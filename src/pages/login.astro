@@ -5,16 +5,33 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login</title>
+    <title>Memberstack Login Test</title>
 
+    <!-- Memberstack v2 Script -->
     <script
-      src="https://static.memberstack.com/scripts/v1/memberstack.js"
-      data-memberstack-app="app_cmfh3d1n802vb0wy706205810">
+      data-memberstack-app="app_cmfh3d1n802vb0wy706205810"
+      src="https://static.memberstack.com/scripts/v2/memberstack.js"
+      type="text/javascript">
     </script>
 
     <style>
-      body { font-family: system-ui, sans-serif; padding: 40px; background: #f7f7f7; }
-      .card { background: white; padding: 24px; border-radius: 12px; border: 1px solid #ddd; max-width: 560px; }
+      body {
+        font-family: system-ui, sans-serif;
+        padding: 40px;
+        background: #f7f7f7;
+      }
+
+      .card {
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        border: 1px solid #ddd;
+        max-width: 560px;
+      }
+
+      h1 {
+        margin-bottom: 24px;
+      }
     </style>
   </head>
 
@@ -22,6 +39,7 @@
     <h1>Login</h1>
 
     <div class="card">
+      <!-- v2 Inline Login Component -->
       <div data-ms-component="ms-login"></div>
     </div>
   </body>
