@@ -5,9 +5,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Memberstack Login Test</title>
+    <title>Login</title>
 
-    <!-- Memberstack v2 Script -->
+    <!-- Memberstack v2 -->
     <script
       data-memberstack-app="app_cmfh3d1n802vb0wy706205810"
       src="https://static.memberstack.com/scripts/v2/memberstack.js"
@@ -15,23 +15,14 @@
     </script>
 
     <style>
-      body {
-        font-family: system-ui, sans-serif;
-        padding: 40px;
-        background: #f7f7f7;
-      }
-
-      .card {
-        background: white;
-        padding: 24px;
-        border-radius: 12px;
-        border: 1px solid #ddd;
-        max-width: 560px;
-      }
-
-      h1 {
-        margin-bottom: 24px;
-      }
+      body { font-family: system-ui, sans-serif; padding: 40px; background: #f7f7f7; }
+      .card { background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 24px; max-width: 520px; }
+      label { display:block; margin: 12px 0 6px; }
+      input { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 10px; }
+      button { margin-top: 14px; padding: 10px 14px; border-radius: 10px; background: #111; color: #fff; border: 0; cursor: pointer; width: 100%; }
+      .row { display:flex; gap: 12px; margin-top: 12px; }
+      .row a { color: #111; }
+      .muted { color: #666; font-size: 14px; }
     </style>
   </head>
 
@@ -39,8 +30,20 @@
     <h1>Login</h1>
 
     <div class="card">
-      <!-- v2 Inline Login Component -->
-      <div data-ms-component="ms-login"></div>
+      <form data-ms-form="login">
+        <label for="email">Email</label>
+        <input id="email" type="email" data-ms-member="email" autocomplete="email" required />
+
+        <label for="pw">Password</label>
+        <input id="pw" type="password" data-ms-member="password" autocomplete="current-password" required />
+
+        <button type="submit">Log in</button>
+      </form>
+
+      <div class="row">
+        <a href="#" data-ms-modal="forgot-password">Forgot password?</a>
+        <a href="/" class="muted">Back</a>
+      </div>
     </div>
   </body>
 </html>
