@@ -1,0 +1,457 @@
+/* ========================================
+   Global Print Styles
+   Comprehensive print-friendly styles for
+   all Knit by Machine tools and wizards
+   ======================================== */
+
+@media print {
+  /* ========================================
+     HIDE: Global Chrome & Navigation
+     CRITICAL: Remove from flow completely to prevent blank first page
+     ======================================== */
+  header,
+  footer,
+  nav,
+  .kbm-header-wrap,
+  .kbm-footer,
+  .kbm-nav,
+  .kbm-menu,
+  .kbm-hamburger,
+  .kbm-search-wrap,
+  .kbm-breadcrumb,
+  .back-link,
+  .video-button,
+  .kbm-logo-section,
+  .kbm-nav-row,
+  .kbm-nav-trigger {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: absolute !important;
+    top: -9999px !important;
+    left: -9999px !important;
+  }
+  
+  /* Fixed headers must be removed from flow completely */
+  .kbm-header-wrap {
+    position: absolute !important;
+    top: -9999px !important;
+  }
+
+  /* ========================================
+     HIDE: Interactive Input Elements
+     Only hide actual editable controls,
+     preserve all containers and labels
+     ======================================== */
+  input:not([readonly]):not([type="hidden"]),
+  select:not([disabled]),
+  textarea:not([readonly]) {
+    display: none !important;
+  }
+
+  /* ========================================
+     HIDE: Buttons & Interactive Controls
+     ======================================== */
+  .calculate-btn,
+  .copy-btn,
+  .copy-button,
+  .kbm-print-button,
+  .kbm-button,
+  .breakdown-toggle,
+  .units-toggle,
+  .unit-btn,
+  .toggle-group,
+  .icon-toggle-group,
+  .results-actions,
+  .kbm-actions,
+  .kbm-control-bar,
+  .kbm-card__footer,
+  .section-divider,
+  .no-print,
+  button[type="submit"],
+  button[type="button"]:not(.print-visible) {
+    display: none !important;
+  }
+
+  /* ========================================
+     PAGE LAYOUT: Base Reset
+     ======================================== */
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 12pt !important;
+    line-height: 1.5 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* ========================================
+     WIZARD & TOOL CONTAINERS
+     ======================================== */
+  .wizard-page,
+  .tool-page {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    min-height: auto !important;
+    background: #ffffff !important;
+  }
+
+  .wizard-container,
+  .calculator-card,
+  .tool-container {
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+  }
+
+  /* ========================================
+     PAGE HEADERS
+     ======================================== */
+  .page-header {
+    margin-bottom: 1rem !important;
+    text-align: left !important;
+    padding: 0 !important;
+  }
+
+  .page-header-title {
+    justify-content: flex-start !important;
+    gap: 0 !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .page-header h1 {
+    font-size: 18pt !important;
+    color: #000000 !important;
+    margin: 0 !important;
+  }
+
+  .page-header p {
+    display: none !important;
+  }
+
+  /* ========================================
+     KBM CARDS
+     ======================================== */
+  .kbm-card,
+  .kbm-card--shadow {
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: 1px solid #52682D !important;
+    padding: 1.25rem !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+  }
+
+  .kbm-card__header {
+    padding: 0 0 0.5rem 0 !important;
+    border-bottom: 1px solid #ccc !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .kbm-card__title {
+    font-size: 18pt !important;
+    color: #000000 !important;
+  }
+
+  .kbm-card__subtitle {
+    font-size: 10pt !important;
+    color: #666666 !important;
+  }
+
+  .kbm-card__body {
+    padding: 0 !important;
+  }
+
+  /* ========================================
+     RESULTS SECTION: Always Visible
+     Explicitly ensure all result containers
+     are displayed for printing
+     ======================================== */
+  .results,
+  .results-section,
+  .results-container,
+  .results-card,
+  .result-card,
+  .result-item,
+  .result-grid,
+  .tool-results,
+  .kbm-tool-results,
+  .wizard-result-card,
+  .pattern-card,
+  .diagram-container,
+  #results {
+    display: block !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Result containers with borders */
+  .results,
+  .results-section,
+  .pattern-card,
+  .result-card {
+    border: 1px solid #52682D !important;
+    padding: 1.25rem !important;
+    margin: 0 0 1rem 0 !important;
+  }
+
+  /* Result items and values */
+  .result-item,
+  .result-row {
+    display: flex !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .result-label {
+    font-weight: 600 !important;
+    margin-right: 0.5rem !important;
+  }
+
+  .result-value {
+    color: #000000 !important;
+  }
+
+  .results h2 {
+    font-size: 14pt !important;
+    color: #000000 !important;
+    border-bottom: 1px solid #ccc !important;
+    padding-bottom: 0.5rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .results p,
+  .results li {
+    font-size: 11pt !important;
+    color: #000000 !important;
+    line-height: 1.6 !important;
+  }
+
+  .kbm-wizard__result-heading {
+    font-size: 14pt !important;
+    color: #000000 !important;
+  }
+
+  .kbm-wizard__result-list {
+    margin: 0 !important;
+    padding-left: 1.5rem !important;
+  }
+
+  .kbm-wizard__result-list li {
+    font-size: 11pt !important;
+    line-height: 1.6 !important;
+  }
+
+  .kbm-lede {
+    font-size: 11pt !important;
+    color: #000000 !important;
+  }
+
+  .kbm-text-muted {
+    font-size: 10pt !important;
+    color: #666666 !important;
+  }
+
+  .kbm-eyebrow {
+    font-size: 9pt !important;
+    color: #666666 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  .kbm-pill {
+    display: inline-block !important;
+    padding: 0.25rem 0.5rem !important;
+    font-size: 9pt !important;
+    border: 1px solid #ccc !important;
+    background: #f5f5f5 !important;
+  }
+
+  /* ========================================
+     BREAKDOWN TABLE: Force Expanded
+     ======================================== */
+  .breakdown-content {
+    display: block !important;
+    margin-top: 1rem !important;
+    page-break-inside: avoid !important;
+  }
+
+  .breakdown-explanation {
+    font-size: 10pt !important;
+    color: #666666 !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .breakdown-table-wrapper {
+    max-height: none !important;
+    overflow: visible !important;
+    border: 1px solid #ccc !important;
+  }
+
+  .breakdown-table {
+    font-size: 10pt !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  .breakdown-table th {
+    background: #f5f5f5 !important;
+    color: #000000 !important;
+    border-bottom: 2px solid #333333 !important;
+    font-size: 10pt !important;
+    padding: 0.5rem !important;
+    text-align: left !important;
+  }
+
+  .breakdown-table td {
+    border-bottom: 1px solid #ddd !important;
+    padding: 0.5rem !important;
+  }
+
+  .breakdown-table tbody tr:nth-child(odd),
+  .breakdown-table tbody tr:nth-child(even) {
+    background: #ffffff !important;
+  }
+
+  /* ========================================
+     GENERIC TABLES
+     ======================================== */
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    font-size: 10pt !important;
+  }
+
+  table th,
+  table td {
+    border: 1px solid #444444 !important;
+    padding: 0.5rem !important;
+    text-align: left !important;
+  }
+
+  table th {
+    background-color: #f5f5f5 !important;
+    font-weight: 600 !important;
+  }
+
+  table tr:nth-child(even) {
+    background-color: #fafafa !important;
+  }
+
+  /* ========================================
+     SVG DIAGRAMS
+     ======================================== */
+  svg {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  svg text {
+    fill: #000000 !important;
+  }
+
+  svg polygon,
+  svg path,
+  svg line,
+  svg rect {
+    stroke: #333333 !important;
+  }
+
+  /* ========================================
+     NOTE & INFO BOXES
+     ======================================== */
+  .note,
+  .info-box,
+  .tip-box {
+    border-left: 3px solid #52682D !important;
+    background: #f9f9f9 !important;
+    padding: 0.75rem !important;
+    margin: 1rem 0 !important;
+    font-size: 10pt !important;
+  }
+
+  /* ========================================
+     PRINT FOOTER (legacy)
+     ======================================== */
+  .print-footer {
+    display: block !important;
+    margin-top: 2rem !important;
+    padding-top: 1rem !important;
+    border-top: 1px solid #ccc !important;
+    font-size: 9pt !important;
+    color: #666666 !important;
+    text-align: center !important;
+  }
+
+  /* ========================================
+     KBM PRINT FOOTER (new standard)
+     ======================================== */
+  .kbm-print-footer {
+    display: block !important;
+    margin-top: 1.5rem !important;
+    padding-top: 0.5rem !important;
+    border-top: 1px solid #52682D !important;
+    font-size: 11px !important;
+    text-align: center !important;
+    color: #333333 !important;
+  }
+
+  .kbm-print-footer__brand {
+    font-weight: 600 !important;
+  }
+
+  .kbm-print-footer__url {
+    color: #666666 !important;
+  }
+
+  /* ========================================
+     PAGE BREAK CONTROLS
+     ======================================== */
+  .results-section,
+  .pattern-card,
+  .kbm-card {
+    page-break-inside: avoid !important;
+  }
+
+  h1, h2, h3, h4 {
+    page-break-after: avoid !important;
+  }
+
+  /* ========================================
+     TYPOGRAPHY & LINKS
+     ======================================== */
+  a {
+    color: #000000 !important;
+    text-decoration: none !important;
+  }
+
+  h1 {
+    font-size: 18pt !important;
+  }
+
+  h2 {
+    font-size: 14pt !important;
+  }
+
+  h3 {
+    font-size: 12pt !important;
+  }
+
+  p, li {
+    font-size: 11pt !important;
+    line-height: 1.6 !important;
+  }
+}

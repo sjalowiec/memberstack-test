@@ -1,0 +1,77 @@
+---
+import { getCollection } from 'astro:content';
+
+interface Props {
+  term?: string;
+  text?: string;
+  position?: "top" | "right" | "bottom" | "left";
+}
+
+const { term, text, position = "top" } = Astro.props;
+const positionClass = `tooltip--${position}`;
+
+let tooltipText = text || "";
+
+// If term is provided, fetch from glossary
+if (term && !text) {
+  try {
+    // Get all glossary entries and find by term (case-insensitive)
+    const glossaryEntries = await getCollection('glossary');
+    const normalizedTerm = term.toLowerCase().trim();
+    
+    const glossaryEntry = glossaryEntries.find(entry => {
+      const entryTerm = entry.data.term?.toLowerCase().trim();
+      const entrySlug = entry.slug?.toLowerCase().trim();
+      return entryTerm === normalizedTerm || entrySlug === normalizedTerm;
+    });
+    
+    if (glossaryEntry?.data?.tooltip) {
+      tooltipText = glossaryEntry.data.tooltip;
+    } else if (glossaryEntry?.data?.description) {
+      // Fallback to first sentence of description
+      const firstSentence = glossaryEntry.data.description.split(/[.!?]/)[0];
+      tooltipText = firstSentence ? firstSentence + '.' : glossaryEntry.data.description;
+    } else {
+      // Glossary entry not found, use term as fallback
+      tooltipText = term;
+    }
+  } catch (e) {
+    // Error fetching glossary, use term as fallback
+    tooltipText = term;
+  }
+}
+---
+
+<span class={`tooltip ${positionClass}`} tabindex="0">
+  <svg
+    class="tooltip-icon"
+    viewBox="0 0 100 100"
+    width="1em"
+    height="1em"
+    aria-hidden="true"
+  >
+    <polygon
+      points="50 2, 95 25, 95 75, 50 98, 5 75, 5 25"
+      fill="#52682D"
+      stroke="none"
+    />
+    <text
+      x="50"
+      y="63"
+      text-anchor="middle"
+      font-size="55"
+      font-family="Arial, sans-serif"
+      font-weight="bold"
+      fill="#ffffff"
+      pointer-events="none"
+    >
+      ?
+    </text>
+  </svg>
+
+  {tooltipText && (
+    <span class="tooltip-text" role="tooltip">
+      {tooltipText}
+    </span>
+  )}
+</span>

@@ -1,0 +1,72 @@
+---
+/**
+ * WizardStepsLayout.astro
+ * 
+ * Container/layout component for stepped wizards.
+ * Provides consistent spacing, max-width, and structure.
+ * 
+ * Slots:
+ * - header: Optional header content (intro card, title, etc.)
+ * - default: Main wizard content (steps, questions, results)
+ * - footer: Optional footer content (typically navigation)
+ * 
+ * Props:
+ * - maxWidth: Maximum width of the container (default: "900px")
+ * - class: Additional CSS classes
+ */
+
+interface Props {
+  maxWidth?: string;
+  class?: string;
+}
+
+const { 
+  maxWidth = "900px",
+  class: className = ""
+} = Astro.props;
+---
+
+<div class={`wizard-steps-layout ${className}`.trim()} style={`--wizard-max-width: ${maxWidth};`}>
+  {Astro.slots.has('header') && (
+    <div class="wizard-steps-layout__header">
+      <slot name="header" />
+    </div>
+  )}
+  
+  <div class="wizard-steps-layout__content">
+    <slot />
+  </div>
+  
+  {Astro.slots.has('footer') && (
+    <div class="wizard-steps-layout__footer">
+      <slot name="footer" />
+    </div>
+  )}
+</div>
+
+<style>
+  .wizard-steps-layout {
+    max-width: var(--wizard-max-width, 900px);
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+  
+  .wizard-steps-layout__header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .wizard-steps-layout__content {
+    /* Main content area */
+  }
+  
+  .wizard-steps-layout__footer {
+    margin-top: 1.5rem;
+  }
+  
+  @media print {
+    .wizard-steps-layout {
+      padding: 0;
+      max-width: none;
+    }
+  }
+</style>

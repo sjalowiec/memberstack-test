@@ -1,0 +1,126 @@
+---
+interface Props {
+  title: string;
+  subtitle?: string;
+  iconPath?: string;
+  iconAlt?: string;
+  eyebrow?: string;
+}
+
+const { title, subtitle, iconPath, iconAlt = "", eyebrow } = Astro.props;
+---
+
+<div class="section-hero">
+  <div class="hero-primary">
+    {iconPath && (
+      <img src={iconPath} alt={iconAlt} class="hero-icon" />
+    )}
+    <div class="hero-text">
+      {eyebrow && <p class="hero-eyebrow">{eyebrow}</p>}
+      <h1 class="hero-title">{title}</h1>
+      {subtitle && <p class="hero-subtitle">{subtitle}</p>}
+    </div>
+    <div class="hero-actions">
+      <slot name="actions" />
+    </div>
+  </div>
+  
+  {Astro.slots.has('toolbar') && (
+    <div class="hero-toolbar">
+      <slot name="toolbar" />
+    </div>
+  )}
+</div>
+
+<style>
+  .section-hero {
+    max-width: 1200px;
+    margin: 0 auto 3rem;
+    padding: 0 1.5rem;
+  }
+
+  .hero-primary {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-icon {
+    width: clamp(80px, 8vw, 96px);
+    height: clamp(80px, 8vw, 96px);
+    flex-shrink: 0;
+    object-fit: contain;
+  }
+
+  .hero-text {
+    flex: 1;
+  }
+
+  .hero-eyebrow {
+    font-size: clamp(0.875rem, 1.5vw, 1rem);
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .hero-title {
+    font-family: var(--font, "Poppins", system-ui, Arial, sans-serif);
+    font-size: clamp(2.25rem, 4vw, 3rem);
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+    margin: 0 0 0.35rem 0;
+    line-height: 1.2;
+  }
+
+  .hero-subtitle {
+    font-family: var(--font, "Poppins", system-ui, Arial, sans-serif);
+    font-size: clamp(1rem, 2vw, 1.125rem);
+    color: #5a6b47;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .hero-actions {
+    flex-shrink: 0;
+  }
+
+  .hero-actions:empty {
+    display: none;
+  }
+
+  .hero-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1rem 0;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .hero-primary {
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .hero-icon {
+      align-self: center;
+      width: clamp(64px, 15vw, 80px);
+      height: clamp(64px, 15vw, 80px);
+    }
+
+    .hero-actions {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    .hero-toolbar {
+      justify-content: center;
+    }
+  }
+</style>

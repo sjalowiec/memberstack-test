@@ -1,0 +1,147 @@
+---
+import { getCollection } from 'astro:content';
+import VimeoEmbed from './VimeoEmbed.astro';
+import Transcript from './Transcript.astro';
+
+interface Props {
+  videoSlug?: string;
+  videoId?: string;
+  vimeoId?: string;
+  title?: string;
+  transcript?: string;
+  heading?: string;
+  showMeta?: boolean;
+}
+
+const { videoSlug, videoId, vimeoId, title, transcript, heading, showMeta = false } = Astro.props;
+
+const lookupSlug = videoSlug || videoId;
+
+let video: {
+  title: string;
+  vimeoId: string;
+  transcriptHtml?: string;
+  keywords?: string[];
+  tags?: string[];
+  skillLevel?: string | null;
+  published?: boolean;
+} | null = null;
+
+let fromCollection = false;
+
+if (lookupSlug) {
+  const allVideos = await getCollection('videos');
+  const videoEntry = allVideos.find(v => v.id === lookupSlug || v.id === `${lookupSlug}.json`);
+  
+  if (videoEntry) {
+    video = videoEntry.data;
+    fromCollection = true;
+  }
+}
+
+if (!fromCollection && vimeoId && title) {
+  video = {
+    title,
+    vimeoId,
+    transcriptHtml: transcript || "",
+    tags: [],
+    keywords: [],
+  };
+}
+
+const displaySlug = lookupSlug || vimeoId || 'unknown';
+---
+
+{video && (
+  <div class="kbm-video-block" data-testid={`video-block-${displaySlug}`}>
+    {heading && (
+      <h3 class="kbm-video-block-heading">{heading}</h3>
+    )}
+    
+    <VimeoEmbed 
+      vimeoId={video.vimeoId} 
+      title={video.title} 
+    />
+    
+    {showMeta && (video.tags && video.tags.length > 0) && (
+      <div class="kbm-video-block-meta">
+        {video.skillLevel && (
+          <span class="kbm-video-skill-level">
+            {video.skillLevel}
+          </span>
+        )}
+        <span class="kbm-video-tags">
+          {video.tags.join(' · ')}
+        </span>
+      </div>
+    )}
+    
+    {video.transcriptHtml && video.transcriptHtml.trim().length > 0 && (
+      <Transcript title="Read transcript">
+        <Fragment set:html={video.transcriptHtml} />
+      </Transcript>
+    )}
+  </div>
+)}
+
+{!video && lookupSlug && (
+  <div class="kbm-video-block-error" data-testid={`video-block-error-${displaySlug}`}>
+    <p>Video not found: <code>{lookupSlug}</code></p>
+  </div>
+)}
+
+{!video && !lookupSlug && !vimeoId && (
+  <div class="kbm-video-block-error" data-testid="video-block-error-no-props">
+    <p>VideoBlock requires either a <code>videoSlug</code> or <code>vimeoId</code> + <code>title</code></p>
+  </div>
+)}
+
+<style>
+  .kbm-video-block {
+    margin: 1.5rem 0;
+  }
+
+  .kbm-video-block-heading {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+    margin: 0 0 0.75rem 0;
+  }
+
+  .kbm-video-block-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .kbm-video-skill-level {
+    background: var(--kbm-green-light, #e8eee0);
+    color: var(--kbm-green, #52682d);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    text-transform: capitalize;
+  }
+
+  .kbm-video-tags {
+    font-style: italic;
+  }
+
+  .kbm-video-block-error {
+    padding: 1rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    color: #991b1b;
+    font-size: 0.9rem;
+  }
+
+  .kbm-video-block-error code {
+    background: rgba(0,0,0,0.1);
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+  }
+</style>

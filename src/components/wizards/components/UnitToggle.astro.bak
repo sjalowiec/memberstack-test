@@ -1,0 +1,66 @@
+---
+/**
+ * ============================================================================
+ * KBM LEGO BLOCK: Unit Toggle Component
+ * ============================================================================
+ * 
+ * This is a standardized, reusable component for all KBM wizards.
+ * 
+ * PURPOSE:
+ * - Provides inches/cm switching with consistent KBM styling
+ * - Appears in the top-right corner of all wizard headers
+ * - Integrates with wizard-utils.js for unit conversion
+ * - Persists user preference to localStorage
+ * 
+ * USAGE:
+ * 1. Mount this component inside #kbm-units-toggle container in wizard headers
+ * 2. Parent page handles toggle logic using wizard-utils.js
+ * 3. Use the .kbm-header-layout wrapper for proper positioning
+ * 
+ * EXAMPLE:
+ * <div class="wizard-header kbm-header-layout">
+ *   <h1 class="wizard-title">My Wizard</h1>
+ *   <div id="kbm-units-toggle">
+ *     <UnitToggle id="mywizard" />
+ *   </div>
+ * </div>
+ * 
+ * STYLING:
+ * - Compact, header-friendly design
+ * - Uses KBM green for active state
+ * - Responsive on mobile devices
+ */
+
+interface Props {
+  /** ID prefix for the toggle buttons (e.g., 'hat' creates 'hat-btn-inches') */
+  id?: string;
+  /** Additional CSS classes */
+  class?: string;
+}
+
+const { id = 'unit', class: className = '' } = Astro.props;
+---
+
+<div class={`units-toggle ${className}`}>
+  <button 
+    class="unit-btn active" 
+    id={`${id}-btn-inches`}
+    data-unit="inches"
+    data-testid="button-toggle-inches"
+  >
+    in
+  </button>
+  <button 
+    class="unit-btn" 
+    id={`${id}-btn-cm`}
+    data-unit="cm"
+    data-testid="button-toggle-cm"
+  >
+    cm
+  </button>
+</div>
+
+<style>
+/* Styles are inherited from wizard.css */
+/* This is just for any component-specific overrides if needed */
+</style>

@@ -1,0 +1,47 @@
+---
+// LoadingState.astro
+type Props = {
+  id?: string;
+  title?: string;
+  message?: string;
+  minHeight?: number | string;
+  centered?: boolean;
+  spinnerSize?: number;
+  subtle?: boolean;
+  className?: string;
+};
+
+const {
+  id,
+  title = "Processing…",
+  message = "This may take a few seconds.",
+  minHeight = 220,
+  centered = true,
+  spinnerSize = 36,
+  subtle = false,
+  className = "",
+} = Astro.props;
+
+const minH =
+  typeof minHeight === "number" ? `${minHeight}px` : (minHeight ?? "220px");
+---
+
+<div
+  id={id}
+  class={`kbm-loading ${centered ? "is-centered" : ""} ${subtle ? "is-subtle" : ""} ${className}`}
+  style={`min-height:${minH};`}
+  role="status"
+  aria-live="polite"
+  aria-busy="true"
+>
+  <span
+    class="kbm-loading__spinner"
+    aria-hidden="true"
+    style={`width:${spinnerSize}px;height:${spinnerSize}px;`}
+  ></span>
+
+  <div class="kbm-loading__text">
+    <div class="kbm-loading__title">{title}</div>
+    <div class="kbm-loading__message">{message}</div>
+  </div>
+</div>

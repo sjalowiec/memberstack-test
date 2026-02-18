@@ -1,0 +1,56 @@
+---
+import { getAvailabilityInfo } from '../../lib/machines/availability';
+
+interface Props {
+  status: string;
+  leadTimeNotes?: string | null;
+  showMessage?: boolean;
+  size?: 'sm' | 'md';
+}
+
+const { 
+  status, 
+  leadTimeNotes, 
+  showMessage = false,
+  size = 'md'
+} = Astro.props;
+
+const info = getAvailabilityInfo(status, leadTimeNotes);
+
+const fontSize = size === 'sm' ? '0.75rem' : '0.875rem';
+const padding = size === 'sm' ? '0.125rem 0.5rem' : '0.25rem 0.75rem';
+---
+
+<div class="availability-badge-wrapper">
+  <span 
+    class="availability-badge"
+    style={`${info.inlineStyle} font-size: ${fontSize}; padding: ${padding};`}
+  >
+    {info.label}
+  </span>
+  {showMessage && (
+    <p class="availability-message">{info.message}</p>
+  )}
+</div>
+
+<style>
+  .availability-badge-wrapper {
+    display: inline-block;
+  }
+
+  .availability-badge {
+    display: inline-block;
+    border-radius: 9999px;
+    font-weight: 500;
+    border-width: 1px;
+    border-style: solid;
+    white-space: nowrap;
+  }
+
+  .availability-message {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+    margin-bottom: 0;
+  }
+</style>

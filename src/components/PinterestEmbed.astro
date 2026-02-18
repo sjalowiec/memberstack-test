@@ -1,0 +1,90 @@
+---
+/**
+ * PinterestEmbed - Renders Pinterest board or pin embeds
+ * 
+ * Props:
+ *   pinterestUrl?: string - URL to a Pinterest board or pin
+ *   pinterestEmbedHtml?: string - Raw embed HTML (fallback, scripts stripped)
+ * 
+ * Behavior:
+ *   - If pinterestUrl is present, renders standard Pinterest anchor markup
+ *   - If only pinterestEmbedHtml is present, renders it (scripts stripped)
+ *   - If neither, renders nothing
+ */
+interface Props {
+  pinterestUrl?: string;
+  pinterestEmbedHtml?: string;
+}
+
+const { pinterestUrl, pinterestEmbedHtml } = Astro.props;
+
+// Detect if URL is a pin (vs board)
+function isPin(url: string): boolean {
+  return url.includes('/pin/');
+}
+
+// Strip script tags from HTML for safety
+function stripScripts(html: string): string {
+  return html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+}
+
+const hasPinterestUrl = pinterestUrl && pinterestUrl.trim().length > 0;
+const hasEmbedHtml = pinterestEmbedHtml && pinterestEmbedHtml.trim().length > 0;
+const shouldRender = hasPinterestUrl || hasEmbedHtml;
+
+const pinType = hasPinterestUrl && isPin(pinterestUrl) ? 'embedPin' : 'embedBoard';
+const cleanEmbedHtml = hasEmbedHtml ? stripScripts(pinterestEmbedHtml) : '';
+---
+
+{shouldRender && (
+  <div class="pinterest-embed-container" data-testid="pinterest-embed">
+    {hasPinterestUrl ? (
+      <a 
+        data-pin-do={pinType} 
+        href={pinterestUrl}
+        data-testid="pinterest-link"
+      ></a>
+    ) : (
+      <Fragment set:html={cleanEmbedHtml} />
+    )}
+  </div>
+)}
+
+{shouldRender && (
+  <script is:inline>
+    // Trigger Pinterest build after render, safely
+    (function() {
+      function buildPinterest() {
+        try {
+          if (window.kbmPinterestBuild) {
+            window.kbmPinterestBuild();
+          }
+        } catch (e) {
+          // no-op
+        }
+      }
+      // Run after next paint
+      if (document.readyState === 'complete') {
+        requestAnimationFrame(buildPinterest);
+      } else {
+        window.addEventListener('load', function() {
+          requestAnimationFrame(buildPinterest);
+        });
+      }
+    })();
+  </script>
+)}
+
+<style>
+  .pinterest-embed-container {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    background: #fafafa;
+    min-height: 100px;
+  }
+  
+  .pinterest-embed-container:empty {
+    display: none;
+  }
+</style>

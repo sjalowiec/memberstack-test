@@ -1,0 +1,26 @@
+---
+interface Term {
+  term: string;
+  definition: string;
+  tooltipText?: string;
+}
+
+interface Props {
+  title?: string;
+  terms: Term[];
+}
+
+const { title = "Terms", terms } = Astro.props;
+---
+
+<section class="pattern-terms">
+  <h4>{title}</h4>
+  {terms.map((item) => (
+    <p>
+      <span 
+        class="pattern-term" 
+        data-tooltip={item.tooltipText || item.definition}
+      >{item.term}:</span> {item.definition}
+    </p>
+  ))}
+</section>

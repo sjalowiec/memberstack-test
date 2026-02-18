@@ -1,0 +1,239 @@
+---
+/**
+ * GatedVimeo.astro - Video component with member gating
+ * Shows Vimeo embed for free videos, locked state for member-only videos
+ * 
+ * TODO: Connect isMember to real Memberstack membership state when available
+ */
+interface Props {
+  vimeoId: string;
+  access: "free" | "member";
+  title?: string;
+  description?: string;
+  posterSrc?: string;
+  runtime?: string;
+}
+
+const { vimeoId, access, title, description, posterSrc, runtime } = Astro.props;
+
+// TODO: Replace with actual membership check (e.g., Memberstack integration)
+const isMember = false;
+
+const canWatch = access === "free" || isMember;
+---
+
+<div class="gated-video-card" data-testid={`video-card-${vimeoId}`}>
+  {title && (
+    <div class="video-header">
+      <h3 class="video-title">{title}</h3>
+      {runtime && <span class="video-runtime">{runtime}</span>}
+    </div>
+  )}
+  
+  {description && (
+    <p class="video-description">{description}</p>
+  )}
+
+  <div class="video-container">
+    {canWatch ? (
+      <div class="video-embed">
+        <iframe
+          src={`https://player.vimeo.com/video/${vimeoId}?h=&title=0&byline=0&portrait=0`}
+          frameborder="0"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowfullscreen
+          title={title || "Video"}
+          data-testid={`vimeo-embed-${vimeoId}`}
+        ></iframe>
+      </div>
+    ) : (
+      <div class="video-locked" data-testid={`video-locked-${vimeoId}`}>
+        {posterSrc ? (
+          <img src={posterSrc} alt={title || "Video thumbnail"} class="video-poster" />
+        ) : (
+          <div class="video-placeholder">
+            <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+        )}
+        <div class="locked-overlay">
+          <div class="locked-content">
+            <svg class="lock-icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            <p class="locked-text">Members Only</p>
+            <a href="/membership" class="login-button" data-testid={`button-login-${vimeoId}`}>
+              Log in to watch
+            </a>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+
+  {access === "free" && (
+    <span class="access-badge access-badge-free" data-testid={`badge-free-${vimeoId}`}>Free</span>
+  )}
+</div>
+
+<style>
+  .gated-video-card {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .video-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #eee;
+    gap: 1rem;
+  }
+
+  .video-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3a57;
+  }
+
+  .video-runtime {
+    font-size: 0.85rem;
+    color: #666;
+    background: #f5f5f5;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .video-description {
+    margin: 0;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+    color: #5a6c7d;
+    line-height: 1.5;
+  }
+
+  .video-container {
+    position: relative;
+    width: 100%;
+  }
+
+  .video-embed {
+    position: relative;
+    padding-top: 56.25%;
+    width: 100%;
+  }
+
+  .video-embed iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .video-locked {
+    position: relative;
+    padding-top: 56.25%;
+    background: #1a1a2e;
+  }
+
+  .video-poster {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.4);
+  }
+
+  .video-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #2c3a57 0%, #1a1a2e 100%);
+  }
+
+  .lock-icon {
+    width: 48px;
+    height: 48px;
+    color: rgba(255, 255, 255, 0.2);
+  }
+
+  .locked-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .locked-content {
+    text-align: center;
+    color: white;
+  }
+
+  .lock-icon-large {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 0.75rem;
+    color: white;
+  }
+
+  .locked-text {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .login-button {
+    display: inline-block;
+    background: #52682d;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: background 0.2s ease;
+  }
+
+  .login-button:hover {
+    background: #3e5524;
+  }
+
+  .access-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .access-badge-free {
+    background: #52682d;
+    color: white;
+  }
+</style>

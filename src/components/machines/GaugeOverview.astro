@@ -1,0 +1,121 @@
+---
+interface Props {
+  currentGaugeName?: string;
+  showExplainer?: boolean;
+}
+
+const { currentGaugeName, showExplainer = true } = Astro.props;
+
+const gauges = [
+  {
+    name: 'Standard',
+    label: '4.5G',
+    mm: '4.5mm',
+    yarns: 'Fingering to DK',
+    description: 'Fine, drapey fabrics'
+  },
+  {
+    name: 'Mid',
+    label: '6G',
+    mm: '6mm',
+    yarns: 'DK to Worsted',
+    description: 'Versatile everyday knits'
+  },
+  {
+    name: 'Bulky',
+    label: '9G',
+    mm: '9mm',
+    yarns: 'Bulky to Super Bulky',
+    description: 'Quick, cozy projects'
+  }
+];
+---
+
+<div class="gauge-overview">
+  {showExplainer && (
+    <p class="gauge-explainer">
+      Machine gauge determines the spacing between needles and what yarn weights work best. 
+      A smaller gauge (like 4.5G) creates finer fabrics with thinner yarns, while a larger gauge 
+      (like 9G) handles bulky yarns for faster, chunkier knitting.
+    </p>
+  )}
+  
+  <div class="gauge-grid">
+    {gauges.map((gauge) => {
+      const isActive = currentGaugeName && currentGaugeName.toLowerCase().includes(gauge.name.toLowerCase());
+      return (
+        <div class={`gauge-card ${isActive ? 'active' : ''}`}>
+          <div class="gauge-label">{gauge.label}</div>
+          <div class="gauge-spacing">{gauge.mm} spacing</div>
+          <div class="gauge-name">{gauge.name}</div>
+          <div class="gauge-yarns">{gauge.yarns}</div>
+        </div>
+      );
+    })}
+  </div>
+</div>
+
+<style>
+  .gauge-overview {
+    /* Container styles */
+  }
+
+  .gauge-explainer {
+    color: #374151;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  .gauge-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+
+  .gauge-card {
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+    border: 2px solid #e5e7eb;
+    background: white;
+    transition: all 0.2s;
+  }
+
+  .gauge-card.active {
+    border-color: var(--kbm-green);
+    background: var(--kbm-bg);
+  }
+
+  .gauge-label {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #374151;
+  }
+
+  .gauge-card.active .gauge-label {
+    color: var(--kbm-green);
+  }
+
+  .gauge-spacing {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+  }
+
+  .gauge-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1f2937;
+  }
+
+  .gauge-card.active .gauge-name {
+    color: var(--kbm-green);
+  }
+
+  .gauge-yarns {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+  }
+</style>

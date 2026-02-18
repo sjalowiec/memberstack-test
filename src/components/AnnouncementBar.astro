@@ -1,0 +1,243 @@
+---
+/* Toggle banner visibility */
+const show = true;
+
+/* Banner text */
+const message =
+  "New around here?";
+---
+
+{show && (
+  <>
+    <div class="kbm-announcement">
+      <p>
+        {message}{" "}
+        <button type="button" id="intro-modal-trigger" class="kbm-announcement-link">
+          Start with a quick introduction →
+        </button>
+      </p>
+    </div>
+
+    <div id="intro-modal" class="intro-modal-overlay" aria-hidden="true">
+      <div class="intro-modal-content" role="dialog" aria-modal="true" aria-labelledby="intro-modal-title">
+        <button type="button" class="intro-modal-close" aria-label="Close modal">&times;</button>
+        
+        <h2 id="intro-modal-title">Hi! I'm Sue - Welcome to Knit by Machine</h2>
+        
+        <div class="intro-modal-body">
+          <img src="/images/sue_icon9.png" alt="Sue" class="intro-sue-photo" />
+          <p>
+            Welcome! <b>Knit by Machine</b> is a modern, clarity-first resource for machine knitters 
+            who want real guidance without the overwhelm.
+          </p>
+          <p>
+            I'm Sue, and after years of helping knitters troubleshoot, build skills, and finish beautiful projects, I created this 
+            space to make machine knitting simpler, more confident, and more joyful.
+          </p>
+          
+          <div class="intro-modal-clear"></div>
+          
+          <p>
+            Here you'll find clear explanations, helpful tools, interactive wizards, and 
+            practical patterns — all designed to help you succeed, one small win at a time.
+          </p>
+          
+          <p>
+            If you're just getting started, explore the <a href="/wizards-catalog">Tools page</a> or 
+            check out the <a href="/glossary">Glossary</a> for quick, confidence-boosting help.
+          </p>
+          <p>
+            And if you need anything, I'm always glad to point you in the right direction.
+          </p>
+        </div>
+      </div>
+    </div>
+  </>
+)}
+
+<style is:global>
+  .kbm-announcement {
+    background: var(--kbm-green, #52682d);
+    color: #fff;
+    padding: 0.35rem 1rem;
+    font-size: 0.9rem;
+    text-align: center;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .kbm-announcement-link {
+    background: none;
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+    cursor: pointer;
+    font-size: inherit;
+    font-family: inherit;
+    padding: 0;
+  }
+
+  .kbm-announcement-link:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  /* Modal Overlay */
+  .intro-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+    padding: 1rem;
+  }
+
+  .intro-modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Modal Content */
+  .intro-modal-content {
+    background: #fff;
+    border-radius: 1rem;
+    max-width: 560px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 2rem;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    transform: translateY(20px);
+    transition: transform 0.25s ease;
+  }
+
+  .intro-modal-overlay.is-open .intro-modal-content {
+    transform: translateY(0);
+  }
+
+  /* Close Button */
+  .intro-modal-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    color: #666;
+    cursor: pointer;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s ease, color 0.2s ease;
+    line-height: 1;
+  }
+
+  .intro-modal-close:hover {
+    background: #f0f0f0;
+    color: #333;
+  }
+
+  /* Modal Title */
+  .intro-modal-content h2 {
+    margin: 0 0 1.25rem;
+    font-size: 1.5rem;
+    color: var(--kbm-green, #52682d);
+    padding-right: 2rem;
+  }
+
+  /* Modal Body */
+  .intro-modal-body p {
+    margin: 0 0 1rem;
+    line-height: 1.7;
+    color: #333;
+  }
+
+  .intro-modal-body p:last-child {
+    margin-bottom: 0;
+  }
+
+  .intro-modal-body a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+  }
+
+  .intro-modal-body a:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  /* Sue's photo - floated left */
+  .intro-sue-photo {
+    float: left;
+    width: 110px;
+    height: 110px;
+    margin: 0.25rem 1rem 0.5rem 0;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .intro-modal-clear {
+    clear: both;
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 480px) {
+    .intro-modal-content {
+      padding: 1.5rem;
+    }
+
+    .intro-modal-content h2 {
+      font-size: 1.25rem;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const trigger = document.getElementById('intro-modal-trigger');
+    const modal = document.getElementById('intro-modal');
+    const closeBtn = modal?.querySelector('.intro-modal-close');
+    const modalContent = modal?.querySelector('.intro-modal-content');
+
+    function openModal() {
+      modal?.classList.add('is-open');
+      modal?.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      closeBtn?.focus();
+    }
+
+    function closeModal() {
+      modal?.classList.remove('is-open');
+      modal?.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      trigger?.focus();
+    }
+
+    trigger?.addEventListener('click', openModal);
+
+    closeBtn?.addEventListener('click', closeModal);
+
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal?.classList.contains('is-open')) {
+        closeModal();
+      }
+    });
+  });
+</script>

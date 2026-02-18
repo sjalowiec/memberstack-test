@@ -1,0 +1,137 @@
+---
+/**
+ * SectionBlock.astro - Renders a foundation content section
+ * Displays heading, body text, bullets, and optional callout
+ */
+interface Props {
+  heading: string;
+  body?: string;
+  bullets?: string[];
+  callout?: { title?: string; text: string };
+}
+
+const { heading, body, bullets = [], callout } = Astro.props;
+---
+
+<section class="section-block" data-testid={`section-${heading.toLowerCase().replace(/\s+/g, '-')}`}>
+  <h2 class="section-heading">{heading}</h2>
+  
+  {body && (
+    <div class="section-body" set:html={body}></div>
+  )}
+
+  {bullets.length > 0 && (
+    <ul class="section-bullets">
+      {bullets.map((bullet) => (
+        <li>{bullet}</li>
+      ))}
+    </ul>
+  )}
+
+  {callout && (
+    <div class="section-callout" data-testid="callout">
+      {callout.title && (
+        <h4 class="callout-title">{callout.title}</h4>
+      )}
+      <p class="callout-text">{callout.text}</p>
+    </div>
+  )}
+</section>
+
+<style>
+  .section-block {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .section-block:last-child {
+    border-bottom: none;
+  }
+
+  .section-heading {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #2c3a57;
+    margin: 0 0 1rem 0;
+  }
+
+  .section-body {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #374151;
+  }
+
+  .section-body :global(p) {
+    margin: 0 0 1rem 0;
+  }
+
+  .section-body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .section-body :global(a) {
+    color: #52682d;
+    text-decoration: underline;
+  }
+
+  .section-body :global(a:hover) {
+    color: #3e5524;
+  }
+
+  .section-body :global(strong) {
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .section-bullets {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0 0;
+  }
+
+  .section-bullets li {
+    position: relative;
+    padding-left: 1.5rem;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #374151;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-bullets li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #52682d;
+    font-weight: bold;
+    font-size: 1.2em;
+  }
+
+  .section-bullets li:last-child {
+    margin-bottom: 0;
+  }
+
+  .section-callout {
+    margin-top: 1.5rem;
+    background: linear-gradient(135deg, #f5f8f0 0%, #e7f0dc 100%);
+    border-left: 4px solid #52682d;
+    border-radius: 0 8px 8px 0;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .callout-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #52682d;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .callout-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #2c3a57;
+    margin: 0;
+  }
+</style>

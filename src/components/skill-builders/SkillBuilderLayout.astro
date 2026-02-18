@@ -1,0 +1,520 @@
+---
+/**
+ * SkillBuilderLayout.astro
+ * Reusable layout for $19 Skill Builder pages
+ * 
+ * Usage: Pass content via slots or props
+ * 
+ * FAQs: Pass faqs prop as array of {question, answer} objects.
+ * This generates both visible FAQ HTML and JSON-LD schema for SEO/AEO.
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+interface Props {
+  title: string;
+  subtitle: string;
+  price: string;
+  level: string;
+  timeEstimate: string;
+  metaDescription?: string;
+  faqs?: FAQItem[];
+}
+
+const { 
+  title, 
+  subtitle, 
+  price, 
+  level, 
+  timeEstimate,
+  metaDescription = "Learn machine knitting skills step-by-step with Knit by Machine.",
+  faqs = []
+} = Astro.props;
+
+// Generate FAQPage JSON-LD schema if FAQs exist
+const faqSchema = faqs.length > 0 ? JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqs.map(faq => ({
+    "@type": "Question",
+    "name": faq.question,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": faq.answer
+    }
+  }))
+}) : null;
+---
+
+<BaseLayout title={`${title} | Skill Builder | Knit by Machine`} description={metaDescription}>
+  
+  {/* Inject FAQPage JSON-LD schema into head if FAQs exist */}
+  {faqSchema && (
+    <script type="application/ld+json" set:html={faqSchema} slot="head" />
+  )}
+
+  <div class="skill-builder-page">
+    
+    <!-- A) HERO SECTION -->
+    <section class="sb-hero">
+      <h1>{title}</h1>
+      <p class="sb-subtitle">{subtitle}</p>
+      <div class="sb-meta">
+        <span class="sb-badge sb-price">{price}</span>
+        <span class="sb-badge sb-level">{level}</span>
+        <span class="sb-badge sb-time">{timeEstimate}</span>
+      </div>
+    </section>
+
+    <!-- B) QUICK SCAN SECTION -->
+    <section class="sb-section">
+      <h2>Quick Scan</h2>
+      <div class="sb-quick-scan">
+        <slot name="quick-scan" />
+      </div>
+    </section>
+
+    <!-- C) WHAT YOU'LL DO SECTION -->
+    <section class="sb-section">
+      <h2>What You'll Do</h2>
+      <slot name="what-youll-do" />
+    </section>
+
+    <!-- D) VIDEO SECTION -->
+    <section class="sb-section">
+      <h2>Watch in Order</h2>
+      <slot name="video" />
+    </section>
+
+    <!-- E) STEPS SECTION -->
+    <section class="sb-section">
+      <h2>Steps</h2>
+      <slot name="steps" />
+    </section>
+
+    <!-- F) PRACTICE SECTION -->
+    <section class="sb-section">
+      <h2>Practice</h2>
+      <slot name="practice" />
+    </section>
+
+    <!-- G) TROUBLESHOOTING SECTION -->
+    <section class="sb-section">
+      <h2>Troubleshooting</h2>
+      {faqs.length > 0 ? (
+        <div class="sb-faq">
+          {faqs.map((faq, index) => (
+            <div class="sb-faq-item">
+              <button 
+                class="sb-faq-question" 
+                type="button"
+                aria-controls={`sb-faq-answer-${index}`}
+                aria-expanded="false"
+              >
+                {faq.question}
+              </button>
+              <div class="sb-faq-answer" id={`sb-faq-answer-${index}`}>
+                <p>{faq.answer}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <slot name="troubleshooting" />
+      )}
+    </section>
+
+    <!-- H) TERMS USED SECTION -->
+    <section class="sb-section">
+      <h2>Terms Used</h2>
+      <slot name="terms-used" />
+    </section>
+
+    <!-- I) WHAT'S NEXT SECTION -->
+    <section class="sb-section sb-whats-next">
+      <h2>What's Next</h2>
+      <slot name="whats-next" />
+    </section>
+
+    <!-- Default slot for modals and extra content -->
+    <slot />
+
+  </div>
+</BaseLayout>
+
+<style>
+/* ========== SKILL BUILDER SCOPED STYLES ========== */
+
+.skill-builder-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+/* A) Hero Section */
+.sb-hero {
+  text-align: center;
+  padding: 2rem 1rem;
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, #f0f4eb 0%, #e9ece7 100%);
+  border-radius: 12px;
+  border: 1px solid var(--ring, #e5e8e0);
+}
+
+.sb-hero h1 {
+  font-size: var(--text-xxl, 2.25rem);
+  color: var(--kbm-green, #52682d);
+  margin-bottom: 0.5rem;
+}
+
+.sb-subtitle {
+  font-size: var(--text-lg, 1.125rem);
+  color: #555;
+  margin-bottom: 1.5rem;
+}
+
+.sb-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.sb-badge {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.sb-price {
+  background: var(--kbm-green, #52682d);
+  color: #fff;
+}
+
+.sb-level {
+  background: var(--kbm-green-2, #738c52);
+  color: #fff;
+}
+
+.sb-time {
+  background: #e5e8e0;
+  color: var(--kbm-green, #52682d);
+}
+
+/* Section styling */
+.sb-section {
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid var(--ring, #e5e8e0);
+}
+
+.sb-section h2 {
+  font-size: var(--text-xl, 1.5rem);
+  color: var(--kbm-green, #52682d);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--kbm-green-2, #738c52);
+}
+
+/* B) Quick Scan Cards */
+.sb-quick-scan {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.sb-scan-card {
+  background: var(--page-bg, #f7f8f7);
+  padding: 1.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--ring, #e5e8e0);
+}
+
+.sb-scan-card h3 {
+  font-size: 1rem;
+  color: var(--kbm-green, #52682d);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sb-scan-card p,
+.sb-scan-card ul {
+  font-size: 0.95rem;
+  color: #555;
+  margin: 0;
+}
+
+.sb-scan-card ul {
+  padding-left: 1.25rem;
+  margin-top: 0.5rem;
+}
+
+.sb-scan-card li {
+  margin-bottom: 0.25rem;
+}
+
+/* D) Video placeholder */
+.sb-video-placeholder {
+  background: #e9ece7;
+  border: 2px dashed var(--kbm-green-2, #738c52);
+  border-radius: 8px;
+  padding: 3rem 2rem;
+  text-align: center;
+  color: #555;
+}
+
+.sb-video-placeholder i {
+  font-size: 3rem;
+  color: var(--kbm-green-2, #738c52);
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.sb-video-note {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 1rem;
+  font-style: italic;
+}
+
+/* E) Steps list */
+.sb-steps {
+  counter-reset: step-counter;
+  list-style: none;
+  padding: 0;
+}
+
+.sb-steps li {
+  counter-increment: step-counter;
+  position: relative;
+  padding-left: 3rem;
+  margin-bottom: 1.25rem;
+  min-height: 2rem;
+}
+
+.sb-steps li::before {
+  content: counter(step-counter);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2rem;
+  height: 2rem;
+  background: var(--kbm-green, #52682d);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* F) Practice section */
+.sb-practice-list {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.sb-practice-list li {
+  margin-bottom: 0.5rem;
+}
+
+.sb-practice-callout {
+  background: linear-gradient(135deg, #f0f4eb 0%, #e9ece7 100%);
+  border-left: 4px solid var(--kbm-green, #52682d);
+  padding: 1rem 1.25rem;
+  border-radius: 0 8px 8px 0;
+  margin-top: 1rem;
+}
+
+.sb-practice-callout strong {
+  color: var(--kbm-green, #52682d);
+}
+
+/* G) Troubleshooting FAQ */
+.sb-faq {
+  border: 1px solid var(--ring, #e5e8e0);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sb-faq-item {
+  border-bottom: 1px solid var(--ring, #e5e8e0);
+}
+
+.sb-faq-item:last-child {
+  border-bottom: none;
+}
+
+.sb-faq-question {
+  width: 100%;
+  background: var(--page-bg, #f7f8f7);
+  border: none;
+  padding: 1rem 1.25rem;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--kbm-green, #52682d);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s ease;
+}
+
+.sb-faq-question:hover,
+.sb-faq-question:focus {
+  background: #e9ece7;
+  outline: 2px solid var(--kbm-green-2, #738c52);
+  outline-offset: -2px;
+}
+
+.sb-faq-question::after {
+  content: '+';
+  font-size: 1.25rem;
+  font-weight: 400;
+  transition: transform 0.2s ease;
+}
+
+.sb-faq-item.open .sb-faq-question::after {
+  content: '−';
+}
+
+.sb-faq-answer {
+  display: none;
+  padding: 1rem 1.25rem;
+  background: #fff;
+  color: #555;
+}
+
+.sb-faq-item.open .sb-faq-answer {
+  display: block;
+}
+
+/* H) Terms definitions */
+.sb-terms-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.sb-term {
+  background: var(--page-bg, #f7f8f7);
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--ring, #e5e8e0);
+}
+
+.sb-term dt {
+  font-weight: 600;
+  color: var(--kbm-green, #52682d);
+  margin-bottom: 0.25rem;
+}
+
+.sb-term dd {
+  margin: 0;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+/* I) What's Next buttons */
+.sb-whats-next .sb-next-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.sb-next-btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: var(--kbm-green, #52682d);
+  color: #fff;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.sb-next-btn:hover,
+.sb-next-btn:focus {
+  background: var(--kbm-green-hover, #445626);
+  transform: translateY(-1px);
+  outline: 2px solid var(--kbm-green-2, #738c52);
+  outline-offset: 2px;
+}
+
+.sb-next-btn.secondary {
+  background: #fff;
+  color: var(--kbm-green, #52682d);
+  border: 2px solid var(--kbm-green, #52682d);
+}
+
+.sb-next-btn.secondary:hover,
+.sb-next-btn.secondary:focus {
+  background: #f0f4eb;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .sb-quick-scan {
+    grid-template-columns: 1fr;
+  }
+  
+  .sb-next-buttons {
+    flex-direction: column;
+  }
+  
+  .sb-next-btn {
+    text-align: center;
+  }
+}
+</style>
+
+<script>
+// Collapsible FAQ functionality with ARIA support
+document.addEventListener('DOMContentLoaded', () => {
+  const faqItems = document.querySelectorAll('.sb-faq-item');
+  
+  faqItems.forEach((item, index) => {
+    const question = item.querySelector('.sb-faq-question');
+    const answer = item.querySelector('.sb-faq-answer');
+    
+    if (question && answer) {
+      // Set up ARIA attributes
+      const answerId = `sb-faq-answer-${index}`;
+      answer.id = answerId;
+      question.setAttribute('aria-controls', answerId);
+      question.setAttribute('aria-expanded', 'false');
+      
+      question.addEventListener('click', () => {
+        const isOpen = item.classList.contains('open');
+        
+        // Close other open items and update their ARIA
+        faqItems.forEach(other => {
+          if (other !== item) {
+            other.classList.remove('open');
+            const otherQuestion = other.querySelector('.sb-faq-question');
+            if (otherQuestion) {
+              otherQuestion.setAttribute('aria-expanded', 'false');
+            }
+          }
+        });
+        
+        // Toggle current item
+        item.classList.toggle('open');
+        question.setAttribute('aria-expanded', String(!isOpen));
+      });
+    }
+  });
+});
+</script>

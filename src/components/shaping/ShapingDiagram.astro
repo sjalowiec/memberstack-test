@@ -1,0 +1,265 @@
+---
+interface Step {
+  sts: number;
+  rows: number;
+  times: number;
+}
+
+interface Props {
+  startSts?: number;
+  endSts?: number;
+  mode: "one" | "both";
+  direction: "increase" | "decrease";
+  steps: Step[];
+}
+
+const { startSts, endSts, mode, direction, steps } = Astro.props;
+
+// Get polygon points based on mode
+// Points order: top-left, top-right, bottom-right, bottom-left
+// For decrease: wide at bottom (starting), narrow at top (ending)
+// For increase: narrow at bottom (starting), wide at top (ending)
+// For one-side: angled line is on the RIGHT side to match the icon
+const isIncrease = direction === "increase";
+
+let polygonPoints: string;
+if (mode === "both") {
+  // Symmetrical trapezoid - shaping on both sides
+  if (isIncrease) {
+    // Increase: narrow bottom, wide top (symmetrical)
+    polygonPoints = "40,30 220,30 200,170 60,170";
+  } else {
+    // Decrease: wide bottom, narrow top (symmetrical)
+    polygonPoints = "60,30 200,30 220,170 40,170";
+  }
+} else {
+  // One-sided trapezoid - angled line on RIGHT side, left side straight
+  if (isIncrease) {
+    // Increase: narrow bottom-right, wide top-right
+    polygonPoints = "40,30 220,30 180,170 40,170";
+  } else {
+    // Decrease: wide bottom-right, narrow top-right
+    polygonPoints = "40,30 180,30 220,170 40,170";
+  }
+}
+
+// Label text
+const startLabel = startSts !== undefined ? `starting (${startSts} sts)` : "starting";
+const endLabel = endSts !== undefined ? `end (${endSts} sts)` : "end";
+
+// Label positions - starting is always at bottom, ending always at top
+const startingY = 190;
+const endY = 20;
+---
+
+<div class="shaping-diagram-container">
+  <div class="shaping-diagram-svg-wrapper">
+    <svg 
+      viewBox="0 0 260 200" 
+      class="shaping-diagram-svg"
+      aria-label={`Shaping diagram showing ${direction} from ${startSts || '?'} to ${endSts || '?'} stitches on ${mode === 'both' ? 'both sides' : 'one side'}`}
+    >
+      <!-- Main shape outline -->
+      <polygon
+        points={polygonPoints}
+        fill="none"
+        stroke="#52682D"
+        stroke-width="6"
+        stroke-linejoin="round"
+      />
+      
+      <!-- Starting label (at bottom) -->
+      <text 
+        x="25" 
+        y={startingY}
+        class="diagram-label"
+        fill="#6b7280"
+      >
+        {startLabel}
+      </text>
+      
+      <!-- End label (at top) -->
+      <text 
+        x="235" 
+        y={endY}
+        class="diagram-label"
+        text-anchor="end"
+        fill="#6b7280"
+      >
+        {endLabel}
+      </text>
+      
+      <!-- All shaping shorthand inside the shape -->
+      {steps.length === 1 && (
+        <g class="diagram-shorthand">
+          <text 
+            x="130" 
+            y="95"
+            text-anchor="middle"
+            class="diagram-shorthand-numbers-single"
+            fill="#1f2937"
+          >
+            {steps[0].sts}–{steps[0].rows}–{steps[0].times}
+          </text>
+          <text 
+            x="130" 
+            y="118"
+            text-anchor="middle"
+            class="diagram-shorthand-caption"
+            fill="#6b7280"
+          >
+            sts – rows – times
+          </text>
+        </g>
+      )}
+      {steps.length === 2 && (
+        <g class="diagram-shorthand">
+          <text 
+            x="130" 
+            y="75"
+            text-anchor="middle"
+            class="diagram-shorthand-numbers"
+            fill="#1f2937"
+          >
+            {steps[0].sts}–{steps[0].rows}–{steps[0].times}
+          </text>
+          <text 
+            x="130" 
+            y="110"
+            text-anchor="middle"
+            class="diagram-shorthand-numbers"
+            fill="#1f2937"
+          >
+            {steps[1].sts}–{steps[1].rows}–{steps[1].times}
+          </text>
+          <text 
+            x="130" 
+            y="135"
+            text-anchor="middle"
+            class="diagram-shorthand-caption"
+            fill="#6b7280"
+          >
+            sts – rows – times
+          </text>
+        </g>
+      )}
+      {steps.length > 2 && (
+        <g class="diagram-shorthand">
+          {steps.map((step, i) => (
+            <text 
+              x="130" 
+              y={60 + i * 28}
+              text-anchor="middle"
+              class="diagram-shorthand-numbers-small"
+              fill="#1f2937"
+            >
+              {step.sts}–{step.rows}–{step.times}
+            </text>
+          ))}
+          <text 
+            x="130" 
+            y={60 + steps.length * 28 + 5}
+            text-anchor="middle"
+            class="diagram-shorthand-caption"
+            fill="#6b7280"
+          >
+            sts – rows – times
+          </text>
+        </g>
+      )}
+    </svg>
+  </div>
+</div>
+
+<style>
+  .shaping-diagram-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+  }
+
+  .shaping-diagram-svg-wrapper {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .shaping-diagram-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .diagram-label {
+    font-size: 14px;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+
+  .diagram-shorthand-numbers-single {
+    font-size: 28px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .diagram-shorthand-numbers {
+    font-size: 24px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .diagram-shorthand-numbers-small {
+    font-size: 20px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .diagram-shorthand-caption {
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-style: italic;
+  }
+</style>
+
+<!--
+===========================================
+EXAMPLE USAGE (do not render on a live page)
+===========================================
+
+Basic decrease on both sides:
+<ShapingDiagram
+  startSts={20}
+  endSts={10}
+  mode="both"
+  direction="decrease"
+  steps={[{ sts: 1, rows: 2, times: 20 }]}
+/>
+
+Increase on one side only:
+<ShapingDiagram
+  startSts={10}
+  endSts={20}
+  mode="one"
+  direction="increase"
+  steps={[{ sts: 1, rows: 4, times: 10 }]}
+/>
+
+Multiple steps (complex shaping):
+<ShapingDiagram
+  startSts={40}
+  endSts={20}
+  mode="both"
+  direction="decrease"
+  steps={[
+    { sts: 1, rows: 2, times: 5 },
+    { sts: 1, rows: 4, times: 5 }
+  ]}
+/>
+
+Without stitch counts (just the shape):
+<ShapingDiagram
+  mode="both"
+  direction="decrease"
+  steps={[{ sts: 1, rows: 3, times: 10 }]}
+/>
+-->

@@ -1,0 +1,110 @@
+---
+/**
+ * WizardResultCard.astro
+ * 
+ * Reusable outcome/result card for stepped wizard results.
+ * Displays the diagnosis/outcome with action items and optional CTA.
+ * 
+ * Props:
+ * - eyebrow: Small label above title (e.g., "Likely cause")
+ * - title: Main result title
+ * - explanation: Explanation text
+ * - items: Array of action items/suggestions
+ * - itemsHeading: Heading for the items list (default: "Try this next:")
+ * - encouragement: Optional encouraging message
+ * - ctaLabel: Optional CTA button label
+ * - ctaHref: Optional CTA button link
+ * - selectedOptionLabel: Optional - shows the user's selected option
+ */
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  explanation?: string;
+  items?: string[];
+  itemsHeading?: string;
+  encouragement?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  selectedOptionLabel?: string;
+}
+
+const { 
+  eyebrow = "Likely cause",
+  title,
+  explanation,
+  items = [],
+  itemsHeading = "Try this next:",
+  encouragement,
+  ctaLabel,
+  ctaHref,
+  selectedOptionLabel
+} = Astro.props;
+---
+
+<div class="kbm-card kbm-card--shadow">
+  <div class="kbm-card__header">
+    {selectedOptionLabel && (
+      <div style="max-width: 500px; margin: 0 0 1.5rem;">
+        <div 
+          class="option-bubble selected" 
+          style="cursor: default; pointer-events: none;"
+          data-testid="text-selected-option"
+        >
+          {selectedOptionLabel}
+        </div>
+      </div>
+    )}
+    
+    {eyebrow && (
+      <div class="kbm-eyebrow" data-testid="text-result-eyebrow">
+        {eyebrow}
+      </div>
+    )}
+    <h2 class="kbm-card__title" data-testid="text-result-title">
+      {title}
+    </h2>
+  </div>
+  
+  <div class="kbm-card__body">
+    {explanation && (
+      <p data-testid="text-result-explanation">{explanation}</p>
+    )}
+
+    {items && items.length > 0 && (
+      <>
+        <h3 class="kbm-wizard__result-heading" data-testid="text-result-try-this-heading">
+          {itemsHeading}
+        </h3>
+        <ul class="kbm-wizard__result-list" data-testid="list-result-suggestions">
+          {items.map((item, index) => (
+            <li data-testid={`list-item-suggestion-${index}`}>
+              {item}
+            </li>
+          ))}
+        </ul>
+      </>
+    )}
+
+    {encouragement && (
+      <p class="kbm-text-muted" data-testid="text-result-encouragement">
+        {encouragement}
+      </p>
+    )}
+  </div>
+  
+  <div class="kbm-card__footer">
+    <slot name="actions" />
+    
+    {ctaLabel && ctaHref && (
+      <a href={ctaHref} class="kbm-button kbm-button--primary" data-testid="button-cta">
+        {ctaLabel}
+      </a>
+    )}
+  </div>
+</div>
+
+<style>
+  /* Styles are inherited from wizard.css - .kbm-card, .kbm-eyebrow, etc. */
+  /* This component relies on the global wizard.css styles being loaded */
+</style>

@@ -1,0 +1,33 @@
+---
+const {
+  title = "Video reply (optional)",
+  helper = "If it's easier to show than explain, you can record a quick video update here.",
+  placeholderTitle = "Video replies are coming next",
+  placeholderBody = "This spot will hold a simple recorder so you can record a short update without leaving the hub page.",
+  fallback = "Prefer not to record? Reply in writing in the comments below — that works great too."
+} = Astro.props;
+---
+
+<section class="kbm-video-reply" aria-labelledby="kbm-video-reply-title">
+  <div class="kbm-video-reply__header">
+    <h2 id="kbm-video-reply-title" class="kbm-video-reply__title">{title}</h2>
+    <p class="kbm-video-reply__helper">{helper}</p>
+  </div>
+
+  <div class="kbm-video-reply__card" role="status" aria-live="polite">
+    <div class="kbm-video-reply__badge">Placeholder</div>
+    <h3 class="kbm-video-reply__cardTitle">{placeholderTitle}</h3>
+    <p class="kbm-video-reply__cardBody">{placeholderBody}</p>
+
+    <div class="kbm-video-reply__placeholder">
+      <div class="kbm-video-reply__placeholderIcon" aria-hidden="true">●</div>
+      <div class="kbm-video-reply__placeholderLines" aria-hidden="true">
+        <div class="kbm-video-reply__line"></div>
+        <div class="kbm-video-reply__line"></div>
+        <div class="kbm-video-reply__line kbm-video-reply__line--short"></div>
+      </div>
+    </div>
+
+    <p class="kbm-video-reply__fallback">{fallback}</p>
+  </div>
+</section>

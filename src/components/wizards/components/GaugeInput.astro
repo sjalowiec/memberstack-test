@@ -1,0 +1,259 @@
+---
+/**
+ * ============================================================================
+ * KBM LEGO BLOCK: Gauge Input Component
+ * ============================================================================
+ * 
+ * Standardized gauge input for all KBM wizards.
+ * Collects stitch and row gauge over 4" (or 10cm when metric).
+ * Uses FloatingInput lego block for the input fields.
+ * 
+ * FEATURES:
+ * - Two inputs side-by-side (desktop), stacked (mobile)
+ * - Floating labels that animate on focus/value
+ * - Dynamic label text based on unit selection (inches/cm)
+ * - Unit toggle integrated (optional)
+ * - Helper text explaining the input format
+ * 
+ * USAGE:
+ * Standalone (includes its own toggle):
+ *   <GaugeInput id="mywizard" />
+ * 
+ * With external toggle (wizard has UnitToggle in header):
+ *   <GaugeInput id="mywizard" showToggle={false} toggleId="hat" />
+ * 
+ * OUTPUT IDS:
+ * - {id}-stitch-gauge: stitch count input
+ * - {id}-row-gauge: row count input
+ * - {id}-stitch-label: stitch label (for JS updates)
+ * - {id}-row-label: row label (for JS updates)
+ * - {toggleId}-btn-inches: inches toggle button (if using external toggle)
+ * - {toggleId}-btn-cm: cm toggle button (if using external toggle)
+ */
+
+import UnitToggle from './UnitToggle.astro';
+import FloatingInput from '../../lego/FloatingInput.astro';
+
+interface Props {
+  /** ID prefix for form elements (e.g., 'hat' creates 'hat-stitch-gauge') */
+  id?: string;
+  /** Show section title above the gauge inputs */
+  showTitle?: boolean;
+  /** Custom title text */
+  title?: string;
+  /** Show the unit toggle (set false if wizard has its own toggle) */
+  showToggle?: boolean;
+  /** ID of external toggle buttons (defaults to id) */
+  toggleId?: string;
+}
+
+const { 
+  id = 'gauge', 
+  showTitle = true,
+  title = 'Your Gauge',
+  showToggle = true,
+  toggleId
+} = Astro.props;
+
+const effectiveToggleId = toggleId || id;
+---
+
+<div class="gauge-input-wrapper" data-toggle-id={effectiveToggleId}>
+  {showTitle && showToggle && (
+    <div class="kbm-header-layout">
+      <h3 class="section-title">{title}</h3>
+      <div id="kbm-units-toggle">
+        <UnitToggle id={id} />
+      </div>
+    </div>
+  )}
+  
+  {showTitle && !showToggle && (
+    <h3 class="section-title">{title}</h3>
+  )}
+  
+  {!showTitle && showToggle && (
+    <div class="gauge-toggle-only">
+      <UnitToggle id={id} />
+    </div>
+  )}
+  
+  <div class="gauge-input-row">
+    <FloatingInput 
+      id={`${id}-stitch-gauge`}
+      labelId={`${id}-stitch-label`}
+      label='Stitches (over 4")'
+      type="number"
+      step="0.5"
+      min="1"
+      testId={`input-${id}-stitch-gauge`}
+    />
+    <FloatingInput 
+      id={`${id}-row-gauge`}
+      labelId={`${id}-row-label`}
+      label='Rows (over 4")'
+      type="number"
+      step="0.5"
+      min="1"
+      testId={`input-${id}-row-gauge`}
+    />
+  </div>
+  
+  <p class="gauge-helper">Enter your measured gauge over 4" (or 10 cm).</p>
+</div>
+
+<style is:global>
+.gauge-input-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.gauge-toggle-only {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.gauge-input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .gauge-input-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gauge-helper {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  font-style: italic;
+}
+
+/* ===========================================
+   FLOATING INPUT STYLES FOR GAUGE INPUTS
+   High specificity to override wizard.css
+   =========================================== */
+.gauge-input-row .floating-input {
+  position: relative !important;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.gauge-input-row .floating-input input {
+  width: 100% !important;
+  min-height: 52px !important;
+  padding: 1.25rem 0.75rem 0.5rem !important;
+  border: 2px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  font-family: var(--font);
+  font-size: 1rem !important;
+  color: var(--text-dark, #374151);
+  background: white !important;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -moz-appearance: textfield;
+  box-sizing: border-box;
+}
+
+.gauge-input-row .floating-input input::-webkit-outer-spin-button,
+.gauge-input-row .floating-input input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.gauge-input-row .floating-input input:focus {
+  outline: none;
+  border-color: var(--kbm-green) !important;
+  box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.1) !important;
+}
+
+.gauge-input-row .floating-input .floating-label {
+  position: absolute !important;
+  left: 0.75rem !important;
+  top: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translateY(-50%) !important;
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 2px !important;
+  font-size: 0.95rem !important;
+  font-weight: normal !important;
+  color: #6b7280 !important;
+  pointer-events: none !important;
+  transition: all 0.2s ease !important;
+  background: transparent !important;
+  white-space: nowrap !important;
+  z-index: 1 !important;
+}
+
+.gauge-input-row .floating-input input:focus ~ .floating-label,
+.gauge-input-row .floating-input input:not(:placeholder-shown) ~ .floating-label {
+  top: 0.35rem !important;
+  transform: translateY(0) !important;
+  font-size: 0.75rem !important;
+  color: var(--kbm-green) !important;
+  font-weight: 500 !important;
+}
+
+.gauge-input-row .floating-input input::placeholder {
+  color: transparent !important;
+}
+
+.gauge-input-row .floating-input input:focus::placeholder {
+  color: #9ca3af !important;
+}
+</style>
+
+<script>
+  // Dynamic placeholder updates based on unit toggle
+  document.addEventListener('DOMContentLoaded', () => {
+    // Find all gauge input wrappers and set up each one
+    document.querySelectorAll('.gauge-input-wrapper').forEach(wrapper => {
+      const toggleId = wrapper.dataset.toggleId;
+      const id = wrapper.querySelector('input[id$="-stitch-gauge"]')?.id?.replace('-stitch-gauge', '');
+      
+      if (!id) return;
+      
+      const btnInches = document.getElementById(`${toggleId}-btn-inches`);
+      const btnCm = document.getElementById(`${toggleId}-btn-cm`);
+      const stitchInput = document.getElementById(`${id}-stitch-gauge`);
+      const rowInput = document.getElementById(`${id}-row-gauge`);
+      const stitchLabel = document.getElementById(`${id}-stitch-label`);
+      const rowLabel = document.getElementById(`${id}-row-label`);
+      
+      function updatePlaceholders(unit) {
+        if (!stitchLabel || !rowLabel) return;
+        
+        if (unit === 'cm') {
+          stitchLabel.textContent = 'Stitches (over 10 cm)';
+          rowLabel.textContent = 'Rows (over 10 cm)';
+        } else {
+          stitchLabel.textContent = 'Stitches (over 4")';
+          rowLabel.textContent = 'Rows (over 4")';
+        }
+      }
+      
+      // Check initial state - look for active button or localStorage
+      const inchesActive = btnInches?.classList.contains('active');
+      const savedUnit = localStorage.getItem(`${toggleId}.unit`) || localStorage.getItem(`${toggleId}-unit`);
+      const initialUnit = inchesActive ? 'in' : (savedUnit === 'cm' ? 'cm' : 'in');
+      updatePlaceholders(initialUnit);
+      
+      // Listen for unit toggle clicks
+      btnInches?.addEventListener('click', () => {
+        updatePlaceholders('in');
+      });
+      
+      btnCm?.addEventListener('click', () => {
+        updatePlaceholders('cm');
+      });
+    });
+  });
+</script>

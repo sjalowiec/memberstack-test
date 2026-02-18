@@ -1,0 +1,168 @@
+---
+interface Props {
+  qaHTML: string;
+}
+
+const { qaHTML } = Astro.props;
+
+// Server-side parsing of Q&A HTML
+function parseQASection(html: string) {
+  // Extract Q&A items using regex since we're server-side
+  const itemRegex = /<div class="kbm-qa-item">([\s\S]*?)<\/div>(?=\s*(?:<div class="kbm-qa-item">|<\/section>))/g;
+  const questionRegex = /<h3 class="kbm-qa-question">([\s\S]*?)<\/h3>/;
+  const answerRegex = /<p class="kbm-qa-answer">([\s\S]*?)<\/p>/;
+  
+  const items: Array<{ question: string; answer: string }> = [];
+  let match;
+  
+  while ((match = itemRegex.exec(html)) !== null) {
+    const itemHTML = match[1];
+    const questionMatch = questionRegex.exec(itemHTML);
+    const answerMatch = answerRegex.exec(itemHTML);
+    
+    if (questionMatch && answerMatch) {
+      items.push({
+        question: questionMatch[1].trim(),
+        answer: answerMatch[1].trim()
+      });
+    }
+  }
+  
+  return items;
+}
+
+const qaItems = parseQASection(qaHTML);
+---
+
+{qaItems.length > 0 ? (
+  <div class="kbm-qa-accordion">
+    <h2 class="kbm-qa-title">Questions & Answers</h2>
+    
+    <div class="accordion-wrapper">
+      {qaItems.map((item, index) => (
+      <details class="accordion-item" data-index={index}>
+        <summary class="accordion-question">
+          <span class="question-text">{item.question}</span>
+          <svg class="accordion-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </summary>
+        <div class="accordion-answer">
+          <p set:html={item.answer} />
+        </div>
+      </details>
+      ))}
+    </div>
+  </div>
+) : (
+  <div class="kbm-qa" set:html={qaHTML} />
+)}
+
+<style>
+.kbm-qa-accordion {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid #e5e7e3;
+}
+
+.kbm-qa-title {
+  font-family: var(--font, 'Poppins', system-ui, sans-serif);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  color: #2c3a57;
+  margin-bottom: 1.5rem;
+}
+
+.accordion-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.accordion-item {
+  background: white;
+  border: 1px solid #e5e7e3;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.accordion-item:hover {
+  box-shadow: 0 2px 8px rgba(82, 104, 45, 0.1);
+}
+
+.accordion-item[open] {
+  border-color: #52682d;
+}
+
+.accordion-question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--font, 'Poppins', system-ui, sans-serif);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #2c3a57;
+  list-style: none;
+  transition: background-color 0.2s ease;
+}
+
+.accordion-question::-webkit-details-marker {
+  display: none;
+}
+
+.accordion-question:hover {
+  background-color: #f7f8f7;
+}
+
+.accordion-item[open] .accordion-question {
+  background-color: #f0f3ec;
+  color: #52682d;
+}
+
+.question-text {
+  flex: 1;
+  padding-right: 1rem;
+}
+
+.accordion-icon {
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+  color: #52682d;
+}
+
+.accordion-item[open] .accordion-icon {
+  transform: rotate(180deg);
+}
+
+.accordion-answer {
+  padding: 0 1.5rem 1.5rem 1.5rem;
+  font-family: var(--font, 'Poppins', system-ui, sans-serif);
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #3b4b2f;
+}
+
+.accordion-answer :global(p) {
+  margin-bottom: 1rem;
+}
+
+.accordion-answer :global(p:last-child) {
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .accordion-question {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+  
+  .accordion-answer {
+    padding: 0 1rem 1rem 1rem;
+    font-size: 0.95rem;
+  }
+}
+</style>

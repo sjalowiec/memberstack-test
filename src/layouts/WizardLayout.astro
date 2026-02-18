@@ -1,0 +1,128 @@
+---
+/**
+ * WizardLayout.astro
+ * 
+ * A shared layout for wizard pages that automatically shows a loading 
+ * indicator when iframe embeds are present, hiding it once they load.
+ * 
+ * Features:
+ * - Shows spinner immediately on page load (when iframe detected)
+ * - Hides spinner when iframe fires 'load' event
+ * - Gracefully does nothing if no iframe exists
+ * - Accessible with aria-busy and role=status
+ * - Respects prefers-reduced-motion
+ * 
+ * Usage:
+ * <WizardLayout title="My Wizard" description="...">
+ *   <div class="wizard-container">
+ *     <iframe class="wizard-frame" src="..." />
+ *   </div>
+ * </WizardLayout>
+ */
+
+import BaseLayout from "./BaseLayout.astro";
+import Footer from "../components/footer.astro";
+import LoadingState from "../components/ui/LoadingState.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+  schemaMarkup?: object;
+}
+
+const { title, description = "", schemaMarkup } = Astro.props;
+---
+
+<BaseLayout title={title} description={description} skipGlobalHyvor={true}>
+  {schemaMarkup && (
+    <script type="application/ld+json" set:html={JSON.stringify(schemaMarkup)} />
+  )}
+  
+  <div class="wizard-layout" data-wizard-layout>
+    <div id="wizard-loader" class="wizard-loader" aria-busy="true">
+      <LoadingState 
+        title="Processing…" 
+        message="This may take a few seconds."
+        minHeight={300}
+        centered={true}
+      />
+    </div>
+    
+    <div id="wizard-content" class="wizard-content">
+      <slot />
+    </div>
+  </div>
+  
+  <Footer />
+</BaseLayout>
+
+<script>
+(function() {
+  const loader = document.getElementById('wizard-loader');
+  const content = document.getElementById('wizard-content');
+  
+  if (!loader || !content) return;
+  
+  const iframe = content.querySelector('iframe.wizard-frame, iframe[class*="wizard"], iframe');
+  
+  if (!iframe) {
+    loader.style.display = 'none';
+    loader.setAttribute('aria-busy', 'false');
+    return;
+  }
+  
+  let loaded = false;
+  let timeoutId = null;
+  
+  function hideLoader() {
+    if (loaded) return;
+    loaded = true;
+    
+    if (timeoutId) clearTimeout(timeoutId);
+    
+    loader.style.display = 'none';
+    loader.setAttribute('aria-busy', 'false');
+  }
+  
+  function showSlowMessage() {
+    if (loaded) return;
+    const msgEl = loader.querySelector('.kbm-loading__message');
+    if (msgEl) {
+      msgEl.textContent = 'Still working… Thanks for your patience.';
+    }
+  }
+  
+  timeoutId = setTimeout(showSlowMessage, 12000);
+  
+  iframe.addEventListener('load', hideLoader);
+  iframe.addEventListener('error', hideLoader);
+  
+  window.addEventListener('kbm:wizard-loaded', hideLoader);
+})();
+</script>
+
+<style>
+  .wizard-layout {
+    position: relative;
+    min-height: 60vh;
+  }
+  
+  .wizard-loader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    padding: 2rem;
+    background: var(--page-bg, #f7f8f7);
+    z-index: 10;
+  }
+  
+  .wizard-content {
+    width: 100%;
+  }
+</style>

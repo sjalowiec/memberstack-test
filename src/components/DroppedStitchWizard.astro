@@ -1,0 +1,406 @@
+---
+// Embeddable Dropped Stitch Troubleshooter Wizard
+// Generate unique ID for this instance
+const wizardId = `wizard-${Math.random().toString(36).substr(2, 9)}`;
+---
+
+<div class="embedded-wizard">
+  <div id={wizardId} class="wizard-content" data-wizard-instance></div>
+</div>
+
+<style>
+.embedded-wizard {
+  width: 100%;
+  margin: 2rem 0;
+}
+
+.wizard-content {
+  width: 100%;
+}
+
+/* Option grid layout - responsive 2-3 columns */
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin: 2rem 0;
+}
+
+/* 2 columns on tablets */
+@media (min-width: 640px) {
+  .options-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* 3 columns on desktop */
+@media (min-width: 1024px) {
+  .options-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+/* Card styling */
+.wizard-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #d1d9c2;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(82, 104, 45, 0.10);
+}
+
+.wizard-card-header {
+  margin-bottom: 1.5rem;
+}
+
+.wizard-card-title {
+  color: #52682d;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.wizard-card-subtitle {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.wizard-card-body {
+  margin-bottom: 1.5rem;
+}
+
+.wizard-card-body p {
+  color: #2c3a57;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+}
+
+.wizard-eyebrow {
+  display: inline-block;
+  color: #52682d;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background-color: #eef3e4;
+  border-radius: 12px;
+}
+
+.wizard-result-heading {
+  color: #52682d;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.75rem 0;
+}
+
+.wizard-result-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+}
+
+.wizard-result-list li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #2c3a57;
+  line-height: 1.6;
+}
+
+.wizard-result-list li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: #52682d;
+  font-weight: 600;
+}
+
+.wizard-text-muted {
+  color: #6b7280;
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+.wizard-card-footer {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.wizard-button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.wizard-button-primary {
+  background-color: #52682d;
+  color: #ffffff;
+}
+
+.wizard-button-primary:hover {
+  background-color: #3E5524;
+}
+
+.wizard-button-secondary {
+  background-color: #eef3e4;
+  color: #52682d;
+  border: 1px solid #c7d8a4;
+}
+
+.wizard-button-secondary:hover {
+  background-color: #e0e9d4;
+}
+
+.wizard-button-ghost {
+  background-color: transparent;
+  color: #52682d;
+  border: 1px solid #c7d8a4;
+}
+
+.wizard-button-ghost:hover {
+  background-color: #f7f9f3;
+}
+
+@media (max-width: 640px) {
+  .options-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .wizard-card-footer {
+    flex-direction: column;
+  }
+  
+  .wizard-button {
+    width: 100%;
+  }
+}
+</style>
+
+<script define:vars={{ wizardId }}>
+  // Wrap in IIFE to isolate scope for multiple instances
+  (function(containerId) {
+  const diagnoses = {
+    edge: {
+      causeTitle: "Edge tension or patterning at the edge",
+      explanation: "The edge stitches may be too loose, losing contact with the gate pegs, or patterning may be pulling more on the edge needles.",
+      tryThisItems: [
+        "Add a claw weight or extra weight near the edge.",
+        "Check that your edge needles are fully in working position.",
+        "If you're patterning, try a plain-knit edge (1–2 stitches) before the pattern starts.",
+      ],
+      encouragement: "Edge stitches are fussy for everyone. A little extra weight and attention usually fixes it.",
+    },
+    transfer: {
+      causeTitle: "Transfer tool technique",
+      explanation: "Stitches may be falling off while they're on the tool or while you're moving them to new needles.",
+      tryThisItems: [
+        "Slow down and keep the stitches fully on the prongs before you move them.",
+        "Keep the tool level with the needle bed instead of tipping it.",
+        "Practice on scrap yarn until the motions feel smooth.",
+      ],
+      encouragement: "This is pure practice. The more you transfer on scrap, the more automatic it feels.",
+    },
+    sameNeedle: {
+      causeTitle: "A problem needle (bent, sticky, or damaged)",
+      explanation: "One stubborn needle can cause repeated dropped stitches in the same column.",
+      tryThisItems: [
+        "Mark the problem needle with a bit of yarn.",
+        "Remove and inspect it for burrs, bends, or rough spots.",
+        "Replace it if in doubt – it's not worth fighting.",
+      ],
+      encouragement: "If one needle keeps misbehaving, retiring it is an easy win.",
+    },
+    random: {
+      causeTitle: "Overall yarn or carriage tension",
+      explanation: "The yarn may be feeding too loosely or too tightly, or the carriage may not be moving smoothly.",
+      tryThisItems: [
+        "Knit a small swatch and adjust your tension dial up or down one number.",
+        "Check that the mast, tension dial, and yarn path are smooth with no snags.",
+        "Make sure you're moving the carriage all the way across with even speed.",
+      ],
+      encouragement: "Small tension tweaks can make a big difference. Keep notes as you experiment.",
+    },
+    unsure: {
+      causeTitle: "A mix of tension and technique",
+      explanation: "When things feel random, it usually means a few small factors are stacking up.",
+      tryThisItems: [
+        "Knit a 20–30 row test swatch and watch where the fabric misbehaves.",
+        "Check edge weights, overall tension, and any tools you use often.",
+        "Note when the drop happens (edge, transfer, middle) – then rerun this checker.",
+      ],
+      encouragement: "You're not doing anything 'wrong.' You're just gathering clues. Each small test gives you more control.",
+    },
+  };
+
+  const options = [
+    { key: "edge", label: "On the edge of my knitting" },
+    { key: "transfer", label: "While I'm transferring stitches" },
+    { key: "sameNeedle", label: "On the same needle over and over" },
+    { key: "random", label: "Randomly in the middle of the fabric" },
+    { key: "unsure", label: "I'm not sure – it feels random" },
+  ];
+
+  let selectedOption = null;
+
+  function renderQuestion() {
+    return `
+      <div class="wizard-card">
+        <div class="wizard-card-header">
+          <h2 class="wizard-card-title" data-testid="text-question-title">
+            When do you usually notice the dropped stitch?
+          </h2>
+          <p class="wizard-card-subtitle" data-testid="text-question-helper">
+            Click the option that sounds most like what you're seeing.
+          </p>
+        </div>
+        <div class="wizard-card-body">
+          <div class="options-grid">
+            ${options.map((option) => `
+              <button
+                class="option-bubble ${selectedOption === option.key ? 'selected' : ''}"
+                data-option="${option.key}"
+                data-testid="button-option-${option.key}"
+              >
+                ${option.label}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderResult() {
+    if (!selectedOption) return '';
+    
+    const diagnosis = diagnoses[selectedOption];
+    const selectedOptionData = options.find(opt => opt.key === selectedOption);
+    
+    return `
+      <div class="wizard-card">
+        <div class="wizard-card-header">
+          <!-- Selected option in speech bubble -->
+          <div style="max-width: 500px; margin: 0 0 1.5rem;">
+            <div class="option-bubble selected" style="cursor: default; pointer-events: none;" data-testid="text-selected-option">
+              ${selectedOptionData.label}
+            </div>
+          </div>
+          
+          <div class="wizard-eyebrow" data-testid="text-result-eyebrow">
+            Likely cause
+          </div>
+          <h2 class="wizard-card-title" data-testid="text-result-title">
+            ${diagnosis.causeTitle}
+          </h2>
+        </div>
+        <div class="wizard-card-body">
+          <p data-testid="text-result-explanation">${diagnosis.explanation}</p>
+
+          <h3
+            class="wizard-result-heading"
+            data-testid="text-result-try-this-heading"
+          >
+            Try this next:
+          </h3>
+          <ul
+            class="wizard-result-list"
+            data-testid="list-result-suggestions"
+          >
+            ${diagnosis.tryThisItems.map((item, index) => `
+              <li data-testid="list-item-suggestion-${index}">
+                ${item}
+              </li>
+            `).join('')}
+          </ul>
+
+          <p
+            class="wizard-text-muted"
+            data-testid="text-result-encouragement"
+          >
+            ${diagnosis.encouragement}
+          </p>
+        </div>
+        <div class="wizard-card-footer">
+          <button
+            class="wizard-button wizard-button-secondary"
+            id="btn-change-answer"
+            data-testid="button-change-answer"
+            style="border-radius: 24px;"
+          >
+            Change my answer
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function render() {
+    const root = document.getElementById(containerId);
+    if (!root) return;
+
+    let html = '';
+    if (selectedOption) {
+      html = renderResult();
+    } else {
+      html = renderQuestion();
+    }
+
+    root.innerHTML = html;
+    attachEventListeners();
+  }
+
+  function attachEventListeners() {
+    const root = document.getElementById(containerId);
+    if (!root) return;
+
+    const btnChangeAnswer = root.querySelector('#btn-change-answer');
+    const optionButtons = root.querySelectorAll('[data-option]');
+
+    if (btnChangeAnswer) {
+      btnChangeAnswer.addEventListener('click', () => {
+        selectedOption = null;
+        render();
+      });
+    }
+
+    optionButtons.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        const clickedOption = e.currentTarget.getAttribute('data-option');
+        
+        // Hide all unselected bubbles
+        optionButtons.forEach((otherBtn) => {
+          if (otherBtn !== e.currentTarget) {
+            otherBtn.classList.add('is-hidden');
+          } else {
+            otherBtn.classList.add('selected');
+          }
+        });
+
+        // Wait for animation, then show result
+        setTimeout(() => {
+          selectedOption = clickedOption;
+          render();
+        }, 300);
+      });
+    });
+  }
+
+  // Initialize wizard
+  render();
+  })(wizardId);
+</script>

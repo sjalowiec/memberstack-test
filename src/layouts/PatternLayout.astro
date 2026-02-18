@@ -1,0 +1,640 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+
+export interface TabsEnabled {
+  pattern?: boolean;
+  yarn?: boolean;
+  walkthrough?: boolean;
+  reference?: boolean;
+  askShare?: boolean;
+  inspiration?: boolean;
+}
+
+export interface Props {
+  title: string;
+  description: string;
+  pageUrl?: string;
+  tabsEnabled?: TabsEnabled;
+  hideTabs?: boolean;
+}
+
+const { 
+  title, 
+  description, 
+  pageUrl = Astro.url.href,
+  tabsEnabled = { pattern: true, yarn: true, walkthrough: true, reference: true, askShare: true, inspiration: true },
+  hideTabs = false
+} = Astro.props;
+
+const showPattern = tabsEnabled.pattern ?? true;
+const showYarn = tabsEnabled.yarn ?? true;
+const showWalkthrough = tabsEnabled.walkthrough ?? true;
+const showReference = tabsEnabled.reference ?? true;
+const showAskShare = tabsEnabled.askShare ?? true;
+const showInspiration = tabsEnabled.inspiration ?? true;
+---
+
+<BaseLayout title={title} description={description}>
+  <style>
+    :root {
+      --kbm-green: var(--kbm-green, #52682D);
+      --page-bg: #f7f6f2;
+      --surface: #ffffff;
+      --text: #1f2937;
+      --muted: #5b6472;
+      --border: #e5e7eb;
+      --shadow: 0 10px 30px rgba(0,0,0,.08);
+      --radius: 18px;
+      --max: 980px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      --tab-bg: #fbfbf9;
+      --hint-bg: rgba(82,104,45,.08);
+      --hint-border: rgba(82,104,45,.22);
+    }
+    * { box-sizing: border-box; }
+
+    .page-wrap {
+      max-width: min(1400px, calc(100vw - 48px));
+      margin: 0 auto;
+      padding: 34px 24px 90px;
+      font-family: var(--font);
+      color: var(--text);
+    }
+
+    .tabs-shell {
+      margin-top: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    /* Constrain hero and other non-pattern content */
+    .hero-constrained {
+      max-width: var(--max, 980px);
+      margin: 0 auto;
+    }
+
+    /* Tab header wrapper - full width background */
+    .kbm-tabs-wrapper {
+      background: var(--tab-bg);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    /* Modern Tabs - buttons stay constrained */
+    .kbm-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 12px 12px 0;
+      max-width: var(--max, 980px);
+      margin: 0 auto;
+    }
+
+    .kbm-tab {
+      appearance: none;
+      border: 1px solid transparent;
+      border-bottom: none;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 10px 10px 0 0;
+      padding: 12px 18px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background .15s ease, color .15s ease, border-color .15s ease;
+      position: relative;
+      margin-bottom: -1px;
+    }
+    
+    .kbm-tab:hover {
+      color: var(--text);
+      background: rgba(82,104,45,.05);
+    }
+    
+    .kbm-tab[aria-selected="true"] {
+      background: var(--surface);
+      color: var(--text);
+      border-color: var(--border);
+      border-bottom-color: var(--surface);
+    }
+    
+    .kbm-tab[aria-selected="true"]::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 8px;
+      right: 8px;
+      height: 2px;
+      background: var(--kbm-green);
+      border-radius: 2px 2px 0 0;
+    }
+    
+    .kbm-tab:focus-visible {
+      outline: 3px solid rgba(82,104,45,.35);
+      outline-offset: 2px;
+    }
+    
+    .tab-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.4;
+    }
+    
+    .kbm-tab[aria-selected="true"] .tab-dot {
+      background: var(--kbm-green);
+      opacity: 1;
+    }
+
+    .panels { padding: 16px; }
+    .panel { display: none; }
+    .panel[data-active="true"] { display: block; }
+
+    /* Wide mode for Pattern tab only */
+    .pattern-wide {
+      width: 100%;
+      max-width: min(1400px, calc(100vw - 48px));
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Normal constrained mode for other tabs */
+    .tab-content-normal {
+      max-width: var(--max, 980px);
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+
+    @media (max-width: 768px) {
+      .page-wrap {
+        padding: 24px 12px 60px;
+      }
+      .pattern-wide {
+        max-width: 100%;
+        padding: 0 8px;
+      }
+      .tab-content-normal {
+        padding: 0 8px;
+      }
+      .kbm-tabs {
+        padding: 8px 8px 0;
+        gap: 2px;
+      }
+    }
+
+    /* Mobile: tabs wrap to prevent cut-off */
+    @media (max-width: 640px) {
+      .tabs-shell {
+        overflow: visible;
+      }
+
+      .kbm-tabs-wrapper {
+        overflow: visible;
+      }
+
+      .kbm-tabs {
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 8px 8px 4px;
+      }
+
+      .kbm-tab {
+        padding: 10px 14px;
+        font-size: 13px;
+        white-space: nowrap;
+        flex: 0 0 auto;
+        border-radius: 8px 8px 0 0;
+        margin-bottom: 0;
+      }
+
+      .kbm-tab[aria-selected="true"] {
+        margin-bottom: -1px;
+      }
+    }
+
+    /* Print styles */
+    .print-only { display: none; }
+
+    @media print {
+      @page { margin: 0.5in; }
+
+      .kbm-tabs,
+      .kbm-tabs-wrapper,
+      .mobile-controls,
+      .drawer,
+      .drawer-backdrop,
+      nav,
+      button {
+        display: none !important;
+      }
+
+      html, body {
+        background: #fff !important;
+        color: #000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+      }
+
+      header.site-header,
+      footer.site-footer,
+      .site-header,
+      .site-footer,
+      header,
+      footer,
+      .kbm-header-wrap,
+      .kbm-logo-section,
+      .kbm-nav-row {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        max-height: 0 !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        position: absolute !important;
+        top: -9999px !important;
+        left: -9999px !important;
+      }
+
+      /* Hero slot often causes blank first page - hide it entirely */
+      .hero-constrained,
+      [slot="hero"],
+      .page-header {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        max-height: 0 !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        position: absolute !important;
+        top: -9999px !important;
+        left: -9999px !important;
+      }
+
+      .page-wrap {
+        padding: 0 !important;
+        max-width: none !important;
+        margin: 0 !important;
+      }
+
+      .tabs-shell {
+        box-shadow: none !important;
+        border: none !important;
+        background: transparent !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+      }
+
+      .panels { 
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      #panel-pattern { 
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      #panel-pattern > :first-child {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+      }
+      
+      #panel-yarn,
+      #panel-walkthrough,
+      #panel-reference,
+      #panel-ask-share,
+      #panel-inspiration { display: none !important; }
+
+      .pattern-wide {
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      
+      .pattern-wide > :first-child {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+      }
+
+      .print-only {
+        display: block !important;
+        margin: 0 0 12pt !important;
+      }
+
+      .print-meta {
+        font-size: 10pt !important;
+        line-height: 1.35 !important;
+        padding-bottom: 8pt !important;
+        border-bottom: 1px solid #ddd !important;
+      }
+
+      a {
+        color: #000 !important;
+        text-decoration: none !important;
+      }
+
+      /* Prevent forced page breaks that could create blank first page */
+      .page-break, .break-before, [data-page-break] {
+        break-before: auto !important;
+        page-break-before: auto !important;
+      }
+    }
+  </style>
+
+  <main class="page-wrap">
+    <slot name="hero" />
+
+    {!hideTabs && (
+    <section class="tabs-shell" aria-label="Pattern tabs">
+      <div class="kbm-tabs-wrapper">
+        <div class="kbm-tabs" role="tablist" aria-label="Pattern sections">
+        <button 
+          class="kbm-tab" 
+          role="tab" 
+          id="tab-pattern" 
+          aria-controls="panel-pattern" 
+          aria-selected="true" 
+          type="button"
+          data-testid="tab-pattern"
+        >
+          <span class="tab-dot" aria-hidden="true"></span> Pattern
+        </button>
+        {showYarn && (
+          <button 
+            class="kbm-tab" 
+            role="tab" 
+            id="tab-yarn" 
+            aria-controls="panel-yarn" 
+            aria-selected="false" 
+            type="button"
+            data-testid="tab-yarn"
+          >
+            <span class="tab-dot" aria-hidden="true"></span> Yarn Needed
+          </button>
+        )}
+        {showWalkthrough && (
+          <button 
+            class="kbm-tab" 
+            role="tab" 
+            id="tab-walkthrough" 
+            aria-controls="panel-walkthrough" 
+            aria-selected="false" 
+            type="button"
+            data-testid="tab-walkthrough"
+          >
+            <span class="tab-dot" aria-hidden="true"></span> Walkthrough
+          </button>
+        )}
+        {showReference && (
+          <button 
+            class="kbm-tab" 
+            role="tab" 
+            id="tab-reference" 
+            aria-controls="panel-reference" 
+            aria-selected="false" 
+            type="button"
+            data-testid="tab-reference"
+          >
+            <span class="tab-dot" aria-hidden="true"></span> Reference
+          </button>
+        )}
+        {showAskShare && (
+          <button 
+            class="kbm-tab" 
+            role="tab" 
+            id="tab-ask-share" 
+            aria-controls="panel-ask-share" 
+            aria-selected="false" 
+            type="button"
+            data-testid="tab-ask-share"
+          >
+            <span class="tab-dot" aria-hidden="true"></span> Ask / Share
+          </button>
+        )}
+        {showInspiration && (
+          <button 
+            class="kbm-tab" 
+            role="tab" 
+            id="tab-inspiration" 
+            aria-controls="panel-inspiration" 
+            aria-selected="false" 
+            type="button"
+            data-testid="tab-inspiration"
+          >
+            <span class="tab-dot" aria-hidden="true"></span> Inspiration
+          </button>
+        )}
+        </div>
+      </div>
+
+      <div class="panels">
+        <section 
+          class="panel" 
+          id="panel-pattern" 
+          role="tabpanel" 
+          aria-labelledby="tab-pattern" 
+          data-active="true"
+        >
+          <div class="pattern-wide">
+            <slot name="pattern" />
+          </div>
+        </section>
+
+        {showYarn && (
+          <section 
+            class="panel" 
+            id="panel-yarn" 
+            role="tabpanel" 
+            aria-labelledby="tab-yarn" 
+            data-active="false"
+          >
+            <div class="tab-content-normal">
+              <!-- Yarn Needed tab content goes here -->
+              <slot name="yarn" />
+            </div>
+          </section>
+        )}
+
+        {showWalkthrough && (
+          <section 
+            class="panel" 
+            id="panel-walkthrough" 
+            role="tabpanel" 
+            aria-labelledby="tab-walkthrough" 
+            data-active="false"
+          >
+            <div class="tab-content-normal">
+              <!-- Walkthrough tab content goes here -->
+              <slot name="walkthrough" />
+            </div>
+          </section>
+        )}
+
+        {showReference && (
+          <section 
+            class="panel" 
+            id="panel-reference" 
+            role="tabpanel" 
+            aria-labelledby="tab-reference" 
+            data-active="false"
+          >
+            <div class="tab-content-normal">
+              <!-- Reference tab content goes here -->
+              <slot name="reference" />
+            </div>
+          </section>
+        )}
+
+        {showAskShare && (
+          <section 
+            class="panel" 
+            id="panel-ask-share" 
+            role="tabpanel" 
+            aria-labelledby="tab-ask-share" 
+            data-active="false"
+          >
+            <div class="tab-content-normal">
+              <!-- Ask / Share tab content goes here -->
+              <slot name="askShare" />
+            </div>
+          </section>
+        )}
+
+        {showInspiration && (
+          <section 
+            class="panel" 
+            id="panel-inspiration" 
+            role="tabpanel" 
+            aria-labelledby="tab-inspiration" 
+            data-active="false"
+          >
+            <div class="tab-content-normal">
+              <!-- Inspiration tab content goes here -->
+              <slot name="inspiration" />
+            </div>
+          </section>
+        )}
+      </div>
+    </section>
+    )}
+
+    <slot name="mobile-controls" />
+  </main>
+
+  <script>
+    (function() {
+      const tabButtons = Array.from(document.querySelectorAll('[role="tab"]')) as HTMLButtonElement[];
+      const panels = Array.from(document.querySelectorAll('[role="tabpanel"]')) as HTMLElement[];
+
+      function activateTab(btn: HTMLButtonElement) {
+        tabButtons.forEach(b => b.setAttribute('aria-selected', String(b === btn)));
+        panels.forEach(p => {
+          if (p instanceof HTMLElement) {
+            p.dataset.active = String(p.id === btn.getAttribute('aria-controls'));
+          }
+        });
+        btn.focus({ preventScroll: true });
+      }
+
+      tabButtons.forEach((btn, idx) => {
+        btn.addEventListener('click', () => activateTab(btn));
+        btn.addEventListener('keydown', (e: KeyboardEvent) => {
+          const key = e.key;
+          // Enter or Space activates the focused tab
+          if (key === 'Enter' || key === ' ') {
+            e.preventDefault();
+            activateTab(btn);
+            return;
+          }
+          // Arrow keys and Home/End navigate between tabs
+          if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(key)) return;
+          e.preventDefault();
+          let nextIdx = idx;
+          if (key === 'ArrowLeft') nextIdx = (idx - 1 + tabButtons.length) % tabButtons.length;
+          if (key === 'ArrowRight') nextIdx = (idx + 1) % tabButtons.length;
+          if (key === 'Home') nextIdx = 0;
+          if (key === 'End') nextIdx = tabButtons.length - 1;
+          activateTab(tabButtons[nextIdx]);
+        });
+      });
+
+      document.querySelectorAll('[data-open-tab]').forEach(a => {
+        a.addEventListener('click', (e: Event) => {
+          e.preventDefault();
+          const tabId = a.getAttribute('data-open-tab');
+          const targetTab = document.getElementById(`tab-${tabId}`) as HTMLButtonElement | null;
+          if (targetTab) {
+            activateTab(targetTab);
+            const scrollId = a.getAttribute('data-scroll');
+            if (scrollId) {
+              const el = document.getElementById(scrollId);
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }
+        });
+      });
+
+      // Legacy support: if jumpResourcesBtn exists, map it to reference tab
+      document.getElementById('jumpResourcesBtn')?.addEventListener('click', () => {
+        const referenceTab = document.getElementById('tab-reference') as HTMLButtonElement | null;
+        if (referenceTab) activateTab(referenceTab);
+      });
+
+      // Handle URL hash on page load - redirect disabled tabs to pattern
+      function handleInitialHash() {
+        const hash = window.location.hash.slice(1); // Remove #
+        if (!hash) return; // No hash, use default (pattern tab)
+        
+        // Map common hash values to tab IDs
+        const hashToTabId: Record<string, string> = {
+          'walkthrough': 'tab-walkthrough',
+          'reference': 'tab-reference',
+          'pattern': 'tab-pattern',
+          'yarn': 'tab-yarn',
+          'ask-share': 'tab-ask-share',
+          'inspiration': 'tab-inspiration'
+        };
+        
+        const targetTabId = hashToTabId[hash];
+        if (!targetTabId) return; // Unknown hash, ignore
+        
+        const targetTab = document.getElementById(targetTabId) as HTMLButtonElement | null;
+        if (targetTab) {
+          // Tab exists, activate it
+          activateTab(targetTab);
+        } else {
+          // Tab doesn't exist (disabled), redirect to pattern tab
+          const patternTab = document.getElementById('tab-pattern') as HTMLButtonElement | null;
+          if (patternTab) {
+            window.history.replaceState(null, '', window.location.pathname + '#pattern');
+            activateTab(patternTab);
+          }
+        }
+      }
+      
+      // Run hash handling after DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', handleInitialHash);
+      } else {
+        handleInitialHash();
+      }
+
+      (window as any).__kbmTabs = { activateTab };
+    })();
+  </script>
+</BaseLayout>

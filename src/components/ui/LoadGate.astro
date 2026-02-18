@@ -1,0 +1,121 @@
+---
+/**
+ * LoadGate.astro
+ * 
+ * A wrapper component that shows a loading state until content finishes loading.
+ * Works with iframes, images, and supports manual hide via custom events.
+ * 
+ * Usage Example A: iframe with data-loadgate-target
+ * -------------------------------------------------
+ * <LoadGate id="my-iframe">
+ *   <iframe data-loadgate-target src="https://example.com" />
+ * </LoadGate>
+ * 
+ * Usage Example B: manual trigger
+ * --------------------------------
+ * <LoadGate id="my-custom">
+ *   <div data-loadgate-target>...dynamic content...</div>
+ * </LoadGate>
+ * 
+ * <script>
+ *   // Call when content is ready:
+ *   window.dispatchEvent(new CustomEvent("kbm:loaded", { detail: { id: "my-custom" }}));
+ * </script>
+ */
+
+import LoadingState from "./LoadingState.astro";
+
+type Props = {
+  id: string;
+  timeoutMs?: number;
+  title?: string;
+  message?: string;
+  slowMessage?: string;
+  minHeight?: number | string;
+};
+
+const {
+  id,
+  timeoutMs = 12000,
+  title = "Processing…",
+  message = "This may take a few seconds.",
+  slowMessage = "Still working… Thanks for your patience.",
+  minHeight = 220,
+} = Astro.props;
+
+const loaderId = `loader-${id}`;
+---
+
+<div class="kbm-loadgate" data-loadgate-id={id}>
+  <LoadingState 
+    id={loaderId} 
+    title={title} 
+    message={message} 
+    minHeight={minHeight}
+  />
+  <div class="kbm-loadgate__content" style="display:none;">
+    <slot />
+  </div>
+</div>
+
+<script define:vars={{ id, loaderId, timeoutMs, slowMessage }}>
+(function() {
+  const wrapper = document.querySelector(`[data-loadgate-id="${id}"]`);
+  if (!wrapper) return;
+
+  const loader = document.getElementById(loaderId);
+  const content = wrapper.querySelector(".kbm-loadgate__content");
+  const target = content?.querySelector("[data-loadgate-target]");
+  const msgEl = loader?.querySelector(".kbm-loading__message");
+  
+  let loaded = false;
+  let timeoutId = null;
+  
+  function hideLoader() {
+    if (loaded) return;
+    loaded = true;
+    
+    if (timeoutId) clearTimeout(timeoutId);
+    
+    if (loader) {
+      loader.style.display = "none";
+      loader.setAttribute("aria-busy", "false");
+    }
+    if (content) {
+      content.style.display = "block";
+    }
+  }
+  
+  function showSlowMessage() {
+    if (loaded) return;
+    if (msgEl) {
+      msgEl.textContent = slowMessage;
+    }
+  }
+  
+  // Set timeout for slow message
+  timeoutId = setTimeout(showSlowMessage, timeoutMs);
+  
+  // Listen for load event on iframe/img
+  if (target) {
+    const tagName = target.tagName.toLowerCase();
+    if (tagName === "iframe" || tagName === "img") {
+      target.addEventListener("load", hideLoader);
+      target.addEventListener("error", hideLoader);
+    }
+  }
+  
+  // Listen for custom event
+  window.addEventListener("kbm:loaded", function(e) {
+    if (e.detail && e.detail.id === id) {
+      hideLoader();
+    }
+  });
+})();
+</script>
+
+<style>
+  .kbm-loadgate {
+    position: relative;
+  }
+</style>

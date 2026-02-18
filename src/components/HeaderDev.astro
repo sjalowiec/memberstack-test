@@ -1,0 +1,631 @@
+---
+/* Centered Logo Header for Knit by Machine - Dev Version */
+---
+<style is:global>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+/* Global variables and typography now defined in global.css to avoid Astro CSS bundling issues */
+
+/* Desktop header-specific adjustments */
+@media (min-width: 1025px) {
+  .kbm-logo-section {
+    padding: 4px 80px 0 80px;
+  }
+
+  .kbm-tagline {
+    margin-top: 0;
+    margin-bottom: 0.25rem;
+  }
+
+  .kbm-nav-row {
+    padding: 0.25rem 0;
+    margin-top: 0;
+  }
+}
+
+/* ===== FIXED HEADER ===== */
+.kbm-header-wrap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1500;
+  background: var(--kbm-bg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
+}
+
+.kbm-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ===== CENTERED LOGO ===== */
+.kbm-logo-section {
+  text-align: center;
+  padding: 0.5rem 80px 0.25rem 80px;
+  border-bottom: 1px solid var(--ring);
+}
+
+.kbm-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--kbm-green);
+  margin-bottom: 0.25rem;
+}
+
+.kbm-logo-img {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.kbm-logo-text {
+  font-family: "Poppins", sans-serif;
+  font-size: var(--text-xxl);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  color: var(--kbm-green);
+}
+
+.kbm-logo-text-by {
+  font-weight: 400;
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
+.kbm-tagline {
+  font-family: "Poppins", sans-serif;
+  font-size: calc(var(--text-base) + 2px);
+  color: rgba(60, 80, 45, 0.75);
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 400;
+  text-align: center;
+}
+
+/* ===== NAVIGATION ROW ===== */
+.kbm-nav-row {
+  padding: 0.25rem 0;
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+}
+
+.kbm-menu {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: "Poppins", sans-serif;
+}
+
+.kbm-menu > li > a,
+.kbm-menu > li > .dd-trigger {
+  color: var(--kbm-green);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: var(--text-lg);
+  padding: 8px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+
+.kbm-menu > li > a:hover,
+.kbm-menu > li > .dd-trigger:hover {
+  color: var(--kbm-green-hover);
+}
+
+.caret {
+  font-size: 1.2em;
+  margin-left: 2px;
+}
+
+/* ===== SEARCH BAR ===== */
+.kbm-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: white;
+  border: 1px solid var(--ring);
+  border-radius: 24px;
+  overflow: hidden;
+  min-width: 280px;
+}
+
+.kbm-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 8px 16px;
+  font-size: var(--text-base);
+  font-family: "Poppins", sans-serif;
+  background: transparent;
+}
+
+.kbm-search-btn {
+  background: var(--kbm-green);
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  cursor: pointer;
+  font-size: var(--text-base);
+  transition: background 0.2s ease;
+  min-height: 40px;
+}
+
+.kbm-search-btn:hover {
+  background: var(--kbm-green-hover);
+}
+
+/* ===== DROPDOWNS ===== */
+.dd {
+  position: relative;
+}
+
+.dd-panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(8px) scale(0.98);
+  min-width: 200px;
+  background: #ffffff;
+  border: 1px solid var(--ring);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+  padding: 8px 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+  z-index: 1200;
+}
+
+.dd.open > .dd-panel,
+.dd:hover > .dd-panel {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.dd-panel li {
+  list-style: none;
+}
+
+.dd-panel a {
+  display: block;
+  padding: 12px 16px;
+  color: var(--kbm-green);
+  text-decoration: none;
+  font-size: var(--text-base);
+  transition: background 0.15s ease;
+  min-height: 44px;
+}
+
+.dd-panel a:hover {
+  background: var(--kbm-bg);
+}
+
+/* ===== HAMBURGER MENU (MOBILE) ===== */
+.kbm-hamburger {
+  display: none;
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  flex-direction: column;
+  gap: 7px;
+  background: none;
+  border: none;
+  padding: 14px;
+  cursor: pointer;
+  z-index: 1300;
+  min-width: 56px;      /* Larger tap target */
+  min-height: 56px;     /* Larger tap target */
+  align-items: center;
+  justify-content: center;
+}
+
+.kbm-hamburger span {
+  width: 40px;          /* Bigger bars - easier to see */
+  height: 5px;          /* Thicker bars */
+  background: var(--kbm-green);
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.kbm-hamburger.active span:nth-child(1) {
+  transform: rotate(45deg) translate(8px, 8px);
+}
+
+.kbm-hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.kbm-hamburger.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(8px, -8px);
+}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .kbm-hamburger {
+    display: flex;
+  }
+
+  .kbm-logo-section {
+    padding: 0.5rem 0 0.25rem 0;
+  }
+
+  .kbm-logo-img {
+    width: 42px;
+    height: 42px;
+  }
+
+  .kbm-nav-row {
+    position: fixed;
+    top: var(--header-height, 90px);
+    right: -100%;
+    width: 320px;
+    max-width: 85vw;
+    height: calc(100vh - var(--header-height, 90px));
+    background: var(--kbm-bg);
+    box-shadow: -4px 0 12px rgba(0, 0, 0, .1);
+    transition: right 0.3s ease;
+    overflow-y: auto;
+    padding: 0 20px 20px 20px;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start !important;
+    gap: 0;
+    z-index: 1200;
+  }
+
+  .kbm-nav-row.mobile-open {
+    right: 0;
+  }
+
+  .kbm-menu {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    margin: 0 0 24px 0;
+  }
+
+  .kbm-menu > li {
+    border-bottom: 1px solid var(--ring);
+  }
+
+  .kbm-menu > li:last-child {
+    border-bottom: none;
+  }
+
+  .kbm-menu > li > a,
+  .kbm-menu > li > .dd-trigger {
+    padding: 16px 0;
+    display: block;
+  }
+
+  .kbm-search-wrap {
+    width: 100%;
+    min-width: auto;
+  }
+
+  /* Mobile dropdowns - full width, no absolute positioning */
+  .kbm-menu .dd-panel {
+    position: static !important;
+    transform: none !important;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+    margin: 8px 0 0 20px;
+    padding: 0;
+    display: none;
+  }
+
+  .kbm-menu .dd.open > .dd-panel {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .kbm-menu .dd-panel li {
+    border-left: 3px solid var(--kbm-green);
+    padding-left: 12px;
+  }
+
+  .kbm-menu .dd-panel a {
+    padding: 10px 0;
+  }
+}
+
+/* Tablet and small laptop screens - scale down header */
+@media (min-width: 600px) and (max-width: 1024px) {
+  .kbm-logo-section {
+    padding: 0.5rem 1rem 0.25rem 1rem;
+  }
+
+  .kbm-logo-text {
+    font-size: 1.6rem;
+    line-height: 1.1;
+  }
+
+  .kbm-tagline {
+    font-size: 0.9rem;
+    line-height: 1.3;
+    max-width: 420px;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .kbm-container {
+    padding: 0 16px;
+  }
+
+  .kbm-logo-section {
+    padding: 0.75rem 60px 0.5rem 60px;
+  }
+
+  .kbm-logo-img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .kbm-logo-text {
+    font-size: 1.8rem;
+  }
+
+  .kbm-tagline {
+    font-size: 0.9rem;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .kbm-hamburger {
+    top: 12px;
+    right: 16px;
+  }
+}
+
+/* Hide header when printing */
+@media print {
+  .kbm-header-wrap {
+    display: none !important;
+  }
+}
+</style>
+
+<section class="kbm-header-wrap">
+  <header>
+    <div class="kbm-container">
+      <!-- Centered Logo Section -->
+      <div class="kbm-logo-section">
+        <a href="/" class="kbm-logo">
+          <img src="/images/kbm_logo.svg" alt="Knit by Machine" class="kbm-logo-img" />
+          <span class="kbm-logo-text">Knit <span class="kbm-logo-text-by">by</span> Machine</span>
+        </a>
+        <p class="kbm-tagline">See it ● Love it ● Knit it | Make the right project decisions, then knit with confidence.</p>
+      </div>
+
+      <!-- Hamburger menu (mobile only) -->
+      <button class="kbm-hamburger" aria-label="Toggle menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <!-- Navigation Row - PLAN / KNIT / SUPPORT / SHOP structure -->
+      <div class="kbm-nav-row">
+        <ul class="kbm-menu">
+          <!-- PLAN dropdown -->
+          <li class="dd">
+            <button class="dd-trigger" aria-expanded="false" data-testid="nav-plan">Plan <span class="caret">▾</span></button>
+            <ul class="dd-panel">
+              <li><a href="/project-wizards" data-testid="nav-plan-wizards">Project Planning Wizards</a></li>
+              <li><a href="/charting-tools" data-testid="nav-plan-tools">Charting Tools</a></li>
+            
+            </ul>
+          </li>
+          
+          <!-- KNIT dropdown -->
+          <li class="dd">
+            <button class="dd-trigger" aria-expanded="false" data-testid="nav-knit">Knit <span class="caret">▾</span></button>
+            <ul class="dd-panel">
+              <li><a href="/patterns" data-testid="nav-knit-patterns">Patterns</a></li>
+              <li><a href="/practice-projects" data-testid="nav-knit-practice">Practice Projects</a></li>
+              <li><a href="/workshops" data-testid="nav-knit-workshops">Workshops</a></li>
+            </ul>
+          </li>
+          
+          <!-- SUPPORT dropdown -->
+          <li class="dd">
+            <button class="dd-trigger" aria-expanded="false" data-testid="nav-support">Support <span class="caret">▾</span></button>
+            <ul class="dd-panel">
+            <li><a href="/community" data-testid="nav-support-community">Community</a></li>
+              
+              <li><a href="/start-here" data-testid="nav-support-answers">Help Hub</a></li>
+              <li><a href="/glossary" data-testid="nav-support-glossary">Glossary</a></li>
+              <li><a href="/contact" data-testid="nav-support-community">Contact</a></li>
+            </ul>
+          </li>
+          
+          <!-- SHOP link -->
+          <li>
+            <a href="/shop" data-testid="nav-shop">Shop</a>
+          </li>
+        </ul>
+
+        <!-- Search Bar -->
+        <div class="kbm-search-wrap">
+          <input class="kbm-search-input" type="search" placeholder="Search..." aria-label="Search" data-testid="input-search" />
+          <button class="kbm-search-btn" aria-label="Submit search" data-testid="button-search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.3-4.3"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+</section>
+
+<script is:inline>
+  (() => {
+    const dds = document.querySelectorAll('.kbm-menu .dd');
+    const hamburger = document.querySelector('.kbm-hamburger');
+    const navRow = document.querySelector('.kbm-nav-row');
+    
+    let currentMode = null;
+    let clickHandlers = new Map();
+    let outsideClickHandler = null;
+
+    function closeAll(except) {
+      dds.forEach(li => {
+        if (li !== except) {
+          li.classList.remove('open');
+          const trigger = li.querySelector('.dd-trigger');
+          if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    function isTouchMode() {
+      return matchMedia('(hover: none), (pointer: coarse)').matches || window.innerWidth <= 1024;
+    }
+
+    function setupDropdownBehavior() {
+      const touchMode = isTouchMode();
+      
+      // Only update if mode has changed
+      if (currentMode === touchMode) return;
+      currentMode = touchMode;
+
+      // Remove old click handlers if switching from touch to desktop
+      if (!touchMode && clickHandlers.size > 0) {
+        clickHandlers.forEach((handler, element) => {
+          element.removeEventListener('click', handler);
+        });
+        clickHandlers.clear();
+        
+        if (outsideClickHandler) {
+          document.removeEventListener('click', outsideClickHandler);
+          outsideClickHandler = null;
+        }
+      }
+
+      // Setup touch/mobile click behavior
+      if (touchMode) {
+        dds.forEach(li => {
+          const trigger = li.querySelector(':scope > a, :scope > .dd-trigger');
+          const handler = (e) => {
+            e.preventDefault();
+            const nowOpen = li.classList.toggle('open');
+            trigger.setAttribute('aria-expanded', nowOpen ? 'true' : 'false');
+            if (nowOpen) closeAll(li);
+          };
+          trigger.addEventListener('click', handler);
+          clickHandlers.set(trigger, handler);
+        });
+        
+        outsideClickHandler = (e) => {
+          if (!e.target.closest('.kbm-nav-row')) closeAll();
+        };
+        document.addEventListener('click', outsideClickHandler);
+      }
+    }
+
+    // Desktop hover behavior (always active, but only works when not in touch mode)
+    dds.forEach(li => {
+      const trigger = li.querySelector('.dd-trigger');
+      li.addEventListener('mouseenter', () => {
+        if (!isTouchMode()) {
+          clearTimeout(li._closeTimeout);
+          li.classList.add('open');
+          if (trigger) trigger.setAttribute('aria-expanded', 'true');
+        }
+      });
+      li.addEventListener('mouseleave', () => {
+        if (!isTouchMode()) {
+          li._closeTimeout = setTimeout(() => {
+            li.classList.remove('open');
+            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+          }, 250);
+        }
+      });
+    });
+
+    // Sync header height to CSS variable for accurate sticky positioning
+    function syncHeaderHeight() {
+      const header = document.querySelector('.kbm-header-wrap');
+      if (header) {
+        const height = header.getBoundingClientRect().height;
+        document.documentElement.style.setProperty('--header-height', `${height}px`);
+      }
+    }
+
+    // Initial setup
+    setupDropdownBehavior();
+    syncHeaderHeight();
+
+    // Re-sync after fonts load to handle late layout shifts
+    if (document.fonts) {
+      document.fonts.ready.then(syncHeaderHeight);
+    }
+    window.addEventListener('load', syncHeaderHeight, { passive: true });
+
+    // Re-check on resize
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        setupDropdownBehavior();
+        syncHeaderHeight();
+      }, 150);
+    }, { passive: true });
+
+    // Hamburger menu toggle
+    if (hamburger && navRow) {
+      hamburger.addEventListener('click', () => {
+        const isOpen = navRow.classList.toggle('mobile-open');
+        hamburger.classList.toggle('active');
+        hamburger.setAttribute('aria-expanded', isOpen);
+        
+        if (isOpen) {
+          document.body.style.overflow = 'hidden';
+        } else {
+          document.body.style.overflow = '';
+          closeAll();
+        }
+      });
+
+      // Close menu when clicking outside
+      document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 1024 && 
+            !navRow.contains(e.target) && 
+            !hamburger.contains(e.target) && 
+            navRow.classList.contains('mobile-open')) {
+          navRow.classList.remove('mobile-open');
+          hamburger.classList.remove('active');
+          hamburger.setAttribute('aria-expanded', 'false');
+          document.body.style.overflow = '';
+          closeAll();
+        }
+      });
+    }
+  })();
+</script>

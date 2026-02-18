@@ -1,0 +1,108 @@
+---
+import AvailabilityBadge from './AvailabilityBadge.astro';
+import type { BundleOption } from '../../lib/machines/getMachineById';
+
+interface Props {
+  bundle: BundleOption;
+}
+
+const { bundle } = Astro.props;
+---
+
+<div class="bundle-card">
+  <div class="bundle-header">
+    <h4>{bundle.bundleName}</h4>
+    <AvailabilityBadge 
+      status={bundle.bundleAvailabilityStatus} 
+      leadTimeMinWeeks={bundle.bundleLeadTimeMinWeeks}
+      leadTimeMaxWeeks={bundle.bundleLeadTimeMaxWeeks}
+      size="sm" 
+    />
+  </div>
+  
+  <p class="bundle-description">{bundle.bundleShortDescription}</p>
+  
+  {bundle.bundleIncludes && bundle.bundleIncludes.length > 0 && (
+    <div class="bundle-includes">
+      <p class="includes-label">Includes:</p>
+      <ul>
+        {bundle.bundleIncludes.map((item) => (
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--kbm-green-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 13l4 4L19 7" />
+            </svg>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+</div>
+
+<style>
+  .bundle-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    padding: 1.25rem;
+    transition: box-shadow 0.2s;
+  }
+
+  .bundle-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .bundle-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .bundle-header h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0;
+  }
+
+  .bundle-description {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+
+  .bundle-includes {
+    margin-top: 0.75rem;
+  }
+
+  .includes-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+  }
+
+  .bundle-includes ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .bundle-includes li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+    margin-bottom: 0.25rem;
+  }
+
+  .bundle-includes li svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+</style>

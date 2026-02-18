@@ -1,0 +1,257 @@
+---
+import HeaderPublic from "../components/HeaderPublic.astro";
+import HeaderDev from "../components/HeaderDev.astro";
+import Footer from "../components/footer.astro";
+import "../styles/global.css";
+import "../styles/print.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  bodyClass?: string;
+  skipGlobalHyvor?: boolean;
+}
+
+const { title = "Knit by Machine", description = "Machine knitting tools and patterns", bodyClass = "", skipGlobalHyvor = false } = Astro.props;
+
+// Determine which header to render based on hostname
+// During build, hostname may be undefined, so we check at runtime
+const hostname = typeof Astro.url !== 'undefined' && Astro.url.hostname ? Astro.url.hostname.toLowerCase() : "";
+const isPublicDomain = hostname === "knitbymachine.com" || hostname === "www.knitbymachine.com" || (hostname && hostname.endsWith(".knitbymachine.com"));
+
+const isProduction = (import.meta.env.PUBLIC_SITE_ENV || "").toLowerCase() === "production";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- CRITICAL: Inline typography to prevent Astro CSS bundler reordering issues -->
+    <style data-kbm-typography>
+      html {
+        font-size: 112.5% !important; /* 18px - comfortable mobile reading */
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
+      @media (min-width: 1025px) {
+        html {
+          font-size: 100% !important; /* 16px for desktop */
+        }
+      }
+    </style>
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#738C52" />
+
+    <!-- Google Analytics (gtag.js) -->
+    {import.meta.env.PUBLIC_GA4_ID && (
+      <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${import.meta.env.PUBLIC_GA4_ID}`}></script>
+        <script is:inline define:vars={{ gaId: import.meta.env.PUBLIC_GA4_ID }}>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', gaId);
+        </script>
+      </>
+    )}
+
+    <!-- Fonts & icons -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Shadows+Into+Light+Two&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+
+    <!-- Pinterest Embed Script -->
+    <script async defer src="https://assets.pinterest.com/js/pinit.js"></script>
+    <script is:inline>
+      window.kbmPinterestBuild = function() {
+        try {
+          if (window.PinUtils && typeof window.PinUtils.build === "function") {
+            window.PinUtils.build();
+          }
+        } catch (e) {
+          // no-op
+        }
+      };
+    </script>
+
+    <slot name="head" />
+  </head>
+
+  <body class={bodyClass}>
+    {isPublicDomain ? <HeaderPublic /> : <HeaderDev />}
+
+    <main>
+      <slot /> <!-- Page content goes here -->
+    </main>
+
+    <Footer />
+    
+    <!-- Contact Modal -->
+    <div id="contact-modal" class="contact-modal" aria-hidden="true" role="dialog" aria-labelledby="contact-modal-title">
+      <div class="contact-modal-overlay" id="contact-modal-overlay"></div>
+      <div class="contact-modal-container">
+        <button class="contact-modal-close" id="contact-modal-close" aria-label="Close contact form">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h2 id="contact-modal-title" class="contact-modal-title">Contact Sue</h2>
+        
+        <!-- Netlify-powered Contact form -->
+        <form
+          id="contactFormModal"
+          name="contact-sue"
+          method="POST"
+          data-netlify="true"
+          data-netlify-honeypot="bot-field"
+          class="contact-form"
+        >
+          <input type="hidden" name="form-name" value="contact-sue" />
+          <input type="hidden" name="submission-type" value="contact" />
+          <input type="hidden" name="submitted-at" id="contactSubmittedAtModal" value="" />
+          
+          <!-- Honeypot for spam -->
+          <p class="hidden">
+            <label>Don't fill this out if you're human: <input name="bot-field" /></label>
+          </p>
+
+          <label class="contact-form__field">
+            <span>Name</span>
+            <input type="text" name="name" required data-testid="input-name" />
+          </label>
+
+          <label class="contact-form__field">
+            <span>Email</span>
+            <input type="email" name="email" required data-testid="input-email" />
+          </label>
+
+          <label class="contact-form__field">
+            <span>Your message</span>
+            <textarea name="message" rows="6" required data-testid="textarea-message"></textarea>
+          </label>
+
+          <button type="submit" class="contact-form__submit" data-testid="button-submit">
+            Send message
+          </button>
+        </form>
+
+        <!-- Inline success message (hidden until form submits) -->
+        <div id="contactSuccessModal" class="contact-success hidden">
+          <h2>Thank you - your message has been sent.</h2>
+          <p>We'll read it soon and reply if needed. While you're here, you can also explore <a href="/ana-catalog">Help Hub</a>, <a href="/charting-tools">Tools</a>, or <a href="/glossary">Glossary</a> for quick help.</p>
+        </div>
+      </div>
+    </div>
+    
+    <script src="/scripts/rsk-title-format.js" defer></script>
+    <script src="/scripts/dynamic-tooltips.js" defer></script>
+    <script src="/scripts/pinterest-tabs.js" defer></script>
+    {!skipGlobalHyvor && <script async src="https://talk.hyvor.com/embed/embed.js" type="module"></script>}
+    
+    <!-- Contact Modal Script -->
+    <script is:inline>
+      (function() {
+        const modal = document.getElementById('contact-modal');
+        const trigger = document.getElementById('contact-modal-trigger');
+        const overlay = document.getElementById('contact-modal-overlay');
+        const closeBtn = document.getElementById('contact-modal-close');
+        const form = document.getElementById('contactFormModal');
+        const successMsg = document.getElementById('contactSuccessModal');
+        
+        function openModal() {
+          modal.setAttribute('aria-hidden', 'false');
+          modal.classList.add('contact-modal--open');
+          document.body.style.overflow = 'hidden';
+          // Focus the first input for accessibility
+          const firstInput = form?.querySelector('input[type="text"]');
+          if (firstInput) {
+            setTimeout(() => firstInput.focus(), 100);
+          }
+        }
+        
+        function closeModal() {
+          modal.setAttribute('aria-hidden', 'true');
+          modal.classList.remove('contact-modal--open');
+          document.body.style.overflow = '';
+          // Reset form if it was submitted
+          if (form && successMsg) {
+            form.classList.remove('hidden');
+            successMsg.classList.add('hidden');
+            form.reset();
+          }
+        }
+        
+        // Open modal
+        trigger?.addEventListener('click', function(e) {
+          e.preventDefault();
+          openModal();
+        });
+        
+        // Close modal
+        overlay?.addEventListener('click', closeModal);
+        closeBtn?.addEventListener('click', closeModal);
+        
+        // Close on Escape key
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape' && modal?.classList.contains('contact-modal--open')) {
+            closeModal();
+          }
+        });
+        
+        // Form submission handler
+        form?.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const formEl = e.target;
+          
+          // Add submission timestamp
+          const now = new Date();
+          const timestamp = now.toLocaleString('en-US', { 
+            dateStyle: 'medium', 
+            timeStyle: 'short',
+            timeZone: 'America/New_York'
+          });
+          const timestampInput = document.getElementById('contactSubmittedAtModal');
+          if (timestampInput) {
+            timestampInput.value = timestamp;
+          }
+          
+          const formData = new FormData(formEl);
+          
+          // POST to the blueprint page where Netlify detects the form
+          fetch('/contact-form.html', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(formData).toString()
+          })
+          .then(response => {
+            if (response.ok) {
+              // Hide form and show success message
+              formEl.classList.add('hidden');
+              successMsg?.classList.remove('hidden');
+              // Auto-close modal after 3 seconds
+              setTimeout(closeModal, 3000);
+            } else {
+              alert('Something went wrong. Please try again.');
+            }
+          })
+          .catch(error => {
+            console.error('Form submission error:', error);
+            alert('Something went wrong. Please try again.');
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

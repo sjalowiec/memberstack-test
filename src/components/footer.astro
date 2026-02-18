@@ -1,0 +1,160 @@
+---
+/* src/components/Footer.astro */
+---
+<style is:global>
+/* ========== FOOTER STYLES ========== */
+footer {
+  background-color: #e8ece3;
+  color: #3b4b2f;
+  font-family: "Poppins", Arial, sans-serif;
+  font-size: var(--text-base);
+  line-height: 1.6;
+  padding: 30px 20px 10px;
+  border-top: 3px solid #6a8141;
+  text-align: center;
+}
+
+/* ========== FOOTER LINKS (All Devices) ========== */
+footer .footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+footer .footer-links a {
+  color: #3b4b2f;
+  text-decoration: none;
+  font-size: var(--text-base);
+  font-weight: 600;
+  transition: color 0.3s ease;
+  display: inline-block;
+}
+
+footer .footer-links a:hover {
+  color: #6a8141;
+  text-decoration: underline;
+}
+
+/* ========== FOOTER BOTTOM ========== */
+footer .footer-bottom {
+  width: 100%;
+  text-align: center;
+  font-size: var(--text-base);
+  color: #4a5a35;
+  border-top: 1px solid #c3c9b9;
+  margin-top: 20px;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+footer .legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+footer .legal-links a {
+  color: #4a5a35;
+  text-decoration: none;
+  font-size: var(--text-base);
+  position: relative;
+  transition: color 0.3s ease;
+  margin: 0;
+  display: inline-block;
+}
+
+footer .legal-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0%;
+  height: 1px;
+  background-color: #6a8141;
+  transition: width 0.3s ease;
+}
+
+footer .legal-links a:hover {
+  color: #6a8141;
+}
+
+footer .legal-links a:hover::after {
+  width: 100%;
+}
+
+footer .legal-links span {
+  color: #4a5a35;
+}
+
+/* ========== RESPONSIVE ADJUSTMENTS ========== */
+/* Small screens - stack legal links vertically to prevent cutoff */
+@media (max-width: 500px) {
+  footer {
+    padding: 20px 16px 10px;
+  }
+
+  footer .footer-links {
+    gap: 16px;
+  }
+
+  footer .legal-links {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  footer .legal-links span {
+    display: none;
+  }
+}
+
+/* Tablet and small laptop screens - scale down typography and padding */
+@media (min-width: 600px) and (max-width: 1024px) {
+  footer {
+    padding: 1.5rem 0;
+  }
+  footer p,
+  footer a {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  footer h3 {
+    font-size: 1.1rem;
+  }
+}
+
+/* Hide footer when printing */
+@media print {
+  footer {
+    display: none !important;
+  }
+}
+</style>
+
+<footer aria-label="Site footer">
+  <!-- Essential Links (All Devices) -->
+  <div class="footer-links">
+    <a href="#" id="contact-modal-trigger" data-testid="footer-contact">Contact</a>
+    <a href="/about" data-testid="footer-about">About</a>
+    <a href="/membership" data-testid="footer-membership">Membership</a>
+  </div>
+
+  <!-- Footer Bottom -->
+  <div class="footer-bottom">
+    <div>© <span id="year">{new Date().getFullYear()}</span> Knit by Machine. Operated by Knit it Now, LLC</div>
+    <div class="legal-links">
+      <a href="/privacy" data-testid="footer-privacy">Privacy Policy</a>
+      <span>|</span>
+      <a href="/terms-of-service" data-testid="footer-terms">Terms of Use</a>
+      <span>|</span>
+      <a href="/refund-policy" data-testid="footer-refund">Refund Policy</a>
+    </div>
+  </div>
+</footer>

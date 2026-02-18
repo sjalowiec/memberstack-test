@@ -1,0 +1,188 @@
+---
+import AvailabilityBadge from './AvailabilityBadge.astro';
+import type { Machine } from '../../lib/machines/getMachineById';
+import { formatPrice } from '../../lib/machines/getMachineById';
+
+interface Props {
+  machine: Machine;
+}
+
+const { machine } = Astro.props;
+
+const typeLabels: Record<string, string> = {
+  'machine': 'Machine',
+  'bundle': 'Bundle',
+  'ribber': 'Ribber'
+};
+---
+
+<article 
+  class="machine-card"
+  data-gauge={machine.gauge}
+  data-type={machine.productType}
+  data-availability={machine.availability}
+>
+  <a href={`/machines/${machine.id}`}>
+    <div class="card-image">
+      {machine.primaryImage ? (
+        <img 
+          src={machine.primaryImage} 
+          alt={machine.model}
+          loading="lazy"
+        />
+      ) : (
+        <div class="image-placeholder">
+          <span>Image coming soon</span>
+        </div>
+      )}
+      {machine.isBundle && (
+        <span class="bundle-badge">Bundle</span>
+      )}
+    </div>
+    
+    <div class="card-content">
+      <div class="card-badges">
+        <span class="gauge-badge">
+          {machine.gaugeLabel} {machine.gauge.replace('-Gauge', '').replace(' Gauge', '')}
+        </span>
+        <AvailabilityBadge status={machine.availability} size="sm" />
+      </div>
+      
+      <h3>{machine.model}</h3>
+      
+      <p class="card-description">{machine.shortDescription}</p>
+      
+      <div class="card-footer">
+        <span class="price">{formatPrice(machine.priceUSD)}</span>
+        <span class="view-link">
+          View details
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 5l7 7-7 7" />
+          </svg>
+        </span>
+      </div>
+    </div>
+  </a>
+</article>
+
+<style>
+  .machine-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+
+  .machine-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+
+  .machine-card a {
+    text-decoration: none;
+    display: block;
+  }
+
+  .card-image {
+    aspect-ratio: 1;
+    background: #f3f4f6;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e5e7eb;
+    color: #9ca3af;
+    font-size: 0.875rem;
+  }
+
+  .bundle-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: var(--kbm-green);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+  }
+
+  .card-content {
+    padding: 1rem;
+  }
+
+  .card-badges {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .gauge-badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+    background: #f3f4f6;
+    padding: 0.125rem 0.5rem;
+    border-radius: 4px;
+  }
+
+  .card-content h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0 0 0.5rem 0;
+  }
+
+  .card-description {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0 0 1rem 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--kbm-green);
+  }
+
+  .view-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--kbm-green);
+  }
+
+  .machine-card:hover .view-link {
+    text-decoration: underline;
+  }
+
+  .view-link svg {
+    flex-shrink: 0;
+  }
+</style>

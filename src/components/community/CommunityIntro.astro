@@ -1,0 +1,82 @@
+---
+interface Props {
+  title: string;
+  lede: string;
+  bullets?: string[];
+  note?: string;
+}
+
+const { title, lede, bullets = [], note } = Astro.props;
+---
+
+<div class="community-intro-well">
+  <h2 class="intro-title">{title}</h2>
+  <p class="intro-lede">{lede}</p>
+  
+  {bullets.length > 0 && (
+    <ul class="intro-bullets">
+      {bullets.map((bullet) => (
+        <li>{bullet}</li>
+      ))}
+    </ul>
+  )}
+  
+  {note && (
+    <p class="intro-note">{note}</p>
+  )}
+</div>
+
+<style>
+  .community-intro-well {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.5rem;
+    text-align: left;
+  }
+
+  .intro-title {
+    font-size: var(--text-lg, 1.125rem);
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0 0 0.5rem 0;
+  }
+
+  .intro-lede {
+    font-size: var(--text-base, 1rem);
+    color: #444;
+    margin: 0 0 1rem 0;
+    line-height: 1.5;
+  }
+
+  .intro-bullets {
+    margin: 0 0 1rem 0;
+    padding-left: 1.25rem;
+    list-style-type: disc;
+  }
+
+  .intro-bullets li {
+    font-size: var(--text-sm, 0.875rem);
+    color: #555;
+    margin-bottom: 0.35rem;
+    line-height: 1.4;
+  }
+
+  .intro-bullets li:last-child {
+    margin-bottom: 0;
+  }
+
+  .intro-note {
+    font-size: 0.8rem;
+    color: #888;
+    margin: 0;
+    font-style: italic;
+  }
+
+  @media (max-width: 768px) {
+    .community-intro-well {
+      padding: 1.25rem 1.25rem;
+    }
+  }
+</style>

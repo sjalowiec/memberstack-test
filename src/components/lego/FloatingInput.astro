@@ -1,0 +1,91 @@
+---
+/**
+ * ============================================================================
+ * KBM LEGO BLOCK: Floating Input Component
+ * ============================================================================
+ * 
+ * Reusable floating-label input pattern.
+ * Label starts centered inside the input and floats to the top on focus/value.
+ * 
+ * USAGE:
+ *   <FloatingInput id="my-input" label="Enter value" type="number" />
+ * 
+ * REQUIREMENTS:
+ * - Import floating-input.css in global.css (already done)
+ * - placeholder must be " " (space) for the CSS :placeholder-shown trick to work
+ * - Label comes AFTER input in DOM for CSS sibling selector (~)
+ */
+
+interface Props {
+  /** Unique ID for the input element */
+  id: string;
+  /** Label text displayed inside/above the input */
+  label: string;
+  /** Optional ID for the label element (for dynamic text updates via JS) */
+  labelId?: string;
+  /** Input type (default: "text") */
+  type?: string;
+  /** Input mode for mobile keyboards */
+  inputMode?: string;
+  /** Minimum value for number inputs */
+  min?: string | number;
+  /** Maximum value for number inputs */
+  max?: string | number;
+  /** Step increment for number inputs */
+  step?: string | number;
+  /** Placeholder text (default: " " - required for floating label CSS) */
+  placeholder?: string;
+  /** Whether the field is required */
+  required?: boolean;
+  /** Initial value */
+  value?: string | number;
+  /** data-testid for testing */
+  testId?: string;
+  /** ID for error text element */
+  errorId?: string;
+  /** Error text to display */
+  errorText?: string;
+  /** Whether the input is in an invalid/error state */
+  invalid?: boolean;
+}
+
+const {
+  id,
+  label,
+  labelId,
+  type = "text",
+  inputMode,
+  min,
+  max,
+  step,
+  placeholder = " ",
+  required = false,
+  value,
+  testId,
+  errorId,
+  errorText = "Please enter a valid value.",
+  invalid = false,
+} = Astro.props;
+---
+
+<div class="floating-input">
+  <input
+    type={type}
+    id={id}
+    inputmode={inputMode}
+    min={min}
+    max={max}
+    step={step}
+    placeholder={placeholder}
+    required={required}
+    value={value}
+    data-testid={testId}
+    aria-describedby={errorId}
+    aria-invalid={invalid ? "true" : undefined}
+    class:list={[{ error: invalid }]}
+  />
+  <label for={id} id={labelId} class="floating-label">{label}</label>
+  {errorId && (
+    <span class="error-text" id={errorId}>{errorText}</span>
+  )}
+</div>

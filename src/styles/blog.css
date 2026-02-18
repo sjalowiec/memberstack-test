@@ -1,0 +1,152 @@
+/* ================================
+   BLOG BASE TYPOGRAPHY & SPACING
+   ================================ */
+
+.kbm-post {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.kbm-post-header h1 {
+  font-size: var(--text-2xl);
+  color: #2c3a57;
+  margin-bottom: 1.2rem;
+}
+
+.kbm-post h2 {
+  font-size: var(--text-xl);
+  color: #2c3a57;
+  margin-top: 2rem;
+  margin-bottom: 0.6rem;
+}
+
+.kbm-post h3 {
+  font-size: var(--text-lg);
+  color: #52682d;
+  margin-top: 1.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.kbm-post p {
+  color: #3b4b2f;
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+
+/* ================================
+   IMAGES
+   ================================ */
+.kbm-post img {
+  width: 100%;
+  border-radius: 12px;
+  margin: 1.5rem 0;
+}
+
+/* ================================
+   BLOCKQUOTES
+   ================================ */
+.kbm-post blockquote {
+  padding: 1rem 1.2rem;
+  background: #eef1ea;
+  border-left: 4px solid #52682d;
+  border-radius: 4px;
+  margin: 1.5rem 0;
+  color: #2c3a57;
+  font-style: italic;
+}
+
+/* ================================
+   Q&A BLOCK
+   ================================ */
+
+.kbm-qa {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid #dee3d5;
+}
+
+.kbm-qa-title {
+  font-size: var(--text-xl);
+  color: #2c3a57;
+  margin-bottom: 1rem;
+}
+
+.kbm-qa-item {
+  margin-bottom: 1.25rem;
+}
+
+.kbm-qa-question {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: #52682d;
+  margin-bottom: 0.4rem;
+}
+
+.kbm-qa-answer {
+  margin: 0;
+  color: #3b4b2f;
+  line-height: 1.6;
+}
+
+/* ================================
+   STICKY BACK TO BLOG BUTTON
+   ================================ */
+
+.sticky-back-button {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  color: #52682d;
+  border: 1px solid #dee3d5;
+  border-radius: 9999px;
+  padding: 12px 20px;
+  font-family: "Poppins", system-ui, Arial, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sticky-back-button.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.sticky-back-button:hover {
+  background: #f7f8f7;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  color: #445626;
+}
+
+.sticky-back-arrow {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.sticky-back-text {
+  display: inline;
+}
+
+/* Mobile: icon only */
+@media (max-width: 640px) {
+  .sticky-back-button {
+    padding: 12px 14px;
+    bottom: 16px;
+    left: 16px;
+  }
+  
+  .sticky-back-text {
+    display: none;
+  }
+}

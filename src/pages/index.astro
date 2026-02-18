@@ -1,4 +1,7 @@
 ---
+import glossary from '../data/glossary.json';
+
+const count = glossary.length;
 ---
 
 <html lang="en">
@@ -42,6 +45,19 @@
 
   <body>
     <h1>MemberStack Proof Page</h1>
+    <p>Total glossary terms: {count}</p>
+    <ul>
+      {glossary.slice(0, 5).map(term => (
+        <li>{term.english}</li>
+      ))}
+
+
+<img src="/images/glossary/1x1tuck6.jpg" alt="test" />
+
+</ul>
+
+
+
 
    <!-- Logged Out Content -->
 <div class="card" data-ms-content="!members">

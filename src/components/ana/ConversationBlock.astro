@@ -1,0 +1,215 @@
+---
+/**
+ * ConversationBlock: speech-bubble "dialogue" UI.
+ * Use for true response-style content (e.g., community highlights, case studies, "Sue replies"),
+ * NOT for ANA hub/leaf pages (those use the standard ANA template).
+ * 
+ * Props:
+ * - items: Array of conversation items with role, label, and contentHtml
+ * - variant: "ana" (default) or "neutral" for different styling contexts
+ * - overlap: boolean - if true, question bubble overlaps answer bubble
+ * 
+ * Example usage:
+ * <ConversationBlock
+ *   items={[
+ *     { role: "ask", label: "You asked", contentHtml: questionHtml },
+ *     { role: "answer", label: "Sue's answer", contentHtml: answerHtml }
+ *   ]}
+ * />
+ */
+
+interface ConversationItem {
+  role: "ask" | "answer";
+  label?: string;
+  contentHtml: string;
+}
+
+interface Props {
+  items: ConversationItem[];
+  variant?: "ana" | "neutral";
+  overlap?: boolean;
+}
+
+const { items, variant = "ana", overlap = false } = Astro.props;
+
+const defaultLabels = {
+  ask: "You asked",
+  answer: "Sue's Answer"
+};
+---
+
+<div class={`convBlock ${variant === "neutral" ? "convBlock--neutral" : ""} ${overlap ? "convBlock--overlap" : ""}`}>
+  {items.map((item, index) => (
+    <div class={`convBlock-bubble convBlock-bubble--${item.role}`}>
+      <div class="convBlock-header">
+        {item.role === "ask" ? (
+          <>
+            <img src="/images/ask-n-answer_logo.svg" alt="" class="convBlock-icon" />
+            <span class="convBlock-label">{item.label || defaultLabels.ask}</span>
+          </>
+        ) : (
+          <>
+            <span class="convBlock-label">{item.label || defaultLabels.answer}</span>
+            <img src="/images/hex_checkmark.svg" alt="" class="convBlock-answer-icon" />
+          </>
+        )}
+      </div>
+      <div class="convBlock-content" set:html={item.contentHtml}></div>
+    </div>
+  ))}
+</div>
+
+<style>
+  /* =========================================
+     ConversationBlock - Scoped Speech Bubble Styles
+     Extracted from ANA leaf pages for reuse elsewhere.
+     All styles are scoped to .convBlock to prevent leakage.
+     ========================================= */
+  
+  .convBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 900px;
+    margin: 1rem auto 3rem;
+    font-family: var(--font, "Poppins", sans-serif);
+  }
+
+  /* Overlapping variant (question overlaps answer) */
+  .convBlock--overlap {
+    gap: 0;
+  }
+
+  .convBlock--overlap .convBlock-bubble:first-child {
+    z-index: 2;
+    margin-bottom: -3rem;
+  }
+
+  .convBlock--overlap .convBlock-bubble:last-child {
+    z-index: 1;
+  }
+
+  /* Shared Bubble Base Styles */
+  .convBlock-bubble {
+    position: relative;
+    padding: 1.5rem 2rem;
+    max-width: 85%;
+    box-shadow: 0 4px 14px rgba(82, 104, 45, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .convBlock-bubble:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(82, 104, 45, 0.15);
+  }
+
+  .convBlock-content :global(p) {
+    margin: 0;
+    line-height: 1.6;
+    font-size: 1.05rem;
+    color: #2c3a57;
+    margin-bottom: 1rem;
+  }
+
+  .convBlock-content :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .convBlock-content :global(ul),
+  .convBlock-content :global(ol) {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .convBlock-content :global(strong) {
+    font-weight: 600;
+    color: #52682d;
+  }
+
+  /* Header (Label + Icon) Styling */
+  .convBlock-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.9;
+  }
+
+  .convBlock-icon {
+    height: 22px;
+    width: auto;
+    transform: scale(1.5);
+    transform-origin: center;
+  }
+
+  .convBlock-answer-icon {
+    height: 22px;
+    width: auto;
+    transform: scale(1.5);
+    transform-origin: center;
+  }
+
+  .convBlock-label {
+    color: #52682d;
+  }
+
+  /* STYLE 1: The Question (Left) - White Background */
+  .convBlock-bubble--ask {
+    align-self: flex-start;
+    background-color: #ffffff;
+    border: 2px solid #52682d;
+    border-radius: 24px 24px 24px 0;
+  }
+
+  .convBlock-bubble--ask .convBlock-header {
+    color: #52682d;
+  }
+
+  /* STYLE 2: The Answer (Right) - Light Green Background */
+  .convBlock-bubble--answer {
+    align-self: flex-end;
+    background-color: #eef3e4;
+    border: 2px solid #52682d;
+    border-radius: 24px 24px 0 24px;
+  }
+
+  .convBlock-bubble--answer .convBlock-header {
+    justify-content: flex-end;
+    color: #52682d;
+  }
+
+  /* Neutral variant - more subdued colors */
+  .convBlock--neutral .convBlock-bubble--ask {
+    border-color: #d8e2cc;
+  }
+
+  .convBlock--neutral .convBlock-bubble--answer {
+    background-color: #f5f8f0;
+    border-color: #d8e2cc;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .convBlock-bubble {
+      max-width: 100%;
+      margin-bottom: 0.5rem;
+    }
+
+    .convBlock-bubble--ask {
+      border-radius: 16px 16px 16px 0;
+    }
+
+    .convBlock-bubble--answer {
+      border-radius: 16px 16px 0 16px;
+    }
+
+    .convBlock-icon,
+    .convBlock-answer-icon {
+      height: 18px;
+    }
+  }
+</style>

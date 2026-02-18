@@ -1,0 +1,179 @@
+---
+/* Centered Logo Header for Knit by Machine - Public Version */
+---
+<style is:global>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+/* Global variables and typography now defined in global.css to avoid Astro CSS bundling issues */
+
+/* Desktop header-specific adjustments */
+@media (min-width: 1025px) {
+  .kbm-logo-section {
+    padding: 4px 80px 0 80px;
+  }
+
+  .kbm-tagline {
+    margin-top: 0;
+    margin-bottom: 0.25rem;
+  }
+}
+
+/* ===== FIXED HEADER ===== */
+.kbm-header-wrap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1500;
+  background: var(--kbm-bg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
+}
+
+.kbm-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ===== CENTERED LOGO ===== */
+.kbm-logo-section {
+  text-align: center;
+  padding: 0.5rem 80px 0.25rem 80px;
+  border-bottom: 1px solid var(--ring);
+}
+
+.kbm-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--kbm-green);
+  margin-bottom: 0.25rem;
+}
+
+.kbm-logo-img {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.kbm-logo-text {
+  font-family: "Poppins", sans-serif;
+  font-size: var(--text-xxl);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  color: var(--kbm-green);
+}
+
+.kbm-logo-text-by {
+  font-weight: 400;
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
+.kbm-tagline {
+  font-family: "Poppins", sans-serif;
+  font-size: calc(var(--text-base) + 2px);
+  color: rgba(60, 80, 45, 0.75);
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 400;
+  text-align: center;
+}
+
+/* Tablet and small laptop screens - scale down header */
+@media (min-width: 600px) and (max-width: 1024px) {
+  .kbm-logo-section {
+    padding: 0.5rem 1rem 0.25rem 1rem;
+  }
+
+  .kbm-logo-text {
+    font-size: 1.6rem;
+    line-height: 1.1;
+  }
+
+  .kbm-tagline {
+    font-size: 0.9rem;
+    line-height: 1.3;
+    max-width: 420px;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .kbm-container {
+    padding: 0 16px;
+  }
+
+  .kbm-logo-section {
+    padding: 0.75rem 60px 0.5rem 60px;
+  }
+
+  .kbm-logo-img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .kbm-logo-text {
+    font-size: 1.8rem;
+  }
+
+  .kbm-tagline {
+    font-size: 0.9rem;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Hide header when printing */
+@media print {
+  .kbm-header-wrap {
+    display: none !important;
+  }
+}
+</style>
+
+<section class="kbm-header-wrap">
+  <header>
+    <div class="kbm-container">
+      <!-- Centered Logo Section -->
+      <div class="kbm-logo-section">
+        <a href="/" class="kbm-logo">
+          <img src="/images/kbm_logo.svg" alt="Knit by Machine" class="kbm-logo-img" />
+          <span class="kbm-logo-text">Knit <span class="kbm-logo-text-by">by</span> Machine</span>
+        </a>
+        <p class="kbm-tagline">See it ● Love it ● Knit it | Make the right project decisions, then knit with confidence.</p>
+      </div>
+    </div>
+  </header>
+</section>
+
+<script is:inline>
+  // Sync header height to CSS variable for accurate sticky positioning
+  (() => {
+    function syncHeaderHeight() {
+      const header = document.querySelector('.kbm-header-wrap');
+      if (header) {
+        const height = header.getBoundingClientRect().height;
+        document.documentElement.style.setProperty('--header-height', `${height}px`);
+      }
+    }
+
+    // Initial sync
+    syncHeaderHeight();
+
+    // Re-sync after fonts load to handle late layout shifts
+    if (document.fonts) {
+      document.fonts.ready.then(syncHeaderHeight);
+    }
+    window.addEventListener('load', syncHeaderHeight, { passive: true });
+
+    // Re-check on resize
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(syncHeaderHeight, 150);
+    }, { passive: true });
+  })();
+</script>

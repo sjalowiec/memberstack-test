@@ -1,0 +1,194 @@
+---
+// Reusable Action Bar component for wizards
+// Fixed floating buttons in bottom-right corner (Edit/Rebuild, Start Over, Print)
+// Desktop/tablet: floating vertical stack
+// Mobile: hidden floating, show top bar instead
+---
+
+<!-- Mobile Top Bar (hidden on desktop, hidden initially in viewer mode) -->
+<div id="action-bar-topbar" class="pattern-actions pattern-actions--topbar no-print" aria-label="Pattern actions">
+  <button type="button" class="action-btn action-btn--icon" aria-label="Edit or rebuild" data-action="edit" data-testid="topbar-edit">
+    <i class="fas fa-edit" aria-hidden="true"></i>
+  </button>
+  <button type="button" class="action-btn action-btn--icon" aria-label="Start over" data-action="reset" data-testid="topbar-start-over">
+    <i class="fas fa-redo" aria-hidden="true"></i>
+  </button>
+  <button type="button" class="action-btn action-btn--icon" aria-label="Print" data-action="print" data-testid="topbar-print">
+    <i class="fas fa-print" aria-hidden="true"></i>
+  </button>
+</div>
+
+<!-- Desktop/Tablet Floating Stack (hidden on mobile) -->
+<div id="action-bar" class="wizard-action-bar pattern-actions--floating no-print">
+  <button class="wizard-action-btn" id="edit-btn" data-testid="button-edit-rebuild" aria-label="Edit or rebuild pattern">
+    <i class="fas fa-edit" aria-hidden="true"></i>
+    <span class="btn-label">Edit / Rebuild</span>
+  </button>
+  <button class="wizard-action-btn" id="start-over-btn" data-testid="button-start-over" aria-label="Start over with new settings">
+    <i class="fas fa-redo" aria-hidden="true"></i>
+    <span class="btn-label">Start Over</span>
+  </button>
+  <button class="wizard-action-btn" id="print-btn" data-testid="button-print" aria-label="Print pattern">
+    <i class="fas fa-print" aria-hidden="true"></i>
+    <span class="btn-label">Print</span>
+  </button>
+</div>
+
+<style>
+/* Default: topbar hidden, floating hidden until activated */
+.pattern-actions--topbar { display: none; }
+.pattern-actions--floating { display: none; }
+
+/* When pattern is built, JS adds .is-active class */
+.pattern-actions--floating.is-active { display: flex; }
+
+/* Print button only visible when active */
+#print-btn { display: none; }
+#print-btn.is-active { display: inline-flex; }
+
+/* Desktop (≥641px): NEVER show topbar, only show floating when active */
+@media (min-width: 641px) {
+  .pattern-actions--topbar {
+    display: none !important;
+  }
+  .pattern-actions--floating.is-active {
+    display: flex;
+  }
+}
+
+/* Mobile (≤640px): show topbar when active, NEVER show floating */
+@media (max-width: 640px) {
+  .pattern-actions--topbar.is-active {
+    display: flex;
+  }
+  .pattern-actions--floating {
+    display: none !important;
+  }
+}
+
+/* Floating action bar styles (desktop/tablet) */
+.wizard-action-bar {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.wizard-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--kbm-green);
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+  font-size: var(--text-base);
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  pointer-events: auto;
+  min-width: 160px;
+}
+
+.wizard-action-btn:hover {
+  background: #6E8B3D;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(82, 104, 45, 0.35);
+}
+
+.wizard-action-btn:active {
+  transform: translateY(0);
+}
+
+.wizard-action-btn:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+/* Tablet: slightly smaller buttons */
+@media (max-width: 1024px) {
+  .wizard-action-bar {
+    bottom: 15px;
+    right: 15px;
+    gap: 0.6rem;
+  }
+  
+  .wizard-action-btn {
+    min-width: 140px;
+    padding: 0.65rem 1.25rem;
+    font-size: var(--text-base);
+  }
+}
+
+/* Mobile topbar styling (only visible when .is-active) */
+@media (max-width: 640px) {
+  .pattern-actions--topbar.is-active {
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-start;
+    
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 100;
+    
+    padding: 8px 12px;
+    
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: var(--radius, 18px);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  }
+  
+  .action-btn--icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--kbm-green, #52682D);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .action-btn--icon:hover {
+    background: #6E8B3D;
+  }
+  
+  .action-btn--icon svg,
+  .action-btn--icon i {
+    font-size: 18px;
+  }
+}
+
+/* Desktop: ensure labels visible */
+@media (min-width: 641px) {
+  .wizard-action-btn .btn-label {
+    display: inline;
+  }
+}
+
+/* Print: never show action UI */
+@media print {
+  .pattern-actions,
+  .no-print {
+    display: none !important;
+  }
+}
+</style>

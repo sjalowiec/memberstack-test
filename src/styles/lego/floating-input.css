@@ -1,0 +1,117 @@
+/* ========================================
+   Floating Input Component Styles
+   Reusable floating-label input pattern
+   
+   USAGE: Use with FloatingInput.astro component
+   The label starts centered inside the input and
+   floats to the top-left when focused or has value.
+   
+   NAMESPACING: Uses .floating-label class to avoid
+   conflicts with wizard.css and other global styles.
+   ======================================== */
+
+.floating-input {
+  position: relative !important;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.floating-input input {
+  width: 100% !important;
+  min-height: 52px !important;
+  padding: 1.25rem 0.75rem 0.5rem !important;
+  border: 2px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  font-family: var(--font);
+  font-size: 1rem !important;
+  color: var(--text-dark, #374151);
+  background: white !important;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -moz-appearance: textfield;
+  box-sizing: border-box;
+}
+
+.floating-input input::-webkit-outer-spin-button,
+.floating-input input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.floating-input input:focus {
+  outline: none;
+  border-color: var(--kbm-green) !important;
+  box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.1) !important;
+}
+
+/* Error state */
+.floating-input input.error {
+  border-color: #dc3545 !important;
+}
+
+/* ===========================================
+   FLOATING LABEL - Namespaced with .floating-label
+   to override wizard.css .input-group label rules
+   =========================================== */
+.floating-input .floating-label {
+  position: absolute !important;
+  left: 0.75rem !important;
+  top: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translateY(-50%) !important;
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 2px !important;
+  font-size: 0.95rem !important;
+  font-weight: normal !important;
+  color: #6b7280 !important;
+  pointer-events: none !important;
+  transition: all 0.2s ease !important;
+  background: transparent !important;
+  white-space: nowrap !important;
+  z-index: 1 !important;
+}
+
+/* Float/shrink label when focused or has value */
+.floating-input input:focus ~ .floating-label,
+.floating-input input:not(:placeholder-shown) ~ .floating-label {
+  top: 0.35rem !important;
+  transform: translateY(0) !important;
+  font-size: 0.75rem !important;
+  color: var(--kbm-green) !important;
+  font-weight: 500 !important;
+}
+
+/* Label error state */
+.floating-input input.error ~ .floating-label {
+  color: #dc3545 !important;
+}
+
+/* Placeholder styling - hide placeholder when label is visible */
+.floating-input input::placeholder {
+  color: transparent !important;
+}
+
+.floating-input input:focus::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Error text - hidden by default, shown when input has .error class */
+.floating-input .error-text {
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
+  display: none;
+}
+
+.floating-input .error-text.show {
+  display: block;
+}
+
+/* Show error text when input has error class */
+.floating-input input.error ~ .error-text {
+  display: block;
+}

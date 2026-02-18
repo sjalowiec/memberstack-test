@@ -1,0 +1,72 @@
+---
+interface Step {
+  sts: number;
+  rows: number;
+  times: number;
+}
+
+interface Props {
+  steps: Step[];
+  title?: string;
+}
+
+const { 
+  steps, 
+  title = "Shaping shorthand (sts / rows / times)" 
+} = Astro.props;
+
+// Don't render anything if no steps
+if (steps.length === 0) {
+  return;
+}
+---
+
+<div class="shaping-code">
+  <div class="shaping-code-heading">{title}</div>
+  <div class="shaping-code-lines">
+    {steps.map((step) => (
+      <div class="shaping-code-line">
+        {step.sts}–{step.rows}–{step.times}
+      </div>
+    ))}
+  </div>
+  <div class="shaping-code-caption">sts – rows – times</div>
+</div>
+
+<style>
+  .shaping-code {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .shaping-code-heading {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+  }
+
+  .shaping-code-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .shaping-code-line {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.02em;
+  }
+
+  .shaping-code-caption {
+    font-size: 0.7rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+    font-style: italic;
+  }
+</style>

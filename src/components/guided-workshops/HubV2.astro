@@ -1,0 +1,374 @@
+---
+/**
+ * HubV2 - New Guided Workshop Hub Layout
+ * 
+ * This is a layout-only component. No auth, no redirects, no business logic.
+ * Designed for calm, minimal, modern workshop experience.
+ * 
+ * Props:
+ * - workshopTitle: string
+ * - currentDay: number
+ * - totalDays: number
+ * - nextStep: { day: number, title: string, bullets: string[] }
+ * - steps: { day: number | string, title: string, status: 'completed' | 'current' | 'upcoming' }[]
+ * - hyvor: { websiteId: string, pageId: string }
+ * - workshopSlug: string
+ */
+
+interface Step {
+  day: number | string;
+  title: string;
+  status: 'completed' | 'current' | 'upcoming';
+}
+
+interface NextStepData {
+  day: number;
+  title: string;
+  bullets: string[];
+}
+
+interface Props {
+  workshopTitle: string;
+  currentDay: number;
+  totalDays: number;
+  nextStep: NextStepData;
+  steps: Step[];
+  hyvor: { websiteId: string; pageId: string };
+  workshopSlug: string;
+}
+
+const { workshopTitle, currentDay, totalDays, nextStep, steps, hyvor, workshopSlug } = Astro.props;
+---
+
+<div class="hub-v2" data-workshop-slug={workshopSlug}>
+  
+  <!-- 1. Orientation Header -->
+  <header class="hub-orientation">
+    <h1 class="hub-orientation__title">{workshopTitle}</h1>
+    <p class="hub-orientation__subtitle">Day {currentDay} of {totalDays} &bull; You're right on track</p>
+  </header>
+
+  <!-- 2. Next Step Hero Card -->
+  <section class="hub-hero">
+    <div class="hub-hero__content">
+      <span class="hub-hero__eyebrow">Your Next Step</span>
+      <h2 class="hub-hero__heading">Day {nextStep.day} — {nextStep.title}</h2>
+      <ul class="hub-hero__bullets">
+        {nextStep.bullets.map((bullet) => (
+          <li>{bullet}</li>
+        ))}
+      </ul>
+      <a href={`/guided-workshops/${workshopSlug}/day/${nextStep.day}`} class="hub-hero__cta">
+        Go to Day {nextStep.day}
+      </a>
+    </div>
+  </section>
+
+  <!-- 3. Workshop Conversation -->
+  <section class="hub-conversation">
+    <h2 class="hub-conversation__heading">Workshop Conversation</h2>
+    <p class="hub-conversation__helper">Ask questions, share progress, and get feedback here.</p>
+    
+    <div 
+      id="hyvor-talk-view-v2" 
+      class="hub-conversation__embed" 
+      data-website-id={hyvor.websiteId} 
+      data-page-id={hyvor.pageId}
+    ></div>
+  </section>
+
+  <!-- 4. Workshop Steps / Progress -->
+  <section class="hub-steps">
+    <h2 class="hub-steps__heading">Workshop Steps</h2>
+    <ol class="hub-steps__list">
+      {steps.map((step) => (
+        <li class={`hub-steps__item hub-steps__item--${step.status}`}>
+          <span class="hub-steps__icon" aria-hidden="true">
+            {step.status === 'completed' && '✓'}
+            {step.status === 'current' && '→'}
+            {step.status === 'upcoming' && '○'}
+          </span>
+          <span class="hub-steps__label">
+            {typeof step.day === 'number' ? `Day ${step.day}` : step.day} — {step.title}
+          </span>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <!-- 5. Support Expectations -->
+  <aside class="hub-support">
+    <h3 class="hub-support__heading">Support</h3>
+    <p class="hub-support__text">
+      I check in Monday–Thursday.<br />
+      You'll hear back within one business day.
+    </p>
+  </aside>
+</div>
+
+<!-- Hyvor Talk Loader Script -->
+<script type="module">
+  import { waitForAuth, setHyvorIdentity, loadHyvorScript } from '/scripts/hyvorLoader.js';
+
+  const mount = document.getElementById('hyvor-talk-view-v2');
+
+  if (mount) {
+    const websiteId = mount.dataset.websiteId || '14706';
+    const pageId = mount.dataset.pageId || 'workshop-hub';
+
+    // Dev bypass for testing
+    const devUnlock = new URLSearchParams(window.location.search).get('dev') === '1';
+
+    // Quick auth check
+    const result = await waitForAuth({ timeoutMs: 2000, intervalMs: 100 });
+    const authorized = (result.ok && result.user) || devUnlock;
+
+    if (authorized && result.user) {
+      setHyvorIdentity({ websiteId, user: result.user });
+    }
+    
+    // Create Hyvor Talk element
+    const hyvorEl = document.createElement('hyvor-talk-comments');
+    hyvorEl.setAttribute('website-id', websiteId);
+    hyvorEl.setAttribute('page-id', pageId);
+    mount.appendChild(hyvorEl);
+    
+    loadHyvorScript();
+  }
+</script>
+
+<style>
+  /* ===== Hub V2 Base ===== */
+  .hub-v2 {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  /* ===== 1. Orientation Header ===== */
+  .hub-orientation {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .hub-orientation__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.2;
+  }
+
+  .hub-orientation__subtitle {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #666;
+    font-weight: 400;
+  }
+
+  /* ===== 2. Next Step Hero Card ===== */
+  .hub-hero {
+    background: linear-gradient(135deg, #f8faf5 0%, #eef3e6 100%);
+    border: 1px solid rgba(82, 104, 45, 0.15);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .hub-hero__content {
+    max-width: 520px;
+  }
+
+  .hub-hero__eyebrow {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #52682d;
+    margin-bottom: 0.5rem;
+  }
+
+  .hub-hero__heading {
+    margin: 0 0 1rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.3;
+  }
+
+  .hub-hero__bullets {
+    margin: 0 0 1.5rem;
+    padding-left: 1.25rem;
+    color: #444;
+    line-height: 1.6;
+  }
+
+  .hub-hero__bullets li {
+    margin-bottom: 0.4rem;
+  }
+
+  .hub-hero__bullets li:last-child {
+    margin-bottom: 0;
+  }
+
+  .hub-hero__cta {
+    display: inline-block;
+    padding: 0.75rem 1.75rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fff;
+    background: #52682d;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+
+  .hub-hero__cta:hover {
+    background: #3d4f22;
+  }
+
+  .hub-hero__cta:active {
+    transform: scale(0.98);
+  }
+
+  /* ===== 3. Workshop Conversation ===== */
+  .hub-conversation {
+    margin-bottom: 2.5rem;
+  }
+
+  .hub-conversation__heading {
+    margin: 0 0 0.25rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .hub-conversation__helper {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .hub-conversation__embed {
+    min-height: 300px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  /* ===== 4. Workshop Steps ===== */
+  .hub-steps {
+    margin-bottom: 2.5rem;
+  }
+
+  .hub-steps__heading {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .hub-steps__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .hub-steps__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .hub-steps__item:last-child {
+    border-bottom: none;
+  }
+
+  .hub-steps__icon {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .hub-steps__label {
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+
+  /* Step status styling */
+  .hub-steps__item--completed .hub-steps__icon {
+    color: #52682d;
+  }
+
+  .hub-steps__item--completed .hub-steps__label {
+    color: #333;
+  }
+
+  .hub-steps__item--current .hub-steps__icon {
+    color: #52682d;
+    font-weight: 700;
+  }
+
+  .hub-steps__item--current .hub-steps__label {
+    color: #1a1a1a;
+    font-weight: 600;
+  }
+
+  .hub-steps__item--upcoming .hub-steps__icon {
+    color: #bbb;
+  }
+
+  .hub-steps__item--upcoming .hub-steps__label {
+    color: #999;
+  }
+
+  /* ===== 5. Support Expectations ===== */
+  .hub-support {
+    padding: 1.25rem 1.5rem;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .hub-support__heading {
+    margin: 0 0 0.35rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #444;
+  }
+
+  .hub-support__text {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #666;
+    line-height: 1.5;
+  }
+
+  /* ===== Mobile Adjustments ===== */
+  @media (max-width: 600px) {
+    .hub-v2 {
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    .hub-orientation__title {
+      font-size: 1.5rem;
+    }
+
+    .hub-hero {
+      padding: 1.5rem;
+    }
+
+    .hub-hero__heading {
+      font-size: 1.2rem;
+    }
+  }
+</style>

@@ -1,0 +1,872 @@
+---
+// YarnRequirement.astro
+// Estimates yarn needed based on swatch weight and blanket dimensions
+// Supports embed mode (with props) and standalone mode (without props)
+
+export interface Props {
+  projectWidth?: number; // Blanket width (in lengthUnit)
+  projectLength?: number; // Blanket length (in lengthUnit)
+  lengthUnit?: 'in' | 'cm'; // Unit of projectWidth/projectLength (default: 'in')
+  source?: 'sample' | 'custom'; // Whether dimensions are from sample or custom pattern
+}
+
+const { 
+  projectWidth = 0, 
+  projectLength = 0, 
+  lengthUnit = 'in',
+  source = 'sample'
+} = Astro.props;
+
+// Determine mode: embed (has props) or standalone (no props)
+const isEmbedMode = projectWidth !== undefined && projectLength !== undefined && projectWidth > 0 && projectLength > 0;
+
+// Convert to inches if needed (internal calculations always use inches)
+const widthInches = lengthUnit === 'cm' ? (projectWidth / 2.54) : projectWidth;
+const lengthInches = lengthUnit === 'cm' ? (projectLength / 2.54) : projectLength;
+
+// Check if props are missing in embed mode (developer warning)
+const hasMissingProps = (projectWidth === undefined || projectLength === undefined) && isEmbedMode;
+---
+
+<div 
+  id="yarn-requirement"
+  class="yarn-requirement-tool" 
+  data-width-inches={widthInches} 
+  data-length-inches={lengthInches} 
+  data-embed-mode={isEmbedMode}
+  data-project-width={projectWidth}
+  data-project-length={projectLength}
+  data-length-unit={lengthUnit}
+  data-source={source}
+>
+  <h3 class="yarn-heading" id="yarn-heading">
+    {widthInches > 0 && lengthInches > 0 
+      ? (() => {
+          const w = Math.round(widthInches * 10) / 10;
+          const l = Math.round(lengthInches * 10) / 10;
+          const wDisplay = w % 1 === 0 ? Math.round(w) : w;
+          const lDisplay = l % 1 === 0 ? Math.round(l) : l;
+          return `How much yarn do I need for my ${wDisplay}″ × ${lDisplay}″ blanket?`;
+        })()
+      : 'How much yarn do I need?'}
+  </h3>
+  
+  <div class="yarn-calculator" id="yarn-calculator">
+    <!-- Developer warning for missing props in embed mode -->
+    {hasMissingProps && (
+      <div class="yarn-dev-warning">
+        Blanket dimensions not provided by pattern.
+      </div>
+    )}
+    
+    <!-- Length unit toggle: in / cm -->
+    <div class="yarn-units-toggle" id="yarn-length-units-toggle">
+      <button type="button" class="yarn-unit-btn active" data-unit="in" data-testid="button-yarn-length-unit-in">Inches</button>
+      <button type="button" class="yarn-unit-btn" data-unit="cm" data-testid="button-yarn-length-unit-cm">Centimeters</button>
+    </div>
+    
+    <!-- Swatch inputs -->
+    <div class="yarn-section">
+      <span class="yarn-section-label">
+        Measure your entire swatch (edge to edge), then weigh it.<br />
+        Use a food or postal scale.
+      </span>
+      <div class="yarn-input-grid">
+        <div class="yarn-input-group">
+          <label for="yarn-swatch-width">Swatch Width (<span class="yarn-length-unit-label">in</span>)</label>
+          <input type="number" id="yarn-swatch-width" step="0.1" min="0" placeholder="e.g., 4" data-testid="input-yarn-swatch-width" />
+        </div>
+        <div class="yarn-input-group">
+          <label for="yarn-swatch-length">Swatch Length (<span class="yarn-length-unit-label">in</span>)</label>
+          <input type="number" id="yarn-swatch-length" step="0.1" min="0" placeholder="e.g., 4" data-testid="input-yarn-swatch-length" />
+        </div>
+        <div class="yarn-input-group">
+          <label for="yarn-swatch-weight">Swatch Weight</label>
+          <div class="yarn-weight-input-wrapper">
+            <input type="number" id="yarn-swatch-weight" step="0.1" min="0" placeholder="e.g., 12" data-testid="input-yarn-swatch-weight" />
+            <div class="yarn-weight-units-toggle" id="yarn-weight-units-toggle">
+              <button type="button" class="yarn-weight-unit-btn active" data-unit="g" data-testid="button-yarn-weight-unit-g">g</button>
+              <button type="button" class="yarn-weight-unit-btn" data-unit="oz" data-testid="button-yarn-weight-unit-oz">oz</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Blanket dimensions: only show in standalone mode -->
+    {!isEmbedMode && (
+      <div class="yarn-section">
+        <span class="yarn-section-label">Your Blanket</span>
+        <div class="yarn-input-grid">
+          <div class="yarn-input-group">
+            <label for="yarn-blanket-width">Blanket Width (<span class="yarn-length-unit-label">in</span>)</label>
+            <input type="number" id="yarn-blanket-width" step="0.1" min="0" placeholder="e.g., 48" data-testid="input-yarn-blanket-width" />
+          </div>
+          <div class="yarn-input-group">
+            <label for="yarn-blanket-length">Blanket Length (<span class="yarn-length-unit-label">in</span>)</label>
+            <input type="number" id="yarn-blanket-length" step="0.1" min="0" placeholder="e.g., 60" data-testid="input-yarn-blanket-length" />
+          </div>
+        </div>
+      </div>
+    )}
+    
+    <!-- Results section: two cards side-by-side -->
+    <div class="yarn-results-section" id="yarn-results-section">
+      <h4 class="yarn-results-heading">Estimated yarn needed</h4>
+      <div class="yarn-results-cards">
+        <div class="yarn-result-card">
+          <div class="yarn-result-card-title">Estimated Grams</div>
+          <div class="yarn-result-card-value" id="yarn-result-grams">---</div>
+        </div>
+        <div class="yarn-result-card">
+          <div class="yarn-result-card-title">Estimated Ounces</div>
+          <div class="yarn-result-card-value" id="yarn-result-ounces">---</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Validation messages -->
+    <p class="yarn-message" id="yarn-message-incomplete" style="display: none;">Enter your swatch measurements to see your estimate.</p>
+    <p class="yarn-message yarn-error" id="yarn-message-error" style="display: none;">All values must be greater than zero.</p>
+  </div>
+</div>
+
+<style>
+  .yarn-requirement-tool {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .yarn-heading {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text, #1f2937);
+    margin-bottom: 24px;
+  }
+
+  .yarn-calculator {
+    background: var(--surface, #ffffff);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: var(--radius, 18px);
+    padding: 24px;
+  }
+
+  .yarn-dev-warning {
+    padding: 12px;
+    margin-bottom: 20px;
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    color: #856404;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .yarn-units-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+
+  .yarn-unit-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border, #e5e7eb);
+    background: var(--surface, #ffffff);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.15s ease;
+  }
+
+  .yarn-unit-btn:hover {
+    background: var(--tab-bg, #fbfbf9);
+  }
+
+  .yarn-unit-btn.active {
+    background: var(--kbm-green, #52682D);
+    color: white;
+    border-color: var(--kbm-green, #52682D);
+  }
+
+  .yarn-section {
+    margin-bottom: 28px;
+  }
+
+  .yarn-section:last-of-type {
+    margin-bottom: 0;
+  }
+
+  .yarn-section-label {
+    display: block;
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 14px;
+    color: var(--text, #1f2937);
+  }
+
+  .yarn-input-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 20px;
+  }
+
+  .yarn-input-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .yarn-input-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text, #1f2937);
+  }
+
+  .yarn-input-group input {
+    width: 100%;
+    max-width: 8ch;
+    padding: 10px 12px;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: var(--font, ui-sans-serif, system-ui);
+  }
+
+  .yarn-input-group input:focus {
+    outline: 2px solid var(--kbm-green, #52682D);
+    outline-offset: 2px;
+  }
+
+  .yarn-weight-input-wrapper {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+    max-width: fit-content;
+  }
+
+  .yarn-weight-input-wrapper input {
+    max-width: 8ch;
+    flex: 0 0 auto;
+  }
+
+  .yarn-weight-units-toggle {
+    display: flex;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .yarn-weight-unit-btn {
+    padding: 10px 16px;
+    border: none;
+    background: var(--surface, #ffffff);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.15s ease;
+    border-right: 1px solid var(--border, #e5e7eb);
+  }
+
+  .yarn-weight-unit-btn:last-child {
+    border-right: none;
+  }
+
+  .yarn-weight-unit-btn:hover {
+    background: var(--tab-bg, #fbfbf9);
+  }
+
+  .yarn-weight-unit-btn.active {
+    background: var(--kbm-green, #52682D);
+    color: white;
+  }
+
+  .yarn-results-section {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid var(--border, #e5e7eb);
+  }
+
+  .yarn-blanket-context {
+    font-size: 14px;
+    color: var(--muted, #5b6472);
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+
+  .yarn-results-heading {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text, #1f2937);
+    margin-bottom: 20px;
+  }
+
+  .yarn-results-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .yarn-result-card {
+    background: var(--tab-bg, #fbfbf9);
+    border: 2px solid var(--kbm-green, #52682D);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .yarn-result-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted, #5b6472);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .yarn-result-card-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--kbm-green, #52682D);
+    line-height: 1.2;
+  }
+
+  .yarn-message {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+    color: var(--muted, #5b6472);
+  }
+
+  .yarn-message.yarn-error {
+    background: #fee;
+    border: 1px solid #fcc;
+    color: #c33;
+  }
+
+  @media (max-width: 640px) {
+    .yarn-input-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .yarn-results-cards {
+      grid-template-columns: 1fr;
+    }
+
+    .yarn-result-card-value {
+      font-size: 28px;
+    }
+
+    .yarn-weight-input-wrapper {
+      max-width: 100%;
+    }
+
+    .yarn-weight-input-wrapper input {
+      max-width: none;
+      flex: 1;
+    }
+  }
+</style>
+
+<script>
+  (function() {
+    // Get DOM elements
+    const yarnHeading = document.getElementById('yarn-heading');
+    const swatchWidth = document.getElementById('yarn-swatch-width');
+    const swatchLength = document.getElementById('yarn-swatch-length');
+    const swatchWeight = document.getElementById('yarn-swatch-weight');
+    const blanketWidth = document.getElementById('yarn-blanket-width');
+    const blanketLength = document.getElementById('yarn-blanket-length');
+    const lengthUnitBtns = document.querySelectorAll('#yarn-length-units-toggle .yarn-unit-btn');
+    const lengthUnitLabels = document.querySelectorAll('.yarn-length-unit-label');
+    const weightUnitBtns = document.querySelectorAll('#yarn-weight-units-toggle .yarn-weight-unit-btn');
+    const resultsSection = document.getElementById('yarn-results-section');
+    const resultGrams = document.getElementById('yarn-result-grams');
+    const resultOunces = document.getElementById('yarn-result-ounces');
+    const blanketContext = document.getElementById('yarn-blanket-context');
+    const messageIncomplete = document.getElementById('yarn-message-incomplete');
+    const messageError = document.getElementById('yarn-message-error');
+    
+    if (!swatchWidth || !swatchLength || !swatchWeight) {
+      return; // Elements not found
+    }
+    
+    // State
+    const LENGTH_STORAGE_KEY = 'kbm:yarnRequirement:lengthUnit';
+    const WEIGHT_STORAGE_KEY = 'kbm:yarnRequirement:weightUnit';
+    let currentLengthUnit = localStorage.getItem(LENGTH_STORAGE_KEY) || 'in';
+    let currentWeightUnit = localStorage.getItem(WEIGHT_STORAGE_KEY) || 'g'; // Default to grams
+    let blanketWidthIn = 0;
+    let blanketLengthIn = 0;
+    let hasInteracted = false; // Track if user has interacted with form
+    let isCustomPattern = false; // Track if using custom (built) pattern vs sample
+    
+    // Get wrapper element
+    const wrapper = document.getElementById('yarn-requirement');
+    if (!wrapper) {
+      return; // Component wrapper not found
+    }
+    
+    // Check if embed mode (has props)
+    const isEmbedMode = wrapper.getAttribute('data-embed-mode') === 'true';
+    
+    // Read projectWidth and projectLength from dataset (props)
+    let projectWidth = parseFloat(wrapper.dataset.projectWidth || '0');
+    let projectLength = parseFloat(wrapper.dataset.projectLength || '0');
+    const propsLengthUnit = wrapper.dataset.lengthUnit || 'in';
+    
+    // Convert props to inches for internal calculations
+    if (propsLengthUnit === 'cm') {
+      projectWidth = projectWidth / 2.54;
+      projectLength = projectLength / 2.54;
+    }
+    
+    // Sample defaults (for comparison to detect custom vs sample)
+    const SAMPLE_WIDTH_IN = 36;
+    const SAMPLE_LENGTH_IN = 36;
+    
+    // Initialize blanket dimensions from props (embed mode)
+    if (isEmbedMode) {
+      blanketWidthIn = projectWidth;
+      blanketLengthIn = projectLength;
+      
+      // Use source prop if available, otherwise detect from dimensions
+      const sourceProp = wrapper.getAttribute('data-source');
+      if (sourceProp === 'custom' || sourceProp === 'sample') {
+        isCustomPattern = sourceProp === 'custom';
+      } else {
+        // Fallback: check if values differ from sample defaults (within small tolerance)
+        const tolerance = 0.1;
+        const isSampleSize = Math.abs(blanketWidthIn - SAMPLE_WIDTH_IN) < tolerance && 
+                            Math.abs(blanketLengthIn - SAMPLE_LENGTH_IN) < tolerance;
+        isCustomPattern = !isSampleSize;
+      }
+      
+      // Debug log (one-time on init)
+      console.log('[YarnRequirement] Initial projectWidth/projectLength:', projectWidth, projectLength, '(inches)');
+      
+      // Fallback: read from wizard data attributes if props are zero
+      if (blanketWidthIn === 0 || blanketLengthIn === 0) {
+        const wizard = document.getElementById('hybrid-blanket-wizard-v2');
+        if (wizard) {
+          const wizardWidth = wizard.getAttribute('data-blanket-width-inches');
+          const wizardLength = wizard.getAttribute('data-blanket-length-inches');
+          if (wizardWidth) blanketWidthIn = parseFloat(wizardWidth) || 0;
+          if (wizardLength) blanketLengthIn = parseFloat(wizardLength) || 0;
+          if (blanketWidthIn > 0 || blanketLengthIn > 0) {
+            console.log('[YarnRequirement] Using wizard dimensions:', blanketWidthIn, blanketLengthIn);
+            // Check if custom
+            const isSampleSize = Math.abs(blanketWidthIn - SAMPLE_WIDTH_IN) < tolerance && 
+                                Math.abs(blanketLengthIn - SAMPLE_LENGTH_IN) < tolerance;
+            isCustomPattern = !isSampleSize;
+          }
+        }
+      }
+    }
+    
+    // Focus first missing required field
+    function focusFirstMissing() {
+      const requiredFields = [];
+      
+      // Swatch fields (always required)
+      requiredFields.push(swatchWidth);
+      requiredFields.push(swatchLength);
+      requiredFields.push(swatchWeight);
+      
+      // Blanket fields (only in standalone mode)
+      if (!isEmbedMode) {
+        if (blanketWidth) requiredFields.push(blanketWidth);
+        if (blanketLength) requiredFields.push(blanketLength);
+      }
+      
+      // Find first empty or invalid field
+      for (const field of requiredFields) {
+        const value = parseFloat(field.value);
+        if (!field.value.trim() || isNaN(value) || value <= 0) {
+          field.focus();
+          field.select();
+          return true;
+        }
+      }
+      
+      return false;
+    }
+    
+    // Update length unit UI
+    function updateLengthUnitUI() {
+      lengthUnitBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.unit === currentLengthUnit);
+      });
+      lengthUnitLabels.forEach(label => {
+        label.textContent = currentLengthUnit;
+      });
+      // Update context line when unit changes
+      if (resultsSection) {
+        updateBlanketContext();
+      }
+    }
+    
+    // Update weight unit UI
+    function updateWeightUnitUI() {
+      weightUnitBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.unit === currentWeightUnit);
+      });
+    }
+    
+    // Set placeholder values for results section
+    // NOTE: Does NOT reset blanket context - that should always show current dimensions
+    function setResultsPlaceholders() {
+      // Don't reset blanket context - it should always show the current dimensions
+      if (resultGrams) {
+        resultGrams.textContent = '---';
+      }
+      if (resultOunces) {
+        resultOunces.textContent = '---';
+      }
+    }
+    
+    // Update heading text dynamically based on current dimensions
+    function updateHeading() {
+      if (!yarnHeading) {
+        return;
+      }
+      
+      if (blanketWidthIn > 0 && blanketLengthIn > 0) {
+        // Format dimensions: round to 1 decimal, remove .0 if whole number
+        const w = Math.round(blanketWidthIn * 10) / 10;
+        const l = Math.round(blanketLengthIn * 10) / 10;
+        const wDisplay = w % 1 === 0 ? Math.round(w) : w;
+        const lDisplay = l % 1 === 0 ? Math.round(l) : l;
+        yarnHeading.textContent = `How much yarn do I need for my ${wDisplay}″ × ${lDisplay}″ blanket?`;
+      } else {
+        yarnHeading.textContent = 'How much yarn do I need?';
+      }
+    }
+    
+    // Update blanket context line
+    function updateBlanketContext() {
+      // Always query fresh to avoid stale references
+      const currentBlanketContext = document.getElementById('yarn-blanket-context');
+      
+      if (!currentBlanketContext) {
+        return;
+      }
+      
+      if (blanketWidthIn <= 0 || blanketLengthIn <= 0) {
+        currentBlanketContext.textContent = 'Blanket size used: ---';
+        return;
+      }
+      
+      // Use the same values used in calculation (blanketWidthIn/blanketLengthIn in inches)
+      // Convert to display unit based on current length unit toggle
+      let displayW, displayL;
+      const displayUnit = currentLengthUnit;
+      
+      if (displayUnit === 'cm') {
+        // Convert inches to cm: round to whole number
+        displayW = Math.round(blanketWidthIn * 2.54);
+        displayL = Math.round(blanketLengthIn * 2.54);
+      } else {
+        // Inches: round to 1 decimal max
+        displayW = Math.round(blanketWidthIn * 10) / 10;
+        displayL = Math.round(blanketLengthIn * 10) / 10;
+        // Remove .0 if whole number
+        if (displayW % 1 === 0) displayW = Math.round(displayW);
+        if (displayL % 1 === 0) displayL = Math.round(displayL);
+      }
+      
+      const source = isCustomPattern ? 'custom' : 'sample';
+      const unitLabel = displayUnit === 'in' ? 'in' : 'cm';
+      currentBlanketContext.textContent = `Blanket size used: ${displayW} × ${displayL} ${unitLabel} (${source})`;
+    }
+    
+    // Calculate yarn estimate
+    function calculateYarn(shouldFocus = false) {
+      // Hide messages (but keep results visible)
+      if (messageIncomplete) messageIncomplete.style.display = 'none';
+      if (messageError) messageError.style.display = 'none';
+      
+      // Get swatch values
+      let swatchW = parseFloat(swatchWidth.value);
+      let swatchL = parseFloat(swatchLength.value);
+      const swatchWt = parseFloat(swatchWeight.value);
+      
+      // Get blanket dimensions
+      let blanketW = blanketWidthIn;
+      let blanketL = blanketLengthIn;
+      
+      if (!isEmbedMode) {
+        // Standalone mode: read from inputs
+        blanketW = parseFloat(blanketWidth?.value || '0');
+        blanketL = parseFloat(blanketLength?.value || '0');
+        
+        // Convert to inches if needed
+        if (currentLengthUnit === 'cm') {
+          blanketW = blanketW / 2.54;
+          blanketL = blanketL / 2.54;
+        }
+      }
+      
+      // Convert swatch dimensions to inches if needed
+      if (currentLengthUnit === 'cm') {
+        swatchW = swatchW / 2.54;
+        swatchL = swatchL / 2.54;
+      }
+      
+      // Validate inputs
+      const swatchValid = !isNaN(swatchW) && !isNaN(swatchL) && !isNaN(swatchWt) && 
+                         swatchW > 0 && swatchL > 0 && swatchWt > 0;
+      const blanketValid = blanketW > 0 && blanketL > 0;
+      
+      // Check if any input has been entered
+      const hasAnyInput = swatchWidth.value.trim() !== '' || 
+                         swatchLength.value.trim() !== '' || 
+                         swatchWeight.value.trim() !== '' ||
+                         (!isEmbedMode && (blanketWidth?.value.trim() !== '' || blanketLength?.value.trim() !== ''));
+      
+      // Show appropriate message (only if user has interacted)
+      if (!hasAnyInput) {
+        if (messageIncomplete && hasInteracted) {
+          messageIncomplete.style.display = 'block';
+        }
+        setResultsPlaceholders();
+        return;
+      }
+      
+      // Check for invalid values (only show error if user has entered something)
+      if (!swatchValid || !blanketValid) {
+        // Only show error if user has interacted AND entered invalid values
+        if (hasInteracted && messageError) {
+          const hasInvalidValue = (swatchWidth.value.trim() !== '' && (isNaN(swatchW) || swatchW <= 0)) ||
+                                  (swatchLength.value.trim() !== '' && (isNaN(swatchL) || swatchL <= 0)) ||
+                                  (swatchWeight.value.trim() !== '' && (isNaN(swatchWt) || swatchWt <= 0)) ||
+                                  (!isEmbedMode && blanketWidth && blanketWidth.value.trim() !== '' && (isNaN(blanketW) || blanketW <= 0)) ||
+                                  (!isEmbedMode && blanketLength && blanketLength.value.trim() !== '' && (isNaN(blanketL) || blanketL <= 0));
+          
+          if (hasInvalidValue) {
+            messageError.style.display = 'block';
+          }
+        }
+        
+        // Focus first missing field if requested
+        if (shouldFocus) {
+          focusFirstMissing();
+        }
+        
+        setResultsPlaceholders();
+        return;
+      }
+      
+      // Calculate swatch area (square inches)
+      const swatchArea = swatchW * swatchL;
+      
+      // Calculate density based on weight unit
+      let densityPerSqIn;
+      if (currentWeightUnit === 'oz') {
+        // Ounces per square inch
+        densityPerSqIn = swatchWt / swatchArea;
+      } else {
+        // Grams per square inch
+        densityPerSqIn = swatchWt / swatchArea;
+      }
+      
+      // Calculate blanket area (square inches)
+      const blanketArea = blanketW * blanketL;
+      
+      // Calculate estimated yarn (before buffer)
+      let estimatedGrams, estimatedOunces;
+      
+      if (currentWeightUnit === 'oz') {
+        // Start with ounces
+        const estimatedOzBase = densityPerSqIn * blanketArea;
+        const estimatedOzWithBuffer = estimatedOzBase * 1.10; // 10% buffer
+        estimatedOunces = estimatedOzWithBuffer;
+        // Convert to grams: ounces × 28.349523125
+        estimatedGrams = estimatedOzWithBuffer * 28.349523125;
+      } else {
+        // Start with grams
+        const estimatedGramsBase = densityPerSqIn * blanketArea;
+        const estimatedGramsWithBuffer = estimatedGramsBase * 1.10; // 10% buffer
+        estimatedGrams = estimatedGramsWithBuffer;
+        // Convert to ounces: grams / 28.349523125
+        estimatedOunces = estimatedGramsWithBuffer / 28.349523125;
+      }
+      
+      // Validate computed values are finite and > 0
+      if (!Number.isFinite(estimatedGrams) || !Number.isFinite(estimatedOunces) || 
+          estimatedGrams <= 0 || estimatedOunces <= 0) {
+        setResultsPlaceholders();
+        return;
+      }
+      
+      // Display results
+      if (resultGrams) resultGrams.textContent = Math.round(estimatedGrams) + ' g';
+      if (resultOunces) resultOunces.textContent = estimatedOunces.toFixed(1) + ' oz';
+      
+      // Update blanket context line
+      updateBlanketContext();
+    }
+    
+    // Listen for yarn dimensions event from pattern engine (embed mode)
+    if (isEmbedMode) {
+      window.addEventListener('kbm:yarnDimensions', function(e: CustomEvent) {
+        const detail = e.detail;
+        if (detail && (detail.projectWidth !== undefined || detail.projectLength !== undefined)) {
+          // Update props from event
+          let newWidth = detail.projectWidth || 0;
+          let newLength = detail.projectLength || 0;
+          const eventUnit = detail.lengthUnit || 'in';
+          
+          // Convert to inches if needed
+          if (eventUnit === 'cm') {
+            newWidth = newWidth / 2.54;
+            newLength = newLength / 2.54;
+          }
+          
+          // Update internal values (in inches) first
+          blanketWidthIn = newWidth;
+          blanketLengthIn = newLength;
+          
+          // Update wrapper dataset
+          wrapper.dataset.projectWidth = String(detail.projectWidth || 0);
+          wrapper.dataset.projectLength = String(detail.projectLength || 0);
+          wrapper.dataset.lengthUnit = eventUnit;
+          
+          // Update source from event if provided
+          if (detail.source === 'custom' || detail.source === 'sample') {
+            wrapper.dataset.source = detail.source;
+            isCustomPattern = detail.source === 'custom';
+          } else {
+            // Fallback: check if this is custom pattern (differs from sample defaults)
+            const tolerance = 0.1;
+            const isSampleSize = Math.abs(blanketWidthIn - SAMPLE_WIDTH_IN) < tolerance && 
+                                Math.abs(blanketLengthIn - SAMPLE_LENGTH_IN) < tolerance;
+            isCustomPattern = !isSampleSize;
+          }
+          
+          // Update data-width-inches and data-length-inches for compatibility
+          wrapper.setAttribute('data-width-inches', blanketWidthIn.toString());
+          wrapper.setAttribute('data-length-inches', blanketLengthIn.toString());
+          
+          // Update heading text immediately
+          updateHeading();
+          
+          // Update heading text immediately
+          updateHeading();
+          
+          // Update blanket context line immediately (even if swatch inputs aren't filled)
+          updateBlanketContext();
+          
+          // Recalculate (will show placeholders if swatch inputs aren't filled)
+          calculateYarn();
+        }
+      });
+      
+      // Also listen for legacy event (for backwards compatibility)
+      window.addEventListener('kbm:hybridBlanket:dimensions', function(e: CustomEvent) {
+        const detail = e.detail;
+        if (detail && detail.widthInches !== undefined && detail.lengthInches !== undefined) {
+          blanketWidthIn = detail.widthInches || 0;
+          blanketLengthIn = detail.lengthInches || 0;
+          
+          // Use source from event if provided, otherwise detect from dimensions
+          if (detail.source === 'custom' || detail.source === 'sample') {
+            wrapper.dataset.source = detail.source;
+            isCustomPattern = detail.source === 'custom';
+          } else {
+            // Fallback: check if custom pattern (differs from sample defaults)
+            const tolerance = 0.1;
+            const isSampleSize = Math.abs(blanketWidthIn - SAMPLE_WIDTH_IN) < tolerance && 
+                                Math.abs(blanketLengthIn - SAMPLE_LENGTH_IN) < tolerance;
+            isCustomPattern = !isSampleSize;
+          }
+          
+          // Update heading text immediately
+          updateHeading();
+          
+          // Update blanket context line immediately (even if swatch inputs aren't filled)
+          updateBlanketContext();
+          
+          // Recalculate (will show placeholders if swatch inputs aren't filled)
+          calculateYarn();
+        }
+      });
+    }
+    
+    // Track user interaction
+    function markInteracted() {
+      hasInteracted = true;
+    }
+    
+    // Length unit toggle handlers
+    lengthUnitBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        markInteracted();
+        currentLengthUnit = btn.dataset.unit || 'in';
+        localStorage.setItem(LENGTH_STORAGE_KEY, currentLengthUnit);
+        updateLengthUnitUI();
+        calculateYarn();
+      });
+    });
+    
+    // Weight unit toggle handlers
+    weightUnitBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        markInteracted();
+        currentWeightUnit = btn.dataset.unit || 'g';
+        localStorage.setItem(WEIGHT_STORAGE_KEY, currentWeightUnit);
+        updateWeightUnitUI();
+        calculateYarn();
+      });
+    });
+    
+    // Input handlers - mark as interacted on input
+    [swatchWidth, swatchLength, swatchWeight].forEach(input => {
+      input.addEventListener('input', () => {
+        markInteracted();
+        calculateYarn();
+      });
+      
+      // Focus first missing field on blur if form is incomplete
+      input.addEventListener('blur', () => {
+        if (hasInteracted) {
+          calculateYarn(true);
+        }
+      });
+    });
+    
+    if (!isEmbedMode && blanketWidth && blanketLength) {
+      blanketWidth.addEventListener('input', () => {
+        markInteracted();
+        calculateYarn();
+      });
+      blanketLength.addEventListener('input', () => {
+        markInteracted();
+        calculateYarn();
+      });
+      
+      blanketWidth.addEventListener('blur', () => {
+        if (hasInteracted) {
+          calculateYarn(true);
+        }
+      });
+      blanketLength.addEventListener('blur', () => {
+        if (hasInteracted) {
+          calculateYarn(true);
+        }
+      });
+    }
+    
+    // Initialize
+    updateLengthUnitUI();
+    updateWeightUnitUI();
+    // Update heading with initial dimensions
+    updateHeading();
+    // Set placeholders on init so results section is visible with ---
+    setResultsPlaceholders();
+  })();
+</script>
