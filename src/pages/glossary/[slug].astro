@@ -3,30 +3,41 @@ import Layout from "../../layouts/layout.astro";
 import glossary from "../../data/glossary.json";
 import { slugify } from "../../lib/slugify";
 
-
 const { slug } = Astro.params;
+
+// Clean a string inline (no helper function)
+const clean = (s: string) =>
+  (s ?? "").toString().replace(/<[^>]*>/g, "").trim();
 
 export async function getStaticPaths() {
   return glossary
     .filter((t) => (t.english ?? "").trim().length > 0)
+    .filter((t) => t.dak !== true && t.dak9 !== true && t.passap !== true && t.bettybot !== true)
     .map((t) => ({
-      params: { slug: slugify(t.english) },
+      params: { slug: slugify((t.english ?? "").replace(/<[^>]*>/g, "").trim()) },
     }));
 }
 
-const entry = glossary.find((t) => slugify(t.english ?? "") === slug);
+const normalizedSlug = slugify(slug ?? "");
+
+const entry = glossary
+  .filter((t) => (t.english ?? "").trim().length > 0)
+  .filter((t) => t.dak !== true && t.dak9 !== true && t.passap !== true && t.bettybot !== true)
+  .find(
+    (t) =>
+      slugify((t.english ?? "").replace(/<[^>]*>/g, "").trim()) ===
+      normalizedSlug
+  );
 
 if (!entry) {
   return Astro.redirect("/glossary");
 }
 
-// SQL export doesn't include related terms yet — keep empty for now
 const relatedTermsData: Array<{ slug: string; term: string }> = [];
 
-// Map SQL-shaped fields into the names your older template expects
 const view = {
-  slug,
-  term: entry.english ?? "",
+  slug: normalizedSlug,
+  term: clean(entry.english ?? ""), // stripped for display
   abbreviation: entry.alt ?? "",
   description: entry.helpInfo ?? "",
   tooltip: "",
@@ -35,9 +46,9 @@ const view = {
   categories: entry.category ? [entry.category] : [],
 
   imageFilename: entry.image
-    ? (entry.image.startsWith("http") || entry.image.startsWith("/")
-        ? entry.image
-        : `/images/glossary/${entry.image}`)
+    ? entry.image.startsWith("http") || entry.image.startsWith("/")
+      ? entry.image
+      : `/images/glossary/${entry.image}`
     : "",
   imageAlt: entry.imageAlt ?? "",
   gifFilename: "",
@@ -47,6 +58,7 @@ const view = {
   promoText: "",
 };
 ---
+
 
 
 
@@ -106,6 +118,16 @@ const view = {
       color: #1f2937;
       margin: 0 0 0.75rem;
       line-height: 1.2;
+    }
+
+    .term-title small {
+      font-size: 0.7em;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+
+    .term-title em {
+      font-style: italic;
     }
 
     .term-intro {
@@ -349,7 +371,7 @@ const view = {
 
   <div class="glossary-entry">
     <a href="/glossary" class="back-link">← Back to Glossary </a>
-    <h1 class="term-title">{entry.english}</h1>
+    <h1 class="term-title" set:html={entry.english ?? ""}></h1>
     {entry.example && (
       <p class="term-intro">{entry.example}</p>
     )}
