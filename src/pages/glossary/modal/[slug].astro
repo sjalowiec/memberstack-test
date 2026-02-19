@@ -1,0 +1,41 @@
+---
+import GlossaryEntry from "../../../components/GlossaryEntry.astro";
+import glossary from "../../../data/glossary.json";
+import { slugify } from "../../../lib/slugify";
+
+const { slug } = Astro.params;
+
+export async function getStaticPaths() {
+  return glossary
+    .filter((t: any) => (t.english ?? "").toString().trim().length > 0)
+    .map((t: any) => ({
+      params: { slug: slugify((t.english ?? "").toString().replace(/<[^>]*>/g, "").trim()) },
+    }));
+}
+
+const entry = glossary.find(
+  (t: any) => slugify((t.english ?? "").toString().replace(/<[^>]*>/g, "").trim()) === slug
+);
+
+if (!entry) {
+  return Astro.redirect("/glossary");
+}
+
+const relatedTermsData: Array<{ slug: string; term: string }> = [];
+---
+
+<head>
+  <link rel="canonical" href={`/glossary/${slug}/`} />
+  <meta name="robots" content="noindex, nofollow" />
+</head>
+
+<style>
+  main.glossaryEntry {
+    margin-top: 0;
+    padding-top: 0;
+  }
+</style>
+
+<main class="glossaryEntry glossaryEntry--modal" data-glossary-entry>
+  <GlossaryEntry entry={entry} relatedTermsData={relatedTermsData} />
+</main>

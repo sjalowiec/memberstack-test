@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/layout.astro";
 import glossaryRaw from "../../data/glossary.json";
+import { slugify } from "../../lib/slugify";
 
 export const prerender = true;
 
@@ -20,8 +21,10 @@ const filteredGlossary = glossaryList
   .map((t: any) => {
     const english = (t.english ?? t.English ?? "").toString().trim();
     const letter = english[0]?.toUpperCase() ?? "#";
+    const slug = slugify(english.replace(/<[^>]*>/g, "").trim());
     return {
       english,
+      slug,
       letter: /[A-Z]/.test(letter) ? letter : "#",
       definition: (t.definition ?? t.helpInfo ?? t.helpinfo ?? t.Helpinfo ?? t.description ?? "").toString().trim(),
       notes: (t.notes ?? "").toString().trim(),
@@ -33,11 +36,11 @@ const filteredGlossary = glossaryList
 const termCount = filteredGlossary.length;
 
 // Group by first letter (A–Z; non-alphabetic under "#")
-const letterMap = new Map<string, { term: string; definition: string }[]>();
+const letterMap = new Map<string, { term: string; definition: string; slug: string }[]>();
 for (const item of filteredGlossary) {
   const letter = item.letter;
   if (!letterMap.has(letter)) letterMap.set(letter, []);
-  letterMap.get(letter)!.push({ term: item.english, definition: item.definition });
+  letterMap.get(letter)!.push({ term: item.english, definition: item.definition, slug: item.slug });
 }
 
 // Order: # first, then A–Z
@@ -90,6 +93,7 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
                   type="button"
                   class="glossary__term-btn"
                   data-term={item.term}
+                  data-slug={slugify((item.term ?? "").replace(/<[^>]*>/g, "").trim())}
                 >
                   {item.term}
                 </button>
@@ -100,19 +104,28 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
       })}
     </div>
 
-    <dialog id="glossary-modal" class="glossary-modal" aria-labelledby="glossary-modal-title" aria-describedby="glossary-modal-definition">
-      <div class="glossary-modal__inner">
-        <div class="glossary-modal__head">
-          <h2 id="glossary-modal-title" class="glossary-modal__title"></h2>
-          <button type="button" class="glossary-modal__close" aria-label="Close definition">×</button>
+    <dialog id="glossaryModal" class="glossaryModal">
+      <div class="glossaryModal__shell">
+        <div class="glossaryModal__top">
+          <div class="glossaryModal__title" aria-live="polite"></div>
+          <button class="glossaryModal__close" aria-label="Close" type="button">✕</button>
         </div>
-        <div id="glossary-modal-definition" class="glossary-modal__body"></div>
+
+        <div id="modalBody" class="glossaryModal__body"></div>
       </div>
     </dialog>
   </main>
 
   <script is:inline define:vars={{ glossaryJson }}>
     (function () {
+      function setFixedHeaderVar() {
+        var header = document.querySelector("header") || document.querySelector("[data-site-header]") || document.querySelector("#header");
+        var h = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
+        document.documentElement.style.setProperty("--fixed-header", h + "px");
+      }
+      setFixedHeaderVar();
+      window.addEventListener("resize", setFixedHeaderVar);
+
       var ALLOWED_TAGS = ["P", "BR", "B", "STRONG", "I", "EM", "UL", "OL", "LI", "DIV", "SPAN", "A"];
       var ALLOWED_ATTRS = ["href", "title", "target", "rel", "class"];
 
@@ -174,18 +187,10 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
         console.error("Failed to parse glossary JSON", e);
       }
 
-      var dialog = document.getElementById("glossary-modal");
-      var titleEl = document.getElementById("glossary-modal-title");
-      var bodyEl = document.getElementById("glossary-modal-definition");
-      var closeBtn = dialog ? dialog.querySelector(".glossary-modal__close") : null;
-
-      function openModal(term, definition) {
-        if (!dialog || !titleEl || !bodyEl) return;
-        titleEl.textContent = term || "";
-        bodyEl.innerHTML = sanitizeHTML(definition || "");
-        dialog.showModal();
-        if (closeBtn) closeBtn.focus();
-      }
+      var dialog = document.getElementById("glossaryModal");
+      var modalBody = document.getElementById("modalBody");
+      var modalTitleEl = document.querySelector(".glossaryModal__title");
+      var closeBtn = dialog ? dialog.querySelector(".glossaryModal__close") : null;
 
       function closeModal() {
         dialog?.close();
@@ -193,10 +198,34 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
 
       document.querySelectorAll("button[data-term]").forEach(function (btn) {
         btn.addEventListener("click", function () {
-          const term = btn.getAttribute("data-term") || "";
-          const item = terms.find(function (t) { return t.term === term; });
-          const definition = item ? item.definition : "";
-          openModal(term, definition);
+          const slug = btn.getAttribute("data-slug") || "";
+          if (!dialog || !modalBody) return;
+          dialog.showModal();
+          modalBody.innerHTML = "<p>Loading...</p>";
+          if (modalTitleEl) modalTitleEl.textContent = "";
+          if (closeBtn) closeBtn.focus();
+          fetch("/glossary/modal/" + slug + "/")
+            .then(function (res) { return res.text(); })
+            .then(function (html) {
+              var doc = new DOMParser().parseFromString(html, "text/html");
+              var container =
+                doc.querySelector("main.glossaryEntry") ||
+                doc.querySelector("[data-glossary-entry]");
+
+              modalBody.innerHTML = container ? container.outerHTML : html;
+
+              var h1 = modalBody.querySelector(".glossaryEntry h1, .glossaryEntry h2, h1, h2");
+              var title = h1 ? h1.textContent.trim() : "";
+              if (modalTitleEl) modalTitleEl.textContent = title;
+
+              modalBody.querySelectorAll("img").forEach(function (img) {
+                img.style.maxWidth = "100%";
+                img.style.height = "auto";
+              });
+            })
+            .catch(function () {
+              modalBody.innerHTML = "<p>Error loading entry.</p>";
+            });
         });
       });
 
@@ -354,79 +383,126 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
       outline-offset: 2px;
     }
 
-    /* Modal */
-    .glossary-modal {
-      max-width: 90vw;
-      width: 520px;
-      max-height: 85vh;
-      padding: 0;
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      border-radius: 16px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    /* Glossary modal – below fixed header, body scrolls */
+    dialog.glossaryModal {
+      position: fixed;
+      top: calc(var(--fixed-header, 0px) + 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(900px, 92vw);
+      max-height: calc(100vh - var(--fixed-header, 0px) - 24px);
+      margin: 0;
+      padding: 0 !important;
+      border: 0;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #fff;
+      z-index: 99999;
     }
 
-    .glossary-modal::backdrop {
-      background: rgba(0, 0, 0, 0.4);
+    dialog.glossaryModal::backdrop {
+      background: rgba(0, 0, 0, 0.45);
     }
 
-    .glossary-modal__inner {
+    .glossaryModal__shell {
       display: flex;
       flex-direction: column;
-      max-height: 85vh;
+      height: 100%;
+      min-height: 0;
+      padding: 0 !important;
+      margin: 0 !important;
     }
 
-    .glossary-modal__head {
+    /* Top section hidden; only floating close button shown */
+    dialog.glossaryModal .glossaryModal__top {
       display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 1.25rem 1.25rem 0.5rem;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-      flex-shrink: 0;
-    }
-
-    .glossary-modal__title {
+      flex: 0 0 auto;
+      position: relative;
+      height: 0;
+      min-height: 0;
+      padding: 0;
       margin: 0;
-      font-size: 1.35rem;
-      line-height: 1.3;
-      flex: 1;
-    }
-
-    .glossary-modal__close {
-      flex-shrink: 0;
-      width: 44px;
-      height: 44px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
       border: none;
-      border-radius: 12px;
-      background: rgba(0, 0, 0, 0.06);
-      font-size: 1.5rem;
+      background: transparent;
+      overflow: visible;
+    }
+
+    dialog.glossaryModal .glossaryModal__title {
+      display: none !important;
+    }
+
+    dialog.glossaryModal .glossaryModal__close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+      margin: 0;
+      width: 40px;
+      height: 40px;
       line-height: 1;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      background: #fff;
       cursor: pointer;
-      transition: background 0.15s ease;
     }
 
-    .glossary-modal__close:hover {
-      background: rgba(0, 0, 0, 0.1);
+    dialog.glossaryModal .glossaryModal__body {
+      flex: 1 1 auto;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 !important;
+      padding: 10px 16px 18px;
+      padding-top: 10px !important;
+      min-height: 0;
     }
 
-    .glossary-modal__close:focus {
-      outline: 2px solid rgba(0, 0, 0, 0.35);
-      outline-offset: 2px;
+    .glossaryModal__body > :first-child {
+      margin-top: 0 !important;
     }
 
-    .glossary-modal__body {
-      padding: 1rem 1.25rem 1.25rem;
-      overflow-y: auto;
-      line-height: 1.5;
-      word-break: break-word;
+    .glossaryModal__body :global(main.glossaryEntry) {
+      margin-top: 0 !important;
+      padding-top: 0 !important;
     }
 
-    .glossary-modal__body a {
-      color: inherit;
-      text-decoration: underline;
+    dialog.glossaryModal .glossaryModal__body :global(.glossaryEntry h1) {
+      margin-top: 0;
+      display: none;
+    }
+
+    dialog.glossaryModal .glossaryModal__body :global(.two-col) {
+      display: grid;
+      grid-template-columns: minmax(220px, 360px) 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (max-width: 640px) {
+      dialog.glossaryModal .glossaryModal__body :global(.two-col) {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    dialog.glossaryModal .glossaryModal__body :global(img) {
+      max-width: 100%;
+      height: auto;
+      max-height: 45vh;
+      object-fit: contain;
+    }
+
+    dialog.glossaryModal .glossaryModal__body :global(.back-link) {
+      display: none;
+    }
+
+    .glossaryModal__body :global(*) {
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .glossaryModal__body :global(video),
+    .glossaryModal__body :global(iframe) {
+      max-width: 100% !important;
+      height: auto !important;
     }
   </style>
 </Layout>

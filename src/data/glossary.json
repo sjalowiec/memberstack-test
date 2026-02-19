@@ -4,7 +4,7 @@
     "english": "#1 Card",
     "alt": "",
     "example": "Basic \u0022utility\u0022 punchcard and stitch pattern that has a variety of uses.",
-    "image": "/images/glossary/#1-pattern-card-machine-knitting.jpg",
+    "image": "/images/glossary/pattern-card-machine-knitting.jpg",
     "imageAlt": "Machine knitting pattern card labeled #1",
     "imageDescription": "#1 Pattern Card for Machine Knitting",
     "helpInfo": "\u003Cdiv class=\u0022row\u0022\u003E\r\n    \u003Cdiv class=\u0022col-sm-4 col-sm-offset-1 col-xs-10\u0022\u003EThis stitch pattern is often referred to as the #1 card and was included with all of the punchcard packs that came with knitting machines.\u003Cbr\u003E\u003Cbr\u003EIt offers a lot of texture and can be used as a substitute for hand knitting garter or seed stitch.\u003Cbr\u003E\u003Cbr\u003EEven if you don\u0027t have an automatic patterning machine (punchcard or electronics), the variety of stitch patterns that can be accomplished with this design can be worked by using a 1x1 \u003Ca data-GlossaryId=\u0022290\u0022 class=\u0022glossaryhelp\u0022\u003ENeedle Pusher \u003Ci class=\u0022fa fa-question-circle\u0022 aria-hidden=\u0022true\u0022\u003E\u003C/i\u003E\u003C/a\u003E.\r\n    \u003C/div\u003E\r\n    \u003Cdiv class=\u0022col-sm-4 col-xs-10\u0022\u003E\r\n        \u003Ca href=\u0022/knit/swatch/1307/1884/x-tuck\u0022\u003E\u003Cimg class=\u0022thumbnail zoom\u0022 width=\u0022300\u0022 src=\u0022/images/glossary/1x1tuck6.jpg\u0022\u003E\u003C/a\u003E\r\n        \u003Ca href=\u0022/knit/swatch/1307/1884/x-tuck\u0022\u003E \u003Cb\u003E1x1 Tuck\u003C/b\u003E\u003Cbr\u003E\u003Cem\u003E\u003C/a\u003ETuck every other needle every other row, alternating needles\u003C/em\u003E\r\n    \u003C/div\u003E\r\n\u003C/div\u003E",
@@ -435,7 +435,7 @@
   },
   {
     "id": 675,
-    "english": "BL1 Brother Link USB \u003Csmall\u003E\u003Cem\u003EDAK cable\u003C/em\u003E\u003C/small\u003E",
+    "english": "BL1 Brother Link USB Cable",
     "alt": "",
     "example": "",
     "image": "/images/glossary/cableBL1.jpg",
@@ -443,7 +443,7 @@
     "imageDescription": "",
     "helpInfo": "\u003Cstyle\u003E\r\n.yellow_highlight {\r\n\r\nbackground: linear-gradient(rgba(255,255,255,0) 55%,#ffff00 45%,#ffff00);\r\n}\r\n\u003C/style\u003E\r\n\r\n\r\nThe Brother Link 5 with USB connection is designed to connect DesignaKnit to the following \u003Cbr\u003E\r\n \u003Cspan class=\u0022yellow_highlight\u0022\u003EBrother knitting machines: KH940, KH950i, PPD (KH900, CK35), CompuKnit IV. Interactive Knitting\u003C/span\u003E\u003Cbr\u003E\u003Cbr\u003E\r\n\u003Cul class=\u0022bullets col padding-50px-left\u0022\u003E\r\n\u003Cli\u003EUpload stitch patterns from the knitting machine to DesignaKnit\u003C/li\u003E\r\n\u003Cli\u003EDownload from DesignaKnit to the knitting machine\u003C/li\u003E\r\n\u003Cli\u003EInteractive Knitting connection\u003C/li\u003E\r\n\u003C/ul\u003E",
     "icon": "",
-    "dak": true,
+    "dak": false,
     "dak9": false,
     "passap": false,
     "bettyBot": false,
@@ -451,24 +451,7 @@
     "metaDescription": "",
     "category": "DAK Cable"
   },
-  {
-    "id": 674,
-    "english": "BL1 Brother Link1 USB",
-    "alt": "",
-    "example": "",
-    "image": "/images/glossary/bl1-brother-link1-usb-machine-knitting.jpg",
-    "imageAlt": "BL1 Brother Link1 USB for connecting DesignaKnit to machines",
-    "imageDescription": "BL1 Brother Link1 USB for uploading and downloading stitch patterns between DesignaKnit and Brother machines",
-    "helpInfo": "\u003Cstyle\u003E\r\n.yellow_highlight {\r\n\r\nbackground: linear-gradient(rgba(255,255,255,0) 55%,#ffff00 45%,#ffff00);\r\n}\r\n\u003C/style\u003E\r\n\r\n\r\nThe Brother Link 1 with USB connection is designed to connect DesignaKnit to the following \u003Cbr\u003E\r\n \u003Cspan class=\u0022yellow_highlight\u0022\u003EBrother knitting machines: KH940, KH950i, PPD,CompuKnit IV. Interactive Knitting (KH900,CK35) Also FB100 emulator\u003C/span\u003E\u003Cbr\u003E\u003Cbr\u003E\r\n\u003Cul class=\u0022bullets col padding-50px-left\u0022\u003E\r\n\u003Cli\u003EUpload stitch patterns from the knitting machine to DesignaKnit\u003C/li\u003E\r\n\u003Cli\u003EDownload from DesignaKnit to the knitting machine\u003C/li\u003E\r\n\u003Cli\u003EInteractive Knitting connection\u003C/li\u003E\r\n\u003C/ul\u003E",
-    "icon": "",
-    "dak": false,
-    "dak9": false,
-    "passap": false,
-    "bettyBot": true,
-    "metaTitle": "BL1 Brother Link1 USB: Definition in Machine Knitting",
-    "metaDescription": "BL1 Brother Link1 USB connects DesignaKnit to Brother machines, enabling easy upload and download of stitch patterns for interactive knitting.",
-    "category": "None"
-  },
+  
   {
     "id": 672,
     "english": "BL5 Brother Link 5 USB",
@@ -487,24 +470,7 @@
     "metaDescription": "The BL5 Brother Link 5 USB connects DesignaKnit to Brother knitting machines, enabling uploading and downloading of stitch patterns for interactive knitting.",
     "category": "None"
   },
-  {
-    "id": 670,
-    "english": "BL5 Brother Link USB\u003Csmall\u003E\u003Cem\u003E | DAK cable\u003C/em\u003E\u003C/small\u003E",
-    "alt": "",
-    "example": "",
-    "image": "/images/glossary/cableBL1.jpg",
-    "imageAlt": "",
-    "imageDescription": "",
-    "helpInfo": "\u003Cstyle\u003E\r\n.yellow_highlight {\r\n\r\nbackground: linear-gradient(rgba(255,255,255,0) 55%,#ffff00 45%,#ffff00);\r\n}\r\n\u003C/style\u003E\r\n\r\n\r\nThe Brother Link 5 with USB connection is designed to connect DesignaKnit to the following \u003Cbr\u003E\r\n \u003Cspan class=\u0022yellow_highlight\u0022\u003EBrother knitting machines: KH970, KH965i, KH930\u003C/span\u003E\u003Cbr\u003E\u003Cbr\u003E\r\n\u003Cul class=\u0022bullets col padding-50px-left\u0022\u003E\r\n\u003Cli\u003EUpload stitch patterns from the knitting machine to DesignaKnit\u003C/li\u003E\r\n\u003Cli\u003EDownload from DesignaKnit to the knitting machine\u003C/li\u003E\r\n\u003Cli\u003EInteractive Knitting connection\u003C/li\u003E\r\n\u003C/ul\u003E",
-    "icon": "",
-    "dak": true,
-    "dak9": false,
-    "passap": false,
-    "bettyBot": false,
-    "metaTitle": "",
-    "metaDescription": "",
-    "category": "DAK Cable"
-  },
+  
   {
     "id": 300,
     "english": "Blocking Wires",
@@ -2779,7 +2745,7 @@
     "english": "Fashion Lace",
     "alt": "",
     "example": "Fashion lace: Transfers occur in \u003Cb\u003Edifferent directions\r\non the same row\u003C/b\u003E, requiring multiple passes\r\nof the carriage per row.",
-    "image": "/challenge/images/v2/98/fashion_lace1.jpg",
+    "image": "/images/glossary/fashion_lace.jpg",
     "helpInfo": "This is a Silver Reed/Studio term for use with the lace carriage.\u003Cbr\u003E\r\nFashion lace is the opposite of \u0022Simple Lace\u0022 where the single stitch transfers per row are all in the same direction.  The stitches are transferred AND KNIT with the same pass of the carriage.\u003Cbr\u003EThis is controlled by the carriage settings. \u0022P\u0022 for Fashion Lace and \u0022L\u0022 for Simple Lace.\r\n\r\n\u003Cdiv class=\u0022row\u0022\u003E\r\n\u003Cdiv class=\u0022col-sm-4 col-xs-10 col-xs-offset-1\u0022\u003E\r\n\r\n\u003Cimg class=\u0022img-responsive\u0022 src=\u0022/path/images/151/lace2.jpg\u0022\u003E\r\n\r\n\r\n\u003C/div\u003E\r\n\r\n\u003Cdiv class=\u0022col-sm-4 col-xs-10 col-xs-offset-1\u0022\u003E\r\n\r\n\r\n\u003Ca href=\u0022/classrooms/138/lace-on-the-machine\u0022\u003E\u003Cimg class=\u0022img-thumbnail\u0022 src=\u0022/path/images/138/lace_classroom.jpg\u0022\u003E\u003Cbr\u003E\r\n\u003Cdiv class=\u0022text-center\u0022\u003E\u003Cb\u003E\r\nClassroom: Lace\u003C/b\u003E\u003C/div\u003E\r\n\u003C/a\u003E\r\n\u003C/div\u003E\r\n\u003C/div\u003E",
     "icon": "",
     "dak": false,
@@ -4093,7 +4059,7 @@
     "english": "KCI / KCII",
     "alt": "",
     "example": "Brother Machines: Carriage setting to control needle selection.",
-    "image": "/challenge/images/v2/103/change_knob_gif.gif",
+    "image": "/images/glossary/change_knob_gif.gif",
     "helpInfo": "\u003Cdiv class=\u0022row\u0022\u003E\r\n\u003Cdiv class=\u0022col-sm-4 col-xs-10 col-xs-offset-1\u0022\u003EWhen setting up to knit in pattern, use the KCI or KCII setting to tell the machine you will be working in pattern.  This alerts the machine to read the punchcard or electronics.\u003Cbr\u003E\r\n\u003Cul\u003E\r\n\u003Cli\u003EKCI: End needles remain in \u0022D\u0022 Position\u003C/li\u003E\r\n\u003Cli\u003EKCII: End needles follow the stitch pattern\u003C/li\u003E\r\n\u003C/ul\u003E\r\n\r\n\r\n\u003Cbutton data-vimeoid=\u0022718492073\u0022 class=\u0022subvideopopup btn btn-xs btn-default\u0022\u003E\u003Ci class=\u0022fa fa-youtube-play\u0022 aria-hidden=\u0022true\u0022\u003E\u003C/i\u003E End Needle Selection: Brother Machines\u003C/button\u003E\r\n\r\n\u003C/div\u003E\r\n\u003Cdiv class=\u0022col-sm-4 col-xs-10 col-xs-offset-1\u0022\u003E\r\n\u003Ca href=\u0022/challenge/72/automatic-stitch-patterning\u0022\u003E\u003Cimg class=\u0022img-thumbnail\u0022 src=\u0022/challenge/images//v2/72/automatic_stitch.jpg\u0022\u003E\u003Cbr\u003E\r\n\u003Ccenter\u003E\u003Cb\u003ECourse:\u003C/b\u003E\u003Cbr\u003E\r\nAutomatic Stitch Patterning\u003C/center\u003E\r\n\u003C/a\u003E\r\n\u003C/div\u003E\r\n\u003C/div\u003E",
     "icon": "",
     "dak": false,
@@ -5233,7 +5199,7 @@
     "english": "Measure Edge",
     "alt": "OPD Tool",
     "example": "Measure CLOCKWISE around the edge of a piece between any 2 selected points.\u003Cbr\u003E\u003Cbr\u003E\r\n\u003Cimg class=\u0022img-thumbnail\u0022 src=\u0022/images/glossary/ctrl_f8.png\u0022\u003E",
-    "image": "/images/glossary/measure_edge12.png",
+    "image": "/images/glossary/Measure_edge12.png",
     "helpInfo": "\u003Cdiv class=\u0022padding-10px-left\u0022\u003E\r\n\u003Cul\u003E\r\n\u003Cli\u003EThe secret to this tool is remembering that you measure \u003Cb\u003ECLOCKWISE\u003C/b\u003E around the piece.\u003C/li\u003E\r\n\u003Cli\u003EYou must select the tool each time (to prevent mistakenly selecting points, it automatically turns off with each click)\u003C/li\u003E\r\n\u003Cli\u003EThe displayed measurement is displayed in sts/row or inches/cm depending on the ruler setting\u003C/li\u003E\r\n\u003Cli\u003EYou can measure betwen individual points or measure across multiple points (example: Measure a cardigan front edge, including any shaping points)\u003C/li\u003E\r\n\u003Cli\u003ETo turn off the red measurement indicator, re-click on the first point selected\u003C/li\u003E\r\n\u003C/ul\u003E\r\n\u003C/div\u003E\r\n\u003Cbr\u003E\u003Cbr\u003E\r\n\u003Ccenter\u003E\u003Cimg class=\u0022img-thumbnail\u0022 src=\u0022/images/glossary/measure_edge_gif1.gif\u0022\u003E\u003C/center\u003E\r\n",
     "icon": "2_measure_edge.jpg",
     "dak": true,
@@ -5247,7 +5213,7 @@
     "english": "Memory Drum (Wheel)",
     "alt": "",
     "example": "Main bed carriage component that \u0022reads\u0022 and \u0022memorizes\u0022 punchcard instructions. (Silver, Singer, Studio)",
-    "image": "/images/glossary/memory_wheel.jpg",
+    "image": "/images/glossary/Memory_wheel.jpg",
     "helpInfo": "This is the heart of automatic patterning on a Silver/Singer/Studio punchcard machine. As the carriage passes the punchcard mechanism, the Memory Drums record the position of the holes in the card.  On the return pass of the carriage, the appropriate needles are selected and positioned according to the Cam Setting (stitch technique).\u003Cbr\u003E\u003Cbr\u003E\r\nNOTE: \u003Cem\u003EOften on machines that have been stored for a long time the memory drums can be locked up.  The drum should turn freely for stitch patterning to occur.\u003C/em\u003E\u003Cbr\u003E\u003Cbr\u003E\u003Cbr\u003E\r\nNOTE: The memory drum \u0022remembers\u0022 previous positioning even if you remove the punchcard.  To clear the memory drum memory, remove the punchcard and leave the mechanism engaged. Pass the carriage a few times to reset it, then cancel patterning.\u003Cbr\u003E\r\n\u003Cimg class=\u0022img-thumbnail center-block\u0022 src=\u0022/images/glossary/memory_wheel_gif.gif\u0022\u003E",
     "icon": "",
     "dak": false,
@@ -5582,19 +5548,7 @@
     "bettyBot": false,
     "category": "Standard Garment Styling"
   },
-  {
-    "id": 461,
-    "english": "Neck Styling  | \u003Csmall\u003E\u003Csmall\u003E\u003Cem\u003ESGS Tool\u003C/em\u003E\u003C/small\u003E\u003C/small\u003E",
-    "alt": "",
-    "example": "",
-    "image": "",
-    "helpInfo": "\u003Cdiv class=\u0022row\u0022\u003E\r\n\u003Cdiv class=\u0022col-sm-4 col-xs-10 col-xs-offset-1\u0022\u003ETEXT HERE\r\n\r\n\u003Cbutton data-vimeoid=\u0022XXXXX\u0022 class=\u0022videopopup btn btn-xs btn-default\u0022\u003E\u003Ci class=\u0022fa fa-youtube-play\u0022 aria-hidden=\u0022true\u0022\u003E\u003C/i\u003E VIDEO TITLE HERE\u003C/button\u003E\r\n\r\n\u003C/div\u003E\u003Cdiv class=\u0022container\u0022\u003E\r\n\u003Cdiv class=\u0022text-center\u0022\u003E\r\n\t\u003Ch5\u003E3 ways to edit the Sleeve Dimensions\u003C/h5\u003E\r\n\t\u003Cdiv class=\u0022card-deck\u0022\u003E\r\n\t\t\u003Cdiv class=\u0022card bg-light\u0022\u003E\r\n\t\t\t\u003Cdiv class=\u0022card-body text-center\u0022\u003E\r\n\t\t\t\t\u003Cp class=\u0022card-text\u0022\u003E\u003Cimg src=\u0022/images/glossary/sleeve_styling_40.jpg\u0022\u003E\u003C/p\u003E\r\n\t\t\t\u003C/div\u003E\r\n\t\t\u003C/div\u003E\r\n\t\t\u003Cdiv class=\u0022card bg-light\u0022\u003E\r\n\t\t\t\u003Cdiv class=\u0022card-body text-center\u0022\u003E\r\n\t\t\t\t\u003Cp class=\u0022card-text\u0022\u003E\u003Cimg class=\u0022img-responsive\u0022 src=\u0022/images/glossary/sleeve_styling_menu.jpg\u0022\u003E\u003C/p\u003E\r\n\t\t\t\u003C/div\u003E\r\n\t\t\u003C/div\u003E\r\n\t\t\u003Cdiv class=\u0022card bg-light\u0022\u003E\r\n\t\t\t\u003Cdiv class=\u0022card-body text-center\u0022\u003E\r\n\t\t\t\t\u003Cp class=\u0022card-text\u0022\u003E\u003Cimg src=\u0022/images/glossary/double_click.png\u0022\u003E\u003Cbr\u003EDouble Click\u003C/p\u003E\r\n\t\t\t\u003C/div\u003E\r\n\t\t\u003C/div\u003E\r\n\t\u003C/div\u003E\r\n\u003C/div\u003E\r\n\u003C/div\u003E\r\n\u003Cbr\u003E\u003Cbr\u003E\r\n\u003Ccenter\u003E\r\n\u003Cimg class=\u0022img-thumbnail\u0022 src=\u0022/images/glossary/sleeve_styling_gif.gif\u0022\u003E\u003C/center\u003E\r\n\u003Cdiv class=\u0022col-sm-4 col-xs-10 col-xs-offset-1\u0022\u003E\r\n\u003Ca href=\u0022/challenge/33/course/XXX\u0022\u003E\u003Cimg class=\u0022img-thumbnail\u0022 src=\u0022/challenge/images/XXX\u0022\u003E\u003Cbr\u003E\r\n\u003Ccenter\u003E\u003Cb\u003ECourse / Classroom:\u003C/b\u003E\u003Cbr\u003E\r\nCOURSE NAME/ CLASSROOM NAME\u003C/center\u003E\r\n\u003C/a\u003E\r\n\u003C/div\u003E\r\n\u003C/div\u003E",
-    "dak": false,
-    "dak9": false,
-    "passap": false,
-    "bettyBot": true,
-    "category": "None"
-  },
+  
   {
     "id": 193,
     "english": "Needle",
@@ -6771,21 +6725,7 @@
     "bettyBot": true,
     "category": "None"
   },
-  {
-    "id": 692,
-    "english": "Premium Membership",
-    "alt": "",
-    "example": "",
-    "image": "/images/logos/KIN/kin_logo_360x80.jpg",
-    "helpInfo": "Knit it Now offers 2 levels of membership:\u003Cul\u003E\r\n\u003Cli\u003E\u003Cb\u003EBasic\u003C/b\u003E\u003Cbr\u003E\r\nIncludes the Learning Library, patterns, Premium Tools and more\u003C/li\u003E\r\n\u003Cli\u003E\u003Cb\u003EPREMIUM\u003C/b\u003E\u003Cbr\u003E\r\nIncludes everything in the basic membership \u003Cspan class=\u0022yellow_highlight\u0022\u003EPLUS access to ALL 30\u002B Courses\u003C/span\u003E\u003C/li\u003E\r\n\u003C/ul\u003E\r\n\u003Ccenter\u003E\u003Ca class=\u0022btn btn-primary\u0022 href=\u0022https://www.knititnow.com/plans\u0022 role=\u0022button\u0022\u003EBecome a member\u003C/a\u003E\u003C/center\u003E",
-    "icon": "",
-    "dak": false,
-    "dak9": false,
-    "passap": false,
-    "bettyBot": true,
-    "category": "Miscellaneous"
-  },
-  {
+    {
     "id": 198,
     "english": "Preparation Row",
     "german": "Zubereitung Reihe",
@@ -8095,26 +8035,13 @@
     "example": "",
     "image": "/images/glossary/screen_link.jpg",
     "helpInfo": "\u003Cstyle\u003E\r\n.yellow_highlight {\r\nbackground: linear-gradient(rgba(255,255,255,0) 55%,#ffff00 45%,#ffff00);\r\n}\r\n\u003C/style\u003E\r\n\r\nAllows \u003Cb\u003EInteractive Knitting\u003C/b\u003E on \u003Cspan class=\u0022yellow_highlight\u0022\u003Eany non-electronic machine including plastic bed machines\u003C/span\u003E even the plastic bed machines like the LK-150, KX-350, KH-400 and passap Vario, etc\u003Cbr\u003E\u003Cbr\u003E\r\nConnect the cable to you PC. The other end is velcro\u0027d to the main bed. The magnet (provided) is attached to the carriage. The cable senses the magnet as it passes by on the carriage and forwards the pattern in DesignaKnit by one row.\u003Cbr\u003E\u003Cbr\u003E\u003Ci class=\u0022fa fa-youtube-play\u0022 aria-hidden=\u0022true\u0022\u003E\u003C/i\u003E DAK and Manual (non-patterning) machines\u003Cbr\u003E\r\n \u003Cdiv class=\u0022videopopup\u0022 data-videotitle=\u0022dak_lk150\u0022 data-vimeoid=\u0022333139920\u0022\u003E\r\n\t\t\u003Cimg class=\u0022img-thumbnail\u0022 src=\u0022https://i.vimeocdn.com/video/779034939-755ee379da603dff42dcaf7cfce8fe8366506f479853795f9e149ec541a51b58-d_1280x720?r=pad\u0022\u003E\r\n\t\t\u003Cdiv class=\u0022imagecenter text-center\u0022\u003E\u003Cbutton class=\u0022btn btn-sm\u0022\u003E\u003Ci class=\u0022fa fa-youtube-play fa-2x learn\u0022 aria-hidden=\u0022true\u0022\u003E\u003C/i\u003E\u003C/button\u003E\u003C/div\u003E\t\t\r\n\u003C/div\u003E",
-    "dak": true,
+    "dak": false,
     "dak9": false,
     "passap": false,
     "bettyBot": false,
     "category": "None"
   },
-  {
-    "id": 676,
-    "english": "Screen Link SL-USB \u003Cem\u003E\u003Csmall\u003E | DAK Cable\u003C/small\u003E\u003C/em\u003E",
-    "alt": "",
-    "example": "",
-    "image": "/images/glossary/screen_link.jpg",
-    "helpInfo": "\u003Cstyle\u003E\r\n.yellow_highlight {\r\n\r\nbackground: linear-gradient(rgba(255,255,255,0) 55%,#ffff00 45%,#ffff00);\r\n}\r\n\u003C/style\u003E\r\n\r\nAllows \u003Cb\u003EInteractive Knitting\u003C/b\u003E on \u003Cspan class=\u0022yellow_highlight\u0022\u003Eany non-electronic machine including plastic bed machines\u003C/span\u003E even the plastic bed machines like the LK-150, KX-350, KH-400 and passap Vario, etc\u003Cbr\u003E\u003Cbr\u003E\r\nConnect the cable to you PC. The other end is velcro\u0027d to the main bed. The magnet (provided) is attached to the carriage. The cable senses the magnet as it passes by on the carriage and forwards the pattern in DesignaKnit by one row.\u003Cbr\u003E\u003Cbr\u003E\u003Ci class=\u0022fa fa-youtube-play\u0022 aria-hidden=\u0022true\u0022\u003E\u003C/i\u003E DAK and Manual (non-patterning) machines\u003Cbr\u003E\r\n \u003Cdiv class=\u0022videopopup\u0022 data-videotitle=\u0022dak_lk150\u0022 data-vimeoid=\u0022333139920\u0022\u003E\r\n\t\t\u003Cimg class=\u0022img-thumbnail\u0022 src=\u0022https://i.vimeocdn.com/video/779034939-755ee379da603dff42dcaf7cfce8fe8366506f479853795f9e149ec541a51b58-d_1280x720?r=pad\u0022\u003E\r\n\t\t\u003Cdiv class=\u0022imagecenter text-center\u0022\u003E\u003Cbutton class=\u0022btn btn-sm\u0022\u003E\u003Ci class=\u0022fa fa-youtube-play fa-2x learn\u0022 aria-hidden=\u0022true\u0022\u003E\u003C/i\u003E\u003C/button\u003E\u003C/div\u003E\t\t\r\n\u003C/div\u003E",
-    "icon": "",
-    "dak": false,
-    "dak9": false,
-    "passap": false,
-    "bettyBot": true,
-    "category": "None"
-  },
+  
   {
     "id": 605,
     "english": "Seaming Stitches",

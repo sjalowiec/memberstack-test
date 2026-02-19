@@ -1,0 +1,442 @@
+---
+interface Props {
+  entry: any;
+  relatedTermsData?: Array<{ slug: string; term: string }>;
+}
+
+const { entry, relatedTermsData = [] } = Astro.props;
+
+const termLabel = (entry?.english ?? "").toString().replace(/<[^>]*>/g, "").trim();
+const imageSrc = entry?.image
+  ? (entry.image.startsWith("http") || entry.image.startsWith("/")
+    ? entry.image
+    : `/images/glossary/${String(entry.image).replace(/^\.?\//, "")}`)
+  : "";
+---
+
+<style>
+  .glossary-entry {
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-top: 0;
+    padding: 0 20px 60px;
+    padding-top: 0;
+  }
+
+  .glossary-entry > :first-child {
+    margin-top: 0 !important;
+  }
+
+  .glossary-entry h1 {
+    margin-top: 0 !important;
+  }
+
+  .glossary-entry__title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #1f2937;
+    margin: 0 0 0.75rem;
+    line-height: 1.2;
+  }
+
+  .back-link {
+    display: inline-block;
+    color: var(--kbm-green);
+    text-decoration: none;
+    font-weight: 600;
+    margin-bottom: 2rem;
+  }
+
+  .back-link:hover {
+    text-decoration: underline;
+  }
+
+  .two-col {
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    align-items: flex-start;
+    margin-top: 1rem;
+  }
+
+  .two-col .image-col {
+    flex-shrink: 0;
+    width: 320px;
+    max-width: 320px;
+  }
+
+  .two-col .glossary-image {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    border-radius: 12px;
+    border: 1px solid #e2e6df;
+    display: block;
+    object-fit: cover;
+  }
+
+  .two-col .content-col {
+    min-width: 0;
+    flex: 1;
+    max-width: 680px;
+  }
+
+  .term-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #1f2937;
+    margin: 0 0 0.75rem;
+    line-height: 1.2;
+  }
+
+  .term-title small {
+    font-size: 0.7em;
+    font-weight: 500;
+    opacity: 0.8;
+  }
+
+  .term-title em {
+    font-style: italic;
+  }
+
+  .term-intro {
+    margin: 0.25rem 0 1rem;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #2a2a2a;
+  }
+
+  .term-body {
+    margin-top: 1.5rem;
+    padding: 1.75rem;
+    border-radius: 16px;
+    background: #ffffff;
+    border: 1px solid #e6eadf;
+  }
+
+  .term-tooltip {
+    font-size: 1.2rem;
+    color: #6b7280;
+    margin: 0 0 1.5rem;
+    font-style: italic;
+  }
+
+  .term-description {
+    margin-bottom: 1.5rem;
+  }
+
+  .term-example {
+    background: #f9fafb;
+    border-left: 4px solid var(--kbm-green);
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+  }
+
+  .term-example-label {
+    font-weight: 700;
+    color: var(--kbm-green);
+    margin-bottom: 0.5rem;
+  }
+
+  .term-example-text {
+    color: #374151;
+    line-height: 1.6;
+    white-space: pre-line;
+  }
+
+  .term-promo {
+    margin: 1.75rem 0;
+    padding-left: 1rem;
+    border-left: 3px solid var(--kbm-green);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #374151;
+  }
+
+  .term-promo strong {
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .term-promo :global(a),
+  .term-promo :global(a:visited) {
+    color: #52682d !important;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .term-promo :global(a:hover),
+  .term-promo :global(a:focus-visible) {
+    opacity: 0.85;
+  }
+
+  .glossary-example-full {
+    max-width: 1200px;
+    margin: 3rem auto 0;
+    padding: 0 20px;
+  }
+
+  .glossary-example-full .term-example {
+    background: transparent;
+    border-left: none;
+    padding: 0;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .glossary-example-full .term-example-label {
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #52682d;
+    margin: 0 0 0.6rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(82, 104, 45, 0.18);
+  }
+
+  .glossary-example-full .term-example-text {
+    color: #374151;
+    line-height: 1.7;
+    white-space: normal;
+    max-width: 900px;
+  }
+
+  .related-terms {
+    margin: 1.5rem 0;
+    padding: 0;
+  }
+
+  .related-terms-label {
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+  }
+
+  .related-terms-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .related-term-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--kbm-green);
+    font-weight: 600;
+    font-size: 1rem;
+    transition: opacity 0.2s;
+  }
+
+  .related-term-link:hover {
+    opacity: 0.7;
+  }
+
+  .related-term-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .member-only,
+  .non-member-cta {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #e2e6df;
+  }
+
+  .member-only {
+    background: #f6f8f2;
+  }
+
+  .member-only h3 {
+    margin: 0 0 1rem;
+    color: #1f2937;
+    font-size: 1.3rem;
+  }
+
+  .video-player {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: 8px;
+    background: #000;
+  }
+
+  .video-player iframe,
+  .video-player video {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+  }
+
+  .non-member-cta {
+    background: linear-gradient(135deg, #f0f4ea 0%, #ffffff 100%);
+    text-align: center;
+  }
+
+  .non-member-cta p {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+    color: #374151;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    background: var(--kbm-green);
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: background 0.2s;
+  }
+
+  .btn-primary:hover {
+    background: #3f5323;
+  }
+
+  @media (max-width: 768px) {
+    .two-col {
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .two-col .image-col {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .two-col .glossary-image {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      object-fit: cover;
+      border-radius: 12px;
+      display: block;
+      border: 1px solid #e2e6df;
+    }
+
+    .term-title {
+      font-size: 2rem;
+    }
+
+    .term-tooltip {
+      font-size: 1rem;
+    }
+  }
+</style>
+
+<div class="glossary-entry">
+  <h1 class="glossary-entry__title">{entry?.english ?? ""}</h1>
+  <a href="/glossary" class="back-link">← Back to Glossary </a>
+  {entry?.example && (
+    <p class="term-intro">{entry.example}</p>
+  )}
+
+  <div class="term-body">
+    <div class="two-col">
+      {imageSrc && (
+        <div class="image-col">
+          <img
+            class="glossary-image"
+            src={imageSrc}
+            alt={entry?.imageAlt || entry?.english || ""}
+          />
+        </div>
+      )}
+      <div class="content-col">
+        {entry?.tooltip && <p class="term-tooltip"><em>{entry.tooltip}</em></p>}
+
+        <div class="term-description" set:html={entry?.helpInfo ?? ""}></div>
+
+        {entry?.promoText && (
+          <div class="term-promo" set:html={entry.promoText} />
+        )}
+
+        {relatedTermsData && relatedTermsData.length > 0 && (
+          <div class="related-terms">
+            <div class="related-terms-label">Related terms:</div>
+            <div class="related-terms-list">
+              {relatedTermsData.map((relatedTerm: any) => (
+                <a href={`/glossary/${relatedTerm.slug}`} class="related-term-link">
+                  <img
+                    src="/images/glossary/glossary_logo.svg"
+                    alt=""
+                    class="related-term-icon"
+                  />
+                  {relatedTerm.term}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {entry?.videoUrl && (
+          <>
+            {entry?.isMemberOnly ? (
+              <>
+                <div class="member-only" data-member="true" style="display:none;">
+                  <h3>Watch it in action</h3>
+                  <div class="video-player">
+                    {entry.videoUrl.includes('youtube.com') || entry.videoUrl.includes('youtu.be') ? (
+                      <iframe
+                        src={entry.videoUrl.includes('youtube.com/embed') ? entry.videoUrl : entry.videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                        title={`Video: ${termLabel}`}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                      ></iframe>
+                    ) : entry.videoUrl.includes('vimeo.com') ? (
+                      <iframe
+                        src={entry.videoUrl.replace('vimeo.com/', 'player.vimeo.com/video/')}
+                        title={`Video: ${termLabel}`}
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        allowfullscreen
+                      ></iframe>
+                    ) : (
+                      <video controls src={entry.videoUrl}></video>
+                    )}
+                  </div>
+                </div>
+
+                <div class="non-member-cta" data-member="false">
+                  <p>This video is available for members only.</p>
+                  <a href="/subscribe" class="btn-primary">Join Now</a>
+                </div>
+              </>
+            ) : (
+              <div class="member-only">
+                <h3>Watch it in action</h3>
+                <div class="video-player">
+                  {entry.videoUrl.includes('youtube.com') || entry.videoUrl.includes('youtu.be') ? (
+                    <iframe
+                      src={entry.videoUrl.includes('youtube.com/embed') ? entry.videoUrl : entry.videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                      title={`Video: ${termLabel}`}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowfullscreen
+                    ></iframe>
+                  ) : entry.videoUrl.includes('vimeo.com') ? (
+                    <iframe
+                      src={entry.videoUrl.replace('vimeo.com/', 'player.vimeo.com/video/')}
+                      title={`Video: ${termLabel}`}
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      allowfullscreen
+                    ></iframe>
+                  ) : (
+                    <video controls src={entry.videoUrl}></video>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  </div>
+</div>

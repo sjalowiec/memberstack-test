@@ -12,7 +12,7 @@ interface Props {
   skipGlobalHyvor?: boolean;
 }
 
-const { title = "Knit by Machine", description = "Machine knitting tools and patterns", bodyClass = "", skipGlobalHyvor = false } = Astro.props;
+const { title = "Knit it Now", description = "Machine knitting tools and patterns", bodyClass = "", skipGlobalHyvor = false } = Astro.props;
 
 // Determine which header to render based on hostname
 // During build, hostname may be undefined, so we check at runtime
@@ -44,12 +44,16 @@ const isProduction = (import.meta.env.PUBLIC_SITE_ENV || "").toLowerCase() === "
     <meta name="description" content={description} />
 
     <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" href="/favicon.ico" />
+  
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#738C52" />
+ 
+
+    <!-- MemberStack (global; required for glossary lock/unlock) -->
+    <script
+      src="https://static.memberstack.com/scripts/v1/memberstack.js"
+      data-memberstack-app="app_cmfh3d1n802vb0wy706205810">
+    </script>
 
     <!-- Google Analytics (gtag.js) -->
     {import.meta.env.PUBLIC_GA4_ID && (
@@ -155,9 +159,8 @@ const isProduction = (import.meta.env.PUBLIC_SITE_ENV || "").toLowerCase() === "
       </div>
     </div>
     
-    <script src="/scripts/rsk-title-format.js" defer></script>
-    <script src="/scripts/dynamic-tooltips.js" defer></script>
-    <script src="/scripts/pinterest-tabs.js" defer></script>
+    
+   
     {!skipGlobalHyvor && <script async src="https://talk.hyvor.com/embed/embed.js" type="module"></script>}
     
     <!-- Contact Modal Script -->
