@@ -1,0 +1,432 @@
+---
+import Layout from "../../layouts/layout.astro";
+import glossaryRaw from "../../data/glossary.json";
+
+export const prerender = true;
+
+const glossary = Array.isArray(glossaryRaw) ? glossaryRaw : (glossaryRaw as { Glossary?: unknown[] })?.Glossary ?? [];
+const glossaryList = Array.isArray(glossary) ? glossary : [];
+
+const toBool = (v: unknown): boolean =>
+  v === true || v === "true" || v === 1 || v === "1";
+
+const filteredGlossary = glossaryList
+  .filter((t: any) => (t.english ?? t.English ?? "").toString().trim().length > 0)
+  .filter((t: any) => {
+    if (toBool(t.dak)) return false;
+    if (toBool(t.dak9)) return false;
+    return true;
+  })
+  .map((t: any) => {
+    const english = (t.english ?? t.English ?? "").toString().trim();
+    const letter = english[0]?.toUpperCase() ?? "#";
+    return {
+      english,
+      letter: /[A-Z]/.test(letter) ? letter : "#",
+      definition: (t.definition ?? t.helpInfo ?? t.helpinfo ?? t.Helpinfo ?? t.description ?? "").toString().trim(),
+      notes: (t.notes ?? "").toString().trim(),
+      example: (t.example ?? "").toString().trim(),
+    };
+  })
+  .sort((a: { english: string }, b: { english: string }) => a.english.localeCompare(b.english));
+
+const termCount = filteredGlossary.length;
+
+// Group by first letter (A–Z; non-alphabetic under "#")
+const letterMap = new Map<string, { term: string; definition: string }[]>();
+for (const item of filteredGlossary) {
+  const letter = item.letter;
+  if (!letterMap.has(letter)) letterMap.set(letter, []);
+  letterMap.get(letter)!.push({ term: item.english, definition: item.definition });
+}
+
+// Order: # first, then A–Z
+const lettersOrder = ["#", ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
+const lettersWithTerms = lettersOrder.filter((l) => letterMap.has(l));
+
+const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.english, definition: i.definition })));
+---
+
+<Layout>
+  <main class="glossary">
+    <header class="glossary__hero">
+      <div class="glossary__hero-inner">
+        <h1 class="glossary__title">
+          Glossary <span class="glossary__count">({termCount} terms)</span>
+        </h1>
+        <p class="glossary__sub">
+          Browse machine knitting terms from A to Z. Tap a term to view its definition in a popup.
+        </p>
+      </div>
+    </header>
+
+    <nav
+      class="glossary__az"
+      aria-label="Jump to letter A to Z"
+    >
+      {lettersWithTerms.map((letter) => (
+        <a
+          href={letter === "#" ? "#letter-hash" : `#letter-${letter}`}
+          class="az-link"
+          aria-label={`Jump to letter ${letter}`}
+        >
+          {letter}
+        </a>
+      ))}
+    </nav>
+
+    <div class="glossary__sections">
+      {lettersWithTerms.map((letter) => {
+        const id = letter === "#" ? "letter-hash" : `letter-${letter}`;
+        const terms = letterMap.get(letter)!;
+        return (
+          <section id={id} class="glossary__letter-section">
+            <div class="glossary__letter-header">
+              <h2 class="glossary__letter-title">{letter}</h2>
+            </div>
+            <div class="glossary__grid">
+              {terms.map((item) => (
+                <button
+                  type="button"
+                  class="glossary__term-btn"
+                  data-term={item.term}
+                >
+                  {item.term}
+                </button>
+              ))}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+
+    <dialog id="glossary-modal" class="glossary-modal" aria-labelledby="glossary-modal-title" aria-describedby="glossary-modal-definition">
+      <div class="glossary-modal__inner">
+        <div class="glossary-modal__head">
+          <h2 id="glossary-modal-title" class="glossary-modal__title"></h2>
+          <button type="button" class="glossary-modal__close" aria-label="Close definition">×</button>
+        </div>
+        <div id="glossary-modal-definition" class="glossary-modal__body"></div>
+      </div>
+    </dialog>
+  </main>
+
+  <script is:inline define:vars={{ glossaryJson }}>
+    (function () {
+      var ALLOWED_TAGS = ["P", "BR", "B", "STRONG", "I", "EM", "UL", "OL", "LI", "DIV", "SPAN", "A"];
+      var ALLOWED_ATTRS = ["href", "title", "target", "rel", "class"];
+
+      function isExternalHref(href) {
+        if (!href || typeof href !== "string") return false;
+        var t = href.trim().toLowerCase();
+        return t.indexOf("http:") === 0 || t.indexOf("https:") === 0 || t.indexOf("//") === 0;
+      }
+
+      function sanitizeHTML(html) {
+        if (!html || typeof html !== "string") return "";
+        var parser = new DOMParser();
+        var doc = parser.parseFromString("<body>" + html + "</body>", "text/html");
+        var out = document.createElement("div");
+        function walk(parent, node) {
+          if (node.nodeType === Node.TEXT_NODE) {
+            parent.appendChild(document.createTextNode(node.textContent));
+            return;
+          }
+          if (node.nodeType !== Node.ELEMENT_NODE) return;
+          var tag = node.tagName.toUpperCase();
+          if (ALLOWED_TAGS.indexOf(tag) === -1) {
+            for (var i = 0; i < node.childNodes.length; i++) walk(parent, node.childNodes[i]);
+            return;
+          }
+          var el = document.createElement(tag);
+          if (node.attributes && node.attributes.length) {
+            for (var j = 0; j < node.attributes.length; j++) {
+              var a = node.attributes[j];
+              var name = a.name.toLowerCase();
+              if (name.indexOf("on") === 0) continue;
+              if (ALLOWED_ATTRS.indexOf(name) === -1) continue;
+              if (tag === "A" && name === "href") {
+                el.setAttribute("href", a.value);
+                if (isExternalHref(a.value)) {
+                  el.setAttribute("target", "_blank");
+                  el.setAttribute("rel", "noopener noreferrer");
+                }
+              } else {
+                el.setAttribute(a.name, a.value);
+              }
+            }
+          }
+          if (tag === "A" && isExternalHref(el.getAttribute("href"))) {
+            el.setAttribute("target", "_blank");
+            el.setAttribute("rel", "noopener noreferrer");
+          }
+          for (var k = 0; k < node.childNodes.length; k++) walk(el, node.childNodes[k]);
+          parent.appendChild(el);
+        }
+        for (var i = 0; i < doc.body.childNodes.length; i++) walk(out, doc.body.childNodes[i]);
+        return out.innerHTML;
+      }
+
+      var terms = [];
+      try {
+        terms = JSON.parse(glossaryJson);
+      } catch (e) {
+        console.error("Failed to parse glossary JSON", e);
+      }
+
+      var dialog = document.getElementById("glossary-modal");
+      var titleEl = document.getElementById("glossary-modal-title");
+      var bodyEl = document.getElementById("glossary-modal-definition");
+      var closeBtn = dialog ? dialog.querySelector(".glossary-modal__close") : null;
+
+      function openModal(term, definition) {
+        if (!dialog || !titleEl || !bodyEl) return;
+        titleEl.textContent = term || "";
+        bodyEl.innerHTML = sanitizeHTML(definition || "");
+        dialog.showModal();
+        if (closeBtn) closeBtn.focus();
+      }
+
+      function closeModal() {
+        dialog?.close();
+      }
+
+      document.querySelectorAll("button[data-term]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const term = btn.getAttribute("data-term") || "";
+          const item = terms.find(function (t) { return t.term === term; });
+          const definition = item ? item.definition : "";
+          openModal(term, definition);
+        });
+      });
+
+      closeBtn?.addEventListener("click", closeModal);
+
+      dialog?.addEventListener("click", function (e) {
+        if (e.target === dialog) closeModal();
+      });
+
+      dialog?.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closeModal();
+      });
+    })();
+  </script>
+
+  <style>
+    .glossary {
+      padding: 2.25rem 1.25rem 3rem;
+    }
+
+    .glossary__hero {
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(250, 250, 250, 1), rgba(245, 245, 245, 1));
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+
+    .glossary__hero-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.25rem 1.5rem 1.25rem;
+    }
+
+    .glossary__title {
+      font-size: clamp(2rem, 3.2vw, 2.75rem);
+      line-height: 1.1;
+      margin: 0 0 0.5rem;
+    }
+
+    .glossary__count {
+  font-size: 0.5em;   /* or 0.5em / 0.55em to taste */
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+    .glossary__sub {
+      margin: 0 0 1.25rem;
+      font-size: 1.05rem;
+      opacity: 0.85;
+      max-width: 70ch;
+    }
+
+    .glossary__az {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.5rem 0 0;
+    }
+
+    .az-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      min-width: 44px;
+      padding: 0.5rem 0.65rem;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.7);
+      color: inherit;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .az-link:hover {
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .az-link:focus {
+      outline: 2px solid rgba(0, 0, 0, 0.35);
+      outline-offset: 2px;
+    }
+
+    .glossary__sections {
+      max-width: 1100px;
+      margin: 1.5rem auto 0;
+    }
+
+    .glossary__letter-section {
+      margin-bottom: 0.5rem;
+    }
+
+    .glossary__letter-header {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+      padding: 0.6rem 0.25rem 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .glossary__letter-title {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .glossary__grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.6rem;
+    }
+
+    @media (min-width: 640px) {
+      .glossary__grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .glossary__grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .glossary__term-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 0.75rem 0.9rem;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: rgba(255, 255, 255, 0.85);
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .glossary__term-btn:hover {
+      background: rgba(255, 255, 255, 1);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .glossary__term-btn:focus {
+      outline: 2px solid rgba(0, 0, 0, 0.35);
+      outline-offset: 2px;
+    }
+
+    /* Modal */
+    .glossary-modal {
+      max-width: 90vw;
+      width: 520px;
+      max-height: 85vh;
+      padding: 0;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    }
+
+    .glossary-modal::backdrop {
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    .glossary-modal__inner {
+      display: flex;
+      flex-direction: column;
+      max-height: 85vh;
+    }
+
+    .glossary-modal__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.25rem 1.25rem 0.5rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      flex-shrink: 0;
+    }
+
+    .glossary-modal__title {
+      margin: 0;
+      font-size: 1.35rem;
+      line-height: 1.3;
+      flex: 1;
+    }
+
+    .glossary-modal__close {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.06);
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .glossary-modal__close:hover {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .glossary-modal__close:focus {
+      outline: 2px solid rgba(0, 0, 0, 0.35);
+      outline-offset: 2px;
+    }
+
+    .glossary-modal__body {
+      padding: 1rem 1.25rem 1.25rem;
+      overflow-y: auto;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .glossary-modal__body a {
+      color: inherit;
+      text-decoration: underline;
+    }
+  </style>
+</Layout>
