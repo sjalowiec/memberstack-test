@@ -1,6 +1,5 @@
 ---
-import HeaderPublic from "../components/HeaderPublic.astro";
-import HeaderDev from "../components/HeaderDev.astro";
+import Header from "../components/header.astro";
 import Footer from "../components/footer.astro";
 import "../styles/global.css";
 import "../styles/print.css";
@@ -17,7 +16,6 @@ const { title = "Knit it Now", description = "Machine knitting tools and pattern
 // Determine which header to render based on hostname
 // During build, hostname may be undefined, so we check at runtime
 const hostname = typeof Astro.url !== 'undefined' && Astro.url.hostname ? Astro.url.hostname.toLowerCase() : "";
-const isPublicDomain = hostname === "knitbymachine.com" || hostname === "www.knitbymachine.com" || (hostname && hostname.endsWith(".knitbymachine.com"));
 
 const isProduction = (import.meta.env.PUBLIC_SITE_ENV || "").toLowerCase() === "production";
 ---
@@ -49,11 +47,7 @@ const isProduction = (import.meta.env.PUBLIC_SITE_ENV || "").toLowerCase() === "
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
  
 
-    <!-- MemberStack (global; required for glossary lock/unlock) -->
-    <script
-      src="https://static.memberstack.com/scripts/v1/memberstack.js"
-      data-memberstack-app="app_cmfh3d1n802vb0wy706205810">
-    </script>
+  
 
     <!-- Google Analytics (gtag.js) -->
     {import.meta.env.PUBLIC_GA4_ID && (
@@ -93,10 +87,16 @@ const isProduction = (import.meta.env.PUBLIC_SITE_ENV || "").toLowerCase() === "
     </script>
 
     <slot name="head" />
+
+    <!-- MemberStack (global; required for glossary lock/unlock) -->
+    <script async
+    src="https://static.memberstack.com/scripts/v1/memberstack.js"
+    data-memberstack-app="app_cmfh3d1n802vb0wy706205810">
+  </script>
   </head>
 
   <body class={bodyClass}>
-    {isPublicDomain ? <HeaderPublic /> : <HeaderDev />}
+    <Header />
 
     <main>
       <slot /> <!-- Page content goes here -->
