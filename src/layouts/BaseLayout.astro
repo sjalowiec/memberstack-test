@@ -35,10 +35,10 @@ const isProduction = (import.meta.env.PUBLIC_SITE_ENV || "").toLowerCase() === "
         text-size-adjust: 100%;
       }
       @media (min-width: 1025px) {
-        html {
-          font-size: 100% !important; /* 16px for desktop */
-        }
-      }
+  html {
+    font-size: 112.5% !important; /* keep 18px on desktop */
+  }
+}
     </style>
     <title>{title}</title>
     <meta name="description" content={description} />

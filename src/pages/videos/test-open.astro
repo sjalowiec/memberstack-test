@@ -1,0 +1,107 @@
+---
+import Layout from "../../layouts/layout.astro";
+import SectionHero from "../../components/SectionHero.astro";
+import VimeoEmbed from "../../components/VimeoEmbed.astro";
+import Transcript from "../../content/transcripts/1046394794.md";
+
+const videoTitle = "How to Knit a Proper Swatch: The Secret to Machine Knitting Success";
+const videoId = "1046394794";
+const access_level = "open";
+---
+
+<Layout title={videoTitle}>
+  <SectionHero title={videoTitle}>
+    <div slot="actions">
+      <a href="/membership" class="kbm-intro-primary">Get Access to the Full Membership Experience</a>
+    </div>
+    <div slot="toolbar">
+      <p>Learn how to knit a proper swatch—the key to successful machine knitting!</p>
+      <ul>
+        <li>Cast on cleanly for a swatch</li>
+        <li>Place stitch and row markers</li>
+        <li>Bind off and record key details (tension and gauge)</li>
+        <li>Measure accurately and avoid edge distortion</li>
+      </ul>
+      <p>This guide ensures your swatches set you up for success with every project.</p>
+    </div>
+  </SectionHero>
+
+  <div style="max-width:1200px;margin:0 auto;padding:0 1.5rem;">
+    <div style="display:flex; justify-content:flex-start; margin-bottom:0.5rem;">
+      <button type="button" id="transcript-open-btn" class="transcript-open-btn">View Transcript</button>
+    </div>
+    <VimeoEmbed videoId={videoId} title={videoTitle} />
+
+    <section aria-label="Transcript">
+      <div id="transcript-modal" class="transcript-modal-overlay" role="dialog" aria-modal="true" aria-label="Transcript" style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center;">
+        <div id="transcript-modal-box" class="transcript-modal-box" style="background:#fff; max-width:90%; width:600px; max-height:85vh; overflow-y:auto; border-radius:12px; padding:1rem; position:relative;" onclick="event.stopPropagation()">
+          <button type="button" id="transcript-close-btn" aria-label="Close" style="position:absolute; top:0.5rem; right:0.5rem; background:none; border:none; font-size:1.5rem; cursor:pointer; line-height:1;">×</button>
+          <div style="background:#fff; padding:1rem; padding-top:2rem; border-radius:12px;">
+            <Transcript />
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .transcript-open-btn {
+    padding: 0.45rem 1rem;
+    border-radius: 9999px;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+  }
+  .transcript-modal-overlay {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+  }
+  .transcript-modal-overlay.transcript-modal-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+  .transcript-modal-box {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .transcript-modal-overlay.transcript-modal-open .transcript-modal-box {
+    opacity: 1;
+    transform: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .transcript-modal-overlay,
+    .transcript-modal-box {
+      transition: none;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function() {
+    var btn = document.getElementById("transcript-open-btn");
+    var modal = document.getElementById("transcript-modal");
+    var closeBtn = document.getElementById("transcript-close-btn");
+    if (!btn || !modal || !closeBtn) return;
+    function openModal() {
+      modal.classList.add("transcript-modal-open");
+      document.body.style.overflow = "hidden";
+    }
+    function closeModal() {
+      modal.classList.remove("transcript-modal-open");
+      document.body.style.overflow = "";
+    }
+    btn.addEventListener("click", openModal);
+    closeBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", function(e) {
+      if (e.target === modal) closeModal();
+    });
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape" && modal.classList.contains("transcript-modal-open")) closeModal();
+    });
+  })();
+</script>
