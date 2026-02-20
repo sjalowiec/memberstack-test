@@ -1,0 +1,48 @@
+---
+import videos from "../../../data/videos-public.json";
+import Layout from "../../../layouts/layout.astro";
+
+export function getStaticPaths() {
+  return videos.map((v) => ({
+    params: {
+      content_id: String(v.content_id),
+      slug: v.slug,
+    },
+    props: { video: v },
+  }));
+}
+
+const { video } = Astro.props;
+---
+
+<Layout title={video.title} description={video.description ?? ""}>
+  <section class="video-page">
+
+    <h1>{video.title}</h1>
+
+    {video.description && (
+      <div set:html={video.description} />
+    )}
+
+    {video.access_level === "open" && video.vimeo_id_public ? (
+      <div class="video-embed">
+        <iframe
+          src={`https://player.vimeo.com/video/${video.vimeo_id_public}`}
+          width="800"
+          height="450"
+          frameborder="0"
+          allow="autoplay; fullscreen"
+          allowfullscreen
+        />
+      </div>
+    ) : (
+      <div class="locked-video">
+        <p>This video is for members.</p>
+        {video.posterUrl && (
+          <img src={video.posterUrl} alt={video.title} width="800" />
+        )}
+      </div>
+    )}
+
+  </section>
+</Layout>

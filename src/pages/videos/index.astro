@@ -1,0 +1,77 @@
+---
+import videos from "../../data/videos-public.json";
+import Layout from "../../layouts/layout.astro";
+
+// optional: sort A→Z by title
+const sorted = [...videos].sort((a, b) =>
+  (a.title ?? "").localeCompare(b.title ?? "")
+);
+---
+
+<Layout title="Video Library" description="Browse and search videos.">
+  <section class="video-library">
+    <h1>Video Library</h1>
+
+    <input
+      id="videoSearch"
+      type="search"
+      placeholder="Search videos…"
+      autocomplete="off"
+      class="video-search"
+    />
+
+    <div id="videoCount" class="video-count">
+      Showing {sorted.length} videos
+    </div>
+
+    <ul id="videoList" class="video-list">
+      {sorted.map((v) => (
+        <li class="video-card" data-title={(v.title ?? "").toLowerCase()} data-desc={(v.description ?? "").toLowerCase()}>
+          <a href={`/videos/${v.content_id}/${v.slug}`} class="video-link">
+            {v.posterUrl && <img src={v.posterUrl} alt="" class="video-thumb" loading="lazy" />}
+            <div class="video-meta">
+              <div class="video-title">{v.title}</div>
+              <div class="video-access">{v.access_level === "open" ? "Open" : "Member"}</div>
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <script>
+    const input = document.getElementById("videoSearch");
+    const list = document.getElementById("videoList");
+    const count = document.getElementById("videoCount");
+    const items = Array.from(list.querySelectorAll("li"));
+
+    function update() {
+      const q = (input.value || "").trim().toLowerCase();
+      let shown = 0;
+
+      for (const li of items) {
+        const hay =
+          (li.dataset.title || "") + " " + (li.dataset.desc || "");
+        const match = !q || hay.includes(q);
+        li.style.display = match ? "" : "none";
+        if (match) shown++;
+      }
+
+      count.textContent = `Showing ${shown} videos`;
+    }
+
+    input.addEventListener("input", update);
+  </script>
+
+  <style>
+    /* Keep this minimal; your global styles can override */
+    .video-search { width: 100%; max-width: 520px; padding: 10px 12px; margin: 12px 0; }
+    .video-list { list-style: none; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+    .video-card { border: 1px solid rgba(0,0,0,0.12); border-radius: 12px; overflow: hidden; }
+    .video-link { display: grid; grid-template-columns: 120px 1fr; gap: 12px; text-decoration: none; color: inherit; }
+    .video-thumb { width: 120px; height: 68px; object-fit: cover; display: block; }
+    .video-meta { padding: 10px 10px 10px 0; }
+    .video-title { font-weight: 600; }
+    .video-access { font-size: 0.9rem; opacity: 0.75; margin-top: 4px; }
+  </style>
+</Layout>
