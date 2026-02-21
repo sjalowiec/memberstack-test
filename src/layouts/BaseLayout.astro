@@ -1,6 +1,4 @@
 ---
-import Header from "../components/header.astro";
-import Footer from "../components/footer.astro";
 import "../styles/global.css";
 import "../styles/print.css";
 
@@ -11,49 +9,58 @@ interface Props {
   skipGlobalHyvor?: boolean;
 }
 
-const { title = "Knit it Now", description = "Machine knitting tools and patterns", bodyClass = "", skipGlobalHyvor = false } = Astro.props;
+const {
+  title = "Knit it Now",
+  description = "Machine knitting tools and patterns",
+  bodyClass = "",
+  skipGlobalHyvor = false
+} = Astro.props;
 
-// Determine which header to render based on hostname
-// During build, hostname may be undefined, so we check at runtime
-const hostname = typeof Astro.url !== 'undefined' && Astro.url.hostname ? Astro.url.hostname.toLowerCase() : "";
+const hostname =
+  typeof Astro.url !== "undefined" && Astro.url.hostname
+    ? Astro.url.hostname.toLowerCase()
+    : "";
 
-const isProduction = (import.meta.env.PUBLIC_SITE_ENV || "").toLowerCase() === "production";
+const isProduction =
+  (import.meta.env.PUBLIC_SITE_ENV || "").toLowerCase() === "production";
 ---
-
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
+
     <!-- CRITICAL: Inline typography to prevent Astro CSS bundler reordering issues -->
     <style data-kbm-typography>
       html {
-        font-size: 112.5% !important; /* 18px - comfortable mobile reading */
+        font-size: 112.5% !important;
         -webkit-text-size-adjust: 100%;
         text-size-adjust: 100%;
       }
       @media (min-width: 1025px) {
-  html {
-    font-size: 112.5% !important; /* keep 18px on desktop */
-  }
-}
+        html {
+          font-size: 112.5% !important;
+        }
+      }
     </style>
+
     <title>{title}</title>
     <meta name="description" content={description} />
 
     <!-- Favicons -->
     <link rel="icon" href="/favicon.ico" />
-  
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
- 
 
-  
-
-    <!-- Google Analytics (gtag.js) -->
+    <!-- Google Analytics -->
     {import.meta.env.PUBLIC_GA4_ID && (
       <>
-        <script async src={`https://www.googletagmanager.com/gtag/js?id=${import.meta.env.PUBLIC_GA4_ID}`}></script>
-        <script is:inline define:vars={{ gaId: import.meta.env.PUBLIC_GA4_ID }}>
+        <script
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${import.meta.env.PUBLIC_GA4_ID}`}
+        ></script>
+        <script
+          is:inline
+          define:vars={{ gaId: import.meta.env.PUBLIC_GA4_ID }}
+        >
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
@@ -80,40 +87,45 @@ const isProduction = (import.meta.env.PUBLIC_SITE_ENV || "").toLowerCase() === "
           if (window.PinUtils && typeof window.PinUtils.build === "function") {
             window.PinUtils.build();
           }
-        } catch (e) {
-          // no-op
-        }
+        } catch (e) {}
       };
     </script>
 
     <slot name="head" />
 
-    <!-- MemberStack (global; required for glossary lock/unlock) -->
-    <script async
-    src="https://static.memberstack.com/scripts/v1/memberstack.js"
-    data-memberstack-app="app_cmfh3d1n802vb0wy706205810">
-  </script>
+    <!-- MemberStack -->
+    <script
+      async
+      src="https://static.memberstack.com/scripts/v1/memberstack.js"
+      data-memberstack-app="app_cmfh3d1n802vb0wy706205810">
+    </script>
   </head>
 
   <body class={bodyClass}>
-    <Header />
+    <slot /> <!-- Page content (or Layout wrapper) goes here -->
 
-    <main>
-      <slot /> <!-- Page content goes here -->
-    </main>
-
-    <Footer />
-    
     <!-- Contact Modal -->
-    <div id="contact-modal" class="contact-modal" aria-hidden="true" role="dialog" aria-labelledby="contact-modal-title">
+    <div
+      id="contact-modal"
+      class="contact-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-labelledby="contact-modal-title"
+    >
       <div class="contact-modal-overlay" id="contact-modal-overlay"></div>
       <div class="contact-modal-container">
-        <button class="contact-modal-close" id="contact-modal-close" aria-label="Close contact form">
+        <button
+          class="contact-modal-close"
+          id="contact-modal-close"
+          aria-label="Close contact form"
+        >
           <span aria-hidden="true">&times;</span>
         </button>
-        <h2 id="contact-modal-title" class="contact-modal-title">Contact Sue</h2>
-        
-        <!-- Netlify-powered Contact form -->
+
+        <h2 id="contact-modal-title" class="contact-modal-title">
+          Contact Sue
+        </h2>
+
         <form
           id="contactFormModal"
           name="contact-sue"
@@ -124,46 +136,55 @@ const isProduction = (import.meta.env.PUBLIC_SITE_ENV || "").toLowerCase() === "
         >
           <input type="hidden" name="form-name" value="contact-sue" />
           <input type="hidden" name="submission-type" value="contact" />
-          <input type="hidden" name="submitted-at" id="contactSubmittedAtModal" value="" />
-          
-          <!-- Honeypot for spam -->
+          <input type="hidden" name="submitted-at" id="contactSubmittedAtModal" />
+
           <p class="hidden">
-            <label>Don't fill this out if you're human: <input name="bot-field" /></label>
+            <label>
+              Don't fill this out if you're human:
+              <input name="bot-field" />
+            </label>
           </p>
 
           <label class="contact-form__field">
             <span>Name</span>
-            <input type="text" name="name" required data-testid="input-name" />
+            <input type="text" name="name" required />
           </label>
 
           <label class="contact-form__field">
             <span>Email</span>
-            <input type="email" name="email" required data-testid="input-email" />
+            <input type="email" name="email" required />
           </label>
 
           <label class="contact-form__field">
             <span>Your message</span>
-            <textarea name="message" rows="6" required data-testid="textarea-message"></textarea>
+            <textarea name="message" rows="6" required></textarea>
           </label>
 
-          <button type="submit" class="contact-form__submit" data-testid="button-submit">
+          <button type="submit" class="contact-form__submit">
             Send message
           </button>
         </form>
 
-        <!-- Inline success message (hidden until form submits) -->
         <div id="contactSuccessModal" class="contact-success hidden">
           <h2>Thank you - your message has been sent.</h2>
-          <p>We'll read it soon and reply if needed. While you're here, you can also explore <a href="/ana-catalog">Help Hub</a>, <a href="/charting-tools">Tools</a>, or <a href="/glossary">Glossary</a> for quick help.</p>
+          <p>
+            We'll read it soon and reply if needed. While you're here, you can
+            also explore <a href="/ana-catalog">Help Hub</a>,
+            <a href="/charting-tools">Tools</a>, or
+            <a href="/glossary">Glossary</a>.
+          </p>
         </div>
       </div>
     </div>
-    
-    
-   
-    {!skipGlobalHyvor && <script async src="https://talk.hyvor.com/embed/embed.js" type="module"></script>}
-    
-    <!-- Contact Modal Script -->
+
+    {!skipGlobalHyvor && (
+      <script
+        async
+        src="https://talk.hyvor.com/embed/embed.js"
+        type="module"
+      ></script>
+    )}
+
     <script is:inline>
       (function() {
         const modal = document.getElementById('contact-modal');
@@ -172,88 +193,27 @@ const isProduction = (import.meta.env.PUBLIC_SITE_ENV || "").toLowerCase() === "
         const closeBtn = document.getElementById('contact-modal-close');
         const form = document.getElementById('contactFormModal');
         const successMsg = document.getElementById('contactSuccessModal');
-        
+
         function openModal() {
-          modal.setAttribute('aria-hidden', 'false');
-          modal.classList.add('contact-modal--open');
+          modal?.setAttribute('aria-hidden', 'false');
+          modal?.classList.add('contact-modal--open');
           document.body.style.overflow = 'hidden';
-          // Focus the first input for accessibility
-          const firstInput = form?.querySelector('input[type="text"]');
-          if (firstInput) {
-            setTimeout(() => firstInput.focus(), 100);
-          }
         }
-        
+
         function closeModal() {
-          modal.setAttribute('aria-hidden', 'true');
-          modal.classList.remove('contact-modal--open');
+          modal?.setAttribute('aria-hidden', 'true');
+          modal?.classList.remove('contact-modal--open');
           document.body.style.overflow = '';
-          // Reset form if it was submitted
-          if (form && successMsg) {
-            form.classList.remove('hidden');
-            successMsg.classList.add('hidden');
-            form.reset();
-          }
+          form?.reset();
         }
-        
-        // Open modal
+
         trigger?.addEventListener('click', function(e) {
           e.preventDefault();
           openModal();
         });
-        
-        // Close modal
+
         overlay?.addEventListener('click', closeModal);
         closeBtn?.addEventListener('click', closeModal);
-        
-        // Close on Escape key
-        document.addEventListener('keydown', function(e) {
-          if (e.key === 'Escape' && modal?.classList.contains('contact-modal--open')) {
-            closeModal();
-          }
-        });
-        
-        // Form submission handler
-        form?.addEventListener('submit', function(e) {
-          e.preventDefault();
-          const formEl = e.target;
-          
-          // Add submission timestamp
-          const now = new Date();
-          const timestamp = now.toLocaleString('en-US', { 
-            dateStyle: 'medium', 
-            timeStyle: 'short',
-            timeZone: 'America/New_York'
-          });
-          const timestampInput = document.getElementById('contactSubmittedAtModal');
-          if (timestampInput) {
-            timestampInput.value = timestamp;
-          }
-          
-          const formData = new FormData(formEl);
-          
-          // POST to the blueprint page where Netlify detects the form
-          fetch('/contact-form.html', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams(formData).toString()
-          })
-          .then(response => {
-            if (response.ok) {
-              // Hide form and show success message
-              formEl.classList.add('hidden');
-              successMsg?.classList.remove('hidden');
-              // Auto-close modal after 3 seconds
-              setTimeout(closeModal, 3000);
-            } else {
-              alert('Something went wrong. Please try again.');
-            }
-          })
-          .catch(error => {
-            console.error('Form submission error:', error);
-            alert('Something went wrong. Please try again.');
-          });
-        });
       })();
     </script>
   </body>

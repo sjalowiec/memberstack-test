@@ -1,0 +1,156 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+
+
+const updated = "February 20, 2026";
+---
+
+<Layout>
+  <style>
+
+    .kbm-breadcrumb {
+      font-size: var(--text-base);
+      margin-bottom: 1rem;
+      color: #6b7280;
+    }
+    .kbm-legal h1 {
+      font-size: var(--text-xxl);
+      line-height: 1.2;
+      margin: 0 0 0.75rem 0;
+    }
+    .meta {
+      color: #6b7280;
+      font-size: var(--text-base);
+      margin-bottom: 2rem;
+    }
+    .kbm-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 24px 22px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    }
+    .kbm-toc {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin: 0 0 24px 0;
+    }
+    .kbm-toc-title {
+      font-weight: 600;
+      font-size: var(--text-lg);
+      margin-bottom: 10px;
+    }
+    .kbm-toc a {
+      display: block;
+      padding: 6px 8px;
+      border-radius: 6px;
+      color: #1f2937;
+      text-decoration: none;
+      font-size: var(--text-base);
+      transition: background 0.15s ease;
+    }
+    .kbm-toc a:hover {
+      background: #f3f4f6;
+      color: var(--kbm-green);
+    }
+    
+    .print-btn {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--kbm-green);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 54px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      font-size: var(--text-xl);
+      transition: background 0.2s ease;
+      z-index: 999;
+    }
+    .print-btn:hover {
+      background: var(--kbm-green-2);
+    }
+    
+    @media (max-width: 1024px) {
+      
+      .kbm-card {
+        padding: 20px 18px;
+      }
+      .kbm-legal h1 {
+        /* font-size handled by CSS variable */
+      }
+     
+      .print-btn {
+        width: 48px;
+        height: 48px;
+        /* font-size handled by CSS variable */
+      }
+    }
+    
+    @media print {
+      .print-btn {
+        display: none;
+      }
+    }
+  </style>
+
+  <div class="page-wrap">
+  <PageHead
+    title="Refund Policy"
+    breadcrumb="Home / Refund Policy"
+    meta={`Last updated: ${updated}`}
+  />
+
+  <div class="kbm-legal">
+    <div class="kbm-toc">
+      <div class="kbm-toc-title">Jump to section</div>
+      <a href="#digital-products">Digital Products</a>
+      <a href="#exceptions">Exceptions</a>
+      <a href="#how-to-request">How to Request a Refund</a>
+      <a href="#contact">Contact Us</a>
+    </div>
+
+    <div class="kbm-card">
+      <p>
+        At <strong>Knit it Now</strong>, we strive to provide high-quality resources
+        and support. Please review our refund policy below.
+      </p>
+
+      <h2 id="digital-products">1. Digital Products</h2>
+      <p>
+        Because our products are digital (patterns, wizards, tutorials), we cannot
+        offer refunds once you've accessed or downloaded them. We encourage you to
+        review all available previews and descriptions before purchasing.
+      </p>
+
+      <h2 id="exceptions">2. Exceptions</h2>
+      <p>
+        If you experience technical issues that prevent you from accessing your
+        purchase, please contact us at <a href="mailto:contact@knititnow.com">contact@knititnow.com</a>, and we'll work to resolve the problem.
+      </p>
+
+      <h2 id="how-to-request">3. How to Request a Refund</h2>
+      <p>
+        If you believe you're eligible for a refund based on the exceptions noted
+        above, please contact us at <a href="mailto:contact@knititnow.com">contact@knititnow.com</a> with your order details and a description of the issue.
+      </p>
+
+      <h2 id="contact">4. Contact Us</h2>
+      <p>
+        If you have any questions about this Refund Policy, please contact us at <a href="mailto:contact@knititnow.com">contact@knititnow.com</a>.
+      </p>
+    </div>
+  </div>
+
+  <button class="print-btn" onclick="window.print()" aria-label="Print this page">🖨</button>
+  </div>
+</Layout>

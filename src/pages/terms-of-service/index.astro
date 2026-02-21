@@ -1,0 +1,204 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+const updated = "October 3, 2025";
+---
+
+<Layout>
+  <style>
+    .kbm-breadcrumb {
+      font-size: var(--text-base);
+      margin-bottom: 1rem;
+      color: #6b7280;
+    }
+    .kbm-legal h1 {
+      font-size: var(--text-xxl);
+      line-height: 1.2;
+      margin: 0 0 0.75rem 0;
+    }
+    .meta {
+      color: #6b7280;
+      font-size: var(--text-base);
+      margin-bottom: 2rem;
+    }
+    .kbm-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 24px 22px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    }
+    .kbm-toc {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin: 0 0 24px 0;
+    }
+    .kbm-toc-title {
+      font-weight: 600;
+      font-size: var(--text-lg);
+      margin-bottom: 10px;
+    }
+    .kbm-toc a {
+      display: block;
+      padding: 6px 8px;
+      border-radius: 6px;
+      color: #1f2937;
+      text-decoration: none;
+      font-size: var(--text-base);
+      transition: background 0.15s ease;
+    }
+    .kbm-toc a:hover {
+      background: #f3f4f6;
+      color: var(--kbm-green);
+    }
+    .page-wrap h2 {
+      margin-top: 2rem;
+      font-size: var(--text-xl);
+    }
+    .page-wrap p,
+    .page-wrap ul {
+      margin: 1rem 0;
+      color: #374151;
+      font-size: var(--text-base);
+    }
+    .page-wrap ul {
+      padding-left: 1.5rem;
+    }
+    .page-wrap li {
+      margin: 0.5rem 0;
+      font-size: var(--text-base);
+    }
+    .print-btn {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--kbm-green);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 54px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      font-size: var(--text-xl);
+      transition: background 0.2s ease;
+      z-index: 999;
+    }
+    .print-btn:hover {
+      background: var(--kbm-green-2);
+    }
+    
+    @media (max-width: 1024px) {
+      .kbm-card {
+        padding: 20px 18px;
+      }
+      .kbm-legal h1 {
+        /* font-size handled by CSS variable */
+      }
+      .page-wrap h2 {
+        margin-top: 1.5rem;
+      }
+      .print-btn {
+        width: 48px;
+        height: 48px;
+        /* font-size handled by CSS variable */
+      }
+    }
+    
+    @media print {
+      .print-btn {
+        display: none;
+      }
+    }
+  </style>
+
+  <div class="page-wrap">
+  <PageHead
+    title="Terms of Service"
+    breadcrumb="Home / Terms of Service"
+    meta={`Last updated: ${updated}`}
+  />
+
+  <div class="kbm-legal">
+    <div class="kbm-toc">
+      <div class="kbm-toc-title">Jump to section</div>
+      <a href="#acceptance">Acceptance of Terms</a>
+      <a href="#use-license">Use License</a>
+      <a href="#prohibited">Prohibited Uses</a>
+      <a href="#intellectual">Intellectual Property</a>
+      <a href="#liability">Limitation of Liability</a>
+      <a href="#changes">Changes to Terms</a>
+      <a href="#contact">Contact Us</a>
+    </div>
+
+    <div class="kbm-card">
+      <p>
+        Welcome to <strong>Knit it Now</strong>.<br> By using our website and
+        services, you agree to these Terms of Service. Please read them carefully.
+      </p>
+
+      <h2 id="acceptance">1. Acceptance of Terms</h2>
+      <p>
+        By accessing or using our website, you agree to be bound by these Terms of
+        Service and all applicable laws and regulations.
+      </p>
+
+      <h2 id="use-license">2. Use License</h2>
+      <p>
+        Permission is granted to temporarily download one copy of the materials on
+        Knit it Now's website for personal, non-commercial use only. This is the
+        grant of a license, not a transfer of title.
+      </p>
+      <p>Under this license you may not:</p>
+      <ul>
+        <li>Modify or copy the materials;</li>
+        <li>Use the materials for any commercial purpose or for any public display;</li>
+        <li>Attempt to reverse engineer any software contained on Knit it Now's website;</li>
+        <li>Remove any copyright or other proprietary notations from the materials.</li>
+      </ul>
+
+      <h2 id="prohibited">3. Prohibited Uses</h2>
+      <p>You may not use our website:</p>
+      <ul>
+        <li>In any way that violates any applicable law or regulation;</li>
+        <li>To transmit, or procure the sending of, any advertising or promotional material;</li>
+        <li>To impersonate or attempt to impersonate Knit it Now or another user.</li>
+      </ul>
+
+      <h2 id="intellectual">4. Intellectual Property</h2>
+      <p>
+        All content, including but not limited to text, graphics, logos, and images,
+        is the property of Knit it Now and is protected by copyright and other
+        intellectual property laws.
+      </p>
+
+      <h2 id="liability">5. Limitation of Liability</h2>
+      <p>
+        In no event shall KKnit it Now or its suppliers be liable for any damages
+        (including, without limitation, damages for loss of data or profit) arising
+        out of the use or inability to use the materials on our website.
+      </p>
+
+      <h2 id="changes">6. Changes to Terms</h2>
+      <p>
+        We may revise these Terms of Service at any time without notice. By using
+        this website you agree to be bound by the current version of these Terms of
+        Service.
+      </p>
+
+      <h2 id="contact">7. Contact Us</h2>
+      <p>
+        If you have any questions about these Terms of Service, please contact us at 
+        <a href="mailto:contact@knititnow.com">contact@knititnow.com</a>.
+      </p>
+    </div>
+  </div>
+
+  <button class="print-btn" onclick="window.print()" aria-label="Print this page">🖨</button>
+  </div>
+</Layout>

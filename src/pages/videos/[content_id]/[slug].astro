@@ -1,6 +1,8 @@
 ---
 import videos from "../../../data/videos-public.json";
-import Layout from "../../../layouts/layout.astro";
+import Layout from "../../../layouts/Layout.astro";
+import PageHead from "../../../components/PageHead.astro";
+
 
 export function getStaticPaths() {
   return videos.map((v) => ({
@@ -16,10 +18,18 @@ const { video } = Astro.props;
 ---
 
 <Layout title={video.title} description={video.description ?? ""}>
+  <div class="page-wrap"> 
+  <PageHead
+    title={video.title}
+    breadcrumb={`Home / Videos / ${video.title}`}
+  />  
+
+
+
+
   <section class="video-page">
 
-    <h1>{video.title}</h1>
-
+    
     {video.description && (
       <div set:html={video.description} />
     )}
@@ -45,4 +55,5 @@ const { video } = Astro.props;
     )}
 
   </section>
+  </div>
 </Layout>

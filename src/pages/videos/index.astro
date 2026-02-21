@@ -1,6 +1,7 @@
 ---
 import videos from "../../data/videos-public.json";
-import Layout from "../../layouts/layout.astro";
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
 
 // optional: sort A→Z by title
 const sorted = [...videos].sort((a, b) =>
@@ -8,10 +9,14 @@ const sorted = [...videos].sort((a, b) =>
 );
 ---
 
-<Layout title="Video Library" description="Browse and search videos.">
-  <section class="video-library">
-    <h1>Video Library</h1>
+<Layout title="Videos" description="Browse and search videos.">
+  <div class="videos-wrap">
+  <PageHead
+    title="Video Library"
+    breadcrumb="Home / Videos"
+  />
 
+  <section class="video-library">
     <input
       id="videoSearch"
       type="search"
@@ -38,6 +43,7 @@ const sorted = [...videos].sort((a, b) =>
       ))}
     </ul>
   </section>
+  </div>
 
   <script>
     const input = document.getElementById("videoSearch");
@@ -64,6 +70,15 @@ const sorted = [...videos].sort((a, b) =>
   </script>
 
   <style>
+    .videos-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding-top: calc(var(--header-height, 140px) + 2rem);
+      padding-right: 20px;
+      padding-bottom: 80px;
+      padding-left: 20px;
+    }
+
     /* Keep this minimal; your global styles can override */
     .video-search { width: 100%; max-width: 520px; padding: 10px 12px; margin: 12px 0; }
     .video-list { list-style: none; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }

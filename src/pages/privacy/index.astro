@@ -1,0 +1,189 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+const updated = "February 20, 2026";
+---
+
+<Layout>
+  <style>
+ 
+}
+    .kbm-breadcrumb {
+      font-size: var(--text-base);
+      margin-bottom: 1rem;
+      color: #6b7280;
+    }
+    .kbm-legal h1 {
+      font-size: var(--text-xxl);
+      line-height: 1.2;
+      margin: 0 0 0.75rem 0;
+    }
+    .meta {
+      color: #6b7280;
+      font-size: var(--text-base);
+      margin-bottom: 2rem;
+    }
+    .kbm-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 24px 22px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    }
+    .kbm-toc {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin: 0 0 24px 0;
+    }
+    .kbm-toc-title {
+      font-weight: 600;
+      font-size: var(--text-lg);
+      margin-bottom: 10px;
+    }
+    .kbm-toc a {
+      display: block;
+      padding: 6px 8px;
+      border-radius: 6px;
+      color: #1f2937;
+      text-decoration: none;
+      font-size: var(--text-base);
+      transition: background 0.15s ease;
+    }
+    .kbm-toc a:hover {
+      background: #f3f4f6;
+      color: var(--kbm-green);
+    }
+   
+    .print-btn {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--kbm-green);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 54px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      font-size: var(--text-xl);
+      transition: background 0.2s ease;
+      z-index: 999;
+    }
+    .print-btn:hover {
+      background: var(--kbm-green-2);
+    }
+    
+    @media (max-width: 1024px) {
+     
+      .kbm-card {
+        padding: 20px 18px;
+      }
+      .kbm-legal h1 {
+        /* font-size handled by CSS variable */
+      }
+  
+      .print-btn {
+        width: 48px;
+        height: 48px;
+        /* font-size handled by CSS variable */
+      }
+    }
+    
+    @media print {
+      .print-btn {
+        display: none;
+      }
+    }
+  </style>
+
+<div class="page-wrap">
+  <p class="kbm-breadcrumb">
+    <a href="/" style="color:#6b7280; text-decoration:none">Home</a> / Privacy Policy
+  </p>
+
+  <div class="kbm-legal">
+    <h1>Privacy Policy</h1>
+    <p class="meta">Last updated: {updated}</p>
+
+    <div class="kbm-toc">
+      <div class="kbm-toc-title">Jump to section</div>
+      <a href="#what-we-collect">What We Collect</a>
+      <a href="#how-we-use">How We Use Your Information</a>
+      <a href="#third-party">Third-Party Services</a>
+      <a href="#security">Security</a>
+      <a href="#rights">Your Rights</a>
+      <a href="#changes">Changes to This Policy</a>
+      <a href="#contact">Contact Us</a>
+    </div>
+
+    <div class="kbm-card">
+      <p>
+        At <strong>Knit it Now</strong>, we respect your privacy. This Privacy
+        Policy applies to Knit it Now, and it explains how we collect, use, and protect your information when you use
+        our website and services.
+      </p>
+
+      <h2 id="what-we-collect">1. What We Collect</h2>
+      <p>We collect the following types of information:</p>
+      <ul>
+        <li><strong>Email Address:</strong> When you sign up for our newsletter or create an account.</li>
+        <li><strong>Name:</strong> If you provide it when joining our mailing list.</li>
+        <li><strong>Usage Data:</strong> Basic information about how you interact with our site.</li>
+      </ul>
+
+      <h2 id="how-we-use">2. How We Use Your Information</h2>
+      <p>We use the information we collect to:</p>
+      <ul>
+        <li>Send you updates, newsletters, and special offers (if you've opted in).</li>
+        <li>Improve our website and services.</li>
+        <li>Respond to your inquiries and provide customer support.</li>
+      </ul>
+
+      <h2 id="third-party">3. Third-Party Services</h2>
+      <p>
+        We use trusted third-party services to help us manage email communications
+        and analyze website traffic. These services have their own privacy policies.
+        We do not sell or share your personal information with third parties for their
+        marketing purposes.
+      </p>
+
+      <h2 id="security">4. Security</h2>
+      <p>
+        We take reasonable measures to protect your information from unauthorized
+        access, use, or disclosure. However, no method of transmission over the
+        internet is 100% secure.
+      </p>
+
+      <h2 id="rights">5. Your Rights</h2>
+      <p>You have the right to:</p>
+      <ul>
+        <li>Access, update, or delete your personal information.</li>
+        <li>Unsubscribe from our email list at any time.</li>
+      </ul>
+      <p>
+        To exercise these rights, please contact us at <a href="mailto:contact@knititnow.com">contact@knititnow.com</a>.
+      </p>
+
+      <h2 id="changes">6. Changes to This Policy</h2>
+      <p>
+        We may update this Privacy Policy from time to time. Any changes will be
+        posted on this page with an updated "Last updated" date.
+      </p>
+
+      <h2 id="contact">7. Contact Us</h2>
+      <p>
+        If you have any questions about this Privacy Policy, please contact us at <a href="mailto:contact@knititnow.com">
+          contact@knititnow.com</a>.
+      </p>
+    </div>
+  </div>
+
+  <button class="print-btn" onclick="window.print()" aria-label="Print this page">🖨</button>
+  </div>
+</Layout>

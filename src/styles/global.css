@@ -1370,3 +1370,11 @@ p {
   border-left: 4px solid currentColor;
   opacity: 0.8;
 }
+.page-wrap {
+  max-width: 860px;
+  margin: 0 auto;
+  padding-top: calc(var(--header-height, 140px) + 2rem);
+  padding-right: 20px;
+  padding-bottom: 80px;
+  padding-left: 20px;
+}

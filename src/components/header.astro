@@ -460,9 +460,15 @@
           <p class="kbm-tagline">See it ● Love it ● Knit it | Make the right project decisions, then knit with confidence.</p>
         </div>
         <div class="kbm-account-section">
-          <a data-ms-modal="login" data-ms-hide="member">Log in</a>
-          <a href="/account" data-ms-show="member">Account</a>
-          <a data-ms-action="logout" data-ms-show="member">Log out</a>
+          <a data-ms-modal="login" data-ms-content="!members">Log in</a>
+
+          <span data-ms-content="members" class="ms-greeting">
+            Hi, <span data-ms-member="first-name"></span>
+          </span>
+
+          <a data-ms-modal="profile" data-ms-content="members">Account</a>
+
+          <a href="#" data-ms-action="logout" data-ms-content="members">Log out</a>
         </div>
       </div>
 

@@ -1,9 +1,9 @@
 ---
-import Layout from "../../layouts/layout.astro";
+import Layout from "../../layouts/Layout.astro";
 import GlossaryEntry from "../../components/GlossaryEntry.astro";
 import glossary from "../../data/glossary.json";
 import { slugify } from "../../lib/slugify";
-
+import PageHead from "../../components/PageHead.astro";
 function cleanTerm(v: any) {
   return (v ?? "").toString().replace(/<[^>]*>/g, "").trim();
 }
@@ -31,18 +31,31 @@ if (!entry) {
 }
 
 const relatedTermsData: Array<{ slug: string; term: string }> = [];
+const termLabel = cleanTerm((entry as any).english);
 ---
 
-<Layout title={`${(entry as any).english ?? "Term"} | Glossary`}>
+<Layout title={`${termLabel} | Glossary`} description={`Glossary definition: ${termLabel}`}>
+  <div class="page-wrap">
+    <PageHead
+      title={termLabel}
+      breadcrumb={`Home / Glossary / ${termLabel}`}
+    />
+    <article class="glossary-entry" data-glossary-entry>
+      <GlossaryEntry entry={entry} relatedTermsData={relatedTermsData} />
+    </article>
+  </div>
+
   <style>
-    main.glossaryEntry {
-      margin-top: 0;
-      padding-top: 0;
+    .page-wrap .kbm-breadcrumb {
+      font-size: var(--text-base);
+      margin-bottom: 1rem;
+      color: #6b7280;
+    }
+    /* Single H1: PageHead is the page title; hide duplicate from GlossaryEntry */
+    .page-wrap .glossary-entry h1 {
+      display: none;
     }
   </style>
-  <main class="glossaryEntry" data-glossary-entry>
-    <GlossaryEntry entry={entry} relatedTermsData={relatedTermsData} />
-  </main>
 
   <script>
     const userIsMember = false; // Replace with real membership logic

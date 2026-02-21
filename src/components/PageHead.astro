@@ -1,0 +1,44 @@
+---
+interface Props {
+  title: string;
+  breadcrumb?: string;
+  meta?: string;
+  subhead?: string;
+}
+
+const { title, breadcrumb, meta, subhead } = Astro.props;
+---
+
+<header class="page-head">
+  {breadcrumb && (
+    <p class="kbm-breadcrumb">{breadcrumb}</p>
+  )}
+
+  <h1 class="page-title">{title}</h1>
+
+  {subhead && (
+    <p class="page-subhead">{subhead}</p>
+  )}
+
+  {meta && (
+    <p class="meta">{meta}</p>
+  )}
+</header>
+
+<style>
+  .page-head {
+    margin-bottom: 2rem;
+  }
+
+  .page-title {
+    margin: 0 0 0.75rem 0;
+    font-size: var(--text-xxl);
+    line-height: 1.2;
+  }
+
+  .page-subhead {
+    margin: 0 0 1rem 0;
+    font-size: var(--text-lg);
+    opacity: 0.85;
+  }
+</style>
