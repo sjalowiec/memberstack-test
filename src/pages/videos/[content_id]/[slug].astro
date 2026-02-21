@@ -8,7 +8,7 @@ export function getStaticPaths() {
   return videos.map((v) => ({
     params: {
       content_id: String(v.content_id),
-      slug: v.slug,
+      slug: String(v.slug ?? "").replaceAll("|", "-"),
     },
     props: { video: v },
   }));
