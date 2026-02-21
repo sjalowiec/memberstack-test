@@ -1,93 +1,313 @@
 ---
-import videos from "../../data/videos-public.json";
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
-
-// optional: sort A→Z by title
-const sorted = [...videos].sort((a, b) =>
-  (a.title ?? "").localeCompare(b.title ?? "")
-);
+import videos from "../../data/videos-public.json";
 ---
 
 <Layout title="Videos" description="Browse and search videos.">
   <div class="page-wrap">
-  <PageHead
-    title="Video Library"
-    breadcrumb="Home / Videos"
-  />
- 
-  <section class="video-library">
-    <input
-      id="videoSearch"
-      type="search"
-      placeholder="Search videos…"
-      autocomplete="off"
-      class="video-search"    
+
+
+    <PageHead
+      title="Video Library"
+      breadcrumb="Home / Videos"
+      hideTitle
     />
 
-    <div id="videoCount" class="video-count">
-      Showing {sorted.length} videos
+    <div class="video-title-row">
+      <h1 class="video-page-title">Video Library</h1>
+      <input
+        id="videoSearch"
+        type="search"
+        placeholder="Search videos…"
+        autocomplete="off"
+        class="video-search"
+      />
     </div>
 
-    <ul id="videoList" class="video-list">
-      {sorted.map((v) => (
-        <li class="video-card" data-title={(v.title ?? "").toLowerCase()} data-desc={(v.description ?? "").toLowerCase()}>
-          <a href={`/videos/${v.content_id}/${v.slug}`} class="video-link">
-            {v.posterUrl && <img src={v.posterUrl} alt="" class="video-thumb" loading="lazy" />}
-            <div class="video-meta">
-              <div class="video-title">{v.title}</div>
-              <div class="video-access">{v.access_level === "open" ? "Open" : "Member"}</div>
-            </div>
-          </a>
-        </li>
-      ))}
-    </ul>
-  </section>
+    <div class="category-bar">
+      <div class="category-bar-right">
+        <label for="category-select" class="sr-only">Category</label>
+        <select id="category-select" class="category-select" aria-label="Video category"></select>
+      </div>
+    </div>
+    <div class="kbm-card">Test</div>
+
+    <div id="video-grid" class="video-grid"></div>
   </div>
- 
 
-  <script>
-    const input = document.getElementById("videoSearch");
-    const list = document.getElementById("videoList");
-    const count = document.getElementById("videoCount");
-    const items = Array.from(list.querySelectorAll("li"));
+  <script id="videos-data" type="application/json" set:html={JSON.stringify(videos)} />
 
-    function update() {
-      const q = (input.value || "").trim().toLowerCase();
-      let shown = 0;
-
-      for (const li of items) {
-        const hay =
-          (li.dataset.title || "") + " " + (li.dataset.desc || "");
-        const match = !q || hay.includes(q);
-        li.style.display = match ? "" : "none";
-        if (match) shown++;
+  <script is:inline>
+    (function () {
+      const raw = document.getElementById("videos-data")?.textContent || "{}";
+      let parsed;
+      try {
+        parsed = JSON.parse(raw);
+      } catch (parseErr) {
+        console.error(parseErr);
+        return;
+      }
+      const videos = Array.isArray(parsed) ? parsed : (parsed?.videos ?? parsed?.items ?? parsed?.data ?? []);
+      if (videos.length === 0) {
+        console.warn("videos-data: no video items found (empty or missing array).");
+        return;
       }
 
-      count.textContent = `Showing ${shown} videos`;
+      const grid = document.getElementById("video-grid");
+      const selectEl = document.getElementById("category-select");
+
+      const categories = Array.from(new Set(videos.map(v => v.category).filter(Boolean))).sort();
+
+    const requested = new URLSearchParams(location.search).get("cat");
+    const defaultCategory = (requested && categories.includes(requested)) ? requested : (categories[0] || "");
+
+    if (selectEl) {
+      categories.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+        selectEl.appendChild(opt);
+      });
+      selectEl.value = defaultCategory;
     }
 
-    input.addEventListener("input", update);
+    function setCat(cat) {
+      const qs = cat ? "?cat=" + encodeURIComponent(cat) : "";
+      history.replaceState(null, "", location.pathname + qs);
+    }
+
+    function render(cat) {
+      const filtered = cat ? videos.filter(v => v.category === cat) : videos;
+      filtered.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+
+      if (!grid) return;
+      if (filtered.length === 0) {
+        grid.innerHTML = "<p style=\"padding:12px;\">No videos found for this category.</p>";
+        return;
+      }
+
+      grid.innerHTML = filtered.map(v => {
+        const href = v.content_id ? "/videos/" + v.content_id + "/" + v.slug : "/videos/" + (v.slug || "");
+        const title = (v.title || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const poster = v.posterUrl
+          ? "<img class=\"video-card__img\" src=\"" + v.posterUrl.replace(/"/g, "&quot;") + "\" alt=\"\" loading=\"lazy\" />"
+          : "";
+        return "<a class=\"video-card\" href=\"" + href + "\">" + poster + "<div class=\"video-card__title\">" + title + "</div></a>";
+      }).join("");
+    }
+
+    render(defaultCategory);
+
+    if (selectEl) {
+      selectEl.addEventListener("change", function () {
+        const cat = this.value || "";
+        setCat(cat);
+        render(cat);
+      });
+    }
+    })();
   </script>
 
   <style>
-    .videos-wrap {
+    .page-wrap {
       max-width: 1100px;
       margin: 0 auto;
-      padding-top: calc(var(--header-height, 140px) + 2rem);
-      padding-right: 20px;
-      padding-bottom: 80px;
-      padding-left: 20px;
+      padding: calc(var(--header-height, 140px) + 2rem) 20px 80px;
     }
 
-    /* Keep this minimal; your global styles can override */
-    .video-search { width: 100%; max-width: 520px; padding: 10px 12px; margin: 12px 0; }
-    .video-list { list-style: none; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
-    .video-card { border: 1px solid rgba(0,0,0,0.12); border-radius: 12px; overflow: hidden; }
-    .video-link { display: grid; grid-template-columns: 120px 1fr; gap: 12px; text-decoration: none; color: inherit; }
-    .video-thumb { width: 120px; height: 68px; object-fit: cover; display: block; }
-    .video-meta { padding: 10px 10px 10px 0; }
-    .video-title { font-weight: 600; }
-    .video-access { font-size: 0.9rem; opacity: 0.75; margin-top: 4px; }
+    .category-bar {
+      position: sticky;
+      top: var(--site-header-offset, 0px);
+      z-index: 10;
+      background: var(--color-bg, #fff);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      margin: 0 -20px 1rem;
+      padding: 0 20px;
+    }
+
+    .category-bar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      min-height: 52px;
+    }
+
+    .category-bar-left {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+
+    .category-label {
+      font-weight: 600;
+      font-size: 1.05rem;
+    }
+
+    .category-count {
+      font-size: 0.9rem;
+      opacity: 0.75;
+    }
+
+    .category-select {
+      padding: 0.4rem 2rem 0.4rem 0.6rem;
+      font-size: 0.95rem;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      background: var(--color-bg, #fff);
+      cursor: pointer;
+      min-width: 180px;
+    }
+
+    .category-select:hover,
+    .category-select:focus {
+      border-color: rgba(0, 0, 0, 0.35);
+      outline: none;
+    }
+
+    .video-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 8px 0 12px;
+    }
+
+    .video-page-title {
+      margin: 0;
+      font-size: var(--text-xxl);
+      line-height: 1.2;
+    }
+
+    .subcat-segment {
+      display: inline-flex;
+      align-items: stretch;
+      gap: 0;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+      margin-bottom: 1rem;
+    }
+
+    .subcat-tab {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      padding: 8px 12px;
+      font: inherit;
+      font-size: 0.9rem;
+      cursor: pointer;
+      line-height: 1;
+      text-decoration: none;
+      color: inherit;
+      border-right: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .subcat-tab:last-child {
+      border-right: 0;
+    }
+
+    .subcat-tab:hover {
+      background: rgba(0, 0, 0, 0.03);
+    }
+
+    .subcat-tab.is-active {
+      background: rgba(0, 0, 0, 0.06);
+      font-weight: 600;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .video-search {
+      width: 100%;
+      max-width: 420px;
+      padding: 10px 12px;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    .video-search:focus {
+      outline: none;
+      border-color: rgba(0, 0, 0, 0.35);
+    }
+
+    .video-list {
+      list-style: none;
+      padding: 0;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+
+    #video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+
+    .video-card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .video-card__img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      height: auto;
+      object-fit: cover;
+      display: block;
+      border-radius: 12px;
+    }
+
+    .video-card__title {
+      padding: 10px 12px;
+      font-weight: 600;
+    }
+
+    .video-link {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .video-thumb {
+      width: 120px;
+      height: 68px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .video-meta {
+      padding: 10px 10px 10px 0;
+    }
+
+    .video-title {
+      font-weight: 600;
+    }
+
+    .video-access {
+      font-size: 0.9rem;
+      opacity: 0.75;
+      margin-top: 4px;
+    }
   </style>
 </Layout>

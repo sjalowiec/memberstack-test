@@ -2,6 +2,7 @@
    Lego Components - Import reusable styles
    ============================================ */
 @import './lego/floating-input.css';
+@import './components/kbm-card.css';
 
 /* 
  * TYPOGRAPHY: html font-size is set inline in BaseLayout.astro with !important
@@ -20,6 +21,7 @@
 
   /* Layout spacing */
   --header-height: 6rem;
+  --site-header-offset: var(--header-height); /* sticky bars sit below fixed header */
   --max-content-width: 1100px;
 
   /* Typography tokens - now relative to html font-size */

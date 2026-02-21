@@ -1,12 +1,13 @@
 ---
 interface Props {
-  title: string;
+  title?: string;
   breadcrumb?: string;
   meta?: string;
   subhead?: string;
+  hideTitle?: boolean;
 }
 
-const { title, breadcrumb, meta, subhead } = Astro.props;
+const { title, breadcrumb, meta, subhead, hideTitle = false } = Astro.props;
 ---
 
 <header class="page-head">
@@ -14,7 +15,7 @@ const { title, breadcrumb, meta, subhead } = Astro.props;
     <p class="kbm-breadcrumb">{breadcrumb}</p>
   )}
 
-  <h1 class="page-title">{title}</h1>
+  {title && !hideTitle && <h1 class="page-title">{title}</h1>}
 
   {subhead && (
     <p class="page-subhead">{subhead}</p>
