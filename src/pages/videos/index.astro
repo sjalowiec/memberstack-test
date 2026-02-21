@@ -25,13 +25,33 @@ import videos from "../../data/videos-public.json";
       />
     </div>
 
-    <div class="category-bar">
-      <div class="category-bar-right">
-        <label for="category-select" class="sr-only">Category</label>
-        <select id="category-select" class="category-select" aria-label="Video category"></select>
+    <div class="category-band">
+      <div class="category-band__inner">
+        <div class="category-bar" id="categoryBar">
+          <label for="category-select" class="sr-only">Category</label>
+
+          <!-- Keep the select for fallback + data/state, but hide it -->
+          <select id="category-select" class="sr-only" aria-label="Video category"></select>
+
+          <!-- Custom UI -->
+          <button
+            id="categoryTrigger"
+            class="category-trigger"
+            type="button"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-controls="categoryMenu"
+          >
+            <span class="category-prefix">Category:</span>
+          <span id="categoryLabel" class="category-label">All Videos</span>
+            <span class="category-chevron" aria-hidden="true">▾</span>
+          </button>
+
+          <div id="categoryMenu" class="category-menu" role="listbox" aria-label="Video categories" hidden></div>
+        </div>
       </div>
     </div>
-    <div class="kbm-card">Test</div>
+
 
     <div id="video-grid" class="video-grid"></div>
   </div>
@@ -62,16 +82,6 @@ import videos from "../../data/videos-public.json";
     const requested = new URLSearchParams(location.search).get("cat");
     const defaultCategory = (requested && categories.includes(requested)) ? requested : (categories[0] || "");
 
-    if (selectEl) {
-      categories.forEach(c => {
-        const opt = document.createElement("option");
-        opt.value = c;
-        opt.textContent = c;
-        selectEl.appendChild(opt);
-      });
-      selectEl.value = defaultCategory;
-    }
-
     function setCat(cat) {
       const qs = cat ? "?cat=" + encodeURIComponent(cat) : "";
       history.replaceState(null, "", location.pathname + qs);
@@ -93,19 +103,156 @@ import videos from "../../data/videos-public.json";
         const poster = v.posterUrl
           ? "<img class=\"video-card__img\" src=\"" + v.posterUrl.replace(/"/g, "&quot;") + "\" alt=\"\" loading=\"lazy\" />"
           : "";
-        return "<a class=\"video-card\" href=\"" + href + "\">" + poster + "<div class=\"video-card__title\">" + title + "</div></a>";
+        const desc = (v.description || v.summary || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const isFree = Boolean(v.isFree || v.free || v.access === "free");
+
+        return (
+          "<a class=\"kbm-card\" href=\"" + href + "\">" +
+            (isFree ? "<span class=\"kbm-card-ribbon\">Free</span>" : "") +
+            poster +
+            "<h3 class=\"kbm-card__title\">" + title + "</h3>" +
+            (desc ? "<p class=\"kbm-card__desc\">" + desc + "</p>" : "") +
+          "</a>"
+        );
       }).join("");
     }
 
     render(defaultCategory);
 
-    if (selectEl) {
-      selectEl.addEventListener("change", function () {
-        const cat = this.value || "";
-        setCat(cat);
-        render(cat);
+    /* ---------- Custom dropdown UI ---------- */
+    const trigger = document.getElementById("categoryTrigger");
+    const label = document.getElementById("categoryLabel");
+    const menu = document.getElementById("categoryMenu");
+
+    function setLabelFromValue(val) {
+      if (!label) return;
+      label.textContent = val ? val : "All Videos";
+    }
+
+    function openMenu() {
+      if (!trigger || !menu) return;
+      menu.hidden = false;
+      menu.removeAttribute("hidden");
+      trigger.setAttribute("aria-expanded", "true");
+    }
+
+    function closeMenu() {
+      if (!trigger || !menu) return;
+      menu.hidden = true;
+      menu.setAttribute("hidden", "");
+      trigger.setAttribute("aria-expanded", "false");
+    }
+
+    function toggleMenu() {
+      if (!menu) return;
+      if (menu.hidden) openMenu();
+      else closeMenu();
+    }
+
+    function buildMenuOptions(cats) {
+      if (!menu) return;
+      menu.innerHTML = "";
+
+      // Add "All Videos"
+      const allBtn = document.createElement("button");
+      allBtn.type = "button";
+      allBtn.className = "category-option";
+      allBtn.setAttribute("role", "option");
+      allBtn.setAttribute("data-value", "");
+      allBtn.textContent = "All Videos";
+      menu.appendChild(allBtn);
+
+      cats.forEach((c) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "category-option";
+        btn.setAttribute("role", "option");
+        btn.setAttribute("data-value", c);
+        btn.textContent = c;
+        menu.appendChild(btn);
       });
     }
+
+    function syncSelectedUI(val) {
+      setLabelFromValue(val);
+
+      if (menu) {
+        Array.from(menu.querySelectorAll(".category-option")).forEach((btn) => {
+          const v = btn.getAttribute("data-value") || "";
+          btn.setAttribute("aria-selected", v === (val || "") ? "true" : "false");
+        });
+      }
+
+      // Keep the hidden select in sync (fallback)
+      if (selectEl) {
+        selectEl.value = val || "";
+      }
+    }
+
+    // Build hidden select options + custom menu options
+    if (selectEl) {
+      selectEl.innerHTML = "";
+      const optAll = document.createElement("option");
+      optAll.value = "";
+      optAll.textContent = "All Videos";
+      selectEl.appendChild(optAll);
+
+      categories.forEach((c) => {
+        const o = document.createElement("option");
+        o.value = c;
+        o.textContent = c;
+        selectEl.appendChild(o);
+      });
+    }
+
+    buildMenuOptions(categories);
+
+    // Initial UI sync
+    syncSelectedUI(defaultCategory);
+
+    // Toggle open/close
+    if (trigger) {
+      trigger.addEventListener("click", () => toggleMenu());
+    }
+
+    // Click option to select
+    if (menu) {
+      menu.addEventListener("click", (e) => {
+        const btn = e.target && e.target.closest ? e.target.closest(".category-option") : null;
+        if (!btn) return;
+        const val = btn.getAttribute("data-value") || "";
+        setCat(val);
+        render(val);
+        syncSelectedUI(val);
+        closeMenu();
+      });
+    }
+
+    // Close on outside click
+    document.addEventListener("click", (e) => {
+      if (!menu || !trigger) return;
+      const t = e.target;
+      const inside = (t === trigger) || trigger.contains(t) || menu.contains(t);
+      if (!inside) closeMenu();
+    });
+
+    // Close on ESC
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeMenu();
+    });
+
+    // Add a "stuck" class for polish once the band pins to the top
+    const band = document.querySelector(".category-band");
+    if (band) {
+      const onScroll = () => {
+        const r = band.getBoundingClientRect();
+        const top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--site-header-offset")) || 110;
+        band.classList.toggle("is-stuck", r.top <= top + 1);
+      };
+      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll(); // run once so it sets correctly on load
+    }
+    /* ---------- end custom dropdown ---------- */
     })();
   </script>
 
@@ -116,54 +263,106 @@ import videos from "../../data/videos-public.json";
       padding: calc(var(--header-height, 140px) + 2rem) 20px 80px;
     }
 
+    /* =====================================
+       Custom Category Dropdown (Styled)
+       ===================================== */
+
     .category-bar {
       position: sticky;
-      top: var(--site-header-offset, 0px);
-      z-index: 10;
-      background: var(--color-bg, #fff);
-      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-      margin: 0 -20px 1rem;
-      padding: 0 20px;
+      top: var(--site-header-offset, 110px);
+      z-index: 30;
+
+      background: var(--kbm-green, #52682d);
+      border-radius: 14px;
+      padding: 0.65rem 0.9rem;
+      margin: 0.75rem 0 1.5rem 0;
+
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
     }
 
-    .category-bar-inner {
+    /* Button that looks like a label, not an input */
+    .category-trigger {
+      width: 100%;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1rem;
-      min-height: 52px;
-    }
+      gap: 0.75rem;
 
-    .category-bar-left {
-      display: flex;
-      align-items: baseline;
-      gap: 0.5rem;
+      background: transparent;
+      border: 0;
+      padding: 0.25rem 0.35rem;
+      cursor: pointer;
+
+      color: #fff;
+      font-size: 1.15rem;
+      font-weight: 500;
+      text-align: left;
     }
 
     .category-label {
-      font-weight: 600;
-      font-size: 1.05rem;
+      display: block;
+      white-space: nowrap;
     }
 
-    .category-count {
-      font-size: 0.9rem;
-      opacity: 0.75;
+    .category-chevron {
+      flex: 0 0 auto;
+      opacity: 0.9;
     }
 
-    .category-select {
-      padding: 0.4rem 2rem 0.4rem 0.6rem;
-      font-size: 0.95rem;
-      border: 1px solid rgba(0, 0, 0, 0.2);
-      border-radius: 8px;
-      background: var(--color-bg, #fff);
+    /* Dropdown panel — calm and clean */
+    #categoryBar .category-menu {
+      margin-top: 0.6rem;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 0.5rem;
+      border: 1px solid rgba(0,0,0,0.10);
+      box-shadow: 0 18px 44px rgba(0,0,0,0.14);
+
+      max-height: min(52vh, 420px);
+      overflow: auto;
+
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    /* Option rows — remove "input box" vibe */
+    #categoryBar .category-option {
+      all: unset;
+      box-sizing: border-box;
+
+      display: block;
+      width: 100%;
+
+      padding: 0.55rem 0.75rem;
+      border-radius: 10px;
+
       cursor: pointer;
-      min-width: 180px;
+      user-select: none;
+
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      font-size: 0.98rem;
+      line-height: 1.2;
+      color: #1f2937;
+
+      /* IMPORTANT: no border/outline box look */
+      border: none;
+      background: transparent;
     }
 
-    .category-select:hover,
-    .category-select:focus {
-      border-color: rgba(0, 0, 0, 0.35);
-      outline: none;
+    /* Hover/focus — subtle tint */
+    #categoryBar .category-option:hover,
+    #categoryBar .category-option:focus {
+      background: rgba(82,104,45,0.10);
+    }
+
+    /* Selected — slightly stronger tint */
+    #categoryBar .category-option[aria-selected="true"] {
+      background: rgba(82,104,45,0.16);
+      font-weight: 600;
     }
 
     .video-title-row {
@@ -308,6 +507,120 @@ import videos from "../../data/videos-public.json";
       font-size: 0.9rem;
       opacity: 0.75;
       margin-top: 4px;
+    }
+  </style>
+
+  <style is:global>
+    /* Full-width sticky band behind the dropdown */
+    .category-band {
+      position: sticky;
+      top: var(--site-header-offset, 110px);
+      z-index: 40;
+
+      background: rgba(82, 104, 45, 0.06); /* always visible */
+      backdrop-filter: blur(6px);          /* always on, subtle */
+
+      padding: 0.2rem 0;              /* was 0.35rem */
+      margin: 0.5rem 0 1rem 0;        /* slightly tighter */
+
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+
+      transition: box-shadow 200ms ease, backdrop-filter 200ms ease;
+    }
+
+    /* stronger only when stuck */
+    .category-band.is-stuck {
+      box-shadow: 0 8px 30px rgba(0,0,0,0.10);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Align band content to the same width as your page content */
+    .category-band__inner {
+      max-width: var(--page-max, 1100px);
+      margin: 0 auto;
+      padding: 0 var(--page-pad, 16px);
+
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .category-prefix {
+      font-size: 0.75rem;
+      font-weight: 400;
+      opacity: 0.6;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-right: 0.5rem;
+    }
+
+    /* Make the inner dropdown pill use its own sticky behavior = off (band handles stickiness) */
+    #categoryBar.category-bar {
+      position: relative; /* NOT sticky now */
+      top: auto;
+      z-index: 1;
+
+      background: var(--kbm-green, #52682d);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    /* --- Category dropdown: force [hidden] to work --- */
+    #categoryBar #categoryMenu[hidden] {
+      display: none !important;
+    }
+
+    /* --- Sticky bar sizing/shape --- */
+    #categoryBar.category-bar {
+      z-index: 50;
+
+      display: inline-flex;
+      width: auto;
+      min-width: 260px;
+      max-width: min(100%, 600px);
+
+      padding: 0.4rem 0.8rem;   /* tighter vertical */
+      border-radius: 14px;
+    }
+
+    /* Button */
+    #categoryBar .category-trigger {
+      width: 100%;
+      padding: 0.2rem 0.4rem;
+
+      font-size: 1.05rem;
+      font-weight: 500;
+    }
+
+    .category-chevron {
+      font-size: 0.9rem;
+    }
+
+    /* Dropdown panel floats, doesn't push content */
+    #categoryBar #categoryMenu.category-menu {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 0.5rem);
+      width: min(420px, 92vw);
+
+      margin-top: 0 !important;
+    }
+
+    /* Options: phone-friendly tap targets */
+    #categoryBar .category-option {
+      font-size: 1.05rem;
+      padding: 0.85rem 0.9rem;
+      min-height: 44px; /* touch target */
+    }
+
+    /* Mobile: bar and menu full width */
+    @media (max-width: 768px) {
+      #categoryBar.category-bar {
+        width: 100%;
+        display: flex;
+      }
+      #categoryBar #categoryMenu.category-menu {
+        width: 100%;
+      }
+      
     }
   </style>
 </Layout>
