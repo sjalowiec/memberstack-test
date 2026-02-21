@@ -1378,3 +1378,8 @@ p {
   padding-bottom: 80px;
   padding-left: 20px;
 }
+.section-divider {
+  border: 0;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  margin: 16px 0 24px;
+}

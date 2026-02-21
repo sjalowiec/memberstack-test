@@ -10,19 +10,19 @@ const sorted = [...videos].sort((a, b) =>
 ---
 
 <Layout title="Videos" description="Browse and search videos.">
- 
+  <div class="page-wrap">
   <PageHead
     title="Video Library"
     breadcrumb="Home / Videos"
   />
-
+ 
   <section class="video-library">
     <input
       id="videoSearch"
       type="search"
       placeholder="Search videos…"
       autocomplete="off"
-      class="video-search"
+      class="video-search"    
     />
 
     <div id="videoCount" class="video-count">
@@ -43,6 +43,7 @@ const sorted = [...videos].sort((a, b) =>
       ))}
     </ul>
   </section>
+  </div>
  
 
   <script>
