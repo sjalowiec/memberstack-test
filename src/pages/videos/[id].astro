@@ -1,0 +1,527 @@
+---
+import videos from "../../data/videos-public.json";
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+import jumplinksData from "../../../data/jumplinks-by-content.json";
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  return videos.map((v) => ({
+    params: { id: String(v.content_id) },
+  }));
+}
+
+const id = Astro.params.id;
+const video = videos.find((v) => String(v.content_id) === id);
+if (!video) {
+  throw new Error(`Video not found: ${id}`);
+}
+const forceMember = Astro.url.searchParams.get("member") === "1";
+const contentId = String((Astro.params as Record<string, unknown>).content_id ?? (Astro.params as Record<string, unknown>).id ?? (Astro.params as Record<string, unknown>).slug ?? "");
+const jlRow = (jumplinksData as Record<string, unknown>[]).find((r) => String(r.content_id) === contentId);
+const jumplinks = ((jlRow?.jumplinks ?? []) as { t: number; label: string; code?: string }[]);
+
+const v = video as Record<string, unknown>;
+const hasTranscript = Boolean(
+  v.transcript != null && String(v.transcript).trim()
+);
+const vimeoId = video.vimeo_id;
+
+---
+<Layout title={video.title} description={video.description ?? ""}>
+  <div class="page-wrap">
+    <PageHead title={video.title} breadcrumb="Home / Videos" />
+
+    <article class="video-detail" data-content-id={video.content_id}>
+      <section class="video-player">
+        <div data-view="member" data-test-member={forceMember ? "true" : undefined}>
+          {true ? (
+            <div class="vimeo-wrap">
+              <iframe
+                class="vimeo-player"
+                src={`https://player.vimeo.com/video/${vimeoId}`}
+                frameborder="0"
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowfullscreen
+              />
+            </div>
+          ) : null}
+        </div>
+        {!forceMember && (
+          <div data-view="guest" class="locked-video">
+            {video.posterUrl && (
+              <img class="locked-poster" src={video.posterUrl} alt="" />
+            )}
+            <a class="locked-link" href="/join" aria-label="Join to unlock this video">
+              <div class="locked-content">
+                <p class="locked-headline">Unlock the full video and follow along.</p>
+                <p class="locked-subhead">Part of the Knit It Now Member Library. Join for full access.</p>
+                <span class="unlock-button">Unlock this video</span>
+              </div>
+            </a>
+          </div>
+        )}
+      </section>
+
+      {jumplinks.length > 0 && (
+        <nav class="video-jumplinks" aria-label="Jump links">
+          <div class="jumplinks-head">
+            <h2>Jump to</h2>
+          </div>
+          <div class="jumplinks-pills">
+            {jumplinks.map((j) => (
+              <a href="#" class="jump-pill jl-pill" data-t={j.t}>
+                <span class="jump-label">{j.label}</span>
+                <span class="jump-time">{j.code != null && j.code !== "" ? j.code : j.t + "s"}</span>
+              </a>
+            ))}
+          </div>
+        </nav>
+      )}
+
+      {import.meta.env.DEV && jumplinks.length === 0 && (
+        <p class="video-jumplinks-dev-msg">No jumplinks found for content_id: {contentId}</p>
+      )}
+
+      <section id="jumplinks-wrap" class="video-jumplinks-wrap" hidden>
+        <h3 class="video-jumplinks-title">Jump to section</h3>
+        <div id="jumplinks" class="video-jumplinks-list"></div>
+      </section>
+
+      {video.description && (
+        <section class="video-description">
+          <div class="desc-card">
+            <div set:html={video.description} />
+          </div>
+        </section>
+      )}
+
+      {hasTranscript && (
+        <section class="video-transcript">
+          <details>
+            <summary>Transcript</summary>
+            <div class="transcript-content" set:html={String(v.transcript ?? "")} />
+          </details>
+        </section>
+      )}
+    </article>
+  </div>
+</Layout>
+<script is:inline>
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("member") === "1") {
+    document.documentElement.setAttribute("data-test-member", "true");
+  }
+</script>
+<script is:inline>
+  (function () {
+    const as = new URLSearchParams(window.location.search).get("as");
+    const member = new URLSearchParams(window.location.search).get("member") === "1";
+    const view = member ? "member" : ((as === "member" || as === "guest") ? as : "guest");
+    document.querySelectorAll("[data-view]").forEach((el) => {
+      el.style.display = (el.getAttribute("data-view") === view) ? "" : "none";
+    });
+  })();
+</script>
+<script src="https://player.vimeo.com/api/player.js"></script>
+<script is:inline>
+  window.initJumplinksPills = function () {
+    var iframe = document.querySelector(".vimeo-player");
+    var pills = Array.from(document.querySelectorAll(".jl-pill"));
+    if (!iframe || !pills.length) return;
+    if (typeof Vimeo === "undefined") return;
+    var player = new Vimeo.Player(iframe);
+    var points = pills
+      .map(function (el) { return { el: el, t: Number(el.dataset.t || 0) }; })
+      .sort(function (a, b) { return a.t - b.t; });
+    pills.forEach(function (pill) {
+      pill.addEventListener("click", function (e) {
+        e.preventDefault();
+        player.setCurrentTime(Number(pill.dataset.t || 0));
+      });
+    });
+    player.on("timeupdate", function (data) {
+      var currentSeconds = data.seconds;
+      var lastPoint = null;
+      for (var i = 0; i < points.length; i++) {
+        if (points[i].t <= currentSeconds + 0.2) lastPoint = points[i];
+      }
+      points.forEach(function (p) { p.el.classList.remove("is-active"); });
+      if (lastPoint) lastPoint.el.classList.add("is-active");
+    });
+  };
+</script>
+<script is:inline define:vars={{ contentId: video.content_id }}>
+  (function () {
+    const cid = typeof contentId !== "undefined" ? String(contentId) : document.querySelector(".video-detail")?.getAttribute("data-content-id");
+    if (!cid) return;
+
+    const player = document.querySelector(".video-player");
+    const videoEmbed = document.getElementById("video-embed");
+    const jumplinksWrap = document.getElementById("jumplinks-wrap");
+    const jumplinksList = document.getElementById("jumplinks");
+
+    if (videoEmbed && videoEmbed.querySelector(".vimeo-player") && player) {
+      player.classList.add("is-unlocked");
+      if (typeof initJumplinksPills === "function") initJumplinksPills();
+    }
+
+    fetch("/api/vimeo-embed.json?content_id=" + encodeURIComponent(cid))
+      .then(function (res) { return res.json().then(function (data) { return { res: res, data: data }; }); })
+      .then(function (ref) {
+        if (videoEmbed && videoEmbed.querySelector(".vimeo-player")) {
+          if (player) player.classList.add("is-unlocked");
+          if (typeof initJumplinksPills === "function") initJumplinksPills();
+          return;
+        }
+        if (ref.res.ok && ref.data && ref.data.embedUrl) {
+          const iframe = document.createElement("iframe");
+          let embedSrc = ref.data.embedUrl;
+          embedSrc += (embedSrc.indexOf("?") >= 0 ? "&" : "?") + "api=1&player_id=video-" + cid;
+          iframe.src = embedSrc;
+          iframe.className = "vimeo-player";
+          iframe.width = 800;
+          iframe.height = 450;
+          iframe.frameBorder = "0";
+          iframe.allow = "autoplay; fullscreen";
+          iframe.allowFullscreen = true;
+          if (videoEmbed) {
+            videoEmbed.appendChild(iframe);
+            if (player) player.classList.add("is-unlocked");
+            if (typeof initJumplinksPills === "function") initJumplinksPills();
+          }
+        }
+      })
+      .catch(function () {});
+
+    fetch("/api/jumplinks.json?content_id=" + encodeURIComponent(cid))
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        const links = data && Array.isArray(data.jumplinks) ? data.jumplinks : [];
+        if (links.length > 0 && jumplinksList && jumplinksWrap) {
+          links.forEach(function (item) {
+            const a = document.createElement("a");
+            a.href = "#t=" + (item.t != null ? item.t : 0);
+            a.textContent = item.label || "Section";
+            a.className = "video-jumplink";
+            jumplinksList.appendChild(a);
+          });
+          jumplinksWrap.hidden = false;
+        }
+      })
+      .catch(function () {});
+  })();
+</script>
+
+<style>
+  [data-view="member"] { display: none; }
+  html[data-test-member="true"] [data-view="member"] { display: block; }
+  html[data-test-member="true"] [data-view="guest"] { display: none; }
+
+  .video-detail {
+    margin-top: 0;
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  /* ONE consistent frame for both unlocked and locked */
+  .video-detail .video-player {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #000;
+    position: relative;
+  }
+
+  /* Video embed: hidden until API returns embedUrl; client adds .is-unlocked */
+  .video-detail .video-player #video-embed {
+    position: absolute;
+    inset: 0;
+    display: none;
+  }
+
+  .video-detail .video-player.is-unlocked #video-embed {
+    display: block;
+  }
+
+  .video-detail .video-player.is-unlocked .locked-video {
+    display: none;
+  }
+
+  .video-detail #video-embed iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .vimeo-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .vimeo-player {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  /* Jumplinks: shown when API returns list */
+  .video-detail .video-jumplinks-wrap {
+    margin-top: 0.5rem;
+  }
+
+  .video-detail .video-jumplinks-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .video-detail .video-jumplinks-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .video-detail .video-jumplink {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.9rem;
+    color: var(--kbm-green, #52682d);
+    text-decoration: none;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.8);
+  }
+
+  .video-detail .video-jumplink:hover {
+    background: rgba(82, 104, 45, 0.08);
+  }
+
+  .video-jumplinks {
+    margin-top: 16px;
+  }
+
+  .jumplinks-head h2 {
+    font-size: 1rem;
+    margin: 0 0 10px;
+  }
+
+  .jumplinks-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .jump-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 999px;
+    text-decoration: none;
+    line-height: 1;
+    background: rgba(255, 255, 255, 0.8);
+    transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+  }
+
+  .jump-pill:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.22);
+  }
+
+  .jump-pill:focus {
+    outline: 2px solid rgba(0, 0, 0, 0.25);
+    outline-offset: 2px;
+  }
+
+  .jump-pill.is-active {
+    background: rgba(82, 104, 45, 0.12);
+    border-color: var(--kbm-green, #52682d);
+  }
+
+  .jump-icon {
+    font-size: 0.95rem;
+    opacity: 0.75;
+  }
+
+  .jump-label {
+    font-weight: 600;
+  }
+
+  .jump-time {
+    font-size: 0.85rem;
+    opacity: 0.65;
+  }
+
+  .video-detail .video-jumplinks-dev-msg {
+    margin: 0.5rem 0 0;
+    font-size: 0.9rem;
+    color: #b45309;
+  }
+
+  /* Locked overlay inside the same frame */
+  .video-detail .locked-video {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 1.25rem;
+    color: #fff;
+  }
+
+  /* Optional poster as blurred background */
+  .video-detail .locked-video .locked-poster {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(2px);
+    transform: scale(1.05);
+    opacity: 0.75;
+  }
+
+  .video-detail .locked-video::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.05),
+      rgba(0, 0, 0, 0.18)
+    );
+  }
+
+  .video-detail .locked-video .locked-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .video-detail .locked-video .locked-content {
+    position: relative;
+    text-align: center;
+    width: 100%;
+    max-width: 48ch;
+    margin: 0 auto;
+    padding: 0 0.5rem;
+  }
+
+  .video-detail .locked-video .locked-headline {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.25;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  }
+
+  .video-detail .locked-video .locked-subhead {
+    margin: 0.75rem 0 0;
+    font-size: 1rem;
+    line-height: 1.5;
+    opacity: 0.95;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  .video-detail .locked-video .unlock-button {
+    display: inline-block;
+    margin-top: 1.25rem;
+    padding: 0.65rem 1.35rem;
+    background: rgba(255, 255, 255, 0.95);
+    color: #1a1a2e;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 999px;
+    border: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .video-detail .locked-video .locked-link:hover .unlock-button {
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .video-detail .video-description {
+    max-width: 75ch;
+    margin-top: 1.25rem;
+  }
+
+  .video-detail .desc-card {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
+  }
+
+  .video-detail .desc-card ul,
+  .video-detail .desc-card p {
+    margin: 0 0 0.75rem 0;
+  }
+
+  .video-detail .desc-card ul:last-child,
+  .video-detail .desc-card p:last-child {
+    margin-bottom: 0;
+  }
+
+  .video-detail .video-transcript {
+    margin-bottom: 0;
+  }
+
+  .video-detail .video-transcript details {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  .video-detail .video-transcript summary {
+    padding: 0.65rem 1rem;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.95rem;
+    list-style: none;
+    color: var(--kbm-green, #52682d);
+    transition: background 0.15s ease;
+  }
+
+  .video-detail .video-transcript summary:hover {
+    background: rgba(82, 104, 45, 0.06);
+  }
+
+  .video-detail .video-transcript summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .video-detail .transcript-content {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    font-size: 1rem;
+    line-height: 1.7;
+    max-width: 70ch;
+  }
+
+  .video-detail .transcript-content p {
+    margin: 0 0 0.75rem 0;
+  }
+
+  .video-detail .transcript-content p:last-child {
+    margin-bottom: 0;
+  }
+</style>

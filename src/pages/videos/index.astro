@@ -98,7 +98,7 @@ import videos from "../../data/videos-public.json";
       }
 
       grid.innerHTML = filtered.map(v => {
-        const href = v.content_id ? "/videos/" + v.content_id + "/" + v.slug : "/videos/" + (v.slug || "");
+        const href = v.content_id ? "/videos/" + v.content_id : "/videos/" + (v.slug || "");
         const title = (v.title || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         const poster = v.posterUrl
           ? "<img class=\"video-card__img\" src=\"" + v.posterUrl.replace(/"/g, "&quot;") + "\" alt=\"\" loading=\"lazy\" />"
@@ -225,6 +225,9 @@ import videos from "../../data/videos-public.json";
         render(val);
         syncSelectedUI(val);
         closeMenu();
+
+        const bar = document.getElementById("categoryBar");
+        if (bar) bar.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     }
 
