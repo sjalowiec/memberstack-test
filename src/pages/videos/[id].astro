@@ -2,7 +2,6 @@
 import videos from "../../data/videos-public.json";
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
-import jumplinksData from "../../../data/jumplinks-by-content.json";
 
 export const prerender = true;
 
@@ -14,26 +13,29 @@ export function getStaticPaths() {
 
 const id = Astro.params.id;
 const video = videos.find((v) => String(v.content_id) === id);
-if (!video) {
-  throw new Error(`Video not found: ${id}`);
-}
 const forceMember = Astro.url.searchParams.get("member") === "1";
 const contentId = String((Astro.params as Record<string, unknown>).content_id ?? (Astro.params as Record<string, unknown>).id ?? (Astro.params as Record<string, unknown>).slug ?? "");
-const jlRow = (jumplinksData as Record<string, unknown>[]).find((r) => String(r.content_id) === contentId);
-const jumplinks = ((jlRow?.jumplinks ?? []) as { t: number; label: string; code?: string }[]);
+const jumplinks: { t: number; label: string; code?: string }[] = [];
 
-const v = video as Record<string, unknown>;
-const hasTranscript = Boolean(
-  v.transcript != null && String(v.transcript).trim()
-);
-const vimeoId = video.vimeo_id;
+const v = video as Record<string, unknown> | undefined;
+const hasTranscript = Boolean(v && v.transcript != null && String(v.transcript).trim());
+const vimeoId = video?.vimeo_id;
 
 ---
-<Layout title={video.title} description={video.description ?? ""}>
+<Layout title={video ? video.title : "Video not found"} description={video?.description ?? "Video not found."}>
   <div class="page-wrap">
-    <PageHead title={video.title} breadcrumb="Home / Videos" />
+    {!video ? (
+      <>
+        <PageHead title="Video not found" breadcrumb="Home / Videos" />
+        <article class="video-detail">
+          <p>Video not found. <a href="/videos">Back to Videos</a>.</p>
+        </article>
+      </>
+    ) : (
+      <>
+        <PageHead title={video.title} breadcrumb="Home / Videos" />
 
-    <article class="video-detail" data-content-id={video.content_id}>
+        <article class="video-detail" data-content-id={video.content_id}>
       <section class="video-player">
         <div data-view="member" data-test-member={forceMember ? "true" : undefined}>
           {true ? (
@@ -101,11 +103,13 @@ const vimeoId = video.vimeo_id;
         <section class="video-transcript">
           <details>
             <summary>Transcript</summary>
-            <div class="transcript-content" set:html={String(v.transcript ?? "")} />
+            <div class="transcript-content" set:html={String(v?.transcript ?? "")} />
           </details>
         </section>
       )}
-    </article>
+        </article>
+      </>
+    )}
   </div>
 </Layout>
 <script is:inline>
@@ -152,7 +156,7 @@ const vimeoId = video.vimeo_id;
     });
   };
 </script>
-<script is:inline define:vars={{ contentId: video.content_id }}>
+<script is:inline define:vars={{ contentId: video?.content_id }}>
   (function () {
     const cid = typeof contentId !== "undefined" ? String(contentId) : document.querySelector(".video-detail")?.getAttribute("data-content-id");
     if (!cid) return;
