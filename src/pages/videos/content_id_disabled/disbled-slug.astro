@@ -2,7 +2,6 @@
 import videos from "../../../data/videos-public.json";
 import Layout from "../../../layouts/Layout.astro";
 import PageHead from "../../../components/PageHead.astro";
-import jumplinksData from "../../../../data/jumplinks-by-content.json";
 
 export function getStaticPaths() {
   return videos.map((v) => ({
@@ -10,215 +9,26 @@ export function getStaticPaths() {
       content_id: String(v.content_id),
       slug: String(v.slug ?? "").replaceAll("|", "-"),
     },
-    props: { video: v },
+    props: {},
   }));
 }
-
-const { video } = Astro.props;
-const v = video as Record<string, unknown>;
-const contentId = Number(v.content_id);
-type JumplinksRow = { content_id: number; vimeo_id?: number; jumplinks?: Array<{ t: number; label: string; code?: string }> };
-const jumplinksArr = jumplinksData as unknown as JumplinksRow[];
-const row = jumplinksArr.find((r) => Number(r.content_id) === contentId);
-const jumplinks = row?.jumplinks ?? [];
-const vimeoId = row?.vimeo_id && row.vimeo_id !== 0 ? String(row.vimeo_id) : null;
-const hasTranscript = Boolean(
-  v.transcript != null && String(v.transcript).trim()
-);
 ---
 
-<Layout title={video.title} description={video.description ?? ""}>
+<Layout title="Video link updated" description="This video link has been updated.">
   <div class="page-wrap">
-    <PageHead title={video.title} breadcrumb={`Home / Videos`} />
+    <PageHead title="Video link updated" breadcrumb="Home / Videos" />
 
-    <article class="video-detail">
-      <div class="video-debug-banner" role="status" aria-live="polite">
-        DEBUG: /videos/[slug].astro IS RENDERING
-        {Astro.params.slug != null && ` (slug: ${Astro.params.slug})`}
-      </div>
-      {true && (
-        <pre class="video-debug">
-{`content_id: ${contentId}
-row exists: ${row ? "YES" : "NO"}
-jumplinks length: ${jumplinks.length}`}
-        </pre>
-      )}
-      <section class="video-player" aria-label="Video">
-        {vimeoId ? (
-          <div class="video-embed">
-            <iframe
-              src={`https://player.vimeo.com/video/${vimeoId}`}
-              width="800"
-              height="450"
-              frameborder="0"
-              allow="autoplay; fullscreen"
-              allowfullscreen
-            />
-          </div>
-        ) : (
-          <div class="locked-video">
-            <p>This video is for members.</p>
-            {video.posterUrl && (
-              <img src={video.posterUrl} alt={video.title} width="800" />
-            )}
-          </div>
-        )}
-      </section>
-
-      {jumplinks.length > 0 && (
-        <nav class="video-jumplinks" aria-label="Jump links">
-          <div class="jumplinks-head">
-            <h2>Jump to</h2>
-          </div>
-          <div class="jumplinks-pills">
-            {jumplinks.map((j) => (
-              <a href={"#t=" + j.t} class="jump-pill">
-                <span class="jump-label">{j.label}</span>
-                <span class="jump-time">{j.code != null && j.code !== "" ? j.code : j.t + "s"}</span>
-              </a>
-            ))}
-          </div>
-        </nav>
-      )}
-
-      {video.description && (
-        <section class="video-description" aria-label="Description">
-          <div set:html={video.description} />
-        </section>
-      )}
-
-      {hasTranscript && (
-        <section class="video-transcript" aria-label="Transcript">
-          <details class="kbm-transcript">
-            <summary class="kbm-transcript-summary">Transcript</summary>
-            <div class="kbm-transcript-content" set:html={String(v.transcript ?? "")} />
-          </details>
-        </section>
-      )}
+    <article class="placeholder">
+      <p>This video link has been updated. <a href="/videos">Back to Videos</a>.</p>
     </article>
   </div>
 </Layout>
 
 <style>
-
-
-
-  .video-detail {
-    margin-top: 0;
+  .placeholder {
+    margin-top: 1rem;
   }
-
-  .video-detail .video-player {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #000;
-    margin-bottom: 1.5rem;
-  }
-
-  .video-detail .video-embed {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-
-  .video-detail .video-embed iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
-  }
-
-  .video-detail .locked-video {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #1a1a2e;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    padding: 1rem;
-  }
-
-  .video-detail .locked-video img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-  }
-
-  .video-detail .video-description {
-    margin-bottom: 1.5rem;
-  }
-
-  .video-detail .video-description ul,
-  .video-detail .video-description p {
-    margin: 0 0 0.75rem 0;
-  }
-
-  .video-detail .video-description ul:last-child,
-  .video-detail .video-description p:last-child {
-    margin-bottom: 0;
-  }
-
-  .video-jumplinks {
-    margin-top: 16px;
-  }
-
-  .jumplinks-head h2 {
-    font-size: 1rem;
-    margin: 0 0 10px;
-  }
-
-  .jumplinks-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .jump-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    border-radius: 999px;
-    text-decoration: none;
-    line-height: 1;
-    background: rgba(255, 255, 255, 0.8);
-    transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
-  }
-
-  .jump-pill:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-    border-color: rgba(0, 0, 0, 0.22);
-  }
-
-  .jump-pill:focus {
-    outline: 2px solid rgba(0, 0, 0, 0.25);
-    outline-offset: 2px;
-  }
-
-  .jump-icon {
-    font-size: 0.95rem;
-    opacity: 0.75;
-  }
-
-  .jump-label {
-    font-weight: 600;
-  }
-
-  .jump-time {
-    font-size: 0.85rem;
-    opacity: 0.65;
-  }
-
-  .video-detail .video-transcript {
-    margin-bottom: 0;
+  .placeholder a {
+    text-decoration: underline;
   }
 </style>
