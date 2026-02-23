@@ -22,3 +22,15 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Local Netlify folder
+.netlify
+
+# Local API experiments / build artifacts
+public/api/
+
+# Local data scratch files
+src/data/*.csv
+
+# Backup files
+*.backup
