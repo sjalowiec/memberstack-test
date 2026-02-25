@@ -54,6 +54,7 @@ import videos from "../../data/videos-public.json";
 
 
     <div id="video-grid" class="video-grid"></div>
+    
   </div>
 
   <script id="videos-data" type="application/json" set:html={JSON.stringify(videos)} />
@@ -82,6 +83,52 @@ import videos from "../../data/videos-public.json";
     const requested = new URLSearchParams(location.search).get("cat");
     const defaultCategory = (requested && categories.includes(requested)) ? requested : (categories[0] || "");
 
+    const MEMBER_PLAN_IDS = new Set([
+      "pln_dev-kin-member-eim6011h",
+      "pln_kin-membership-monthly-a59701wy",
+      "pln_kin-membership-annual-qf9g01et",
+    ]);
+
+    async function getViewerState() {
+      try {
+        const res = await window.$memberstackDom?.getAppAndMember?.();
+        const member = res?.data?.member || null;
+        if (!member) return { isLoggedIn: false, isMember: false, member: null };
+
+        const conns = Array.isArray(member.planConnections) ? member.planConnections : [];
+        const activePlanIds = new Set(
+          conns
+            .filter(function (c) { return c && c.status === "ACTIVE" && c.active; })
+            .map(function (c) { return c.planId; })
+            .filter(Boolean)
+        );
+
+        const isMember = [...activePlanIds].some(function (id) { return MEMBER_PLAN_IDS.has(id); });
+        return { isLoggedIn: true, isMember: isMember, member: member };
+      } catch (e) {
+        return { isLoggedIn: false, isMember: false, member: null };
+      }
+    }
+
+    let VIEWER = { isLoggedIn: false, isMember: false, member: null };
+
+    async function waitForMemberstackReady(opts) {
+      const attempts = (opts && opts.attempts) !== undefined ? opts.attempts : 30;
+      const delayMs = (opts && opts.delayMs) !== undefined ? opts.delayMs : 200;
+      for (let i = 0; i < attempts; i++) {
+        try {
+          if (window.$memberstackDom && window.$memberstackDom.getAppAndMember) {
+            const res = await window.$memberstackDom.getAppAndMember();
+            return res;
+          }
+        } catch (e) {
+          // keep trying
+        }
+        await new Promise(function (r) { return setTimeout(r, delayMs); });
+      }
+      return null;
+    }
+
     function setCat(cat) {
       const qs = cat ? "?cat=" + encodeURIComponent(cat) : "";
       history.replaceState(null, "", location.pathname + qs);
@@ -98,17 +145,20 @@ import videos from "../../data/videos-public.json";
       }
 
       grid.innerHTML = filtered.map(v => {
+        const isFree = v.access_level === "open";
         const href = v.content_id ? "/videos/" + v.content_id : "/videos/" + (v.slug || "");
         const title = (v.title || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         const poster = v.posterUrl
-          ? "<img class=\"video-card__img\" src=\"" + v.posterUrl.replace(/"/g, "&quot;") + "\" alt=\"\" loading=\"lazy\" />"
+          ? "<div class=\"video-thumb\"><img class=\"video-card__img\" src=\"" + v.posterUrl.replace(/"/g, "&quot;") + "\" alt=\"\" loading=\"lazy\" />" +
+            (!VIEWER.isMember
+              ? (isFree ? "<div class=\"badge-free\">FREE</div>" : "<div class=\"badge-lock\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"3\" y=\"11\" width=\"18\" height=\"11\" rx=\"2\"></rect><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"></path></svg></div>")
+              : "") +
+            "</div>"
           : "";
         const desc = (v.description || v.summary || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        const isFree = Boolean(v.isFree || v.free || v.access === "free");
 
         return (
           "<a class=\"kbm-card\" href=\"" + href + "\">" +
-            (isFree ? "<span class=\"kbm-card-ribbon\">Free</span>" : "") +
             poster +
             "<h3 class=\"kbm-card__title\">" + title + "</h3>" +
             (desc ? "<p class=\"kbm-card__desc\">" + desc + "</p>" : "") +
@@ -117,7 +167,18 @@ import videos from "../../data/videos-public.json";
       }).join("");
     }
 
-    render(defaultCategory);
+    (async function () {
+      render(defaultCategory);
+
+      const res = await waitForMemberstackReady();
+      if (res && res.data && res.data.member) {
+        VIEWER = await getViewerState();
+      } else {
+        VIEWER = { isLoggedIn: false, isMember: false, member: null };
+      }
+
+      render(defaultCategory);
+    })();
 
     /* ---------- Custom dropdown UI ---------- */
     const trigger = document.getElementById("categoryTrigger");
@@ -491,13 +552,6 @@ import videos from "../../data/videos-public.json";
       color: inherit;
     }
 
-    .video-thumb {
-      width: 120px;
-      height: 68px;
-      object-fit: cover;
-      display: block;
-    }
-
     .video-meta {
       padding: 10px 10px 10px 0;
     }
@@ -514,6 +568,43 @@ import videos from "../../data/videos-public.json";
   </style>
 
   <style is:global>
+    /* Video card thumb + badges (JS-injected) */
+    .video-thumb {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .badge-lock,
+    .badge-free {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .badge-lock {
+      background: var(--kbm-green);
+      color: white;
+    }
+
+    .badge-lock svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 2.5;
+    }
+
+    .badge-free {
+      background: #16a34a;
+      color: white;
+      letter-spacing: 0.5px;
+    }
+
     /* Full-width sticky band behind the dropdown */
     .category-band {
       position: sticky;

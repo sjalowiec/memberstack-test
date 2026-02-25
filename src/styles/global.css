@@ -19,6 +19,24 @@
   --ring: #e5e8e0;
   --font: "Poppins", system-ui, Arial, sans-serif;
 
+  .video-thumb{
+    position: relative;
+    background: #dcdcdc; /* lighter bezel */
+    padding: 8px;        /* thinner frame */
+    border-radius: 20px;
+    box-shadow:
+
+  }
+  
+  .video-thumb img{
+    display:block;
+    width:100%;
+    border-radius: 14px;
+  }
+
+
+
+
   /* Layout spacing */
   --header-height: 6rem;
   --site-header-offset: var(--header-height); /* sticky bars sit below fixed header */
