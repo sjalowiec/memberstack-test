@@ -2,6 +2,7 @@
 import videos from "../../data/videos-public.json";
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
+import LoginNudge from "../../components/auth/LoginNudge.astro";
 
 export const prerender = true;
 
@@ -20,6 +21,15 @@ const contentIdAttr = !Number.isNaN(contentIdForJumplinks) ? String(contentIdFor
 const vimeoId = (video as any)?.vimeo_id;
 const title = (video as any)?.title ?? "Video";
 const description = (video as any)?.description ?? "";
+
+// thumbnail / poster: support full URL, /path, or filename → /images/filename
+const rawPosterUrl = (video as any)?.posterUrl ?? (video as any)?.poster_url ?? "";
+const posterSrc =
+  rawPosterUrl && (rawPosterUrl.startsWith("http") || rawPosterUrl.startsWith("/"))
+    ? rawPosterUrl
+    : rawPosterUrl
+      ? `/images/${rawPosterUrl}`
+      : "";
 ---
 
 <Layout title={video ? title : "Video not found"} description={video ? description : "Video not found."}>
@@ -36,191 +46,172 @@ const description = (video as any)?.description ?? "";
         <PageHead title={title} breadcrumb="Home / Videos" />
 
         <article class="video-detail">
+          {/* PLAYER AREA */}
           <section class="video-player">
-            <div class="vimeo-wrap">
-              <iframe
-                class="vimeo-player"
-                src={`https://player.vimeo.com/video/${vimeoId}`}
-                frameborder="0"
-                allow="autoplay; fullscreen; picture-in-picture"
-                allowfullscreen
-              />
+            {/* Locked (default) */}
+            <div class="gated-locked" data-gated="locked">
+              <div class="teaser-player">
+                {posterSrc ? (
+                  <img class="video-poster" src={posterSrc} alt={title} loading="lazy" />
+                ) : (
+                  <div class="video-poster-fallback" aria-hidden="true"></div>
+                )}
+
+                <div class="locked-overlay">
+                  <h2 class="locked-title">Full video available to members</h2>
+                  <p class="locked-text">
+                    Watch the complete tutorial, scan key sections with jump links, and reference the transcript anytime.
+                  </p>
+
+                  <div class="locked-actions">
+                    <a class="btn btn-primary" href="/join">Become a member</a>
+                    {/* swap /videos for your real pricing / join / Stripe page when ready */}
+                  </div>
+                  <LoginNudge className="locked-nudge" />
+                </div>
+              </div>
+            </div>
+
+            {/* Member-only */}
+            <div class="gated-content" data-gated="content" hidden>
+              {vimeoId ? (
+                <div class="vimeo-wrap">
+                  <iframe
+                    class="vimeo-player"
+                    src={`https://player.vimeo.com/video/${vimeoId}`}
+                    frameborder="0"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowfullscreen
+                  ></iframe>
+                </div>
+              ) : (
+                <p>Video player unavailable for this item.</p>
+              )}
             </div>
           </section>
 
-          <nav class="video-jumplinks" aria-label="Jump links" hidden data-content-id={contentIdAttr}>
+          {/* JUMP LINKS */}
+          <nav class="video-jumplinks" aria-label="Jump links" data-content-id={contentIdAttr}>
             <div class="jumplinks-head"><h2>Jump to</h2></div>
-            <div class="jumplinks" id="jumplinks"></div>
+
+            {/* Locked view: show disabled UI */}
+            <div class="gated-locked" data-gated="locked">
+              <div class="jumplinks-disabled" aria-disabled="true">
+                <p class="locked-inline">
+                  Jump links are available with access.
+                </p>
+              </div>
+            </div>
+
+            {/* Member view: your existing jumplink container */}
+            <div class="gated-content" data-gated="content" hidden>
+              <div class="jumplinks" id="jumplinks"></div>
+            </div>
           </nav>
 
-          {description && (
-            <section class="video-description">
-              <h2>Description</h2>
-              <div class="video-desc-text">
-                <p>{description}</p>
-              </div>
-            </section>
-          )}
+          {/* DESCRIPTION (always visible) */}
+          <section class="video-description">
+            <h2>Description</h2>
+            <div class="video-desc-text" set:html={description}></div>
+          </section>
+
+          {/* TRANSCRIPT LINK (no transcript content for non-members) */}
+          <section class="video-transcript-link">
+            <h2>Transcript</h2>
+
+            <div class="gated-locked" data-gated="locked">
+              <a class="transcript-link is-disabled" aria-disabled="true" role="link" tabindex="-1">
+                View transcript (members)
+              </a>
+            </div>
+
+            <div class="gated-content" data-gated="content" hidden>
+              {/* If you have a real transcript route, link it here */}
+              <a class="transcript-link" href={`/videos/${id}/transcript`}>View transcript</a>
+            </div>
+          </section>
         </article>
+
+        <script>
+          // --- Memberstack gating (client-side unlock) ---
+          const MEMBER_PLAN_IDS = new Set([
+            "pln_dev-kin-member-eim6011h",
+            "pln_kin-membership-monthly-a59701wy",
+            "pln_kin-membership-annual-qf9g01et",
+          ]);
+
+          async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
+            for (let i = 0; i < attempts; i++) {
+              try {
+                const api = window.$memberstackDom?.getAppAndMember;
+                if (typeof api === "function") return await api();
+              } catch (e) {}
+              await new Promise((r) => setTimeout(r, delayMs));
+            }
+            return null;
+          }
+
+          function getViewerStateFromRes(res) {
+            const member = res?.data?.member ?? null;
+            const planConnections = member?.planConnections ?? [];
+            const activePlanIds = new Set(
+              planConnections
+                .filter((p) => (p?.status ?? "").toUpperCase() === "ACTIVE")
+                .map((p) => p?.planId)
+                .filter(Boolean)
+            );
+
+            const isLoggedIn = Boolean(member);
+            const isMember = [...activePlanIds].some((id) => MEMBER_PLAN_IDS.has(id));
+            return { isLoggedIn, isMember, member };
+          }
+
+          function setAccess(hasFullAccess) {
+            document.querySelectorAll('[data-gated="content"]').forEach((el) => {
+              if (hasFullAccess) el.removeAttribute("hidden");
+              else el.setAttribute("hidden", "");
+            });
+            document.querySelectorAll('[data-gated="locked"]').forEach((el) => {
+              if (hasFullAccess) el.setAttribute("hidden", "");
+              else el.removeAttribute("hidden");
+            });
+          }
+
+          (async () => {
+            // default: locked
+            setAccess(false);
+
+            // Dev override (optional): ?mode=full
+            const urlParams = new URLSearchParams(window.location.search);
+            const devFull = urlParams.get("mode") === "full";
+
+            if (devFull) {
+              setAccess(true);
+              return;
+            }
+
+            const res = await waitForMemberstackReady();
+            const viewer = getViewerStateFromRes(res);
+            setAccess(Boolean(viewer.isMember));
+          })();
+        </script>
+
+        <style>
+          /* minimal safety styles; keep or delete if you already have equivalents */
+          .teaser-player { position: relative; border-radius: 16px; overflow: hidden; background: #111; }
+          .video-poster { width: 100%; display: block; }
+          .video-poster-fallback { width: 100%; aspect-ratio: 16/9; background: #222; }
+          /* Ensure overlay text is white and overrides global heading color */
+          .locked-overlay { position: absolute; inset: 0; display: grid; place-content: center; gap: 6px; /* tighter vertical spacing */ padding: 18px; text-align: center; background: rgba(0,0,0,.55); color: #fff; }
+          .locked-overlay .locked-title { color: #fff; margin-bottom: 6px; }
+          .locked-overlay .locked-text { margin-top: 0; }
+          .locked-overlay .locked-nudge { margin-top: 10px; }
+          .locked-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+          .btn { padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,.35); color: white; text-decoration: none; }
+          .btn-primary { background: rgba(255,255,255,.15); }
+          .transcript-link.is-disabled { opacity: .55; cursor: not-allowed; text-decoration: none; }
+        </style>
       </>
     )}
   </div>
-
-  <style is:global>
-    .video-detail {
-      display: grid;
-      gap: 18px;
-    }
-  
-    /* Vimeo embed wrapper */
-    .vimeo-wrap {
-      position: relative;
-      width: 100%;
-      padding-top: 56.25%;
-      border-radius: 14px;
-      overflow: hidden;
-      background: rgba(0,0,0,0.06);
-    }
-  
-    .vimeo-wrap iframe {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border: 0;
-    }
-  
-    /* Jump links */
-    .video-jumplinks {
-      display: grid;
-      gap: 10px;
-    }
-  
-    .jumplinks-head h2 {
-      margin: 0;
-      font-size: 16px;
-    }
-  
-    .jumplinks {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-  
-    .jl-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-  
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(0,0,0,0.14);
-  
-      background-color: rgba(255,255,255,0.92);
-      text-decoration: none;
-      color: inherit;
-      line-height: 1;
-  
-      transition: background 120ms ease, transform 120ms ease, border-color 120ms ease;
-    }
-  
-    .jl-pill:hover {
-      background: rgba(0,0,0,0.03);
-      border-color: rgba(0,0,0,0.20);
-    }
-  
-    .jl-pill:active {
-      transform: translateY(1px);
-    }
-  
-    .jl-pill:focus-visible {
-      outline: 2px solid rgba(0,0,0,0.25);
-      outline-offset: 2px;
-    }
-  
-    .jl-icon {
-      display: inline-flex;
-      align-items: center;
-      opacity: 0.7;
-    }
-  
-    .jl-icon svg {
-      width: 12px;
-      height: 12px;
-    }
-  
-    .jl-label {
-      font-size: 14px;
-    }
-  
-    .jl-time {
-      font-size: 11px;
-      opacity: 0.55;
-      font-variant-numeric: tabular-nums;
-    }
-  
-    /* Description */
-    .video-description h2 {
-      margin: 0 0 8px;
-      font-size: 16px;
-    }
-  
-    .video-desc-text p {
-      margin: 0;
-    }
-  </style>
-
-  <script is:inline>
-    window.addEventListener("DOMContentLoaded", async () => {
-      const nav = document.querySelector(".video-jumplinks");
-      const contentIdRaw = nav?.getAttribute("data-content-id") ?? "";
-      const contentId = Number(contentIdRaw);
-      const wrap = document.getElementById("jumplinks");
-      if (!nav || !wrap || !contentIdRaw || Number.isNaN(contentId)) return;
-
-      const url = `/api/jumplinks/${encodeURIComponent(contentIdRaw)}.json`;
-
-      function formatTime(sec) {
-        const s = Math.max(0, Math.floor(Number(sec) || 0));
-        const m = Math.floor(s / 60) % 60;
-        const h = Math.floor(s / 3600);
-        const secPart = String(s % 60).padStart(2, "0");
-        if (h > 0) {
-          const minPart = String(m).padStart(2, "0");
-          return h + ":" + minPart + ":" + secPart;
-        }
-        const minPart = String(m).padStart(2, "0");
-        return minPart + ":" + secPart;
-      }
-      const ffSvg = '<svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" focusable="false" aria-hidden="true"><path d="M2 2l6 6-6 6V2zm6 0l6 6-6 6V2z"/></svg>';
-
-      try {
-        const r = await fetch(url);
-        if (!r.ok) return;
-        const data = await r.json();
-        const rawList = data?.jumplinks;
-        if (!Array.isArray(rawList)) return;
-        const list = rawList.filter(function (j) {
-          const jId = Number(j.content_id ?? j.contentId ?? j.video_id ?? j.videoId ?? j.id ?? NaN);
-          return Number.isNaN(jId) || jId === contentId;
-        });
-        if (list.length === 0) return;
-
-        wrap.innerHTML = list.map(j => `
-          <a href="#" class="jl-pill" data-t="${j.t}">
-            <span class="jl-icon" aria-hidden="true">${ffSvg}</span>
-            <span class="jl-label">${j.label ?? ""}</span>
-            <span class="jl-time">${formatTime(j.t)}</span>
-          </a>
-        `).join("");
-
-        const container = document.getElementById("jumplinks");
-        if (container && container.children.length > 0) {
-          nav?.removeAttribute("hidden");
-        } else {
-          nav?.setAttribute("hidden", "");
-        }
-      } catch {}
-    });
-  </script>
 </Layout>

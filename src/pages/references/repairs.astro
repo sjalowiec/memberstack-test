@@ -1,0 +1,376 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+
+const lastUpdated = "March 2026";
+
+/** Line in a contact entry: either label+value or label+href(+linkText). */
+interface LineItem {
+  label: string;
+  value?: string;
+  href?: string;
+  linkText?: string;
+}
+
+const countries = [
+  {
+    name: "Australia",
+    entries: [
+      {
+        name: "Susan Gleeson",
+        lines: [
+          { label: "Contact", value: "Via Facebook group", href: "https://www.facebook.com/groups/138942638163675/" , linkText: "Perth Machine Knitting Group" },
+          { label: "Location", value: "Western Australia" },
+        ],
+      },
+    ],
+  },
+  {
+    name: "Canada",
+    entries: [
+      {
+        name: "Joanna Kassoulides",
+        lines: [
+          { label: "Website", href: "https://joannakassoulides.wixsite.com/theknittingstudio", linkText: "The Knitting Studio" },
+          { label: "Email", value: "Machineknittingstudio@gmail.com" },
+        ],
+      },
+      {
+        name: "Peter Smith Trading Ltd.",
+        lines: [
+          { label: "Also known as", value: "THE SEW 'N KNIT 'N SERGE OUTLET" },
+          { label: "Phone", value: "1-800-836-6536 / 416-752-1828" },
+          { label: "Email", value: "info@passapcanada.com" },
+        ],
+      },
+    ],
+  },
+  {
+    name: "Germany",
+    entries: [
+      {
+        name: "Strickmaschinen Service",
+        lines: [
+          { label: "Website", href: "https://www.strickmaschinen-service.de/", linkText: "strickmaschinen-service.de" },
+        ],
+      },
+    ],
+  },
+  {
+    name: "Hong Kong",
+    entries: [
+      {
+        name: "Sun Cheong Knitting Machine Co",
+        lines: [
+          { label: "Notes", value: "Parts and accessories" },
+          { label: "Website", href: "https://shop.sckmcl.com.hk/", linkText: "Hong Kong Knitting (shop)" },
+          { label: "Email", value: "hongkong.knitting@gmail.com" },
+        ],
+      },
+    ],
+  },
+  {
+    name: "Italy",
+    entries: [
+      {
+        name: "Donatella",
+        lines: [
+          { label: "Notes", value: "Home knitting machines, accessories, spare parts. Taitexma machines." },
+          { label: "Website", href: "https://xoxkn.it/", linkText: "xoxkn.it" },
+        ],
+      },
+    ],
+  },
+  {
+    name: "Netherlands/Belgium",
+    entries: [
+      {
+        name: "ABS in Tholen",
+        lines: [
+          { label: "Notes", value: "Taitexma machines" },
+          { label: "Website", href: "https://www.abstholen.nl/", linkText: "abstholen.nl" },
+        ],
+      },
+    ],
+  },
+  {
+    name: "New Zealand",
+    entries: [
+      {
+        name: "Emma Parker",
+        lines: [
+          { label: "Business", value: "Flat out Knitting" },
+          { label: "Website", href: "https://flatoutknitting.wordpress.com/", linkText: "flatoutknitting.wordpress.com" },
+          { label: "Services", value: "Taitexma machines" },
+        ],
+      },
+    ],
+  },
+  {
+    name: "Norway",
+    entries: [
+      {
+        name: "Haralds Multi Service as",
+        lines: [
+          { label: "Notes", value: "Repair of knitting machines and other things, mostly Brother and Silver Reed" },
+          { label: "Email", value: "hms.post@outlook.com" },
+          { label: "Contact", value: "Kjell Ivar Bjerke" },
+          { label: "Address", value: "Strengenvegen 6, N-3825 Lunde, Norway" },
+          { label: "Tel", value: "+47 90 17 00 95" },
+        ],
+      },
+    ],
+  },
+  {
+    name: "United Kingdom",
+    entries: [
+      {
+        name: "David Drummond",
+        lines: [
+          { label: "Website", href: "https://www.daviddrummond.co.uk/", linkText: "daviddrummond.co.uk" },
+        ],
+      },
+      {
+        name: "Graham Jones",
+        lines: [
+          { label: "Phone", value: "07495 621110" },
+          { label: "Email", value: "knitman25@gmail.com" },
+        ],
+      },
+      {
+        name: "Troy Proctor (Spartan Knitting Machine Parts)",
+        lines: [
+          { label: "Address", value: "Unit B1d, Trevol Business Park, Torpoint, PL11 2TB" },
+          { label: "Phone", value: "07842 535949" },
+          { label: "Email", value: "perth_66@yahoo.com" },
+          { label: "Notes", value: "Drop-in by appointment only. Generally Devon/Cornwall. House visits for disabled knitters (appointment; someone must be present). No postal repairs." },
+        ],
+      },
+      {
+        name: "Knitting Machine Repairs - Neil",
+        lines: [
+          { label: "Phone", value: "01603 731169" },
+          { label: "Email", value: "knittingmachinerepairs@hotmail.co.uk" },
+          { label: "Address", value: "23 Hammond Way, Sprowston, Norwich, NR7 9HP" },
+        ],
+      },
+      {
+        name: "IBB",
+        lines: [
+          { label: "Notes", value: "Manufactures and sells various knitting machine interface products for most machine brands" },
+          { label: "Website", href: "https://ibab.nl/ibb/en/index.html", linkText: "ibab.nl (IBB)" },
+        ],
+      },
+    ],
+  },
+  {
+    name: "United States",
+    entries: [
+      {
+        name: "Jerry Carriere (Needle-Tek)",
+        lines: [
+          { label: "Address", value: "24917 NE Rawson Rd, Brush Prairie, Washington 98606" },
+          { label: "Phone", value: "360 892-2304" },
+          { label: "Website", href: "http://needle-tek.com", linkText: "needle-tek.com" },
+          { label: "Email", value: "ndlteknew@gmail.com" },
+        ],
+      },
+      {
+        name: "Joyce Knits and Sews",
+        lines: [
+          { label: "Notes", value: "Tools/products for circular sock machine knitting, including cone winders" },
+          { label: "Website", href: "https://joyceknitsandsews.com/", linkText: "joyceknitsandsews.com" },
+        ],
+      },
+      {
+        name: "Spongebar.com",
+        lines: [
+          { label: "Notes", value: "Replacement sponge for plastic machines (Jan 2025). Natalia is sourcing material for other machines." },
+          { label: "Website", href: "https://spongebar.com/", linkText: "spongebar.com" },
+          { label: "Also", value: "Misc accessories for various machines" },
+        ],
+      },
+      {
+        name: "Linda Williams",
+        lines: [
+          { label: "Website", href: "https://www.countryknittingofmaine.com/", linkText: "Country Knitting of Maine" },
+        ],
+      },
+      {
+        name: "Susan Lively Klug",
+        lines: [
+          { label: "Notes", value: "Specialized in Brother; also Studio and Toyota. Meeting spots: Escondido, CA and Clairemont (San Diego), CA." },
+          { label: "Website", href: "http://www.makelively.com", linkText: "makelively.com" },
+          { label: "Services", value: "Zoom consultations, refurbished machines, parts, 3D printed parts/tools" },
+        ],
+      },
+      {
+        name: "Justin Scott",
+        lines: [
+          { label: "Email", value: "jscottknitservices@gmail.com" },
+          { label: "Location", value: "Illinois" },
+        ],
+      },
+      {
+        name: "Knit & Sew World",
+        lines: [
+          { label: "Address", value: "119 S. Minnesota Ave., St. Peter, MN 56082" },
+          { label: "Phone", value: "(507) 934-3741" },
+          { label: "Website", href: "http://www.knitsewworld.com", linkText: "knitsewworld.com" },
+        ],
+      },
+      {
+        name: "The Knitting Closet",
+        lines: [
+          { label: "Location", value: "Florida" },
+          { label: "Website", href: "https://theknittingcloset.com/", linkText: "theknittingcloset.com" },
+        ],
+      },
+    ],
+  },
+  {
+    name: "Worldwide",
+    entries: [
+      {
+        name: "Facebook group: Knitting machine repairs and spares - Worldwide",
+        lines: [
+          { label: "Link", href: "https://www.facebook.com/groups/1069850073945932/", linkText: "Facebook group" },
+        ],
+      },
+      {
+        name: "Spartan Knitting Machine Parts",
+        lines: [
+          { label: "eBay", href: "https://www.ebay.co.uk/str/tprknittingmachineparts", linkText: "eBay store" },
+          { label: "Facebook", href: "https://www.facebook.com/SpartanKMP", linkText: "Facebook page" },
+        ],
+      },
+      {
+        name: "Sun Cheong Knitting Machine Co",
+        lines: [
+          { label: "Notes", value: "Parts and accessories" },
+          { label: "Website", href: "https://shop.sckmcl.com.hk/", linkText: "Hong Kong Knitting (shop)" },
+          { label: "Email", value: "hongkong.knitting@gmail.com" },
+        ],
+      },
+    ],
+  },
+];
+---
+
+<Layout
+  title="Knitting Machine Repair References | Knit by Machine"
+  description="Directory of knitting machine repair contacts and services by country."
+>
+  <div class="page-wrap">
+    <PageHead
+      title="Knitting Machine Repair References"
+      breadcrumb="Home / References / Repairs"
+      meta={`Updated ${lastUpdated}`}
+    />
+
+    <div class="repairs-hero">
+      <div class="repairs-intro">
+        <p>
+          Unfortunately, there aren't many people repairing knitting machines these days.
+          We've put together this list of potential contacts for repairs.
+          <em><small>(updated {lastUpdated}).</small></em>
+        </p>
+        <p>
+          If you can recommend any others, please
+          <a href="#" id="contact-modal-trigger" data-testid="footer-contact">Contact us</a>
+
+        <div class="repairs-callout">
+          <a href="https://eknitter.com/" target="_blank" rel="noopener">eKnitter for Brother Machines</a>
+          <span>— Certified replacement board for Brother machines</span>
+        </div>
+      </div>
+
+      <img
+        src="/images/machines/knitting-machine-needlebed.jpeg"
+        width="200"
+        alt="Knitting machine repair services directory"
+        loading="lazy"
+        class="repairs-image"
+      />
+    </div>
+
+    {countries.map((c) => (
+      <section class="repairs-section" id={c.name.toLowerCase().replaceAll("/", "-").replaceAll(" ", "-")}>
+        <h2>{c.name}</h2>
+
+        <div class="repairs-grid">
+          {c.entries.map((e) => (
+            <article class="repairs-card">
+              <h3>{e.name}</h3>
+
+              <dl class="repairs-dl">
+                {e.lines.map((ln: LineItem) => (
+                  <div class="repairs-row">
+                    <dt class="repairs-k">{ln.label}</dt>
+                    <dd class="repairs-v">
+                      {ln.href ? (
+                        <a href={ln.href} target="_blank" rel="noopener">
+                          {ln.linkText ?? ln.href}
+                        </a>
+                      ) : (
+                        ln.value
+                      )}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </article>
+          ))}
+        </div>
+      </section>
+    ))}
+  </div>
+</Layout>
+
+<style>
+  .repairs-hero {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+    align-items: start;
+    margin-bottom: 2rem;
+  }
+  @media (min-width: 768px) {
+    .repairs-hero { grid-template-columns: 1fr auto; }
+  }
+  .repairs-image {
+    width: 200px;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .repairs-intro p { margin: 1rem 0; line-height: 1.5; }
+  .repairs-callout {
+    background: rgba(0, 0, 0, 0.03);
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    margin-top: 1rem;
+  }
+  .repairs-callout a { font-weight: 600; }
+  .repairs-section { margin-top: 2rem; }
+  .repairs-section h2 { font-size: var(--text-xl, 1.25rem); margin-bottom: 0.75rem; }
+  .repairs-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 768px) {
+    .repairs-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .repairs-card {
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #fff;
+  }
+  .repairs-card h3 { margin: 0 0 0.5rem 0; font-size: 1.05rem; }
+  .repairs-dl { margin: 0; display: grid; gap: 0.35rem; }
+  .repairs-row { display: grid; grid-template-columns: 8rem 1fr; gap: 0.5rem; }
+  .repairs-k { font-weight: 600; color: rgba(0, 0, 0, 0.75); margin: 0; }
+  .repairs-v { margin: 0; color: rgba(0, 0, 0, 0.85); }
+</style>

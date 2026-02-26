@@ -51,7 +51,7 @@ const lettersWithTerms = lettersOrder.filter((l) => letterMap.has(l));
 const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.english, definition: i.definition })));
 ---
 
-<Layout>
+<Layout bodyClass="glossary-page">
   <main class="glossary">
     <PageHead
       title={`Glossary (${termCount} terms)`}
@@ -236,9 +236,31 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
     })();
   </script>
 
+  <script is:inline>
+    (function () {
+      function setCurrentAzLink() {
+        var hash = window.location.hash || "#letter-hash";
+        if (hash === "#") hash = "#letter-hash";
+        document.querySelectorAll(".az-link").forEach(function (link) {
+          link.classList.toggle("az-link--current", link.getAttribute("href") === hash);
+        });
+      }
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", setCurrentAzLink);
+      } else {
+        setCurrentAzLink();
+      }
+      window.addEventListener("hashchange", setCurrentAzLink);
+    })();
+  </script>
+
   <style>
     .glossary {
       padding: 2.25rem 1.25rem 3rem;
+      /* Height of sticky A–Z bar when it wraps to two rows (padding + row1 + gap + row2). Match .glossary__az / .az-link if you change layout. */
+      --glossary-az-height: 104px;
+      /* Lower = lighter selected A–Z / letter header green. */
+      --glossary-selected-mix: 70%;
     }
 
     .glossary__az {
@@ -250,6 +272,40 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
       flex-wrap: wrap;
       gap: 0.5rem;
       padding: 0.5rem 0 0;
+    }
+
+    /* Mobile: single horizontal swipeable row with right-edge fade */
+    @media (max-width: 767px) {
+      .glossary__az {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 0.5rem 0 0.5rem;
+        position: relative;
+      }
+      .glossary__az::-webkit-scrollbar {
+        display: none;
+      }
+      .glossary__az::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 28px;
+        background: linear-gradient(to right, transparent, var(--page-bg, #fff));
+        pointer-events: none;
+      }
+      .glossary {
+        --glossary-az-height: 52px;
+      }
+      .az-link {
+        flex-shrink: 0;
+        white-space: nowrap;
+      }
     }
 
     .az-link {
@@ -268,6 +324,7 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
       font-weight: 600;
       cursor: pointer;
       transition: background 0.15s ease, box-shadow 0.15s ease;
+      box-sizing: border-box;
     }
 
     .az-link:hover {
@@ -280,19 +337,36 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
       outline-offset: 2px;
     }
 
+    .az-link.az-link--current {
+      background: color-mix(in srgb, #738c52 var(--glossary-selected-mix), white);
+      color: #fff;
+    }
+
+    .az-link.az-link--current:focus {
+      outline: 2px solid rgba(255, 255, 255, 0.8);
+      outline-offset: 2px;
+    }
+
+    /* Reserves space so the first letter header is not behind the A–Z bar on refresh and keeps a consistent gap. */
     .glossary__sections {
       max-width: 1100px;
       margin: 1.5rem auto 0;
+      padding-top: calc(var(--header-height, 140px) + var(--glossary-az-height, 104px) + 40px);
+    }
+
+    /* scroll-margin-top so anchor jumps (A–Z links) don't hide the section under the fixed header + sticky A–Z bar. */
+    section[id^="letter-"] {
+      scroll-margin-top: calc(var(--header-height, 140px) + var(--glossary-az-height, 104px) + 40px);
     }
 
     .glossary__letter-section {
-      scroll-margin-top: calc(var(--header-height, 140px) + 1rem);
       margin-bottom: 0.5rem;
     }
 
+    /* Sticky letter header sticks below the fixed header and A–Z bar so it stays visible. */
     .glossary__letter-header {
       position: sticky;
-      top: 0;
+      top: calc(var(--header-height, 140px) + var(--glossary-az-height, 104px));
       z-index: 1;
       background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(8px);
@@ -300,6 +374,15 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
       border-bottom: 2px solid rgba(0, 0, 0, 0.08);
       padding: 0.6rem 0.25rem 0.5rem;
       margin-bottom: 0.5rem;
+    }
+
+    section[id^="letter-"]:target .glossary__letter-header {
+      background: color-mix(in srgb, #738c52 var(--glossary-selected-mix), white);
+      color: #fff;
+    }
+
+    section[id^="letter-"]:target .glossary__letter-header .glossary__letter-title {
+      color: #fff;
     }
 
     .glossary__letter-title {

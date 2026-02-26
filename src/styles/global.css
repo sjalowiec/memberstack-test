@@ -64,6 +64,40 @@ body {
   }
 }
 
+a {
+  color: #3e5221;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--kbm-green-hover);
+}
+
+a:visited {
+  color: #3e5221;
+}
+
+a[target="_blank"]::after {
+  content: "";
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  margin-left: 0.2em;
+
+  background-color: currentColor;
+
+  mask: url("/images/external-link.svg") no-repeat center;
+  -webkit-mask: url("/images/external-link.svg") no-repeat center;
+  mask-size: contain;
+  -webkit-mask-size: contain;
+
+  vertical-align: -0.15em;  /* slightly stronger alignment */
+}
+
 /* Hide global header search on catalog pages that have their own search */
 body.has-catalog-search .kbm-search-wrap {
   display: none;

@@ -1,0 +1,51 @@
+---
+interface Props {
+  loginUrl?: string;
+  className?: string;
+  showBackLink?: boolean;
+}
+
+const { loginUrl = "/login", className, showBackLink = false } = Astro.props;
+---
+
+<div class={`login-nudge${className ? ` ${className}` : ""}`} data-ms-content="!members">
+  {showBackLink && (
+    <>
+      <button type="button" class="login-nudge-back" onclick="window.history.back()">Back</button>
+      <span class="login-nudge-sep" aria-hidden="true"> · </span>
+    </>
+  )}
+  Already a member? <a data-ms-modal="login" data-ms-content="!members" class="login-nudge-link">Log in</a>.
+</div>
+
+<style>
+  .login-nudge {
+    color: #fff;
+    text-align: center;
+    margin: 12px 0 0 0;
+    font-size: var(--text-base, 1rem);
+  }
+  .login-nudge a {
+    color: #fff;
+    text-decoration: underline;
+  }
+  .login-nudge-back {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    color: #fff;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .login-nudge-back:hover {
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .login-nudge-sep {
+    margin: 0 0.25em;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  .login-nudge-link:hover {
+    color: rgba(255, 255, 255, 0.85);
+  }
+</style>

@@ -1,0 +1,88 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHead from "../components/PageHead.astro";
+---
+
+<Layout title="Become a Member" description="Join Knit It Now for full access to videos, tools, and patterns.">
+  <div class="page-wrap">
+    <PageHead title="Become a Member" breadcrumb="Home / Join" />
+
+    <div class="join-content">
+      <p class="join-intro">
+        Membership gives you full access to the Knit It Now library, including videos with jump links and transcripts, plus interactive tools and patterns.
+      </p>
+
+      <div class="join-options">
+        <div class="join-option">
+          <p class="join-option-title">Monthly Membership</p>
+          <p class="join-option-price">$19.99/month</p>
+          <a class="join-cta" href="https://checkout.memberstack.com/prc_monthly-u1h20u83">Join Monthly</a>
+        </div>
+        <div class="join-option">
+          <p class="join-option-title">Annual Membership</p>
+          <p class="join-option-price">$199/year</p>
+          <a class="join-cta" href="https://checkout.memberstack.com/prc_annual-gqh30uee">Join Annual</a>
+        </div>
+      </div>
+
+      <p class="join-footer">
+        Already a member? <a href="/login">Log in</a>.
+      </p>
+    </div>
+  </div>
+
+  <style>
+    .join-content {
+      max-width: 42rem;
+      margin-bottom: 2rem;
+    }
+    .join-intro {
+      margin: 0 0 1.5rem 0;
+      font-size: var(--text-base, 1rem);
+      line-height: 1.5;
+    }
+    .join-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .join-option {
+      padding: 1rem 1.25rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      background: #fafafa;
+    }
+    .join-option-title {
+      margin: 0 0 0.25rem 0;
+      font-weight: 600;
+      font-size: var(--text-lg, 1.125rem);
+    }
+    .join-option-price {
+      margin: 0 0 0.75rem 0;
+      font-size: var(--text-base, 1rem);
+      color: #374151;
+    }
+    .join-cta {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: var(--kbm-green, #166534);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: var(--text-base, 1rem);
+    }
+    .join-cta:hover {
+      background: var(--kbm-green-2, #15803d);
+    }
+    .join-footer {
+      margin: 0;
+      font-size: var(--text-base, 1rem);
+      color: #6b7280;
+    }
+    .join-footer a {
+      color: var(--kbm-green, #166534);
+      text-decoration: underline;
+    }
+  </style>
+</Layout>
