@@ -8,7 +8,6 @@ export const prerender = true;
 
 const glossary = Array.isArray(glossaryRaw) ? glossaryRaw : (glossaryRaw as { Glossary?: unknown[] })?.Glossary ?? [];
 const glossaryList = Array.isArray(glossary) ? glossary : [];
-
 const toBool = (v: unknown): boolean =>
   v === true || v === "true" || v === 1 || v === "1";
 
@@ -89,7 +88,7 @@ const glossaryJson = JSON.stringify(
         </a>
       ))}
     </nav>
-
+<section data-glossary-locked>
     <div class="glossary__sections">
       <p class="glossary__no-results is-hidden" aria-live="polite" id="glossary-no-results">No results</p>
       {lettersWithTerms.map((letter) => {
@@ -117,7 +116,7 @@ const glossaryJson = JSON.stringify(
         );
       })}
     </div>
-
+      </section>
     <dialog id="glossaryModal" class="glossaryModal">
       <div class="glossaryModal__shell">
         <div class="glossaryModal__top">
@@ -548,6 +547,29 @@ const glossaryJson = JSON.stringify(
       }
       window.addEventListener("hashchange", setCurrentAzLink);
     })();
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const lockedSection = document.querySelector("[data-glossary-locked]");
+
+      try {
+        const res = await fetch("/member");
+
+        if (!res.ok) {
+          if (lockedSection) lockedSection.style.display = "none";
+          return;
+        }
+
+        const member = await res.json();
+
+        if (!member?.data?.id) {
+          if (lockedSection) lockedSection.style.display = "none";
+          return;
+        }
+
+      } catch (err) {
+        if (lockedSection) lockedSection.style.display = "none";
+      }
+    });
   </script>
 
   <style>
@@ -960,4 +982,4 @@ const glossaryJson = JSON.stringify(
       height: auto !important;
     }
   </style>
-</Layout>
+  </Layout>

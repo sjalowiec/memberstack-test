@@ -1,0 +1,484 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import glossaryRaw from "../../data/glossary.json";
+import { slugify } from "../../lib/slugify";
+import PageHead from "../../components/PageHead.astro";
+
+export const prerender = true;
+
+const glossary = Array.isArray(glossaryRaw) ? glossaryRaw : (glossaryRaw as { Glossary?: unknown[] })?.Glossary ?? [];
+const glossaryList = Array.isArray(glossary) ? glossary : [];
+
+const toBool = (v: unknown): boolean =>
+  v === true || v === "true" || v === 1 || v === "1";
+
+const filteredGlossary = glossaryList
+  .filter((t: any) => (t.english ?? t.English ?? "").toString().trim().length > 0)
+  .filter((t: any) => {
+    if (toBool(t.dak)) return false;
+    if (toBool(t.dak9)) return false;
+    return true;
+  })
+  .map((t: any) => {
+    const english = (t.english ?? t.English ?? "").toString().trim();
+    const letter = english[0]?.toUpperCase() ?? "#";
+    const slug = slugify(english.replace(/<[^>]*>/g, "").trim());
+    return {
+      english,
+      slug,
+      letter: /[A-Z]/.test(letter) ? letter : "#",
+      definition: (t.definition ?? t.helpInfo ?? t.helpinfo ?? t.Helpinfo ?? t.description ?? "").toString().trim(),
+      notes: (t.notes ?? "").toString().trim(),
+      example: (t.example ?? "").toString().trim(),
+    };
+  })
+  .sort((a: { english: string }, b: { english: string }) => a.english.localeCompare(b.english));
+
+const termCount = filteredGlossary.length;
+
+// Group by first letter (A–Z; non-alphabetic under "#")
+const letterMap = new Map<string, { term: string; definition: string; slug: string }[]>();
+for (const item of filteredGlossary) {
+  const letter = item.letter;
+  if (!letterMap.has(letter)) letterMap.set(letter, []);
+  letterMap.get(letter)!.push({ term: item.english, definition: item.definition, slug: item.slug });
+}
+
+// Order: # first, then A–Z
+const lettersOrder = ["#", ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
+const lettersWithTerms = lettersOrder.filter((l) => letterMap.has(l));
+
+const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.english, definition: i.definition })));
+---
+
+<Layout bodyClass="glossary-page">
+  <main class="glossary">
+    <PageHead
+      title={`Glossary (${termCount} terms)`}
+      subhead="Browse machine knitting terms from A to Z. Tap a term to view its definition in a popup."
+    />
+
+    <nav
+      class="glossary__az"
+      aria-label="Jump to letter A to Z"
+    >
+      {lettersWithTerms.map((letter) => (
+        <a
+          href={letter === "#" ? "#letter-hash" : `#letter-${letter}`}
+          class="az-link"
+          aria-label={`Jump to letter ${letter}`}
+        >
+          {letter}
+        </a>
+      ))}
+    </nav>
+
+    <div class="glossary__sections">
+      {lettersWithTerms.map((letter) => {
+        const id = letter === "#" ? "letter-hash" : `letter-${letter}`;
+        const terms = letterMap.get(letter)!;
+        return (
+          <section id={id} class="glossary__letter-section">
+            <div class="glossary__letter-header">
+              <h2 class="glossary__letter-title">{letter}</h2>
+            </div>
+            <div class="glossary__grid">
+              {terms.map((item) => (
+                <button
+                  type="button"
+                  class="glossary__term-btn"
+                  data-term={item.term}
+                  data-slug={slugify((item.term ?? "").replace(/<[^>]*>/g, "").trim())}
+                >
+                  {item.term}
+                </button>
+              ))}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+
+    <dialog id="glossaryModal" class="glossaryModal">
+      <div class="glossaryModal__shell">
+        <div class="glossaryModal__top">
+          <div class="glossaryModal__title" aria-live="polite"></div>
+          <button class="glossaryModal__close" aria-label="Close" type="button">✕</button>
+        </div>
+
+        <div id="modalBody" class="glossaryModal__body"></div>
+      </div>
+    </dialog>
+  </main>
+
+  <script is:inline define:vars={{ glossaryJson }}>
+    (function () {
+      function setFixedHeaderVar() {
+        var header = document.querySelector("header") || document.querySelector("[data-site-header]") || document.querySelector("#header");
+        var h = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
+        document.documentElement.style.setProperty("--fixed-header", h + "px");
+      }
+      setFixedHeaderVar();
+      window.addEventListener("resize", setFixedHeaderVar);
+
+      var ALLOWED_TAGS = ["P", "BR", "B", "STRONG", "I", "EM", "UL", "OL", "LI", "DIV", "SPAN", "A"];
+      var ALLOWED_ATTRS = ["href", "title", "target", "rel", "class"];
+
+      function isExternalHref(href) {
+        if (!href || typeof href !== "string") return false;
+        var t = href.trim().toLowerCase();
+        return t.indexOf("http:") === 0 || t.indexOf("https:") === 0 || t.indexOf("//") === 0;
+      }
+
+      function sanitizeHTML(html) {
+        if (!html || typeof html !== "string") return "";
+        var parser = new DOMParser();
+        var doc = parser.parseFromString("<body>" + html + "</body>", "text/html");
+        var out = document.createElement("div");
+        function walk(parent, node) {
+          if (node.nodeType === Node.TEXT_NODE) {
+            parent.appendChild(document.createTextNode(node.textContent));
+            return;
+          }
+          if (node.nodeType !== Node.ELEMENT_NODE) return;
+          var tag = node.tagName.toUpperCase();
+          if (ALLOWED_TAGS.indexOf(tag) === -1) {
+            for (var i = 0; i < node.childNodes.length; i++) walk(parent, node.childNodes[i]);
+            return;
+          }
+          var el = document.createElement(tag);
+          if (node.attributes && node.attributes.length) {
+            for (var j = 0; j < node.attributes.length; j++) {
+              var a = node.attributes[j];
+              var name = a.name.toLowerCase();
+              if (name.indexOf("on") === 0) continue;
+              if (ALLOWED_ATTRS.indexOf(name) === -1) continue;
+              if (tag === "A" && name === "href") {
+                el.setAttribute("href", a.value);
+                if (isExternalHref(a.value)) {
+                  el.setAttribute("target", "_blank");
+                  el.setAttribute("rel", "noopener noreferrer");
+                }
+              } else {
+                el.setAttribute(a.name, a.value);
+              }
+            }
+          }
+          if (tag === "A" && isExternalHref(el.getAttribute("href"))) {
+            el.setAttribute("target", "_blank");
+            el.setAttribute("rel", "noopener noreferrer");
+          }
+          for (var k = 0; k < node.childNodes.length; k++) walk(el, node.childNodes[k]);
+          parent.appendChild(el);
+        }
+        for (var i = 0; i < doc.body.childNodes.length; i++) walk(out, doc.body.childNodes[i]);
+        return out.innerHTML;
+      }
+
+      var terms = [];
+      try {
+        terms = JSON.parse(glossaryJson);
+      } catch (e) {
+        console.error("Failed to parse glossary JSON", e);
+      }
+
+      var dialog = document.getElementById("glossaryModal");
+      var modalBody = document.getElementById("modalBody");
+      var modalTitleEl = document.querySelector(".glossaryModal__title");
+      var closeBtn = dialog ? dialog.querySelector(".glossaryModal__close") : null;
+
+      function closeModal() {
+        dialog?.close();
+      }
+
+      document.querySelectorAll("button[data-term]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const slug = btn.getAttribute("data-slug") || "";
+          if (!dialog || !modalBody) return;
+          dialog.showModal();
+          modalBody.innerHTML = "<p>Loading...</p>";
+          if (modalTitleEl) modalTitleEl.textContent = "";
+          if (closeBtn) closeBtn.focus();
+          fetch("/glossary/modal/" + slug + "/")
+            .then(function (res) { return res.text(); })
+            .then(function (html) {
+              var doc = new DOMParser().parseFromString(html, "text/html");
+              var container =
+                doc.querySelector("main.glossaryEntry") ||
+                doc.querySelector("[data-glossary-entry]");
+
+              modalBody.innerHTML = container ? container.outerHTML : html;
+
+              var h1 = modalBody.querySelector(".glossaryEntry h1, .glossaryEntry h2, h1, h2");
+              var title = h1 ? h1.textContent.trim() : "";
+              if (modalTitleEl) modalTitleEl.textContent = title;
+
+              modalBody.querySelectorAll("img").forEach(function (img) {
+                img.style.maxWidth = "100%";
+                img.style.height = "auto";
+              });
+            })
+            .catch(function () {
+              modalBody.innerHTML = "<p>Error loading entry.</p>";
+            });
+        });
+      });
+
+      closeBtn?.addEventListener("click", closeModal);
+
+      dialog?.addEventListener("click", function (e) {
+        if (e.target === dialog) closeModal();
+      });
+
+      dialog?.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closeModal();
+      });
+    })();
+  </script>
+
+  <style>
+    .glossary {
+      padding: 2.25rem 1.25rem 3rem;
+      /* Height of sticky A–Z bar when it wraps to two rows (padding + row1 + gap + row2). Match .glossary__az / .az-link if you change layout. */
+      --glossary-az-height: 104px;
+    }
+
+    .glossary__az {
+      position: sticky;
+      top: var(--header-height, 140px);
+      z-index: 50;
+      background: var(--page-bg, transparent);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.5rem 0 0;
+    }
+
+    .az-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      min-width: 44px;
+      padding: 0.5rem 0.65rem;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.7);
+      color: inherit;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .az-link:hover {
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .az-link:focus {
+      outline: 2px solid rgba(0, 0, 0, 0.35);
+      outline-offset: 2px;
+    }
+
+    /* Reserves space so the first letter header is not behind the A–Z bar on refresh and keeps a consistent gap. */
+    .glossary__sections {
+      max-width: 1100px;
+      margin: 1.5rem auto 0;
+      padding-top: calc(var(--header-height, 140px) + var(--glossary-az-height, 104px) + 40px);
+    }
+
+    /* scroll-margin-top so anchor jumps (A–Z links) don't hide the section under the fixed header + sticky A–Z bar. */
+    section[id^="letter-"] {
+      scroll-margin-top: calc(var(--header-height, 140px) + var(--glossary-az-height, 104px) + 40px);
+    }
+
+    .glossary__letter-section {
+      margin-bottom: 0.5rem;
+    }
+
+    /* Sticky letter header sticks below the fixed header and A–Z bar so it stays visible. */
+    .glossary__letter-header {
+      position: sticky;
+      top: calc(var(--header-height, 140px) + var(--glossary-az-height, 104px));
+      z-index: 1;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+      padding: 0.6rem 0.25rem 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .glossary__letter-title {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .glossary__grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.6rem;
+    }
+
+    @media (min-width: 640px) {
+      .glossary__grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .glossary__grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .glossary__term-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 0.75rem 0.9rem;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: rgba(255, 255, 255, 0.85);
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .glossary__term-btn:hover {
+      background: rgba(255, 255, 255, 1);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .glossary__term-btn:focus {
+      outline: 2px solid rgba(0, 0, 0, 0.35);
+      outline-offset: 2px;
+    }
+
+    /* Glossary modal – below fixed header, body scrolls */
+    dialog.glossaryModal {
+      position: fixed;
+      top: calc(var(--fixed-header, 0px) + 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(900px, 92vw);
+      max-height: calc(100vh - var(--fixed-header, 0px) - 24px);
+      margin: 0;
+      padding: 0 !important;
+      border: 0;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #fff;
+      z-index: 99999;
+    }
+
+    dialog.glossaryModal::backdrop {
+      background: rgba(0, 0, 0, 0.45);
+    }
+
+    .glossaryModal__shell {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    /* Top section hidden; only floating close button shown */
+    dialog.glossaryModal .glossaryModal__top {
+      display: flex;
+      flex: 0 0 auto;
+      position: relative;
+      height: 0;
+      min-height: 0;
+      padding: 0;
+      margin: 0;
+      border: none;
+      background: transparent;
+      overflow: visible;
+    }
+
+    dialog.glossaryModal .glossaryModal__title {
+      display: none !important;
+    }
+
+    dialog.glossaryModal .glossaryModal__close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+      margin: 0;
+      width: 40px;
+      height: 40px;
+      line-height: 1;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      background: #fff;
+      cursor: pointer;
+    }
+
+    dialog.glossaryModal .glossaryModal__body {
+      flex: 1 1 auto;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 !important;
+      padding: 10px 16px 18px;
+      padding-top: 10px !important;
+      min-height: 0;
+    }
+
+    .glossaryModal__body > :first-child {
+      margin-top: 0 !important;
+    }
+
+    .glossaryModal__body :global(main.glossaryEntry) {
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+    }
+
+    dialog.glossaryModal .glossaryModal__body :global(.glossaryEntry h1) {
+      margin-top: 0;
+      display: none;
+    }
+
+    dialog.glossaryModal .glossaryModal__body :global(.two-col) {
+      display: grid;
+      grid-template-columns: minmax(220px, 360px) 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (max-width: 640px) {
+      dialog.glossaryModal .glossaryModal__body :global(.two-col) {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    dialog.glossaryModal .glossaryModal__body :global(img) {
+      max-width: 100%;
+      height: auto;
+      max-height: 45vh;
+      object-fit: contain;
+    }
+
+    dialog.glossaryModal .glossaryModal__body :global(.back-link) {
+      display: none;
+    }
+
+    .glossaryModal__body :global(*) {
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .glossaryModal__body :global(video),
+    .glossaryModal__body :global(iframe) {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+  </style>
+</Layout>

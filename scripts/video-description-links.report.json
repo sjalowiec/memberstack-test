@@ -1,0 +1,395 @@
+{
+  "scannedFile": "src/data/videos-public.json",
+  "totalVideos": 693,
+  "affectedVideos": 28,
+  "findings": [
+    {
+      "content_id": 280,
+      "slug": "openwork-slashes",
+      "title": "Openwork Slashes",
+      "urls": [
+        "http://www.knititnow.com/blog2/blog_images/Spoilt_for_Choice_gallery_large.jpg"
+      ]
+    },
+    {
+      "content_id": 561,
+      "slug": "sock-gusset",
+      "title": "Sock Gusset",
+      "urls": [
+        "http://www.knititnow.com/store/product/710/the-ultimate-machine-knit-socks-ebook/digitialdownload"
+      ]
+    },
+    {
+      "content_id": 573,
+      "slug": "start-to-finish-simply-rectangles-waterfall-vest",
+      "title": "Start to Finish - Simply Rectangles Waterfall Vest",
+      "urls": [
+        "http://www.knititnow.com/knit/DynamicPattern/324/simply-rectangles",
+        "http://www.knititnow.com/store/ConeDetails.cfm?itemid=473"
+      ]
+    },
+    {
+      "content_id": 601,
+      "slug": "neckline-shaping-perfection",
+      "title": "Neckline Shaping Perfection",
+      "urls": [
+        "http://www.knititnow.com/knit/DynamicPattern/679/practice-necklines"
+      ]
+    },
+    {
+      "content_id": 681,
+      "slug": "vintage-yarn-index",
+      "title": "Vintage Yarn Index",
+      "urls": [
+        "http://www.knititnow.com/YarnIndex/",
+        "http://www.knititnow.com/images/blog_images/2014/buttons/vintage_yarn_index.jpg"
+      ]
+    },
+    {
+      "content_id": 711,
+      "slug": "bonnies-one-piece-cocoon-pattern",
+      "title": "Bonnie's One Piece Cocoon Pattern",
+      "urls": [
+        "http://www.knititnow.com/knit/DynamicPattern/798/bonnies-cocoon",
+        "http://www.knititnow.com/Homestudy/course/49/bonnies-one-piece-cocoon"
+      ]
+    },
+    {
+      "content_id": 205,
+      "slug": "chain-cast-on",
+      "title": "Chain Cast On",
+      "urls": [
+        "http://www.knititnow.com/learn/launch.cfm?contentid=200",
+        "http://www.knititnow.com/learn/launch.cfm?contentid=935"
+      ]
+    },
+    {
+      "content_id": 695,
+      "slug": "one-piece-neckband-perfection",
+      "title": "One Piece Neckband Perfection",
+      "urls": [
+        "https://www.knititnow.com/learn/tutorial/387/calculating-bands"
+      ]
+    },
+    {
+      "content_id": 232,
+      "slug": "square-neck-mitered-band",
+      "title": "Square Neck Mitered Band",
+      "urls": [
+        "https://www.knititnow.com/learn/tutorial/728/square-neck-mitered-band"
+      ]
+    },
+    {
+      "content_id": 728,
+      "slug": "square-neck-mitered-band-2",
+      "title": "Square Neck Mitered Band 2",
+      "urls": [
+        "https://www.knititnow.com/learn/tutorial/232/square-neck-mitered-band"
+      ]
+    },
+    {
+      "content_id": 2159,
+      "slug": "make-hand-manipulation-easier",
+      "title": "Make Hand Manipulation Easier",
+      "urls": [
+        "https://www.knititnow.com/cheat"
+      ]
+    },
+    {
+      "content_id": 752,
+      "slug": "using-the-pet-vest-pattern",
+      "title": "Using the Pet Vest Pattern",
+      "urls": [
+        "http://www.knititnow.com/knit/DynamicPattern/824/pet-vest",
+        "http://www.knititnow.com/images/Blog_Images/2014/buttons/get_the_pattern.png"
+      ]
+    },
+    {
+      "content_id": 760,
+      "slug": "add-a-hood-to-any-sweater",
+      "title": "Add a Hood to Any Sweater",
+      "urls": [
+        "http://www.knititnow.com/store/product/728/add-a-hood-to-any-knitting-pattern/digitialdownload"
+      ]
+    },
+    {
+      "content_id": 769,
+      "slug": "designaknit-garment-japanese-notation-format",
+      "title": "DesignaKnit Garment (Japanese) Notation Format",
+      "urls": [
+        "http://www.knititnow.com/learn/tutorial/770/designaknit-garment-japanese-notation-page-format"
+      ]
+    },
+    {
+      "content_id": 770,
+      "slug": "designaknit-8-9-japanese-notation-formatting",
+      "title": "DesignaKnit 8/9 Japanese Notation Formatting",
+      "urls": [
+        "http://www.knititnow.com/learn/tutorial/769/designaknit-garment-japanese-notation-page-format"
+      ]
+    },
+    {
+      "content_id": 773,
+      "slug": "zig-zag-lace-flags",
+      "title": "Zig-Zag Lace Flags",
+      "urls": [
+        "https://www.knititnow.com/learn/tutorial/771/zig-zag-lace"
+      ]
+    },
+    {
+      "content_id": 783,
+      "slug": "ugly-cast-on",
+      "title": "Ugly Cast On?",
+      "urls": [
+        "http://www.knititnow.com/learn/tutorial/556/super-fast-closed-cast-on",
+        "https://www.knititnow.com/challenge/33/beginner-workshop"
+      ]
+    },
+    {
+      "content_id": 260,
+      "slug": "shaped-crown-hat-on-the-machine",
+      "title": "Shaped Crown Hat on the Machine",
+      "urls": [
+        "https://www.knititnow.com/path/55/swirl-top-beanie"
+      ]
+    },
+    {
+      "content_id": 920,
+      "slug": "lk-150-and-dak",
+      "title": "LK-150 and DAK",
+      "urls": [
+        "https://www.knititnow.com/store/product/805/screen-link-usb-cable/itemdetails"
+      ]
+    },
+    {
+      "content_id": 925,
+      "slug": "punchcard-basics",
+      "title": "Punchcard Basics",
+      "urls": [
+        "https://www.knititnow.com/learn/tutorial/926/identify-punchcards"
+      ]
+    },
+    {
+      "content_id": 939,
+      "slug": "kangaroo-pocket",
+      "title": "Kangaroo Pocket",
+      "urls": [
+        "https://www.knititnow.com/knit/DynamicPattern/2324/kangaroo-pocket"
+      ]
+    },
+    {
+      "content_id": 955,
+      "slug": "backward-e-wrap",
+      "title": "Backward E-Wrap",
+      "urls": [
+        "https://www.knititnow.com/challenge/55/course/upside-down-raglans"
+      ]
+    },
+    {
+      "content_id": 965,
+      "slug": "spikey-scarf-from-knit-1",
+      "title": "Spikey Scarf from Knit-1",
+      "urls": [
+        "https://www.knititnow.com/classrooms/48/all-about-short-rows"
+      ]
+    },
+    {
+      "content_id": 2083,
+      "slug": "using-the-needle-beetle",
+      "title": "Using the Needle Beetle",
+      "urls": [
+        "https://knititnow.com/cheat"
+      ]
+    },
+    {
+      "content_id": 2103,
+      "slug": "custom-sleeves",
+      "title": "Custom Sleeves",
+      "urls": [
+        "https://www.knititnow.com/knit/DynamicPattern/2272/custom-sleeves"
+      ]
+    },
+    {
+      "content_id": 2177,
+      "slug": "design-a-blanket",
+      "title": "Design a Blanket",
+      "urls": [
+        "https://www.knititnow.com/blog/1798/the-lessons-this-swatch-taught-me"
+      ]
+    },
+    {
+      "content_id": 2182,
+      "slug": "machine-knit-quick-no-gore-fingerless-mittens",
+      "title": "Machine Knit Quick No-Gore Fingerless Mittens",
+      "urls": [
+        "https://www.knititnow.com/knit/DynamicPattern/2354/quick-no-gore-fingerless-mittens"
+      ]
+    },
+    {
+      "content_id": 2196,
+      "slug": "watch-this-first",
+      "title": "Watch this First",
+      "urls": [
+        "https://www.knititnow.com/sweatersuccess",
+        "http://www.knititnow.com/learn/tutorial/2196/watch-this-first",
+        "http://www.knititnow.com/learn/tutorial/2200/plan-it-right-the-key-to-machine-knitting-a-perfect-sweater",
+        "http://www.knititnow.com/learn/tutorial/2201/machine-knit-sweaters-myths",
+        "http://www.knititnow.com/learn/tutorial/2203/next-level-sweaters-master-fit-style"
+      ]
+    }
+  ],
+  "topUrls": [
+    [
+      "http://www.knititnow.com/blog2/blog_images/Spoilt_for_Choice_gallery_large.jpg",
+      1
+    ],
+    [
+      "http://www.knititnow.com/store/product/710/the-ultimate-machine-knit-socks-ebook/digitialdownload",
+      1
+    ],
+    [
+      "http://www.knititnow.com/knit/DynamicPattern/324/simply-rectangles",
+      1
+    ],
+    [
+      "http://www.knititnow.com/store/ConeDetails.cfm?itemid=473",
+      1
+    ],
+    [
+      "http://www.knititnow.com/knit/DynamicPattern/679/practice-necklines",
+      1
+    ],
+    [
+      "http://www.knititnow.com/YarnIndex/",
+      1
+    ],
+    [
+      "http://www.knititnow.com/images/blog_images/2014/buttons/vintage_yarn_index.jpg",
+      1
+    ],
+    [
+      "http://www.knititnow.com/knit/DynamicPattern/798/bonnies-cocoon",
+      1
+    ],
+    [
+      "http://www.knititnow.com/Homestudy/course/49/bonnies-one-piece-cocoon",
+      1
+    ],
+    [
+      "http://www.knititnow.com/learn/launch.cfm?contentid=200",
+      1
+    ],
+    [
+      "http://www.knititnow.com/learn/launch.cfm?contentid=935",
+      1
+    ],
+    [
+      "https://www.knititnow.com/learn/tutorial/387/calculating-bands",
+      1
+    ],
+    [
+      "https://www.knititnow.com/learn/tutorial/728/square-neck-mitered-band",
+      1
+    ],
+    [
+      "https://www.knititnow.com/learn/tutorial/232/square-neck-mitered-band",
+      1
+    ],
+    [
+      "https://www.knititnow.com/cheat",
+      1
+    ],
+    [
+      "http://www.knititnow.com/knit/DynamicPattern/824/pet-vest",
+      1
+    ],
+    [
+      "http://www.knititnow.com/images/Blog_Images/2014/buttons/get_the_pattern.png",
+      1
+    ],
+    [
+      "http://www.knititnow.com/store/product/728/add-a-hood-to-any-knitting-pattern/digitialdownload",
+      1
+    ],
+    [
+      "http://www.knititnow.com/learn/tutorial/770/designaknit-garment-japanese-notation-page-format",
+      1
+    ],
+    [
+      "http://www.knititnow.com/learn/tutorial/769/designaknit-garment-japanese-notation-page-format",
+      1
+    ],
+    [
+      "https://www.knititnow.com/learn/tutorial/771/zig-zag-lace",
+      1
+    ],
+    [
+      "http://www.knititnow.com/learn/tutorial/556/super-fast-closed-cast-on",
+      1
+    ],
+    [
+      "https://www.knititnow.com/challenge/33/beginner-workshop",
+      1
+    ],
+    [
+      "https://www.knititnow.com/path/55/swirl-top-beanie",
+      1
+    ],
+    [
+      "https://www.knititnow.com/store/product/805/screen-link-usb-cable/itemdetails",
+      1
+    ],
+    [
+      "https://www.knititnow.com/learn/tutorial/926/identify-punchcards",
+      1
+    ],
+    [
+      "https://www.knititnow.com/knit/DynamicPattern/2324/kangaroo-pocket",
+      1
+    ],
+    [
+      "https://www.knititnow.com/challenge/55/course/upside-down-raglans",
+      1
+    ],
+    [
+      "https://www.knititnow.com/classrooms/48/all-about-short-rows",
+      1
+    ],
+    [
+      "https://knititnow.com/cheat",
+      1
+    ],
+    [
+      "https://www.knititnow.com/knit/DynamicPattern/2272/custom-sleeves",
+      1
+    ],
+    [
+      "https://www.knititnow.com/blog/1798/the-lessons-this-swatch-taught-me",
+      1
+    ],
+    [
+      "https://www.knititnow.com/knit/DynamicPattern/2354/quick-no-gore-fingerless-mittens",
+      1
+    ],
+    [
+      "https://www.knititnow.com/sweatersuccess",
+      1
+    ],
+    [
+      "http://www.knititnow.com/learn/tutorial/2196/watch-this-first",
+      1
+    ],
+    [
+      "http://www.knititnow.com/learn/tutorial/2200/plan-it-right-the-key-to-machine-knitting-a-perfect-sweater",
+      1
+    ],
+    [
+      "http://www.knititnow.com/learn/tutorial/2201/machine-knit-sweaters-myths",
+      1
+    ],
+    [
+      "http://www.knititnow.com/learn/tutorial/2203/next-level-sweaters-master-fit-style",
+      1
+    ]
+  ]
+}
