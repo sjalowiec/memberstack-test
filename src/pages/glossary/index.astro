@@ -552,16 +552,9 @@ const glossaryJson = JSON.stringify(
       const lockedSection = document.querySelector("[data-glossary-locked]");
 
       try {
-        const res = await fetch("/member");
+        const { data: member } = await window.$memberstackDom.getCurrentMember();
 
-        if (!res.ok) {
-          if (lockedSection) lockedSection.style.display = "none";
-          return;
-        }
-
-        const member = await res.json();
-
-        if (!member?.data?.id) {
+        if (!member) {
           if (lockedSection) lockedSection.style.display = "none";
           return;
         }
