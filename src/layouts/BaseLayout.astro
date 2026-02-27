@@ -264,5 +264,10 @@ const isProduction =
   window.addEventListener("pageshow", () => setBanner(""));
 })();
 </script>
+    <script is:inline>
+  window.$memberstackDom?.onReady?.then(() => {
+    window.$memberstackDom?.init?.();
+  });
+</script>
   </body>
 </html>
