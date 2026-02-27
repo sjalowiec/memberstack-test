@@ -42,3 +42,29 @@ import Layout from "../layouts/Layout.astro";
     });
   })();
 </script>
+<script is:inline>
+    (function () {
+      const origFetch = window.fetch;
+      if (!origFetch) return;
+  
+      window.fetch = async function (...args) {
+        const res = await origFetch.apply(this, args);
+  
+        try {
+          const url = typeof args[0] === "string" ? args[0] : args[0]?.url || "";
+          // When Memberstack login succeeds, close the modal
+          if (url.includes("/auth/login") && res.ok) {
+            // click the modal's close button if it exists
+            const closeBtn =
+              document.querySelector('[data-ms-close]') ||
+              document.querySelector('button[aria-label="Close"]') ||
+              document.querySelector('.ms-modal button');
+  
+            closeBtn?.click();
+          }
+        } catch (e) {}
+  
+        return res;
+      };
+    })();
+  </script>
