@@ -32,3 +32,13 @@ import Layout from "../layouts/Layout.astro";
     </section>
   </main>
 </Layout>
+
+<script is:inline>
+  (function () {
+    if (!window.$memberstackDom || typeof window.$memberstackDom.on !== "function") return;
+
+    window.$memberstackDom.on("member.login", function () {
+      window.location.reload();
+    });
+  })();
+</script>
