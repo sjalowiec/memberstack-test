@@ -269,5 +269,15 @@ const isProduction =
     window.$memberstackDom?.init?.();
   });
 </script>
+    <script is:inline>
+  document.addEventListener("click", function (e) {
+    const a = e.target?.closest?.("#kbmLoginLink");
+    if (!a) return;
+    e.preventDefault();
+    if (window.$memberstackDom?.openModal) {
+      window.$memberstackDom.openModal("LOGIN");
+    }
+  });
+</script>
   </body>
 </html>
