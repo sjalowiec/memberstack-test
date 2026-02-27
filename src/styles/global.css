@@ -112,6 +112,13 @@ main {
   padding-right: 1rem;
 }
 
+/* Glossary: single header offset on mobile (avoids duplicate with .glossary padding) */
+@media (max-width: 767px) {
+  body.glossary-page main {
+    padding-top: calc(var(--header-height) + 8px);
+  }
+}
+
 /* Headings */
 h1, h2, h3, h4, h5 {
   font-family: var(--font);

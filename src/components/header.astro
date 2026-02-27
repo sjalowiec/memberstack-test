@@ -1,5 +1,6 @@
 ---
 /* Centered Logo Header for Knit it Now */
+const showAuthDebug = import.meta.env.DEV;
 ---
 <style is:global>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
@@ -40,39 +41,119 @@
   padding: 0 20px;
 }
 
-/* ===== LOGO ROW (centered logo + right account) ===== */
-.kbm-logo-row {
+/* ===== HEADER INNER (two-column: brand | auth) ===== */
+.header-inner {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr auto;
   align-items: center;
   border-bottom: 1px solid var(--ring);
 }
 
-.kbm-account-section {
+.right {
   display: flex;
+  gap: 12px;
   align-items: center;
-  gap: 1rem;
-  font-family: "Poppins", sans-serif;
-  font-size: var(--text-base);
-  justify-self: end;
+  justify-content: flex-end;
 }
 
-.kbm-account-section a {
+.auth {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-family: "Poppins", sans-serif;
+  font-size: var(--text-base);
+}
+
+.auth a,
+.auth button {
   color: var(--kbm-green);
   text-decoration: none;
   font-weight: 600;
   white-space: nowrap;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0;
 }
 
-.kbm-account-section a:hover {
+.auth a:hover,
+.auth button:hover {
   color: var(--kbm-green-hover);
 }
 
-/* ===== CENTERED LOGO ===== */
+.auth-pill {
+  margin-left: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid currentColor;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+.header-actions a {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  text-decoration: none;
+  margin-left: 0.5rem;
+}
+
+.auth-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.auth-btn--primary {
+  background: var(--color-primary, #111);
+  color: #fff;
+  border: 1px solid var(--color-primary, #111);
+}
+
+.auth-btn--primary:hover {
+  opacity: 0.9;
+}
+
+.auth-btn--secondary {
+  background: transparent;
+  color: var(--color-primary, #111);
+  border: 1px solid transparent;
+}
+
+.auth-btn--secondary:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 760px) {
+  .header-inner {
+    grid-template-columns: 1fr;
+  }
+  .right {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
+/* ===== BRAND (logo + tagline) ===== */
+.brand .kbm-logo-section {
+  text-align: left;
+  padding: 0.5rem 0 0.25rem 0;
+  justify-self: start;
+}
+
 .kbm-logo-section {
-  text-align: center;
   padding: 0.5rem 80px 0.25rem 80px;
-  justify-self: center;
 }
 
 .kbm-logo {
@@ -298,13 +379,13 @@
     padding: 0.5rem 0 0.25rem 0;
   }
 
-  .kbm-account-section {
-    padding-right: 56px;
-  }
-
   .kbm-logo-img {
     width: 42px;
     height: 42px;
+  }
+
+  .header-inner .right {
+    padding-right: 56px;
   }
 
   .kbm-nav-row {
@@ -412,7 +493,7 @@
     padding: 0.75rem 60px 0.5rem 60px;
   }
 
-  .kbm-account-section {
+  .right {
     padding-right: 56px;
   }
 
@@ -437,6 +518,81 @@
   }
 }
 
+#auth-msg.auth-msg {
+  position: fixed;
+  top: 20px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: min(680px, calc(100vw - 24px));
+  z-index: 1000000;
+
+  background: #111;
+  color: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.65);
+
+  padding: 14px 16px 14px 18px;
+  font-size: 1.05rem;
+  line-height: 1.4;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+#auth-msg.auth-msg::before {
+  content: "";
+  display: block;
+  width: 8px;
+  align-self: stretch;
+  border-radius: 12px;
+  margin-right: 10px;
+  background: #d11a2a;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
+#auth-msg #auth-msg-text {
+  flex: 1;
+}
+#auth-msg .auth-msg-close {
+  background: transparent;
+  border: 0;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  opacity: 0.9;
+  line-height: 1;
+}
+#auth-msg .auth-msg-close:hover {
+  opacity: 1;
+}
+.auth-msg-close {
+  background: transparent;
+  border: 0;
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* Memberstack overlay (try common selectors) */
+.ms-modal__overlay,
+.ms-overlay,
+[data-ms-overlay],
+div[data-ms-modal-overlay] {
+  background: rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Hide Memberstack error/success toast messages */
+div[data-ms-message] {
+  display: none !important;
+}
+
+div[data-ms-message-class="ms-error-message"],
+div[data-ms-message-class="ms-success-message"] {
+  display: none !important;
+}
+
 /* Hide header when printing */
 @media print {
   .kbm-header-wrap {
@@ -446,29 +602,28 @@
 </style>
 
 <section class="kbm-header-wrap">
-  <header>
+  <header class="site-header">
     <div class="kbm-container">
-      <!-- Centered Logo Section + Right Account -->
-      <div class="kbm-logo-row">
-
-        
-        <div class="kbm-logo-section">
-          <a href="/" class="kbm-logo">
-            <img src="/KINlogo.svg" alt="Knit it Now" class="kbm-logo-img" />
-            <span class="kbm-logo-text">Knit it Now</span>
-          </a>
-          <p class="kbm-tagline">See it ● Love it ● Knit it | Make the right project decisions, then knit with confidence.</p>
+      <div class="header-inner">
+        <div class="brand">
+          <div class="kbm-logo-section">
+            <a href="/" class="kbm-logo">
+              <img src="/KINlogo.svg" alt="Knit it Now" class="kbm-logo-img" />
+              <span class="kbm-logo-text">Knit it Now</span>
+            </a>
+            <p class="kbm-tagline">See it ● Love it ● Knit it | Make the right project decisions, then knit with confidence.</p>
+          </div>
         </div>
-        <div class="kbm-account-section">
-          <a data-ms-modal="login" data-ms-content="!members">Log in</a>
 
-          <span data-ms-content="members" class="ms-greeting">
-            Hi, <span data-ms-member="first-name"></span>
-          </span>
-
-          <a data-ms-modal="profile" data-ms-content="members">Account</a>
-
-          <a href="#" data-ms-action="logout" data-ms-content="members">Log out</a>
+        <div class="right">
+          {showAuthDebug && (
+            <span id="auth-pill" class="auth-pill">auth: …</span>
+          )}
+          <div class="kbm-account-section auth header-actions">
+            <a data-ms-modal="login" data-ms-content="!members">Log in</a>
+            <a data-ms-modal="profile" data-ms-content="members">Account</a>
+            <a href="#" data-ms-action="logout" data-ms-content="members">Log out</a>
+          </div>
         </div>
       </div>
 
@@ -480,7 +635,7 @@
       </button>
 
       <!-- Navigation Row - PLAN / KNIT / SUPPORT / SHOP structure -->
-      <div class="kbm-nav-row">
+      <div class="kbm-nav-row menu-row">
         <ul class="kbm-menu">
           <!-- PLAN dropdown -->
           <li class="dd">
@@ -533,8 +688,119 @@
       </div>
     </div>
   </header>
+  <div id="auth-msg" class="auth-msg" style="display:none;" role="status" aria-live="polite">
+    <span id="auth-msg-text"></span>
+    <button type="button" id="auth-msg-close" class="auth-msg-close" aria-label="Dismiss">×</button>
+  </div>
 </section>
 
+<script is:inline>
+  (function () {
+    const PAID_PLAN_IDS = [
+      "pln_DEV-KIN-Member-REPLACE_ME",
+      "pln_PROD-KIN-Member-REPLACE_ME"
+    ];
+
+    const pill = document.getElementById("auth-pill");
+    const authMsg = document.getElementById("auth-msg");
+    const authMsgText = document.getElementById("auth-msg-text");
+    const authMsgClose = document.getElementById("auth-msg-close");
+
+    function showAuthMsg(text) {
+      if (authMsgText) authMsgText.textContent = text;
+      if (authMsg) authMsg.style.display = "flex";
+      clearTimeout(window.__kinAuthMsgTimer);
+      window.__kinAuthMsgTimer = setTimeout(() => {
+        const el = document.getElementById("auth-msg");
+        if (el) el.style.display = "none";
+      }, 6000);
+    }
+    function hideAuthMsg() {
+      clearTimeout(window.__kinAuthMsgTimer);
+      if (authMsg) authMsg.style.display = "none";
+    }
+
+    function setPill({ ms, loggedIn, isMember, plansDebug }) {
+      if (pill) pill.textContent = `MS:${ms} loggedIn:${loggedIn} member:${isMember}` + (plansDebug ? ` ${plansDebug}` : "");
+    }
+
+    async function waitForMS(attempts = 30, delayMs = 200) {
+      for (let i = 0; i < attempts; i++) {
+        if (window.$memberstackDom?.getCurrentMember) return true;
+        await new Promise(r => setTimeout(r, delayMs));
+      }
+      return false;
+    }
+
+    async function getAuthState() {
+      const ms = window.$memberstackDom;
+      if (!ms?.getCurrentMember) {
+        window.__KBM_AUTH = { loggedIn: false, member: false, memberId: null };
+        return { ms: "missing", loggedIn: false, isMember: false, displayName: "", memberId: null };
+      }
+      try {
+        const res = await ms.getCurrentMember();
+        const data = res?.data;
+        const member = (data?.member ?? data) || null;
+        const loggedIn = Boolean(member);
+        const planConnections = member?.planConnections || [];
+        const isMember = planConnections.some((p) => PAID_PLAN_IDS.includes(p?.planId));
+        window.__KBM_AUTH = {
+          loggedIn,
+          member: isMember,
+          memberId: member?.id || null
+        };
+        const planLabels = planConnections.map((p) => p?.planId || p?.planName || "?").join(",");
+        const plansDebug = `plans:${planConnections.length}:${planLabels}`;
+        const displayName =
+          member?.name ||
+          member?.customFields?.firstName ||
+          member?.email ||
+          "";
+        return { ms: "ready", loggedIn, isMember, displayName, plansDebug, memberId: member?.id || null };
+      } catch (e) {
+        window.__KBM_AUTH = { loggedIn: false, member: false, memberId: null };
+        return { ms: "error", loggedIn: false, isMember: false, displayName: "", memberId: null };
+      }
+    }
+
+    async function refreshHeaderAuthUI() {
+      try {
+        const state = await getAuthState();
+        setPill(state);
+        window.__AUTH = {
+          loggedIn: Boolean(state.loggedIn),
+          member: Boolean(state.isMember),
+          memberId: state.memberId || null
+        };
+        window.dispatchEvent(new Event("auth:updated"));
+        return state;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    setPill({ ms: "loading", loggedIn: false, isMember: false, plansDebug: "" });
+
+    (async () => {
+      const ready = await waitForMS();
+      if (!ready) {
+        setPill({ ms: "missing", loggedIn: false, isMember: false, plansDebug: "" });
+        return;
+      }
+      await refreshHeaderAuthUI();
+
+      if (authMsgClose) {
+        authMsgClose.addEventListener("click", hideAuthMsg);
+      }
+
+      window.addEventListener("focus", refreshHeaderAuthUI);
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) refreshHeaderAuthUI();
+      });
+    })();
+  })();
+</script>
 <script is:inline>
   (() => {
     const dds = document.querySelectorAll('.kbm-menu .dd');

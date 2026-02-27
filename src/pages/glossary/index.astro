@@ -30,6 +30,7 @@ const filteredGlossary = glossaryList
       definition: (t.definition ?? t.helpInfo ?? t.helpinfo ?? t.Helpinfo ?? t.description ?? "").toString().trim(),
       notes: (t.notes ?? "").toString().trim(),
       example: (t.example ?? "").toString().trim(),
+      alt: (t.alt ?? "").toString().trim(),
     };
   })
   .sort((a: { english: string }, b: { english: string }) => a.english.localeCompare(b.english));
@@ -48,7 +49,9 @@ for (const item of filteredGlossary) {
 const lettersOrder = ["#", ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
 const lettersWithTerms = lettersOrder.filter((l) => letterMap.has(l));
 
-const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.english, definition: i.definition })));
+const glossaryJson = JSON.stringify(
+  filteredGlossary.map((i) => ({ term: i.english, definition: i.definition, alt: i.alt || undefined }))
+);
 ---
 
 <Layout bodyClass="glossary-page">
@@ -57,6 +60,20 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
       title={`Glossary (${termCount} terms)`}
       subhead="Browse machine knitting terms from A to Z. Tap a term to view its definition in a popup."
     />
+
+    <div class="glossary__search">
+      <label for="glossary-search" class="glossary__search-label sr-only">Search glossary</label>
+      <input
+        type="search"
+        id="glossary-search"
+        class="glossary__search-input"
+        placeholder="Search terms and definitions…"
+        autocomplete="off"
+        aria-label="Search glossary"
+      />
+      <button type="button" id="glossary-search-btn" class="glossary__search-btn" aria-label="Search">Search</button>
+      <button type="button" id="glossary-search-clear" class="glossary__search-clear is-hidden" aria-label="Clear search">Clear</button>
+    </div>
 
     <nav
       class="glossary__az"
@@ -74,6 +91,7 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
     </nav>
 
     <div class="glossary__sections">
+      <p class="glossary__no-results is-hidden" aria-live="polite" id="glossary-no-results">No results</p>
       {lettersWithTerms.map((letter) => {
         const id = letter === "#" ? "letter-hash" : `letter-${letter}`;
         const terms = letterMap.get(letter)!;
@@ -87,6 +105,7 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
                 <button
                   type="button"
                   class="glossary__term-btn"
+                  data-glossary-link
                   data-term={item.term}
                   data-slug={slugify((item.term ?? "").replace(/<[^>]*>/g, "").trim())}
                 >
@@ -111,8 +130,10 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
     </dialog>
   </main>
 
-  <script is:inline define:vars={{ glossaryJson }}>
+  <script define:vars={{ glossaryJson }} is:inline>
     (function () {
+      let VIEWER_STATE = "unknown"; // "unknown" | "stranger" | "loggedin"
+
       function setFixedHeaderVar() {
         var header = document.querySelector("header") || document.querySelector("[data-site-header]") || document.querySelector("#header");
         var h = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
@@ -175,13 +196,6 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
         return out.innerHTML;
       }
 
-      var terms = [];
-      try {
-        terms = JSON.parse(glossaryJson);
-      } catch (e) {
-        console.error("Failed to parse glossary JSON", e);
-      }
-
       var dialog = document.getElementById("glossaryModal");
       var modalBody = document.getElementById("modalBody");
       var modalTitleEl = document.querySelector(".glossaryModal__title");
@@ -191,38 +205,187 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
         dialog?.close();
       }
 
-      document.querySelectorAll("button[data-term]").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          const slug = btn.getAttribute("data-slug") || "";
-          if (!dialog || !modalBody) return;
-          dialog.showModal();
-          modalBody.innerHTML = "<p>Loading...</p>";
-          if (modalTitleEl) modalTitleEl.textContent = "";
-          if (closeBtn) closeBtn.focus();
-          fetch("/glossary/modal/" + slug + "/")
-            .then(function (res) { return res.text(); })
-            .then(function (html) {
-              var doc = new DOMParser().parseFromString(html, "text/html");
-              var container =
-                doc.querySelector("main.glossaryEntry") ||
-                doc.querySelector("[data-glossary-entry]");
+      async function waitForMSReady(attempts, delayMs) {
+        attempts = attempts !== undefined ? attempts : 50;
+        delayMs = delayMs !== undefined ? delayMs : 100;
+        for (var i = 0; i < attempts; i++) {
+          if (window.$memberstackDom?.onReady) {
+            try { await window.$memberstackDom.onReady; } catch {}
+            return true;
+          }
+          await new Promise(function (r) { return setTimeout(r, delayMs); });
+        }
+        return false;
+      }
 
-              modalBody.innerHTML = container ? container.outerHTML : html;
+      async function openSignupModal() {
+        var res;
+        try {
+          res = await window.$memberstackDom?.getCurrentMember?.();
+        } catch {}
+        if (res?.data?.member) {
+          VIEWER_STATE = "loggedin";
+          removeLockedStyling();
+          if (window.__pendingGlossarySlug) {
+            openTermModal(window.__pendingGlossarySlug);
+          }
+          return;
+        }
+        if (window.$memberstackDom?.openModal?.("signup")) {
+          pollUntilLoggedIn({ attempts: 40, delayMs: 200 });
+          return;
+        }
+        document.querySelector('[data-ms-modal="signup"]')?.click();
+        pollUntilLoggedIn({ attempts: 40, delayMs: 200 });
+      }
 
-              var h1 = modalBody.querySelector(".glossaryEntry h1, .glossaryEntry h2, h1, h2");
-              var title = h1 ? h1.textContent.trim() : "";
-              if (modalTitleEl) modalTitleEl.textContent = title;
-
-              modalBody.querySelectorAll("img").forEach(function (img) {
-                img.style.maxWidth = "100%";
-                img.style.height = "auto";
-              });
-            })
-            .catch(function () {
-              modalBody.innerHTML = "<p>Error loading entry.</p>";
+      function openTermModal(slug) {
+        if (!dialog || !modalBody) return;
+        dialog.showModal();
+        modalBody.innerHTML = "<p>Loading...</p>";
+        if (modalTitleEl) modalTitleEl.textContent = "";
+        if (closeBtn) closeBtn.focus();
+        fetch("/glossary/modal/" + slug + "/")
+          .then(function (res) { return res.text(); })
+          .then(function (html) {
+            var doc = new DOMParser().parseFromString(html, "text/html");
+            var container =
+              doc.querySelector("main.glossaryEntry") ||
+              doc.querySelector("[data-glossary-entry]");
+            modalBody.innerHTML = container ? container.outerHTML : html;
+            var h1 = modalBody.querySelector(".glossaryEntry h1, .glossaryEntry h2, h1, h2");
+            var title = h1 ? h1.textContent.trim() : "";
+            if (modalTitleEl) modalTitleEl.textContent = title;
+            modalBody.querySelectorAll("img").forEach(function (img) {
+              img.style.maxWidth = "100%";
+              img.style.height = "auto";
             });
+          })
+          .catch(function () {
+            modalBody.innerHTML = "<p>Error loading entry.</p>";
+          });
+      }
+
+      function applyLockedStyling() {
+        document.querySelectorAll("[data-glossary-link]").forEach(function (el) {
+          el.classList.add("term-link", "term-link--locked");
+          el.setAttribute("aria-disabled", "true");
+          el.setAttribute("title", "Sign up free to open terms");
         });
-      });
+      }
+
+      function removeLockedStyling() {
+        document.querySelectorAll("[data-glossary-link]").forEach(function (el) {
+          el.classList.remove("term-link", "term-link--locked");
+          el.removeAttribute("aria-disabled");
+          el.removeAttribute("title");
+        });
+      }
+
+      async function pollUntilLoggedIn(opts) {
+        opts = opts || {};
+        var attempts = opts.attempts !== undefined ? opts.attempts : 25;
+        var delayMs = opts.delayMs !== undefined ? opts.delayMs : 200;
+        if (!window.$memberstackDom || typeof window.$memberstackDom.getCurrentMember !== "function") return false;
+        for (var i = 0; i < attempts; i++) {
+          try {
+            var res = await window.$memberstackDom.getCurrentMember();
+            var data = res && res.data;
+            if (data && data.member) {
+              VIEWER_STATE = "loggedin";
+              removeLockedStyling();
+              if (typeof renderViewerStatus === "function") renderViewerStatus();
+              return true;
+            }
+            VIEWER_STATE = "stranger";
+          } catch (e) {
+            VIEWER_STATE = "stranger";
+          }
+          await new Promise(function (r) { return setTimeout(r, delayMs); });
+        }
+        return false;
+      }
+
+      function observeMemberstackModalClose() {
+        var wasOpen = false;
+        function isOpen() {
+          return Boolean(
+            document.querySelector("[data-memberstack-modal]") ||
+            document.querySelector(".ms-modal") ||
+            document.querySelector("[class*=\"memberstack\"] [role=\"dialog\"]") ||
+            document.body.classList.contains("modal-open")
+          );
+        }
+        var obs = new MutationObserver(function () {
+          var openNow = isOpen();
+          if (openNow) wasOpen = true;
+          if (wasOpen && !openNow) {
+            wasOpen = false;
+            pollUntilLoggedIn({ attempts: 25, delayMs: 200 });
+          }
+        });
+        obs.observe(document.body, { childList: true, subtree: true, attributes: true });
+      }
+
+      async function initViewerState() {
+        if (!window.$memberstackDom) {
+          VIEWER_STATE = "unknown";
+          return;
+        }
+        await window.$memberstackDom.onReady;
+        try {
+          var res = await window.$memberstackDom.getCurrentMember();
+          var data = res && res.data;
+          VIEWER_STATE = data && data.member ? "loggedin" : "stranger";
+        } catch (err) {
+          VIEWER_STATE = "stranger";
+        }
+        if (VIEWER_STATE === "stranger") applyLockedStyling();
+      }
+      initViewerState();
+      observeMemberstackModalClose();
+
+      if (window.$memberstackDom && window.$memberstackDom.onReady) {
+        window.$memberstackDom.onReady.then(function () {
+          if (typeof window.$memberstackDom.on === "function") {
+            window.$memberstackDom.on("member.login", function () {
+              VIEWER_STATE = "loggedin";
+              document.querySelectorAll("[data-glossary-link]").forEach(function (el) {
+                el.classList.remove("term-link", "term-link--locked");
+                el.removeAttribute("aria-disabled");
+                el.removeAttribute("title");
+              });
+            });
+          }
+        });
+      }
+
+      (function initTermButtons() {
+        var container = document.querySelector("main.glossary");
+        if (container) {
+          document.querySelectorAll("[data-glossary-link]").forEach(function (btn) {
+            var clone = btn.cloneNode(true);
+            btn.parentNode.replaceChild(clone, btn);
+          });
+          container.addEventListener("click", function (e) {
+            var btn = e.target && e.target.closest ? e.target.closest("[data-glossary-link]") : null;
+            if (!btn) return;
+            var slug = btn.getAttribute("data-slug") || "";
+            window.__pendingGlossarySlug = slug;
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+            if (window.__AUTH?.loggedIn) {
+              removeLockedStyling();
+              openTermModal(slug);
+              return;
+            }
+            applyLockedStyling();
+            openSignupModal();
+            return;
+          }, true);
+        }
+      })();
 
       closeBtn?.addEventListener("click", closeModal);
 
@@ -233,6 +396,139 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
       dialog?.addEventListener("keydown", function (e) {
         if (e.key === "Escape") closeModal();
       });
+
+      document.addEventListener("click", function (e) {
+        var trigger = e.target && e.target.closest
+          ? e.target.closest('[data-ms-modal="login"], [data-ms-modal="signup"]')
+          : null;
+
+        if (!trigger) return;
+
+        // Start polling shortly after the modal is triggered so the first successful login updates state.
+        setTimeout(function () {
+          pollUntilLoggedIn({ attempts: 40, delayMs: 200 });
+        }, 300);
+      }, true);
+
+      // Glossary search: filter entries by term, definition, optional alt
+      function initGlossarySearch() {
+        var searchInput = document.getElementById("glossary-search");
+        var searchBtn = document.getElementById("glossary-search-btn");
+        var searchClear = document.getElementById("glossary-search-clear");
+        var noResultsEl = document.getElementById("glossary-no-results");
+        if (!searchInput) return;
+        var data = (typeof glossaryJson === "string") ? JSON.parse(glossaryJson) : glossaryJson;
+        var terms = Array.isArray(data) ? data : [];
+
+        var termMap = new Map();
+        terms.forEach(function (e) {
+          termMap.set(e.term, e);
+        });
+
+        function stripHtml(html) {
+          if (!html) return "";
+          var div = document.createElement("div");
+          div.innerHTML = html;
+          return (div.textContent || div.innerText || "").trim();
+        }
+
+        function getSearchableText(entry) {
+          const term = (entry.term ?? "").toString();
+          const alt = (entry.alt ?? "").toString();
+          return `${term} ${alt}`.toLowerCase();
+        }
+
+        function runFilter(query) {
+          var q = query.toLowerCase();
+          var sections = document.querySelectorAll(".glossary__letter-section");
+          var anyVisible = false;
+
+          sections.forEach(function (section) {
+            var buttons = section.querySelectorAll(".glossary__term-btn");
+            var sectionVisible = false;
+            buttons.forEach(function (btn) {
+              var term = btn.getAttribute("data-term");
+              var entry = termMap.get(term);
+              var show = false;
+              if (!q) {
+                show = true;
+              } else if (entry) {
+                show = getSearchableText(entry).toLowerCase().indexOf(q) !== -1;
+              }
+              if (show) {
+                btn.classList.remove("is-hidden");
+                sectionVisible = true;
+                anyVisible = true;
+              } else {
+                btn.classList.add("is-hidden");
+              }
+            });
+            if (sectionVisible) {
+              section.classList.remove("is-hidden");
+            } else {
+              section.classList.add("is-hidden");
+            }
+          });
+
+          if (noResultsEl) {
+            if (q && !anyVisible) {
+              noResultsEl.classList.remove("is-hidden");
+            } else {
+              noResultsEl.classList.add("is-hidden");
+            }
+          }
+
+          if (searchClear) {
+            if (searchInput && searchInput.value.trim().length > 0) {
+              searchClear.classList.remove("is-hidden");
+            } else {
+              searchClear.classList.add("is-hidden");
+            }
+          }
+        }
+
+        if (searchBtn) {
+          searchBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            var query = searchInput ? searchInput.value.trim() : "";
+            runFilter(query);
+            if (searchClear) {
+              searchClear.classList.toggle("is-hidden", query.length === 0);
+            }
+          });
+        }
+
+        if (searchInput) {
+          searchInput.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              var query = searchInput.value.trim();
+              runFilter(query);
+              if (searchClear) {
+                searchClear.classList.toggle("is-hidden", query.length === 0);
+              }
+            }
+          });
+        }
+
+        if (searchClear) {
+          searchClear.addEventListener("click", function () {
+            if (searchInput) {
+              searchInput.value = "";
+              runFilter("");
+              searchClear.classList.add("is-hidden");
+              searchInput.focus();
+            }
+          });
+        }
+
+        runFilter("");
+      }
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initGlossarySearch);
+      } else {
+        initGlossarySearch();
+      }
     })();
   </script>
 
@@ -256,11 +552,99 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
 
   <style>
     .glossary {
-      padding: 2.25rem 1.25rem 3rem;
+      padding: calc(var(--header-height, 140px) + 8px) 1.25rem 3rem;
       /* Height of sticky A–Z bar when it wraps to two rows (padding + row1 + gap + row2). Match .glossary__az / .az-link if you change layout. */
       --glossary-az-height: 104px;
       /* Lower = lighter selected A–Z / letter header green. */
       --glossary-selected-mix: 70%;
+    }
+
+    .glossary .page-head {
+      margin-bottom: 1rem;
+    }
+
+    .glossary .is-hidden {
+      display: none !important;
+    }
+
+    .glossary__search {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .glossary__search-input {
+      flex: 1 1 200px;
+      min-width: 0;
+      padding: 0.5rem 0.75rem;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      background: rgba(255, 255, 255, 0.9);
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    .glossary__search-input:focus {
+      outline: 2px solid rgba(0, 0, 0, 0.35);
+      outline-offset: 2px;
+    }
+
+    .glossary__search-btn {
+      flex-shrink: 0;
+      padding: 0.5rem 0.75rem;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.85);
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .glossary__search-btn:hover {
+      background: rgba(255, 255, 255, 1);
+    }
+
+    .glossary__search-btn:focus {
+      outline: 2px solid rgba(0, 0, 0, 0.35);
+      outline-offset: 2px;
+    }
+
+    .glossary__search-clear {
+      flex-shrink: 0;
+      padding: 0.5rem 0.75rem;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.85);
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .glossary__search-clear:hover {
+      background: rgba(255, 255, 255, 1);
+    }
+
+    .glossary__search-clear:focus {
+      outline: 2px solid rgba(0, 0, 0, 0.35);
+      outline-offset: 2px;
+    }
+
+    .glossary__search .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .glossary__no-results {
+      margin: 1rem 0 0;
+      padding: 0.75rem;
+      color: rgba(0, 0, 0, 0.65);
     }
 
     .glossary__az {
@@ -274,8 +658,16 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
       padding: 0.5rem 0 0;
     }
 
-    /* Mobile: single horizontal swipeable row with right-edge fade */
+    /* Mobile: single horizontal swipeable row with right-edge fade; no duplicate header offset */
     @media (max-width: 767px) {
+      /* Top spacing: 8px only here; global body.glossary-page main supplies header + 8px (single source). */
+      .glossary {
+        --glossary-az-height: 52px;
+        padding: 8px 1.25rem 3rem;
+      }
+      .glossary .page-head {
+        margin-bottom: 0.5rem;
+      }
       .glossary__az {
         flex-wrap: nowrap;
         overflow-x: auto;
@@ -284,7 +676,9 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
         scrollbar-width: none;
         -ms-overflow-style: none;
         padding: 0.5rem 0 0.5rem;
-        position: relative;
+        position: sticky;
+        top: var(--header-height, 5rem);
+        background: var(--page-bg, #f7f8f7);
       }
       .glossary__az::-webkit-scrollbar {
         display: none;
@@ -299,12 +693,19 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
         background: linear-gradient(to right, transparent, var(--page-bg, #fff));
         pointer-events: none;
       }
-      .glossary {
-        --glossary-az-height: 52px;
-      }
       .az-link {
         flex-shrink: 0;
         white-space: nowrap;
+      }
+      /* Reserve space below sticky A–Z bar so first letter section is not hidden (A–Z height + gap only). */
+      .glossary__sections {
+        padding-top: calc(var(--glossary-az-height, 52px) + 8px);
+      }
+      section[id^="letter-"] {
+        scroll-margin-top: calc(var(--header-height, 5rem) + var(--glossary-az-height, 52px) + 8px);
+      }
+      .glossary__letter-header {
+        top: calc(var(--header-height, 5rem) + var(--glossary-az-height, 52px));
       }
     }
 
@@ -347,16 +748,16 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
       outline-offset: 2px;
     }
 
-    /* Reserves space so the first letter header is not behind the A–Z bar on refresh and keeps a consistent gap. */
+    /* Reserves space so the first letter header is not behind the A–Z bar; A–Z height + gap only (header already in main). */
     .glossary__sections {
       max-width: 1100px;
       margin: 1.5rem auto 0;
-      padding-top: calc(var(--header-height, 140px) + var(--glossary-az-height, 104px) + 40px);
+      padding-top: calc(var(--glossary-az-height, 104px) + 8px);
     }
 
     /* scroll-margin-top so anchor jumps (A–Z links) don't hide the section under the fixed header + sticky A–Z bar. */
     section[id^="letter-"] {
-      scroll-margin-top: calc(var(--header-height, 140px) + var(--glossary-az-height, 104px) + 40px);
+      scroll-margin-top: calc(var(--header-height, 140px) + var(--glossary-az-height, 104px) + 8px);
     }
 
     .glossary__letter-section {
@@ -431,6 +832,10 @@ const glossaryJson = JSON.stringify(filteredGlossary.map((i) => ({ term: i.engli
     .glossary__term-btn:focus {
       outline: 2px solid rgba(0, 0, 0, 0.35);
       outline-offset: 2px;
+    }
+
+    .term-link--locked {
+      cursor: pointer;
     }
 
     /* Glossary modal – below fixed header, body scrolls */
