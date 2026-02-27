@@ -45,5 +45,14 @@
         <a href="/" class="muted">Back</a>
       </div>
     </div>
+
+    <script is:inline>
+      (function () {
+        if (!window.$memberstackDom || typeof window.$memberstackDom.on !== "function") return;
+        window.$memberstackDom.on("member.login", function () {
+          window.location.href = "/glossary";
+        });
+      })();
+    </script>
   </body>
 </html>
