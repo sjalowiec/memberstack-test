@@ -96,7 +96,7 @@ const isProduction =
     <!-- MemberStack -->
     <script
     src="https://static.memberstack.com/scripts/v1/memberstack.js"
-    data-memberstack-id="app_cmfhd3d1n802vb0wy706205810">
+    data-memberstack-app="app_cmfhd3d1n802vb0wy706205810">
   </script>
 
   <body class={bodyClass}>
@@ -218,61 +218,6 @@ const isProduction =
         closeBtn?.addEventListener('click', closeModal);
       })();
     </script>
-
-    <!-- Memberstack: one-time reload after login so header shows Account/Log out -->
-    <script is:inline>
-      (function () {
-        const RELOAD_KEY = "ms_reload_once";
-        function clearReloadFlag() {
-          try { sessionStorage.removeItem(RELOAD_KEY); } catch (e) {}
-        }
-        function setReloadFlag() {
-          try { sessionStorage.setItem(RELOAD_KEY, "1"); } catch (e) {}
-        }
-        function didReloadAlready() {
-          try { return sessionStorage.getItem(RELOAD_KEY) === "1"; } catch (e) { return false; }
-        }
-        async function checkAndReloadOnce() {
-          var ms = window.$memberstackDom;
-          if (!ms || typeof ms.getCurrentMember !== "function") return;
-          try {
-            var res = await ms.getCurrentMember();
-            var member = (res && (res.data && (res.data.member || res.data))) || null;
-            var loggedIn = Boolean(member);
-            if (loggedIn && !didReloadAlready()) {
-              setReloadFlag();
-              window.location.reload();
-              return;
-            }
-            if (!loggedIn) clearReloadFlag();
-          } catch (e) {}
-        }
-        if (window.$memberstackDom && window.$memberstackDom.onReady) {
-          window.$memberstackDom.onReady.then(function () {
-            if (typeof window.$memberstackDom.on === "function") {
-              window.$memberstackDom.on("member.login", function () {
-                if (!didReloadAlready()) {
-                  setReloadFlag();
-                  window.location.reload();
-                }
-              });
-              window.$memberstackDom.on("member.logout", function () {
-                clearReloadFlag();
-              });
-            }
-            checkAndReloadOnce();
-          });
-        } else {
-          var attempts = 0;
-          var t = setInterval(function () {
-            if (window.$memberstackDom && window.$memberstackDom.getCurrentMember) {
-              clearInterval(t);
-              checkAndReloadOnce();
-            } else if (++attempts > 50) clearInterval(t);
-          }, 200);
-        }
-      })();
-    </script>
     <script is:inline>
 (function () {
   function bannerEl() {
@@ -313,23 +258,6 @@ const isProduction =
       if (txt) return txt;
     }
     return "";
-  }
-
-  function startObserver() {
-    // Observe the whole document since Memberstack injects dynamically
-    const obs = new MutationObserver(() => {
-      setBanner(readMemberstackError());
-    });
-    obs.observe(document.documentElement, { subtree: true, childList: true, characterData: true });
-
-    // initial check (in case an error already exists)
-    setBanner(readMemberstackError());
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", startObserver);
-  } else {
-    startObserver();
   }
 
   // clear on back/forward cache restore
