@@ -550,17 +550,26 @@ const glossaryJson = JSON.stringify(
 
     document.addEventListener("DOMContentLoaded", async () => {
       const lockedSection = document.querySelector("[data-glossary-locked]");
+      if (!lockedSection) return;
 
       try {
         const { data: member } = await window.$memberstackDom.getCurrentMember();
 
         if (!member) {
-          if (lockedSection) lockedSection.style.display = "none";
-          return;
+          const termButtons = lockedSection.querySelectorAll("[data-glossary-link]");
+          termButtons.forEach((btn) => {
+            btn.disabled = true;
+            btn.tabIndex = -1;
+            btn.setAttribute("aria-disabled", "true");
+          });
         }
-
       } catch (err) {
-        if (lockedSection) lockedSection.style.display = "none";
+        const termButtons = lockedSection.querySelectorAll("[data-glossary-link]");
+        termButtons.forEach((btn) => {
+          btn.disabled = true;
+          btn.tabIndex = -1;
+          btn.setAttribute("aria-disabled", "true");
+        });
       }
     });
   </script>
