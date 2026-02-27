@@ -100,6 +100,10 @@ const isProduction =
   </script>
 
   <body class={bodyClass}>
+    <div id="msTopError" class="ms-top-error" role="alert" aria-live="polite" hidden>
+      <div class="ms-top-error__bar" aria-hidden="true"></div>
+      <div class="ms-top-error__text"></div>
+    </div>
     <slot /> <!-- Page content (or Layout wrapper) goes here -->
 
     <!-- Contact Modal -->
@@ -269,5 +273,68 @@ const isProduction =
         }
       })();
     </script>
+    <script is:inline>
+(function () {
+  function bannerEl() {
+    return document.getElementById("msTopError");
+  }
+
+  function setBanner(message) {
+    const banner = bannerEl();
+    if (!banner) return;
+
+    const textEl = banner.querySelector(".ms-top-error__text");
+    if (!textEl) return;
+
+    const msg = (message || "").trim();
+
+    if (!msg) {
+      banner.hidden = true;
+      textEl.textContent = "";
+      return;
+    }
+
+    textEl.textContent = msg;
+    banner.hidden = false;
+
+    // bring it into view so it's obvious
+    try { banner.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {}
+  }
+
+  function readMemberstackError() {
+    // Prefer the standard error message element if present
+    const msError = document.querySelector(".ms-error-message");
+    if (msError && msError.textContent.trim()) return msError.textContent.trim();
+
+    // Fallback to data attribute containers
+    const msContainers = document.querySelectorAll('[data-ms-message="error"]');
+    for (const el of msContainers) {
+      const txt = (el.textContent || "").trim();
+      if (txt) return txt;
+    }
+    return "";
+  }
+
+  function startObserver() {
+    // Observe the whole document since Memberstack injects dynamically
+    const obs = new MutationObserver(() => {
+      setBanner(readMemberstackError());
+    });
+    obs.observe(document.documentElement, { subtree: true, childList: true, characterData: true });
+
+    // initial check (in case an error already exists)
+    setBanner(readMemberstackError());
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startObserver);
+  } else {
+    startObserver();
+  }
+
+  // clear on back/forward cache restore
+  window.addEventListener("pageshow", () => setBanner(""));
+})();
+</script>
   </body>
 </html>

@@ -34,7 +34,12 @@
     border-radius: 14px;
   }
 
-
+/* Memberstack prebuilt UI: always allow messages to display */
+memberstack-prebuilt-ui [data-ms-message="error"],
+memberstack-prebuilt-ui [data-ms-message="success"] {
+  display: block !important;
+  margin-top: 10px;
+}
 
 
   /* Layout spacing */
@@ -1443,4 +1448,25 @@ p {
   border: 0;
   border-top: 1px solid rgba(0,0,0,0.08);
   margin: 16px 0 24px;
+}
+
+/* Memberstack modal messages: ensure errors can show */
+[data-ms-message="error"]:not(:empty),
+[data-ms-message="success"]:not(:empty) {
+  display: block !important;
+}
+
+/* Memberstack Error Visibility Fix */
+div[data-ms-message="error"] {
+  display: block;
+}
+
+div[data-ms-message="error"]:empty {
+  display: none;
+}
+
+.ms-error-message {
+  color: #b00020;
+  font-size: 0.95rem;
+  margin-top: 8px;
 }
