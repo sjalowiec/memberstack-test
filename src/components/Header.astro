@@ -962,11 +962,13 @@ div[data-ms-message-class="ms-success-message"] {
     // Before opening Memberstack login modal,
     // store current URL and set redirect target
     link.addEventListener("click", () => {
-      try {
-        const currentUrl = window.location.href;
-        sessionStorage.setItem("kbm_return_to", currentUrl);
-        link.setAttribute("data-ms-redirect", currentUrl);
-      } catch (e) {}
-    });
-  })();
+  try {
+    const relativeUrl =
+      window.location.pathname +
+      window.location.search +
+      window.location.hash;
+
+    link.setAttribute("data-ms-redirect", relativeUrl);
+  } catch (e) {}
+});
 </script>
