@@ -15,7 +15,12 @@ const { title, breadcrumb, meta, subhead, hideTitle = false } = Astro.props;
     <p class="kbm-breadcrumb">{breadcrumb}</p>
   )}
 
-  {title && !hideTitle && <h1 class="page-title">{title}</h1>}
+  {title && !hideTitle && (
+    <h1 class="page-title">
+      {title}
+      <slot name="after-title" />
+    </h1>
+  )}
 
   {subhead && (
     <p class="page-subhead">{subhead}</p>
@@ -42,4 +47,6 @@ const { title, breadcrumb, meta, subhead, hideTitle = false } = Astro.props;
     font-size: var(--text-lg);
     opacity: 0.85;
   }
+
+
 </style>
