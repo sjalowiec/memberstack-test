@@ -624,7 +624,7 @@ div[data-ms-message-class="ms-success-message"] {
               id="kbmLoginLink"
               data-ms-modal="login"
               data-ms-hide="member"
-              data-ms-redirect=""
+              data-ms-redirect="current-url"
             >
               Log in
             </a>
@@ -952,23 +952,4 @@ div[data-ms-message-class="ms-success-message"] {
       });
     }
   })();
-</script>
-
-<script is:inline>
-  (function () {
-    const link = document.getElementById("kbmLoginLink");
-    if (!link) return;
-
-    // Before opening Memberstack login modal,
-    // store current URL and set redirect target
-    link.addEventListener("click", () => {
-  try {
-    const relativeUrl =
-      window.location.pathname +
-      window.location.search +
-      window.location.hash;
-
-    link.setAttribute("data-ms-redirect", relativeUrl);
-  } catch (e) {}
-});
 </script>
