@@ -35,20 +35,7 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
   data-iframe-src={iframeSrc}
 >
   <div class="kbm-video__frame" style={`padding-top:${pad}%;`}>
-    {isMemberOnly ? (
-      <div class="kbm-video__locked" role="region" aria-label={`${title} (Members only)`}>
-        {thumbUrl ? <img class="kbm-video__thumb" src={thumbUrl} alt="" loading="lazy" /> : null}
-
-        <div class="kbm-video__overlay">
-          <div class="kbm-video__lockline">
-            <span aria-hidden="true">🔒</span>
-            <strong>Members only</strong>
-          </div>
-          <p class="kbm-video__msg">This video is available with membership.</p>
-          <a class="kbm-video__cta" href={ctaHref}>{ctaText}</a>
-        </div>
-      </div>
-    ) : (
+    {access_level === "open" ? (
       <iframe
         class="kbm-video__iframe"
         src={iframeSrc}
@@ -58,46 +45,36 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
         allow="autoplay; fullscreen; picture-in-picture"
         allowfullscreen
       />
+    ) : (
+      <>
+        <div data-ms-content="paid-plans" class="kbm-video__paid-wrap">
+          <iframe
+            class="kbm-video__iframe"
+            src={iframeSrc}
+            title={title}
+            loading="lazy"
+            frameborder="0"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowfullscreen
+          />
+        </div>
+        <div data-ms-content="!paid-plans" class="kbm-video__locked" role="region" aria-label={`${title} (Members only)`}>
+          {thumbUrl ? <img class="kbm-video__thumb" src={thumbUrl} alt="" loading="lazy" /> : null}
+
+          <div class="kbm-video__overlay">
+            <div class="kbm-video__lockline">
+              <span aria-hidden="true">🔒</span>
+              <strong>Members only</strong>
+            </div>
+            <p class="kbm-video__msg">This video is available with membership.</p>
+            <a class="kbm-video__cta" href={ctaHref}>{ctaText}</a>
+          </div>
+        </div>
+      </>
     )}
   </div>
 </div>
 
-{isMemberOnly && (
-  <script is:inline>
-    (function () {
-      const root = document.currentScript?.previousElementSibling;
-      if (!root) return;
-
-      // Your Memberstack script must already be on the page.
-      // We only inject the iframe if Memberstack confirms a "member".
-      function injectIframe() {
-        const frame = root.querySelector(".kbm-video__frame");
-        if (!frame) return;
-
-        // Prevent double-injection
-        if (frame.querySelector("iframe")) return;
-
-        const src = root.getAttribute("data-iframe-src");
-        const title = "Video";
-
-        const iframe = document.createElement("iframe");
-        iframe.className = "kbm-video__iframe";
-        iframe.src = src || "";
-        iframe.title = title;
-        iframe.loading = "lazy";
-        iframe.setAttribute("frameborder", "0");
-        iframe.setAttribute("allow", "autoplay; fullscreen; picture-in-picture");
-        iframe.setAttribute("allowfullscreen", "true");
-
-        // Remove locked UI and replace with iframe
-        frame.innerHTML = "";
-        frame.appendChild(iframe);
-      }
-
-      async function checkMember() {
-        try {
-          // Memberstack v2 exposes window.MemberStack in most setups.
-          const ms = window.MemberStack;
           if (!ms) return;
 
           // Try common “get current member” call patterns.
