@@ -1,11 +1,11 @@
 ---
 /**
  * GatedVimeoEmbed.astro
- * - If access_level === "open": render iframe immediately
- * - If access_level === "member": render a locked placeholder; inject iframe only if Memberstack says member
+ * - If access_level === "open": render iframe for everyone.
+ * - If access_level === "member": DOM gating via data-ms-content="paid-plans" / "!paid-plans".
  */
 
- const {
+const {
   videoId,
   title = "Video",
   access_level = "open", // "open" | "member"
@@ -14,8 +14,6 @@
   ctaHref = "/membership",
   ctaText = "Join to watch",
 } = Astro.props;
-
-const isMemberOnly = access_level === "member";
 
 function paddingPercent(aspectStr: string) {
   // "16/9" -> 56.25
@@ -35,19 +33,10 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
   data-iframe-src={iframeSrc}
 >
   <div class="kbm-video__frame" style={`padding-top:${pad}%;`}>
-    {access_level === "open" ? (
-      <iframe
-        class="kbm-video__iframe"
-        src={iframeSrc}
-        title={title}
-        loading="lazy"
-        frameborder="0"
-        allow="autoplay; fullscreen; picture-in-picture"
-        allowfullscreen
-      />
-    ) : (
+    {access_level === "member" ? (
       <>
-        <div data-ms-content="paid-plans" class="kbm-video__paid-wrap">
+        <!-- Paid members see video -->
+        <div data-ms-content="paid-plans">
           <iframe
             class="kbm-video__iframe"
             src={iframeSrc}
@@ -58,54 +47,38 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
             allowfullscreen
           />
         </div>
-        <div data-ms-content="!paid-plans" class="kbm-video__locked" role="region" aria-label={`${title} (Members only)`}>
-          {thumbUrl ? <img class="kbm-video__thumb" src={thumbUrl} alt="" loading="lazy" /> : null}
 
-          <div class="kbm-video__overlay">
-            <div class="kbm-video__lockline">
-              <span aria-hidden="true">🔒</span>
-              <strong>Members only</strong>
+        <!-- Everyone else sees locked state -->
+        <div data-ms-content="!paid-plans">
+          <div class="kbm-video__locked">
+            <div class="kbm-video__overlay">
+              <div class="kbm-video__lockline">
+                🔒 <strong>Members only</strong>
+              </div>
+              <p>This video is available with membership.</p>
+              <a href="/membership" class="kbm-video__cta">
+                Join to watch
+              </a>
             </div>
-            <p class="kbm-video__msg">This video is available with membership.</p>
-            <a class="kbm-video__cta" href={ctaHref}>{ctaText}</a>
           </div>
         </div>
       </>
+    ) : (
+      <!-- Open video - iframe for everyone -->
+      <iframe
+        class="kbm-video__iframe"
+        src={iframeSrc}
+        title={title}
+        loading="lazy"
+        frameborder="0"
+        allow="autoplay; fullscreen; picture-in-picture"
+        allowfullscreen
+      />
     )}
   </div>
 </div>
 
-          if (!ms) return;
 
-          // Try common “get current member” call patterns.
-          // If your setup differs, we’ll adjust in the next step.
-          const member =
-            (ms.getCurrentMember && (await ms.getCurrentMember())) ||
-            (ms.getMemberJSON && (await ms.getMemberJSON()));
-
-          // Normalize
-          const data = member?.data || member;
-
-          // Heuristic: “member” typically means logged in + has a paid plan.
-          // Many setups include `planConnections` or similar.
-          const isPaid =
-            Array.isArray(data?.planConnections) ? data.planConnections.length > 0 :
-            Array.isArray(data?.plans) ? data.plans.length > 0 :
-            Boolean(data?.plan); // fallback
-
-          if (isPaid) injectIframe();
-        } catch (e) {
-          // stay locked if anything fails
-          console.warn("Video gate check failed:", e);
-        }
-      }
-
-      // Run after window load to ensure Memberstack is ready
-      if (document.readyState === "complete") checkMember();
-      else window.addEventListener("load", checkMember);
-    })();
-  </script>
-)}
 
 <style>
   .kbm-video__frame{
@@ -115,6 +88,11 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
     overflow: hidden;
     border-radius: 14px;
     background: #fff;
+  }
+  .kbm-video__frame [data-ms-content="paid-plans"],
+  .kbm-video__frame [data-ms-content="!paid-plans"] {
+    position: absolute;
+    inset: 0;
   }
   .kbm-video__iframe{
     position:absolute;
