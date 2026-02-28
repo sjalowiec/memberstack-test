@@ -3,6 +3,7 @@ import videos from "../../data/videos-public.json";
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
 import LoginNudge from "../../components/auth/LoginNudge.astro";
+import GatedVimeoEmbed from "../../components/videos/GatedVimeoEmbed.astro";
 
 export const prerender = true;
 
@@ -72,22 +73,11 @@ const posterSrc =
               </div>
             </div>
 
-            {/* Member-only */}
-            <div class="gated-content" data-gated="content" hidden>
-              {vimeoId ? (
-                <div class="vimeo-wrap">
-                  <iframe
-                    class="vimeo-player"
-                    src={`https://player.vimeo.com/video/${vimeoId}`}
-                    frameborder="0"
-                    allow="autoplay; fullscreen; picture-in-picture"
-                    allowfullscreen
-                  ></iframe>
-                </div>
-              ) : (
-                <p>Video player unavailable for this item.</p>
-              )}
-            </div>
+            <GatedVimeoEmbed
+              videoId={vimeoId}
+              title={title}
+              access_level={(video as any)?.access_level ?? "member"}
+            />
           </section>
 
           {/* JUMP LINKS */}
