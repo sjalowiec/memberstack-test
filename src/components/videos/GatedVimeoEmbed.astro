@@ -1,0 +1,193 @@
+---
+/**
+ * GatedVimeoEmbed.astro
+ * - If access_level === "open": render iframe immediately
+ * - If access_level === "member": render a locked placeholder; inject iframe only if Memberstack says member
+ */
+
+ const {
+  videoId,
+  title = "Video",
+  access_level = "open", // "open" | "member"
+  aspect = "16/9",
+  thumbUrl = "", // optional: show a thumbnail for locked state
+  ctaHref = "/membership",
+  ctaText = "Join to watch",
+} = Astro.props;
+
+const isMemberOnly = access_level === "member";
+
+function paddingPercent(aspectStr: string) {
+  // "16/9" -> 56.25
+  const [w, h] = String(aspectStr).split("/").map(Number);
+  if (!w || !h) return 56.25;
+  return (h / w) * 100;
+}
+
+const pad = paddingPercent(aspect);
+const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
+---
+
+<div
+  class="kbm-video"
+  data-access-level={access_level}
+  data-video-id={videoId}
+  data-iframe-src={iframeSrc}
+>
+  <div class="kbm-video__frame" style={`padding-top:${pad}%;`}>
+    {isMemberOnly ? (
+      <div class="kbm-video__locked" role="region" aria-label={`${title} (Members only)`}>
+        {thumbUrl ? <img class="kbm-video__thumb" src={thumbUrl} alt="" loading="lazy" /> : null}
+
+        <div class="kbm-video__overlay">
+          <div class="kbm-video__lockline">
+            <span aria-hidden="true">🔒</span>
+            <strong>Members only</strong>
+          </div>
+          <p class="kbm-video__msg">This video is available with membership.</p>
+          <a class="kbm-video__cta" href={ctaHref}>{ctaText}</a>
+        </div>
+      </div>
+    ) : (
+      <iframe
+        class="kbm-video__iframe"
+        src={iframeSrc}
+        title={title}
+        loading="lazy"
+        frameborder="0"
+        allow="autoplay; fullscreen; picture-in-picture"
+        allowfullscreen
+      />
+    )}
+  </div>
+</div>
+
+{isMemberOnly && (
+  <script is:inline>
+    (function () {
+      const root = document.currentScript?.previousElementSibling;
+      if (!root) return;
+
+      // Your Memberstack script must already be on the page.
+      // We only inject the iframe if Memberstack confirms a "member".
+      function injectIframe() {
+        const frame = root.querySelector(".kbm-video__frame");
+        if (!frame) return;
+
+        // Prevent double-injection
+        if (frame.querySelector("iframe")) return;
+
+        const src = root.getAttribute("data-iframe-src");
+        const title = "Video";
+
+        const iframe = document.createElement("iframe");
+        iframe.className = "kbm-video__iframe";
+        iframe.src = src || "";
+        iframe.title = title;
+        iframe.loading = "lazy";
+        iframe.setAttribute("frameborder", "0");
+        iframe.setAttribute("allow", "autoplay; fullscreen; picture-in-picture");
+        iframe.setAttribute("allowfullscreen", "true");
+
+        // Remove locked UI and replace with iframe
+        frame.innerHTML = "";
+        frame.appendChild(iframe);
+      }
+
+      async function checkMember() {
+        try {
+          // Memberstack v2 exposes window.MemberStack in most setups.
+          const ms = window.MemberStack;
+          if (!ms) return;
+
+          // Try common “get current member” call patterns.
+          // If your setup differs, we’ll adjust in the next step.
+          const member =
+            (ms.getCurrentMember && (await ms.getCurrentMember())) ||
+            (ms.getMemberJSON && (await ms.getMemberJSON()));
+
+          // Normalize
+          const data = member?.data || member;
+
+          // Heuristic: “member” typically means logged in + has a paid plan.
+          // Many setups include `planConnections` or similar.
+          const isPaid =
+            Array.isArray(data?.planConnections) ? data.planConnections.length > 0 :
+            Array.isArray(data?.plans) ? data.plans.length > 0 :
+            Boolean(data?.plan); // fallback
+
+          if (isPaid) injectIframe();
+        } catch (e) {
+          // stay locked if anything fails
+          console.warn("Video gate check failed:", e);
+        }
+      }
+
+      // Run after window load to ensure Memberstack is ready
+      if (document.readyState === "complete") checkMember();
+      else window.addEventListener("load", checkMember);
+    })();
+  </script>
+)}
+
+<style>
+  .kbm-video__frame{
+    position: relative;
+    width: 100%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #fff;
+  }
+  .kbm-video__iframe{
+    position:absolute;
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    border:0;
+  }
+  .kbm-video__locked{
+    position:absolute;
+    inset:0;
+    display:block;
+    background:#fff;
+  }
+  .kbm-video__thumb{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    filter: blur(0px);
+  }
+  .kbm-video__overlay{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    padding:16px;
+    text-align:center;
+    background: rgba(255,255,255,0.86);
+    gap:10px;
+  }
+  .kbm-video__lockline{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    font-size: 1.05rem;
+  }
+  .kbm-video__msg{
+    margin:0;
+    max-width: 42ch;
+  }
+  .kbm-video__cta{
+    display:inline-block;
+    padding:10px 14px;
+    border-radius: 999px;
+    text-decoration:none;
+    font-weight:700;
+    background: var(--kbm-green, #52682d);
+    color:#fff;
+  }
+</style>
