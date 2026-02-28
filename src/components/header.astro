@@ -620,7 +620,7 @@ div[data-ms-message-class="ms-success-message"] {
             <span id="auth-pill" class="auth-pill">auth: …</span>
           )}
           <div class="kbm-account-section auth header-actions">
-            <a data-ms-modal="login" data-ms-hide="member">Log in</a>
+            <a id="kbmLoginLink" data-ms-modal="login" data-ms-hide="member">Log in</a>
             <a data-ms-modal="profile" data-ms-content="members">Account</a>
             <a href="#" data-ms-action="logout" data-ms-content="members">Log out</a>
           </div>
@@ -944,5 +944,50 @@ div[data-ms-message-class="ms-success-message"] {
         }
       });
     }
+  })();
+</script>
+
+<script is:inline>
+  (function () {
+    const link = document.getElementById("kbmLoginLink");
+    if (!link) return;
+
+    // Store current page before opening Memberstack login modal
+    link.addEventListener("click", () => {
+      try {
+        sessionStorage.setItem("kbm_return_to", window.location.href);
+      } catch (e) {}
+    });
+
+    // After login, if Memberstack redirected elsewhere, bounce back once
+    window.addEventListener("load", () => {
+      try {
+        const ret = sessionStorage.getItem("kbm_return_to");
+        if (!ret) return;
+
+        // If we're already on the intended page, clear and stop
+        if (window.location.href === ret) {
+          sessionStorage.removeItem("kbm_return_to");
+          return;
+        }
+
+        const ms = window.MemberStack;
+        if (!ms) return;
+
+        const goBack = async () => {
+          let member = null;
+          if (ms.getCurrentMember) member = await ms.getCurrentMember();
+          else if (ms.getMemberJSON) member = await ms.getMemberJSON();
+
+          const data = member?.data || member;
+          if (data) {
+            sessionStorage.removeItem("kbm_return_to");
+            window.location.href = ret;
+          }
+        };
+
+        goBack().catch(() => {});
+      } catch (e) {}
+    });
   })();
 </script>

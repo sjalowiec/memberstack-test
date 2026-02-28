@@ -56,9 +56,13 @@ const glossaryJson = JSON.stringify(
 <Layout bodyClass="glossary-page">
   <main class="glossary">
     <PageHead
-      title={`Glossary (${termCount} terms)`}
-      subhead="Browse machine knitting terms from A to Z. Tap a term to view its definition in a popup."
-    />
+      title="Glossary"
+      subhead="Machine knitting has a language of it's own. Browse machine knitting terms and abbreviations from A to Z. Tap a term to view the definition."
+    >
+    <span slot="after-title" class="term-count" style="font-size:0.4em;">
+      ({termCount} terms)
+    </span>
+    </PageHead>
 
     <div class="glossary__search">
       <label for="glossary-search" class="glossary__search-label sr-only">Search glossary</label>
@@ -574,7 +578,7 @@ const glossaryJson = JSON.stringify(
     });
   </script>
 
-  <style>
+  <style is:global>
     .glossary {
       padding: calc(var(--header-height, 140px) + 8px) 1.25rem 3rem;
       /* Height of sticky A–Z bar when it wraps to two rows (padding + row1 + gap + row2). Match .glossary__az / .az-link if you change layout. */
