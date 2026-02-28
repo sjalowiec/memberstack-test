@@ -2,7 +2,7 @@
 /**
  * GatedVimeoEmbed.astro
  * - If access_level === "open": render iframe for everyone.
- * - If access_level === "member": DOM gating via data-ms-content="DEV – KIN Member" / "!DEV – KIN Member".
+ * - If access_level === "member": DOM gating via data-ms-content="member-videos" / "!member-videos".
  */
 
 const {
@@ -36,7 +36,7 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
     {access_level === "member" ? (
       <>
         <!-- Paid members see video -->
-        <div data-ms-content="DEV – KIN Member">
+        <div data-ms-content="member-videos">
           <iframe
             class="kbm-video__iframe"
             src={iframeSrc}
@@ -49,7 +49,7 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
         </div>
 
         <!-- Everyone else sees locked state -->
-        <div data-ms-content="!DEV – KIN Member">
+        <div data-ms-content="!member-videos">
           <div class="kbm-video__locked">
             <div class="kbm-video__overlay">
               <div class="kbm-video__lockline">
@@ -89,8 +89,8 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
     border-radius: 14px;
     background: #fff;
   }
-  .kbm-video__frame [data-ms-content="DEV – KIN Member"],
-  .kbm-video__frame [data-ms-content="!DEV – KIN Member"] {
+  .kbm-video__frame [data-ms-content="member-videos"],
+  .kbm-video__frame [data-ms-content="!member-videos"] {
     position: absolute;
     inset: 0;
   }
