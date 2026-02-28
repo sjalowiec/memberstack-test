@@ -16,14 +16,16 @@ export async function getStaticPaths() {
     return (v ?? "").toString().replace(/<[^>]*>/g, "").trim();
   }
   return glossary
-    .filter((t: any) => cleanTerm(t.english).length > 0)
+    .filter((t: any) => t.active === true && cleanTerm(t.english).length > 0)
     .map((t: any) => ({
       params: { slug: slugify(cleanTerm(t.english)) },
     }));
 }
 
 const entry = glossary.find(
-  (t: any) => slugify(cleanTerm(t.english)) === normalizedSlug
+  (t: any) =>
+    t.active === true &&
+    slugify(cleanTerm(t.english)) === normalizedSlug
 );
 
 if (!entry) {
