@@ -1,33 +1,50 @@
-import type { APIRoute } from "astro";  
+import type { APIRoute } from "astro";
 
 const TALKYARD_BASE = "https://knititnow.talkyard.net";
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ request }) => {
+  const url = new URL(request.url);
+  const thenGoTo = url.searchParams.get("thenGoTo") || "/-/sso-test";
+
+  // TODO in a later step: replace this with real Memberstack member info
+  const externalId = "mem_test_user";
+  const email = "test@example.com";
+  const fullName = "Test User";
+
   const secret = (import.meta.env.TALKYARD_API_SECRET || "").trim();
-  const user = "tyid=2"; // sysbot user, per Talkyard docs/examples
+  const auth = Buffer.from(`tyid=2:${secret}`).toString("base64");
 
-  const auth = Buffer.from(`${user}:${secret}`).toString("base64");
-
-  const res = await fetch(`${TALKYARD_BASE}/-/v0/ping`, {
-    headers: { Authorization: `Basic ${auth}` }
-  });
-
-  const text = await res.text();
-
-  return new Response(
-    JSON.stringify(
-      {
-        status: res.status,
-        ok: res.ok,
-        usingUser: user,
-        secretLength: secret.length,
-        secretStartsWith: secret.slice(0, 4),
-        secretEndsWith: secret.slice(-4),
-        talkyardResponse: text.slice(0, 200)
+  const upsertRes = await fetch(
+    `${TALKYARD_BASE}/-/v0/sso-upsert-user-generate-login-secret`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${auth}`
       },
-      null,
-      2
-    ),
-    { status: 200, headers: { "Content-Type": "application/json" } }
+      body: JSON.stringify({
+        externalId,
+        email,
+        fullName
+      })
+    }
+  );
+
+  const upsertText = await upsertRes.text();
+  if (!upsertRes.ok) {
+    return new Response(
+      `Talkyard upsert failed: ${upsertRes.status}\n${upsertText}`,
+      { status: 500 }
+    );
+  }
+
+  const data = JSON.parse(upsertText);
+  const oneTimeSecret = data.oneTimeSecret;
+
+  return Response.redirect(
+    `${TALKYARD_BASE}/-/v0/login-with-secret?oneTimeSecret=${encodeURIComponent(
+      oneTimeSecret
+    )}&thenGoTo=${encodeURIComponent(thenGoTo)}`,
+    302
   );
 };
