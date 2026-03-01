@@ -18,13 +18,13 @@ export const GET: APIRoute = async ({ request }) => {
   const upstream = await fetch(
     `${TALKYARD_BASE}/-/v0/sso-upsert-user-generate-login-secret`,
     {
-      method: "POST",
+      method: "POST", 
       headers: {
         "Content-Type": "application/json",
         Authorization:
           "Basic " +
-          Buffer.from(`2:${TALKYARD_API_SECRET}`).toString("base64"),
-      },
+          Buffer.from(`tyid=2:${TALKYARD_API_SECRET}`).toString("base64")   
+             },
       body: JSON.stringify({
         ssoId: externalUserId,
         primaryEmailAddress,
