@@ -2,13 +2,20 @@ import type { APIRoute } from "astro";
 
 const TALKYARD_BASE = "https://knititnow.talkyard.net";
 
-export const GET: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async ({ request, locals }) => {
   const TALKYARD_API_SECRET = import.meta.env.TALKYARD_API_SECRET;
   if (!TALKYARD_API_SECRET) {
     return new Response("Missing TALKYARD_API_SECRET", { status: 500 });
   }
 
   const url = new URL(request.url);
+
+  if (url.searchParams.get("debug") === "1") {
+    return new Response(
+      JSON.stringify({ hasMsToken: !!(locals as any).msToken }, null, 2),
+      { headers: { "Content-Type": "application/json" } }
+    );
+  }
 
   // ✅ Always safe default: land on Talkyard home after login
   const thenGoTo = url.searchParams.get("thenGoTo") ?? "/";
