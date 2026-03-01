@@ -24,7 +24,7 @@ export const GET: APIRoute = async ({ request }) => {
       },
       body: JSON.stringify({
         externalUserId: externalId,
-        email,
+        primaryEmailAddress: email,
         fullName
       })
     }
