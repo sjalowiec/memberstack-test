@@ -7,39 +7,7 @@ import Layout from "../layouts/Layout.astro";
     <h1>Memberstack Test Page</h1>
     <button id="talkyardSsoBtn">Log into Roundtable</button>
 
-    <script>
-      document.getElementById("talkyardSsoBtn").addEventListener("click", async () => {
-        const member = await $memberstackDom.getCurrentMember();
-        if (!member) {
-          alert("Not logged into Memberstack");
-          return;
-        }
     
-        const externalUserId = member.data.id;
-        const email = member.data.auth.email;
-        const fullName =
-          member.data.customFields?.fullName ||
-          member.data.auth?.email ||
-          "Member";
-    
-        // IMPORTANT: this navigates the whole window after POST returns the 302
-        const res = await fetch("/api/talkyard-sso?thenGoTo=/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ externalUserId, email, fullName }),
-          redirect: "manual",
-        });
-    
-        const loc = res.headers.get("Location");
-        if (!loc) {
-          const t = await res.text();
-          alert("SSO failed: " + t);
-          return;
-        }
-    
-        window.location.href = loc;
-      });
-    </script>
     <p>
       <button type="button" data-ms-modal="login">Open Login Modal</button>
       &nbsp;|&nbsp;
@@ -66,7 +34,39 @@ import Layout from "../layouts/Layout.astro";
     </section>
   </main>
 </Layout>
+<script>
+  document.getElementById("talkyardSsoBtn").addEventListener("click", async () => {
+    const member = await $memberstackDom.getCurrentMember();
+    if (!member) {
+      alert("Not logged into Memberstack");
+      return;
+    }
 
+    const externalUserId = member.data.id;
+    const email = member.data.auth.email;
+    const fullName =
+      member.data.customFields?.fullName ||
+      member.data.auth?.email ||
+      "Member";
+
+    // IMPORTANT: this navigates the whole window after POST returns the 302
+    const res = await fetch("/api/talkyard-sso?thenGoTo=/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ externalUserId, email, fullName }),
+      redirect: "manual",
+    });
+
+    const loc = res.headers.get("Location");
+    if (!loc) {
+      const t = await res.text();
+      alert("SSO failed: " + t);
+      return;
+    }
+
+    window.location.href = loc;
+  });
+</script>
 <script is:inline>
   (function () {
     if (!window.$memberstackDom || typeof window.$memberstackDom.on !== "function") return;
