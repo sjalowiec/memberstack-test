@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 
 const TALKYARD_BASE = "https://knititnow.talkyard.net";
 
-export const GET: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async ({ request, locals }) => {
   const TALKYARD_API_SECRET = import.meta.env.TALKYARD_API_SECRET;
 
   if (!TALKYARD_API_SECRET) {
