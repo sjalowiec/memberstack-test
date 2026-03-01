@@ -127,5 +127,12 @@ export const POST: APIRoute = async ({ request }) => {
 
   if (!result.ok) return new Response(result.raw, { status: result.status });
 
-  return redirectToTalkyard(result.loginSecret, thenGoTo);
-};
+  const redirectUrl =
+  `${TALKYARD_BASE}/-/v0/login-with-secret` +
+  `?oneTimeSecret=${encodeURIComponent(result.loginSecret)}` +
+  `&thenGoTo=${encodeURIComponent(thenGoTo || "/")}`;
+
+return new Response(JSON.stringify({ redirectUrl }), {
+  status: 200,
+  headers: { "Content-Type": "application/json" },
+});
