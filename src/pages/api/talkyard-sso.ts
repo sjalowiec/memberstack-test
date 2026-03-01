@@ -6,7 +6,9 @@ export const GET: APIRoute = async () => {
   const secret = import.meta.env.TALKYARD_API_SECRET;
 
   const res = await fetch(`${TALKYARD_BASE}/-/v0/ping`, {
-    headers: { "X-Api-Secret": secret }
+    headers: {
+      Authorization: `Bearer ${secret}`
+    }
   });
 
   return new Response(
