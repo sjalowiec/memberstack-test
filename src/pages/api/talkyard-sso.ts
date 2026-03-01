@@ -9,22 +9,21 @@ export const GET: APIRoute = async ({ request }) => {
     return new Response("Missing TALKYARD_API_SECRET", { status: 500 });
   }
 
-  // 🔹 Replace these with your actual Memberstack values
-  // If you're already pulling these from session, keep that logic.
-  const externalUserId = "Some(mem_test_user)";
-  const primaryEmailAddress = "test@example.com";
-  const fullName = "Test User";
+  // Temporary clean test user
+  const externalUserId = "mem_test_user_2";
+  const primaryEmailAddress = "test2@example.com";
+  const fullName = "Test User 2";
 
   const upstream = await fetch(
     `${TALKYARD_BASE}/-/v0/sso-upsert-user-generate-login-secret`,
     {
-      method: "POST", 
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization:
           "Basic " +
-          Buffer.from(`tyid=2:${TALKYARD_API_SECRET}`).toString("base64")   
-             },
+          Buffer.from(`tyid=2:${TALKYARD_API_SECRET}`).toString("base64"),
+      },
       body: JSON.stringify({
         ssoId: externalUserId,
         primaryEmailAddress,
@@ -40,7 +39,6 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   const data = await upstream.json();
-
   const loginSecret = data.loginSecret ?? data.ssoLoginSecret;
 
   if (!loginSecret) {
