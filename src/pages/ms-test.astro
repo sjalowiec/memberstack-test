@@ -58,11 +58,11 @@ import Layout from "../layouts/Layout.astro";
     });
 
     const loc = res.headers.get("Location");
-    if (!loc) {
-      const t = await res.text();
-      alert("SSO failed: " + t);
-      return;
-    }
+if (!loc) {
+  const t = await res.text();
+  alert("SSO failed:\n\nStatus: " + res.status + "\n\n" + t);
+  return;
+}
 
     window.location.href = loc;
   });
