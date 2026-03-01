@@ -1,0 +1,189 @@
+---
+import { getCollection } from 'astro:content';
+import Header from "../../components/header.astro";
+import Footer from "../../components/footer.astro";
+import WizardFlowRenderer from "../../components/wizards/WizardFlowRenderer.astro";
+import "../../styles/global.css";
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const wizards = await getCollection('wizards');
+  
+  // Exclude wizards that have dedicated page files (to avoid route conflicts)
+  const excludedSlugs = ['hand-machine-blanket'];
+  
+  return wizards
+    .filter((wizard) => !excludedSlugs.includes(wizard.data.slug))
+    .map((wizard) => ({
+      params: { slug: wizard.data.slug },
+      props: { wizard },
+    }));
+}
+
+const { wizard } = Astro.props;
+const { data } = wizard;
+
+const pageTitle = data.metaTitle || `${data.title} | Knit by Machine`;
+const pageDescription = data.metaDescription || data.excerpt || data.hero || '';
+
+const hasWizardFlow = data.wizardFlow && data.wizardFlow.options && data.wizardFlow.options.length > 0;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{pageTitle}</title>
+  <meta name="description" content={pageDescription} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  
+  {data.schemaMarkup && (
+    <script type="application/ld+json" set:html={JSON.stringify(data.schemaMarkup)} />
+  )}
+</head>
+<body>
+  <Header />
+  
+  <main class="kbm-main">
+    <article class="wizard-detail">
+      <div class="wizard-container">
+        <h1 class="wizard-title">{data.title}</h1>
+        
+        {data.hero && (
+          <p class="wizard-hero">{data.hero}</p>
+        )}
+        
+        {data.imageUrl && (
+          <div class="wizard-image">
+            <img src={data.imageUrl} alt={data.imageAlt || data.title} />
+          </div>
+        )}
+        
+        {data.description && (
+          <div class="wizard-description" set:html={data.description} />
+        )}
+        
+        {hasWizardFlow && (
+          <section class="wizard-flow-section">
+            <WizardFlowRenderer 
+              wizardFlow={data.wizardFlow}
+              wizardTitle={data.title}
+              introDescription={data.excerpt || "This quick check helps you find the most likely cause and get practical guidance."}
+            />
+          </section>
+        )}
+        
+        {data.tags && data.tags.length > 0 && (
+          <div class="wizard-tags">
+            {data.tags.map((tag: string) => (
+              <span class="wizard-tag">{tag}</span>
+            ))}
+          </div>
+        )}
+        
+        <nav class="wizard-back">
+          <a href="/wizards">&larr; Back to all wizards</a>
+        </nav>
+      </div>
+    </article>
+  </main>
+  
+  <Footer />
+</body>
+</html>
+
+<style>
+  .kbm-main {
+    min-height: 60vh;
+    padding: 2rem 0;
+  }
+  
+  .wizard-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+  
+  .wizard-title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--color-heading, #1a1a1a);
+  }
+  
+  .wizard-hero {
+    font-size: 1.2rem;
+    color: var(--color-muted, #555);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+  }
+  
+  .wizard-image {
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .wizard-image img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+  
+  .wizard-description {
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+  
+  .wizard-description :global(p) {
+    margin-bottom: 1rem;
+  }
+  
+  .wizard-description :global(ul),
+  .wizard-description :global(ol) {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .wizard-flow-section {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: var(--color-card-bg, #fafafa);
+    border-radius: 12px;
+    border: 1px solid var(--color-border, #e5e5e5);
+  }
+  
+  .wizard-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 2rem 0;
+  }
+  
+  .wizard-tag {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--color-tag-bg, #f0f0f0);
+    color: var(--color-tag-text, #555);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+  }
+  
+  .wizard-back {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border, #e5e5e5);
+  }
+  
+  .wizard-back a {
+    color: var(--color-link, #0066cc);
+    text-decoration: none;
+  }
+  
+  .wizard-back a:hover {
+    text-decoration: underline;
+  }
+</style>

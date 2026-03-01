@@ -1,0 +1,46 @@
+{
+  "title": "Shaping Formula by Measurement",
+  "slug": "magic-formula-measurement",
+  "hero": "",
+  "description": "<p>Enter your stitch counts, rows, and gauge to get instant, row-by-row shaping—on one or both sides. Also known as the Magic Formula, this calculator works when you’re following a pattern and know your measurements.</p>",
+  "excerpt": "Enter your widths, gauge, and row length, and get instant shaping instructions - no math needed.",
+  "whyUseThisTool": "Get instant shaping instructions for smooth or steep shaping when you know the measurements of your piece.",
+  "category": "tool",
+  "tags": [],
+  "keywords": [],
+  "aliases": [],
+  "videoUrl": "",
+  "accessLevel": "free",
+  "price": "",
+  "relatedAnas": [],
+  "relatedWorkshops": [],
+  "imageUrl": "",
+  "imageAlt": "",
+  "iconUrl": "https://www.knitbymachine.com/images/tools.svg",
+  "metaTitle": "Magic Formula by Measurement | Machine Knitting Shaping Calculator",
+  "metaDescription": "Shape your knitting using real measurements instead of stitch counts. Enter your starting and ending widths, row length, and gauge to instantly generate clear, accurate shaping instructions for any machine-knit project.",
+  "schemaMarkup": {
+    "url": "https://knitbymachine.com/wizards/magic-formula",
+    "name": "Magic Formula Shaping Calculator",
+    "@type": "SoftwareApplication",
+    "@context": "https://schema.org",
+    "keywords": "shaping calculator, knitting shaping tool, magic formula, shaping instructions, decrease calculator, increase calculator, sleeve shaping, garment shaping, knitting math, gauge-based shaping, machine knitting shaping",
+    "publisher": {
+      "url": "https://knitbymachine.com",
+      "name": "Knit by Machine",
+      "@type": "Organization"
+    },
+    "description": "A shaping calculator that turns your measurements into clear instructions. Enter your starting and ending widths, row length, and gauge to instantly generate accurate shaping guidance for sleeves, sides, and gradual shaping sections.",
+    "alternateName": [
+      "Shaping Calculator",
+      "Knitting Shaping Tool",
+      "Magic Formula Tool"
+    ],
+    "operatingSystem": "Any",
+    "applicationCategory": "EducationalApplication",
+    "isAccessibleForFree": true
+  },
+  "isDraft": false,
+  "publishedDate": "2025-11-18",
+  "pendingPublish": false
+}

@@ -1,0 +1,142 @@
+---
+import { getCollection } from 'astro:content';
+import Header from "../../components/header.astro";
+import Footer from "../../components/footer.astro";
+import "../../styles/global.css";
+
+export const prerender = true;
+
+const allWizards = await getCollection('wizards');
+
+const wizards = allWizards
+  .filter(w => w.data.isDraft !== true)
+  .sort((a, b) => a.data.title.localeCompare(b.data.title));
+
+const pageTitle = "Wizards & Tools";
+const pageDescription = "Interactive calculators, troubleshooters, and planning tools for machine knitters.";
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{pageTitle} | Knit by Machine</title>
+  <meta name="description" content={pageDescription} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body>
+  <Header />
+  
+  <main class="kbm-main">
+    <section class="kbm-section">
+      <div class="kbm-container">
+        <h1 class="kbm-page-title">{pageTitle}</h1>
+        <p class="kbm-page-intro">{pageDescription}</p>
+        
+        {wizards.length === 0 ? (
+          <p class="kbm-empty-state">No wizards available yet.</p>
+        ) : (
+          <ul class="wizard-list">
+            {wizards.map((wizard) => (
+              <li class="wizard-item">
+                <a href={`/wizards/${wizard.data.slug}`} class="wizard-link">
+                  <h2 class="wizard-title">{wizard.data.title}</h2>
+                  {wizard.data.hero && (
+                    <p class="wizard-hero">{wizard.data.hero}</p>
+                  )}
+                  {wizard.data.category && (
+                    <span class="wizard-category">{wizard.data.category}</span>
+                  )}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
+  </main>
+  
+  <Footer />
+</body>
+</html>
+
+<style>
+  .kbm-main {
+    min-height: 60vh;
+    padding: 2rem 0;
+  }
+  
+  .kbm-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+  
+  .kbm-page-title {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-heading, #1a1a1a);
+  }
+  
+  .kbm-page-intro {
+    color: var(--color-muted, #666);
+    margin-bottom: 2rem;
+  }
+  
+  .wizard-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 1rem;
+  }
+  
+  .wizard-item {
+    background: var(--color-card-bg, #fff);
+    border: 1px solid var(--color-border, #e5e5e5);
+    border-radius: 8px;
+    transition: box-shadow 0.2s ease;
+  }
+  
+  .wizard-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  
+  .wizard-link {
+    display: block;
+    padding: 1.25rem 1.5rem;
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .wizard-title {
+    font-size: 1.25rem;
+    margin: 0 0 0.5rem;
+    color: var(--color-heading, #1a1a1a);
+  }
+  
+  .wizard-hero {
+    font-size: 0.95rem;
+    color: var(--color-muted, #666);
+    margin: 0 0 0.75rem;
+    line-height: 1.5;
+  }
+  
+  .wizard-category {
+    display: inline-block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--color-tag-bg, #f0f0f0);
+    color: var(--color-tag-text, #555);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+  }
+  
+  .kbm-empty-state {
+    color: var(--color-muted, #666);
+    text-align: center;
+    padding: 3rem 0;
+  }
+</style>

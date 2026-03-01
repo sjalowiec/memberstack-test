@@ -1,0 +1,588 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Tooltip from "../../components/Tooltip.astro";
+import WhyUseThisToolTooltip from "../../components/common/WhyUseThisToolTooltip.astro";
+import PrintFooter from "../../components/common/PrintFooter.astro";
+import ActionBar from "../../components/wizards/ActionBar.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
+
+const pageUrl = "https://knitbymachine.com/wizards/gauge-calculator";
+
+// Fetch wizard metadata at build time
+const wizardSlug = 'gauge-calculator';
+let whyUseThisTool = '';
+
+try {
+  const response = await fetch(`https://api.github.com/repos/sjalowiec/knitbymachine-site/contents/astro-site/src/content/wizards/${wizardSlug}.json`);
+  if (response.ok) {
+    const fileData = await response.json();
+    // Use download_url to get raw JSON directly (avoids base64 decoding)
+    const contentResponse = await fetch(fileData.download_url);
+    if (contentResponse.ok) {
+      const wizardData = await contentResponse.json();
+      whyUseThisTool = wizardData.whyUseThisTool || '';
+    }
+  }
+} catch (e) {
+  // Silently fail - tooltip just won't show
+}
+---
+
+<BaseLayout 
+  title="Gauge Calculator | Knit by Machine" 
+  description="Accurate gauge means accurate fit. Measure your swatch, enter the numbers, and instantly get your stitch and row gauge in inches or centimeters.">
+
+<style>
+.wizard-page {
+  padding-top: 120px;
+  padding-bottom: 3rem;
+  min-height: 100vh;
+  background: var(--page-bg);
+}
+
+.page-header {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  padding: 0 1rem;
+}
+
+.page-header-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .page-header-title {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+.page-header h1 {
+  color: var(--kbm-green);
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.page-header p {
+  color: #6b7280;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.video-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: #e5e7eb;
+  color: #374151;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: all 0.2s;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.video-button:hover {
+  background: #d1d5db;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.wizard-container {
+  max-width: 700px;
+  margin: 0 auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+
+.input-group {
+  margin-bottom: 1.5rem;
+}
+
+.input-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--kbm-green);
+}
+
+.input-group input::placeholder {
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+.input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.results-section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(82, 104, 45, 0.05);
+  border-radius: 8px;
+  border-left: 4px solid var(--kbm-green);
+}
+
+.results-section h3 {
+  color: var(--kbm-green);
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.gauge-result {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+}
+
+.gauge-result:last-child {
+  margin-bottom: 0;
+}
+
+.gauge-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.gauge-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--kbm-green);
+}
+
+.gauge-value-sub {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.tips-section {
+  margin-top: 2rem;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.tips-header {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.tips-header:hover {
+  background: #f9fafb;
+}
+
+.tips-header h4 {
+  color: var(--kbm-green);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.tips-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.tips-content.open {
+  max-height: 500px;
+}
+
+.tips-content ul {
+  padding: 0 1.25rem 1.25rem 2.5rem;
+  color: #6b7280;
+  line-height: 1.8;
+}
+
+.tips-content li {
+  margin-bottom: 0.5rem;
+}
+
+.chevron {
+  transition: transform 0.3s ease;
+  color: var(--kbm-green);
+}
+
+.chevron.rotated {
+  transform: rotate(180deg);
+}
+
+@media (max-width: 640px) {
+  .input-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.back-link {
+  display: inline-block;
+  color: #52682D;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #3d4e21;
+  text-decoration: underline;
+}
+
+/* Print styles - hide input sections */
+@media print {
+  .wizard-page {
+    padding-top: 0 !important;
+    background: white !important;
+  }
+  
+  .page-header,
+  .video-button,
+  .back-link,
+  .toggle-group,
+  .form-grid,
+  .section-label,
+  .section-divider,
+  .floating-input,
+  .form-row-2,
+  .form-row-3,
+  .icon-toggle-group,
+  .calculate-btn,
+  .results-actions,
+  .no-print,
+  .units-toggle,
+  .input-grid,
+  .input-group,
+  form {
+    display: none !important;
+  }
+  
+  .wizard-container,
+  .calculator-card {
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: white !important;
+    border: none !important;
+  }
+  
+  .results,
+  #results {
+    border-top: none !important;
+    padding-top: 0 !important;
+    background: white !important;
+  }
+}
+
+</style>
+
+  <div class="wizard-page">
+    <div style="max-width: 800px; margin: 0 auto; padding: 0 1rem;">
+      <WizardBackLink category="tool" />
+    </div>
+
+  <div class="page-header">
+    <div class="page-header-title">
+      <h1>Gauge Calculator</h1>
+      {whyUseThisTool && (
+        <WhyUseThisToolTooltip text={whyUseThisTool} variant="inline" />
+      )}
+    </div>
+    <p>
+      Accurate gauge means accurate fit. Measure your swatch, enter the numbers, and instantly get your stitch and row gauge in inches or centimeters.
+    </p>
+  </div>
+
+  <div class="wizard-container">
+    <!-- Unit Toggle - left-aligned, above first input -->
+    <UnitToggle id="gaugecalc" />
+
+    <!-- Input Fields -->
+    <div class="input-grid">
+      <div class="input-group">
+        <label for="swatch-width">Swatch Width</label>
+        <input 
+          type="number" 
+          id="swatch-width" 
+          step="0.1" 
+          placeholder="e.g., 4"
+        />
+      </div>
+      <div class="input-group">
+        <label for="swatch-height">Swatch Height</label>
+        <input 
+          type="number" 
+          id="swatch-height" 
+          step="0.1" 
+          placeholder="e.g., 4"
+        />
+      </div>
+    </div>
+
+    <div class="input-grid">
+      <div class="input-group">
+        <label for="stitches">Number of Stitches</label>
+        <input 
+          type="number" 
+          id="stitches" 
+          step="1" 
+          placeholder="Count across your swatch"
+        />
+      </div>
+      <div class="input-group">
+        <label for="rows">Number of Rows</label>
+        <input 
+          type="number" 
+          id="rows" 
+          step="1" 
+          placeholder="Count down your swatch"
+        />
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results" class="results-section" style="display: none;">
+      <ActionBar />
+      <h3>Your Gauge</h3>
+      
+      <div class="gauge-result">
+        <div class="gauge-label">Stitch Gauge</div>
+        <div class="gauge-value" id="stitch-gauge">--</div>
+        <div class="gauge-value-sub" id="stitch-per-unit">--</div>
+      </div>
+
+      <div class="gauge-result">
+        <div class="gauge-label">Row Gauge</div>
+        <div class="gauge-value" id="row-gauge">--</div>
+        <div class="gauge-value-sub" id="row-per-unit">--</div>
+      </div>
+    </div>
+
+    <!-- Tips Section -->
+    <div class="tips-section">
+      <button class="tips-header" id="tips-toggle">
+        <h4>Tips for Accurate Measurements</h4>
+        <svg class="chevron" id="tips-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="tips-content" id="tips-content">
+        <ul>
+          <li>Always measure your swatch after resting and blocking.</li>
+          <li>Use a ruler with clear markings for accurate measurements.</li>
+          <li>Measure multiple sections of the swatch and average the results for better accuracy.</li>
+          <li>Count stitches and rows in the center of your swatch, away from the edges.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <PrintFooter url={pageUrl} />
+</div>
+
+<script>
+  // State management with localStorage
+  let units = localStorage.getItem('gauge.unit') || 'inches';
+  let swatchWidth = localStorage.getItem('gauge.width') || '';
+  let swatchHeight = localStorage.getItem('gauge.height') || '';
+  let stitches = localStorage.getItem('gauge.sts') || '';
+  let rows = localStorage.getItem('gauge.rows') || '';
+
+  // DOM elements
+  const btnInches = document.getElementById('gaugecalc-btn-inches');
+  const btnCm = document.getElementById('gaugecalc-btn-cm');
+  const inputWidth = document.getElementById('swatch-width');
+  const inputHeight = document.getElementById('swatch-height');
+  const inputStitches = document.getElementById('stitches');
+  const inputRows = document.getElementById('rows');
+  const resultsSection = document.getElementById('results');
+  const stitchGaugeEl = document.getElementById('stitch-gauge');
+  const stitchPerUnitEl = document.getElementById('stitch-per-unit');
+  const rowGaugeEl = document.getElementById('row-gauge');
+  const rowPerUnitEl = document.getElementById('row-per-unit');
+  const tipsToggle = document.getElementById('tips-toggle');
+  const tipsContent = document.getElementById('tips-content');
+  const tipsChevron = document.getElementById('tips-chevron');
+
+  // Action Bar buttons
+  const actionBar = document.getElementById('action-bar');
+  const startOverBtn = document.getElementById('start-over-btn');
+  const printBtn = document.getElementById('print-btn');
+
+  // Start Over handler
+  if (startOverBtn) {
+    startOverBtn.addEventListener('click', () => {
+      resultsSection.style.display = 'none';
+      if (actionBar) actionBar.style.display = 'none';
+    });
+  }
+
+  // Print handler
+  if (printBtn) {
+    printBtn.addEventListener('click', () => {
+      window.print();
+    });
+  }
+
+  // Initialize inputs from localStorage
+  inputWidth.value = swatchWidth;
+  inputHeight.value = swatchHeight;
+  inputStitches.value = stitches;
+  inputRows.value = rows;
+
+  // Update units UI
+  function updateUnitsUI() {
+    if (units === 'inches') {
+      btnInches.classList.add('active');
+      btnCm.classList.remove('active');
+    } else {
+      btnCm.classList.add('active');
+      btnInches.classList.remove('active');
+    }
+  }
+
+  updateUnitsUI();
+
+  // Unit toggle handlers
+  btnInches.addEventListener('click', () => {
+    units = 'inches';
+    localStorage.setItem('gauge.unit', units);
+    updateUnitsUI();
+    calculateGauge();
+  });
+
+  btnCm.addEventListener('click', () => {
+    units = 'cm';
+    localStorage.setItem('gauge.unit', units);
+    updateUnitsUI();
+    calculateGauge();
+  });
+
+  // Listen for unit changes from UnitToggle component
+  window.addEventListener('kbm:units-change', (e) => {
+    units = e.detail.unit === 'in' ? 'inches' : 'cm';
+    localStorage.setItem('gauge.unit', units);
+    updateUnitsUI();
+    calculateGauge();
+  });
+
+  // Input handlers
+  inputWidth.addEventListener('input', (e) => {
+    swatchWidth = e.target.value;
+    localStorage.setItem('gauge.width', swatchWidth);
+    calculateGauge();
+  });
+
+  inputHeight.addEventListener('input', (e) => {
+    swatchHeight = e.target.value;
+    localStorage.setItem('gauge.height', swatchHeight);
+    calculateGauge();
+  });
+
+  inputStitches.addEventListener('input', (e) => {
+    stitches = e.target.value;
+    localStorage.setItem('gauge.sts', stitches);
+    calculateGauge();
+  });
+
+  inputRows.addEventListener('input', (e) => {
+    rows = e.target.value;
+    localStorage.setItem('gauge.rows', rows);
+    calculateGauge();
+  });
+
+  // Tips toggle
+  tipsToggle.addEventListener('click', () => {
+    tipsContent.classList.toggle('open');
+    tipsChevron.classList.toggle('rotated');
+  });
+
+  // Calculate gauge
+  function calculateGauge() {
+    const width = parseFloat(swatchWidth) || 0;
+    const height = parseFloat(swatchHeight) || 0;
+    const sts = parseFloat(stitches) || 0;
+    const rowCount = parseFloat(rows) || 0;
+
+    if (width > 0 && height > 0 && sts > 0 && rowCount > 0) {
+      let stitchesPerInch, rowsPerInch, stitchesPer4or10, rowsPer4or10, displayLabel;
+
+      if (units === 'inches') {
+        stitchesPerInch = sts / width;
+        rowsPerInch = rowCount / height;
+        stitchesPer4or10 = stitchesPerInch * 4;
+        rowsPer4or10 = rowsPerInch * 4;
+        displayLabel = '4"';
+      } else {
+        // Centimeters - calculate per 10cm and convert to per inch
+        const stitchesPer10cm = (sts / width) * 10;
+        const rowsPer10cm = (rowCount / height) * 10;
+        stitchesPer4or10 = stitchesPer10cm;
+        rowsPer4or10 = rowsPer10cm;
+        // Convert from per-10cm to per-inch
+        stitchesPerInch = stitchesPer10cm / 3.937007874;
+        rowsPerInch = rowsPer10cm / 3.937007874;
+        displayLabel = '10 cm';
+      }
+
+      // Display results
+      stitchGaugeEl.textContent = `${stitchesPerInch.toFixed(1)} sts/inch`;
+      stitchPerUnitEl.textContent = `${stitchesPer4or10.toFixed(1)} stitches per ${displayLabel}`;
+      rowGaugeEl.textContent = `${rowsPerInch.toFixed(1)} rows/inch`;
+      rowPerUnitEl.textContent = `${rowsPer4or10.toFixed(1)} rows per ${displayLabel}`;
+      
+      resultsSection.style.display = 'block';
+      if (actionBar) actionBar.style.display = 'flex';
+      if (printBtn) printBtn.style.display = 'block';
+    } else {
+      resultsSection.style.display = 'none';
+      if (actionBar) actionBar.style.display = 'none';
+    }
+  }
+
+  // Initial calculation
+  calculateGauge();
+</script>
+
+</BaseLayout>

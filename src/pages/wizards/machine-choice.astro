@@ -1,0 +1,102 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/wizard.css";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+
+const pageUrl = "https://knitbymachine.com/wizards/machine-choice";
+---
+
+<BaseLayout 
+  title="Choose a Knitting Machine | Knit by Machine" 
+  description="Answer a few questions to discover which knitting machine control types and features fit your goals.">
+
+<style>
+.wizard-page {
+  padding-top: 4.5rem;
+  padding-bottom: 3rem;
+  min-height: 100vh;
+  background: var(--page-bg);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.header-panel {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(82, 104, 45, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.intro-icon {
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+}
+
+.header-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.header-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #52682D;
+}
+
+.intro-tagline {
+  margin: 0;
+  font-size: 1rem;
+  color: #2c3a57;
+  line-height: 1.6;
+}
+
+.wizard-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (max-width: 768px) {
+  .header-panel {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .intro-icon {
+    width: 100px;
+    height: 100px;
+  }
+}
+</style>
+
+<div class="wizard-page">
+  <WizardBackLink category="machine selection" />
+  
+  <div class="header-panel">
+    <img src="/images/machine-matrix.svg" alt="Machine Choice Wizard" class="intro-icon">
+    <div class="header-right">
+      <h1 class="header-title">Choose a Knitting Machine</h1>
+      <p class="intro-tagline">Answer a few questions to discover which knitting machine control types and features fit your goals.</p>
+    </div>
+  </div>
+
+  <div class="wizard-container">
+    <div id="wizard-wf-machine-choice" data-testid="wizard-container"></div>
+  </div>
+</div>
+
+<script type="module" src="/scripts/wizards/wf-machine-choice.js"></script>
+
+</BaseLayout>

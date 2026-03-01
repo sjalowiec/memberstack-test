@@ -1,0 +1,720 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ActionBar from "../../components/wizards/ActionBar.astro";
+import Tooltip from "../../components/Tooltip.astro";
+import PrintFooter from "../../components/common/PrintFooter.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import GaugeInput from "../../components/wizards/components/GaugeInput.astro";
+import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
+
+const pageUrl = "https://knitbymachine.com/wizards/corner-to-corner";
+---
+
+<BaseLayout 
+  title="Corner-to-Corner Blanket | Knit by Machine" 
+  description="Estimate the finished dimensions of a diagonally knitted (corner-to-corner) blanket based on your gauge and cast-on stitches.">
+
+<style>
+.wizard-page {
+  padding-top: 120px;
+  padding-bottom: 3rem;
+  min-height: 100vh;
+  background: var(--page-bg);
+}
+
+.page-header {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  padding: 0 1rem;
+}
+
+.page-header-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .page-header-title {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+.page-header h1 {
+  color: var(--kbm-green);
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.page-header p {
+  color: #6b7280;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.video-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: #e5e7eb;
+  color: #374151;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: all 0.2s;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.video-button:hover {
+  background: #d1d5db;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.wizard-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.calculator-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  color: var(--kbm-green);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #eef0ea;
+}
+
+
+.input-group {
+  margin-bottom: 1.5rem;
+}
+
+.input-label {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.input-label .label-hint {
+  color: #6b7280;
+  font-weight: 400;
+  font-size: 0.9rem;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--kbm-green);
+  box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.1);
+}
+
+.input-field::placeholder {
+  color: #9ca3af;
+}
+
+.gauge-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 600px) {
+  .gauge-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.button-row {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.calculate-btn {
+  flex: 1;
+  background: var(--kbm-green);
+  color: white;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.calculate-btn:hover {
+  background: #3f5123;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(82, 104, 45, 0.25);
+}
+
+.calculate-btn:active {
+  transform: translateY(0);
+}
+
+.reset-btn {
+  padding: 1rem 2rem;
+  background: white;
+  color: #6b7280;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.reset-btn:hover {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+.footnote {
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  font-style: italic;
+}
+
+.error-message {
+  background: #fef2f2;
+  border-left: 4px solid #ef4444;
+  color: #991b1b;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  display: none;
+}
+
+.error-message.show {
+  display: block;
+}
+
+.results-container {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid #eef0ea;
+  display: none;
+}
+
+.results-container.show {
+  display: block;
+}
+
+.results-title {
+  color: var(--kbm-green);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 1.5rem;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.result-item {
+  padding: 1rem;
+  text-align: center;
+}
+
+.result-label {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.result-value {
+  color: var(--kbm-green);
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.result-unit {
+  font-size: 1rem;
+  color: #6b7280;
+}
+
+.instructions-box {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.instructions-title {
+  color: #374151;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+}
+
+.instructions-text {
+  color: #4b5563;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-line;
+}
+
+.diagram-container {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.diagram-title {
+  color: #374151;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 1.5rem;
+}
+
+/* Print styles */
+@media print {
+  .wizard-page {
+    padding-top: 0 !important;
+    background: white !important;
+  }
+  
+  .page-header,
+  .calculator-card,
+  .no-print {
+    display: none !important;
+  }
+  
+  .results-container {
+    background: white !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .result-grid,
+  .instructions-box,
+  .diagram-container {
+    background: white !important;
+    page-break-inside: avoid;
+  }
+  
+  .diagram-container,
+  .diagram-container svg {
+    display: block !important;
+    page-break-inside: avoid;
+    background: white !important;
+  }
+}
+
+:global(.back-link) {
+  display: inline-block;
+  color: var(--kbm-green);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+:global(.back-link:hover) {
+  color: #3d4e21;
+  text-decoration: underline;
+}
+
+</style>
+
+  <div class="wizard-page">
+    <div style="max-width: 800px; margin: 0 auto; padding: 0 1rem;">
+      <WizardBackLink category="pattern" />
+    </div>
+
+  <div class="page-header">
+    <div class="page-header-title">
+      <h1>Corner-to-Corner Blanket</h1>
+    </div>
+    <p>
+      This small blanket is perfect for preemies and infants — quick to knit and endlessly adaptable.
+      Knit multiples and join them for a larger blanket or play with color for a custom look.
+    </p>
+  </div>
+  
+  <div class="wizard-container">
+    <div class="calculator-card">
+      <h2 class="section-title">Calculate Dimensions</h2>
+      
+      <!-- Unit Toggle - left-aligned, above first input -->
+      <UnitToggle id="c2c" />
+      
+      <div id="error-message" class="error-message" role="alert" aria-live="polite">
+        Please enter valid positive numbers for all fields.
+      </div>
+      
+      <div class="input-group">
+        <label for="needles" class="input-label">
+          How many needles can you use at the widest point?
+        </label>
+        <input 
+          type="number" 
+          id="needles" 
+          class="input-field" 
+          placeholder="How many needles?"
+          min="1"
+          step="1"
+          data-testid="input-needles"
+        />
+      </div>
+      
+      <GaugeInput id="c2c" showTitle={false} showToggle={false} toggleId="c2c" />
+      
+      <div class="button-row">
+        <button class="calculate-btn" id="calculate-btn" data-testid="button-calculate">
+          CALCULATE
+        </button>
+      </div>
+    </div>
+    
+    <ActionBar />
+    
+    <div id="results" class="results-container" role="region" aria-live="polite">
+      <h3 class="results-title">Your Corner-to-Corner Blanket</h3>
+      
+      <div class="result-grid">
+        <div class="result-item">
+          <div class="result-label">Side</div>
+          <p class="result-value">
+            <span id="base-value">0</span> <span class="result-unit">inches</span>
+          </p>
+        </div>
+        
+        <div class="result-item">
+          <div class="result-label">Diagonal</div>
+          <p class="result-value">
+            <span id="height-value">0</span> <span class="result-unit">inches</span>
+          </p>
+        </div>
+        
+        <div class="result-item">
+          <div class="result-label">Total Rows</div>
+          <p class="result-value">
+            <span id="decrease-value">0</span> <span class="result-unit-rows">rows</span>
+          </p>
+        </div>
+      </div>
+      
+      <div class="instructions-box">
+        <h4 class="instructions-title">Knitting Instructions</h4>
+        <p class="instructions-text" id="instructions-text">
+          <!-- Will be populated by JavaScript -->
+        </p>
+      </div>
+      
+      <div class="diagram-container">
+        <svg id="diagram-svg" viewBox="0 0 600 450" width="600" height="450" xmlns="http://www.w3.org/2000/svg" style="max-width: 100%; height: auto;">
+          <!-- Will be populated by JavaScript -->
+        </svg>
+      </div>
+      
+    </div>
+  </div>
+  <PrintFooter url={pageUrl} />
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const needlesInput = document.getElementById('needles');
+  const stitchGaugeInput = document.getElementById('c2c-stitch-gauge');
+  const rowGaugeInput = document.getElementById('c2c-row-gauge');
+  const calculateBtn = document.getElementById('calculate-btn');
+  const errorMessage = document.getElementById('error-message');
+  const resultsContainer = document.getElementById('results');
+  const baseValue = document.getElementById('base-value');
+  const heightValue = document.getElementById('height-value');
+  const decreaseValue = document.getElementById('decrease-value');
+  const instructionsText = document.getElementById('instructions-text');
+  const diagramSvg = document.getElementById('diagram-svg');
+  
+  // Action Bar buttons
+  const actionBar = document.getElementById('action-bar');
+  const startOverBtn = document.getElementById('start-over-btn');
+  const printBtn = document.getElementById('print-btn');
+  
+  // Unit toggle
+  const btnInches = document.getElementById('c2c-btn-inches');
+  const btnCm = document.getElementById('c2c-btn-cm');
+  let currentUnit = localStorage.getItem('c2c-unit') || 'inches';
+  
+  // Initialize unit toggle
+  function updateUnitToggle() {
+    if (currentUnit === 'inches') {
+      btnInches.classList.add('active');
+      btnCm.classList.remove('active');
+    } else {
+      btnCm.classList.add('active');
+      btnInches.classList.remove('active');
+    }
+    updateLabels();
+  }
+  
+  function updateLabels() {
+    // Gauge input labels are now handled by GaugeInput component's built-in JavaScript
+    // Just update result units here
+    const resultUnits = document.querySelectorAll('.result-unit');
+    resultUnits.forEach(unit => {
+      unit.textContent = currentUnit === 'inches' ? 'inches' : 'cm';
+    });
+  }
+  
+  btnInches.addEventListener('click', function() {
+    currentUnit = 'inches';
+    localStorage.setItem('c2c-unit', currentUnit);
+    updateUnitToggle();
+    // Recalculate if we have results showing
+    if (resultsContainer.classList.contains('show')) {
+      calculate();
+    }
+  });
+  
+  btnCm.addEventListener('click', function() {
+    currentUnit = 'cm';
+    localStorage.setItem('c2c-unit', currentUnit);
+    updateUnitToggle();
+    // Recalculate if we have results showing
+    if (resultsContainer.classList.contains('show')) {
+      calculate();
+    }
+  });
+  
+  // Initialize on load
+  updateUnitToggle();
+  
+  // Calculate function
+  function calculate() {
+    const maxNeedles = parseFloat(needlesInput.value);
+    const stGauge = parseFloat(stitchGaugeInput.value);
+    const rowGauge = parseFloat(rowGaugeInput.value);
+    const isInches = currentUnit === 'inches';
+    
+    // Validate inputs
+    if (!maxNeedles || !stGauge || !rowGauge || maxNeedles <= 0 || stGauge <= 0 || rowGauge <= 0) {
+      errorMessage.classList.add('show');
+      resultsContainer.classList.remove('show');
+      return;
+    }
+    
+    // Hide error message
+    errorMessage.classList.remove('show');
+    
+    // Constants
+    const endStitches = 3;
+    const gaugeRef = isInches ? 4 : 10; // 4" or 10cm
+    
+    // STEP 1: Calculate dimensions for square
+    // Width (side) = max needles / stitch gauge
+    const width = maxNeedles / (stGauge / gaugeRef);
+    
+    // Diagonal = width * sqrt(2) -- diagonal is LONGER than side
+    const diagonal = width * Math.sqrt(2);
+    
+    // STEP 2: Calculate total rows based on WIDTH
+    const totalRows = width * (rowGauge / gaugeRef);
+    
+    // STEP 3: Apply Magic Formula to DECREASE phase (max → 3)
+    const totalDecreases = Math.ceil((maxNeedles - endStitches) / 2);
+    const rowsPerDecrease = totalRows / totalDecreases;
+    const decreaseInteger = Math.floor(rowsPerDecrease);
+    const decreaseWider = Math.round((rowsPerDecrease - decreaseInteger) * totalDecreases);
+    const decreaseNormal = totalDecreases - decreaseWider;
+    
+    // Update results display (no decimals for cm, 1 decimal for inches)
+    if (isInches) {
+      baseValue.textContent = width.toFixed(1);
+      heightValue.textContent = diagonal.toFixed(1);
+    } else {
+      baseValue.textContent = Math.round(width);
+      heightValue.textContent = Math.round(diagonal);
+    }
+    decreaseValue.textContent = Math.round(totalRows);
+    
+    // Generate detailed instructions with proper formatting
+    let instructions = `Cast on ${endStitches} stitches.\n\n`;
+    
+    // INCREASE phase instructions (mirror of decrease)
+    instructions += `INCREASE PHASE (${endStitches} → ${maxNeedles} stitches):\n`;
+    if (decreaseWider === 0) {
+      instructions += `• Increase 1 st on each side every ${decreaseInteger} row(s) ${totalDecreases} times\n`;
+    } else if (decreaseNormal === 0) {
+      instructions += `• Increase 1 st on each side every ${decreaseInteger + 1} row(s) ${totalDecreases} times\n`;
+    } else {
+      instructions += `• Increase 1 st on each side every ${decreaseInteger} row(s) ${decreaseNormal} times,\n`;
+      instructions += `  then every ${decreaseInteger + 1} row(s) ${decreaseWider} times\n`;
+    }
+    instructions += `\n`;
+    
+    // DECREASE phase instructions (REVERSED order - mirror of increase)
+    instructions += `DECREASE PHASE (${maxNeedles} → ${endStitches} stitches):\n`;
+    instructions += `Work the second (decrease) half as the mirror image of the first, reversing the shaping order.\n\n`;
+    if (decreaseWider === 0) {
+      instructions += `• Decrease 1 st on each side every ${decreaseInteger} row(s) ${totalDecreases} times\n`;
+    } else if (decreaseNormal === 0) {
+      instructions += `• Decrease 1 st on each side every ${decreaseInteger + 1} row(s) ${totalDecreases} times\n`;
+    } else {
+      // REVERSED: Show wider spacing FIRST, then normal spacing
+      instructions += `• Decrease 1 st on each side every ${decreaseInteger + 1} row(s) ${decreaseWider} times,\n`;
+      instructions += `  then every ${decreaseInteger} row(s) ${decreaseNormal} times\n`;
+    }
+    instructions += `\nBind off remaining ${endStitches} stitches.`;
+    
+    instructionsText.textContent = instructions;
+    
+    // Generate diagram
+    generateDiagram(width, diagonal);
+    
+    // Show results
+    resultsContainer.classList.add('show');
+    
+    // Show action bar with print button
+    actionBar.style.display = 'flex';
+    printBtn.style.display = 'inline-flex';
+    
+    // Smooth scroll to results
+    setTimeout(() => {
+      resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
+  }
+  
+  // Generate SVG diagram - diamond/square shape for corner-to-corner
+  function generateDiagram(sideLength, diagonalLength) {
+    const svgWidth = 600;
+    const svgHeight = 450;
+    const margin = 60;
+    const unitLabel = currentUnit === 'inches' ? '"' : 'cm';
+    
+    // Format measurements (no decimals for cm, 1 decimal for inches)
+    const displaySide = currentUnit === 'inches' ? sideLength.toFixed(1) : Math.round(sideLength);
+    const displayDiagonal = currentUnit === 'inches' ? diagonalLength.toFixed(1) : Math.round(diagonalLength);
+    
+    // Calculate scale to fit the diamond (rotated square)
+    // The diagonal is the max width, so scale based on that
+    const scale = Math.min((svgWidth - margin * 2) / diagonalLength, (svgHeight - margin * 2) / diagonalLength);
+    const size = diagonalLength * scale;
+    
+    // Diamond coordinates (rotated square)
+    const centerX = svgWidth / 2;
+    const centerY = svgHeight / 2;
+    const halfSize = size / 2;
+    
+    // Four corners of the diamond
+    const top = { x: centerX, y: centerY - halfSize };
+    const right = { x: centerX + halfSize, y: centerY };
+    const bottom = { x: centerX, y: centerY + halfSize };
+    const left = { x: centerX - halfSize, y: centerY };
+    
+    diagramSvg.innerHTML = `
+      <!-- Diamond shape (square rotated 45°) -->
+      <polygon points="${top.x},${top.y} ${right.x},${right.y} ${bottom.x},${bottom.y} ${left.x},${left.y}" 
+               fill="none" stroke="#52682d" stroke-width="3"/>
+      
+      <!-- Diagonal measurement (horizontal across - max width) -->
+      <line x1="${left.x - 20}" y1="${centerY}" x2="${right.x + 20}" y2="${centerY}" 
+            stroke="black" stroke-width="2"/>
+      <circle cx="${left.x - 20}" cy="${centerY}" r="4" fill="black"/>
+      <circle cx="${right.x + 20}" cy="${centerY}" r="4" fill="black"/>
+      <text x="${centerX}" y="${centerY + 35}" text-anchor="middle" font-size="18" fill="black" font-weight="600">
+        Diagonal: ${displayDiagonal}${unitLabel}
+      </text>
+      
+      <!-- Side measurement (edge of square) - rotated 45° along left edge -->
+      <line x1="${left.x}" y1="${left.y}" x2="${top.x}" y2="${top.y}" stroke="none"/>
+      <text x="${(left.x + top.x) / 2 - 40}" y="${(left.y + top.y) / 2}" 
+            text-anchor="middle" font-size="16" fill="#52682d" font-weight="bold"
+            transform="rotate(-45, ${(left.x + top.x) / 2 - 40}, ${(left.y + top.y) / 2})">
+        Side: ${displaySide}${unitLabel}
+      </text>
+      
+      <!-- Corner labels -->
+      <text x="${top.x}" y="${top.y - 15}" text-anchor="middle" font-size="14" fill="#52682d" font-weight="bold">
+        Start (3 sts)
+      </text>
+      <text x="${bottom.x}" y="${bottom.y + 25}" text-anchor="middle" font-size="14" fill="#52682d" font-weight="bold">
+        End (3 sts)
+      </text>
+    `;
+  }
+  
+  // Reset function
+  function reset() {
+    needlesInput.value = '';
+    stitchGaugeInput.value = '';
+    rowGaugeInput.value = '';
+    errorMessage.classList.remove('show');
+    resultsContainer.classList.remove('show');
+    
+    // Hide action bar
+    actionBar.style.display = 'none';
+    printBtn.style.display = 'none';
+    
+    // Scroll back to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  
+  // Print function
+  function handlePrint() {
+    window.print();
+  }
+  
+  // Event listeners
+  calculateBtn.addEventListener('click', calculate);
+  startOverBtn.addEventListener('click', reset);
+  printBtn.addEventListener('click', handlePrint);
+  
+  // Allow Enter key to calculate
+  [needlesInput, stitchGaugeInput, rowGaugeInput].forEach(input => {
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        calculate();
+      }
+    });
+  });
+});
+</script>
+
+</BaseLayout>

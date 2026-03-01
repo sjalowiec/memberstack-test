@@ -1,0 +1,61 @@
+{
+  "title": "Gauge Impact Calculator",
+  "slug": "gauge-difference",
+  "hero": "See how your project grows (or shrinks) when your gauge changes — even by a little.",
+  "description": "<p>This tool shows how much your project can grow or shrink when your gauge shifts - even by half a stitch. </p><p>Enter two gauges and instantly see the width difference across a range of stitch counts. </p><p>It’s a quick way to understand the real-world impact of gauge on sweaters, blankets, and any project.</p>",
+  "excerpt": "A tiny change in gauge can make a big difference. Compare two gauges side by side and see how the same stitch count can dramatically change the width of your project. 123",
+  "whyUseThisTool": "Even a tiny gauge change can make a project grow or shrink. This tool shows you the real-world impact so you can adjust before you knit — not after.",
+  "category": "tool",
+  "tags": [],
+  "keywords": [
+    "gauge calculator",
+    "gauge impact",
+    "stitch gauge",
+    "knitting gauge tool",
+    "width calculator",
+    "stitch count width",
+    "knitting measurements",
+    "gauge comparison",
+    "machine knitting gauge",
+    "project sizing",
+    "gauge accuracy",
+    "stitches per inch",
+    "gauge change"
+  ],
+  "aliases": [
+    "gauge difference calculator",
+    "gauge comparison tool",
+    "stitch gauge calculator",
+    "width difference calculator",
+    "gauge change tool"
+  ],
+  "videoUrl": "",
+  "accessLevel": "free",
+  "price": "",
+  "relatedAnas": [],
+  "relatedWorkshops": [],
+  "imageUrl": "",
+  "imageAlt": "",
+  "iconUrl": "https://www.knitbymachine.com/images/tools.svg",
+  "metaTitle": "Gauge Impact Calculator | How Gauge Changes Affect Width",
+  "metaDescription": "See how different gauges change the finished width of your knitting. Compare two gauges side by side and instantly view the impact across multiple stitch counts. Perfect for understanding how even a small gauge shift can add — or subtract — inches from your project.",
+  "schemaMarkup": {
+    "url": "https://knitbymachine.com/tools/gauge-impact",
+    "name": "Gauge Difference Calulator",
+    "@type": "WebApplication",
+    "creator": {
+      "url": "https://knitbymachine.com",
+      "name": "Knit by Machine",
+      "@type": "Organization"
+    },
+    "@context": "https://schema.org",
+    "keywords": "gauge calculator, gauge impact, stitch gauge, knitting gauge tool, width calculator, stitch count width, knitting measurements, gauge comparison, machine knitting gauge, project sizing, gauge accuracy, stitches per inch, gauge change",
+    "description": "See how a small gauge change can add or subtract inches from your project. Compare two gauges side by side and instantly view the impact across multiple stitch counts.",
+    "alternateName": "What a Difference a Stitch Makes",
+    "operatingSystem": "All",
+    "applicationCategory": "Knitting Tool"
+  },
+  "isDraft": false,
+  "publishedDate": "2025-11-18",
+  "pendingPublish": false
+}

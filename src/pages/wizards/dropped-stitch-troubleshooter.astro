@@ -1,0 +1,134 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/wizard.css";
+import PrintFooter from "../../components/common/PrintFooter.astro";
+import ActionBar from "../../components/wizards/ActionBar.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import WizardFlowRenderer from "../../components/wizards/WizardFlowRenderer.astro";
+import { getEntry } from "astro:content";
+
+const entry = await getEntry("wizards", "dropped-stitch-troubleshooter");
+const wizardData = entry?.data;
+
+const pageUrl = "https://knitbymachine.com/wizards/dropped-stitch-troubleshooter";
+---
+
+<BaseLayout 
+  title={wizardData?.metaTitle || "Dropped Stitch Troubleshooter | Knit by Machine"} 
+  description={wizardData?.metaDescription || "Dropped stitches happen to everyone. This quick check helps you spot what's causing them so you can get back to confident knitting."}>
+
+<style>
+.wizard-page {
+  padding-top: 4.5rem;
+  padding-bottom: 3rem;
+  min-height: 100vh;
+  background: var(--page-bg);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.header-panel {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(82, 104, 45, 0.1);
+  padding: 0.625rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.intro-icon {
+  width: 180px;
+  height: 180px;
+  flex-shrink: 0;
+}
+
+.header-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  min-width: 0;
+}
+
+.intro-tagline {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #2c3a57;
+  line-height: 1.6;
+}
+
+.wizard-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (max-width: 768px) {
+  .header-panel {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .intro-icon {
+    width: 150px;
+    height: 150px;
+  }
+}
+
+@media print {
+  .wizard-page {
+    padding-top: 0 !important;
+    background: white !important;
+  }
+  
+  .header-panel,
+  .back-link,
+  .no-print {
+    display: none !important;
+  }
+  
+  .wizard-container {
+    padding: 0 !important;
+    background: white !important;
+  }
+}
+</style>
+
+<div class="wizard-page">
+  <WizardBackLink category="smart guide" />
+  
+  <div class="header-panel">
+    <img src="/images/troubleshooter-wizard-logo.svg" alt="Dropped Stitch Troubleshooter" class="intro-icon">
+    <div class="header-right">
+      <p class="intro-tagline">{wizardData?.hero || "Find out what's causing your dropped stitches and get practical fixes that work."}</p>
+    </div>
+  </div>
+
+  <div class="wizard-container">
+    <ActionBar />
+    
+    {wizardData?.wizardFlow ? (
+      <WizardFlowRenderer 
+        wizardFlow={wizardData.wizardFlow}
+        wizardTitle={wizardData.title}
+        introDescription="Dropped stitches happen to everyone. This quick check helps you spot what's causing them so you can get back to confident knitting."
+      />
+    ) : (
+      <div class="kbm-card kbm-card--shadow">
+        <div class="kbm-card__body">
+          <p>This wizard is not yet configured. Please add interactive flow data in the admin.</p>
+        </div>
+      </div>
+    )}
+  </div>
+  
+  <PrintFooter url={pageUrl} />
+</div>
+
+</BaseLayout>

@@ -1,0 +1,672 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ActionBar from "../../components/wizards/ActionBar.astro";
+import Tooltip from "../../components/Tooltip.astro";
+import PrintFooter from "../../components/common/PrintFooter.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
+
+const pageUrl = "https://knitbymachine.com/wizards/maximum-knitted-width";
+---
+
+<BaseLayout 
+  title="Maximum Knitted Width | Knit by Machine" 
+  description="Calculate the widest piece you can knit on your machine based on your available needles and stitch gauge.">
+
+<style>
+.wizard-page {
+  padding-top: 120px;
+  padding-bottom: 3rem;
+  min-height: 100vh;
+  background: var(--page-bg);
+}
+
+.page-header {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  padding: 0 1rem;
+}
+
+.page-header-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .page-header-title {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+.page-header h1 {
+  color: var(--kbm-green);
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.page-header p {
+  color: #6b7280;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.video-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: #e5e7eb;
+  color: #374151;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: all 0.2s;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.video-button:hover {
+  background: #d1d5db;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.wizard-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem 120px 1rem;
+}
+
+.calculator-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  color: var(--kbm-green);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #eef0ea;
+}
+
+.slider-section {
+  margin-bottom: 2rem;
+}
+
+.slider-label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slider-value {
+  color: var(--kbm-green);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.input-wrapper {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.text-input {
+  padding: 0.5rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 1rem;
+  width: 120px;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: var(--kbm-green);
+}
+
+.unit-label {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+
+.slider-container {
+  position: relative;
+  padding: 1rem 0;
+}
+
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 5px;
+  background: #e5e7eb;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--kbm-green);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 8px rgba(82, 104, 45, 0.1);
+}
+
+.slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--kbm-green);
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.slider::-moz-range-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 8px rgba(82, 104, 45, 0.1);
+}
+
+.tick-marks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  padding: 0 12px;
+}
+
+.tick {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.result-card {
+  background: linear-gradient(135deg, rgba(82, 104, 45, 0.15) 0%, rgba(82, 104, 45, 0.08) 100%);
+  border: 2px solid var(--kbm-green);
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.result-text {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #2d3748;
+  margin-bottom: 1.5rem;
+}
+
+.result-text strong {
+  color: var(--kbm-green);
+  font-weight: 700;
+  font-size: 1.4rem;
+}
+
+.ruler-wrapper {
+  margin-top: 1.5rem;
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ruler-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+@media (max-width: 640px) {
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .calculator-card {
+    padding: 1.5rem;
+  }
+  
+  .result-text {
+    font-size: 1rem;
+  }
+}
+
+.back-link {
+  display: inline-block;
+  color: #52682D;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #3d4e21;
+  text-decoration: underline;
+}
+
+/* Print styles - hide input sections */
+@media print {
+  .wizard-page {
+    padding-top: 0 !important;
+    background: white !important;
+  }
+  
+  .page-header,
+  .video-button,
+  .back-link,
+  .toggle-group,
+  .units-toggle,
+  .slider-section,
+  .section-title,
+  .input-wrapper,
+  .no-print {
+    display: none !important;
+  }
+  
+  .wizard-container,
+  .calculator-card {
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: white !important;
+    border: none !important;
+  }
+  
+  .result-box,
+  #results {
+    border-top: none !important;
+    padding-top: 0 !important;
+    background: white !important;
+  }
+}
+
+</style>
+
+  <div class="wizard-page">
+    <div style="max-width: 800px; margin: 0 auto; padding: 0 1rem;">
+      <WizardBackLink category="tool" />
+    </div>
+
+  <div class="page-header">
+    <div class="page-header-title">
+      <h1>Maximum Knitted Width</h1>
+    </div>
+    <p>Every machine knitter works within the limits of their needle bed. Use this quick calculator to see how wide you can knit at your gauge and plan your blanket or project with confidence.</p>
+  </div>
+
+  <div class="wizard-container">
+    <div class="calculator-card">
+      <h2 class="section-title">Calculate Your Maximum Width</h2>
+      
+      <!-- Unit Toggle - left-aligned, above first input -->
+      <UnitToggle id="maxwidth" />
+      
+      <!-- Needle Count Section -->
+      <div class="slider-section">
+        <div class="slider-label">
+          <span>How many needles do you have?</span>
+          <span class="slider-value" id="needle-value">150</span>
+        </div>
+        <div class="input-wrapper">
+          <input 
+            type="number" 
+            class="text-input" 
+            id="needle-input" 
+            min="1" 
+            max="500" 
+            value="150"
+          />
+          <span class="unit-label">needles</span>
+        </div>
+        <div class="slider-container">
+          <input 
+            type="range" 
+            class="slider" 
+            id="needle-slider" 
+            min="0" 
+            max="4" 
+            value="2" 
+            step="1"
+          />
+          <div class="tick-marks">
+            <span class="tick">100</span>
+            <span class="tick">110</span>
+            <span class="tick">150</span>
+            <span class="tick">200</span>
+            <span class="tick">272</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gauge Section -->
+      <div class="slider-section">
+        <div class="slider-label">
+          <span>Stitch gauge</span>
+          <span class="slider-value" id="gauge-value">16.0</span>
+        </div>
+        <div class="input-wrapper">
+          <input 
+            type="number" 
+            class="text-input" 
+            id="gauge-input" 
+            min="1" 
+            max="100" 
+            step="0.1" 
+            value="16.0"
+          />
+          <span class="unit-label" id="gauge-unit-label">stitches per 10 cm / 4″</span>
+        </div>
+        <div class="slider-container">
+          <input 
+            type="range" 
+            class="slider" 
+            id="gauge-slider" 
+            min="8" 
+            max="40" 
+            value="16" 
+            step="0.1"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="result-card" id="result-card">
+      <div class="result-text" id="result-text">
+        Using <strong>150</strong> needles at a gauge of <strong>16.0</strong> sts / 10 cm,<br>
+        your maximum knitted width is <strong>37.0″ (93.8 cm)</strong>.
+      </div>
+      
+      <div class="ruler-wrapper">
+        <div class="ruler-label" id="ruler-label">Visual Width Scale (0-100 cm)</div>
+        <svg id="ruler-bar" viewBox="0 0 400 30" style="width:100%; height:30px;">
+          <defs>
+            <linearGradient id="rulerGradient" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#52682D" />
+              <stop offset="100%" stop-color="#7B9B4A" />
+            </linearGradient>
+          </defs>
+          <!-- Background track -->
+          <rect x="0" y="12" width="400" height="6" fill="#ddd" rx="3" />
+          <!-- Dynamic fill -->
+          <rect id="ruler-fill" x="0" y="12" width="375" height="6" fill="url(#rulerGradient)" rx="3" />
+          <!-- Tick marks -->
+          <g stroke="#aaa" stroke-width="1">
+            <line x1="0" y1="10" x2="0" y2="20"/>
+            <line x1="50" y1="10" x2="50" y2="20"/>
+            <line x1="100" y1="10" x2="100" y2="20"/>
+            <line x1="150" y1="10" x2="150" y2="20"/>
+            <line x1="200" y1="10" x2="200" y2="20"/>
+            <line x1="250" y1="10" x2="250" y2="20"/>
+            <line x1="300" y1="10" x2="300" y2="20"/>
+            <line x1="350" y1="10" x2="350" y2="20"/>
+            <line x1="400" y1="10" x2="400" y2="20"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <PrintFooter url={pageUrl} />
+</div>
+
+<ActionBar>
+  <button id="start-over-btn" class="action-btn secondary">
+    <i class="fa-solid fa-rotate-left"></i>
+    Start Over
+  </button>
+  <button id="print-btn" class="action-btn">
+    <i class="fa-solid fa-print"></i>
+    Print
+  </button>
+</ActionBar>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Maximum Knitted Width Wizard initializing...');
+  
+  // Needle count snap points
+  const needleCounts = [100, 110, 150, 200, 272];
+  
+  // DOM elements
+  const inchesBtn = document.getElementById('maxwidth-btn-inches');
+  const cmBtn = document.getElementById('maxwidth-btn-cm');
+  const needleSlider = document.getElementById('needle-slider');
+  const needleInput = document.getElementById('needle-input');
+  const needleValue = document.getElementById('needle-value');
+  const gaugeSlider = document.getElementById('gauge-slider');
+  const gaugeInput = document.getElementById('gauge-input');
+  const gaugeValue = document.getElementById('gauge-value');
+  const gaugeUnitLabel = document.getElementById('gauge-unit-label');
+  const resultText = document.getElementById('result-text');
+  const rulerFill = document.getElementById('ruler-fill');
+  const rulerLabel = document.getElementById('ruler-label');
+  const startOverBtn = document.getElementById('start-over-btn');
+  const printBtn = document.getElementById('print-btn');
+  
+  // State
+  let currentNeedles = 150;
+  let currentGauge = 16.0;
+  let useCm = false; // Default to inches
+  
+  // Load saved unit preference
+  const savedUnit = localStorage.getItem('kbm-unit-preference');
+  if (savedUnit === 'cm') {
+    useCm = true;
+    inchesBtn.classList.remove('active');
+    cmBtn.classList.add('active');
+  } else {
+    useCm = false;
+    inchesBtn.classList.add('active');
+    cmBtn.classList.remove('active');
+  }
+  
+  // Calculate width
+  function calculateWidth(needles, gauge) {
+    // Gauge is always entered as stitches per 10cm (same for both unit modes)
+    // But we calculate width based on the formula
+    let widthCm, widthIn;
+    
+    if (useCm) {
+      // Gauge is in stitches per 10cm
+      widthCm = (needles / gauge) * 10;
+      widthIn = widthCm / 2.54;
+    } else {
+      // When in inches mode, gauge represents stitches per 4 inches
+      // Width = needles / gauge_per_4in = needles / gauge * 4
+      widthIn = (needles / gauge) * 4;
+      widthCm = widthIn * 2.54;
+    }
+    
+    return { widthCm, widthIn };
+  }
+  
+  // Update all displays
+  function updateDisplay() {
+    const { widthCm, widthIn } = calculateWidth(currentNeedles, currentGauge);
+    
+    // Update needle value display
+    needleValue.textContent = currentNeedles;
+    needleInput.value = currentNeedles;
+    
+    // Update gauge value display
+    gaugeValue.textContent = currentGauge.toFixed(1);
+    gaugeInput.value = currentGauge.toFixed(1);
+    
+    // Update gauge unit label based on selected unit
+    if (useCm) {
+      gaugeUnitLabel.textContent = 'stitches per 10 cm';
+    } else {
+      gaugeUnitLabel.textContent = 'stitches per 4 inches';
+    }
+    
+    // Update result text
+    if (useCm) {
+      resultText.innerHTML = `
+        Using <strong>${currentNeedles}</strong> needles at a gauge of <strong>${currentGauge.toFixed(1)}</strong> sts / 10 cm,<br>
+        your maximum knitted width is <strong>${widthCm.toFixed(1)} cm</strong> (<strong>${widthIn.toFixed(1)}″</strong>).
+      `;
+    } else {
+      resultText.innerHTML = `
+        Using <strong>${currentNeedles}</strong> needles at a gauge of <strong>${currentGauge.toFixed(1)}</strong> sts / 4″,<br>
+        your maximum knitted width is <strong>${widthIn.toFixed(1)}″</strong> (<strong>${widthCm.toFixed(1)} cm</strong>).
+      `;
+    }
+    
+    // Update ruler label based on selected unit
+    if (useCm) {
+      rulerLabel.textContent = 'Visual Width Scale (0-100 cm)';
+    } else {
+      rulerLabel.textContent = 'Visual Width Scale (0-40 inches)';
+    }
+    
+    // Update ruler bar
+    updateRulerBar(widthCm, widthIn);
+  }
+  
+  // Update ruler bar
+  function updateRulerBar(widthCm, widthIn) {
+    const maxWidth = 400; // SVG width
+    let scaledWidth;
+    
+    if (useCm) {
+      const maxCm = 100; // scale reference for cm
+      scaledWidth = Math.min((widthCm / maxCm) * maxWidth, maxWidth);
+    } else {
+      const maxIn = 40; // scale reference for inches
+      scaledWidth = Math.min((widthIn / maxIn) * maxWidth, maxWidth);
+    }
+    
+    rulerFill.setAttribute('width', scaledWidth);
+  }
+  
+  // Find closest snap point for slider
+  function findClosestSnapPoint(needles) {
+    let closestIndex = 0;
+    let minDiff = Math.abs(needles - needleCounts[0]);
+    
+    for (let i = 1; i < needleCounts.length; i++) {
+      const diff = Math.abs(needles - needleCounts[i]);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestIndex = i;
+      }
+    }
+    
+    return closestIndex;
+  }
+  
+  // Unit toggle handlers
+  inchesBtn.addEventListener('click', function() {
+    if (!useCm) return; // Already in inches mode
+    useCm = false;
+    inchesBtn.classList.add('active');
+    cmBtn.classList.remove('active');
+    localStorage.setItem('kbm-unit-preference', 'in');
+    updateDisplay();
+  });
+  
+  cmBtn.addEventListener('click', function() {
+    if (useCm) return; // Already in cm mode
+    useCm = true;
+    cmBtn.classList.add('active');
+    inchesBtn.classList.remove('active');
+    localStorage.setItem('kbm-unit-preference', 'cm');
+    updateDisplay();
+  });
+  
+  // Needle slider handler
+  needleSlider.addEventListener('input', function() {
+    const index = parseInt(this.value);
+    currentNeedles = needleCounts[index];
+    updateDisplay();
+  });
+  
+  // Needle input handler
+  needleInput.addEventListener('input', function() {
+    let value = parseInt(this.value);
+    if (isNaN(value) || value < 1) return;
+    if (value > 500) value = 500;
+    
+    currentNeedles = value;
+    
+    // Update slider to closest snap point
+    const closestIndex = findClosestSnapPoint(value);
+    needleSlider.value = closestIndex;
+    
+    updateDisplay();
+  });
+  
+  // Gauge slider handler
+  gaugeSlider.addEventListener('input', function() {
+    currentGauge = parseFloat(this.value);
+    updateDisplay();
+  });
+  
+  // Gauge input handler
+  gaugeInput.addEventListener('input', function() {
+    let value = parseFloat(this.value);
+    if (isNaN(value) || value < 1) return;
+    if (value > 100) value = 100;
+    
+    currentGauge = value;
+    
+    // Update slider if within range
+    if (value >= 8 && value <= 40) {
+      gaugeSlider.value = value;
+    }
+    
+    updateDisplay();
+  });
+  
+  // Start over button
+  startOverBtn.addEventListener('click', function() {
+    needleSlider.value = 2; // 150 needles
+    gaugeSlider.value = 16;
+    currentNeedles = 150;
+    currentGauge = 16.0;
+    updateDisplay();
+  });
+  
+  // Print button
+  printBtn.addEventListener('click', function() {
+    window.print();
+  });
+  
+  // Initial display
+  updateDisplay();
+  
+  console.log('Maximum Knitted Width Wizard initialized successfully');
+});
+</script>
+
+</BaseLayout>

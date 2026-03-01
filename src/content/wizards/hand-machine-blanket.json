@@ -1,0 +1,42 @@
+{
+  "title": "The Hybrid Blanket Pattern",
+  "slug": "hand-machine-blanket",
+  "hero": "Combine hand and machine knitting for a beautiful blanket",
+  "description": "<p>The Hybrid Blanket Pattern helps you create a stunning blanket that combines the warmth of hand-knit garter borders with the speed of machine-knit stockinette. Enter your size, gauge, and border preferences, and the wizard calculates stitch counts for both techniques.</p>",
+  "excerpt": "Combine hand and machine knitting for a cozy blanket with garter borders.",
+  "whyUseThisTool": "Why use this pattern?",
+  "category": "pattern",
+  "tags": ["beginner", "blanket", "hybrid"],
+  "keywords": ["hybrid blanket", "hand machine", "garter border"],
+  "aliases": [],
+  "videoUrl": "",
+  "videoId": "",
+  "accessLevel": "free",
+  "price": "",
+  "relatedAnas": [],
+  "relatedWorkshops": [],
+  "imageUrl": "",
+  "imageAlt": "Hand and machine knit hybrid blanket",
+  "iconUrl": "https://www.knitbymachine.com/images/blanket.svg",
+  "metaTitle": "Hybrid Blanket Pattern | Hand + Machine Knit Blanket",
+  "metaDescription": "Create a cozy blanket combining hand-knit garter borders with machine-knit stockinette. Calculate stitch counts for both techniques.",
+  "pinterestUrl": "https://www.pinterest.com/knitbymachine/hybrid-blankets/",
+  "hyvorPageId": "wizards-hand-machine-blanket",
+  "schemaMarkup": {
+    "url": "https://knitbymachine.com/wizards/hand-machine-blanket",
+    "name": "Hybrid Blanket Pattern",
+    "@type": "SoftwareApplication",
+    "@context": "https://schema.org",
+    "provider": {
+      "url": "https://knitbymachine.com",
+      "name": "Knit by Machine",
+      "@type": "Organization"
+    },
+    "description": "Interactive pattern for creating blankets with hand-knit garter borders and machine-knit bodies.",
+    "operatingSystem": "Web",
+    "applicationCategory": "KnittingTool"
+  },
+  "isDraft": false,
+  "publishedDate": "2025-01-28",
+  "pendingPublish": false
+}

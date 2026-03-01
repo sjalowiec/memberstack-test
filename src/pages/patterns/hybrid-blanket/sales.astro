@@ -1,3 +1,487 @@
 ---
-// TODO: copy from KBM
+import '../../../styles/global.css';
+import '../../../styles/wizard.css';
+
+const pageTitle = "Hybrid Blanket Pattern • Knit by Machine";
+const pageDescription = "A customizable blanket pattern for mixing stitch patterns — whether they're hand knit, machine knit, or both.";
 ---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- CRITICAL: Inline typography to prevent Astro CSS bundler reordering issues -->
+    <style data-kbm-typography>
+      html {
+        font-size: 112.5% !important; /* 18px - comfortable mobile reading */
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
+      @media (min-width: 1025px) {
+        html {
+          font-size: 100% !important; /* 16px for desktop */
+        }
+      }
+    </style>
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#738C52" />
+
+    <!-- Google Analytics (gtag.js) -->
+    {import.meta.env.PUBLIC_GA4_ID && (
+      <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${import.meta.env.PUBLIC_GA4_ID}`}></script>
+        <script is:inline define:vars={{ gaId: import.meta.env.PUBLIC_GA4_ID }}>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', gaId);
+        </script>
+      </>
+    )}
+
+    <!-- Fonts & icons -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Shadows+Into+Light+Two&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    {import.meta.env.PUBLIC_SITE_ENV === "staging" && (
+      <div style="position:sticky;top:0;z-index:9999;background:#fff3cd;border-bottom:1px solid #ffe69c;padding:.6rem 1rem;font:600 14px/1.2 system-ui;">
+        STAGING SITE — changes here are not live
+      </div>
+    )}
+
+    <!-- Slim Header: Logo/Brand Only -->
+    <header class="sales-slim-header">
+      <div class="sales-header-container">
+        <a href="/patterns" class="sales-brand" aria-label="Knit by Machine patterns">
+          <img src="/images/kbm_logo.svg" alt="Knit by Machine" class="sales-logo-img" />
+          <span class="sales-logo-text">Knit by Machine</span>
+        </a>
+      </div>
+    </header>
+
+    <main class="sales-main">
+  <!-- HERO SECTION -->
+  <section class="kbm-section">
+    <div class="kbm-section__inner">
+      <div class="sales-hero">
+        <div class="sales-panel">
+          <h1>Hybrid Blanket Pattern</h1>
+
+          <p class="sales-subhead">
+            Design flat knitting—without the curl.<br>
+            A customizable blanket pattern that lets you combine two stitch patterns so your knitting stays flatter, whether you're working by hand, machine, or both.
+          </p>
+
+          <div class="sales-cta-row">
+            <a class="kbm-button kbm-button--primary" href="https://buy.stripe.com/28E14m25EcCL8TsgcO0oM05" id="purchase-btn" data-testid="button-purchase">
+              Buy the pattern — $13
+            </a>
+            <a class="kbm-button kbm-button--secondary" href="#how">
+              See how it works
+            </a>
+          </div>
+
+          <div class="sales-clarifier">
+            <strong>You do not need to hand knit to use this pattern.</strong>
+            The focus is on coordinating stitch patterns — not on how the stitches are made.
+          </div>
+
+          <p class="sales-fineprint">
+            Instant access after purchase • Print-friendly output • Built-in calculations
+          </p>
+        </div>
+
+        <div class="sales-image-wrapper">
+          
+           <img src="/images/hybrid-blanket.webp" alt="machine knit | hand knit hybrid blanket" class="sales-hero-image">
+          
+          <p class="sales-image-caption">
+            Designed as a blanket pattern—also useful for scarves, shawls, and other rectangular projects.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MIDDLE ROW: CONTEXT / FEATURES / AUDIENCE -->
+  <section class="kbm-section">
+    <div class="kbm-section__inner">
+      <div class="sales-middle-row">
+        <div class="sales-panel sales-image-placeholder">
+          <img src="/3.jpg" alt="iPad + knitting machine photo" class="sales-hero-image">
+        </div>
+
+        <div class="sales-panel">
+          <h2>What you're buying</h2>
+          <ul>
+            <li><strong>Interactive Pattern Generator</strong> — Custom instructions built from your exact gauge and size.</li>
+            <li><strong>No-Math Hybrid Support</strong> — Seamless transitions between hand and machine knitting.</li>
+            <li><strong>Machine-Ready PDF</strong> — A clean, printable plan delivered instantly after purchase.</li>
+          </ul>
+        </div>
+
+        <div class="sales-panel">
+          <h2>Who this is for</h2>
+          <ul>
+            <li><strong>Machine knitters</strong> — who want a flexible blanket plan without manual math.</li>
+            <li><strong>Hand knitters</strong> — who want a structured way to combine stitch patterns.</li>
+            <li><strong>Hybrid knitters</strong> — anyone mixing hand and machine techniques.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="kbm-section" id="how">
+    <div class="kbm-section__inner">
+      <div class="sales-panel">
+        <h2>How it works</h2>
+
+        <div class="sales-steps">
+          <div class="sales-step">
+            <div class="sales-step-num">1</div>
+            <strong>Choose your size</strong>
+            <p class="sales-fineprint">Pick a standard size or enter custom dimensions.</p>
+          </div>
+
+          <div class="sales-step">
+            <div class="sales-step-num">2</div>
+            <strong>Enter your gauge</strong>
+            <p class="sales-fineprint">Input stitch and row counts for a precise fit.</p>
+          </div>
+
+          <div class="sales-step">
+            <div class="sales-step-num">3</div>
+            <strong>Print your pattern</strong>
+            <p class="sales-fineprint">Get a custom-calculated PDF based on your numbers.</p>
+          </div>
+        </div>
+
+        <div class="sales-callout">
+          <strong>Tip:</strong> Mix hand-knit borders or different machine stitch patterns with a
+          machine-knit body — the math updates automatically based on your gauge.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="kbm-section" id="buy">
+    <div class="kbm-section__inner">
+      <div class="sales-panel">
+        <h2>Start your custom blanket today</h2>
+        <p class="sales-subhead">
+          Get instant access to the generator and create as many versions as you need.
+        </p>
+
+        <div class="sales-cta-row">
+          <a class="kbm-button kbm-button--primary" href="https://buy.stripe.com/28E14m25EcCL8TsgcO0oM05" id="final-purchase-btn" data-testid="button-final-purchase">
+            Get the Pattern — $13
+          </a>
+        </div>
+
+        <div class="sales-microtrust">
+          <strong>What happens next:</strong> After checkout, you'll be redirected straight to the builder to enter your numbers.
+        </div>
+
+        <a class="sales-support-link" href="/support">Questions? Visit Support</a>
+      </div>
+    </div>
+  </section>
+
+    </main>
+
+    <!-- Minimal Footer: Copyright Only -->
+    <footer class="sales-footer">
+      <p class="sales-copyright">© <span id="year"></span> Knit by Machine</p>
+    </footer>
+  </body>
+</html>
+
+<style>
+  /* Slim Header Styles */
+  .sales-slim-header {
+    padding: 0.5rem 0;
+    background: var(--kbm-bg);
+    border-bottom: 1px solid var(--ring);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .sales-header-container {
+    max-width: var(--max-content-width);
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  .sales-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--kbm-green);
+  }
+
+  .sales-logo-img {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .sales-logo-text {
+    font-family: "Poppins", sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    color: var(--kbm-green);
+  }
+
+  /* Main Content Area */
+  .sales-main {
+    padding-top: 1rem;
+    max-width: var(--max-content-width);
+    margin: 0 auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 2rem;
+  }
+
+  /* Minimal Footer */
+  .sales-footer {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    border-top: 1px solid var(--ring);
+    background: var(--kbm-bg);
+  }
+
+  .sales-copyright {
+    font-size: 0.8125rem;
+    color: var(--kbm-green-2);
+    margin: 0;
+  }
+
+  /* Existing Sales Page Styles */
+  .sales-hero {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .sales-middle-row {
+    display: grid;
+    grid-template-columns: 0.7fr 1.15fr 1.15fr;
+    gap: 1.25rem;
+    margin: 2rem 0;
+  }
+
+  .sales-panel {
+    background: white;
+    border: 1px solid var(--ring);
+    border-radius: 18px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .sales-image-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #6b7280;
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(82, 104, 45, 0.04),
+      rgba(82, 104, 45, 0.04) 10px,
+      rgba(82, 104, 45, 0.02) 10px,
+      rgba(82, 104, 45, 0.02) 20px
+    );
+    min-height: 250px;
+  }
+
+  .sales-hero-image {
+    max-width: 300px;
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+  }
+
+  .sales-image-caption {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    margin: 0.5rem 0 0;
+    text-align: center;
+  }
+
+  .sales-badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.625rem;
+    border: 1px solid var(--ring);
+    border-radius: 999px;
+    color: var(--kbm-green-2);
+    display: inline-block;
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+  }
+
+  .sales-subhead {
+    font-size: var(--text-lg);
+    color: var(--kbm-green-2);
+    margin-bottom: 1.25rem;
+    line-height: 1.6;
+  }
+
+  .sales-cta-row {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+
+  .sales-clarifier {
+    padding: 0.75rem 0.875rem;
+    border: 1px dashed var(--ring);
+    border-radius: 14px;
+    background: rgba(82, 104, 45, 0.05);
+    margin-bottom: 0.75rem;
+    color: var(--kbm-green);
+  }
+
+  .sales-fineprint {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .sales-steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .sales-step {
+    border: 1px solid var(--ring);
+    border-radius: 16px;
+    padding: 1rem;
+    background: rgba(82, 104, 45, 0.02);
+  }
+
+  .sales-step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(82, 104, 45, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--kbm-green);
+  }
+
+  .sales-callout {
+    margin-top: 1rem;
+    padding: 0.875rem;
+    border-radius: 16px;
+    border: 1px solid rgba(82, 104, 45, 0.3);
+    background: rgba(82, 104, 45, 0.08);
+    color: var(--kbm-green);
+  }
+
+  .sales-microtrust {
+    margin-top: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: 14px;
+    border: 1px solid var(--ring);
+    background: rgba(82, 104, 45, 0.02);
+    font-size: 0.8125rem;
+    color: var(--kbm-green-2);
+  }
+
+  .sales-support-link {
+    display: inline-block;
+    margin-top: 0.75rem;
+    font-size: 0.8125rem;
+    color: var(--kbm-green-2);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .sales-support-link:hover {
+    color: var(--kbm-green);
+  }
+
+  ul {
+    padding-left: 1.125rem;
+    margin: 0;
+    color: var(--kbm-green);
+  }
+
+  li {
+    margin: 0.625rem 0;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 900px) {
+    .sales-hero {
+      grid-template-columns: 1fr;
+    }
+
+    .sales-middle-row {
+      grid-template-columns: 1fr;
+    }
+
+    .sales-steps {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .sales-panel {
+      padding: 1rem;
+    }
+
+    .sales-cta-row {
+      flex-direction: column;
+      gap: 0.625rem;
+    }
+
+    .sales-cta-row .kbm-button {
+      width: 100%;
+    }
+
+    .sales-subhead {
+      margin-bottom: 1rem;
+    }
+  }
+</style>
+
+<script>
+  // Set current year if needed
+  const yearElement = document.getElementById('year');
+  if (yearElement) {
+    yearElement.textContent = new Date().getFullYear();
+  }
+</script>

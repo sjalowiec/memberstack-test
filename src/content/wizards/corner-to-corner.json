@@ -1,0 +1,43 @@
+{
+  "title": "Corner to Corner Blanket",
+  "slug": "corner-to-corner",
+  "hero": "this the tagline",
+  "description": "<p>The Corner-to-Corner Blanket Wizard helps you plan a diagonal, bias-knit blanket from any yarn, any gauge, and any machine. Enter your finished size, yarn weight, and stitch/row gauge, and the wizard calculates shaping, needle counts, and the increase/decrease sequence for smooth edges and a perfect square or rectangle.<br>You can also explore variations, choose your construction style, and download a step sheet for your machine.</p><p>It’s a quick way to go from “I think I want to try this project” to “I know exactly how many stitches I need and how to knit it.”</p>",
+  "excerpt": "Unusual construction for a fast, fun blanket.",
+  "whyUseThisTool": "why use this tool?why use this tool?",
+  "category": "pattern",
+  "tags": [
+    "advanced",
+    "beginner"
+  ],
+  "keywords": [],
+  "aliases": [],
+  "videoUrl": "",
+  "accessLevel": "free",
+  "price": "",
+  "relatedAnas": [],
+  "relatedWorkshops": [],
+  "imageUrl": "1763127504557-no-sound.png",
+  "imageAlt": "machine knit corner to corner blanket",
+  "iconUrl": "https://www.knitbymachine.com/images/blanket.svg",
+  "metaTitle": "Corner-to-Corner Blanket Pattern| Knit a Diagonal Blanket on Your Machine",
+  "metaDescription": "Create a custom corner-to-corner machine-knit blanket with your yarn and gauge. This pattern calculates needle counts, shaping, and step-by-step instructions for perfect diagonal knitting.",
+  "schemaMarkup": {
+    "url": "https://knitbymachine.com/wizards/corner-to-corner-blanket",
+    "name": "Corner-to-Corner Blanket Pattern",
+    "@type": "SoftwareApplication",
+    "image": "https://knitbymachine.com/images/wizards/c2c-blanket.jpg",
+    "@context": "https://schema.org",
+    "provider": {
+      "url": "https://knitbymachine.com",
+      "name": "Knit by Machine",
+      "@type": "Organization"
+    },
+    "description": "Interactive tool that calculates shaping, needle counts, and instructions for knitting a diagonal corner-to-corner blanket on any machine.",
+    "operatingSystem": "Web",
+    "applicationCategory": "KnittingTool"
+  },
+  "isDraft": false,
+  "publishedDate": "2025-11-14",
+  "pendingPublish": false
+}

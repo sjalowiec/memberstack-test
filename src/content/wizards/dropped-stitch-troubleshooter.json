@@ -1,0 +1,148 @@
+{
+  "title": "Dropped Stitch Troubleshooter",
+  "slug": "dropped-stitch-troubleshooter",
+  "hero": "Find out what's causing your dropped stitches - and get one clear fix you can try right now.",
+  "description": "<p>Dropped stitches happen to every knitter — but they don't have to derail your project.<br>This interactive Troubleshooter walks you through a short diagnostic to understand <strong>why</strong> it's happening and what you can do about it.</p><p>You'll choose the option that best matches what you're seeing, and the guide will give you:</p><ul><li><p>the most likely cause</p></li><li><p>a simple, practical fix</p></li><li><p>one action step you can take right away</p></li></ul><p>Clear, calm, and to the point — so you can get back to knitting with confidence.</p>",
+  "excerpt": "Find the best fix for your dropped stitch problem.",
+  "whyUseThisTool": "",
+  "category": "project wizard",
+  "tags": [
+    "troubleshooting",
+    "dropped-stitches",
+    "tension",
+    "technique"
+  ],
+  "keywords": [],
+  "aliases": [],
+  "videoUrl": "",
+  "accessLevel": "free",
+  "price": "",
+  "relatedAnas": [],
+  "relatedWorkshops": [],
+  "imageUrl": "/public-objects/glossary/1763900772973-machine-knitting-dropped-stitch.webp",
+  "imageAlt": "picking up a dropped stitch in machine knitting",
+  "iconUrl": "https://www.knitbymachine.com/images/wizard.svg",
+  "metaTitle": "Dropped Stitch Troubleshooter - Knit by Machine",
+  "metaDescription": "Find out what's causing your dropped stitches with this quick troubleshooting tool. Get practical fixes for edge tension, transfer technique, needle problems, and more.",
+  "schemaMarkup": {
+    "name": "Dropped Stitch Troubleshooter",
+    "step": [
+      {
+        "name": "Identify where the stitch drops",
+        "text": "Choose when and where you usually see the dropped stitch to narrow down the most likely cause.",
+        "@type": "HowToStep"
+      },
+      {
+        "name": "Review the likely cause",
+        "text": "Based on your selection, the tool reveals the most probable reason for the dropped stitch.",
+        "@type": "HowToStep"
+      },
+      {
+        "name": "Take the recommended action",
+        "text": "Follow a quick, practical fix tailored to your situation, with one clear step to try immediately.",
+        "@type": "HowToStep"
+      }
+    ],
+    "tool": [
+      "Knitting machine",
+      "Latch tool",
+      "Transfer tool",
+      "Weights"
+    ],
+    "@type": "HowTo",
+    "@context": "https://schema.org",
+    "description": "A quick diagnostic tool that helps machine knitters identify why they're dropping stitches and provides a clear, practical fix."
+  },
+  "wizardFlow": {
+    "version": 1,
+    "questionTitle": "When do you usually notice the dropped stitch?",
+    "questionSubtitle": "Choose the option that sounds most like what you're seeing.",
+    "options": [
+      {
+        "id": "opt-edge",
+        "label": "On the edge of my knitting",
+        "resultId": "res-edge"
+      },
+      {
+        "id": "opt-transfer",
+        "label": "While I'm transferring stitches",
+        "resultId": "res-transfer"
+      },
+      {
+        "id": "opt-same-needle",
+        "label": "On the same needle over and over",
+        "resultId": "res-same-needle"
+      },
+      {
+        "id": "opt-random",
+        "label": "Randomly in the middle of the fabric",
+        "resultId": "res-random"
+      },
+      {
+        "id": "opt-unsure",
+        "label": "I'm not sure – it feels random",
+        "resultId": "res-unsure"
+      }
+    ],
+    "results": [
+      {
+        "id": "res-edge",
+        "causeTitle": "Edge tension or patterning at the edge",
+        "explanation": "The edge stitches may be too loose, losing contact with the gate pegs, or patterning may be pulling more on the edge needles.",
+        "tryThisItems": [
+          "Add a claw weight or extra weight near the edge.",
+          "Check that your edge needles are fully in working position.",
+          "If you're patterning, try a plain-knit edge (1–2 stitches) before the pattern starts."
+        ],
+        "encouragement": "Edge stitches are fussy for everyone. A little extra weight and attention usually fixes it."
+      },
+      {
+        "id": "res-transfer",
+        "causeTitle": "Transfer tool technique",
+        "explanation": "Stitches may be falling off while they're on the tool or while you're moving them to new needles.",
+        "tryThisItems": [
+          "Slow down and keep the stitches fully on the prongs before you move them.",
+          "Keep the tool level with the needle bed instead of tipping it.",
+          "Practice on scrap yarn until the motions feel smooth."
+        ],
+        "encouragement": "This is pure practice. The more you transfer on scrap, the more automatic it feels."
+      },
+      {
+        "id": "res-same-needle",
+        "causeTitle": "A problem needle (bent, sticky, or damaged)",
+        "explanation": "One stubborn needle can cause repeated dropped stitches in the same column.",
+        "tryThisItems": [
+          "Mark the problem needle with a bit of yarn.",
+          "Remove and inspect it for burrs, bends, or rough spots.",
+          "Replace it if in doubt – it's not worth fighting."
+        ],
+        "encouragement": "If one needle keeps misbehaving, retiring it is an easy win."
+      },
+      {
+        "id": "res-random",
+        "causeTitle": "Overall yarn or carriage tension",
+        "explanation": "The yarn may be feeding too loosely or too tightly, or the carriage may not be moving smoothly.",
+        "tryThisItems": [
+          "Knit a small swatch and adjust your tension dial up or down one number.",
+          "Check that the mast, tension dial, and yarn path are smooth with no snags.",
+          "Make sure you're moving the carriage all the way across with even speed."
+        ],
+        "encouragement": "Small tension tweaks can make a big difference. Keep notes as you experiment."
+      },
+      {
+        "id": "res-unsure",
+        "causeTitle": "A mix of tension and technique",
+        "explanation": "When things feel random, it usually means a few small factors are stacking up.",
+        "tryThisItems": [
+          "Knit a 20–30 row test swatch and watch where the fabric misbehaves.",
+          "Check edge weights, overall tension, and any tools you use often.",
+          "Note when the drop happens (edge, transfer, middle) – then rerun this checker."
+        ],
+        "encouragement": "You're not doing anything 'wrong.' You're just gathering clues. Each small test gives you more control."
+      }
+    ]
+  },
+  "isDraft": false,
+  "publishedDate": "2025-01-22",
+  "pendingPublish": false
+}

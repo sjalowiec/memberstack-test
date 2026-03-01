@@ -1,0 +1,1330 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
+import GaugeInput from "../../components/wizards/components/GaugeInput.astro";
+import Tooltip from "../../components/Tooltip.astro";
+import PrintFooter from "../../components/common/PrintFooter.astro";
+import ActionBar from "../../components/wizards/ActionBar.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+
+// Import shared wizard styles
+import '../../styles/wizard.css';
+
+const pageUrl = "https://knitbymachine.com/wizards/triangle";
+---
+
+<BaseLayout 
+  title="Tailor-Made Triangle Shawl | Knit by Machine" 
+  description="Build a triangle that fits your machine and your project. Enter your size, gauge, and needles, and this pattern will outline the shaping for you.">
+
+<style>
+/* Triangle-specific styles */
+.triangle-diagram {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: rgba(82, 104, 45, 0.03);
+  border-radius: 12px;
+  border: 2px dashed #d1d5db;
+}
+
+.triangle-svg-container {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.triangle-svg {
+  width: 100%;
+  height: auto;
+}
+
+.svg-input-box {
+  position: absolute;
+  background: white;
+  border: 2px solid var(--kbm-green);
+  border-radius: 6px;
+  padding: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 10;
+}
+
+.svg-input-box input {
+  width: 100px;
+  padding: 0.4rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.svg-input-box input:focus {
+  outline: none;
+  border-color: var(--kbm-green);
+}
+
+/* Position input boxes on the SVG */
+.input-width {
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.input-depth {
+  right: -10px;
+  top: 40%;
+  transform: translateY(-50%);
+}
+
+.input-gauge {
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.gauge-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.gauge-grid .svg-input-box {
+  position: relative;
+  transform: none;
+  left: auto;
+  right: auto;
+  top: auto;
+  bottom: auto;
+}
+
+.input-needles {
+  position: relative;
+  background: white;
+  border: 2px solid var(--kbm-green);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1.5rem;
+}
+
+.input-needles input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.input-needles input:focus {
+  outline: none;
+  border-color: var(--kbm-green);
+}
+
+.helper-text {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 1rem;
+  background: var(--kbm-green);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 1.5rem;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #445626;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.submit-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.results-container {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(82, 104, 45, 0.05);
+  border-radius: 8px;
+  border-left: 4px solid var(--kbm-green);
+}
+
+.results-placeholder {
+  color: #6b7280;
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 1rem;
+}
+
+.error-message {
+  color: #dc2626;
+  background: #fee2e2;
+  padding: 1rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+
+.summary-box {
+  background: white;
+  padding: 1.25rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.summary-box p {
+  margin: 0;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.summary-box strong {
+  color: var(--kbm-green);
+}
+
+/* NEW: Construction recommendation card styling */
+.recommendation-card {
+  background: linear-gradient(135deg, rgba(82, 104, 45, 0.08) 0%, rgba(82, 104, 45, 0.03) 100%);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border: 2px solid var(--kbm-green-2);
+  box-shadow: 0 2px 4px rgba(82, 104, 45, 0.1);
+}
+
+.option-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.option-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: white;
+  color: #374151;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.option-btn svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.option-btn:hover {
+  border-color: var(--kbm-green-2);
+  background: #f9fafb;
+}
+
+.option-btn.active {
+  background: var(--kbm-green);
+  color: white;
+  border-color: var(--kbm-green);
+}
+
+.option-btn.active svg {
+  stroke: white;
+}
+
+/* Pattern diagram */
+.pattern-diagram-visual {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: rgba(82, 104, 45, 0.03);
+  border-radius: 8px;
+  border: 2px dashed #d1d5db;
+}
+
+.pattern-diagram-visual svg {
+  max-width: 600px;
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.pattern-details {
+  background: white;
+  padding: 1.25rem;
+  border-radius: 6px;
+}
+
+.pattern-details h3 {
+  color: var(--kbm-green);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+}
+
+.pattern-details p {
+  margin: 0 0 0.75rem 0;
+  color: #374151;
+  line-height: 1.7;
+}
+
+.pattern-details ul {
+  margin: 0.5rem 0 1rem 1.5rem;
+  padding: 0;
+}
+
+.pattern-details li {
+  margin-bottom: 0.5rem;
+  color: #374151;
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .wizard-container {
+    padding: 1.5rem;
+  }
+  
+  .option-buttons {
+    flex-direction: column;
+  }
+  
+  .triangle-diagram {
+    padding: 1rem;
+  }
+  
+  .svg-input-box {
+    font-size: 0.8rem;
+    padding: 0.4rem;
+  }
+  
+  .svg-input-box input {
+    width: 70px;
+    font-size: 0.8rem;
+    padding: 0.3rem;
+  }
+  
+  /* Adjust positioned input boxes for mobile */
+  .input-width {
+    bottom: -15px;
+  }
+  
+  .input-depth {
+    right: -15px;
+    top: 35%;
+  }
+  
+  /* Stack gauge grid vertically on mobile */
+  .gauge-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+  }
+  
+  /* Adjust input-needles for mobile */
+  .input-needles {
+    padding: 0.75rem;
+  }
+  
+  .input-needles input {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Additional breakpoint for very small screens */
+@media (max-width: 400px) {
+  .triangle-diagram {
+    padding: 0.75rem;
+  }
+  
+  .svg-input-box {
+    font-size: 0.75rem;
+    padding: 0.35rem;
+  }
+  
+  .svg-input-box input {
+    width: 60px;
+    font-size: 0.75rem;
+  }
+  
+  .input-width {
+    bottom: -20px;
+  }
+  
+  .input-depth {
+    right: -20px;
+  }
+}
+
+.back-link {
+  display: inline-block;
+  color: #52682D;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #3d4e21;
+  text-decoration: underline;
+}
+
+/* Print styles - hide input sections */
+@media print {
+  .wizard-page {
+    padding-top: 0 !important;
+    background: white !important;
+  }
+  
+  .page-header,
+  .video-button,
+  .back-link,
+  .toggle-group,
+  .form-grid,
+  .section-label,
+  .section-divider,
+  .floating-input,
+  .form-row-2,
+  .form-row-3,
+  .icon-toggle-group,
+  .calculate-btn,
+  .results-actions,
+  .no-print,
+  .units-toggle,
+  .input-grid,
+  .input-group,
+  form {
+    display: none !important;
+  }
+  
+  .wizard-container,
+  .calculator-card {
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: white !important;
+    border: none !important;
+  }
+  
+  .results,
+  #results {
+    border-top: none !important;
+    padding-top: 0 !important;
+    background: white !important;
+  }
+}
+</style>
+
+<div class="wizard-page">
+  <div style="max-width: 800px; margin: 0 auto; padding: 0 1rem;">
+    <WizardBackLink category="pattern" />
+  </div>
+  <div class="page-header">
+    <h1>Tailor-Made Triangle Shawl</h1>
+    <p>Build a triangle that fits your machine and your project. Enter your size, gauge, and needles, and this pattern will outline the shaping for you.</p>
+  </div>
+
+  <div class="wizard-container">
+    <div class="calculator-card">
+      <h2 class="wizard-title">Step 1: Enter your triangle details</h2>
+      
+      <!-- Unit Toggle - left-aligned, above first input -->
+      <UnitToggle id="triangle" />
+      
+      <!-- Visual Triangle Diagram with Inputs -->
+      <div class="triangle-diagram">
+        <div class="triangle-svg-container">
+          <svg class="triangle-svg" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+            <!-- Main triangle -->
+            <polygon points="200,40 350,260 50,260" 
+                     fill="none" 
+                     stroke="#52682d" 
+                     stroke-width="3"/>
+            
+            <!-- Bottom width measurement line -->
+            <line x1="50" y1="275" x2="350" y2="275" 
+                  stroke="#52682d" 
+                  stroke-width="2" 
+                  marker-start="url(#arrow)" 
+                  marker-end="url(#arrow)"/>
+            <circle cx="50" cy="275" r="4" fill="#52682d"/>
+            <circle cx="350" cy="275" r="4" fill="#52682d"/>
+            
+            <!-- Depth measurement line -->
+            <line x1="365" y1="260" x2="365" y2="40" 
+                  stroke="#52682d" 
+                  stroke-width="2" 
+                  marker-start="url(#arrow)" 
+                  marker-end="url(#arrow)"/>
+            <circle cx="365" cy="260" r="4" fill="#52682d"/>
+            <circle cx="365" cy="40" r="4" fill="#52682d"/>
+            
+            <!-- Gauge swatch indicator (small square) -->
+            <rect x="90" y="80" width="40" height="40" 
+                  fill="none" 
+                  stroke="#738c52" 
+                  stroke-width="2" 
+                  stroke-dasharray="4,4"/>
+            <text x="110" y="75" 
+                  font-size="12" 
+                  fill="#52682d" 
+                  text-anchor="middle" 
+                  font-weight="600">Gauge</text>
+            
+            <!-- Arrow markers -->
+            <defs>
+              <marker id="arrow" markerWidth="10" markerHeight="10" 
+                      refX="5" refY="5" orient="auto">
+                <circle cx="5" cy="5" r="3" fill="#52682d"/>
+              </marker>
+            </defs>
+          </svg>
+          
+          <!-- Width Input (bottom) -->
+          <div class="svg-input-box input-width">
+            <input 
+              type="number" 
+              id="bottom-width" 
+              data-testid="input-bottom-width"
+              step="0.25" 
+              min="1" 
+              placeholder="Bottom Width"
+              required
+            />
+          </div>
+          
+          <!-- Depth Input (right side) -->
+          <div class="svg-input-box input-depth">
+            <input 
+              type="number" 
+              id="depth" 
+              data-testid="input-depth"
+              step="0.25" 
+              min="1" 
+              placeholder="Depth"
+              required
+            />
+          </div>
+        </div>
+        
+        <!-- Gauge Inputs (using shared GaugeInput component) -->
+        <GaugeInput id="triangle" showToggle={false} toggleId="triangle" />
+        
+        <!-- Needles Input -->
+        <div class="input-needles">
+          <input 
+            type="number" 
+            id="needles" 
+            data-testid="input-needles"
+            step="1" 
+            min="20" 
+            placeholder="Maximum needles available on this bed"
+            required
+          />
+          <div class="helper-text">Use the number of needles you comfortably work with for a wide piece on your machine.</div>
+        </div>
+      </div>
+
+      <button type="button" id="submit-btn" class="submit-btn" data-testid="button-submit">Build my triangle pattern</button>
+    </div>
+
+    <div class="results-container">
+      <h2 class="section-title">Step 2: Your pattern outline</h2>
+      <div id="triangle-results" data-testid="results-container">
+        <ActionBar />
+        <div class="results-placeholder">Your pattern outline will appear here after you enter your details.</div>
+      </div>
+    </div>
+  </div>
+  <PrintFooter url={pageUrl} />
+</div>
+
+<!-- Load wizard utilities -->
+<script is:inline src="/js/wizard-utils.js"></script>
+
+<script>
+  // Constants
+  const SAFETY_MARGIN_NEEDLES = 10;
+  const SEAM_ALLOWANCE_STS = 4;
+  const END_STS = 3;
+  const INCH_TO_CM = 2.54;
+
+  // Unit state
+  const unitStore = WizardUtils.createUnitStore('triangle-unit', 'inches');
+  let currentUnit = unitStore.get();
+
+  // Get form elements
+  const submitBtn = document.getElementById('submit-btn');
+  const resultsDiv = document.getElementById('triangle-results');
+
+  // Input elements
+  const bottomWidthInput = document.getElementById('bottom-width');
+  const depthInput = document.getElementById('depth');
+  const stitchGaugeInput = document.getElementById('triangle-stitch-gauge');
+  const rowGaugeInput = document.getElementById('triangle-row-gauge');
+  const needlesInput = document.getElementById('needles');
+
+  // Unit toggle buttons
+  const inchesBtn = document.getElementById('triangle-btn-inches');
+  const cmBtn = document.getElementById('triangle-btn-cm');
+
+  // State
+  let currentOption = 'A';
+  let calculationData = null;
+
+  // Update placeholders based on unit
+  function updatePlaceholdersForUnit() {
+    const unit = currentUnit === 'inches' ? 'in' : 'cm';
+    
+    bottomWidthInput.placeholder = `Bottom Width (${unit})`;
+    depthInput.placeholder = `Depth (${unit})`;
+    // Note: Gauge input placeholders are handled by GaugeInput component
+  }
+
+  // Convert input values when unit changes
+  function convertInputValues(fromUnit, toUnit) {
+    // Convert dimension inputs
+    if (bottomWidthInput.value) {
+      const converted = WizardUtils.convertLength(parseFloat(bottomWidthInput.value), fromUnit, toUnit);
+      bottomWidthInput.value = currentUnit === 'inches' ? converted.toFixed(2) : Math.round(converted);
+    }
+    if (depthInput.value) {
+      const converted = WizardUtils.convertLength(parseFloat(depthInput.value), fromUnit, toUnit);
+      depthInput.value = currentUnit === 'inches' ? converted.toFixed(2) : Math.round(converted);
+    }
+    
+    // Convert gauge inputs (they're measured per different standards)
+    if (stitchGaugeInput.value) {
+      const currentGauge = parseFloat(stitchGaugeInput.value);
+      if (fromUnit === 'inches' && toUnit === 'cm') {
+        // Converting from "per 4 inches" to "per 10cm"
+        stitchGaugeInput.value = (currentGauge * 2.5).toFixed(1);
+      } else if (fromUnit === 'cm' && toUnit === 'inches') {
+        // Converting from "per 10cm" to "per 4 inches"
+        stitchGaugeInput.value = (currentGauge / 2.5).toFixed(1);
+      }
+    }
+    if (rowGaugeInput.value) {
+      const currentGauge = parseFloat(rowGaugeInput.value);
+      if (fromUnit === 'inches' && toUnit === 'cm') {
+        rowGaugeInput.value = (currentGauge * 2.5).toFixed(1);
+      } else if (fromUnit === 'cm' && toUnit === 'inches') {
+        rowGaugeInput.value = (currentGauge / 2.5).toFixed(1);
+      }
+    }
+  }
+
+  // Handle unit toggle
+  function handleUnitToggle(newUnit) {
+    if (newUnit === currentUnit) return;
+    
+    const oldUnit = currentUnit;
+    currentUnit = newUnit;
+    unitStore.set(newUnit);
+    
+    // Update button states
+    inchesBtn.classList.toggle('active', newUnit === 'inches');
+    cmBtn.classList.toggle('active', newUnit === 'cm');
+    
+    // Convert existing input values
+    convertInputValues(oldUnit, newUnit);
+    
+    // Update placeholders
+    updatePlaceholdersForUnit();
+    
+    // If results are visible, recalculate
+    if (calculationData) {
+      handleSubmit();
+    }
+  }
+
+  // Set up unit toggle event listeners
+  inchesBtn.addEventListener('click', () => handleUnitToggle('inches'));
+  cmBtn.addEventListener('click', () => handleUnitToggle('cm'));
+
+  // Initialize UI
+  updatePlaceholdersForUnit();
+  inchesBtn.classList.toggle('active', currentUnit === 'inches');
+  cmBtn.classList.toggle('active', currentUnit === 'cm');
+
+  // Validate form inputs
+  function validateInputs() {
+    const allInputs = [bottomWidthInput, depthInput, stitchGaugeInput, rowGaugeInput, needlesInput];
+    const allValid = allInputs.every(input => {
+      const value = parseFloat(input.value);
+      return !isNaN(value) && value >= parseFloat(input.min || 0);
+    });
+    submitBtn.disabled = !allValid;
+  }
+
+  // Add input listeners for validation
+  [bottomWidthInput, depthInput, stitchGaugeInput, rowGaugeInput, needlesInput].forEach(input => {
+    input.addEventListener('input', validateInputs);
+  });
+
+  // Initial validation
+  validateInputs();
+
+  // Format number for display
+  function formatNum(num) {
+    return Math.round(num).toLocaleString();
+  }
+
+  // Format length with unit
+  function formatLength(value) {
+    const formatted = currentUnit === 'inches' ? value.toFixed(1) : Math.round(value).toString();
+    const symbol = currentUnit === 'inches' ? 'in' : 'cm';
+    return `${formatted}${symbol}`;
+  }
+
+  // SVG icon generators
+  function getIsoscelesIcon(color = '#374151') {
+    return `
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 4 L20 20 L4 20 Z" stroke="${color}" stroke-width="2" fill="none"/>
+      </svg>
+    `;
+  }
+
+  function getRightAngleIcon(color = '#374151') {
+    return `
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 4 L4 20 L20 20 Z" stroke="${color}" stroke-width="2" fill="none"/>
+      </svg>
+    `;
+  }
+
+  // Dynamic SVG diagram generators
+  function generateSingleIsoscelesDiagram(data) {
+    const { widthSts, depthRows, bottomWidth, depth } = data;
+    
+    return `
+      <div class="pattern-diagram-visual">
+        <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+          <!-- Triangle shape -->
+          <polygon points="200,40 350,260 50,260" 
+                   fill="rgba(82, 104, 45, 0.08)" 
+                   stroke="#52682d" 
+                   stroke-width="3"/>
+          
+          <!-- Width measurement -->
+          <line x1="50" y1="275" x2="350" y2="275" 
+                stroke="#52682d" 
+                stroke-width="2"/>
+          <circle cx="50" cy="275" r="4" fill="#52682d"/>
+          <circle cx="350" cy="275" r="4" fill="#52682d"/>
+          <text x="200" y="292" 
+                font-size="14" 
+                fill="#52682d" 
+                text-anchor="middle" 
+                font-weight="600">${formatLength(bottomWidth)} (${formatNum(widthSts)} sts)</text>
+          
+          <!-- Depth measurement -->
+          <line x1="365" y1="260" x2="365" y2="40" 
+                stroke="#52682d" 
+                stroke-width="2"/>
+          <circle cx="365" cy="260" r="4" fill="#52682d"/>
+          <circle cx="365" cy="40" r="4" fill="#52682d"/>
+          <text x="380" y="155" 
+                font-size="14" 
+                fill="#52682d" 
+                text-anchor="start" 
+                font-weight="600">${formatLength(depth)}</text>
+          <text x="380" y="172" 
+                font-size="14" 
+                fill="#52682d" 
+                text-anchor="start" 
+                font-weight="600">(${formatNum(depthRows)} rows)</text>
+          
+          <!-- Point label -->
+          <text x="200" y="30" 
+                font-size="12" 
+                fill="#52682d" 
+                text-anchor="middle" 
+                font-weight="600">Point (${END_STS} sts)</text>
+        </svg>
+      </div>
+    `;
+  }
+
+  function generateSingleRightAngleDiagram(data) {
+    const { widthSts, depthRows, bottomWidth, depth } = data;
+    
+    return `
+      <div class="pattern-diagram-visual">
+        <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+          <!-- Triangle shape (right angle) -->
+          <polygon points="50,40 50,260 350,260" 
+                   fill="rgba(82, 104, 45, 0.08)" 
+                   stroke="#52682d" 
+                   stroke-width="3"/>
+          
+          <!-- Width measurement -->
+          <line x1="50" y1="275" x2="350" y2="275" 
+                stroke="#52682d" 
+                stroke-width="2"/>
+          <circle cx="50" cy="275" r="4" fill="#52682d"/>
+          <circle cx="350" cy="275" r="4" fill="#52682d"/>
+          <text x="200" y="292" 
+                font-size="14" 
+                fill="#52682d" 
+                text-anchor="middle" 
+                font-weight="600">${formatLength(bottomWidth)} (${formatNum(widthSts)} sts)</text>
+          
+          <!-- Depth measurement (straight edge) -->
+          <line x1="35" y1="260" x2="35" y2="40" 
+                stroke="#52682d" 
+                stroke-width="2"/>
+          <circle cx="35" cy="260" r="4" fill="#52682d"/>
+          <circle cx="35" cy="40" r="4" fill="#52682d"/>
+          <text x="20" y="155" 
+                font-size="14" 
+                fill="#52682d" 
+                text-anchor="end" 
+                font-weight="600">${formatLength(depth)}</text>
+          <text x="20" y="172" 
+                font-size="14" 
+                fill="#52682d" 
+                text-anchor="end" 
+                font-weight="600">(${formatNum(depthRows)} rows)</text>
+          
+          <!-- Point label -->
+          <text x="50" y="30" 
+                font-size="12" 
+                fill="#52682d" 
+                text-anchor="middle" 
+                font-weight="600">Point (${END_STS} sts)</text>
+          
+          <!-- Shaped edge label -->
+          <text x="220" y="140" 
+                font-size="12" 
+                fill="#52682d" 
+                text-anchor="middle" 
+                font-weight="600" 
+                transform="rotate(-35 220 140)">Shaped edge</text>
+          
+          <!-- Straight edge label -->
+          <text x="40" y="150" 
+                font-size="12" 
+                fill="#52682d" 
+                text-anchor="middle" 
+                font-weight="600" 
+                transform="rotate(-90 40 150)">Straight edge</text>
+        </svg>
+      </div>
+    `;
+  }
+
+  function generateTwoMirroredDiagram(data) {
+    const { halfWidthSts, depthRows, bottomWidth, depth } = data;
+    const halfWidth = bottomWidth / 2;
+    
+    return `
+      <div class="pattern-diagram-visual">
+        <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+          <!-- Left half triangle -->
+          <polygon points="200,40 50,260 200,260" 
+                   fill="rgba(82, 104, 45, 0.08)" 
+                   stroke="#52682d" 
+                   stroke-width="3"/>
+          
+          <!-- Right half triangle -->
+          <polygon points="200,40 350,260 200,260" 
+                   fill="rgba(115, 140, 82, 0.08)" 
+                   stroke="#52682d" 
+                   stroke-width="3"/>
+          
+          <!-- Center seam line (dashed) -->
+          <line x1="200" y1="40" x2="200" y2="260" 
+                stroke="#52682d" 
+                stroke-width="2" 
+                stroke-dasharray="5,5"/>
+          
+          <!-- Half width measurement (left piece) -->
+          <line x1="50" y1="275" x2="200" y2="275" 
+                stroke="#52682d" 
+                stroke-width="2"/>
+          <circle cx="50" cy="275" r="4" fill="#52682d"/>
+          <circle cx="200" cy="275" r="4" fill="#52682d"/>
+          <text x="125" y="292" 
+                font-size="14" 
+                fill="#52682d" 
+                text-anchor="middle" 
+                font-weight="600">${formatLength(halfWidth)} (${formatNum(halfWidthSts)} sts)</text>
+          
+          <!-- Half width measurement (right piece) -->
+          <line x1="200" y1="20" x2="350" y2="20" 
+                stroke="#52682d" 
+                stroke-width="2"/>
+          <circle cx="200" cy="20" r="4" fill="#52682d"/>
+          <circle cx="350" cy="20" r="4" fill="#52682d"/>
+          <text x="275" y="13" 
+                font-size="14" 
+                fill="#52682d" 
+                text-anchor="middle" 
+                font-weight="600">${formatLength(halfWidth)} (${formatNum(halfWidthSts)} sts)</text>
+          
+          <!-- Depth measurement -->
+          <line x1="365" y1="260" x2="365" y2="40" 
+                stroke="#52682d" 
+                stroke-width="2"/>
+          <circle cx="365" cy="260" r="4" fill="#52682d"/>
+          <circle cx="365" cy="40" r="4" fill="#52682d"/>
+          <text x="380" y="155" 
+                font-size="14" 
+                fill="#52682d" 
+                text-anchor="start" 
+                font-weight="600">${formatLength(depth)}</text>
+          <text x="380" y="172" 
+                font-size="14" 
+                fill="#52682d" 
+                text-anchor="start" 
+                font-weight="600">(${formatNum(depthRows)} rows)</text>
+          
+          <!-- Seam label -->
+          <text x="210" y="150" 
+                font-size="12" 
+                fill="#52682d" 
+                text-anchor="start" 
+                font-weight="600">Seam</text>
+        </svg>
+      </div>
+    `;
+  }
+
+  function generateTwoRightAnglesDiagram(data) {
+    const { halfWidthSts, depthRows, bottomWidth, depth } = data;
+    const halfWidth = bottomWidth / 2;
+    
+    return `
+      <div class="pattern-diagram-visual">
+        <svg viewBox="0 0 450 300" xmlns="http://www.w3.org/2000/svg">
+          <!-- Left right-angle triangle -->
+          <polygon points="50,40 50,260 200,260" 
+                   fill="rgba(82, 104, 45, 0.08)" 
+                   stroke="#52682d" 
+                   stroke-width="3"/>
+          
+          <!-- Right right-angle triangle (mirrored) -->
+          <polygon points="250,40 250,260 400,260" 
+                   fill="rgba(115, 140, 82, 0.08)" 
+                   stroke="#52682d" 
+                   stroke-width="3"/>
+          
+          <!-- Left triangle width -->
+          <line x1="50" y1="275" x2="200" y2="275" 
+                stroke="#52682d" 
+                stroke-width="2"/>
+          <circle cx="50" cy="275" r="4" fill="#52682d"/>
+          <circle cx="200" cy="275" r="4" fill="#52682d"/>
+          <text x="125" y="292" 
+                font-size="14" 
+                fill="#52682d" 
+                text-anchor="middle" 
+                font-weight="600">${formatLength(halfWidth)} (${formatNum(halfWidthSts)} sts)</text>
+          
+          <!-- Right triangle width -->
+          <line x1="250" y1="275" x2="400" y2="275" 
+                stroke="#52682d" 
+                stroke-width="2"/>
+          <circle cx="250" cy="275" r="4" fill="#52682d"/>
+          <circle cx="400" cy="275" r="4" fill="#52682d"/>
+          <text x="325" y="292" 
+                font-size="14" 
+                fill="#52682d" 
+                text-anchor="middle" 
+                font-weight="600">${formatLength(halfWidth)} (${formatNum(halfWidthSts)} sts)</text>
+          
+          <!-- Left triangle depth -->
+          <line x1="35" y1="260" x2="35" y2="40" 
+                stroke="#52682d" 
+                stroke-width="2"/>
+          <circle cx="35" cy="260" r="4" fill="#52682d"/>
+          <circle cx="35" cy="40" r="4" fill="#52682d"/>
+          <text x="20" y="155" 
+                font-size="14" 
+                fill="#52682d" 
+                text-anchor="end" 
+                font-weight="600">${formatLength(depth)}</text>
+          <text x="20" y="172" 
+                font-size="14" 
+                fill="#52682d" 
+                text-anchor="end" 
+                font-weight="600">(${formatNum(depthRows)} rows)</text>
+          
+          <!-- Hypotenuse join label -->
+          <text x="125" y="140" 
+                font-size="12" 
+                fill="#52682d" 
+                text-anchor="middle" 
+                font-weight="600" 
+                transform="rotate(-35 125 140)">Join along hypotenuse →</text>
+        </svg>
+      </div>
+    `;
+  }
+
+  // Generate isosceles pattern (single piece)
+  function generateIsoscelesPattern(data) {
+    const { widthSts, depthRows } = data;
+    const decsNeededIso = Math.max(widthSts - END_STS, 0) / 2;
+    const rowsPerDecIso = decsNeededIso > 0 ? depthRows / decsNeededIso : 1;
+    const rowsPerDecIsoRounded = Math.max(1, Math.round(rowsPerDecIso));
+
+    return `
+      ${generateSingleIsoscelesDiagram(data)}
+      <h3>Single isosceles triangle</h3>
+      <p>This creates an isosceles triangle with the bottom edge as the widest side, decreasing evenly at both edges as you knit upward.</p>
+      <ul>
+        <li>Cast on <strong>${formatNum(widthSts)} stitches</strong> across the bottom edge.</li>
+        <li>Decrease 1 stitch at each edge every <strong>${formatNum(rowsPerDecIsoRounded)} rows</strong>.</li>
+        <li>Continue until you have about <strong>${END_STS} stitches</strong> remaining or you have worked about <strong>${formatNum(depthRows)} rows</strong>.</li>
+        <li>Bind off remaining stitches to complete the point.</li>
+      </ul>
+    `;
+  }
+
+  // Generate right-angle pattern (single piece)
+  function generateRightAnglePattern(data) {
+    const { widthSts, depthRows } = data;
+    const decsNeededRt = Math.max(widthSts - END_STS, 0);
+    const rowsPerDecRt = decsNeededRt > 0 ? depthRows / decsNeededRt : 1;
+    const rowsPerDecRtRounded = Math.max(1, Math.round(rowsPerDecRt));
+
+    return `
+      ${generateSingleRightAngleDiagram(data)}
+      <h3>Single right-angle triangle</h3>
+      <p>This creates a right-angle triangle with the non-shaped side remaining straight and one edge shaped to form the diagonal.</p>
+      <ul>
+        <li>Cast on <strong>${formatNum(widthSts)} stitches</strong> along the bottom edge.</li>
+        <li>Decrease 1 stitch at the designated shaping edge only every <strong>${formatNum(rowsPerDecRtRounded)} rows</strong>.</li>
+        <li>Work until you have about <strong>${END_STS} stitches</strong> remaining and approximately <strong>${formatNum(depthRows)} rows</strong> in total.</li>
+        <li>Bind off remaining stitches to complete the point.</li>
+      </ul>
+      <p>The non-shaped edge will remain straight, creating the right angle.</p>
+    `;
+  }
+
+  // Generate two mirrored halves pattern
+  function generateTwoMirroredPattern(data) {
+    const { halfWidthSts, depthRows } = data;
+    const decsNeededHalfIso = Math.max(halfWidthSts - END_STS, 0);
+    const rowsPerDecHalfIso = decsNeededHalfIso > 0 ? depthRows / decsNeededHalfIso : 1;
+    const rowsPerDecHalfIsoRounded = Math.max(1, Math.round(rowsPerDecHalfIso));
+
+    return `
+      ${generateTwoMirroredDiagram(data)}
+      <h3>Two mirrored halves (isosceles triangle)</h3>
+      <p>Each half is a right triangle worked from the bottom edge up to the point. The two pieces will be joined along their straight edges to form a complete isosceles triangle.</p>
+      <ul>
+        <li>For each half, cast on <strong>${formatNum(halfWidthSts)} stitches</strong> along the bottom edge.</li>
+        <li>Decrease 1 stitch at the outside edge only every <strong>${formatNum(rowsPerDecHalfIsoRounded)} rows</strong>.</li>
+        <li>Work until you have about <strong>${END_STS} stitches</strong> and approximately <strong>${formatNum(depthRows)} rows</strong>.</li>
+        <li>Bind off remaining stitches.</li>
+        <li>Knit a second, mirrored piece.</li>
+        <li>Join the two straight (non-shaped) edges with a seam to form the full isosceles triangle with a seam up the center.</li>
+      </ul>
+    `;
+  }
+
+  // Generate two right-angle triangles pattern
+  function generateTwoRightAnglesPattern(data) {
+    const { halfWidthSts, depthRows } = data;
+    const decsNeededHalfIso = Math.max(halfWidthSts - END_STS, 0);
+    const rowsPerDecHalfIso = decsNeededHalfIso > 0 ? depthRows / decsNeededHalfIso : 1;
+    const rowsPerDecHalfIsoRounded = Math.max(1, Math.round(rowsPerDecHalfIso));
+
+    return `
+      ${generateTwoRightAnglesDiagram(data)}
+      <h3>Two right-angle triangles</h3>
+      <p>Knit two identical right-angle triangles and join them along their long edges (the hypotenuse) to form the full triangle.</p>
+      <ul>
+        <li>For each triangle, cast on <strong>${formatNum(halfWidthSts)} stitches</strong> along the bottom edge.</li>
+        <li>Decrease 1 stitch at the shaping edge every <strong>${formatNum(rowsPerDecHalfIsoRounded)} rows</strong> until you have about <strong>${END_STS} stitches</strong> and approximately <strong>${formatNum(depthRows)} rows</strong>.</li>
+        <li>Bind off remaining stitches.</li>
+        <li>Knit a second identical triangle.</li>
+        <li>Join the two triangles along their long edges (the hypotenuse) to form the full triangle, with the combined bottom edges forming the full width.</li>
+      </ul>
+    `;
+  }
+
+  // ============================================================================
+  // NEW: Decide construction method based on needle capacity
+  // ============================================================================
+  /**
+   * Evaluates whether the triangle fits on the needlebed and recommends
+   * the best construction method.
+   * 
+   * @param {number} widthSts - Full width in stitches
+   * @param {number} effectiveMax - Effective maximum needles available
+   * @param {number} halfWidthSts - Half width in stitches (with seam allowance)
+   * @returns {string} - One of: 'side-to-side', 'two-piece-center-back', 'corner-to-corner'
+   */
+  function decideConstructionMethod(widthSts, effectiveMax, halfWidthSts) {
+    // Rule 1: If full width fits, recommend side-to-side (right triangle) construction
+    if (widthSts <= effectiveMax) {
+      return 'side-to-side';
+    }
+    
+    // Rule 2: If half width fits, recommend two-piece center-back (isosceles) construction
+    if (halfWidthSts <= effectiveMax) {
+      return 'two-piece-center-back';
+    }
+    
+    // Rule 3: Otherwise, recommend corner-to-corner construction
+    return 'corner-to-corner';
+  }
+
+  /**
+   * Generates the construction method recommendation card
+   * 
+   * @param {string} method - The construction method returned by decideConstructionMethod()
+   * @returns {string} - HTML for the recommendation card
+   */
+  function generateConstructionRecommendation(method) {
+    let title = '';
+    let description = '';
+    
+    switch (method) {
+      case 'side-to-side':
+        title = 'Side-to-Side Triangle';
+        description = 'Your width fits your needlebed. This triangle will be knit from the point outward, increasing on one edge.';
+        break;
+      
+      case 'two-piece-center-back':
+        title = 'Two-Piece Center-Back Triangle';
+        description = 'Your full width is wider than your needlebed, but each half fits comfortably. Knit two matching triangles and seam them at center back.';
+        break;
+      
+      case 'corner-to-corner':
+        title = 'Corner-to-Corner Triangle';
+        description = 'Your chosen width exceeds your needlebed, even when divided in half. Corner-to-corner construction allows you to knit the full size without exceeding your machine\'s limits.';
+        break;
+    }
+    
+    return `
+      <div class="recommendation-card" data-testid="construction-recommendation">
+        <h3 style="margin-top: 0; color: var(--kbm-green); font-size: 1.1rem;">
+          🎯 Your Recommended Construction
+        </h3>
+        <h4 style="margin: 0.5rem 0; color: #374151; font-size: 1rem; font-weight: 600;">
+          ${title}
+        </h4>
+        <p style="margin: 0.75rem 0 0 0; color: #4b5563; line-height: 1.6;">
+          ${description}
+        </p>
+      </div>
+    `;
+  }
+
+  // Render results
+  function renderResults(data) {
+    const { 
+      widthSts, 
+      depthRows, 
+      needlesAvailable, 
+      effectiveMax, 
+      fitsInOnePiece, 
+      halfWidthSts, 
+      halfFits,
+      constructionMethod  // NEW: Include construction method from calculationData
+    } = data;
+
+    let html = '';
+    
+    // NEW: Add construction recommendation at the top of results
+    if (constructionMethod) {
+      html += generateConstructionRecommendation(constructionMethod);
+    }
+
+    if (fitsInOnePiece) {
+      // Single piece fits
+      html += `
+        <div class="summary-box" data-testid="summary-single-piece">
+          <p>Your triangle cast-on will be approximately <strong>${formatNum(widthSts)} stitches</strong> wide and about <strong>${formatNum(depthRows)} rows</strong> deep. With <strong>${formatNum(needlesAvailable)} needles</strong> available, this will fit on your machine in a single piece.</p>
+        </div>
+        <div class="option-buttons">
+          <button class="option-btn ${currentOption === 'A' ? 'active' : ''}" data-option="A" data-testid="button-option-a">
+            ${getIsoscelesIcon(currentOption === 'A' ? 'white' : '#374151')}
+            <span>Option A: Single isosceles triangle</span>
+          </button>
+          <button class="option-btn ${currentOption === 'B' ? 'active' : ''}" data-option="B" data-testid="button-option-b">
+            ${getRightAngleIcon(currentOption === 'B' ? 'white' : '#374151')}
+            <span>Option B: Single right-angle triangle</span>
+          </button>
+        </div>
+        <div class="pattern-details" data-testid="pattern-details">
+          ${currentOption === 'A' ? generateIsoscelesPattern(data) : generateRightAnglePattern(data)}
+        </div>
+      `;
+    } else {
+      // Two pieces needed
+      if (!halfFits) {
+        // Even half doesn't fit
+        html += `
+          <div class="error-message" data-testid="error-too-wide">
+            Your full triangle cast-on would need about <strong>${formatNum(widthSts)} stitches</strong>, but you set a limit of <strong>${formatNum(needlesAvailable)} needles</strong> (effective maximum <strong>${formatNum(effectiveMax)}</strong>). Even half the width (with seam allowance) would need about <strong>${formatNum(halfWidthSts)} stitches</strong>, which is more than your effective maximum of <strong>${formatNum(effectiveMax)} needles</strong>.
+            <br><br>
+            Try a narrower width, a shallower depth, or plan the triangle in more than two panels.
+          </div>
+        `;
+      } else {
+        // Two pieces will work
+        html += `
+          <div class="summary-box" data-testid="summary-two-pieces">
+            <p>Your full triangle cast-on would need about <strong>${formatNum(widthSts)} stitches</strong>, but you set a limit of <strong>${formatNum(needlesAvailable)} needles</strong> (effective maximum <strong>${formatNum(effectiveMax)}</strong>). Let's work this as two pieces with a seam.</p>
+          </div>
+          <div class="option-buttons">
+            <button class="option-btn ${currentOption === 'A' ? 'active' : ''}" data-option="A" data-testid="button-option-a">
+              ${getIsoscelesIcon(currentOption === 'A' ? 'white' : '#374151')}
+              <span>Option A: Two mirrored halves</span>
+            </button>
+            <button class="option-btn ${currentOption === 'B' ? 'active' : ''}" data-option="B" data-testid="button-option-b">
+              ${getRightAngleIcon(currentOption === 'B' ? 'white' : '#374151')}
+              <span>Option B: Two right-angle triangles</span>
+            </button>
+          </div>
+          <div class="pattern-details" data-testid="pattern-details">
+            ${currentOption === 'A' ? generateTwoMirroredPattern(data) : generateTwoRightAnglesPattern(data)}
+          </div>
+        `;
+      }
+    }
+
+    resultsDiv.innerHTML = html;
+
+    // Show ActionBar
+    const actionBar = document.getElementById('action-bar');
+    const printBtn = document.getElementById('print-btn');
+    if (actionBar) actionBar.style.display = 'flex';
+    if (printBtn) printBtn.style.display = 'block';
+
+    // Add event listeners to option buttons
+    const optionButtons = resultsDiv.querySelectorAll('.option-btn');
+    optionButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentOption = btn.dataset.option;
+        renderResults(calculationData);
+      });
+    });
+  }
+
+  // Action Bar buttons
+  const actionBarEl = document.getElementById('action-bar');
+  const startOverBtn = document.getElementById('start-over-btn');
+  const printBtnEl = document.getElementById('print-btn');
+
+  // Start Over handler
+  if (startOverBtn) {
+    startOverBtn.addEventListener('click', () => {
+      resultsDiv.innerHTML = '<div class="results-placeholder">Your pattern outline will appear here after you enter your details.</div>';
+      if (actionBarEl) actionBarEl.style.display = 'none';
+    });
+  }
+
+  // Print handler
+  if (printBtnEl) {
+    printBtnEl.addEventListener('click', () => {
+      window.print();
+    });
+  }
+
+  // Submit handler
+  function handleSubmit() {
+    // Get input values
+    const bottomWidthInput_value = parseFloat(bottomWidthInput.value);
+    const depthInput_value = parseFloat(depthInput.value);
+    let bottomWidth = bottomWidthInput_value;
+    let depth = depthInput_value;
+    let stitchGauge = parseFloat(stitchGaugeInput.value);
+    let rowGauge = parseFloat(rowGaugeInput.value);
+    const needlesAvailable = parseFloat(needlesInput.value);
+
+    // Validate inputs
+    if (isNaN(bottomWidth) || isNaN(depth) || isNaN(stitchGauge) || 
+        isNaN(rowGauge) || isNaN(needlesAvailable)) {
+      resultsDiv.innerHTML = `
+        <div class="error-message" data-testid="error-invalid">
+          Please enter all measurements and gauges before building your pattern.
+        </div>
+      `;
+      return;
+    }
+
+    // Convert to inches for calculations if needed
+    if (currentUnit === 'cm') {
+      bottomWidth = bottomWidth / INCH_TO_CM;
+      depth = depth / INCH_TO_CM;
+      // Gauge is per 10cm, convert to per inch
+      stitchGauge = stitchGauge / 10 * INCH_TO_CM;
+      rowGauge = rowGauge / 10 * INCH_TO_CM;
+    } else {
+      // Gauge is per 4 inches, convert to per inch
+      stitchGauge = stitchGauge / 4;
+      rowGauge = rowGauge / 4;
+    }
+
+    // Calculate
+    const widthSts = Math.round(bottomWidth * stitchGauge);
+    const effectiveMax = needlesAvailable - SAFETY_MARGIN_NEEDLES;
+
+    if (effectiveMax < 20) {
+      resultsDiv.innerHTML = `
+        <div class="error-message" data-testid="error-needles">
+          The effective maximum needles (after safety margin) is too low. Please enter a higher needle count.
+        </div>
+      `;
+      return;
+    }
+
+    const fitsInOnePiece = widthSts <= effectiveMax;
+    const halfWidthSts = Math.ceil(widthSts / 2) + SEAM_ALLOWANCE_STS;
+    const halfFits = halfWidthSts <= effectiveMax;
+    const depthRows = Math.round(depth * rowGauge);
+
+    // NEW: Determine the recommended construction method based on needle capacity
+    // This evaluates whether the triangle should be knit side-to-side, as two pieces,
+    // or corner-to-corner based on how the width fits the needlebed
+    const constructionMethod = decideConstructionMethod(widthSts, effectiveMax, halfWidthSts);
+
+    // Store calculation data (including original measurements in current units for diagrams)
+    calculationData = {
+      widthSts,
+      depthRows,
+      needlesAvailable,
+      effectiveMax,
+      fitsInOnePiece,
+      halfWidthSts,
+      halfFits,
+      bottomWidth: bottomWidthInput_value,
+      depth: depthInput_value,
+      constructionMethod  // NEW: Store the recommended construction method
+    };
+
+    // Reset to option A
+    currentOption = 'A';
+
+    // Render results (now includes construction recommendation)
+    renderResults(calculationData);
+  }
+
+  // Button click handler
+  submitBtn.addEventListener('click', handleSubmit);
+</script>
+
+</BaseLayout>

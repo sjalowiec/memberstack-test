@@ -1,0 +1,120 @@
+{
+  "wizardId": "wf-5ihf4x",
+  "name": "ready ... set ... knit",
+  "slug": "getting-started-readiness",
+  "description": "Answer a few quick questions to see where you are right now — and get a clear next step for setting up and using your machine.",
+  "flowType": "assessment",
+  "wizardStartStepId": "step-c0hhqm",
+  "wizardSteps": [
+    {
+      "stepId": "step-c0hhqm",
+      "thoughtText": "Is your machine securely mounted or clamped to a stable surface?",
+      "helperText": "Use the clamps provided with your machine",
+      "choices": [
+        {
+          "label": "Yes",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": "Great! you are on your way"
+        },
+        {
+          "label": "No",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": "Locate the clamps that came with your machine and follow your manual. It is important the machine is secure to a sturdy table so it doesn't end up in your lap as you are knitting 😊"
+        }
+      ]
+    },
+    {
+      "stepId": "step-wfg460",
+      "thoughtText": "If you have a used machine, has it been been cleaned and lightly oiled recently?",
+      "helperText": "",
+      "choices": [
+        {
+          "label": "Yes",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": "Great! our machines don't need a lot of maintenance, but they need to be kept clean of dust and lint and lightly oiled."
+        },
+        {
+          "label": "No",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": "Following your manual, use a small amount of a lightweight oil (gun oil or sewing machine oil)"
+        },
+        {
+          "label": "Don't Know",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": "Our machines don't require a lot of maintenance, but keeping them cleaned and lightly oiled is essential."
+        }
+      ]
+    },
+    {
+      "stepId": "step-pwmi9e",
+      "thoughtText": "Do the needles sit flat against the needlebed and not float above it?",
+      "helperText": "The sponge bar is the strip inside the machine that applies gentle pressure so the needles rest flat against the bed",
+      "choices": [
+        {
+          "label": "yes",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": "Great. That's what you want to see. Your needles are being held correctly."
+        },
+        {
+          "label": "No - needles float above the bed",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": "That can affect how the machine knits. A worn or missing sponge bar can cause any number of knitting problems and could potentially damage your machine. Even if the machine hasn't been used or has been stored for a while, the sponge will deteriorate. Replace your sponge bar"
+        }
+      ]
+    },
+    {
+      "stepId": "step-51dwil",
+      "thoughtText": "Are you using yarn that's appropriate for your machine's needle size?",
+      "helperText": "",
+      "choices": [
+        {
+          "label": "Yes",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": "Our machines can use a wide variety of yarn weights. It is important that you use the yarn that is correct for your needle size."
+        },
+        {
+          "label": "I don't know",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": "Our machines can use a wide variety of yarn weights. It is important that you use the yarn that is correct for your needle size. A yarn that is too heavy will be difficult to knit and will put strain on your machine, causing potential damage."
+        }
+      ]
+    },
+    {
+      "stepId": "step-5yxtwb",
+      "thoughtText": "Is the yarn threaded correctly through the mast and carriage?",
+      "helperText": "Follow your manual exactly",
+      "choices": [
+        {
+          "label": "Yes",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": "The yarn flows freely thru the mast and the carriage - no snags or hang-ups"
+        },
+        {
+          "label": "I'm not sure",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": "That's OK. If the yarn isn't threaded correctly, it can cause uneven, skipped stitches or cause the carriage to jam. Check your manual and adjust until the yarn flows freely thru the mast and the carriage - no snags or hang-ups"
+        }
+      ]
+    }
+  ],
+  "wizardOutcomes": {
+    "outcome-qid3jr": {
+      "key": "outcome-qid3jr",
+      "title": "You're set to begin",
+      "body": "You've checked the key setup details that affect how your machine behaves. That gives you a solid starting point.\n\nWhen you're ready, the next step is simply to begin knitting — take it slowly, knit a few rows, and notice how everything feels.\n\nIf something doesn't look or feel right, that's okay. Small adjustments are part of getting started, and help is available when you need it.",
+      "ctaLabel": "next step button",
+      "ctaHref": ""
+    }
+  }
+}

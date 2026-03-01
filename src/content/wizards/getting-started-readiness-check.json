@@ -1,0 +1,164 @@
+{
+  "title": "Getting Started: Readiness Check",
+  "slug": "getting-started-readiness-check",
+  "hero": "Answer a few quick questions and get one clear next step before you knit.",
+  "description": "<p>This short readiness check helps you avoid the most common early problems: <strong>jams</strong>, <strong>sticking carriages</strong>, and <strong>mystery dropped stitches</strong>.</p><p>Choose the option that matches your setup right now, and you’ll get:</p><ul><li><p>the most likely issue (if any)</p></li><li><p>one practical fix</p></li><li><p>one clear next step</p></li></ul><p>Simple and calm — so you can start with confidence.</p>",
+  "excerpt": "Find your next right step before you knit.",
+  "whyUseThisTool": "A quick readiness check can save you hours of frustration. This wizard helps you confirm the few setup basics that matter most before you knit your first rows.",
+  "category": "project wizard",
+  "tags": [
+    "getting-started",
+    "setup",
+    "first-project",
+    "beginner",
+    "troubleshooting"
+  ],
+  "keywords": [
+    "machine knitting getting started",
+    "knitting machine setup check",
+    "first knit readiness check",
+    "before you knit",
+    "carriage glide check"
+  ],
+  "aliases": [
+    "ready-to-knit-check",
+    "first-knit-check",
+    "setup-readiness-check"
+  ],
+  "videoUrl": "",
+  "accessLevel": "free",
+  "price": "",
+  "relatedAnas": [],
+  "relatedWorkshops": [],
+  "imageUrl": "",
+  "imageAlt": "",
+  "iconUrl": "https://www.knitbymachine.com/images/wizard.svg",
+  "metaTitle": "Getting Started: Readiness Check - Knit by Machine",
+  "metaDescription": "A quick readiness check for machine knitters. Confirm your setup and get one clear next step before you knit.",
+  "schemaMarkup": {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "Getting Started: Readiness Check",
+    "description": "A quick readiness check that helps machine knitters confirm their setup before starting to knit and provides one clear next step.",
+    "tool": [
+      "Knitting machine",
+      "Machine manual",
+      "Machine oil",
+      "Weights"
+    ],
+    "step": [
+      {
+        "@type": "HowToStep",
+        "name": "Confirm the machine is stable",
+        "text": "Make sure the machine is secured and level before you knit."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Confirm basic readiness",
+        "text": "Check oiling and your basic tools so you are ready to troubleshoot quickly."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Confirm the yarn path",
+        "text": "Verify threading through the mast and into the carriage or feeder."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Follow one clear next step",
+        "text": "Based on your selection, do the recommended action before knitting."
+      }
+    ]
+  },
+  "wizardFlow": {
+    "version": 1,
+    "questionTitle": "Where are you right now in your setup?",
+    "questionSubtitle": "Choose the option that sounds most like your current situation.",
+    "options": [
+      {
+        "id": "opt-ready",
+        "label": "My machine is secure, oiled, and threaded — I’m ready to try my first rows",
+        "resultId": "res-green"
+      },
+      {
+        "id": "opt-almost",
+        "label": "I think I’m ready, but I’m not sure about one small step (threading, weights, or tools)",
+        "resultId": "res-yellow"
+      },
+      {
+        "id": "opt-unstable",
+        "label": "My machine isn’t clamped/secure or the bed feels wobbly",
+        "resultId": "res-red-stable"
+      },
+      {
+        "id": "opt-not-oiled",
+        "label": "I haven’t cleaned/oiled the machine (or I’m not sure if it needs it)",
+        "resultId": "res-red-oil"
+      },
+      {
+        "id": "opt-not-threaded",
+        "label": "I haven’t threaded the yarn through the mast/carriage yet (or I’m not sure it’s correct)",
+        "resultId": "res-red-thread"
+      }
+    ],
+    "results": [
+      {
+        "id": "res-green",
+        "causeTitle": "You’re ready to knit",
+        "explanation": "Your setup sounds solid — which means you can focus on the feel of the carriage and how the stitches form.",
+        "tryThisItems": [
+          "Set a comfortable tension and knit slowly for the first few passes.",
+          "Add enough weight so the fabric stays in contact with the machine.",
+          "Watch the needles: the loop should form cleanly and stay held as you move across."
+        ],
+        "encouragement": "This is the best moment to start simple. A few calm rows will tell you a lot."
+      },
+      {
+        "id": "res-yellow",
+        "causeTitle": "One quick check will make everything smoother",
+        "explanation": "When you’re “almost ready,” a tiny setup detail is usually what causes the first jam or the first dropped stitch.",
+        "tryThisItems": [
+          "Do a quick carriage glide pass without yarn to feel what “smooth” is.",
+          "Confirm the yarn path is clean and snag-free from cone to carriage.",
+          "Make sure your weights are balanced and not pulling only on one side."
+        ],
+        "encouragement": "You’re close. A 60-second check now can save you 60 minutes later."
+      },
+      {
+        "id": "res-red-stable",
+        "causeTitle": "Machine stability comes first",
+        "explanation": "If the machine isn’t secure and level, the bed can shift just enough to cause skipped stitches or a stuck carriage.",
+        "tryThisItems": [
+          "Clamp or secure the machine so it doesn’t move when you push the carriage.",
+          "Confirm the bed is level and not rocking on the table.",
+          "Once it’s stable, recheck the yarn path before you knit."
+        ],
+        "encouragement": "This is common. Getting the machine stable is a one-time win that makes everything easier."
+      },
+      {
+        "id": "res-red-oil",
+        "causeTitle": "A quick oil/clean check will protect your machine",
+        "explanation": "Dry or dirty needle beds can create drag, sticking, and inconsistent stitch formation — especially on the first try.",
+        "tryThisItems": [
+          "Wipe the needle bed lightly to remove dust and old lint.",
+          "Oil where your machine manual recommends (a small amount goes a long way).",
+          "Do a few smooth carriage passes without yarn before you thread up."
+        ],
+        "encouragement": "You’re not behind — you’re setting yourself up for a smoother first knit."
+      },
+      {
+        "id": "res-red-thread",
+        "causeTitle": "Threading needs to be confirmed before knitting",
+        "explanation": "If the yarn path isn’t correct, the yarn won’t feed consistently — which can cause instant problems even on plain knitting.",
+        "tryThisItems": [
+          "Thread the yarn through the mast in the correct order for your machine.",
+          "Confirm the yarn is seated properly in the carriage/feeder.",
+          "Look for snags: the yarn should pull smoothly with gentle tension."
+        ],
+        "encouragement": "Once the yarn path is right, everything else gets easier to read and adjust."
+      }
+    ]
+  },
+  "isDraft": false,
+  "publishedDate": "2026-01-02",
+  "pendingPublish": false
+}

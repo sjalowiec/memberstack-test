@@ -1,0 +1,3633 @@
+---
+/**
+ * Hand + Machine Blanket Planner Wizard - REDESIGNED
+ * Location: src/pages/wizards/hand-machine-blanket.astro
+ * 
+ * "Gated Complexity" design:
+ * - Full-width pattern preview with sample data loaded by default
+ * - Glass overlay for viewer mode
+ * - Right-side drawer for customization inputs
+ * - Size preset chips instead of large cards
+ */
+
+export const prerender = true;
+
+import PatternLayout from "../../layouts/PatternLayout.astro";
+import ActionBar from "../../components/wizards/ActionBar.astro";
+import PrintFooter from "../../components/common/PrintFooter.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import PinterestEmbed from "../../components/PinterestEmbed.astro";
+import VimeoEmbed from "../../components/media/VimeoEmbed.astro";
+import wizardData from "../../content/wizards/hand-machine-blanket.json";
+import "../../styles/wizard.css";
+
+const pageUrl = "https://knitbymachine.com/wizards/hand-machine-blanket";
+const hyvorPageId = wizardData.hyvorPageId || "wizards-hand-machine-blanket";
+
+// Access level from JSON - "free" or "paid"
+const accessLevel = wizardData.accessLevel || "free";
+const price = wizardData.price || "$9.99";
+---
+
+<PatternLayout 
+  title="The Hybrid Blanket Pattern | Knit by Machine" 
+  description="Hand Knit + Machine Knit Blanket Pattern. Calculate stitch counts for blankets with hand-knit garter borders and machine-knit body."
+  tabsEnabled={{ pattern: true, yarn: true, resources: true, discussion: true, inspiration: true }}
+>
+
+<style is:global>
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.pattern-slot-wrapper {
+  padding-top: 20px;
+  padding-bottom: 3rem;
+}
+
+.inspiration-content,
+.resources-content,
+.discussion-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.inspiration-content h3,
+.resources-content h3,
+.discussion-content h3 {
+  color: var(--kbm-green);
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.inspiration-intro,
+.resources-intro,
+.discussion-intro {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+
+.video-placeholder {
+  background: #f9fafb;
+  border: 1px dashed #e5e7eb;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.video-note {
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Yarn Calculator Styles */
+.yarn-content {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.yarn-content h3 {
+  color: var(--kbm-green);
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.yarn-intro {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+.yarn-calculator {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.yarn-section {
+  background: #f9fafb;
+  border: 1px solid var(--kbm-border, #e5e7eb);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.yarn-section-label {
+  font-weight: 600;
+  color: var(--kbm-green);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.yarn-input-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .yarn-input-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.yarn-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.yarn-input-group label {
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.yarn-input-group input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--kbm-border, #e5e7eb);
+  border-radius: 8px;
+  font-size: 1rem;
+  width: 100%;
+  transition: border-color 0.2s ease;
+}
+
+.yarn-input-group input:focus {
+  outline: none;
+  border-color: var(--kbm-green);
+}
+
+.yarn-output-box {
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--kbm-green);
+  border-radius: var(--radius, 18px);
+  padding: 1.25rem;
+  margin-top: 0.5rem;
+}
+
+.yarn-output-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem 1.5rem;
+}
+
+@media (max-width: 480px) {
+  .yarn-output-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.yarn-output-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.yarn-output-label {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.yarn-output-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--kbm-green);
+}
+
+.yarn-output-value.highlight {
+  font-size: 1.4rem;
+  color: var(--kbm-green);
+}
+
+.yarn-error {
+  color: #dc2626;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1rem;
+  margin: 0;
+}
+
+.yarn-units-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.yarn-unit-btn {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--kbm-border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--surface, #ffffff);
+  color: #6b7280;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.yarn-unit-btn:hover {
+  border-color: var(--kbm-green);
+}
+
+.yarn-unit-btn.active {
+  background: var(--kbm-green);
+  color: #ffffff;
+  border-color: var(--kbm-green);
+}
+
+.yarn-blanket-display {
+  text-align: center;
+}
+
+.yarn-blanket-size {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--kbm-green);
+  margin: 0.5rem 0 0;
+}
+
+.yarn-blanket-hint {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0;
+}
+
+#hyvor-talk-view {
+  min-height: 200px;
+}
+
+/* Universal hide class */
+.is-hidden {
+  display: none !important;
+}
+
+/* Dev Preview Toggle - injected near top of page via JS */
+.dev-preview-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--kbm-border, #e5e7eb);
+  border-radius: var(--radius, 18px);
+  background: var(--surface, #fff);
+  margin: 12px 1rem;
+  font-size: 14px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dev-preview-toggle .hint {
+  opacity: 0.6;
+  font-size: 12px;
+}
+
+.dev-preview-toggle .dev-label {
+  background: #f59e0b;
+  color: #1f2937;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dev-preview-toggle span.mode-label {
+  color: #374151;
+  font-weight: 500;
+}
+
+.dev-preview-toggle a {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--kbm-border, #e5e7eb);
+  text-decoration: none;
+  color: #374151;
+  font-size: 13px;
+  transition: all 0.15s ease;
+}
+
+.dev-preview-toggle a:hover {
+  background: #f3f4f6;
+}
+
+.dev-preview-toggle a.active {
+  background: var(--kbm-green, #52682D);
+  color: #fff;
+  border-color: var(--kbm-green, #52682D);
+}
+
+/* Sales Section (for unpaid view) */
+.sales-section {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+/* Sales section visibility handled by .is-hidden class */
+
+.sales-title {
+  color: var(--kbm-green);
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.sales-description {
+  color: #4b5563;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.sales-how-it-works {
+  text-align: left;
+  max-width: 420px;
+  margin: 0 auto 1.5rem;
+}
+
+.sales-how-it-works h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--kbm-green);
+  margin: 0 0 0.75rem 0;
+}
+
+.sales-how-it-works ul,
+.sales-how-it-works ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sales-how-it-works li {
+  padding: 0.35rem 0;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.sales-features {
+  text-align: left;
+  max-width: 500px;
+  margin: 0 auto 1.5rem;
+}
+
+.sales-features ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sales-features li {
+  padding: 0.4rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.sales-features li strong {
+  color: #1f2937;
+}
+
+.sales-features li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--kbm-green);
+  font-weight: bold;
+}
+
+.sales-microcopy {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+.sales-price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--kbm-green);
+  margin-bottom: 1rem;
+}
+
+.sales-cta {
+  display: inline-block;
+  background: var(--kbm-green);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.sales-cta:hover {
+  background: #3d4e22;
+}
+
+/* Pattern content visibility */
+.pattern-content-wrapper {
+  transition: opacity 0.3s;
+}
+
+/* Pattern content visibility handled by .is-hidden class */
+
+.page-header {
+  max-width: 900px;
+  margin: 0 auto 1.5rem;
+  padding: 0 1rem;
+}
+
+.page-header-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.page-header h1 {
+  color: var(--kbm-green);
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.page-header p {
+  color: #6b7280;
+  font-size: 1rem;
+  line-height: 1.5;
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* Pattern Preview Container */
+.pattern-preview-wrapper {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem 120px 1rem;
+}
+
+/* Glass Overlay - Semi-transparent overlay (no blur on background) */
+.glass-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.15);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.glass-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Glass message card - centered preview info block with glass effect */
+.glass-message {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 18px;
+  padding: 1.5rem 2rem;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  max-width: 340px;
+  width: 90%;
+}
+
+.glass-message-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 1rem 0;
+}
+
+.glass-message-prompt {
+  font-size: 0.95rem;
+  color: #374151;
+  margin: 0 0 0.5rem 0;
+}
+
+.glass-message-subprompt {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0 0 1rem 0;
+}
+
+.customize-btn {
+  background: var(--kbm-green);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.customize-btn:hover {
+  background: #3d4e22;
+  transform: translateY(-1px);
+}
+
+/* Pattern Card */
+.pattern-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.pattern-output-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eef0ea;
+}
+
+.pattern-output-header h2 {
+  color: var(--kbm-green);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+}
+
+.pattern-output-header .subtitle {
+  color: #6b7280;
+  font-size: 1rem;
+  margin: 0 0 0.75rem 0;
+}
+
+.pattern-output-header .what-youll-do {
+  color: #374151;
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.inputs-summary {
+  background: #f9fafb;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  border: 1px solid #eef0ea;
+}
+
+.inputs-summary p {
+  margin: 0 0 0.25rem 0;
+}
+
+.stitch-counts-section {
+  background: rgba(82, 104, 45, 0.08);
+  padding: 1.25rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.stitch-counts-section h4 {
+  color: var(--kbm-green);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  text-align: center;
+}
+
+.stitch-counts-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+}
+
+.stitch-count-card {
+  background: white;
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+  border: 1px solid rgba(82, 104, 45, 0.15);
+}
+
+.stitch-count-card dt {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.stitch-count-card dd {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--kbm-green);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.instructions-wrapper {
+  background: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.instructions-wrapper h3 {
+  color: var(--kbm-green);
+  font-size: 1.1rem;
+  margin: 0 0 1rem 0;
+}
+
+.instructions-list {
+  margin-left: 0;
+  padding-left: 0;
+  line-height: 1.9;
+  list-style: none;
+  counter-reset: step-counter;
+}
+
+:global(.instructions-list li) {
+  margin-bottom: 0.75rem;
+  position: relative;
+  padding-left: 1.75rem;
+}
+
+:global(.instructions-list li:not(.phase-heading)) {
+  counter-increment: step-counter;
+}
+
+:global(.instructions-list li:not(.phase-heading)::before) {
+  content: counter(step-counter) ".";
+  position: absolute;
+  left: 0;
+  font-weight: 400;
+  color: inherit;
+}
+
+:global(.instructions-list .calculated-value) {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+:global(.instructions-list .phase-heading) {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--kbm-green);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  padding-left: 0;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid rgba(82, 104, 45, 0.2);
+}
+
+:global(.instructions-list .phase-heading:first-child) {
+  margin-top: 0;
+}
+
+:global(.instructions-list .step-aside) {
+  display: block;
+  margin: 0.5rem 0 0 1.25rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid rgba(82, 104, 45, 0.35);
+  color: #6b7280;
+  font-size: 0.95em;
+}
+
+:global(.instructions-list .step-aside__label) {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.why-note {
+  font-style: italic;
+  color: #6b7280;
+  padding: 1rem;
+  background: #f0f4eb;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.why-note-text {
+  font-style: italic;
+  color: #6b7280;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* =========================
+   MAIN SECTIONS (no focus)
+   ========================= */
+.kbm-sections {
+  display: block;
+}
+
+.kbm-section {
+  border: 1px solid var(--kbm-border, #e5e7eb);
+  border-radius: var(--radius, 18px);
+  padding: 14px 18px;
+  margin: 14px 0;
+  background: var(--surface, #fff);
+}
+
+.kbm-section__title {
+  margin: 0 0 12px 0;
+  color: var(--kbm-green);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* =========================
+   PATTERN STEPS
+   ========================= */
+
+/* --- Pattern Steps: hard-scoped styling --- */
+#kbm-pattern-steps { width: 100%; }
+
+#kbm-pattern-steps .kbm-step-ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: kbmstep;
+}
+
+/* Section header rows should NOT be centered by any global list styles */
+#kbm-pattern-steps .kbm-section-header {
+  list-style: none;
+  margin: 14px 0 6px;
+  padding: 0;
+  text-align: left !important;
+}
+#kbm-pattern-steps .kbm-section-header::marker { content: ""; }
+
+/* The visible section "box" */
+#kbm-pattern-steps .kbm-section-header .kbm-step-section {
+  display: block;
+  text-align: left !important;
+  border: 1px solid var(--border, #e5e7eb) !important;
+  border-radius: var(--radius, 18px) !important;
+  background: var(--surface, #fff) !important;
+  padding: 14px !important;
+  margin: 0 !important;
+}
+
+/* Title */
+#kbm-pattern-steps .kbm-section-header .kbm-step-header {
+  margin: 0 !important;
+  font-weight: 800;
+  color: var(--kbm-green, #52682D);
+  font-size: 16px;
+}
+
+/* Instruction steps: continuous numbering */
+#kbm-pattern-steps .kbm-step {
+  counter-increment: kbmstep;
+  display: grid;
+  grid-template-columns: 2.2em 1fr;
+  column-gap: 10px;
+  padding: 8px 0;
+  text-align: left !important;
+}
+#kbm-pattern-steps .kbm-step::before {
+  content: counter(kbmstep) ".";
+  font-weight: 700;
+  color: var(--kbm-green, #52682D);
+  text-align: right;
+}
+
+/* Step content wrapper - keeps all inline content together in grid cell */
+#kbm-pattern-steps .kbm-step-content {
+  display: block;
+}
+
+#kbm-pattern-steps .kbm-step-content .calculated-value {
+  display: inline;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Notes: unnumbered */
+#kbm-pattern-steps .kbm-step-note {
+  counter-increment: none;
+  display: block;
+  margin-left: 2.2em;
+  padding: 6px 0 10px;
+}
+#kbm-pattern-steps .kbm-step-note::before { content: ""; }
+
+@media print {
+  /* Prevent forced page breaks */
+  #kbm-pattern-steps, 
+  .kbm-section { 
+    break-inside: avoid-page; 
+    page-break-inside: avoid; 
+    break-after: auto; 
+    page-break-after: auto; 
+  }
+  
+  /* Kill sticky/fixed positioning that can cause blank pages */
+  [style*="position:sticky"], 
+  [style*="position: sticky"],
+  [style*="position:fixed"],
+  [style*="position: fixed"] { 
+    position: static !important; 
+  }
+}
+
+.pattern-illustration {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.pattern-illustration img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Action Bar in Designer Mode */
+.action-bar-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.action-bar-wrapper.viewer-mode .print-action {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Settings Drawer - Native dialog with slide-in animation from right */
+.settings-drawer {
+  position: fixed;
+  top: 0;
+  left: auto;  /* Override browser default left:0 for dialogs */
+  right: 0;
+  width: min(400px, 90vw);
+  height: 100vh;
+  max-height: 100vh;
+  max-width: none;  /* Override browser default max-width for dialogs */
+  background: white;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  border-radius: 18px 0 0 18px;
+  overflow-x: hidden;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  border: none;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+.settings-drawer[open] {
+  display: flex;
+  transform: translateX(0);
+}
+
+.drawer-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #eef0ea;
+  flex-shrink: 0;
+}
+
+.apply-btn {
+  width: 100%;
+  background: var(--kbm-green);
+  color: white;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.apply-btn:hover {
+  background: #3d4e22;
+  transform: translateY(-1px);
+}
+
+.settings-drawer::backdrop {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #eef0ea;
+  flex-shrink: 0;
+}
+
+.drawer-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--kbm-green);
+  font-weight: 600;
+}
+
+.drawer-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.drawer-close-btn:hover {
+  background: #f3f4f6;
+}
+
+.drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.25rem;
+}
+
+/* Screen-reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Mobile/Desktop size picker switching */
+.size-picker--mobile { display: none; }
+.size-picker--desktop { display: block; }
+
+@media (max-width: 640px) {
+  .size-picker--mobile { display: block; margin-bottom: 10px; }
+  .size-picker--desktop { display: none; }
+
+  .size-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--kbm-green, #52682D);
+    border-radius: var(--radius, 18px);
+    background: var(--surface, #fff);
+    font-size: 16px; /* prevent iOS zoom */
+    line-height: 1.2;
+    color: inherit;
+  }
+}
+
+/* Size Preset Tile Grid */
+.size-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.size-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px solid var(--kbm-green, #52682D);
+  background: transparent;
+  color: inherit;
+  border-radius: 14px;
+  padding: 8px 8px;
+  min-height: 44px;
+  line-height: 1.05;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.size-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: inherit;
+}
+
+.size-dims {
+  font-size: 12px;
+  opacity: 0.75;
+  margin-top: 3px;
+  display: block;
+}
+
+/* Hide the Selected size bar (replaced by dimensions in pills) */
+.selected-size-bar {
+  display: none;
+}
+
+.selected-size-label {
+  color: #6b7280;
+}
+
+.selected-size-name {
+  font-weight: 600;
+  color: #374151;
+}
+
+.selected-size-dims {
+  color: #374151;
+}
+
+.size-tile:hover {
+  background: rgba(82, 104, 45, 0.1);
+}
+
+.size-tile.is-active {
+  background: var(--kbm-green, #52682D);
+  border-color: var(--kbm-green, #52682D);
+  color: #fff;
+}
+
+.size-tile.is-active .size-name {
+  color: white;
+}
+
+.size-tile.is-active .size-dims {
+  opacity: 0.95;
+}
+
+/* Custom tile - full width */
+.size-tile--custom {
+  grid-column: 1 / -1;
+  align-items: flex-start;
+  text-align: left;
+  padding: 10px 10px;
+}
+
+.size-tile--custom .size-name {
+  font-size: 14px;
+}
+
+.size-tile--custom .size-dims {
+  font-size: 12px;
+}
+
+/* Custom Size Inputs */
+.custom-size-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.custom-size-row.hidden {
+  display: none;
+}
+
+/* Unit Toggle */
+.unit-toggle {
+  display: inline-flex;
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 3px;
+  margin-bottom: 1.5rem;
+}
+
+.unit-toggle button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 600;
+  color: #6b7280;
+  border-radius: 6px;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+}
+
+.unit-toggle button.active {
+  background: var(--kbm-green);
+  color: white;
+}
+
+/* Section Dividers */
+.drawer-section {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #eef0ea;
+}
+
+.drawer-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.section-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--kbm-green);
+  margin-bottom: 1rem;
+  display: block;
+}
+
+/* Input Groups */
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.375rem;
+  font-size: 0.8rem;
+}
+
+.input-group input {
+  padding: 0.5rem 0.625rem;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--kbm-green);
+  box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.1);
+}
+
+.input-group input.error {
+  border-color: #dc3545;
+}
+
+.input-hint {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.validation-message {
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.validation-message.error {
+  color: #dc3545;
+}
+
+/* Gauge Warning */
+.gauge-warning {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  margin-top: 0.75rem;
+  background-color: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 10px;
+  color: #92400e;
+  font-size: 0.85rem;
+}
+
+.gauge-warning-icon {
+  flex-shrink: 0;
+}
+
+/* Required field marker */
+.required-marker {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* Full-width input group in drawer */
+.input-group--full {
+  grid-column: 1 / -1;
+}
+
+/* Needle Warning Panel */
+.needle-warning-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.needle-warning-wrapper[hidden] {
+  display: none;
+}
+
+.needle-warning-panel {
+  background: #fef2f2;
+  border: 2px solid #dc2626;
+  border-radius: 12px 12px 0 0;
+  padding: 1rem 1.25rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.needle-warning-fix {
+  background: #fff5f5;
+  border: 1px solid #fca5a5;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  padding: 0.75rem 1rem 0.75rem 3.5rem;
+  font-size: 0.95rem;
+  color: #7f1d1d;
+  line-height: 1.5;
+}
+
+.needle-warning-fix-icon {
+  margin-right: 0.5rem;
+}
+
+.needle-warning-fix strong {
+  font-weight: 700;
+  color: #991b1b;
+}
+
+.needle-warning-icon {
+  flex-shrink: 0;
+  color: #dc2626;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.needle-warning-content {
+  flex: 1;
+}
+
+.needle-warning-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #991b1b;
+}
+
+.needle-warning-body {
+  font-size: 0.95rem;
+  color: #7f1d1d;
+  line-height: 1.5;
+}
+
+.needle-warning-body p {
+  margin: 0.25rem 0;
+}
+
+.needle-warning-body .needle-counts {
+  margin: 0.75rem 0;
+  padding-left: 1rem;
+  border-left: 3px solid #fca5a5;
+}
+
+.needle-warning-body .go-to-size-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  color: #991b1b;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.needle-warning-body .go-to-size-link:hover {
+  color: #7f1d1d;
+}
+
+/* Blanket Size attention state */
+.blanket-size-section.needs-attention {
+  border: 1px solid var(--kbm-green, #52682D);
+  border-radius: var(--radius, 18px);
+  background: rgba(82, 104, 45, 0.08);
+  padding: 12px;
+  margin: -12px;
+  animation: attentionPulse 1.5s ease-out 1;
+}
+
+@keyframes attentionPulse {
+  0% { background: rgba(82, 104, 45, 0.15); }
+  100% { background: rgba(82, 104, 45, 0.08); }
+}
+
+/* Attention highlight for scroll-to-focus */
+.kbm-attn {
+  outline: 2px solid var(--kbm-green, #52682D);
+  outline-offset: 2px;
+  box-shadow: 0 0 12px rgba(82, 104, 45, 0.35);
+  transition: outline 0.3s ease, box-shadow 0.3s ease;
+}
+
+@media print {
+  .kbm-attn {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
+.size-tile.recommended {
+  border: 2px solid var(--kbm-green, #52682D);
+  position: relative;
+}
+
+.size-tile.recommended::after {
+  content: 'Try this';
+  display: block;
+  font-size: 10px;
+  color: var(--kbm-green, #52682D);
+  margin-top: 2px;
+}
+
+.size-fix-helper {
+  display: none;
+  font-size: 0.9rem;
+  color: #991b1b;
+  margin-top: 0;
+  padding: 0.75rem 1rem;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+}
+
+.size-fix-helper-icon {
+  margin-right: 0.5rem;
+}
+
+.size-fix-helper strong {
+  font-weight: 700;
+}
+
+.size-fix-helper.visible {
+  display: block;
+}
+
+
+.pulse-once {
+  animation: kbmPulse 1.2s ease-out 1;
+}
+
+@keyframes kbmPulse {
+  0% { box-shadow: 0 0 0 0 rgba(82, 104, 45, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(82, 104, 45, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(82, 104, 45, 0); }
+}
+
+/* Print button disabled state */
+.wizard-action-btn:disabled,
+.wizard-action-btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.print-blocked-hint {
+  font-size: 0.85rem;
+  color: #dc2626;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .stitch-counts-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .input-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .custom-size-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Print-only content: hidden on screen, visible in print */
+.print-only {
+  display: none;
+}
+
+/* Print Styles */
+@media print {
+  @page { margin: 0.5in; }
+
+  html, body {
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* CRITICAL: Hide ALL header/nav/footer elements - use every possible selector */
+  header, nav, footer,
+  .site-header, .hero, .topbar, .announcement, .breadcrumbs,
+  .page-header, .pattern-nav, .global-header,
+  .hero-constrained, [slot="hero"],
+  .kbm-header-wrap, .kbm-footer,
+  .kbm-logo-section, .kbm-nav-row, .kbm-nav-trigger,
+  .kbm-container > *:not(main) {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    position: absolute !important;
+    top: -9999px !important;
+    left: -9999px !important;
+  }
+
+  /* Fixed header must be removed from flow completely */
+  .kbm-header-wrap {
+    position: absolute !important;
+    top: -9999px !important;
+  }
+
+  /* Kill layout spacing that can push content down */
+  main, .page, .container, .content, .layout, .pattern-page, .pattern-wide,
+  .page-wrap, .tabs-shell, .panels, #panel-pattern {
+    margin: 0 !important;
+    padding: 0 !important;
+    position: static !important;
+  }
+  
+  /* Make sure main element in BaseLayout doesn't add spacing */
+  body > main,
+  .page-wrap > main {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* No-print elements */
+  .glass-overlay,
+  .settings-drawer,
+  .no-print,
+  .customize-btn,
+  .action-bar-wrapper,
+  .sales-section,
+  .pattern-illustration {
+    display: none !important;
+  }
+  
+  .pattern-slot-wrapper {
+    padding: 0 !important;
+    background: white !important;
+    margin: 0 !important;
+  }
+  
+  .pattern-slot-wrapper > :first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+  
+  .pattern-preview-wrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .pattern-content-wrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .pattern-card {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Screen-hidden print container must be visible in print */
+  .print-only {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  /* The printable region must be visible and positioned normally */
+  #print-root {
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Prevent margin-collapsing / phantom top space */
+  #print-root > :first-child,
+  .pattern-card > :first-child,
+  .pattern-output-header:first-child,
+  .pattern-wide > :first-child,
+  #panel-pattern > :first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* Ensure pattern header starts at top */
+  .pattern-output-header {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* Remove any forced page breaks that could create a blank page */
+  .page-break, .break-before, [data-page-break] {
+    break-before: auto !important;
+    page-break-before: auto !important;
+  }
+
+  /* Section styling for print */
+  .kbm-section { 
+    outline: none !important; 
+    border: 1px solid #ddd !important;
+  }
+  .kbm-section__title {
+    font-size: 14pt !important;
+    color: #000 !important;
+  }
+}
+
+/* =========================
+   MOBILE LAYOUT FIXES
+   ========================= */
+
+/* keep the pattern area from feeling "squeezed" */
+.pattern-wide {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* card should be full-width on phones */
+.pattern-card {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+/* make the counts behave like a grid */
+.stitch-counts-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+
+/* =========================
+   PHONE BREAKPOINT
+   ========================= */
+@media (max-width: 640px) {
+  /* reduce header spacing so content isn't pushed down */
+  .page-header {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .pattern-card {
+    border-radius: 12px;
+  }
+
+  .pattern-output-header h2 {
+    font-size: 20px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  .pattern-output-header .subtitle {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .what-youll-do {
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .inputs-summary p {
+    font-size: 14px;
+    line-height: 1.35;
+    margin: 8px 0;
+  }
+
+  /* stitch cards should stack 1 per row on phones */
+  .stitch-counts-cards {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .stitch-count-card dt {
+    font-size: 13px;
+  }
+
+  .stitch-count-card dd {
+    font-size: 20px;
+  }
+
+  /* steps should be readable */
+  .instructions-wrapper h3 {
+    font-size: 18px;
+  }
+
+  .instructions-list {
+    padding-left: 18px;
+  }
+
+  .instructions-list li {
+    font-size: 15px;
+    line-height: 1.4;
+    margin: 10px 0;
+  }
+
+  .instructions-list .phase-heading {
+    font-size: 14px;
+    margin: 16px 0 8px;
+  }
+
+  /* tile grid: 2 columns on phones */
+  .size-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  /* settings drawer should behave like a bottom sheet / full-screen panel */
+  .settings-drawer {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .drawer-content {
+    padding-bottom: 90px; /* room for footer button */
+  }
+
+  .drawer-footer {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 12px;
+    border-top: 1px solid rgba(0,0,0,0.08);
+  }
+}
+</style>
+<style>
+  .customize-btn {
+    background: #52682D;
+    color: white;
+  }
+</style>
+
+<div slot="hero" class="hero-constrained">
+  <div class="no-print" style="max-width: 900px; margin: 0 auto; padding: 0 1rem;">
+    <WizardBackLink category="pattern" />
+  </div>
+  <div class="page-header no-print">
+    <div class="page-header-title">
+      <h1>The Hybrid Blanket Pattern</h1>
+    </div>
+    <p>Combine hand knitting and machine knitting — or use two different stitch patterns — with automatic stitch adjustments at each transition.</p>
+  </div>
+</div>
+
+<div slot="pattern" class="pattern-slot-wrapper">
+  <!-- Sales Section (shown when unpaid) -->
+  <section class="sales-section" id="salesSection" data-testid="sales-section">
+    <h2 class="sales-title">Design Your Hybrid Blanket in Minutes</h2>
+    <p class="sales-description">
+      Enter your swatch gauges and size. Get a custom, step-by-step pattern—with stitch counts adjusted at every transition.
+    </p>
+    <div class="sales-how-it-works">
+      <h3>How it works</h3>
+      <ul>
+        <li><strong>Enter</strong> border gauge + body gauge</li>
+        <li><strong>Choose</strong> a standard size or custom measurements</li>
+        <li><strong>Click</strong> Build My Pattern</li>
+      </ul>
+    </div>
+    <div class="sales-features">
+      <ul>
+        <li><strong>Mix gauges with confidence:</strong> Borders and body can use different gauges—counts adjust automatically.</li>
+        <li><strong>Math-free transitions:</strong> Stitch counts update where hand meets machine (or one tension meets another).</li>
+        <li><strong>Standard + custom sizes:</strong> Pick a preset or enter your exact width × length.</li>
+        <li><strong>Reuse anytime:</strong> Build new versions for different yarns and sizes whenever you want.</li>
+      </ul>
+    </div>
+    <div class="sales-price" id="sales-price"></div>
+
+    <a href="#" class="sales-cta" id="purchase-btn" data-testid="button-purchase">Build My Pattern</a>
+    <p class="sales-microcopy">Use it again for future blankets.</p>
+  </section>
+
+  <!-- Pattern Content (shown when paid) -->
+  <div class="pattern-content-wrapper" id="patternWrapper">
+    <div class="pattern-preview-wrapper">
+      <!-- Glass Overlay (Viewer Mode) -->
+      <div class="glass-overlay" id="glass-overlay" data-testid="glass-overlay">
+        <div class="glass-message">
+          <p class="glass-message-title">Preview</p>
+          <p class="glass-message-prompt">You're viewing a sample size pattern.</p>
+          <p class="glass-message-subprompt">Ready to create your own custom pattern?</p>
+          <button class="customize-btn" id="customize-btn" data-testid="button-customize">
+            Build My Pattern
+          </button>
+        </div>
+      </div>
+    
+    <!-- Pattern Preview (Always Visible) -->
+    <div class="pattern-card">
+      <div class="action-bar-wrapper no-print" id="action-bar-wrapper">
+        <ActionBar />
+      </div>
+      
+      <!-- Print Root: This section is the printable pattern content -->
+      <section id="print-root">
+        <div class="pattern-output-header">
+          <h2 data-testid="text-pattern-title">The Hybrid Blanket Pattern</h2>
+          <p class="subtitle" data-testid="text-pattern-subtitle">Multi Stitch Pattern Knit Blanket</p>
+          <p class="what-youll-do">Combine 2 stitch patterns for borders and blanket body, adjusting stitch count at each transition to maintain consistent width.</p>
+        </div>
+        
+        <!-- Needle Count Warning Panel -->
+        <div class="needle-warning-wrapper" id="needle-warning" hidden data-testid="needle-warning">
+          <div class="needle-warning-panel">
+            <div class="needle-warning-icon">✋</div>
+            <div class="needle-warning-content">
+              <h4 class="needle-warning-title" id="needle-warning-title">Stop — this size won't fit your machine</h4>
+              <div class="needle-warning-body" id="needle-warning-body"></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Hidden dimension outputs for Yarn calculator -->
+        <span id="hb-finished-width-in" data-value="0" hidden></span>
+        <span id="hb-finished-length-in" data-value="0" hidden></span>
+        
+        <!-- Hidden needle count outputs -->
+        <span id="hb-needles-border" data-value="0" hidden></span>
+        <span id="hb-needles-body" data-value="0" hidden></span>
+        <span id="hb-needles-required" data-value="0" hidden></span>
+        <span id="hb-needles-available" data-value="0" hidden></span>
+
+        <!-- Section Focus Container -->
+        <div class="kbm-sections" id="kbm-pattern-sections">
+          <!-- Overview Section -->
+          <section class="kbm-section" data-section="overview">
+            <h3 class="kbm-section__title">Your Settings</h3>
+            <div class="inputs-summary" id="inputs-summary" data-testid="inputs-summary">
+            </div>
+          </section>
+        
+          <!-- Results Section -->
+          <section class="kbm-section stitch-counts-section" data-section="results" aria-labelledby="stitch-counts-heading">
+            <h3 class="kbm-section__title" id="stitch-counts-heading">Calculated Stitch Counts</h3>
+            <dl class="stitch-counts-cards">
+              <div class="stitch-count-card">
+                <dt>Border Stitches</dt>
+                <dd id="summary-hand-sts" data-testid="text-border-stitches">&mdash;</dd>
+              </div>
+              <div class="stitch-count-card">
+                <dt>Body Stitches</dt>
+                <dd id="summary-machine-sts" data-testid="text-body-stitches">&mdash;</dd>
+              </div>
+              <div class="stitch-count-card">
+                <dt>Difference</dt>
+                <dd id="summary-delta" data-testid="text-difference">&mdash;</dd>
+              </div>
+            </dl>
+          </section>
+
+          <!-- Instructions Section -->
+          <section class="kbm-section instructions-wrapper" data-section="instructions">
+            <h3 class="kbm-section__title">Pattern</h3>
+            <div class="kbm-steps" id="kbm-pattern-steps" data-testid="instructions-list">
+            </div>
+          </section>
+        
+          <!-- Why Note Section -->
+          <section class="kbm-section" data-section="notes">
+            <h3 class="kbm-section__title">Why This Works</h3>
+            <p class="why-note-text" data-testid="text-why-note">
+              Different stitch patterns have different natural gauges, so adjusting stitch count at each transition keeps the blanket width consistent while letting each section knit at its best gauge.
+            </p>
+          </section>
+        </div>
+      </section>
+      
+      <div class="pattern-illustration no-print">
+        <img src="/images/hybrid_blanket.svg" alt="Hybrid blanket illustration showing border and body sections" />
+      </div>
+    </div>
+  </div>
+  
+  <!-- Settings Drawer -->
+  <dialog class="settings-drawer" id="settings-drawer" data-testid="settings-drawer">
+    <div class="drawer-header">
+      <h2>Customize Pattern</h2>
+      <button class="drawer-close-btn" id="drawer-close-btn" data-testid="button-close-drawer" aria-label="Close settings">&times;</button>
+    </div>
+    
+    <div class="drawer-content">
+      <!-- Units Toggle -->
+      <div class="unit-toggle" id="unit-toggle">
+        <button type="button" id="btn-inches" class="active" data-testid="button-inches">Inches</button>
+        <button type="button" id="btn-cm" data-testid="button-cm">Centimeters</button>
+      </div>
+      
+      <!-- Machine Needle Count (first so users enter it early) -->
+      <div class="drawer-section" id="hb-needles-input">
+        <span class="section-label">Your Machine</span>
+        <div class="input-row">
+          <div class="input-group input-group--full">
+            <label for="needles-available">Needles Available on My Machine <span class="required-marker">*</span></label>
+            <input type="number" id="needles-available" placeholder="e.g., 150" min="1" step="1" data-testid="input-needles-available" />
+            <div class="input-hint">How many needles can you use? (Required to confirm fit)</div>
+            <div class="validation-message" id="needles-validation"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Size Presets -->
+      <div class="drawer-section blanket-size-section" id="hb-blanket-size" tabindex="-1">
+        <span class="section-label">Blanket Size</span>
+        
+        <!-- Mobile dropdown (hidden on desktop) -->
+        <div class="size-picker size-picker--mobile">
+          <label for="hb-size-select" class="sr-only">Blanket size</label>
+          <select id="hb-size-select" class="size-select" data-testid="select-blanket-size">
+            <option value="small-preemie">Small Preemie — 24 × 24"</option>
+            <option value="large-preemie">Large Preemie — 36 × 36"</option>
+            <option value="bassinet">Bassinet — 16 × 36"</option>
+            <option value="cradle">Cradle — 20 × 36"</option>
+            <option value="crib" selected>Crib — 30 × 54"</option>
+            <option value="toddler">Toddler/Lap — 36 × 48"</option>
+            <option value="child">Child — 42 × 48"</option>
+            <option value="standard-throw">Standard Throw — 48 × 60"</option>
+            <option value="adult-throw">Adult Throw — 48 × 78"</option>
+            <option value="custom">Custom Measurements</option>
+          </select>
+        </div>
+        
+        <!-- Desktop pill grid (hidden on mobile) -->
+        <div class="size-picker size-picker--desktop">
+          <div class="size-tiles" id="size-tiles">
+            <button type="button" class="size-tile" data-size="small-preemie" data-testid="tile-small-preemie">
+              <span class="size-name">Small Preemie</span>
+              <span class="size-dims">24 × 24"</span>
+            </button>
+            <button type="button" class="size-tile" data-size="large-preemie" data-testid="tile-large-preemie">
+              <span class="size-name">Large Preemie</span>
+              <span class="size-dims">36 × 36"</span>
+            </button>
+            <button type="button" class="size-tile" data-size="bassinet" data-testid="tile-bassinet">
+              <span class="size-name">Bassinet</span>
+              <span class="size-dims">16 × 36"</span>
+            </button>
+            <button type="button" class="size-tile" data-size="cradle" data-testid="tile-cradle">
+              <span class="size-name">Cradle</span>
+              <span class="size-dims">20 × 36"</span>
+            </button>
+            <button type="button" class="size-tile is-active" data-size="crib" data-testid="tile-crib">
+              <span class="size-name">Crib</span>
+              <span class="size-dims">30 × 54"</span>
+            </button>
+            <button type="button" class="size-tile" data-size="toddler" data-testid="tile-toddler">
+              <span class="size-name">Toddler/Lap</span>
+              <span class="size-dims">36 × 48"</span>
+            </button>
+            <button type="button" class="size-tile" data-size="child" data-testid="tile-child">
+              <span class="size-name">Child</span>
+              <span class="size-dims">42 × 48"</span>
+            </button>
+            <button type="button" class="size-tile" data-size="standard-throw" data-testid="tile-standard-throw">
+              <span class="size-name">Standard Throw</span>
+              <span class="size-dims">48 × 60"</span>
+            </button>
+            <button type="button" class="size-tile" data-size="adult-throw" data-testid="tile-adult-throw">
+              <span class="size-name">Adult Throw</span>
+              <span class="size-dims">48 × 78"</span>
+            </button>
+            <button type="button" class="size-tile size-tile--custom" data-size="custom" id="hb-size-custom" data-testid="tile-custom">
+              <span class="size-name">Custom Measurements</span>
+              <span class="size-dims">Set below</span>
+            </button>
+          </div>
+        </div>
+        
+        <div class="size-fix-helper" id="size-fix-helper">
+          <span class="size-fix-helper-icon">👉</span><strong>Fix:</strong> choose "Custom Measurements' above and reduce the width until the needle count fits.
+        </div>
+        
+        <div class="selected-size-bar" id="selected-size-bar" data-testid="selected-size-bar">
+          <span class="selected-size-label">Selected:</span>
+          <span class="selected-size-name" id="selected-size-name">Crib</span>
+          <span class="selected-size-dims" id="selected-size-dims">— 30 × 54"</span>
+        </div>
+        
+        <div class="custom-size-row hidden" id="custom-size-row">
+          <div class="input-group">
+            <label for="custom-width">Width</label>
+            <input type="number" id="custom-width" step="0.5" placeholder="Width" data-testid="input-custom-width" />
+            <div class="validation-message" id="width-validation"></div>
+          </div>
+          <div class="input-group">
+            <label for="custom-length">Length</label>
+            <input type="number" id="custom-length" step="0.5" placeholder="Length" data-testid="input-custom-length" />
+            <div class="validation-message" id="length-validation"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Gauge Section -->
+      <div class="drawer-section" style="margin-top: 1rem;">
+        <span class="section-label">Border Gauge <span id="gauge-unit-label" style="font-weight: 400; color: #6b7280;">(over 4")</span></span>
+        <div class="input-row">
+          <div class="input-group">
+            <label for="hand-gauge">Stitches</label>
+            <input type="number" id="hand-gauge" placeholder="Stitches" min="1" step="0.5" data-testid="input-hand-gauge" />
+            <div class="validation-message" id="hand-gauge-validation"></div>
+          </div>
+          <div class="input-group">
+            <label for="border-row-gauge">Rows</label>
+            <input type="number" id="border-row-gauge" placeholder="Rows" min="1" step="0.5" data-testid="input-border-row-gauge" />
+            <div class="validation-message" id="border-row-gauge-validation"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="drawer-section">
+        <span class="section-label">Body Gauge <span id="machine-gauge-unit-label" style="font-weight: 400; color: #6b7280;">(over 4")</span></span>
+        <div class="input-row">
+          <div class="input-group">
+            <label for="machine-gauge">Stitches</label>
+            <input type="number" id="machine-gauge" placeholder="Stitches" min="1" step="0.5" data-testid="input-machine-gauge" />
+            <div class="validation-message" id="machine-gauge-validation"></div>
+          </div>
+          <div class="input-group">
+            <label for="body-row-gauge">Rows</label>
+            <input type="number" id="body-row-gauge" placeholder="Rows" min="1" step="0.5" data-testid="input-body-row-gauge" />
+            <div class="validation-message" id="body-row-gauge-validation"></div>
+          </div>
+        </div>
+        
+        <div id="row-gauge-warning" class="gauge-warning" style="display: none;">
+          <div class="gauge-warning-icon">⚠</div>
+          <div>Stitch gauges differ by more than 20%. You'll have a significant stitch adjustment at each transition.</div>
+        </div>
+      </div>
+      
+      <!-- Border Details -->
+      <div class="drawer-section">
+        <span class="section-label">Border Details</span>
+        <div class="input-row">
+          <div class="input-group">
+            <label for="border-depth" id="border-depth-label">Border Depth</label>
+            <input type="number" id="border-depth" placeholder="Depth" min="0.5" step="0.5" data-testid="input-border-depth" />
+            <div class="input-hint">Top & bottom border depth</div>
+            <div class="validation-message" id="border-depth-validation"></div>
+          </div>
+          <div class="input-group">
+            <label for="edge-stitches">Edge Stitches</label>
+            <input type="number" id="edge-stitches" placeholder="e.g., 6" value="6" min="0" step="1" data-testid="input-edge-stitches" />
+            <div class="input-hint">Hand-manipulated stitches (5–7 typical)</div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+    <div class="drawer-footer">
+      <button class="apply-btn" id="apply-btn" data-testid="button-build-pattern">
+        Build My Pattern
+      </button>
+    </div>
+  </dialog>
+  
+  <PrintFooter url={pageUrl} />
+    </div>
+  </div>
+
+  <!-- Dev toggle injected via JS into document.body -->
+</div>
+
+<div slot="yarn">
+  <div class="yarn-content">
+    <h3>Yarn Needed</h3>
+    <p class="yarn-intro">Estimate total grams from a weighed swatch. Adds 10% buffer for joins, mistakes, and finishing.</p>
+    
+    <div class="yarn-calculator" id="yarn-calculator">
+      <!-- Units toggle -->
+      <div class="yarn-units-toggle" id="yarn-units-toggle">
+        <button type="button" class="yarn-unit-btn active" data-unit="in" data-testid="button-yarn-unit-in">Inches</button>
+        <button type="button" class="yarn-unit-btn" data-unit="cm" data-testid="button-yarn-unit-cm">Centimeters</button>
+      </div>
+      
+      <div class="yarn-section">
+        <span class="yarn-section-label">Your Swatch</span>
+        <div class="yarn-input-grid">
+          <div class="yarn-input-group">
+            <label for="yarn-swatch-width">Swatch Width (<span class="yarn-unit-label">in</span>)</label>
+            <input type="number" id="yarn-swatch-width" step="0.1" min="0" placeholder="e.g., 4" data-testid="input-yarn-swatch-width" />
+          </div>
+          <div class="yarn-input-group">
+            <label for="yarn-swatch-length">Swatch Length (<span class="yarn-unit-label">in</span>)</label>
+            <input type="number" id="yarn-swatch-length" step="0.1" min="0" placeholder="e.g., 4" data-testid="input-yarn-swatch-length" />
+          </div>
+          <div class="yarn-input-group">
+            <label for="yarn-swatch-weight">Swatch Weight (grams)</label>
+            <input type="number" id="yarn-swatch-weight" step="0.1" min="0" placeholder="e.g., 12" data-testid="input-yarn-swatch-weight" />
+          </div>
+        </div>
+      </div>
+      
+      <div class="yarn-section yarn-blanket-display">
+        <span class="yarn-section-label">Your Blanket (from Pattern tab)</span>
+        <p class="yarn-blanket-size" id="yarn-blanket-size" data-testid="text-yarn-blanket-size">
+          <span id="yarn-blanket-width-display">—</span> × <span id="yarn-blanket-length-display">—</span>
+        </p>
+        <p class="yarn-blanket-hint" id="yarn-blanket-hint" style="display: none;">Blanket size isn't available yet—check your Pattern tab inputs.</p>
+      </div>
+      
+      <div class="yarn-output-box" id="yarn-output-box" style="display: none;">
+        <div class="yarn-output-grid">
+          <div class="yarn-output-item">
+            <span class="yarn-output-label">Swatch Area</span>
+            <span class="yarn-output-value" id="yarn-swatch-area">—</span>
+          </div>
+          <div class="yarn-output-item">
+            <span class="yarn-output-label">Grams per sq in</span>
+            <span class="yarn-output-value" id="yarn-grams-per-sqin">—</span>
+          </div>
+          <div class="yarn-output-item">
+            <span class="yarn-output-label">Blanket Area</span>
+            <span class="yarn-output-value" id="yarn-blanket-area">—</span>
+          </div>
+          <div class="yarn-output-item">
+            <span class="yarn-output-label">Estimated Grams (+10%)</span>
+            <span class="yarn-output-value highlight" id="yarn-estimated-grams">—</span>
+          </div>
+          <div class="yarn-output-item">
+            <span class="yarn-output-label">Estimated Ounces</span>
+            <span class="yarn-output-value" id="yarn-estimated-oz">—</span>
+          </div>
+        </div>
+      </div>
+      
+      <p class="yarn-error" id="yarn-error" style="display: none;">Enter all swatch values as numbers greater than 0.</p>
+    </div>
+  </div>
+</div>
+
+<div slot="resources">
+  <div class="resources-content">
+    <h3>Resources</h3>
+    <p class="resources-intro">Compare stitch patterns.</p>
+    <div class="vimeo-embed-wrapper" style="padding:75% 0 0 0;position:relative;">
+      <iframe 
+        src="https://player.vimeo.com/video/151858373?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" 
+        frameborder="0" 
+        allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" 
+        referrerpolicy="strict-origin-when-cross-origin" 
+        style="position:absolute;top:0;left:0;width:100%;height:100%;" 
+        title="Anatomy of Pattern Stitches"
+      ></iframe>
+    </div>
+    <script src="https://player.vimeo.com/api/player.js"></script>
+  </div>
+</div>
+
+<div slot="discussion">
+  <div class="discussion-content">
+    <h3>Ask and Share</h3>
+    <p class="discussion-intro">Share your projects, ask questions, and connect with other knitters.</p>
+    <div id="hyvor-talk-view" data-testid="hyvor-talk-view"></div>
+  </div>
+</div>
+
+<div slot="inspiration">
+  <div class="inspiration-content">
+    <h3>Inspiration</h3>
+    <p class="inspiration-intro">See examples of hybrid blankets.</p>
+    <div class="pinterest-board-embed" style="display: flex; justify-content: center;">
+      <a
+        data-pin-do="embedBoard"
+        href="https://www.pinterest.com/1fsl6ow0d6rpwc1uh9vmw14qs5dww0/hybrid-blankets/"
+        data-pin-board-width="600"
+        data-pin-scale-height="600"
+        data-pin-scale-width="120"
+      ></a>
+    </div>
+    <script async defer src="https://assets.pinterest.com/js/pinit.js"></script>
+  </div>
+</div>
+
+</PatternLayout>
+
+<script is:inline>
+// is:inline keeps script as-is without Astro bundling
+// Hybrid Blanket Wizard - Pattern Calculator
+
+  
+  // ====================
+  // DEV TOGGLE + PAID/UNPAID VIEW TOGGLE (ROBUST)
+  // ====================
+
+  // Ensure the hide class actually hides things (in case CSS is missing)
+  (function ensureHiddenClass() {
+    if (document.getElementById('kbm-hidden-class-style')) return;
+    const style = document.createElement('style');
+    style.id = 'kbm-hidden-class-style';
+    style.textContent = `.is-hidden{display:none!important;}`;
+    document.head.appendChild(style);
+  })();
+
+  // Check if we're in a dev/preview environment (not production)
+  function isDevEnvironment() {
+    const params = new URLSearchParams(window.location.search);
+    const devParam = params.get('dev');
+    
+    // ?dev=1 ALWAYS forces toggle visible, regardless of environment
+    if (devParam === '1') return true;
+    
+    const hostname = window.location.hostname;
+    // Production domains - hide toggle unless ?dev=1
+    if (hostname === 'knitbymachine.com' || hostname === 'www.knitbymachine.com') {
+      return false;
+    }
+    // Dev environments: localhost, Netlify deploy previews, branch deploys
+    if (hostname === 'localhost' || hostname === '127.0.0.1') return true;
+    if (hostname.includes('netlify.app')) return true;  // deploy previews
+    if (hostname.includes('.repl.co') || hostname.includes('.replit.dev')) return true;
+    // Default to showing in dev
+    return true;
+  }
+
+  function getIsPaidFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const paidParam = params.get('paid');
+    // If no param, default to paid=1 (paid view)
+    if (paidParam === null) return true;
+    return paidParam === '1';
+  }
+
+  function injectDevToggle(isPaid) {
+    if (document.getElementById('devToggle')) return; // prevent duplicates
+    const basePath = window.location.pathname;
+    const toggleHtml = `
+      <div class="dev-preview-toggle no-print" id="devToggle" data-testid="dev-preview-toggle">
+        <span class="dev-label">DEV</span>
+        <span class="mode-label">Preview:</span>
+        <a href="${basePath}?dev=1&paid=0" class="${!isPaid ? 'active' : ''}" data-testid="toggle-not-paid">Not Paid</a>
+        <a href="${basePath}?dev=1&paid=1" class="${isPaid ? 'active' : ''}" data-testid="toggle-paid">Paid</a>
+        <span class="hint">Use ?dev=1 to force this bar.</span>
+      </div>
+    `;
+    // Insert near the top of the page, after the back link if it exists
+    const backLink = document.querySelector('.wizard-back-link');
+    const patternSlot = document.querySelector('.pattern-slot-wrapper');
+    
+    if (backLink && backLink.parentNode) {
+      backLink.insertAdjacentHTML('afterend', toggleHtml);
+    } else if (patternSlot) {
+      patternSlot.insertAdjacentHTML('afterbegin', toggleHtml);
+    } else {
+      // Fallback: prepend to body
+      document.body.insertAdjacentHTML('afterbegin', toggleHtml);
+    }
+    console.log('Dev toggle injected, isPaid:', isPaid);
+  }
+
+  function showDevBanner(message) {
+    // reuse if already exists
+    let banner = document.getElementById('kbmDevBanner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'kbmDevBanner';
+      banner.style.cssText =
+        'position:fixed;top:0;left:0;right:0;background:#dc2626;color:#fff;padding:10px 12px;text-align:center;z-index:999999;font:700 14px/1.2 system-ui;';
+      document.body.prepend(banner);
+    }
+    banner.textContent = 'DEV ERROR: ' + message;
+  }
+
+  function applyPaidView(isPaid) {
+    const salesSectionEl = document.getElementById('salesSection');
+    const patternWrapperEl = document.getElementById('patternWrapper');
+
+    if (!salesSectionEl) showDevBanner('Missing #salesSection (sales block)');
+    if (!patternWrapperEl) showDevBanner('Missing #patternWrapper (pattern block)');
+
+    if (!salesSectionEl || !patternWrapperEl) {
+      console.error('Paid view setup failed:', { salesSectionEl, patternWrapperEl });
+      return;
+    }
+
+    // Paid => pattern visible, sales hidden
+    salesSectionEl.classList.toggle('is-hidden', isPaid);
+    patternWrapperEl.classList.toggle('is-hidden', !isPaid);
+    console.log('View applied:', isPaid ? 'PAID (pattern visible)' : 'UNPAID (sales visible)');
+  }
+
+  function setupPaidToggle() {
+    const isPaid = getIsPaidFromUrl();
+
+    // Only inject toggle UI in dev environments
+    if (isDevEnvironment()) {
+      injectDevToggle(isPaid);
+    }
+
+    // Apply view on next frame so layout is settled
+    requestAnimationFrame(() => applyPaidView(isPaid));
+  }
+
+  // Run after DOM is ready (prevents null elements)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupPaidToggle);
+  } else {
+    setupPaidToggle();
+  }
+  
+  // ====================
+  // BLANKET WIZARD LOGIC
+  // ====================
+  
+  // Blanket size presets
+  const blanketSizes = {
+    "adult-throw": { name: "Adult Throw", length: 78, width: 48 },
+    "bassinet": { name: "Bassinet", length: 36, width: 16 },
+    "child": { name: "Child", length: 48, width: 42 },
+    "cradle": { name: "Cradle", length: 36, width: 20 },
+    "crib": { name: "Crib", length: 54, width: 30 },
+    "large-preemie": { name: "Large Preemie", length: 36, width: 36 },
+    "small-preemie": { name: "Small Preemie", length: 24, width: 24 },
+    "standard-throw": { name: "Standard Throw", length: 60, width: 48 },
+    "toddler": { name: "Toddler or Lapghan", length: 48, width: 36 }
+  };
+
+  // Default sample values for "viewer mode"
+  // Using Large Preemie: 36" x 36", 16 sts x 24 rows per 4"
+  const sampleDefaults = {
+    size: 'large-preemie',
+    handGauge: 16,
+    machineGauge: 16,
+    borderRowGauge: 24,
+    bodyRowGauge: 24,
+    borderDepth: 3,
+    edgeStitches: 6
+  };
+
+  // In-memory state object - source of truth for calculations
+  // This allows calculations to work even if DOM inputs don't exist
+  let currentInputs = {
+    handGauge: sampleDefaults.handGauge,
+    machineGauge: sampleDefaults.machineGauge,
+    borderRowGauge: sampleDefaults.borderRowGauge,
+    bodyRowGauge: sampleDefaults.bodyRowGauge,
+    borderDepth: sampleDefaults.borderDepth,
+    edgeStitches: sampleDefaults.edgeStitches
+  };
+
+  let units = 'inches';
+  let selectedSize = 'large-preemie';
+  let isViewerMode = true;
+  
+  // DOM Elements
+  const glassOverlay = document.getElementById('glass-overlay');
+  const customizeBtn = document.getElementById('customize-btn');
+  const settingsDrawer = document.getElementById('settings-drawer');
+  const drawerCloseBtn = document.getElementById('drawer-close-btn');
+  const actionBarWrapper = document.getElementById('action-bar-wrapper');
+  const actionBar = document.getElementById('action-bar');
+  const actionBarTopbar = document.getElementById('action-bar-topbar');
+  const editBtn = document.getElementById('edit-btn');
+  const customizeBtn = document.getElementById('customize-btn');
+  
+  // Track if user has built a pattern (so we don't trap them in viewer mode)
+  let hasBuiltPattern = false;
+  
+  const btnInches = document.getElementById('btn-inches');
+  const btnCm = document.getElementById('btn-cm');
+  const sizeTilesContainer = document.getElementById('size-tiles');
+  const sizeSelectDropdown = document.getElementById('hb-size-select');
+  const customSizeRow = document.getElementById('custom-size-row');
+  const selectedSizeNameEl = document.getElementById('selected-size-name');
+  const selectedSizeDimsEl = document.getElementById('selected-size-dims');
+  
+  const inputCustomWidth = document.getElementById('custom-width');
+  const inputCustomLength = document.getElementById('custom-length');
+  const inputHandGauge = document.getElementById('hand-gauge');
+  const inputMachineGauge = document.getElementById('machine-gauge');
+  const inputBorderRowGauge = document.getElementById('border-row-gauge');
+  const inputBodyRowGauge = document.getElementById('body-row-gauge');
+  const inputBorderDepth = document.getElementById('border-depth');
+  const inputEdgeStitches = document.getElementById('edge-stitches');
+  const inputNeedlesAvailable = document.getElementById('needles-available');
+  
+  const gaugeUnitLabel = document.getElementById('gauge-unit-label');
+  const machineGaugeUnitLabel = document.getElementById('machine-gauge-unit-label');
+  const rowGaugeWarning = document.getElementById('row-gauge-warning');
+  
+  const summaryHandSts = document.getElementById('summary-hand-sts');
+  const summaryMachineSts = document.getElementById('summary-machine-sts');
+  const summaryDelta = document.getElementById('summary-delta');
+  const patternStepsContainer = document.getElementById('kbm-pattern-steps');
+  const inputsSummary = document.getElementById('inputs-summary');
+  
+  const widthValidation = document.getElementById('width-validation');
+  const lengthValidation = document.getElementById('length-validation');
+  const handGaugeValidation = document.getElementById('hand-gauge-validation');
+  const machineGaugeValidation = document.getElementById('machine-gauge-validation');
+  const borderRowGaugeValidation = document.getElementById('border-row-gauge-validation');
+  const bodyRowGaugeValidation = document.getElementById('body-row-gauge-validation');
+  const borderDepthValidation = document.getElementById('border-depth-validation');
+  const needlesValidation = document.getElementById('needles-validation');
+  
+  // Needle warning elements
+  const needleWarning = document.getElementById('needle-warning');
+  const needleWarningTitle = document.getElementById('needle-warning-title');
+  const needleWarningBody = document.getElementById('needle-warning-body');
+  const stitchCountsSection = document.querySelector('.stitch-counts-section');
+  const instructionsWrapper = document.querySelector('.instructions-wrapper');
+  const whyNote = document.querySelector('.why-note');
+  
+  // Blanket Size attention elements
+  const blanketSizeSection = document.getElementById('hb-blanket-size');
+  const customSizeTile = document.getElementById('hb-size-custom');
+  const sizeFixHelper = document.getElementById('size-fix-helper');
+  
+  // Hidden needle count spans
+  const needlesBorderSpan = document.getElementById('hb-needles-border');
+  const needlesBodySpan = document.getElementById('hb-needles-body');
+  const needlesRequiredSpan = document.getElementById('hb-needles-required');
+  const needlesAvailableSpan = document.getElementById('hb-needles-available');
+  
+  // Needle persistence key
+  const NEEDLES_STORAGE_KEY = 'kbm:hybridBlanket:needlesAvailable';
+  
+  // Submit-style validation: only check on "Build My Pattern" click
+  // No warnings shown during editing/preview
+  let buildAttempted = false;
+  
+  const printBtn = document.getElementById('print-btn');
+  const startOverBtn = document.getElementById('start-over-btn');
+  const applyBtn = document.getElementById('apply-btn');
+
+  // Initialize with sample defaults
+  // Uses in-memory state as source of truth, syncs to DOM inputs when they exist
+  function loadSampleDefaults() {
+    // 1. Set in-memory state (source of truth - always works)
+    currentInputs = {
+      handGauge: sampleDefaults.handGauge,
+      machineGauge: sampleDefaults.machineGauge,
+      borderRowGauge: sampleDefaults.borderRowGauge,
+      bodyRowGauge: sampleDefaults.bodyRowGauge,
+      borderDepth: sampleDefaults.borderDepth,
+      edgeStitches: sampleDefaults.edgeStitches
+    };
+    
+    // 2. Sync to DOM inputs if they exist (optional - for when drawer is open)
+    if (inputHandGauge) inputHandGauge.value = currentInputs.handGauge;
+    if (inputMachineGauge) inputMachineGauge.value = currentInputs.machineGauge;
+    if (inputBorderRowGauge) inputBorderRowGauge.value = currentInputs.borderRowGauge;
+    if (inputBodyRowGauge) inputBodyRowGauge.value = currentInputs.bodyRowGauge;
+    if (inputBorderDepth) inputBorderDepth.value = currentInputs.borderDepth;
+    if (inputEdgeStitches) inputEdgeStitches.value = currentInputs.edgeStitches;
+    
+    // 3. Set size and recalculate
+    selectedSize = sampleDefaults.size;
+    updateTileSelection();
+    calculate();
+  }
+  
+  // Sync DOM input values to in-memory state (called when user changes inputs)
+  function syncInputsToState() {
+    if (inputHandGauge) currentInputs.handGauge = parseFloat(inputHandGauge.value) || currentInputs.handGauge;
+    if (inputMachineGauge) currentInputs.machineGauge = parseFloat(inputMachineGauge.value) || currentInputs.machineGauge;
+    if (inputBorderRowGauge) currentInputs.borderRowGauge = parseFloat(inputBorderRowGauge.value) || currentInputs.borderRowGauge;
+    if (inputBodyRowGauge) currentInputs.bodyRowGauge = parseFloat(inputBodyRowGauge.value) || currentInputs.bodyRowGauge;
+    if (inputBorderDepth) currentInputs.borderDepth = parseFloat(inputBorderDepth.value) || currentInputs.borderDepth;
+    if (inputEdgeStitches) currentInputs.edgeStitches = parseInt(inputEdgeStitches.value) || currentInputs.edgeStitches;
+  }
+
+  // Mode switching
+  function enterDesignerMode() {
+    if (!settingsDrawer) {
+      console.error('DRAWER ERROR: settingsDrawer not found!');
+      return;
+    }
+    isViewerMode = false;
+    if (glassOverlay) glassOverlay.classList.add('hidden');
+    if (actionBarWrapper) actionBarWrapper.classList.remove('viewer-mode');
+    settingsDrawer.showModal();
+  }
+
+  function exitDesignerMode() {
+    if (settingsDrawer) settingsDrawer.close();
+    // Apply view state based on whether user has built a pattern
+    applyViewState();
+  }
+  
+  // Centralized function to apply view state based on hasBuiltPattern
+  function applyViewState() {
+    if (hasBuiltPattern) {
+      // User has built a pattern - show action bar, hide overlay
+      if (glassOverlay) glassOverlay.classList.add('hidden');
+      if (actionBar) actionBar.classList.add('is-active');
+      if (actionBarTopbar) actionBarTopbar.classList.add('is-active');
+      if (printBtn) printBtn.classList.add('is-active');
+      if (actionBarWrapper) actionBarWrapper.classList.remove('viewer-mode');
+      isViewerMode = false;
+    } else {
+      // Preview mode - show overlay, hide action bar
+      if (glassOverlay) glassOverlay.classList.remove('hidden');
+      if (actionBar) actionBar.classList.remove('is-active');
+      if (actionBarTopbar) actionBarTopbar.classList.remove('is-active');
+      if (printBtn) printBtn.classList.remove('is-active');
+      if (actionBarWrapper) actionBarWrapper.classList.add('viewer-mode');
+      isViewerMode = true;
+    }
+  }
+
+  // ====================
+  // CRITICAL: CUSTOMIZE BUTTON + DRAWER - FAIL LOUDLY
+  // ====================
+  if (!customizeBtn) {
+    console.error('CRITICAL: customizeBtn (#customize-btn) not found!');
+    showDevBanner('customizeBtn (#customize-btn) not found!');
+  } else if (!settingsDrawer) {
+    console.error('CRITICAL: settingsDrawer (#settings-drawer) not found!');
+    showDevBanner('settingsDrawer (#settings-drawer) not found!');
+  } else {
+    customizeBtn.addEventListener('click', function(e) {
+      enterDesignerMode();
+    });
+  }
+  
+  if (drawerCloseBtn) {
+    drawerCloseBtn.addEventListener('click', exitDesignerMode);
+  }
+  
+  // Apply button - builds pattern with submit-style validation
+  if (applyBtn) {
+    applyBtn.addEventListener('click', () => {
+      console.log('Build clicked - validating needle fit');
+      buildAttempted = true;
+      
+      // Sync inputs and calculate to get current values
+      syncInputsToState();
+      
+      // Get needle counts for validation
+      const availableNeedles = parseInt(inputNeedlesAvailable?.value || '0', 10);
+      const requiredBorderNeedles = parseInt(needlesBorderSpan?.getAttribute('data-value') || '0', 10);
+      const requiredBodyNeedles = parseInt(needlesBodySpan?.getAttribute('data-value') || '0', 10);
+      const requiredNeedles = Math.max(requiredBorderNeedles, requiredBodyNeedles);
+      
+      const needlesMissing = isNaN(availableNeedles) || availableNeedles <= 0;
+      const needlesExceeded = !needlesMissing && requiredNeedles > availableNeedles;
+      
+      // Case A: Needles missing/invalid
+      if (needlesMissing) {
+        showBuildBlockedWarning('missing', 0, 0, 0);
+        scrollToNeedleInput();
+        return; // Block build
+      }
+      
+      // Case B: Won't fit
+      if (needlesExceeded) {
+        showBuildBlockedWarning('exceeded', requiredBorderNeedles, requiredBodyNeedles, availableNeedles);
+        scrollToSizeAndPulse();
+        return; // Block build
+      }
+      
+      // Case C: Fits - proceed with build
+      hideBuildBlockedWarning();
+      calculate();
+      
+      // Mark that user has built a pattern
+      hasBuiltPattern = true;
+      
+      // Close drawer (which will call applyViewState)
+      if (settingsDrawer) settingsDrawer.close();
+      applyViewState();
+    });
+  }
+  
+  // Edit/Rebuild button - opens drawer to edit settings
+  if (editBtn) {
+    editBtn.addEventListener('click', () => {
+      console.log('Edit/Rebuild clicked - opening drawer');
+      isViewerMode = false;
+      if (settingsDrawer) settingsDrawer.showModal();
+    });
+  }
+  
+  if (settingsDrawer) {
+    // Prevent native Escape key close behavior - we handle it explicitly
+    settingsDrawer.addEventListener('cancel', (e) => {
+      console.log('Dialog cancel event fired - preventing default');
+      e.preventDefault();
+    });
+    
+    // Explicitly handle Escape key to close drawer
+    settingsDrawer.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        exitDesignerMode();
+      }
+    });
+    
+    // Log close events to debug unexpected closes
+    settingsDrawer.addEventListener('close', () => {
+      console.log('Dialog close event fired - stack trace:', new Error().stack);
+    });
+    
+    // Backdrop click detection: close if click is on dialog element itself (the backdrop)
+    // but not on any child elements (the actual drawer content)
+    settingsDrawer.addEventListener('click', (e) => {
+      // Only close if clicking directly on the dialog backdrop, not on content
+      if (e.target === settingsDrawer) {
+        console.log('Backdrop click detected - closing drawer');
+        exitDesignerMode();
+      }
+    });
+  }
+
+  // Size tile selection
+  function updateTileSelection() {
+    document.querySelectorAll('.size-tile').forEach(tile => {
+      const tileSize = tile.dataset.size;
+      tile.classList.toggle('is-active', tileSize === selectedSize);
+    });
+    
+    // Sync mobile dropdown
+    if (sizeSelectDropdown) {
+      sizeSelectDropdown.value = selectedSize;
+    }
+    
+    // Show/hide custom size inputs
+    customSizeRow.classList.toggle('hidden', selectedSize !== 'custom');
+    
+    // Update selected size bar display
+    updateSelectedSizeBar();
+  }
+
+  // Update the "Selected: Name — W × L" bar below the grid
+  function updateSelectedSizeBar() {
+    if (!selectedSizeNameEl || !selectedSizeDimsEl) return;
+    
+    const unitLabel = units === 'cm' ? 'cm' : '"';
+    
+    if (selectedSize === 'custom') {
+      // Custom size
+      selectedSizeNameEl.textContent = 'Custom';
+      const customW = parseFloat(inputCustomWidth.value) || 0;
+      const customL = parseFloat(inputCustomLength.value) || 0;
+      
+      if (customW > 0 && customL > 0) {
+        selectedSizeDimsEl.textContent = `— ${customW} × ${customL}${unitLabel}`;
+      } else {
+        selectedSizeDimsEl.textContent = '— enter your size below';
+      }
+    } else {
+      // Preset size
+      const size = blanketSizes[selectedSize];
+      if (size) {
+        // Find display name from tile
+        const tile = document.querySelector(`.size-tile[data-size="${selectedSize}"]`);
+        const nameEl = tile?.querySelector('.size-name');
+        const displayName = nameEl?.textContent || selectedSize;
+        
+        selectedSizeNameEl.textContent = displayName;
+        
+        if (units === 'cm') {
+          const w = Math.round(size.width * 2.54);
+          const l = Math.round(size.length * 2.54);
+          selectedSizeDimsEl.textContent = `— ${w} × ${l} cm`;
+        } else {
+          selectedSizeDimsEl.textContent = `— ${size.width} × ${size.length}"`;
+        }
+      }
+    }
+  }
+
+  // Update all tile dimensions display based on units
+  function updateTileDimensions() {
+    document.querySelectorAll('.size-tile').forEach(tile => {
+      const sizeKey = tile.dataset.size;
+      if (sizeKey === 'custom') {
+        // Update custom tile dimensions if values are set
+        const customDimsEl = tile.querySelector('.size-dims');
+        if (customDimsEl) {
+          const w = parseFloat(inputCustomWidth.value);
+          const h = parseFloat(inputCustomLength.value);
+          if (w && h) {
+            const unitSymbol = units === 'cm' ? ' cm' : '"';
+            customDimsEl.textContent = `${w} × ${h}${unitSymbol}`;
+          } else {
+            customDimsEl.textContent = 'Set below';
+          }
+        }
+        return;
+      }
+      
+      const size = blanketSizes[sizeKey];
+      if (!size) return;
+      
+      const dimsEl = tile.querySelector('.size-dims');
+      if (!dimsEl) return;
+      
+      if (units === 'cm') {
+        const w = Math.round(size.width * 2.54);
+        const l = Math.round(size.length * 2.54);
+        dimsEl.textContent = `${w} × ${l} cm`;
+      } else {
+        dimsEl.textContent = `${size.width} × ${size.length}"`;
+      }
+    });
+  }
+
+  // Update mobile dropdown option labels when units change
+  function updateSelectOptions() {
+    if (!sizeSelectDropdown) return;
+    
+    const unitSymbol = units === 'cm' ? ' cm' : '"';
+    
+    Array.from(sizeSelectDropdown.options).forEach(option => {
+      const key = option.value;
+      if (key === 'custom') {
+        option.textContent = 'Custom Measurements';
+        return;
+      }
+      
+      const size = blanketSizes[key];
+      if (!size) return;
+      
+      let w, l;
+      if (units === 'cm') {
+        w = Math.round(size.width * 2.54);
+        l = Math.round(size.length * 2.54);
+      } else {
+        w = size.width;
+        l = size.length;
+      }
+      
+      option.textContent = `${size.name} — ${w} × ${l}${unitSymbol}`;
+    });
+  }
+
+  sizeTilesContainer.addEventListener('click', (e) => {
+    const tile = e.target.closest('.size-tile');
+    if (!tile) return;
+    
+    selectedSize = tile.dataset.size;
+    updateTileSelection();
+    
+    // If selecting a preset, clear custom inputs
+    if (selectedSize !== 'custom') {
+      inputCustomWidth.value = '';
+      inputCustomLength.value = '';
+    }
+    
+    calculate();
+  });
+
+  // Mobile dropdown change handler - uses same selection logic as tile clicks
+  sizeSelectDropdown?.addEventListener('change', (e) => {
+    selectedSize = e.target.value;
+    updateTileSelection();
+    
+    // If selecting a preset, clear custom inputs
+    if (selectedSize !== 'custom') {
+      inputCustomWidth.value = '';
+      inputCustomLength.value = '';
+    }
+    
+    calculate();
+  });
+
+  // Check if custom values match any preset
+  function checkForPresetMatch() {
+    if (selectedSize !== 'custom') return;
+    
+    const customW = parseFloat(inputCustomWidth.value) || 0;
+    const customL = parseFloat(inputCustomLength.value) || 0;
+    
+    // Convert to inches if in cm mode
+    let widthInches = customW;
+    let lengthInches = customL;
+    if (units === 'cm') {
+      widthInches = customW / 2.54;
+      lengthInches = customL / 2.54;
+    }
+    
+    // Check against presets
+    for (const [key, size] of Object.entries(blanketSizes)) {
+      if (Math.abs(size.width - widthInches) < 0.5 && Math.abs(size.length - lengthInches) < 0.5) {
+        selectedSize = key;
+        updateTileSelection();
+        return;
+      }
+    }
+  }
+
+  // Unit toggle
+  btnInches.addEventListener('click', () => {
+    units = 'inches';
+    btnInches.classList.add('active');
+    btnCm.classList.remove('active');
+    updateGaugeLabels();
+    updateTileDimensions();
+    updateSelectOptions();
+    updateSelectedSizeBar();
+    updatePlaceholders();
+    calculate();
+  });
+
+  btnCm.addEventListener('click', () => {
+    units = 'cm';
+    btnCm.classList.add('active');
+    btnInches.classList.remove('active');
+    updateGaugeLabels();
+    updateTileDimensions();
+    updateSelectOptions();
+    updateSelectedSizeBar();
+    updatePlaceholders();
+    calculate();
+  });
+
+  function updateGaugeLabels() {
+    if (units === 'cm') {
+      gaugeUnitLabel.textContent = '(over 10 cm)';
+      machineGaugeUnitLabel.textContent = '(over 10 cm)';
+    } else {
+      gaugeUnitLabel.textContent = '(over 4")';
+      machineGaugeUnitLabel.textContent = '(over 4")';
+    }
+  }
+
+  function updatePlaceholders() {
+    const unitText = units === 'inches' ? 'in' : 'cm';
+    inputCustomWidth.placeholder = `Width (${unitText})`;
+    inputCustomLength.placeholder = `Length (${unitText})`;
+    inputBorderDepth.placeholder = `Depth (${unitText})`;
+  }
+
+  function getCurrentDimensions() {
+    if (selectedSize === 'custom') {
+      let width = parseFloat(inputCustomWidth.value) || 0;
+      let length = parseFloat(inputCustomLength.value) || 0;
+      if (units === 'cm') {
+        width = width / 2.54;
+        length = length / 2.54;
+      }
+      return { width, length, name: 'Custom Size' };
+    } else if (selectedSize && blanketSizes[selectedSize]) {
+      const data = blanketSizes[selectedSize];
+      return { width: data.width, length: data.length, name: data.name };
+    }
+    return null;
+  }
+
+  function validatePositive(input, validationEl) {
+    if (!input || !validationEl) return { valid: false, hasValue: false };
+    const value = parseFloat(input.value);
+    if (input.value === '' || isNaN(value)) {
+      validationEl.innerHTML = '';
+      input.classList.remove('error');
+      return { valid: false, hasValue: false };
+    }
+    if (value <= 0) {
+      validationEl.innerHTML = '<span class="error">Must be > 0</span>';
+      input.classList.add('error');
+      return { valid: false, hasValue: true };
+    }
+    validationEl.innerHTML = '';
+    input.classList.remove('error');
+    return { valid: true, hasValue: true, value: value };
+  }
+
+  function calculate() {
+    const dimensions = getCurrentDimensions();
+    const widthVal = dimensions ? dimensions.width : 48;
+    const lengthVal = dimensions ? dimensions.length : 60;
+    const sizeName = dimensions ? dimensions.name : 'Standard Throw';
+    
+    // Use in-memory state as source of truth (synced from inputs when they exist)
+    const edgeStitches = currentInputs.edgeStitches;
+    
+    let customWidthValid = true;
+    let customLengthValid = true;
+    
+    if (selectedSize === 'custom') {
+      if (inputCustomWidth && inputCustomLength) {
+        const widthResult = validatePositive(inputCustomWidth, widthValidation);
+        const lengthResult = validatePositive(inputCustomLength, lengthValidation);
+        customWidthValid = widthResult.valid;
+        customLengthValid = lengthResult.valid;
+      }
+    }
+    
+    // Validate inputs if they exist, otherwise use in-memory state
+    let handGaugeVal = currentInputs.handGauge;
+    let machineGaugeVal = currentInputs.machineGauge;
+    let borderRowGaugeVal = currentInputs.borderRowGauge;
+    let bodyRowGaugeVal = currentInputs.bodyRowGauge;
+    let borderDepth = currentInputs.borderDepth;
+    
+    if (inputHandGauge) {
+      const handResult = validatePositive(inputHandGauge, handGaugeValidation);
+      handGaugeVal = handResult.valid ? handResult.value : currentInputs.handGauge;
+    }
+    if (inputMachineGauge) {
+      const machineResult = validatePositive(inputMachineGauge, machineGaugeValidation);
+      machineGaugeVal = machineResult.valid ? machineResult.value : currentInputs.machineGauge;
+    }
+    if (inputBorderRowGauge) {
+      const borderRowResult = validatePositive(inputBorderRowGauge, borderRowGaugeValidation);
+      borderRowGaugeVal = borderRowResult.valid ? borderRowResult.value : currentInputs.borderRowGauge;
+    }
+    if (inputBodyRowGauge) {
+      const bodyRowResult = validatePositive(inputBodyRowGauge, bodyRowGaugeValidation);
+      bodyRowGaugeVal = bodyRowResult.valid ? bodyRowResult.value : currentInputs.bodyRowGauge;
+    }
+    if (inputBorderDepth) {
+      const borderDepthResult = validatePositive(inputBorderDepth, borderDepthValidation);
+      borderDepth = borderDepthResult.valid ? borderDepthResult.value : currentInputs.borderDepth;
+    }
+    
+    // Stitch gauge warning is computed later after handSts/machineSts are calculated
+    
+    // With in-memory state, these are always valid unless explicitly null
+    const gaugesValid = handGaugeVal > 0 && machineGaugeVal > 0 && borderRowGaugeVal > 0 && bodyRowGaugeVal > 0;
+    const hasSizeSelection = selectedSize && (selectedSize !== 'custom' || (customWidthValid && customLengthValid));
+    
+    const gaugeDisplayUnit = units === 'inches' ? 'over 4"' : 'over 10 cm';
+    const dimensionUnit = units === 'inches' ? '"' : 'cm';
+    const displayWidth = units === 'inches' ? widthVal : Math.round(widthVal * 2.54 * 10) / 10;
+    const displayLength = units === 'inches' ? lengthVal : Math.round(lengthVal * 2.54 * 10) / 10;
+    
+    const borderGaugeDisplay = (handGaugeVal !== null && borderRowGaugeVal !== null) 
+      ? `${handGaugeVal} sts / ${borderRowGaugeVal} rows ${gaugeDisplayUnit}` 
+      : '—';
+    const bodyGaugeDisplay = (machineGaugeVal !== null && bodyRowGaugeVal !== null)
+      ? `${machineGaugeVal} sts / ${bodyRowGaugeVal} rows ${gaugeDisplayUnit}`
+      : '—';
+    
+    inputsSummary.innerHTML = `
+      <p><strong>Size:</strong> ${sizeName} (${displayWidth}${dimensionUnit} × ${displayLength}${dimensionUnit})</p>
+      <p><strong>Border gauge:</strong> ${borderGaugeDisplay}</p>
+      <p><strong>Body gauge:</strong> ${bodyGaugeDisplay}</p>
+    `;
+    
+    const gaugeSampleInches = units === 'inches' ? 4 : (10 / 2.54);
+    const borderRowsPerInch = borderRowGaugeVal ? borderRowGaugeVal / gaugeSampleInches : null;
+    
+    let borderDepthInches = borderDepth;
+    if (units === 'cm' && borderDepthInches) {
+      borderDepthInches = borderDepthInches / 2.54;
+    }
+    
+    const borderRows = (borderRowsPerInch && borderDepthInches) ? Math.round((borderDepthInches * borderRowsPerInch) / 2) * 2 : null;
+    
+    const borderDisplay = borderRows !== null 
+      ? `${borderDepth}${dimensionUnit} (${borderRows} rows)` 
+      : (borderDepth !== null ? `${borderDepth}${dimensionUnit}` : 'your desired depth');
+    
+    const bodyRowsPerInch = bodyRowGaugeVal ? bodyRowGaugeVal / gaugeSampleInches : null;
+    let bodyLengthInches = lengthVal;
+    if (borderDepthInches) {
+      bodyLengthInches = lengthVal - (2 * borderDepthInches);
+    }
+    const bodyRows = (bodyRowsPerInch && bodyLengthInches > 0) ? Math.round(bodyLengthInches * bodyRowsPerInch) : null;
+    const bodyLengthDisplay = units === 'inches' ? Math.round(bodyLengthInches * 10) / 10 : Math.round(bodyLengthInches * 2.54 * 10) / 10;
+    
+    const hasAllInputs = gaugesValid && hasSizeSelection && borderDepth !== null;
+    
+    if (!hasAllInputs) {
+      summaryHandSts.innerHTML = '&mdash;';
+      summaryMachineSts.innerHTML = '&mdash;';
+      summaryDelta.innerHTML = '&mdash;';
+      renderInstructionsPlaceholder(displayWidth, dimensionUnit, displayLength, borderDisplay, edgeStitches);
+      // Hide needle warning when pattern is incomplete (no stitch counts to validate)
+      if (needleWarning) needleWarning.hidden = true;
+      // Show all result sections (placeholder content)
+      if (stitchCountsSection) stitchCountsSection.style.display = '';
+      if (instructionsWrapper) instructionsWrapper.style.display = '';
+      if (whyNote) whyNote.style.display = '';
+      // Note: Print stays in its current state (managed by view mode, not needle validation)
+      // Still update dimension outputs for Yarn tab even with incomplete pattern
+      updateDimensionOutputs(widthVal, lengthVal);
+      return;
+    }
+    
+    const handStsPerInch = handGaugeVal / gaugeSampleInches;
+    const machineStsPerInch = machineGaugeVal / gaugeSampleInches;
+
+    const handSts = Math.round(widthVal * handStsPerInch);
+    const machineSts = Math.round(widthVal * machineStsPerInch);
+    const delta = machineSts - handSts;
+    
+    // DEV check: calculations should produce valid positive integers
+    if (handSts <= 0 || machineSts <= 0 || !Number.isFinite(handSts) || !Number.isFinite(machineSts)) {
+      showDevBanner(`Invalid calculation: handSts=${handSts}, machineSts=${machineSts}`);
+    }
+    const absDelta = Math.abs(delta);
+
+    summaryHandSts.textContent = handSts + ' sts';
+    summaryMachineSts.textContent = machineSts + ' sts';
+    summaryDelta.textContent = (delta >= 0 ? '+' : '') + delta;
+    
+    // Stitch gauge warning (uses handSts & machineSts)
+    if (rowGaugeWarning && Number.isFinite(handSts) && Number.isFinite(machineSts) && handSts > 0 && machineSts > 0) {
+      const avgStitchGauge = (handSts + machineSts) / 2;
+      const percentDiff = Math.abs(handSts - machineSts) / avgStitchGauge;
+      rowGaugeWarning.style.display = percentDiff >= 0.20 ? 'flex' : 'none';
+    } else if (rowGaugeWarning) {
+      rowGaugeWarning.style.display = 'none';
+    }
+    
+    // ===== NEEDLE COUNT VALIDATION =====
+    // Border stitches = handSts (cast on for border)
+    // Body stitches = machineSts (cast on for body section)
+    const requiredBorderNeedles = handSts;
+    const requiredBodyNeedles = machineSts;
+    const requiredNeedles = Math.max(requiredBorderNeedles, requiredBodyNeedles);
+    
+    // Get available needles from input (try localStorage if input empty)
+    let availableNeedles = 0;
+    if (inputNeedlesAvailable) {
+      const inputVal = parseInt(inputNeedlesAvailable.value, 10);
+      if (!isNaN(inputVal) && inputVal > 0) {
+        availableNeedles = inputVal;
+      }
+    }
+    
+    // Update hidden needle spans
+    if (needlesBorderSpan) needlesBorderSpan.setAttribute('data-value', requiredBorderNeedles.toString());
+    if (needlesBodySpan) needlesBodySpan.setAttribute('data-value', requiredBodyNeedles.toString());
+    if (needlesRequiredSpan) needlesRequiredSpan.setAttribute('data-value', requiredNeedles.toString());
+    if (needlesAvailableSpan) needlesAvailableSpan.setAttribute('data-value', availableNeedles.toString());
+    
+    // Submit-style validation: calculate() always shows results during editing
+    // Blocking only happens on "Build My Pattern" click - handled in applyBtn listener
+    // ===== END NEEDLE COUNT VALIDATION =====
+
+    const edgeDisplay = edgeStitches === 6 ? '5–7' : edgeStitches.toString();
+    
+    let spacingToMachine = 0;
+    let spacingToHand = 0;
+    
+    if (absDelta > 0) {
+      spacingToMachine = Math.max(1, Math.floor(Math.min(handSts, machineSts) / absDelta));
+      spacingToHand = Math.max(1, Math.floor(Math.min(handSts, machineSts) / absDelta));
+    }
+
+    const instructions = [];
+
+    instructions.push({ type: 'phase', text: 'Section 1: Foundation & First Border' });
+    instructions.push({ type: 'step', text: `Your blanket size: <span class="calculated-value">${displayWidth}${dimensionUnit}</span> wide × <span class="calculated-value">${displayLength}${dimensionUnit}</span> long.` });
+    instructions.push({ type: 'step', text: `Cast on <span class="calculated-value">${handSts} sts</span> and knit in border pattern for <span class="calculated-value">${borderDisplay}</span>.` });
+
+    instructions.push({ type: 'phase', text: 'Section 2: The Transition' });
+    if (delta > 0) {
+      instructions.push({ type: 'step', text: `Transfer stitches to the machine or change stitch pattern. Increase <span class="calculated-value">${absDelta} sts</span> evenly across the row (about every <span class="calculated-value">${spacingToMachine} sts</span>) to reach <span class="calculated-value">${machineSts} sts</span>.` });
+    } else if (delta < 0) {
+      instructions.push({ type: 'step', text: `Transfer stitches to the machine or change stitch pattern. Decrease <span class="calculated-value">${absDelta} sts</span> evenly across the row (about every <span class="calculated-value">${spacingToMachine} sts</span>) to reach <span class="calculated-value">${machineSts} sts</span>.` });
+    } else {
+      instructions.push({ type: 'step', text: `Transfer stitches to the machine or change stitch pattern. No stitch adjustment needed—gauges match.` });
+    }
+
+    instructions.push({ type: 'phase', text: 'Section 3: The Blanket Body' });
+    const bodyLengthNote = bodyRows !== null 
+      ? `<span class="calculated-value">${bodyLengthDisplay}${dimensionUnit}</span> (~<span class="calculated-value">${bodyRows} rows</span>)`
+      : 'desired length';
+    instructions.push({ type: 'step', text: `Knit the blanket body for ${bodyLengthNote}.<span class="step-aside"><span class="step-aside__label"><br>AT THE SAME TIME:</span> Hand-manipulate <span class="calculated-value">${edgeDisplay}</span> stitch border pattern along each edge as you knit.</span>` });
+
+    instructions.push({ type: 'phase', text: 'Section 4: Finishing' });
+    if (delta > 0) {
+      instructions.push({ type: 'step', text: `Move stitches to a hand needle or change stitch pattern. Decrease <span class="calculated-value">${absDelta} sts</span> evenly across the row (about every <span class="calculated-value">${spacingToHand} sts</span>) to return to <span class="calculated-value">${handSts} sts</span>.` });
+    } else if (delta < 0) {
+      instructions.push({ type: 'step', text: `Move stitches to a hand needle or change stitch pattern. Increase <span class="calculated-value">${absDelta} sts</span> evenly across the row (about every <span class="calculated-value">${spacingToHand} sts</span>) to return to <span class="calculated-value">${handSts} sts</span>.` });
+    } else {
+      instructions.push({ type: 'step', text: `Move stitches to a hand needle or change stitch pattern.` });
+    }
+    instructions.push({ type: 'step', text: `Knit in border pattern for <span class="calculated-value">${borderDisplay}</span>. <br>Bind off.` });
+
+    renderPatternStepsSections(instructions);
+    
+    // Update hidden spans for Yarn tab and dispatch event
+    updateDimensionOutputs(widthVal, lengthVal);
+  }
+  
+  // Update hidden dimension spans and dispatch event for Yarn calculator
+  function updateDimensionOutputs(widthIn, lengthIn) {
+    const widthSpan = document.getElementById('hb-finished-width-in');
+    const lengthSpan = document.getElementById('hb-finished-length-in');
+    
+    if (widthSpan) widthSpan.setAttribute('data-value', widthIn.toString());
+    if (lengthSpan) lengthSpan.setAttribute('data-value', lengthIn.toString());
+    
+    window.dispatchEvent(new CustomEvent('kbm:hybridBlanket:dimensions', {
+      detail: { widthIn, lengthIn }
+    }));
+  }
+  
+  // Show build-blocked warning (submit-style validation)
+  // type: 'missing' or 'exceeded'
+  function showBuildBlockedWarning(type, borderNeedles, bodyNeedles, availableNeedles) {
+    if (!needleWarning || !needleWarningBody) return;
+    
+    needleWarning.hidden = false;
+    
+    if (type === 'missing') {
+      // Case A: Needle count not entered
+      if (needleWarningTitle) needleWarningTitle.textContent = 'Before you build';
+      needleWarningBody.innerHTML = `
+        <p>Enter your machine's needle count to confirm this size will fit.</p>
+        <a class="go-to-size-link" id="go-to-needles-link">Go to Needle Count</a>
+      `;
+      // Remove size attention styling (not relevant for missing needles)
+      if (blanketSizeSection) blanketSizeSection.classList.remove('needs-attention');
+      if (customSizeTile) customSizeTile.classList.remove('recommended');
+      if (sizeFixHelper) sizeFixHelper.classList.remove('visible');
+      
+      // Attach scroll handler
+      const goToNeedlesLink = document.getElementById('go-to-needles-link');
+      if (goToNeedlesLink) {
+        goToNeedlesLink.addEventListener('click', scrollToNeedleInput);
+      }
+    } else {
+      // Case B: Won't fit
+      if (needleWarningTitle) needleWarningTitle.textContent = "Stop — this size won't fit your machine";
+      needleWarningBody.innerHTML = `
+        <div class="needle-counts">
+          <p>Border needs <strong>${borderNeedles}</strong> needles.</p>
+          <p>Body needs <strong>${bodyNeedles}</strong> needles.</p>
+          <p>Your machine: <strong>${availableNeedles}</strong> needles.</p>
+        </div>
+        <p>Adjust the blanket size or settings until BOTH border and body needle counts are at or under ${availableNeedles}.</p>
+        <a class="go-to-size-link" id="go-to-size-link">Go to Blanket Size</a>
+      `;
+      
+      // Add attention styling to blanket size section
+      if (blanketSizeSection) blanketSizeSection.classList.add('needs-attention');
+      
+      // Recommend Custom tile only if not already on Custom
+      if (customSizeTile) {
+        customSizeTile.classList.toggle('recommended', selectedSize !== 'custom');
+      }
+      
+      // Show helper text only if not on Custom
+      if (sizeFixHelper) {
+        sizeFixHelper.classList.toggle('visible', selectedSize !== 'custom');
+      }
+      
+      // Attach scroll handler
+      const goToSizeLink = document.getElementById('go-to-size-link');
+      if (goToSizeLink) {
+        goToSizeLink.addEventListener('click', scrollToSizeAndPulse);
+      }
+    }
+  }
+  
+  // Hide build-blocked warning and remove all attention styling
+  function hideBuildBlockedWarning() {
+    if (needleWarning) needleWarning.hidden = true;
+    if (blanketSizeSection) blanketSizeSection.classList.remove('needs-attention');
+    if (customSizeTile) customSizeTile.classList.remove('recommended');
+    if (sizeFixHelper) sizeFixHelper.classList.remove('visible');
+  }
+  
+  // Scroll to needle input and focus it
+  function scrollToNeedleInput() {
+    const needleSection = document.getElementById('hb-needles-input');
+    if (needleSection) {
+      needleSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    if (inputNeedlesAvailable) {
+      setTimeout(() => inputNeedlesAvailable.focus(), 300);
+    }
+  }
+  
+  // Scroll to blanket size section, open drawer if needed, focus and highlight
+  function scrollToSizeAndPulse() {
+    // Open drawer if closed
+    if (settingsDrawer && !settingsDrawer.open) {
+      settingsDrawer.showModal();
+    }
+    
+    // Small delay to let drawer open, then scroll and highlight
+    setTimeout(() => {
+      if (blanketSizeSection) {
+        blanketSizeSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        blanketSizeSection.focus({ preventScroll: true });
+        
+        // Add attention highlight
+        blanketSizeSection.classList.add('kbm-attn');
+        setTimeout(() => {
+          blanketSizeSection.classList.remove('kbm-attn');
+        }, 1200);
+      }
+      if (customSizeTile) {
+        customSizeTile.classList.add('pulse-once');
+        setTimeout(() => {
+          customSizeTile.classList.remove('pulse-once');
+        }, 1200);
+      }
+    }, 100);
+  }
+  
+  // Disable/enable print button
+  function disablePrint(disabled) {
+    if (!printBtn) return;
+    
+    // Find or create the print hint element
+    let printHint = document.getElementById('print-blocked-hint');
+    
+    if (disabled) {
+      printBtn.disabled = true;
+      printBtn.setAttribute('aria-disabled', 'true');
+      
+      // Add helper text if not exists
+      if (!printHint) {
+        printHint = document.createElement('div');
+        printHint.id = 'print-blocked-hint';
+        printHint.className = 'print-blocked-hint no-print';
+        printHint.textContent = 'Resolve the needle count warning to enable printing.';
+        printBtn.parentNode.insertBefore(printHint, printBtn.nextSibling);
+      }
+      printHint.style.display = '';
+    } else {
+      printBtn.disabled = false;
+      printBtn.removeAttribute('aria-disabled');
+      
+      if (printHint) {
+        printHint.style.display = 'none';
+      }
+    }
+  }
+  
+  function renderInstructionsPlaceholder(width, dimensionUnit, length, borderDepthDisplay, edgeStitches) {
+    const edgeDisplay = edgeStitches === 6 ? '5–7' : edgeStitches.toString();
+    const placeholder = '—';
+    
+    const instructions = [];
+    
+    instructions.push({ type: 'phase', text: 'Section 1: Foundation & First Border' });
+    instructions.push({ type: 'step', text: `Your dimensions: <span class="calculated-value">${width}${dimensionUnit}</span> wide × <span class="calculated-value">${length}${dimensionUnit}</span> long.` });
+    instructions.push({ type: 'step', text: `Cast on <span class="calculated-value">${placeholder}</span> and knit in border stitch pattern for <span class="calculated-value">${borderDepthDisplay}</span>.` });
+
+    instructions.push({ type: 'phase', text: 'Section 2: The Transition' });
+    instructions.push({ type: 'step', text: `Transfer stitches to the machine or change to body stitch pattern. <span class="calculated-value">${placeholder}</span>` });
+
+    instructions.push({ type: 'phase', text: 'Section 3: The Blanket Body' });
+    instructions.push({ type: 'step', text: `Knit the blanket body to desired length.<span class="step-aside"><span class="step-aside__label">AT THE SAME TIME:</span> Hand-manipulate <span class="calculated-value">${edgeDisplay}</span> stitches along each edge as you knit.</span>` });
+
+    instructions.push({ type: 'phase', text: 'Section 4: Finishing' });
+    instructions.push({ type: 'step', text: `Transfer stitches to a hand needle or change to border stitch pattern. <span class="calculated-value">${placeholder}</span>` });
+    instructions.push({ type: 'step', text: `Knit in border stitch pattern for <span class="calculated-value">${borderDepthDisplay}</span>. Bind off.` });
+
+    renderPatternStepsSections(instructions);
+  }
+  
+  // Render instructions grouped by phase into focusable sections
+  function renderPatternStepsSections(instructions) {
+    if (!patternStepsContainer) return;
+    
+    // Group instructions by phase - each phase starts a new section
+    const sections = [];
+    let currentSection = null;
+    let sectionCounter = 0;
+    
+    instructions.forEach(item => {
+      if (item.type === 'phase') {
+        if (currentSection) sections.push(currentSection);
+        sectionCounter++;
+        // Generate stable slug from phase text
+        const slug = slugify(item.text) || `section-${sectionCounter}`;
+        currentSection = { header: item.text, steps: [], slug: slug };
+      } else if (currentSection) {
+        currentSection.steps.push(item.text);
+      }
+    });
+    if (currentSection) sections.push(currentSection);
+    
+    // Helper to create slug from text
+    function slugify(text) {
+      if (!text) return '';
+      return text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+        .substring(0, 50);
+    }
+    
+    // Build HTML using new class names: kbm-step-ol, kbm-section-header, kbm-step-section, kbm-step-header, kbm-step
+    // Wrap step content in a span to keep all text in the second grid column (prevents spans from becoming separate grid cells)
+    const sectionsHtml = sections.map(sec => {
+      const stepsHtml = sec.steps.map(stepContent => 
+        `<li class="kbm-step"><span class="kbm-step-content">${stepContent}</span></li>`
+      ).join('');
+      
+      return `
+        <li class="kbm-section-header">
+          <div class="kbm-step-section">
+            <div class="kbm-step-header">${sec.header}</div>
+          </div>
+        </li>
+        ${stepsHtml}
+      `;
+    }).join('');
+    
+    const html = `<ol class="kbm-step-ol">${sectionsHtml}</ol>`;
+    
+    patternStepsContainer.innerHTML = html;
+  }
+
+  // Input event listeners
+  [inputCustomWidth, inputCustomLength].forEach(input => {
+    if (input) {
+      input.addEventListener('input', () => {
+        checkForPresetMatch();
+        updateTileDimensions();
+        updateSelectedSizeBar();
+        calculate();
+      });
+    }
+  });
+
+  [inputHandGauge, inputMachineGauge, inputBorderRowGauge, inputBodyRowGauge, inputBorderDepth, inputEdgeStitches].forEach(input => {
+    if (input) input.addEventListener('input', () => {
+      syncInputsToState();
+      calculate();
+    });
+  });
+  
+  // Needle input listener with localStorage persistence
+  if (inputNeedlesAvailable) {
+    // Load persisted value on init (prefill only)
+    const savedNeedles = localStorage.getItem(NEEDLES_STORAGE_KEY);
+    if (savedNeedles) {
+      inputNeedlesAvailable.value = savedNeedles;
+    }
+    
+    // Persist on input and recalculate preview
+    inputNeedlesAvailable.addEventListener('input', () => {
+      const val = inputNeedlesAvailable.value;
+      if (val && parseInt(val, 10) > 0) {
+        localStorage.setItem(NEEDLES_STORAGE_KEY, val);
+      } else {
+        localStorage.removeItem(NEEDLES_STORAGE_KEY);
+      }
+      calculate();
+    });
+  }
+  
+  // Initial calculate called after all listeners are set up ensures localStorage values are applied
+
+  // Print event handlers - add class for CSS targeting
+  window.addEventListener('beforeprint', () => {
+    document.documentElement.classList.add('is-printing');
+  });
+  window.addEventListener('afterprint', () => {
+    document.documentElement.classList.remove('is-printing');
+  });
+
+  // Print button handling
+  if (printBtn) {
+    printBtn.addEventListener('click', () => {
+      // Close drawer before printing
+      if (settingsDrawer.open) {
+        settingsDrawer.close();
+      }
+      
+      // Disable print in viewer mode
+      if (isViewerMode) {
+        enterDesignerMode();
+        return;
+      }
+      
+      const originalTitle = document.title;
+      document.title = 'Hybrid Blanket Pattern';
+      window.print();
+      document.title = originalTitle;
+    });
+  }
+
+ // Start over - reset to preview mode
+if (startOverBtn) {
+  startOverBtn.addEventListener('click', () => {
+    console.log('Start over - returning to preview defaults');
+
+    loadSampleDefaults();
+    hasBuiltPattern = false;
+
+    if (settingsDrawer && settingsDrawer.open) {
+      settingsDrawer.close();
+    }
+
+    applyViewState();
+  });
+}
+
+// Build My Pattern (customize button)
+if (customizeBtn) {
+  customizeBtn.addEventListener('click', () => {
+    hasBuiltPattern = true;
+    syncInputsToState?.();
+    calculate();
+
+    if (settingsDrawer) settingsDrawer.close();
+
+    applyViewState();
+  });
+}
+
+
+
+
+  // Set up viewer mode styling
+  if (actionBarWrapper) {
+    actionBarWrapper.classList.add('viewer-mode');
+  }
+  
+  // Ensure drawer is closed on page load
+  if (settingsDrawer && settingsDrawer.open) {
+    settingsDrawer.close();
+  }
+
+  // Mobile topbar action buttons - wire to same handlers via event delegation
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.getAttribute('data-action');
+    
+    if (action === 'edit') {
+      console.log('Topbar Edit clicked - opening drawer');
+      isViewerMode = false;
+      if (settingsDrawer) settingsDrawer.showModal();
+    }
+    
+    if (action === 'reset') {
+      console.log('Topbar Start over clicked');
+      loadSampleDefaults();
+      hasBuiltPattern = false;
+      applyViewState();
+      if (settingsDrawer && settingsDrawer.open) {
+        settingsDrawer.close();
+      }
+    }
+    
+    if (action === 'print') {
+      if (settingsDrawer && settingsDrawer.open) {
+        settingsDrawer.close();
+      }
+      if (isViewerMode) {
+        enterDesignerMode();
+        return;
+      }
+      window.print();
+    }
+  });
+
+// Always initialize - load sample defaults so pattern shows real values
+loadSampleDefaults();
+updatePlaceholders();
+updateGaugeLabels();
+// Wizard initialization complete
+
+// Yarn Calculator
+(function initYarnCalculator() {
+  const swatchWidth = document.getElementById('yarn-swatch-width');
+  const swatchLength = document.getElementById('yarn-swatch-length');
+  const swatchWeight = document.getElementById('yarn-swatch-weight');
+  const outputBox = document.getElementById('yarn-output-box');
+  const errorBox = document.getElementById('yarn-error');
+  const blanketHint = document.getElementById('yarn-blanket-hint');
+  const blanketSizeEl = document.getElementById('yarn-blanket-size');
+  const blanketWidthDisplay = document.getElementById('yarn-blanket-width-display');
+  const blanketLengthDisplay = document.getElementById('yarn-blanket-length-display');
+  const unitLabels = document.querySelectorAll('.yarn-unit-label');
+  const unitBtns = document.querySelectorAll('.yarn-unit-btn');
+  
+  if (!swatchWidth || !swatchLength || !swatchWeight) {
+    return; // Yarn tab not present
+  }
+  
+  const swatchAreaEl = document.getElementById('yarn-swatch-area');
+  const gramsPerSqinEl = document.getElementById('yarn-grams-per-sqin');
+  const blanketAreaEl = document.getElementById('yarn-blanket-area');
+  const estimatedGramsEl = document.getElementById('yarn-estimated-grams');
+  const estimatedOzEl = document.getElementById('yarn-estimated-oz');
+  
+  // State
+  const STORAGE_KEY = 'kbm:hybridBlanket:units';
+  let currentUnit = localStorage.getItem(STORAGE_KEY) || 'in';
+  let blanketWidthIn = 0;
+  let blanketLengthIn = 0;
+  
+  // Initialize units UI
+  function updateUnitsUI() {
+    unitBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.unit === currentUnit);
+    });
+    unitLabels.forEach(label => {
+      label.textContent = currentUnit;
+    });
+    updateBlanketDisplay();
+  }
+  
+  // Update blanket size display
+  function updateBlanketDisplay() {
+    if (blanketWidthIn <= 0 || blanketLengthIn <= 0) {
+      blanketWidthDisplay.textContent = '—';
+      blanketLengthDisplay.textContent = '—';
+      blanketHint.style.display = 'block';
+      blanketSizeEl.style.display = 'none';
+      return;
+    }
+    
+    blanketHint.style.display = 'none';
+    blanketSizeEl.style.display = 'block';
+    
+    const unitSuffix = currentUnit === 'in' ? '"' : ' cm';
+    if (currentUnit === 'in') {
+      blanketWidthDisplay.textContent = blanketWidthIn.toFixed(1) + unitSuffix;
+      blanketLengthDisplay.textContent = blanketLengthIn.toFixed(1) + unitSuffix;
+    } else {
+      blanketWidthDisplay.textContent = (blanketWidthIn * 2.54).toFixed(1) + unitSuffix;
+      blanketLengthDisplay.textContent = (blanketLengthIn * 2.54).toFixed(1) + unitSuffix;
+    }
+  }
+  
+  function calculateYarn() {
+    // Get swatch values - convert to inches if user entered cm
+    let sw = parseFloat(swatchWidth.value);
+    let sl = parseFloat(swatchLength.value);
+    const swt = parseFloat(swatchWeight.value);
+    
+    // Convert cm to inches for calculation
+    if (currentUnit === 'cm') {
+      sw = sw / 2.54;
+      sl = sl / 2.54;
+    }
+    
+    // Validate swatch inputs
+    const swatchValid = !isNaN(sw) && !isNaN(sl) && !isNaN(swt) && sw > 0 && sl > 0 && swt > 0;
+    const blanketValid = blanketWidthIn > 0 && blanketLengthIn > 0;
+    
+    if (!swatchValid) {
+      outputBox.style.display = 'none';
+      // Only show error if at least one swatch field has a value
+      const hasAnyValue = [swatchWidth, swatchLength, swatchWeight]
+        .some(el => el.value.trim() !== '');
+      errorBox.style.display = hasAnyValue ? 'block' : 'none';
+      return;
+    }
+    
+    if (!blanketValid) {
+      outputBox.style.display = 'none';
+      errorBox.style.display = 'none';
+      return;
+    }
+    
+    errorBox.style.display = 'none';
+    outputBox.style.display = 'block';
+    
+    const swatchArea = sw * sl;
+    const gramsPerSqIn = swt / swatchArea;
+    const blanketArea = blanketWidthIn * blanketLengthIn;
+    const baseGrams = blanketArea * gramsPerSqIn;
+    const estimatedGrams = baseGrams * 1.10; // 10% buffer
+    const estimatedOz = estimatedGrams / 28.3495;
+    
+    swatchAreaEl.textContent = swatchArea.toFixed(1) + ' sq in';
+    gramsPerSqinEl.textContent = gramsPerSqIn.toFixed(3) + ' g/sq in';
+    blanketAreaEl.textContent = blanketArea.toFixed(0) + ' sq in';
+    estimatedGramsEl.textContent = Math.ceil(estimatedGrams) + ' g';
+    estimatedOzEl.textContent = estimatedOz.toFixed(1) + ' oz';
+  }
+  
+  // Listen for dimension events from pattern engine
+  window.addEventListener('kbm:hybridBlanket:dimensions', function(e) {
+    blanketWidthIn = e.detail.widthIn || 0;
+    blanketLengthIn = e.detail.lengthIn || 0;
+    updateBlanketDisplay();
+    calculateYarn();
+  });
+  
+  // Fallback: read from hidden spans on init
+  function readDimensionsFromDOM() {
+    const widthSpan = document.getElementById('hb-finished-width-in');
+    const lengthSpan = document.getElementById('hb-finished-length-in');
+    if (widthSpan && lengthSpan) {
+      blanketWidthIn = parseFloat(widthSpan.getAttribute('data-value')) || 0;
+      blanketLengthIn = parseFloat(lengthSpan.getAttribute('data-value')) || 0;
+      updateBlanketDisplay();
+      calculateYarn();
+    }
+  }
+  
+  // Unit toggle handlers
+  unitBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      currentUnit = this.dataset.unit;
+      localStorage.setItem(STORAGE_KEY, currentUnit);
+      updateUnitsUI();
+      calculateYarn();
+    });
+  });
+  
+  // Add input listeners
+  [swatchWidth, swatchLength, swatchWeight].forEach(input => {
+    input.addEventListener('input', calculateYarn);
+  });
+  
+  // Initialize
+  updateUnitsUI();
+  // Delay reading DOM dimensions to ensure pattern engine has initialized
+  setTimeout(readDimensionsFromDOM, 100);
+})();
+</script>
+
+<script define:vars={{ hyvorPageId }}>
+// Hyvor Talk loader for Discussion tab
+(function() {
+  let hyvorLoaded = false;
+  
+  function loadHyvor() {
+    if (hyvorLoaded) return;
+    
+    const pageId = hyvorPageId;
+    
+    window.HYVOR_TALK_WEBSITE = 14706;
+    window.HYVOR_TALK_CONFIG = {
+      url: false,
+      id: pageId
+    };
+
+    if (window.hyvorTalkReload) {
+      window.hyvorTalkReload();
+      hyvorLoaded = true;
+      return;
+    }
+
+    const existingScript = document.querySelector('script[src*="talk.hyvor.com/web-api/embed"]');
+    if (!existingScript) {
+      const script = document.createElement("script");
+      script.src = "https://talk.hyvor.com/web-api/embed.js";
+      script.async = true;
+      script.type = "text/javascript";
+      document.body.appendChild(script);
+    }
+    hyvorLoaded = true;
+  }
+
+  // Load Hyvor when Discussion tab is clicked
+  document.addEventListener('DOMContentLoaded', function() {
+    const discussionTab = document.getElementById('tab-discussion');
+    if (discussionTab) {
+      discussionTab.addEventListener('click', loadHyvor);
+    }
+  });
+})();
+</script>

@@ -1,9 +1,9 @@
 ---
+const isFullMode = Astro.url.searchParams.get('mode') === 'full';
+
 /**
  * Hybrid Blanket Pattern Page
- * Uses PatternLayout and embeds HybridBlanketWizardV2 component.
- * Access: Memberstack member = full access; else preview + Inspiration open; gated tabs (Yarn, Ask/Share) show CTA.
- * Dev override: ?mode=full forces full access without Memberstack.
+ * Uses PatternLayout and embeds HybridBlanketWizardV2 component
  */
 
 export const prerender = true;
@@ -39,15 +39,17 @@ const yarnSource = "sample"; // Initial state is sample; updated to "custom" whe
   </div>
 
   <div slot="pattern" id="pattern">
-    <!-- Top CTA: hidden when hasFullAccess (set client-side) -->
-    <div class="top-cta kbm-no-full-access">
-      <a
-        href="https://buy.stripe.com/28E14m25EcCL8TsgcO0oM05"
-        class="btn-primary"
-      >
-        Purchase & Build Your Own
-      </a>
-    </div>
+    <!-- Top CTA for non-purchasers -->
+    {!isFullMode && (
+      <div class="top-cta">
+        <a
+          href="https://buy.stripe.com/28E14m25EcCL8TsgcO0oM05"
+          class="btn-primary"
+        >
+          Purchase & Build Your Own
+        </a>
+      </div>
+    )}
 
     <!-- Preview Section: Always visible to everyone -->
     <section class="pattern-preview">
@@ -57,98 +59,131 @@ const yarnSource = "sample"; // Initial state is sample; updated to "custom" whe
       <HybridBlanketWizardV2 previewOnly={true} />
     </section>
 
-    <!-- Interactive Pattern Builder: shown when hasFullAccess (client-side) -->
-    <div class="gated-content" style="display: none;">
-      <HybridBlanketWizardV2 />
-    </div>
+    <!-- Interactive Pattern Builder: Visible when isFullMode is true -->
+    {isFullMode && (
+      <div>
+        <HybridBlanketWizardV2 />
+      </div>
+    )}
 
-    <!-- Locked Panel: shown when !hasFullAccess (client-side) -->
-    <div class="gated-locked locked-panel">
-      <h2>Unlock the Interactive Pattern</h2>
+    <!-- Locked Panel: Shown to non-purchasers -->
+    {!isFullMode && (
+      <div class="locked-panel">
+        <h2>Unlock the Interactive Pattern</h2>
 
-      <p>
-        Generate this pattern for your size, your gauge, your yarn, and your machine.
-      </p>
+        <p>
+          Generate this pattern for your size, your gauge, your yarn, and your machine.
+        </p>
 
-      <a
-        href="https://buy.stripe.com/28E14m25EcCL8TsgcO0oM05"
-        class="btn-primary"
-      >
-        Purchase & Access
-      </a>
+        <a
+          href="https://buy.stripe.com/28E14m25EcCL8TsgcO0oM05"
+          class="btn-primary"
+        >
+          Purchase & Access
+        </a>
 
-      <p class="small">
-        Already purchased? Use the same button to log in.
-      </p>
-    </div>
+        <p class="small">
+          Already purchased? Use the same button to log in.
+        </p>
+      </div>
+    )}
   </div>
 
   <div slot="yarn">
-    <!-- Yarn Needed: shown when hasFullAccess (client-side) -->
-    <div class="gated-content" style="display: none;">
-      <YarnRequirement projectWidth={yarnWidth} projectLength={yarnLength} lengthUnit={yarnLengthUnit} source={yarnSource} />
-    </div>
+    <!-- Yarn Needed tab: Visible when isFullMode is true -->
+    {isFullMode && (
+      <div>
+        <!-- Yarn Needed tab: embeds YarnRequirement tool with pattern dimensions -->
+        <!-- Initial values use sample defaults; updated client-side when pattern is built -->
+        <YarnRequirement projectWidth={yarnWidth} projectLength={yarnLength} lengthUnit={yarnLengthUnit} source={yarnSource} />
+      </div>
+    )}
 
-    <!-- Locked state: shown when !hasFullAccess (client-side) -->
-    <div class="gated-locked locked-panel">
-      <h2>Unlock this section</h2>
-      <p>Purchase to access this tab.</p>
+    <!-- Locked state for non-purchasers -->
+    {!isFullMode && (
+      <div class="locked-panel">
+        <h2>Unlock this section</h2>
+        <p>Purchase to access this tab.</p>
 
-      <a
-        href="https://buy.stripe.com/28E14m25EcCL8TsgcO0oM05"
-        class="btn-primary"
-      >
-        Purchase & Access
-      </a>
+        <a
+          href="https://buy.stripe.com/28E14m25EcCL8TsgcO0oM05"
+          class="btn-primary"
+        >
+          Purchase & Access
+        </a>
 
-      <p class="small">Already purchased? Use the same button to log in.</p>
-    </div>
+        <p class="small">Already purchased? Use the same button to log in.</p>
+      </div>
+    )}
   </div>
 
   <div slot="askShare" class="kbm-talk">
-    <!-- Ask/Share: shown when hasFullAccess (client-side) -->
-    <div class="gated-content" style="display: none;">
-      <h2>Talk</h2>
-      <p>💡 Start the conversation: What are you making with this pattern?</p>
+    <!-- Ask/Share tab: Visible when isFullMode is true -->
+    {isFullMode && (
+      <div>
+        <h2>Talk</h2>
+        <p>💡 Start the conversation: What are you making with this pattern?</p>
+      
+        <hyvor-talk-comments
+          website-id="14706"
+          page-id="hybrid-blanket"
+        ></hyvor-talk-comments>
+      </div>
+    )}
 
-      <hyvor-talk-comments
-        website-id="14706"
-        page-id="hybrid-blanket"
-      ></hyvor-talk-comments>
-    </div>
+    <!-- Locked state for non-purchasers -->
+    {!isFullMode && (
+      <div class="locked-panel">
+        <h2>Unlock this section</h2>
+        <p>Purchase to access this tab.</p>
 
-    <!-- Locked state: shown when !hasFullAccess (client-side) -->
-    <div class="gated-locked locked-panel">
-      <h2>Unlock this section</h2>
-      <p>Purchase to access this tab.</p>
+        <a
+          href="https://buy.stripe.com/28E14m25EcCL8TsgcO0oM05"
+          class="btn-primary"
+        >
+          Purchase & Access
+        </a>
 
-      <a
-        href="https://buy.stripe.com/28E14m25EcCL8TsgcO0oM05"
-        class="btn-primary"
-      >
-        Purchase & Access
-      </a>
-
-      <p class="small">Already purchased? Use the same button to log in.</p>
-    </div>
+        <p class="small">Already purchased? Use the same button to log in.</p>
+      </div>
+    )}
   </div>
   
 
   <div slot="inspiration">
-    <!-- Inspiration tab: always open for everyone (not gated) -->
-    <div>
-      <h3>Inspiration</h3>
-      <p>See examples and inspiration for hybrid blankets.</p>
-      <div class="pinterest-board-embed" style="display: flex; justify-content: center;">
-        <a 
-          data-pin-do="embedBoard" 
-          data-pin-board-width="400" 
-          data-pin-scale-height="600" 
-          data-pin-scale-width="80" 
-          href="https://www.pinterest.com/1fsl6ow0d6rpwc1uh9vmw14qs5dww0/hybrid-blankets/">
-        </a>
+    <!-- Inspiration tab: Visible when isFullMode is true -->
+    {isFullMode && (
+      <div>
+        <h3>Inspiration</h3>
+        <p>See examples and inspiration for hybrid blankets.</p>
+        <div class="pinterest-board-embed" style="display: flex; justify-content: center;">
+          <a 
+            data-pin-do="embedBoard" 
+            data-pin-board-width="400" 
+            data-pin-scale-height="600" 
+            data-pin-scale-width="80" 
+            href="https://www.pinterest.com/1fsl6ow0d6rpwc1uh9vmw14qs5dww0/hybrid-blankets/">
+          </a>
+        </div>
       </div>
-    </div>
+    )}
+
+    <!-- Locked state for non-purchasers -->
+    {!isFullMode && (
+      <div class="locked-panel">
+        <h2>Unlock this section</h2>
+        <p>Purchase to access this tab.</p>
+
+        <a
+          href="https://buy.stripe.com/28E14m25EcCL8TsgcO0oM05"
+          class="btn-primary"
+        >
+          Purchase & Access
+        </a>
+
+        <p class="small">Already purchased? Use the same button to log in.</p>
+      </div>
+    )}
   </div>
 </PatternLayout>
 
@@ -213,79 +248,17 @@ if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded"
 
 
 <script>
-  (async function() {
-    // Access: Memberstack member = full access; ?mode=full = dev override
+  (function() {
+    // Full mode check: skip access checks and delays when ?mode=full is present
     const urlParams = new URL(window.location.href).searchParams;
-    const devOverrideFull = urlParams.get('mode') === 'full';
-
-    const MEMBER_PLAN_IDS = new Set([
-      'pln_dev-kin-member-eim6011h',
-      'pln_kin-membership-monthly-a59701wy',
-      'pln_kin-membership-annual-qf9g01et',
-    ]);
-
-    async function getViewerState(): Promise<{ isLoggedIn: boolean; isMember: boolean }> {
-      try {
-        const res = await (window as any).$memberstackDom?.getAppAndMember?.();
-        const member = res?.data?.member ?? null;
-        if (!member) return { isLoggedIn: false, isMember: false };
-
-        const conns = Array.isArray(member.planConnections) ? member.planConnections : [];
-        const activePlanIds = new Set(
-          conns
-            .filter((c: { status?: string; active?: boolean }) => c && c.status === 'ACTIVE' && c.active)
-            .map((c: { planId?: string }) => c.planId)
-            .filter(Boolean)
-        );
-        const isMember = ([...activePlanIds] as string[]).some((id) => MEMBER_PLAN_IDS.has(id));
-        return { isLoggedIn: true, isMember };
-      } catch {
-        return { isLoggedIn: false, isMember: false };
-      }
-    }
-
-    async function waitForMemberstackReady(): Promise<unknown> {
-      const attempts = 30;
-      const delayMs = 200;
-      for (let i = 0; i < attempts; i++) {
-        try {
-          const w = (window as any).$memberstackDom;
-          if (w && typeof w.getAppAndMember === 'function') {
-            return await w.getAppAndMember();
-          }
-        } catch {
-          // keep trying
-        }
-        await new Promise((r) => setTimeout(r, delayMs));
-      }
-      return null;
-    }
-
-    let hasFullAccess = devOverrideFull;
-    if (!devOverrideFull) {
-      await waitForMemberstackReady();
-      const viewer = await getViewerState();
-      hasFullAccess = viewer.isMember;
-    }
-
-    function applyAccessVisibility() {
-      document.querySelectorAll('.gated-content').forEach((el) => {
-        (el as HTMLElement).style.display = hasFullAccess ? '' : 'none';
-      });
-      document.querySelectorAll('.gated-locked').forEach((el) => {
-        (el as HTMLElement).style.display = hasFullAccess ? 'none' : '';
-      });
-      document.querySelectorAll('.kbm-no-full-access').forEach((el) => {
-        (el as HTMLElement).style.display = hasFullAccess ? 'none' : '';
-      });
-    }
-    applyAccessVisibility();
-
-    if (hasFullAccess) {
+    const isFullMode = urlParams.get('mode') === 'full';
+    
+    if (isFullMode) {
+      // Full mode: remove any "checking access" elements if present
       const accessCheckElements = document.querySelectorAll('[data-access-check], #access-check, .access-check, .checking-access');
-      accessCheckElements.forEach((el) => el.remove());
+      accessCheckElements.forEach(el => el.remove());
     }
-
+    
     // Sample defaults in inches
     const SAMPLE_WIDTH_INCHES = 36;
     const SAMPLE_LENGTH_INCHES = 36;
@@ -299,7 +272,7 @@ if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded"
      * @param {number} lengthInches - Blanket length in inches
      * @param {'custom'|'sample'} source - Whether dimensions are from custom pattern or sample defaults
      */
-    function emitYarnDimensions(widthInches: number, lengthInches: number, source: 'custom' | 'sample') {
+    function emitYarnDimensions(widthInches, lengthInches, source) {
       // Guard: only dispatch if both values are > 0 and finite
       if (!Number.isFinite(widthInches) || !Number.isFinite(lengthInches) || 
           widthInches <= 0 || lengthInches <= 0) {
@@ -433,8 +406,9 @@ if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded"
       const sizePreset = document.getElementById('size-preset');
       if (sizePreset) {
         sizePreset.addEventListener('change', function(e) {
-          const target = e.target as HTMLSelectElement | null;
-          if (target?.selectedOptions && target.selectedOptions.length > 0) {
+          const target = e.target;
+          // @ts-ignore - HTMLSelectElement selectedOptions property exists at runtime
+          if (target && 'selectedOptions' in target && target.selectedOptions && target.selectedOptions.length > 0) {
             const option = target.selectedOptions[0];
             if (option && option.value) {
               const widthAttr = option.getAttribute('data-width');
@@ -860,25 +834,33 @@ if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded"
       // Set up modal handlers
       setupModalHandlers();
       
-      if (hasFullAccess) {
+      if (isFullMode) {
+        // Full mode: initialize immediately without delays
         watchBlanketDimensions();
         addBottomUpdateButton();
         watchPatternViewVisibility();
         watchForPatternResults();
       } else {
+        // Normal mode: delay watcher setup to ensure wizard component is fully loaded
         setTimeout(watchBlanketDimensions, 200);
+        // Add bottom update button after form is loaded
         setTimeout(addBottomUpdateButton, 300);
+        // Watch for pattern view and add bottom actions when visible
         setTimeout(watchPatternViewVisibility, 400);
+        // Watch for pattern results to show success modal
         setTimeout(watchForPatternResults, 500);
       }
     }
-
+    
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initialize);
     } else {
-      if (hasFullAccess) {
+      // DOM already ready
+      if (isFullMode) {
+        // Full mode: initialize immediately
         initialize();
       } else {
+        // Normal mode: wait a bit for components to initialize
         setTimeout(initialize, 100);
       }
     }

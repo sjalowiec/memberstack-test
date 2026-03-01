@@ -17,7 +17,11 @@ src/data/glossary.backup.before-strip-html.json
 # environment variables
 .env
 .env.production
-
+glossary_export.csv
+glossary_images_extra.json
+glossary_images_missing.json
+glossary_images_referenced.json
+glossary_rows_with_missing_images.csv
 # macOS-specific files
 .DS_Store
 

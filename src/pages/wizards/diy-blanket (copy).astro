@@ -1,0 +1,1161 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ActionBar from "../../components/wizards/ActionBar.astro";
+import Tooltip from "../../components/Tooltip.astro";
+import PrintFooter from "../../components/common/PrintFooter.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import GaugeInput from "../../components/wizards/components/GaugeInput.astro";
+import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
+
+const pageUrl = "https://knitbymachine.com/wizards/diy-blanket";
+---
+
+<BaseLayout 
+  title="DIY Blanket | Knit by Machine" 
+  description="Design your own blanket for any yarn, any machine, any gauge. Choose a standard size or set your own — includes a built-in yarn estimator.">
+
+<style>
+.wizard-page {
+  padding-top: 120px;
+  padding-bottom: 3rem;
+  min-height: 100vh;
+  background: var(--page-bg);
+}
+
+.page-header {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  padding: 0 1rem;
+}
+
+.page-header-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .page-header-title {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+.page-header h1 {
+  color: var(--kbm-green);
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.page-header p {
+  color: #6b7280;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.video-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: #e5e7eb;
+  color: #374151;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: all 0.2s;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.video-button:hover {
+  background: #d1d5db;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.wizard-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 1rem 120px 1rem;
+}
+
+.calculator-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.section-title {
+  color: var(--kbm-green);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 1.5rem 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #eef0ea;
+}
+
+.input-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.input-group input, .input-group select {
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.input-group input:focus, .input-group select:focus {
+  outline: none;
+  border-color: var(--kbm-green);
+  box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.1);
+}
+
+.input-group input.error {
+  border-color: #dc3545;
+}
+
+.input-group input.warning {
+  border-color: #ffc107;
+}
+
+.validation-message {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.validation-message.error {
+  color: #dc3545;
+}
+
+.validation-message.warning {
+  color: #ff8c00;
+}
+
+
+.info-box {
+  background: rgba(82, 104, 45, 0.1);
+  border-left: 4px solid var(--kbm-green);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+}
+
+.yarn-estimate-box {
+  background: linear-gradient(135deg, rgba(82, 104, 45, 0.15) 0%, rgba(82, 104, 45, 0.08) 100%);
+  border: 2px solid var(--kbm-green);
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 1rem;
+  color: #2d3748;
+  font-weight: 600;
+}
+
+:global(.size-options) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+:global(.size-option) {
+  padding: 0.75rem;
+  min-height: 64px;
+  width: 160px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.25s ease;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+:global(.size-option:hover) {
+  border-color: var(--kbm-green);
+  background: rgba(82, 104, 45, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(82, 104, 45, 0.15);
+}
+
+:global(.size-option.selected) {
+  border-color: var(--kbm-green);
+  background: rgba(82, 104, 45, 0.12);
+  box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.2), 0 4px 12px rgba(82, 104, 45, 0.2);
+  transform: translateY(-2px);
+}
+
+:global(.size-option-name) {
+  font-size: 1rem;
+  color: #1f2937;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+:global(.size-option.selected .size-option-name) {
+  color: var(--kbm-green);
+}
+
+:global(.size-option-dims) {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+:global(.size-option.disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1024px) {
+  :global(.size-option) {
+    width: 100%;
+    min-height: 56px;
+  }
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #52682D;
+}
+
+.checkbox-group label {
+  cursor: pointer;
+  font-weight: 600;
+  color: #374151;
+}
+
+.results-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid #eef0ea;
+}
+
+.pattern-card {
+  background: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.pattern-card h3 {
+  color: var(--kbm-green);
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.highlight-box {
+  background: rgba(82, 104, 45, 0.2);
+  border-left: 4px solid var(--kbm-green);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.materials-list, .instructions-list {
+  margin-left: 1.5rem;
+  line-height: 1.8;
+}
+
+.diagram-container {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.diagram-container svg {
+  max-width: 500px;
+  width: 100%;
+  height: auto;
+}
+
+@media print {
+  * {
+    background: white !important;
+    background-color: white !important;
+  }
+  
+  body {
+    background: white !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .wizard-page {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    background: white !important;
+  }
+  
+  .page-header, .video-button {
+    display: none;
+  }
+  
+  /* Hide all input sections when printing */
+  .units-toggle,
+  .section-title,
+  .input-grid,
+  .input-group,
+  .checkbox-group,
+  #standard-sizes,
+  #custom-size,
+  #yarn-calculator-section,
+  .validation-message,
+  .info-box,
+  .yarn-estimate-box {
+    display: none !important;
+  }
+  
+  /* Show only the results section */
+  .results-section {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+    background: white !important;
+  }
+  
+  /* Optimize pattern display for printing */
+  .calculator-card,
+  .pattern-card,
+  .wizard-container {
+    box-shadow: none !important;
+    padding: 1rem;
+    background: white !important;
+    border: none !important;
+  }
+  
+  /* Keep borders but remove colored backgrounds */
+  .highlight-box {
+    background: white !important;
+    border-left: 2px solid #333 !important;
+    padding: 0.5rem !important;
+  }
+  
+  /* Ensure diagram is visible */
+  .diagram-container,
+  .diagram-container svg {
+    display: block !important;
+    page-break-inside: avoid;
+    background: white !important;
+  }
+}
+
+.back-link {
+  display: inline-block;
+  color: #52682D;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #3d4e21;
+  text-decoration: underline;
+}
+
+</style>
+
+  <div class="wizard-page">
+    <div style="max-width: 800px; margin: 0 auto; padding: 0 1rem;">
+      <WizardBackLink category="pattern" />
+    </div>
+
+  <div class="page-header no-print">
+    <div class="page-header-title">
+      <h1>DIY Blanket</h1>
+    </div>
+    <p>
+      Design the perfect blanket — any yarn, any size, any machine. Choose a standard size or set your own with a built-in yarn estimator.
+    </p>
+  </div>
+  
+  <div class="wizard-container">
+
+    <div class="calculator-card">
+      <!-- Unit Toggle - left-aligned, above first input -->
+      <UnitToggle id="diy" />
+
+      <!-- Gauge Section -->
+      <GaugeInput id="diy" showTitle={true} showToggle={false} toggleId="diy" />
+
+      <!-- Size Selection -->
+      <h3 class="section-title">Select Blanket Size</h3>
+      
+      <p style="margin-bottom: 1rem; color: #6b7280; font-size: 0.95rem;">
+        <strong>Note:</strong> If your blanket size requires more needles than your machine has, you have a few options:<br>
+        <strong>Choose another size</strong> | 
+        <a href="#" onclick="document.getElementById('use-custom').click(); return false;" style="color: var(--kbm-green); text-decoration: none; font-weight: 600;">Enter a custom size <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.8rem;"></i></a> | 
+        <a href="/wizards/maximum-knitted-width" style="color: var(--kbm-green); text-decoration: none; font-weight: 600;">Check your maximum width <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.8rem;"></i></a>
+      </p>
+      
+      <div class="checkbox-group">
+        <input type="checkbox" id="use-custom" data-testid="checkbox-custom-size">
+        <label for="use-custom">Use Custom Size</label>
+      </div>
+
+      <!-- Standard Sizes -->
+      <div id="standard-sizes" class="size-categories">
+        <!-- Will be populated by JavaScript -->
+      </div>
+
+      <!-- Custom Size Inputs -->
+      <div id="custom-size" style="display: none;">
+        <div class="input-grid">
+          <div class="input-group">
+            <input 
+              type="number" 
+              id="custom-length" 
+              step="0.5" 
+              placeholder="Length (e.g., 60)"
+              data-testid="input-custom-length"
+            />
+          </div>
+          <div class="input-group">
+            <input 
+              type="number" 
+              id="custom-width" 
+              step="0.5" 
+              placeholder="Width (e.g., 48)"
+              data-testid="input-custom-width"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Yarn Calculator Section -->
+      <div id="yarn-calculator-section" style="display: none;">
+        <h3 class="section-title">Yarn Calculator (Optional)</h3>
+        
+        <div class="checkbox-group">
+          <input type="checkbox" id="calculate-yarn" data-testid="checkbox-yarn-calculator">
+          <label for="calculate-yarn">Calculate Yarn Needed</label>
+        </div>
+
+        <div id="yarn-inputs" style="display: none;">
+        <div class="info-box">
+          <p><strong>How it works:</strong> Knit and weigh a gauge swatch. Enter its dimensions and weight below to calculate how much yarn you'll need for your blanket.</p>
+        </div>
+        <div class="input-grid">
+          <div class="input-group">
+            <input 
+              type="number" 
+              id="swatch-width" 
+              step="0.1" 
+              placeholder="Swatch Width (in)"
+              data-testid="input-swatch-width"
+            />
+          </div>
+          <div class="input-group">
+            <input 
+              type="number" 
+              id="swatch-length" 
+              step="0.1" 
+              placeholder="Swatch Length (in)"
+              data-testid="input-swatch-length"
+            />
+          </div>
+          <div class="input-group">
+            <input 
+              type="number" 
+              id="swatch-weight" 
+              step="0.1" 
+              placeholder="Swatch Weight (grams)"
+              data-testid="input-swatch-weight"
+            />
+          </div>
+        </div>
+        
+        <div id="yarn-estimate-display" class="yarn-estimate-box" style="display: none;">
+          <!-- Will be populated by JavaScript -->
+        </div>
+      </div>
+      </div>
+
+      <!-- Results Section -->
+      <div id="results" style="display: none;">
+        <ActionBar />
+        
+        <div class="results-section">
+          <div class="pattern-card">
+            <div id="pattern-content">
+              <!-- Will be populated by JavaScript -->
+            </div>
+          </div>
+
+          <div class="diagram-container">
+            <h3 id="diagram-title" style="color: var(--kbm-green); margin-bottom: 1rem; text-align: center;">
+              <!-- Will be populated by JavaScript -->
+            </h3>
+            <div id="diagram-content">
+              <!-- Will be populated by JavaScript -->
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  <PrintFooter url={pageUrl} />
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DIY Blanket Wizard initializing...');
+  
+  // Blanket size data
+  const blanketSizes = {
+    "adult-throw": { name: "Adult Throw", length: 78, width: 48, category: "Throw" },
+    "bassinet": { name: "Bassinet", length: 36, width: 16, category: "Baby" },
+    "child": { name: "Child", length: 48, width: 42, category: "Child" },
+    "cradle": { name: "Cradle", length: 36, width: 20, category: "Baby" },
+    "crib": { name: "Crib", length: 54, width: 30, category: "Baby" },
+    "large-preemie": { name: "Large Preemie", length: 36, width: 36, category: "Baby" },
+    "small-preemie": { name: "Small Preemie", length: 24, width: 24, category: "Baby" },
+    "standard-throw": { name: "Standard Throw", length: 60, width: 48, category: "Throw" },
+    "toddler": { name: "Toddler or Lapghan", length: 48, width: 36, category: "Child" }
+  };
+
+  // State
+  let units = 'inches';
+  let stitchesGauge = '';
+  let rowsGauge = '';
+  let hasGaugeError = false;
+  let selectedSize = '';
+  let useCustomSize = false;
+  let customLength = '';
+  let customWidth = '';
+  let calculateYarn = false;
+  let swatchWidth = '';
+  let swatchLength = '';
+  let swatchWeight = '';
+
+  // DOM elements
+  const btnInches = document.getElementById('diy-btn-inches');
+  const btnCm = document.getElementById('diy-btn-cm');
+  const inputStitches = document.getElementById('diy-stitch-gauge');
+  const inputRows = document.getElementById('diy-row-gauge');
+  const useCustomCheckbox = document.getElementById('use-custom');
+  const standardSizesDiv = document.getElementById('standard-sizes');
+  const customSizeDiv = document.getElementById('custom-size');
+  const inputCustomLength = document.getElementById('custom-length');
+  const inputCustomWidth = document.getElementById('custom-width');
+  const yarnCalculatorSection = document.getElementById('yarn-calculator-section');
+  const calculateYarnCheckbox = document.getElementById('calculate-yarn');
+  const yarnInputsDiv = document.getElementById('yarn-inputs');
+  const inputSwatchWidth = document.getElementById('swatch-width');
+  const inputSwatchLength = document.getElementById('swatch-length');
+  const inputSwatchWeight = document.getElementById('swatch-weight');
+  const yarnEstimateDisplay = document.getElementById('yarn-estimate-display');
+  const resultsSection = document.getElementById('results');
+  const actionBar = document.getElementById('action-bar');
+  const startOverBtn = document.getElementById('start-over-btn');
+  const printBtn = document.getElementById('print-btn');
+  
+  console.log('DOM elements loaded, standardSizesDiv:', standardSizesDiv);
+  
+  // Update placeholders based on units
+  function updatePlaceholders() {
+    const unitLabel = units === 'inches' ? 'in' : 'cm';
+    inputSwatchWidth.placeholder = `Swatch Width (${unitLabel})`;
+    inputSwatchLength.placeholder = `Swatch Length (${unitLabel})`;
+  }
+
+  // Populate size cards
+  function populateSizes() {
+    console.log('populateSizes() called');
+    standardSizesDiv.innerHTML = '';
+    
+    const optionsDiv = document.createElement('div');
+    optionsDiv.className = 'size-options';
+    
+    // Sort by area (length × width) ascending
+    const sortedSizes = Object.entries(blanketSizes).sort((a, b) => {
+      const areaA = a[1].length * a[1].width;
+      const areaB = b[1].length * b[1].width;
+      return areaA - areaB;
+    });
+    
+    sortedSizes.forEach(([key, data]) => {
+      const option = document.createElement('div');
+      option.className = 'size-option';
+      option.dataset.sizeKey = key;
+      
+      // Convert dimensions based on current unit system
+      let displayWidth, displayLength, unitLabel;
+      if (units === 'cm') {
+        displayWidth = Math.round(data.width * 2.54 * 10) / 10;
+        displayLength = Math.round(data.length * 2.54 * 10) / 10;
+        unitLabel = 'cm';
+      } else {
+        displayWidth = data.width;
+        displayLength = data.length;
+        unitLabel = '"';
+      }
+      
+      option.innerHTML = `
+        <div class="size-option-name">${data.name}</div>
+        <div class="size-option-dims">${displayWidth}${unitLabel} × ${displayLength}${unitLabel}</div>
+      `;
+      option.onclick = () => selectSize(key);
+      optionsDiv.appendChild(option);
+    });
+
+    standardSizesDiv.appendChild(optionsDiv);
+    console.log('Size cards created. Total cards:', Object.keys(blanketSizes).length);
+    
+    // Restore disabled/enabled state based on gauge
+    updateSizeCardsState();
+    
+    // Restore selected state if a size was previously selected
+    if (selectedSize) {
+      document.querySelectorAll('.size-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.dataset.sizeKey === selectedSize);
+      });
+    }
+  }
+
+  function selectSize(key) {
+    const hasGauge = stitchesGauge && rowsGauge && !hasGaugeError;
+    if (!hasGauge) {
+      // Show message when user tries to click
+      alert('Enter your gauge above to select a blanket size');
+      return;
+    }
+    
+    selectedSize = key;
+    document.querySelectorAll('.size-option').forEach(opt => {
+      opt.classList.toggle('selected', opt.dataset.sizeKey === key);
+    });
+    updateYarnCalculatorVisibility();
+    updateYarnEstimate();
+    calculate();
+  }
+
+  // Check if gauge is entered
+  function hasValidGauge() {
+    return stitchesGauge && rowsGauge && !hasGaugeError;
+  }
+
+  // Update size cards enabled/disabled state
+  function updateSizeCardsState() {
+    const hasGauge = hasValidGauge();
+    
+    document.querySelectorAll('.size-option').forEach(opt => {
+      if (hasGauge) {
+        opt.classList.remove('disabled');
+      } else {
+        opt.classList.add('disabled');
+      }
+    });
+  }
+
+  // Show/hide yarn calculator section based on whether a size is selected
+  function updateYarnCalculatorVisibility() {
+    const hasSizeSelection = selectedSize || (useCustomSize && customLength && customWidth);
+    yarnCalculatorSection.style.display = hasSizeSelection ? 'block' : 'none';
+  }
+
+  // Update real-time yarn estimate display
+  function updateYarnEstimate() {
+    // Only show if we have all required inputs
+    if (!swatchWidth || !swatchLength || !swatchWeight) {
+      yarnEstimateDisplay.style.display = 'none';
+      return;
+    }
+
+    const swatchWidthNum = parseFloat(swatchWidth);
+    const swatchLengthNum = parseFloat(swatchLength);
+    const swatchWeightNum = parseFloat(swatchWeight);
+
+    // Validate inputs
+    if (swatchWidthNum <= 0 || swatchLengthNum <= 0 || swatchWeightNum <= 0 ||
+        isNaN(swatchWidthNum) || isNaN(swatchLengthNum) || isNaN(swatchWeightNum)) {
+      yarnEstimateDisplay.style.display = 'none';
+      return;
+    }
+
+    // Need a size selection to calculate
+    const sizeSelection = getCurrentSize();
+    if (!sizeSelection) {
+      yarnEstimateDisplay.style.display = 'none';
+      return;
+    }
+
+    // Calculate yarn needed
+    const swatchArea = swatchWidthNum * swatchLengthNum;
+    const blanketArea = sizeSelection.dimensions.width * sizeSelection.dimensions.length;
+    const gramsNeeded = Math.round((blanketArea / swatchArea) * swatchWeightNum);
+
+    // Display the result
+    yarnEstimateDisplay.innerHTML = `Estimated Yarn Needed: <span style="color: var(--kbm-green);">${gramsNeeded}g</span> based on your swatch`;
+    yarnEstimateDisplay.style.display = 'block';
+  }
+
+  // Validation
+  function validateGauge(value, type) {
+    if (!value) return { valid: true, message: '', class: '' };
+    
+    const num = parseFloat(value);
+    if (isNaN(num)) {
+      return { valid: false, message: 'Please enter a valid number', class: 'error' };
+    }
+    if (num < 2) {
+      return { valid: false, message: 'Value must be at least 2', class: 'error' };
+    }
+    if (num > 80) {
+      return { valid: false, message: 'Value must be 80 or less', class: 'error' };
+    }
+    
+    if (type === 'stitches' && (num < 10 || num > 50)) {
+      return { valid: true, message: 'That seems unusual — double-check your entry', class: 'warning' };
+    }
+    if (type === 'rows' && (num < 10 || num > 60)) {
+      return { valid: true, message: 'That seems unusual — double-check your entry', class: 'warning' };
+    }
+    
+    return { valid: true, message: '', class: '' };
+  }
+
+  function updateValidation(input, msgEl, type) {
+    const validation = validateGauge(input.value, type);
+    input.className = validation.class;
+    if (validation.message) {
+      const symbol = validation.class === 'error' ? '⚠' : '⚠';
+      msgEl.className = `validation-message ${validation.class}`;
+      msgEl.innerHTML = `${symbol} ${validation.message}`;
+    } else {
+      msgEl.className = 'validation-message';
+      msgEl.innerHTML = '';
+    }
+    return validation.valid;
+  }
+  
+  // Check if BOTH gauge inputs are valid
+  function checkGaugeErrors() {
+    const stitchesValidation = validateGauge(stitchesGauge, 'stitches');
+    const rowsValidation = validateGauge(rowsGauge, 'rows');
+    return !stitchesValidation.valid || !rowsValidation.valid;
+  }
+
+  // Unit conversion
+  function convertDimensions(dimensions) {
+    if (units === 'cm') {
+      return {
+        length: Math.round(dimensions.length * 2.54 * 10) / 10,
+        width: Math.round(dimensions.width * 2.54 * 10) / 10
+      };
+    }
+    return dimensions;
+  }
+
+  // Get current size selection
+  function getCurrentSize() {
+    if (useCustomSize && customLength && customWidth) {
+      return {
+        size: "Custom",
+        dimensions: {
+          length: parseFloat(customLength),
+          width: parseFloat(customWidth)
+        },
+        category: "Custom"
+      };
+    }
+    
+    if (selectedSize && blanketSizes[selectedSize]) {
+      const sizeData = blanketSizes[selectedSize];
+      return {
+        size: sizeData.name,
+        dimensions: convertDimensions({ length: sizeData.length, width: sizeData.width }),
+        category: sizeData.category
+      };
+    }
+    
+    return null;
+  }
+
+  // Calculate yarn needed
+  function calculateYarnNeeded(sizeSelection, widthSts, lengthRows) {
+    if (!calculateYarn || !swatchWidth || !swatchLength || !swatchWeight) {
+      return { grams: 0, balls: 0, method: 'none' };
+    }
+
+    const swatchWidthNum = parseFloat(swatchWidth);
+    const swatchLengthNum = parseFloat(swatchLength);
+    const swatchWeightNum = parseFloat(swatchWeight);
+
+    if (swatchWidthNum > 0 && swatchLengthNum > 0 && swatchWeightNum > 0) {
+      const swatchArea = swatchWidthNum * swatchLengthNum;
+      const blanketArea = sizeSelection.dimensions.width * sizeSelection.dimensions.length;
+      const gramsNeeded = Math.round((blanketArea / swatchArea) * swatchWeightNum);
+      const ballsNeeded = Math.ceil(gramsNeeded / 100);
+
+      return { grams: gramsNeeded, balls: ballsNeeded, method: 'swatch' };
+    }
+
+    return { grams: 0, balls: 0, method: 'none' };
+  }
+
+  // Generate SVG diagram
+  function generateDiagram(sizeSelection, widthSts, lengthRows, yarnData) {
+    const blanketWidth = sizeSelection.dimensions.width;
+    const blanketLength = sizeSelection.dimensions.length;
+    const aspectRatio = blanketWidth / blanketLength;
+
+    const svgWidth = 400;
+    const svgHeight = 300;
+    const maxRectWidth = 250;
+    const maxRectHeight = 200;
+
+    let rectWidth, rectHeight;
+    if (aspectRatio > 1) {
+      rectWidth = maxRectWidth;
+      rectHeight = maxRectWidth / aspectRatio;
+    } else {
+      rectHeight = maxRectHeight;
+      rectWidth = maxRectHeight * aspectRatio;
+    }
+
+    const rectX = (svgWidth - rectWidth) / 2;
+    const rectY = (svgHeight - rectHeight) / 2;
+
+    const unitLabel = units === 'inches' ? '"' : 'cm';
+
+    const yarnText = yarnData.method !== 'none'
+      ? `<text x="${rectX + rectWidth/2}" y="${rectY + rectHeight/2 + 15}" text-anchor="middle" font-size="12" fill="#666">${yarnData.grams}g</text>`
+      : '';
+
+    return `
+      <svg viewBox="0 0 ${svgWidth} ${svgHeight}" width="${svgWidth}" height="${svgHeight}" xmlns="http://www.w3.org/2000/svg" style="width: 100%; max-width: 500px; height: auto; background: white;">
+        <rect x="${rectX}" y="${rectY}" width="${rectWidth}" height="${rectHeight}"
+              fill="white" stroke="black" stroke-width="2"/>
+
+        <line x1="${rectX}" y1="${rectY + rectHeight + 25}" x2="${rectX + rectWidth}" y2="${rectY + rectHeight + 25}"
+              stroke="black" stroke-width="1"/>
+        <circle cx="${rectX}" cy="${rectY + rectHeight + 25}" r="3" fill="black"/>
+        <circle cx="${rectX + rectWidth}" cy="${rectY + rectHeight + 25}" r="3" fill="black"/>
+        <text x="${rectX + rectWidth/2}" y="${rectY + rectHeight + 45}" text-anchor="middle" font-size="12" fill="black">
+          ${widthSts} stitches (${blanketWidth}${unitLabel})
+        </text>
+
+        <line x1="${rectX - 25}" y1="${rectY}" x2="${rectX - 25}" y2="${rectY + rectHeight}"
+              stroke="black" stroke-width="1"/>
+        <circle cx="${rectX - 25}" cy="${rectY}" r="3" fill="black"/>
+        <circle cx="${rectX - 25}" cy="${rectY + rectHeight}" r="3" fill="black"/>
+        <text x="${rectX - 35}" y="${rectY + rectHeight/2}" text-anchor="middle" font-size="12" fill="black"
+              transform="rotate(-90, ${rectX - 35}, ${rectY + rectHeight/2})">
+          ${lengthRows} rows (${blanketLength}${unitLabel})
+        </text>
+
+        ${yarnText}
+      </svg>
+    `;
+  }
+
+  // Generate pattern instructions
+  function generateInstructions(sizeSelection, widthSts, lengthRows, yarnData) {
+    const unitLabel = units === 'inches' ? '"' : 'cm';
+    const unitSize = units === 'inches' ? '4"' : '10cm';
+
+    const yarnLine = yarnData.method !== 'none'
+      ? `<li>Yarn: ${yarnData.grams}g (based on your swatch)</li>`
+      : '';
+
+    return `
+      <div style="padding: 12px 16px; background: linear-gradient(135deg, #fff3cd 0%, #ffecb5 100%); border: 2px solid #ffc107; border-radius: 8px; margin-bottom: 20px;">
+        <strong style="color: #856404;">⚠ IMPORTANT:</strong>
+        <span style="color: #856404; font-size: 0.9rem;"> Your pattern will not be saved on this site. Please be sure to download and save your PDF - once you leave this page, your custom details won't be available again.</span>
+      </div>
+
+      <div class="highlight-box">
+        <strong style="color: #52682d;">${sizeSelection.size} Blanket</strong><br>
+        <small style="color: #666;">Finished size: ${sizeSelection.dimensions.width}${unitLabel} × ${sizeSelection.dimensions.length}${unitLabel}</small><br>
+        <small style="color: #666;">Gauge: ${stitchesGauge} stitches and ${rowsGauge} rows = ${unitSize}</small>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <strong>Materials Needed:</strong>
+        <ul class="materials-list">
+          <li>Machine: Any knitting machine</li>
+          ${yarnLine}
+          <li>Gauge: ${stitchesGauge} stitches and ${rowsGauge} rows = ${unitSize}</li>
+        </ul>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <strong>Pattern Instructions:</strong>
+        <ol class="instructions-list">
+          <li>Cast on ${widthSts} stitches</li>
+          <li>Knit in pattern for ${lengthRows} rows</li>
+          <li>Bind off all stitches</li>
+        </ol>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <strong>Finishing:</strong>
+        <ul class="materials-list">
+          <li>Weave in all ends</li>
+          <li>Block to finished measurements</li>
+          <li>Add fringe or edging if desired</li>
+        </ul>
+      </div>
+
+      <div class="highlight-box">
+        <strong style="color: #52682d;">Pattern Summary:</strong><br>
+        <small style="color: #666;">
+          Cast on ${widthSts} stitches, knit ${lengthRows} rows, bind off.
+          Finished size: ${sizeSelection.dimensions.width}${unitLabel} × ${sizeSelection.dimensions.length}${unitLabel}${yarnData.method !== 'none' ? `<br>Yarn needed: ${yarnData.grams}g` : ''}
+        </small>
+      </div>
+    `;
+  }
+
+  // Main calculate function
+  function calculate() {
+    const divisor = units === 'inches' ? 4 : 10;
+    const stitchesPerUnit = parseFloat(stitchesGauge) / divisor;
+    const rowsPerUnit = parseFloat(rowsGauge) / divisor;
+
+    const sizeSelection = getCurrentSize();
+
+    // Show action bar if user has data
+    if (stitchesGauge || rowsGauge) {
+      actionBar.style.display = 'flex';
+    }
+
+    // Check if BOTH gauges are valid
+    if (!stitchesPerUnit || !rowsPerUnit || !sizeSelection || checkGaugeErrors()) {
+      resultsSection.style.display = 'none';
+      printBtn.style.display = 'none';
+      return;
+    }
+
+    const widthSts = Math.round(sizeSelection.dimensions.width * stitchesPerUnit);
+    const lengthRows = Math.round(sizeSelection.dimensions.length * rowsPerUnit);
+
+    if (widthSts <= 0 || lengthRows <= 0) {
+      resultsSection.style.display = 'none';
+      printBtn.style.display = 'none';
+      return;
+    }
+
+    const yarnData = calculateYarnNeeded(sizeSelection, widthSts, lengthRows);
+
+    // Display results
+    document.getElementById('pattern-content').innerHTML = generateInstructions(sizeSelection, widthSts, lengthRows, yarnData);
+    document.getElementById('diagram-title').textContent = `${sizeSelection.size} Blanket`;
+    document.getElementById('diagram-content').innerHTML = generateDiagram(sizeSelection, widthSts, lengthRows, yarnData);
+
+    resultsSection.style.display = 'block';
+    printBtn.style.display = 'inline-flex';
+  }
+
+  // Event handlers
+  btnInches.addEventListener('click', () => {
+    units = 'inches';
+    btnInches.classList.add('active');
+    btnCm.classList.remove('active');
+    // Gauge input labels are handled by GaugeInput component
+    updatePlaceholders();
+    populateSizes();
+    calculate();
+  });
+
+  btnCm.addEventListener('click', () => {
+    units = 'cm';
+    btnCm.classList.add('active');
+    btnInches.classList.remove('active');
+    // Gauge input labels are handled by GaugeInput component
+    updatePlaceholders();
+    populateSizes();
+    calculate();
+  });
+
+  inputStitches.addEventListener('input', (e) => {
+    stitchesGauge = e.target.value;
+    updateSizeCardsState();
+    calculate();
+  });
+
+  inputRows.addEventListener('input', (e) => {
+    rowsGauge = e.target.value;
+    updateSizeCardsState();
+    calculate();
+  });
+
+  useCustomCheckbox.addEventListener('change', (e) => {
+    useCustomSize = e.target.checked;
+    standardSizesDiv.style.display = useCustomSize ? 'none' : 'block';
+    customSizeDiv.style.display = useCustomSize ? 'block' : 'none';
+    if (useCustomSize) {
+      selectedSize = '';
+      document.querySelectorAll('.size-option').forEach(opt => opt.classList.remove('selected'));
+    }
+    updateYarnCalculatorVisibility();
+    calculate();
+  });
+
+  inputCustomLength.addEventListener('input', (e) => {
+    customLength = e.target.value;
+    updateYarnCalculatorVisibility();
+    updateYarnEstimate();
+    calculate();
+  });
+
+  inputCustomWidth.addEventListener('input', (e) => {
+    customWidth = e.target.value;
+    updateYarnCalculatorVisibility();
+    updateYarnEstimate();
+    calculate();
+  });
+
+  calculateYarnCheckbox.addEventListener('change', (e) => {
+    calculateYarn = e.target.checked;
+    yarnInputsDiv.style.display = calculateYarn ? 'block' : 'none';
+    calculate();
+  });
+
+  inputSwatchWidth.addEventListener('input', (e) => {
+    swatchWidth = e.target.value;
+    updateYarnEstimate();
+    calculate();
+  });
+
+  inputSwatchLength.addEventListener('input', (e) => {
+    swatchLength = e.target.value;
+    updateYarnEstimate();
+    calculate();
+  });
+
+  inputSwatchWeight.addEventListener('input', (e) => {
+    swatchWeight = e.target.value;
+    updateYarnEstimate();
+    calculate();
+  });
+
+  // Action bar event listeners (buttons are inside results section, so check if they exist)
+  if (startOverBtn) {
+    startOverBtn.addEventListener('click', () => {
+      units = 'inches';
+      stitchesGauge = rowsGauge = '';
+      selectedSize = '';
+      useCustomSize = false;
+      customLength = customWidth = '';
+      calculateYarn = false;
+      swatchWidth = swatchLength = swatchWeight = '';
+      
+      inputStitches.value = '';
+      inputRows.value = '';
+      inputCustomLength.value = '';
+      inputCustomWidth.value = '';
+      inputSwatchWidth.value = '';
+      inputSwatchLength.value = '';
+      inputSwatchWeight.value = '';
+      useCustomCheckbox.checked = false;
+      calculateYarnCheckbox.checked = false;
+      
+      btnInches.classList.add('active');
+      btnCm.classList.remove('active');
+      standardSizesDiv.style.display = 'block';
+      customSizeDiv.style.display = 'none';
+      yarnInputsDiv.style.display = 'none';
+      yarnCalculatorSection.style.display = 'none';
+      yarnEstimateDisplay.style.display = 'none';
+      
+      document.querySelectorAll('.size-option').forEach(opt => opt.classList.remove('selected'));
+      
+      updateSizeCardsState();
+      actionBar.style.display = 'none';
+      resultsSection.style.display = 'none';
+    });
+  }
+
+  if (printBtn) {
+    printBtn.addEventListener('click', () => {
+      const sizeSelection = getCurrentSize();
+      const originalTitle = document.title;
+      
+      // Set pattern name in title
+      if (sizeSelection) {
+        document.title = `${sizeSelection.size} Blanket Pattern`;
+      }
+      
+      // Set print date
+      const today = new Date();
+      const formattedDate = today.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      document.body.setAttribute('data-print-date', formattedDate);
+      
+      // Update print footer
+      const printFooter = document.getElementById('print-footer');
+      if (printFooter) {
+        printFooter.textContent = `Knit by Machine • Created on ${formattedDate}`;
+      }
+      
+      // Open print dialog
+      window.print();
+      
+      // Restore original title after print
+      setTimeout(() => {
+        document.title = originalTitle;
+      }, 100);
+    });
+  }
+
+  // Initialize
+  console.log('Initializing wizard, calling populateSizes()...');
+  populateSizes();
+  updateSizeCardsState();
+  console.log('Wizard initialized!');
+});
+</script>
+
+</BaseLayout>

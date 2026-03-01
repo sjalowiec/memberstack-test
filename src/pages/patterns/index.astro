@@ -1,0 +1,647 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SectionHero from '../../components/SectionHero.astro';
+
+let entries: any[] = [
+  {
+    title: 'Hybrid Blanket',
+    slug: 'hybrid-blanket-v2',
+    shortDescription: 'Create a custom blanket plan using your gauge, yarn, and size.',
+    displayOrder: 1,
+  },
+];
+
+let errorMessage = '';
+
+// Sort by displayOrder ascending (nulls last), then by title ascending
+entries.sort((a: any, b: any) => {
+  const aOrder = a.displayOrder ?? Number.MAX_SAFE_INTEGER;
+  const bOrder = b.displayOrder ?? Number.MAX_SAFE_INTEGER;
+  if (aOrder !== bOrder) {
+    return aOrder - bOrder;
+  }
+  // Tie-breaker: title ascending
+  return a.title.localeCompare(b.title);
+});
+
+const title = "Patterns";
+const description = "Custom-fit patterns for your knitting machine. Build patterns that fit your machine, your gauge, and your yarn.";
+---
+
+<BaseLayout {title} {description}>
+  <div class="page-container">
+    <SectionHero 
+      title="Patterns" 
+      iconPath="/images/pattern_icon.png"
+      iconAlt="Pattern icon"
+    />
+
+    <div class="intro-section">
+      <p class="intro-headline">Custom patterns that fit your machine, your gauge, and your yarn.</p>
+      <button 
+        type="button" 
+        class="intro-about-link" 
+        id="about-patterns-trigger"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+      >
+        About our patterns
+      </button>
+    </div>
+
+    <!-- Modal -->
+    <div 
+      class="modal-backdrop" 
+      id="about-patterns-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+      hidden
+    >
+      <div class="modal-content">
+        <h2 id="modal-title" class="modal-title">
+          <img src="/images/kbm_logo.svg" alt="Knit by Machine" class="modal-logo" />
+          About our patterns
+        </h2>
+        <div class="modal-body">
+          <ul class="modal-list">
+            <li><b>Start with your setup:</b><br> Gauge, yarn, machine, and measurements.</li>
+             <li><b> Make the choices that matter: </b><br>Each pattern guides your design decisions.</li>
+              <li><b>Get your pattern: </b><br>Clear, machine-ready instructions you can trust.</li>
+          </ul>
+          <p class="modal-note">
+            Your setup. Your size. Your pattern.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="modal-continue-btn" id="modal-continue-btn">
+            Continue
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="guides-grid" data-testid="patterns-grid">
+      {errorMessage && (
+        <div class="error">
+          <p><strong>Error loading Patterns</strong></p>
+          <p>Unable to fetch entries. Please try again later.</p>
+          <p style="font-size: 0.9rem; margin-top: 1rem;">{errorMessage}</p>
+        </div>
+      )}
+      
+      {entries.length === 0 && !errorMessage && (
+        <div class="no-results">
+          <p>Patterns are coming soon! Check back for custom-fit patterns.</p>
+        </div>
+      )}
+      
+      {entries.map((entry, index) => {
+        const href = entry.slug === 'hybrid-blanket-v2' 
+          ? '/patterns/hybrid-blanket' 
+          : `/patterns/${entry.slug}`;
+        return (
+          <a 
+            href={href} 
+            class="guide-card" 
+            data-testid={`card-pattern-${entry.slug}`}
+            style={`animation-delay: ${index * 0.1}s`}
+          >
+            {entry.slug === 'hybrid-blanket-v2' && (
+              <img 
+                src="/images/blanket.svg" 
+                alt="" 
+                class="guide-card-icon-top"
+              />
+            )}
+            <h2 class="guide-card-title">{entry.title}</h2>
+            {entry.slug === 'hybrid-blanket-v2' ? (
+              <div class="guide-card-content-hybrid">
+                <p class="guide-card-promise">A no-roll blanket with edges that behave.</p>
+                <p class="guide-card-supporting">Calculated for your gauge and yarn so every edge is accurate and lays flat.</p>
+                <span class="wizard-cta guide-card-cta">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" class="cta-icon" aria-hidden="true"><!--!Font Awesome Pro v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2026 Fonticons, Inc.--><path d="M536.8 64C527.2 64 517.9 67.5 510.8 73.9L233.9 320L200 320C177.9 320 160 337.9 160 360L160 387.1L81.7 457C70.5 467.1 64 481.5 64 496.6C64 510.7 69.6 524.2 79.6 534.2L105.8 560.4C115.8 570.4 129.3 576 143.4 576C158.5 576 172.9 569.6 183 558.4L455.1 256L480 256C497.7 256 512 241.7 512 224L512 197.6L567.3 128.5C572.9 121.5 576 112.7 576 103.7L576 103.2C576 81.5 558.5 64 536.8 64zM532 97.8C533.3 96.6 535 96 536.8 96C540.8 96 544 99.2 544 103.2L544 103.7C544 105.4 543.4 107.1 542.3 108.5L483.5 182C481.2 184.8 480 188.4 480 192L480 224L448 224C443.5 224 439.1 225.9 436.1 229.3L159.2 537C155.2 541.5 149.4 544 143.4 544C137.8 544 132.4 541.8 128.4 537.8L102.2 511.6C98.2 507.6 96 502.3 96 496.7C96 490.7 98.6 485 103.1 480.9L186.7 406.3C190.1 403.3 192 398.9 192 394.4L192 360.1C192 355.7 195.6 352.1 200 352.1L240 352.1C243.9 352.1 247.7 350.7 250.6 348.1L532 97.8zM320 96C320 87.2 312.8 80 304 80C295.2 80 288 87.2 288 96L288 128L256 128C247.2 128 240 135.2 240 144C240 152.8 247.2 160 256 160L288 160L288 192C288 200.8 295.2 208 304 208C312.8 208 320 200.8 320 192L320 160L352 160C360.8 160 368 152.8 368 144C368 135.2 360.8 128 352 128L320 128L320 96zM160 144C160 135.2 152.8 128 144 128C135.2 128 128 135.2 128 144L128 192L80 192C71.2 192 64 199.2 64 208C64 216.8 71.2 224 80 224L128 224L128 272C128 280.8 135.2 288 144 288C152.8 288 160 280.8 160 272L160 224L208 224C216.8 224 224 216.8 224 208C224 199.2 216.8 192 208 192L160 192L160 144zM512 368C512 359.2 504.8 352 496 352C487.2 352 480 359.2 480 368L480 416L432 416C423.2 416 416 423.2 416 432C416 440.8 423.2 448 432 448L480 448L480 496C480 504.8 487.2 512 496 512C504.8 512 512 504.8 512 496L512 448L560 448C568.8 448 576 440.8 576 432C576 423.2 568.8 416 560 416L512 416L512 368z"/></svg>
+                  <span>Build your pattern</span>
+                </span>
+              </div>
+            ) : (
+              entry.shortDescription && (
+                <p class="guide-card-description">{entry.shortDescription}</p>
+              )
+            )}
+          </a>
+        );
+      })}
+      
+      <div class="patterns-footer-note">
+        <p class="patterns-footer-note-primary">More patterns are on the way.</p>
+        <p class="patterns-footer-note-secondary">Each new pattern will follow the same build-to-fit approach—designed around gauge, yarn, and real machines.</p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .intro-section {
+    max-width: 800px;
+    margin: 0 auto 3rem;
+    text-align: center;
+  }
+
+  .intro-headline {
+    font-size: clamp(1.3rem, 2.5vw, 1.5rem);
+    font-weight: 700;
+    color: #52682D;
+    line-height: 1.4;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .intro-about-link {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0.5rem 0 0 0;
+    font-size: clamp(0.9rem, 1.5vw, 1rem);
+    color: #52682D;
+    text-decoration: underline;
+    text-decoration-color: #c7d8a4;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    transition: text-decoration-color 0.2s ease;
+  }
+
+  .intro-about-link:hover {
+    text-decoration-color: #52682D;
+  }
+
+  .intro-about-link:focus-visible {
+    outline: 2px solid #52682D;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Modal styles */
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .modal-backdrop[hidden] {
+    display: none !important;
+  }
+
+  .modal-backdrop:not([hidden]) {
+    opacity: 1;
+  }
+
+  .modal-content {
+    background-color: #ffffff;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #52682D;
+    margin: 0;
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid #c7d8a4;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .modal-logo {
+    width: 26px;
+    height: auto;
+    flex-shrink: 0;
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .modal-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.25rem 0;
+  }
+
+  .modal-list li {
+    padding: 0.5rem 0 0.5rem 1.5rem;
+    position: relative;
+    font-size: 1rem;
+    color: #5a6b47;
+    line-height: 1.6;
+  }
+
+  .modal-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #52682D;
+    font-weight: bold;
+  }
+
+  .modal-note {
+    font-size: 0.95rem;
+    color: #5a6b47;
+    line-height: 1.6;
+    margin: 0;
+    font-style: italic;
+  }
+
+  .modal-footer {
+    padding: 1rem 1.5rem 1.5rem;
+    border-top: 1px solid #c7d8a4;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .modal-continue-btn {
+    padding: 0.625rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    background-color: #52682D;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .modal-continue-btn:hover {
+    background-color: #6E8B3D;
+  }
+
+  .modal-continue-btn:focus-visible {
+    outline: 3px solid rgba(82, 104, 45, 0.35);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 768px) {
+    .modal-content {
+      max-width: 100%;
+    }
+
+    .modal-title {
+      font-size: 1.3rem;
+      padding: 1.25rem 1.25rem 0.875rem;
+    }
+
+    .modal-body {
+      padding: 1.25rem;
+    }
+
+    .modal-footer {
+      padding: 0.875rem 1.25rem 1.25rem;
+    }
+  }
+
+  .guides-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .guide-card {
+    position: relative;
+    background-color: #ffffff;
+    color: #52682D;
+    border: 2px solid #c7d8a4;
+    padding: 2rem;
+    border-radius: 16px;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 260px;
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+  }
+
+  .guide-card:hover {
+    background-color: #f6f8f2;
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(82, 104, 45, 0.15);
+    border-color: #52682D;
+  }
+
+  .guide-card-icon {
+    position: absolute;
+    top: 1.75rem;
+    right: 1.75rem;
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .guide-card:hover .guide-card-icon {
+    opacity: 1;
+  }
+
+  .guide-card-icon-top {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 0.75rem;
+    display: block;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  .guide-card-title {
+    font-size: clamp(1.4rem, 3vw, 1.6rem);
+    font-weight: 700;
+    color: #52682D;
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .guide-card-description {
+    font-size: 1.1rem;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0;
+    flex: 1 0 auto;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .guide-card-content-hybrid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1 0 auto;
+  }
+
+  .guide-card-promise {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #52682D;
+    line-height: 1.4;
+    margin: 0;
+  }
+
+  .guide-card-supporting {
+    font-size: 1rem;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0;
+    flex: 1 0 auto;
+  }
+
+  .guide-card-cta {
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
+    gap: 0.45rem;
+    margin-top: auto;
+    width: fit-content;
+  }
+
+  .wizard-cta {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: #52682D;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+  }
+
+  .wizard-cta:hover {
+    background-color: #738C52;
+  }
+
+  .guide-card-cta .cta-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    fill: currentColor;
+  }
+
+  .guide-card-badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 12px;
+    font-size: clamp(0.9rem, 2vw, 1rem);
+    font-weight: 600;
+    text-transform: uppercase;
+    align-self: flex-start;
+  }
+
+  .badge-free {
+    background-color: #C7D8A4;
+    color: #52682D;
+  }
+
+  .badge-paid {
+    background-color: #52682D;
+    color: white;
+  }
+
+  .badge-membership {
+    background-color: #8BA556;
+    color: white;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .error {
+    text-align: center;
+    padding: 3rem;
+    color: #d64545;
+    background-color: #ffe5e5;
+    border-radius: 12px;
+    grid-column: 1 / -1;
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 3rem;
+    color: #5a6b47;
+    background-color: #f9fdf5;
+    border-radius: 12px;
+    grid-column: 1 / -1;
+  }
+
+  .no-results p {
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  .patterns-footer-note {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-top: 3rem;
+    opacity: 0.75;
+  }
+
+  .patterns-footer-note-primary {
+    font-size: 0.95rem;
+    color: #5a6b47;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.5;
+  }
+
+  .patterns-footer-note-secondary {
+    font-size: 0.875rem;
+    color: #5a6b47;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 768px) {
+    .page-container {
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    .guides-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .guide-card {
+      min-height: 220px;
+    }
+
+    .intro-section {
+      margin-bottom: 2rem;
+    }
+
+    .patterns-footer-note {
+      margin-top: 2rem;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function() {
+    'use strict';
+    
+    function initModal() {
+      var trigger = document.getElementById('about-patterns-trigger');
+      var modal = document.getElementById('about-patterns-modal');
+      var continueBtn = document.getElementById('modal-continue-btn');
+      
+      if (!trigger) return;
+      if (!modal) return;
+      if (!continueBtn) return;
+
+      var previousActiveElement = null;
+
+      function lockScroll() {
+        document.body.style.overflow = 'hidden';
+      }
+
+      function unlockScroll() {
+        document.body.style.overflow = '';
+      }
+
+      function openModal() {
+        previousActiveElement = document.activeElement;
+        modal.removeAttribute('hidden');
+        trigger.setAttribute('aria-expanded', 'true');
+        lockScroll();
+        requestAnimationFrame(function() {
+          if (continueBtn) continueBtn.focus();
+        });
+      }
+
+      function closeModal() {
+        modal.setAttribute('hidden', '');
+        trigger.setAttribute('aria-expanded', 'false');
+        unlockScroll();
+        if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
+          previousActiveElement.focus();
+          previousActiveElement = null;
+        }
+      }
+
+      trigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openModal();
+      }, false);
+
+      continueBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeModal();
+      }, false);
+
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          e.preventDefault();
+          e.stopPropagation();
+          closeModal();
+        }
+      }, false);
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !modal.hasAttribute('hidden')) {
+          closeModal();
+        }
+      }, false);
+    }
+
+    function runInit() {
+      try {
+        initModal();
+      } catch (e) {
+        // Silently fail if elements not found
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', runInit);
+      window.addEventListener('load', runInit);
+    } else {
+      runInit();
+    }
+  })();
+</script>

@@ -1,0 +1,247 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PrintFooter from "../../components/common/PrintFooter.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import ToolActionBar from "../../components/wizards/ToolActionBar.astro";
+import GaugeInput from "../../components/wizards/components/GaugeInput.astro";
+import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
+import "../../styles/wizard.css";
+
+const pageUrl = "https://knitbymachine.com/tools/graph-paper";
+---
+
+<BaseLayout 
+  title="Graph Paper Tool | Knit by Machine" 
+  description="Create full-scale knitter's graph paper based on your stitch and row gauge. Download printable SVG graph paper for shaping, motifs, and intarsia.">
+
+<style>
+/* Tool-specific container (wider than default wizard-container) */
+.tool-container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.form-section {
+  margin-bottom: 2rem;
+}
+
+.section-label {
+  color: var(--kbm-green);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.gauge-helper {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.options-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Print styles */
+@media print {
+  .wizard-page {
+    padding-top: 0 !important;
+    background: white !important;
+  }
+  
+  .page-header,
+  .back-link,
+  .form-section,
+  .actions-section,
+  .info-box,
+  .no-print {
+    display: none !important;
+  }
+  
+  .tool-container {
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: white !important;
+    border: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .options-row,
+  .input-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+<div class="wizard-page">
+  <div style="max-width: 900px; margin: 0 auto; padding: 0 1rem;">
+    <WizardBackLink category="tool" />
+  </div>
+
+  <div class="page-header">
+    <div class="page-header-title">
+      <h1>Graph Paper Tool</h1>
+    </div>
+    <p>
+      Create full-scale knitter's graph paper based on your stitch and row gauge. Plan shaping, motifs, and intarsia on a grid that matches how your knitting grows.
+    </p>
+  </div>
+
+  <div class="tool-container">
+    <!-- Unit Toggle - left-aligned, above first input -->
+    <UnitToggle id="graph" />
+
+    <!-- Gauge Section -->
+    <div class="form-section">
+      <GaugeInput id="graph" showTitle={true} showToggle={false} />
+      <p class="gauge-error" id="gauge-error" style="display: none; color: #dc2626; font-size: 0.9rem; margin-top: 0.5rem;">Please enter whole numbers only.</p>
+    </div>
+
+    <!-- Paper Size -->
+    <div class="form-section">
+      <div class="input-group">
+        <label for="paper-size">Paper Size</label>
+        <select id="paper-size" data-testid="select-paper-size">
+          <option value="letter">Letter (8.5 × 11 in)</option>
+          <option value="a4">A4 (210 × 297 mm)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <ToolActionBar downloadId="download-btn" downloadFilename="knit-graph-paper.svg" showPrint={false} />
+    
+    <div class="info-box no-print">
+      <strong>Tip:</strong> For true-scale printing, print at Actual Size / 100% (not "Fit to page").
+    </div>
+  </div>
+  
+  <PrintFooter url={pageUrl} />
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // State
+  let unit = localStorage.getItem('graphpaper.unit') || 'in';
+  let paperSize = localStorage.getItem('graphpaper.paper') || 'letter';
+
+  // DOM elements
+  const btnInches = document.getElementById('graph-btn-inches');
+  const btnCm = document.getElementById('graph-btn-cm');
+  const inputStitches = document.getElementById('graph-stitch-gauge') as HTMLInputElement;
+  const inputRows = document.getElementById('graph-row-gauge') as HTMLInputElement;
+  const selectPaper = document.getElementById('paper-size') as HTMLSelectElement;
+  const downloadBtn = document.getElementById('download-btn') as HTMLAnchorElement;
+
+  // Initialize paper size from localStorage (but NOT gauge inputs - they start blank)
+  if (selectPaper) selectPaper.value = paperSize;
+
+  // Update UI based on unit - labels are handled by GaugeInput component
+  function updateUnitsUI() {
+    if (unit === 'in') {
+      btnInches?.classList.add('active');
+      btnCm?.classList.remove('active');
+    } else {
+      btnCm?.classList.add('active');
+      btnInches?.classList.remove('active');
+    }
+  }
+
+  updateUnitsUI();
+
+  // Build query string
+  function buildQueryString(): string {
+    const params = new URLSearchParams({
+      sts: inputStitches.value || '24',
+      rows: inputRows.value || '32',
+      unit: unit,
+      paper: selectPaper.value,
+    });
+    return params.toString();
+  }
+
+  // Update download link
+  function updateDownloadLink() {
+    const query = buildQueryString();
+    if (downloadBtn) downloadBtn.href = `/api/graph-paper.svg?${query}`;
+    
+    // Save to localStorage
+    localStorage.setItem('graphpaper.sts', inputStitches.value);
+    localStorage.setItem('graphpaper.rows', inputRows.value);
+    localStorage.setItem('graphpaper.unit', unit);
+    localStorage.setItem('graphpaper.paper', selectPaper.value);
+  }
+
+  // Unit toggle handlers
+  btnInches?.addEventListener('click', () => {
+    unit = 'in';
+    updateUnitsUI();
+    updateDownloadLink();
+  });
+
+  btnCm?.addEventListener('click', () => {
+    unit = 'cm';
+    updateUnitsUI();
+    updateDownloadLink();
+  });
+
+  // Listen for unit changes from UnitToggle component
+  window.addEventListener('kbm:units-change', (e: CustomEvent) => {
+    unit = e.detail.unit;
+    updateUnitsUI();
+    updateDownloadLink();
+  });
+
+  const gaugeError = document.getElementById('gauge-error');
+
+  // Check if value is a whole number
+  function hasDecimal(value: string): boolean {
+    return value.includes('.') || value.includes(',') || (parseFloat(value) % 1 !== 0);
+  }
+
+  // Validate inputs and show/hide error
+  function validateGauge(): boolean {
+    const stsVal = inputStitches?.value || '';
+    const rowsVal = inputRows?.value || '';
+    
+    if ((stsVal && hasDecimal(stsVal)) || (rowsVal && hasDecimal(rowsVal))) {
+      if (gaugeError) gaugeError.style.display = 'block';
+      return false;
+    } else {
+      if (gaugeError) gaugeError.style.display = 'none';
+      return true;
+    }
+  }
+
+  // Input change handlers - validate and update download link
+  inputStitches?.addEventListener('input', () => {
+    validateGauge();
+    updateDownloadLink();
+  });
+  inputRows?.addEventListener('input', () => {
+    validateGauge();
+    updateDownloadLink();
+  });
+  selectPaper?.addEventListener('change', updateDownloadLink);
+
+  // Initial download link update
+  updateDownloadLink();
+});
+</script>
+
+</BaseLayout>

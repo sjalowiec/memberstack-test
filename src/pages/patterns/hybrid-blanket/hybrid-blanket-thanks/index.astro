@@ -1,3 +1,85 @@
 ---
-// TODO: copy from KBM
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+
+const title = "Thank You - Hybrid Blanket";
+const description = "Your Hybrid Blanket pattern is ready.";
 ---
+
+<BaseLayout {title} {description}>
+  <section class="kbm-thanks">
+    <div class="kbm-thanks__grid">
+      <div class="kbm-thanks__left">
+        <h1>You&rsquo;re in</h1>
+
+        <p>
+          Thanks for your purchase. Stripe has emailed your receipt to the address you used at checkout.
+        </p>
+
+        <div class="kbm-thanks__actions">
+          <a class="btn-primary" href="/patterns/hybrid-blanket/?mode=full">
+            Start Your Hybrid Blanket Pattern →
+          </a>
+        </div>
+      </div>
+
+      <div class="kbm-thanks__right">
+        <img
+          src="/images/hybrid-blanket_basket.webp"
+          alt="Hybrid blanket basket"
+          loading="eager"
+        />
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .kbm-thanks {
+      padding: 2rem 1rem;
+    }
+
+    .kbm-thanks__grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .kbm-thanks__actions {
+      margin-top: 1.25rem;
+    }
+
+    .kbm-thanks__right img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 18px;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      text-align: center;
+      transition: all 0.2s;
+      font-family: inherit;
+      background: var(--kbm-green, #52682D);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #3d4e22;
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 800px) {
+      .kbm-thanks__grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</BaseLayout>

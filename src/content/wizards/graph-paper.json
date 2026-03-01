@@ -1,0 +1,103 @@
+{
+  "title": "Knitters Graph Paper",
+  "slug": "graph-paper",
+  "hero": "Create knitters graph paper based on your stitch and row gauge — so what you plan on paper matches what you knit on your machine.",
+  "description": "<p>This gauge-based graph paper adapts to your stitch and row gauge, giving you a reliable planning surface for intarsia, shaping, motifs, and custom designs.<br>Instead of forcing your ideas to fit generic squares, the grid reflects how your fabric actually knits — making it easier to sketch shapes, count stitches, and visualize results before you start.</p>",
+  "excerpt": "Printable knitters graph paper based on your stitch and row gauge — ideal for planning intarsia, shaping, and custom designs.",
+  "whyUseThisTool": "Generic graph paper treats every square the same — but knitted fabric doesn’t work that way.\nStitches are wider than rows are tall, and your gauge determines those proportions.\n\nThis tool creates knitters graph paper based on your stitch and row gaug",
+  "category": "tool",
+  "tags": [
+    "gauge",
+    "planning"
+  ],
+  "keywords": [
+    "knitters graph paper",
+    "knitting graph paper",
+    "gauge based graph paper",
+    "stitch and row gauge",
+    "knitting chart paper",
+    "intarsia planning",
+    "knitting charts"
+  ],
+  "aliases": [
+    "knitting graph paper",
+    "graph paper for knitting",
+    "gauge graph paper",
+    "knitting chart paper",
+    "stitch and row graph paper",
+    "machine knitting graph paper"
+  ],
+  "videoUrl": "",
+  "accessLevel": "free",
+  "price": "",
+  "relatedAnas": [],
+  "relatedWorkshops": [],
+  "imageUrl": "",
+  "imageAlt": "",
+  "iconUrl": "",
+  "metaTitle": "Knitters Graph Paper | Gauge-Based Charting Tool | Knit by Machine",
+  "metaDescription": "Create printable knitters graph paper based on your stitch and row gauge. Ideal for planning intarsia, shaping, motifs, and custom designs.",
+  "schemaMarkup": {
+    "@graph": [
+      {
+        "@id": "https://YOURDOMAIN.com/#organization",
+        "url": "https://YOURDOMAIN.com/",
+        "logo": {
+          "url": "https://YOURDOMAIN.com/images/kbm_logo.svg",
+          "@type": "ImageObject"
+        },
+        "name": "Knit by Machine",
+        "@type": "Organization"
+      },
+      {
+        "@id": "https://YOURDOMAIN.com/tools/graph-paper#app",
+        "url": "https://YOURDOMAIN.com/tools/graph-paper",
+        "name": "Knitters Graph Paper",
+        "@type": "WebApplication",
+        "offers": {
+          "url": "https://YOURDOMAIN.com/tools/graph-paper",
+          "@type": "Offer",
+          "price": "0",
+          "category": "Free",
+          "priceCurrency": "USD"
+        },
+        "creator": {
+          "@id": "https://YOURDOMAIN.com/#organization"
+        },
+        "keywords": "knitters graph paper, knitting graph paper, gauge based graph paper, stitch and row gauge, knitting chart paper, intarsia planning, knitting charts",
+        "publisher": {
+          "@id": "https://YOURDOMAIN.com/#organization"
+        },
+        "description": "Create printable knitters graph paper based on your stitch and row gauge. Ideal for planning intarsia, shaping, motifs, and custom designs.",
+        "alternateName": [
+          "Knitting Graph Paper",
+          "Graph Paper for Knitting",
+          "Gauge Graph Paper",
+          "Knitting Chart Paper",
+          "Stitch and Row Graph Paper",
+          "Machine Knitting Graph Paper"
+        ],
+        "operatingSystem": "Web",
+        "applicationCategory": "DesignApplication",
+        "browserRequirements": "Requires a modern web browser."
+      },
+      {
+        "@id": "https://YOURDOMAIN.com/tools/graph-paper#webpage",
+        "url": "https://YOURDOMAIN.com/tools/graph-paper",
+        "name": "Knitters Graph Paper",
+        "@type": "WebPage",
+        "about": {
+          "@id": "https://YOURDOMAIN.com/tools/graph-paper#app"
+        },
+        "isPartOf": {
+          "@id": "https://YOURDOMAIN.com/#organization"
+        },
+        "description": "Create printable knitters graph paper based on your stitch and row gauge."
+      }
+    ],
+    "@context": "https://schema.org"
+  },
+  "isDraft": false,
+  "publishedDate": "2025-12-14",
+  "pendingPublish": false
+}

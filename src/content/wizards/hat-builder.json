@@ -1,0 +1,58 @@
+{
+  "title": "The Go-To Machine-Knit Hat",
+  "slug": "hat-builder",
+  "hero": "Design the perfect custom hat with precise sizing, brim options, and crown shaping.",
+  "description": "<p><strong>The Go-To Machine-Knit Hat</strong> is a foundational hat pattern you’ll come back to again and again.</p>\n<p>Designed for machine knitters, this pattern adapts to <em>your</em> gauge and measurements, then lets you choose from four different crown styles — no recalculating, no guesswork.</p>\n<p>Clear, machine-knitting specific instructions walk you through cast-on, body, and crown shaping, with options for a gathered crown, segmented wedge crowns or a smooth spiral finish. Whether you want structure or softness, this single pattern gives you flexible, reliable results.</p>\n<p>Knit it plain, knit it patterned, knit it again — this is the hat pattern that earns its place as your go-to.</p>\n<p>One pattern. Multiple crown options. Your fit.</p>",
+  "excerpt": "A custom-fit machine-knit hat pattern with four crown styles, designed to work with your gauge and knitting style.",
+  "whyUseThisTool": "",
+  "category": "pattern",
+  "tags": [
+    "hat",
+    "custom",
+    "sizing",
+    "calculator"
+  ],
+  "keywords": [
+    "pattern",
+    "hat",
+    "beanie",
+    "cap"
+  ],
+  "aliases": [
+    "machine knit hat pattern",
+    "custom fit hat pattern",
+    "machine knitting hat",
+    "knit hat on a knitting machine",
+    "beanie machine knit pattern",
+    "adjustable fit hat pattern",
+    "gauge-based hat pattern"
+  ],
+  "videoUrl": "",
+  "accessLevel": "free",
+  "price": "",
+  "relatedAnas": [],
+  "relatedWorkshops": [],
+  "imageUrl": "",
+  "imageAlt": "",
+  "iconUrl": "https://www.knitbymachine.com/images/hat.svg",
+  "metaTitle": "Machine-Knit Hat Pattern – Custom Fit with Multiple Crown Styles",
+  "metaDescription": "Create a perfectly fitting machine-knit hat using your own gauge. One pattern includes multiple crown styles with clear, machine-knitting specific instructions.",
+  "schemaMarkup": {
+    "name": "Custom-Fit Machine-Knit Hat",
+    "@type": "Product",
+    "brand": {
+      "name": "Knit by Machine",
+      "@type": "Brand"
+    },
+    "@context": "https://schema.org",
+    "audience": {
+      "@type": "Audience",
+      "audienceType": "Machine Knitters"
+    },
+    "category": "Knitting Pattern",
+    "description": "A customizable machine-knit hat pattern designed for your gauge and fit, with multiple crown styles and clear, machine-native instructions."
+  },
+  "isDraft": false,
+  "publishedDate": "2024-11-14",
+  "pendingPublish": false
+}
