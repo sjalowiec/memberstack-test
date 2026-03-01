@@ -23,7 +23,7 @@ export const GET: APIRoute = async ({ request }) => {
         Authorization: `Basic ${auth}`
       },
       body: JSON.stringify({
-        externalId,
+        externalUserId: externalId,
         email,
         fullName
       })
