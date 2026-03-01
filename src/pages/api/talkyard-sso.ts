@@ -4,7 +4,7 @@ const TALKYARD_BASE = "https://knititnow.talkyard.net";
 
 export const GET: APIRoute = async () => {
   const secret = (import.meta.env.TALKYARD_API_SECRET || "").trim();
-  const user = "tyid2"; // sysbot user, per Talkyard docs/examples
+  const user = "tyid=2"; // sysbot user, per Talkyard docs/examples
 
   const auth = Buffer.from(`${user}:${secret}`).toString("base64");
 
