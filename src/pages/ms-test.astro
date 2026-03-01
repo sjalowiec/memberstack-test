@@ -34,37 +34,29 @@ import Layout from "../layouts/Layout.astro";
     </section>
   </main>
 </Layout>
-<script>
-  document.getElementById("talkyardSsoBtn").addEventListener("click", async () => {
-    const member = await $memberstackDom.getCurrentMember();
-    if (!member) {
-      alert("Not logged into Memberstack");
+<script is:inline>
+  document.getElementById("talkyardSsoBtn")?.addEventListener("click", async () => {
+    const member = await window.$memberstackDom?.getCurrentMember();
+    if (!member?.data) {
+      alert("Not logged in");
       return;
     }
 
-    const externalUserId = member.data.id;
-    const email = member.data.auth.email;
-    const fullName =
-      member.data.customFields?.fullName ||
-      member.data.auth?.email ||
-      "Member";
-
-    // IMPORTANT: this navigates the whole window after POST returns the 302
     const res = await fetch("/api/talkyard-sso?thenGoTo=/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ externalUserId, email, fullName }),
-      redirect: "manual",
+      body: JSON.stringify({
+        externalUserId: member.data.id,
+        email: member.data.auth?.email,
+        fullName:
+          member.data.customFields?.fullName ||
+          member.data.auth?.email ||
+          "Member",
+      }),
     });
 
-    const loc = res.headers.get("Location");
-if (!loc) {
-  const t = await res.text();
-  alert("SSO failed:\n\nStatus: " + res.status + "\n\n" + t);
-  return;
-}
-
-    window.location.href = loc;
+    const data = await res.json();
+    window.location.href = data.redirectUrl;
   });
 </script>
 <script is:inline>
