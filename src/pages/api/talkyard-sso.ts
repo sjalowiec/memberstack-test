@@ -136,3 +136,4 @@ return new Response(JSON.stringify({ redirectUrl }), {
   status: 200,
   headers: { "Content-Type": "application/json" },
 });
+};
