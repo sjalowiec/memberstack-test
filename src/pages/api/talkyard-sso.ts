@@ -2,14 +2,18 @@ import type { APIRoute } from "astro";
 
 const TALKYARD_BASE = "https://knititnow.talkyard.net";
 
-export const GET: APIRoute = async ({ request, locals }) => {
+export const GET: APIRoute = async ({ request }) => {
   const TALKYARD_API_SECRET = import.meta.env.TALKYARD_API_SECRET;
-
   if (!TALKYARD_API_SECRET) {
     return new Response("Missing TALKYARD_API_SECRET", { status: 500 });
   }
 
-  // Temporary clean test user
+  const url = new URL(request.url);
+
+  // ✅ Always safe default: land on Talkyard home after login
+  const thenGoTo = url.searchParams.get("thenGoTo") ?? "/";
+
+  // ✅ TEMP: clean test user (replace later with Memberstack user)
   const externalUserId = "mem_test_user_2";
   const primaryEmailAddress = "test2@example.com";
   const fullName = "Test User 2";
@@ -33,22 +37,23 @@ export const GET: APIRoute = async ({ request, locals }) => {
     }
   );
 
+  const raw = await upstream.text();
+
   if (!upstream.ok) {
-    const text = await upstream.text();
-    return new Response(text, { status: upstream.status });
+    return new Response(raw, { status: upstream.status });
   }
 
-  const data = await upstream.json();
+  let data: any;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    return new Response("Talkyard returned non-JSON response", { status: 502 });
+  }
+
   const loginSecret = data.loginSecret ?? data.ssoLoginSecret;
-
   if (!loginSecret) {
-    return new Response("No login secret returned from Talkyard", {
-      status: 502,
-    });
+    return new Response("No login secret returned from Talkyard", { status: 502 });
   }
-
-  const url = new URL(request.url);
-  const thenGoTo = url.searchParams.get("thenGoTo") ?? "/roundtable";
 
   const redirectUrl =
     `${TALKYARD_BASE}/-/v0/login-with-secret` +
@@ -57,8 +62,6 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
   return new Response(null, {
     status: 302,
-    headers: {
-      location: redirectUrl,
-    },
+    headers: { location: redirectUrl },
   });
 };
