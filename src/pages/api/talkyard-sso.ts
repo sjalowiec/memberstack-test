@@ -5,9 +5,11 @@ const TALKYARD_BASE = "https://knititnow.talkyard.net";
 export const GET: APIRoute = async () => {
   const secret = import.meta.env.TALKYARD_API_SECRET;
 
+  const auth = Buffer.from(`tyid2:${secret}`).toString("base64");
+
   const res = await fetch(`${TALKYARD_BASE}/-/v0/ping`, {
     headers: {
-      Authorization: `Bearer ${secret}`
+      Authorization: `Basic ${auth}`
     }
   });
 
