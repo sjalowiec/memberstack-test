@@ -11,7 +11,7 @@ export const GET: APIRoute = async ({ request }) => {
 
   // 🔹 Replace these with your actual Memberstack values
   // If you're already pulling these from session, keep that logic.
-  const externalUserId = "test-user-id";
+  const externalUserId = "Some(mem_test_user)";
   const primaryEmailAddress = "test@example.com";
   const fullName = "Test User";
 
