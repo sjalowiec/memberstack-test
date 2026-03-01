@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 
-const TALKYARD_SECRET = process.env.TALKYARD_API_SECRET!;
+const TALKYARD_SECRET = import.meta.env.TALKYARD_API_SECRET;
 const TALKYARD_BASE = "https://knititnow.talkyard.net";
 
 export const GET: APIRoute = async ({ request }) => {
