@@ -39,8 +39,10 @@ export const GET: APIRoute = async ({ request }) => {
     );
   }
 
-  const data = JSON.parse(upsertText);
-  const oneTimeSecret = data.oneTimeSecret;
+  return new Response(upsertText, {
+    status: 200,
+    headers: { "Content-Type": "application/json" }
+  });
 
   return Response.redirect(
     `${TALKYARD_BASE}/-/v0/login-with-secret?oneTimeSecret=${encodeURIComponent(
