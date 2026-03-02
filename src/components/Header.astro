@@ -584,6 +584,12 @@ div[data-ms-modal-overlay] {
 }
 
 
+.kbm-welcome-message {
+  font-size: 14px;
+  margin-right: 12px;
+  white-space: nowrap;
+}
+
 /* Hide header when printing */
 @media print {
   .kbm-header-wrap {
@@ -607,6 +613,7 @@ div[data-ms-modal-overlay] {
         </div>
 
         <div class="right">
+          <div id="kbm-welcome-message" class="kbm-welcome-message"></div>
           {showAuthDebug && (
             <span id="auth-pill" class="auth-pill">auth: …</span>
           )}
@@ -974,4 +981,38 @@ div[data-ms-modal-overlay] {
       });
     }
   })();
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    if (!window.$memberstackDom) return;
+
+    try {
+      const { data: member } = await window.$memberstackDom.getCurrentMember();
+      if (!member) return;
+
+      const firstName =
+        member.customFields?.firstName ||
+        member.name ||
+        "";
+
+      if (!firstName) return;
+
+      const el = document.getElementById("kbm-welcome-message");
+      if (!el) return;
+
+      const hasPaidPlan =
+        member.planConnections &&
+        member.planConnections.length > 0;
+
+      if (hasPaidPlan) {
+        el.innerText = `Welcome back, ${firstName}. Thanks for being a member.`;
+      } else {
+        el.innerText = `Hi, ${firstName}.`;
+      }
+
+    } catch (e) {
+      console.error("Memberstack greeting error:", e);
+    }
+  });
 </script>
