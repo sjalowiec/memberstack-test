@@ -620,16 +620,35 @@ div[data-ms-message-class="ms-success-message"] {
             <span id="auth-pill" class="auth-pill">auth: …</span>
           )}
           <div class="kbm-account-section auth header-actions">
-            <a
-              id="kbmLoginLink"
-              data-ms-modal="login"
-              data-ms-content="!members"
-              data-ms-redirect="current-url"
-            >
-              Log in
+            <a href="#"
+               data-ms-modal="signup"
+               data-ms-hide="member">
+               Join Free
             </a>
-            <a data-ms-modal="profile" data-ms-content="members">Account</a>
-            <a href="#" data-ms-action="logout" data-ms-content="members">Log out</a>
+
+            <a href="#"
+               data-ms-modal="login"
+               data-ms-hide="member">
+               Log in
+            </a>
+
+            <a href="#"
+               data-ms-modal="account"
+               data-ms-show="member">
+               Account
+            </a>
+
+            <a href="#"
+               data-ms-action="logout"
+               data-ms-show="member">
+               Log out
+            </a>
+
+            <a href="/subscribe/plans.cfm"
+               data-ms-show="member"
+               data-ms-hide="plan:KIN Membership – Annual,plan:KIN Membership – Monthly">
+               Become a member
+            </a>
             <span style="margin-left:10px;" data-ms-content="member-videos">VIDEOS✅</span>
             <span style="margin-left:10px;" data-ms-content="!member-videos">NO VIDEOS❌</span>
           </div>

@@ -1,0 +1,194 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Community">
+  <main class="page">
+    <section class="hero">
+      <h1>Community</h1>
+      <p class="subhead">
+        A friendly place for machine knitters to ask questions, share progress, and learn from each other.
+      </p>
+
+      <div class="ctaRow">
+        <!-- Update this href later when you decide where the forum lives -->
+        <a class="btnPrimary"
+          href="#"
+          data-ms-modal="signup"
+          data-ms-hide="member"
+          data-ms-content="!members">
+          Enter the Community
+        </a>
+        <a href="#" class="btnSecondary" id="contact-modal-trigger-community">
+          Need to reach me directly?
+        </a>
+      </div>
+
+      <p class="note">
+        Just so expectations are clear: this is a member-to-member space. I’ll pop in when I can, but it isn’t the fastest
+        way to get direct support from me.
+      </p>
+    </section>
+
+    <section class="cards">
+      <div class="card">
+        <h2>What you’ll find there</h2>
+        <ul>
+          <li>Questions and helpful answers from other knitters</li>
+          <li>Ideas, works-in-progress, and “what would you do?” threads</li>
+          <li>A place to keep the conversation going between videos and projects</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Posting tips</h2>
+        <ul>
+          <li>If you’re stuck, include your machine, yarn, and what you’ve already tried</li>
+          <li>A photo or short clip helps a lot</li>
+          <li>One question per post keeps replies clear and useful</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Kind & helpful wins</h2>
+        <p>
+          We’re all learning. If something goes sideways, it doesn’t mean you did anything “wrong.”
+          Ask anyway—chances are someone has been right there too.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <style>
+   .page {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 220px 16px 56px; /* pushes content below fixed header */
+}
+
+.hero {
+  padding: 40px 28px;
+  border-radius: 18px;
+  background: #f3f6ef; /* soft olive tint */
+  border: 1px solid rgba(82, 104, 45, 0.15);
+  text-align: center; /* centers heading + text */
+}
+
+.hero h1 {
+  margin: 0 0 12px;
+}
+
+.hero .subhead {
+  margin: 0 auto 20px;
+  max-width: 680px;
+}
+
+.ctaRow {
+  display: flex;
+  gap: 14px;
+  justify-content: center; /* centers buttons */
+  flex-wrap: wrap;
+  margin: 18px 0 14px;
+}
+
+.note {
+  max-width: 680px;
+  margin: 12px auto 0;
+}
+
+    .subhead {
+      margin: 0 0 16px;
+      font-size: 18px;
+      line-height: 1.5;
+      opacity: 0.9;
+    }
+
+    .ctaRow {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 14px 0 12px;
+    }
+
+    .btnPrimary,
+    .btnSecondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+    }
+
+    .btnPrimary {
+      background: #52682d;
+      color: #fff;
+      border-color: rgba(82, 104, 45, 0.35);
+    }
+
+    .btnSecondary {
+      background: #fff;
+      color: #1b1b1b;
+    }
+
+    .note {
+  max-width: 680px;        /* keeps it readable */
+  margin: 14px auto 0;     /* centers the block itself */
+  font-size: 14px;
+  line-height: 1.6;
+  opacity: 0.8;
+  text-align: center;      /* centers the text inside */
+}
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .card ul {
+      margin: 0;
+      padding-left: 18px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 900px) {
+      .cards {
+        grid-template-columns: 1fr;
+      }
+      h1 {
+        font-size: 32px;
+      }
+    }
+  </style>
+  <script>
+    // Reuse the footer's modal behavior by delegating to the existing trigger.
+    document.addEventListener("DOMContentLoaded", () => {
+      const communityTrigger = document.getElementById("contact-modal-trigger-community");
+      const footerTrigger = document.getElementById("contact-modal-trigger");
+  
+      if (!communityTrigger) return;
+  
+      communityTrigger.addEventListener("click", (e) => {
+        e.preventDefault();
+        // If the footer trigger exists on this page, "click" it to open the same modal.
+        if (footerTrigger) footerTrigger.click();
+      });
+    });
+  </script>
+</Layout>

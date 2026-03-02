@@ -1,13 +1,28 @@
+<!-- Backup of Header.astro from 2026-03-01 — restore by copying over Header.astro -->
 ---
-/* src/components/Header.astro */
+/* Centered Logo Header for Knit it Now */
+const showAuthDebug = import.meta.env.DEV;
 ---
 <style is:global>
-:root {
-  --kbm-green: #52682d;
-  --kbm-green-2: #738c52;
-  --kbm-bg: #e9ece7;
-  --page-bg: #f7f8f7;
-  --ring: #e5e8e0;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+/* Global variables and typography now defined in global.css to avoid Astro CSS bundling issues */
+
+/* Desktop header-specific adjustments */
+@media (min-width: 1025px) {
+  .kbm-logo-section {
+    padding: 4px 80px 0 80px;
+  }
+
+  .kbm-tagline {
+    margin-top: 0;
+    margin-bottom: 0.25rem;
+  }
+
+  .kbm-nav-row {
+    padding: 0.25rem 0;
+    margin-top: 0;
+  }
 }
 
 /* ===== FIXED HEADER ===== */
@@ -16,115 +31,255 @@
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
+  z-index: 1500;
   background: var(--kbm-bg);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, .05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
 }
 
 .kbm-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 8px 18px;
+  padding: 0 20px;
 }
 
-.kbm-header {
-  border-bottom: 1px solid rgba(0, 0, 0, .06);
-}
-
-/* ===== TOPBAR ===== */
-.kbm-topbar {
-  display: flex;
+/* ===== HEADER INNER (two-column: brand | auth) ===== */
+.header-inner {
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 6px 18px;
+  border-bottom: 1px solid var(--ring);
 }
 
-/* ===== LOGO ===== */
+.right {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.auth {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-family: "Poppins", sans-serif;
+  font-size: var(--text-base);
+}
+
+.auth a,
+.auth button {
+  color: var(--kbm-green);
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0;
+}
+
+.auth a:hover,
+.auth button:hover {
+  color: var(--kbm-green-hover);
+}
+
+.auth-pill {
+  margin-left: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid currentColor;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+.header-actions a {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  text-decoration: none;
+  margin-left: 0.5rem;
+}
+
+.auth-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.auth-btn--primary {
+  background: var(--color-primary, #111);
+  color: #fff;
+  border: 1px solid var(--color-primary, #111);
+}
+
+.auth-btn--primary:hover {
+  opacity: 0.9;
+}
+
+.auth-btn--secondary {
+  background: transparent;
+  color: var(--color-primary, #111);
+  border: 1px solid transparent;
+}
+
+.auth-btn--secondary:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 760px) {
+  .header-inner {
+    grid-template-columns: 1fr;
+  }
+  .right {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
+/* ===== BRAND (logo + tagline) ===== */
+.brand .kbm-logo-section {
+  text-align: left;
+  padding: 0.5rem 0 0.25rem 0;
+  justify-self: start;
+}
+
+.kbm-logo-section {
+  padding: 0.5rem 80px 0.25rem 80px;
+}
+
 .kbm-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   text-decoration: none;
   color: var(--kbm-green);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+  margin-bottom: 0.25rem;
+}
+
+.kbm-logo-img {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
 }
 
 .kbm-logo-text {
-  font-family: "Shadows Into Light Two", cursive;
-  font-size: 2.6rem;
+  font-family: "Poppins", sans-serif;
+  font-size: var(--text-xxl);
   font-weight: 700;
-  letter-spacing: .3px;
+  letter-spacing: -0.5px;
   line-height: 1;
-}
-
-.kbm-logo .by {
-  font-size: .7em;
-  color: #8a96a3;
-  font-weight: 400;
-  margin: 0 8px;
-}
-
-.kbm-logo .tagline {
-  font-size: .95rem;
   color: var(--kbm-green);
-  margin-top: 2px;
-  letter-spacing: .3px;
 }
 
-/* ===== NAV ===== */
-.kbm-nav {
-  position: relative;
-  z-index: 1100;
+.kbm-logo-text-by {
+  font-weight: 400;
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
+.kbm-tagline {
+  font-family: "Poppins", sans-serif;
+  font-size: calc(var(--text-base) + 2px);
+  color: rgba(60, 80, 45, 0.75);
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 400;
+  text-align: center;
+}
+
+/* ===== NAVIGATION ROW ===== */
+.kbm-nav-row {
+  padding: 0.25rem 0;
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
 }
 
 .kbm-menu {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 40px;
   margin: 0;
   padding: 0;
   list-style: none;
+  font-family: "Poppins", sans-serif;
 }
 
-.kbm-menu>li>a {
+.kbm-menu > li > a,
+.kbm-menu > li > .dd-trigger {
   color: var(--kbm-green);
   text-decoration: none;
-  font-weight: 700;
-  padding: 5px 6px;
-  border-radius: 6px;
+  font-weight: 600;
+  font-size: var(--text-lg);
+  padding: 8px 0;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
 }
 
-.kbm-menu>li>a:hover {
-  background: rgba(68, 86, 38, .1);
+.kbm-menu > li > a:hover,
+.kbm-menu > li > .dd-trigger:hover {
+  color: var(--kbm-green-hover);
 }
 
 .caret {
   font-size: 1.2em;
-  color: var(--kbm-green-2);
-  margin-left: 3px;
+  margin-left: 2px;
 }
 
-/* LOGIN BUTTON */
-.kbm-login {
-  background: var(--kbm-green);
-  color: #fff !important;
-  padding: 6px 16px;
-  border-radius: 6px;
-  text-decoration: none;
-  font-weight: 700;
-  display: inline-flex;
+/* ===== SEARCH BAR ===== */
+.kbm-search-wrap {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 0.95rem;
+  gap: 0;
+  background: white;
+  border: 1px solid var(--ring);
+  border-radius: 24px;
+  overflow: hidden;
+  min-width: 280px;
 }
 
-.kbm-login:hover {
-  background: var(--kbm-green-2);
+.kbm-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 8px 16px;
+  font-size: var(--text-base);
+  font-family: "Poppins", sans-serif;
+  background: transparent;
+}
+
+.kbm-search-btn {
+  background: var(--kbm-green);
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  cursor: pointer;
+  font-size: var(--text-base);
+  transition: background 0.2s ease;
+  min-height: 40px;
+}
+
+.kbm-search-btn:hover {
+  background: var(--kbm-green-hover);
 }
 
 /* ===== DROPDOWNS ===== */
@@ -134,28 +289,28 @@
 
 .dd-panel {
   position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  min-width: 220px;
-  background: #f7f8f7;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(8px) scale(0.98);
+  min-width: 200px;
+  background: #ffffff;
   border: 1px solid var(--ring);
   border-radius: 8px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, .12);
-  padding: 6px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+  padding: 8px 0;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateY(8px) scale(.98);
-  transition: opacity .18s ease, transform .18s ease;
+  transition: opacity .2s ease, transform .2s ease;
   z-index: 1200;
 }
 
-.dd.open>.dd-panel,
-.dd:hover>.dd-panel {
+.dd.open > .dd-panel,
+.dd:hover > .dd-panel {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transform: translateY(0) scale(1);
+  transform: translateX(-50%) translateY(0) scale(1);
 }
 
 .dd-panel li {
@@ -164,125 +319,42 @@
 
 .dd-panel a {
   display: block;
-  padding: 8px 14px;
+  padding: 12px 16px;
   color: var(--kbm-green);
   text-decoration: none;
-  font-weight: 600;
-  font-size: 0.95rem;
+  font-size: var(--text-base);
+  transition: background 0.15s ease;
+  min-height: 44px;
 }
 
 .dd-panel a:hover {
-  background: rgba(68, 86, 38, .08);
+  background: var(--kbm-bg);
 }
 
-/* ===== SEARCH BAR ===== */
-.kbm-searchbar {
-  background: var(--kbm-bg);
-  padding: 4px 0 8px;
-  display: flex;
+/* ===== HAMBURGER MENU (MOBILE) ===== */
+.kbm-hamburger {
+  display: none;
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  flex-direction: column;
+  gap: 7px;
+  background: none;
+  border: none;
+  padding: 14px;
+  cursor: pointer;
+  z-index: 1300;
+  min-width: 56px;      /* Larger tap target */
+  min-height: 56px;     /* Larger tap target */
+  align-items: center;
   justify-content: center;
 }
 
-.kbm-search-wrap {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  max-width: 680px;
-  margin: 0 auto;
-}
-
-.kbm-search-input {
-  flex: 1;
-  padding: 10px 14px;
-  font-size: 1rem;
-  border: 1px solid #cfcfcf;
-  border-right: none;
-  border-radius: 8px 0 0 8px;
-}
-
-.kbm-search-btn {
-  background: var(--kbm-green);
-  color: #fff;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 0 8px 8px 0;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-.kbm-search-btn:hover {
-  background: var(--kbm-green-2);
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width:1024px) {
-  .kbm-topbar {
-    flex-direction: column;
-    gap: 4px;
-    padding: 4px 10px;
-  }
-
-  .kbm-logo-text {
-    font-size: 2.3rem;
-  }
-
-  .kbm-logo .tagline {
-    font-size: .85rem;
-    margin-top: 1px;
-  }
-
-  .kbm-menu {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 14px;
-  }
-}
-
-@media (max-width:600px) {
-  .kbm-logo-text {
-    font-size: 2rem;
-  }
-
-  .kbm-logo .tagline {
-    font-size: .8rem;
-  }
-
-  .kbm-menu {
-    gap: 10px;
-  }
-
-  .kbm-search-wrap {
-    max-width: 75%;
-  }
-
-  .kbm-search-input {
-    padding: 8px 12px;
-    font-size: .95rem;
-  }
-
-  .kbm-search-btn {
-    padding: 8px 12px;
-    font-size: .95rem;
-  }
-}
-
-/* ===== HAMBURGER MENU ===== */
-.kbm-hamburger {
-  display: none;
-  flex-direction: column;
-  gap: 5px;
-  background: none;
-  border: none;
-  padding: 8px;
-  cursor: pointer;
-  z-index: 1300;
-}
-
 .kbm-hamburger span {
-  width: 28px;
-  height: 3px;
+  width: 40px;          /* Bigger bars - easier to see */
+  height: 5px;          /* Thicker bars */
   background: var(--kbm-green);
-  border-radius: 2px;
+  border-radius: 3px;
   transition: all 0.3s ease;
 }
 
@@ -298,25 +370,45 @@
   transform: rotate(-45deg) translate(8px, -8px);
 }
 
-@media (max-width:768px) {
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 1024px) {
   .kbm-hamburger {
     display: flex;
   }
 
-  .kbm-nav {
+  .kbm-logo-section {
+    padding: 0.5rem 0 0.25rem 0;
+  }
+
+  .kbm-logo-img {
+    width: 42px;
+    height: 42px;
+  }
+
+  .header-inner .right {
+    padding-right: 56px;
+  }
+
+  .kbm-nav-row {
     position: fixed;
-    top: 0;
+    top: var(--header-height, 90px);
     right: -100%;
-    width: 280px;
-    height: 100vh;
+    width: 320px;
+    max-width: 85vw;
+    height: calc(100vh - var(--header-height, 90px));
     background: var(--kbm-bg);
     box-shadow: -4px 0 12px rgba(0, 0, 0, .1);
     transition: right 0.3s ease;
     overflow-y: auto;
-    padding-top: 80px;
+    padding: 0 20px 20px 20px;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start !important;
+    gap: 0;
+    z-index: 1200;
   }
 
-  .kbm-nav.mobile-open {
+  .kbm-nav-row.mobile-open {
     right: 0;
   }
 
@@ -324,46 +416,182 @@
     flex-direction: column;
     align-items: stretch;
     gap: 0;
-    padding: 20px;
+    margin: 0 0 24px 0;
   }
 
-  .kbm-menu > li > a {
-    padding: 12px 14px;
+  .kbm-menu > li {
+    border-bottom: 1px solid var(--ring);
+  }
+
+  .kbm-menu > li:last-child {
+    border-bottom: none;
+  }
+
+  .kbm-menu > li > a,
+  .kbm-menu > li > .dd-trigger {
+    padding: 16px 0;
     display: block;
   }
 
+  .kbm-search-wrap {
+    width: 100%;
+    min-width: auto;
+  }
+
+  /* Mobile dropdowns - full width, no absolute positioning */
   .kbm-menu .dd-panel {
-    position: static;
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: none;
+    position: static !important;
+    transform: none !important;
     box-shadow: none;
     border: none;
-    border-left: 3px solid var(--kbm-green-2);
-    margin-left: 14px;
-    margin-top: 6px;
-    padding-left: 12px;
     background: transparent;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
+    margin: 8px 0 0 20px;
+    padding: 0;
+    display: none;
   }
 
   .kbm-menu .dd.open > .dd-panel {
-    max-height: 500px;
+    display: block;
+    opacity: 1;
+    visibility: visible;
   }
 
-  .login-li {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid rgba(0, 0, 0, .1);
+  .kbm-menu .dd-panel li {
+    border-left: 3px solid var(--kbm-green);
+    padding-left: 12px;
   }
 
-  .kbm-login {
-    width: 100%;
-    text-align: center;
+  .kbm-menu .dd-panel a {
+    padding: 10px 0;
   }
+}
+
+/* Tablet and small laptop screens - scale down header */
+@media (min-width: 600px) and (max-width: 1024px) {
+  .kbm-logo-section {
+    padding: 0.5rem 1rem 0.25rem 1rem;
+  }
+
+  .kbm-logo-text {
+    font-size: 1.6rem;
+    line-height: 1.1;
+  }
+
+  .kbm-tagline {
+    font-size: 0.9rem;
+    line-height: 1.3;
+    max-width: 420px;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .kbm-container {
+    padding: 0 16px;
+  }
+
+  .kbm-logo-section {
+    padding: 0.75rem 60px 0.5rem 60px;
+  }
+
+  .right {
+    padding-right: 56px;
+  }
+
+  .kbm-logo-img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .kbm-logo-text {
+    font-size: 1.8rem;
+  }
+
+  .kbm-tagline {
+    font-size: 0.9rem;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .kbm-hamburger {
+    top: 12px;
+    right: 16px;
+  }
+}
+
+#auth-msg.auth-msg {
+  position: fixed;
+  top: 20px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: min(680px, calc(100vw - 24px));
+  z-index: 1000000;
+
+  background: #111;
+  color: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.65);
+
+  padding: 14px 16px 14px 18px;
+  font-size: 1.05rem;
+  line-height: 1.4;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+#auth-msg.auth-msg::before {
+  content: "";
+  display: block;
+  width: 8px;
+  align-self: stretch;
+  border-radius: 12px;
+  margin-right: 10px;
+  background: #d11a2a;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
+#auth-msg #auth-msg-text {
+  flex: 1;
+}
+#auth-msg .auth-msg-close {
+  background: transparent;
+  border: 0;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  opacity: 0.9;
+  line-height: 1;
+}
+#auth-msg .auth-msg-close:hover {
+  opacity: 1;
+}
+.auth-msg-close {
+  background: transparent;
+  border: 0;
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* Memberstack overlay (try common selectors) */
+.ms-modal__overlay,
+.ms-overlay,
+[data-ms-overlay],
+div[data-ms-modal-overlay] {
+  background: rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Hide Memberstack error/success toast messages */
+div[data-ms-message] {
+  display: none !important;
+}
+
+div[data-ms-message-class="ms-error-message"],
+div[data-ms-message-class="ms-success-message"] {
+  display: none !important;
 }
 
 /* Hide header when printing */
@@ -375,126 +603,354 @@
 </style>
 
 <section class="kbm-header-wrap">
-  <header class="kbm-header">
-    <div class="kbm-container kbm-topbar">
-      <a href="/" class="kbm-logo">
-        <div class="kbm-logo-text">KNIT<span class="by">by</span>MACHINE</div>
-        <div class="tagline">Tools and inspiration for every machine knitter</div>
-      </a>
+  <header class="site-header">
+    <div class="kbm-container">
+      <div class="header-inner">
+        <div class="brand">
+          <div class="kbm-logo-section">
+            <a href="/" class="kbm-logo">
+              <img src="/KINlogo.svg" alt="Knit it Now" class="kbm-logo-img" />
+              <span class="kbm-logo-text">Knit it Now</span>
+            </a>
+            <p class="kbm-tagline">See it ● Love it ● Knit it | Make the right project decisions, then knit with confidence.</p>
+          </div>
+        </div>
 
-      <!-- Hamburger button for mobile -->
+        <div class="right">
+          {showAuthDebug && (
+            <span id="auth-pill" class="auth-pill">auth: …</span>
+          )}
+          <div class="kbm-account-section auth header-actions">
+            <a
+              id="kbmLoginLink"
+              data-ms-modal="login"
+              data-ms-content="!members"
+              data-ms-redirect="current-url"
+            >
+              Log in
+            </a>
+            <a data-ms-modal="profile" data-ms-content="members">Account</a>
+            <a href="#" data-ms-action="logout" data-ms-content="members">Log out</a>
+            <span style="margin-left:10px;" data-ms-content="member-videos">VIDEOS✅</span>
+            <span style="margin-left:10px;" data-ms-content="!member-videos">NO VIDEOS❌</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hamburger menu (mobile only) -->
       <button class="kbm-hamburger" aria-label="Toggle menu" aria-expanded="false">
         <span></span>
         <span></span>
         <span></span>
       </button>
 
-      <nav class="kbm-nav" aria-label="Primary">
+      <!-- Navigation Row - PLAN / KNIT / SUPPORT / SHOP structure -->
+      <div class="kbm-nav-row menu-row">
         <ul class="kbm-menu">
+          <!-- PLAN dropdown -->
           <li class="dd">
-            <a href="/wizards-catalog">Patterns <span class="caret">▾</span></a>
+            <button class="dd-trigger" aria-expanded="false" data-testid="nav-plan">Plan <span class="caret">▾</span></button>
             <ul class="dd-panel">
-              <li><a href="/wizards-catalog?category=Pattern">Pattern</a></li>
-              <li><a href="/wizards-catalog?category=Tools">Tools</a></li>
-              <li><a href="/wizards-catalog?category=Practice">Practice</a></li>
-              <li><a href="/smart-guides-coming-soon">Smart Guides</a></li>
+              <li><a href="/project-wizards" data-testid="nav-plan-wizards">Project Planning Wizards</a></li>
+              <li><a href="/charting-tools" data-testid="nav-plan-tools">Charting Tools</a></li>
+            
             </ul>
           </li>
-          <li><a href="/workshops">Workshops</a></li>
+          
+          <!-- KNIT dropdown -->
           <li class="dd">
-            <a href="#">Resources <span class="caret">▾</span></a>
+            <button class="dd-trigger" aria-expanded="false" data-testid="nav-knit">Knit <span class="caret">▾</span></button>
             <ul class="dd-panel">
-              <li><a href="/ana-catalog">Ask 'n Answer</a></li>
-              <li><a href="/glossary">Glossary</a></li>
-              <li><a href="/sizing-charts">Sizing Charts</a></li>
-              <li><a href="/machine-history">Machine History</a></li>
+              <li><a href="/patterns" data-testid="nav-knit-patterns">Patterns</a></li>
+              <li><a href="/practice-projects" data-testid="nav-knit-practice">Practice Projects</a></li>
+              <li><a href="/workshops" data-testid="nav-knit-workshops">Workshops</a></li>
             </ul>
           </li>
+          
+          <!-- SUPPORT dropdown -->
           <li class="dd">
-            <a href="#">About <span class="caret">▾</span></a>
+            <button class="dd-trigger" aria-expanded="false" data-testid="nav-support">Support <span class="caret">▾</span></button>
             <ul class="dd-panel">
-              <li><a href="/about">About Us</a></li>
-              <li><a href="/contact">Contact</a></li>
-              <li><a href="/membership">Membership</a></li>
+            <li><a href="/community" data-testid="nav-support-community">Community</a></li>
+              
+              <li><a href="/start-here" data-testid="nav-support-answers">Help Hub</a></li>
+              <li><a href="/glossary" data-testid="nav-support-glossary">Glossary</a></li>
+              <li><a href="/contact" data-testid="nav-support-community">Contact</a></li>
             </ul>
+          </li>
+          
+          <!-- SHOP link -->
+          <li>
+            <a href="/shop" data-testid="nav-shop">Shop</a>
           </li>
         </ul>
-      </nav>
-    </div>
 
-    <div class="kbm-searchbar">
-      <div class="kbm-container kbm-search-wrap">
-        <input class="kbm-search-input" type="search" placeholder="Search…" aria-label="Search" />
-        <button class="kbm-search-btn" aria-label="Submit search"><i class="fa fa-search"></i></button>
+        <!-- Search Bar -->
+        <div class="kbm-search-wrap">
+          <input class="kbm-search-input" type="search" placeholder="Search..." aria-label="Search" data-testid="input-search" />
+          <button class="kbm-search-btn" aria-label="Submit search" data-testid="button-search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.3-4.3"></path>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   </header>
+  <div id="auth-msg" class="auth-msg" style="display:none;" role="status" aria-live="polite">
+    <span id="auth-msg-text"></span>
+    <button type="button" id="auth-msg-close" class="auth-msg-close" aria-label="Dismiss">×</button>
+  </div>
 </section>
 
 <script is:inline>
+  (function () {
+    const PAID_PLAN_IDS = [
+      "pln_DEV-KIN-Member-REPLACE_ME",
+      "pln_PROD-KIN-Member-REPLACE_ME"
+    ];
+
+    const pill = document.getElementById("auth-pill");
+    const authMsg = document.getElementById("auth-msg");
+    const authMsgText = document.getElementById("auth-msg-text");
+    const authMsgClose = document.getElementById("auth-msg-close");
+
+    function showAuthMsg(text) {
+      if (authMsgText) authMsgText.textContent = text;
+      if (authMsg) authMsg.style.display = "flex";
+      clearTimeout(window.__kinAuthMsgTimer);
+      window.__kinAuthMsgTimer = setTimeout(() => {
+        const el = document.getElementById("auth-msg");
+        if (el) el.style.display = "none";
+      }, 6000);
+    }
+    function hideAuthMsg() {
+      clearTimeout(window.__kinAuthMsgTimer);
+      if (authMsg) authMsg.style.display = "none";
+    }
+
+    function setPill({ ms, loggedIn, isMember, plansDebug }) {
+      if (pill) pill.textContent = `MS:${ms} loggedIn:${loggedIn} member:${isMember}` + (plansDebug ? ` ${plansDebug}` : "");
+    }
+
+    async function waitForMS(attempts = 30, delayMs = 200) {
+      for (let i = 0; i < attempts; i++) {
+        if (window.$memberstackDom?.getCurrentMember) return true;
+        await new Promise(r => setTimeout(r, delayMs));
+      }
+      return false;
+    }
+
+    async function getAuthState() {
+      const ms = window.$memberstackDom;
+      if (!ms?.getCurrentMember) {
+        window.__KBM_AUTH = { loggedIn: false, member: false, memberId: null };
+        return { ms: "missing", loggedIn: false, isMember: false, displayName: "", memberId: null };
+      }
+      try {
+        const res = await ms.getCurrentMember();
+        const data = res?.data;
+        const member = (data?.member ?? data) || null;
+        const loggedIn = Boolean(member);
+        const planConnections = member?.planConnections || [];
+        const isMember = planConnections.some((p) => PAID_PLAN_IDS.includes(p?.planId));
+        window.__KBM_AUTH = {
+          loggedIn,
+          member: isMember,
+          memberId: member?.id || null
+        };
+        const planLabels = planConnections.map((p) => p?.planId || p?.planName || "?").join(",");
+        const plansDebug = `plans:${planConnections.length}:${planLabels}`;
+        const displayName =
+          member?.name ||
+          member?.customFields?.firstName ||
+          member?.email ||
+          "";
+        return { ms: "ready", loggedIn, isMember, displayName, plansDebug, memberId: member?.id || null };
+      } catch (e) {
+        window.__KBM_AUTH = { loggedIn: false, member: false, memberId: null };
+        return { ms: "error", loggedIn: false, isMember: false, displayName: "", memberId: null };
+      }
+    }
+
+    async function refreshHeaderAuthUI() {
+      try {
+        const state = await getAuthState();
+        setPill(state);
+        window.__AUTH = {
+          loggedIn: Boolean(state.loggedIn),
+          member: Boolean(state.isMember),
+          memberId: state.memberId || null
+        };
+        window.dispatchEvent(new Event("auth:updated"));
+        return state;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    setPill({ ms: "loading", loggedIn: false, isMember: false, plansDebug: "" });
+
+    (async () => {
+      const ready = await waitForMS();
+      if (!ready) {
+        setPill({ ms: "missing", loggedIn: false, isMember: false, plansDebug: "" });
+        return;
+      }
+      await refreshHeaderAuthUI();
+
+      if (authMsgClose) {
+        authMsgClose.addEventListener("click", hideAuthMsg);
+      }
+
+      window.addEventListener("focus", refreshHeaderAuthUI);
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) refreshHeaderAuthUI();
+      });
+    })();
+  })();
+</script>
+<script is:inline>
   (() => {
     const dds = document.querySelectorAll('.kbm-menu .dd');
-    const isTouchLike =
-      matchMedia('(hover: none), (pointer: coarse)').matches || window.innerWidth <= 1024;
+    const hamburger = document.querySelector('.kbm-hamburger');
+    const navRow = document.querySelector('.kbm-nav-row');
+    
+    let currentMode = null;
+    let clickHandlers = new Map();
+    let outsideClickHandler = null;
 
     function closeAll(except) {
       dds.forEach(li => {
-        if (li !== except) li.classList.remove('open');
+        if (li !== except) {
+          li.classList.remove('open');
+          const trigger = li.querySelector('.dd-trigger');
+          if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        }
       });
     }
 
+    function isTouchMode() {
+      return matchMedia('(hover: none), (pointer: coarse)').matches || window.innerWidth <= 1024;
+    }
+
+    function setupDropdownBehavior() {
+      const touchMode = isTouchMode();
+      
+      // Only update if mode has changed
+      if (currentMode === touchMode) return;
+      currentMode = touchMode;
+
+      // Remove old click handlers if switching from touch to desktop
+      if (!touchMode && clickHandlers.size > 0) {
+        clickHandlers.forEach((handler, element) => {
+          element.removeEventListener('click', handler);
+        });
+        clickHandlers.clear();
+        
+        if (outsideClickHandler) {
+          document.removeEventListener('click', outsideClickHandler);
+          outsideClickHandler = null;
+        }
+      }
+
+      // Setup touch/mobile click behavior
+      if (touchMode) {
+        dds.forEach(li => {
+          const trigger = li.querySelector(':scope > a, :scope > .dd-trigger');
+          const handler = (e) => {
+            e.preventDefault();
+            const nowOpen = li.classList.toggle('open');
+            trigger.setAttribute('aria-expanded', nowOpen ? 'true' : 'false');
+            if (nowOpen) closeAll(li);
+          };
+          trigger.addEventListener('click', handler);
+          clickHandlers.set(trigger, handler);
+        });
+        
+        outsideClickHandler = (e) => {
+          if (!e.target.closest('.kbm-nav-row')) closeAll();
+        };
+        document.addEventListener('click', outsideClickHandler);
+      }
+    }
+
+    // Desktop hover behavior (always active, but only works when not in touch mode)
     dds.forEach(li => {
+      const trigger = li.querySelector('.dd-trigger');
       li.addEventListener('mouseenter', () => {
-        clearTimeout(li._closeTimeout);
-        li.classList.add('open');
+        if (!isTouchMode()) {
+          clearTimeout(li._closeTimeout);
+          li.classList.add('open');
+          if (trigger) trigger.setAttribute('aria-expanded', 'true');
+        }
       });
       li.addEventListener('mouseleave', () => {
-        li._closeTimeout = setTimeout(() => li.classList.remove('open'), 250);
+        if (!isTouchMode()) {
+          li._closeTimeout = setTimeout(() => {
+            li.classList.remove('open');
+            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+          }, 250);
+        }
       });
     });
 
-    if (isTouchLike) {
-      dds.forEach(li => {
-        const trigger = li.querySelector(':scope > a');
-        trigger.addEventListener('click', e => {
-          e.preventDefault();
-          const nowOpen = li.classList.toggle('open');
-          if (nowOpen) closeAll(li);
-        });
-      });
-      document.addEventListener('click', e => {
-        if (!e.target.closest('.kbm-nav')) closeAll();
-      });
+    // Sync header height to CSS variable for accurate sticky positioning
+    function syncHeaderHeight() {
+      const header = document.querySelector('.kbm-header-wrap');
+      if (header) {
+        const height = header.getBoundingClientRect().height;
+        document.documentElement.style.setProperty('--header-height', `${height}px`);
+      }
     }
 
+    // Initial setup
+    setupDropdownBehavior();
+    syncHeaderHeight();
+
+    // Re-sync after fonts load to handle late layout shifts
+    if (document.fonts) {
+      document.fonts.ready.then(syncHeaderHeight);
+    }
+    window.addEventListener('load', syncHeaderHeight, { passive: true });
+
+    // Re-check on resize
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        setupDropdownBehavior();
+        syncHeaderHeight();
+      }, 150);
+    }, { passive: true });
+
     // Hamburger menu toggle
-    const hamburger = document.querySelector('.kbm-hamburger');
-    const nav = document.querySelector('.kbm-nav');
-    
-    if (hamburger && nav) {
+    if (hamburger && navRow) {
       hamburger.addEventListener('click', () => {
-        const isOpen = nav.classList.toggle('mobile-open');
+        const isOpen = navRow.classList.toggle('mobile-open');
         hamburger.classList.toggle('active');
         hamburger.setAttribute('aria-expanded', isOpen);
         
-        // Prevent body scroll when menu is open on mobile
         if (isOpen) {
           document.body.style.overflow = 'hidden';
         } else {
           document.body.style.overflow = '';
+          closeAll();
         }
       });
 
-      // Close menu when clicking outside on mobile
+      // Close menu when clicking outside
       document.addEventListener('click', (e) => {
-        if (window.innerWidth <= 768 && 
-            !nav.contains(e.target) && 
+        if (window.innerWidth <= 1024 && 
+            !navRow.contains(e.target) && 
             !hamburger.contains(e.target) && 
-            nav.classList.contains('mobile-open')) {
-          nav.classList.remove('mobile-open');
+            navRow.classList.contains('mobile-open')) {
+          navRow.classList.remove('mobile-open');
           hamburger.classList.remove('active');
           hamburger.setAttribute('aria-expanded', 'false');
           document.body.style.overflow = '';
+          closeAll();
         }
       });
     }
