@@ -2,7 +2,7 @@
 /**
  * GatedVimeoEmbed.astro
  * - If access_level === "open": render iframe for everyone.
- * - If access_level === "member": DOM gating via data-ms-content="member-videos" / "!member-videos".
+ * - If access_level === "member": gate by paid plan IDs; iframe injected client-side only when allowed.
  */
 
 const {
@@ -33,50 +33,75 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
   data-iframe-src={iframeSrc}
 >
   <div class="kbm-video__frame" style={`padding-top:${pad}%;`}>
-    {access_level === "member" ? (
-      <>
-        <!-- Paid members see video -->
-        <div data-ms-content="member-videos">
-          <iframe
-            class="kbm-video__iframe"
-            src={iframeSrc}
-            title={title}
-            loading="lazy"
-            frameborder="0"
-            allow="autoplay; fullscreen; picture-in-picture"
-            allowfullscreen
-          />
-        </div>
-
-        <!-- Everyone else sees locked state -->
-        <div data-ms-content="!member-videos">
-          <div class="kbm-video__locked">
-            <div class="kbm-video__overlay">
-              <div class="kbm-video__lockline">
-                🔒 <strong>Members only</strong>
-              </div>
-              <p>This video is available with membership.</p>
-              <a href="/membership" class="kbm-video__cta">
-                Join to watch
-              </a>
+    <div id={`kbm-vimeo-slot-${videoId}`} data-access-level={access_level}>
+      <!-- Default: show locked UI for member videos (iframe will be injected only if allowed) -->
+      {access_level === "open" ? (
+        <iframe
+          class="kbm-video__iframe"
+          src={iframeSrc}
+          title={title}
+          loading="lazy"
+          frameborder="0"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowfullscreen
+        />
+      ) : (
+        <div class="kbm-video__locked">
+          <div class="kbm-video__overlay">
+            <div class="kbm-video__lockline">
+              🔒 <strong>Members only</strong>
             </div>
+            <p>This video is available with membership.</p>
+            <a href="/membership" class="kbm-video__cta">
+              Join to watch
+            </a>
           </div>
         </div>
-      </>
-    ) : (
-      <!-- Open video - iframe for everyone -->
-      <iframe
-        class="kbm-video__iframe"
-        src={iframeSrc}
-        title={title}
-        loading="lazy"
-        frameborder="0"
-        allow="autoplay; fullscreen; picture-in-picture"
-        allowfullscreen
-      />
-    )}
+      )}
+    </div>
   </div>
 </div>
+
+<script is:inline define:vars={{ videoId, access_level, iframeSrc, title }}>
+  document.addEventListener("DOMContentLoaded", async () => {
+    if (access_level !== "member") return;
+
+    const slot = document.getElementById(`kbm-vimeo-slot-${videoId}`);
+    if (!slot) return;
+
+    if (!window.$memberstackDom) return;
+
+    try {
+      const res = await window.$memberstackDom.getCurrentMember();
+      const member = res?.data;
+
+      const paidPlanIds = new Set([
+        "pln_kin-membership-monthly-a59701wy",
+        "pln_kin-membership-annual-qf9g01et"
+      ]);
+
+      const planConnections = member?.planConnections || [];
+      const isPaid = planConnections.some(pc => paidPlanIds.has(pc.planId));
+
+      if (!isPaid) return;
+
+      // Inject iframe only for paid members
+      slot.innerHTML = `
+        <iframe
+          class="kbm-video__iframe"
+          src="${iframeSrc}"
+          title="${title}"
+          loading="lazy"
+          frameborder="0"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+      `;
+    } catch (e) {
+      console.error("GatedVimeoEmbed paid check failed:", e);
+    }
+  });
+</script>
 
 
 
@@ -89,8 +114,7 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
     border-radius: 14px;
     background: #fff;
   }
-  .kbm-video__frame [data-ms-content="member-videos"],
-  .kbm-video__frame [data-ms-content="!member-videos"] {
+  .kbm-video__frame > [data-access-level] {
     position: absolute;
     inset: 0;
   }
