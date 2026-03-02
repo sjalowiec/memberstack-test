@@ -990,15 +990,18 @@ div[data-ms-modal-overlay] {
     try {
       const { data: member } = await window.$memberstackDom.getCurrentMember();
       if (!member) return;
+      console.log("Member object:", member);
 
       const firstName =
         member.customFields?.firstName ||
         member.name ||
         "";
 
+      console.log("First name detected:", firstName);
       if (!firstName) return;
 
       const el = document.getElementById("kbm-welcome-message");
+      console.log("Welcome element exists:", !!el);
       if (!el) return;
 
       const hasPaidPlan =
@@ -1010,6 +1013,7 @@ div[data-ms-modal-overlay] {
       } else {
         el.innerText = `Hi, ${firstName}.`;
       }
+      console.log("Final greeting text:", el.textContent);
 
     } catch (e) {
       console.error("Memberstack greeting error:", e);
