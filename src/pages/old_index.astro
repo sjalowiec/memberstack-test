@@ -1,0 +1,79 @@
+---
+import glossary from '../data/glossary.json';
+
+const count = glossary.length;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MemberStack Test</title>
+
+    <!-- MemberStack Script -->
+	<script
+	
+	src="https://static.memberstack.com/scripts/v1/memberstack.js"
+	data-memberstack-app="app_cmfh3d1n802vb0wy706205810">
+  </script>
+
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        padding: 40px;
+        background: #f7f7f7;
+      }
+
+      .card {
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        border: 1px solid #ddd;
+      }
+
+      .button {
+        display: inline-block;
+        padding: 10px 16px;
+        border-radius: 8px;
+        background: black;
+        color: white;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>MemberStack Proof Page</h1>
+    <p>Total glossary terms: {count}</p>
+    <ul>
+      {glossary.slice(0, 5).map(term => (
+        <li>{term.english}</li>
+      ))}
+
+
+<img src="/images/glossary/1x1tuck6.jpg" alt="test" />
+
+</ul>
+
+
+
+
+   <!-- Logged Out Content -->
+<div class="card" data-ms-content="!members">
+  <h2>Locked</h2>
+  <p>You are NOT logged in.</p>
+
+  <!-- MemberStack Login Form -->
+  <div data-ms-component="ms-login"></div>
+</div>
+
+
+    <!-- Logged In Content -->
+    <div class="card" data-ms-content="members">
+      <h2>Unlocked</h2>
+      <p>✅ You ARE logged in.</p>
+      <a href="#" data-ms-action="logout" class="button">Log Out</a>
+    </div>
+  </body>
+</html>

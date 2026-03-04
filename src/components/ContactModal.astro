@@ -1,0 +1,201 @@
+---
+---
+<!-- Contact Modal -->
+<div
+  id="contact-modal"
+  class="contact-modal"
+  aria-hidden="true"
+  role="dialog"
+  aria-labelledby="contact-modal-title"
+>
+  <div class="contact-modal-overlay" id="contact-modal-overlay"></div>
+  <div class="contact-modal-container">
+    <button
+      class="contact-modal-close"
+      id="contact-modal-close"
+      aria-label="Close contact form"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+
+    <h2 id="contact-modal-title" class="contact-modal-title">
+      Contact Sue
+    </h2>
+    <p class="contact-modal-subheader">
+      Stuck on a project or something not working right? Tell me what you're seeing and I'll help you figure out the most likely cause.
+    </p>
+
+    <form
+      id="contactFormModal"
+      name="contact-sue"
+      method="POST"
+      data-netlify="true"
+      data-netlify-honeypot="bot-field"
+      class="contact-form"
+    >
+      <input type="hidden" name="form-name" value="contact-sue" />
+      <input type="hidden" name="submission-type" value="contact" />
+      <input type="hidden" name="submitted-at" id="contactSubmittedAtModal" />
+
+      <p class="hidden">
+        <label>
+          Don't fill this out if you're human:
+          <input name="bot-field" />
+        </label>
+      </p>
+
+      <label class="contact-form__field">
+        <span>Name</span>
+        <input type="text" name="name" required />
+      </label>
+
+      <label class="contact-form__field">
+        <span>Email</span>
+        <input type="email" name="email" required />
+      </label>
+
+      <div class="contact-modal-tip" role="note">
+        Tip: If you're troubleshooting, include your machine model, yarn type, and what the machine is doing.
+      </div>
+
+      <label class="contact-form__field">
+        <span>What's happening?</span>
+        <textarea name="message" rows="6" required></textarea>
+      </label>
+
+      <div class="contact-modal-leadmag">
+        <label class="contact-modal-checkbox">
+          <input type="checkbox" name="optin_troubleshoot" value="yes" />
+          <span>
+            Send me the troubleshooting guide: "It's Not You, It Might Be the Machine."
+            <a class="contact-modal-leadmaglink" href="/troubleshoot">View</a>
+          </span>
+        </label>
+        <div class="contact-modal-leadmaghelp">
+          A quick checklist to help diagnose common knitting machine problems.
+        </div>
+      </div>
+
+      <button type="submit" class="contact-form__submit">
+        Send message
+      </button>
+      <div class="contact-modal-response">I usually respond within 1–2 business days.</div>
+    </form>
+
+    <div id="contactSuccessModal" class="contact-success hidden">
+      <h2>Thank you - your message has been sent.</h2>
+      <p>
+        We'll read it soon and reply if needed. While you're here, you can
+        also explore <a href="/ana-catalog">Help Hub</a>,
+        <a href="/charting-tools">Tools</a>, or
+        <a href="/glossary">Glossary</a>.
+      </p>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  #contact-modal .contact-modal-container {
+    border-radius: 16px;
+  }
+
+  #contact-modal .contact-modal-title {
+    margin: 0 0 6px 0;
+    line-height: 1.2;
+  }
+
+  #contact-modal .contact-modal-subheader {
+    margin: 0 0 14px 0;
+    font-size: 0.98em;
+    line-height: 1.45;
+    max-width: 42ch;
+    opacity: 0.92;
+  }
+
+  #contact-modal .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+  }
+
+  #contact-modal .contact-modal-tip {
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 14px;
+    padding: 10px 12px;
+    font-size: 0.92em;
+    line-height: 1.35;
+  }
+
+  #contact-modal .contact-modal-leadmag {
+    margin-top: 2px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.03);
+  }
+
+  #contact-modal .contact-modal-checkbox {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  #contact-modal .contact-modal-checkbox input {
+    margin-top: 3px;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+  }
+
+  #contact-modal .contact-modal-leadmaglink {
+    margin-left: 8px;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  #contact-modal .contact-modal-leadmaghelp {
+    margin-top: 6px;
+    font-size: 0.9em;
+    opacity: 0.9;
+  }
+
+  #contact-modal .contact-modal-response {
+    margin-top: -4px;
+    font-size: 0.9em;
+    opacity: 0.9;
+  }
+</style>
+
+<script is:inline>
+  (function() {
+    const modal = document.getElementById('contact-modal');
+    const trigger = document.getElementById('contact-modal-trigger');
+    const overlay = document.getElementById('contact-modal-overlay');
+    const closeBtn = document.getElementById('contact-modal-close');
+    const form = document.getElementById('contactFormModal');
+    const successMsg = document.getElementById('contactSuccessModal');
+
+    function openModal() {
+      modal?.setAttribute('aria-hidden', 'false');
+      modal?.classList.add('contact-modal--open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      modal?.setAttribute('aria-hidden', 'true');
+      modal?.classList.remove('contact-modal--open');
+      document.body.style.overflow = '';
+      form?.reset();
+    }
+
+    trigger?.addEventListener('click', function(e) {
+      e.preventDefault();
+      openModal();
+    });
+
+    overlay?.addEventListener('click', closeModal);
+    closeBtn?.addEventListener('click', closeModal);
+  })();
+</script>

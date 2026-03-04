@@ -223,60 +223,115 @@ const updated = "February 20, 2026";
         padding: 1.25rem;
       }
     }
+
+    .about-content {
+      max-width: 760px;
+      margin: 0 auto;          /* centers the text block */
+    }
+
+    .about-photo {
+      float: right;
+      width: 200px;            /* slightly smaller = better wrap balance */
+      margin: 6px 0 18px 28px; /* nudges it down + gives nicer breathing room */
+      border-radius: 50%;
+      border: 4px solid #f3f3f3;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    }
+
+    /* Prevent extra top gap on the first paragraph after the floated image */
+    .about-photo + p { margin-top: 0; }
+
+    /* Make sure sections after the wrapped intro don't get odd float behavior */
+    .about-content::after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    /* Tighten spacing under the My Story heading a bit */
+    .about-content h2,
+    .about-content h3 {
+      margin-bottom: 10px;
+    }
+
+    .kin-card-logo {
+      width: 42px;
+      height: 42px;
+      display: block;
+      margin: 0 auto 10px auto;
+    }
   </style>
 
   <div class="page-wrap">
   <PageHead
     title="About Knit it Now"
     breadcrumb="Home / About"
-    subhead="15+ years helping knitters like you."
+    subhead="Master your knitting machine with confidence. 15+ years of expert guidance for every project."
+  />
+
+  <div class="about-content">
+  <p>
+    Stop struggling with your machine—start finishing projects you love.
+  </p>
+
+  <img
+    src="/images/sue.jpg"
+    alt="Sue Jalowiec at her knitting machine, founder of Knit it Now"
+    class="about-photo"
   />
 
   <p>
-    <strong>Knit It Now</strong> is built on years of experience supporting knitters who want to feel confident with their machines.
-  </p>
-
-  <p>
-    My goal is to take away the overwhelm and give you practical tools, resources, and encouragement so you can focus on creating projects you love.
+    For more than 15 years, Knit it Now has helped machine knitters move past confusing manuals, frustrating setup issues, and piles of unfinished projects. With clear instruction, practical tips, and real examples, you can finally understand how your machine works—and start enjoying the knitting again.
   </p>
 
   <h2>My Story</h2>
   <p>
-    I'm <strong>Sue Jalowiec</strong>, and for more than 15 years, I've been helping knitters overcome the challenges of machine knitting — from confusing instructions to projects that don't quite turn out as planned.
+    I'm <strong>Sue Jalowiec</strong>, and I know how overwhelming machine knitting can feel—especially when you're trying to figure everything out on your own.
   </p>
   <p>
-    That experience has shaped everything here at <strong>Knit It Now</strong> , where the goal is simple: to give you the confidence and support you need to succeed with your machine.
+    That's why I created Knit it Now. My goal has always been simple: take the mystery out of machine knitting and give knitters the clear guidance they need to build confidence, solve problems, and finish projects they're proud of.
   </p>
   <p>
-    <strong>Knit It Now</strong>  is designed for knitters like you. It's a place where you'll find practical tools, clear resources, and encouraging guidance — all aimed at removing the guesswork so you can knit with confidence and actually enjoy the projects you start.
+    Over the years, thousands of machine knitters have used Knit it Now to learn new skills, troubleshoot problems, and bring their knitting ideas to life.
   </p>
+
+  <h2>Start Exploring</h2>
+  <p>
+    Whether you're just getting started or looking to expand your skills, you'll find resources here to help you move forward with confidence.
+  </p>
+  <p>
+    Explore the tutorials, patterns, and guides available throughout the site and discover just how enjoyable machine knitting can be.
+  </p>
+  </div>
 
   <h2>What You'll Discover</h2>
   <p>Here's a quick look at what you'll discover inside <strong><strong>Knit It Now</strong> </strong>:</p>
 
   <div class="card-grid">
     <div class="card">
+      <img src="/images/KINlogo.svg" alt="" class="kin-card-logo" aria-hidden="true">
       <h3>Patterns & Wizards</h3>
-      <p>Custom-fit, step-by-step projects for any machine.</p>
+      <p>Solve common knitting hurdles with expert tips.</p>
     </div>
     <div class="card">
+      <img src="/images/KINlogo.svg" alt="" class="kin-card-logo" aria-hidden="true">
       <h3>Tutorials & Tips</h3>
-      <p>Practical techniques explained clearly.</p>
+      <p>Master new techniques with clear video lessons.</p>
     </div>
     <div class="card">
+      <img src="/images/KINlogo.svg" alt="" class="kin-card-logo" aria-hidden="true">
       <h3>Reference</h3>
-      <p>Charts, tools, and guides all in one place.</p>
+      <p>Simplify your setup with go-to technical guides.</p>
     </div>
     <div class="card">
+      <img src="/images/KINlogo.svg" alt="" class="kin-card-logo" aria-hidden="true">
       <h3>Support for All Levels</h3>
-      <p>Confidence for beginners and inspiration for experienced knitters.</p>
+      <p>Connect with expert advice to keep your projects moving.</p>
     </div>
   </div>
 
   <p style="margin-top:2rem;">
-    Machine knitting doesn't have to feel overwhelming. With clear steps and the right tools, you can knit with confidence and enjoy the process.
-    That's what <strong>Knit It Now</strong>  is here to give you — clarity, confidence, and encouragement.
-  </p>
+    Start Knitting with clarity and confidence today.  </p>
 
   <div class="connect">
     <h2>Let's Connect</h2>

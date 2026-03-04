@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import "../styles/print.css";
+import ContactModal from "../components/ContactModal.astro";
 
 interface Props {
   title?: string;
@@ -108,78 +109,7 @@ const isProduction =
     </div>
     <slot /> <!-- Page content (or Layout wrapper) goes here -->
 
-    <!-- Contact Modal -->
-    <div
-      id="contact-modal"
-      class="contact-modal"
-      aria-hidden="true"
-      role="dialog"
-      aria-labelledby="contact-modal-title"
-    >
-      <div class="contact-modal-overlay" id="contact-modal-overlay"></div>
-      <div class="contact-modal-container">
-        <button
-          class="contact-modal-close"
-          id="contact-modal-close"
-          aria-label="Close contact form"
-        >
-          <span aria-hidden="true">&times;</span>
-        </button>
-
-        <h2 id="contact-modal-title" class="contact-modal-title">
-          Contact Sue
-        </h2>
-
-        <form
-          id="contactFormModal"
-          name="contact-sue"
-          method="POST"
-          data-netlify="true"
-          data-netlify-honeypot="bot-field"
-          class="contact-form"
-        >
-          <input type="hidden" name="form-name" value="contact-sue" />
-          <input type="hidden" name="submission-type" value="contact" />
-          <input type="hidden" name="submitted-at" id="contactSubmittedAtModal" />
-
-          <p class="hidden">
-            <label>
-              Don't fill this out if you're human:
-              <input name="bot-field" />
-            </label>
-          </p>
-
-          <label class="contact-form__field">
-            <span>Name</span>
-            <input type="text" name="name" required />
-          </label>
-
-          <label class="contact-form__field">
-            <span>Email</span>
-            <input type="email" name="email" required />
-          </label>
-
-          <label class="contact-form__field">
-            <span>Your message</span>
-            <textarea name="message" rows="6" required></textarea>
-          </label>
-
-          <button type="submit" class="contact-form__submit">
-            Send message
-          </button>
-        </form>
-
-        <div id="contactSuccessModal" class="contact-success hidden">
-          <h2>Thank you - your message has been sent.</h2>
-          <p>
-            We'll read it soon and reply if needed. While you're here, you can
-            also explore <a href="/ana-catalog">Help Hub</a>,
-            <a href="/charting-tools">Tools</a>, or
-            <a href="/glossary">Glossary</a>.
-          </p>
-        </div>
-      </div>
-    </div>
+    <ContactModal />
 
     {!skipGlobalHyvor && (
       <script
@@ -189,37 +119,6 @@ const isProduction =
       ></script>
     )}
 
-    <script is:inline>
-      (function() {
-        const modal = document.getElementById('contact-modal');
-        const trigger = document.getElementById('contact-modal-trigger');
-        const overlay = document.getElementById('contact-modal-overlay');
-        const closeBtn = document.getElementById('contact-modal-close');
-        const form = document.getElementById('contactFormModal');
-        const successMsg = document.getElementById('contactSuccessModal');
-
-        function openModal() {
-          modal?.setAttribute('aria-hidden', 'false');
-          modal?.classList.add('contact-modal--open');
-          document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-          modal?.setAttribute('aria-hidden', 'true');
-          modal?.classList.remove('contact-modal--open');
-          document.body.style.overflow = '';
-          form?.reset();
-        }
-
-        trigger?.addEventListener('click', function(e) {
-          e.preventDefault();
-          openModal();
-        });
-
-        overlay?.addEventListener('click', closeModal);
-        closeBtn?.addEventListener('click', closeModal);
-      })();
-    </script>
     <script is:inline>
 (function () {
   function bannerEl() {
