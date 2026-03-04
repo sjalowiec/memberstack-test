@@ -4870,8 +4870,8 @@
   {
     "glossaryId": 773,
     "english": "Plain Knitting | Stockinette Stitch",
-    "example": "Basic stitch formation on knitting machines. Equivalent to knit 1 row purl 1 row in flat hand knitting. (Stocking stitch, plain knitting)",
-    "helpinfo": "",
+    "example": "Basic stitch formation on knitting machine (without any stitch pattterns)",
+    "helpinfo": "The most basic formation on a knitting machine. It’s the default setting where every needle knits a simple loop every row, without any fancy stitch patterns like tuck, slip, or Fair Isle. It creates a smooth, clean fabric that looks like a series of 'V's on the front.",
     "image": "/images/glossary/plain-knitting-stitch-formation.jpg",
     "image_alt": "Plain knitting on a knitting machine showing basic stitch formation (stocking stitch)",
     "image_description": "Plain knitting stitch formation on a knitting machine (stocking stitch)",
@@ -4880,6 +4880,7 @@
     "active": true,
     "vimeoIds": []
   },
+  
   {
     "glossaryId": 775,
     "english": "Joiner: Cast On Comb",
