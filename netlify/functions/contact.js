@@ -46,7 +46,7 @@ ${message}
     // Update "from" once you have a verified sending domain in Resend.
     // For now we use Resend's onboarding sender.
     const from = "Knit it Now <onboarding@resend.dev>";
-    const to = "support@knititnow.com";
+    const to = "sue@knititnow.com";
 
     const resendResp = await fetch("https://api.resend.com/emails", {
       method: "POST",
