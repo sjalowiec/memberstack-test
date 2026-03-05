@@ -21,7 +21,7 @@ const { title, description, bodyClass = "", skipGlobalHyvor = false } = Astro.pr
 >
   <Header />
 
-  <main class="site-content">
+  <main class="site-content" style="padding-top: calc(var(--header-offset, 170px) + var(--header-buffer, 24px));">
     <slot />
   </main>
 
@@ -30,35 +30,42 @@ const { title, description, bodyClass = "", skipGlobalHyvor = false } = Astro.pr
 
 <style is:global>
   :root {
-    --header-height: 220px;
+    --header-offset: 170px;   /* fallback if measurement fails */
+    --header-buffer: 36px;   /* EXTRA breathing room */
   }
 
-  .site-content {
-    padding-top: 0;
+  body.page--tight-header {
+    --header-buffer: 8px;
   }
 
   html {
-    scroll-padding-top: var(--header-height);
+    scroll-padding-top: calc(var(--header-offset, 170px) + var(--header-buffer, 24px));
   }
 
-  :target,
-  [data-scroll-target] {
-    scroll-margin-top: calc(var(--header-height) + 16px);
+  .site-content > :first-child {
+    margin-top: 0;
   }
 </style>
 <script is:inline>
 (function () {
 
   function setHeaderOffset() {
-    const wrap = document.querySelector(".kbm-header-wrap");
-    if (!wrap) return;
+    const fallback = 170;
 
-    const wrapHeight = Math.ceil(wrap.getBoundingClientRect().height);
+    const headerEl =
+      document.querySelector("header") ||
+      document.querySelector(".kbm-header-wrap");
 
-    // Detect Memberstack debug pill if present
+    if (!headerEl) {
+      document.documentElement.style.setProperty("--header-offset", fallback + "px");
+      return;
+    }
+
+    const headerHeight = Math.ceil(headerEl.getBoundingClientRect().height);
+
+    // Subtract Memberstack debug pill height if present
     let debugHeight = 0;
-
-    const debugPill = Array.from(wrap.querySelectorAll("*")).find(el => {
+    const debugPill = Array.from(headerEl.querySelectorAll("*")).find((el) => {
       const txt = (el.textContent || "").trim();
       return txt.startsWith("MS:ready") || txt.includes("MS:ready loggedIn");
     });
@@ -67,12 +74,12 @@ const { title, description, bodyClass = "", skipGlobalHyvor = false } = Astro.pr
       debugHeight = Math.ceil(debugPill.getBoundingClientRect().height);
     }
 
-    const correctedHeight = Math.max(90, wrapHeight - debugHeight);
+    // Add a small safety margin so content never kisses the header
+    const safety = 12;
 
-    document.documentElement.style.setProperty(
-      "--header-offset",
-      correctedHeight + "px"
-    );
+    const corrected = Math.max(fallback, headerHeight - debugHeight + safety);
+
+    document.documentElement.style.setProperty("--header-offset", corrected + "px");
   }
 
   window.addEventListener("load", setHeaderOffset);

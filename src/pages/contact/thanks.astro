@@ -1,15 +1,89 @@
 ---
-import BaseLayout from "../../layouts/Layout.astro"; // adjust if your layout path differs
+import Layout from "../../layouts/Layout.astro";
 ---
 
-<BaseLayout title="Message sent">
-  <main class="container" style="max-width: 760px; margin: 0 auto; padding: 40px 16px;">
-    <h1>Thanks — I got your message.</h1>
-    <p>I’ll reply as soon as I can.</p>
+<Layout title="Message Received | Knit it Now">
 
-    <p style="margin-top: 24px;">
-      <a class="btn btn-primary" href="/contact/">Back to Contact</a>
-      <a class="btn btn-default" href="/">Home</a>
-    </p>
-  </main>
-</BaseLayout>
+  <style>
+    .thankyou-wrap {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 60px 20px 80px;
+    }
+    .thankyou-well {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 2rem 1.75rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    .thankyou-well h1 {
+      margin: 0 0 1rem;
+      font-size: 1.5rem;
+    }
+    .thankyou-well p {
+      margin: 0 0 0.75rem;
+      font-size: 1.05rem;
+      color: #374151;
+    }
+    .thankyou-well p:last-child {
+      margin-bottom: 0;
+      font-size: 0.95rem;
+      color: #6b7280;
+    }
+    .thankyou-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1.5rem 1.75rem;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+    .thankyou-card h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #374151;
+      margin: 0 0 0.5rem;
+    }
+    .thankyou-card h3 {
+      font-size: 1.25rem;
+      margin: 0 0 0.5rem;
+    }
+    .thankyou-card p {
+      margin: 0 0 1rem;
+      font-size: 0.95rem;
+      color: #6b7280;
+    }
+    .thankyou-card .btn {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      background: var(--kbm-green, #52682d);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .thankyou-card .btn:hover {
+      background: var(--kbm-green-2, #6b8a3a);
+    }
+  </style>
+
+  <div class="thankyou-wrap">
+
+    <section class="thankyou-well" aria-label="Confirmation">
+      <h1>Thanks — your message was sent.</h1>
+      <p>I've received your message and will review it shortly.</p>
+      <p>You can expect a reply within <strong>1–2 business days</strong>.</p>
+    </section>
+
+    <section class="thankyou-card" aria-label="While you're waiting">
+      <h2>While you're waiting...</h2>
+      <h3>👉 It's Not You, It Might Be the Machine</h3>
+      <p>A quick checklist for diagnosing common knitting machine problems.</p>
+      <a href="/checklist" class="btn">Use the checklist</a>
+    </section>
+
+  </div>
+
+</Layout>

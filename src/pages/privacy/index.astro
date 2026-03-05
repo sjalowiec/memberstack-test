@@ -6,8 +6,8 @@ const updated = "February 20, 2026";
 
 <Layout>
   <style>
- 
-}
+    /* Override global .page-wrap top padding; Layout already supplies header clearance */
+    .privacy-page-wrap.page-wrap { padding-top: 8px; }
     .kbm-breadcrumb {
       font-size: var(--text-base);
       margin-bottom: 1rem;
@@ -102,7 +102,7 @@ const updated = "February 20, 2026";
     }
   </style>
 
-<div class="page-wrap">
+<div class="page-wrap privacy-page-wrap">
   <p class="kbm-breadcrumb">
     <a href="/" style="color:#6b7280; text-decoration:none">Home</a> / Privacy Policy
   </p>

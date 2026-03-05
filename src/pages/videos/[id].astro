@@ -33,7 +33,11 @@ const posterSrc =
 ---
 
 <Layout title={video ? title : "Video not found"} description={video ? description : "Video not found."}>
-  <div class="page-wrap">
+  <style>
+    /* Override global .page-wrap top padding; Layout already supplies header clearance */
+    .video-detail-wrap.page-wrap { padding-top: 8px; }
+  </style>
+  <div class="page-wrap video-detail-wrap">
     {!video ? (
       <>
         <PageHead title="Video not found" breadcrumb="Home / Videos" />

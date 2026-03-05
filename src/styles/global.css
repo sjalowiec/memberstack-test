@@ -649,6 +649,12 @@ p {
   margin-top: var(--header-height, 8rem); /* Push below fixed header */
 }
 
+.page {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 140px 20px 40px;
+}
+
 .hidden {
   display: none !important;
 }

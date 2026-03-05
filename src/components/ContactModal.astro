@@ -19,9 +19,13 @@
     </button>
 
     <div class="contact-modal-header">
-      <h2 id="contact-modal-title" class="contact-modal-title">
-        Contact Sue
-      </h2>
+      <div class="contact-modal-title-wrapper">
+        <div class="contact-modal-title">
+          <img src="/images/KINlogo.svg" alt="Knit it Now" class="contact-modal-logo">
+          <h2 id="contact-modal-title">Contact Sue</h2>
+        </div>
+        <div class="contact-modal-divider"></div>
+      </div>
       <p class="contact-modal-subheader">
         Questions or feedback? Send a message below.
       </p>
@@ -68,25 +72,7 @@
       ></textarea>
       </label>
 
-      <div class="contact-modal-leadmag">
-
-        <div class="contact-modal-leadmag-intro">
-          Before sending your message, you might also find this helpful:
-        </div>
       
-        <div class="contact-modal-leadmag-title">
-          👉 It's Not You, It Might Be the Machine
-        </div>
-      
-        <div class="contact-modal-leadmaghelp">
-          A quick checklist for diagnosing common knitting machine problems.
-        </div>
-      
-        <a href="/troubleshoot" class="contact-modal-leadmaglink">
-          Use the checklist <i class="fa fa-external-link-alt"></i>
-        </a>
-      
-      </div>
 
       <div class="contact-form__submit-wrap">
         <button type="submit" class="contact-form__submit">
@@ -255,6 +241,37 @@
 
   #contact-modal .contact-modal-header {
     margin-bottom: 12px;
+  }
+
+  .contact-modal-title-wrapper {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .contact-modal-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .contact-modal-title h2 {
+    font-size: 1.5rem;
+    color: var(--kbm-green);
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .contact-modal-logo {
+    width: 34px;
+    height: auto;
+  }
+
+  .contact-modal-divider {
+    width: 60px;
+    height: 2px;
+    background: #e5e5e5;
+    margin: 12px auto 0;
   }
 
   #contact-modal .contact-modal-body {

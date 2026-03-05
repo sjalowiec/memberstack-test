@@ -6,6 +6,8 @@ const updated = "February 20, 2026";
 
 <Layout>
   <style>
+    /* Override global .page-wrap top padding; Layout already supplies header clearance */
+    .about-page-wrap.page-wrap { padding-top: 8px; }
     .page-wrap h1 {
       font-size: var(--text-xxl);
       margin-bottom: 0.5rem;
@@ -262,7 +264,7 @@ const updated = "February 20, 2026";
     }
   </style>
 
-  <div class="page-wrap">
+  <div class="page-wrap about-page-wrap">
   <PageHead
     title="About Knit it Now"
     breadcrumb="Home / About"

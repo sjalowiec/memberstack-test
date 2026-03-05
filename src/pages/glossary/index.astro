@@ -53,7 +53,7 @@ const glossaryJson = JSON.stringify(
 );
 ---
 
-<Layout bodyClass="glossary-page">
+<Layout title="Glossary" bodyClass="page--tight-header">
   <main class="glossary">
     <PageHead
       title="Glossary"
@@ -580,7 +580,7 @@ const glossaryJson = JSON.stringify(
 
   <style is:global>
     .glossary {
-      padding: calc(var(--header-height, 140px) + 8px) 1.25rem 3rem;
+      padding: 8px 1.25rem 3rem;
       /* Height of sticky A–Z bar when it wraps to two rows (padding + row1 + gap + row2). Match .glossary__az / .az-link if you change layout. */
       --glossary-az-height: 104px;
       /* Lower = lighter selected A–Z / letter header green. */
@@ -677,7 +677,7 @@ const glossaryJson = JSON.stringify(
 
     .glossary__az {
       position: sticky;
-      top: var(--header-height, 140px);
+      top: calc(var(--header-offset, 170px) + var(--header-buffer, 24px));
       z-index: 50;
       background: var(--page-bg, transparent);
       display: flex;
@@ -705,7 +705,7 @@ const glossaryJson = JSON.stringify(
         -ms-overflow-style: none;
         padding: 0.5rem 0 0.5rem;
         position: sticky;
-        top: var(--header-height, 5rem);
+        top: calc(var(--header-offset, 170px) + var(--header-buffer, 24px));
         background: var(--page-bg, #f7f8f7);
       }
       .glossary__az::-webkit-scrollbar {
@@ -730,10 +730,10 @@ const glossaryJson = JSON.stringify(
         padding-top: calc(var(--glossary-az-height, 52px) + 8px);
       }
       section[id^="letter-"] {
-        scroll-margin-top: calc(var(--header-height, 5rem) + var(--glossary-az-height, 52px) + 8px);
+        scroll-margin-top: calc(var(--header-offset, 170px) + var(--header-buffer, 24px) + var(--glossary-az-height, 52px) + 8px);
       }
       .glossary__letter-header {
-        top: calc(var(--header-height, 5rem) + var(--glossary-az-height, 52px));
+        top: calc(var(--header-offset, 170px) + var(--header-buffer, 24px) + var(--glossary-az-height, 52px));
       }
     }
 
@@ -785,7 +785,7 @@ const glossaryJson = JSON.stringify(
 
     /* scroll-margin-top so anchor jumps (A–Z links) don't hide the section under the fixed header + sticky A–Z bar. */
     section[id^="letter-"] {
-      scroll-margin-top: calc(var(--header-height, 140px) + var(--glossary-az-height, 104px) + 8px);
+      scroll-margin-top: calc(var(--header-offset, 170px) + var(--header-buffer, 24px) + var(--glossary-az-height, 52px) + 8px);
     }
 
     .glossary__letter-section {
@@ -795,7 +795,7 @@ const glossaryJson = JSON.stringify(
     /* Sticky letter header sticks below the fixed header and A–Z bar so it stays visible. */
     .glossary__letter-header {
       position: sticky;
-      top: calc(var(--header-height, 140px) + var(--glossary-az-height, 104px));
+      top: calc(var(--header-offset, 170px) + var(--header-buffer, 24px) + var(--glossary-az-height, 104px));
       z-index: 1;
       background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(8px);
@@ -988,4 +988,4 @@ const glossaryJson = JSON.stringify(
       height: auto !important;
     }
   </style>
-  </Layout>
+</Layout>

@@ -6,6 +6,8 @@ const updated = "October 3, 2025";
 
 <Layout>
   <style>
+    /* Override global .page-wrap top padding; Layout already supplies header clearance */
+    .terms-page-wrap.page-wrap { padding-top: 8px; }
     .kbm-breadcrumb {
       font-size: var(--text-base);
       margin-bottom: 1rem;
@@ -117,7 +119,7 @@ const updated = "October 3, 2025";
     }
   </style>
 
-<div class="page-wrap" style="padding-top:190px;">
+<div class="page-wrap terms-page-wrap">
   <PageHead
     title="Terms of Service"
     breadcrumb="Home / Terms of Service"
