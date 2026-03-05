@@ -21,7 +21,81 @@ const { title, description, bodyClass = "", skipGlobalHyvor = false } = Astro.pr
 >
   <Header />
 
-  <slot />
+  <main class="site-content">
+    <slot />
+  </main>
 
   <Footer />
 </BaseLayout>
+
+<style is:global>
+  :root {
+    --header-height: 220px;
+  }
+
+  .site-content {
+    padding-top: 0;
+  }
+
+  html {
+    scroll-padding-top: var(--header-height);
+  }
+
+  :target,
+  [data-scroll-target] {
+    scroll-margin-top: calc(var(--header-height) + 16px);
+  }
+</style>
+<script is:inline>
+(function () {
+
+  function setHeaderOffset() {
+    const wrap = document.querySelector(".kbm-header-wrap");
+    if (!wrap) return;
+
+    const wrapHeight = Math.ceil(wrap.getBoundingClientRect().height);
+
+    // Detect Memberstack debug pill if present
+    let debugHeight = 0;
+
+    const debugPill = Array.from(wrap.querySelectorAll("*")).find(el => {
+      const txt = (el.textContent || "").trim();
+      return txt.startsWith("MS:ready") || txt.includes("MS:ready loggedIn");
+    });
+
+    if (debugPill) {
+      debugHeight = Math.ceil(debugPill.getBoundingClientRect().height);
+    }
+
+    const correctedHeight = Math.max(90, wrapHeight - debugHeight);
+
+    document.documentElement.style.setProperty(
+      "--header-offset",
+      correctedHeight + "px"
+    );
+  }
+
+  window.addEventListener("load", setHeaderOffset);
+  window.addEventListener("resize", setHeaderOffset);
+
+  // Handle delayed layout shifts
+  setTimeout(setHeaderOffset, 50);
+  setTimeout(setHeaderOffset, 250);
+  setTimeout(setHeaderOffset, 1000);
+
+  // Recalculate after fonts load
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(setHeaderOffset).catch(function(){});
+  }
+
+  // Watch for header size changes
+  window.addEventListener("load", function () {
+    const wrap = document.querySelector(".kbm-header-wrap");
+    if (!wrap || typeof ResizeObserver === "undefined") return;
+
+    const observer = new ResizeObserver(setHeaderOffset);
+    observer.observe(wrap);
+  });
+
+})();
+</script>
