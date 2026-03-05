@@ -8,9 +8,7 @@ import Tooltip from "../../components/Tooltip.astro";
   title="It's Not You - It Might Be Your Machine"
   description="A quick checklist to help you troubleshoot common knitting machine issues—without blaming yourself."
 >
-  <PageHead title="It's Not You — It Might Be Your Machine" hideTitle={true} />
-
-  <main class="container">
+  <div class="page-wrap troubleshoot-page-wrap">
     <header class="lm-hero">
    
       <div class="lm-hero__text">
@@ -183,12 +181,11 @@ import Tooltip from "../../components/Tooltip.astro";
     </section>
 
     </div>
-  </main>
+  </div>
 
   <style>
-    :global(main.container) {
-      padding-top: var(--header-height);
-    }
+    /* Override global .page-wrap top padding; Layout already supplies header clearance */
+    .troubleshoot-page-wrap.page-wrap { padding-top: 8px; }
 
     .lm-well{
       background:#fff;
