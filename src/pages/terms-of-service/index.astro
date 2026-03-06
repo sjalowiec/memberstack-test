@@ -8,12 +8,20 @@ const updated = "October 3, 2025";
   <style>
     /* Override global .page-wrap top padding; Layout already supplies header clearance */
     .terms-page-wrap.page-wrap { padding-top: 8px; }
+
+    /* Centered legal content column */
+    .kbm-legal {
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
     .kbm-breadcrumb {
       font-size: var(--text-base);
       margin-bottom: 1rem;
       color: #6b7280;
     }
-    .kbm-legal h1 {
+    .kbm-legal .page-head .page-title {
       font-size: var(--text-xxl);
       line-height: 1.2;
       margin: 0 0 0.75rem 0;
@@ -27,7 +35,7 @@ const updated = "October 3, 2025";
       background: #fff;
       border: 1px solid #e5e7eb;
       border-radius: 16px;
-      padding: 24px 22px;
+      padding: 36px 32px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
     }
     .kbm-toc {
@@ -35,7 +43,7 @@ const updated = "October 3, 2025";
       border: 1px solid #e5e7eb;
       border-radius: 12px;
       padding: 14px 16px;
-      margin: 0 0 24px 0;
+      margin: 0 0 32px 0;
     }
     .kbm-toc-title {
       font-weight: 600;
@@ -55,23 +63,51 @@ const updated = "October 3, 2025";
       background: #f3f4f6;
       color: var(--kbm-green);
     }
-    .page-wrap h2 {
-      margin-top: 2rem;
-      font-size: var(--text-xl);
-    }
-    .page-wrap p,
-    .page-wrap ul {
-      margin: 1rem 0;
+
+    /* Legal page content: readable typography and spacing */
+    .legal-page {
+      line-height: 1.7;
       color: #374151;
+    }
+    .legal-page > p:first-child {
+      margin-top: 0;
+      margin-bottom: 2.5rem;
       font-size: var(--text-base);
     }
-    .page-wrap ul {
-      padding-left: 1.5rem;
+    .legal-page h2 {
+      font-size: var(--text-xl);
+      font-weight: 600;
+      color: #1f2937;
+      margin-top: 2.75rem;
+      margin-bottom: 1.25rem;
+      scroll-margin-top: calc(var(--header-offset, 170px) + var(--header-buffer, 36px));
     }
-    .page-wrap li {
-      margin: 0.5rem 0;
+    .legal-page h2:first-of-type {
+      margin-top: 0;
+    }
+    .legal-page p {
+      margin: 0 0 1.5rem 0;
       font-size: var(--text-base);
     }
+    .legal-page p + ul {
+      margin-top: 0.25rem;
+    }
+    .legal-page ul {
+      margin: 0 0 1.75rem 0;
+      padding-left: 1.75rem;
+      font-size: var(--text-base);
+    }
+    .legal-page li {
+      margin: 0.65rem 0;
+      padding-left: 0.25rem;
+    }
+    .legal-page li::marker {
+      color: var(--kbm-green);
+    }
+    .legal-page a {
+      color: var(--kbm-green);
+    }
+
     .print-btn {
       position: fixed;
       bottom: 2rem;
@@ -94,24 +130,51 @@ const updated = "October 3, 2025";
     .print-btn:hover {
       background: var(--kbm-green-2);
     }
-    
+
     @media (max-width: 1024px) {
+      .kbm-legal {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
       .kbm-card {
-        padding: 20px 18px;
+        padding: 28px 24px;
       }
-      .kbm-legal h1 {
-        /* font-size handled by CSS variable */
+      .legal-page > p:first-child {
+        margin-bottom: 2rem;
       }
-      .page-wrap h2 {
-        margin-top: 1.5rem;
+      .legal-page h2 {
+        margin-top: 2.25rem;
+        margin-bottom: 1rem;
+      }
+      .legal-page p,
+      .legal-page ul {
+        margin-bottom: 1.375rem;
+      }
+      .legal-page li {
+        margin: 0.55rem 0;
       }
       .print-btn {
         width: 48px;
         height: 48px;
-        /* font-size handled by CSS variable */
       }
     }
-    
+
+    @media (max-width: 480px) {
+      .kbm-legal {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+      .kbm-card {
+        padding: 24px 20px;
+      }
+      .legal-page > p:first-child {
+        margin-bottom: 1.75rem;
+      }
+      .legal-page ul {
+        padding-left: 1.5rem;
+      }
+    }
+
     @media print {
       .print-btn {
         display: none;
@@ -139,6 +202,7 @@ const updated = "October 3, 2025";
     </div>
 
     <div class="kbm-card">
+      <div class="legal-page">
       <p>
         Welcome to <strong>Knit it Now</strong>.<br> By using our website and
         services, you agree to these Terms of Service. Please read them carefully.
@@ -198,6 +262,7 @@ const updated = "October 3, 2025";
         If you have any questions about these Terms of Service, please contact us at 
         <a href="mailto:contact@knititnow.com">contact@knititnow.com</a>.
       </p>
+      </div>
     </div>
   </div>
 

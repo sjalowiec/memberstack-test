@@ -6,9 +6,10 @@ import PageHead from "../../components/PageHead.astro";
 const updated = "February 20, 2026";
 ---
 
-<Layout>
+<Layout bodyClass="page--tight-header">
   <style>
-
+    /* Override global .page-wrap top padding; Layout already supplies header clearance */
+    .refund-page-wrap.page-wrap { padding-top: 20px !important; }
     .kbm-breadcrumb {
       font-size: var(--text-base);
       margin-bottom: 1rem;
@@ -103,7 +104,7 @@ const updated = "February 20, 2026";
     }
   </style>
 
-  <div class="page-wrap">
+  <div class="page-wrap refund-page-wrap">
   <PageHead
     title="Refund Policy"
     breadcrumb="Home / Refund Policy"

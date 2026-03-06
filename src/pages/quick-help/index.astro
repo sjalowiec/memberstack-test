@@ -1,0 +1,439 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+---
+
+<Layout
+  title="15-Minute Machine Knitting Help | Knit it Now"
+  description="Get expert machine knitting help in just 15 minutes. Quick Zoom sessions to get unstuck and move forward."
+>
+  <div class="page-wrap quick-help-page-wrap">
+    <PageHead
+      breadcrumb="Home / Quick Help"
+      hideTitle
+    />
+
+    <!-- Hero: 2-col — left = text + CTAs, right = image placeholder -->
+    <section class="quick-help-hero">
+      <div class="quick-help-hero__content">
+        <h1 class="quick-help-hero__headline">Get Expert Machine Knitting Help — In Just 15 Minutes</h1>
+        <p class="quick-help-hero__subhead">Quick Zoom sessions to help you get unstuck and move forward with your project.</p>
+        <p>
+          Sometimes you don't need a full class — you just need a little guidance to figure out what's going wrong.
+        </p>
+        <p>
+          These short sessions are designed to give you quick, focused help so you can continue knitting with confidence.
+        </p>
+        <div class="quick-help-hero__ctas">
+          <a href="#" class="quick-help-btn quick-help-btn--primary">Book a Session</a>
+          <a href="#" class="quick-help-btn quick-help-btn--secondary">Buy the 4-Session Package</a>
+        </div>
+      </div>
+      <div class="quick-help-img-placeholder quick-help-img-placeholder--hero" aria-hidden="true">
+        <span>Knitting Machine / Workspace Image</span>
+      </div>
+    </section>
+
+    <hr class="kbm-divider" />
+
+    <!-- What We Can Work On -->
+    <section class="quick-help-section">
+      <h2>What We Can Work On</h2>
+      <p class="quick-help-section__intro">Your session can focus on one specific question or problem, such as:</p>
+      <ul class="quick-help-list">
+        <li>understanding part of a pattern</li>
+        <li>troubleshooting a machine issue</li>
+        <li>getting started on a new project</li>
+        <li>guidance using DesignaKnit</li>
+        <li>deciding what to do next</li>
+      </ul>
+    </section>
+
+    <hr class="kbm-divider" />
+
+    <!-- How It Works -->
+    <section class="quick-help-section">
+      <h2>How It Works</h2>
+      <div class="quick-help-steps">
+        <div class="quick-help-step">
+          <span class="quick-help-step__num" aria-hidden="true">1</span>
+          <span class="quick-help-step__label">Purchase a session</span>
+        </div>
+        <div class="quick-help-step">
+          <span class="quick-help-step__num" aria-hidden="true">2</span>
+          <span class="quick-help-step__label">Complete a short intake form</span>
+        </div>
+        <div class="quick-help-step">
+          <span class="quick-help-step__num" aria-hidden="true">3</span>
+          <span class="quick-help-step__label">We schedule a Zoom meeting</span>
+        </div>
+        <div class="quick-help-step">
+          <span class="quick-help-step__num" aria-hidden="true">4</span>
+          <span class="quick-help-step__label">Spend 15 minutes solving your problem</span>
+        </div>
+      </div>
+      <p class="quick-help-steps-note">
+        You'll also receive a recording of the session so you can review it later.
+      </p>
+    </section>
+
+    <hr class="kbm-divider" />
+
+    <!-- Session Options -->
+    <section class="quick-help-section quick-help-pricing-wrap">
+      <h2>Session Options</h2>
+      <p class="quick-help-pricing-intro">
+        After purchasing, you'll complete a short intake form so I can understand your question before we meet.
+      </p>
+      <div class="quick-help-cards">
+        <div class="quick-help-card">
+          <h3 class="quick-help-card__title">Single Session</h3>
+          <p class="quick-help-card__subtitle">15-minute Zoom consultation</p>
+          <p class="quick-help-card__body">
+            Perfect if you have one specific question or need quick troubleshooting help.
+          </p>
+          <p class="quick-help-card__price">$59.99</p>
+          <a href="#" class="quick-help-btn quick-help-btn--primary">Book a Session</a>
+        </div>
+        <div class="quick-help-card quick-help-card--featured">
+          <h3 class="quick-help-card__title">4-Session Package</h3>
+          <p class="quick-help-card__subtitle">Four 15-minute Zoom sessions</p>
+          <p class="quick-help-card__body">
+            Perfect if you're working through a project or learning something new.
+          </p>
+          <p class="quick-help-card__price">$199.99</p>
+          <p class="quick-help-card__save">Save $40 compared to purchasing sessions individually.</p>
+          <a href="#" class="quick-help-btn quick-help-btn--primary">Buy Package</a>
+        </div>
+      </div>
+    </section>
+
+    <hr class="kbm-divider" />
+
+    <!-- Work With Sue -->
+    <section class="quick-help-section quick-help-about">
+      <h2>Work With Sue</h2>
+      <div class="quick-help-about__grid">
+        <div class="quick-help-img-placeholder quick-help-img-placeholder--sue" aria-hidden="true">
+          <span>Sue Photo Placeholder</span>
+        </div>
+        <div class="quick-help-about__text">
+          <p>
+            Sue Jalowiec has spent more than 15 years helping machine knitters solve problems, finish projects, and feel confident using their machines.
+          </p>
+          <p>
+            These short sessions are designed to quickly identify what's going wrong and help you move forward.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .quick-help-page-wrap.page-wrap {
+    padding-top: 8px;
+  }
+
+  /* Hero */
+  .quick-help-hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .quick-help-hero__content {
+    max-width: 52ch;
+  }
+
+  .quick-help-hero__headline {
+    font-size: var(--text-xxl);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--kbm-green);
+    margin: 0 0 0.5rem 0;
+  }
+
+  .quick-help-hero__subhead {
+    font-size: var(--text-lg);
+    color: #4a5568;
+    margin: 0 0 1rem 0;
+    line-height: 1.5;
+  }
+
+  .quick-help-hero__content > p {
+    margin: 0 0 1rem 0;
+  }
+
+  .quick-help-hero__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  /* Image placeholders */
+  .quick-help-img-placeholder {
+    background: linear-gradient(135deg, rgba(199, 216, 164, 0.22) 0%, rgba(229, 232, 224, 0.35) 100%);
+    border: 1px dashed rgba(82, 104, 45, 0.35);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow: 0 2px 12px rgba(82, 104, 45, 0.06);
+  }
+
+  .quick-help-img-placeholder span {
+    font-size: var(--text-base);
+    font-weight: 500;
+    color: #6b7280;
+    padding: 0 1rem;
+  }
+
+  .quick-help-img-placeholder--hero {
+    min-height: 260px;
+  }
+
+  .quick-help-img-placeholder--sue {
+    min-height: 200px;
+    max-width: 260px;
+  }
+
+  /* Sections */
+  .quick-help-section h2 {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0 0 1rem 0;
+  }
+
+  .quick-help-section p {
+    margin: 0 0 1rem 0;
+  }
+
+  .quick-help-section__intro {
+    margin-bottom: 0.75rem;
+  }
+
+  .quick-help-list {
+    margin: 0 0 0 1.25rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .quick-help-list li {
+    position: relative;
+    margin: 0.45rem 0;
+    padding-left: 1.25rem;
+    line-height: 1.6;
+  }
+
+  .quick-help-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.5em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--kbm-green);
+  }
+
+  /* How It Works steps */
+  .quick-help-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 1rem 0 0;
+  }
+
+  .quick-help-step {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    background: rgba(82, 104, 45, 0.04);
+    border: 1px solid var(--ring);
+    border-radius: 12px;
+  }
+
+  .quick-help-step__num {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--kbm-green);
+    color: #fff;
+    font-weight: 700;
+    font-size: var(--text-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .quick-help-step__label {
+    font-weight: 500;
+    color: #374151;
+  }
+
+  .quick-help-steps-note {
+    margin-top: 1rem;
+    font-size: var(--text-base);
+    color: #6b7280;
+  }
+
+  /* Pricing */
+  .quick-help-pricing-wrap {
+    background: linear-gradient(180deg, rgba(199, 216, 164, 0.12) 0%, rgba(255, 255, 255, 0) 100%);
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    border: 1px solid rgba(82, 104, 45, 0.12);
+  }
+
+  .quick-help-pricing-intro {
+    margin-bottom: 1.25rem;
+  }
+
+  .quick-help-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .quick-help-card {
+    background: #fff;
+    border: 2px solid var(--ring);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  }
+
+  .quick-help-card--featured {
+    border-color: var(--kbm-green);
+    box-shadow: 0 6px 20px rgba(82, 104, 45, 0.12);
+  }
+
+  .quick-help-card__title {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--kbm-green);
+    margin: 0 0 0.25rem 0;
+  }
+
+  .quick-help-card__subtitle {
+    font-size: var(--text-base);
+    color: #6b7280;
+    margin: 0 0 0.75rem 0;
+  }
+
+  .quick-help-card__body {
+    flex: 1;
+    margin: 0 0 1rem 0;
+    font-size: var(--text-base);
+    line-height: 1.6;
+  }
+
+  .quick-help-card__price {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--kbm-green);
+    margin: 0 0 1rem 0;
+  }
+
+  .quick-help-card__save {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin: 0 0 1rem 0;
+  }
+
+  /* Work With Sue */
+  .quick-help-about__grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .quick-help-about__text p {
+    margin: 0 0 1rem 0;
+  }
+
+  .quick-help-about__text p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Buttons */
+  .quick-help-btn {
+    display: inline-block;
+    text-align: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: var(--text-base);
+    text-decoration: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    border: 2px solid transparent;
+  }
+
+  .quick-help-btn--primary {
+    background-color: var(--kbm-green);
+    color: #fff;
+    border-color: var(--kbm-green);
+  }
+
+  .quick-help-btn--primary:hover {
+    background-color: var(--kbm-green-hover);
+    border-color: var(--kbm-green-hover);
+  }
+
+  .quick-help-btn--secondary {
+    background-color: #fff;
+    color: var(--kbm-green);
+    border-color: var(--kbm-green);
+  }
+
+  .quick-help-btn--secondary:hover {
+    background-color: rgba(82, 104, 45, 0.08);
+  }
+
+  @media (max-width: 768px) {
+    .quick-help-hero {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .quick-help-hero__ctas {
+      flex-direction: column;
+    }
+
+    .quick-help-hero__ctas .quick-help-btn {
+      width: 100%;
+    }
+
+    .quick-help-img-placeholder--hero {
+      min-height: 220px;
+    }
+
+    .quick-help-cards {
+      grid-template-columns: 1fr;
+    }
+
+    .quick-help-about__grid {
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+
+    .quick-help-img-placeholder--sue {
+      max-width: 100%;
+      min-height: 180px;
+    }
+
+    .quick-help-pricing-wrap {
+      padding: 1.5rem 1rem;
+    }
+  }
+</style>
