@@ -1,6 +1,5 @@
 ---
 /* Centered Logo Header for Knit it Now */
-const showAuthDebug = import.meta.env.DEV;
 
 /** Learn submenu items (placeholder routes until pages exist). Reuse this pattern for other dropdowns. */
 const LEARN_SUBMENU = [
@@ -19,12 +18,7 @@ const LEARN_SUBMENU = [
 /* Desktop header-specific adjustments */
 @media (min-width: 1025px) {
   .kbm-logo-section {
-    padding: 4px 80px 0 80px;
-  }
-
-  .kbm-tagline {
-    margin-top: 0;
-    margin-bottom: 0.25rem;
+    padding: 4px 24px 0 20px;
   }
 
   .kbm-nav-row {
@@ -40,22 +34,320 @@ const LEARN_SUBMENU = [
   left: 0;
   right: 0;
   z-index: 1500;
-  background: var(--kbm-bg);
   box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
 }
 
+/* Full-width header content with page padding (no max-width) */
 .kbm-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+  width: 100%;
+  padding-inline: 24px;
+  box-sizing: border-box;
 }
 
-/* ===== HEADER INNER (two-column: brand | auth) ===== */
+/* ===== BILLBOARD STRIP (above main nav) ===== */
+.kbm-billboard {
+  width: 100%;
+  background: #fff1d3;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Same horizontal alignment as nav bar: full width, same padding */
+.kbm-billboard-inner {
+  width: 100%;
+  padding-inline: 24px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .kbm-billboard-inner {
+    padding-inline: 16px;
+  }
+}
+
+/* Mobile: compact announcement strip (Layer 1); secondary to brand bar and CTA */
+@media (max-width: 1024px) {
+  .kbm-billboard {
+    padding: 0.28rem 0;
+  }
+
+  .kbm-billboard-inner {
+    padding-inline: 16px;
+    text-align: center;
+  }
+
+  .kbm-billboard-text {
+    font-size: 0.85rem;
+    line-height: 1.35;
+  }
+}
+
+@media (max-width: 600px) {
+  .kbm-billboard {
+    padding: 0.2rem 0;
+  }
+
+  .kbm-billboard-text {
+    font-size: 0.8rem;
+    line-height: 1.3;
+  }
+}
+
+/* Drawer-only block: CTA + Account (visible only inside mobile drawer) */
+.kbm-drawer-actions {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .kbm-nav-row .kbm-drawer-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--ring);
+  }
+
+  /* CTA moved to green bar; remove from drawer */
+  .kbm-nav-row .kbm-drawer-actions .kbm-drawer-cta {
+    display: none !important;
+  }
+
+  .kbm-nav-row .kbm-drawer-actions .kbm-drawer-account {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-start;
+  }
+
+  .kbm-nav-row .kbm-drawer-actions .kbm-drawer-account a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+  }
+
+  /* Strong contrast in drawer: dark text on light background */
+  .kbm-nav-row .kbm-menu > li > a,
+  .kbm-nav-row .kbm-menu > li > .dd-trigger {
+    color: #1a2a15 !important;
+    font-weight: 600;
+  }
+
+  .kbm-nav-row .kbm-menu > li > a:hover,
+  .kbm-nav-row .kbm-menu > li > .dd-trigger:hover {
+    color: var(--kbm-green) !important;
+  }
+
+  .kbm-nav-row .kbm-menu .dd-panel a {
+    color: #1a2a15 !important;
+    font-weight: 500;
+  }
+
+  .kbm-nav-row .kbm-menu .dd-panel a:hover {
+    color: var(--kbm-green) !important;
+  }
+
+  .kbm-nav-row .kbm-drawer-actions .kbm-drawer-account a {
+    color: #1a2a15 !important;
+  }
+
+  .kbm-nav-row .kbm-drawer-actions .kbm-drawer-account .kbm-btn--primary {
+    color: #fff !important;
+    background: var(--kbm-green) !important;
+    border-color: var(--kbm-green) !important;
+  }
+}
+
+.kbm-billboard-text {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  color: #243015;
+  margin: 0;
+}
+
+.kbm-billboard-trigger {
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--kbm-green);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.2em;
+}
+
+.kbm-billboard-trigger:hover {
+  color: var(--kbm-green-hover);
+  text-decoration-thickness: 2px;
+}
+
+.kbm-billboard-trigger:focus {
+  outline: 2px solid var(--kbm-green);
+  outline-offset: 2px;
+}
+
+/* ===== MAIN NAV BAR (green bar: logo | nav | search | CTA | account) ===== */
+.kbm-nav-bar {
+  background: var(--kbm-green);
+  padding: 0.35rem 0;
+}
+
+/* Desktop: three-zone layout — logo left, nav centered, CTA + account right */
+.kbm-nav-bar .kbm-container {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.kbm-nav-bar .brand {
+  justify-self: start;
+  flex-shrink: 0;
+}
+
+.kbm-nav-bar .kbm-nav-center {
+  justify-self: center;
+  min-width: 0;
+}
+
+.kbm-nav-bar .kbm-nav-right {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.kbm-nav-bar .kbm-logo-section {
+  padding: 0.25rem 0;
+}
+
+.kbm-nav-bar .kbm-logo,
+.kbm-nav-bar .kbm-logo-text {
+  color: #fff;
+}
+
+.kbm-nav-bar .kbm-logo:hover,
+.kbm-nav-bar .kbm-logo-text:hover {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* ===== HEADER INNER (legacy / mobile) ===== */
 .header-inner {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
   border-bottom: 1px solid var(--ring);
+}
+
+/* Nav bar: menu + search icon + CTA + account (inside green bar) */
+.kbm-nav-bar .kbm-menu-wrap {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex: 1 1 auto;
+  justify-content: center;
+  min-width: 0;
+}
+
+.kbm-nav-bar .kbm-menu > li > a,
+.kbm-nav-bar .kbm-menu > li > .dd-trigger {
+  color: #fff;
+  font-weight: 500;
+}
+
+.kbm-nav-bar .kbm-menu > li > a:hover,
+.kbm-nav-bar .kbm-menu > li > .dd-trigger:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.kbm-nav-bar .kbm-menu .dd-panel a {
+  color: var(--kbm-green);
+}
+
+.kbm-nav-bar .kbm-search-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.kbm-nav-bar .kbm-search-icon:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.kbm-nav-bar .kbm-search-icon:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
+}
+
+.kbm-cta-guide {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 1rem;
+  font-family: var(--font);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: #243015;
+  background: #e7c677;
+  border: none;
+  border-radius: 6px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.kbm-cta-guide:hover {
+  background: #e0bc5c;
+  color: #243015;
+}
+
+.kbm-cta-guide:focus {
+  outline: 2px solid #243015;
+  outline-offset: 2px;
+}
+
+/* Desktop: full CTA text; mobile: short "Free Guide" */
+.kbm-cta-mobile {
+  display: none;
+}
+
+.kbm-nav-bar .kbm-account-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.kbm-nav-bar .kbm-account-wrap a {
+  color: #fff;
+  text-decoration: none;
+  font-size: var(--text-base);
+  font-weight: 600;
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.kbm-nav-bar .kbm-account-wrap a:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
 }
 
 .right {
@@ -90,16 +382,6 @@ const LEARN_SUBMENU = [
 .auth a:hover,
 .auth button:hover {
   color: var(--kbm-green-hover);
-}
-
-.auth-pill {
-  margin-left: 12px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  border: 1px solid currentColor;
-  opacity: 0.85;
-  white-space: nowrap;
 }
 
 .header-actions a {
@@ -213,6 +495,140 @@ const LEARN_SUBMENU = [
   align-items: center;
   justify-content: center;
   gap: 40px;
+}
+
+/* Desktop: nav row in flow; search icon as last nav item; hide full search bar in bar; hide hamburger */
+.kbm-nav-bar .kbm-nav-row .kbm-search-icon {
+  display: none;
+}
+
+@media (min-width: 1025px) {
+  .kbm-nav-bar .kbm-nav-row .kbm-search-icon {
+    display: inline-flex;
+  }
+
+  .kbm-nav-bar .kbm-nav-row .kbm-search-wrap {
+    display: none; /* full search only in mobile drawer */
+  }
+
+  .kbm-nav-bar .kbm-nav-row {
+    position: static;
+    width: auto;
+    max-width: none;
+    height: auto;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    min-width: 0;
+  }
+
+  .kbm-nav-bar .kbm-hamburger {
+    display: none;
+  }
+}
+
+/* Mobile: two-layer header — billboard + green bar with logo, Free Guide CTA, hamburger */
+@media (max-width: 1024px) {
+  /* Green bar: logo (left), Free Guide CTA (middle-right), hamburger (far right) */
+  .kbm-nav-bar .kbm-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 0.55rem;
+    padding-bottom: 0.55rem;
+  }
+
+  .kbm-nav-bar .kbm-nav-center {
+    width: 0;
+    min-width: 0;
+    overflow: visible;
+    flex: 0 0 0;
+  }
+
+  .kbm-nav-bar .kbm-nav-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  /* Show compact "Free Guide" CTA in bar; hide only account (account stays in drawer) */
+  .kbm-nav-bar .kbm-nav-right .kbm-cta-desktop {
+    display: none;
+  }
+
+  .kbm-nav-bar .kbm-nav-right .kbm-cta-mobile {
+    display: inline;
+  }
+
+  .kbm-nav-bar .kbm-nav-right .kbm-cta-guide {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.9rem;
+    display: inline-flex !important;
+  }
+
+  .kbm-nav-bar .kbm-nav-right .kbm-account-wrap {
+    display: none !important;
+  }
+
+  /* Hamburger in flow inside green bar (not absolute); white for contrast on green */
+  .kbm-nav-bar .kbm-hamburger {
+    position: static;
+    top: auto;
+    right: auto;
+    margin: 0;
+    padding: 10px;
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .kbm-nav-bar .kbm-hamburger span {
+    background: #fff;
+    width: 26px;
+    height: 3px;
+  }
+
+  .kbm-nav-bar .kbm-hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translate(6px, 6px);
+  }
+
+  .kbm-nav-bar .kbm-hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -6px);
+  }
+}
+
+/* Account buttons in green bar */
+.kbm-nav-bar .kbm-account-wrap .kbm-btn--ghost {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+}
+
+.kbm-nav-bar .kbm-account-wrap .kbm-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.kbm-nav-bar .kbm-account-wrap .kbm-btn--primary {
+  background: #fff;
+  color: var(--kbm-green);
+  border-color: #fff;
+}
+
+.kbm-nav-bar .kbm-account-wrap .kbm-btn--primary:hover {
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--kbm-green);
+}
+
+.kbm-nav-bar .kbm-hamburger span {
+  background: #fff;
 }
 
 .kbm-menu {
@@ -387,15 +803,56 @@ const LEARN_SUBMENU = [
 @media (max-width: 1024px) {
   .kbm-hamburger {
     display: flex;
+    top: 10px;
+    right: 12px;
+    padding: 10px;
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .kbm-hamburger span {
+    width: 24px;
+    height: 3px;
+  }
+
+  .kbm-hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+
+  .kbm-hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  /* Compact single-line logo on mobile */
+  .kbm-nav-bar .kbm-logo-section {
+    padding: 0.25rem 0;
+    min-width: 0;
+  }
+
+  .kbm-nav-bar .kbm-logo {
+    white-space: nowrap;
+    gap: 8px;
+    max-width: 100%;
+  }
+
+  /* Stronger brand presence: larger site name on mobile */
+  .kbm-nav-bar .kbm-logo-text {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 700;
   }
 
   .kbm-logo-section {
-    padding: 0.5rem 0 0.25rem 0;
+    padding: 0.35rem 0 0.2rem 0;
   }
 
+  /* Slightly larger icon to balance larger text */
   .kbm-logo-img {
-    width: 42px;
-    height: 42px;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
   }
 
   .header-inner .right {
@@ -489,46 +946,48 @@ const LEARN_SUBMENU = [
     font-size: 1.6rem;
     line-height: 1.1;
   }
-
-  .kbm-tagline {
-    font-size: 0.9rem;
-    line-height: 1.3;
-    max-width: 420px;
-    margin-bottom: 0.5rem;
-  }
 }
 
 @media (max-width: 600px) {
   .kbm-container {
-    padding: 0 16px;
+    padding-inline: 12px;
   }
 
-  .kbm-logo-section {
-    padding: 0.75rem 60px 0.5rem 60px;
+  .kbm-nav-bar .kbm-logo-section {
+    padding: 0.25rem 0;
+  }
+
+  /* Keep brand title prominent on small screens */
+  .kbm-nav-bar .kbm-logo-text {
+    font-size: 1.35rem;
+  }
+
+  .kbm-logo-img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .kbm-hamburger {
+    top: 8px;
+    right: 8px;
+    padding: 8px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .kbm-hamburger span {
+    width: 22px;
+    height: 2.5px;
   }
 
   .right {
     padding-right: 56px;
   }
 
-  .kbm-logo-img {
-    width: 40px;
-    height: 40px;
-  }
-
-  .kbm-logo-text {
-    font-size: 1.8rem;
-  }
-
   .kbm-tagline {
     font-size: 0.9rem;
     margin-top: 0;
     margin-bottom: 0.5rem;
-  }
-
-  .kbm-hamburger {
-    top: 12px;
-    right: 16px;
   }
 }
 
@@ -598,12 +1057,6 @@ div[data-ms-modal-overlay] {
 }
 
 
-.kbm-welcome-message {
-  font-size: 14px;
-  margin-right: 12px;
-  white-space: nowrap;
-}
-
 /* Hide header when printing */
 @media print {
   .kbm-header-wrap {
@@ -613,115 +1066,120 @@ div[data-ms-modal-overlay] {
 </style>
 
 <section class="kbm-header-wrap">
-  <header class="site-header">
+  <!-- Billboard strip above main nav -->
+  <div class="kbm-billboard" data-testid="welcome-intro-wrapper">
+    <div class="kbm-billboard-inner">
+      <p class="kbm-billboard-text">
+        Welcome! Knit it Now has been given a fresh new look.
+        <button
+          type="button"
+          id="open-intro-drawer"
+          class="kbm-billboard-trigger"
+          aria-haspopup="dialog"
+          data-testid="button-see-intro"
+        >
+          see what's here and what's coming next.
+        </button>
+      </p>
+    </div>
+  </div>
+
+  <!-- Main nav bar: left (logo) | center (nav + search) | right (CTA + account) -->
+  <header class="site-header kbm-nav-bar">
     <div class="kbm-container">
-      <div class="header-inner">
-        <div class="brand">
-          <div class="kbm-logo-section">
-            <a href="/" class="kbm-logo">
-              <img src="/KINlogo.svg" alt="Knit it Now" class="kbm-logo-img" />
-              <span class="kbm-logo-text">Knit it Now</span>
-            </a>
-            <p class="kbm-tagline">See it ● Love it ● Knit it | Make the right project decisions, then knit with confidence.</p>
-          </div>
-        </div>
-
-        <div class="right">
-          <div id="kbm-welcome-message" class="kbm-welcome-message"></div>
-          {showAuthDebug && (
-            <span id="auth-pill" class="auth-pill">auth: …</span>
-          )}
-          <div class="kbm-account-section auth header-actions">
-
-            <!-- Logged OUT users -->
-            <div data-ms-content="!members">
-              <a
-                href="#"
-                class="kbm-btn kbm-btn--primary"
-                data-ms-modal="signup"
-                data-ms-plan:add="pln_free-plan-8n34u0qnx"
-                data-ms-redirect="current-url"
-              >
-                Join Free
-              </a>
-
-              <a
-                href="#"
-                class="kbm-btn kbm-btn--ghost"
-                data-ms-modal="login"
-                data-ms-redirect="current-url"
-              >
-                Log in
-              </a>
-            </div>
-
-            <!-- Logged IN members -->
-            <div data-ms-content="members">
-              <a
-                href="#"
-                class="kbm-btn kbm-btn--ghost"
-                data-ms-modal="profile"
-              >
-                Account
-              </a>
-
-              <a
-                href="#"
-                class="kbm-btn kbm-btn--ghost"
-                data-ms-action="logout"
-              >
-                Log out
-              </a>
-            </div>
-
-          </div>
-          </div>
+      <!-- Left zone: logo -->
+      <div class="brand">
+        <div class="kbm-logo-section">
+          <a href="/" class="kbm-logo">
+            <img src="/KINlogo.svg" alt="Knit it Now" class="kbm-logo-img" />
+            <span class="kbm-logo-text">Knit it Now</span>
+          </a>
         </div>
       </div>
 
-      <!-- Hamburger menu (mobile only) -->
-      <button class="kbm-hamburger" aria-label="Toggle menu" aria-expanded="false">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-
-      <!-- Navigation Row - main menu: Patterns, Learn, Tools, Get Help, Shop -->
-      <div class="kbm-nav-row menu-row">
-        <ul class="kbm-menu">
-          <li><a href="/patterns" data-testid="nav-patterns">Patterns</a></li>
-          <li class="dd">
-            <button type="button" class="dd-trigger" data-testid="nav-learn" aria-haspopup="true" aria-expanded="false" aria-controls="learn-submenu">
-              Learn 
-            </button>
-            <div id="learn-submenu" class="dd-panel" role="menu" aria-label="Learn">
-              <ul role="none">
-                {LEARN_SUBMENU.map((item) => (
-                  <li role="none">
-                    <a href={item.href} role="menuitem">{item.label}</a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </li>
-          <li><a href="/wizards" data-testid="nav-tools">Tools</a></li>
-          <li><a href="/get-help" data-testid="nav-get-help">Get Help</a></li>
-          <li><a href="/shop" data-testid="nav-shop">Shop</a></li>
-        </ul>
-
-        <!-- Search Bar -->
-        <div class="kbm-search-wrap">
-          <input class="kbm-search-input" type="search" placeholder="Search..." aria-label="Search" data-testid="input-search" />
-          <button class="kbm-search-btn" aria-label="Submit search" data-testid="button-search">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Center zone: primary nav + search icon -->
+      <div class="kbm-nav-center">
+        <div class="kbm-nav-row menu-row">
+          <ul class="kbm-menu">
+            <li><a href="/patterns" data-testid="nav-patterns">Patterns</a></li>
+            <li class="dd">
+              <button type="button" class="dd-trigger" data-testid="nav-learn" aria-haspopup="true" aria-expanded="false" aria-controls="learn-submenu">
+                Learn
+              </button>
+              <div id="learn-submenu" class="dd-panel" role="menu" aria-label="Learn">
+                <ul role="none">
+                  {LEARN_SUBMENU.map((item) => (
+                    <li role="none">
+                      <a href={item.href} role="menuitem">{item.label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </li>
+            <li><a href="/wizards" data-testid="nav-tools">Tools</a></li>
+            <li><a href="/get-help" data-testid="nav-get-help">Get Help</a></li>
+            <li><a href="/shop" data-testid="nav-shop">Shop</a></li>
+          </ul>
+          <!-- Search icon as last item in nav (desktop); full search in mobile drawer -->
+          <button type="button" class="kbm-search-icon" aria-label="Search" data-testid="button-search-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.3-4.3"></path>
             </svg>
           </button>
+          <div class="kbm-search-wrap">
+            <input class="kbm-search-input" type="search" placeholder="Search..." aria-label="Search" data-testid="input-search" />
+            <button class="kbm-search-btn" aria-label="Submit search" data-testid="button-search">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.3-4.3"></path>
+              </svg>
+            </button>
+          </div>
+          <!-- Mobile drawer only: CTA + Account/Log out (hidden on desktop) -->
+          <div class="kbm-drawer-actions">
+            <a href="/learn/workshops" class="kbm-cta-guide kbm-drawer-cta" data-testid="drawer-cta-free-guide">Get the Free guide</a>
+            <div class="kbm-drawer-account">
+              <div data-ms-content="!members">
+                <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="login" data-ms-redirect="current-url">Log in</a>
+                <a href="#" class="kbm-btn kbm-btn--primary" data-ms-modal="signup" data-ms-plan:add="pln_free-plan-8n34u0qnx" data-ms-redirect="current-url">Join Free</a>
+              </div>
+              <div data-ms-content="members">
+                <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="profile">Account</a>
+                <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-action="logout">Log out</a>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <!-- Right zone: CTA + account + hamburger (mobile shows compact "Free Guide") -->
+      <div class="kbm-nav-right">
+        <a href="/learn/workshops" class="kbm-cta-guide" data-testid="cta-free-guide">
+          <span class="kbm-cta-desktop">Get the Free guide</span>
+          <span class="kbm-cta-mobile">Free Guide</span>
+        </a>
+        <div class="kbm-account-wrap">
+          <!-- Logged OUT -->
+          <div data-ms-content="!members">
+            <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="login" data-ms-redirect="current-url">Log in</a>
+            <a href="#" class="kbm-btn kbm-btn--primary" data-ms-modal="signup" data-ms-plan:add="pln_free-plan-8n34u0qnx" data-ms-redirect="current-url">Join Free</a>
+          </div>
+          <!-- Logged IN -->
+          <div data-ms-content="members">
+            <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="profile">Account</a>
+            <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-action="logout">Log out</a>
+          </div>
+        </div>
+        <button class="kbm-hamburger" aria-label="Toggle menu" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
     </div>
   </header>
+
   <div id="auth-msg" class="auth-msg" style="display:none;" role="status" aria-live="polite">
     <span id="auth-msg-text"></span>
     <button type="button" id="auth-msg-close" class="auth-msg-close" aria-label="Dismiss">×</button>
@@ -754,8 +1212,8 @@ div[data-ms-modal-overlay] {
       if (authMsg) authMsg.style.display = "none";
     }
 
-    function setPill({ ms, loggedIn, isMember, plansDebug }) {
-      if (pill) pill.textContent = `MS:${ms} loggedIn:${loggedIn} member:${isMember}` + (plansDebug ? ` ${plansDebug}` : "");
+    function setPill(_state) {
+      /* Debug pill removed from UI; auth state still tracked for logic */
     }
 
     async function waitForMS(attempts = 30, delayMs = 200) {

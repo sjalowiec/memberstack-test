@@ -844,6 +844,107 @@ p {
   }
 }
 
+/* ========== Right-side intro drawer (dialog) ========== */
+.kbm-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: auto;
+  margin: 0;
+  width: 100%;
+  max-width: 400px;
+  height: 100vh;
+  max-height: 100vh;
+  border: none;
+  padding: 0;
+  background: #ffffff;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+  transform: translateX(100%);
+  transition: transform 200ms ease-out;
+}
+
+.kbm-drawer::backdrop {
+  background: rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+}
+
+.kbm-drawer[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.kbm-drawer--open {
+  transform: translateX(0);
+}
+
+.kbm-drawer-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1.5rem;
+}
+
+.kbm-drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.kbm-drawer-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3a57;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.kbm-drawer-close {
+  border: none;
+  background: transparent;
+  font-size: 1.75rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #8891a6;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.kbm-drawer-close:hover {
+  color: #2c3a57;
+}
+
+.kbm-drawer-body {
+  flex: 1;
+}
+
+.kbm-drawer-body p {
+  font-size: 1rem;
+  color: #4d5a48;
+  line-height: 1.6;
+  margin: 0 0 1.25rem;
+}
+
+.kbm-drawer-link {
+  color: var(--kbm-green);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-size: 1rem;
+}
+
+.kbm-drawer-link:hover {
+  text-decoration-thickness: 2px;
+}
+
+@media (max-width: 480px) {
+  .kbm-drawer {
+    max-width: 100%;
+  }
+}
+
 /* --- Workshop Hub: Video Reply Section (placeholder) --- */
 .kbm-video-reply {
   margin-top: 1.75rem;

@@ -744,8 +744,7 @@ import Tooltip from "../../components/Tooltip.astro";
       onScroll();
     })();
   </script>
-  <script>
-    import { isDevEnvironment } from "../../utils/devGateBypass";
+  <script is:inline>
     (function () {
       var gatedContent = document.getElementById('troubleshoot-gated-content');
       var accessGate = document.getElementById('troubleshoot-access-gate');
@@ -765,10 +764,6 @@ import Tooltip from "../../components/Tooltip.astro";
       }
 
       async function resolveAccess() {
-        if (isDevEnvironment()) {
-          showContent();
-          return;
-        }
         try {
           if (!window.$memberstackDom) {
             showGate();

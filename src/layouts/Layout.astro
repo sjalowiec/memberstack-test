@@ -21,6 +21,98 @@ const { title, description, bodyClass = "", skipGlobalHyvor = false } = Astro.pr
 >
   <Header />
 
+  <!-- Right-side intro drawer (opened by billboard "see what's here" link) -->
+  <dialog
+    id="intro-drawer"
+    class="kbm-drawer"
+    aria-labelledby="drawer-title"
+    aria-describedby="drawer-description"
+    data-testid="dialog-intro-drawer"
+  >
+    <div class="kbm-drawer-content">
+      <header class="kbm-drawer-header">
+        <h2 id="drawer-title" class="kbm-drawer-title">Clear answers and practical tools for machine knitters</h2>
+        <button
+          type="button"
+          class="kbm-drawer-close"
+          aria-label="Close drawer"
+          data-testid="button-drawer-close"
+        >&times;</button>
+      </header>
+      <div id="drawer-description" class="kbm-drawer-body">
+        <p>
+          Knit it Now has been given a fresh new look. It is a focused space for machine knitters who want clear answers and practical tools — without digging through forums or scattered resources.
+        </p>
+        <p>
+          Whether you're restarting, refreshing skills, or trying something new you'll find Patterns, Tools, and Guides to help you get started
+          — with more being added as Knit by Machine grows.
+        </p>
+        <p>New here?</p>
+        <a
+          href="/#where-are-you"
+          id="drawer-where-link"
+          class="kbm-drawer-link"
+          data-testid="link-where-drawer"
+        >
+          See where to start →
+        </a>
+      </div>
+    </div>
+  </dialog>
+
+  <script is:inline>
+    (function () {
+      const openBtn = document.getElementById('open-intro-drawer');
+      const drawer = document.getElementById('intro-drawer');
+      const closeBtn = drawer?.querySelector('.kbm-drawer-close');
+
+      function openDrawer() {
+        if (drawer) {
+          drawer.showModal();
+          drawer.classList.add('kbm-drawer--open');
+        }
+      }
+
+      function closeDrawer() {
+        if (!drawer) return;
+        drawer.classList.remove('kbm-drawer--open');
+        setTimeout(function () { drawer.close(); }, 200);
+      }
+
+      if (openBtn) openBtn.addEventListener('click', openDrawer);
+      if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+
+      if (drawer) {
+        drawer.addEventListener('click', function (e) {
+          if (e.target === drawer) closeDrawer();
+        });
+        drawer.addEventListener('cancel', function (e) {
+          e.preventDefault();
+          closeDrawer();
+        });
+      }
+
+      var whereLink = document.getElementById('drawer-where-link');
+      if (whereLink) {
+        whereLink.addEventListener('click', function (e) {
+          e.preventDefault();
+          closeDrawer();
+          setTimeout(function () {
+            var target = document.getElementById('where-are-you');
+            var headerEl = document.querySelector('header') || document.querySelector('.kbm-header-wrap');
+            var headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 160;
+            if (target) {
+              var y = target.getBoundingClientRect().top + window.scrollY - headerHeight - 16;
+              window.scrollTo({ top: y, behavior: 'smooth' });
+            } else {
+              window.location.href = whereLink.getAttribute('href') || '/#where-are-you';
+            }
+          }, 220);
+        });
+      }
+    })();
+  </script>
+
   <main class="site-content" style="padding-top: calc(var(--header-offset, 150px) + var(--header-buffer, 24px));">
     <slot />
   </main>
@@ -38,6 +130,13 @@ const { title, description, bodyClass = "", skipGlobalHyvor = false } = Astro.pr
     --header-buffer: 8px;
   }
 
+  /* Mobile: more breathing room below brand bar so content doesn’t feel jammed */
+  @media (max-width: 1024px) {
+    :root {
+      --header-buffer: 24px;
+    }
+  }
+
   html {
     scroll-padding-top: calc(var(--header-offset, 170px) + var(--header-buffer, 24px));
   }
@@ -52,9 +151,9 @@ const { title, description, bodyClass = "", skipGlobalHyvor = false } = Astro.pr
   function setHeaderOffset() {
     const fallback = 170;
 
-    const headerEl =
-      document.querySelector("header") ||
-      document.querySelector(".kbm-header-wrap");
+    /* Use full fixed header (billboard + green bar) so content starts below both layers */
+    const headerWrap = document.querySelector(".kbm-header-wrap");
+    const headerEl = headerWrap || document.querySelector("header");
 
     if (!headerEl) {
       document.documentElement.style.setProperty("--header-offset", fallback + "px");
@@ -65,7 +164,7 @@ const { title, description, bodyClass = "", skipGlobalHyvor = false } = Astro.pr
 
     // Subtract Memberstack debug pill height if present
     let debugHeight = 0;
-    const debugPill = Array.from(headerEl.querySelectorAll("*")).find((el) => {
+    const debugPill = headerEl && Array.from(headerEl.querySelectorAll("*")).find((el) => {
       const txt = (el.textContent || "").trim();
       return txt.startsWith("MS:ready") || txt.includes("MS:ready loggedIn");
     });
