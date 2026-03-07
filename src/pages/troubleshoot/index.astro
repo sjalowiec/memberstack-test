@@ -19,6 +19,35 @@ import Tooltip from "../../components/Tooltip.astro";
         </p>
       </div>
     </header>
+
+<section id="troubleshoot-access-gate" class="troubleshoot-access-gate" hidden aria-live="polite">
+  <div class="troubleshoot-access-gate__inner">
+    <h2 class="troubleshoot-access-gate__title">Log in or continue with your email</h2>
+    <p class="troubleshoot-access-gate__text">
+      Troubleshooting help is available once you're signed in or we have your email address.
+    </p>
+
+    <div class="troubleshoot-access-gate__actions">
+      <button
+        type="button"
+        class="troubleshoot-access-gate__btn troubleshoot-access-gate__btn--primary"
+        data-ms-modal="login"
+      >
+        Log In
+      </button>
+
+      <button
+        type="button"
+        class="troubleshoot-access-gate__btn troubleshoot-access-gate__btn--secondary"
+        data-ms-modal="signup"
+      >
+        Give Email / Sign Up
+      </button>
+    </div>
+  </div>
+</section>
+
+<div id="troubleshoot-gated-content" hidden>
 <!-- Funnel callout: non-member — styled panel inviting users to explore membership -->
 <section data-ms-content="!members" class="lm-membership-callout" aria-labelledby="lm-membership-heading">
   <h2 id="lm-membership-heading" class="lm-membership-callout__headline">Need help?</h2>
@@ -603,6 +632,86 @@ import Tooltip from "../../components/Tooltip.astro";
         justify-content: center;
       }
     }
+
+    .troubleshoot-access-gate {
+      margin: 24px 0 28px;
+    }
+
+    .troubleshoot-access-gate__inner {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 24px 22px;
+      border: 1px solid rgba(82, 104, 45, 0.18);
+      border-radius: 18px;
+      background: #fff;
+      box-shadow: 0 10px 30px rgba(17, 24, 39, 0.08);
+      text-align: center;
+    }
+
+    .troubleshoot-access-gate__title {
+      margin: 0 0 10px;
+      font-size: clamp(1.35rem, 2vw, 1.75rem);
+      line-height: 1.2;
+      color: #1f2937;
+    }
+
+    .troubleshoot-access-gate__text {
+      margin: 0 auto;
+      max-width: 56ch;
+      font-size: 1rem;
+      line-height: 1.65;
+      color: #4b5563;
+    }
+
+    .troubleshoot-access-gate__actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .troubleshoot-access-gate__btn {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    }
+
+    .troubleshoot-access-gate__btn:hover,
+    .troubleshoot-access-gate__btn:focus-visible {
+      transform: translateY(-1px);
+    }
+
+    .troubleshoot-access-gate__btn--primary {
+      background: #52682d;
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(82, 104, 45, 0.22);
+    }
+
+    .troubleshoot-access-gate__btn--secondary {
+      background: #eef3e6;
+      color: #2f3b1f;
+    }
+
+    @media (max-width: 640px) {
+      .troubleshoot-access-gate__inner {
+        padding: 20px 16px;
+        border-radius: 16px;
+      }
+
+      .troubleshoot-access-gate__actions {
+        flex-direction: column;
+      }
+
+      .troubleshoot-access-gate__btn {
+        width: 100%;
+      }
+    }
   </style>
   <script is:inline>
     (function () {
@@ -635,4 +744,69 @@ import Tooltip from "../../components/Tooltip.astro";
       onScroll();
     })();
   </script>
+  <script is:inline>
+    (function () {
+      var gatedContent = document.getElementById('troubleshoot-gated-content');
+      var accessGate = document.getElementById('troubleshoot-access-gate');
+
+      if (!gatedContent || !accessGate) return;
+
+      function showGate() {
+        gatedContent.hidden = true;
+        accessGate.hidden = false;
+        document.documentElement.classList.remove('troubleshoot-access-ready');
+      }
+
+      function showContent() {
+        accessGate.hidden = true;
+        gatedContent.hidden = false;
+        document.documentElement.classList.add('troubleshoot-access-ready');
+      }
+
+      async function resolveAccess() {
+        try {
+          if (!window.$memberstackDom) {
+            showGate();
+            return;
+          }
+
+          var memberstack = window.$memberstackDom;
+          var member = await memberstack.getCurrentMember();
+
+          var data = member && member.data ? member.data : null;
+          var email = data && typeof data.email === 'string' ? data.email.trim() : '';
+
+          if (data && email) {
+            showContent();
+            return;
+          }
+
+          showGate();
+        } catch (error) {
+          console.error('Troubleshoot gate error:', error);
+          showGate();
+        }
+      }
+
+      function waitForMemberstack(attempt) {
+        if (window.$memberstackDom) {
+          resolveAccess();
+          return;
+        }
+
+        if (attempt >= 40) {
+          showGate();
+          return;
+        }
+
+        window.setTimeout(function () {
+          waitForMemberstack(attempt + 1);
+        }, 150);
+      }
+
+      showGate();
+      waitForMemberstack(0);
+    })();
+  </script>
+</div>
 </Layout>
