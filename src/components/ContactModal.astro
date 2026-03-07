@@ -47,6 +47,7 @@
       <input type="hidden" name="submission-type" value="contact" />
       <input type="hidden" name="page_url" id="contactPageURLModal" />
       <input type="hidden" name="submitted_at" id="contactSubmittedAtModal" />
+      <input type="hidden" name="form_source" id="contactFormSourceModal" value="unknown" />
 
       <label class="contact-form__field">
         <span>Name *</span>
@@ -354,18 +355,25 @@
 <script is:inline>
   (function() {
     const modal = document.getElementById('contact-modal');
-    const trigger = document.getElementById('contact-modal-trigger');
     const overlay = document.getElementById('contact-modal-overlay');
     const closeBtn = document.getElementById('contact-modal-close');
     const form = document.getElementById('contactFormModal');
     const successMsg = document.getElementById('contactSuccessModal');
+    const pageUrlInput = document.getElementById('contactPageURLModal');
+    const submittedAtInput = document.getElementById('contactSubmittedAtModal');
+    const formSourceInput = document.getElementById('contactFormSourceModal');
 
-    function openModal() {
+    const triggers = document.querySelectorAll('#contact-modal-trigger, .contact-modal-trigger');
+
+    function openModal(source) {
+      source = source || 'unknown';
+      if (pageUrlInput) pageUrlInput.value = window.location.href;
+      if (submittedAtInput) submittedAtInput.value = new Date().toISOString();
+      if (formSourceInput) formSourceInput.value = source;
+
       modal?.setAttribute('aria-hidden', 'false');
       modal?.classList.add('contact-modal--open');
       document.body.style.overflow = 'hidden';
-      document.getElementById('contactPageURLModal').value = window.location.href;
-      document.getElementById('contactSubmittedAtModal').value = new Date().toISOString();
     }
 
     function closeModal() {
@@ -375,16 +383,27 @@
       form?.reset();
     }
 
-    trigger?.addEventListener('click', function(e) {
-      e.preventDefault();
-      openModal();
-    });
+    if (modal && overlay && closeBtn && form) {
+      triggers.forEach(function(trigger) {
+        trigger.addEventListener('click', function(e) {
+          e.preventDefault();
+          const source = trigger.getAttribute('data-contact-source') || 'unknown';
+          openModal(source);
+        });
+      });
 
-    overlay?.addEventListener('click', closeModal);
-    closeBtn?.addEventListener('click', closeModal);
+      overlay.addEventListener('click', closeModal);
+      closeBtn.addEventListener('click', closeModal);
 
-    form?.addEventListener('submit', function() {
-      document.getElementById('contactSubmittedAtModal').value = new Date().toISOString();
-    });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
+          closeModal();
+        }
+      });
+
+      form.addEventListener('submit', function() {
+        if (submittedAtInput) submittedAtInput.value = new Date().toISOString();
+      });
+    }
   })();
 </script>

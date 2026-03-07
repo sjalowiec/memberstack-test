@@ -54,6 +54,7 @@ export default async (req) => {
     const message = (formData.get("message") || "").toString().trim();
     const pageUrl = (formData.get("page_url") || "").toString().trim();
     const submittedAt = (formData.get("submitted_at") || "").toString().trim();
+    const formSource = (formData.get("form_source") || "").toString().trim();
 
     if (!email || !message) {
       // Don’t give attackers feedback
@@ -76,6 +77,7 @@ export default async (req) => {
 
 Name: ${name}
 Email: ${email}
+Source: ${formSource}
 IP: ${ip}
 Page: ${pageUrl}
 Submitted: ${submittedAt}
@@ -88,6 +90,7 @@ ${message}
       <h2>New contact form submission</h2>
       <p><strong>Name:</strong> ${escapeHtml(name)}</p>
       <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+      ${formSource ? `<p><strong>Source:</strong> ${escapeHtml(formSource)}</p>` : ""}
       <p><strong>IP:</strong> ${escapeHtml(ip)}</p>
       ${pageUrl ? `<p><strong>Page:</strong> ${escapeHtml(pageUrl)}</p>` : ""}
       ${submittedAt ? `<p><strong>Submitted:</strong> ${escapeHtml(submittedAt)}</p>` : ""}
