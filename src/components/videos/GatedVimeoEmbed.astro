@@ -75,15 +75,10 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
       const res = await window.$memberstackDom.getCurrentMember();
       const member = res?.data;
 
-      const paidPlanIds = new Set([
-        "pln_kin-membership-monthly-a59701wy",
-        "pln_kin-membership-annual-qf9g01et"
-      ]);
+      const permissions = member?.permissions || [];
+      const hasVideoAccess = permissions.includes("member-videos");
 
-      const planConnections = member?.planConnections || [];
-      const isPaid = planConnections.some(pc => paidPlanIds.has(pc.planId));
-
-      if (!isPaid) return;
+      if (!hasVideoAccess) return;
 
       // Inject iframe only for paid members
       slot.innerHTML = `
