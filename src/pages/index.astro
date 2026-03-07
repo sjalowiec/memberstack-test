@@ -1,10 +1,11 @@
 ---
+import Layout from "../layouts/Layout.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import "../styles/global.css";
 ---   
 
-<html lang="en">
+<Layout>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -30,9 +31,8 @@ import "../styles/global.css";
     />
   </head>
 
-  <body>
-    <Header />
-
+ 
+    
     <!-- Welcome Banner -->
     <div class="kbm-intro-wrapper" data-testid="welcome-intro-wrapper">
       <div class="kbm-intro-banner" data-testid="welcome-intro-banner">
@@ -264,9 +264,9 @@ import "../styles/global.css";
       </section>
     </main>
 
-    <Footer />
-  </body>
-</html>
+    
+  
+</Layout>
 
 <style>
   html {
