@@ -1,6 +1,15 @@
 ---
 /* Centered Logo Header for Knit it Now */
 const showAuthDebug = import.meta.env.DEV;
+
+/** Learn submenu items (placeholder routes until pages exist). Reuse this pattern for other dropdowns. */
+const LEARN_SUBMENU = [
+  { label: "Tutorials", href: "/videos" },
+  { label: "Workshops & Guides", href: "/learn/workshops" },
+  { label: "Skill Builders", href: "/learn/skill-builders" },
+  { label: "Reference", href: "/learn/reference" },
+  { label: "Learning Paths", href: "/learn/learning-paths" },
+];
 ---
 <style is:global>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
@@ -237,6 +246,11 @@ const showAuthDebug = import.meta.env.DEV;
 .kbm-menu > li > a:hover,
 .kbm-menu > li > .dd-trigger:hover {
   color: var(--kbm-green-hover);
+}
+
+.kbm-menu > li > .dd-trigger:focus {
+  outline: 2px solid var(--kbm-green);
+  outline-offset: 2px;
 }
 
 .caret {
@@ -670,45 +684,27 @@ div[data-ms-modal-overlay] {
         <span></span>
       </button>
 
-      <!-- Navigation Row - PLAN / KNIT / SUPPORT / SHOP structure -->
+      <!-- Navigation Row - main menu: Patterns, Learn, Tools, Get Help, Shop -->
       <div class="kbm-nav-row menu-row">
         <ul class="kbm-menu">
-          <!-- PLAN dropdown -->
+          <li><a href="/patterns" data-testid="nav-patterns">Patterns</a></li>
           <li class="dd">
-            <button class="dd-trigger" aria-expanded="false" data-testid="nav-plan">Plan <span class="caret">▾</span></button>
-            <ul class="dd-panel">
-              <li><a href="/project-wizards" data-testid="nav-plan-wizards">Project Planning Wizards</a></li>
-              <li><a href="/charting-tools" data-testid="nav-plan-tools">Charting Tools</a></li>
-            
-            </ul>
+            <button type="button" class="dd-trigger" data-testid="nav-learn" aria-haspopup="true" aria-expanded="false" aria-controls="learn-submenu">
+              Learn 
+            </button>
+            <div id="learn-submenu" class="dd-panel" role="menu" aria-label="Learn">
+              <ul role="none">
+                {LEARN_SUBMENU.map((item) => (
+                  <li role="none">
+                    <a href={item.href} role="menuitem">{item.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </li>
-          
-          <!-- KNIT dropdown -->
-          <li class="dd">
-            <button class="dd-trigger" aria-expanded="false" data-testid="nav-knit">Knit <span class="caret">▾</span></button>
-            <ul class="dd-panel">
-              <li><a href="/patterns" data-testid="nav-knit-patterns">Patterns</a></li>
-              <li><a href="/practice-projects" data-testid="nav-knit-practice">Practice Projects</a></li>
-              <li><a href="/workshops" data-testid="nav-knit-workshops">Workshops</a></li>
-            </ul>
-          </li>
-          
-          <!-- SUPPORT dropdown -->
-          <li class="dd">
-            <button class="dd-trigger" aria-expanded="false" data-testid="nav-support">Support <span class="caret">▾</span></button>
-            <ul class="dd-panel">
-            <li><a href="/community" data-testid="nav-support-community">Community</a></li>
-              
-              <li><a href="/start-here" data-testid="nav-support-answers">Help Hub</a></li>
-              <li><a href="/glossary" data-testid="nav-support-glossary">Glossary</a></li>
-              <li><a href="/contact" data-testid="nav-support-community">Contact</a></li>
-            </ul>
-          </li>
-          
-          <!-- SHOP link -->
-          <li>
-            <a href="/shop" data-testid="nav-shop">Shop</a>
-          </li>
+          <li><a href="/wizards" data-testid="nav-tools">Tools</a></li>
+          <li><a href="/get-help" data-testid="nav-get-help">Get Help</a></li>
+          <li><a href="/shop" data-testid="nav-shop">Shop</a></li>
         </ul>
 
         <!-- Search Bar -->
@@ -868,20 +864,17 @@ div[data-ms-modal-overlay] {
       if (currentMode === touchMode) return;
       currentMode = touchMode;
 
-      // Remove old click handlers if switching from touch to desktop
-      if (!touchMode && clickHandlers.size > 0) {
-        clickHandlers.forEach((handler, element) => {
-          element.removeEventListener('click', handler);
-        });
-        clickHandlers.clear();
-        
-        if (outsideClickHandler) {
-          document.removeEventListener('click', outsideClickHandler);
-          outsideClickHandler = null;
-        }
+      // Remove old click handlers when switching mode
+      clickHandlers.forEach((handler, element) => {
+        element.removeEventListener('click', handler);
+      });
+      clickHandlers.clear();
+      if (outsideClickHandler) {
+        document.removeEventListener('click', outsideClickHandler);
+        outsideClickHandler = null;
       }
 
-      // Setup touch/mobile click behavior
+      // Setup touch/mobile click behavior (toggle on trigger click)
       if (touchMode) {
         dds.forEach(li => {
           const trigger = li.querySelector(':scope > a, :scope > .dd-trigger');
@@ -899,6 +892,20 @@ div[data-ms-modal-overlay] {
           if (!e.target.closest('.kbm-nav-row')) closeAll();
         };
         document.addEventListener('click', outsideClickHandler);
+      } else {
+        // Desktop: click (and keyboard Enter/Space) also toggles dropdown
+        dds.forEach(li => {
+          const trigger = li.querySelector(':scope > .dd-trigger');
+          if (!trigger) return;
+          const handler = (e) => {
+            e.preventDefault();
+            const nowOpen = li.classList.toggle('open');
+            trigger.setAttribute('aria-expanded', nowOpen ? 'true' : 'false');
+            if (nowOpen) closeAll(li);
+          };
+          trigger.addEventListener('click', handler);
+          clickHandlers.set(trigger, handler);
+        });
       }
     }
 
@@ -950,6 +957,17 @@ div[data-ms-modal-overlay] {
         syncHeaderHeight();
       }, 150);
     }, { passive: true });
+
+    // Escape closes open dropdown (keyboard accessibility)
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      const open = document.querySelector('.kbm-menu .dd.open');
+      if (open) {
+        open.classList.remove('open');
+        const t = open.querySelector('.dd-trigger');
+        if (t) t.setAttribute('aria-expanded', 'false');
+      }
+    });
 
     // Hamburger menu toggle
     if (hamburger && navRow) {

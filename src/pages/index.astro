@@ -23,7 +23,7 @@ import "../styles/global.css";
       }
     </style>
     
-    <title>Start Here | Knit by Machine</title>
+    <title>Knit it Now | Machine Knitting Help & Patterns</title>
     <meta
       name="description"
       content="New to machine knitting? Start here. Find your next step, build skills, and get guidance one small win at a time."
@@ -148,7 +148,7 @@ import "../styles/global.css";
       <section class="kbm-hero">
         <div class="kbm-hero__grid">
           <div class="kbm-hero__content">
-            <h1>Stop guessing. Get knitting.</h1>
+            <h1>See it • Love it • Knit it</h1>
             <p class="kbm-hero__text">
              Get clear, step-by-step guidance so you can start strong, fix issues fast, and finish with confidence.
             </p>
@@ -183,7 +183,7 @@ import "../styles/global.css";
               <img src="/images/KINlogo.svg" alt="" />
             </div>
             <h3>I'm just getting started</h3>
-            <p>Get comfortable with the basics so you can knit your first confident rows.</p>
+            <p>Learn the basics so you can knit your first confident rows.</p>
             <span class="btn primary" data-testid="button-getting-started">Start with the basics</span>
           </a>
 
@@ -192,7 +192,7 @@ import "../styles/global.css";
             <div class="kbm-hex-icon">
               <img src="/images/KINlogo.svg" alt="" />  </div>
             <h3>I've knitted a little</h3>
-            <p>Build your skills with small, low-pressure projects that actually turn out right.</p>
+            <p>Build your skills with small, low-pressure projects.</p>
             <span class="btn primary" data-testid="button-skill-builders">Practice Key Skills</span>
           </a>
 
@@ -202,18 +202,18 @@ import "../styles/global.css";
               <img src="/images/KINlogo.svg" alt="" />
             </div>
             <h3>I'm ready to make something</h3>
-            <p>These patterns give you a solid place to start. You can follow them as written, or use them as a base for your own ideas.</p>
+            <p>Start with patterns that give you a solid place to begin.</p>
             <span class="btn primary" data-testid="button-rsk">Start a project</span>
           </a>
 
-          <!-- Card 4: Need help? -->
-          <a href="/start-here" class="kbm-hex-card kbm-hex-card--link" data-testid="card-need-help">
+          <!-- Card 4: Help Hub (support destination) -->
+          <a href="/start-here" class="kbm-hex-card kbm-hex-card--link kbm-hex-card--help" data-testid="card-need-help">
             <div class="kbm-hex-icon">
               <img src="/images/KINlogo.svg" alt="" />
             </div>
             <h3>Help Hub</h3>
-            <p>Start here and get your next right step.</p>
-            <span class="btn primary" data-testid="button-need-help">Start Here</span>
+            <p>Find troubleshooting tips, answers, and your next step.</p>
+            <span class="btn primary" data-testid="button-need-help">Get Help</span>
           </a>
 
           
@@ -224,7 +224,7 @@ import "../styles/global.css";
       <!-- WHAT YOU'LL FIND SECTION -->
       <section class="kbm-reassurance-section">
         <div class="kbm-section-header">
-          <h2>What you'll find at Knit by Machine</h2>
+          <h2>What you'll find at Knit It Now</h2>
           <p class="kbm-section-framing">Straightforward help for getting more done on your machine — without guessing, overwhelm, or endless scrolling online.</p>
           
         </div>
@@ -258,7 +258,7 @@ import "../styles/global.css";
             <p>
               I'm Sue, your guide here at Knit by Machine. I've helped thousands of knitters feel confident using their machines. I'll walk with you one small win at a time.
             </p>
-            <a href="/about" class="kbm-about-link" data-testid="link-about">Learn more about Knit by Machine</a>
+            <a href="/about" class="kbm-about-link" data-testid="link-about">Learn more about Knit it Now</a>
           </div>
         </div>
       </section>
@@ -489,11 +489,34 @@ import "../styles/global.css";
 
   @media (min-width: 1024px) {
     .kbm-hex-grid {
+      position: relative;
       grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    /* Subtle connector line behind first three cards (visible only in gaps between them) */
+    .kbm-hex-grid::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      width: 65%;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 4px;
+      border-radius: 3px;
+      background: rgba(115, 140, 82, 0.35);
+      z-index: 0;
+      pointer-events: none;
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .kbm-hex-grid::before {
+      display: none;
     }
   }
 
   .kbm-hex-card {
+    position: relative;
+    z-index: 2;
     background-color: #ffffff;
     border-radius: 1.25rem;
     padding: 1.5rem 1.25rem;
@@ -509,6 +532,17 @@ import "../styles/global.css";
     transform: translateY(-4px);
     box-shadow: 0 8px 20px rgba(82, 104, 45, 0.12);
     border-color: var(--kbm-green);
+  }
+
+  /* Help Hub card: subtle support styling (same structure, soft green tint) */
+  .kbm-hex-card--help {
+    background-color: #f2f5ec;
+    border-color: #a8c078;
+  }
+
+  .kbm-hex-card--help:hover {
+    background-color: #eaf0e2;
+    border-color: var(--kbm-green-2);
   }
 
   .kbm-hex-card--link {

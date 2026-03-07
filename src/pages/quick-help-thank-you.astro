@@ -1,0 +1,125 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Thank You | Knit it Now Quick Help"
+  description="Thank you for booking a Quick Help session."
+>
+  <section class="thankyou-page">
+    <div class="thankyou-card">
+      <p class="eyebrow">Knit it Now Quick Help</p>
+      <h1>Thank you - your payment was received.</h1>
+      <p class="lead">
+        
+        Your next step is to complete a short intake form so I can understand your
+        question before we meet.
+      </p>
+
+      <div class="next-step-box">
+        <h2>Next Step</h2>
+        <p>
+          Please fill out the intake form now. With a little planning, we can get
+          a lot accomplished in 15 minutes.
+        </p>
+
+        <a class="btn-primary" href="/quick-help-intake" target="_blank" rel="noopener noreferrer">
+          Complete the Intake Form
+        </a>
+      </div>
+
+      <div class="help-note">
+        <p>
+          After you submit the form, I’ll review your details and we’ll move
+          forward from there.
+        </p>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .thankyou-page {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 5rem;
+  }
+
+  .thankyou-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+  }
+
+  .eyebrow {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #52682d;
+  }
+
+  h1 {
+    margin: 0 0 1rem;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    line-height: 1.15;
+  }
+
+  .lead {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin: 0 0 1.75rem;
+    color: #374151;
+  }
+
+  .next-step-box {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+  }
+
+  .next-step-box h2 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    font-size: 1.35rem;
+  }
+
+  .next-step-box p {
+    margin-bottom: 1.25rem;
+    line-height: 1.7;
+    color: #374151;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    background: #52682d;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    padding: 0.9rem 1.4rem;
+    border-radius: 999px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
+
+  .help-note {
+    margin-top: 1.5rem;
+    color: #4b5563;
+    line-height: 1.7;
+  }
+
+  @media (max-width: 640px) {
+    .thankyou-card {
+      padding: 1.5rem;
+    }
+  }
+</style>

@@ -1,0 +1,153 @@
+---
+export const prerender = true;
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+  title="Get Help | Knit it Now"
+  description="Need a little guidance? Get one-on-one Quick Help, ask the community, or contact Sue directly."
+>
+  <div class="get-help-page-wrap">
+    <div class="get-help-container">
+      <header class="get-help-header">
+        <h1>Get Help</h1>
+        <p class="get-help-intro">Need a little guidance? Here are a few ways to get help.</p>
+      </header>
+
+      <div class="get-help-cards">
+        <!-- Card 1: Quick Help with Sue (slight visual emphasis) -->
+        <article class="get-help-card get-help-card--featured">
+          <h2 class="get-help-card__title">Quick Help with Sue</h2>
+          <p class="get-help-card__body">
+            Get one-on-one help with your knitting machine or DesignaKnit. These short sessions are designed to help you move forward quickly.
+          </p>
+          <a href="/quick-help" class="get-help-card__btn">Book a Quick Help Session</a>
+        </article>
+
+        <!-- Card 2: Community -->
+        <article class="get-help-card">
+          <h2 class="get-help-card__title">Ask the Community</h2>
+          <p class="get-help-card__body">
+            Visit the Roundtable to ask questions, share ideas, and learn from other machine knitters.
+          </p>
+          <a href="/community" class="get-help-card__btn">Visit the Community</a>
+        </article>
+
+        <!-- Card 3: Contact Sue -->
+        <article class="get-help-card">
+          <h2 class="get-help-card__title">Contact Sue</h2>
+          <p class="get-help-card__body">
+            Send a message if you have a question or need to reach me directly.
+          </p>
+          <a href="/contact" class="get-help-card__btn">Contact Sue</a>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .get-help-page-wrap {
+      padding-top: 8px;
+    }
+
+    .get-help-container {
+      max-width: 960px;
+      margin: 0 auto 60px;
+      padding: 0 1rem;
+    }
+
+    .get-help-header {
+      margin-bottom: 2.5rem;
+    }
+
+    .get-help-header h1 {
+      font-size: var(--text-xxl);
+      font-weight: 600;
+      color: var(--kbm-green);
+      margin: 0 0 0.5rem 0;
+    }
+
+    .get-help-intro {
+      font-size: var(--text-lg);
+      color: #243015;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .get-help-cards {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .get-help-cards {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1.5rem;
+      }
+    }
+
+    .get-help-card {
+      background: #fff;
+      border: 1px solid var(--ring);
+      border-radius: 16px;
+      padding: 1.5rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .get-help-card:hover {
+      box-shadow: 0 4px 14px rgba(82, 104, 45, 0.1);
+      border-color: #c7d8a4;
+    }
+
+    /* Slight emphasis for Quick Help card */
+    .get-help-card--featured {
+      border-color: #c7d8a4;
+      box-shadow: 0 2px 10px rgba(82, 104, 45, 0.08);
+    }
+
+    .get-help-card--featured:hover {
+      box-shadow: 0 6px 18px rgba(82, 104, 45, 0.12);
+      border-color: var(--kbm-green-2);
+    }
+
+    .get-help-card__title {
+      font-size: var(--text-xl);
+      font-weight: 600;
+      color: var(--kbm-green);
+      margin: 0 0 0.75rem 0;
+      line-height: 1.3;
+    }
+
+    .get-help-card__body {
+      font-size: var(--text-base);
+      color: #243015;
+      line-height: 1.6;
+      margin: 0 0 1.25rem 0;
+      flex: 1;
+    }
+
+    .get-help-card__btn {
+      display: inline-block;
+      text-align: center;
+      padding: 0.6rem 1.25rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: var(--text-base);
+      text-decoration: none;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+      border: 2px solid var(--kbm-green);
+      background-color: var(--kbm-green);
+      color: #fff;
+      margin-top: auto;
+    }
+
+    .get-help-card__btn:hover {
+      background-color: var(--kbm-green-hover);
+      border-color: var(--kbm-green-hover);
+    }
+  </style>
+</Layout>

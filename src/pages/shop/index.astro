@@ -1,0 +1,141 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+import PageHead from "../../components/PageHead.astro";
+
+const title = "Shop | Knit by Machine";
+const description = "Find knitting machines, accessories, software, cables, and guided workshops. Choose what you're looking for.";
+
+const categories = [
+  {
+    name: "Knitting Machines",
+    description: "Compare machines and bundles so you can choose with confidence.",
+    href: "/machines",
+    cta: "Shop machines"
+  },
+  {
+    name: "Accessories",
+    description: "Tools and add-ons for the knitting machines you already own.",
+    href: "/shop/accessories",
+    cta: "Shop accessories"
+  },
+  {
+    name: "Software",
+    description: "DesignaKnit versions and upgrades.",
+    href: "/software/designaknit",
+    cta: "Shop software"
+  },
+  {
+    name: "Cables",
+    description: "Machine-specific cables for connecting DesignaKnit. Help choosing a cable is available.",
+    href: "/shop/cables",
+    cta: "Shop cables"
+  },
+  
+];
+---
+
+<Layout {title} {description}>
+  <div class="shop-page">
+    <header class="page-header">
+      <h1 data-testid="text-page-title">Shop</h1>
+      <p class="page-intro">Tools, machines, and guidance — chosen specifically for machine knitters.</p>
+    </header>
+
+    <div class="categories-grid">
+      {categories.map((category, index) => (
+        <div class="category-card" data-testid={`card-category-${index}`}>
+          <h2 class="category-name">{category.name}</h2>
+          <p class="category-description">{category.description}</p>
+          <a href={category.href} class="category-cta" data-testid={`link-category-${index}`}>
+            {category.cta}
+          </a>
+        </div>
+      ))}
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .shop-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .page-header h1 {
+    font-size: 2rem;
+    color: var(--kbm-green);
+    margin-bottom: 0.5rem;
+  }
+
+  .page-intro {
+    font-size: 1.125rem;
+    color: #5a6b47;
+    margin: 0;
+  }
+
+  .categories-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .categories-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .category-card {
+    background: #fafbf9;
+    border: 1px solid #e8ebe4;
+    border-radius: 12px;
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s ease;
+  }
+
+  .category-card:hover {
+    box-shadow: 0 4px 12px rgba(82, 104, 45, 0.1);
+  }
+
+  .category-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0 0 0.75rem 0;
+  }
+
+  .category-description {
+    font-size: 1rem;
+    color: #5a6b47;
+    line-height: 1.6;
+    margin: 0 0 1.25rem 0;
+    flex-grow: 1;
+  }
+
+  .category-cta {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--kbm-green);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    text-decoration: none;
+    text-align: center;
+    transition: background 0.2s ease;
+    align-self: flex-start;
+  }
+
+  .category-cta:hover {
+    background: var(--kbm-green-hover, #445626);
+  }
+</style>

@@ -18,17 +18,17 @@
   "relatedWorkshops": [],
   "imageUrl": "1763127366336-swatch-background.png",
   "imageAlt": "",
-  "iconUrl": "https://www.knitbymachine.com/images/blanket.svg",
+  "iconUrl": "/images/blanket.svg",
   "metaTitle": "DIY Blanket Wizard | Custom Machine-Knit Blanket Planner",
   "metaDescription": "Create a custom machine-knit blanket using your yarn and gauge. The DIY Blanket Wizard calculates needle counts, rows, and steps so you can start knitting with confidence.",
   "schemaMarkup": {
-    "url": "https://knitbymachine.com/wizards/diy-blanket",
+    "url": "/wizards/diy-blanket",
     "name": "DIY Blanket Wizard",
     "@type": "SoftwareApplication",
-    "image": "https://knitbymachine.com/images/wizards/diy-blanket.jpg",
+    "image": "/images/wizards/diy-blanket.webp",
     "@context": "https://schema.org",
     "provider": {
-      "url": "https://knitbymachine.com",
+      "url": "https://knititnow.com",
       "name": "Knit by Machine",
       "@type": "Organization"
     },

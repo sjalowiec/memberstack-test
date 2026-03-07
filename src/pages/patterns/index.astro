@@ -1,6 +1,6 @@
 ---
 export const prerender = true;
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import Layout from '../../layouts/Layout.astro';
 import SectionHero from '../../components/SectionHero.astro';
 
 let entries: any[] = [
@@ -29,11 +29,11 @@ const title = "Patterns";
 const description = "Custom-fit patterns for your knitting machine. Build patterns that fit your machine, your gauge, and your yarn.";
 ---
 
-<BaseLayout {title} {description}>
+<Layout {title} {description}>
   <div class="page-container">
     <SectionHero 
       title="Patterns" 
-      iconPath="/images/pattern_icon.png"
+      
       iconAlt="Pattern icon"
     />
 
@@ -59,27 +59,28 @@ const description = "Custom-fit patterns for your knitting machine. Build patter
       aria-labelledby="modal-title"
       hidden
     >
-      <div class="modal-content">
-        <h2 id="modal-title" class="modal-title">
-          <img src="/images/kbm_logo.svg" alt="Knit by Machine" class="modal-logo" />
-          About our patterns
-        </h2>
-        <div class="modal-body">
-          <ul class="modal-list">
-            <li><b>Start with your setup:</b><br> Gauge, yarn, machine, and measurements.</li>
-             <li><b> Make the choices that matter: </b><br>Each pattern guides your design decisions.</li>
-              <li><b>Get your pattern: </b><br>Clear, machine-ready instructions you can trust.</li>
-          </ul>
-          <p class="modal-note">
-            Your setup. Your size. Your pattern.
-          </p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="modal-continue-btn" id="modal-continue-btn">
-            Continue
-          </button>
-        </div>
+    <div class="modal-content">
+      <h2 id="modal-title" class="modal-title">
+        <img src="/images/KINlogo.svg" alt="Knit it Now" class="modal-logo" />
+        About our patterns
+      </h2>
+    
+      <div class="modal-body">
+        <p class="modal-intro">
+          Our patterns aren’t fixed sizes. They’re built for YOUR machine with YOUR gauge.
+        </p>
+      
+        <ul class="modal-list">
+          <li><b>Start with your setup:</b><br> Gauge, yarn, machine, and measurements.</li>
+          <li><b>Make the choices that matter:</b><br> Each pattern guides the important decisions.</li>
+          <li><b>Get your pattern:</b><br> Clear, machine-ready instructions you can trust.</li>
+        </ul>
       </div>
+      <p class="modal-note">Every pattern adapts to your gauge so you can knit with confidence.</p>
+      <button id="modal-continue-btn" type="button" class="modal-continue-btn">
+        Continue
+      </button>
+    </div>
     </div>
 
     <div class="guides-grid" data-testid="patterns-grid">
@@ -140,7 +141,7 @@ const description = "Custom-fit patterns for your knitting machine. Build patter
       </div>
     </div>
   </div>
-</BaseLayout>
+</Layout>
 
 <style>
   .page-container {
@@ -188,6 +189,10 @@ const description = "Custom-fit patterns for your knitting machine. Build patter
   }
 
   /* Modal styles */
+  .modal-intro {
+  margin-bottom: 18px;
+}
+
   .modal-backdrop {
     position: fixed;
     top: 0;
@@ -198,7 +203,7 @@ const description = "Custom-fit patterns for your knitting machine. Build patter
     display: flex !important;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 9999;
     padding: 1rem;
     opacity: 0;
     transition: opacity 0.2s ease;
@@ -275,6 +280,7 @@ const description = "Custom-fit patterns for your knitting machine. Build patter
     color: #5a6b47;
     line-height: 1.6;
     margin: 0;
+    padding: 16px 24px;
     font-style: italic;
   }
 

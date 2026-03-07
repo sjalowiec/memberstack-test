@@ -1,0 +1,78 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+
+const title = "Accessories | Knit by Machine";
+const description = "Tools and add-ons for the knitting machines you already own.";
+---
+
+<Layout {title} {description}>
+  <div class="placeholder-page">
+    <header class="page-header">
+      <h1 data-testid="text-page-title">Accessories</h1>
+    </header>
+
+    <div class="content-section">
+      <p>
+        We're putting together a selection of tools and add-ons for the machines you already own. 
+        This page is coming soon.
+      </p>
+      <p>
+        In the meantime, if you're looking for something specific, let us know and we'll help you find it.
+      </p>
+      <a href="/contact" class="btn-primary" data-testid="button-contact">Contact us</a>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .placeholder-page {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    font-size: 2rem;
+    color: var(--kbm-green);
+    margin-bottom: 0.5rem;
+  }
+
+  .content-section {
+    background: #f9fdf5;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .content-section p {
+    font-size: 1.1rem;
+    color: #5a6b47;
+    line-height: 1.7;
+    margin-bottom: 1.25rem;
+  }
+
+  .content-section p:last-of-type {
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 0.875rem 2rem;
+    background: var(--kbm-green);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    background: var(--kbm-green-hover, #445626);
+  }
+</style>

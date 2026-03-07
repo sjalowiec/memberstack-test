@@ -4,128 +4,136 @@ import PageHead from "../../components/PageHead.astro";
 ---
 
 <Layout
-  title="15-Minute Machine Knitting Help | Knit it Now"
+  title="Knit it Now Quick Help"
   description="Get expert machine knitting help in just 15 minutes. Quick Zoom sessions to get unstuck and move forward."
 >
   <div class="page-wrap quick-help-page-wrap">
+    <div id="top"></div>
     <PageHead
-      breadcrumb="Home / Quick Help"
+      
       hideTitle
     />
 
-    <!-- Hero: 2-col — left = text + CTAs, right = image placeholder -->
-    <section class="quick-help-hero">
-      <div class="quick-help-hero__content">
-        <h1 class="quick-help-hero__headline">Get Expert Machine Knitting Help — In Just 15 Minutes</h1>
-        <p class="quick-help-hero__subhead">Quick Zoom sessions to help you get unstuck and move forward with your project.</p>
-        <p>
-          Sometimes you don't need a full class — you just need a little guidance to figure out what's going wrong.
+    <!-- 1. Hero -->
+    <section class="quickhelp-hero">
+      <div class="quickhelp-hero__header">
+        <h1>Knit it Now Quick Help</h1>
+        <p class="quickhelp-subhead">
+          Stop the Frustration: Get clear answers without hours of searching.
         </p>
-        <p>
-          These short sessions are designed to give you quick, focused help so you can continue knitting with confidence.
-        </p>
-        <div class="quick-help-hero__ctas">
-          <a href="#" class="quick-help-btn quick-help-btn--primary">Book a Session</a>
-          <a href="#" class="quick-help-btn quick-help-btn--secondary">Buy the 4-Session Package</a>
-        </div>
       </div>
-      <div class="quick-help-img-placeholder quick-help-img-placeholder--hero" aria-hidden="true">
-        <span>Knitting Machine / Workspace Image</span>
+      <div class="quickhelp-hero__inner">
+        <div class="quickhelp-hero__image">
+          <img src="/images/machines/knitting-machine-and-ribber.webp" alt="Knitting machine and ribber" />
+        </div>
+        <div class="quickhelp-hero__text">
+          <p>
+            Sometimes you don't need a full class — you just need a little guidance to move forward.
+          </p>
+          <p>
+            These short sessions are designed to give you quick, focused help so you can continue knitting with confidence.
+          </p>
+          <div class="hero-buttons">
+            <a href="#pricing" class="quick-help-btn quick-help-btn--primary">Get Quick Help</a>
+          </div>
+          <p class="hero-reassurance">
+            15-minute focused sessions • No membership required
+          </p>
+        </div>
       </div>
     </section>
 
-    <hr class="kbm-divider" />
+    <div class="section-divider" aria-hidden="true"></div>
 
-    <!-- What We Can Work On -->
-    <section class="quick-help-section">
-      <h2>What We Can Work On</h2>
-      <p class="quick-help-section__intro">Your session can focus on one specific question or problem, such as:</p>
-      <ul class="quick-help-list">
-        <li>understanding part of a pattern</li>
-        <li>troubleshooting a machine issue</li>
-        <li>getting started on a new project</li>
-        <li>guidance using DesignaKnit</li>
-        <li>deciding what to do next</li>
-      </ul>
-    </section>
-
-    <hr class="kbm-divider" />
-
-    <!-- How It Works -->
-    <section class="quick-help-section">
-      <h2>How It Works</h2>
-      <div class="quick-help-steps">
-        <div class="quick-help-step">
-          <span class="quick-help-step__num" aria-hidden="true">1</span>
-          <span class="quick-help-step__label">Purchase a session</span>
-        </div>
-        <div class="quick-help-step">
-          <span class="quick-help-step__num" aria-hidden="true">2</span>
-          <span class="quick-help-step__label">Complete a short intake form</span>
-        </div>
-        <div class="quick-help-step">
-          <span class="quick-help-step__num" aria-hidden="true">3</span>
-          <span class="quick-help-step__label">We schedule a Zoom meeting</span>
-        </div>
-        <div class="quick-help-step">
-          <span class="quick-help-step__num" aria-hidden="true">4</span>
-          <span class="quick-help-step__label">Spend 15 minutes solving your problem</span>
-        </div>
-      </div>
-      <p class="quick-help-steps-note">
-        You'll also receive a recording of the session so you can review it later.
+    <!-- 2. About Sue (Trust) -->
+    <section class="quickhelp-about">
+      <h2>Work with someone who understands machine knitting</h2>
+      <p>
+        Sue Jalowiec has spent more than 15 years helping machine knitters solve problems,
+        finish projects, and feel confident using their machines.
+      </p>
+      <p>
+        These short sessions are designed to quickly identify what's going wrong
+        and help you move forward.
       </p>
     </section>
 
-    <hr class="kbm-divider" />
+    <div class="section-divider" aria-hidden="true"></div>
 
-    <!-- Session Options -->
-    <section class="quick-help-section quick-help-pricing-wrap">
+    <!-- 3. How It Works -->
+    <section class="quickhelp-process">
+      <h2>How It Works</h2>
+      <ol class="process-steps">
+        <li>Purchase a session</li>
+        <li>Complete the short intake form</li>
+        <li>Join the scheduled Zoom meeting</li>
+        <li>Leave with a clear next step</li>
+      </ol>
+      <div class="process-cta">
+        <p class="process-cta-text">Ready to get help?</p>
+        <a href="#pricing" class="btn btn-primary">Get Quick Help</a>
+      </div>
+    </section>
+
+    <div class="section-divider" aria-hidden="true"></div>
+
+    <!-- 4. Pricing Options -->
+    <section id="pricing" class="quickhelp-pricing quick-help-section quick-help-pricing-wrap">
       <h2>Session Options</h2>
       <p class="quick-help-pricing-intro">
         After purchasing, you'll complete a short intake form so I can understand your question before we meet.
+        Taking a few minutes to fill it out helps us make your 15 minutes as effective as possible.
       </p>
       <div class="quick-help-cards">
         <div class="quick-help-card">
-          <h3 class="quick-help-card__title">Single Session</h3>
-          <p class="quick-help-card__subtitle">15-minute Zoom consultation</p>
-          <p class="quick-help-card__body">
-            Perfect if you have one specific question or need quick troubleshooting help.
-          </p>
-          <p class="quick-help-card__price">$59.99</p>
-          <a href="#" class="quick-help-btn quick-help-btn--primary">Book a Session</a>
+          <h3 class="quick-help-card__title">Quick Help Session</h3>
+          <ul class="pricing-card__benefits">
+            <li>Troubleshoot a machine issue</li>
+            <li>Get help using DesignaKnit</li>
+            <li>Get started on a new project</li>
+            <li>Understand a confusing part of a pattern</li>
+            <li>Figure out your next step</li>
+          </ul>
+          <p class="pricing-card__detail">One focused 15-minute Zoom session</p>
+          <div class="pricing-card__price">$59.99</div>
+          <a href="https://buy.stripe.com/00w5kC25EfOX0mW0dQ0oM09" class="quick-help-btn quick-help-btn--primary">Get Quick Help</a>
+          
         </div>
         <div class="quick-help-card quick-help-card--featured">
-          <h3 class="quick-help-card__title">4-Session Package</h3>
-          <p class="quick-help-card__subtitle">Four 15-minute Zoom sessions</p>
-          <p class="quick-help-card__body">
-            Perfect if you're working through a project or learning something new.
+          <h3 class="quick-help-card__title">Project Coaching & Mastery</h3>
+          <ul class="pricing-card__benefits">
+            <li>Start-to-Finish Pattern Execution </li>
+            <li>Master a Complex Technique </li>
+            <li>Advanced DesignaKnit Drafting </li>
+            <li>Full Machine Deep-Dive </li>
+            <li>Design and Problem-Solving Strategy</li>
+          </ul>
+          <p class="pricing-card__detail">
+            Four focused 15-minute coaching sessions
           </p>
-          <p class="quick-help-card__price">$199.99</p>
-          <p class="quick-help-card__save">Save $40 compared to purchasing sessions individually.</p>
-          <a href="#" class="quick-help-btn quick-help-btn--primary">Buy Package</a>
+          <p class="pricing-card__progress">
+            Four sessions to work through a real project or skill
+          </p>
+          <div class="pricing-card__price">$199</div>
+          <p class="pricing-card__value">
+            <strong>Get guidance</strong> instead of trying to figure it out alone.
+          </p>
+          <a href="https://buy.stripe.com/6oU28q9y6gT1d9IbWy0oM0a" class="quick-help-btn quick-help-btn--secondary">Start Your Journey</a>
         </div>
       </div>
     </section>
 
-    <hr class="kbm-divider" />
+    <div class="back-to-top">
+      <a href="#top">↑ Back to top</a>
+    </div>
 
-    <!-- Work With Sue -->
-    <section class="quick-help-section quick-help-about">
-      <h2>Work With Sue</h2>
-      <div class="quick-help-about__grid">
-        <div class="quick-help-img-placeholder quick-help-img-placeholder--sue" aria-hidden="true">
-          <span>Sue Photo Placeholder</span>
-        </div>
-        <div class="quick-help-about__text">
-          <p>
-            Sue Jalowiec has spent more than 15 years helping machine knitters solve problems, finish projects, and feel confident using their machines.
-          </p>
-          <p>
-            These short sessions are designed to quickly identify what's going wrong and help you move forward.
-          </p>
-        </div>
-      </div>
+    <!-- Quick Help FAQ -->
+    <section class="quick-help-faq">
+      <h2 class="quick-help-faq__title">Quick Help FAQ</h2>
+      <dl class="quick-help-faq__list">
+        <dt class="quick-help-faq__q">What if we can't solve my issue in 15 minutes?</dt>
+        <dd class="quick-help-faq__a">These sessions are designed to quickly identify the issue and help you move forward. If we don't make meaningful progress, we'll schedule another session at no charge. If your question turns out to require deeper troubleshooting or instruction, I'll explain the options so you can decide the best next step.</dd>
+      </dl>
     </section>
   </div>
 </Layout>
@@ -135,19 +143,46 @@ import PageHead from "../../components/PageHead.astro";
     padding-top: 8px;
   }
 
-  /* Hero */
-  .quick-help-hero {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    align-items: start;
+  .back-to-top {
+    text-align: center;
+    margin-top: 40px;
   }
 
-  .quick-help-hero__content {
-    max-width: 52ch;
+  .back-to-top a {
+    font-size: 0.9rem;
+    color: #6b6b6b;
+    text-decoration: none;
   }
 
-  .quick-help-hero__headline {
+  .back-to-top a:hover {
+    text-decoration: underline;
+  }
+
+  .section-divider {
+    height: 2px;
+    margin: 60px auto;
+    max-width: 700px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(0,0,0,0.08) 25%,
+      rgba(0,0,0,0.18) 50%,
+      rgba(0,0,0,0.08) 75%,
+      transparent
+    );
+  }
+
+  /* Hero: full-width header, then two-column layout */
+  .quickhelp-hero {
+    margin-bottom: 0.5rem;
+  }
+
+  .quickhelp-hero__header {
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+
+  .quickhelp-hero__header h1 {
     font-size: var(--text-xxl);
     font-weight: 600;
     line-height: 1.25;
@@ -155,25 +190,131 @@ import PageHead from "../../components/PageHead.astro";
     margin: 0 0 0.5rem 0;
   }
 
-  .quick-help-hero__subhead {
-    font-size: var(--text-lg);
-    color: #4a5568;
-    margin: 0 0 1rem 0;
+  .quickhelp-hero__header .quickhelp-subhead {
+    font-size: 1.2rem;
+    color: #555;
+    margin: 0;
     line-height: 1.5;
   }
 
-  .quick-help-hero__content > p {
+  .quickhelp-hero__inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+  }
+
+  .quickhelp-hero__text > p {
     margin: 0 0 1rem 0;
   }
 
-  .quick-help-hero__ctas {
+  .hero-buttons {
+    margin-top: 24px;
     display: flex;
+    justify-content: center;
+    gap: 16px;
     flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 1.25rem;
   }
 
-  /* Image placeholders */
+  .hero-reassurance {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .quickhelp-hero__image img {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.15), 0 4px 10px rgba(0,0,0,0.08);
+  }
+
+  .quick-help-img-placeholder--hero {
+    min-height: 260px;
+  }
+
+  /* Section spacing: About, How It Works, Pricing */
+  .quickhelp-about,
+  .quickhelp-process,
+  .quickhelp-pricing {
+    margin-top: 60px;
+  }
+
+  .quickhelp-about h2,
+  .quickhelp-process h2 {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0 0 1rem 0;
+  }
+
+  .quickhelp-about p {
+    margin: 0 0 1rem 0;
+  }
+
+  .quickhelp-about p:last-child {
+    margin-bottom: 0;
+  }
+
+  .process-steps {
+    list-style: none;
+    counter-reset: step;
+    padding: 0;
+    margin: 1.25rem 0;
+  }
+
+  .process-steps li {
+    position: relative;
+    padding-left: 42px;
+    margin-bottom: 12px;
+  }
+
+  .process-steps li::before {
+    counter-increment: step;
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #52682d;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .process-cta {
+    margin-top: 1.5rem;
+    text-align: left;
+  }
+
+  .process-cta-text {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+
+  .process-cta .btn.btn-primary {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: var(--text-base);
+    text-decoration: none;
+    background-color: var(--kbm-green);
+    color: #fff;
+    border: 2px solid var(--kbm-green);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .process-cta .btn.btn-primary:hover {
+    background-color: var(--kbm-green-hover);
+    border-color: var(--kbm-green-hover);
+  }
+
+  /* Image placeholders (e.g. Work With Sue) */
   .quick-help-img-placeholder {
     background: linear-gradient(135deg, rgba(199, 216, 164, 0.22) 0%, rgba(229, 232, 224, 0.35) 100%);
     border: 1px dashed rgba(82, 104, 45, 0.35);
@@ -190,10 +331,6 @@ import PageHead from "../../components/PageHead.astro";
     font-weight: 500;
     color: #6b7280;
     padding: 0 1rem;
-  }
-
-  .quick-help-img-placeholder--hero {
-    min-height: 260px;
   }
 
   .quick-help-img-placeholder--sue {
@@ -296,10 +433,60 @@ import PageHead from "../../components/PageHead.astro";
     margin-bottom: 1.25rem;
   }
 
+  .quick-help-promise,
+  .quick-help-scope {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: #6b6b6b;
+    margin-top: 10px;
+    max-width: 420px;
+  }
+
+  .quick-help-promise strong {
+    color: #4a4a4a;
+  }
+
+  .quick-help-scope {
+    margin-top: 6px;
+  }
+
+  /* Quick Help FAQ */
+  .quick-help-faq {
+    margin-top: 60px;
+  }
+
+  .quick-help-faq__title {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0 0 1rem 0;
+  }
+
+  .quick-help-faq__list {
+    margin: 0;
+    padding: 0;
+  }
+
+  .quick-help-faq__q {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 0.35rem 0;
+  }
+
+  .quick-help-faq__a {
+    font-size: var(--text-base);
+    color: #555;
+    line-height: 1.6;
+    margin: 0 0 1.25rem 0;
+    padding-left: 0;
+  }
+
   .quick-help-cards {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
+    align-items: stretch;
   }
 
   .quick-help-card {
@@ -309,7 +496,14 @@ import PageHead from "../../components/PageHead.astro";
     padding: 1.5rem 1.75rem;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    min-height: 0;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  }
+
+  .quick-help-card .quick-help-btn {
+    margin-top: auto;
+    flex-shrink: 0;
   }
 
   .quick-help-card--featured {
@@ -348,6 +542,44 @@ import PageHead from "../../components/PageHead.astro";
     font-size: 0.9rem;
     color: #6b7280;
     margin: 0 0 1rem 0;
+  }
+
+  /* Single Session card: benefit list and detail/price */
+  .pricing-card__benefits {
+    margin: 1rem 0;
+    padding-left: 1.2rem;
+  }
+
+  .pricing-card__benefits li {
+    margin-bottom: 0.5rem;
+  }
+
+  .pricing-card__benefits li::marker {
+    color: var(--kbm-green);
+  }
+
+  .pricing-card__detail {
+    margin: 1rem 0 0.75rem;
+    font-size: var(--text-base);
+    color: #6b7280;
+  }
+
+  .pricing-card__price {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--kbm-green);
+    margin: 0.75rem 0 1rem;
+  }
+
+  .pricing-card__progress {
+    margin: 0.5rem 0;
+    font-weight: 500;
+  }
+
+  .pricing-card__value {
+    margin: 0.5rem 0 1rem;
+    font-size: 0.95rem;
+    color: #555;
   }
 
   /* Work With Sue */
@@ -401,21 +633,17 @@ import PageHead from "../../components/PageHead.astro";
   }
 
   @media (max-width: 768px) {
-    .quick-help-hero {
+    .quickhelp-hero__inner {
       grid-template-columns: 1fr;
       gap: 1.5rem;
     }
 
-    .quick-help-hero__ctas {
-      flex-direction: column;
-    }
-
-    .quick-help-hero__ctas .quick-help-btn {
-      width: 100%;
-    }
-
     .quick-help-img-placeholder--hero {
       min-height: 220px;
+    }
+
+    .hero-buttons .quick-help-btn {
+      width: 100%;
     }
 
     .quick-help-cards {
