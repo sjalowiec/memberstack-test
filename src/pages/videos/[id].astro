@@ -52,7 +52,7 @@ const posterSrc =
         <article class="video-detail">
           {/* PLAYER AREA */}
           <section>
-            {/* Locked (default) */}
+            {/* Temporarily disabled: page-level locked teaser so GatedVimeoEmbed controls the player
             <div class="gated-locked" data-gated="locked">
               <div class="teaser-player">
                 {posterSrc ? (
@@ -69,12 +69,13 @@ const posterSrc =
 
                   <div class="locked-actions">
                     <a class="btn btn-primary" href="/join">Become a member</a>
-                    {/* swap /videos for your real pricing / join / Stripe page when ready */}
+                    <!-- swap /videos for your real pricing / join / Stripe page when ready -->
                   </div>
                   <LoginNudge className="locked-nudge" />
                 </div>
               </div>
             </div>
+            */}
 
             <GatedVimeoEmbed
               videoId={vimeoId}
