@@ -21,7 +21,7 @@ import Tooltip from "../../components/Tooltip.astro";
     </header>
 <!-- Funnel callout: non-member — styled panel inviting users to explore membership -->
 <section data-ms-content="!members" class="lm-membership-callout" aria-labelledby="lm-membership-heading">
-  <h2 id="lm-membership-heading" class="lm-membership-callout__headline">Still need help?</h2>
+  <h2 id="lm-membership-heading" class="lm-membership-callout__headline">Need help?</h2>
   <div class="lm-membership-callout__body">
     <p>If the checklist didn't solve it, you don't have to figure it out alone.</p>
     <p>Knit it Now members have access to troubleshooting guides, tutorials, and machine-specific help so you can quickly track down what's going wrong.</p>
@@ -214,7 +214,7 @@ import Tooltip from "../../components/Tooltip.astro";
     role="complementary"
   >
     <div class="lm-sticky-banner__inner">
-      <p class="lm-sticky-banner__message">Still need more help?</p>
+      <p class="lm-sticky-banner__message">Need more help?</p>
       <div class="lm-sticky-banner__actions">
         <a
           href="https://www.knititnow.com/subscribe/plans.cfm"
@@ -487,14 +487,14 @@ import Tooltip from "../../components/Tooltip.astro";
       }
     }
 
-    /* --- Sticky membership banner (non-members only, scroll-triggered) --- */
+    /* --- Sticky membership banner: compact toast-style (non-members, scroll-triggered) --- */
     .lm-sticky-banner {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
       z-index: 100;
-      padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0));
+      padding: 0 16px calc(28px + env(safe-area-inset-bottom, 0));
       pointer-events: none;
       opacity: 0;
       transform: translateY(100%);
@@ -511,23 +511,23 @@ import Tooltip from "../../components/Tooltip.astro";
       transform: translateY(0);
     }
     .lm-sticky-banner__inner {
-      max-width: 720px;
+      max-width: 900px;
       margin: 0 auto;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 12px 20px;
-      padding: 14px 18px 14px 20px;
+      gap: 10px 16px;
+      padding: 10px 14px 10px 16px;
       background: rgba(255, 255, 255, 0.98);
-      border: 1px solid rgba(82, 104, 45, 0.2);
-      border-radius: 14px;
-      box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(82, 104, 45, 0.06);
+      border: 1px solid rgba(82, 104, 45, 0.16);
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
     }
     .lm-sticky-banner__message {
       margin: 0;
-      font-size: 1rem;
-      line-height: 1.4;
+      font-size: 0.9375rem;
+      line-height: 1.35;
       color: #243015;
       font-weight: 600;
     }
@@ -539,13 +539,13 @@ import Tooltip from "../../components/Tooltip.astro";
     }
     .lm-sticky-banner__cta {
       display: inline-block;
-      padding: 10px 18px;
+      padding: 8px 14px;
       background: #52682d;
       color: #fff;
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: 0.875rem;
       text-decoration: none;
-      border-radius: 10px;
+      border-radius: 8px;
       transition: background 0.2s ease, transform 0.15s ease;
     }
     .lm-sticky-banner__cta:hover {
@@ -559,35 +559,45 @@ import Tooltip from "../../components/Tooltip.astro";
     }
     .lm-sticky-banner__dismiss {
       flex-shrink: 0;
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       padding: 0;
       border: none;
       background: transparent;
-      color: #6b7280;
-      font-size: 1.5rem;
+      color: #9ca3af;
+      font-size: 1.25rem;
       line-height: 1;
       cursor: pointer;
-      border-radius: 8px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: color 0.2s ease, background 0.2s ease;
     }
     .lm-sticky-banner__dismiss:hover {
-      color: #374151;
-      background: rgba(0, 0, 0, 0.06);
+      color: #6b7280;
+      background: rgba(0, 0, 0, 0.05);
     }
     .lm-sticky-banner__dismiss:focus-visible {
       outline: 2px solid #52682d;
       outline-offset: 2px;
     }
     @media (max-width: 520px) {
+      .lm-sticky-banner {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
       .lm-sticky-banner__inner {
-        flex-direction: column;
-        align-items: stretch;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
         text-align: center;
-        padding: 16px 18px;
+        padding: 10px 12px;
+        gap: 10px;
+      }
+      .lm-sticky-banner__message {
+        width: 100%;
+        text-align: center;
       }
       .lm-sticky-banner__actions {
         justify-content: center;

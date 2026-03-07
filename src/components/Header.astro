@@ -632,44 +632,48 @@ div[data-ms-modal-overlay] {
             <span id="auth-pill" class="auth-pill">auth: …</span>
           )}
           <div class="kbm-account-section auth header-actions">
-            <a
-              href="#"
-              class="kbm-btn kbm-btn--primary"
-              data-ms-modal="signup"
-              data-ms-plan:add="pln_free-plan-8n34u0qnx"
-              data-ms-content="!members"
-              data-ms-redirect="current-url"
-            >
-              Join Free
-            </a>
 
-            <a
-              href="#"
-              class="kbm-btn kbm-btn--ghost"
-              data-ms-modal="login"
-              data-ms-content="!members"
-              data-ms-redirect="current-url"
-            >
-              Log in
-            </a>
+            <!-- Logged OUT users -->
+            <div data-ms-content="!members">
+              <a
+                href="#"
+                class="kbm-btn kbm-btn--primary"
+                data-ms-modal="signup"
+                data-ms-plan:add="pln_free-plan-8n34u0qnx"
+                data-ms-redirect="current-url"
+              >
+                Join Free
+              </a>
 
-            <a
-              href="#"
-              class="kbm-btn kbm-btn--ghost"
-              data-ms-modal="profile"
-              data-ms-content="members"
-            >
-              Account
-            </a>
+              <a
+                href="#"
+                class="kbm-btn kbm-btn--ghost"
+                data-ms-modal="login"
+                data-ms-redirect="current-url"
+              >
+                Log in
+              </a>
+            </div>
 
-            <a
-              href="#"
-              class="kbm-btn kbm-btn--ghost"
-              data-ms-action="logout"
-              data-ms-content="members"
-            >
-              Log out
-            </a>
+            <!-- Logged IN members -->
+            <div data-ms-content="members">
+              <a
+                href="#"
+                class="kbm-btn kbm-btn--ghost"
+                data-ms-modal="profile"
+              >
+                Account
+              </a>
+
+              <a
+                href="#"
+                class="kbm-btn kbm-btn--ghost"
+                data-ms-action="logout"
+              >
+                Log out
+              </a>
+            </div>
+
           </div>
             <span style="margin-left:10px;" data-ms-content="member-videos">VIDEOS✅</span>
             <span style="margin-left:10px;" data-ms-content="!member-videos">NO VIDEOS❌</span>
