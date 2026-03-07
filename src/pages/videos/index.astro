@@ -59,7 +59,8 @@ import videos from "../../data/videos-public.json";
 
   <script id="videos-data" type="application/json" set:html={JSON.stringify(videos)} />
 
-  <script is:inline>
+  <script>
+    import { isDevEnvironment } from "../../utils/devGateBypass";
     (function () {
       const raw = document.getElementById("videos-data")?.textContent || "{}";
       let parsed;
@@ -169,6 +170,12 @@ import videos from "../../data/videos-public.json";
 
     (async function () {
       render(defaultCategory);
+
+      if (isDevEnvironment()) {
+        VIEWER = { isLoggedIn: true, isMember: true, member: null };
+        render(defaultCategory);
+        return;
+      }
 
       const res = await waitForMemberstackReady();
       if (res && res.data && res.data.member) {

@@ -127,6 +127,7 @@ const posterSrc =
         </article>
 
         <script>
+          import { isDevEnvironment } from "../../utils/devGateBypass";
           // --- Memberstack gating (client-side unlock) ---
           const MEMBER_PLAN_IDS = new Set([
             "pln_dev-kin-member-eim6011h",
@@ -174,6 +175,11 @@ const posterSrc =
           (async () => {
             // default: locked
             setAccess(false);
+
+            if (isDevEnvironment()) {
+              setAccess(true);
+              return;
+            }
 
             // Dev override (optional): ?mode=full
             const urlParams = new URLSearchParams(window.location.search);
