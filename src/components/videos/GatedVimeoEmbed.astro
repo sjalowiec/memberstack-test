@@ -33,8 +33,11 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
   data-iframe-src={iframeSrc}
 >
   <div class="kbm-video__frame" style={`padding-top:${pad}%;`}>
-    <div id={`kbm-vimeo-slot-${videoId}`} data-access-level={access_level}>
-      <!-- Default: show locked UI for member videos (iframe will be injected only if allowed) -->
+    <div
+      id={`kbm-vimeo-slot-${videoId}`}
+      data-access-level={access_level}
+      data-state={access_level === "member" ? "loading" : "ready"}
+    >
       {access_level === "open" ? (
         <iframe
           class="kbm-video__iframe"
@@ -46,17 +49,7 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
           allowfullscreen
         />
       ) : (
-        <div class="kbm-video__locked">
-          <div class="kbm-video__overlay">
-            <div class="kbm-video__lockline">
-              🔒 <strong>Members only</strong>
-            </div>
-            <p>This video is available with membership.</p>
-            <a href="/membership" class="kbm-video__cta">
-              Join to watch
-            </a>
-          </div>
-        </div>
+        <div class="kbm-video__loading" aria-hidden="true"></div>
       )}
     </div>
   </div>
@@ -69,26 +62,47 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
     const slot = document.getElementById(`kbm-vimeo-slot-${videoId}`);
     if (!slot) return;
 
-    if (!window.$memberstackDom) return;
+    const lockedMarkup = `
+  <div class="kbm-video__locked">
+    <div class="kbm-video__overlay">
+      <div class="kbm-video__lockline">
+        🔒 <strong>Members only</strong>
+      </div>
+      <p>This video is available with membership.</p>
+      <a href="/membership" class="kbm-video__cta">
+        Join to watch
+      </a>
+    </div>
+  </div>
+`;
+
+    if (!window.$memberstackDom) {
+      slot.innerHTML = lockedMarkup;
+      slot.setAttribute("data-state", "ready");
+      return;
+    }
 
     try {
       const res = await window.$memberstackDom.getCurrentMember();
       const member = res?.data;
 
       const allowedPlanIds = new Set([
-  "pln_dev-kin-member-eim6011h",
-  "pln_kin-membership-monthly-a59701wy",
-  "pln_kin-membership-annual-qf9g01et"
-]);
+        "pln_dev-kin-member-eim6011h",
+        "pln_kin-membership-monthly-a59701wy",
+        "pln_kin-membership-annual-qf9g01et"
+      ]);
 
-const planConnections = member?.planConnections || [];
-const hasVideoAccess = planConnections.some(
-  (pc) => pc.active && allowedPlanIds.has(pc.planId)
-);
+      const planConnections = member?.planConnections || [];
+      const hasVideoAccess = planConnections.some(
+        (pc) => pc.active && allowedPlanIds.has(pc.planId)
+      );
 
-if (!hasVideoAccess) return;
+      if (!hasVideoAccess) {
+        slot.innerHTML = lockedMarkup;
+        slot.setAttribute("data-state", "ready");
+        return;
+      }
 
-      // Inject iframe only for paid members
       slot.innerHTML = `
         <iframe
           src="${iframeSrc}"
@@ -100,8 +114,11 @@ if (!hasVideoAccess) return;
           style="position:absolute; inset:0; width:100%; height:100%; border:0;"
         ></iframe>
       `;
+      slot.setAttribute("data-state", "ready");
     } catch (e) {
       console.error("GatedVimeoEmbed paid check failed:", e);
+      slot.innerHTML = lockedMarkup;
+      slot.setAttribute("data-state", "ready");
     }
   });
 </script>
@@ -109,6 +126,16 @@ if (!hasVideoAccess) return;
 
 
 <style>
+  .kbm-video__frame [data-state="loading"] {
+    position: absolute;
+    inset: 0;
+    background: #f3f4ef;
+  }
+  .kbm-video__loading {
+    position: absolute;
+    inset: 0;
+    background: #f3f4ef;
+  }
   .kbm-video__frame{
     position: relative;
     width: 100%;
