@@ -40,7 +40,7 @@ const posterSrc =
   <div class="page-wrap video-detail-wrap">
     {!video ? (
       <>
-        <PageHead title="Video not found" breadcrumb="Home / Videos" />
+        <PageHead title="Video not found" 
         <article class="video-detail">
           <p>Video not found. <a href="/videos">Back to Videos</a>.</p>
         </article>
@@ -51,7 +51,7 @@ const posterSrc =
 
         <article class="video-detail">
           {/* PLAYER AREA */}
-          <section class="video-player">
+          <section>
             {/* Locked (default) */}
             <div class="gated-locked" data-gated="locked">
               <div class="teaser-player">
