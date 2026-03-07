@@ -774,7 +774,22 @@ import Tooltip from "../../components/Tooltip.astro";
           var member = await memberstack.getCurrentMember();
 
           var data = member && member.data ? member.data : null;
-          var email = data && typeof data.email === 'string' ? data.email.trim() : '';
+          var email = '';
+
+          if (data) {
+            if (typeof data.email === 'string' && data.email.trim()) {
+              email = data.email.trim();
+            } else if (
+              data.auth &&
+              typeof data.auth.email === 'string' &&
+              data.auth.email.trim()
+            ) {
+              email = data.auth.email.trim();
+            }
+          }
+
+          console.log('Troubleshoot gate member data:', member);
+          console.log('Troubleshoot gate resolved email:', email);
 
           if (data && email) {
             showContent();
