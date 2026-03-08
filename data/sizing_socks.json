@@ -1,0 +1,66 @@
+[
+  {
+    "size": "baby",
+    "label": "Baby",
+    "extended_label": "Baby",
+    "foot_length": 3.5,
+    "foot_circumference": 4,
+    "cuff_length": 2.5
+  },
+  {
+    "size": "child",
+    "label": "Child",
+    "extended_label": "Child (6–10 years)",
+    "foot_length": 6,
+    "foot_circumference": 6.5,
+    "cuff_length": 3.5
+  },
+  {
+    "size": "woman_sm",
+    "label": "Woman Small",
+    "extended_label": "Woman Small (US shoe 5–6)",
+    "foot_length": 8.5,
+    "foot_circumference": 8,
+    "cuff_length": 4
+  },
+  {
+    "size": "woman_med",
+    "label": "Woman Medium",
+    "extended_label": "Woman Medium (US shoe 7–8)",
+    "foot_length": 9,
+    "foot_circumference": 8.5,
+    "cuff_length": 4.5
+  },
+  {
+    "size": "woman_lg",
+    "label": "Woman Large",
+    "extended_label": "Woman Large (US shoe 9–10)",
+    "foot_length": 9.5,
+    "foot_circumference": 9,
+    "cuff_length": 5
+  },
+  {
+    "size": "man_sm",
+    "label": "Man Small",
+    "extended_label": "Man Small (US shoe 7–8)",
+    "foot_length": 10,
+    "foot_circumference": 9,
+    "cuff_length": 5
+  },
+  {
+    "size": "man_med",
+    "label": "Man Medium",
+    "extended_label": "Man Medium (US shoe 9–10)",
+    "foot_length": 10.5,
+    "foot_circumference": 9.5,
+    "cuff_length": 5.5
+  },
+  {
+    "size": "man_lg",
+    "label": "Man Large",
+    "extended_label": "Man Large (US shoe 11–12)",
+    "foot_length": 11,
+    "foot_circumference": 10,
+    "cuff_length": 6
+  }
+]

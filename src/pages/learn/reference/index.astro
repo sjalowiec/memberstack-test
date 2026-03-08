@@ -20,7 +20,6 @@ const referenceCategories = [
     id: "machine-reference",
     title: "Machine Reference",
     items: [
-      { title: "Machine Parts", href: "/reference/machine-parts", description: "Parts of the machine and basic terminology." },
       { title: "Machine Comparison", href: "/reference/machine-comparison", description: "Compare machine types and features." },
       { title: "Standard vs Bulky Machines", href: "/reference/standard-vs-bulky", description: "Differences between standard and bulky gauge machines." },
     ],
@@ -29,7 +28,7 @@ const referenceCategories = [
     id: "designaknit",
     title: "DesignaKnit Reference",
     items: [
-      { title: "DesignaKnit Versions", href: "/reference/designaknit-versions", description: "Version differences and compatibility." },
+      { title: "DesignaKnit Versions", href: "/reference/DAK-compare", description: "Version differences and compatibility." },
       { title: "DesignaKnit Cable Setup", href: "/reference/designaknit-cable-setup", description: "Cable and connection setup." },
       { title: "DesignaKnit Basics", href: "/reference/designaknit-basics", description: "Essential DesignaKnit concepts." },
     ],
@@ -39,7 +38,7 @@ const referenceCategories = [
     title: "Charts & Comparisons",
     items: [
       { title: "Needle Chart", href: "/reference/needle-chart", description: "Needle positions and numbering reference." },
-      { title: "Yarn / Gauge Reference", href: "/reference/yarn-gauge-reference", description: "Yarn weights and gauge guidelines." },
+      { title: "Stitch Symbols", href: "/reference/stitch-symbols", description: "Stitch Symbols for machine knitters." },
       { title: "Sizing Charts", href: "/reference/sizing-charts", description: "Standard sizing and measurements." },
     ],
   },
@@ -55,7 +54,7 @@ const referenceCategories = [
 
     <div class="intro-section">
       <p class="intro-text">
-        Use this page to find reference-style content—glossary terms, machine parts, DesignaKnit help, needle charts, and sizing—when you need to look something up quickly.
+        Use this page to find reference-style content—glossary terms,  DesignaKnit help, needle charts,  sizing—when you need to look something up quickly.
       </p>
     </div>
 
@@ -73,8 +72,8 @@ const referenceCategories = [
       </section>
     ))}
 
-    <p class="tutorials-note">
-      Looking for a step-by-step lesson instead? <a href="/videos">Visit Tutorials</a>.
+    <p class="reference-footer-note">
+      Need help applying this in your knitting? <a href="/videos">Visit Tutorials</a>.
     </p>
   </div>
 </Layout>
@@ -160,15 +159,16 @@ const referenceCategories = [
     margin: 0;
   }
 
-  .tutorials-note {
+  .reference-footer-note {
+    border-top: 1px solid #e6e6e6;
+    margin-top: 2rem;
+    padding-top: 1rem;
     font-size: 0.95rem;
-    color: #5a6b47;
-    margin: 2rem 0 0;
-    padding-top: 1.5rem;
-    border-top: 1px solid #e5e9dc;
+    color: #666;
+    text-align: center;
   }
 
-  .tutorials-note a {
+  .reference-footer-note a {
     color: var(--kbm-green, #52682d);
     font-weight: 600;
     text-decoration: underline;
@@ -176,7 +176,7 @@ const referenceCategories = [
     text-underline-offset: 3px;
   }
 
-  .tutorials-note a:hover {
+  .reference-footer-note a:hover {
     text-decoration-color: #52682d;
   }
 

@@ -1,0 +1,519 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+---
+
+<Layout
+  title="Minimum Ease Comparison Chart | Knit by Machine"
+  description="Compare minimum recommended ease for blouse, dress, jacket, coat, skirt, and pants. Switch between inches and centimeters."
+>
+  <main class="page-content ease-chart-page">
+  <div class="ease-wrapper">
+    <div class="ease-intro">
+      <h1>Minimum Ease Comparison Chart</h1>
+      <br /><br />
+        <p class="related-link"><a href="/reference/sizing-charts">Sizing charts</a></p>
+        <p class="ease-summary"></p>
+        This chart compares the <strong>minimum recommended ease</strong> for different types of garments.
+        <span class="kbm-tooltip" data-tip="Ease is the extra room added to a garment for comfort or style.">Ease</span>
+        is the extra room added to your body measurements to allow for movement and comfort.
+        The amount of ease you choose depends on garment style, fabric, and your personal fit preference.
+      </p>
+      <p class="ease-note">
+        <strong>NOTE:</strong> Larger figures will be more comfortable with more than the minimum amount of ease.<br />
+        Copyright © 2008 by the Association of Sewing and Design Professionals, Inc.
+        <a href="https://sewingprofessionals.com/" target="_blank" rel="noopener noreferrer">sewingprofessionals.com</a>
+        reproduced with permission.
+      </p>
+    </div>
+
+    <div class="ease-tabs" role="tablist" aria-label="Ease chart categories">
+      <button class="ease-tab active" type="button" data-tab="blouse" role="tab" aria-selected="true" aria-controls="blouse">Blouse / Dress</button>
+      <button class="ease-tab" type="button" data-tab="jacket" role="tab" aria-selected="false" aria-controls="jacket">Jacket</button>
+      <button class="ease-tab" type="button" data-tab="coat" role="tab" aria-selected="false" aria-controls="coat">Coat</button>
+      <button class="ease-tab" type="button" data-tab="skirt" role="tab" aria-selected="false" aria-controls="skirt">Skirt / Pants</button>
+
+      <div class="ease-toggle">
+        <label class="switch" for="unitToggle">
+          <input type="checkbox" id="unitToggle" />
+          <span class="slider"></span>
+        </label>
+        <span class="unit-label" id="unitLabel">in / cm</span>
+      </div>
+    </div>
+
+    <section class="ease-tab-content active" id="blouse" role="tabpanel">
+      <h2>Ease — Blouse / Dress</h2>
+      <div class="ease-row">
+        <div class="ease-col">
+          <table class="ease-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Description</th>
+                <th>Blouse / Dress</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="numb">1</span></td><td>Neck</td><td data-inch="0.5-1">0.5-1"</td></tr>
+              <tr><td><span class="numb">2</span></td><td>High Bust or Chest</td><td data-inch="2.5-4">2.5-4"</td></tr>
+              <tr><td><span class="numb">3</span></td><td>Bust, Fullest Part</td><td data-inch="2.5-4">2.5-4"</td></tr>
+              <tr><td><span class="numb">4</span></td><td>Waist</td><td data-inch="0.5-1">0.5-1"</td></tr>
+              <tr><td><span class="numb">5</span></td><td>Hips, Fullest Part</td><td data-inch="1.5-3">1.5-3"</td></tr>
+              <tr><td><span class="numb">6</span></td><td>Shoulder to Waist, Back</td><td data-inch="0.25-0.5">0.25-0.5"</td></tr>
+              <tr><td><span class="numb">7</span></td><td>Shoulder to Waist, Front</td><td data-inch="0.25-0.5">0.25-0.5"</td></tr>
+              <tr><td><span class="numb">8</span></td><td>Waist to Hip</td><td data-inch="0">0"</td></tr>
+              <tr><td><span class="numb">9</span></td><td>Sleeve Length, Underarm Seam</td><td data-inch="0.5-1">0.5-1"</td></tr>
+              <tr><td><span class="numb">10</span></td><td>Shoulder Length</td><td data-inch="0.25-0.5">0.25-0.5"</td></tr>
+              <tr><td><span class="numb">11</span></td><td>Underarm (Bicep)</td><td data-inch="1.5-3">1.5-3"</td></tr>
+              <tr><td><span class="numb">12</span></td><td>Elbow</td><td data-inch="0.75-2">0.75-2"</td></tr>
+              <tr><td><span class="numb">13</span></td><td>Wrist</td><td data-inch="0.5-1">0.5-1"</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ease-col">
+          <img src="/images/ease_diagram.webp" alt="Blouse and dress measurement diagram with numbered points" />
+        </div>
+      </div>
+    </section>
+
+    <section class="ease-tab-content" id="jacket" role="tabpanel" hidden>
+      <h2>Ease — Jacket</h2>
+      <div class="ease-row">
+        <div class="ease-col">
+          <table class="ease-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Description</th>
+                <th>Jacket (Unlined)</th>
+                <th>Jacket (Lined)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="numb">1</span></td><td>Neck</td><td data-inch="0.75-1.25">0.75-1.25"</td><td data-inch="1-1.5">1-1.5"</td></tr>
+              <tr><td><span class="numb">2</span></td><td>High Bust or Chest</td><td data-inch="3.5-5">3.5-5"</td><td data-inch="4-5.5">4-5.5"</td></tr>
+              <tr><td><span class="numb">3</span></td><td>Bust, Fullest Part</td><td data-inch="3.5-5">3.5-5"</td><td data-inch="4-5.5">4-5.5"</td></tr>
+              <tr><td><span class="numb">4</span></td><td>Waist</td><td data-inch="2.5-4">2.5-4"</td><td data-inch="3-4.5">3-4.5"</td></tr>
+              <tr><td><span class="numb">5</span></td><td>Hips, Fullest Part</td><td data-inch="2.5-4">2.5-4"</td><td data-inch="3-4.5">3-4.5"</td></tr>
+              <tr><td><span class="numb">6</span></td><td>Shoulder to Waist, Back</td><td data-inch="0.25-0.75">0.25-0.75"</td><td data-inch="0.5-1">0.5-1"</td></tr>
+              <tr><td><span class="numb">7</span></td><td>Shoulder to Waist, Front</td><td data-inch="0.25-0.75">0.25-0.75"</td><td data-inch="0.5-1">0.5-1"</td></tr>
+              <tr><td><span class="numb">8</span></td><td>Waist to Hip</td><td data-inch="0">0"</td><td data-inch="0">0"</td></tr>
+              <tr><td><span class="numb">9</span></td><td>Sleeve Length, Underarm Seam</td><td data-inch="0.5-1">0.5-1"</td><td data-inch="0.75-1.25">0.75-1.25"</td></tr>
+              <tr><td><span class="numb">10</span></td><td>Shoulder Length</td><td data-inch="0.5-0.75">0.5-0.75"</td><td data-inch="0.75-1">0.75-1"</td></tr>
+              <tr><td><span class="numb">11</span></td><td>Underarm (Bicep)</td><td data-inch="3-4.5">3-4.5"</td><td data-inch="3.5-5">3.5-5"</td></tr>
+              <tr><td><span class="numb">12</span></td><td>Elbow</td><td data-inch="1.25-2.5">1.25-2.5"</td><td data-inch="1.75-3">1.75-3"</td></tr>
+              <tr><td><span class="numb">13</span></td><td>Wrist</td><td data-inch="1.25-2">1.25-2"</td><td data-inch="1.5-2.5">1.5-2.5"</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ease-col">
+          <img src="/images/ease_diagram.webp" alt="Jacket measurement diagram with numbered points" />
+        </div>
+      </div>
+    </section>
+
+    <section class="ease-tab-content" id="coat" role="tabpanel" hidden>
+      <h2>Ease — Coat</h2>
+      <div class="ease-row">
+        <div class="ease-col">
+          <table class="ease-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Description</th>
+                <th>Coat (Unlined)</th>
+                <th>Coat (Lined)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="numb">1</span></td><td>Neck</td><td data-inch="1.25-1.75">1.25-1.75"</td><td data-inch="1.5-2">1.5-2"</td></tr>
+              <tr><td><span class="numb">2</span></td><td>High Bust or Chest</td><td data-inch="4.5-6.5">4.5-6.5"</td><td data-inch="5-7">5-7"</td></tr>
+              <tr><td><span class="numb">3</span></td><td>Bust, Fullest Part</td><td data-inch="4.5-6.5">4.5-6.5"</td><td data-inch="5-7">5-7"</td></tr>
+              <tr><td><span class="numb">4</span></td><td>Waist</td><td data-inch="4.5-6.5">4.5-6.5"</td><td data-inch="5-7">5-7"</td></tr>
+              <tr><td><span class="numb">5</span></td><td>Hips, Fullest Part</td><td data-inch="4.5-6.5">4.5-6.5"</td><td data-inch="5-7">5-7"</td></tr>
+              <tr><td><span class="numb">6</span></td><td>Shoulder to Waist, Back</td><td data-inch="0.75-1.25">0.75-1.25"</td><td data-inch="1-1.5">1-1.5"</td></tr>
+              <tr><td><span class="numb">7</span></td><td>Shoulder to Waist, Front</td><td data-inch="0.75-1.25">0.75-1.25"</td><td data-inch="1-1.5">1-1.5"</td></tr>
+              <tr><td><span class="numb">8</span></td><td>Waist to Hip</td><td data-inch="0">0"</td><td data-inch="0">0"</td></tr>
+              <tr><td><span class="numb">9</span></td><td>Sleeve Length, Underarm Seam</td><td data-inch="0.75-1.25">0.75-1.25"</td><td data-inch="1-1.5">1-1.5"</td></tr>
+              <tr><td><span class="numb">10</span></td><td>Shoulder Length</td><td data-inch="1-1.25">1-1.25"</td><td data-inch="1.25-1.5">1.25-1.5"</td></tr>
+              <tr><td><span class="numb">11</span></td><td>Underarm (Bicep)</td><td data-inch="4-5.5">4-5.5"</td><td data-inch="4.5-6">4.5-6"</td></tr>
+              <tr><td><span class="numb">12</span></td><td>Elbow</td><td data-inch="2-3.5">2-3.5"</td><td data-inch="2.5-4">2.5-4"</td></tr>
+              <tr><td><span class="numb">13</span></td><td>Wrist</td><td data-inch="2-3">2-3"</td><td data-inch="2.5-3.5">2.5-3.5"</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ease-col">
+          <img src="/images/ease_diagram.webp" alt="Coat measurement diagram with numbered points" />
+        </div>
+      </div>
+    </section>
+
+    <section class="ease-tab-content" id="skirt" role="tabpanel" hidden>
+      <h2>Ease — Skirt / Pants</h2>
+      <div class="ease-row">
+        <div class="ease-col">
+          <table class="ease-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Description</th>
+                <th>Skirt</th>
+                <th>Pants</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="numb">1</span></td><td>Waist</td><td data-inch="0.5-1">0.5-1"</td><td data-inch="0.75-1.25">0.75-1.25"</td></tr>
+              <tr><td><span class="numb">2</span></td><td>Hips, Fullest Part</td><td data-inch="1.5-3">1.5-3"</td><td data-inch="1.5-3">1.5-3"</td></tr>
+              <tr><td><span class="numb">3</span></td><td>Waist to Hip</td><td data-inch="0">0"</td><td data-inch="0">0"</td></tr>
+              <tr><td><span class="numb">4</span></td><td>Thigh</td><td>—</td><td data-inch="1.5-3">1.5-3"</td></tr>
+              <tr><td><span class="numb">5</span></td><td>Knee</td><td>—</td><td data-inch="1-2">1-2"</td></tr>
+              <tr><td><span class="numb">6</span></td><td>Calf</td><td>—</td><td data-inch="1-2">1-2"</td></tr>
+              <tr><td><span class="numb">7</span></td><td>Ankle</td><td>—</td><td data-inch="1-1.5">1-1.5"</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ease-col">
+          <img src="/images/pants_skirt.webp" alt="Skirt and pants measurement diagram with numbered points" />
+        </div>
+      </div>
+    </section>
+  </div>
+  </main>
+
+  <script is:inline>
+  /** Convert an inch value or range (e.g. "0.5-1" or "0") to cm text. */
+  function inchRangeToCm(text) {
+    var raw = (text || '').trim();
+    if (raw === '') return '';
+    var parts = raw.split('-').map(function (s) { return parseFloat(s.trim()); });
+    if (parts.some(function (n) { return Number.isNaN(n); })) return raw;
+    if (parts.length === 1) return Math.round(parts[0] * 2.54) + ' cm';
+    return Math.round(parts[0] * 2.54) + '-' + Math.round(parts[1] * 2.54) + ' cm';
+  }
+
+  function setUnits(useCm) {
+    var cells = document.querySelectorAll('[data-inch]');
+    cells.forEach(function (cell) {
+      var original = cell.getAttribute('data-inch') || '';
+      cell.textContent = useCm ? inchRangeToCm(original) : (original ? original + '"' : '');
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var tabs = document.querySelectorAll('.ease-tab');
+    var panels = document.querySelectorAll('.ease-tab-content');
+    var toggle = document.getElementById('unitToggle');
+
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        tabs.forEach(function (item) {
+          item.classList.remove('active');
+          item.setAttribute('aria-selected', 'false');
+        });
+
+        panels.forEach(function (panel) {
+          panel.classList.remove('active');
+          panel.setAttribute('hidden', '');
+        });
+
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+
+        var tabId = tab.getAttribute('data-tab');
+        var panel = tabId ? document.getElementById(tabId) : null;
+        if (panel) {
+          panel.classList.add('active');
+          panel.removeAttribute('hidden');
+        }
+      });
+    });
+
+    if (toggle) {
+      toggle.addEventListener('change', function () {
+        setUnits(toggle.checked);
+      });
+    }
+
+    setUnits(false);
+  });
+  </script>
+</Layout>
+
+<style>
+  :root {
+    --kbm-green: #52682d;
+    --kbm-green-2: #738c52;
+    --kbm-surface: #ffffff;
+    --kbm-soft: #f5f6f2;
+    --kbm-border: #d7decb;
+    --kbm-text: #333333;
+  }
+
+  .page-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 16px 20px 72px;
+  }
+
+  .ease-chart-page {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .ease-wrapper {
+    color: var(--kbm-text);
+  }
+
+  .ease-intro {
+    margin-bottom: 40px;
+    text-align: left;
+  }
+
+  .ease-intro h1 {
+    font-size: clamp(2rem, 4vw, 2.5rem);
+    color: var(--kbm-green);
+    font-weight: 700;
+    margin: 0 0 10px;
+    border-bottom: 2px solid var(--kbm-green);
+    display: inline-block;
+    padding-bottom: 4px;
+  }
+
+  .ease-summary {
+    font-size: 1.06rem;
+    margin: 16px 0 20px;
+    line-height: 1.7;
+    color: #444;
+    max-width: 80ch;
+  }
+
+  .ease-note {
+    font-size: 0.95rem;
+    background: var(--kbm-soft);
+    border-left: 4px solid var(--kbm-green);
+    padding: 12px 16px;
+    border-radius: 6px;
+    color: #555;
+    line-height: 1.6;
+    max-width: 80ch;
+  }
+
+  .ease-note a {
+    color: var(--kbm-green);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .ease-note a:hover {
+    text-decoration: underline;
+  }
+
+  .ease-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 24px;
+    align-items: center;
+  }
+
+  .ease-tab {
+    padding: 10px 16px;
+    border: 2px solid var(--kbm-green);
+    background: var(--kbm-surface);
+    color: var(--kbm-green);
+    font-weight: 600;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    font-size: 0.95rem;
+  }
+
+  .ease-tab.active,
+  .ease-tab:hover,
+  .ease-tab:focus-visible {
+    background: var(--kbm-green);
+    color: white;
+    outline: none;
+  }
+
+  .ease-toggle {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .unit-label {
+    font-weight: 600;
+    color: var(--kbm-green);
+    font-size: 0.95rem;
+  }
+
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .related-link {
+      font-size: 0.95em;
+      margin-top: -10px;
+      margin-bottom: 20px;
+      color: #52682D;
+      text-align: center;
+    }
+  .slider {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+    background-color: var(--kbm-green);
+    transition: 0.3s;
+    border-radius: 26px;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: '';
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+  }
+
+  .switch input:checked + .slider:before {
+    transform: translateX(24px);
+  }
+
+  .ease-tab-content {
+    display: none;
+  }
+
+  .ease-tab-content.active {
+    display: block;
+  }
+
+  .ease-tab-content h2 {
+    font-size: 1.6rem;
+    color: var(--kbm-green);
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+
+  .ease-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  .ease-col {
+    flex: 1 1 360px;
+  }
+
+  .ease-col img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    background: white;
+  }
+
+  .ease-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .ease-table thead {
+    background: #e8ede2;
+    color: var(--kbm-green);
+  }
+
+  .ease-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .ease-table th:first-child,
+  .ease-table td:first-child {
+    width: 60px;
+    text-align: center;
+  }
+
+  .ease-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #e8e8e8;
+    font-size: 0.9rem;
+  }
+
+  .ease-table tbody tr:nth-child(even) {
+    background-color: #f8f8f8;
+  }
+
+  .ease-table tbody tr:hover {
+    background-color: #f0f4ed;
+  }
+
+  .ease-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .numb {
+    display: inline-grid;
+    place-items: center;
+    background: var(--kbm-green);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  @media (max-width: 1024px) {
+    .page-content {
+      padding-top: 12px;
+    }
+
+    .ease-tabs {
+      justify-content: flex-start;
+    }
+
+    .ease-toggle {
+      margin-left: 0;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .ease-row {
+      flex-direction: column-reverse;
+    }
+
+    .ease-col {
+      flex: 1 1 100%;
+    }
+
+    .ease-table th,
+    .ease-table td {
+      padding: 8px 10px;
+      font-size: 0.85rem;
+    }
+  }
+</style>

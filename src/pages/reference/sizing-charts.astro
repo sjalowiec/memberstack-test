@@ -1,0 +1,745 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import SectionHero from "../../components/SectionHero.astro";
+---
+
+<Layout
+  title="Knitting Sizing Charts | Knit by Machine"
+  description="Choose from sweater, hat, mitten, and sock sizing charts for machine knitting. Switch between inches and centimeters and explore measurements tailored to knitters.">
+
+  <div class="page-container">
+    <main class="page-content sizing-chart-page">
+
+      <SectionHero
+        title="Standard Sizing Charts"
+        subtitle="Quickly find standard measurements for your machine-knit projects."
+      >
+        <div slot="toolbar" class="unit-toggle-wrapper">
+          <span class="unit-label">in</span>
+          <label class="switch">
+            <input type="checkbox" id="unitToggle">
+            <span class="slider round"></span>
+          </label>
+          <span class="unit-label">cm</span>
+        </div>
+      </SectionHero>
+
+    <p class="related-link">
+      <a href="/reference/minimum-ease-chart">Minimum ease suggestions</a>.
+    </p>
+
+    <!-- Project selection buttons -->
+    <div class="project-controls">
+      <div class="project-pills">
+        <button data-type="sweaters_misses">
+          <img src="/images/sweater.svg" alt="" class="button-icon" />
+          Sweaters
+        </button>
+        <button data-type="hats">
+          <img src="/images/hat.svg" alt="" class="button-icon" />
+          Hats
+        </button>
+        <button data-type="mittens">
+          <img src="/images/mitten.svg" alt="" class="button-icon" />
+          Mittens
+        </button>
+        <button data-type="socks">
+          <img src="/images/sock.svg" alt="" class="button-icon" />
+          Socks
+        </button>
+        <button data-type="blankets">
+          <img src="/images/blanket.svg" alt="" class="button-icon" />
+          Blankets
+        </button>
+        <button data-type="pillows">
+          <img src="/images/pillow.svg" alt="" class="button-icon" />
+          Pillows
+        </button>
+        <button data-type="xmas_stockings">
+          <img src="/images/stocking.svg" alt="" class="button-icon" />
+          Christmas Stockings
+        </button>
+      </div>
+    </div>
+
+    <!-- Dynamic chart header with icon -->
+    <div id="chartHeader" class="chart-header"></div>
+
+    <div id="sizingGrid" class="sizing-grid"></div>
+    <p id="errorMsg" class="error-message" style="display:none;">Error loading data.</p>
+
+    </main>
+  </div>
+
+  <style is:inline>
+    :root {
+      --kbm-green: #52682D;
+    }
+
+    .page-content {
+      max-width: 1400px;
+      margin: 140px auto 60px;
+      padding: 0 20px;
+    }
+
+    .sizing-chart-page {
+      font-family: "Poppins", sans-serif;
+    }
+
+    .related-link {
+      font-size: 0.95em;
+      margin-top: -10px;
+      margin-bottom: 20px;
+      color: #52682D;
+      text-align: center;
+    }
+
+    .related-link a {
+      color: #738C52;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    .related-link a:hover {
+      text-decoration: none;
+      color: #52682D;
+    }
+
+    .project-controls {
+      margin-bottom: 32px;
+    }
+
+    .project-pills {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .project-pills button {
+      background: white;
+      border: 2px solid var(--kbm-green);
+      color: var(--kbm-green);
+      padding: 10px 20px;
+      border-radius: 24px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: "Poppins", sans-serif;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .button-icon {
+      width: 30px;
+      height: 30px;
+      transition: filter 0.2s ease;
+    }
+
+    .project-pills button:hover {
+      background: var(--kbm-green);
+      color: white;
+    }
+
+    .project-pills button:hover .button-icon {
+      filter: brightness(0) invert(1);
+    }
+
+    .project-pills button.active {
+      background: var(--kbm-green);
+      color: white;
+    }
+
+    .project-pills button.active .button-icon {
+      filter: brightness(0) invert(1);
+    }
+
+    .unit-toggle-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .unit-label {
+      font-weight: 600;
+      color: var(--kbm-green);
+      font-size: 0.95rem;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 26px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--kbm-green);
+      transition: 0.3s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+    }
+
+    input:checked + .slider {
+      background-color: var(--kbm-green);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    .slider.round {
+      border-radius: 26px;
+    }
+
+    .slider.round:before {
+      border-radius: 50%;
+    }
+
+    .chart-header {
+      margin: 32px 0 16px;
+      text-align: center;
+    }
+
+    .chart-header h2 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #52682D;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 0;
+    }
+
+    .chart-header img {
+      width: 42px;
+      height: 42px;
+    }
+
+    .chart-header-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .chart-header-dropdown-button {
+      background: none;
+      border: none;
+      color: #738C52;
+      font-size: 1.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+      font-family: "Poppins", sans-serif;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.2s ease;
+    }
+
+    .chart-header-dropdown-button:hover {
+      color: var(--kbm-green);
+    }
+
+    .chart-header-dropdown-caret {
+      font-size: 1.2em;
+    }
+
+    .chart-header-dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      min-width: 180px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+      z-index: 100;
+      border-radius: 8px;
+      overflow: hidden;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 8px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .chart-header-dropdown-content button {
+      color: var(--kbm-green);
+      padding: 12px 20px;
+      text-decoration: none;
+      display: block;
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: white;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: "Poppins", sans-serif;
+      transition: background-color 0.2s ease;
+    }
+
+    .chart-header-dropdown-content button:hover {
+      background-color: #f0f4ed;
+    }
+
+    .chart-header-dropdown.open .chart-header-dropdown-content {
+      display: block;
+    }
+
+    .sizing-grid {
+      overflow-x: auto;
+      margin-top: 24px;
+      opacity: 0;
+      animation: fadeIn 0.3s ease-in forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .sizing-grid table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      border-radius: 10px;
+      overflow: hidden;
+      font-size: 0.95em;
+      line-height: 1.5;
+    }
+
+    .sizing-grid th {
+      background: #E8EDE2;
+      color: #52682D;
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.95rem;
+      font-family: "Poppins", sans-serif;
+    }
+
+    .sizing-grid th:not(:first-child) {
+      text-align: center;
+    }
+
+    .sizing-grid td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #e8e8e8;
+      font-size: 0.9rem;
+      font-family: "Poppins", sans-serif;
+    }
+
+    .sizing-grid td:not(:first-child) {
+      text-align: center;
+    }
+
+    .sizing-grid tbody tr:nth-child(even) {
+      background-color: #f8f8f8;
+    }
+
+    .sizing-grid tbody tr:nth-child(odd) {
+      background-color: white;
+    }
+
+    .sizing-grid tbody tr:hover {
+      background-color: #f0f4ed;
+    }
+
+    .sizing-grid tr:last-child td {
+      border-bottom: none;
+    }
+
+    .error-message {
+      text-align: center;
+      color: #e74c3c;
+      font-size: 1.1rem;
+      padding: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .sizing-header h1 {
+        font-size: 2rem;
+      }
+
+      .chart-header h2 {
+        justify-content: center;
+        text-align: center;
+      }
+
+      .project-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .project-pills {
+        justify-content: center;
+      }
+
+      .unit-toggle-wrapper {
+        justify-content: center;
+      }
+
+      .sizing-grid {
+        font-size: 0.9em;
+      }
+
+      .sizing-grid th,
+      .sizing-grid td {
+        padding: 10px 8px;
+        font-size: 0.9em;
+      }
+    }
+  </style>
+
+  <script is:inline>
+    // Sizing chart data URLs - using local files
+    const DATA_URLS = {
+      sweaters_men: '/data/sizing_sweaters_men.json',
+      sweaters_misses: '/data/sizing_sweaters_misses.json',
+      sweaters_plus: '/data/sizing_sweaters_plus.json',
+      sweaters_kids: '/data/sizing_sweaters_kids.json',
+      sweaters_baby: '/data/sizing_sweaters_baby.json',
+      hats: '/data/sizing_hats.json',
+      mittens: '/data/sizing_mittens.json',
+      socks: '/data/sizing_socks.json',
+      blankets: '/data/sizing_blankets.json',
+      pillows: '/data/sizing_pillows.json',
+      xmas_stockings: '/data/sizing_xmas_stockings.json'
+    };
+
+    // Chart metadata for titles and icons
+    const CHART_METADATA = {
+      sweaters_men: { label: 'Sweaters - Men', icon: '/images/sweater.svg', hash: 'sweaters-men-chart' },
+      sweaters_misses: { label: 'Sweaters - Misses', icon: '/images/sweater.svg', hash: 'sweaters-misses-chart' },
+      sweaters_plus: { label: 'Sweaters - Plus', icon: '/images/sweater.svg', hash: 'sweaters-plus-chart' },
+      sweaters_kids: { label: 'Sweaters - Kids', icon: '/images/sweater.svg', hash: 'sweaters-kids-chart' },
+      sweaters_baby: { label: 'Sweaters - Baby', icon: '/images/sweater.svg', hash: 'sweaters-baby-chart' },
+      hats: { label: 'Hats Sizing Chart', icon: '/images/hat.svg', hash: 'hats-chart' },
+      mittens: { label: 'Mittens Sizing Chart', icon: '/images/mitten.svg', hash: 'mittens-chart' },
+      socks: { label: 'Socks Sizing Chart', icon: '/images/sock.svg', hash: 'socks-chart' },
+      blankets: { label: 'Blankets Sizing Chart', icon: '/images/blanket.svg', hash: 'blankets-chart' },
+      pillows: { label: 'Pillows Sizing Chart', icon: '/images/pillow.svg', hash: 'pillows-chart' },
+      xmas_stockings: { label: 'Christmas Stockings Sizing Chart', icon: '/images/stocking.svg', hash: 'xmas-stockings-chart' }
+    };
+
+    let currentData = [];
+    let currentType = 'sweaters_misses';
+    let isMetric = false;
+
+    // Convert inches to centimeters
+    function toCm(inches) {
+      return Math.round(inches * 2.54);
+    }
+
+    // Columns to exclude from sweater charts
+    const EXCLUDED_COLUMNS = {
+      sweaters_men: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'garment_back_length', 'hip', 'sleeve_length'],
+      sweaters_misses: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'garment_back_length', 'hip', 'sleeve_length'],
+      sweaters_plus: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'garment_back_length', 'hip', 'sleeve_length'],
+      sweaters_kids: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'garment_back_length', 'hip', 'sleeve_length'],
+      sweaters_baby: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'garment_back_length', 'hip', 'sleeve_length']
+    };
+
+    // Custom header mappings for specific chart types
+    const customHeaders = {
+      mittens: {
+        'cuff_circumference': 'Cuff<br>Circ.',
+        'cuff_length': 'Cuff<br>Length',
+        'hand_circumference': 'Hand<br>Circ.',
+        'hand_length': 'Hand<br>Length',
+        'thumb_length': 'Thumb<br>Length',
+        'thumb_opening': 'Thumb<br>Opening'
+      }
+    };
+
+    // Format label for display
+    function formatLabel(key, chartType = null) {
+      // Check if there's a custom header for this chart type and key
+      if (chartType && customHeaders[chartType] && customHeaders[chartType][key]) {
+        return customHeaders[chartType][key];
+      }
+      
+      // Default formatting
+      return key
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }
+
+    // Update the chart header with icon and title
+    function updateChartHeader() {
+      const chartHeader = document.getElementById('chartHeader');
+      const metadata = CHART_METADATA[currentType];
+      
+      if (metadata) {
+        // Check if this is a sweater chart - if so, add dropdown
+        if (currentType.startsWith('sweaters_')) {
+          const subCategory = currentType.replace('sweaters_', '');
+          const formattedSubCategory = formatLabel(subCategory);
+          
+          chartHeader.innerHTML = `
+            <h2 id="${metadata.hash}">
+              <img src="${metadata.icon}" alt="" />
+              Sweaters – 
+              <div class="chart-header-dropdown">
+                <button class="chart-header-dropdown-button">
+                  ${formattedSubCategory} <span class="chart-header-dropdown-caret">▾</span>
+                </button>
+                <div class="chart-header-dropdown-content">
+                  <button data-type="sweaters_men">Men</button>
+                  <button data-type="sweaters_misses">Misses</button>
+                  <button data-type="sweaters_plus">Plus</button>
+                  <button data-type="sweaters_kids">Kids</button>
+                  <button data-type="sweaters_baby">Baby</button>
+                </div>
+              </div>
+            </h2>
+          `;
+          
+          const dropdown = chartHeader.querySelector('.chart-header-dropdown');
+          const dropdownButton = chartHeader.querySelector('.chart-header-dropdown-button');
+          
+          // Toggle dropdown on button click
+          dropdownButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('open');
+          });
+          
+          // Close dropdown when clicking outside
+          document.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target)) {
+              dropdown.classList.remove('open');
+            }
+          });
+          
+          // Add click handlers to dropdown items
+          chartHeader.querySelectorAll('.chart-header-dropdown-content button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const type = btn.dataset.type;
+              if (type) {
+                dropdown.classList.remove('open');
+                currentType = type;
+                loadData(currentType);
+                updateActiveStates(currentType);
+                updateURL(currentType);
+              }
+            });
+          });
+        } else {
+          // Non-sweater charts - simple header
+          chartHeader.innerHTML = `
+            <h2 id="${metadata.hash}">
+              <img src="${metadata.icon}" alt="" />
+              ${metadata.label}
+            </h2>
+          `;
+        }
+      }
+    }
+
+    // Render the sizing table
+    function renderTable(data) {
+      const grid = document.getElementById('sizingGrid');
+      
+      // Reset animation by removing and re-adding it
+      grid.style.animation = 'none';
+      setTimeout(() => {
+        grid.style.animation = '';
+      }, 10);
+      
+      // Update the chart header
+      updateChartHeader();
+      
+      if (!data || data.length === 0) {
+        grid.innerHTML = '<p style="text-align: center; padding: 40px;">No data available for this category.</p>';
+        return;
+      }
+
+      // Get all unique keys from the data, excluding unwanted columns
+      const excludedCols = EXCLUDED_COLUMNS[currentType] || [];
+      const allKeys = new Set();
+      data.forEach(item => {
+        Object.keys(item).forEach(key => {
+          if (key !== 'size' && key !== 'label' && key !== 'extended_label' && key !== '' && key !== '__1' && !excludedCols.includes(key)) {
+            allKeys.add(key);
+          }
+        });
+      });
+
+      const headers = ['Size', ...Array.from(allKeys)];
+
+      let html = '<table><thead><tr>';
+      headers.forEach(header => {
+        const displayHeader = header === 'Size' ? header : formatLabel(header, currentType);
+        html += `<th>${displayHeader}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+
+      data.forEach(row => {
+        html += '<tr>';
+        // For sweater charts, use simple "Size X" format; otherwise use extended label
+        let displayLabel;
+        if (currentType.startsWith('sweaters_')) {
+          displayLabel = `Size ${row.size}`;
+        } else {
+          displayLabel = row.extended_label || row.label || row.size;
+        }
+        html += `<td>${displayLabel}</td>`;
+        
+        Array.from(allKeys).forEach(key => {
+          let value = row[key];
+          if (value === '' || value === null || value === undefined) {
+            html += '<td>—</td>';
+          } else if (typeof value === 'number') {
+            const displayValue = isMetric ? toCm(value) : value;
+            const unit = isMetric ? ' cm' : '″';
+            html += `<td>${displayValue}${unit}</td>`;
+          } else {
+            html += `<td>${value}</td>`;
+          }
+        });
+        
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+      grid.innerHTML = html;
+    }
+
+    // Load data for a specific type
+    async function loadData(type) {
+      const errorMsg = document.getElementById('errorMsg');
+      errorMsg.style.display = 'none';
+
+      try {
+        const response = await fetch(DATA_URLS[type]);
+        if (!response.ok) throw new Error('Failed to load data');
+        
+        currentData = await response.json();
+        renderTable(currentData);
+      } catch (error) {
+        console.error('Error loading data:', error);
+        errorMsg.style.display = 'block';
+        errorMsg.textContent = 'Error loading sizing data. Please try again later.';
+      }
+    }
+
+    // Get chart type from hash
+    function getTypeFromHash() {
+      const hash = location.hash.substring(1); // Remove the #
+      if (!hash) return null;
+      
+      // Find the chart type that matches this hash
+      for (const [type, metadata] of Object.entries(CHART_METADATA)) {
+        if (metadata.hash === hash) {
+          return type;
+        }
+      }
+      return null;
+    }
+
+    // Update URL hash
+    function updateURL(type) {
+      const metadata = CHART_METADATA[type];
+      if (metadata) {
+        history.replaceState(null, '', `#${metadata.hash}`);
+      }
+    }
+
+    // Update active button states
+    function updateActiveStates(type) {
+      // Remove active from all buttons
+      document.querySelectorAll('.project-pills button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Find the button to activate based on the type
+      let buttonSelector;
+      if (type.startsWith('sweaters_')) {
+        // For any sweater type, activate the main Sweaters button
+        buttonSelector = 'button[data-type="sweaters_misses"]';
+      } else {
+        buttonSelector = `button[data-type="${type}"]`;
+      }
+      
+      const activeButton = document.querySelector(buttonSelector);
+      if (activeButton) {
+        activeButton.classList.add('active');
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check if URL has a hash and load that chart
+      const hashType = getTypeFromHash();
+      if (hashType) {
+        currentType = hashType;
+      }
+      
+      // Load initial data and sync UI
+      loadData(currentType);
+      updateActiveStates(currentType);
+
+      // Handle button clicks (only top navigation pills)
+      document.querySelectorAll('.project-pills button').forEach(button => {
+        button.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const type = button.dataset.type;
+          
+          if (type) {
+            currentType = type;
+            updateURL(type);
+            updateActiveStates(type);
+            loadData(type);
+          }
+        });
+      });
+
+      // Handle unit toggle
+      document.getElementById('unitToggle').addEventListener('change', (e) => {
+        isMetric = e.target.checked;
+        renderTable(currentData);
+      });
+
+      // Listen for hash changes (if user manually changes URL)
+      window.addEventListener('hashchange', () => {
+        const newType = getTypeFromHash();
+        if (newType && newType !== currentType) {
+          currentType = newType;
+          updateActiveStates(newType);
+          loadData(currentType);
+        }
+      });
+    });
+  </script>
+</Layout>

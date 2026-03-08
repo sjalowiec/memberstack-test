@@ -1,0 +1,86 @@
+[
+  {
+    "size": "xs_preemie",
+    "label": "X-Small Preemie",
+    "extended_label": "X-Small Preemie (1–2 lbs)",
+    "circumference": 9,
+    "depth": 3.5
+  },
+  {
+    "size": "sm_preemie",
+    "label": "Small Preemie",
+    "extended_label": "Small Preemie (3–4 lbs)",
+    "circumference": 11,
+    "depth": 4
+  },
+  {
+    "size": "med_preemie",
+    "label": "Medium Preemie",
+    "extended_label": "Medium Preemie (4–5 lbs)",
+    "circumference": 12,
+    "depth": 4.5
+  },
+  {
+    "size": "preemie",
+    "label": "Preemie",
+    "extended_label": "Preemie (5–6 lbs)",
+    "circumference": 13,
+    "depth": 5
+  },
+  {
+    "size": "newborn",
+    "label": "Newborn",
+    "extended_label": "Newborn (approx. 14″ head)",
+    "circumference": 14,
+    "depth": 6
+  },
+  {
+    "size": "baby_3_6",
+    "label": "Baby",
+    "extended_label": "Baby (3–6 months)",
+    "circumference": 17,
+    "depth": 7
+  },
+  {
+    "size": "baby_6-12",
+    "label": "Baby",
+    "extended_label": "Baby (6–12 months)",
+    "circumference": 18,
+    "depth": 7.5
+  },
+  {
+    "size": "preschool",
+    "label": "Preschool",
+    "extended_label": "Preschool (1–3 years)",
+    "circumference": 19,
+    "depth": 8
+  },
+  {
+    "size": "child",
+    "label": "Child",
+    "extended_label": "Child (3–10 years)",
+    "circumference": 20,
+    "depth": 8.5
+  },
+  {
+    "size": "preteen",
+    "label": "Pre-Teen",
+    "extended_label": "Pre-Teen / Teen",
+    "circumference": 21,
+    "depth": 10
+  },
+  {
+    "size": "adult_woman",
+    "label": "Adult Woman",
+    "extended_label": "Adult Woman (21–22″ head)",
+    "circumference": 22.5,
+    "depth": 11
+  },
+  {
+    "size": "adult_man",
+    "label": "Adult Man",
+    "extended_label": "Adult Man (22–24″ head)",
+    "circumference": 24,
+    "depth": 11.5
+  }
+]

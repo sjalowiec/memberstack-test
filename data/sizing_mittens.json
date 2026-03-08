@@ -1,0 +1,90 @@
+[
+  {
+    "size": "child_2_4",
+    "label": "Child 2–4 Years",
+    "extended_label": "Child (2–4 Years)",
+    "cuff_circumference": 5,
+    "cuff_length": 1.75,
+    "hand_circumference": 5.5,
+    "hand_length": 4,
+    "thumb_length": 0.75,
+    "thumb_opening": 1.25
+  },
+  {
+    "size": "child_4_6",
+    "label": "Child 4–6 Years",
+    "extended_label": "Child (4–6 Years)",
+    "cuff_circumference": 5.5,
+    "cuff_length": 2.25,
+    "hand_circumference": 6,
+    "hand_length": 4.75,
+    "thumb_length": 1,
+    "thumb_opening": 1.5
+  },
+  {
+    "size": "child_6_8",
+    "label": "Child 6–8 Years",
+    "extended_label": "Child (6–8 Years)",
+    "cuff_circumference": 6,
+    "cuff_length": 2.5,
+    "hand_circumference": 6.5,
+    "hand_length": 5.25,
+    "thumb_length": 1.25,
+    "thumb_opening": 1.5
+  },
+  {
+    "size": "woman_sm",
+    "label": "Woman Small",
+    "extended_label": "Woman Small",
+    "cuff_circumference": 6.5,
+    "cuff_length": 2.5,
+    "hand_circumference": 7,
+    "hand_length": 6,
+    "thumb_length": 1.25,
+    "thumb_opening": 1.75
+  },
+  {
+    "size": "woman_lg",
+    "label": "Woman Large",
+    "extended_label": "Woman Large",
+    "cuff_circumference": 7,
+    "cuff_length": 2.75,
+    "hand_circumference": 7.5,
+    "hand_length": 6.5,
+    "thumb_length": 1.5,
+    "thumb_opening": 2
+  },
+  {
+    "size": "man_sm",
+    "label": "Man Small",
+    "extended_label": "Man Small",
+    "cuff_circumference": 7.5,
+    "cuff_length": 2.75,
+    "hand_circumference": 8,
+    "hand_length": 7.25,
+    "thumb_length": 1.75,
+    "thumb_opening": 2.25
+  },
+  {
+    "size": "man_med",
+    "label": "Man Medium",
+    "extended_label": "Man Medium",
+    "cuff_circumference": 8,
+    "cuff_length": 3,
+    "hand_circumference": 8.5,
+    "hand_length": 7.75,
+    "thumb_length": 2,
+    "thumb_opening": 2.5
+  },
+  {
+    "size": "man_lg",
+    "label": "Man Large",
+    "extended_label": "Man Large",
+    "cuff_circumference": 8.5,
+    "cuff_length": 3,
+    "hand_circumference": 9,
+    "hand_length": 8.5,
+    "thumb_length": 2,
+    "thumb_opening": 2.75
+  }
+]

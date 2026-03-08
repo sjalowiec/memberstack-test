@@ -1,0 +1,47 @@
+[
+  {
+    "size": "mini",
+    "label": "Mini",
+    "extended_label": "Mini (ornament size)",
+    "total_length": 6,
+    "cuff_circumference": 4,
+    "leg_width": 3,
+    "foot_length": 3
+  },
+  {
+    "size": "sm",
+    "label": "Small",
+    "extended_label": "Small (decorative)",
+    "total_length": 12,
+    "cuff_circumference": 6,
+    "leg_width": 5,
+    "foot_length": 7
+  },
+  {
+    "size": "med",
+    "label": "Medium",
+    "extended_label": "Medium (standard)",
+    "total_length": 16,
+    "cuff_circumference": 8,
+    "leg_width": 6,
+    "foot_length": 9
+  },
+  {
+    "size": "lg",
+    "label": "Large",
+    "extended_label": "Large (oversized)",
+    "total_length": 22,
+    "cuff_circumference": 10,
+    "leg_width": 8,
+    "foot_length": 11
+  },
+  {
+    "size": "xl",
+    "label": "Extra Large",
+    "extended_label": "Extra Large (jumbo stocking)",
+    "total_length": 28,
+    "cuff_circumference": 12,
+    "leg_width": 9,
+    "foot_length": 13
+  }
+]

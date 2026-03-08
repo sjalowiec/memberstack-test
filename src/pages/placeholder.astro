@@ -1,0 +1,38 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const url = new URL(Astro.request.url);
+const section = url.searchParams.get("section") || "This section";
+---
+
+<Layout title={`${section} | Knit it Now`}>
+
+<section class="container" style="max-width:820px; margin:60px auto;">
+
+<h1>{section} is being built</h1>
+
+<p class="intro intro-accent">
+We're currently building this area to include clear guides, helpful tools, and practical examples for machine knitters.
+</p>
+
+<p>
+Rather than rushing something unfinished, we're taking the time to make sure this section is genuinely useful.
+</p>
+
+<p>
+Check back soon — new resources are being added regularly.
+</p>
+
+<hr>
+
+<p><strong>In the meantime:</strong></p>
+
+<ul>
+<li><a href="/videos">Explore the Video Library</a></li>
+<li><a href="/troubleshoot">Visit the Troubleshooting Guide</a></li>
+<li><a href="/learn/reference">Browse the Reference pages</a></li>
+</ul>
+
+</section>
+
+</Layout>

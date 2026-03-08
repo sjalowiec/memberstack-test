@@ -4,10 +4,10 @@
 /** Learn submenu items (placeholder routes until pages exist). Reuse this pattern for other dropdowns. */
 const LEARN_SUBMENU = [
   { label: "Tutorials", href: "/videos" },
-  { label: "Workshops & Guides", href: "/learn/workshops" },
-  { label: "Skill Builders", href: "/learn/skill-builders" },
-  { label: "Reference", href: "/learn/reference" },
-  { label: "Learning Paths", href: "/learn/learning-paths" },
+  { label: "Workshops & Guides", href: "/placeholder?section=Workshops & Guides" },
+  { label: "Skill Builders", href: "/placeholder?section=Skill Builders" },
+  { label: "Reference", href: "/learn/reference"},
+  { label: "Learning Paths", href: "/placeholder?section=Learning Paths" },
 ];
 ---
 <style is:global>
@@ -1138,7 +1138,7 @@ div[data-ms-modal-overlay] {
           </div>
           <!-- Mobile drawer only: CTA + Account/Log out (hidden on desktop) -->
           <div class="kbm-drawer-actions">
-            <a href="/learn/workshops" class="kbm-cta-guide kbm-drawer-cta" data-testid="drawer-cta-free-guide">Get the Free guide</a>
+            <a href="/troubleshoot" class="kbm-cta-guide kbm-drawer-cta" data-testid="drawer-cta-free-guide">Get the Free guide</a>
             <div class="kbm-drawer-account">
               <div data-ms-content="!members">
                 <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="login" data-ms-redirect="current-url">Log in</a>
@@ -1155,7 +1155,7 @@ div[data-ms-modal-overlay] {
 
       <!-- Right zone: CTA + account + hamburger (mobile shows compact "Free Guide") -->
       <div class="kbm-nav-right">
-        <a href="/learn/workshops" class="kbm-cta-guide" data-testid="cta-free-guide">
+        <a href="/troubleshoot" class="kbm-cta-guide" data-testid="cta-free-guide">
           <span class="kbm-cta-desktop">Get the Free guide</span>
           <span class="kbm-cta-mobile">Free Guide</span>
         </a>

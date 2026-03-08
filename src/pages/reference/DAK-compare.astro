@@ -1,0 +1,376 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const pageTitle = "Compare DesignaKnit Versions";
+const pageDescription =
+  "Compare DesignaKnit versions side by side to see which option fits your knitting needs.";
+
+const products = [
+  {
+    name: "Hand Knit",
+    price: "$199",
+    href: "",
+    recommended: false,
+  },
+  {
+    name: "Machine Standard",
+    price: "$330",
+    href: "",
+    recommended: false,
+  },
+  {
+    name: "Machine Pro",
+    price: "$450",
+    href: "",
+    recommended: true,
+  },
+  {
+    name: "Complete",
+    price: "$500",
+    href: "",
+    recommended: true,
+  },
+];
+
+const rows = [
+  {
+    feature:
+      "Includes Standard Garment Styling, Stitch Designer, Interactive Knitting, and Graphics Studio",
+    values: ["yes", "yes", "yes", "yes"],
+  },
+  {
+    feature: "Includes Original Pattern Drafting",
+    values: [
+      "yes",
+      {
+        value: "no",
+        note: "Garments designed using Original Pattern Drafting in a different product level may be knitted, but not modified, using Machine Standard.",
+      },
+      "yes",
+      "yes",
+    ],
+  },
+  {
+    feature: "Can use optional cable links to knitting machines",
+    values: ["no", "yes", "yes", "yes"],
+  },
+  {
+    feature: "Can design and print hand knitting patterns",
+    values: [
+      "yes",
+      {
+        value: "no",
+        note: "Hand knit stitch patterns can be opened in Machine Standard or Machine Pro, but are treated as machine knit patterns.",
+      },
+      {
+        value: "no",
+        note: "Hand knit stitch patterns can be opened in Machine Standard or Machine Pro, but are treated as machine knit patterns.",
+      },
+      "yes",
+    ],
+  },
+  {
+    feature: "Can open hand knitting patterns as machine knitting patterns",
+    values: [
+      {
+        value: "no",
+        note: "Machine knit stitch patterns can be opened in Hand Knit, but are treated as hand knit patterns.",
+      },
+      "yes",
+      "yes",
+      "yes",
+    ],
+  },
+  {
+    feature:
+      "Can design machine knitting patterns and print KnitLeader, KnitRadar, color change, punch card, and mylar templates",
+    values: ["no", "yes", "yes", "yes"],
+  },
+  {
+    feature: "Can design using stitch cable crossings over 6 stitches wide",
+    values: ["yes", "no", "no", "yes"],
+  },
+  {
+    feature: "Can enter knitting instructions for custom stitch cables",
+    values: ["yes", "no", "no", "yes"],
+  },
+];
+
+function normalizeCell(cell) {
+  if (typeof cell === "string") {
+    return { value: cell };
+  }
+  return cell;
+}
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+  <section class="reference-page">
+    <div class="container">
+      <header class="page-header">
+        <h1>{pageTitle}</h1>
+      </header>
+
+      <p class="kbm-intro-callout">
+        Not sure which DesignaKnit version is right for you? Use this chart to compare the
+        features side by side. Still deciding? Get clear answers in our DesignaKnit Buyers Guide.
+      </p>
+
+      <div class="cta-top">
+        <a
+          href="/reference/dak-buyers-guide"
+          class="kbm-button"
+                    >
+          Get Clear Answers Before You Buy
+        </a>
+      </div>
+
+      <div class="table-wrap">
+        <table class="dak-compare">
+          <thead>
+            <tr class="recommend-row">
+              <th></th>
+              <th></th>
+              <th></th>
+              <th colspan="2">
+                <span class="recommended-label">Recommended</span>
+              </th>
+            </tr>
+            <tr>
+              <th>Features</th>
+              {products.map((product) => (
+                <th>
+                  <a href={product.href}>
+                    <span class:list={{ recommended: product.recommended }}>
+                      {product.name}
+                    </span>
+                  </a>
+                  <br />
+                  <small><em>{product.price}</em></small>
+                </th>
+              ))}
+            </tr>
+          </thead>
+
+          <tbody>
+            {rows.map((row) => (
+              <tr>
+                <td class="feature">{row.feature}</td>
+                {row.values.map((cell) => {
+                  const item = normalizeCell(cell);
+                  return (
+                    <td>
+                      <div class="cell-mark" data-value={item.value}>
+                        {item.value === "yes" ? (
+                          <span class="yes" aria-label="Yes">✓</span>
+                        ) : (
+                          <span class="no" aria-label="No">✕</span>
+                        )}
+                      </div>
+
+                      {item.note && (
+                        <details class="cell-note">
+                          <summary>Why?</summary>
+                          <p>{item.note}</p>
+                        </details>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      
+  <div class="kin-discussion" id="hyvor">
+    <p class="kbm-intro-callout">
+      <strong>Do you already use DesignaKnit? Your experience could make all the difference for someone considering it.</strong><br />
+      Share your tips or words of wisdom in <span class="yellow_highlight">the comments below</span> to help a fellow knitter feel more confident.
+    </p>
+    <h2 class="discussion-title">Join the Conversation</h2>
+    <script async src="https://talk.hyvor.com/embed/embed.js" type="module"></script>
+  
+    <hyvor-talk-comments
+      website-id="14706"
+      page-id="DesignaKnit"
+    ></hyvor-talk-comments>
+  </div>
+<!--
+      <div class="bonus-callout">
+        <p class="bonus-free">FREE!</p>
+        <p class="bonus-text">
+          Choose any
+          <a href="https://learndesignaknit.com/" target="_blank" rel="noopener">
+            <strong> LearnDesignaKnit </strong>
+          </a>
+          course with any DAK version purchased from Knit it Now.
+        </p>
+      </div>-->
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .reference-page {
+    padding: 2rem 0 3rem;
+  }
+
+  .container {
+    width: min(1100px, 92%);
+    margin: 0 auto;
+  }
+
+  .page-header {
+    margin-bottom: 1.25rem;
+  }
+
+  .page-header h1 {
+    margin: 0;
+  }
+
+  .intro {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: #444;
+    margin: 0 0 1.5rem;
+  }
+
+  .intro-accent {
+    border-left: 5px solid #5e9ded;
+    background: #f5f5f5;
+    border-radius: 6px;
+    padding: 12px 16px 12px 20px;
+  }
+
+  .cta-top {
+    text-align: center;
+    margin: 1.5rem 0 2rem;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    margin: 0 auto 2rem;
+  }
+
+  .dak-compare {
+    width: 100%;
+    min-width: 860px;
+    border-collapse: collapse;
+    table-layout: fixed;
+    background: #fff;
+  }
+
+  .dak-compare th,
+  .dak-compare td {
+    border: 1px solid #ddd;
+    padding: 0.9rem;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .dak-compare th:first-child,
+  .dak-compare td.feature {
+    text-align: left;
+  }
+
+  .dak-compare thead th {
+    background: #fafafa;
+  }
+
+  .recommend-row th {
+    background: #fff;
+    border-bottom: 0;
+  }
+
+  .recommended-label {
+    display: inline-block;
+    background: #fff3a6;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+
+  .recommended {
+    background: linear-gradient(transparent 60%, #fff3a6 60%);
+    font-weight: 700;
+  }
+
+  .feature {
+    font-weight: 600;
+  }
+
+  .cell-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2rem;
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+
+  .yes {
+    color: #96be11;
+    font-weight: 700;
+  }
+
+  .no {
+    color: #cc3333;
+    font-weight: 700;
+  }
+
+  .cell-note {
+    margin-top: 0.45rem;
+    text-align: left;
+    font-size: 0.92rem;
+  }
+
+  .cell-note summary {
+    cursor: pointer;
+    color: #5e9ded;
+    font-weight: 600;
+  }
+
+  .cell-note p {
+    margin: 0.5rem 0 0;
+    color: #555;
+    line-height: 1.45;
+  }
+
+  .bonus-callout {
+    text-align: center;
+    background: #f5f5f5;
+    border-radius: 10px;
+    padding: 1.5rem 1rem;
+  }
+
+  .bonus-free {
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem;
+    color: #d49a00;
+  }
+
+  .bonus-text {
+    font-size: 1.125rem;
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .bonus-text a {
+    color: inherit;
+  }
+
+  @media (max-width: 768px) {
+    .reference-page {
+      padding-top: 1.5rem;
+    }
+
+    .intro {
+      font-size: 1rem;
+    }
+
+    
+  }
+</style>

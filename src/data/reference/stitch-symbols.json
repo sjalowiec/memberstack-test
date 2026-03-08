@@ -1,0 +1,164 @@
+[
+  {
+    "id": 7,
+    "title": "3 Stitches Together (Center)",
+    "icon": "ThreeStitchesTogether.jpg",
+    "detail": "ThreeStitchesTogether_details.jpg"
+  },
+  {
+    "id": 9,
+    "title": "3 Stitches Together (Left on top)",
+    "icon": "ThreeStitchesTogether_left.jpg",
+    "detail": "ThreeStitchesTogether_left_details.jpg"
+  },
+  {
+    "id": 8,
+    "title": "3 Stitches Together (Right on top)",
+    "icon": "ThreeStitchesTogether_Right.jpg",
+    "detail": "ThreeStitchesTogether_Right_detail.jpg"
+  },
+  {
+    "id": 27,
+    "title": "Cables",
+    "icon": "cable1.jpg",
+    "detail": "CableLeft_details.jpg"
+  },
+  {
+    "id": 22,
+    "title": "Crossed Stitch Left",
+    "icon": "CrossedStitchLeft.jpg",
+    "detail": "CrossedStitchLeft_details.jpg"
+  },
+  {
+    "id": 23,
+    "title": "Crossed Stitch Right",
+    "icon": "CrossedStitchRight.jpg",
+    "detail": "CrossedStitchRight_details.jpg"
+  },
+  {
+    "id": 19,
+    "title": "Crossing Left over Right",
+    "icon": "CrossingLeftoverRight.jpg",
+    "detail": "CrossingLeftoverRight_details.jpg"
+  },
+  {
+    "id": 20,
+    "title": "Crossing Right over Left",
+    "icon": "CrossingRightoverLeft.jpg",
+    "detail": "CrossingRightoverLeft_details.jpg"
+  },
+  {
+    "id": 3,
+    "title": "Eyelet",
+    "icon": "Eyelet.jpg",
+    "detail": "Eyelet_details.jpg"
+  },
+  {
+    "id": 15,
+    "title": "Float Stitch",
+    "icon": "FloatStitch.jpg",
+    "detail": "FloatStitch_details.jpg"
+  },
+  {
+    "id": 1,
+    "title": "Knit Stitch",
+    "icon": "KnitStitch.jpg",
+    "detail": "KnitStitch_details.jpg"
+  },
+  {
+    "id": 13,
+    "title": "Left Leaning Increase",
+    "icon": "LeftLeaningIncrease.jpg",
+    "detail": "LeftLeaningIncrease_details.jpg"
+  },
+  {
+    "id": 24,
+    "title": "Make 1 Left",
+    "icon": "Make1left.jpg",
+    "detail": "Make1left_details.jpg"
+  },
+  {
+    "id": 25,
+    "title": "Make 1 Right",
+    "icon": "Make1right.jpg",
+    "detail": "Make1Right_details.jpg"
+  },
+  {
+    "id": 4,
+    "title": "Needle out of Work",
+    "icon": "NeedleoutofWork.jpg",
+    "detail": "NeedleoutofWork_details.jpg"
+  },
+  {
+    "id": 2,
+    "title": "Purl  Stitch",
+    "icon": "Purl.jpg",
+    "detail": "Purl_details.jpg"
+  },
+  {
+    "id": 12,
+    "title": "Right Leaning Increase",
+    "icon": "RightLeaningIncrease.jpg",
+    "detail": "RightLeaningIncrease_details.jpg"
+  },
+  {
+    "id": 14,
+    "title": "Slip (Skip) Stitch",
+    "icon": "SlipSkipStitch.jpg",
+    "detail": "SlipSkipStitch_details.jpg"
+  },
+  {
+    "id": 11,
+    "title": "Transfer Left",
+    "icon": "TransferLeft.jpg",
+    "detail": "TransferLeft_details.jpg"
+  },
+  {
+    "id": 10,
+    "title": "Transfer Right",
+    "icon": "TransferRight.jpg",
+    "detail": "TransferRight_details.jpg"
+  },
+  {
+    "id": 16,
+    "title": "Tuck Stitch",
+    "icon": "TuckStitch.jpg",
+    "detail": "TuckStitch_details.jpg"
+  },
+  {
+    "id": 18,
+    "title": "Twisted Stitch",
+    "icon": "TwistedStitch.jpg",
+    "detail": "TwistedStitch_details.jpg"
+  },
+  {
+    "id": 17,
+    "title": "Twisted Tuck Stitch",
+    "icon": "TwistedTuckStitch.jpg",
+    "detail": "TwistedTuckStitch_details.jpg"
+  },
+  {
+    "id": 6,
+    "title": "Two Stitches Together (Left)",
+    "icon": "TwoStitchesTogetherLeft.jpg",
+    "detail": "TwoStitchesTogetherLeft_details.jpg"
+  },
+  {
+    "id": 5,
+    "title": "Two Stitches Together (Right)",
+    "icon": "TwoStitchesTogetherRight.jpg",
+    "detail": "TwoStitchesTogetherRight_details.jpg"
+  },
+  {
+    "id": 26,
+    "title": "Weaving",
+    "icon": "weaving.jpg",
+    "detail": "Weaving_Details.jpg"
+  },
+  {
+    "id": 21,
+    "title": "Winding Stitch",
+    "icon": "WindingStitch.jpg",
+    "detail": "WindingStitch_details.jpg"
+  }
+]

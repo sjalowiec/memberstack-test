@@ -697,6 +697,32 @@ p {
   text-decoration-thickness: 2px;
 }
 
+/* KBM Intro Callout Card */
+.kbm-intro-callout {
+  background: #f6f8f3;
+  border: 1px solid #d8e1c8;
+  border-left: 6px solid #52682D; /* Knit It Now green */
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin: 28px 0;
+  line-height: 1.6;
+}
+
+/* headline line */
+.kbm-intro-callout strong {
+  display: block;
+  color: #52682D;
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+/* optional paragraph spacing */
+.kbm-intro-callout p {
+  margin: 0;
+}
+
+
 /* Tiny close button on the right */
 .kbm-intro-banner-close {
   border: none;
@@ -1466,6 +1492,7 @@ p {
     right: 0.75rem;
     font-size: 1.75rem;
   }
+}
   /* ================================
    KBM Primary Button
    ================================ */
@@ -1475,7 +1502,7 @@ p {
   padding: 0.75rem 1.5rem;
   border-radius: 10px;
   background-color: #52682D;
-  color: #ffffff;
+  color: #ffffff !important;
   font-weight: 600;
   text-decoration: none;
   border: none;
@@ -1490,7 +1517,7 @@ p {
 .kbm-button:active {
   transform: translateY(1px);
 }
-}
+
 
 /* --- Prose / Rich Text (sitewide) --- */
 .prose {
@@ -1576,4 +1603,72 @@ div[data-ms-message="error"]:empty {
   color: #b00020;
   font-size: 0.95rem;
   margin-top: 8px;
+}
+.faq-accordion .faq-item {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 0;
+}
+
+.faq-accordion .faq-item summary {
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+.faq-accordion .faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+/* arrow indicator */
+.faq-accordion .faq-item summary::before {
+  content: "▶";
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 0.8em;
+  transition: transform 0.2s ease;
+}
+
+.faq-accordion .faq-item[open] summary::before {
+  transform: rotate(90deg);
+}
+.faq-accordion .faq-item {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 14px 0;
+}
+.faq-accordion .faq-item + .faq-item {
+  margin-top: 8px;
+}
+
+/* Hyvor Talk ANSWER STYLING */
+
+.kin-discussion {
+  margin-top: 60px;
+  padding: 32px;
+  background: #fafafa;
+  border: 1px solid #738c52;
+
+  border-radius: 12px;
+}
+/* Hyvor empty state */
+.kin-discussion .hyvor-talk-empty-state {
+  padding: 20px;
+  margin-top: 20px;
+  background: #f8faf5;
+  border: 1px dashed #738c52;
+  border-radius: 8px;
+  font-style: italic;
+  color: #55624a;
+  .kin-discussion {
+    margin: 60px 0;
+  } 
+
+/* Hide Hyvor login button */
+.hyvor-talk-login {
+  display: none !important;
+}
+
+/* Optional: hide "0 comments" label */
+.hyvor-talk-comment-count {
+  display: none !important;
+}
 }
