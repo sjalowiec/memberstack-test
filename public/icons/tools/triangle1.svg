@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="v" data-name="new" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <style>
+      .w {
+        fill: none;
+        stroke: #fff;
+        stroke-width: 2.69px;
+      }
+
+      .x {
+        fill: #52682d;
+      }
+    </style>
+  </defs>
+  <rect class="x" x="2.53" y="2.53" width="59.41" height="59.41" rx="8.78" ry="8.78"/>
+  <polygon class="w" points="53.84 53.84 10.16 53.84 32.15 10.16 53.84 53.84"/>
+</svg>

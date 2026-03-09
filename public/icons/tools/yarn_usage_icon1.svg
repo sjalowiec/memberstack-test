@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="v" data-name="new" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <style>
+      .w {
+        fill: #52682d;
+      }
+
+      .x {
+        fill: #fff;
+      }
+
+      .y {
+        fill: none;
+        stroke: #fff;
+        stroke-width: 2px;
+      }
+    </style>
+  </defs>
+  <rect class="w" x="2.53" y="2.53" width="59.41" height="59.41" rx="8.78" ry="8.78"/>
+  <g>
+    <rect class="y" x="14.13" y="10.35" width="35.47" height="7.3"/>
+    <rect class="y" x="27.44" y="18.7" width="9.39" height="4.69"/>
+    <path class="y" d="M54.04,53.65H9.96l8.87-29.47,25.56.26,9.65,29.21ZM31.48,28.1c-6.12,0-11.07,4.96-11.07,11.08s4.96,11.07,11.07,11.07,11.07-4.96,11.07-11.07-4.96-11.08-11.07-11.08Z"/>
+    <path class="x" d="M34.48,39.04c0,1.58-1.28,2.87-2.87,2.87s-2.87-1.28-2.87-2.87,1.28-2.87,2.87-2.87,2.87,1.28,2.87,2.87Z"/>
+    <polygon class="x" points="31.49 28.75 30.33 36.69 32.65 36.69 31.49 28.75"/>
+  </g>
+</svg>

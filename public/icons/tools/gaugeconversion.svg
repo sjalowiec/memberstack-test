@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="v" data-name="new" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <style>
+      .x {
+        fill: #52682d;
+      }
+
+      .y {
+        fill: none;
+        stroke: #fff;
+        stroke-width: 2.25px;
+      }
+    </style>
+  </defs>
+  <rect class="x" x="2.53" y="2.53" width="59.41" height="59.41" rx="8.78" ry="8.78"/>
+  <g id="w" data-name="gaugeconversion">
+    <g>
+      <rect class="y" x="8.31" y="13.58" width="9.43" height="37.91"/>
+      <line class="y" x1="15.1" y1="32.28" x2="8.64" y2="32.28"/>
+      <line class="y" x1="11.62" y1="19.54" x2="8.98" y2="19.54"/>
+      <line class="y" x1="11.62" y1="26.65" x2="8.98" y2="26.65"/>
+      <line class="y" x1="11.62" y1="38.87" x2="8.98" y2="38.87"/>
+      <line class="y" x1="11.62" y1="45.99" x2="8.98" y2="45.99"/>
+    </g>
+    <g>
+      <rect class="y" x="20.23" y="27.81" width="37.91" height="9.43"/>
+      <line class="y" x1="38.94" y1="30.46" x2="38.94" y2="36.92"/>
+      <line class="y" x1="26.19" y1="33.94" x2="26.19" y2="36.59"/>
+      <line class="y" x1="33.31" y1="33.94" x2="33.31" y2="36.59"/>
+      <line class="y" x1="45.53" y1="33.94" x2="45.53" y2="36.59"/>
+      <line class="y" x1="52.65" y1="33.94" x2="52.65" y2="36.59"/>
+    </g>
+  </g>
+</svg>

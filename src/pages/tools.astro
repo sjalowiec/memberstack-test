@@ -1,0 +1,116 @@
+---
+import Layout from "../layouts/Layout.astro";
+import tools from "../../data/tools.json";
+
+// Group tools by category
+const groupedTools = Object.groupBy(tools, tool => tool.category);
+---
+
+<Layout title="Charting Tools">
+
+<section class="tools-page">
+
+  <h1>Charting Tools</h1>
+
+  <p class="tools-intro">
+  These tools help you calculate shaping, gauge, stitch counts, and other knitting math
+  so you can focus on creating.
+  </p>
+
+  {Object.entries(groupedTools).map(([category, items]) => (
+    <section class="tool-category">
+      <div class="tool-category-inner">
+        <h2>{category}</h2>
+        <div class="tools-grid">
+          {items.map(tool => (
+            <a class="tool-card" href={tool.href}>
+              <img
+                src={`/icons/tools/${tool.icon}`}
+                alt=""
+                class="tool-icon"
+              />
+              <h3>{tool.title}</h3>
+              <p>{tool.description}</p>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  ))}
+
+</section>
+
+<style>
+
+.tools-page{
+  max-width:1100px;
+  margin:auto;
+  padding:40px 20px;
+}
+
+.tools-intro{
+  max-width:700px;
+  margin-bottom:30px;
+}
+
+.tool-category{
+  margin-top:60px;
+}
+
+.tool-category-inner{
+  max-width:1100px;
+  margin:auto;
+}
+
+.tool-category h2{
+  background:var(--kbm-green);
+  color:white;
+  padding:12px 20px;
+  border-radius:6px;
+  font-size:18px;
+  font-weight:600;
+  margin-bottom:24px;
+}
+
+.tools-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:28px;
+  margin-top:18px;
+}
+
+.tool-card{
+  display:block;
+  text-decoration:none;
+  color:inherit;
+  padding:32px 26px;
+  text-align:center;
+  border-radius:20px;
+  border:1px solid #e5e7eb;
+  background:white;
+  transition:all .2s ease;
+}
+
+.tool-card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 14px 28px rgba(0,0,0,.08);
+}
+
+.tool-icon{
+  width:64px;
+  height:64px;
+  margin-bottom:16px;
+}
+
+.tool-card h3{
+  margin:8px 0;
+  text-decoration:none;
+}
+
+.tool-card p{
+  font-size:14px;
+  color:#555;
+  text-decoration:none;
+}
+
+</style>

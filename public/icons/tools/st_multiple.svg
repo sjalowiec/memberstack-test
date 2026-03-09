@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="v" data-name="new" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <style>
+      .w {
+        fill: #52682d;
+      }
+
+      .x {
+        fill: #fff;
+      }
+    </style>
+  </defs>
+  <rect class="w" x="2.53" y="2.53" width="59.41" height="59.41" rx="8.78" ry="8.78"/>
+  <g>
+    <circle class="x" cx="15.11" cy="49.41" r="4.39"/>
+    <circle class="x" cx="15.11" cy="38.33" r="4.39"/>
+    <circle class="x" cx="25.67" cy="36.52" r="4.39"/>
+    <circle class="x" cx="25.67" cy="25.44" r="4.39"/>
+    <circle class="x" cx="37.42" cy="22.42" r="4.39"/>
+    <circle class="x" cx="37.42" cy="11.35" r="4.39"/>
+    <circle class="x" cx="49.27" cy="34.4" r="4.39"/>
+    <circle class="x" cx="49.27" cy="23.32" r="4.39"/>
+  </g>
+</svg>

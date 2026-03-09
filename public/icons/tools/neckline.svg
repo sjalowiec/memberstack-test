@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="v" data-name="new" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <style>
+      .w {
+        fill: #52682d;
+      }
+
+      .x {
+        stroke-dasharray: 1.33;
+      }
+
+      .x, .y {
+        fill: none;
+        stroke: #fff;
+      }
+
+      .y {
+        stroke-width: 2px;
+      }
+    </style>
+  </defs>
+  <rect class="w" x="2.53" y="2.53" width="59.41" height="59.41" rx="8.78" ry="8.78"/>
+  <path class="y" d="M56.3,52.89c0-9.27-.09-39.12-.09-39.12,0,0-2.92-.82-12.02-2.66"/>
+  <path class="y" d="M20.35,11.11c-8.26,1.73-12.64,2.66-12.64,2.66,0,0,.31,29.85.31,39.12"/>
+  <polyline class="x" points="19.19 11.57 32.23 40.48 45.27 11.31"/>
+  <path class="x" d="M41.07,20.02c-6.19,8.52-10.81,7.3-17.61,0"/>
+  <path class="x" d="M43.32,11.31s-10.58,8.27-22.18.3"/>
+</svg>

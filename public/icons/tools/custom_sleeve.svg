@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="v" data-name="new" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <style>
+      .w {
+        fill: #52682d;
+      }
+
+      .x {
+        stroke-width: 2px;
+      }
+
+      .x, .y {
+        fill: none;
+        stroke: #fff;
+      }
+
+      .y {
+        stroke-dasharray: .69 1.38;
+        stroke-width: 8.27px;
+      }
+    </style>
+  </defs>
+  <rect class="w" x="2.53" y="2.53" width="59.41" height="59.41" rx="8.78" ry="8.78"/>
+  <g>
+    <polygon class="x" points="44.75 55.82 19.38 55.82 10.41 8.18 53.59 8.18 44.75 55.82"/>
+    <line class="y" x1="19.38" y1="50.77" x2="45.69" y2="50.77"/>
+  </g>
+</svg>
