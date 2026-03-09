@@ -1,0 +1,82 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import abbreviations from "../../data/reference/abbreviations.json";
+
+const sortedAbbreviations = [...abbreviations].sort((a, b) => {
+  const aVal = (a.Abbreviation ?? "").toString();
+  const bVal = (b.Abbreviation ?? "").toString();
+  return aVal.localeCompare(bVal);
+});
+---
+<Layout title="Machine Knitting Abbreviations">
+
+    <div class="page-nav">
+        <a class="page-nav__back" href="/learn/reference">← Back to References</a>
+      </div>
+
+  <h1>Machine Knitting Abbreviations</h1>
+  <div class="kbm-intro-callout">
+    <p>
+      Machine knitting patterns often use abbreviations to keep instructions short and readable.
+      This reference list explains the most common abbreviations you’ll see in patterns,
+      manuals, and tutorials so you can follow instructions with confidence.<br>
+      For a full listing of machine knitting terms, visit the <a href="/glossary">Glossary</a>.
+    </p>
+  </div>
+  <table class="abbr-table">
+    <thead>
+      <tr>
+        <th>Abbreviation</th>
+        <th>Term</th>
+        <th>Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      {sortedAbbreviations.map((item) => (
+        <tr>
+          <td><strong>{item.abbreviation}</strong></td>
+        <td>{item.term}</td>
+<td>{item.example}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</Layout>
+<style>
+.abbr-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5rem;
+}
+
+.abbr-table thead th {
+  text-align: left;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 8px;
+}
+
+.abbr-table td {
+  padding: 10px 0;
+  vertical-align: top;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.abbr-table td:first-child {
+  font-weight: 700;
+  color: #52682d;
+  letter-spacing: .04em;
+}
+
+.abbr-table td:nth-child(2) {
+  width: 180px;
+  color: #374151;
+}
+
+.abbr-table td:nth-child(3) {
+  color: #6b7280;
+}
+</style>

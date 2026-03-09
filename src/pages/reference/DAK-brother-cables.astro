@@ -1,0 +1,486 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import brotherCablesData from '../../../data/brother-cables.json';
+
+const pageTitle = 'Brother DesignaKnit Cable Comparison';
+const pageDescription =
+  'Quick reference guide comparing USB BrotherLink 5 and USB BrotherLink 4 for use with DesignaKnit.';
+
+const machines = (brotherCablesData as Array<{
+  model: string;
+  machinestyle: string;
+  interactiveknittingsupport: string;
+  downloadsupport: string;
+  recommendedcable: string;
+  secondaryoption: string;
+  showindropdown: string;
+  messagetype: string;
+}>)
+  .filter((m) => m.showindropdown === 'yes')
+  .sort((a, b) => a.model.localeCompare(b.model, undefined, { numeric: true }));
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+  <div class="page-nav">
+    <a class="page-nav__back" href="/learn/reference#category-designaknit">
+      ← Back to DesignaKnit Reference
+    </a>
+  </div>
+  <section class="kbm-page-section cable-compare-page">
+    <div class="kbm-container">
+      <header class="kbm-page-header">
+               <h1>{pageTitle}</h1>
+        <p class="kbm-page-intro">
+          Use this quick comparison to help decide which Brother cable setup best
+          matches your machine and the way you want to use DesignaKnit.
+        </p>
+      </header>
+
+      <!-- Machine selector card: dropdown + result in one card -->
+      <div class="cable-selector-card">
+        <div class="cable-selector-block">
+          <label for="machine-select" class="cable-selector-label">
+            Choose your Brother machine
+          </label>
+          <div class="cable-selector-dropdown-wrap">
+            <select id="machine-select" class="cable-selector-select" aria-label="Select your Brother machine model">
+              <option value="">Choose your machine…</option>
+              {machines.map((m) => (
+                <option value={m.model}>{m.model}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <!-- Recommendation result (hidden until selection, integrated in same card) -->
+        <div id="recommendation-card" class="recommendation-result" hidden>
+          <p class="recommendation-machine" id="rec-machine"></p>
+          <dl class="recommendation-dl">
+            <dt>Recommended cable</dt>
+            <dd id="rec-cable" class="rec-cable-value"></dd>
+            <dt id="rec-secondary-dt" class="rec-secondary-dt">Optional secondary option</dt>
+            <dd id="rec-secondary" class="rec-secondary-dd"></dd>
+          </dl>
+          <p class="recommendation-explanation" id="rec-explanation"></p>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-wrap">
+          <table class="kbm-table kbm-table--cable-compare">
+            <caption>Brother DesignaKnit Cable Comparison (Quick Choice Guide)</caption>
+            <thead>
+              <tr>
+                <th scope="col">Feature / Use</th>
+                <th scope="col">USB BrotherLink 5 (Full Featured)</th>
+                <th scope="col">USB BrotherLink 4 (Cartridge Cable / 4 Plus variant)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Buy this cable if…</th>
+                <td>
+                  You want <strong>two-way communication</strong> with DesignaKnit,
+                  need to <strong>upload 900-series patterns</strong> from the machine or PPD,
+                  and want <strong>Interactive Knitting via a magnet arm</strong>
+                  (works with any machine).
+                </td>
+                <td>
+                  You use a <strong>cartridge-based Brother machine</strong>,
+                  want <strong>easy pattern downloads</strong>,
+                  need <strong>standalone transfer software</strong>,
+                  or want <strong>Interactive Knitting with Brother electronic machines</strong>
+                  (4 Plus variant).
+                </td>
+              </tr>
+
+              <tr>
+                <th scope="row">Primary purpose</th>
+                <td>Two-way: download to machine and upload 900-series patterns to DesignaKnit</td>
+                <td>Download to cartridge-style machines + extra transfer features</td>
+              </tr>
+
+              <tr>
+                <th scope="row">Download patterns from DesignaKnit to machine</th>
+                <td>Yes</td>
+                <td>Yes</td>
+              </tr>
+
+              <tr>
+                <th scope="row">Upload patterns from machine/PPD to DesignaKnit</th>
+                <td>Yes (900-series patterns only)</td>
+                <td>No</td>
+              </tr>
+
+              <tr>
+                <th scope="row">Machines supported (direct)</th>
+                <td>KH930, KH940, KH950i, KH965i, KH970</td>
+                <td>KH270, KH900, KH965, KH965i, KH970</td>
+              </tr>
+
+              <tr>
+                <th scope="row">PPD support</th>
+                <td>Yes (PPD for KH900; PPD for CK35)</td>
+                <td>Yes (PPD)</td>
+              </tr>
+
+              <tr>
+                <th scope="row">Cartridge details (PPD / CK35)</th>
+                <td>PPD using Cartridge III in KH900 mode, or PPD using CK35 cartridge</td>
+                <td>Supports CK35; special version available for downloading to CK35 via the PPD</td>
+              </tr>
+
+              <tr>
+                <th scope="row">Includes its own transfer software</th>
+                <td>No</td>
+                <td>Yes</td>
+              </tr>
+
+              <tr>
+                <th scope="row">Can replace a PPD cartridge</th>
+                <td>No</td>
+                <td>Yes</td>
+              </tr>
+
+              <tr>
+                <th scope="row">Interactive Knitting (DesignaKnit 8 / 9)</th>
+                <td>
+                  Yes — includes magnet arm; works with <strong>any knitting machine</strong>,
+                  including non-electronic
+                </td>
+                <td>
+                  Yes (4 Plus variant) — works with
+                  <strong>Brother electronic knitting machines</strong>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script define:vars={{ machines }}>
+  const MESSAGES = {
+    manual:
+      'Manual (non-electronic) machines cannot download patterns from DesignaKnit, but you can use the Screenlink USB Cable for Interactive Knitting.',
+    punchcard:
+      'Punchcard machines cannot download patterns from DesignaKnit, but you can use the Screenlink USB Cable for Interactive Knitting.',
+    electronic:
+      'This machine can download stitch patterns directly from DesignaKnit using the BrotherLink 5 cable.',
+    cartridge:
+      'This machine uses a cartridge system for pattern downloads, so the BrotherLink 4 cable is required. BrotherLink 5 can still be used for Interactive Knitting.',
+  };
+
+  const INTERACTIVE_KNITTING_TOOLTIP =
+    'Interactive Knitting in DesignaKnit allows knitters to visually follow instructions for shaping, color changes, and stitch patterns, compatible with all machine setups.';
+  const interactiveKnittingSpan =
+    '<span class="kbm-tooltip" data-tip="' +
+    INTERACTIVE_KNITTING_TOOLTIP.replace(/"/g, '&quot;') +
+    '">Interactive Knitting</span>';
+
+  function messageWithTooltip(msg) {
+    if (!msg) return '';
+    return msg.replace(/Interactive Knitting/g, interactiveKnittingSpan);
+  }
+
+  const selectEl = document.getElementById('machine-select');
+  const cardEl = document.getElementById('recommendation-card');
+  const machineEl = document.getElementById('rec-machine');
+  const cableEl = document.getElementById('rec-cable');
+  const secondaryDt = document.getElementById('rec-secondary-dt');
+  const secondaryDd = document.getElementById('rec-secondary');
+  const explanationEl = document.getElementById('rec-explanation');
+
+  selectEl?.addEventListener('change', () => {
+    const value = selectEl.value;
+    if (!value) {
+      cardEl?.setAttribute('hidden', '');
+      return;
+    }
+    const machine = machines.find((m) => m.model === value);
+    if (!machine) return;
+
+    machineEl.textContent = machine.model;
+    cableEl.textContent = machine.recommendedcable;
+    const hasSecondary = machine.secondaryoption && machine.secondaryoption.trim() !== '';
+    if (hasSecondary) {
+      secondaryDt.classList.remove('rec-secondary-hidden');
+      secondaryDd.classList.remove('rec-secondary-hidden');
+      secondaryDd.textContent = machine.secondaryoption;
+    } else {
+      secondaryDt.classList.add('rec-secondary-hidden');
+      secondaryDd.classList.add('rec-secondary-hidden');
+    }
+    const rawMessage = MESSAGES[machine.messagetype] ?? '';
+    explanationEl.innerHTML = messageWithTooltip(rawMessage);
+    cardEl?.removeAttribute('hidden');
+  });
+</script>
+
+<style>
+.machine-select {
+  appearance: none;
+  background-image: url("/images/icon-chevron.svg");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+}
+
+  /* Single card wrapping selector + result */
+  .cable-compare-page .cable-selector-card {
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+    background: #ffffff;
+    border: 1px solid #e0e6d6;
+    border-radius: 16px;
+    box-shadow: 0 6px 24px rgba(47, 53, 39, 0.06);
+    padding: 1.75rem 1.5rem;
+  }
+
+  .cable-compare-page .cable-selector-block {
+    margin-bottom: 0;
+  }
+
+  .cable-compare-page .cable-selector-dropdown-wrap {
+    max-width: 100%;
+  }
+
+  @media (min-width: 769px) {
+    .cable-compare-page .cable-selector-dropdown-wrap {
+      max-width: 50%;
+    }
+  }
+
+  .cable-compare-page .cable-selector-label {
+    display: block;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #2f3527;
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.01em;
+  }
+
+  /* Custom-styled dropdown: branded and polished */
+  .cable-selector-select {
+    width: 50%;
+    padding: 12px 40px 12px 14px;
+    border: 2px solid #52682D;
+    border-radius: 10px;
+    background: #F6F8F2;
+    color: #2f3a1f;
+    font-size: 1rem;
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background-image: url("/images/icon-chevron-down.svg");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 14px;
+  }
+
+  .cable-selector-select:focus {
+    outline: none;
+    border-color: #52682D;
+    box-shadow: 0 0 0 3px #E8EDE2;
+  }
+
+  /* Result area: integrated into same card */
+  .cable-compare-page .recommendation-result {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e0e6d6;
+  }
+
+  .cable-compare-page .recommendation-machine {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #52682d;
+    margin: 0 0 1rem 0;
+  }
+
+  .cable-compare-page .recommendation-dl {
+    margin: 0 0 1rem 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.4rem 1.5rem;
+    align-items: baseline;
+  }
+
+  .cable-compare-page .recommendation-dl dt {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #3f5221;
+    margin: 0;
+  }
+
+  .cable-compare-page .recommendation-dl dd {
+    margin: 0;
+    font-size: 1rem;
+    color: #2f3527;
+  }
+
+  .cable-compare-page .rec-cable-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #52682d;
+  }
+
+  .cable-compare-page .rec-secondary-dt.rec-secondary-hidden,
+  .cable-compare-page .rec-secondary-dd.rec-secondary-hidden {
+    display: none;
+  }
+
+  .cable-compare-page .recommendation-explanation {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #2f3527;
+  }
+
+  .cable-compare-page .table-card {
+    background: #ffffff;
+    border: 1px solid #e7ebdf;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    padding: 1rem;
+    margin-top: 2rem;
+  }
+
+  .cable-compare-page .table-wrap {
+    overflow-x: auto;
+  }
+
+  .cable-compare-page .kbm-table--cable-compare {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: #2f3527;
+  }
+
+  .cable-compare-page .kbm-table--cable-compare caption {
+    caption-side: top;
+    text-align: left;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #52682d;
+    padding: 0 0 1rem 0;
+  }
+
+  .cable-compare-page .kbm-table--cable-compare thead th {
+    background: #52682d;
+    color: #ffffff;
+    padding: 1rem 1rem;
+    font-weight: 700;
+    text-align: center;
+    border: 0;
+    vertical-align: top;
+  }
+
+  .cable-compare-page .kbm-table--cable-compare thead th:first-child {
+    text-align: left;
+    border-top-left-radius: 12px;
+  }
+
+  .cable-compare-page .kbm-table--cable-compare thead th:last-child {
+    border-top-right-radius: 12px;
+  }
+
+  .cable-compare-page .kbm-table--cable-compare tbody th,
+  .cable-compare-page .kbm-table--cable-compare tbody td {
+    padding: 1rem;
+    vertical-align: top;
+    border-bottom: 1px solid #e8ece3;
+    background: #ffffff;
+  }
+
+  .cable-compare-page .kbm-table--cable-compare tbody th {
+    text-align: left;
+    font-weight: 700;
+    width: 27%;
+    background: #f7f9f3;
+    color: #2f3527;
+  }
+
+  .cable-compare-page .kbm-table--cable-compare tbody td {
+    width: 36.5%;
+  }
+
+  .cable-compare-page .kbm-table--cable-compare tbody tr:nth-child(even) td {
+    background: #fcfcfa;
+  }
+
+  .cable-compare-page .kbm-table--cable-compare tbody tr:first-child th,
+  .cable-compare-page .kbm-table--cable-compare tbody tr:first-child td {
+    background: #eef4e6;
+  }
+
+  .cable-compare-page .kbm-table--cable-compare strong {
+    color: #3f5221;
+  }
+
+  @media (max-width: 768px) {
+    .cable-compare-page .cable-selector-card {
+      padding: 1.25rem 1rem;
+      border-radius: 14px;
+    }
+
+    .cable-compare-page .cable-selector-select,
+    .cable-selector-select {
+      width: 100%;
+    }
+
+    .cable-compare-page .table-card {
+      padding: 0.75rem;
+      border-radius: 14px;
+    }
+
+    .cable-compare-page .kbm-table--cable-compare {
+      font-size: 0.95rem;
+    }
+
+    .cable-compare-page .kbm-table--cable-compare thead th,
+    .cable-compare-page .kbm-table--cable-compare tbody th,
+    .cable-compare-page .kbm-table--cable-compare tbody td {
+      padding: 0.85rem;
+    }
+    .cable-selector-select {
+  width: 65%;
+  max-width: 420px;
+  min-height: 48px;
+  padding: 12px 44px 12px 14px;
+  border: 2px solid #52682D;
+  border-radius: 10px;
+  background-color: #F6F8F2;
+  color: #2f3a1f;
+  font-size: 1rem;
+  line-height: 1.2;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%2352682D' d='M4.646 6.646a.5.5 0 0 1 .708 0L8 9.293l2.646-2.647a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px 16px;
+}
+
+.cable-selector-select:focus {
+  outline: none;
+  border-color: #52682D;
+  box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.15);
+}
+
+@media (max-width: 768px) {
+  .cable-selector-select {
+    width: 100%;
+    max-width: none;
+  }
+}
+  }
+</style>

@@ -200,18 +200,24 @@ p {
   position: absolute;
   bottom: 140%;
   left: 50%;
-  transform: translateX(-50%) translateY(0);
+  transform: translateX(-50%);
   background-color: #52682D;
   color: #fff;
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: 6px;
-  font-size: 0.85em;
-  line-height: 1.3;
-  white-space: nowrap;
+  font-size: 0.9em;
+  line-height: 1.35;
+
+  max-width: 280px;
+  min-width: 200px;
+
+  white-space: normal;
+  text-align: left;
+
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease, transform 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
   z-index: 20;
 }
 
@@ -219,7 +225,7 @@ p {
 .kbm-tooltip::before {
   content: '';
   position: absolute;
-  bottom: 130%;
+  bottom: 132%;
   left: 50%;
   transform: translateX(-50%);
   border-width: 5px;
@@ -524,6 +530,30 @@ p {
     font-size: 0.7rem;
     padding: 0.3rem 0.6rem;
   }
+}
+
+/* =================================
+   Reference Card Enhancements
+   ================================= */
+
+.reference-card {
+  transition: all 0.18s ease;
+  border: 1px solid #d7dfc4;
+}
+
+.reference-card:hover {
+  transform: translateY(-3px);
+  border-color: #52682d;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+}
+
+.reference-card h3 {
+  color: #52682d;
+  transition: color 0.18s ease;
+}
+
+.reference-card:hover h3 {
+  color: #3e5220;
 }
 
 /* ============================================
@@ -1073,6 +1103,48 @@ p {
   margin: 0.9rem 0 0;
   color: rgba(44, 58, 87, 0.78);
   font-size: 0.95rem;
+}
+
+/* === Reference Quick Links (Learn > Reference page) === */
+.reference-quick-links {
+  margin: 1.5rem 0 2.25rem;
+  padding: 1rem 1.25rem;
+  background: #f5f7f0;
+  border: 1px solid #cfd9b8;
+  border-radius: 14px;
+}
+
+.reference-quick-links__label {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #52682d;
+}
+
+.reference-quick-links__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.reference-quick-links__item {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid #b8c79a;
+  border-radius: 999px;
+  background: #fff;
+  color: #52682d;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.reference-quick-links__item:hover,
+.reference-quick-links__item:focus {
+  background: #52682d;
+  color: #fff;
+  text-decoration: none;
 }
 
 /* === Reference Quick Scan Styles (reusable) === */
@@ -1670,5 +1742,49 @@ div[data-ms-message="error"]:empty {
 /* Optional: hide "0 comments" label */
 .hyvor-talk-comment-count {
   display: none !important;
+}
+/* Small page-level navigation */
+.page-nav {
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.page-nav__back {
+  display: inline-block;
+  font-size: 0.85rem;
+  color: #6b7280;
+  text-decoration: none;
+  margin-bottom: 0.65rem;
+}
+
+.page-nav__back:hover {
+  text-decoration: underline;
+}
+
+.page-nav__tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.page-nav__tab {
+  font-size: 0.9rem;
+  padding: 6px 12px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: #52682d;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+.page-nav__tab:hover {
+  background: #f1f5f9;
+}
+
+.page-nav__tab--active {
+  background: #eef4e8;
+  color: #52682d;
+  border-color: #cfd8c2;
+  font-weight: 600;
 }
 }

@@ -11,9 +11,7 @@ const { title, breadcrumb, meta, subhead, hideTitle = false } = Astro.props;
 ---
 
 <header class="page-head">
-  {breadcrumb && (
-    <p class="kbm-breadcrumb">{breadcrumb}</p>
-  )}
+
 
   {title && !hideTitle && (
     <h1 class="page-title">

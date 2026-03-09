@@ -1,35 +1,34 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import SectionHero from "../../components/SectionHero.astro";
+import ReferencePageShell from "../../components/ReferencePageShell.astro";
 ---
 
 <Layout
-  title="Knitting Sizing Charts | Knit by Machine"
-  description="Choose from sweater, hat, mitten, and sock sizing charts for machine knitting. Switch between inches and centimeters and explore measurements tailored to knitters.">
+  title="Sizing Charts"
+  description="Standard sizing and measurements for quick machine knitting reference."
+>
+  <ReferencePageShell
+    title="Sizing Charts"
+    subhead="Standard sizing and measurements for quick machine knitting reference."
+    backHref="/learn/reference"
+    backLabel="Back to Reference"
+  >
+    <div class="sizing-chart-page">
+      <div class="unit-toggle-wrapper">
+        <span class="unit-label">in</span>
+        <label class="switch">
+          <input type="checkbox" id="unitToggle">
+          <span class="slider round"></span>
+        </label>
+        <span class="unit-label">cm</span>
+      </div>
 
-  <div class="page-container">
-    <main class="page-content sizing-chart-page">
+      <p class="related-link">
+        <a href="/reference/minimum-ease-chart">Minimum ease suggestions</a>.
+      </p>
 
-      <SectionHero
-        title="Standard Sizing Charts"
-        subtitle="Quickly find standard measurements for your machine-knit projects."
-      >
-        <div slot="toolbar" class="unit-toggle-wrapper">
-          <span class="unit-label">in</span>
-          <label class="switch">
-            <input type="checkbox" id="unitToggle">
-            <span class="slider round"></span>
-          </label>
-          <span class="unit-label">cm</span>
-        </div>
-      </SectionHero>
-
-    <p class="related-link">
-      <a href="/reference/minimum-ease-chart">Minimum ease suggestions</a>.
-    </p>
-
-    <!-- Project selection buttons -->
-    <div class="project-controls">
+      <!-- Project selection buttons -->
+      <div class="project-controls">
       <div class="project-pills">
         <button data-type="sweaters_misses">
           <img src="/images/sweater.svg" alt="" class="button-icon" />
@@ -60,30 +59,26 @@ import SectionHero from "../../components/SectionHero.astro";
           Christmas Stockings
         </button>
       </div>
+      </div>
+
+      <!-- Dynamic chart header with icon -->
+      <div id="chartHeader" class="chart-header"></div>
+
+      <div id="sizingGrid" class="sizing-grid"></div>
+      <p id="errorMsg" class="error-message" style="display:none;">Error loading data.</p>
     </div>
-
-    <!-- Dynamic chart header with icon -->
-    <div id="chartHeader" class="chart-header"></div>
-
-    <div id="sizingGrid" class="sizing-grid"></div>
-    <p id="errorMsg" class="error-message" style="display:none;">Error loading data.</p>
-
-    </main>
-  </div>
+  </ReferencePageShell>
+</Layout>
 
   <style is:inline>
     :root {
       --kbm-green: #52682D;
     }
 
-    .page-content {
-      max-width: 1400px;
-      margin: 140px auto 60px;
-      padding: 0 20px;
-    }
-
     .sizing-chart-page {
       font-family: "Poppins", sans-serif;
+      max-width: 1400px;
+      margin: 0 auto 60px;
     }
 
     .related-link {
@@ -386,10 +381,6 @@ import SectionHero from "../../components/SectionHero.astro";
     }
 
     @media (max-width: 1024px) {
-      .sizing-header h1 {
-        font-size: 2rem;
-      }
-
       .chart-header h2 {
         justify-content: center;
         text-align: center;

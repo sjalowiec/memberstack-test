@@ -52,17 +52,23 @@ const glossaryJson = JSON.stringify(
   filteredGlossary.map((i) => ({ term: i.english, definition: i.definition, alt: i.alt || undefined }))
 );
 ---
-
 <Layout title="Glossary" bodyClass="page--tight-header">
+  <div class="page-nav">
+    <a class="page-nav__back" href="/learn/reference">← Back to References</a>
+  </div>
+
   <main class="glossary">
-    <PageHead
-      title="Glossary"
-      subhead="Machine knitting has a language of it's own. Browse machine knitting terms and abbreviations from A to Z. Tap a term to view the definition."
-    >
-    <span slot="after-title" class="term-count" style="font-size:0.4em;">
-      ({termCount} terms)
-    </span>
+    <PageHead title="Glossary">
+      <span slot="after-title" class="term-count" style="font-size:0.4em;">
+        ({termCount} terms)
+      </span>
     </PageHead>
+
+    <div class="kbm-intro-callout">
+      <p>
+        Machine knitting has a language of its own. Browse machine knitting terms from A to Z. <br>Looking for pattern shorthand? See the <a href="/reference/abbreviations">Machine Knitting Abbreviations</a> reference.
+      </p>
+    </div>
 
     <div class="glossary__search">
       <label for="glossary-search" class="glossary__search-label sr-only">Search glossary</label>

@@ -1,0 +1,62 @@
+---
+import PageHead from "./PageHead.astro";
+
+interface Props {
+  title: string;
+  subhead?: string;
+  breadcrumb?: string;
+  meta?: string;
+  backHref: string;
+  backLabel: string;
+}
+
+const {
+  title,
+  subhead,
+  breadcrumb,
+  meta,
+  backHref,
+  backLabel
+} = Astro.props;
+---
+
+<div class="reference-shell">
+  <div class="page-nav">
+    <a class="page-nav__back" href={backHref}>
+      ← {backLabel}
+    </a>
+  </div>
+
+  <div class="page-wrap">
+    <PageHead
+      title={title}
+      subhead={subhead}
+      breadcrumb={breadcrumb}
+      meta={meta}
+    />
+
+    <slot />
+  </div>
+</div>
+
+<style>
+  .reference-shell :global(.page-nav) {
+    position: relative;
+    z-index: 5;
+    margin-top: 0;
+    padding-top: 12px;
+  }
+
+  .reference-shell :global(.page-wrap) {
+    padding-top: 0;
+  }
+
+  .reference-shell :global(.page-head) {
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  .reference-shell :global(.page-title) {
+    margin-top: 0;
+  }
+</style>

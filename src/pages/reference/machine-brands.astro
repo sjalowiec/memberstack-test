@@ -1,0 +1,73 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import ReferencePageShell from "../../components/ReferencePageShell.astro";
+
+---
+
+<Layout title="Knitting Machine Brand Names Worldwide">
+
+<ReferencePageShell
+  title="Knitting Machine Brand Names Worldwide"
+  subhead="Many knitting machines were sold under different brand names around the world. This chart helps identify equivalent machines across Brother, Silver Reed, Studio, KnitKing, Elna, and other brands."
+  backHref="/learn/reference#category-machine-reference"
+  backLabel="Back to Machine References"
+>
+    <figure class="machine-brand-chart">
+      <img
+        src="/images/references/Knitting-machine-brands-worldwide.jpg"
+        alt="Knitting machine brand names worldwide comparison chart"
+      />
+
+      <figcaption>
+        Knitting machines were frequently sold under different brand names depending
+        on the country where they were distributed.
+      </figcaption>
+    </figure>
+
+    <section class="reference-notes">
+
+      <h2>Why machines have different brand names</h2>
+
+      <p>
+        During the peak years of home knitting machines, manufacturers often partnered
+        with distributors in different countries. The same machine might appear under
+        several different brand names even though the underlying design and parts were
+        identical.
+      </p>
+
+      <p>
+        Understanding these relationships can make it easier to find manuals,
+        accessories, replacement parts, and tutorials for your machine.
+      </p>
+
+    </section>
+
+</ReferencePageShell>
+
+</Layout>
+
+<style>
+
+.machine-brand-chart {
+  margin: 40px auto;
+  text-align: center;
+}
+
+.machine-brand-chart img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.machine-brand-chart figcaption {
+  font-size: 0.9rem;
+  margin-top: 10px;
+  color: #666;
+}
+
+.reference-notes {
+  max-width: 800px;
+  margin: 40px auto;
+}
+
+</style>

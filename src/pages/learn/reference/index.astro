@@ -1,7 +1,7 @@
 ---
 export const prerender = true;
 import Layout from "../../../layouts/Layout.astro";
-import SectionHero from "../../../components/SectionHero.astro";
+import PageHead from "../../../components/PageHead.astro";
 
 const title = "Reference";
 const description = "Quick look-up resources for machine knitters: glossary, abbreviations, machine reference, DesignaKnit, needle charts, and sizing guides.";
@@ -12,24 +12,25 @@ const referenceCategories = [
     id: "glossary-terms",
     title: "Glossary & Terms",
     items: [
-      { title: "Glossary", href: "/glossary", description: "Definitions and terms for machine knitting." },
-      { title: "Abbreviations", href: "/reference/abbreviations", description: "Common abbreviations used in patterns and instructions." },
-    ],
+  { title: "Glossary", href: "/glossary", description: "Definitions and terms for machine knitting." },
+  { title: "Abbreviations", href: "/reference/abbreviations", description: "Common abbreviations used in patterns and instructions." },
+],
   },
   {
     id: "machine-reference",
     title: "Machine Reference",
     items: [
-      { title: "Machine Comparison", href: "/reference/machine-comparison", description: "Compare machine types and features." },
-      { title: "Standard vs Bulky Machines", href: "/reference/standard-vs-bulky", description: "Differences between standard and bulky gauge machines." },
-    ],
+      { title: "Machine Repairs", href: "/reference/repairs", description: "Repair resources worldwide." },
+      { title: "Knitting Machine Reference", href: "/reference/machine-reference", description: "Model information, features, and helpful notes for common knitting machines." },
+      { title: "Machine Brands Worldwide", href: "/reference/machine-brands", description: "Compare machine brands." }   
+     ],
   },
   {
     id: "designaknit",
     title: "DesignaKnit Reference",
     items: [
       { title: "DesignaKnit Versions", href: "/reference/DAK-compare", description: "Version differences and compatibility." },
-      { title: "DesignaKnit Cable Setup", href: "/reference/designaknit-cable-setup", description: "Cable and connection setup." },
+      { title: "DAK Cables for Brother Machines", href: "/reference/DAK-brother-cables", description: "Cable and connection setup." },
       { title: "DesignaKnit Basics", href: "/reference/designaknit-basics", description: "Essential DesignaKnit concepts." },
     ],
   },
@@ -37,7 +38,7 @@ const referenceCategories = [
     id: "charts-comparisons",
     title: "Charts & Comparisons",
     items: [
-      { title: "Needle Chart", href: "/reference/needle-chart", description: "Needle positions and numbering reference." },
+    
       { title: "Stitch Symbols", href: "/reference/stitch-symbols", description: "Stitch Symbols for machine knitters." },
       { title: "Sizing Charts", href: "/reference/sizing-charts", description: "Standard sizing and measurements." },
     ],
@@ -47,15 +48,21 @@ const referenceCategories = [
 
 <Layout {title} {description}>
   <div class="page-container">
-    <SectionHero
+    <PageHead
       title="Reference"
-      subtitle="Quick look-up resources: definitions, machine basics, charts, and comparisons for machine knitters."
+      subhead="Quick reference resources for machine knitters. Browse definitions, machine basics, charts, and comparisons when you need to look something up quickly."
     />
 
-    <div class="intro-section">
-      <p class="intro-text">
-        Use this page to find reference-style content—glossary terms,  DesignaKnit help, needle charts,  sizing—when you need to look something up quickly.
-      </p>
+    <div class="reference-quick-links">
+      <p class="reference-quick-links__label">Popular References</p>
+
+      <div class="reference-quick-links__list">
+        <a href="/glossary" class="reference-quick-links__item">Glossary</a>
+        <a href="/reference/abbreviations" class="reference-quick-links__item">Abbreviations</a>
+        <a href="/reference/machine-brands" class="reference-quick-links__item">Machine Brands</a>
+        <a href="/reference/sizing-charts" class="reference-quick-links__item">Sizing Charts</a>
+        <a href="/reference/DAK-compare" class="reference-quick-links__item">DAK Versions</a>
+      </div>
     </div>
 
     {referenceCategories.map((category) => (
@@ -83,18 +90,6 @@ const referenceCategories = [
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 1.5rem 4rem;
-  }
-
-  .intro-section {
-    max-width: 720px;
-    margin: 0 auto 2.5rem;
-  }
-
-  .intro-text {
-    font-size: clamp(1rem, 1.8vw, 1.125rem);
-    color: #5a6b47;
-    line-height: 1.6;
-    margin: 0;
   }
 
   .ref-category {

@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import PageHead from "../../components/PageHead.astro";
+import ReferencePageShell from "../../components/ReferencePageShell.astro";
+
 
 const lastUpdated = "March 2026";
 
@@ -261,70 +262,63 @@ const countries = [
   title="Knitting Machine Repair References | Knit by Machine"
   description="Directory of knitting machine repair contacts and services by country."
 >
-  <div class="page-wrap">
-    <PageHead
-      title="Knitting Machine Repair References"
-      breadcrumb="Home / References / Repairs"
-      meta={`Updated ${lastUpdated}`}
-    />
+<ReferencePageShell
+  title="Knitting Machine Repair References"
+  meta={`Updated ${lastUpdated}`}
+  backHref="/learn/reference#category-machine-reference"
+  backLabel="Back to Machine References"
+>
+  <div class="repairs-hero">
+    <div class="repairs-intro">
+      <p>
+        Unfortunately, there aren't many people repairing knitting machines these days.
+        We've put together this list of potential contacts for repairs.
+        <em><small>(updated {lastUpdated}).</small></em>
+      </p>
 
-    <div class="repairs-hero">
-      <div class="repairs-intro">
-        <p>
-          Unfortunately, there aren't many people repairing knitting machines these days.
-          We've put together this list of potential contacts for repairs.
-          <em><small>(updated {lastUpdated}).</small></em>
-        </p>
-        <p>
-          If you can recommend any others, please
-          <a href="#" id="contact-modal-trigger" data-testid="footer-contact">Contact us</a>
+      <p>
+        If you can recommend any others, please
+        <a href="#" id="contact-modal-trigger" data-testid="footer-contact">Contact us</a>
+      </p>
 
-        <div class="repairs-callout">
-          <a href="https://eknitter.com/" target="_blank" rel="noopener">eKnitter for Brother Machines</a>
-          <span>— Certified replacement board for Brother machines</span>
-        </div>
+      <div class="repairs-callout">
+        <a href="https://eknitter.com/" target="_blank" rel="noopener">eKnitter for Brother Machines</a>
+        <span>— Certified replacement board for Brother machines</span>
       </div>
-
-      <img
-        src="/images/machines/knitting-machine-needlebed.jpeg"
-        width="200"
-        alt="Knitting machine repair services directory"
-        loading="lazy"
-        class="repairs-image"
-      />
     </div>
-
-    {countries.map((c) => (
-      <section class="repairs-section" id={c.name.toLowerCase().replaceAll("/", "-").replaceAll(" ", "-")}>
-        <h2>{c.name}</h2>
-
-        <div class="repairs-grid">
-          {c.entries.map((e) => (
-            <article class="repairs-card">
-              <h3>{e.name}</h3>
-
-              <dl class="repairs-dl">
-                {e.lines.map((ln: LineItem) => (
-                  <div class="repairs-row">
-                    <dt class="repairs-k">{ln.label}</dt>
-                    <dd class="repairs-v">
-                      {ln.href ? (
-                        <a href={ln.href} target="_blank" rel="noopener">
-                          {ln.linkText ?? ln.href}
-                        </a>
-                      ) : (
-                        ln.value
-                      )}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </article>
-          ))}
-        </div>
-      </section>
-    ))}
   </div>
+
+  {countries.map((c) => (
+    <section class="repairs-section" id={c.name.toLowerCase().replace(/\s+/g, "-").replace(/\//g, "-")}>
+      <h2>{c.name}</h2>
+
+      <div class="repairs-grid">
+        {c.entries.map((e) => (
+          <article class="repairs-card">
+            <h3>{e.name}</h3>
+
+            <dl class="repairs-dl">
+              {e.lines.map((ln: LineItem) => (
+                <div class="repairs-row">
+                  <dt class="repairs-k">{ln.label}</dt>
+                  <dd class="repairs-v">
+                    {ln.href ? (
+                      <a href={ln.href} target="_blank" rel="noopener">
+                        {ln.linkText ?? ln.href}
+                      </a>
+                    ) : (
+                      ln.value
+                    )}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </article>
+        ))}
+      </div>
+    </section>
+  ))}
+</ReferencePageShell>
 </Layout>
 
 <style>
@@ -335,15 +329,16 @@ const countries = [
     align-items: start;
     margin-bottom: 2rem;
   }
+
   @media (min-width: 768px) {
     .repairs-hero { grid-template-columns: 1fr auto; }
   }
-  .repairs-image {
-    width: 200px;
-    border-radius: 0.75rem;
-    border: 1px solid rgba(0, 0, 0, 0.08);
+
+  .repairs-intro p {
+    margin: 1rem 0;
+    line-height: 1.5;
   }
-  .repairs-intro p { margin: 1rem 0; line-height: 1.5; }
+
   .repairs-callout {
     background: rgba(0, 0, 0, 0.03);
     padding: 1rem;
@@ -351,26 +346,58 @@ const countries = [
     border: 1px solid rgba(0, 0, 0, 0.06);
     margin-top: 1rem;
   }
+
   .repairs-callout a { font-weight: 600; }
+
   .repairs-section { margin-top: 2rem; }
-  .repairs-section h2 { font-size: var(--text-xl, 1.25rem); margin-bottom: 0.75rem; }
+
+  .repairs-section h2 {
+    font-size: var(--text-xl, 1.25rem);
+    margin-bottom: 0.75rem;
+  }
+
   .repairs-grid {
     display: grid;
     gap: 0.75rem;
     grid-template-columns: 1fr;
   }
+
   @media (min-width: 768px) {
     .repairs-grid { grid-template-columns: 1fr 1fr; }
   }
+
   .repairs-card {
     padding: 1rem;
     border-radius: 0.75rem;
     border: 1px solid rgba(0, 0, 0, 0.08);
     background: #fff;
   }
-  .repairs-card h3 { margin: 0 0 0.5rem 0; font-size: 1.05rem; }
-  .repairs-dl { margin: 0; display: grid; gap: 0.35rem; }
-  .repairs-row { display: grid; grid-template-columns: 8rem 1fr; gap: 0.5rem; }
-  .repairs-k { font-weight: 600; color: rgba(0, 0, 0, 0.75); margin: 0; }
-  .repairs-v { margin: 0; color: rgba(0, 0, 0, 0.85); }
+
+  .repairs-card h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.05rem;
+  }
+
+  .repairs-dl {
+    margin: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .repairs-row {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    gap: 0.5rem;
+  }
+
+  .repairs-k {
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.75);
+    margin: 0;
+  }
+
+  .repairs-v {
+    margin: 0;
+    color: rgba(0, 0, 0, 0.85);
+  }
 </style>

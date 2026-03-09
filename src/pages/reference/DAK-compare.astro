@@ -105,6 +105,11 @@ function normalizeCell(cell) {
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
+  <div class="page-nav">
+    <a class="page-nav__back" href="/learn/reference#category-designaknit">
+      ← Back to DesignaKnit Reference
+    </a>
+  </div>
   <section class="reference-page">
     <div class="container">
       <header class="page-header">
@@ -212,10 +217,32 @@ function normalizeCell(cell) {
   </section>
 </Layout>
 
+
 <style>
-  .reference-page {
-    padding: 2rem 0 3rem;
-  }
+main.kbm-reference-page {
+  padding-top: 0;
+}
+
+.page-nav {
+  margin-bottom: 0;
+}
+
+.kbm-intro-callout {
+  margin-top: 10px;
+}
+
+.kbm-reference-page {
+  margin-top: 0;
+}
+
+.kbm-intro-callout {
+  margin-top: 0;
+}
+
+.kbm-reference-page > :first-child {
+  margin-top: 0;
+}
+
 
   .container {
     width: min(1100px, 92%);

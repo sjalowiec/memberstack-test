@@ -1,0 +1,492 @@
+[
+  {
+    "model": "KH110",
+    "machinestyle": "Button",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KH120",
+    "machinestyle": "Button",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KH531",
+    "machinestyle": "Button",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KH270",
+    "machinestyle": "Electronic",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "BrotherLink 4",
+    "secondaryoption": "BrotherLink 5",
+    "showindropdown": "yes",
+    "messagetype": "cartridge"
+  },
+  {
+    "model": "KH900",
+    "machinestyle": "Electronic",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "BrotherLink 4",
+    "secondaryoption": "BrotherLink 5",
+    "showindropdown": "yes",
+    "messagetype": "cartridge"
+  },
+  {
+    "model": "KH910",
+    "machinestyle": "Electronic",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "yes",
+    "recommendedcable": "BrotherLink 5",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "electronic"
+  },
+  {
+    "model": "KH950",
+    "machinestyle": "Electronic",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "yes",
+    "recommendedcable": "BrotherLink 5",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "electronic"
+  },
+  {
+    "model": "KH950i",
+    "machinestyle": "Electronic",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "yes",
+    "recommendedcable": "BrotherLink 5",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "electronic"
+  },
+  {
+    "model": "KH965",
+    "machinestyle": "Electronic",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "yes",
+    "recommendedcable": "BrotherLink 4",
+    "secondaryoption": "BrotherLink 5",
+    "showindropdown": "yes",
+    "messagetype": "cartridge"
+  },
+  {
+    "model": "KH965i",
+    "machinestyle": "Electronic",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "yes",
+    "recommendedcable": "BrotherLink 4",
+    "secondaryoption": "BrotherLink 5",
+    "showindropdown": "yes",
+    "messagetype": "cartridge"
+  },
+  {
+    "model": "KH970",
+    "machinestyle": "Electronic",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "yes",
+    "recommendedcable": "BrotherLink 4",
+    "secondaryoption": "BrotherLink 5",
+    "showindropdown": "yes",
+    "messagetype": "cartridge"
+  },
+  {
+    "model": "KH710",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KH210",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KH212",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KH230",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KH341",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KH35",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KH370",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KH400",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KX350",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KX355",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KX390",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KH503",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KH551",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KH560",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KH580",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KH588",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KR551",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KR580",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KX395",
+    "machinestyle": "Manual",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "manual"
+  },
+  {
+    "model": "KH260",
+    "machinestyle": "Punchcard",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "punchcard"
+  },
+  {
+    "model": "KH601",
+    "machinestyle": "Punchcard",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "punchcard"
+  },
+  {
+    "model": "KH800",
+    "machinestyle": "Punchcard",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "punchcard"
+  },
+  {
+    "model": "KH810",
+    "machinestyle": "Punchcard",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "punchcard"
+  },
+  {
+    "model": "KH820",
+    "machinestyle": "Punchcard",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "punchcard"
+  },
+  {
+    "model": "KH830",
+    "machinestyle": "Punchcard",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "punchcard"
+  },
+  {
+    "model": "KH836",
+    "machinestyle": "Punchcard",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "punchcard"
+  },
+  {
+    "model": "KH840",
+    "machinestyle": "Punchcard",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "punchcard"
+  },
+  {
+    "model": "KH860",
+    "machinestyle": "Punchcard",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "punchcard"
+  },
+  {
+    "model": "KH864",
+    "machinestyle": "Punchcard",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "punchcard"
+  },
+  {
+    "model": "KH868",
+    "machinestyle": "Punchcard",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "punchcard"
+  },
+  {
+    "model": "KH871",
+    "machinestyle": "Punchcard",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "punchcard"
+  },
+  {
+    "model": "KH881",
+    "machinestyle": "Punchcard",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "punchcard"
+  },
+  {
+    "model": "KH890",
+    "machinestyle": "Punchcard",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "punchcard"
+  },
+  {
+    "model": "KH891",
+    "machinestyle": "Punchcard",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "punchcard"
+  },
+  {
+    "model": "KH892",
+    "machinestyle": "Punchcard",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "punchcard"
+  },
+  {
+    "model": "KH894",
+    "machinestyle": "Punchcard",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "no",
+    "recommendedcable": "Screenlink USB Cable",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "punchcard"
+  },
+  {
+    "model": "KH930",
+    "machinestyle": "Electronic",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "yes",
+    "recommendedcable": "BrotherLink 5",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "electronic"
+  },
+  {
+    "model": "KH940",
+    "machinestyle": "Electronic",
+    "interactiveknittingsupport": "Yes",
+    "downloadsupport": "yes",
+    "recommendedcable": "BrotherLink 5",
+    "secondaryoption": "",
+    "showindropdown": "yes",
+    "messagetype": "electronic"
+  }
+]

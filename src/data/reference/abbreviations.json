@@ -1,0 +1,656 @@
+[
+ {
+   "glossaryId": 626,
+   "abbreviation": "ADJ",
+   "term": "Adjacent",
+   "example": "Transfer stitch to the adjacent needle"
+ },
+ {
+   "glossaryId": 172,
+   "abbreviation": "ALT",
+   "term": "Alternate",
+   "example": "example: Decrease on alt rows 7 times"
+ },
+ {
+   "glossaryId": 173,
+   "abbreviation": "BB",
+   "term": "Back Bed",
+   "example": "main bed, knitter"
+ },
+ {
+   "glossaryId": 208,
+   "abbreviation": "BEG",
+   "term": "Begin",
+   "example": "example: Decrease at beg (beginning) of row"
+ },
+ {
+   "glossaryId": 282,
+   "abbreviation": "BH",
+   "term": "Buttonholes",
+   "example": "Secured holes in knitting to allow the insertion of a button."
+ },
+ {
+   "glossaryId": 804,
+   "abbreviation": "BO",
+   "term": "Bind off / Cast Off",
+   "example": "Securing stitches at the ends of the knitting."
+ },
+ {
+   "glossaryId": 175,
+   "abbreviation": "CC",
+   "term": "Contrast Color",
+   "example": "example: Change to cc (contrasting color) for stripes"
+ },
+ {
+   "glossaryId": 240,
+   "abbreviation": "CH",
+   "term": "Chain",
+   "example": "Pull loop-through-loop often with the latch tool. Used for chain cast on (CH CO) and decorative techniques"
+ },
+ {
+   "glossaryId": 262,
+   "abbreviation": "CH CO",
+   "term": "Chain Cast On",
+   "example": "Closed Cast On with the latch tool, pulling loop through loop over needles"
+ },
+ {
+   "glossaryId": 212,
+   "abbreviation": "cm",
+   "term": "Centimeters",
+   "example": "A unit of measurement equal to 0.39 inches"
+ },
+ {
+   "glossaryId": 241,
+   "abbreviation": "CO",
+   "term": "Cast On",
+   "example": "Get your knitting started."
+ },
+ {
+   "glossaryId": 211,
+   "abbreviation": "COBH",
+   "term": "Cast on by Hand",
+   "example": "As opposed to an automatic cast on | e-wrap cast on | chain cast on"
+ },
+ {
+   "glossaryId": 283,
+   "abbreviation": "COC",
+   "term": "Cast on Comb",
+   "example": "An accessory, often with a series of wire hooks that holds the initial cast on stitches for a smooth cast on."
+ },
+ {
+   "glossaryId": 176,
+   "abbreviation": "COL",
+   "term": "Carriage on the Left",
+   "example": "Position of the knitting carriage on the needlebed"
+ },
+ {
+   "glossaryId": 214,
+   "abbreviation": "CONT",
+   "term": "Continue",
+   "example": "Continue in pattern to RC100"
+ },
+ {
+   "glossaryId": 177,
+   "abbreviation": "COR",
+   "term": "Carriage on the Right",
+   "example": "Position of the knitting carriage on the needlebed"
+ },
+ {
+   "glossaryId": 630,
+   "abbreviation": "CTR",
+   "term": "Center",
+   "example": "example: Rehang stitches in the center of the machine"
+ },
+ {
+   "glossaryId": 216,
+   "abbreviation": "DAK",
+   "term": "DesignaKnit",
+   "example": "Software for pattern charting and stitch design"
+ },
+ {
+   "glossaryId": 620,
+   "abbreviation": "DB",
+   "term": "Double Bed",
+   "example": "Machine Needlebed aligned so the needles are facing up (opposite the main bed)"
+ },
+ {
+   "glossaryId": 268,
+   "abbreviation": "DBJ",
+   "term": "Double Bed Jacquard",
+   "example": "A double bed technique that incorporates patterning on the main bed while needles are in work on the ribber.rib and a color changer."
+ },
+ {
+   "glossaryId": 242,
+   "abbreviation": "DC",
+   "term": "Double Crochet",
+   "example": "Often used to finish the edges of knitting"
+ },
+ {
+   "glossaryId": 178,
+   "abbreviation": "DEC",
+   "term": "Decrease",
+   "example": "Reduce the number of needles in work usually by doubling up stitches. example: Decrease at beg of row"
+ },
+ {
+   "glossaryId": 215,
+   "abbreviation": "DK",
+   "term": "Double Knit",
+   "example": "Full Needle Rib (also refers to a weight of yarn)"
+ },
+ {
+   "glossaryId": 730,
+   "abbreviation": "EC1",
+   "term": "EC1 Pattern Controller",
+   "example": "Electronic patterning device for Silver Reed SK 830/840/860"
+ },
+ {
+   "glossaryId": 179,
+   "abbreviation": "EN",
+   "term": "Every Needle",
+   "example": "example: Cast on over EVERY needle"
+ },
+ {
+   "glossaryId": 180,
+   "abbreviation": "EON",
+   "term": "Every Other Needle",
+   "example": "example: Cast on over EVERY OTHER needle"
+ },
+ {
+   "glossaryId": 182,
+   "abbreviation": "EOR",
+   "term": "Every Other Row",
+   "example": "example: Decrease every other row 7 times"
+ },
+ {
+   "glossaryId": 246,
+   "abbreviation": "EOS",
+   "term": "Every Other Stitch",
+   "example": "example: Transfer every other stitch"
+ },
+ {
+   "glossaryId": 181,
+   "abbreviation": "ER",
+   "term": "Every Row",
+   "example": "example: Reform stitches EVERY ROW"
+ },
+ {
+   "glossaryId": 245,
+   "abbreviation": "ES",
+   "term": "Every Stitch",
+   "example": "example:  Re-form EVERY Stitch in the row"
+ },
+ {
+   "glossaryId": 183,
+   "abbreviation": "FB",
+   "term": "Front Bed",
+   "example": "ribber"
+ },
+ {
+   "glossaryId": 217,
+   "abbreviation": "FI",
+   "term": "Fair Isle | Knit-In",
+   "example": "Knitting multiple colors across a row. (Jacquard) "
+ },
+ {
+   "glossaryId": 184,
+   "abbreviation": "FNR",
+   "term": "Full Needle Rib",
+   "example": "Using all needles on the ribber and main bed at the same time. "
+ },
+ {
+   "glossaryId": 218,
+   "abbreviation": "FOL",
+   "term": "Following",
+   "example": "example: Decrease 1 stitch each side every FOLLOWING row 7 times"
+ },
+ {
+   "glossaryId": 317,
+   "abbreviation": "GB",
+   "term": "Garter Bar",
+   "example": "An accessory that allows quick removal of stitches from the needlebed. Commonly used to reverse the knitting."
+ },
+ {
+   "glossaryId": 220,
+   "abbreviation": "gm",
+   "term": "Gram",
+   "example": "Unit of measurement equal to .035 ounces"
+ },
+ {
+   "glossaryId": 244,
+   "abbreviation": "HDC",
+   "term": "Half Double Crochet",
+   "example": "Often used to finish the edges of knitting"
+ },
+ {
+   "glossaryId": 284,
+   "abbreviation": "HH",
+   "term": "Hung Hem",
+   "example": "Pick up stitches to create double layer of knitting. See RHH | reverse hung a hem"
+ },
+ {
+   "glossaryId": 185,
+   "abbreviation": "HP",
+   "term": "Holding Position",
+   "example": "Needle position E - D depending on brand (pulled all the way out)"
+ },
+ {
+   "glossaryId": 221,
+   "abbreviation": "IN",
+   "term": "Inch",
+   "example": "A unit of measurement equal to 2.54 cm"
+ },
+ {
+   "glossaryId": 186,
+   "abbreviation": "INC",
+   "term": "Increase",
+   "example": "Add to the number of stitches in work (multiple methods)"
+ },
+ {
+   "glossaryId": 712,
+   "abbreviation": "k2tog",
+   "term": "Knit 2 together",
+   "example": "Knit 2 together is a hand knitting term referring to positioning stitches to lean to the right.  Used for decreases or creating eyelet lace."
+ },
+ {
+   "glossaryId": 187,
+   "abbreviation": "KC",
+   "term": "Knit Carriage",
+   "example": "Knitting carriage that forms stitches (can be 1 or 2 pieces) | Brother: K Carriage"
+ },
+ {
+   "glossaryId": 602,
+   "abbreviation": "KWK",
+   "term": "Knit-wrap-Knit",
+   "example": "Knitting sequence to prevent holes when working short rows"
+ },
+ {
+   "glossaryId": 188,
+   "abbreviation": "L",
+   "term": "Left",
+   "example": "Knit L (left)"
+ },
+ {
+   "glossaryId": 337,
+   "abbreviation": "L ## - L##",
+   "term": "Left ## - Left ##",
+   "example": "Hold L5-L9 | refers to specific needles on the needle bed identified left and right of 0"
+ },
+ {
+   "glossaryId": 726,
+   "abbreviation": "M.Y.",
+   "term": "Main Yarn",
+   "example": "Cast on with M.Y. and knit 10 rows. Then change to Con Y. and continue knitting"
+ },
+ {
+   "glossaryId": 191,
+   "abbreviation": "MB",
+   "term": "Main Bed",
+   "example": "back bed, knitter"
+ },
+ {
+   "glossaryId": 192,
+   "abbreviation": "MC",
+   "term": "Main Color",
+   "example": "Indicates yarn colors see also CC (contrasting color)"
+ },
+ {
+   "glossaryId": 223,
+   "abbreviation": "mm",
+   "term": "Millimeter",
+   "example": "Unit of measure"
+ },
+ {
+   "glossaryId": 247,
+   "abbreviation": "MP",
+   "term": "Middle Position",
+   "example": "Also called upper Working position"
+ },
+ {
+   "glossaryId": 307,
+   "abbreviation": "MSS",
+   "term": "Main  stitch Size",
+   "example": "indicates carriage tension dial setting"
+ },
+ {
+   "glossaryId": 309,
+   "abbreviation": "MSS +2",
+   "term": "Main Stitch Size +2",
+   "example": "Indicates carriage tension dial setting. If main tension is 5 - set the tension to 7"
+ },
+ {
+   "glossaryId": 308,
+   "abbreviation": "MSS-1",
+   "term": "Main Stitch Size -1",
+   "example": "Indicates carriage tension dial setting. If main tension is 5 - set the tension to 4"
+ },
+ {
+   "glossaryId": 224,
+   "abbreviation": "MT",
+   "term": "Main Tension",
+   "example": "indicates carriage tension dial setting"
+ },
+ {
+   "glossaryId": 225,
+   "abbreviation": "MT-1",
+   "term": "Main Tension -1",
+   "example": "Indicates carriage tension dial setting. If main tension is 5 - set the tension to 4"
+ },
+ {
+   "glossaryId": 226,
+   "abbreviation": "MT+2",
+   "term": "Main Tension +2",
+   "example": "Indicates carriage tension dial setting. If main tension is 5 - set the tension to 7"
+ },
+ {
+   "glossaryId": 227,
+   "abbreviation": "MY",
+   "term": "Main Yarn",
+   "example": "Indicates yarn colors see also CC (contrasting color) | Main Color MC"
+ },
+ {
+   "glossaryId": 193,
+   "abbreviation": "NDL",
+   "term": "Needle",
+   "example": "Knitting machine needles are specific to brand and model of machines. They consist of a hook, latch, stem, butt and shank."
+ },
+ {
+   "glossaryId": 383,
+   "abbreviation": "now",
+   "term": "Needle Out of Work",
+   "example": "example: Position every 3rd needle out of work"
+ },
+ {
+   "glossaryId": 194,
+   "abbreviation": "NWP",
+   "term": "Non Working Position",
+   "example": "Needles that are in 'A' position and will not knit no matter what the carriage setting. See Out of Work Needles"
+ },
+ {
+   "glossaryId": 632,
+   "abbreviation": "O/W",
+   "term": "Out of Work",
+   "example": "Needles that are in \"A\" position and will not knit no matter what the carriage setting. See NWP Non-working position or NOW Needles out of Work"
+ },
+ {
+   "glossaryId": 631,
+   "abbreviation": "ON |O/N",
+   "term": "Opposite Needle",
+   "example": "example: Transfer ribber stitches to the opposite needles on the  main bed"
+ },
+ {
+   "glossaryId": 228,
+   "abbreviation": "OPP",
+   "term": "Opposite",
+   "example": "example: Opposite the carriage, put needles in hold"
+ },
+ {
+   "glossaryId": 281,
+   "abbreviation": "OWP",
+   "term": "Out of Work Position",
+   "example": "Needles that are in \"A\" position and will not knit no matter what the carriage setting. See NWP Non-working position or NOW Needles out of Work"
+ },
+ {
+   "glossaryId": 229,
+   "abbreviation": "OZ",
+   "term": "Ounce",
+   "example": "Unit of weight measurement"
+ },
+ {
+   "glossaryId": 195,
+   "abbreviation": "P",
+   "term": "Purl Side",
+   "example": "Refers to the side of the knitting that faces a machine knitter (purl bumps show)"
+ },
+ {
+   "glossaryId": 196,
+   "abbreviation": "PAT",
+   "term": "Pattern",
+   "example": "example: Work in pattern for 12 rows"
+ },
+ {
+   "glossaryId": 230,
+   "abbreviation": "PC",
+   "term": "Punchcard",
+   "example": "A paper card with holes used with a punchcard patterning device to automatically select needles for stitch patterning."
+ },
+ {
+   "glossaryId": 731,
+   "abbreviation": "PE1",
+   "term": "PE1 Pattern Controller",
+   "example": "Electronic patterning device for Silver Reed SK 830/840/860/890. Used in conjunction with the EC1 Pattern Controller "
+ },
+ {
+   "glossaryId": 310,
+   "abbreviation": "PM",
+   "term": "Place marker",
+   "example": "Hang a contrasting loop on the edge needle to easily locate a specific row or match 2 pieces for seaming"
+ },
+ {
+   "glossaryId": 200,
+   "abbreviation": "POS",
+   "term": "Position",
+   "example": "example: Place all needles in hp | hold position"
+ },
+ {
+   "glossaryId": 812,
+   "abbreviation": "PSSO",
+   "term": "Pass slipped stitch over",
+   "example": "Common abbreviation in hand knitting."
+ },
+ {
+   "glossaryId": 248,
+   "abbreviation": "PU",
+   "term": "Pick Up",
+   "example": "Often refers to re-hanging stitches from an open edge (live stitches)"
+ },
+ {
+   "glossaryId": 189,
+   "abbreviation": "R",
+   "term": "Right",
+   "example": "Knit R (right)"
+ },
+ {
+   "glossaryId": 338,
+   "abbreviation": "R5 - R9",
+   "term": "Right 5 - Right 9",
+   "example": "Hold R5-R9 | refers to specific needles on the needle bed identified left and right of 0"
+ },
+ {
+   "glossaryId": 231,
+   "abbreviation": "RB",
+   "term": "Rear Bed",
+   "example": "main bed, knitter"
+ },
+ {
+   "glossaryId": 201,
+   "abbreviation": "RC",
+   "term": "Row Count",
+   "example": "Indication of the number of rows completed. Indicated by RC:100"
+ },
+ {
+   "glossaryId": 232,
+   "abbreviation": "REM",
+   "term": "Remaining",
+   "example": "example: Bind off rem sts (Bind off remaining stitches)"
+ },
+ {
+   "glossaryId": 634,
+   "abbreviation": "rep(s)",
+   "term": "Repeats",
+   "example": "example: Rep from *.* 3 times."
+ },
+ {
+   "glossaryId": 635,
+   "abbreviation": "ret",
+   "term": "Return",
+   "example": "example: Return 3 needles to working position every other row 3 times."
+ },
+ {
+   "glossaryId": 636,
+   "abbreviation": "rev",
+   "term": "Reverse",
+   "example": "example: Remove the work on a garter bar, turn to rev (reverse) and rehang the knitting"
+ },
+ {
+   "glossaryId": 285,
+   "abbreviation": "RHH",
+   "term": "Reverse Hung Hem",
+   "example": "Pick up stitches to create double layer of knitting with the PURL side facing. see HH | hung hem"
+ },
+ {
+   "glossaryId": 298,
+   "abbreviation": "RS",
+   "term": "Right Side",
+   "example": "Refers to the side of the knitting that will be seen when the garment is worn. Opposed to the Wrong Side (private side) Public Side"
+ },
+ {
+   "glossaryId": 318,
+   "abbreviation": "RTR",
+   "term": "RTR | Remove, Turn, Rehang",
+   "example": "A technique for reversing rows of knit and purl stitches using a garter bar, scrapping off or hand knitting needle"
+ },
+ {
+   "glossaryId": 619,
+   "abbreviation": "S/B",
+   "term": "Single Bed | Main Bed",
+   "example": "Japanese flat bed machines are commonly made up of 2 needlebeds facing each other (main bed and ribber). The single or main bed can be used independently."
+ },
+ {
+   "glossaryId": 311,
+   "abbreviation": "S/O",
+   "term": "Scrap Off",
+   "example": "Remove knitting on waste yarn, leaving live stitches."
+ },
+ {
+   "glossaryId": 364,
+   "abbreviation": "SAYG",
+   "term": "Sew-As-You-Go",
+   "example": "Quickly \"seam\" knitted pieces as you knit."
+ },
+ {
+   "glossaryId": 243,
+   "abbreviation": "SC",
+   "term": "Single Crochet",
+   "example": "often used to finish the edges of knitting"
+ },
+ {
+   "glossaryId": 270,
+   "abbreviation": "SD",
+   "term": "Stitch Dial",
+   "example": "The device on the carriage that controls the flow of yarn and impacts the stitch size | Tension Dial"
+ },
+ {
+   "glossaryId": 250,
+   "abbreviation": "SR",
+   "term": "Short Row | Partial Knitting",
+   "example": "Knitting a only a few stitches in a row. Often used for intarsia and garment shaping | Partial Knitting"
+ },
+ {
+   "glossaryId": 203,
+   "abbreviation": "SS",
+   "term": "Stitch Size",
+   "example": "Can refer to the tension dial on the carriage"
+ },
+ {
+   "glossaryId": 252,
+   "abbreviation": "SS | sl st",
+   "term": "Slip Stitch",
+   "example": "Crochet stitch often used to seam knitting pieces (slip is also a textured stitch technique)"
+ },
+ {
+   "glossaryId": 205,
+   "abbreviation": "SS | st st",
+   "term": "Stockinette Stitch",
+   "example": "Basic stitch formation on knitting machines. Equivalent to knit 1 row purl 1 row in flat hand knitting. (Stocking stitch, plain knitting)"
+ },
+ {
+   "glossaryId": 637,
+   "abbreviation": "ST / STS",
+   "term": "Stitch",
+   "example": "example: Bind off 34 sts"
+ },
+ {
+   "glossaryId": 236,
+   "abbreviation": "T | Ten",
+   "term": "Tension",
+   "example": "Can refer to the tension dial on the carriage or the tension dial on the mast"
+ },
+ {
+   "glossaryId": 235,
+   "abbreviation": "TD",
+   "term": "Tension Dial",
+   "example": "The device on the carriage that controls the flow of yarn and impacts the stitch size. See Stitch Dial"
+ },
+ {
+   "glossaryId": 237,
+   "abbreviation": "TOG",
+   "term": "Together",
+   "example": "example: Knit 3 together | Decrease"
+ },
+ {
+   "glossaryId": 638,
+   "abbreviation": "TR(S)",
+   "term": "Transfers",
+   "example": "example: Work trs(transfers) 10 times."
+ },
+ {
+   "glossaryId": 238,
+   "abbreviation": "UWP",
+   "term": "Upper Working Position",
+   "example": "Needle position C or D (depending on brand)"
+ },
+ {
+   "glossaryId": 639,
+   "abbreviation": "WK",
+   "term": "Waste Knitting",
+   "example": "Also called scrap knitting"
+ },
+ {
+   "glossaryId": 207,
+   "abbreviation": "WP",
+   "term": "Working Position",
+   "example": "Needle position that allows stitches to be formed. Depends on the carriage setting. Opposite of out-of-work needle"
+ },
+ {
+   "glossaryId": 606,
+   "abbreviation": "WPI",
+   "term": "Wraps Per Inch",
+   "example": "method for measuring yarn thickness"
+ },
+ {
+   "glossaryId": 385,
+   "abbreviation": "WRN",
+   "term": "Wrap Round Needle",
+   "example": "Refers to e-wrapping a separate strand around the end needle as the piece is knit.  Apparently used to control the edge curl, or give the edge more stability."
+ },
+ {
+   "glossaryId": 297,
+   "abbreviation": "WS",
+   "term": "Wrong Side",
+   "example": "Refers to the side of the knitting that will be against the body. Opposed to the Right Side (public side) "
+ },
+ {
+   "glossaryId": 239,
+   "abbreviation": "WY",
+   "term": "Waste Yarn",
+   "example": "Used to temporarily hold stitches. Should be a similar weight to the garment yarn and a contrasting color if possible (scrap yarn)"
+ },
+ {
+   "glossaryId": 625,
+   "abbreviation": "X",
+   "term": "X times",
+   "example": "Repeat this row 2X (2 times)"
+ },
+ {
+   "glossaryId": 371,
+   "abbreviation": "yo",
+   "term": "yo | Eyelet",
+   "example": "Controlled holes used to make lace, small buttonholes and specialized stitch techniques. [yo] is a hand knitting term"
+ },
+ {
+   "glossaryId": 367,
+   "abbreviation": "YPP",
+   "term": "Yards Per Pound",
+   "example": "A method often used by machine knitters to identify and compare yarn weights"
+ }
+]
