@@ -1,12 +1,18 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
+import toolsData from "../../../data/tools.json";
 import "../../styles/wizard.css";
+import FloatingInput from "../../components/tools/FloatingInput.astro";
 import IsoTriangleIcon from "../../components/tools/triangle-iso-icon.svg";
 import RightTriangleIcon from "../../components/tools/triangle-right-icon.svg";
 import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
 import TriangleIsoSvg from "../../components/tools/triangle-iso.svg";
 import TriangleRightSvg from "../../components/tools/triangle-right.svg";
+
+const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
+const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
 ---
 <Layout title="Triangle Calculator">
   <main class="wizard-page">
@@ -14,10 +20,9 @@ import TriangleRightSvg from "../../components/tools/triangle-right.svg";
       <WizardBackLink category="tool" />
 
       <section class="wizard-hero">
-                <h1>Triangle Calculator</h1>
+        <ToolPageHeader tool={tool} fallbackTitle="Triangle Calculator" />
         <p class="wizard-intro">
-          Choose your triangle style, enter your finished measurements and gauge,
-          and the calculator will generate the knitting numbers.
+          Whether it’s a simple shawl or a complex garment insert, get the exact increase and decrease rates you need. Just enter your finished dimensions and let us handle the slopes.
         </p>
       </section>
 
@@ -50,31 +55,53 @@ import TriangleRightSvg from "../../components/tools/triangle-right.svg";
             <input type="hidden" id="triangleType" value="isosceles">
             <div class="triangle-input-grid">
               <div class="triangle-input-row triangle-input-row--dimensions">
-                <label class="triangle-field">
-                  <span>Width</span>
-                  <input type="number" name="finishedWidth" min="0" step="0.01" data-highlight="width" />
-                </label>
-                <label class="triangle-field">
-                  <span>Height</span>
-                  <input type="number" name="finishedHeight" min="0" step="0.01" data-highlight="height" />
-                </label>
+                <FloatingInput
+                  id="finishedWidth"
+                  name="finishedWidth"
+                  label="Width"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  dataAttrs={{ "data-highlight": "width" }}
+                />
+                <FloatingInput
+                  id="finishedHeight"
+                  name="finishedHeight"
+                  label="Height"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  dataAttrs={{ "data-highlight": "height" }}
+                />
               </div>
               <div class="triangle-input-row triangle-input-row--gauge">
-                <label class="triangle-field">
-                  <span>Gauge Stitches</span>
-                  <input type="number" id="stitchesInput" name="stitchesInMeasure" min="0" step="0.01">
-                </label>
-                <label class="triangle-field">
-                  <span>Gauge Rows</span>
-                  <input type="number" id="rowsInput" name="rowsInMeasure" min="0" step="0.01">
-                </label>
-                <label class="triangle-field triangle-field--needles">
-                  <span>Available Needles</span>
-                  <input type="number" name="availableNeedles" min="0" step="1" id="availableNeedlesInput" />
-                  <div class="needle-validation-error" id="needle-validation-error" hidden>
-                    Please enter the number of needles available on your machine (typically between 100 and 200).
-                  </div>
-                </label>
+                <FloatingInput
+                  id="stitchesInput"
+                  name="stitchesInMeasure"
+                  label="Gauge Stitches"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  placeholder="in 4 inches"
+                />
+                <FloatingInput
+                  id="rowsInput"
+                  name="rowsInMeasure"
+                  label="Gauge Rows"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  placeholder="in 4 inches"
+                />
+                <FloatingInput
+                  id="availableNeedlesInput"
+                  name="availableNeedles"
+                  label="Available Needles"
+                  type="number"
+                  min={0}
+                  step={1}
+                  errorMessage="Please enter the number of needles available on your machine (typically between 100 and 200)."
+                />
               </div>
             </div>
             <div class="triangle-actions">
@@ -284,11 +311,6 @@ import TriangleRightSvg from "../../components/tools/triangle-right.svg";
       font-size: 1rem;
     }
 
-.needle-validation-error {
-  margin-top: 6px;
-  color: #b94a48;
-  font-size: 14px;
-}
     .triangle-actions {
   margin-top: 20px;
 }
@@ -808,12 +830,10 @@ import TriangleRightSvg from "../../components/tools/triangle-right.svg";
     const needlesInput = document.querySelector('[name="availableNeedles"]');
     const needles = parseInt(needlesInput?.value ?? "", 10);
     if (isNaN(needles) || needles < 50 || needles > 400) {
-      const needleErrorEl = document.getElementById("needle-validation-error");
-      if (needleErrorEl) needleErrorEl.hidden = false;
+      if (needlesInput) needlesInput.classList.add("error");
       return;
     }
-    const needleErrorEl = document.getElementById("needle-validation-error");
-    if (needleErrorEl) needleErrorEl.hidden = true;
+    if (needlesInput) needlesInput.classList.remove("error");
     const availableNeedles = needles;
 
     if (!baseWidth || !height || !stitchGauge || !rowGauge) {
@@ -991,7 +1011,7 @@ import TriangleRightSvg from "../../components/tools/triangle-right.svg";
         hidden
       >
         <img
-          src="/images/help/decrease-distribution-compare.svg"
+          src="/images/tools/decrease-distribution-compare.svg"
           alt="Comparison of evenly distributed decreases and simple decreases"
         />
         <p>
@@ -1068,12 +1088,11 @@ import TriangleRightSvg from "../../components/tools/triangle-right.svg";
   updateGaugePlaceholders(localStorage.getItem("kbm-units") || "in");
 
   const availableNeedlesInput = document.querySelector('[name="availableNeedles"]');
-  const needleValidationError = document.getElementById("needle-validation-error");
-  if (availableNeedlesInput && needleValidationError) {
+  if (availableNeedlesInput) {
     availableNeedlesInput.addEventListener("input", () => {
       const n = parseInt(availableNeedlesInput.value, 10);
       if (!isNaN(n) && n >= 50 && n <= 400) {
-        needleValidationError.hidden = true;
+        availableNeedlesInput.classList.remove("error");
       }
     });
   }

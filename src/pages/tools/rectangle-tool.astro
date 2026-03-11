@@ -1,0 +1,377 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
+import toolsData from "../../../data/tools.json";
+import "../../styles/wizard.css";
+import FloatingInput from "../../components/tools/FloatingInput.astro";
+import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
+
+const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
+const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+---
+
+<Layout title="Rectangle / Square Calculator">
+  <main class="wizard-page">
+    <div class="wizard-shell">
+      <WizardBackLink category="tool" />
+
+      <section class="wizard-hero">
+        <ToolPageHeader tool={tool} fallbackTitle="Rectangle / Square Calculator" />
+        <p class="wizard-intro">
+          Use this tool to calculate cast-on stitches and total rows for a simple rectangular knitted piece.
+        </p>
+        <p class="wizard-intro-sub">
+          Great for scarves, panels, swatches, blankets, and other straight pieces.
+        </p>
+      </section>
+
+      <div class="rectangle-calculator-panel">
+        <div class="section-header-with-toggle">
+          <h2>Enter Your Measurements</h2>
+          <UnitToggle />
+        </div>
+        <form id="rectangleForm">
+          <div class="rectangle-input-grid">
+            <div class="rectangle-input-row rectangle-input-row--dimensions">
+              <FloatingInput
+                id="finishedWidth"
+                name="finishedWidth"
+                label="Finished Width"
+                type="number"
+                min={0}
+                step={0.01}
+              />
+              <FloatingInput
+                id="finishedLength"
+                name="finishedLength"
+                label="Finished Length"
+                type="number"
+                min={0}
+                step={0.01}
+              />
+            </div>
+            <div class="rectangle-input-row rectangle-input-row--gauge">
+              <FloatingInput
+                id="stitchesInput"
+                name="stitchesInMeasure"
+                label="Stitch Gauge"
+                type="number"
+                min={0}
+                step={0.01}
+                placeholder="in 4 inches"
+              />
+              <FloatingInput
+                id="rowsInput"
+                name="rowsInMeasure"
+                label="Row Gauge"
+                type="number"
+                min={0}
+                step={0.01}
+                placeholder="in 4 inches"
+              />
+              <FloatingInput
+                id="availableNeedlesInput"
+                name="availableNeedles"
+                label="Available Needles (optional)"
+                type="number"
+                min={0}
+                step={1}
+                placeholder=" "
+              />
+            </div>
+          </div>
+          <div class="rectangle-actions">
+            <button type="button" id="calculateRectangle" class="wizard-button">
+              Calculate
+            </button>
+          </div>
+
+          <div id="rectangleValidation" class="rectangle-validation" role="alert" hidden></div>
+          <div id="rectangleResults" class="rectangle-results"></div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <style>
+    .wizard-hero .wizard-intro-sub {
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+      color: #6b7280;
+    }
+
+    .rectangle-calculator-panel {
+      background: #fff;
+      padding: 1.75rem;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 640px) {
+      .rectangle-calculator-panel {
+        padding: 1.25rem;
+      }
+    }
+
+    .section-header-with-toggle {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .rectangle-input-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 16px;
+    }
+
+    .rectangle-input-row {
+      display: grid;
+      gap: 20px;
+    }
+
+    .rectangle-input-row--dimensions {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .rectangle-input-row--gauge {
+      grid-template-columns: 1fr 1fr minmax(140px, 0.75fr);
+    }
+
+    @media (max-width: 640px) {
+      .rectangle-input-row--dimensions,
+      .rectangle-input-row--gauge {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .rectangle-actions {
+      margin-top: 20px;
+    }
+
+    .rectangle-actions .wizard-button {
+      padding: 12px 22px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      background: #52682D;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .rectangle-actions .wizard-button:hover {
+      background: #445925;
+    }
+
+    .rectangle-validation {
+      margin-top: 20px;
+      padding: 14px 18px;
+      border-left: 6px solid #d9534f;
+      background: #fff4f4;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      color: #333;
+    }
+
+    .rectangle-validation:not([hidden]) {
+      display: block;
+    }
+
+    .rectangle-results {
+      margin-top: 24px;
+    }
+
+    .rectangle-results-card.tool-results {
+      background: #f8faf6;
+      border: 1px solid #e5e7eb;
+      border-left: 4px solid #52682D;
+      border-radius: 8px;
+      padding: 20px 24px;
+      font-size: 1.1rem;
+    }
+
+    .rectangle-results-card.tool-results strong {
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: #52682D;
+    }
+
+    .rectangle-results-card .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 10px;
+    }
+
+    .rectangle-results-card .result-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .rectangle-results-card .result-label {
+      font-size: 0.95rem;
+      color: #374151;
+    }
+
+    .rectangle-results-card .result-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #52682D;
+    }
+
+    .rectangle-results-card .result-row.finished-size .result-value {
+      font-weight: 600;
+    }
+
+    .rectangle-results-card .result-row--bind-off .result-value {
+      display: none;
+    }
+
+    :global(.rectangle-warning-callout) {
+      margin: 0 0 16px 0;
+      padding: 16px 18px;
+      border-left: 6px solid #d9534f;
+      background: #fff4f4;
+      border-radius: 6px;
+    }
+
+    :global(.rectangle-warning-callout strong) {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    :global(.rectangle-warning-callout p) {
+      margin: 6px 0 0;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+  </style>
+
+  <script>
+    const calculateButton = document.getElementById("calculateRectangle");
+    const resultsPanel = document.getElementById("rectangleResults");
+    const validationEl = document.getElementById("rectangleValidation");
+
+    function getUnit(): string {
+      return localStorage.getItem("kbm-units") || "in";
+    }
+
+    function updateGaugePlaceholders(unit: string): void {
+      const stitchesInput = document.getElementById("stitchesInput") as HTMLInputElement | null;
+      const rowsInput = document.getElementById("rowsInput") as HTMLInputElement | null;
+      if (!stitchesInput || !rowsInput) return;
+      if (unit === "cm") {
+        stitchesInput.placeholder = "in 10 cm";
+        rowsInput.placeholder = "in 10 cm";
+      } else {
+        stitchesInput.placeholder = "in 4 inches";
+        rowsInput.placeholder = "in 4 inches";
+      }
+    }
+
+    window.addEventListener("kbm:units-change", (e: Event) => {
+      const ev = e as CustomEvent<{ unit?: string }>;
+      const unit = ev.detail?.unit ?? "in";
+      updateGaugePlaceholders(unit);
+    });
+    updateGaugePlaceholders(getUnit());
+
+    if (!calculateButton || !resultsPanel || !validationEl) throw new Error("Rectangle calculator elements not found");
+
+    calculateButton.addEventListener("click", () => {
+      const form = document.getElementById("rectangleForm") as HTMLFormElement | null;
+      const formData = form ? new FormData(form) : new FormData();
+
+      const widthRaw = formData.get("finishedWidth") ?? "";
+      const lengthRaw = formData.get("finishedLength") ?? "";
+      const stitchGaugeRaw = formData.get("stitchesInMeasure") ?? "";
+      const rowGaugeRaw = formData.get("rowsInMeasure") ?? "";
+      const availableNeedlesRaw = formData.get("availableNeedles");
+
+      const width = parseFloat(String(widthRaw)) || 0;
+      const length = parseFloat(String(lengthRaw)) || 0;
+      const stitchGauge = parseFloat(String(stitchGaugeRaw)) || 0;
+      const rowGauge = parseFloat(String(rowGaugeRaw)) || 0;
+      const availableNeedles = availableNeedlesRaw !== null && String(availableNeedlesRaw).trim() !== ""
+        ? parseInt(String(availableNeedlesRaw), 10)
+        : null;
+
+      // Validation
+      validationEl.hidden = true;
+      validationEl.textContent = "";
+
+      const errors: string[] = [];
+      if (!widthRaw || width <= 0) errors.push("Please enter a valid finished width.");
+      if (!lengthRaw || length <= 0) errors.push("Please enter a valid finished length.");
+      if (!stitchGaugeRaw || stitchGauge <= 0) errors.push("Please enter a valid stitch gauge.");
+      if (!rowGaugeRaw || rowGauge <= 0) errors.push("Please enter a valid row gauge.");
+
+      if (errors.length > 0) {
+        validationEl.textContent = errors.join(" ");
+        validationEl.hidden = false;
+        resultsPanel.innerHTML = "";
+        return;
+      }
+
+      const unit = getUnit();
+      let stitchesPerUnit, rowsPerUnit;
+      if (unit === "cm") {
+        stitchesPerUnit = stitchGauge / 10;
+        rowsPerUnit = rowGauge / 10;
+      } else {
+        stitchesPerUnit = stitchGauge / 4;
+        rowsPerUnit = rowGauge / 4;
+      }
+
+      const castOn = Math.round(width * stitchesPerUnit);
+      const totalRows = Math.round(length * rowsPerUnit);
+      const needlesRequired = castOn;
+
+      const unitLabel = unit === "cm" ? "cm" : "in";
+
+      let warningHtml = "";
+      if (availableNeedles != null && !isNaN(availableNeedles) && castOn > availableNeedles) {
+        warningHtml = `
+          <div class="rectangle-warning-callout" role="alert">
+            <strong>⚠ Not enough needles available</strong>
+            <p>
+              This piece requires <strong>${castOn}</strong> stitches (needles), but you entered <strong>${availableNeedles}</strong> available. Reduce the width, increase your gauge, or knit in sections.
+            </p>
+          </div>`;
+      }
+
+      resultsPanel.innerHTML =
+        warningHtml +
+        `
+        <div class="rectangle-results-card tool-results">
+          <div class="result-row">
+            <span class="result-label">Cast On:</span>
+            <span class="result-value"><strong>${castOn}</strong> stitches</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">Work:</span>
+            <span class="result-value"><strong>${totalRows}</strong> rows</span>
+          </div>
+          <div class="result-row result-row--bind-off">
+            <span class="result-label">Bind Off</span>
+            <span class="result-value"></span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">Needles Required:</span>
+            <span class="result-value"><strong>${needlesRequired}</strong></span>
+          </div>
+          <div class="result-row finished-size">
+            <span class="result-label">Finished Size:</span>
+            <span class="result-value"><strong>${width} × ${length}</strong> ${unitLabel}</span>
+          </div>
+        </div>`;
+    });
+  </script>
+</Layout>

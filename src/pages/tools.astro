@@ -4,6 +4,9 @@ import tools from "../../data/tools.json";
 
 // Group tools by category
 const groupedTools = Object.groupBy(tools, tool => tool.category);
+
+// Unique category list for filter (All Categories first)
+const categories = ["All", ...new Set(tools.map((tool: { category?: string }) => tool.category).filter(Boolean))];
 ---
 
 <Layout title="Charting Tools">
@@ -13,32 +16,119 @@ const groupedTools = Object.groupBy(tools, tool => tool.category);
   <h1>Charting Tools</h1>
 
   <p class="tools-intro">
-  These tools help you calculate shaping, gauge, stitch counts, and other knitting math
-  so you can focus on creating.
+    From complex shaping to gauge conversions, we’ve automated the "knitting math." Plug in your numbers, get your custom chart, and get knitting.
   </p>
+
+  <div class="tool-filter-bar">
+    <button class="tool-filter active" data-filter="all">All</button>
+    <button class="tool-filter" data-filter="free">Free</button>
+    <button class="tool-filter" data-filter="member">Member</button>
+  </div>
+
+  <div class="tool-category-filter-bar">
+    {categories.map((category, index) => (
+      <button
+        class={`tool-category-filter ${index === 0 ? "active" : ""}`}
+        data-category-filter={category === "All" ? "all" : category}
+        type="button"
+      >
+        {category === "All" ? "All Categories" : category}
+      </button>
+    ))}
+  </div>
 
   {Object.entries(groupedTools).map(([category, items]) => (
     <section class="tool-category">
       <div class="tool-category-inner">
         <h2>{category}</h2>
         <div class="tools-grid">
-          {items.map(tool => (
-            <a class="tool-card" href={tool.href}>
-              <img
-                src={`/icons/tools/${tool.icon}`}
-                alt=""
-                class="tool-icon"
-              />
-              <h3>{tool.title}</h3>
-              <p>{tool.description}</p>
-            </a>
-          ))}
+          {(items ?? []).map((tool) => {
+            const isActive = String(tool.active ?? true).toUpperCase() !== "FALSE";
+            const membersOnly = tool.membersonly ?? false;
+            const badge = !isActive ? (
+              <span class="tool-badge coming">Coming Soon</span>
+            ) : membersOnly ? (
+              <span class="tool-badge member">🔒 Member</span>
+            ) : (
+              <span class="tool-badge free">Free</span>
+            );
+            return isActive ? (
+              <a href={tool.href} class="tool-card active" data-members-only={membersOnly} data-category={tool.category}>
+                {badge}
+                <img
+                  src={`/icons/tools/${tool.icon}`}
+                  alt=""
+                  class="tool-icon"
+                />
+                <h3>{tool.title}</h3>
+                <p>{tool.description}</p>
+              </a>
+            ) : (
+              <div class="tool-card inactive" aria-disabled="true" data-members-only={membersOnly} data-category={tool.category}>
+                {badge}
+                <img
+                  src={`/icons/tools/${tool.icon}`}
+                  alt=""
+                  class="tool-icon"
+                />
+                <h3>{tool.title}</h3>
+                <p>{tool.description}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
   ))}
 
 </section>
+
+<script>
+  const accessButtons = document.querySelectorAll<HTMLButtonElement>(".tool-filter");
+  const categoryButtons = document.querySelectorAll<HTMLButtonElement>(".tool-category-filter");
+  const cards = document.querySelectorAll<HTMLElement>(".tool-card");
+
+  let activeAccessFilter = "all";
+  let activeCategoryFilter = "all";
+
+  function applyToolFilters() {
+    cards.forEach(card => {
+      const isMember = card.dataset.membersOnly === "true";
+      const category = card.dataset.category || "";
+
+      const matchesAccess =
+        activeAccessFilter === "all" ||
+        (activeAccessFilter === "free" && !isMember) ||
+        (activeAccessFilter === "member" && isMember);
+
+      const matchesCategory =
+        activeCategoryFilter === "all" ||
+        category === activeCategoryFilter;
+
+      card.style.display = matchesAccess && matchesCategory ? "" : "none";
+    });
+  }
+
+  accessButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      accessButtons.forEach(b => b.classList.remove("active"));
+      button.classList.add("active");
+      activeAccessFilter = button.dataset.filter || "all";
+      applyToolFilters();
+    });
+  });
+
+  categoryButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      categoryButtons.forEach(b => b.classList.remove("active"));
+      button.classList.add("active");
+      activeCategoryFilter = button.dataset.categoryFilter || "all";
+      applyToolFilters();
+    });
+  });
+
+  applyToolFilters();
+</script>
 
 <style>
 
@@ -51,6 +141,49 @@ const groupedTools = Object.groupBy(tools, tool => tool.category);
 .tools-intro{
   max-width:700px;
   margin-bottom:30px;
+}
+
+.tool-filter-bar {
+  margin: 20px 0 30px;
+  display: flex;
+  gap: 10px;
+}
+
+.tool-filter {
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tool-filter.active {
+  background: #52682d;
+  color: #fff;
+  border-color: #52682d;
+}
+
+.tool-category-filter-bar {
+  margin: 0 0 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tool-category-filter {
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tool-category-filter.active {
+  background: #52682d;
+  color: #fff;
+  border-color: #52682d;
 }
 
 .tool-category{
@@ -80,6 +213,7 @@ const groupedTools = Object.groupBy(tools, tool => tool.category);
 }
 
 .tool-card{
+  position:relative;
   display:block;
   text-decoration:none;
   color:inherit;
@@ -88,12 +222,52 @@ const groupedTools = Object.groupBy(tools, tool => tool.category);
   border-radius:20px;
   border:1px solid #e5e7eb;
   background:white;
-  transition:all .2s ease;
 }
 
-.tool-card:hover{
-  transform:translateY(-6px);
+.tool-badge{
+  position:absolute;
+  top:0;
+  right:0;
+  font-size:11px;
+  font-weight:600;
+  padding:5px 10px;
+  border-bottom-left-radius:8px;
+  line-height:1.2;
+  z-index:2;
+}
+
+.tool-badge.member{
+  background:#ececec;
+  color:#333;
+}
+
+.tool-badge.free{
+  background:#e8f5e9;
+  color:#2e7d32;
+}
+
+.tool-badge.coming{
+  background:#f3f3f3;
+  color:#888;
+}
+
+.tool-card.active{
+  transition:transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tool-card.active:hover{
+  transform:translateY(-2px);
   box-shadow:0 14px 28px rgba(0,0,0,.08);
+}
+
+.tool-card.inactive{
+  opacity:0.6;
+  cursor:default;
+}
+
+.tool-card.inactive h3,
+.tool-card.inactive p{
+  color:inherit;
 }
 
 .tool-icon{

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="a" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 141.36 139.72">
+  <defs>
+    <style>
+      .b {
+        fill: none;
+        stroke: #000;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 3px;
+      }
+    </style>
+  </defs>
+  <polygon class="b" points="124.2 10.69 15.84 10.69 15.84 119.04 54.34 119.04 124.2 10.69"/>
+  <polygon points="77.06 76.58 83.02 74.9 84.7 80.86 77.06 76.58"/>
+</svg>

@@ -1,0 +1,322 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
+import toolsData from "../../../data/tools.json";
+import "../../styles/wizard.css";
+import FloatingInput from "../../components/tools/FloatingInput.astro";
+import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
+
+const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
+const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+---
+
+<Layout
+  title="Gauge Calculator | Knit it Now"
+  description="Calculate your stitch and row gauge from a measured swatch. Enter swatch dimensions and stitch/row counts to get gauge in inches or centimeters."
+>
+  <main class="wizard-page">
+    <div class="wizard-shell">
+      <WizardBackLink category="tool" />
+
+      <section class="wizard-hero">
+        <ToolPageHeader tool={tool} fallbackTitle="Gauge Calculator" />
+        <p class="wizard-intro">
+          Use this tool to calculate your stitch and row gauge from a measured swatch.
+        </p>
+        <p class="wizard-intro-sub">
+          A quick way to turn your swatch measurements into the numbers you need for planning patterns and tools.
+        </p>
+      </section>
+
+      <div class="gauge-calculator-panel">
+        <div class="section-header-with-toggle">
+          <h2>Enter Your Measurements</h2>
+          <UnitToggle />
+        </div>
+        <form id="gaugeForm">
+          <div class="gauge-input-grid">
+            <FloatingInput
+              id="swatchWidth"
+              name="swatchWidth"
+              label="Swatch Width"
+              type="number"
+              min={0.1}
+              step={0.01}
+              placeholder=" "
+            />
+            <FloatingInput
+              id="swatchHeight"
+              name="swatchHeight"
+              label="Swatch Height"
+              type="number"
+              min={0.1}
+              step={0.01}
+              placeholder=" "
+            />
+            <FloatingInput
+              id="numStitches"
+              name="numStitches"
+              label="Number of Stitches"
+              type="number"
+              min={1}
+              step={1}
+              placeholder=" "
+            />
+            <FloatingInput
+              id="numRows"
+              name="numRows"
+              label="Number of Rows"
+              type="number"
+              min={1}
+              step={1}
+              placeholder=" "
+            />
+          </div>
+          <div class="gauge-actions">
+            <button type="button" id="calculateGauge" class="wizard-button">
+              Calculate
+            </button>
+          </div>
+
+          <div id="gaugeValidation" class="gauge-validation" role="alert" hidden></div>
+          <div id="gaugeResults" class="gauge-results" hidden>
+            <div class="gauge-result-card">
+              <div class="gauge-result-label">Stitch Gauge</div>
+              <div class="gauge-result-primary" id="stitch-gauge-primary"></div>
+              <div class="gauge-result-secondary" id="stitch-gauge-secondary"></div>
+            </div>
+            <div class="gauge-result-card">
+              <div class="gauge-result-label">Row Gauge</div>
+              <div class="gauge-result-primary" id="row-gauge-primary"></div>
+              <div class="gauge-result-secondary" id="row-gauge-secondary"></div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <style>
+    .wizard-hero .wizard-intro-sub {
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+      color: #6b7280;
+    }
+
+    .gauge-calculator-panel {
+      background: #fff;
+      padding: 1.75rem;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 640px) {
+      .gauge-calculator-panel {
+        padding: 1.25rem;
+      }
+    }
+
+    .section-header-with-toggle {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .gauge-input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .gauge-input-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .gauge-actions {
+      margin-top: 20px;
+    }
+
+    .gauge-actions .wizard-button {
+      padding: 12px 22px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      background: #52682d;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .gauge-actions .wizard-button:hover {
+      background: #445925;
+    }
+
+    .gauge-validation {
+      margin-top: 20px;
+      padding: 14px 18px;
+      border-left: 6px solid #d9534f;
+      background: #fff4f4;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      color: #333;
+    }
+
+    .gauge-validation:not([hidden]) {
+      display: block;
+    }
+
+    .gauge-results {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .gauge-result-card {
+      background: #f8f8f5;
+      border: 1px solid #e3e5de;
+      border-radius: 14px;
+      padding: 1.25rem;
+    }
+
+    .gauge-result-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #52682d;
+      margin-bottom: 0.5rem;
+    }
+
+    .gauge-result-primary {
+      font-size: 1.75rem;
+      font-weight: 700;
+      line-height: 1.15;
+      color: #1f2937;
+      margin-bottom: 0.45rem;
+    }
+
+    .gauge-result-secondary {
+      font-size: 1rem;
+      color: #4b5563;
+    }
+
+    @media (max-width: 640px) {
+      .gauge-results {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <script>
+    const calculateButton = document.getElementById("calculateGauge");
+    const resultsPanel = document.getElementById("gaugeResults");
+    const validationEl = document.getElementById("gaugeValidation");
+    const stitchPrimaryEl = document.getElementById("stitch-gauge-primary");
+    const stitchSecondaryEl = document.getElementById("stitch-gauge-secondary");
+    const rowPrimaryEl = document.getElementById("row-gauge-primary");
+    const rowSecondaryEl = document.getElementById("row-gauge-secondary");
+
+    function getUnit(): string {
+      return localStorage.getItem("kbm-units") || "in";
+    }
+
+    /** Format the familiar gauge (per 4 in / per 10 cm): whole number when possible, else 1 decimal */
+    function formatFamiliar(value: number): string {
+      const rounded = Math.round(value * 10) / 10;
+      return rounded % 1 === 0 ? String(Math.round(rounded)) : rounded.toFixed(1);
+    }
+
+    /** Format the small-unit gauge (per 1 in / per 1 cm): up to 2 decimal places */
+    function formatSmallUnit(value: number): string {
+      return value.toFixed(2);
+    }
+
+    if (!calculateButton || !resultsPanel || !validationEl) throw new Error("Gauge calculator elements not found");
+    if (!stitchPrimaryEl || !stitchSecondaryEl || !rowPrimaryEl || !rowSecondaryEl) throw new Error("Gauge result elements not found");
+
+    calculateButton.addEventListener("click", () => {
+      const form = document.getElementById("gaugeForm") as HTMLFormElement | null;
+      const formData = form ? new FormData(form) : new FormData();
+
+      const widthRaw = formData.get("swatchWidth") ?? "";
+      const heightRaw = formData.get("swatchHeight") ?? "";
+      const stitchesRaw = formData.get("numStitches") ?? "";
+      const rowsRaw = formData.get("numRows") ?? "";
+
+      const width = parseFloat(String(widthRaw)) || 0;
+      const height = parseFloat(String(heightRaw)) || 0;
+      const stitches = parseFloat(String(stitchesRaw)) || 0;
+      const rows = parseFloat(String(rowsRaw)) || 0;
+
+      validationEl.hidden = true;
+      validationEl.textContent = "";
+
+      const errors: string[] = [];
+      if (!widthRaw || width <= 0) errors.push("Please enter a valid swatch width.");
+      if (!heightRaw || height <= 0) errors.push("Please enter a valid swatch height.");
+      if (!stitchesRaw || stitches <= 0) errors.push("Please enter a valid number of stitches.");
+      if (!rowsRaw || rows <= 0) errors.push("Please enter a valid number of rows.");
+
+      if (errors.length > 0) {
+        validationEl.textContent = errors.join(" ");
+        validationEl.hidden = false;
+        resultsPanel.hidden = true;
+        return;
+      }
+
+      const unit = getUnit();
+      const IN_PER_CM = 2.54;
+
+      let stitchGaugePer4In: number;
+      let rowGaugePer4In: number;
+      let stitchGaugePer10Cm: number;
+      let rowGaugePer10Cm: number;
+      let stitchGaugePerIn: number;
+      let rowGaugePerIn: number;
+      let stitchGaugePerCm: number;
+      let rowGaugePerCm: number;
+
+      if (unit === "in") {
+        // User entered width/height in inches
+        stitchGaugePerIn = stitches / width;
+        rowGaugePerIn = rows / height;
+        stitchGaugePer4In = stitchGaugePerIn * 4;
+        rowGaugePer4In = rowGaugePerIn * 4;
+        stitchGaugePerCm = stitchGaugePerIn / IN_PER_CM;
+        rowGaugePerCm = rowGaugePerIn / IN_PER_CM;
+        stitchGaugePer10Cm = stitchGaugePerCm * 10;
+        rowGaugePer10Cm = rowGaugePerCm * 10;
+      } else {
+        // User entered width/height in centimeters
+        stitchGaugePerCm = stitches / width;
+        rowGaugePerCm = rows / height;
+        stitchGaugePer10Cm = stitchGaugePerCm * 10;
+        rowGaugePer10Cm = rowGaugePerCm * 10;
+        stitchGaugePerIn = stitchGaugePerCm * IN_PER_CM;
+        rowGaugePerIn = rowGaugePerCm * IN_PER_CM;
+        stitchGaugePer4In = stitchGaugePerIn * 4;
+        rowGaugePer4In = rowGaugePerIn * 4;
+      }
+
+      if (unit === "cm") {
+        stitchPrimaryEl.textContent = `${formatFamiliar(stitchGaugePer10Cm)} sts per 10 cm`;
+        stitchSecondaryEl.textContent = `${formatSmallUnit(stitchGaugePerCm)} sts/cm`;
+        rowPrimaryEl.textContent = `${formatFamiliar(rowGaugePer10Cm)} rows per 10 cm`;
+        rowSecondaryEl.textContent = `${formatSmallUnit(rowGaugePerCm)} rows/cm`;
+      } else {
+        stitchPrimaryEl.textContent = `${formatFamiliar(stitchGaugePer4In)} sts per 4 in`;
+        stitchSecondaryEl.textContent = `${formatSmallUnit(stitchGaugePerIn)} sts/in`;
+        rowPrimaryEl.textContent = `${formatFamiliar(rowGaugePer4In)} rows per 4 in`;
+        rowSecondaryEl.textContent = `${formatSmallUnit(rowGaugePerIn)} rows/in`;
+      }
+
+      resultsPanel.hidden = false;
+    });
+  </script>
+</Layout>

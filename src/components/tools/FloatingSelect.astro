@@ -1,0 +1,118 @@
+---
+/**
+ * Reusable floating-label select for tool pages.
+ * Label sits inside the field and floats up on focus or when a value is selected.
+ * Styles are loaded by this component (same stylesheet as FloatingInput).
+ *
+ * Example:
+ *   import FloatingSelect from "../../components/tools/FloatingSelect.astro";
+ *   <FloatingSelect id="unit" name="unit" label="Unit" options={[{ value: 'in', label: 'Inches' }, { value: 'cm', label: 'Centimeters' }]}" placeholderOption="Select one" />
+ */
+interface SelectOption {
+  value: string;
+  label: string;
+}
+
+interface Props {
+  id: string;
+  name?: string;
+  label: string;
+  value?: string;
+  required?: boolean;
+  autocomplete?: string;
+  ariaDescribedby?: string;
+  /** When true, shows error state (red border/label) and optional error message. */
+  error?: boolean;
+  /** Message shown when error is true. */
+  errorMessage?: string;
+  /** Extra class(es) on the wrapper div. */
+  class?: string;
+  /** Options for the select. Include a placeholder option or use placeholderOption. */
+  options: SelectOption[];
+  /** First option text when no value selected (e.g. "Select one"). Adds an option with value "". */
+  placeholderOption?: string;
+  disabled?: boolean;
+  dataTestid?: string;
+  dataAttrs?: Record<string, string>;
+}
+
+const {
+  id,
+  name,
+  label,
+  value,
+  required = false,
+  autocomplete,
+  ariaDescribedby,
+  error = false,
+  errorMessage,
+  class: wrapperClass,
+  options,
+  placeholderOption,
+  disabled = false,
+  dataTestid,
+  dataAttrs = {},
+} = Astro.props;
+
+const errorId = errorMessage ? `${id}-error` : undefined;
+const describedBy = [ariaDescribedby, errorId].filter(Boolean).join(" ") || undefined;
+
+/** Build option list: placeholder first (if any), then options. */
+const optionList = placeholderOption
+  ? [{ value: "", label: placeholderOption }, ...options]
+  : options;
+---
+
+<style is:global>
+  @import "../../styles/tools/floating-input.css";
+</style>
+
+<div class:list={["floating-select", wrapperClass]}>
+  <select
+    id={id}
+    name={name}
+    value={value}
+    required={required}
+    autocomplete={autocomplete}
+    aria-describedby={describedBy}
+    aria-invalid={error ? "true" : undefined}
+    disabled={disabled}
+    data-testid={dataTestid}
+    class:list={[{ error }]}
+    {...dataAttrs}
+  >
+    {optionList.map((opt) => (
+      <option value={opt.value}>{opt.label}</option>
+    ))}
+  </select>
+  <label for={id}>{label}</label>
+  {errorMessage && (
+    <span class="error-text" id={errorId} aria-live="polite">
+      {errorMessage}
+    </span>
+  )}
+</div>
+
+<script>
+  function initFloatingSelect(container: Element) {
+    const wrapper = container as HTMLElement;
+    const select = wrapper.querySelector<HTMLSelectElement>("select");
+    if (!select) return;
+
+    function updateHasValue() {
+      const sel = wrapper.querySelector<HTMLSelectElement>("select");
+      wrapper.classList.toggle("has-value", sel !== null && sel.value !== "");
+    }
+
+    updateHasValue();
+    select.addEventListener("change", updateHasValue);
+    select.addEventListener("focus", updateHasValue);
+    select.addEventListener("blur", updateHasValue);
+  }
+
+  document.querySelectorAll(".floating-select").forEach((el) => initFloatingSelect(el));
+
+  document.addEventListener("astro:page-load", () => {
+    document.querySelectorAll(".floating-select").forEach((el) => initFloatingSelect(el));
+  });
+</script>

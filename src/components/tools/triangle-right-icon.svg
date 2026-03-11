@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="a" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <style>
+      .e {
+        fill: none;
+        stroke: #000;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2.76px;
+      }
+    </style>
+  </defs>
+  <line id="b" data-name="width" class="e" x1="19.27" y1="85.84" x2="84.47" y2="85.84"/>
+  <line id="c" data-name="height" class="e" x1="19.09" y1="16.48" x2="19.09" y2="85.75"/>
+  <line id="d" data-name="outline" class="e" x1="19.33" y1="16.36" x2="84.2" y2="85.63"/>
+</svg>

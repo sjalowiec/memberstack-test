@@ -18,9 +18,9 @@
   text-decoration: underline;
 }
 
-/* Page Layout */
+/* Page Layout — top spacing comes from Layout’s main.site-content; avoid double padding */
 .wizard-page {
-  padding-top: 120px;
+  padding-top: 0;
   padding-bottom: 3rem;
   min-height: 100vh;
   background: var(--page-bg);
@@ -85,6 +85,18 @@
   background: #d1d5db;
   transform: translateY(-1px);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Triangle Tool: help graphic in instructions section */
+.triangle-help-graphic {
+  text-align: center;
+  margin: 1rem 0 1.5rem;
+}
+
+.triangle-help-graphic img {
+  max-width: 420px;
+  width: 100%;
+  height: auto;
 }
 
 /* Main Container */
@@ -747,7 +759,7 @@
 /* Mobile Responsive */
 @media (max-width: 1024px) {
   .wizard-page {
-    padding-top: 80px;
+    padding-top: 0;
   }
   
   .calculator-card {

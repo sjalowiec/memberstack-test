@@ -1,0 +1,312 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
+import toolsData from "../../../data/tools.json";
+import "../../styles/wizard.css";
+import FloatingInput from "../../components/tools/FloatingInput.astro";
+import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
+
+const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
+const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+---
+
+<Layout
+  title="Maximum Knitted Width | Knit by Machine"
+  description="Calculate the widest piece you can knit on your machine based on your available needles and stitch gauge."
+>
+  <main class="wizard-page">
+    <div class="wizard-shell">
+      <WizardBackLink category="tool" />
+
+      <section class="wizard-hero">
+        <ToolPageHeader tool={tool} fallbackTitle="Maximum Knitted Width" />
+        <p class="wizard-intro">
+          Use this tool to calculate the widest piece you can knit on your machine based on your available needles and stitch gauge.
+        </p>
+        <p class="wizard-intro-sub">
+          A quick way to check blanket panels, wide scarves, and other straight pieces before you cast on.
+        </p>
+      </section>
+
+      <div class="maxwidth-panel">
+        <div class="section-header-with-toggle">
+          <h2>Enter Your Measurements</h2>
+          <UnitToggle />
+        </div>
+        <form id="maxwidthForm">
+          <div class="maxwidth-input-grid">
+            <FloatingInput
+              id="availableNeedles"
+              name="availableNeedles"
+              label="Available Needles"
+              type="number"
+              min={1}
+              step={1}
+              placeholder=" "
+            />
+            <FloatingInput
+              id="stitchGauge"
+              name="stitchGauge"
+              label="Stitch Gauge"
+              type="number"
+              min={0.1}
+              step={0.1}
+              placeholder=" "
+            />
+          </div>
+          <div class="maxwidth-actions">
+            <button type="button" id="calculateMaxwidth" class="wizard-button">
+              Calculate
+            </button>
+          </div>
+
+          <div id="maxwidthValidation" class="maxwidth-validation" role="alert" hidden></div>
+          <div id="maxwidthResults" class="maxwidth-results"></div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <style>
+    .wizard-hero .wizard-intro-sub {
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+      color: #6b7280;
+    }
+
+    .maxwidth-panel {
+      background: #fff;
+      padding: 1.75rem;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 640px) {
+      .maxwidth-panel {
+        padding: 1.25rem;
+      }
+    }
+
+    .section-header-with-toggle {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .maxwidth-input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .maxwidth-input-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .maxwidth-actions {
+      margin-top: 20px;
+    }
+
+    .maxwidth-actions .wizard-button {
+      padding: 12px 22px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      background: #52682d;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .maxwidth-actions .wizard-button:hover {
+      background: #445925;
+    }
+
+    .maxwidth-validation {
+      margin-top: 20px;
+      padding: 14px 18px;
+      border-left: 6px solid #d9534f;
+      background: #fff4f4;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      color: #333;
+    }
+
+    .maxwidth-validation:not([hidden]) {
+      display: block;
+    }
+
+    .maxwidth-results {
+      margin-top: 24px;
+    }
+
+    .maxwidth-results-card.tool-results {
+      background: #f8faf6;
+      border: 1px solid #e5e7eb;
+      border-left: 4px solid #52682d;
+      border-radius: 8px;
+      padding: 20px 24px;
+      font-size: 1.1rem;
+    }
+
+    .maxwidth-results-card.tool-results .result-main {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #52682d;
+    }
+
+    /* Global so injected results HTML receives these styles */
+    :global(.width-indicator) {
+      margin-top: 1rem;
+      max-width: 420px;
+    }
+
+    :global(.width-bar) {
+      width: 100%;
+      height: 12px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    :global(.width-fill) {
+      position: relative;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #52682d, #7b9b4a);
+      border-radius: 999px;
+      transition: width 0.5s ease;
+    }
+
+    :global(.width-fill::after) {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translate(50%, -50%);
+      width: 3px;
+      height: 16px;
+      background: #6b7f43;
+      border-radius: 2px;
+    }
+
+    :global(.width-scale) {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      color: #4b5563;
+      margin-top: 0.35rem;
+    }
+  </style>
+
+  <script>
+    const calculateButton = document.getElementById("calculateMaxwidth");
+    const resultsPanel = document.getElementById("maxwidthResults");
+    const validationEl = document.getElementById("maxwidthValidation");
+
+    function getUnit(): string {
+      return localStorage.getItem("kbm-units") || "in";
+    }
+
+    function updateGaugePlaceholder(unit: string): void {
+      const stitchGaugeInput = document.getElementById("stitchGauge") as HTMLInputElement | null;
+      if (!stitchGaugeInput) return;
+      stitchGaugeInput.placeholder = unit === "cm" ? "per 10 cm" : "per 4 inches";
+    }
+
+    window.addEventListener("kbm:units-change", (e: Event) => {
+      const ev = e as CustomEvent<{ unit?: string }>;
+      const unit = ev.detail?.unit ?? "in";
+      updateGaugePlaceholder(unit);
+    });
+    updateGaugePlaceholder(getUnit());
+
+    if (!calculateButton || !resultsPanel || !validationEl) throw new Error("Maximum width calculator elements not found");
+
+    calculateButton.addEventListener("click", () => {
+      const form = document.getElementById("maxwidthForm") as HTMLFormElement | null;
+      const formData = form ? new FormData(form) : new FormData();
+
+      const needlesRaw = formData.get("availableNeedles") ?? "";
+      const gaugeRaw = formData.get("stitchGauge") ?? "";
+
+      const needles = parseInt(String(needlesRaw), 10) || 0;
+      const gauge = parseFloat(String(gaugeRaw)) || 0;
+
+      validationEl.hidden = true;
+      validationEl.textContent = "";
+
+      const errors: string[] = [];
+      if (needlesRaw === "" || needlesRaw === null) errors.push("Please enter available needles.");
+      else if (needles <= 0) errors.push("Available needles must be greater than zero.");
+      if (gaugeRaw === "" || gaugeRaw === null) errors.push("Please enter stitch gauge.");
+      else if (gauge <= 0) errors.push("Stitch gauge must be greater than zero.");
+
+      if (errors.length > 0) {
+        validationEl.textContent = errors.join(" ");
+        validationEl.hidden = false;
+        resultsPanel.innerHTML = "";
+        return;
+      }
+
+      const unit = getUnit();
+      let widthIn: number;
+      let widthCm: number;
+
+      if (unit === "cm") {
+        widthCm = (needles / gauge) * 10;
+        widthIn = widthCm / 2.54;
+      } else {
+        widthIn = (needles / gauge) * 4;
+        widthCm = widthIn * 2.54;
+      }
+
+      const widthInRounded = Math.round(widthIn * 10) / 10;
+      const widthCmRounded = Math.round(widthCm * 10) / 10;
+
+      const primaryUnit = unit === "cm" ? "cm" : "in";
+      const primaryVal = unit === "cm" ? widthCmRounded : widthInRounded;
+      const altVal = unit === "cm" ? widthInRounded : widthCmRounded;
+      const altUnit = unit === "cm" ? "in" : "cm";
+
+      resultsPanel.innerHTML = `
+        <div class="maxwidth-results-card tool-results">
+          <p class="result-main">
+            Maximum Width: <strong>${primaryVal} ${primaryUnit}</strong> (${altVal} ${altUnit})
+          </p>
+          <div class="width-indicator">
+            <div class="width-bar">
+              <div class="width-fill" id="width-fill"></div>
+            </div>
+            <div class="width-scale">
+              <span>0</span>
+              <span id="width-label">50 in</span>
+            </div>
+          </div>
+        </div>`;
+
+      const visualMax = 60;
+      const percent = Math.min((widthIn / visualMax) * 100, 100);
+      const bar = document.getElementById("width-fill");
+      const label = document.getElementById("width-label");
+      if (bar) {
+        bar.style.width = "0%";
+        setTimeout(() => {
+          bar.style.width = percent + "%";
+        }, 50);
+      }
+      if (label) {
+        label.textContent = primaryVal.toFixed(1) + " " + primaryUnit;
+      }
+    });
+  </script>
+</Layout>

@@ -80,6 +80,8 @@ const isInchesActive = defaultUnit === 'in';
     
     if (!inchesBtn || !cmBtn) return;
 
+    const STORAGE_KEY = 'kbm-units';
+
     // Find or create hidden input for unit value
     let hiddenInput = document.getElementById('unit');
     if (!hiddenInput) {
@@ -109,6 +111,9 @@ const isInchesActive = defaultUnit === 'in';
       if (hiddenInput) {
         hiddenInput.value = unit;
       }
+
+      // Save preference
+      localStorage.setItem(STORAGE_KEY, unit);
       
       // Dispatch event for page-level coordination
       window.dispatchEvent(new CustomEvent('kbm:units-change', { 
@@ -116,47 +121,52 @@ const isInchesActive = defaultUnit === 'in';
       }));
     }
 
+    // Load saved preference, otherwise use default
+    const savedUnit = localStorage.getItem(STORAGE_KEY) || defaultUnit;
+    setUnit(savedUnit);
+
     inchesBtn.addEventListener('click', () => setUnit('in'));
     cmBtn.addEventListener('click', () => setUnit('cm'));
   });
 </script>
 
 <style>
-/* Component-specific styles - compact, left-aligned */
-.units-toggle {
-  display: inline-flex;
-  gap: 0.25rem;
-  padding: 3px;
-  background: #f3f4f6;
-  border-radius: 6px;
-  width: fit-content;
-  margin-bottom: 1rem;
-}
-
-.unit-btn {
-  padding: 0.35rem 0.75rem;
-  border: none;
-  background: transparent;
-  color: #6b7280;
-  font-weight: 600;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.85rem;
-  line-height: 1.2;
-}
-
-.unit-btn.active {
-  background: var(--kbm-green, #52682D);
-  color: white;
-}
-
-.unit-btn:hover:not(.active) {
-  background: rgba(82, 104, 45, 0.1);
-}
-
-.unit-btn:focus-visible {
-  outline: 2px solid var(--kbm-green, #52682D);
-  outline-offset: 2px;
-}
-</style>
+  .units-toggle {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 6px;
+    overflow: hidden;
+    font-size: 0.9rem;
+  }
+  
+  .units-toggle .unit-btn {
+    padding: 6px 14px;
+    border: 1px solid #9aa38f;
+    background: #f3f4ef;
+    color: #38412f;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  
+  .units-toggle .unit-btn + .unit-btn {
+    border-left: none;
+  }
+  
+  .units-toggle .unit-btn.active {
+    background: #52682D;
+    color: #ffffff;
+    border-color: #52682D;
+  }
+  
+  .units-toggle .unit-btn:hover:not(.active) {
+    background: #e7eadf;
+    border-color: #8f987f;
+  }
+  
+  .units-toggle .unit-btn:focus-visible {
+    outline: 2px solid #52682D;
+    outline-offset: 2px;
+  }
+  </style>

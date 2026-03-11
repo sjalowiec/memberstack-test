@@ -1,0 +1,100 @@
+---
+/**
+ * Reusable floating-label input for tool pages.
+ * Label sits inside the input and floats up on focus or when the field has a value.
+ * Styles are loaded by this component (no separate import needed).
+ *
+ * Example (number field on a tool page):
+ *   import FloatingInput from "../../components/tools/FloatingInput.astro";
+ *   <FloatingInput id="totalRows" label="Total rows" type="number" min={1} step={1} />
+ *
+ * With error and message:
+ *   <FloatingInput id="width" label="Width (inches)" type="number" error={hasError} errorMessage="Please enter a valid width." />
+ *
+ * Placeholder: Default " " enables the float; pass a string for optional hint on focus.
+ */
+type InputType = "text" | "number" | "email" | "tel" | "url" | "search" | "password";
+type InputMode = "text" | "numeric" | "decimal" | "email" | "tel" | "url" | "search" | "none";
+
+interface Props {
+  id: string;
+  name?: string;
+  label: string;
+  type?: InputType;
+  value?: string | number;
+  /** Use " " (space) for floating label only; set a string for optional hint on focus. */
+  placeholder?: string;
+  min?: string | number;
+  max?: string | number;
+  step?: string | number;
+  required?: boolean;
+  inputmode?: InputMode;
+  autocomplete?: string;
+  ariaDescribedby?: string;
+  /** When true, shows error state (red border/label) and optional error message. */
+  error?: boolean;
+  /** Message shown when error is true (e.g. "Please enter a valid number."). */
+  errorMessage?: string;
+  /** Extra class(es) on the wrapper div. */
+  class?: string;
+  /** data-testid for the input. */
+  dataTestid?: string;
+  /** Additional data-* attributes to spread on the input. */
+  dataAttrs?: Record<string, string>;
+}
+
+const {
+  id,
+  name,
+  label,
+  type = "text",
+  value,
+  placeholder = " ",
+  min,
+  max,
+  step,
+  required = false,
+  inputmode,
+  autocomplete,
+  ariaDescribedby,
+  error = false,
+  errorMessage,
+  class: wrapperClass,
+  dataTestid,
+  dataAttrs = {},
+} = Astro.props;
+
+const errorId = errorMessage ? `${id}-error` : undefined;
+const describedBy = [ariaDescribedby, errorId].filter(Boolean).join(" ") || undefined;
+---
+
+<style is:global>
+  @import "../../styles/tools/floating-input.css";
+</style>
+
+<div class:list={["floating-input", wrapperClass]}>
+  <input
+    type={type}
+    id={id}
+    name={name}
+    value={value}
+    placeholder={placeholder}
+    min={min}
+    max={max}
+    step={step}
+    required={required}
+    inputmode={inputmode}
+    autocomplete={autocomplete}
+    aria-describedby={describedBy}
+    aria-invalid={error ? "true" : undefined}
+    data-testid={dataTestid}
+    class:list={[{ error }]}
+    {...dataAttrs}
+  />
+  <label for={id}>{label}</label>
+  {errorMessage && (
+    <span class="error-text" id={errorId} aria-live="polite">
+      {errorMessage}
+    </span>
+  )}
+</div>

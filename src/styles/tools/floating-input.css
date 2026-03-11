@@ -1,0 +1,179 @@
+/* ========================================
+   Tools: Floating Input
+   Reusable floating-label input for tool pages.
+   Matches the Magic Formula floating-input pattern.
+   Import this in pages that use FloatingInput.astro from components/tools,
+   or add: import "../../styles/tools/floating-input.css";
+   ======================================== */
+
+.floating-input {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.floating-input input {
+  width: 100%;
+  padding: 1.25rem 0.875rem 0.5rem;
+  border: 1px solid #d0d5cc;
+  border-radius: 6px;
+  font-family: var(--font);
+  font-size: 1rem;
+  color: var(--text-dark);
+  background: white;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -moz-appearance: textfield;
+  box-sizing: border-box;
+}
+
+.floating-input input::-webkit-outer-spin-button,
+.floating-input input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.floating-input input:focus {
+  outline: none;
+  border-color: var(--kbm-green);
+  box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.1);
+}
+
+.floating-input input.error {
+  border-color: #dc3545;
+}
+
+.floating-input label {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.95rem;
+  color: #6b7280;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  background: transparent;
+  padding: 0 2px;
+}
+
+.floating-input input:focus ~ label,
+.floating-input input:not(:placeholder-shown) ~ label {
+  top: 0.5rem;
+  transform: translateY(0);
+  font-size: 0.75rem;
+  color: var(--kbm-green);
+  font-weight: 500;
+}
+
+.floating-input input.error ~ label {
+  color: #dc3545;
+}
+
+.floating-input input::placeholder {
+  color: transparent;
+}
+
+.floating-input input:focus::placeholder {
+  color: #9ca3af;
+}
+
+.floating-input .error-text {
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
+  display: none;
+}
+
+.floating-input .error-text.show {
+  display: block;
+}
+
+.floating-input input.error ~ .error-text {
+  display: block;
+}
+
+/* ========================================
+   Tools: Floating Select
+   Matches floating-input pattern for dropdowns.
+   ======================================== */
+
+.floating-select {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.floating-select select {
+  width: 100%;
+  padding: 1.25rem 2rem 0.5rem 0.875rem;
+  border: 1px solid #d0d5cc;
+  border-radius: 6px;
+  font-family: var(--font);
+  font-size: 1rem;
+  color: var(--text-dark);
+  background: white;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  cursor: pointer;
+}
+
+.floating-select select:focus {
+  outline: none;
+  border-color: var(--kbm-green);
+  box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.1);
+}
+
+.floating-select select.error {
+  border-color: #dc3545;
+}
+
+.floating-select select:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.floating-select label {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.95rem;
+  color: #6b7280;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  background: transparent;
+  padding: 0 2px;
+}
+
+.floating-select select:focus ~ label,
+.floating-select.has-value label {
+  top: 0.5rem;
+  transform: translateY(0);
+  font-size: 0.75rem;
+  color: var(--kbm-green);
+  font-weight: 500;
+}
+
+.floating-select select.error ~ label {
+  color: #dc3545;
+}
+
+.floating-select .error-text {
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
+  display: none;
+}
+
+.floating-select .error-text.show {
+  display: block;
+}
+
+.floating-select select.error ~ .error-text {
+  display: block;
+}
