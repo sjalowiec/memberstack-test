@@ -78,6 +78,34 @@
   }
 
   /* ========================================
+     HIDE: Tool calculator / input area
+     Add class kbm-tool-calculator-area to the panel that contains
+     the tool form so only the result card prints as pattern sheet.
+     ======================================== */
+  .kbm-tool-calculator-area {
+    display: none !important;
+  }
+
+  /* ========================================
+     HIDE: Tool description (keep tool title visible)
+     ======================================== */
+  .wizard-intro,
+  .wizard-intro-sub {
+    display: none !important;
+  }
+
+  /* ========================================
+     SHOW: Results section when printing
+     Force results to display even if hidden until calculation.
+     ======================================== */
+  #rectangleResults,
+  .pattern-result-card,
+  .tool-result-card {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  /* ========================================
      PAGE LAYOUT: Base Reset
      ======================================== */
   html,
@@ -142,6 +170,23 @@
     display: none !important;
   }
 
+  /* Tool title (tool pages): keep visible, print-friendly */
+  .tool-title,
+  .wizard-hero .tool-title {
+    display: flex !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .tool-title h1,
+  .wizard-hero .tool-title h1 {
+    font-size: 18pt !important;
+    color: #000000 !important;
+  }
+
+  .tool-title .tool-title-icon {
+    display: none !important;
+  }
+
   /* ========================================
      KBM CARDS
      ======================================== */
@@ -189,9 +234,13 @@
   .result-grid,
   .tool-results,
   .kbm-tool-results,
+  .tool-result-card,
+  .tool-result-card__inner,
   .wizard-result-card,
   .pattern-card,
   .diagram-container,
+  .tool-result-card__content,
+  .tool-result-card__diagram,
   #results {
     display: block !important;
     box-shadow: none !important;
@@ -207,6 +256,28 @@
     border: 1px solid #52682D !important;
     padding: 1.25rem !important;
     margin: 0 0 1rem 0 !important;
+  }
+
+  /* Tool result card: single column for print, pattern sheet feel */
+  .tool-result-card__inner {
+    grid-template-columns: 1fr !important;
+  }
+
+  .tool-result-card__diagram {
+    margin-top: 1rem !important;
+  }
+
+  /* Prevent diagram from splitting across printed pages */
+  .diagram-area,
+  .tool-result-card__diagram {
+    break-inside: avoid !important;
+  }
+
+  /* Ensure SVG diagrams print */
+  .tool-result-card__diagram svg,
+  .diagram-area svg {
+    display: block !important;
+    max-width: 100% !important;
   }
 
   /* Result items and values */

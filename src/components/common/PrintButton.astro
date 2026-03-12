@@ -1,10 +1,12 @@
 ---
 interface Props {
   label?: string;
+  /** Use when label is empty (icon-only) for accessibility */
+  ariaLabel?: string;
   class?: string;
 }
 
-const { label = "Print these instructions", class: className = "" } = Astro.props;
+const { label = "Print these instructions", ariaLabel, class: className = "" } = Astro.props;
 ---
 
 <button
@@ -12,6 +14,7 @@ const { label = "Print these instructions", class: className = "" } = Astro.prop
   class:list={["kbm-print-button", className]}
   onclick="window.print()"
   data-testid="button-print"
+  aria-label={ariaLabel ?? (label ? undefined : "Print")}
 >
   <svg 
     xmlns="http://www.w3.org/2000/svg" 

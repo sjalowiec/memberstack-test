@@ -1,4 +1,5 @@
 ---
+import Layout from "../../layouts/Layout.astro";
 const isFullMode = Astro.url.searchParams.get('mode') === 'full';
 
 /**
@@ -29,7 +30,7 @@ const yarnLengthUnit = SAMPLE_DEFAULTS.units === "in" ? "in" : "cm";
 const yarnSource = "sample"; // Initial state is sample; updated to "custom" when pattern is built
 ---
 
-<PatternLayout 
+<PatternLayout>
   title="The Hybrid Blanket Pattern | Knit by Machine" 
   description="Hand Knit + Machine Knit Blanket Pattern. Calculate stitch counts for blankets with hand-knit borders and machine-knit body."
   tabsEnabled={{ pattern: true, yarn: true, walkthrough: false, reference: false, askShare: true, inspiration: true }}

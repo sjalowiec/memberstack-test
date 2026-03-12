@@ -230,6 +230,18 @@
     "active": "TRUE"
   },
   {
+    "id": 31,
+    "title": "Ruffle / Gather (One Row)",
+    "href": "/tools/ruffle-gather-tool",
+    "icon": "taper.svg",
+    "description": "Distribute increases or decreases evenly across a single row.",
+    "membersonly": false,
+    "helpID": "NULL",
+    "category": "Formulas",
+    "help_text": "Use this tool when you need to add or remove stitches in one row only—for ruffles, gathers, or single-row shaping. Enter starting and ending stitch counts and how many stitches to leave untouched at each edge. The tool gives you an even distribution and clear machine-knitting instructions.",
+    "active": "TRUE"
+  },
+  {
     "id": 14,
     "title": "Yarn Estimator",
     "href": "yarnusage.cfm",

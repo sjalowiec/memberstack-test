@@ -8,8 +8,10 @@ import FloatingInput from "../../components/tools/FloatingInput.astro";
 import IsoTriangleIcon from "../../components/tools/triangle-iso-icon.svg";
 import RightTriangleIcon from "../../components/tools/triangle-right-icon.svg";
 import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
-import TriangleIsoSvg from "../../components/tools/triangle-iso.svg";
-import TriangleRightSvg from "../../components/tools/triangle-right.svg";
+import GaugeInput from "../../components/wizards/components/GaugeInput.astro";
+import diagramTriangleRight from "../../components/tools/diagram-triangle-right.svg?raw";
+import diagramTriangleSymmetric from "../../components/tools/diagram-triangle-symmetric.svg?raw";
+import ToolResultCard from "../../components/tools/ToolResultCard.astro";
 
 const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
 const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
@@ -54,6 +56,7 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
           <form id="triangleForm">
             <input type="hidden" id="triangleType" value="isosceles">
             <div class="triangle-input-grid">
+              <GaugeInput id="triangle" showTitle={false} showToggle={false} />
               <div class="triangle-input-row triangle-input-row--dimensions">
                 <FloatingInput
                   id="finishedWidth"
@@ -74,57 +77,34 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
                   dataAttrs={{ "data-highlight": "height" }}
                 />
               </div>
-              <div class="triangle-input-row triangle-input-row--gauge">
-                <FloatingInput
-                  id="stitchesInput"
-                  name="stitchesInMeasure"
-                  label="Gauge Stitches"
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  placeholder="in 4 inches"
-                />
-                <FloatingInput
-                  id="rowsInput"
-                  name="rowsInMeasure"
-                  label="Gauge Rows"
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  placeholder="in 4 inches"
-                />
-                <FloatingInput
-                  id="availableNeedlesInput"
-                  name="availableNeedles"
-                  label="Available Needles"
-                  type="number"
-                  min={0}
-                  step={1}
-                  errorMessage="Please enter the number of needles available on your machine (typically between 100 and 200)."
-                />
-              </div>
+              <FloatingInput
+                id="availableNeedlesInput"
+                name="availableNeedles"
+                label="Available Needles"
+                type="number"
+                min={0}
+                step={1}
+                errorMessage="Please enter the number of needles available on your machine (typically between 100 and 200)."
+              />
             </div>
             <div class="triangle-actions">
               <button type="button" id="calculateTriangle" class="wizard-button">
                 Generate Knitting Instructions
               </button>
             </div>
-            
-            <div id="triangleResults" class="triangle-results">
-            </div>
           </form>
-        </div>
 
-        <aside class="triangle-preview-panel" id="trianglePreviewPanel" data-current-style="isosceles">
-          <div class="triangle-preview-card">
-            <div class="triangle-preview-svg-wrap triangle-preview-svg-wrap--iso" data-style="isosceles">
-              <TriangleIsoSvg />
-            </div>
-            <div class="triangle-preview-svg-wrap triangle-preview-svg-wrap--right" data-style="right">
-              <TriangleRightSvg />
-            </div>
+          <div class="triangle-tool-results">
+            <ToolResultCard
+              id="triangleResultsCard"
+              title="Your Pattern"
+              resultsContentId="triangleResults"
+              hidden={true}
+            >
+              <div slot="diagram" id="triangleResultsDiagram"></div>
+            </ToolResultCard>
           </div>
-        </aside>
+        </div>
         </div>
       </div>
     </div>
@@ -147,7 +127,14 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
   }
 }
 
-/* Tool layout: inputs + preview side by side on desktop, stacked on small screens */
+/* Hide diagram slot on phone-sized screens only; keep results text and actions visible */
+@media (max-width: 640px) {
+  .triangle-tool-results :global(.tool-result-card__diagram) {
+    display: none !important;
+  }
+}
+
+/* Tool layout: input column */
 .triangle-tool-layout {
   display: flex;
   flex-wrap: wrap;
@@ -157,61 +144,6 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
 .triangle-input-column {
   flex: 1 1 320px;
   min-width: 0;
-}
-.triangle-preview-panel {
-  flex: 0 1 280px;
-  min-width: 0;
-}
-
-@media (max-width: 767px) {
-  .triangle-preview-panel {
-    display: none;
-  }
-}
-
-/* Preview sits inside the panel; no separate card look so it feels integrated */
-.triangle-preview-card {
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  color: #52682D;
-}
-.triangle-preview-svg-wrap {
-  display: none;
-  width: 100%;
-  max-width: 240px;
-  margin: 0 auto;
-}
-.triangle-preview-svg-wrap .triangle-preview-svg,
-.triangle-preview-svg-wrap :global(svg) {
-  width: 100%;
-  height: auto;
-  display: block;
-  color: #9ca3af;
-}
-.triangle-preview-panel[data-current-style="isosceles"] .triangle-preview-svg-wrap--iso {
-  display: block;
-}
-.triangle-preview-panel[data-current-style="right"] .triangle-preview-svg-wrap--right {
-  display: block;
-}
-.triangle-preview-panel[data-current-style="right"] .triangle-preview-svg-wrap--iso {
-  display: none;
-}
-.triangle-preview-panel[data-current-style="isosceles"] .triangle-preview-svg-wrap--right {
-  display: none;
-}
-/* SVG part default and active highlight */
-.triangle-preview-svg-wrap :global(.svg-part) {
-  transition: stroke 0.15s ease, stroke-width 0.15s ease;
-}
-.triangle-preview-svg-wrap :global(.svg-part) {
-  stroke: #9ca3af;
-}
-.triangle-preview-svg-wrap :global(.svg-part.is-active) {
-  stroke: #52682D;
-  stroke-width: 3;
 }
 
 .section-header-with-toggle {
@@ -566,7 +498,6 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
   }
   .wizard-hero,
   .triangle-style-section,
-  .triangle-preview-panel,
   .section-header-with-toggle,
   .triangle-input-grid,
   .triangle-actions,
@@ -672,10 +603,46 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
 }
   </style>
 
-<script>
+<script define:vars={{ diagramRight: diagramTriangleRight, diagramSymmetric: diagramTriangleSymmetric }}>
   let instructionStyle = "even";
   let showSimpleRowNumbers = false;
   let lastResultData = null;
+
+  /** Update a single SVG text element by id; skips silently if element is missing. */
+  function setSvgText(id, value, root) {
+    if (!root) return;
+    const el = root.querySelector(`[id="${id}"]`);
+    if (!el) return;
+    const str = String(value);
+    if (el.tagName && el.tagName.toUpperCase() === "G") {
+      const textEl = el.querySelector("text");
+      if (textEl) textEl.textContent = str;
+    } else {
+      el.textContent = str;
+    }
+  }
+
+  function getTriangleUnit() {
+    return localStorage.getItem("kbm-units") || "in";
+  }
+
+  /** Populate the 8 shared SVG text IDs with calculated values. Fails quietly if root is missing. */
+  function updateTriangleDiagramValues(data, root) {
+    if (!root) return;
+    const unit = getTriangleUnit();
+    const unitLabel = unit === "cm" ? "cm" : "in";
+    const castOnMeasure = `${data.baseWidth} ${unitLabel}`;
+    const heightMeasure = `${data.finishedHeight} ${unitLabel}`;
+
+    setSvgText("cast-on-label", "Cast On", root);
+    setSvgText("cast-on-measure", castOnMeasure, root);
+    setSvgText("cast-on-stitches-label", "stitches", root);
+    setSvgText("cast-on-stitches-count", data.castOnStitches, root);
+    setSvgText("row-label", "rows", root);
+    setSvgText("row-count", data.totalRows, root);
+    setSvgText("height-label", "Height", root);
+    setSvgText("height-measure", heightMeasure, root);
+  }
 
   function ordinal(n) {
     if (n === 1) return "1st";
@@ -771,48 +738,9 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
       window.selectedTriangleStyle = triangleStyle;
       const triangleTypeInput = document.getElementById("triangleType");
       if (triangleTypeInput) triangleTypeInput.value = triangleStyle;
-      const previewPanel = document.getElementById("trianglePreviewPanel");
-      if (previewPanel) previewPanel.setAttribute("data-current-style", triangleStyle || "isosceles");
       console.log("Triangle style selected:", triangleStyle);
     });
   });
-
-  // Preview: highlight SVG part that matches the focused/active input
-  (function initTrianglePreviewHighlight() {
-    const panel = document.getElementById("trianglePreviewPanel");
-    if (!panel) return;
-    const inputs = document.querySelectorAll("#triangleForm [data-highlight]");
-    function getActiveHighlight() {
-      const active = document.activeElement;
-      if (!active || !active.closest("#triangleForm")) return null;
-      return active.getAttribute("data-highlight");
-    }
-    function clearAndHighlight(wrap, highlight) {
-      const allParts = wrap.querySelectorAll(".svg-part--width, .svg-part--height, #width, #height");
-      allParts.forEach((el) => el.classList.remove("is-active"));
-      if (highlight === "width") {
-        wrap.querySelectorAll(".svg-part--width, #width").forEach((el) => el.classList.add("is-active"));
-      } else if (highlight === "height") {
-        wrap.querySelectorAll(".svg-part--height, #height").forEach((el) => el.classList.add("is-active"));
-      }
-    }
-    function updateHighlight() {
-      const highlight = getActiveHighlight();
-      const style = panel.getAttribute("data-current-style") || "isosceles";
-      const wrap = panel.querySelector(
-        style === "right" ? ".triangle-preview-svg-wrap--right" : ".triangle-preview-svg-wrap--iso"
-      );
-      if (!wrap) return;
-      clearAndHighlight(wrap, highlight);
-    }
-    inputs.forEach((input) => {
-      input.addEventListener("focus", updateHighlight);
-      input.addEventListener("input", updateHighlight);
-      input.addEventListener("blur", () => {
-        setTimeout(updateHighlight, 0);
-      });
-    });
-  })();
 
   const calculateButton = document.getElementById("calculateTriangle");
   const resultsPanel = document.getElementById("triangleResults");
@@ -824,8 +752,8 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
 
     const baseWidth = Number(document.querySelector('[name="finishedWidth"]')?.value);
     const height = Number(document.querySelector('[name="finishedHeight"]')?.value);
-    const stitchGauge = Number(document.querySelector('[name="stitchesInMeasure"]')?.value);
-    const rowGauge = Number(document.querySelector('[name="rowsInMeasure"]')?.value);
+    const stitchGauge = Number(document.getElementById("triangle-stitch-gauge")?.value);
+const rowGauge = Number(document.getElementById("triangle-row-gauge")?.value);
 
     const needlesInput = document.querySelector('[name="availableNeedles"]');
     const needles = parseInt(needlesInput?.value ?? "", 10);
@@ -836,10 +764,10 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
     if (needlesInput) needlesInput.classList.remove("error");
     const availableNeedles = needles;
 
-    if (!baseWidth || !height || !stitchGauge || !rowGauge) {
-      resultsPanel.innerHTML = "<p>Please enter width, depth, stitch gauge, and row gauge.</p>";
-      return;
-    }
+    if (baseWidth === "" || height === "" || stitchGauge === "" || rowGauge === "") {
+  resultsPanel.innerHTML = "<p>Please enter width, depth, stitch gauge, and row gauge.</p>";
+  return;
+}
 
     const triangleStyle = window.selectedTriangleStyle || "isosceles";
 
@@ -958,6 +886,8 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
     instructionStyle = "simple";
     showSimpleRowNumbers = false;
 
+    const diagramData = { baseWidth, finishedHeight: height, castOnStitches, totalRows };
+
     const distributedDecreaseLabel = isSymmetrical
       ? "Decrease rows (decrease 1 at each edge on these rows)"
       : "Decrease Rows";
@@ -1034,6 +964,15 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
     </div>
   `;
 
+    const resultsCard = document.getElementById("triangleResultsCard");
+    if (resultsCard) resultsCard.hidden = false;
+
+    const resultsDiagramEl = document.getElementById("triangleResultsDiagram");
+    if (resultsDiagramEl) {
+      resultsDiagramEl.innerHTML = triangleStyle === "right" ? diagramRight : diagramSymmetric;
+      updateTriangleDiagramValues(diagramData, resultsDiagramEl);
+    }
+
     renderInstructions();
 
     const distributedToggle = document.getElementById("distributed-toggle");
@@ -1066,8 +1005,8 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
   });
 
   function updateGaugePlaceholders(unit) {
-    const stitchesInput = document.getElementById("stitchesInput");
-    const rowsInput = document.getElementById("rowsInput");
+    const stitchesInput = document.getElementById("triangle-stitch-gauge");
+    const rowsInput = document.getElementById("triangle-row-gauge");
 
     if (!stitchesInput || !rowsInput) return;
 

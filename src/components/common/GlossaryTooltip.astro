@@ -1,0 +1,107 @@
+---
+/**
+ * Reusable inline glossary tooltip. Prefer glossaryId (id) for reliable lookup;
+ * term is supported for backward compatibility.
+ *
+ * Preferred (by id):
+ *   <GlossaryTooltip id={753} />
+ *   <GlossaryTooltip id={753}>fine gauge machine</GlossaryTooltip>
+ *
+ * Fallback (by term):
+ *   <GlossaryTooltip term="Fine Gauge" />
+ */
+interface Props {
+  /** Glossary entry id (glossaryId). Preferred. */
+  id?: number;
+  /** Look up by term (entry.english). Fallback for backward compatibility. */
+  term?: string;
+}
+
+const { id, term } = Astro.props;
+
+import glossaryData from "../../data/glossary.json";
+
+const glossary: Array<{ glossaryId: number; english: string; example?: string }> = Array.isArray(
+  glossaryData
+)
+  ? (glossaryData as Array<{ glossaryId: number; english: string; example?: string }>)
+  : [];
+
+const htmlToText = (html: string) => {
+  if (!html) return "";
+  let out = html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<\/(p|div|li|br|figure|figcaption|h\d)>/gi, " ")
+    .replace(/<(br|hr)\s*\/?>/gi, " ")
+    .replace(/<[^>]+>/g, " ");
+  out = out
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+  return out;
+};
+
+const stripHtml = (s: string) => (s ?? "").replace(/<[^>]*>/g, "").trim();
+
+const truncate = (text: string, max = 260) => {
+  const t = (text ?? "").trim();
+  if (t.length <= max) return t;
+  return t.slice(0, max).replace(/\s+\S*$/, "") + "…";
+};
+
+const norm = (s: string) => (s ?? "").toLowerCase().trim();
+const matchesTerm = (entryEnglish: string, t: string) => {
+  const e = norm(entryEnglish);
+  const target = norm(t);
+  if (!e) return false;
+  const parts = e.split("|").map((p) => p.trim());
+  return parts.some((p) => norm(p) === target) || e === target;
+};
+
+let entry: { glossaryId: number; english: string; example?: string } | undefined;
+
+if (id != null) {
+  entry = glossary.find((e) => e.glossaryId === id);
+  if (!entry && typeof console !== "undefined" && import.meta.env?.DEV) {
+    console.warn(`[GlossaryTooltip] No glossary entry found for id=${id}`);
+  }
+} else if (term != null && term !== "") {
+  entry = glossary.find((e) => matchesTerm(e?.english ?? "", term));
+  if (!entry && typeof console !== "undefined" && import.meta.env?.DEV) {
+    console.warn(`[GlossaryTooltip] No glossary entry found for term="${term}"`);
+  }
+}
+
+const tooltipText = entry?.example ? truncate(htmlToText(entry.example)) : "";
+const hasSlot = Astro.slots.has("default");
+
+const visibleText = hasSlot
+  ? undefined
+  : entry
+    ? stripHtml(entry.english ?? "")
+    : (term ?? "").trim();
+---
+
+<span
+  class="glossary-tooltip kbm-tooltip"
+  {...(tooltipText ? { "data-tip": tooltipText } : {})}
+>
+  {hasSlot ? <slot /> : visibleText}
+</span>
+
+<style>
+  .glossary-tooltip {
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+    cursor: help;
+  }
+  .glossary-tooltip:hover {
+    text-decoration-thickness: 2px;
+  }
+</style>

@@ -55,7 +55,7 @@ const {
   toggleId
 } = Astro.props;
 
-const effectiveToggleId = toggleId || id;
+const effectiveToggleId = toggleId || "kbm-unit-toggle";
 ---
 
 <div class="gauge-input-wrapper" data-toggle-id={effectiveToggleId}>
@@ -63,7 +63,7 @@ const effectiveToggleId = toggleId || id;
     <div class="kbm-header-layout">
       <h3 class="section-title">{title}</h3>
       <div id="kbm-units-toggle">
-        <UnitToggle id={id} />
+        <UnitToggle id={effectiveToggleId} />
       </div>
     </div>
   )}
@@ -74,11 +74,12 @@ const effectiveToggleId = toggleId || id;
   
   {!showTitle && showToggle && (
     <div class="gauge-toggle-only">
-      <UnitToggle id={id} />
+      <UnitToggle id={effectiveToggleId} />
     </div>
   )}
-  
-  <div class="gauge-input-row">
+
+  <div class="gauge-label">Gauge</div>
+  <div class="gauge-box">
     <FloatingInput 
       id={`${id}-stitch-gauge`}
       labelId={`${id}-stitch-label`}
@@ -88,6 +89,7 @@ const effectiveToggleId = toggleId || id;
       min="1"
       testId={`input-${id}-stitch-gauge`}
     />
+    <span class="gauge-divider">×</span>
     <FloatingInput 
       id={`${id}-row-gauge`}
       labelId={`${id}-row-label`}
@@ -98,8 +100,6 @@ const effectiveToggleId = toggleId || id;
       testId={`input-${id}-row-gauge`}
     />
   </div>
-  
-  <p class="gauge-helper">Enter your measured gauge over 4" (or 10 cm).</p>
 </div>
 
 <style is:global>
@@ -113,16 +113,27 @@ const effectiveToggleId = toggleId || id;
   margin-bottom: 0.75rem;
 }
 
-.gauge-input-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+.gauge-label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
 }
 
-@media (max-width: 480px) {
-  .gauge-input-row {
-    grid-template-columns: 1fr;
-  }
+.gauge-box {
+  background: #f7f9fb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.gauge-divider {
+  font-size: 18px;
+  font-weight: 600;
+  color: #6b7280;
 }
 
 .gauge-helper {
@@ -137,14 +148,16 @@ const effectiveToggleId = toggleId || id;
    FLOATING INPUT STYLES FOR GAUGE INPUTS
    High specificity to override wizard.css
    =========================================== */
-.gauge-input-row .floating-input {
+.gauge-box .floating-input {
   position: relative !important;
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
+  flex: 1 1 0;
+  min-width: 120px;
 }
 
-.gauge-input-row .floating-input input {
+.gauge-box .floating-input input {
   width: 100% !important;
   min-height: 52px !important;
   padding: 1.25rem 0.75rem 0.5rem !important;
@@ -159,19 +172,19 @@ const effectiveToggleId = toggleId || id;
   box-sizing: border-box;
 }
 
-.gauge-input-row .floating-input input::-webkit-outer-spin-button,
-.gauge-input-row .floating-input input::-webkit-inner-spin-button {
+.gauge-box .floating-input input::-webkit-outer-spin-button,
+.gauge-box .floating-input input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-.gauge-input-row .floating-input input:focus {
+.gauge-box .floating-input input:focus {
   outline: none;
   border-color: var(--kbm-green) !important;
   box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.1) !important;
 }
 
-.gauge-input-row .floating-input .floating-label {
+.gauge-box .floating-input .floating-label {
   position: absolute !important;
   left: 0.75rem !important;
   top: 50% !important;
@@ -193,8 +206,8 @@ const effectiveToggleId = toggleId || id;
   z-index: 1 !important;
 }
 
-.gauge-input-row .floating-input input:focus ~ .floating-label,
-.gauge-input-row .floating-input input:not(:placeholder-shown) ~ .floating-label {
+.gauge-box .floating-input input:focus ~ .floating-label,
+.gauge-box .floating-input input:not(:placeholder-shown) ~ .floating-label {
   top: 0.35rem !important;
   transform: translateY(0) !important;
   font-size: 0.75rem !important;
@@ -202,58 +215,67 @@ const effectiveToggleId = toggleId || id;
   font-weight: 500 !important;
 }
 
-.gauge-input-row .floating-input input::placeholder {
+.gauge-box .floating-input input::placeholder {
   color: transparent !important;
 }
 
-.gauge-input-row .floating-input input:focus::placeholder {
+.gauge-box .floating-input input:focus::placeholder {
   color: #9ca3af !important;
 }
 </style>
 
 <script>
-  // Dynamic placeholder updates based on unit toggle
-  document.addEventListener('DOMContentLoaded', () => {
-    // Find all gauge input wrappers and set up each one
-    document.querySelectorAll('.gauge-input-wrapper').forEach(wrapper => {
-      const toggleId = wrapper.dataset.toggleId;
-      const id = wrapper.querySelector('input[id$="-stitch-gauge"]')?.id?.replace('-stitch-gauge', '');
-      
-      if (!id) return;
-      
-      const btnInches = document.getElementById(`${toggleId}-btn-inches`);
-      const btnCm = document.getElementById(`${toggleId}-btn-cm`);
-      const stitchInput = document.getElementById(`${id}-stitch-gauge`);
-      const rowInput = document.getElementById(`${id}-row-gauge`);
-      const stitchLabel = document.getElementById(`${id}-stitch-label`);
-      const rowLabel = document.getElementById(`${id}-row-label`);
-      
-      function updatePlaceholders(unit) {
-        if (!stitchLabel || !rowLabel) return;
-        
-        if (unit === 'cm') {
-          stitchLabel.textContent = 'Stitches (over 10 cm)';
-          rowLabel.textContent = 'Rows (over 10 cm)';
-        } else {
-          stitchLabel.textContent = 'Stitches (over 4")';
-          rowLabel.textContent = 'Rows (over 4")';
-        }
+document.addEventListener('DOMContentLoaded', () => {
+
+  document.querySelectorAll('.gauge-input-wrapper').forEach((wrapper) => {
+
+    const toggleId = (wrapper as HTMLElement).dataset.toggleId;
+    const stitchInput = wrapper.querySelector('input[id$="-stitch-gauge"]');
+
+    if (!stitchInput || !toggleId) return;
+
+    const id = stitchInput.id.replace('-stitch-gauge','');
+
+    const stitchLabel = document.getElementById(`${id}-stitch-label`);
+    const rowLabel = document.getElementById(`${id}-row-label`);
+
+    function updateLabels(unit: string) {
+
+      if (!stitchLabel || !rowLabel) return;
+
+      if (unit === 'cm') {
+        stitchLabel.textContent = 'Stitches (over 10 cm)';
+        rowLabel.textContent = 'Rows (over 10 cm)';
+      } else {
+        stitchLabel.textContent = 'Stitches (over 4")';
+        rowLabel.textContent = 'Rows (over 4")';
       }
-      
-      // Check initial state - look for active button or localStorage
-      const inchesActive = btnInches?.classList.contains('active');
-      const savedUnit = localStorage.getItem(`${toggleId}.unit`) || localStorage.getItem(`${toggleId}-unit`);
-      const initialUnit = inchesActive ? 'in' : (savedUnit === 'cm' ? 'cm' : 'in');
-      updatePlaceholders(initialUnit);
-      
-      // Listen for unit toggle clicks
-      btnInches?.addEventListener('click', () => {
-        updatePlaceholders('in');
-      });
-      
-      btnCm?.addEventListener('click', () => {
-        updatePlaceholders('cm');
-      });
+
+    }
+
+    function getCurrentUnit() {
+
+      const btnCm = document.getElementById(`${toggleId}-btn-cm`);
+      const btnInches = document.getElementById(`${toggleId}-btn-inches`);
+
+      if (btnCm && btnCm.classList.contains('active')) return 'cm';
+      if (btnInches && btnInches.classList.contains('active')) return 'in';
+
+      const saved =
+        localStorage.getItem(`${toggleId}.unit`) ||
+        localStorage.getItem(`${toggleId}-unit`);
+
+      return saved === 'cm' ? 'cm' : 'in';
+
+    }
+
+    window.addEventListener('kbm:units-change', (e: Event) => {
+      const detail = (e as CustomEvent<{ unit?: string }>).detail;
+      const newUnit = detail?.unit ? detail.unit : 'in';
+      updateLabels(newUnit);
     });
+
   });
+
+});
 </script>

@@ -1,0 +1,267 @@
+---
+/**
+ * ToolResultCard.astro
+ *
+ * Reusable results block for Knit by Machine tools and pattern calculators.
+ * Presents finished pattern/instructions in a white card with optional
+ * heading, actions (e.g. print), text content, and diagram/SVG area.
+ *
+ * Use for: rectangle tool, triangle tool, shaping tools, sweater calculators.
+ *
+ * Props:
+ * - id: Optional wrapper id (e.g. "rectangleResults") for JS visibility control
+ * - hidden: Optional; set when no results yet; toggle via JS when calculation succeeds
+ * - title: Optional heading (e.g. "Your Pattern", "Knitting Instructions")
+ * - resultsContentId: id for the text content container (default "results") so JS can inject
+ *
+ * Slots:
+ * - actions: Optional; print button or other actions
+ * - default: Text/instruction content; leave empty to let JS inject into resultsContentId
+ * - diagram: Optional; schematic SVG or image
+ */
+interface Props {
+  id?: string;
+  hidden?: boolean;
+  title?: string;
+  resultsContentId?: string;
+}
+
+const { id, hidden = false, title, resultsContentId = "results" } = Astro.props;
+---
+
+<section
+  id={id}
+  class="tool-result-card pattern-result-card"
+  hidden={hidden}
+  aria-labelledby={title ? "tool-result-card-title" : undefined}
+>
+  <div class="tool-result-card__inner">
+    <div class="tool-result-card__header">
+      {title && (
+        <h2 id="tool-result-card-title" class="tool-result-card__title">
+          {title}
+        </h2>
+      )}
+      <div class="tool-result-card__header-actions">
+        <slot name="actions" />
+      </div>
+    </div>
+    <div id={resultsContentId} class="tool-result-card__content">
+      <slot />
+    </div>
+    <div class="tool-result-card__diagram diagram-area">
+      <slot name="diagram" />
+    </div>
+    <div class="pattern-print-footer" aria-hidden="true">
+      Created with Knit It Now • <span id="printDate" class="pattern-print-date"></span>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    const el = document.getElementById("printDate");
+    if (el) el.textContent = new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+  })();
+</script>
+
+<style>
+  .tool-result-card {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .tool-result-card__inner {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    padding: 1.5rem 1.75rem;
+    max-width: 100%;
+  }
+
+  .tool-result-card__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .tool-result-card__title {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #2f3a2f;
+  }
+
+  .tool-result-card__header-actions {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .tool-result-card__header-actions:empty {
+    display: none;
+  }
+
+  /* Compact icon-style print button beside heading */
+  .tool-result-card__header-actions :global(.kbm-print-button) {
+    padding: 0.45rem;
+    font-size: 0.875rem;
+    min-width: auto;
+    background: #f3f4f6;
+    border-color: #e5e7eb;
+  }
+
+  .tool-result-card__header-actions :global(.kbm-print-button:hover) {
+    background: #e5e7eb;
+    transform: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+  .tool-result-card__header-actions :global(.kbm-print-button svg) {
+    width: 16px;
+    height: 16px;
+  }
+
+  .tool-result-card__content {
+    margin-bottom: 0;
+    max-width: 420px;
+    line-height: 1.55;
+  }
+
+  .tool-result-card__content:empty {
+    min-height: 0;
+  }
+
+  .tool-result-card__diagram,
+  .diagram-area {
+    margin-top: 1.5rem;
+    min-width: 0;
+    max-width: 520px;
+  }
+
+  .tool-result-card__diagram svg,
+  .diagram-area svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .tool-result-card__diagram:empty {
+    display: none;
+  }
+
+  .pattern-print-footer {
+    display: none;
+  }
+
+  /* Desktop: two columns — text ~40%, diagram ~60%, top-aligned */
+  .tool-result-card__inner {
+    display: grid;
+    grid-template-columns: 2fr 3fr;
+    gap: 32px;
+    align-items: start;
+  }
+
+  .tool-result-card__header {
+    grid-column: 1 / -1;
+  }
+
+  .tool-result-card__content {
+    grid-column: 1;
+  }
+
+  .tool-result-card__diagram {
+    grid-column: 2;
+    margin-top: 0;
+  }
+
+  .tool-result-card__diagram:empty {
+    display: none;
+  }
+
+  /* Mobile: stack instructions then diagram for readability */
+  @media (max-width: 768px) {
+    .tool-result-card__inner {
+      grid-template-columns: 1fr;
+    }
+
+    .tool-result-card__content {
+      grid-column: 1;
+      max-width: none;
+    }
+
+    .tool-result-card__diagram,
+    .diagram-area {
+      grid-column: 1;
+      margin-top: 1.5rem;
+      width: 100%;
+      max-width: none;
+    }
+
+    .diagram-area svg,
+    .tool-result-card__diagram svg {
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  @media print {
+    /* Force result card to print even when hidden (e.g. before first calculation) */
+    .tool-result-card,
+    .tool-result-card[hidden],
+    .pattern-result-card {
+      display: block !important;
+      visibility: visible !important;
+    }
+
+    .tool-result-card__inner {
+      display: block !important;
+    }
+
+    .tool-result-card {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: none;
+    }
+
+    /* Clean pattern sheet: no shadows, light or no border, no background shading */
+    .tool-result-card__inner {
+      box-shadow: none !important;
+      border: 1px solid #ccc !important;
+      background: #fff !important;
+      padding: 1rem 1.25rem;
+    }
+
+    .tool-result-card__title {
+      font-size: 14pt;
+      color: #000;
+    }
+
+    /* Hide UI: print button and other header actions */
+    .tool-result-card__header-actions {
+      display: none !important;
+    }
+
+    /* Prevent diagram from splitting across pages */
+    .tool-result-card__diagram,
+    .diagram-area {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .pattern-print-footer {
+      display: block !important;
+      margin-top: 1.25rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #ccc;
+      font-size: 9pt;
+      color: #666;
+    }
+
+    .pattern-print-date {
+      font-weight: inherit;
+    }
+  }
+</style>

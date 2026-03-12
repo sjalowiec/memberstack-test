@@ -6,9 +6,13 @@ import toolsData from "../../../data/tools.json";
 import "../../styles/wizard.css";
 import FloatingInput from "../../components/tools/FloatingInput.astro";
 import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
-
+import rectangleDiagram from "../../components/tools/diagram-rectangle.svg?raw";
 const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
 const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+import GaugeInput from "../../components/wizards/components/GaugeInput.astro";
+import ToolResultCard from "../../components/tools/ToolResultCard.astro";
+import PrintButton from "../../components/common/PrintButton.astro";
+
 ---
 
 <Layout title="Rectangle / Square Calculator">
@@ -26,13 +30,14 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
         </p>
       </section>
 
-      <div class="rectangle-calculator-panel">
+      <div class="rectangle-calculator-panel kbm-tool-calculator-area">
         <div class="section-header-with-toggle">
           <h2>Enter Your Measurements</h2>
           <UnitToggle />
         </div>
         <form id="rectangleForm">
           <div class="rectangle-input-grid">
+            <GaugeInput id="rectangle" showTitle={false} showToggle={false} toggleId="rectangle" />
             <div class="rectangle-input-row rectangle-input-row--dimensions">
               <FloatingInput
                 id="finishedWidth"
@@ -51,46 +56,30 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
                 step={0.01}
               />
             </div>
-            <div class="rectangle-input-row rectangle-input-row--gauge">
-              <FloatingInput
-                id="stitchesInput"
-                name="stitchesInMeasure"
-                label="Stitch Gauge"
-                type="number"
-                min={0}
-                step={0.01}
-                placeholder="in 4 inches"
-              />
-              <FloatingInput
-                id="rowsInput"
-                name="rowsInMeasure"
-                label="Row Gauge"
-                type="number"
-                min={0}
-                step={0.01}
-                placeholder="in 4 inches"
-              />
-              <FloatingInput
-                id="availableNeedlesInput"
-                name="availableNeedles"
-                label="Available Needles (optional)"
-                type="number"
-                min={0}
-                step={1}
-                placeholder=" "
-              />
-            </div>
+            <FloatingInput
+              id="availableNeedlesInput"
+              name="availableNeedles"
+              label="Available Needles (optional)"
+              type="number"
+              min={0}
+              step={1}
+              placeholder=" "
+            />
           </div>
           <div class="rectangle-actions">
             <button type="button" id="calculateRectangle" class="wizard-button">
               Calculate
             </button>
           </div>
-
+          
           <div id="rectangleValidation" class="rectangle-validation" role="alert" hidden></div>
-          <div id="rectangleResults" class="rectangle-results"></div>
         </form>
       </div>
+
+      <ToolResultCard id="rectangleResults" hidden title="Your Pattern" resultsContentId="results">
+        <PrintButton slot="actions" label="" ariaLabel="Print pattern" />
+        <div class="rectangle-diagram" slot="diagram" set:html={rectangleDiagram}></div>
+      </ToolResultCard>
     </div>
   </main>
 
@@ -183,10 +172,6 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
       display: block;
     }
 
-    .rectangle-results {
-      margin-top: 24px;
-    }
-
     .rectangle-results-card.tool-results {
       background: #f8faf6;
       border: 1px solid #e5e7eb;
@@ -257,15 +242,30 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
   <script>
     const calculateButton = document.getElementById("calculateRectangle");
     const resultsPanel = document.getElementById("rectangleResults");
+    const resultsDiv = document.getElementById("results");
     const validationEl = document.getElementById("rectangleValidation");
+
+    function setSvgText(id: string, value: string | number): void {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const str = String(value);
+      // Illustrator (and similar tools) often export text as <g id="..."><text>...</text></g>.
+      // Updating the group's textContent removes the <text> and hides the label. Use the inner <text> instead.
+      if (el.tagName?.toUpperCase() === "G") {
+        const textEl = el.querySelector("text");
+        if (textEl) textEl.textContent = str;
+      } else {
+        el.textContent = str;
+      }
+    }
 
     function getUnit(): string {
       return localStorage.getItem("kbm-units") || "in";
     }
 
     function updateGaugePlaceholders(unit: string): void {
-      const stitchesInput = document.getElementById("stitchesInput") as HTMLInputElement | null;
-      const rowsInput = document.getElementById("rowsInput") as HTMLInputElement | null;
+      const stitchesInput = document.getElementById("rectangle-stitch-gauge") as HTMLInputElement | null;
+      const rowsInput = document.getElementById("rectangle-row-gauge") as HTMLInputElement | null;
       if (!stitchesInput || !rowsInput) return;
       if (unit === "cm") {
         stitchesInput.placeholder = "in 10 cm";
@@ -291,8 +291,8 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
 
       const widthRaw = formData.get("finishedWidth") ?? "";
       const lengthRaw = formData.get("finishedLength") ?? "";
-      const stitchGaugeRaw = formData.get("stitchesInMeasure") ?? "";
-      const rowGaugeRaw = formData.get("rowsInMeasure") ?? "";
+      const stitchGaugeRaw = (document.getElementById("rectangle-stitch-gauge") as HTMLInputElement | null)?.value ?? "";
+      const rowGaugeRaw = (document.getElementById("rectangle-row-gauge") as HTMLInputElement | null)?.value ?? "";
       const availableNeedlesRaw = formData.get("availableNeedles");
 
       const width = parseFloat(String(widthRaw)) || 0;
@@ -316,7 +316,8 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
       if (errors.length > 0) {
         validationEl.textContent = errors.join(" ");
         validationEl.hidden = false;
-        resultsPanel.innerHTML = "";
+        resultsPanel.hidden = true;
+        if (resultsDiv) resultsDiv.innerHTML = "";
         return;
       }
 
@@ -347,8 +348,14 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
           </div>`;
       }
 
-      resultsPanel.innerHTML =
-        warningHtml +
+      const widthText = `${width} ${unitLabel}`;
+      const heightText = `${length} ${unitLabel}`;
+      const stitchCount = castOn;
+      const rowCount = totalRows;
+
+      if (resultsDiv) {
+        resultsDiv.innerHTML =
+          warningHtml +
         `
         <div class="rectangle-results-card tool-results">
           <div class="result-row">
@@ -362,7 +369,7 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
           <div class="result-row result-row--bind-off">
             <span class="result-label">Bind Off</span>
             <span class="result-value"></span>
-          </div>
+          </div><hr>
           <div class="result-row">
             <span class="result-label">Needles Required:</span>
             <span class="result-value"><strong>${needlesRequired}</strong></span>
@@ -372,6 +379,19 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
             <span class="result-value"><strong>${width} × ${length}</strong> ${unitLabel}</span>
           </div>
         </div>`;
+      }
+
+      resultsPanel.hidden = false;
+
+      // Update rectangle diagram (same values as written results)
+      setSvgText("cast-on-label", "Cast On");
+      setSvgText("cast-on-measure", widthText);
+      setSvgText("cast-on-stitches-label", "Stitches");
+      setSvgText("cast-on-stitches-count", stitchCount);
+      setSvgText("row-label", "Rows");
+      setSvgText("row-count", rowCount);
+      setSvgText("height-label", "Height");
+      setSvgText("height-measure", heightText);
     });
   </script>
 </Layout>

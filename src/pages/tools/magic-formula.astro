@@ -1,2060 +1,644 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import Tooltip from "../../components/Tooltip.astro";
-import WhyUseThisToolTooltip from "../../components/common/WhyUseThisToolTooltip.astro";
 import PrintFooter from "../../components/common/PrintFooter.astro";
 import ActionBar from "../../components/wizards/ActionBar.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
+import GaugeInput from "../../components/wizards/components/GaugeInput.astro";
+import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
+import FloatingInput from "../../components/tools/FloatingInput.astro";
+import toolsData from "../../../data/tools.json";
+import "../../styles/wizard.css";
 
 const pageTitle = "Magic Formula – Shaping Calculator | Knit it Now";
-const pageDescription = "The \"Magic Formula\" is the industry standard for distributing increases or decreases evenly across a slope. Whether you’re shaping a sleeve, a neckline, or a waist, just plug in your starting and ending counts to get perfectly spaced instructions. No math, no \"rounding errors,\" just a smooth edge.";
+const pageDescription = "The \"Magic Formula\" is the industry standard for distributing increases or decreases evenly across a slope. Whether you're shaping a sleeve, a neckline, or a waist, just plug in your starting and ending counts to get perfectly spaced instructions. No math, no \"rounding errors,\" just a smooth edge.";
 const pageUrl = "tools/magic-formula";
+const whyUseText = "Use this tool to evenly distribute increases or decreases across a shaping section. Enter either stitch counts and rows, or measurements and gauge, and get clear pattern-style instructions for one side or both sides of your piece.";
 
-
-
+const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
+const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
-
-<style>
-.wizard-page {
-  padding-top: 120px;
-  padding-bottom: 2rem;
-  min-height: 100vh;
-  background: var(--page-bg);
-}
-
-.page-header {
-  max-width: 800px;
-  margin: 0 auto 1.25rem;
-  padding: 0 1rem;
-}
-
-.page-header-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 0.75rem;
-  flex-wrap: wrap;
-}
-
-@media (max-width: 640px) {
-  .page-header-title {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-}
-
-.page-header h1 {
-  color: var(--kbm-green);
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.page-header p {
-  color: #6b7280;
-  font-size: 1.05rem;
-  line-height: 1.6;
-  text-align: center;
-}
-
-.wizard-description {
-  color: #6b7280;
-  font-size: 1.05rem;
-  line-height: 1.6;
-  text-align: center;
-}
-
-.wizard-description p {
-  margin: 0 0 0.5rem 0;
-}
-
-.wizard-description p:last-child {
-  margin-bottom: 0;
-}
-
-.video-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.5rem 1rem;
-  background: #e5e7eb;
-  color: #374151;
-  text-decoration: none;
-  font-weight: 600;
-  border-radius: 6px;
-  transition: all 0.2s;
-  border: 1px solid #d1d5db;
-  cursor: pointer;
-  font-size: 0.9rem;
-  white-space: nowrap;
-}
-
-.video-button:hover {
-  background: #d1d5db;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.wizard-container {
-  max-width: 700px;
-  margin: 0 auto;
-  background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-@media (max-width: 640px) {
-  .wizard-container {
-    padding: 1.25rem 1rem;
-    margin: 0 1rem;
-  }
-}
-
-.toggle-group {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1.25rem;
-}
-
-.input-mode-label {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #374151;
-  margin: 1rem 0 0.5rem 0;
-}
-
-.input-mode-toggle {
-  display: flex;
-  gap: 0;
-  margin-bottom: 1.25rem;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 2px solid #d0d5cc;
-  background: #f9fafb;
-}
-
-.input-mode-btn {
-  flex: 1;
-  padding: 0.65rem 1rem;
-  border: none;
-  background: transparent;
-  font-family: var(--font);
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #6b7280;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-
-.input-mode-btn:hover {
-  background: rgba(82, 104, 45, 0.08);
-  color: #374151;
-}
-
-.input-mode-btn.active {
-  background: var(--kbm-green);
-  color: white;
-}
-
-.mode-fields {
-  margin-top: 0;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 0.75rem 1rem;
-}
-
-.section-label {
-  grid-column: 1 / -1;
-}
-
-.section-divider {
-  grid-column: 1 / -1;
-}
-
-.form-row-2 {
-  display: contents;
-}
-
-.form-row-2 > .floating-input {
-  grid-column: span 3;
-}
-
-.form-row-3 {
-  display: contents;
-}
-
-.form-row-3 > .floating-input {
-  grid-column: span 2;
-}
-
-@media (max-width: 768px) {
-  .form-row-3 > .floating-input {
-    grid-column: span 3;
-  }
-}
-
-@media (max-width: 480px) {
-  .form-row-2 > .floating-input,
-  .form-row-3 > .floating-input {
-    grid-column: 1 / -1;
-  }
-}
-
-.floating-input {
-  position: relative;
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-.floating-input input {
-  width: 100%;
-  padding: 1.25rem 0.875rem 0.5rem;
-  border: 1px solid #d0d5cc;
-  border-radius: 6px;
-  font-family: var(--font);
-  font-size: 1rem;
-  color: var(--text-dark);
-  background: white;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  -moz-appearance: textfield;
-  box-sizing: border-box;
-}
-
-.floating-input input::-webkit-outer-spin-button,
-.floating-input input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.floating-input input:focus {
-  outline: none;
-  border-color: var(--kbm-green);
-  box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.1);
-}
-
-.floating-input input.error {
-  border-color: #dc3545;
-}
-
-.floating-input label {
-  position: absolute;
-  left: 0.875rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.95rem;
-  color: #6b7280;
-  pointer-events: none;
-  transition: all 0.2s ease;
-  background: transparent;
-  padding: 0 2px;
-}
-
-.floating-input input:focus ~ label,
-.floating-input input:not(:placeholder-shown) ~ label {
-  top: 0.5rem;
-  transform: translateY(0);
-  font-size: 0.75rem;
-  color: var(--kbm-green);
-  font-weight: 500;
-}
-
-.floating-input input.error ~ label {
-  color: #dc3545;
-}
-
-.floating-input input::placeholder {
-  color: transparent;
-}
-
-.floating-input input:focus::placeholder {
-  color: #9ca3af;
-}
-
-.error-text {
-  color: #dc3545;
-  font-size: 0.8rem;
-  margin-top: 0.35rem;
-  display: none;
-}
-
-.error-text.show {
-  display: block;
-}
-
-.section-divider {
-  border: none;
-  border-top: 1px solid #e5e7eb;
-  margin: 1rem 0;
-}
-
-.section-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--kbm-green);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.75rem;
-}
-
-.icon-toggle-group {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-}
-
-.icon-toggle {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 0;
-}
-
-.icon-toggle-box {
-  width: 56px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid var(--kbm-green);
-  border-radius: 8px;
-  background: white;
-  transition: all 0.2s ease;
-}
-
-.icon-toggle-box img {
-  width: 32px;
-  height: 32px;
-  transition: filter 0.2s ease;
-}
-
-.icon-toggle.active .icon-toggle-box {
-  background: var(--kbm-green);
-  border-color: var(--kbm-green);
-}
-
-.icon-toggle.active .icon-toggle-box img {
-  filter: brightness(0) invert(1);
-}
-
-.icon-toggle:hover:not(.active) .icon-toggle-box {
-  background: rgba(82, 104, 45, 0.08);
-}
-
-.icon-toggle-label {
-  font-size: 0.75rem;
-  color: #6b7280;
-  font-weight: 400;
-  transition: color 0.2s ease;
-}
-
-.icon-toggle.active .icon-toggle-label {
-  color: #4b5563;
-  font-weight: 500;
-}
-
-/* Slope indicator - hidden by default, only visible when slope mode is active */
-.slope-indicator {
-  cursor: default;
-  pointer-events: none;
-  display: none;
-}
-
-.slope-indicator .icon-toggle-box {
-  border-style: dashed;
-}
-
-.slope-indicator.active {
-  display: flex;
-}
-
-.slope-indicator.active .icon-toggle-box {
-  background: var(--kbm-green);
-  border-color: var(--kbm-green);
-  border-style: solid;
-}
-
-.slope-indicator.active .icon-toggle-box img {
-  filter: brightness(0) invert(1);
-}
-
-.slope-indicator.active .icon-toggle-label {
-  color: var(--kbm-green);
-  font-weight: 500;
-}
-
-.calculate-btn {
-  width: 100%;
-  padding: 1rem;
-  background: var(--kbm-green);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-family: var(--font);
-  font-size: 1.05rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 1rem;
-  transition: background 0.2s, transform 0.1s;
-}
-
-.calculate-btn:hover {
-  background: #445626;
-}
-
-.calculate-btn:active {
-  transform: scale(0.99);
-}
-
-.results {
-  display: none;
-  margin-top: 1.5rem;
-  padding: 1.25rem 1.5rem;
-  background: #ffffff;
-  border-radius: 12px;
-  border: 2px solid var(--kbm-green);
-  box-shadow: 0 2px 8px rgba(82, 104, 45, 0.08);
-}
-
-.results.show {
-  display: block;
-}
-
-.results h2 {
-  color: var(--kbm-green);
-  font-size: 1.15rem;
-  font-weight: 600;
-  margin: 0 0 0.75rem 0;
-}
-
-.results p {
-  margin: 0.5rem 0;
-  line-height: 1.5;
-}
-
-.results-section-label {
-  font-weight: 600;
-  color: #374151;
-  margin-top: 0.75rem;
-  margin-bottom: 0.25rem;
-}
-
-.note {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: #fff3cd;
-  border-left: 3px solid #ffc107;
-  border-radius: 4px;
-  font-size: 0.9rem;
-}
-
-.note.info {
-  background: #e8f4fd;
-  border-left-color: #0d6efd;
-}
-
-.note.error {
-  background: #f8d7da;
-  border-left-color: #dc3545;
-}
-
-.copy-btn {
-  margin-top: 1rem;
-  padding: 0.65rem 1.25rem;
-  background: white;
-  color: var(--kbm-green);
-  border: 2px solid var(--kbm-green);
-  border-radius: 6px;
-  font-family: var(--font);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.copy-btn:hover {
-  background: var(--kbm-green);
-  color: white;
-}
-
-.back-link {
-  display: inline-block;
-  color: #52682D;
-  text-decoration: none;
-  font-weight: 500;
-  margin-bottom: 1.5rem;
-  padding: 0.5rem 0;
-  transition: color 0.2s;
-}
-
-.back-link:hover {
-  color: #3d4e21;
-  text-decoration: underline;
-}
-
-.breakdown-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: white;
-  border: 1px solid #d0d5cc;
-  border-radius: 6px;
-  cursor: pointer;
-  font-family: var(--font);
-  font-size: 0.95rem;
-  color: var(--text-dark);
-  margin-top: 1rem;
-  transition: all 0.2s;
-  width: 100%;
-  text-align: left;
-}
-
-.breakdown-toggle:hover {
-  background: #f9fafb;
-  border-color: var(--kbm-green);
-}
-
-.breakdown-toggle .icon {
-  transition: transform 0.2s;
-}
-
-.breakdown-toggle.open .icon {
-  transform: rotate(90deg);
-}
-
-.breakdown-content {
-  display: none;
-  margin-top: 0.5rem;
-}
-
-.breakdown-content.show {
-  display: block;
-}
-
-.breakdown-explanation {
-  font-size: 0.8rem;
-  color: #6b7280;
-  margin-bottom: 0.5rem;
-  font-style: italic;
-}
-
-.breakdown-table-wrapper {
-  overflow-x: auto;
-  max-height: 300px;
-  overflow-y: auto;
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
-}
-
-.breakdown-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-}
-
-.breakdown-table th,
-.breakdown-table td {
-  padding: 0.5rem 0.75rem;
-  text-align: left;
-}
-
-.breakdown-table th {
-  background: #ffffff;
-  font-weight: 600;
-  color: #374151;
-  font-size: 0.8rem;
-  border-bottom: 2px solid var(--kbm-green);
-  position: sticky;
-  top: 0;
-}
-
-.breakdown-table tbody tr:nth-child(odd) {
-  background: #ffffff;
-}
-
-.breakdown-table tbody tr:nth-child(even) {
-  background: #E8F0DC;
-}
-
-.breakdown-table .sts-col,
-.breakdown-table td:last-child {
-  text-align: center;
-}
-
-/* Print styles - hide input sections */
-@media print {
-  .wizard-page {
-    padding-top: 0 !important;
-    background: white !important;
-  }
-  
-  .page-header,
-  .video-button,
-  .back-link,
-  .toggle-group,
-  .input-mode-label,
-  .input-mode-toggle,
-  .mode-fields,
-  .form-grid,
-  .section-label,
-  .section-divider,
-  .floating-input,
-  .form-row-2,
-  .form-row-3,
-  .icon-toggle-group,
-  .calculate-btn,
-  .results-actions,
-  .breakdown-toggle,
-  .no-print {
-    display: none !important;
-  }
-  
-  .wizard-container {
-    box-shadow: none !important;
-    padding: 0 !important;
-    background: white !important;
-    border: none !important;
-  }
-  
-  .results {
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    background: white !important;
-  }
-  
-  .breakdown-content {
-    display: block !important;
-    max-height: none !important;
-  }
-  
-  .breakdown-table-wrapper {
-    max-height: none !important;
-    overflow: visible !important;
-  }
-}
-
-</style>
-
-  <div class="wizard-page">
-    <div style="max-width: 800px; margin: 0 auto; padding: 0 1rem;">
+  <main class="wizard-page">
+    <div class="wizard-shell">
       <WizardBackLink category="tool" />
-    </div>
 
-  <div class="page-header">
-    <div class="page-header-title">
-      <h1>Magic Formula – Shaping Calculator</h1>
-      
-    </div>
-  
-      <p>
-        Calculate shaping from either measurements or stitch counts. Get clear increase or decrease instructions for your knitting.
-      </p>
-  </div>
-  <div class="wizard-container">
-    <form id="wizard-form">
-      <!-- Unit Toggle - left-aligned, above first input -->
-      <UnitToggle id="mfmf" />
+      <section class="wizard-hero">
+        <div class="tool-title-row">
+          <ToolPageHeader tool={tool} fallbackTitle="Magic Formula" />
+                 </div>
+        <p class="wizard-intro">
+          Use this tool to evenly distribute increases or decreases across a shaping section. Enter either stitch counts and rows, or measurements and gauge, and the tool will calculate the shaping for one side or both sides of your piece.
+        </p>
+      </section>
 
-      <p class="input-mode-label">How do you want to calculate your shaping?</p>
-      <div class="input-mode-toggle" role="group" aria-label="Input mode">
-        <button type="button" class="input-mode-btn active" data-mode="stitch" id="inputModeStitch" data-testid="input-mode-stitch">
-          I know my stitch counts and rows
-        </button>
-        <button type="button" class="input-mode-btn" data-mode="measurement" id="inputModeMeasurement" data-testid="input-mode-measurement">
-          I know my measurements
-        </button>
+      <div class="action-bar-wrap no-print">
+        <ActionBar />
       </div>
 
-      <div id="stitchModeFields" class="mode-fields">
-      <div class="form-grid">
-        <div class="section-label">Stitch Counts</div>
-        
-        <div class="form-row-2">
-          <div class="floating-input">
-            <input 
-              type="number" 
-              id="startingStitches" 
-              min="1"
-              step="1" 
-              placeholder=" "
-              data-testid="input-starting-stitches"
-            />
-            <label for="startingStitches" id="startingStitchesLabel">Starting stitches</label>
-            <span class="error-text" id="startingStitchesError">Please enter a valid number.</span>
+      <div class="magic-formula-panel">
+        <form id="wizard-form" class="magic-formula-form">
+          <p class="input-mode-label">How do you want to calculate your shaping?</p>
+          <div class="input-mode-toggle" role="group" aria-label="Input mode">
+            <button type="button" class="input-mode-btn active" data-mode="stitch" id="inputModeStitch">
+              I know my stitches and rows
+            </button>
+            <button type="button" class="input-mode-btn" data-mode="measurement" id="inputModeMeasurement">
+              I know my measurements
+            </button>
           </div>
 
-          <div class="floating-input">
-            <input 
-              type="number" 
-              id="endingStitches" 
-              min="0"
-              step="1" 
-              placeholder=" "
-              data-testid="input-ending-stitches"
-            />
-            <label for="endingStitches" id="endingStitchesLabel">Ending stitches</label>
-            <span class="error-text" id="endingStitchesError">Please enter a valid number.</span>
-          </div>
-        </div>
-
-        <hr class="section-divider" />
-        <div class="section-label">Rows & Gauge</div>
-
-        <div class="form-row-3">
-          <div class="floating-input">
-            <input 
-              type="number" 
-              id="totalRows" 
-              min="1"
-              step="1" 
-              placeholder=" "
-              data-testid="input-total-rows"
-            />
-            <label for="totalRows" id="totalRowsLabel">Total rows</label>
-            <span class="error-text" id="totalRowsError">Please enter a valid number.</span>
+          <p class="shaping-side-label">Where does the shaping happen?</p>
+          <p class="shaping-side-hint">One side = single slope or neckline edge. Both sides = sleeve caps, armholes, or waist shaping.</p>
+          <div class="shaping-side-toggle" role="group" aria-label="Shaping side">
+            <button type="button" class="shaping-side-btn active" data-side="one" id="shapeOneSide">
+              Shaping on one side
+            </button>
+            <button type="button" class="shaping-side-btn" data-side="both" id="shapeBothSides">
+              Shaping on both sides
+            </button>
           </div>
 
-          <div class="floating-input">
-            <input 
-              type="number" 
-              id="stitchGauge" 
-              step="1" 
-              min="1"
-              placeholder="16"
-              data-testid="input-stitch-gauge"
-            />
-            <label for="stitchGauge" id="stitchGaugeLabel">Stitches in 4 inches </label>
-            <span class="error-text" id="stitchGaugeError">If you enter one gauge, enter both.</span>
-          </div>
-
-          <div class="floating-input">
-            <input 
-              type="number" 
-              id="rowGauge" 
-              step="1" 
-              min="1"
-              placeholder="24"
-              data-testid="input-row-gauge"
-            />
-            <label for="rowGauge" id="rowGaugeLabel">Rows in 4 inches </label>
-            <span class="error-text" id="rowGaugeError">If you enter one gauge, enter both.</span>
-          </div>
-        </div>
-      </div>
-      </div>
-
-      <div id="measurementModeFields" class="mode-fields" style="display: none;">
-      <div class="form-grid">
-        <div class="section-label">Measurements</div>
-        
-        <div class="form-row-2">
-          <div class="floating-input">
-            <input 
-              type="number" 
-              id="startingWidth" 
-              min="0.1"
-              step="0.1" 
-              placeholder=" "
-              data-testid="input-starting-width"
-            />
-            <label for="startingWidth" id="startingWidthLabel">Starting width (inches)</label>
-            <span class="error-text" id="startingWidthError">Please enter a valid width.</span>
-          </div>
-
-          <div class="floating-input">
-            <input 
-              type="number" 
-              id="endingWidth" 
-              min="0"
-              step="0.1" 
-              placeholder=" "
-              data-testid="input-ending-width"
-            />
-            <label for="endingWidth" id="endingWidthLabel">Ending width (inches)</label>
-            <span class="error-text" id="endingWidthError">Please enter a valid width.</span>
-          </div>
-        </div>
-
-        <hr class="section-divider" />
-        <div class="section-label">Shaping Length & Gauge</div>
-
-        <div class="form-row-3">
-          <div class="floating-input">
-            <input 
-              type="number" 
-              id="shapingLength" 
-              min="0.1"
-              step="0.1" 
-              placeholder=" "
-              data-testid="input-shaping-length"
-            />
-            <label for="shapingLength" id="shapingLengthLabel">Shaping length (inches)</label>
-            <span class="error-text" id="shapingLengthError">Please enter a valid length.</span>
-          </div>
-
-          <div class="floating-input">
-            <input 
-              type="number" 
-              id="stitchGaugeMeas" 
-              step="1" 
-              min="1"
-              placeholder=" "
-              data-testid="input-stitch-gauge-meas"
-            />
-            <label for="stitchGaugeMeas" id="stitchGaugeMeasLabel">Stitches in 4 inches</label>
-            <span class="error-text" id="stitchGaugeMeasError">Please enter a valid gauge.</span>
-          </div>
-
-          <div class="floating-input">
-            <input 
-              type="number" 
-              id="rowGaugeMeas" 
-              step="1" 
-              min="1"
-              placeholder=" "
-              data-testid="input-row-gauge-meas"
-            />
-            <label for="rowGaugeMeas" id="rowGaugeMeasLabel">Rows in 4 inches</label>
-            <span class="error-text" id="rowGaugeMeasError">Please enter a valid gauge.</span>
-          </div>
-        </div>
-      </div>
-      </div>
-
-      <div id="shapingOptionsSection" style="display: none;">
-        <hr class="section-divider" />
-        <div class="section-label">Shaping Options</div>
-
-        <div class="icon-toggle-group">
-          <button type="button" class="icon-toggle active" data-value="both" data-testid="button-shape-both">
-            <div class="icon-toggle-box">
-              <img src="/images/choice-both-sides.svg" alt="Both sides" />
+          <!-- Stitch/row mode -->
+          <div id="stitchModeFields" class="mode-fields">
+            <h2 class="panel-h2">Stitch counts and rows</h2>
+            <p class="optional-gauge-note">Optional: add gauge to see approximate measurements in the results.</p>
+            <GaugeInput id="magicformula" showTitle={false} showToggle={false} />
+            <div id="gaugePartialError" class="validation-msg" role="alert" hidden>If you enter one gauge value, enter both.</div>
+            <div class="input-row">
+              <FloatingInput id="startingStitches" name="startingStitches" label="Starting stitches" type="number" min={1} step={1} placeholder=" " />
+              <FloatingInput id="endingStitches" name="endingStitches" label="Ending stitches" type="number" min={0} step={1} placeholder=" " />
             </div>
-            <span class="icon-toggle-label">Both sides</span>
-          </button>
-          <button type="button" class="icon-toggle" data-value="one" data-testid="button-shape-one">
-            <div class="icon-toggle-box">
-              <img src="/images/tools/choice-one-side.svg" alt="One side" />
+            <div class="input-row">
+              <FloatingInput id="totalRows" name="totalRows" label="Total rows for shaping" type="number" min={1} step={1} placeholder=" " />
             </div>
-            <span class="icon-toggle-label">One side</span>
-          </button>
-          <div class="icon-toggle slope-indicator" id="slopeIndicator" data-testid="indicator-slope" title="Auto-activates when steep shaping is needed">
-            <div class="icon-toggle-box">
-              <img src="/images/tools/  choice-slope.svg" alt="Slope" />
+          </div>
+
+          <!-- Measurement mode -->
+          <div id="measurementModeFields" class="mode-fields" hidden>
+            <div class="section-header-with-toggle">
+              <h2 class="panel-h2">Measurements</h2>
+              <UnitToggle id="mf-units" />
             </div>
-            <span class="icon-toggle-label">Slope</span>
+            <GaugeInput id="magicformula-measure" showTitle={false} showToggle={false} toggleId="mf-units" />
+            <div id="measurementGaugeError" class="validation-msg" role="alert" hidden>Measurement mode requires both stitch and row gauge.</div>
+            <div class="input-row">
+              <FloatingInput id="startingWidth" name="startingWidth" label="Starting width" type="number" min={0.1} step={0.01} placeholder=" " />
+              <FloatingInput id="endingWidth" name="endingWidth" label="Ending width" type="number" min={0} step={0.01} placeholder=" " />
+            </div>
+            <div class="input-row">
+              <FloatingInput id="shapingLength" name="shapingLength" label="Shaping length" type="number" min={0.1} step={0.01} placeholder=" " />
+            </div>
+          </div>
+
+          <div id="validationSummary" class="validation-msg validation-summary" role="alert" hidden></div>
+          <div class="form-actions">
+            <button type="submit" class="wizard-button" id="calculateBtn">Calculate Shaping</button>
+          </div>
+        </form>
+
+        <div id="results" class="results no-print" hidden>
+          <h2 class="results-title">Your Shaping Instructions</h2>
+          <div id="resultsContent" class="results-content print-only-show"></div>
+          <div class="results-actions">
+            <button type="button" id="copyBtn" class="copy-btn">Copy instructions</button>
           </div>
         </div>
-      </div>
-
-      <button type="button" class="calculate-btn" id="calculateBtn" data-testid="button-calculate" style="display: none;">Calculate Shaping</button>
-    </form>
-
-    <div id="results" class="results" data-testid="results-section">
-      <ActionBar />
-      <h2>Your Shaping Instructions</h2>
-      <div id="resultsContent" data-testid="results-content"></div>
-      
-      <button id="breakdownToggle" class="breakdown-toggle" data-testid="button-breakdown-toggle">
-        <span class="icon">▶</span> Row-by-row breakdown
-      </button>
-      <div id="breakdownContent" class="breakdown-content" data-testid="breakdown-content">
-        <p class="breakdown-explanation">Stitch counts shown are totals after each shaping action.</p>
-        <div class="breakdown-table-wrapper">
-          <table class="breakdown-table">
-            <thead>
-              <tr>
-                <th>Row</th>
-                <th>Action</th>
-                <th>Location</th>
-                <th class="sts-col">sts</th>
-              </tr>
-            </thead>
-            <tbody id="breakdownBody"></tbody>
-          </table>
-        </div>
-      </div>
-      
-      <div class="results-actions" style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem;">
-        <button id="copyBtn" class="copy-btn" data-testid="button-copy">
-          <i class="fas fa-copy"></i> Copy Instructions
-        </button>
       </div>
     </div>
-  </div>
+  </main>
+
   <PrintFooter url={pageUrl} />
-</div>
 
-<script is:inline src="/js/generateRowByRow.js"></script>
-<script is:inline>
-  // ========== SHAPING FORMULA CALCULATION HELPER ==========
-  
-  function calculateShaping(params) {
-    const {
-      startingSts,
-      endingSts,
-      totalRows,
-      stsGauge,
-      rowsGauge,
-      units,
-      shapingMode
-    } = params;
-    
-    const totalChange = Math.abs(startingSts - endingSts);
-    const direction = startingSts > endingSts ? 'decrease' : 'increase';
-    
-    // No shaping needed
-    if (totalChange === 0) {
-      return {
-        noShaping: true,
-        startingSts,
-        endingSts,
-        totalRows,
-        direction: null,
-        lengthInUnits: totalRows / rowsGauge,
-        units,
-        mode: 'standard',
-        warnings: []
-      };
+  <style>
+    .wizard-hero .wizard-intro-sub { margin-top: 0.5rem; font-size: 0.95rem; color: #6b7280; }
+    .tool-title-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+    .action-bar-wrap { margin-bottom: 1rem; }
+    .magic-formula-panel {
+      background: #fff;
+      padding: 1.75rem;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      margin-bottom: 1.5rem;
     }
-    
-    let changesPerSide;
-    let leftSideChanges;
-    let rightSideChanges;
-    let unevenWarning = false;
-    
-    if (shapingMode === 'both-sides') {
-      if (totalChange % 2 !== 0) {
-        // Uneven - distribute as best as possible
-        unevenWarning = true;
-        leftSideChanges = Math.floor(totalChange / 2);
-        rightSideChanges = Math.ceil(totalChange / 2);
-        changesPerSide = leftSideChanges; // Use lower for calculation
-      } else {
-        leftSideChanges = totalChange / 2;
-        rightSideChanges = totalChange / 2;
-        changesPerSide = totalChange / 2;
-      }
-    } else {
-      // One side only
-      changesPerSide = totalChange;
-      leftSideChanges = null;
-      rightSideChanges = null;
+    @media (max-width: 640px) { .magic-formula-panel { padding: 1.25rem; } }
+    .section-header-with-toggle { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+    .panel-h2 { font-size: 1.1rem; color: #374151; margin: 0 0 1rem 0; }
+    .input-mode-label, .shaping-side-label { font-weight: 600; color: #374151; margin: 1rem 0 0.5rem 0; }
+    .shaping-side-hint { font-size: 0.85rem; color: #6b7280; margin: 0 0 0.5rem 0; }
+    .input-mode-toggle, .shaping-side-toggle {
+      display: flex; gap: 0; border-radius: 8px; overflow: hidden; border: 2px solid #d0d5cc; background: #f9fafb;
     }
-    
-    // Determine if we need slope mode:
-    // 1. Auto-trigger: when more shaping actions than rows available
-    // 2. Manual-trigger: when user forces slope mode
-    let mode = 'standard';
-    let warnings = [];
-    let slopeData = null;
-    
-    // For asymmetric both-sides, use the larger side count (rightSideChanges) for slope detection
-    const primaryCount = shapingMode === 'both-sides' && unevenWarning ? rightSideChanges : changesPerSide;
-    const needsAutoSlope = primaryCount > totalRows;
-    
-    if (needsAutoSlope) {
-      // SLOPE MODE: bind off multiple stitches on every other row (shoulder-style)
-      mode = 'slope';
-      
-      // Number of shaping rows (every other row)
-      const shapingRows = Math.max(1, Math.floor(totalRows / 2));
-      
-      // For both-sides mode, use the common portion (min of left/right) for symmetric slope
-      // The leftover stitch (if any) will be handled separately on one side
-      let stsToDistribute;
-      let hasAsymmetricLeftover = false;
-      
-      if (shapingMode === 'both-sides') {
-        // Use the minimum to get symmetric bind-offs, leftover handled separately
-        const minSide = Math.min(leftSideChanges, rightSideChanges);
-        stsToDistribute = minSide;
-        hasAsymmetricLeftover = unevenWarning; // Will have 1 extra stitch on right side
-      } else {
-        stsToDistribute = changesPerSide;
-      }
-      
-      // Calculate how many stitches to bind off per shaping row
-      // Use Shaping Formula: distribute stsToDistribute across shapingRows
-      const stsPerAction = Math.floor(stsToDistribute / shapingRows);
-      const extraSts = stsToDistribute % shapingRows;
-      
-      // Some rows will bind off (stsPerAction + 1), others just stsPerAction
-      const timesAtMore = extraSts;
-      const timesAtBase = shapingRows - extraSts;
-      
-      slopeData = {
-        shapingRows,
-        stsPerAction,
-        extraSts,
-        timesAtMore,
-        timesAtBase,
-        rowInterval: 2, // Every other row
-        hasAsymmetricLeftover, // True if one side needs 1 extra stitch
-        leftSideTotal: leftSideChanges,
-        rightSideTotal: rightSideChanges
-      };
-      
-      warnings.push(
-        "This is a steep change over a short distance. This tool auto-converted to shoulder-style slope shaping: bind off or short row multiple stitches on every other row."
-      );
-      
-      if (hasAsymmetricLeftover) {
-        warnings.push(
-          "One side requires 1 extra stitch. The right side will have an additional bind-off step."
-        );
-      }
+    .input-mode-btn, .shaping-side-btn {
+      flex: 1; padding: 0.65rem 1rem; border: none; background: transparent; font-family: var(--font);
+      font-size: 0.9rem; font-weight: 500; color: #6b7280; cursor: pointer; transition: background 0.2s, color 0.2s;
     }
-    
-    // For standard mode, calculate spacing as before
-    let baseInterval, extraRows, intervalMultiplier, timesAtBase, timesAtLonger;
-    
-    if (mode === 'standard') {
-      // primaryCount already calculated above for slope detection
-      baseInterval = Math.floor(totalRows / primaryCount);
-      
-      // Guard: if baseInterval is 0, we need slope mode (this shouldn't happen if slope detection worked correctly)
-      if (baseInterval === 0) {
-        // This is a safety fallback - should be caught by needsAutoSlope detection above
-        console.warn('baseInterval=0 reached in standard mode - this should have been caught by slope detection');
-        baseInterval = 1; // Minimum interval
-      }
-      
-      extraRows = totalRows % primaryCount;
-      intervalMultiplier = 1;
-      timesAtBase = primaryCount - extraRows;
-      timesAtLonger = extraRows;
-    } else {
-      // Slope mode uses different structure
-      baseInterval = 2; // Every other row
-      extraRows = 0;
-      intervalMultiplier = 1;
-      timesAtBase = slopeData.timesAtBase;
-      timesAtLonger = slopeData.timesAtMore;
+    .input-mode-btn:hover, .shaping-side-btn:hover { background: rgba(82, 104, 45, 0.08); color: #374151; }
+    .input-mode-btn.active, .shaping-side-btn.active { background: var(--kbm-green); color: white; }
+    .mode-fields { margin-top: 1rem; }
+    .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    @media (max-width: 640px) { .input-row { grid-template-columns: 1fr; } }
+    .optional-gauge-note { font-size: 0.85rem; color: #6b7280; margin-bottom: 0.5rem; }
+    .validation-msg { color: #dc3545; font-size: 0.9rem; margin-top: 0.5rem; }
+    .validation-summary { margin-bottom: 0.5rem; }
+    .form-actions { margin-top: 1.25rem; }
+    .wizard-button {
+      padding: 12px 22px; font-size: 1rem; font-weight: 600; border-radius: 8px;
+      background: #52682D; color: white; border: none; cursor: pointer; transition: background 0.2s;
     }
-    
-    // Build row-by-row breakdown with running stitch totals
-    let breakdown = [];
-    
-    // Generate breakdown steps
-    if (mode === 'slope') {
-      // SLOPE MODE: bind off multiple stitches every other row
-      let currentRow = 0;
-      let currentStitches = startingSts;
-      const isDecrease = direction === 'decrease';
-      const stsMultiplier = shapingMode === 'both-sides' ? 2 : 1; // Double for both sides
-      
-      // Distribute stitches: some rows bind off more, some less
-      for (let i = 0; i < slopeData.shapingRows; i++) {
-        currentRow += 2; // Every other row
-        const useLarger = i < slopeData.timesAtMore;
-        const stsThisRow = useLarger ? (slopeData.stsPerAction + 1) : slopeData.stsPerAction;
-        const totalStsChanged = stsThisRow * stsMultiplier;
-        
-        currentStitches = isDecrease ? currentStitches - totalStsChanged : currentStitches + totalStsChanged;
-        
-        const actionVerb = isDecrease ? 'Bind off' : 'Cast on';
-        const location = shapingMode === 'both-sides' ? `${stsThisRow} sts each side` : `${stsThisRow} sts one side`;
-        
-        breakdown.push({
-          rowNumber: currentRow,
-          action: `${actionVerb} ${stsThisRow} ${stsThisRow === 1 ? 'stitch' : 'stitches'}`,
-          location: location,
-          stitchesAfter: Math.max(0, currentStitches)
+    .wizard-button:hover { background: #445626; }
+    .results { margin-top: 1.5rem; padding: 1.25rem; background: #f8faf5; border-radius: 12px; border: 2px solid var(--kbm-green); }
+    .results-title { color: var(--kbm-green); font-size: 1.15rem; margin: 0 0 0.75rem 0; }
+    .results-content { line-height: 1.6; }
+    .results-content p { margin: 0.5rem 0; }
+    .results-summary { font-weight: 600; color: #374151; margin-top: 0.75rem; }
+    .results-approx { font-size: 0.95rem; color: #6b7280; margin-top: 0.5rem; }
+    .results-rows-list { font-size: 0.9rem; color: #6b7280; margin-top: 0.75rem; }
+    .results-instruction { margin-top: 1rem; padding: 0.75rem; background: #fff; border-radius: 8px; border-left: 4px solid var(--kbm-green); }
+    .note-box { margin-top: 1rem; padding: 1rem; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; font-size: 0.9rem; }
+    .note-box.info { background: #e8f4fd; border-left-color: #0d6efd; }
+    .note-box.error { background: #f8d7da; border-left-color: #dc3545; }
+    /* Simple vs Smoother shaping (mirror Triangle Tool) */
+    :global(.distributed-option-row) { display: flex; align-items: center; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    :global(.distributed-toggle-link) { padding: 0; border: 0; background: none; color: #52682D; font-size: 14px; font-weight: 600; text-decoration: underline; cursor: pointer; }
+    :global(.distributed-toggle-link:hover) { color: #445925; }
+    :global(.distributed-toggle-link:focus-visible) { outline: 2px solid #52682D; outline-offset: 2px; }
+    :global(.help-icon-btn) { width: 24px; height: 24px; border-radius: 50%; border: 1px solid #52682D; background: #fff; color: #52682D; font-size: 14px; font-weight: 700; line-height: 1; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+    :global(.help-icon-btn:hover) { background: rgba(82, 104, 45, 0.1); }
+    :global(.help-icon-btn:focus-visible) { outline: 2px solid #52682D; outline-offset: 2px; }
+    :global(.distributed-help-panel) { margin-top: 10px; padding: 12px; border: 1px solid #d8d8d8; border-radius: 10px; background: #f9f9f9; max-width: 520px; }
+    :global(.distributed-help-panel img) { display: block; width: 100%; height: auto; }
+    :global(.distributed-help-panel p) { margin-top: 10px; font-size: 14px; line-height: 1.5; color: #555; }
+    :global(#distributed-instructions) { margin-top: 14px; padding: 12px; border-left: 4px solid #52682D; background: #f8f8f8; }
+    :global(.distributed-instructions-title) { margin: 0 0 6px 0; font-size: 1rem; font-weight: 700; }
+    :global(.distributed-instructions-intro) { margin: 0 0 12px 0; font-size: 14px; color: #555; line-height: 1.5; }
+    .copy-btn { margin-top: 1rem; padding: 0.65rem 1.25rem; background: white; color: var(--kbm-green); border: 2px solid var(--kbm-green); border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .copy-btn:hover { background: var(--kbm-green); color: white; }
+    @media print {
+      .no-print { display: none !important; }
+      .results { border: none !important; background: white !important; }
+      .print-only-show { display: block !important; }
+    }
+  </style>
+
+  <script define:vars={{ pageUrl }}>
+    (function() {
+      const form = document.getElementById('wizard-form');
+      const stitchModeFields = document.getElementById('stitchModeFields');
+      const measurementModeFields = document.getElementById('measurementModeFields');
+      const inputModeStitch = document.getElementById('inputModeStitch');
+      const inputModeMeasurement = document.getElementById('inputModeMeasurement');
+      const shapeOneSide = document.getElementById('shapeOneSide');
+      const shapeBothSides = document.getElementById('shapeBothSides');
+      const resultsEl = document.getElementById('results');
+      const resultsContent = document.getElementById('resultsContent');
+      const validationSummary = document.getElementById('validationSummary');
+      const calculateBtn = document.getElementById('calculateBtn');
+      const copyBtn = document.getElementById('copyBtn');
+
+      let inputMode = 'stitch';
+      let useCm = false;
+
+      function getUnit() {
+        const unitInput = document.getElementById('unit');
+        if (unitInput) return unitInput.value === 'cm' ? 'cm' : 'in';
+        const cmBtn = document.getElementById('mf-units-btn-cm');
+        return cmBtn && cmBtn.classList.contains('active') ? 'cm' : 'in';
+      }
+
+      function getInputValue(id) {
+        const el = document.getElementById(id);
+        if (!el || el.tagName !== 'INPUT') return '';
+        return el.value == null ? '' : String(el.value).trim();
+      }
+
+      function setInputMode(mode) {
+        inputMode = mode;
+        if (stitchModeFields) stitchModeFields.hidden = mode !== 'stitch';
+        if (measurementModeFields) measurementModeFields.hidden = mode !== 'measurement';
+        document.querySelectorAll('.input-mode-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
         });
       }
-      
-      // Handle asymmetric leftover: add 1 extra stitch on right side
-      // Note: This is included in the last shaping action on the right side only
-      // We don't add an extra row - it's handled on the same row as the last symmetric action
-      if (slopeData.hasAsymmetricLeftover && shapingMode === 'both-sides') {
-        // Update the last breakdown entry to note the asymmetry
-        if (breakdown.length > 0) {
-          const lastEntry = breakdown[breakdown.length - 1];
-          const currentSts = parseInt(lastEntry.action.match(/\d+/)[0]);
-          const isDecrease = direction === 'decrease';
-          const actionVerb = isDecrease ? 'Bind off' : 'Cast on';
-          
-          // The right side binds off 1 more stitch on this row
-          lastEntry.location = `${currentSts} sts left side, ${currentSts + 1} sts right side`;
-          lastEntry.stitchesAfter = isDecrease ? lastEntry.stitchesAfter - 1 : lastEntry.stitchesAfter + 1;
-          lastEntry.action = `${actionVerb} ${currentSts}/${currentSts + 1} stitches`;
-        }
+
+      function getShapingSide() {
+        const active = document.querySelector('.shaping-side-btn.active');
+        return active && active.getAttribute('data-side') === 'both' ? 'both-sides' : 'one-side';
       }
-    } else if (shapingMode === 'both-sides' && unevenWarning) {
-      // STANDARD MODE - Asymmetric case: one side has more changes than the other
-      // This requires custom logic because the last shaping is on one side only
-      let currentRow = 0;
-      let currentStitches = startingSts;
-      const isDecrease = direction === 'decrease';
-      
-      for (let i = 0; i < rightSideChanges; i++) {
-        const useLonger = i < timesAtLonger;
-        const interval = useLonger ? (baseInterval + 1) : baseInterval;
-        currentRow += interval;
-        
-        if (i < leftSideChanges) {
-          // This row applies to both sides - 2 stitches changed
-          currentStitches = isDecrease ? currentStitches - 2 : currentStitches + 2;
-          breakdown.push({
-            rowNumber: currentRow,
-            action: `${direction === 'decrease' ? 'Decrease' : 'Increase'} 1 stitch`,
-            location: 'Both sides',
-            stitchesAfter: currentStitches
-          });
+
+      // ---------- Validation ----------
+      function validateInput(input) {
+        const errors = [];
+        if (input.inputMode === 'stitches') {
+          if (input.startingStitches == null || input.startingStitches < 1) errors.push('Starting stitches must be greater than 0.');
+          if (input.endingStitches == null || input.endingStitches < 0) errors.push('Ending stitches must be 0 or more.');
+          if (input.totalRows == null || input.totalRows < 1) errors.push('Total rows must be greater than 0.');
         } else {
-          // This extra row only applies to right side - 1 stitch changed
-          currentStitches = isDecrease ? currentStitches - 1 : currentStitches + 1;
-          breakdown.push({
-            rowNumber: currentRow,
-            action: `${direction === 'decrease' ? 'Decrease' : 'Increase'} 1 stitch`,
-            location: 'Right side only (extra)',
-            stitchesAfter: currentStitches
-          });
+          if (input.startingWidth == null || input.startingWidth <= 0) errors.push('Starting width must be greater than 0.');
+          if (input.endingWidth == null || input.endingWidth < 0) errors.push('Ending width must be 0 or more.');
+          if (input.shapingLength == null || input.shapingLength <= 0) errors.push('Shaping length must be greater than 0.');
+          if (!input.stitchGauge || input.stitchGauge <= 0) errors.push('Stitch gauge is required and must be greater than 0.');
+          if (!input.rowGauge || input.rowGauge <= 0) errors.push('Row gauge is required and must be greater than 0.');
         }
+        return { isValid: errors.length === 0, errors };
       }
-    } else {
-      // STANDARD MODE - Symmetric case or one-side mode: use the reusable utility
-      const sideMode = shapingMode === 'both-sides' ? 'both' : 'one';
-      
-      // Build steps array for the utility (longer intervals first for proper row distribution)
-      const breakdownSteps = [];
-      if (timesAtLonger > 0) {
-        breakdownSteps.push({ sts: 1, rows: baseInterval + 1, times: timesAtLonger });
+
+      // ---------- Gauge conversion (per 4 in or 10 cm) ----------
+      function convertMeasurementsToStitchesAndRows(input) {
+        const units = input.units === 'cm' ? 'cm' : 'in';
+        const div = units === 'cm' ? 10 : 4;
+        const stitchesPerUnit = input.stitchGauge / div;
+        const rowsPerUnit = input.rowGauge / div;
+        const startingStitches = Math.round(input.startingWidth * stitchesPerUnit);
+        const endingStitches = Math.round(input.endingWidth * stitchesPerUnit);
+        let totalRows = Math.round(input.shapingLength * rowsPerUnit);
+        if (totalRows < 1) totalRows = 1;
+        return { startingStitches, endingStitches, totalRows, units };
       }
-      if (timesAtBase > 0) {
-        breakdownSteps.push({ sts: 1, rows: baseInterval, times: timesAtBase });
-      }
-      
-      // Use the reusable generateRowByRow utility
-      breakdown = window.generateRowByRow({
-        startingStitches: startingSts,
-        steps: breakdownSteps,
-        shapingMode: sideMode,
-        direction: direction
-      });
-    }
-    
-    // Calculate approximate length
-    const lengthInUnits = totalRows / rowsGauge;
-    
-    return {
-      noShaping: false,
-      error: null,
-      startingSts,
-      endingSts,
-      totalRows,
-      totalChange,
-      direction,
-      shapingMode,
-      changesPerSide,
-      leftSideChanges,
-      rightSideChanges,
-      unevenWarning,
-      baseInterval,
-      extraRows,
-      timesAtBase,
-      timesAtLonger,
-      intervalStep: intervalMultiplier,
-      slopeData, // For slope mode: { shapingRows, stsPerAction, extraSts, timesAtMore, timesAtBase }
-      breakdown,
-      lengthInUnits,
-      units,
-      mode,
-      warnings
-    };
-  }
-  
-  // ========== UI LOGIC ==========
-  
-  const inchesBtn = document.getElementById('mfmf-btn-inches');
-  const cmBtn = document.getElementById('mfmf-btn-cm');
-  let useCm = false;
-  let inputMode = 'stitch'; // 'stitch' | 'measurement'
 
-  const stitchModeFieldsEl = document.getElementById('stitchModeFields');
-  const measurementModeFieldsEl = document.getElementById('measurementModeFields');
-  const stitchInputIds = ['startingStitches', 'endingStitches', 'totalRows', 'stitchGauge', 'rowGauge'];
-  const measurementInputIds = ['startingWidth', 'endingWidth', 'shapingLength', 'stitchGaugeMeas', 'rowGaugeMeas'];
+      // ---------- Shaping engine ----------
+      function runShapingEngine(normalized) {
+        const result = {
+          isValid: true,
+          errors: [],
+          noShaping: false,
+          steepWarning: false,
+          direction: null,
+          shapingSides: normalized.shapingSides,
+          startingStitches: normalized.startingStitches,
+          endingStitches: normalized.endingStitches,
+          totalRows: normalized.totalRows,
+          totalChange: 0,
+          shapingEvents: 0,
+          hasRemainderStitch: false,
+          shortInterval: 0,
+          longInterval: 0,
+          shortCount: 0,
+          longCount: 0,
+          rowList: [],
+          breakdown: [],
+          measurementSummary: normalized.measurementSummary || null,
+          approximateLength: normalized.approximateLength || null
+        };
 
-  function updateRequiredAndDisabled() {
-    if (inputMode === 'stitch') {
-      ['startingStitches', 'endingStitches', 'totalRows'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) { el.required = true; el.disabled = false; }
-      });
-      ['stitchGauge', 'rowGauge'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) { el.required = false; el.disabled = false; }
-      });
-      measurementInputIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) { el.required = false; el.disabled = true; }
-      });
-    } else {
-      stitchInputIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) { el.required = false; el.disabled = true; }
-      });
-      measurementInputIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) { el.required = true; el.disabled = false; }
-      });
-    }
-  }
+        const totalChange = Math.abs(normalized.startingStitches - normalized.endingStitches);
+        result.totalChange = totalChange;
 
-  function updateLabels() {
-    const gaugeUnit = useCm ? '10 cm' : '4 inches';
-    const measureUnit = useCm ? 'cm' : 'inches';
+        if (normalized.endingStitches > normalized.startingStitches) result.direction = 'increase';
+        else if (normalized.endingStitches < normalized.startingStitches) result.direction = 'decrease';
+        else {
+          result.noShaping = true;
+          return result;
+        }
 
-    if (document.getElementById('stitchGaugeLabel')) {
-      document.getElementById('stitchGaugeLabel').textContent = `Stitches in ${gaugeUnit} `;
-      document.getElementById('rowGaugeLabel').textContent = `Rows in ${gaugeUnit} `;
-    }
-    if (document.getElementById('startingWidthLabel')) {
-      document.getElementById('startingWidthLabel').textContent = `Starting width (${measureUnit})`;
-      document.getElementById('endingWidthLabel').textContent = `Ending width (${measureUnit})`;
-      document.getElementById('shapingLengthLabel').textContent = `Shaping length (${measureUnit})`;
-      document.getElementById('stitchGaugeMeasLabel').textContent = `Stitches in ${gaugeUnit}`;
-      document.getElementById('rowGaugeMeasLabel').textContent = `Rows in ${gaugeUnit}`;
-    }
-  }
-
-  function setInputMode(mode) {
-    inputMode = mode;
-    if (stitchModeFieldsEl) stitchModeFieldsEl.style.display = mode === 'stitch' ? '' : 'none';
-    if (measurementModeFieldsEl) measurementModeFieldsEl.style.display = mode === 'measurement' ? '' : 'none';
-    document.querySelectorAll('.input-mode-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.mode === mode);
-    });
-    updateLabels();
-    updateModeUI();
-  }
-
-  // Render SVG shaping diagram with trapezoid, labels, and shorthand
-  // shapingDistance is optional - displayed on the left side of the diagram
-  function renderShapingDiagram(startSts, endSts, mode, direction, steps, shapingDistance = null) {
-    const isIncrease = direction === 'increase';
-    
-    // Get polygon points based on mode and direction
-    // Points order: top-left, top-right, bottom-right, bottom-left
-    // For decrease: wide at bottom (starting), narrow at top (ending)
-    // For increase: narrow at bottom (starting), wide at top (ending)
-    // For one-side: angled line is on the RIGHT side to match the icon
-    let polygonPoints;
-    if (mode === 'both') {
-      if (isIncrease) {
-        // Increase: narrow bottom, wide top (symmetrical)
-        polygonPoints = '40,30 220,30 200,170 60,170';
-      } else {
-        // Decrease: wide bottom, narrow top (symmetrical)
-        polygonPoints = '60,30 200,30 220,170 40,170';
-      }
-    } else {
-      // One-side mode: angled line on RIGHT side, left side straight
-      if (isIncrease) {
-        // Increase: narrow bottom-right, wide top-right
-        polygonPoints = '40,30 220,30 180,170 40,170';
-      } else {
-        // Decrease: wide bottom-right, narrow top-right
-        polygonPoints = '40,30 180,30 220,170 40,170';
-      }
-    }
-    
-    // Label positions - starting is always at bottom, ending at top
-    const startingY = 190;
-    const endY = 20;
-    const startLabel = `starting (${startSts} sts)`;
-    const endLabel = `end (${endSts} sts)`;
-    
-    // Build shorthand text with white knockout for ALL steps inside the SVG
-    let shorthandSvg = '';
-    if (steps.length === 1) {
-      // Single step - centered
-      shorthandSvg = `
-        <text x="130" y="95" text-anchor="middle" fill="#1f2937" stroke="white" stroke-width="4" paint-order="stroke" style="font-size: 28px; font-weight: 600; font-family: 'JetBrains Mono', monospace;">${steps[0].sts}–${steps[0].rows}–${steps[0].times}</text>
-        <text x="130" y="118" text-anchor="middle" fill="#6b7280" stroke="white" stroke-width="3" paint-order="stroke" style="font-size: 13px; font-family: system-ui, -apple-system, sans-serif; font-style: italic;">sts – rows – times</text>
-      `;
-    } else if (steps.length === 2) {
-      // Two steps - stacked inside the shape
-      shorthandSvg = `
-        <text x="130" y="75" text-anchor="middle" fill="#1f2937" stroke="white" stroke-width="4" paint-order="stroke" style="font-size: 24px; font-weight: 600; font-family: 'JetBrains Mono', monospace;">${steps[0].sts}–${steps[0].rows}–${steps[0].times}</text>
-        <text x="130" y="110" text-anchor="middle" fill="#1f2937" stroke="white" stroke-width="4" paint-order="stroke" style="font-size: 24px; font-weight: 600; font-family: 'JetBrains Mono', monospace;">${steps[1].sts}–${steps[1].rows}–${steps[1].times}</text>
-        <text x="130" y="135" text-anchor="middle" fill="#6b7280" stroke="white" stroke-width="3" paint-order="stroke" style="font-size: 13px; font-family: system-ui, -apple-system, sans-serif; font-style: italic;">sts – rows – times</text>
-      `;
-    } else if (steps.length > 2) {
-      // Multiple steps - list them all
-      let yPos = 60;
-      steps.forEach(step => {
-        shorthandSvg += `<text x="130" y="${yPos}" text-anchor="middle" fill="#1f2937" stroke="white" stroke-width="4" paint-order="stroke" style="font-size: 20px; font-weight: 600; font-family: 'JetBrains Mono', monospace;">${step.sts}–${step.rows}–${step.times}</text>`;
-        yPos += 28;
-      });
-      shorthandSvg += `<text x="130" y="${yPos + 5}" text-anchor="middle" fill="#6b7280" stroke="white" stroke-width="3" paint-order="stroke" style="font-size: 13px; font-family: system-ui, -apple-system, sans-serif; font-style: italic;">sts – rows – times</text>`;
-    }
-    
-    // Build the shaping distance display for the left side
-    const distanceHtml = shapingDistance ? `
-      <div style="display: flex; flex-direction: column; justify-content: center; align-items: flex-end; padding-right: 0.75rem; min-width: 80px;">
-        <span style="font-size: 12px; color: #6b7280; font-style: italic;">covers about</span>
-        <span style="font-size: 18px; font-weight: 600; color: #52682D;">${shapingDistance}</span>
-      </div>
-    ` : '';
-    
-    return `
-      <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 0; margin: 1rem 0;">
-        ${distanceHtml}
-        <div style="width: 100%; max-width: 280px;">
-          <svg viewBox="0 0 260 200" style="width: 100%; height: auto; display: block;" aria-label="Shaping diagram showing ${direction} from ${startSts} to ${endSts} stitches on ${mode === 'both' ? 'both sides' : 'one side'}">
-            <polygon points="${polygonPoints}" fill="none" stroke="#52682D" stroke-width="3" stroke-linejoin="round"/>
-            <!-- Labels positioned over the polygon lines with white knockout -->
-            <text x="130" y="173" text-anchor="middle" fill="#6b7280" stroke="white" stroke-width="4" paint-order="stroke" style="font-size: 14px; font-family: system-ui, -apple-system, sans-serif;">${startLabel}</text>
-            <text x="130" y="33" text-anchor="middle" fill="#6b7280" stroke="white" stroke-width="4" paint-order="stroke" style="font-size: 14px; font-family: system-ui, -apple-system, sans-serif;">${endLabel}</text>
-            ${shorthandSvg}
-          </svg>
-        </div>
-      </div>
-    `;
-  }
-
-  // Render SVG slope diagram - right triangle shape matching slope-choice.svg icon
-  // Triangle with hypotenuse from top-left to bottom-right
-  // shapingDistance is optional - displayed on the left side of the diagram
-  function renderSlopeDiagram(startSts, endSts, mode, direction, steps, shapingDistance = null) {
-    // Right triangle matching the slope-choice.svg icon shape:
-    // - Top-left corner (narrow end / ending stitches)
-    // - Bottom-left corner 
-    // - Bottom-right corner (wide end / starting stitches)
-    // Hypotenuse goes from top-left down to bottom-right
-    const polygonPoints = '30,30 30,170 250,170';
-    
-    // Labels - starting at bottom (wide), ending at top (narrow)
-    const startLabel = `starting (${startSts} sts)`;
-    const endLabel = `end (${endSts} sts)`;
-    
-    // Build shorthand text with white knockout - positioned in the lower-right area of the triangle
-    let shorthandSvg = '';
-    const centerX = 140;
-    const centerY = 130;
-    
-    if (steps.length === 1) {
-      shorthandSvg = `
-        <text x="${centerX}" y="${centerY - 10}" text-anchor="middle" fill="#1f2937" stroke="white" stroke-width="4" paint-order="stroke" style="font-size: 24px; font-weight: 600; font-family: 'JetBrains Mono', monospace;">${steps[0].sts}–${steps[0].rows}–${steps[0].times}</text>
-        <text x="${centerX}" y="${centerY + 15}" text-anchor="middle" fill="#6b7280" stroke="white" stroke-width="3" paint-order="stroke" style="font-size: 12px; font-family: system-ui, -apple-system, sans-serif; font-style: italic;">sts – rows – times</text>
-      `;
-    } else if (steps.length === 2) {
-      shorthandSvg = `
-        <text x="${centerX}" y="${centerY - 20}" text-anchor="middle" fill="#1f2937" stroke="white" stroke-width="4" paint-order="stroke" style="font-size: 20px; font-weight: 600; font-family: 'JetBrains Mono', monospace;">${steps[0].sts}–${steps[0].rows}–${steps[0].times}</text>
-        <text x="${centerX}" y="${centerY + 5}" text-anchor="middle" fill="#1f2937" stroke="white" stroke-width="4" paint-order="stroke" style="font-size: 20px; font-weight: 600; font-family: 'JetBrains Mono', monospace;">${steps[1].sts}–${steps[1].rows}–${steps[1].times}</text>
-        <text x="${centerX}" y="${centerY + 28}" text-anchor="middle" fill="#6b7280" stroke="white" stroke-width="3" paint-order="stroke" style="font-size: 11px; font-family: system-ui, -apple-system, sans-serif; font-style: italic;">sts – rows – times</text>
-      `;
-    } else if (steps.length > 2) {
-      let yPos = centerY - 30;
-      steps.forEach(step => {
-        shorthandSvg += `<text x="${centerX}" y="${yPos}" text-anchor="middle" fill="#1f2937" stroke="white" stroke-width="4" paint-order="stroke" style="font-size: 18px; font-weight: 600; font-family: 'JetBrains Mono', monospace;">${step.sts}–${step.rows}–${step.times}</text>`;
-        yPos += 24;
-      });
-      shorthandSvg += `<text x="${centerX}" y="${yPos + 5}" text-anchor="middle" fill="#6b7280" stroke="white" stroke-width="3" paint-order="stroke" style="font-size: 11px; font-family: system-ui, -apple-system, sans-serif; font-style: italic;">sts – rows – times</text>`;
-    }
-    
-    // Build the shaping distance display for the left side
-    const distanceHtml = shapingDistance ? `
-      <div style="display: flex; flex-direction: column; justify-content: center; align-items: flex-end; padding-right: 0.75rem; min-width: 80px;">
-        <span style="font-size: 12px; color: #6b7280; font-style: italic;">covers about</span>
-        <span style="font-size: 18px; font-weight: 600; color: #52682D;">${shapingDistance}</span>
-      </div>
-    ` : '';
-    
-    return `
-      <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 0; margin: 1rem 0;">
-        ${distanceHtml}
-        <div style="width: 100%; max-width: 280px;">
-          <svg viewBox="0 0 280 200" style="width: 100%; height: auto; display: block;" aria-label="Slope shaping diagram showing ${direction} from ${startSts} to ${endSts} stitches">
-            <polygon points="${polygonPoints}" fill="none" stroke="#52682D" stroke-width="4" stroke-linejoin="miter"/>
-            <!-- Labels positioned over the polygon lines with white knockout -->
-            <text x="32" y="35" fill="#6b7280" stroke="white" stroke-width="4" paint-order="stroke" style="font-size: 14px; font-family: system-ui, -apple-system, sans-serif;">${endLabel}</text>
-            <text x="140" y="173" text-anchor="middle" fill="#6b7280" stroke="white" stroke-width="4" paint-order="stroke" style="font-size: 14px; font-family: system-ui, -apple-system, sans-serif;">${startLabel}</text>
-            ${shorthandSvg}
-          </svg>
-        </div>
-      </div>
-    `;
-  }
-
-  // ========== MODE DETECTION & AUTO-CALCULATION ==========
-  
-  // DOM references for mode detection
-  const shapingOptionsSection = document.getElementById('shapingOptionsSection');
-  const calculateBtn = document.getElementById('calculateBtn');
-  const resultsEl = document.getElementById('results');
-  const slopeIndicatorEl = document.getElementById('slopeIndicator');
-  
-  // State tracking
-  let currentMode = null; // 'slope', 'regular', or null
-  let isAutoCalculating = false;
-  
-  // Convert measurements to stitches/rows (measurement mode only)
-  function measurementsToStitches() {
-    const startingWidth = parseFloat(document.getElementById('startingWidth').value);
-    const endingWidth = parseFloat(document.getElementById('endingWidth').value);
-    const shapingLength = parseFloat(document.getElementById('shapingLength').value);
-    const stsGaugeRaw = parseFloat(document.getElementById('stitchGaugeMeas').value);
-    const rowGaugeRaw = parseFloat(document.getElementById('rowGaugeMeas').value);
-    const gaugeBase = useCm ? 10 : 4;
-    const startingSts = Math.round((startingWidth / gaugeBase) * stsGaugeRaw);
-    const endingSts = Math.round((endingWidth / gaugeBase) * stsGaugeRaw);
-    const totalRows = Math.round((shapingLength / gaugeBase) * rowGaugeRaw);
-    return { startingSts, endingSts, totalRows };
-  }
-
-  // Check if all required inputs have valid values for current mode
-  function hasValidInputs() {
-    if (inputMode === 'stitch') {
-      const startSts = parseFloat(document.getElementById('startingStitches').value);
-      const endSts = parseFloat(document.getElementById('endingStitches').value);
-      const rows = parseFloat(document.getElementById('totalRows').value);
-      if (isNaN(startSts) || startSts < 1) return false;
-      if (isNaN(endSts) || endSts < 0) return false;
-      if (isNaN(rows) || rows < 1) return false;
-      return true;
-    }
-    // measurement mode
-    const startWidth = parseFloat(document.getElementById('startingWidth').value);
-    const endWidth = parseFloat(document.getElementById('endingWidth').value);
-    const length = parseFloat(document.getElementById('shapingLength').value);
-    const stsGauge = parseFloat(document.getElementById('stitchGaugeMeas').value);
-    const rowGauge = parseFloat(document.getElementById('rowGaugeMeas').value);
-    if (isNaN(startWidth) || startWidth <= 0) return false;
-    if (isNaN(endWidth) || endWidth < 0) return false;
-    if (isNaN(length) || length <= 0) return false;
-    if (isNaN(stsGauge) || stsGauge < 1) return false;
-    if (isNaN(rowGauge) || rowGauge < 1) return false;
-    return true;
-  }
-  
-  // Detect which shaping mode (no-shaping / slope / regular) based on current input mode
-  function detectMode() {
-    if (!hasValidInputs()) return null;
-
-    let startSts, endSts, rows;
-    if (inputMode === 'stitch') {
-      startSts = parseInt(document.getElementById('startingStitches').value);
-      endSts = parseInt(document.getElementById('endingStitches').value);
-      rows = parseInt(document.getElementById('totalRows').value);
-    } else {
-      const converted = measurementsToStitches();
-      startSts = converted.startingSts;
-      endSts = converted.endingSts;
-      rows = converted.totalRows;
-    }
-
-    const deltaSts = Math.abs(startSts - endSts);
-    if (deltaSts === 0) return 'no-shaping';
-    if (deltaSts > rows) return 'slope';
-    return 'regular';
-  }
-  
-  // Update UI based on detected mode
-  function updateModeUI() {
-    const mode = detectMode();
-    
-    if (mode === null) {
-      // Not enough valid inputs - hide everything
-      shapingOptionsSection.style.display = 'none';
-      calculateBtn.style.display = 'none';
-      currentMode = null;
-      return;
-    }
-    
-    if (mode === 'no-shaping') {
-      // No shaping needed - show calculate button but hide options
-      shapingOptionsSection.style.display = 'none';
-      calculateBtn.style.display = 'block';
-      currentMode = 'no-shaping';
-      return;
-    }
-    
-    if (mode === 'slope') {
-      // Slope mode: hide options, auto-calculate with one-side
-      shapingOptionsSection.style.display = 'none';
-      calculateBtn.style.display = 'none';
-      currentMode = 'slope';
-      
-      // Auto-calculate immediately
-      autoCalculateSlope();
-      return;
-    }
-    
-    if (mode === 'regular') {
-      // Regular mode: show options and calculate button
-      shapingOptionsSection.style.display = 'block';
-      calculateBtn.style.display = 'block';
-      currentMode = 'regular';
-      
-      // Hide results if we switched from slope to regular
-      if (resultsEl.classList.contains('show') && isAutoCalculating) {
-        resultsEl.classList.remove('show');
-        isAutoCalculating = false;
-      }
-      return;
-    }
-  }
-  
-  // Auto-calculate for slope mode (one-side only, no user choice)
-  function autoCalculateSlope() {
-    isAutoCalculating = true;
-    
-    // Force one-side shaping for slope mode
-    document.querySelectorAll('.icon-toggle[data-value]').forEach(btn => {
-      if (btn.dataset.value === 'one') {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
-    });
-    
-    // Trigger form submission programmatically
-    document.getElementById('wizard-form').dispatchEvent(new Event('submit', { cancelable: true }));
-  }
-  
-  // Input mode button handlers
-  document.getElementById('inputModeStitch')?.addEventListener('click', () => setInputMode('stitch'));
-  document.getElementById('inputModeMeasurement')?.addEventListener('click', () => setInputMode('measurement'));
-
-  // Add input listeners to all form fields for real-time detection
-  const allInputIds = [...stitchInputIds, ...measurementInputIds];
-  allInputIds.forEach(fieldId => {
-    const input = document.getElementById(fieldId);
-    if (input) {
-      input.addEventListener('input', () => {
-        input.classList.remove('error');
-        const errorEl = document.getElementById(fieldId + 'Error');
-        if (errorEl) errorEl.classList.remove('show');
-        clearTimeout(input._detectTimeout);
-        input._detectTimeout = setTimeout(updateModeUI, 150);
-      });
-    }
-  });
-
-  // Load saved unit preference
-  const savedUnit = localStorage.getItem('kbm-unit-preference') || 'in';
-  if (savedUnit === 'cm') {
-    useCm = true;
-    inchesBtn.classList.remove('active');
-    cmBtn.classList.add('active');
-  } else {
-    useCm = false;
-    inchesBtn.classList.add('active');
-    cmBtn.classList.remove('active');
-  }
-  updateLabels();
-  updateRequiredAndDisabled();
-
-  inchesBtn.addEventListener('click', function() {
-    if (!useCm) return;
-    useCm = false;
-    inchesBtn.classList.add('active');
-    cmBtn.classList.remove('active');
-    localStorage.setItem('kbm-unit-preference', 'in');
-    updateLabels();
-  });
-
-  cmBtn.addEventListener('click', function() {
-    if (useCm) return;
-    useCm = true;
-    cmBtn.classList.add('active');
-    inchesBtn.classList.remove('active');
-    localStorage.setItem('kbm-unit-preference', 'cm');
-    updateLabels();
-  });
-
-  // Shaping side toggle
-  document.querySelectorAll('.icon-toggle').forEach(btn => {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.icon-toggle').forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-    });
-  });
-
-  // Validation helper
-  function validateField(input, errorEl, allowZero = false) {
-    const value = parseFloat(input.value);
-    const minValue = allowZero ? 0 : 1;
-    if (!input.value || isNaN(value) || value < minValue) {
-      input.classList.add('error');
-      errorEl.classList.add('show');
-      return false;
-    }
-    input.classList.remove('error');
-    errorEl.classList.remove('show');
-    return true;
-  }
-
-  // Form submission
-  document.getElementById('wizard-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const shapingMode = document.querySelector('.icon-toggle.active').dataset.value === 'both' ? 'both-sides' : 'one-side';
-    const units = useCm ? 'cm' : 'in';
-    const gaugeDivisor = useCm ? 10 : 4;
-    let startingSts, endingSts, totalRows, stsGauge, rowsGauge, showConversionSummary, hasLengthDisplay;
-    let savedStartingWidth, savedEndingWidth, savedShapingLength;
-
-    if (inputMode === 'stitch') {
-      const startingStitchesInput = document.getElementById('startingStitches');
-      const endingStitchesInput = document.getElementById('endingStitches');
-      const totalRowsInput = document.getElementById('totalRows');
-      const stitchGaugeInput = document.getElementById('stitchGauge');
-      const rowGaugeInput = document.getElementById('rowGauge');
-      let valid = true;
-      valid = validateField(startingStitchesInput, document.getElementById('startingStitchesError')) && valid;
-      valid = validateField(endingStitchesInput, document.getElementById('endingStitchesError'), true) && valid;
-      valid = validateField(totalRowsInput, document.getElementById('totalRowsError')) && valid;
-      const hasStitchGauge = stitchGaugeInput.value && !isNaN(parseFloat(stitchGaugeInput.value)) && parseFloat(stitchGaugeInput.value) >= 1;
-      const hasRowGauge = rowGaugeInput.value && !isNaN(parseFloat(rowGaugeInput.value)) && parseFloat(rowGaugeInput.value) >= 1;
-      if (hasStitchGauge !== hasRowGauge) {
-        if (hasStitchGauge) { stitchGaugeInput.classList.add('error'); document.getElementById('stitchGaugeError').classList.add('show'); }
-        if (hasRowGauge) { rowGaugeInput.classList.add('error'); document.getElementById('rowGaugeError').classList.add('show'); }
-        if (!hasStitchGauge && !hasRowGauge) { /* both blank is ok */ } else { valid = false; }
-      }
-      if (!valid) return;
-      startingSts = parseInt(startingStitchesInput.value);
-      endingSts = parseInt(endingStitchesInput.value);
-      totalRows = parseInt(totalRowsInput.value);
-      showConversionSummary = false;
-      if (hasStitchGauge && hasRowGauge) {
-        const stsGaugeRaw = parseFloat(stitchGaugeInput.value);
-        const rowsGaugeRaw = parseFloat(rowGaugeInput.value);
-        stsGauge = stsGaugeRaw / gaugeDivisor;
-        rowsGauge = rowsGaugeRaw / gaugeDivisor;
-        hasLengthDisplay = true;
-      } else {
-        stsGauge = 1;
-        rowsGauge = 1;
-        hasLengthDisplay = false;
-      }
-    } else {
-      const startingWidthInput = document.getElementById('startingWidth');
-      const endingWidthInput = document.getElementById('endingWidth');
-      const shapingLengthInput = document.getElementById('shapingLength');
-      const stitchGaugeMeasInput = document.getElementById('stitchGaugeMeas');
-      const rowGaugeMeasInput = document.getElementById('rowGaugeMeas');
-      let valid = true;
-      valid = validateField(startingWidthInput, document.getElementById('startingWidthError')) && valid;
-      valid = validateField(endingWidthInput, document.getElementById('endingWidthError'), true) && valid;
-      valid = validateField(shapingLengthInput, document.getElementById('shapingLengthError')) && valid;
-      valid = validateField(stitchGaugeMeasInput, document.getElementById('stitchGaugeMeasError')) && valid;
-      valid = validateField(rowGaugeMeasInput, document.getElementById('rowGaugeMeasError')) && valid;
-      if (!valid) return;
-      const stsGaugeRaw = parseFloat(stitchGaugeMeasInput.value);
-      const rowsGaugeRaw = parseFloat(rowGaugeMeasInput.value);
-      stsGauge = stsGaugeRaw / gaugeDivisor;
-      rowsGauge = rowsGaugeRaw / gaugeDivisor;
-      const converted = measurementsToStitches();
-      startingSts = converted.startingSts;
-      endingSts = converted.endingSts;
-      totalRows = converted.totalRows;
-      showConversionSummary = true;
-      hasLengthDisplay = true;
-      savedStartingWidth = parseFloat(document.getElementById('startingWidth').value);
-      savedEndingWidth = parseFloat(document.getElementById('endingWidth').value);
-      savedShapingLength = parseFloat(document.getElementById('shapingLength').value);
-    }
-
-    // Calculate shaping
-    const result = calculateShaping({
-      startingSts,
-      endingSts,
-      totalRows,
-      stsGauge,
-      rowsGauge,
-      units,
-      shapingMode
-    });
-
-    let instructions = '';
-    
-    // Handle errors
-    if (result.error === 'not-enough-rows') {
-      instructions += `<div class="note error">`;
-      instructions += `<strong>Not enough rows!</strong><br>`;
-      instructions += `You need ${result.shapingCount} ${result.direction}s but only have ${result.totalRows} rows.<br>`;
-      instructions += `Please increase your total rows or reduce the stitch difference.`;
-      instructions += `</div>`;
-      
-      document.getElementById('resultsContent').innerHTML = instructions;
-      document.getElementById('results').classList.add('show');
-      document.getElementById('breakdownToggle').style.display = 'none';
-      window.currentInstructions = document.getElementById('resultsContent').innerText;
-      document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      return;
-    }
-    
-    // Handle no shaping needed
-    if (result.noShaping) {
-      const unitLabel = result.units === 'cm' ? 'cm' : 'inches';
-      const lengthFormatted = result.units === 'cm' 
-        ? Math.round(result.lengthInUnits) 
-        : result.lengthInUnits.toFixed(1);
-      
-      instructions += `<p><strong>No shaping needed!</strong></p>`;
-      instructions += `<p>Your starting and ending stitch counts are the same (${result.startingSts} stitches).</p>`;
-      instructions += `<p>Simply knit ${result.totalRows} rows with no increases or decreases.</p>`;
-      instructions += `<p style="margin-top: 1rem; color: #6b7280;"><em>This section spans about ${lengthFormatted} ${unitLabel}.</em></p>`;
-      
-      document.getElementById('resultsContent').innerHTML = instructions;
-      document.getElementById('results').classList.add('show');
-      document.getElementById('breakdownToggle').style.display = 'none';
-      window.currentInstructions = document.getElementById('resultsContent').innerText;
-      document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      return;
-    }
-    
-    // Build success instructions
-    const action = result.direction === 'increase' ? 'Increase' : 'Decrease';
-    const actionLower = result.direction === 'increase' ? 'increasing' : 'decreasing';
-    const location = result.shapingMode === 'both-sides' ? 'at EACH end' : 'at ONE end';
-    const locationDisplay = result.shapingMode === 'both-sides' ? 'both sides' : 'one side';
-    const unitLabel = result.units === 'cm' ? 'cm' : 'inches';
-    const lengthFormatted = result.units === 'cm' 
-      ? Math.round(result.lengthInUnits) 
-      : result.lengthInUnits.toFixed(1);
-    
-    // Build shaping steps array for diagram
-    const intervalStep = result.intervalStep || 1;
-    let shapingSteps = [];
-    
-    if (result.mode === 'slope' && result.slopeData) {
-      // SLOPE MODE: show stitch counts per action instead of 1
-      const sd = result.slopeData;
-      if (sd.timesAtMore > 0) {
-        shapingSteps.push({ sts: sd.stsPerAction + 1, rows: 2, times: sd.timesAtMore });
-      }
-      if (sd.timesAtBase > 0) {
-        shapingSteps.push({ sts: sd.stsPerAction, rows: 2, times: sd.timesAtBase });
-      }
-    } else if (result.extraRows === 0) {
-      shapingSteps = [{ sts: 1, rows: result.baseInterval, times: result.changesPerSide }];
-    } else {
-      if (result.timesAtBase > 0) {
-        shapingSteps.push({ sts: 1, rows: result.baseInterval, times: result.timesAtBase });
-      }
-      shapingSteps.push({ sts: 1, rows: result.baseInterval + intervalStep, times: result.timesAtLonger });
-    }
-    
-    const diagramMode = result.shapingMode === 'both-sides' ? 'both' : 'one';
-    const shapingDistanceDisplay = hasLengthDisplay ? `${lengthFormatted} ${unitLabel}` : null;
-
-    // Render the SVG diagram - use slope diagram for slope mode, standard for others
-    if (result.mode === 'slope') {
-      instructions += renderSlopeDiagram(result.startingSts, result.endingSts, diagramMode, result.direction, shapingSteps, shapingDistanceDisplay);
-      
-      // Activate both slope indicator AND one-side toggle (slope uses one-side shaping)
-      document.getElementById('slopeIndicator').classList.add('active');
-      // Slope mode forces one-side shaping - update the toggle icons
-      document.querySelectorAll('.icon-toggle[data-value]').forEach(btn => {
-        if (btn.dataset.value === 'one') {
-          btn.classList.add('active');
+        let shapingEvents;
+        if (normalized.shapingSides === 'one-side') {
+          shapingEvents = totalChange;
         } else {
-          btn.classList.remove('active');
+          shapingEvents = Math.floor(totalChange / 2);
+          result.hasRemainderStitch = (totalChange % 2) === 1;
         }
-      });
-    } else {
-      instructions += renderShapingDiagram(result.startingSts, result.endingSts, diagramMode, result.direction, shapingSteps, shapingDistanceDisplay);
-      document.getElementById('slopeIndicator').classList.remove('active');
-    }
-    
-    // Measurement conversion summary (measurement mode only)
-    if (showConversionSummary && savedStartingWidth != null) {
-      const measureLabel = useCm ? 'cm' : '"';
-      instructions += `<div class="note info" style="margin-bottom: 1rem;">`;
-      instructions += `<strong>Your measurements:</strong><br>`;
-      instructions += `${savedStartingWidth}${measureLabel} wide → ${result.startingSts} sts &nbsp;|&nbsp; ${savedEndingWidth}${measureLabel} wide → ${result.endingSts} sts &nbsp;|&nbsp; ${savedShapingLength}${measureLabel} long → ${result.totalRows} rows`;
-      instructions += `</div>`;
-    }
-    
-    // Slope mode indicator text with icon
-    if (result.mode === 'slope') {
-      instructions += `<div style="display: flex; align-items: center; gap: 0.75rem; margin: 1rem 0; padding: 0.75rem 1rem; background: #fef9e7; border-left: 4px solid #f39c12; border-radius: 0 6px 6px 0;">`;
-      instructions += `<div style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--kbm-green); border-radius: 6px; flex-shrink: 0;">`;
-      instructions += `<img src="/images/slope-choice.svg" alt="Slope" style="width: 20px; height: 20px; filter: brightness(0) invert(1);" />`;
-      instructions += `</div>`;
-      instructions += `<div>`;
-      instructions += `<strong style="color: #b58900;">Shoulder-style slope</strong>`;
-      instructions += `<span style="color: #6c5700; display: block; font-size: 0.85rem;">Bind off or short row multiple stitches every other row</span>`;
-      instructions += `</div>`;
-      instructions += `</div>`;
-    }
-    
-    // Summary
-    instructions += `<p><strong>Summary:</strong></p>`;
-    instructions += `<p>You are ${actionLower} from <strong>${result.startingSts}</strong> to <strong>${result.endingSts}</strong> stitches over <strong>${result.totalRows}</strong> rows.</p>`;
-    instructions += `<p>Shape <strong>${locationDisplay}</strong>.</p>`;
-    
-    // Show total changes clearly
-    if (result.shapingMode === 'both-sides') {
-      if (result.unevenWarning) {
-        instructions += `<p>Total ${result.direction}s: <strong>${result.totalChange}</strong> (left side: ${result.leftSideChanges}, right side: ${result.rightSideChanges})</p>`;
-      } else {
-        instructions += `<p>Total ${result.direction}s: <strong>${result.totalChange}</strong> (${result.changesPerSide} per side)</p>`;
-      }
-    } else {
-      instructions += `<p>Total ${result.direction}s: <strong>${result.totalChange}</strong></p>`;
-    }
-    
-    // Uneven warning
-    if (result.unevenWarning) {
-      instructions += `<div class="note info">`;
-      instructions += `<strong>Note:</strong> The total stitch change (${result.totalChange}) isn't even, so one side will have 1 more ${result.direction} than the other.<br>`;
-      instructions += `Left side: ${result.leftSideChanges} ${result.direction}s. Right side: ${result.rightSideChanges} ${result.direction}s.`;
-      instructions += `</div>`;
-    }
-    
-    // Main instructions
-    instructions += `<p style="margin-top: 1rem;"><strong>Instructions:</strong></p>`;
-    
-    // Helper to format inline shorthand
-    const shorthand = (sts, rows, times) => `<span style="font-family: 'JetBrains Mono', monospace; color: #52682d;">(${sts}–${rows}–${times} sts/rows/times)</span>`;
-    
-    // SLOPE MODE: special instructions for binding off multiple stitches
-    if (result.mode === 'slope' && result.slopeData) {
-      const sd = result.slopeData;
-      const actionVerb = result.direction === 'decrease' ? 'Bind off' : 'Cast on';
-      const locationText = result.shapingMode === 'both-sides' ? 'on each side' : 'on one side';
-      
-      if (sd.timesAtMore > 0 && sd.timesAtBase > 0) {
-        // Two different stitch counts
-        instructions += `<p>• ${actionVerb} <strong>${sd.stsPerAction + 1}</strong> stitches ${locationText} every 2 rows, <strong>${sd.timesAtMore}</strong> times ${shorthand(sd.stsPerAction + 1, 2, sd.timesAtMore)}.</p>`;
-        instructions += `<p>• ${actionVerb} <strong>${sd.stsPerAction}</strong> stitches ${locationText} every 2 rows, <strong>${sd.timesAtBase}</strong> times ${shorthand(sd.stsPerAction, 2, sd.timesAtBase)}.</p>`;
-        
-        instructions += `<div class="note">`;
-        instructions += `<strong>Tip:</strong> Alternate between binding off ${sd.stsPerAction + 1} and ${sd.stsPerAction} stitches to distribute the shaping evenly.`;
-        instructions += `</div>`;
-      } else if (sd.timesAtBase > 0) {
-        // Only one stitch count
-        instructions += `<p>${actionVerb} <strong>${sd.stsPerAction}</strong> stitches ${locationText} every 2 rows, <strong>${sd.shapingRows}</strong> times ${shorthand(sd.stsPerAction, 2, sd.shapingRows)}.</p>`;
-      } else {
-        // Only larger stitch count (rare)
-        instructions += `<p>${actionVerb} <strong>${sd.stsPerAction + 1}</strong> stitches ${locationText} every 2 rows, <strong>${sd.timesAtMore}</strong> times ${shorthand(sd.stsPerAction + 1, 2, sd.timesAtMore)}.</p>`;
-      }
-      
-      // Handle asymmetric leftover: 1 extra stitch on right side (on the last shaping row)
-      if (sd.hasAsymmetricLeftover && result.shapingMode === 'both-sides') {
-        instructions += `<p style="margin-top: 0.5rem;">• On the <strong>last shaping row</strong>, ${actionVerb.toLowerCase()} 1 extra stitch on the right side only (to account for the odd total).</p>`;
-      }
-    } else {
-      // STANDARD MODE: regular shaping instructions
-      
-      // Helper function to analyze intervals from breakdown
-      function analyzeIntervals(breakdown) {
-        if (breakdown.length === 0) return [];
-        
-        const intervals = [];
-        let prevRow = 0;
-        
-        breakdown.forEach(step => {
-          const interval = step.rowNumber - prevRow;
-          prevRow = step.rowNumber;
-          
-          // Find or create interval entry
-          const existing = intervals.find(i => i.interval === interval);
-          if (existing) {
-            existing.count++;
-          } else {
-            intervals.push({ interval, count: 1 });
+        result.shapingEvents = shapingEvents;
+
+        if (shapingEvents === 0) {
+          result.noShaping = true;
+          return result;
+        }
+
+        let totalRows = normalized.totalRows;
+        let intervalExact = totalRows / shapingEvents;
+        let shortInterval = Math.floor(intervalExact);
+        let longInterval = Math.ceil(intervalExact);
+
+        if (shortInterval < 1) {
+          result.steepWarning = true;
+          shapingEvents = Math.min(shapingEvents, totalRows);
+          result.shapingEvents = shapingEvents;
+          if (shapingEvents === 0) {
+            result.noShaping = true;
+            return result;
           }
-        });
-        
-        // Sort by interval (smaller first)
-        intervals.sort((a, b) => a.interval - b.interval);
-        return intervals;
+          intervalExact = totalRows / shapingEvents;
+          shortInterval = Math.floor(intervalExact);
+          longInterval = Math.ceil(intervalExact);
+          if (shortInterval < 1) shortInterval = 1;
+          if (longInterval < 1) longInterval = 1;
+        }
+
+        let shortCount, longCount;
+        if (shortInterval === longInterval) {
+          shortCount = shapingEvents;
+          longCount = 0;
+        } else {
+          longCount = totalRows - (shortInterval * shapingEvents);
+          shortCount = shapingEvents - longCount;
+          if (longCount < 0) longCount = 0;
+          if (shortCount < 0) shortCount = 0;
+        }
+        result.shortInterval = shortInterval;
+        result.longInterval = longInterval;
+        result.shortCount = shortCount;
+        result.longCount = longCount;
+
+        const steps = [];
+        if (longCount > 0) steps.push({ sts: 1, rows: longInterval, times: longCount });
+        if (shortCount > 0) steps.push({ sts: 1, rows: shortInterval, times: shortCount });
+        const sideMode = normalized.shapingSides === 'both-sides' ? 'both' : 'one';
+        const multiplier = sideMode === 'both' ? 2 : 1;
+        const locationText = sideMode === 'both' ? 'Both sides' : 'One side';
+        const actionVerb = result.direction === 'decrease' ? 'Decrease' : 'Increase';
+        let currentStitches = normalized.startingStitches;
+        let currentRow = 0;
+        const breakdown = [];
+        const rowList = [];
+        for (const step of steps) {
+          const { sts, rows: interval, times } = step;
+          for (let i = 0; i < times; i++) {
+            currentRow += interval;
+            if (result.direction === 'decrease') currentStitches -= sts * multiplier;
+            else currentStitches += sts * multiplier;
+            breakdown.push({
+              rowNumber: currentRow,
+              action: `${actionVerb} ${sts} ${sts === 1 ? 'stitch' : 'stitches'}`,
+              location: locationText,
+              stitchesAfter: currentStitches
+            });
+            rowList.push(currentRow);
+          }
+        }
+        result.breakdown = breakdown;
+        result.rowList = rowList;
+        return result;
       }
-      
-      if (result.shapingMode === 'both-sides') {
-      if (result.unevenWarning) {
-        // Asymmetric case - derive from breakdown
-        const bothSidesSteps = result.breakdown.filter(s => s.location === 'each side');
-        const rightOnlySteps = result.breakdown.filter(s => s.location.includes('right side'));
-        
-        const bothIntervals = analyzeIntervals(bothSidesSteps);
-        
-        if (bothIntervals.length === 1) {
-          instructions += `<p>• On each side, ${action} 1 stitch every ${bothIntervals[0].interval} rows, ${bothIntervals[0].count} times ${shorthand(1, bothIntervals[0].interval, bothIntervals[0].count)}.</p>`;
-        } else if (bothIntervals.length > 1) {
-          bothIntervals.forEach(int => {
-            instructions += `<p>• On each side, ${action} 1 stitch every ${int.interval} rows, ${int.count} times ${shorthand(1, int.interval, int.count)}.</p>`;
+
+      // ---------- Build normalized input from form ----------
+      function getNormalizedInput() {
+        const units = getUnit() === 'cm' ? 'cm' : 'in';
+        const div = units === 'cm' ? 10 : 4;
+        const input = {
+          inputMode: inputMode === 'stitch' ? 'stitches' : 'measurements',
+          shapingSides: getShapingSide(),
+          units
+        };
+        if (inputMode === 'stitch') {
+          input.startingStitches = parseInt(getInputValue('startingStitches'), 10);
+          input.endingStitches = parseInt(getInputValue('endingStitches'), 10);
+          input.totalRows = parseInt(getInputValue('totalRows'), 10);
+          const sg = getInputValue('magicformula-stitch-gauge');
+          const rg = getInputValue('magicformula-row-gauge');
+          const hasSg = sg !== '' && !isNaN(Number(sg)) && Number(sg) >= 1;
+          const hasRg = rg !== '' && !isNaN(Number(rg)) && Number(rg) >= 1;
+          if (hasSg && hasRg) {
+            input.stitchGauge = Number(sg);
+            input.rowGauge = Number(rg);
+            input.approximateLength = input.totalRows / (input.rowGauge / div);
+          }
+        } else {
+          input.stitchGauge = Number(getInputValue('magicformula-measure-stitch-gauge'));
+          input.rowGauge = Number(getInputValue('magicformula-measure-row-gauge'));
+          input.startingWidth = parseFloat(getInputValue('startingWidth'));
+          input.endingWidth = parseFloat(getInputValue('endingWidth'));
+          input.shapingLength = parseFloat(getInputValue('shapingLength'));
+          const converted = convertMeasurementsToStitchesAndRows(input);
+          input.startingStitches = converted.startingStitches;
+          input.endingStitches = converted.endingStitches;
+          input.totalRows = converted.totalRows;
+          input.measurementSummary = {
+            startingWidth: input.startingWidth,
+            endingWidth: input.endingWidth,
+            shapingLength: input.shapingLength,
+            units
+          };
+        }
+        return input;
+      }
+
+      // Even distribution for "smoother" option (same as Triangle Tool)
+      function calculateEvenDistribution(totalRows, shapingEvents) {
+        const rows = [];
+        const step = totalRows / shapingEvents;
+        for (let i = 1; i <= shapingEvents; i++) {
+          rows.push(Math.round(i * step));
+        }
+        return rows;
+      }
+
+      // ---------- Row-number schedule (cumulative, long intervals spread evenly) ----------
+      function buildShapingRows(result) {
+        const shapingRows = [];
+        const { shapingEvents, shortInterval, longInterval, shortCount, longCount, totalRows } = result;
+        if (shapingEvents <= 0) return shapingRows;
+        let currentRow = 0;
+        if (longCount === 0) {
+          for (let i = 0; i < shapingEvents; i++) {
+            currentRow += shortInterval;
+            currentRow = Math.min(currentRow, totalRows);
+            shapingRows.push(currentRow);
+          }
+        } else if (shortCount === 0) {
+          for (let i = 0; i < shapingEvents; i++) {
+            currentRow += longInterval;
+            currentRow = Math.min(currentRow, totalRows);
+            shapingRows.push(currentRow);
+          }
+        } else {
+          const spacing = shapingEvents / longCount;
+          const longIndices = new Set();
+          for (let k = 0; k < longCount; k++) {
+            longIndices.add(Math.min(shapingEvents - 1, Math.floor(k * spacing)));
+          }
+          for (let i = 0; i < shapingEvents; i++) {
+            const interval = longIndices.has(i) ? longInterval : shortInterval;
+            currentRow += interval;
+            currentRow = Math.min(currentRow, totalRows);
+            shapingRows.push(currentRow);
+          }
+        }
+        return shapingRows;
+      }
+
+      // ---------- Pattern wording from result ----------
+      function formatPatternInstructions(result) {
+        const action = result.direction === 'increase' ? 'Increase' : 'Decrease';
+        const oneEdge = 'at one edge';
+        const eachEdge = 'at each edge';
+        const isOne = result.shapingSides === 'one-side';
+        const edge = isOne ? oneEdge : eachEdge;
+        const rowWord = (n) => n === 1 ? 'row' : `${n}th row`;
+        const singleInterval = result.longCount === 0 || result.shortCount === 0;
+        const interval = result.longCount > 0 ? result.longInterval : result.shortInterval;
+        const times = result.longCount > 0 ? result.longCount : result.shortCount;
+        if (singleInterval) {
+          return `${action} 1 stitch ${edge} every ${rowWord(interval)} ${times} times.`;
+        }
+        const parts = [];
+        if (result.longCount > 0) parts.push(`every ${rowWord(result.longInterval)} ${result.longCount} times`);
+        if (result.shortCount > 0) parts.push(`every ${rowWord(result.shortInterval)} ${result.shortCount} times`);
+        if (isOne) {
+          return `Work shaping ${result.shapingEvents} times total:\n  • ${parts.join('\n  • ')}`;
+        }
+        return `Work shaping at both edges ${result.shapingEvents} times total:\n  • ${parts.join('\n  • ')}`;
+      }
+
+      function runCalculation() {
+        validationSummary.hidden = true;
+        validationSummary.textContent = '';
+        document.getElementById('gaugePartialError').hidden = true;
+        document.getElementById('measurementGaugeError').hidden = true;
+
+        if (inputMode === 'stitch') {
+          const sg = getInputValue('magicformula-stitch-gauge');
+          const rg = getInputValue('magicformula-row-gauge');
+          const hasSg = sg !== '' && !isNaN(Number(sg)) && Number(sg) >= 1;
+          const hasRg = rg !== '' && !isNaN(Number(rg)) && Number(rg) >= 1;
+          if (hasSg !== hasRg) {
+            document.getElementById('gaugePartialError').hidden = false;
+            validationSummary.textContent = 'If you enter one gauge value, enter both.';
+            validationSummary.hidden = false;
+            return;
+          }
+        }
+
+        const rawInput = getNormalizedInput();
+        const validation = validateInput(rawInput);
+        if (!validation.isValid) {
+          validationSummary.textContent = validation.errors.join(' ');
+          validationSummary.hidden = false;
+          return;
+        }
+
+        const result = runShapingEngine(rawInput);
+
+        if (result.noShaping) {
+          resultsContent.innerHTML = `<p><strong>No shaping is needed for this section.</strong></p><p>Starting and ending stitch counts are the same (${result.startingStitches} stitches). Knit ${result.totalRows} rows with no increases or decreases.</p>`;
+          resultsEl.hidden = false;
+          resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          window.currentInstructions = resultsContent.innerText;
+          return;
+        }
+
+        const action = result.direction === 'increase' ? 'Increase' : 'Decrease';
+        const actionLower = result.direction === 'increase' ? 'increasing' : 'decreasing';
+        const sideText = result.shapingSides === 'both-sides' ? 'both sides' : 'one side';
+        let html = '';
+
+        if (result.measurementSummary) {
+          const u = result.measurementSummary.units === 'cm' ? 'cm' : '"';
+          const m = result.measurementSummary;
+          html += `<div class="note-box info"><strong>Your measurements:</strong> ${m.startingWidth}${u} → ${result.startingStitches} sts; ${m.endingWidth}${u} → ${result.endingStitches} sts; ${m.shapingLength}${u} length → ${result.totalRows} rows.</div>`;
+        }
+
+        html += `<p class="results-summary"><strong>Summary</strong></p>`;
+        html += `<p>Shaping type: <strong>${result.direction}</strong>. Worked on <strong>${sideText}</strong>.</p>`;
+        html += `<p>Starting stitches: <strong>${result.startingStitches}</strong> → Ending stitches: <strong>${result.endingStitches}</strong>. Total stitch change: <strong>${result.totalChange}</strong>. Total rows: <strong>${result.totalRows}</strong>. Shaping events: <strong>${result.shapingEvents}</strong>.</p>`;
+
+        if (result.steepWarning) {
+          html += `<div class="note-box error"><strong>Note:</strong> There are more shaping events than rows available. This shaping is steeper than a standard every-row distribution. The instructions below are a best-effort fit.</div>`;
+        }
+        if (result.hasRemainderStitch) {
+          html += `<div class="note-box info">This stitch difference is not perfectly symmetrical across both sides. The instructions below distribute the symmetrical portion, with 1 stitch remaining to handle separately.</div>`;
+        }
+        if (result.approximateLength != null) {
+          const u = getUnit() === 'cm' ? 'cm' : 'in';
+          const str = u === 'cm' ? Math.round(result.approximateLength) + ' cm' : result.approximateLength.toFixed(1) + ' in';
+          html += `<p class="results-approx">This shaping section is approximately <strong>${str}</strong> long.</p>`;
+        }
+
+        html += '<p class="results-instruction"><strong>Instructions</strong></p>';
+        html += `<p>${formatPatternInstructions(result)}</p>`;
+        if (result.shortCount > 0 && result.longCount > 0) {
+          html += `<p class="note-box"><strong>Tip:</strong> Alternate between the two row intervals to spread the shaping evenly over ${result.totalRows} rows.</p>`;
+        }
+
+        const shapingRows = buildShapingRows(result);
+        const rowLabel = result.direction === 'decrease' ? 'Decrease rows:' : 'Increase rows:';
+        const rowListText = shapingRows.length > 0 ? shapingRows.join(', ') : '';
+        if (rowListText) {
+          html += `<p class="results-rows-list"><strong>${rowLabel}</strong><br>${rowListText}</p>`;
+        }
+
+        const smootherRows = calculateEvenDistribution(result.totalRows, result.shapingEvents);
+        const smootherRowsText = smootherRows.join(', ');
+        const smootherSummary = `Shaping events: ${result.shapingEvents}. Total rows: ${result.totalRows}.`;
+
+        html += `
+          <div class="distributed-option-row">
+            <button type="button" class="distributed-toggle-link" id="distributed-toggle" aria-expanded="false" aria-controls="distributed-instructions">Show smoother shaping option</button>
+            <button type="button" class="help-icon-btn" id="distributed-help-toggle" aria-expanded="false" aria-controls="distributed-help-panel" aria-label="Show help for smoother shaping option">?</button>
+          </div>
+          <div class="distributed-help-panel" id="distributed-help-panel" hidden>
+            <img src="/images/tools/decrease-distribution-compare.svg" alt="Comparison of evenly distributed decreases and simple decreases" />
+            <p>Evenly distributed shaping spreads the ${result.direction}s more smoothly across the rows. Simple shaping uses fixed intervals, which can create a more stepped look.</p>
+          </div>
+          <div id="distributed-instructions" hidden>
+            <div class="distributed-instructions-inner">
+              <h4 class="distributed-instructions-title">Smoother Shaping Option</h4>
+              <p class="distributed-instructions-intro">This version spreads the shaping more evenly across the rows.</p>
+              <p><strong>${rowLabel}</strong><br>${smootherRowsText}</p>
+              <p><strong>Shaping Summary</strong><br>${smootherSummary}</p>
+            </div>
+          </div>`;
+
+        resultsContent.innerHTML = html;
+
+        const distributedToggle = document.getElementById('distributed-toggle');
+        const distributedSection = document.getElementById('distributed-instructions');
+        if (distributedToggle && distributedSection) {
+          distributedToggle.addEventListener('click', () => {
+            const isHidden = distributedSection.hidden;
+            distributedSection.hidden = !isHidden;
+            distributedToggle.setAttribute('aria-expanded', String(!isHidden));
+            distributedToggle.textContent = isHidden ? 'Hide smoother shaping option' : 'Show smoother shaping option';
           });
         }
-        
-        if (rightOnlySteps.length > 0) {
-          const extraRow = rightOnlySteps[0].rowNumber;
-          instructions += `<p style="margin-top: 0.5rem;">• On right side only, ${action} 1 additional stitch at row ${extraRow}.</p>`;
+        const distributedHelpPanel = document.getElementById('distributed-help-panel');
+        const distributedHelpToggle = document.getElementById('distributed-help-toggle');
+        if (distributedHelpToggle && distributedHelpPanel) {
+          distributedHelpToggle.addEventListener('click', () => {
+            const wasHidden = distributedHelpPanel.hidden;
+            distributedHelpPanel.hidden = !wasHidden;
+            distributedHelpToggle.setAttribute('aria-expanded', String(!wasHidden));
+          });
         }
-      } else {
-        const longerInterval = result.baseInterval + intervalStep;
-        if (result.extraRows === 0) {
-          instructions += `<p>On each side, ${action} 1 stitch every ${result.baseInterval} rows, ${result.changesPerSide} times ${shorthand(1, result.baseInterval, result.changesPerSide)}.</p>`;
-        } else {
-          if (result.timesAtBase > 0) {
-            instructions += `<p>• On each side, ${action} 1 stitch every ${result.baseInterval} rows, ${result.timesAtBase} times ${shorthand(1, result.baseInterval, result.timesAtBase)}.</p>`;
-          }
-          instructions += `<p>• On each side, ${action} 1 stitch every ${longerInterval} rows, ${result.timesAtLonger} times ${shorthand(1, longerInterval, result.timesAtLonger)}.</p>`;
-          
-          instructions += `<div class="note">`;
-          instructions += `<strong>Tip:</strong> Your shaping doesn't divide evenly. Alternate between the two intervals to distribute the shaping evenly across your ${result.totalRows} rows.`;
-          instructions += `</div>`;
-        }
-      }
-    } else {
-      const longerInterval = result.baseInterval + intervalStep;
-      if (result.extraRows === 0) {
-        instructions += `<p>On one side only, ${action} 1 stitch every ${result.baseInterval} rows, ${result.changesPerSide} times ${shorthand(1, result.baseInterval, result.changesPerSide)}.</p>`;
-      } else {
-        if (result.timesAtBase > 0) {
-          instructions += `<p>• On one side only, ${action} 1 stitch every ${result.baseInterval} rows, ${result.timesAtBase} times ${shorthand(1, result.baseInterval, result.timesAtBase)}.</p>`;
-        }
-        instructions += `<p>• On one side only, ${action} 1 stitch every ${longerInterval} rows, ${result.timesAtLonger} times ${shorthand(1, longerInterval, result.timesAtLonger)}.</p>`;
-        
-        instructions += `<div class="note">`;
-        instructions += `<strong>Tip:</strong> Your shaping doesn't divide evenly. Alternate between the two intervals to distribute the shaping evenly across your ${result.totalRows} rows.`;
-        instructions += `</div>`;
-      }
-    }
-    } // Close standard mode else block
-    
-    // Slope mode warnings
-    if (result.warnings && result.warnings.length > 0) {
-      instructions += `<div class="note info" style="margin-top: 1rem;">`;
-      instructions += `<strong>Note:</strong> `;
-      instructions += result.warnings.join(' ');
-      instructions += `</div>`;
-    }
-    
-    // Note: Shaping distance is now displayed on the left side of the SVG diagram
 
-    document.getElementById('resultsContent').innerHTML = instructions;
-    document.getElementById('results').classList.add('show');
-    document.getElementById('breakdownToggle').style.display = 'flex';
-    
-    // Build breakdown table
-    const breakdownBody = document.getElementById('breakdownBody');
-    breakdownBody.innerHTML = '';
-    
-    result.breakdown.forEach(step => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>Row ${step.rowNumber}</td>
-        <td>${step.action}</td>
-        <td>${step.location}</td>
-        <td>${step.stitchesAfter}</td>
-      `;
-      breakdownBody.appendChild(row);
-    });
-    
-    window.currentInstructions = document.getElementById('resultsContent').innerText;
-    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    
-    // Show ActionBar
-    const actionBar = document.getElementById('action-bar');
-    const printBtn = document.getElementById('print-btn');
-    if (actionBar) actionBar.style.display = 'flex';
-    if (printBtn) printBtn.style.display = 'block';
-  });
-  
-  // Action Bar buttons
-  const actionBarEl = document.getElementById('action-bar');
-  const startOverBtn = document.getElementById('start-over-btn');
-  const printBtnEl = document.getElementById('print-btn');
+        resultsEl.hidden = false;
+        window.currentInstructions = resultsContent.innerText;
+        resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
 
-  // Start Over handler - full reset to initial state
-  if (startOverBtn) {
-    startOverBtn.addEventListener('click', () => {
-      document.getElementById('results').classList.remove('show');
-      if (actionBarEl) actionBarEl.style.display = 'none';
-      setInputMode('stitch');
-      [...stitchInputIds, ...measurementInputIds].forEach(fieldId => {
-        const input = document.getElementById(fieldId);
-        if (input) {
-          input.value = '';
-          input.classList.remove('error');
-        }
-        const errorEl = document.getElementById(fieldId + 'Error');
-        if (errorEl) errorEl.classList.remove('show');
+      inputModeStitch.addEventListener('click', () => setInputMode('stitch'));
+      inputModeMeasurement.addEventListener('click', () => setInputMode('measurement'));
+
+      shapeOneSide.addEventListener('click', () => {
+        document.querySelectorAll('.shaping-side-btn').forEach(b => b.classList.remove('active'));
+        shapeOneSide.classList.add('active');
       });
-      document.querySelectorAll('.icon-toggle[data-value]').forEach(btn => {
-        if (btn.dataset.value === 'both') {
-          btn.classList.add('active');
-        } else {
-          btn.classList.remove('active');
+      shapeBothSides.addEventListener('click', () => {
+        document.querySelectorAll('.shaping-side-btn').forEach(b => b.classList.remove('active'));
+        shapeBothSides.classList.add('active');
+      });
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        runCalculation();
+      });
+
+      copyBtn.addEventListener('click', () => {
+        if (window.currentInstructions) {
+          navigator.clipboard.writeText(window.currentInstructions).then(() => {
+            const orig = copyBtn.textContent;
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => { copyBtn.textContent = orig; }, 2000);
+          });
         }
       });
-      if (slopeIndicatorEl) slopeIndicatorEl.classList.remove('active');
-      if (shapingOptionsSection) shapingOptionsSection.style.display = 'none';
-      if (calculateBtn) calculateBtn.style.display = 'none';
-      currentMode = null;
-      isAutoCalculating = false;
-      const breakdownToggle = document.getElementById('breakdownToggle');
-      const breakdownContent = document.getElementById('breakdownContent');
-      if (breakdownToggle) breakdownToggle.classList.remove('open');
-      if (breakdownContent) breakdownContent.classList.remove('show');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      setTimeout(() => {
-        document.getElementById('startingStitches').focus();
-      }, 300);
-    });
-  }
 
-  // Print handler
-  if (printBtnEl) {
-    printBtnEl.addEventListener('click', () => {
-      window.print();
-    });
-  }
-
-  // Breakdown toggle
-  document.getElementById('breakdownToggle').addEventListener('click', function() {
-    this.classList.toggle('open');
-    document.getElementById('breakdownContent').classList.toggle('show');
-  });
-
-  // Copy button
-  document.getElementById('copyBtn').addEventListener('click', function() {
-    if (window.currentInstructions) {
-      // Also include breakdown if visible
-      let textToCopy = window.currentInstructions;
-      const breakdownContent = document.getElementById('breakdownContent');
-      if (breakdownContent.classList.contains('show')) {
-        const rows = document.querySelectorAll('#breakdownBody tr');
-        textToCopy += '\n\nRow-by-row breakdown:\n';
-        rows.forEach(row => {
-          const cells = row.querySelectorAll('td');
-          textToCopy += `${cells[0].textContent}: ${cells[1].textContent} (${cells[2].textContent}) → ${cells[3].textContent}\n`;
-        });
-      }
-      
-      navigator.clipboard.writeText(textToCopy).then(() => {
-        const originalText = this.innerHTML;
-        this.innerHTML = '<i class="fas fa-check"></i> Copied!';
-        setTimeout(() => {
-          this.innerHTML = originalText;
-        }, 2000);
+      window.addEventListener('kbm:units-change', (e) => {
+        useCm = e.detail && e.detail.unit === 'cm';
       });
-    }
-  });
-</script>
-
+    })();
+  </script>
 </Layout>
