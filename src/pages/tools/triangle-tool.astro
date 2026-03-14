@@ -127,10 +127,13 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
   }
 }
 
-/* Hide diagram slot on phone-sized screens only; keep results text and actions visible */
+/* Make SVG diagram larger on mobile so it stays readable */
 @media (max-width: 640px) {
-  .triangle-tool-results :global(.tool-result-card__diagram) {
-    display: none !important;
+  .triangle-tool-results :global(.tool-result-card__diagram svg) {
+    width: 150%;
+    max-width: none;
+    height: auto;
+    transform: translateX(-10%);
   }
 }
 
@@ -146,12 +149,7 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
   min-width: 0;
 }
 
-.section-header-with-toggle {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
+
 
 .triangle-style-selector {
   display: grid !important;

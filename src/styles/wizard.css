@@ -848,4 +848,16 @@
   .print-footer {
     font-size: 0.85rem;
   }
-}
+  .section-header-with-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  
+  @media (max-width: 640px) {
+    .section-header-with-toggle {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }

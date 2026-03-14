@@ -83,7 +83,7 @@ const effectiveToggleId = toggleId || "kbm-unit-toggle";
     <FloatingInput 
       id={`${id}-stitch-gauge`}
       labelId={`${id}-stitch-label`}
-      label='Stitches (over 4")'
+      label='Sts (4")'
       type="number"
       step="0.5"
       min="1"
@@ -93,7 +93,7 @@ const effectiveToggleId = toggleId || "kbm-unit-toggle";
     <FloatingInput 
       id={`${id}-row-gauge`}
       labelId={`${id}-row-label`}
-      label='Rows (over 4")'
+      label='Rows (4")'
       type="number"
       step="0.5"
       min="1"
@@ -244,11 +244,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!stitchLabel || !rowLabel) return;
 
       if (unit === 'cm') {
-        stitchLabel.textContent = 'Stitches (over 10 cm)';
-        rowLabel.textContent = 'Rows (over 10 cm)';
+        stitchLabel.textContent = 'Sts(10 cm)';
+        rowLabel.textContent = 'Rows (10 cm)';
       } else {
-        stitchLabel.textContent = 'Stitches (over 4")';
-        rowLabel.textContent = 'Rows (over 4")';
+        stitchLabel.textContent = 'Sts (4")';
+        rowLabel.textContent = 'Rows (4")';
       }
 
     }

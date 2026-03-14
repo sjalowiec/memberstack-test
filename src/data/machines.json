@@ -1,0 +1,155 @@
+[
+    {
+      "name": "Taixtexa 6mm Machine + Ribber",
+      "id": 999,
+      "slug": "taixtexa-6mm-machine-ribber",
+      "sku": "MACH-TAI-6MM-RIB",
+  
+      "gauge": "6mm",
+  
+      "shortDescription": "A versatile 6mm metal-bed knitting machine with ribber, ideal for knitters who want durability and flexibility with yarn choices.",
+  
+      "intro": "At 6mm gauge this machine works beautifully with a wide range of yarns. The metal needle bed provides durability and smooth knitting.",
+  
+      "ribberInfo": "The included ribber expands the machine to double-bed knitting including ribbing and circular knitting.",
+  
+      "whoItsFor": [
+        {
+          "title": "LK-150 knitters",
+          "text": "A natural upgrade that adds durability and ribber capability."
+        },
+        {
+          "title": "New machine knitters",
+          "text": "A straightforward machine that allows you to grow your skills."
+        },
+        {
+          "title": "Experienced machine knitters",
+          "text": "Offers control and flexibility with a wide range of yarns."
+        }
+      ],
+  
+      "features": [
+        "6mm gauge",
+        "Metal needle bed",
+        "164 needles",
+        "Built-in intarsia",
+        "Ribber included"
+      ],
+  
+      "quickSpecs": [
+        "6mm gauge",
+        "Metal bed",
+        "164 needles",
+        "Ribber included"
+      ],
+  
+      "image": "/images/shop/machines/taixtexa-6mm.jpg",
+  
+      "price": 999,
+  
+      "active": "TRUE"
+    },
+    {
+        "name": "SK-280 Punchcard Knitting Machine",
+        "id": 301,
+        "slug": "sk280",
+        "sku": "MACH-SK280",
+      
+        "gauge": "4.5mm",
+        "needles": 200,
+      
+        "shortDescription": "A reliable 4.5mm metal-bed punchcard knitting machine with 200 needles and a 24-stitch pattern repeat.",
+      
+        "intro": "The SK-280 is a standard gauge punchcard knitting machine designed for knitters who want automatic stitch patterning without electronics.",
+      
+        "features": [
+          "4.5mm standard gauge",
+          "200 needle metal bed",
+          "Punchcard patterning",
+          "24 stitch pattern repeat",
+          "Built-in row counter"
+        ],
+      
+        "yarnRange": [
+          "Lace",
+          "Fingering",
+          "Sport",
+          "Light DK"
+        ],
+      
+        "accessories": [
+          "SRP60N Ribber",
+          "Lace Carriage",
+          "Intarsia Carriage",
+          "Color Changer"
+        ],
+      
+        "quickSpecs": [
+          "4.5mm gauge",
+          "200 needles",
+          "Punchcard machine",
+          "Single bed"
+        ],
+      
+        "image": "/images/shop/machines/sk280.jpg",
+        "price": 0,
+        "active": "TRUE"
+      },
+      {
+        "name": "Taitexma 160",
+        "id": 301,
+        "slug": "th160",
+        "shortDescription": "A durable 6mm metal-bed knitting machine that works with a wide range of yarns. A great upgrade from the LK-150 and a dependable everyday machine for knitters who want simplicity and reliability.",
+      
+        "intro": "At 6mm gauge, the Taitexma knitting machine works beautifully with a wide range of yarns. The metal needle bed provides durability and smooth knitting that will last for years. This machine gives you the essential functionality of a knitting machine without the complexity of punchcards or electronics.",
+      
+        "whoItsFor": [
+          {
+            "title": "LK-150 knitters",
+            "text": "Upgrade to a metal-bed machine and enjoy the added durability and expanded knitting capabilities."
+          },
+          {
+            "title": "New machine knitters",
+            "text": "The learning curve is very approachable. Take it step by step and you'll be using the machine comfortably in no time."
+          },
+          {
+            "title": "Experienced machine knitters",
+            "text": "You'll appreciate the quality of the machine, the flexibility of the 6mm gauge, and the control you have over your knitting."
+          }
+        ],
+      
+        "features": [
+          "6mm gauge – works with a wide range of yarns",
+          "Metal needle bed for durability",
+          "164 needles",
+          "Built-in intarsia (no extra carriage required)",
+          "Manual stitch techniques: slip, tuck, partial knitting, thread lace",
+          "No punchcard mechanism",
+          "Machine width: 43½ inches"
+        ],
+      
+        "quickSpecs": [
+          "6mm gauge",
+          "Metal bed",
+          "164 needles",
+          "Built-in intarsia",
+          "No punchcard mechanism"
+        ],
+      
+        "bonus": {
+          "title": "Free Course Included with Purchase",
+          "description": "Getting Started with Your Taitexma 160",
+          "value": "$49.99"
+        },
+      
+        "warranty": {
+          "us": "90 days labor on defects in materials and workmanship",
+          "international": "30 days parts and labor"
+        },
+      
+        "shipping": "Shipping available to US addresses only"
+      }
+      
+      
+  ]
+  

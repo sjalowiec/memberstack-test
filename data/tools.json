@@ -27,7 +27,7 @@
     "id": 2,
     "title": "Rectangle / Square",
     "href": "/tools/rectangle-tool",
-    "icon": "blanketicon.svg",
+    "icon": "rectangle.svg",
     "description": "Calculate stitch and row counts for rectangular or square projects.",
     "membersonly": false,
     "helpID": 4144,
@@ -47,18 +47,7 @@
     "help_text": "Use this tool to position buttonholes evenly along a band.\n\nEnter the length of the band and the number of buttonholes needed. The tool calculates the spacing so the buttonholes are placed evenly from top to bottom.\nThe Knit it Now Buttonhole Placement Tool, will walk you through all the decisions you need to make, step-by-step and it will generate knitting instructions so you can knit bands with perfectly spaced buttonholes.\n\nStart by entering the gauge of the stitch pattern you'll use for your band Next add the details of your buttons:\nHow many holes?\nHow long is the band?\nhat size buttonhole do you need?\nHow much space do you want from the top and bottom edge of the band?\n\nArmed with your answers, the tool will generate knitting instructions for you, with NO MATH.",
     "active": "FALSE"
   },
-  {
-    "id": 6,
-    "title": "Circle / Polygon Tool",
-    "href": "circle.cfm",
-    "icon": "circle.svg",
-    "description": "Calculate stitch counts and shaping for knitted circles.",
-    "membersonly": true,
-    "helpID": 4130,
-    "category": "Formulas",
-    "help_text": "Use this tool to calculate knitted circles for your knitting machine.\n\nEnter your gauge and the finished size of the circle. The tool calculates the stitch counts and shaping needed to knit a flat circle using your yarn, machine, and gauge.6 or 8 wedges\nHats\nBlankets\nPillows\nShawls\n... you name it!",
-    "active": "FALSE"
-  },
+
   {
     "id": 26,
     "title": "Custom Sleeve",
@@ -206,9 +195,9 @@
   },
   {
     "id": 9,
-    "title": "Magic Formula true",
-    "href": "magicformulabyrow.cfm",
-    "icon": "taper.svg",
+    "title": "Magic Formula",
+    "href": "/tools/magic-formula",
+    "icon": "magic-formula.svg",
     "description": "Calculate evenly spaced increases or decreases for shaping.",
     "membersonly": false,
     "helpID": 4135,
@@ -229,18 +218,7 @@
     "help_text": "Whether it’s a simple shawl or a complex garment insert, get the exact increase and decrease rates you need. Just enter your finished dimensions and let us handle the slopes.",
     "active": "TRUE"
   },
-  {
-    "id": 31,
-    "title": "Ruffle / Gather (One Row)",
-    "href": "/tools/ruffle-gather-tool",
-    "icon": "taper.svg",
-    "description": "Distribute increases or decreases evenly across a single row.",
-    "membersonly": false,
-    "helpID": "NULL",
-    "category": "Formulas",
-    "help_text": "Use this tool when you need to add or remove stitches in one row only—for ruffles, gathers, or single-row shaping. Enter starting and ending stitch counts and how many stitches to leave untouched at each edge. The tool gives you an even distribution and clear machine-knitting instructions.",
-    "active": "TRUE"
-  },
+
   {
     "id": 14,
     "title": "Yarn Estimator",
@@ -264,5 +242,17 @@
     "category": "General",
     "help_text": "Use this tool to evaluate whether a yarn is suitable for your knitting machine.\n\nEnter the information from the yarn label, such as weight, yardage, and recommended gauge. The tool helps you estimate whether the yarn will work well on your machine.\nBy using the information on the ball band, this tool will help you determine if the yarn of interest is appropriate for your machine.",
     "active": "FALSE"
+  },
+  {
+    "id": 30,
+    "title": "Ruffle / Gather",
+    "href": "/tools/ruffle-gather-tool",
+    "icon": "ruffle-gather.svg",
+    "description": "Calculate increases or decreases evenly across a row for ruffles, gathers, or single-row shaping.",
+    "membersonly": false,
+    "helpID": "NULL",
+    "category": "Formulas",
+    "help_text": "Use this tool to calculate increases or decreases evenly across a row for ruffles, gathers, or single-row shaping.\n\nEnter starting and ending stitch counts and how many stitches to leave untouched at each edge. The tool gives you an even distribution and clear machine-knitting instructions.",
+    "active": "TRUE"
   }
 ]

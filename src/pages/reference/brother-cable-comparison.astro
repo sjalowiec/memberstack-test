@@ -1,0 +1,258 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const pageTitle = "Brother DesignaKnit Cable Comparison";
+const pageDescription =
+  "Compare BrotherLink 5 and BrotherLink 4 / 4 Plus cables to choose the right DesignaKnit cable for your Brother machine.";
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+  <section class="reference-page brother-cable-compare">
+    <div class="container">
+      <p class="back-link">
+        <a href="/shop/cables">Back to Cables</a>
+      </p>
+
+      <header class="page-header">
+        <h1>{pageTitle}</h1>
+        <p class="intro">
+          Not sure which Brother cable you need? This quick comparison will help you understand
+          the difference between BrotherLink 5 and BrotherLink 4 / 4 Plus, so you can choose the
+          cable that matches your machine and the way you want to use DesignaKnit.
+        </p>
+      </header>
+
+      <div class="table-scroll" tabindex="0">
+        <table class="kbm-table kbm-table--cable-compare">
+          <caption>Brother DesignaKnit Cable Comparison (Quick Choice Guide)</caption>
+          <thead>
+            <tr>
+              <th scope="col">Feature / Use</th>
+              <th scope="col"><a href="/shop/cables/101">USB BrotherLink 5</a> (Full Featured)</th>
+              <th scope="col"><a href="/shop/cables/103">USB BrotherLink 4</a> (Cartridge Cable / 4 Plus variant)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Buy this cable if…</th>
+              <td>
+                You want <strong>two-way communication</strong> with DesignaKnit,
+                need to <strong>upload 900-series patterns</strong> from the machine or PPD,
+                and want <strong>Interactive Knitting via a magnet arm</strong> (works with any machine).
+              </td>
+              <td>
+                You use a <strong>cartridge-based Brother machine</strong>,
+                want <strong>easy pattern downloads</strong>,
+                need <strong>standalone transfer software</strong>,
+                or want <strong>Interactive Knitting with Brother electronic machines</strong> (4 Plus variant).
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">Primary purpose</th>
+              <td>Two-way: download to machine and upload 900-series patterns to DesignaKnit</td>
+              <td>Download to cartridge-style machines + extra transfer features</td>
+            </tr>
+
+            <tr>
+              <th scope="row">Download patterns from DesignaKnit to machine</th>
+              <td>Yes</td>
+              <td>Yes</td>
+            </tr>
+
+            <tr>
+              <th scope="row">Upload patterns from machine/PPD to DesignaKnit</th>
+              <td>Yes (900-series patterns only)</td>
+              <td>No</td>
+            </tr>
+
+            <tr>
+              <th scope="row">Machines supported (direct)</th>
+              <td>KH930, KH940, KH950i, KH965i, KH970</td>
+              <td>KH270, KH900, KH965, KH965i, KH970</td>
+            </tr>
+
+            <tr>
+              <th scope="row">PPD support</th>
+              <td>Yes (PPD for KH900; PPD for CK35)</td>
+              <td>Yes (PPD)</td>
+            </tr>
+
+            <tr>
+              <th scope="row">Cartridge details (PPD / CK35)</th>
+              <td>PPD using Cartridge III in KH900 mode, or PPD using CK35 cartridge</td>
+              <td>Supports CK35; special version available for downloading to CK35 via the PPD</td>
+            </tr>
+
+            <tr>
+              <th scope="row">Includes its own transfer software</th>
+              <td>No</td>
+              <td>Yes</td>
+            </tr>
+
+            <tr>
+              <th scope="row">Can replace a PPD cartridge</th>
+              <td>No</td>
+              <td>Yes</td>
+            </tr>
+
+            <tr>
+              <th scope="row">Interactive Knitting (DesignaKnit 8 / 9)</th>
+              <td>
+                Yes — includes magnet arm; works with <strong>any knitting machine</strong>,
+                including non-electronic
+              </td>
+              <td>
+                Yes (4 Plus variant) — works with <strong>Brother electronic knitting machines</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="note-below-table">
+        Still not sure? Check the individual cable pages for more details, compatibility notes, and ordering information.
+      </p>
+
+      <ul class="cable-links">
+        <li><a href="/shop/cables/101">Brother Link 5 USB Cable</a></li>
+        <li><a href="/shop/cables/103">Brother Cable 4 Plus</a></li>
+      </ul>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .reference-page.brother-cable-compare {
+    padding: 2rem 0 3rem;
+  }
+
+  .brother-cable-compare .container {
+    width: min(900px, 92%);
+    margin: 0 auto;
+  }
+
+  .brother-cable-compare .back-link {
+    margin: 0 0 1rem;
+    font-size: 0.95rem;
+  }
+
+  .brother-cable-compare .back-link a {
+    color: var(--kbm-green, #52682d);
+    text-decoration: none;
+  }
+
+  .brother-cable-compare .back-link a:hover {
+    text-decoration: underline;
+  }
+
+  .brother-cable-compare .page-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .brother-cable-compare .page-header h1 {
+    margin: 0 0 0.75rem;
+  }
+
+  .brother-cable-compare .intro {
+    margin: 0;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #444;
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 0 1.5rem;
+  }
+
+  .kbm-table--cable-compare {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #d6d6d6;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    font-size: 18px;
+    line-height: 1.45;
+  }
+
+  .kbm-table--cable-compare caption {
+    caption-side: top;
+    text-align: left;
+    font-weight: 700;
+    padding: 12px 14px;
+    font-size: 1.1em;
+  }
+
+  .kbm-table--cable-compare th,
+  .kbm-table--cable-compare td {
+    border-top: 1px solid #e6e6e6;
+    padding: 12px 14px;
+    vertical-align: top;
+    text-align: left;
+  }
+
+  .kbm-table--cable-compare thead th {
+    border-top: none;
+    background: #f6f7f8;
+    font-weight: 700;
+  }
+
+  .kbm-table--cable-compare tbody th[scope="row"] {
+    font-weight: 600;
+    width: 34%;
+    background: #fafafa;
+  }
+
+  .kbm-table--cable-compare td {
+    width: 33%;
+  }
+
+  .kbm-table--cable-compare tbody tr:nth-child(even) td {
+    background: #fcfcfc;
+  }
+
+  .kbm-table--cable-compare tbody tr:nth-child(even) th[scope="row"] {
+    background: #f7f7f7;
+  }
+
+  .brother-cable-compare .note-below-table {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #555;
+  }
+
+  .brother-cable-compare .cable-links {
+    margin: 0;
+    padding-left: 1.5rem;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .brother-cable-compare .cable-links a {
+    color: var(--kbm-green, #52682d);
+    text-decoration: none;
+  }
+
+  .brother-cable-compare .cable-links a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 720px) {
+    .kbm-table--cable-compare {
+      font-size: 16px;
+    }
+
+    .kbm-table--cable-compare th,
+    .kbm-table--cable-compare td {
+      padding: 10px;
+    }
+
+    .kbm-table--cable-compare tbody th[scope="row"] {
+      width: auto;
+    }
+  }
+</style>

@@ -9,26 +9,31 @@ const products = [
   {
     name: "Hand Knit",
     price: "$199",
-    href: "",
+    href: "https://buy.stripe.com/3cIcN49y69qz0mW8Km0oM0A",
     recommended: false,
+    bestFor: "Best for hand knitters who want shaping and pattern design tools.",
   },
   {
     name: "Machine Standard",
     price: "$330",
-    href: "",
+    href: "https://buy.stripe.com/4gMbJ0eSq32bb1AaSu0oM0z ",
     recommended: false,
+    bestFor: "Best for machine knitters who want the core DesignaKnit tools.",
   },
   {
     name: "Machine Pro",
     price: "$450",
-    href: "",
+    href: "https://buy.stripe.com/fZu9ASaCadGPglU0dQ0oM0y", 
     recommended: true,
+    bestFor: "Best for most machine knitters who want more advanced design options.",
   },
   {
     name: "Complete",
     price: "$500",
-    href: "",
+    href: "https://buy.stripe.com/6oU14meSq9qz0mWgcO0oM0x ",
+
     recommended: true,
+    bestFor: "Best for knitters who want the full DesignaKnit package.",
   },
 ];
 
@@ -96,29 +101,37 @@ const rows = [
   },
 ];
 
-function normalizeCell(cell) {
+function normalizeCell(cell: string | { value: string; note?: string }) {
   if (typeof cell === "string") {
     return { value: cell };
   }
   return cell;
 }
+
+function getFeaturesForProduct(productIndex: number) {
+  return rows
+    .filter((row) => normalizeCell(row.values[productIndex]).value === "yes")
+    .map((row) => row.feature);
+}
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
-  <div class="page-nav">
-    <a class="page-nav__back" href="/learn/reference#category-designaknit">
-      ← Back to DesignaKnit Reference
-    </a>
-  </div>
   <section class="reference-page">
     <div class="container">
+      <nav class="dak-local-nav" aria-label="DesignaKnit navigation">
+        <a href="/designaknit">DesignaKnit</a>
+        <span class="dak-sep">|</span>
+        <span class="dak-current">Compare Versions</span>
+        <span class="dak-sep">|</span>
+        <a href="/reference/dak-buyers-guide">Buyer's Guide</a>
+      </nav>
       <header class="page-header">
         <h1>{pageTitle}</h1>
       </header>
 
       <p class="kbm-intro-callout">
         Not sure which DesignaKnit version is right for you? Use this chart to compare the
-        features side by side. Still deciding? Get clear answers in our DesignaKnit Buyers Guide.
+        features side by side. Still deciding? Get clear answers in our <a href="/reference/dak-buyers-guide">DesignaKnit Buyers Guide</a>.
       </p>
 
       <div class="cta-top">
@@ -128,6 +141,40 @@ function normalizeCell(cell) {
                     >
           Get Clear Answers Before You Buy
         </a>
+        <div class="cta-helper">
+          <p>DesignaKnit is a digital product. Your license number and download link will be sent to you by email after purchase.</p>
+          <p>Sales on this site are available to customers in the U.S. and Canada. If you live elsewhere, please see the <a href="#">worldwide purchasing options</a>.</p>
+        </div>
+      </div>
+
+      <div class="compare-panels" aria-label="DesignaKnit version comparison for small screens">
+        {products.map((product, idx) => {
+          const features = getFeaturesForProduct(idx);
+          return (
+            <article class="compare-panel" data-product-index={idx}>
+              <div class="compare-panel__header">
+                <h2 class="compare-panel__title">
+                  DesignaKnit {product.name}
+                  {product.recommended && <span class="compare-panel__badge">Recommended</span>}
+                </h2>
+                <p class="compare-panel__price">{product.price}</p>
+              </div>
+              <p class="compare-panel__best-for">{product.bestFor}</p>
+              <ul class="compare-panel__features">
+                {features.map((f) => (
+                  <li>{f}</li>
+                ))}
+              </ul>
+              <p class="compare-panel__delivery">License and download link sent by email after purchase.</p>
+              <a
+                href={product.href || "#"}
+                class="compare-panel__cta"
+              >
+                Choose DesignaKnit {product.name}
+              </a>
+            </article>
+          );
+        })}
       </div>
 
       <div class="table-wrap">
@@ -276,6 +323,121 @@ main.kbm-reference-page {
     margin: 1.5rem 0 2rem;
   }
 
+  .cta-helper {
+    max-width: 36em;
+    margin: 1rem auto 0;
+    font-size: 0.875rem;
+    color: #6b6b6b;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .cta-helper p {
+    margin: 0 0 0.5rem;
+  }
+
+  .cta-helper p:last-child {
+    margin-bottom: 0;
+  }
+
+  .cta-helper a {
+    color: var(--kbm-green, #52682d);
+    text-decoration: underline;
+  }
+
+  .cta-helper a:hover {
+    color: var(--kbm-green-hover, #445626);
+  }
+
+  .compare-panels {
+    display: none;
+    margin-bottom: 2rem;
+  }
+
+  .compare-panel {
+    background: #fff;
+    border: 1px solid #e8ebe4;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .compare-panel:last-child {
+    margin-bottom: 0;
+  }
+
+  .compare-panel__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .compare-panel__title {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--kbm-green, #52682d);
+    flex: 1 1 auto;
+  }
+
+  .compare-panel__badge {
+    display: inline-block;
+    background: #fff3a6;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .compare-panel__price {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #444;
+  }
+
+  .compare-panel__best-for {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #5a6b47;
+  }
+
+  .compare-panel__features {
+    margin: 0 0 1rem;
+    padding-left: 1.25rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  .compare-panel__features li {
+    margin-bottom: 0.35rem;
+  }
+
+  .compare-panel__delivery {
+    margin: 0 0 1rem;
+    font-size: 0.8rem;
+    color: #6b6b6b;
+  }
+
+  .compare-panel__cta {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--kbm-green, #52682d);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s ease;
+  }
+
+  .compare-panel__cta:hover {
+    background: var(--kbm-green-hover, #445626);
+  }
+
   .table-wrap {
     overflow-x: auto;
     margin: 0 auto 2rem;
@@ -355,7 +517,7 @@ main.kbm-reference-page {
 
   .cell-note summary {
     cursor: pointer;
-    color: #5e9ded;
+    color: #52682d;
     font-weight: 600;
   }
 
@@ -398,6 +560,12 @@ main.kbm-reference-page {
       font-size: 1rem;
     }
 
-    
+    .compare-panels {
+      display: block;
+    }
+
+    .table-wrap {
+      display: none;
+    }
   }
 </style>

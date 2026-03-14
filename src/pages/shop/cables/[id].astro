@@ -1,0 +1,180 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import PageHead from "../../../components/PageHead.astro";
+import cables from "../../../data/cables.json";
+
+interface Cable {
+  id: number | string;
+  name: string;
+  price: number;
+  stripeLink: string;
+  thumbnail: string;
+  shortdescription: string;
+  longDescription: string;
+  active?: boolean | string;
+  sortOrder?: number;
+}
+
+export function getStaticPaths() {
+  return (cables as Cable[])
+    .filter((item) => item.active === true || item.active === "TRUE")
+    .map((item) => ({
+      params: { id: String(item.id) },
+      props: { cable: item },
+    }));
+}
+
+const propCable = (Astro.props as { cable?: Cable }).cable;
+const idParam = Astro.params.id;
+const cable =
+  propCable ??
+  (cables as Cable[])
+    .filter((item) => item.active === true || item.active === "TRUE")
+    .find((item) => String(item.id) === String(idParam));
+
+if (!cable) {
+  throw new Error("Cable not found");
+}
+
+const title = `${cable.name} | Knit by Machine`;
+const description =
+  cable.shortdescription || `Purchase ${cable.name} for your knitting machine.`;
+
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: price % 1 === 0 ? 0 : 2,
+  }).format(price);
+}
+---
+
+<Layout {title} {description}>
+  <PageHead title={cable.name} />
+
+  <div class="cable-detail-page">
+    <a href="/shop/cables" class="back-link">Back to Cables</a>
+
+    <div class="cable-detail-layout">
+      <div class="cable-detail-image-wrap">
+        <img
+          src={`/images/shop/designaknit/${cable.thumbnail}`}
+          alt={cable.name}
+          class="cable-detail-thumbnail"
+          width="400"
+          height="260"
+        />
+      </div>
+
+      <div class="cable-detail-content">
+        <h1 class="cable-detail-name">{cable.name}</h1>
+        <p class="cable-detail-price">{formatPrice(cable.price)}</p>
+        <p class="cable-detail-short">{cable.shortdescription}</p>
+        <div class="cable-detail-long" set:html={cable.longDescription} />
+        <a
+          href={cable.stripeLink}
+          class="cable-btn-buy"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Buy Now
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .cable-detail-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .back-link {
+    display: inline-block;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    text-decoration: underline;
+    margin-bottom: 1.5rem;
+  }
+
+  .back-link:hover {
+    color: var(--kbm-green-hover, #445626);
+  }
+
+  .cable-detail-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  @media (min-width: 640px) {
+    .cable-detail-layout {
+      grid-template-columns: 320px 1fr;
+    }
+  }
+
+  .cable-detail-image-wrap {
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 400 / 260;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #eef3e6;
+  }
+
+  .cable-detail-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .cable-detail-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0 0 0.5rem 0;
+  }
+
+  .cable-detail-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #2d3a1f;
+    margin: 0 0 1rem 0;
+  }
+
+  .cable-detail-short {
+    font-size: 1.05rem;
+    color: #5a6b47;
+    line-height: 1.6;
+    margin: 0 0 1.25rem 0;
+  }
+
+  .cable-detail-long {
+    font-size: 1rem;
+    color: #5a6b47;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    white-space: pre-line;
+  }
+
+  .cable-btn-buy {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--kbm-green);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s ease;
+  }
+
+  .cable-btn-buy:hover {
+    background: var(--kbm-green-hover, #445626);
+  }
+</style>

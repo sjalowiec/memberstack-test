@@ -1,0 +1,92 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHead from "../components/PageHead.astro";
+import books from "../data/ebooks.json";
+
+const title = "Thank You | Knit by Machine";
+const description = "Thank you for your purchase. Your ebook download is ready.";
+
+const bookSlug = Astro.url.searchParams.get("book");
+const book = Array.isArray(books)
+  ? books.find((b: { slug?: string }) => String(b.slug).toLowerCase() === String(bookSlug ?? "").toLowerCase())
+  : null;
+
+const downloadUrl = book?.file ? `/downloads/shop/${book.file}` : null;
+const isZip = downloadUrl?.toLowerCase().endsWith(".zip") ?? false;
+const downloadButtonText = isZip ? "Download your eBook and files" : "Download your eBook";
+---
+
+<Layout {title} {description}>
+  <PageHead title="Thank You for Your Purchase!" />
+
+  <section class="thank-you-page">
+    {book && downloadUrl ? (
+      <>
+        <p>Your payment was successful and your download is ready.</p>
+
+        <p>Please download the file now and <strong>save it to your device</strong> so you can access it anytime while knitting.</p>
+
+        <p>
+          <a href={downloadUrl} download class="thank-you-download">
+            {downloadButtonText}
+          </a>
+        </p>
+
+        {isZip && (
+          <p class="small-note">
+            This download is a ZIP file. After saving it to your device, double-click the file to unzip and access the contents.
+          </p>
+        )}
+
+        <p>You will also receive a confirmation email from Stripe for your records.</p>
+
+        <p>If you have any trouble accessing your book, feel free to contact me and I'll be happy to help.</p>
+
+        <p class="small-note">Machine knitting knowledge grows with practice. I hope this book inspires your next project.</p>
+      </>
+    ) : (
+      <>
+        <p>Thank you for your purchase!</p>
+        <p>Please contact us if your download link is missing.</p>
+      </>
+    )}
+  </section>
+</Layout>
+
+<style>
+.thank-you-page {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.thank-you-page :global(h1) {
+  margin-bottom: 1.25rem;
+}
+
+.thank-you-page p {
+  margin-bottom: 1rem;
+}
+
+.thank-you-page p:last-child {
+  margin-bottom: 0;
+}
+
+.thank-you-page .small-note {
+  font-size: 0.95rem;
+  color: #555;
+  margin-top: 1.5rem;
+}
+
+.thank-you-download {
+  display: inline-block;
+  padding: 12px 20px;
+  background: #52682d;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.thank-you-download:hover {
+  background: #445626;
+}
+</style>

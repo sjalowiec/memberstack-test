@@ -1,0 +1,556 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const title = "DesignaKnit Software for Knitters | Knit by Machine";
+const description =
+  "DesignaKnit is powerful knitting design software for machine knitters. Compare versions or find upgrade options.";
+---
+
+<Layout {title} {description}>
+ 
+    <nav class="dak-local-nav" aria-label="DesignaKnit navigation">
+      <span class="dak-current">DesignaKnit</span>
+      <span class="dak-sep">|</span>
+      <a href="/reference/DAK-compare">Compare Versions</a>
+      <span class="dak-sep">|</span>
+      <a href="/reference/dak-buyers-guide">Buyer's Guide</a>
+    </nav>
+    <!-- 1. Hero -->
+    <section class="dak-hero">
+      <h1>DesignaKnit Software for Knitters</h1>
+      <ul class="dak-hero-benefits">
+        <li>Design garments to your exact measurements</li>
+        <li>Create and edit stitch patterns</li>
+        <li>Generate knitting instructions automatically</li>
+      </ul>
+      <a href="/reference/DAK-compare" class="btn-primary">Compare DesignaKnit Versions</a>
+      <p class="dak-hero-support">
+        Not sure which version you need? <a href="/reference/DAK-compare">Compare</a>
+      </p>
+      <div class="dak-hero-screenshots hero-image-wrapper">
+        <img class="hero-image" src="/images/DAK/dak_hero.webp" alt="DesignaKnit hero image">
+      </div>
+      <p class="dak-hero-trust">
+        Used by machine knitters around the world for over 20 years.
+      </p>
+    </section>
+
+    <!-- 2. What DesignaKnit helps you do -->
+    <section class="section">
+      <h2>Is DesignaKnit the Right Tool for Your Knitting?</h2>
+      <ul class="feature-list">
+        <li>Design sweaters and garments to your measurements</li>
+        <li>Create and edit stitch patterns</li>
+        <li>Generate knitting instructions automatically</li>
+        <li>Convert ideas into real knitting patterns</li>
+        <li>Visualize garments before you knit them</li>
+      </ul>
+      <p class="supporting-line">You don't have to solve all the knitting math yourself.</p>
+    </section>
+
+    <!-- 3. Who DesignaKnit is for – video + text -->
+    <section class="dak-video-section">
+      <h2>Could DesignaKnit Help You?</h2>
+      <div class="dak-video-grid">
+        <div class="dak-video-col">
+          <div class="dak-video-wrap">
+            <iframe
+              src="https://player.vimeo.com/video/1173536373"
+              title="DesignaKnit overview video"
+              loading="lazy"
+              frameborder="0"
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+          </div>
+          <p class="dak-video-caption">A quick overview of what DesignaKnit can help you do. (3 minutes)</p>
+        </div>
+        <div class="dak-copy-col">
+          <p>
+            DesignaKnit helps machine knitters take more control over their knitting projects.
+          </p>
+          <p>
+            Whether you are designing your own garments, working with stitch patterns, or generating clear shaping instructions, DesignaKnit helps you turn your ideas into knit-ready instructions.
+          </p>
+          <p class="dak-copy-subhead">It's especially helpful if you want to:</p>
+          <ul class="dak-copy-list">
+            <li>design garments that fit your measurements</li>
+            <li>experiment with stitch patterns before knitting</li>
+            <li>generate shaping instructions without doing all the math</li>
+            <li>create patterns you can reuse with different yarns and gauges</li>
+          </ul>
+          <p>
+            DesignaKnit gives you the tools to plan your knitting with confidence.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Choose your path -->
+    <section class="section section-path">
+      <h2>Choose Your Path</h2>
+      <div class="path-grid">
+        <a href="/reference/DAK-compare" class="dak-path-card">
+          <div class="dak-path-card-inner">
+            <h3>I'm new to DesignaKnit</h3>
+            <p>Compare the available versions and choose the one that fits how you knit.</p>
+            <span class="dak-path-button">Compare DesignaKnit Versions</span>
+          </div>
+        </a>
+        <a href="/reference/dak-upgrade" class="dak-path-card">
+          <div class="dak-path-card-inner">
+            <h3>I already Own DesignaKnit</h3>
+            <p>Find the correct upgrade for your existing version.</p>
+            <span class="dak-path-button">See Upgrade Options</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 5. Common questions (FAQ) -->
+    <section class="section">
+      <h2>Common Questions About DesignaKnit</h2>
+      <p>Here are answers to a few of the most common questions machine knitters have about DesignaKnit.</p>
+      <dl class="faq-list">
+        <div class="faq-item">
+          <dt>Do I need an electronic knitting machine to use DesignaKnit?</dt>
+          <dd>
+            <p>No. DesignaKnit can be used with any knitting machine.</p>
+            <p>Even if your machine is manual or punchcard-based, DesignaKnit can still help you design garments, generate shaping instructions, and create stitch patterns.</p>
+            <p>Electronic machines allow patterns to be downloaded directly, but many machine knitters successfully use DesignaKnit with manual machines by following the instructions and charts it generates.</p>
+          </dd>
+        </div>
+        <div class="faq-item">
+          <dt>Which version do most machine knitters choose?</dt>
+          <dd>Machine Pro is the most common choice because it includes the tools needed for most garment design and stitch pattern work.</dd>
+        </div>
+        <div class="faq-item">
+          <dt>Can I upgrade later?</dt>
+          <dd>Yes. If you decide you want more DesignaKnit features later, upgrade options are available.</dd>
+        </div>
+        <div class="faq-item">
+          <dt>Is DesignaKnit difficult to learn?</dt>
+          <dd>
+            <p>DesignaKnit is a powerful program, so there is a learning curve. But you don't need to master everything at once.</p>
+            <p>Most knitters begin by using just one or two tools, such as generating garment instructions or creating simple stitch patterns. As you become more comfortable, you can explore additional features when you need them.</p>
+            <p>The goal isn't to learn every part of the software — it's to use the tools that help you get your knitting done.</p>
+          </dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- 6. How the purchase works -->
+    <section class="section">
+      <h2>How Your Purchase Works</h2>
+      <p><strong>Step 1 — Payment Confirmation</strong><br>
+      After checkout, Stripe immediately sends a payment receipt to the email address you entered.</p>
+      <p><strong>Step 2 — License Processing</strong><br>
+      Your DesignaKnit license number is created manually by our team. This usually arrives by email within <strong>1–2 business days</strong>.</p>
+      <p><strong>Step 3 — Download &amp; Install</strong><br>
+      Your license email includes the download link and instructions to install and activate your copy of DesignaKnit.</p>
+      <p>If you don't see the license email after two business days, please check your spam folder or contact us.</p>
+      <hr><p style="font-size: 0.85rem; color: #666; margin-top: 1.5rem; border-top: 1px solid #eee; padding-top: 1rem;">
+        Sales on this site are for <strong>U.S. and Canada only</strong>. 
+        <a href="https://www.softbyte.co.uk" target="_blank" rel="noopener" style="color: #666; text-decoration: underline;">
+          Not in the U.S. or Canada?
+        </a>
+      </p>
+    </section>
+
+    <!-- 7. Final CTA -->
+    <section class="section section-cta">
+      <h2>Still Deciding?</h2>
+      <p>Compare the DesignaKnit versions to see which one fits how you knit.</p>
+      <a href="/reference/DAK-compare" class="btn-primary">Compare Versions</a>
+    </section>
+  
+</Layout>
+
+<style>
+  .dak-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1rem 1rem 4rem;
+  }
+
+  .hero-image-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .hero-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 1.5rem auto 2rem auto;
+  }
+
+  /* Hero section – polished, scannable */
+  .dak-hero {
+    text-align: center;
+    padding: 1.25rem 1rem 2.5rem;
+  }
+
+  .dak-hero h1 {
+    margin-bottom: 1rem;
+    font-size: var(--text-xxl, 2.25rem);
+    color: var(--kbm-green);
+  }
+
+  .dak-hero-benefits {
+    list-style: disc;
+    list-style-position: outside;
+    margin: 1rem auto 1.5rem;
+    padding-left: 1.25rem;
+    max-width: 700px;
+    text-align: left;
+  }
+
+  .dak-hero-benefits li {
+    margin: 0.45rem 0;
+    font-size: 1.08rem;
+    line-height: 1.5;
+    display: block;
+  }
+
+  .dak-hero-support {
+    margin-top: 0.75rem;
+    margin-bottom: 2rem;
+    font-size: 0.98rem;
+    color: #5f5f5f;
+  }
+
+  .dak-hero-screenshots {
+    max-width: 760px;
+    margin: 0 auto 1.25rem;
+  }
+
+  .dak-hero-trust {
+    margin-top: 1rem;
+    font-size: 0.98rem;
+    color: #5f5f5f;
+  }
+
+  @media (max-width: 640px) {
+    .dak-hero {
+      padding: 1rem 1rem 2rem;
+    }
+
+    .dak-hero h1 {
+      font-size: 2rem;
+      line-height: 1.2;
+    }
+
+    .dak-hero-benefits li {
+      font-size: 1rem;
+      margin: 0.4rem 0;
+    }
+
+    .dak-hero-support,
+    .dak-hero-trust {
+      font-size: 0.95rem;
+    }
+
+    .dak-hero .btn,
+    .dak-hero .button,
+    .dak-hero a[class*="btn"] {
+      width: 100%;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .dak-hero-screenshots {
+      max-width: 100%;
+    }
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--kbm-green);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    text-decoration: none;
+    text-align: center;
+    transition: background 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    background: var(--kbm-green-hover, #445626);
+  }
+
+  .section {
+    margin-bottom: 2.5rem;
+  }
+
+  .section h2 {
+    font-size: var(--text-xl, 1.5rem);
+    color: var(--kbm-green);
+    margin: 0 0 1rem 0;
+  }
+
+  .section p {
+    font-size: var(--text-base, 1rem);
+    color: #243015;
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+  }
+
+  .feature-list {
+    margin: 0 0 1rem 0;
+    padding-left: 1.5rem;
+    color: #243015;
+    line-height: 1.7;
+  }
+
+  .feature-list li {
+    margin-bottom: 0.5rem;
+  }
+
+  .supporting-line {
+    font-size: var(--text-base);
+    color: #5a6b47;
+    font-style: italic;
+  }
+
+  /* Who DesignaKnit is for – video + text card */
+  .dak-video-section {
+    background: #f8f8f5;
+    border: 1px solid #e5e2d8;
+    border-radius: 18px;
+    padding: 1.5rem;
+    margin: 4rem 0;
+  }
+
+  .dak-video-section h2 {
+    margin: 0 0 1.25rem 0;
+    font-size: var(--text-xl, 1.5rem);
+    color: var(--kbm-green);
+  }
+
+  .dak-video-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr);
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .dak-video-col,
+  .dak-copy-col {
+    min-width: 0;
+  }
+
+  .dak-video-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #000;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .dak-video-wrap iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .dak-video-caption {
+    margin: 0.75rem 0 0;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #666;
+  }
+
+  .dak-copy-col p {
+    line-height: 1.7;
+    font-size: var(--text-base, 1rem);
+    color: #243015;
+    margin: 0 0 1rem 0;
+  }
+
+  .dak-copy-col p:last-of-type {
+    margin-bottom: 0;
+  }
+
+  .dak-copy-subhead {
+    margin: 1rem 0 0.65rem 0;
+    font-weight: 600;
+    font-size: var(--text-base, 1rem);
+    color: #243015;
+  }
+
+  .dak-copy-list {
+    margin: 0 0 1rem 0;
+    padding-left: 1.1rem;
+    color: #243015;
+  }
+
+  .dak-copy-list li {
+    margin-bottom: 0.55rem;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 900px) {
+    .dak-video-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .dak-video-section {
+      margin: 3rem 0;
+      padding: 1rem;
+      border-radius: 14px;
+    }
+
+    .dak-video-section h2 {
+      margin-bottom: 1rem;
+      font-size: 1.65rem;
+      line-height: 1.25;
+    }
+
+    .dak-video-caption {
+      font-size: 0.9rem;
+    }
+  }
+
+  /* Choose your path – prominent */
+  .section-path {
+    margin-bottom: 3rem;
+  }
+
+  .path-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .path-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .dak-path-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: #fafbf9;
+    border: 2px solid var(--kbm-green);
+    border-radius: 12px;
+    padding: 1.75rem;
+    transition: box-shadow 0.2s ease, transform 0.15s ease;
+  }
+
+  .dak-path-card:hover {
+    box-shadow: 0 4px 12px rgba(82, 104, 45, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .dak-path-card-inner {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100%;
+  }
+
+  .dak-path-card-inner h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0 0 0.75rem 0;
+  }
+
+  .dak-path-card-inner p {
+    flex-grow: 1;
+    margin: 0 0 0;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .dak-path-button {
+    display: inline-block;
+    margin: 1.25rem auto 0;
+    padding: 0.75rem 1.5rem;
+    background: var(--kbm-green);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    text-align: center;
+    transition: background 0.2s ease;
+  }
+
+  .dak-path-card:hover .dak-path-button {
+    background: var(--kbm-green-hover, #445626);
+  }
+
+  .faq-list {
+    margin: 0;
+  }
+  .faq-item + .faq-item {
+  border-top: 1px solid #d8ddd2;
+  padding-top: 1.6rem;
+  margin-top: 1.6rem;
+}
+
+
+  .faq-item {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid #e8ebe4;
+  }
+
+  .faq-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .faq-item dt {
+  font-size: 1.35rem;   /* larger */
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
+  color: var(--kbm-green);
+}
+
+.faq-item dd {
+  font-size: 1rem;
+  line-height: 1.65;
+  margin-bottom: 1.5rem;
+}
+  .purchase-list {
+    margin: 0 0 1rem 0;
+    padding-left: 1.5rem;
+    line-height: 1.6;
+  }
+
+  .purchase-list li {
+    margin-bottom: 0.35rem;
+  }
+
+  .section-cta {
+    text-align: center;
+    padding: 2rem 1rem;
+    background: #fafbf9;
+    border-radius: 12px;
+    border: 1px solid #e8ebe4;
+  }
+
+  .section-cta h2 {
+    margin-bottom: 0.5rem;
+  }
+
+  .section-cta p {
+    margin-bottom: 1.25rem;
+  }
+</style>

@@ -1,0 +1,95 @@
+---
+interface Props {
+  current: "designaknit" | "compare" | "buyers-guide";
+}
+
+const { current } = Astro.props;
+
+const links = [
+  { key: "designaknit", label: "DesignaKnit", href: "/shop/designaknit" },
+  { key: "compare", label: "Compare Versions", href: "/reference/DAK-compare" },
+  { key: "buyers-guide", label: "Buyer's Guide", href: "/reference/dak-buyers-guide" }
+];
+---
+
+<nav class="dak-subnav" aria-label="DesignaKnit section navigation">
+  <ul class="dak-subnav-list">
+    {links.map((link) => {
+      const isActive = current === link.key;
+      return (
+        <li>
+          {isActive ? (
+            <span class="dak-subnav-link is-active" aria-current="page">
+              {link.label}
+            </span>
+          ) : (
+            <a href={link.href} class="dak-subnav-link">
+              {link.label}
+            </a>
+          )}
+        </li>
+      );
+    })}
+  </ul>
+</nav>
+
+<style>
+  .dak-subnav {
+    margin: 1.25rem 0 2rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .dak-subnav-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0;
+    margin: 0;
+  }
+
+  .dak-subnav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    border: 1px solid #d7e2c8;
+    background: #f6f8f2;
+    color: var(--kbm-green);
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .dak-subnav-link:hover {
+    background: #eef3e6;
+    border-color: #c9d8b2;
+    color: #3f5222;
+  }
+
+  .dak-subnav-link.is-active {
+    background: var(--kbm-green);
+    color: #fff;
+    border-color: var(--kbm-green);
+  }
+
+  @media (max-width: 640px) {
+    .dak-subnav {
+      margin: 1rem 0 1.5rem;
+    }
+
+    .dak-subnav-list {
+      gap: 0.5rem;
+    }
+
+    .dak-subnav-link {
+      font-size: 0.9rem;
+      padding: 0.5rem 0.9rem;
+    }
+  }
+</style>

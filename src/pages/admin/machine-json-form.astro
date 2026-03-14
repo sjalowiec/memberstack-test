@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Machine JSON Form Helper</title>
+  <style>
+    :root {
+      --kbm-green: #52682d;
+      --kbm-green-light: #eef3e6;
+      --kbm-border: #d9dfd0;
+      --kbm-text: #243018;
+      --kbm-muted: #5f6b52;
+      --kbm-bg: #f8faf6;
+      --kbm-card: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--kbm-bg);
+      color: var(--kbm-text);
+      line-height: 1.5;
+      padding: 24px;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--kbm-card);
+      border: 1px solid var(--kbm-border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+    }
+
+    h1, h2, h3 {
+      margin-top: 0;
+      color: var(--kbm-green);
+    }
+
+    .intro {
+      margin-bottom: 20px;
+      color: var(--kbm-muted);
+    }
+
+    .section {
+      border-top: 1px solid #e7ebdf;
+      padding-top: 18px;
+      margin-top: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .grid-1 { display: grid; gap: 14px; }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--kbm-text);
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid #cfd7c2;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font: inherit;
+      color: var(--kbm-text);
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .small {
+      font-size: 0.92rem;
+      color: var(--kbm-muted);
+      margin-top: 6px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      border: 1px solid var(--kbm-green);
+      background: var(--kbm-green);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: white;
+      color: var(--kbm-green);
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #fcfdfb;
+      border: 1px solid #e2e8d8;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 0.95rem;
+      min-height: 300px;
+      overflow: auto;
+    }
+
+    .status {
+      margin-top: 12px;
+      color: var(--kbm-muted);
+      font-size: 0.95rem;
+      min-height: 24px;
+    }
+
+    .list-note {
+      background: var(--kbm-green-light);
+      border: 1px solid #d9e3c9;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-top: 16px;
+      color: var(--kbm-text);
+    }
+
+    @media (max-width: 900px) {
+      .wrap { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <h1>Machine JSON Form Helper</h1>
+      <p class="intro">Fill out the form, then click <strong>Generate JSON</strong>. This creates a clean machine object for your catalog without you having to type quotes, commas, or brackets yourself.</p>
+
+      <form id="machineForm">
+        <div class="grid section" style="border-top: none; padding-top: 0; margin-top: 0;">
+          <div>
+            <label for="name">Machine name</label>
+            <input id="name" name="name" type="text" placeholder="Taixtexa 6mm Machine + Ribber" />
+          </div>
+          <div>
+            <label for="slug">Slug</label>
+            <input id="slug" name="slug" type="text" placeholder="taixtexa-6mm-machine-ribber" />
+            <div class="small">Leave blank and it will be generated from the name.</div>
+          </div>
+        </div>
+
+        <div class="grid section">
+          <div>
+            <label for="sku">SKU</label>
+            <input id="sku" name="sku" type="text" placeholder="MACH-TAI-6MM-RIB" />
+          </div>
+          <div>
+            <label for="gauge">Gauge</label>
+            <input id="gauge" name="gauge" type="text" placeholder="6mm" />
+          </div>
+        </div>
+
+        <div class="grid-1 section">
+          <div>
+            <label for="shortDescription">Short description</label>
+            <textarea id="shortDescription" name="shortDescription" placeholder="A versatile 6mm metal-bed knitting machine with ribber, ideal for knitters who want durability and flexibility with yarn choices."></textarea>
+          </div>
+          <div>
+            <label for="intro">Intro</label>
+            <textarea id="intro" name="intro" placeholder="At 6mm gauge, this machine works beautifully with a wide range of yarns. The metal needle bed provides durability and smooth knitting for years of use."></textarea>
+          </div>
+          <div>
+            <label for="ribberInfo">Ribber info</label>
+            <textarea id="ribberInfo" name="ribberInfo" placeholder="With the included ribber attachment, you can go beyond basic stockinette and knit ribbing, double-bed fabrics, circular knitting, and decorative textures."></textarea>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>Who It’s For</h2>
+          <div class="grid">
+            <div>
+              <label for="who1Title">Audience 1 title</label>
+              <input id="who1Title" name="who1Title" type="text" placeholder="LK-150 knitters" />
+            </div>
+            <div>
+              <label for="who1Text">Audience 1 text</label>
+              <textarea id="who1Text" name="who1Text" placeholder="A natural upgrade that adds the durability of a metal bed and the versatility of a ribber."></textarea>
+            </div>
+          </div>
+
+          <div class="grid" style="margin-top: 14px;">
+            <div>
+              <label for="who2Title">Audience 2 title</label>
+              <input id="who2Title" name="who2Title" type="text" placeholder="New machine knitters" />
+            </div>
+            <div>
+              <label for="who2Text">Audience 2 text</label>
+              <textarea id="who2Text" name="who2Text" placeholder="The learning curve is approachable. You can begin with basic knitting and gradually explore the machine’s capabilities."></textarea>
+            </div>
+          </div>
+
+          <div class="grid" style="margin-top: 14px;">
+            <div>
+              <label for="who3Title">Audience 3 title</label>
+              <input id="who3Title" name="who3Title" type="text" placeholder="Experienced machine knitters" />
+            </div>
+            <div>
+              <label for="who3Text">Audience 3 text</label>
+              <textarea id="who3Text" name="who3Text" placeholder="You’ll appreciate the control, durability, and flexibility of the 6mm gauge."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>Features</h2>
+          <div class="grid">
+            <div><input id="feature1" name="feature1" type="text" placeholder="6mm gauge – works with a wide range of yarns" /></div>
+            <div><input id="feature2" name="feature2" type="text" placeholder="Metal bed for durability" /></div>
+            <div><input id="feature3" name="feature3" type="text" placeholder="164 needles" /></div>
+            <div><input id="feature4" name="feature4" type="text" placeholder="Built-in intarsia (no extra carriage required)" /></div>
+            <div><input id="feature5" name="feature5" type="text" placeholder="Ribber included" /></div>
+            <div><input id="feature6" name="feature6" type="text" placeholder="No punchcard mechanism" /></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>Quick Specs</h2>
+          <div class="grid">
+            <div><input id="spec1" name="spec1" type="text" placeholder="6mm gauge" /></div>
+            <div><input id="spec2" name="spec2" type="text" placeholder="Metal bed" /></div>
+            <div><input id="spec3" name="spec3" type="text" placeholder="164 needles" /></div>
+            <div><input id="spec4" name="spec4" type="text" placeholder="Ribber included" /></div>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button type="button" id="generateBtn">Generate JSON</button>
+          <button type="button" class="secondary" id="copyBtn">Copy JSON</button>
+          <button type="button" class="secondary" id="downloadBtn">Download JSON</button>
+          <button type="reset" class="secondary">Clear Form</button>
+        </div>
+        <div class="status" id="status"></div>
+      </form>
+    </section>
+
+    <aside class="card">
+      <h2>Generated JSON</h2>
+      <pre id="output">Your machine JSON will appear here.</pre>
+      <div class="list-note">
+        This helper generates a <strong>single machine object</strong>. You can paste that object into your machines JSON array, or download it and save it as a starter file.
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    const form = document.getElementById('machineForm');
+    const output = document.getElementById('output');
+    const status = document.getElementById('status');
+
+    function slugify(text) {
+      return (text || '')
+        .toLowerCase()
+        .trim()
+        .replace(/&/g, ' and ')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
+
+    function value(id) {
+      return document.getElementById(id).value.trim();
+    }
+
+    function compactArray(values) {
+      return values.map(v => (v || '').trim()).filter(Boolean);
+    }
+
+    function buildMachineObject() {
+      const name = value('name');
+      const slug = value('slug') || slugify(name);
+
+      const whoItsFor = [
+        { title: value('who1Title'), text: value('who1Text') },
+        { title: value('who2Title'), text: value('who2Text') },
+        { title: value('who3Title'), text: value('who3Text') }
+      ].filter(item => item.title || item.text);
+
+      return {
+        name,
+        slug,
+        sku: value('sku'),
+        gauge: value('gauge'),
+        shortDescription: value('shortDescription'),
+        intro: value('intro'),
+        ribberInfo: value('ribberInfo'),
+        whoItsFor,
+        features: compactArray([
+          value('feature1'),
+          value('feature2'),
+          value('feature3'),
+          value('feature4'),
+          value('feature5'),
+          value('feature6')
+        ]),
+        quickSpecs: compactArray([
+          value('spec1'),
+          value('spec2'),
+          value('spec3'),
+          value('spec4')
+        ])
+      };
+    }
+
+    function removeEmptyFields(obj) {
+      if (Array.isArray(obj)) {
+        return obj
+          .map(removeEmptyFields)
+          .filter(item => {
+            if (Array.isArray(item)) return item.length > 0;
+            if (item && typeof item === 'object') return Object.keys(item).length > 0;
+            return item !== '' && item !== null && item !== undefined;
+          });
+      }
+
+      if (obj && typeof obj === 'object') {
+        const cleaned = {};
+        Object.entries(obj).forEach(([key, val]) => {
+          const cleanedVal = removeEmptyFields(val);
+          const keep = Array.isArray(cleanedVal)
+            ? cleanedVal.length > 0
+            : cleanedVal && typeof cleanedVal === 'object'
+              ? Object.keys(cleanedVal).length > 0
+              : cleanedVal !== '' && cleanedVal !== null && cleanedVal !== undefined;
+
+          if (keep) cleaned[key] = cleanedVal;
+        });
+        return cleaned;
+      }
+
+      return obj;
+    }
+
+    function generateJson() {
+      const machine = removeEmptyFields(buildMachineObject());
+      const json = JSON.stringify(machine, null, 2);
+      output.textContent = json;
+      status.textContent = 'JSON generated.';
+      return json;
+    }
+
+    document.getElementById('generateBtn').addEventListener('click', generateJson);
+
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      const json = generateJson();
+      try {
+        await navigator.clipboard.writeText(json);
+        status.textContent = 'JSON copied to clipboard.';
+      } catch (error) {
+        status.textContent = 'Could not copy automatically. Please copy from the box.';
+      }
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      const json = generateJson();
+      const name = value('name') || 'machine';
+      const slug = value('slug') || slugify(name) || 'machine';
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${slug}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      status.textContent = 'JSON downloaded.';
+    });
+
+    form.addEventListener('reset', () => {
+      setTimeout(() => {
+        output.textContent = 'Your machine JSON will appear here.';
+        status.textContent = 'Form cleared.';
+      }, 0);
+    });
+  </script>
+</body>
+</html>

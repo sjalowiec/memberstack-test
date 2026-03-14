@@ -3,7 +3,8 @@ import Layout from "../layouts/Layout.astro";
 import tools from "../../data/tools.json";
 
 // Group tools by category
-const groupedTools = Object.groupBy(tools, tool => tool.category);
+const activeTools = tools.filter(tool => tool.active === "TRUE");
+const groupedTools = Object.groupBy(activeTools, tool => tool.category);
 
 // Unique category list for filter (All Categories first)
 const categories = ["All", ...new Set(tools.map((tool: { category?: string }) => tool.category).filter(Boolean))];
@@ -18,19 +19,20 @@ const categories = ["All", ...new Set(tools.map((tool: { category?: string }) =>
   <p class="tools-intro">
     From complex shaping to gauge conversions, we’ve automated the "knitting math." Plug in your numbers, get your custom chart, and get knitting.
   </p>
+ 
 
-  <div class="tool-filter-bar">
-    <button class="tool-filter active" data-filter="all">All</button>
-    <button class="tool-filter" data-filter="free">Free</button>
-    <button class="tool-filter" data-filter="member">Member</button>
+  <div id="tool-access-filters" class="filter-pills">
+    <button type="button" class="filter-pill active" data-filter="all">All</button>
+    <button type="button" class="filter-pill" data-filter="free">Free</button>
+    <button type="button" class="filter-pill" data-filter="member">Member</button>
   </div>
 
-  <div class="tool-category-filter-bar">
+  <div id="tool-category-filters" class="filter-pills">
     {categories.map((category, index) => (
       <button
-        class={`tool-category-filter ${index === 0 ? "active" : ""}`}
-        data-category-filter={category === "All" ? "all" : category}
         type="button"
+        class={`filter-pill ${index === 0 ? "active" : ""}`}
+        data-category-filter={category === "All" ? "all" : category}
       >
         {category === "All" ? "All Categories" : category}
       </button>
@@ -60,7 +62,8 @@ const categories = ["All", ...new Set(tools.map((tool: { category?: string }) =>
                   alt=""
                   class="tool-icon"
                 />
-                <h3>{tool.title}</h3>
+                <h3>{tool.title} </h3>
+                
                 <p>{tool.description}</p>
               </a>
             ) : (
@@ -77,6 +80,10 @@ const categories = ["All", ...new Set(tools.map((tool: { category?: string }) =>
             );
           })}
         </div>
+        <div class="tools-coming-soon">
+          <span class="tools-coming-soon-icon">✦</span>
+          <span>More tools coming to this section</span>
+        </div>
       </div>
     </section>
   ))}
@@ -84,8 +91,8 @@ const categories = ["All", ...new Set(tools.map((tool: { category?: string }) =>
 </section>
 
 <script>
-  const accessButtons = document.querySelectorAll<HTMLButtonElement>(".tool-filter");
-  const categoryButtons = document.querySelectorAll<HTMLButtonElement>(".tool-category-filter");
+  const accessButtons = document.querySelectorAll<HTMLButtonElement>("#tool-access-filters .filter-pill");
+  const categoryButtons = document.querySelectorAll<HTMLButtonElement>("#tool-category-filters .filter-pill");
   const cards = document.querySelectorAll<HTMLElement>(".tool-card");
 
   let activeAccessFilter = "all";
@@ -143,47 +150,12 @@ const categories = ["All", ...new Set(tools.map((tool: { category?: string }) =>
   margin-bottom:30px;
 }
 
-.tool-filter-bar {
-  margin: 20px 0 30px;
-  display: flex;
-  gap: 10px;
+#tool-access-filters.filter-pills {
+  margin-top: 20px;
 }
 
-.tool-filter {
-  border: 1px solid #ddd;
-  background: #fff;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.tool-filter.active {
-  background: #52682d;
-  color: #fff;
-  border-color: #52682d;
-}
-
-.tool-category-filter-bar {
-  margin: 0 0 30px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.tool-category-filter {
-  border: 1px solid #ddd;
-  background: #fff;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.tool-category-filter.active {
-  background: #52682d;
-  color: #fff;
-  border-color: #52682d;
+#tool-category-filters.filter-pills {
+  margin-bottom: 30px;
 }
 
 .tool-category{
@@ -285,6 +257,19 @@ const categories = ["All", ...new Set(tools.map((tool: { category?: string }) =>
   font-size:14px;
   color:#555;
   text-decoration:none;
+}
+
+.tools-coming-soon {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tools-coming-soon-icon {
+  color: var(--kbm-green, #52682d);
 }
 
 </style>

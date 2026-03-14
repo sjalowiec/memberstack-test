@@ -1,0 +1,198 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+import books from "../../data/ebooks.json";
+
+const title = "Books | Knit by Machine";
+const description = "Downloadable reference books for machine knitters.";
+
+const activeBooks = books.filter(
+  (book) => (book as { active?: boolean | string }).active === true || (book as { active?: string }).active === "TRUE"
+);
+
+const categories = [...new Set(activeBooks.map((b) => (b as { category?: string }).category).filter(Boolean))].sort();
+
+---
+
+<Layout {title} {description}>
+  <PageHead title="Machine Knitting eBooks" />
+  <div class="ebooks-intro">
+    <p>
+      Many classic machine knitting books were originally produced as small-run spiral-bound publications for seminars and knitting guilds.
+    </p>
+  
+    <p>
+      These digital editions preserve that knowledge exactly as it was shared — practical techniques, thoughtful explanations, and years of experience from respected machine knitting teachers and designers.
+    </p>
+  
+    <p>
+      Inside you'll find clear instructions, proven methods, and creative ideas that machine knitters have relied on for decades.
+    </p>
+  </div>
+
+  <div id="ebook-category-filters" class="filter-pills">
+    <button type="button" class="filter-pill active" data-category="all" aria-pressed="true">All</button>
+    {categories.map((cat) => (
+      <button type="button" class="filter-pill" data-category={cat} aria-pressed="false">{cat}</button>
+    ))}
+  </div>
+
+  <div id="ebook-cards-wrap">
+    {activeBooks.map((book) => {
+      const category = (book as { category?: string }).category ?? "";
+      return (
+        <article class="ebook-card" data-category={category}>
+          <img
+            src={`/images/shop/books/${book.thumbnail}`}
+            alt={book.title}
+            class="ebook-thumbnail"
+          />
+
+          <div class="ebook-content">
+            <h2>
+              {book.title}
+              {category && <span class="ebook-pill ebook-category-pill">{category}</span>}
+            </h2>
+            {(book as { author?: string }).author && (
+              <div class="ebook-author">{(book as { author?: string }).author}</div>
+            )}
+            <p set:html={book.short}></p>
+            <div class="ebook-download-note">Digital download</div>
+            <div class="ebook-buy">
+              <span class="ebook-price">${book.price}</span>
+              <a
+                href={(book as { stripelink?: string }).stripelink ?? (book as { stripelink?: string }).stripelink}
+                class="ebook-button"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Buy for ${book.price}
+              </a>
+            </div>
+          </div>
+        </article>
+      );
+    })}
+  </div>
+
+  <p id="ebook-empty" class="ebook-empty-state" style="display: none;">
+    No e-books in this category.
+  </p>
+
+  <script>
+    (function () {
+      const pills = document.querySelectorAll("#ebook-category-filters .filter-pill");
+      const cards = document.querySelectorAll(".ebook-card");
+      const emptyEl = document.getElementById("ebook-empty");
+
+      pills.forEach(function (pill) {
+        pill.addEventListener("click", function () {
+          pills.forEach(function (p) {
+            p.classList.remove("active");
+            p.setAttribute("aria-pressed", "false");
+          });
+          pill.classList.add("active");
+          pill.setAttribute("aria-pressed", "true");
+
+          const category = (pill as HTMLElement).dataset.category;
+          let visibleCount = 0;
+
+          cards.forEach(function (card) {
+            const cardCat = card.getAttribute("data-category") ?? "";
+            const show = category === "all" || cardCat === category;
+            (card as HTMLElement).style.display = show ? "" : "none";
+            if (show) visibleCount++;
+          });
+
+          if (emptyEl) {
+            (emptyEl as HTMLElement).style.display = visibleCount === 0 ? "block" : "none";
+          }
+        });
+      });
+    })();
+  </script>
+<style>
+.ebook-thumbnail {
+  width: 160px;
+  height: 210px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.ebook-card {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 28px;
+  padding: 18px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  background: #fff;
+}
+.ebook-card > div {
+  flex: 1;
+}
+.ebook-card h2 {
+  margin: 0 0 10px;
+  font-size: 1.35rem;
+}
+
+.ebook-author {
+  font-size: 0.9rem;
+  color: #6b6b6b;
+  margin-top: 2px;
+  margin-bottom: 8px;
+}
+
+.ebook-purchase {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ebook-price {
+  display: inline-block;
+  margin: 6px 0 14px;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.ebooks-intro {
+  max-width: 100%; /*900px;*/
+  margin-bottom: 2rem;
+}
+
+.ebooks-intro p {
+  line-height: 1.6;
+}
+
+.ebook-category-pill {
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+.ebook-empty-state {
+  color: #555;
+  font-size: 1.05rem;
+  margin: 2rem 0;
+}
+
+.ebook-download-note {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #52682d;
+  margin-bottom: 6px;
+}
+:global(.ebook-pill) {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #52682d;
+  background: #eef3e6;
+  border: 1px solid #d7e2c8;
+  padding: 3px 8px;
+  border-radius: 999px;
+  margin-left: 6px;
+  white-space: nowrap;
+}
+</style>

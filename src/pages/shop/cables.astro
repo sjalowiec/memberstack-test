@@ -1,0 +1,185 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+import cablesData from "../../data/cables.json";
+
+const title = "Knitting Machine Cables | Knit by Machine";
+const description = "Find the cable you need for your machine setup. DesignaKnit links and machine-specific cables.";
+
+interface Cable {
+  id: number;
+  name: string;
+  price: number;
+  stripeLink: string;
+  thumbnail: string;
+  shortdescription: string;
+  longDescription: string;
+  active: boolean | string;
+  sortOrder: number;
+}
+
+const cables = (cablesData as Cable[])
+  .filter((c) => c.active === true || String(c.active).toUpperCase() === "TRUE")
+  .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: price % 1 === 0 ? 0 : 2 }).format(price);
+}
+---
+
+<Layout {title} {description}>
+  <PageHead title="Knitting Machine Cables" />
+
+  <div class="cables-page">
+    <header class="page-header">
+      <p class="page-intro">
+        Find the cable you need for your machine setup. Each listing includes a quick overview, and you can click through for more details before purchasing.
+        <br>
+        Not sure which Brother cable you need?
+        See the <a href="/reference/brother-cable-comparison">Brother Cable Comparison Guide</a> →
+      
+      </p>
+    </header>
+
+    <div class="cables-grid">
+      {cables.map((cable) => (
+        <a href={`/shop/cables/${cable.id}`} class="cable-card">
+          <div class="cable-card-image-wrap">
+            <img
+              src={`/images/shop/designaknit/${cable.thumbnail}`}
+              alt={cable.name}
+              class="cable-thumbnail"
+              width="280"
+              height="180"
+            />
+          </div>
+          <h2 class="cable-name">{cable.name}</h2>
+          <p class="cable-price">{formatPrice(cable.price)}</p>
+          <p class="cable-short">{cable.shortdescription}</p>
+          <div class="cable-actions">
+            <span class="cable-link-details">See Details</span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .cables-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .page-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .page-intro {
+    font-size: 1.125rem;
+    color: #5a6b47;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .cables-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .cables-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .cables-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .cable-card {
+    background: #fafbf9;
+    border: 1px solid #e8ebe4;
+    border-radius: 12px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .cable-card,
+  .cable-card * {
+    text-decoration: none;
+  }
+
+  .cable-card:hover {
+    box-shadow: 0 4px 12px rgba(82, 104, 45, 0.1);
+  }
+
+  .cable-card-image-wrap {
+    width: 100%;
+    aspect-ratio: 280 / 180;
+    overflow: hidden;
+    border-radius: 12px 12px 0 0;
+    background: #eef3e6;
+  }
+
+  .cable-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .cable-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0;
+    padding: 1.25rem 1.25rem 0;
+  }
+
+  .cable-price {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #2d3a1f;
+    margin: 0.35rem 1.25rem 0;
+  }
+
+  .cable-short {
+    font-size: 0.95rem;
+    color: #5a6b47;
+    line-height: 1.55;
+    margin: 1rem 1.25rem 0;
+    flex-grow: 1;
+  }
+
+  .cable-actions {
+    padding: 1.25rem 1.25rem 1.5rem;
+    margin-top: auto;
+    text-align: center;
+  }
+
+  .cable-link-details {
+    display: inline-block;
+    padding: 0.6rem 1.25rem;
+    background: var(--kbm-green);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s ease;
+  }
+
+  .cable-link-details:hover {
+    background: var(--kbm-green-hover, #445626);
+  }
+</style>

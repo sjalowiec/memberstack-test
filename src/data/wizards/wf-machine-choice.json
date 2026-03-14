@@ -1,0 +1,199 @@
+{
+  "wizardId": "wf-machine-choice",
+  "name": "Choose a Knitting Machine",
+  "slug": "machine-choice",
+  "description": "Answer a few questions to discover which knitting machine fits your knitting goals.",
+  "flowType": "assessment",
+  "wizardStartStepId": "step-fabric-goals",
+  "wizardSteps": [
+    {
+      "stepId": "step-fabric-goals",
+      "thoughtText": "What kinds of fabric do you want to knit?",
+      "helperText": "Select all that apply",
+      "answerKey": "fabric_goals",
+      "answerType": "multi",
+      "choices": [
+        {
+          "label": "Simple flat pieces (scarves, blankets, panels)",
+          "value": "flat_pieces",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        },
+        {
+          "label": "Shaped garments (sweaters, hats, socks)",
+          "value": "shaped_garments",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        },
+        {
+          "label": "Complex stitch patterns (lace, cables, intarsia)",
+          "value": "complex_patterns",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        },
+        {
+          "label": "Mixed fabrics (combining different textures or techniques)",
+          "value": "mixed_fabrics",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        },
+        {
+          "label": "Repeat production (making multiples of the same item)",
+          "value": "repeat_production",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        }
+      ]
+    },
+    {
+      "stepId": "step-patterning",
+      "thoughtText": "What are your expectations for patterning?",
+      "helperText": "",
+      "answerKey": "patterning_expectation",
+      "answerType": "single",
+      "choices": [
+        {
+          "label": "I'll create texture and color patterns manually",
+          "value": "manual_texture_color",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        },
+        {
+          "label": "I want the machine to handle patterning automatically",
+          "value": "automatic_patterning",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        },
+        {
+          "label": "I want to download or create digital patterns",
+          "value": "digital_download",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        }
+      ]
+    },
+    {
+      "stepId": "step-gauge",
+      "thoughtText": "What yarn thickness range do you want to work with most comfortably?",
+      "helperText": "",
+      "answerKey": "gauge_family",
+      "answerType": "single",
+      "choices": [
+        {
+          "label": "Mostly finer yarns",
+          "value": "standard",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        },
+        {
+          "label": "Flexibility with common yarn-store yarns",
+          "value": "mid",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        },
+        {
+          "label": "Thicker or bulky yarn often",
+          "value": "bulky",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        },
+        {
+          "label": "I'm not sure yet",
+          "value": "unknown",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        }
+      ]
+    },
+    {
+      "stepId": "step-space",
+      "thoughtText": "What's your space and setup situation?",
+      "helperText": "",
+      "answerKey": "space_permanence",
+      "answerType": "single",
+      "choices": [
+        {
+          "label": "I need to pack away the machine between sessions",
+          "value": "pack_away",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        },
+        {
+          "label": "I have dedicated space where the machine can stay set up",
+          "value": "dedicated_space",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        }
+      ]
+    },
+    {
+      "stepId": "step-ribber",
+      "thoughtText": "Do you need a ribber?",
+      "helperText": "A ribber adds a second bed for creating ribs, double-sided fabrics, and more options",
+      "answerKey": "ribber_need",
+      "answerType": "single",
+      "choices": [
+        {
+          "label": "Yes, ribbing capability is essential for my projects",
+          "value": "rib_required",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        },
+        {
+          "label": "Nice to have, but not required right now",
+          "value": "rib_optional",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        }
+      ]
+    },
+    {
+      "stepId": "step-buying",
+      "thoughtText": "What's your buying preference?",
+      "helperText": "",
+      "answerKey": "buying_reality",
+      "answerType": "single",
+      "choices": [
+        {
+          "label": "I want a new machine with full support and warranty",
+          "value": "new_supported",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        },
+        {
+          "label": "I'm open to used machines if they meet my needs",
+          "value": "used_ok",
+          "routeType": "step",
+          "routeTarget": "",
+          "feedbackText": ""
+        }
+      ]
+    },
+    {
+      "stepId": "step-results",
+      "thoughtText": "Your Machine Recommendations",
+      "helperText": "",
+      "answerKey": "",
+      "answerType": "computed",
+      "choices": []
+    }
+  ],
+  "wizardOutcomes": {}
+}

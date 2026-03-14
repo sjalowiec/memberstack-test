@@ -1,0 +1,234 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+import machinesData from "../../data/machines.json";
+
+const title = "Knitting Machines | Knit by Machine";
+const description = "Compare knitting machines and choose the one that fits your needs. Metal-bed machines, gauges, and key specs at a glance.";
+
+interface Machine {
+  name: string;
+  slug: string;
+  shortDescription?: string;
+  quickSpecs?: string[];
+  image?: string;
+  active?: boolean | string;
+}
+
+const rawMachines = machinesData as Machine[];
+const hasActiveFlag = rawMachines.some((m) => Object.prototype.hasOwnProperty.call(m, "active"));
+const machines = hasActiveFlag
+  ? rawMachines.filter((m) => m.active === true || String(m.active).toUpperCase() === "TRUE")
+  : rawMachines;
+
+const detailUrl = (slug: string) => `/shop/machines/${slug}`;
+const quickSpecsSlice = (specs: string[] | undefined) => (specs ?? []).slice(0, 3);
+---
+
+<Layout {title} {description}>
+  <PageHead title="Knitting Machines" />
+
+  <div class="machines-page">
+    <header class="page-header">
+      <h1 class="page-title">Knitting Machines</h1>
+      <p class="page-intro">
+        This page helps you compare available machines and choose the one that fits your needs. Each card gives you a quick overview; use <strong>View Details</strong> to see full specs and more.
+      </p>
+      <p class="page-wizard-placeholder">
+        Not sure which machine is right for you? A machine decision wizard will be available here soon.
+      </p>
+    </header>
+
+    <div class="machines-grid">
+      {machines.map((machine) => {
+        const specs = quickSpecsSlice(machine.quickSpecs);
+        const imageSrc = machine.image?.startsWith("/") ? machine.image : machine.image ? `/${machine.image}` : null;
+        return (
+          <article class="machine-card">
+            <div class="machine-card-image-wrap">
+              {imageSrc ? (
+                <img
+                  src={imageSrc}
+                  alt={machine.name}
+                  class="machine-card-image"
+                  width="280"
+                  height="180"
+                />
+              ) : (
+                <div class="machine-card-image-placeholder" aria-hidden="true">Image coming soon</div>
+              )}
+            </div>
+            <h2 class="machine-name">{machine.name}</h2>
+            {machine.shortDescription && (
+              <p class="machine-short">{machine.shortDescription}</p>
+            )}
+            {specs.length > 0 && (
+              <ul class="machine-specs" aria-label="Quick specs">
+                {specs.map((spec) => (
+                  <li>{spec}</li>
+                ))}
+              </ul>
+            )}
+            <div class="machine-actions">
+              <a href={detailUrl(machine.slug)} class="machine-link-details">
+                View Details
+              </a>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .machines-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .page-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .page-title {
+    font-size: 1.75rem;
+    color: var(--kbm-green);
+    margin: 0 0 0.75rem;
+  }
+
+  .page-intro {
+    font-size: 1.125rem;
+    color: #5a6b47;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .page-wizard-placeholder {
+    font-size: 0.95rem;
+    color: #6b7b55;
+    margin: 1rem 0 0;
+  }
+
+  .page-wizard-placeholder a {
+    color: var(--kbm-green);
+  }
+
+  .machines-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .machines-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .machines-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .machine-card {
+    background: #fafbf9;
+    border: 1px solid #e8ebe4;
+    border-radius: 12px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s ease;
+  }
+
+  .machine-card:hover {
+    box-shadow: 0 4px 12px rgba(82, 104, 45, 0.1);
+  }
+
+  .machine-card-image-wrap {
+    width: 100%;
+    aspect-ratio: 280 / 180;
+    overflow: hidden;
+    border-radius: 12px 12px 0 0;
+    background: #eef3e6;
+  }
+
+  .machine-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .machine-card-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    color: #8a9a6e;
+    background: #eef3e6;
+  }
+
+  .machine-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0;
+    padding: 1.25rem 1.25rem 0;
+  }
+
+  .machine-short {
+    font-size: 0.95rem;
+    color: #5a6b47;
+    line-height: 1.55;
+    margin: 1rem 1.25rem 0;
+    flex-grow: 1;
+  }
+
+  .machine-specs {
+    list-style: none;
+    margin: 0 1.25rem;
+    padding: 0;
+    font-size: 0.875rem;
+    color: #6b7b55;
+    line-height: 1.5;
+  }
+
+  .machine-specs li {
+    position: relative;
+    padding-left: 1rem;
+  }
+
+  .machine-specs li::before {
+    content: "·";
+    position: absolute;
+    left: 0;
+    color: var(--kbm-green);
+    font-weight: 700;
+  }
+
+  .machine-actions {
+    padding: 1.25rem 1.25rem 1.5rem;
+    margin-top: auto;
+  }
+
+  .machine-link-details {
+    display: inline-block;
+    padding: 0.6rem 1.25rem;
+    background: var(--kbm-green);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s ease;
+  }
+
+  .machine-link-details:hover {
+    background: var(--kbm-green-hover, #445626);
+  }
+</style>

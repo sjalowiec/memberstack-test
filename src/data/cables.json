@@ -1,0 +1,57 @@
+[
+  {
+    "id": 101,
+    "name": "Brother Link 5 USB Cable",
+    "price": 225,
+    "stripeLink": "https://buy.stripe.com/00wfZg5hQfOXd9I1hU0oM0E",
+    "thumbnail": "Brother5.jpg",
+    "shortdescription": "This link enables patterns to be downloaded from DesignaKnit, and 900 series patterns to be uploaded to DesignaKnit.",
+    "longDescription": "This link enables patterns to be downloaded from DesignaKnit, and 900 series patterns to be uploaded to DesignaKnit. The 900 series pattern numbers are those loaded from another source into the knitting machine or PPD (e.g. from the PPD, Brother FB100 Disk Drive, or DesignaKnit).\n{link to Brother cable compare page}\nThis link supports downloading and uploading with the KH930, KH940, KH950i, KH965i, KH970, and with the PPD using Cartridge III in KH900 mode, or with the PPD using the CK35 cartridge.\n\nThis link is identical to the USB BrotherLink 1 except that it includes a magnet arm that attaches to the carriage and thereby enables Interactive Knitting with any knitting machine, including non-electronic ones.<br><p><strong>Not sure which Brother cable you need?</strong><br>\nSee the <a href=\"/reference/brother-cable-comparison\">Brother Cable Comparison Guide</a>.</p>",
+    "active": "TRUE",
+    "sortOrder": 1
+  },
+  {
+    "id": 102,
+    "name": "Screen Link USB Cable",
+    "price": 119.5,
+    "stripeLink": "https://buy.stripe.com/8x2eVcfWu32bedMd0C0oM0F",
+    "thumbnail": "screen_link.jpg",
+    "shortdescription": "Interactive Knitting for non-electronic machines",
+    "longDescription": "The ScreenLinks enable DesignaKnit to provide the full range of row by row instructions and audible alerts during Interactive Knitting  with NON ELECTRONIC MACHINES. However, they are not able to download patterns to the knitting machine.\n\nThis is the cable needed for the Silver Reed LK-150 Passap Vario, Brother KH-400 and Brother KX-350 or any non- electronic machine (including punchcard machines)",
+    "active": "TRUE",
+    "sortOrder": 2
+  },
+  {
+    "id": 103,
+    "name": "Brother Cable 4 Plus",
+    "price": 465,
+    "stripeLink": "https://buy.stripe.com/7sYfZg4dM0U32v4gcO0oM0D",
+    "thumbnail": "Brother-Cable-4-PLUS.png",
+    "shortdescription": "DesignaKnit uses this cable to download patterns to Brother machines that take a Brother pattern cartridge",
+    "longDescription": "DesignaKnit uses this cable to download patterns to Brother machines that take a Brother pattern cartridge (KH900, KH270, KH965, KH965i, KH970). A special version of the cable is available for downloading to the CK35 via the PPD.\n\nThis cable link also has its own software that transfers various formats of stitch pattern files between a Windows computer and the above knitting machines. It can also be used as a replacement for a PPD cartridge and can be used when downloading patterns from DesignaKnit to the PPD using a BrotherLink 3.\n\nThe USB BrotherLink 4 Plus variant of this link may also be used for Interactive Knitting in DesignaKnit 8 or 9 with any Brother electronic knitting machine.<br><p><strong>Not sure which Brother cable you need?</strong><br>\nSee the <a href=\"/reference/brother-cable-comparison\">Brother Cable Comparison Guide</a>.</p>",
+    "active": "TRUE",
+    "sortOrder": 3
+  },
+  {
+    "id": 104,
+    "name": "Curl Cord",
+    "price": 65,
+    "stripeLink": "https://buy.stripe.com/bJe7sK7pY8mvfhQ0dQ0oM0B",
+    "thumbnail": "curl_cord.jpg",
+    "shortdescription": "Curl Cord to connect Silver Reed Electronic 840/860 machines",
+    "longDescription": "Curl Cord for Silver Reed SK840 / SK860. Allows carriage to read patterns from Designaknit.",
+    "active": "TRUE",
+    "sortOrder": 4
+  },
+  {
+    "id": 105,
+    "name": "(Silver Link 5) Silver Reed Direct Link 5",
+    "price": 399,
+    "stripeLink": "https://buy.stripe.com/8x2eVceSq8mv4Dce4G0oM0C",
+    "thumbnail": "silver-link-5.jpg",
+    "shortdescription": "Connect the Siver Reed curl cord to the electronic carriages",
+    "longDescription": "The SilverLink 5 connects via the Silver Reed curl cord to the main carriage, lace carriage, or the AG50 intarsia carriage on the Silver Reed electronic machines, and also on the Knitmaster 550, 560, and 580 machines. It also connects to a USB port on the computer.\n\nThese links all enable downloading of stitch patterns from DesignaKnit to the PE1 memory, and uploading from the PE1 memory to DesignaKnit. Intarsia patterns may be downloaded to the PE1 for knitting with the AG50 carriage.\n\nThese links connect DesignaKnit to machines manufactured by Silver Seiko or Knitmaster. We do not currently offer a cable link for the Singer machines manufactured by Superba (however please see the ScreenLink for those machines).\n\nIntarsia knitting with the AG50 carriage is fully supported.\n\nThe SilverLink 5 has its own processor and memory and has replaced the earlier SilverLink 1 and 2, which were discontinued because they are unsuitable for recent versions of Windows.\n\nThis group of knitting machines do not have any memory, and no separate stage of downloading the pattern is required. The pattern is automatically transferred to the SilverLink memory at the start of interactive knitting.",
+    "active": "TRUE",
+    "sortOrder": 5
+  }
+]

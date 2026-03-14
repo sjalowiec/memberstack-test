@@ -1,0 +1,42 @@
+[
+  {
+    "id": "dak-hand-knit",
+    "title": "DesignaKnit Hand Knit",
+    "price": "$199",
+    "short": "Pattern design and shaping tools for hand knitters.",
+    "href": "",
+    "recommended": false,
+    "category": "DesignaKnit",
+    "active": true
+  },
+  {
+    "id": "dak-machine-standard",
+    "title": "DesignaKnit Machine Standard",
+    "price": "$330",
+    "short": "Core DesignaKnit tools for machine knitters.",
+    "href": "",
+    "recommended": false,
+    "category": "DesignaKnit",
+    "active": true
+  },
+  {
+    "id": "dak-machine-pro",
+    "title": "DesignaKnit Machine Pro",
+    "price": "$450",
+    "short": "Advanced design tools for machine knitters.",
+    "href": "",
+    "recommended": true,
+    "category": "DesignaKnit",
+    "active": true
+  },
+  {
+    "id": "dak-complete",
+    "title": "DesignaKnit Complete",
+    "price": "$500",
+    "short": "Full DesignaKnit package with all modules.",
+    "href": "",
+    "recommended": true,
+    "category": "DesignaKnit",
+    "active": true
+  }
+]

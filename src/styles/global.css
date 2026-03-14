@@ -87,7 +87,7 @@ a:visited {
 }
 
 a[target="_blank"]::after {
-  content: "";
+  content: " ↗";  
   display: inline-block;
   width: 0.9em;
   height: 0.9em;
@@ -95,8 +95,14 @@ a[target="_blank"]::after {
 
   background-color: currentColor;
 
-  mask: url("/images/external-link.svg") no-repeat center;
-  -webkit-mask: url("/images/external-link.svg") no-repeat center;
+  mask-image: url("/images/external-link.svg");
+  -webkit-mask-image: url("/images/external-link.svg");
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  mask-size: 100% 100%;
+  -webkit-mask-size: 100% 100%;
   mask-size: contain;
   -webkit-mask-size: contain;
 
@@ -375,6 +381,56 @@ p {
     font-size: 1rem;
     max-width: 220px;
     padding: 0.6rem 0.85rem;
+  }
+}
+
+/* ============================================
+   Filter Pills (shared: Tools, eBooks)
+   ============================================ */
+
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 1.75rem;
+}
+
+.filter-pill {
+  appearance: none;
+  border: 1px solid #d7e2c8;
+  background: #ffffff;
+  color: #52682d;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.filter-pill:hover {
+  background: #eef3e6;
+}
+
+.filter-pill.active {
+  background: #52682d;
+  color: #ffffff;
+  border-color: #52682d;
+}
+
+.filter-pill:focus-visible {
+  outline: 2px solid rgba(82, 104, 45, 0.25);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .filter-pills {
+    gap: 8px;
+  }
+
+  .filter-pill {
+    font-size: 0.82rem;
+    padding: 6px 12px;
   }
 }
 
@@ -1787,4 +1843,52 @@ div[data-ms-message="error"]:empty {
   border-color: #cfd8c2;
   font-weight: 600;
 }
+}
+
+/* DesignaKnit local navigation (DesignaKnit | Compare | Buyer's Guide) */
+.dak-local-nav {
+  text-align: left;
+  margin: 0.5rem 0 1rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.dak-local-nav a {
+  color: var(--kbm-green);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.dak-local-nav a:hover {
+  text-decoration: underline;
+}
+
+.dak-local-nav .dak-current {
+  font-weight: 600;
+  color: #333;
+}
+
+.dak-local-nav .dak-sep {
+  margin: 0 8px;
+  color: #aaa;
+}
+
+.dak-local-nav::after {
+  content: "";
+  display: block;
+  width: 120px;
+  height: 1px;
+  background: #e4e4e4;
+  margin: 0.9rem 0 0;
+}
+
+@media (max-width: 640px) {
+  .dak-local-nav {
+    font-size: 0.9rem;
+    margin: 0.4rem 0 0.75rem;
+  }
+
+  .dak-local-nav .dak-sep {
+    margin: 0 5px;
+  }
 }

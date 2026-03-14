@@ -1,0 +1,93 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+
+const title = "Thank You for Your Purchase | Knit by Machine";
+const description = "Your DesignaKnit order has been received. Your download link and license will be sent by email shortly.";
+---
+
+<Layout {title} {description}>
+  <PageHead title="Thank You for Your Purchase" />
+
+  <section class="thank-you-page">
+    <div class="thank-you-card">
+      <p class="thank-you-lead">Your DesignaKnit order has been received.</p>
+
+      <p>
+        DesignaKnit is a digital product. Your download link and license number will be sent to you by email shortly.
+      </p>
+
+      <p>
+        Please watch your inbox, and be sure to check your spam or promotions folder if you do not see the message.
+      </p>
+
+      <p>
+        If your email does not arrive, please <a href="/contact">contact us</a> and we'll help you get everything sorted out.
+      </p>
+
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .thank-you-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .thank-you-card {
+    background: #fafbf9;
+    border: 1px solid #e8ebe4;
+    border-radius: 12px;
+    padding: 1.75rem 2rem;
+  }
+
+  .thank-you-page :global(h1) {
+    margin-bottom: 1.25rem;
+  }
+
+  .thank-you-lead {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0 0 1rem 0;
+  }
+
+  .thank-you-page p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+    color: #5a6b47;
+  }
+
+  .thank-you-page p:last-of-type {
+    margin-bottom: 1.5rem;
+  }
+
+  .thank-you-page a:not(.thank-you-cta) {
+    color: var(--kbm-green);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  .thank-you-page a:not(.thank-you-cta):hover {
+    color: var(--kbm-green-hover, #445626);
+  }
+
+  .thank-you-cta {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--kbm-green);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    text-decoration: none;
+    text-align: center;
+    transition: background 0.2s ease;
+  }
+
+  .thank-you-cta:hover {
+    background: var(--kbm-green-hover, #445626);
+  }
+</style>
