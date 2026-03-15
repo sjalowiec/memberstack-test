@@ -2,7 +2,7 @@
    Lego Components - Import reusable styles
    ============================================ */
 @import './lego/floating-input.css';
-@import './components/kbm-card.css';
+
 
 /* 
  * TYPOGRAPHY: html font-size is set inline in BaseLayout.astro with !important
