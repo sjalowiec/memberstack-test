@@ -1,6 +1,7 @@
 ---
 export const prerender = true;
 import Layout from "../../layouts/Layout.astro";
+import "../../styles/global.css";
 ---
 
 <Layout
@@ -16,8 +17,7 @@ import Layout from "../../layouts/Layout.astro";
 
       <div class="get-help-cards">
         <!-- Card 1: Quick Help with Sue (slight visual emphasis) -->
-        <article class="get-help-card get-help-card--featured">
-          <h2 class="get-help-card__title">Quick Help with Sue</h2>
+        <article class="kbm-card get-help-card--featured">          <h2 class="get-help-card__title">Quick Help with Sue</h2>
           <p class="get-help-card__body">
             Get one-on-one help with your knitting machine or DesignaKnit. These short sessions are designed to help you move forward quickly.
           </p>
@@ -25,7 +25,7 @@ import Layout from "../../layouts/Layout.astro";
         </article>
 
         <!-- Card 2: Community -->
-        <article class="get-help-card">
+        <article class="get-help-card kbm-card">
           <h2 class="get-help-card__title">Ask the Community</h2>
           <p class="get-help-card__body">
             Visit the Roundtable to ask questions, share ideas, and learn from other machine knitters.
@@ -34,7 +34,7 @@ import Layout from "../../layouts/Layout.astro";
         </article>
 
         <!-- Card 3: Contact Sue -->
-        <article class="get-help-card">
+        <article class="kbm-card">
           <h2 class="get-help-card__title">Contact Sue</h2>
           <p class="get-help-card__body">
             Send a message if you have a question or need to reach me directly.
@@ -95,32 +95,22 @@ import Layout from "../../layouts/Layout.astro";
     }
 
     .get-help-card {
-      background: #fff;
-      border: 1px solid var(--ring);
-      border-radius: 16px;
+      
       padding: 1.5rem 1.25rem;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+     
     }
 
-    .get-help-card:hover {
-      box-shadow: 0 4px 14px rgba(82, 104, 45, 0.1);
-      border-color: #c7d8a4;
-    }
+  
 
     /* Slight emphasis for Quick Help card */
     .get-help-card--featured {
-      border-color: #c7d8a4;
-      box-shadow: 0 2px 10px rgba(82, 104, 45, 0.08);
-    }
+  border-color: var(--kbm-green, #52682d);
+  background-color: #f6f8f2;
+}
 
-    .get-help-card--featured:hover {
-      box-shadow: 0 6px 18px rgba(82, 104, 45, 0.12);
-      border-color: var(--kbm-green-2);
-    }
-
+  
     .get-help-card__title {
       font-size: var(--text-xl);
       font-weight: 600;

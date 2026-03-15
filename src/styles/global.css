@@ -486,6 +486,7 @@ p {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   cursor: pointer;
+  
 }
 
 .kbm-card:hover {
@@ -502,7 +503,10 @@ p {
   margin: 0 0 0.75rem 0;
   line-height: 1.3;
 }
-
+.kbm-card > *:last-child {
+  margin-top: auto;
+  
+}
 .kbm-card__desc {
   font-size: 1.05rem;
   color: #6b7280;
@@ -514,6 +518,7 @@ p {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-bottom: auto;
 }
 
 .kbm-card__meta {
@@ -1890,5 +1895,9 @@ div[data-ms-message="error"]:empty {
 
   .dak-local-nav .dak-sep {
     margin: 0 5px;
+  }
+  .back-link a::before {
+    content: "← ";
+    font-family: system-ui, -apple-system, Segoe UI, Arial, sans-serif;
   }
 }

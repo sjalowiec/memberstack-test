@@ -53,7 +53,7 @@ function formatPrice(price: number): string {
   <PageHead title={cable.name} />
 
   <div class="cable-detail-page">
-    <a href="/shop/cables" class="back-link">Back to Cables</a>
+    <p class="back-link"> <a href="/shop/cables">Back to Cables</a> </p>
 
     <div class="cable-detail-layout">
       <div class="cable-detail-image-wrap">
@@ -69,7 +69,7 @@ function formatPrice(price: number): string {
       <div class="cable-detail-content">
         <h1 class="cable-detail-name">{cable.name}</h1>
         <p class="cable-detail-price">{formatPrice(cable.price)}</p>
-        <p class="cable-detail-short">{cable.shortdescription}</p>
+        <!--<p class="cable-detail-short">{cable.shortdescription}</p>-->
         <div class="cable-detail-long" set:html={cable.longDescription} />
         <a
           href={cable.stripeLink}

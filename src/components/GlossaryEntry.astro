@@ -6,6 +6,13 @@ interface Props {
 
 const { entry, relatedTermsData = [] } = Astro.props;
 
+const videoUrl =
+  entry?.videoUrl
+    ? entry.videoUrl
+    : entry?.vimeoIds?.length
+      ? `https://player.vimeo.com/video/${entry.vimeoIds[0]}`
+      : '';
+
 const termLabel = (entry?.english ?? "").toString().replace(/<[^>]*>/g, "").trim();
 const imageSrc = entry?.image
   ? (entry.image.startsWith("http") || entry.image.startsWith("/")
@@ -378,29 +385,29 @@ const imageSrc = entry?.image
           </div>
         )}
 
-        {entry?.videoUrl && (
+        {videoUrl && (
           <>
             {entry?.isMemberOnly ? (
               <>
                 <div class="member-only" data-member="true" style="display:none;">
                   <h3>Watch it in action</h3>
                   <div class="video-player">
-                    {entry.videoUrl.includes('youtube.com') || entry.videoUrl.includes('youtu.be') ? (
+                    {videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') ? (
                       <iframe
-                        src={entry.videoUrl.includes('youtube.com/embed') ? entry.videoUrl : entry.videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                        src={videoUrl.includes('youtube.com/embed') ? videoUrl : videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
                         title={`Video: ${termLabel}`}
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowfullscreen
                       ></iframe>
-                    ) : entry.videoUrl.includes('vimeo.com') ? (
+                    ) : videoUrl.includes('vimeo.com') ? (
                       <iframe
-                        src={entry.videoUrl.replace('vimeo.com/', 'player.vimeo.com/video/')}
+                        src={videoUrl.includes('player.vimeo.com/video') ? videoUrl : videoUrl.replace('vimeo.com/', 'player.vimeo.com/video/')}
                         title={`Video: ${termLabel}`}
                         allow="autoplay; fullscreen; picture-in-picture"
                         allowfullscreen
                       ></iframe>
                     ) : (
-                      <video controls src={entry.videoUrl}></video>
+                      <video controls src={videoUrl}></video>
                     )}
                   </div>
                 </div>
@@ -414,22 +421,22 @@ const imageSrc = entry?.image
               <div class="member-only">
                 <h3>Watch it in action</h3>
                 <div class="video-player">
-                  {entry.videoUrl.includes('youtube.com') || entry.videoUrl.includes('youtu.be') ? (
+                  {videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') ? (
                     <iframe
-                      src={entry.videoUrl.includes('youtube.com/embed') ? entry.videoUrl : entry.videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                      src={videoUrl.includes('youtube.com/embed') ? videoUrl : videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
                       title={`Video: ${termLabel}`}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowfullscreen
                     ></iframe>
-                  ) : entry.videoUrl.includes('vimeo.com') ? (
+                  ) : videoUrl.includes('vimeo.com') ? (
                     <iframe
-                      src={entry.videoUrl.replace('vimeo.com/', 'player.vimeo.com/video/')}
+                      src={videoUrl.includes('player.vimeo.com/video') ? videoUrl : videoUrl.replace('vimeo.com/', 'player.vimeo.com/video/')}
                       title={`Video: ${termLabel}`}
                       allow="autoplay; fullscreen; picture-in-picture"
                       allowfullscreen
                     ></iframe>
                   ) : (
-                    <video controls src={entry.videoUrl}></video>
+                    <video controls src={videoUrl}></video>
                   )}
                 </div>
               </div>

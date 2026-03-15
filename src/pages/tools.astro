@@ -55,7 +55,7 @@ const categories = ["All", ...new Set(tools.map((tool: { category?: string }) =>
               <span class="tool-badge free">Free</span>
             );
             return isActive ? (
-              <a href={tool.href} class="tool-card active" data-members-only={membersOnly} data-category={tool.category}>
+              <a href={tool.href} class="kbm-card active" data-members-only={membersOnly} data-category={tool.category}>
                 {badge}
                 <img
                   src={`/icons/tools/${tool.icon}`}
@@ -93,7 +93,7 @@ const categories = ["All", ...new Set(tools.map((tool: { category?: string }) =>
 <script>
   const accessButtons = document.querySelectorAll<HTMLButtonElement>("#tool-access-filters .filter-pill");
   const categoryButtons = document.querySelectorAll<HTMLButtonElement>("#tool-category-filters .filter-pill");
-  const cards = document.querySelectorAll<HTMLElement>(".tool-card");
+  const cards = document.querySelectorAll<HTMLElement>(".tool-card,kbm-card");
 
   let activeAccessFilter = "all";
   let activeCategoryFilter = "all";
