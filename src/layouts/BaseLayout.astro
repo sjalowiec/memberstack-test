@@ -95,6 +95,52 @@ const isProduction =
     
     <slot name="head" />
 
+    {import.meta.env.DEV && (
+      <style>
+        .dev-banner {
+          position: fixed;
+          top: 0;
+          right: 0;
+          z-index: 9999;
+
+          background: #c0392b;
+          color: #fff;
+
+          padding: 6px 12px;
+          font-size: 12px;
+          font-weight: 700;
+
+          border-bottom-left-radius: 6px;
+        }
+
+        .preview-banner {
+          position: fixed;
+          top: 32px;
+          right: 0;
+          z-index: 9998;
+
+          padding: 6px 12px;
+          font-size: 12px;
+          font-weight: 700;
+
+          border-bottom-left-radius: 6px;
+          color: #fff;
+        }
+
+        .preview-member {
+          background: #2e7d32;
+        }
+
+        .preview-nonmember {
+          background: #f39c12;
+        }
+
+        .preview-default {
+          background: #7f8c8d;
+        }
+      </style>
+    )}
+
     <!-- MS TEST MARKER -->
 <meta name="ms-test-marker" content="base-layout-is-rendering" />
    
@@ -108,6 +154,12 @@ const isProduction =
   
 
   <body class={bodyClass}>
+    {import.meta.env.DEV && (
+      <>
+        <div class="dev-banner">DEV MODE</div>
+        <div class="preview-banner" id="preview-banner"></div>
+      </>
+    )}
     <div id="msTopError" class="ms-top-error" role="alert" aria-live="polite" hidden>
       <div class="ms-top-error__bar" aria-hidden="true"></div>
       <div class="ms-top-error__text"></div>
@@ -185,6 +237,28 @@ const isProduction =
     }
   });
 </script>
+
+    {import.meta.env.DEV && (
+      <script>
+        const params = new URLSearchParams(window.location.search);
+        const preview = params.get("previewMember");
+
+        const banner = document.getElementById("preview-banner");
+
+        if (banner) {
+          if (preview === "member") {
+            banner.textContent = "Preview: MEMBER";
+            banner.classList.add("preview-member");
+          } else if (preview === "nonmember") {
+            banner.textContent = "Preview: NON-MEMBER";
+            banner.classList.add("preview-nonmember");
+          } else {
+            banner.textContent = "Preview: DEFAULT";
+            banner.classList.add("preview-default");
+          }
+        }
+      </script>
+    )}
 
   </body>
 </html>

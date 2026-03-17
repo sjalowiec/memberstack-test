@@ -22,6 +22,11 @@ const vimeoId = (video as any)?.vimeo_id;
 const title = (video as any)?.title ?? "Video";
 const description = (video as any)?.description ?? "";
 
+// Public exception: when this video is the featured Tuesday Tip (isTipOfWeek), show player to everyone.
+// Otherwise use access_level from JSON (default "member").
+const isFeaturedTip = (video as any)?.isTipOfWeek === true;
+const effectiveAccessLevel = isFeaturedTip ? "open" : ((video as any)?.access_level ?? "member");
+
 // thumbnail / poster: support full URL, /path, or filename → /images/filename
 const rawPosterUrl = (video as any)?.posterUrl ?? (video as any)?.poster_url ?? "";
 const posterSrc =
@@ -30,19 +35,22 @@ const posterSrc =
     : rawPosterUrl
       ? `/images/${rawPosterUrl}`
       : "";
+
 ---
 
 <Layout title={video ? title : "Video not found"} description={video ? description : "Video not found."}>
   <style>
     /* Override global .page-wrap top padding; Layout already supplies header clearance */
     .video-detail-wrap.page-wrap { padding-top: 8px; }
+    .back-link { display: inline-block; margin-bottom: 0.75rem; }
   </style>
   <div class="page-wrap video-detail-wrap">
+    <a class="back-link back-to-videos-link" id="back-to-videos" href="/videos">← Back to Videos</a>
     {!video ? (
       <>
         <PageHead title="Video not found" 
         <article class="video-detail">
-          <p>Video not found. <a href="/videos">Back to Videos</a>.</p>
+          <p>Video not found. <a class="back-to-videos-link" href="/videos">Back to Videos</a>.</p>
         </article>
       </>
     ) : (
@@ -80,7 +88,7 @@ const posterSrc =
             <GatedVimeoEmbed
               videoId={vimeoId}
               title={title}
-              access_level={(video as any)?.access_level ?? "member"}
+              access_level={effectiveAccessLevel}
             />
           </section>
 
@@ -175,7 +183,13 @@ const posterSrc =
             // default: locked
             setAccess(false);
 
-            // Dev override (optional): ?mode=full
+            // Dev-only gating bypass: show gated content on localhost without login. Off in production.
+            if (window.__DEV_BYPASS_GATING) {
+              setAccess(true);
+              return;
+            }
+
+            // Optional query override: ?mode=full
             const urlParams = new URLSearchParams(window.location.search);
             const devFull = urlParams.get("mode") === "full";
 
@@ -208,4 +222,20 @@ const posterSrc =
       </>
     )}
   </div>
+
+  <script is:inline>
+    (function () {
+      var qs = window.location.search || "";
+      var href = qs ? "/videos" + qs : "/videos";
+      var params = new URLSearchParams(qs);
+      var cat = params.get("cat");
+      var q = params.get("q");
+      var suffix = cat ? cat + " Videos" : (q ? "Search Results" : "Videos");
+      document.querySelectorAll(".back-to-videos-link").forEach(function (el) {
+        el.href = href;
+        var prefix = el.id === "back-to-videos" ? "← " : "";
+        el.textContent = prefix + "Back to " + suffix;
+      });
+    })();
+  </script>
 </Layout>

@@ -3,7 +3,9 @@
  * GatedVimeoEmbed.astro
  * - If access_level === "open": render iframe for everyone.
  * - If access_level === "member": gate by paid plan IDs; iframe injected client-side only when allowed.
+ * - When dev bypass is on (localhost + PUBLIC_DEV_BYPASS_GATING=true), member videos show without login.
  */
+import { devBypass } from "../../lib/devBypass";
 
 const {
   videoId,
@@ -55,7 +57,7 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
   </div>
 </div>
 
-<script is:inline define:vars={{ videoId, access_level, iframeSrc, title }}>
+<script is:inline define:vars={{ videoId, access_level, iframeSrc, title, devBypass }}>
   document.addEventListener("DOMContentLoaded", async () => {
     if (access_level !== "member") return;
 
@@ -75,6 +77,23 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
     </div>
   </div>
 `;
+
+    /* Dev-only gating bypass: show member video on localhost without login. */
+    if (devBypass) {
+      slot.innerHTML = `
+        <iframe
+          src="${iframeSrc}"
+          title="${title}"
+          loading="lazy"
+          frameborder="0"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowfullscreen
+          style="position:absolute; inset:0; width:100%; height:100%; border:0;"
+        ></iframe>
+      `;
+      slot.setAttribute("data-state", "ready");
+      return;
+    }
 
     if (!window.$memberstackDom) {
       slot.innerHTML = lockedMarkup;

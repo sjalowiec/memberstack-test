@@ -8,9 +8,10 @@ interface Props {
 }
 
 const { title, breadcrumb, meta, subhead, hideTitle = false } = Astro.props;
+const isEmpty = hideTitle && !subhead && !meta && !breadcrumb;
 ---
 
-<header class="page-head">
+<header class:list={["page-head", isEmpty && "page-head--empty"]}>
 
 
   {title && !hideTitle && (
@@ -32,6 +33,10 @@ const { title, breadcrumb, meta, subhead, hideTitle = false } = Astro.props;
 <style>
   .page-head {
     margin-bottom: 2rem;
+  }
+
+  .page-head--empty {
+    margin-bottom: 0;
   }
 
   .page-title {

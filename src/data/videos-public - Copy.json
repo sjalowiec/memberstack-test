@@ -2446,7 +2446,15 @@
     "subcategory": "Finished Edges",
     "vimeo_id": 151859707
   },
- 
+  {
+    "content_id": 681,
+    "slug": "vintage-yarn-index",
+    "title": "Vintage Yarn Index",
+    "description": "Do you have a pattern using an old yarn? Find a replacement suggestion.<br>\r\nLearn more about yarn in your stash.<br>\r\nThe Vintage Yarn index is a searchable listing of vintage/discontinued coned yarn with replacement suggestions.<br>\r\n<a href=\"http://www.knititnow.com/YarnIndex/\"><img src=\"http://www.knititnow.com/images/blog_images/2014/buttons/vintage_yarn_index.jpg\"></a>",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/551703661-532d51244c51bc8292d924bf9ff2647eca8a92bf642de952e20e0c0c527809e1-d_1280x720?r=pad",
+    "vimeo_id": 151859715
+  },
   {
     "content_id": 682,
     "slug": "sawtooth-edges-on-the-machine",
@@ -3061,7 +3069,15 @@
     "subcategory": "Finished Edges",
     "vimeo_id": 167581952
   },
-  
+  {
+    "content_id": 729,
+    "slug": "retro-patterns-reborn",
+    "title": "Retro Patterns ... reborn!",
+    "description": "Take a \"vintage\" design and make it your own! Use the Knit it Now Retro Patterns with any knitting machine and any yarn. These are updated, easy to follow instructions, wide range of sizes in classic styles.<br>\r\nDon't be limited to a specific gauge. Don't be intimidated by all those abbreviations.<br>\r\nUse your favorite machine, stitch pattern and yarn and make it your own!",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/572526754-c0d166549d87d79f5ff91140f7d82c0416e377da5f208d91e64e0dd042658b05-d_1280x720?r=pad",
+    "vimeo_id": 168086598
+  },
   {
     "content_id": 730,
     "slug": "tuck-lace",
@@ -3519,7 +3535,15 @@
     "subcategory": "Seams",
     "vimeo_id": 218239790
   },
-  
+  {
+    "content_id": 777,
+    "slug": "machine-knitting-courses",
+    "title": "Machine Knitting Courses",
+    "description": "Learn to machine knit the most efficient on-line way possible. Interactive learning courses include videos, practice exercises, question and answer tutorials and more ... watch how easy they are to use.\r\n<br>\r\n<a href=\"/challenge/6/course/introducing-machine-knitting-courses\" class=\"btn btn-info btn-mini\">Try It Yourself - Free Course</a>\r\n<br><br>",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/639303352-0da85eb6d98ad928bcc186db8a2ba5dbde398007eabc939af379802d91b69a10-d_1280x720?r=pad",
+    "vimeo_id": 221120492
+  },
   {
     "content_id": 778,
     "slug": "blanket-binding",
@@ -3981,7 +4005,15 @@
     "subcategory": "Original Pattern Drafting",
     "vimeo_id": 259074534
   },
-  
+  {
+    "content_id": 830,
+    "slug": "knit-it-now-tools",
+    "title": "Knit it Now Tools",
+    "description": "You may not want to draft your own knitting patterns, but sometimes you need to modify a pattern for fit.<br>\r\nKnit it Now tools takes the tedious math out of making changes to your patterns.",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/687925737-e5720ad8f51ed08156993dc9c8a049e401cf5245e0c3e971de97494b33dc4da5-d_1280x720?r=pad",
+    "vimeo_id": 259466087
+  },
   {
     "content_id": 2156,
     "slug": "use-hk-patterns-for-mking",
@@ -4717,7 +4749,15 @@
     "subcategory": "Basic Techniques",
     "vimeo_id": 317278329
   },
-  
+  {
+    "content_id": 908,
+    "slug": "change-your-email-and-password",
+    "title": "Change your Email and Password",
+    "description": "You can change your own Knit it Now Password:<br>\r\nClick \"Account\" <br>\r\nClick \"Modify Profile\"<br>\r\nNOTE: We do not store credit card or payment information.",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/759475177-3271f9a2588b8ead95b92c6738b340f58ac3f75cb753f8ea16b244f362196d15-d_1280x720?r=pad",
+    "vimeo_id": 317294828
+  },
   {
     "content_id": 2129,
     "slug": "scrap-and-ravel",
@@ -5578,7 +5618,15 @@
     "subcategory": "Techniques",
     "vimeo_id": 396776651
   },
-  
+  {
+    "content_id": 982,
+    "slug": "knit-it-now-learning-library",
+    "title": "Knit it Now Learning Library",
+    "description": "Explore the Knit it Now Learning Library. Navigate the over 500 tutorials and find what you need when you need it.",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/863953050-32d78d6ddd716dbbd61b11a8f841b0f8b4fc5fba1c663d76d895e6351007b626-d_1280x720?r=pad",
+    "vimeo_id": 396947953
+  },
   {
     "content_id": 983,
     "slug": "hip-tummy-shaping",
@@ -5601,7 +5649,15 @@
     "subcategory": "Decreasing",
     "vimeo_id": 399942302
   },
- 
+  {
+    "content_id": 985,
+    "slug": "knit-at-knit-it-now",
+    "title": "\"Knit\" at Knit it Now",
+    "description": "The heart and soul of the website is the \"KNIT\" section. It not only contains all of our Dynamic patterns, it holds a wealth of resources for your knitting.",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/868744684-594106bd1e52b5b8e4592e6a678577aab03e755ea8ab95706ca778a2c9410042-d_1280x720?r=pad",
+    "vimeo_id": 400367653
+  },
   {
     "content_id": 986,
     "slug": "upside-down-stitches",
@@ -5888,7 +5944,15 @@
     "subcategory": "Garment Parts",
     "vimeo_id": 490449687
   },
-  
+  {
+    "content_id": 2062,
+    "slug": "using-knit-it-now-pattern-charts",
+    "title": "Using Knit it Now Pattern Charts",
+    "description": "Some knitters prefer line-by-line charted instructions for shaping. Watch how to use Knit it Now charts for neckline shaping",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/1015183678-d81b8ef5a2bd2056cf1e1bfb56f4edf6d76ef88188f16e34ffe490e26696db2a-d_1280x720?r=pad",
+    "vimeo_id": 490775796
+  },
   {
     "content_id": 1025,
     "slug": "crisp-decorative-fold",
@@ -5900,7 +5964,15 @@
     "subcategory": "-",
     "vimeo_id": 495862624
   },
-  
+  {
+    "content_id": 1026,
+    "slug": "machine-knitters-success-path",
+    "title": "Machine Knitters Success Path",
+    "description": "Learning to machine knit is a journey. For success, take it step-by-step with Knit it Now",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/1031575433-2106a098f6b35e7e253d2814db5326639137ec969de635195f7ad44c007378f4-d_1280x720?r=pad",
+    "vimeo_id": 498519634
+  },
   {
     "content_id": 1027,
     "slug": "every-other-needle-knitting",
@@ -6054,7 +6126,15 @@
     "subcategory": "Sewing",
     "vimeo_id": 553393641
   },
-  
+  {
+    "content_id": 779,
+    "slug": "multiple-gauges-with-dynamic-patterns",
+    "title": "Multiple Gauges with Dynamic patterns",
+    "description": "Most Dynamic Patterns allow you to enter the gauge for each piece in your garment.  Want to knit the sleeves in a different stitch pattern than the body?  No Problem! <br>\r\nJust enter in your gauges and let us do the math for you.",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/1146829267-1414ba86a110929bd58fdea3ba97b22ebc0b24bbc81090566a256479d7e22c19-d_1280x720?r=pad",
+    "vimeo_id": 554919625
+  },
   {
     "content_id": 2037,
     "slug": "toe-up-seamless-sock",
@@ -6602,8 +6682,24 @@
     "subcategory": "Hats",
     "vimeo_id": 772020892
   },
-  
-  
+  {
+    "content_id": 987,
+    "slug": "building-knit-it-now-custom-patterns",
+    "title": "Building Knit it Now Custom Patterns",
+    "description": "Knit it Now patterns are different than patterns you've used before.  Instead of forcing you to use a specific machine, yarn and stitch pattern, you can build your own custom pattern based on your choices. <br>Watch as we build a pattern in just 3 steps.",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/1549750075-327f451b5a9e44b473a72ceed22c9b0c6443b79d2d797bb8f5819f5d3e8a3e5d-d_1280x720?r=pad",
+    "vimeo_id": 772256112
+  },
+  {
+    "content_id": 969,
+    "slug": "build-and-use-a-knit-it-now-pattern",
+    "title": "Build and Use a Knit it Now Pattern",
+    "description": "Knit it Now Interactive Patterns allow you to create custom patterns based on your gauge AND make adjustments to the measurements without any math.<br><br>They are designed to be used with an iPad or tablet, eliminating printing.<br><br>Included are knitting tips, videos and encouragement along the way",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/1549750075-327f451b5a9e44b473a72ceed22c9b0c6443b79d2d797bb8f5819f5d3e8a3e5d-d_1280x720?r=pad",
+    "vimeo_id": 772256112
+  },
   {
     "content_id": 2099,
     "slug": "brother-adjust-ribber",
@@ -6723,7 +6819,15 @@
     "subcategory": "Tips",
     "vimeo_id": 820634377
   },
- 
+  {
+    "content_id": 2110,
+    "slug": "what-is-a-machine-knit-able",
+    "title": "What is a Machine Knit-Able",
+    "description": "Inspiration from the hand Knitting World.<br><br>\r\n\r\n<a href=\"/knit/MachineKnitable.cfm\"><i class=\"fa-regular fa-hand-back-point-right\"></i> Explore the Machine Knit-ables</a>",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/1711871599-56adb79894d729a5edfdc10307bb69e60910c54aa2efb82b7db3b9d84709c39e-d_1280x720?r=pad",
+    "vimeo_id": 829170398
+  },
   {
     "content_id": 2111,
     "slug": "tucked-braid",
@@ -7283,7 +7387,15 @@
     "subcategory": "Basic Techniques",
     "vimeo_id": 1034767881
   },
-  
+  {
+    "content_id": 2185,
+    "slug": "introducing-make-and-master-guides",
+    "title": "Introducing Make & Master Guides",
+    "description": "A new attitude and new focus for Knit it Now to help you be a better machine knitter.",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/1957797224-f4b9733b53e690a943ab19ec8b682835b8c7c2e1afa2500cdc6f6b7c0fa01107-d_1280x720?r=pad",
+    "vimeo_id": 1036145831
+  },
   {
     "content_id": 2186,
     "slug": "broken-toe-cast-on",
@@ -7351,7 +7463,15 @@
     "subcategory": "All Knitting",
     "vimeo_id": 1055227693
   },
- 
+  {
+    "content_id": 2195,
+    "slug": "your-personal-library",
+    "title": "Your Personal Library",
+    "description": "Tag It. Save It. Find It Fast! ",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/1984590930-9544d1f61dea41390ee0a1ab31562b0848ade491d1ec315fbfbebf82f0f19bda-d_1280x720?r=pad",
+    "vimeo_id": 1058434981
+  },
   {
     "content_id": 2196,
     "slug": "watch-this-first",

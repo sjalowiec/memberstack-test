@@ -1,0 +1,92 @@
+---
+/**
+ * FeaturedTipCard.astro
+ * Reusable card: thumbnail with centered play button overlay, links to the video detail page.
+ * Used on the Tuesday Tips landing page and can be used on the videos catalog.
+ */
+interface Props {
+  href: string;
+  title: string;
+  posterUrl: string;
+}
+
+const { href, title, posterUrl } = Astro.props;
+---
+
+<a href={href} class="tip-of-week-card" aria-label={`Play: ${title}`}>
+  {posterUrl ? (
+    <div class="tip-thumb-wrap">
+      <img
+        src={posterUrl}
+        alt={title}
+        class="tip-image"
+        loading="lazy"
+      />
+      <span class="tip-play" aria-hidden="true">
+        <svg viewBox="0 0 68 68" class="tip-play__icon" focusable="false">
+          <circle cx="34" cy="34" r="34"></circle>
+          <polygon points="28,22 28,46 48,34"></polygon>
+        </svg>
+      </span>
+    </div>
+  ) : (
+    <div class="tip-image-placeholder" aria-hidden="true" />
+  )}
+</a>
+
+<style>
+  .tip-of-week-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+  .tip-of-week-card:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+  .tip-thumb-wrap {
+    position: relative;
+    width: 100%;
+  }
+  .tip-of-week-card img,
+  .tip-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+    transition: transform 0.2s ease;
+  }
+  .tip-of-week-card:hover img {
+    transform: scale(1.01);
+  }
+  .tip-play {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .tip-play__icon {
+    width: 68px;
+    height: 68px;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.22));
+    transition: transform 0.18s ease;
+  }
+  .tip-play__icon circle {
+    fill: rgba(0, 0, 0, 0.45);
+  }
+  .tip-play__icon polygon {
+    fill: #ffffff;
+  }
+  .tip-of-week-card:hover .tip-play__icon,
+  .tip-of-week-card:focus-visible .tip-play__icon {
+    transform: scale(1.04);
+  }
+  .tip-image-placeholder {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+    border-radius: 12px;
+  }
+</style>

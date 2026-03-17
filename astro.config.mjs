@@ -6,5 +6,10 @@ import netlify from "@astrojs/netlify";
 export default defineConfig({
   output: "server",
   adapter: netlify(),
-});
 
+  server: {
+    port: 4321,
+    strictPort: true,
+    open: "/videos" // or "/tips" or true
+  }
+});

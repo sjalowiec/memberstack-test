@@ -1,0 +1,707 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import tipsRaw from "../../data/tips.json";
+import videos from "../../data/videos-public.json";
+
+interface TipScheduleItem {
+  content_id: number;
+  startDate: string;
+  endDate?: string;
+  emailDone?: boolean;
+}
+
+interface VideoItem {
+  content_id: number;
+  title: string;
+}
+
+const tipsData: TipScheduleItem[] = Array.isArray(tipsRaw)
+  ? [...tipsRaw].sort(
+      (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+    )
+  : [];
+
+const videoByContentId = new Map<number, VideoItem>();
+if (Array.isArray(videos)) {
+  for (const v of videos as VideoItem[]) {
+    if (v && typeof v.content_id === "number") {
+      videoByContentId.set(v.content_id, v);
+    }
+  }
+}
+
+function getTitleForContentId(contentId: number): string {
+  const video = videoByContentId.get(contentId);
+  return video?.title ?? "Video not found";
+}
+
+function formatDate(isoDate: string): string {
+  const d = new Date(isoDate);
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+/** Effective end = endDate if present, else startDate + 6 days (7-day window). */
+function getEffectiveEndDate(tip: TipScheduleItem): string {
+  if (tip.endDate && tip.endDate.trim()) return tip.endDate.trim();
+  const [y, m, d] = tip.startDate.split("-").map(Number);
+  const end = new Date(y, m - 1, d);
+  end.setDate(end.getDate() + 6);
+  return end.getFullYear() + "-" + String(end.getMonth() + 1).padStart(2, "0") + "-" + String(end.getDate()).padStart(2, "0");
+}
+
+function formatDateRange(tip: TipScheduleItem): string {
+  const end = getEffectiveEndDate(tip);
+  return `${formatDate(tip.startDate)} – ${formatDate(end)}`;
+}
+
+/** Status: Upcoming = before start; Live = start..effectiveEnd; Expired = after effectiveEnd. Uses local date. */
+function getTipStatus(tip: TipScheduleItem): "Live" | "Upcoming" | "Expired" {
+  const [sy, sm, sd] = tip.startDate.split("-").map(Number);
+  const start = new Date(sy, sm - 1, sd);
+  const effectiveEnd = getEffectiveEndDate(tip);
+  const [ey, em, ed] = effectiveEnd.split("-").map(Number);
+  const end = new Date(ey, em - 1, ed);
+  const firstDayAfter = new Date(end);
+  firstDayAfter.setDate(firstDayAfter.getDate() + 1);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  start.setHours(0, 0, 0, 0);
+  firstDayAfter.setHours(0, 0, 0, 0);
+  if (today < start) return "Upcoming";
+  if (today >= firstDayAfter) return "Expired";
+  return "Live";
+}
+
+const calendarTips = tipsData.map((tip) => ({
+  content_id: tip.content_id,
+  startDate: tip.startDate,
+  endDate: getEffectiveEndDate(tip),
+  title: getTitleForContentId(tip.content_id),
+  status: getTipStatus(tip),
+}));
+---
+
+<Layout title="Tips Schedule">
+  <main style="padding: 120px; max-width: 900px; margin: auto;">
+    <h1>Tips Schedule</h1>
+
+    <section style="margin-bottom: 2em;">
+      <h2 id="add-tip-heading">Add Tip</h2>
+      <form id="add-tip-form" style="display: flex; flex-direction: column; gap: 0.75em; max-width: 320px;">
+        <input type="hidden" id="edit-original-content-id" name="original_content_id" value="" />
+        <input type="hidden" id="edit-original-start-date" name="original_start_date" value="" />
+        <div>
+          <label for="add-tip-content-id" style="display: block; margin-bottom: 0.25em;">Content ID</label>
+          <input
+            type="number"
+            id="add-tip-content-id"
+            name="content_id"
+            min="1"
+            step="1"
+            required
+            style="padding: 0.4em 0.6em; width: 100%; box-sizing: border-box;"
+          />
+        </div>
+        <div>
+          <label for="add-tip-start-date" style="display: block; margin-bottom: 0.25em;">Start Date</label>
+          <input
+            type="date"
+            id="add-tip-start-date"
+            name="startDate"
+            required
+            style="padding: 0.4em 0.6em; width: 100%; box-sizing: border-box;"
+          />
+        </div>
+        <div>
+          <label for="add-tip-end-date" style="display: block; margin-bottom: 0.25em;">End Date <span style="font-weight: normal; color: #666;">(optional)</span></label>
+          <input
+            type="date"
+            id="add-tip-end-date"
+            name="endDate"
+            style="padding: 0.4em 0.6em; width: 100%; box-sizing: border-box;"
+          />
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5em;">
+          <input type="checkbox" id="add-tip-email-done" name="emailDone" value="1" style="width: auto;" />
+          <label for="add-tip-email-done" style="margin-bottom: 0;">Email done</label>
+        </div>
+        <p id="add-tip-error" style="color: #c00; margin: 0; display: none;" role="alert"></p>
+        <div style="display: flex; gap: 0.5em; align-items: center;">
+          <button type="submit" id="add-tip-submit" style="padding: 0.5em 1em;">Save</button>
+          <button type="button" id="cancel-edit-btn" style="padding: 0.5em 1em; display: none;">Cancel Edit</button>
+        </div>
+      </form>
+    </section>
+
+    <h2>Tips Schedule</h2>
+    {tipsData.length === 0 ? (
+      <p>No tips scheduled yet.</p>
+    ) : (
+      <>
+        <div style="display: flex; align-items: center; gap: 0.5em; margin-bottom: 0.75em;">
+          <span style="margin-right: 0.25em;">View:</span>
+          <button type="button" id="view-table-btn" class="tips-view-btn active" style="padding: 0.35em 0.75em; cursor: pointer; font-weight: 600;">Table View</button>
+          <button type="button" id="view-calendar-btn" class="tips-view-btn" style="padding: 0.35em 0.75em; cursor: pointer;">Calendar View</button>
+        </div>
+        <script type="application/json" id="calendar-tips-data" set:html={JSON.stringify(calendarTips).replace(/<\/script/gi, "\\u003c/script")} />
+        <div id="tips-table-view">
+        <div id="tips-filters" style="display: flex; flex-wrap: wrap; align-items: center; gap: 1em; margin-bottom: 0.75em;">
+          <label for="filter-status" style="display: flex; align-items: center; gap: 0.5em;">
+            <span style="white-space: nowrap;">Status:</span>
+            <select id="filter-status" style="padding: 0.35em 0.6em; min-width: 140px;">
+              <option value="">All Statuses</option>
+              <option value="Live">Live</option>
+              <option value="Upcoming">Upcoming</option>
+              <option value="Expired">Expired</option>
+            </select>
+          </label>
+          <label for="filter-email" style="display: flex; align-items: center; gap: 0.5em;">
+            <span style="white-space: nowrap;">Email:</span>
+            <select id="filter-email" style="padding: 0.35em 0.6em; min-width: 120px;">
+              <option value="">All Emails</option>
+              <option value="not-done">Not Done</option>
+              <option value="done">Done</option>
+            </select>
+          </label>
+        </div>
+        <p id="tips-no-match" style="display: none; margin: 0.5em 0; color: #555;" role="status">No tips match the selected filters.</p>
+        <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; min-width: 480px;">
+          <thead>
+            <tr style="border-bottom: 2px solid #333; text-align: left;">
+              <th style="padding: 0.5em 0.75em; white-space: nowrap;">Edit</th>
+              <th style="padding: 0.5em 0.75em;">
+                <button type="button" class="sortable-header" data-sort-key="title" style="background: none; border: none; padding: 0; font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 2px;"><span class="sort-label">Title</span><span class="sort-arrow" aria-hidden="true"></span></button>
+              </th>
+              <th style="padding: 0.5em 0.75em; white-space: nowrap;">
+                <button type="button" class="sortable-header" data-sort-key="content_id" style="background: none; border: none; padding: 0; font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 2px;"><span class="sort-label">Content ID</span><span class="sort-arrow" aria-hidden="true"></span></button>
+              </th>
+              <th style="padding: 0.5em 0.75em; white-space: nowrap;">
+                <button type="button" class="sortable-header" data-sort-key="date" style="background: none; border: none; padding: 0; font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 2px;"><span class="sort-label">Date</span><span class="sort-arrow" aria-hidden="true"></span></button>
+              </th>
+              <th style="padding: 0.5em 0.75em; white-space: nowrap;">
+                <button type="button" class="sortable-header" data-sort-key="status" style="background: none; border: none; padding: 0; font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 2px;"><span class="sort-label">Status</span><span class="sort-arrow" aria-hidden="true"></span></button>
+              </th>
+              <th style="padding: 0.5em 0.75em; white-space: nowrap;">
+                <button type="button" class="sortable-header" data-sort-key="email" style="background: none; border: none; padding: 0; font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 2px;"><span class="sort-label">Email</span><span class="sort-arrow" aria-hidden="true"></span></button>
+              </th>
+              <th style="padding: 0.5em 0.75em; white-space: nowrap;">Delete</th>
+            </tr>
+          </thead>
+          <tbody id="tips-table-body">
+            {tipsData.map((tip) => {
+              const status = getTipStatus(tip);
+              const emailDone = tip.emailDone === true;
+              const badgeStyle =
+                status === "Live"
+                  ? "background: #0a0; color: #fff;"
+                  : status === "Upcoming"
+                    ? "background: #07c; color: #fff;"
+                    : "background: #666; color: #fff;";
+              return (
+                <tr
+                  style="border-bottom: 1px solid #ccc;"
+                  data-sort-title={getTitleForContentId(tip.content_id).toLowerCase()}
+                  data-sort-content-id={tip.content_id}
+                  data-sort-date={tip.startDate}
+                  data-sort-status={status}
+                  data-sort-email={emailDone ? "done" : "not-done"}
+                >
+                  <td style="padding: 0.5em 0.75em; vertical-align: middle;">
+                    <button
+                      type="button"
+                      class="edit-tip-btn"
+                      data-content-id={tip.content_id}
+                      data-start-date={tip.startDate}
+                      data-end-date={tip.endDate ?? ""}
+                      data-email-done={emailDone ? "1" : "0"}
+                      style="padding: 0.25em 0.6em; font-size: 0.9em;"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                  <td style="padding: 0.5em 0.75em; vertical-align: middle;">
+                    <strong>{getTitleForContentId(tip.content_id)}</strong>
+                  </td>
+                  <td style="padding: 0.5em 0.75em; vertical-align: middle;">{tip.content_id}</td>
+                  <td style="padding: 0.5em 0.75em; vertical-align: middle; white-space: nowrap;">{formatDateRange(tip)}</td>
+                  <td style="padding: 0.5em 0.75em; vertical-align: middle;">
+                    <span
+                      style={`display: inline-block; padding: 0.15em 0.5em; font-size: 0.9em; font-weight: 600; border-radius: 3px; ${badgeStyle}`}
+                      aria-label={`Status: ${status}`}
+                    >
+                      {status}
+                    </span>
+                  </td>
+                  <td style="padding: 0.5em 0.75em; vertical-align: middle;">
+                    <span
+                      class="email-status-label"
+                      style={`display: inline-block; padding: 0.15em 0.5em; font-size: 0.85em; font-weight: 600; border-radius: 3px; margin-right: 0.5em; ${emailDone ? "background: #0a0; color: #fff;" : "background: #e8e8e8; color: #555;"}`}
+                      aria-hidden="true"
+                    >
+                      {emailDone ? "Done" : "Not done"}
+                    </span>
+                    <input
+                      type="checkbox"
+                      class="email-done-toggle"
+                      data-content-id={tip.content_id}
+                      data-start-date={tip.startDate}
+                      checked={emailDone}
+                      aria-label={emailDone ? "Mark email not done" : "Mark email done"}
+                      style="width: auto; cursor: pointer;"
+                    />
+                  </td>
+                  <td style="padding: 0.5em 0.75em; vertical-align: middle;">
+                    <button
+                      type="button"
+                      class="delete-tip-btn"
+                      data-content-id={tip.content_id}
+                      data-start-date={tip.startDate}
+                      data-title={getTitleForContentId(tip.content_id)}
+                      aria-label={`Delete scheduled tip: ${getTitleForContentId(tip.content_id)}`}
+                      style="padding: 0.25em 0.6em; font-size: 0.9em; color: #c00; background: none; border: 1px solid #c00; cursor: pointer; border-radius: 3px;"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+        </div>
+        <div id="tips-calendar-view" style="display: none;">
+          <div style="display: flex; align-items: center; gap: 0.75em; margin-bottom: 0.75em;">
+            <button type="button" id="calendar-prev-month" style="padding: 0.35em 0.6em; cursor: pointer;">← Previous</button>
+            <strong id="calendar-month-label" style="min-width: 140px; text-align: center;"></strong>
+            <button type="button" id="calendar-next-month" style="padding: 0.35em 0.6em; cursor: pointer;">Next →</button>
+          </div>
+          <div id="tips-calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #ccc; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"></div>
+        </div>
+      </>
+    )}
+
+    <p><a href="/admin/admin">← Back to Creator Control Panel</a></p>
+  </main>
+
+  <script>
+    const form = document.getElementById("add-tip-form") as HTMLFormElement;
+    const errorEl = document.getElementById("add-tip-error") as HTMLParagraphElement;
+    const submitBtn = document.getElementById("add-tip-submit") as HTMLButtonElement;
+    const headingEl = document.getElementById("add-tip-heading");
+    const cancelBtn = document.getElementById("cancel-edit-btn") as HTMLButtonElement;
+    const originalContentIdEl = document.getElementById("edit-original-content-id") as HTMLInputElement;
+    const originalStartDateEl = document.getElementById("edit-original-start-date") as HTMLInputElement;
+    const contentIdInput = form?.querySelector<HTMLInputElement>("[name='content_id']");
+    const startDateInput = form?.querySelector<HTMLInputElement>("[name='startDate']");
+    const endDateInput = form?.querySelector<HTMLInputElement>("[name='endDate']");
+    const emailDoneInput = form?.querySelector<HTMLInputElement>("[name='emailDone']");
+
+    function isEditMode(): boolean {
+      return !!(originalContentIdEl?.value?.trim() && originalStartDateEl?.value?.trim());
+    }
+
+    function setAddMode() {
+      if (originalContentIdEl) originalContentIdEl.value = "";
+      if (originalStartDateEl) originalStartDateEl.value = "";
+      if (contentIdInput) contentIdInput.value = "";
+      if (startDateInput) startDateInput.value = "";
+      if (endDateInput) endDateInput.value = "";
+      if (emailDoneInput) emailDoneInput.checked = false;
+      if (headingEl) headingEl.textContent = "Add Tip";
+      if (submitBtn) submitBtn.textContent = "Save";
+      if (cancelBtn) cancelBtn.style.display = "none";
+      if (errorEl) { errorEl.style.display = "none"; errorEl.textContent = ""; }
+    }
+
+    function setEditMode(originalContentId: number, originalStartDate: string, originalEndDate?: string, originalEmailDone?: boolean) {
+      if (originalContentIdEl) originalContentIdEl.value = String(originalContentId);
+      if (originalStartDateEl) originalStartDateEl.value = originalStartDate;
+      if (contentIdInput) contentIdInput.value = String(originalContentId);
+      if (startDateInput) startDateInput.value = originalStartDate.slice(0, 10);
+      if (endDateInput) endDateInput.value = (originalEndDate ?? "").slice(0, 10);
+      if (emailDoneInput) emailDoneInput.checked = originalEmailDone === true;
+      if (headingEl) headingEl.textContent = "Edit Tip";
+      if (submitBtn) submitBtn.textContent = "Save Changes";
+      if (cancelBtn) cancelBtn.style.display = "inline-block";
+      if (errorEl) { errorEl.style.display = "none"; errorEl.textContent = ""; }
+    }
+
+    document.querySelectorAll(".edit-tip-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const el = btn as HTMLElement;
+        const contentId = el.dataset.contentId;
+        const startDate = el.dataset.startDate;
+        const endDate = el.dataset.endDate ?? "";
+        const emailDone = el.dataset.emailDone === "1";
+        if (contentId && startDate) setEditMode(parseInt(contentId, 10), startDate, endDate, emailDone);
+      });
+    });
+
+    document.querySelectorAll(".delete-tip-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const el = btn as HTMLElement;
+        const contentId = el.dataset.contentId;
+        const startDate = el.dataset.startDate;
+        const title = el.dataset.title ?? "";
+        const message = title
+          ? `Are you sure you want to delete this scheduled tip?\n\n"${title}"`
+          : "Are you sure you want to delete this scheduled tip?";
+        if (!confirm(message)) return;
+        if (!contentId || !startDate) return;
+        (btn as HTMLButtonElement).disabled = true;
+        try {
+          const res = await fetch("/api/admin/tips", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              content_id: parseInt(contentId, 10),
+              startDate,
+            }),
+          });
+          const data = (await res.json()) as { success?: boolean; error?: string };
+          if (res.ok && data.success) {
+            window.location.reload();
+            return;
+          }
+          alert(data.error ?? "Could not delete the tip. Please try again.");
+        } catch {
+          alert("Could not delete the tip. Please try again.");
+        } finally {
+          (btn as HTMLButtonElement).disabled = false;
+        }
+      });
+    });
+
+    document.querySelectorAll(".email-done-toggle").forEach((checkbox) => {
+      checkbox.addEventListener("change", async function (this: HTMLInputElement) {
+        const contentId = this.dataset.contentId;
+        const startDate = this.dataset.startDate;
+        if (!contentId || !startDate) return;
+        this.disabled = true;
+        try {
+          const res = await fetch("/api/admin/tips", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              originalContentId: parseInt(contentId, 10),
+              originalStartDate: startDate,
+              emailDone: this.checked,
+            }),
+          });
+          const data = (await res.json()) as { success?: boolean; error?: string };
+          if (res.ok && data.success) window.location.reload();
+          else this.checked = !this.checked;
+        } catch {
+          this.checked = !this.checked;
+        } finally {
+          this.disabled = false;
+        }
+      });
+    });
+
+    cancelBtn?.addEventListener("click", setAddMode);
+
+    (function initTableSortAndFilter() {
+      const tbody = document.getElementById("tips-table-body");
+      const sortHeaders = document.querySelectorAll(".sortable-header");
+      let currentSortKey: string = "date";
+      let currentSortDir: "asc" | "desc" = "asc";
+
+      function getSortValue(row: HTMLTableRowElement, key: string): string | number {
+        const attr = "data-sort-" + key.replace("_", "-");
+        const val = row.getAttribute(attr) ?? "";
+        if (key === "content_id") return parseInt(String(val), 10) || 0;
+        if (key === "date") return new Date(String(val)).getTime();
+        if (key === "email") return val === "done" ? 1 : 0;
+        return String(val);
+      }
+
+      function updateHeaderArrows() {
+        sortHeaders.forEach((btn) => {
+          const key = (btn as HTMLElement).dataset.sortKey ?? "";
+          const arrow = btn.querySelector(".sort-arrow");
+          if (arrow) {
+            if (key === currentSortKey) {
+              arrow.textContent = currentSortDir === "asc" ? " \u2191" : " \u2193";
+            } else {
+              arrow.textContent = "";
+            }
+          }
+        });
+      }
+
+      function applyFiltersAndSort() {
+        if (!tbody) return;
+        const filterStatus = (document.getElementById("filter-status") as HTMLSelectElement)?.value ?? "";
+        const filterEmail = (document.getElementById("filter-email") as HTMLSelectElement)?.value ?? "";
+        const noMatchEl = document.getElementById("tips-no-match") as HTMLParagraphElement | null;
+        const rows = Array.from(tbody.querySelectorAll<HTMLTableRowElement>("tr[data-sort-status]"));
+        const visible = rows.filter((tr) => {
+          const status = tr.getAttribute("data-sort-status") ?? "";
+          const email = tr.getAttribute("data-sort-email") ?? "not-done";
+          if (filterStatus && status !== filterStatus) return false;
+          if (filterEmail && email !== filterEmail) return false;
+          return true;
+        });
+        const hidden = rows.filter((tr) => !visible.includes(tr));
+        visible.sort((ra, rb) => {
+          const a = getSortValue(ra, currentSortKey);
+          const b = getSortValue(rb, currentSortKey);
+          let cmp = 0;
+          if (typeof a === "number" && typeof b === "number") cmp = a - b;
+          else cmp = String(a).localeCompare(String(b));
+          return currentSortDir === "asc" ? cmp : -cmp;
+        });
+        visible.forEach((r) => {
+          (r as HTMLElement).style.display = "";
+          tbody.appendChild(r);
+        });
+        hidden.forEach((r) => {
+          (r as HTMLElement).style.display = "none";
+          tbody.appendChild(r);
+        });
+        if (noMatchEl) noMatchEl.style.display = visible.length === 0 ? "block" : "none";
+      }
+
+      function sortTable(key: string) {
+        if (!tbody) return;
+        if (currentSortKey === key) {
+          currentSortDir = currentSortDir === "asc" ? "desc" : "asc";
+        } else {
+          currentSortKey = key;
+          currentSortDir = "asc";
+        }
+        applyFiltersAndSort();
+        updateHeaderArrows();
+      }
+
+      sortHeaders.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const key = (btn as HTMLElement).dataset.sortKey;
+          if (key) sortTable(key);
+        });
+      });
+      document.getElementById("filter-status")?.addEventListener("change", applyFiltersAndSort);
+      document.getElementById("filter-email")?.addEventListener("change", applyFiltersAndSort);
+
+      updateHeaderArrows();
+      applyFiltersAndSort();
+    })();
+
+    (function initCalendarView() {
+      const tableView = document.getElementById("tips-table-view");
+      const calendarView = document.getElementById("tips-calendar-view");
+      const viewTableBtn = document.getElementById("view-table-btn");
+      const viewCalendarBtn = document.getElementById("view-calendar-btn");
+      const calendarGrid = document.getElementById("tips-calendar-grid");
+      const monthLabel = document.getElementById("calendar-month-label");
+      const prevBtn = document.getElementById("calendar-prev-month");
+      const nextBtn = document.getElementById("calendar-next-month");
+
+      function getCalendarTips(): { content_id: number; startDate: string; endDate: string; title: string; status: string }[] {
+        const scriptEl = document.getElementById("calendar-tips-data");
+        if (!scriptEl?.textContent) return [];
+        try {
+          return JSON.parse(scriptEl.textContent) as { content_id: number; startDate: string; endDate: string; title: string; status: string }[];
+        } catch {
+          return [];
+        }
+      }
+
+      let currentYear = new Date().getFullYear();
+      let currentMonth = new Date().getMonth();
+
+      const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
+        Live: { bg: "#0a0", color: "#fff" },
+        Upcoming: { bg: "#07c", color: "#fff" },
+        Expired: { bg: "#666", color: "#fff" },
+      };
+
+      function formatMonthYear(year: number, month: number): string {
+        const d = new Date(year, month, 1);
+        return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      }
+
+      function dayToStr(year: number, month: number, day: number): string {
+        return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      }
+
+      function renderCalendar() {
+        if (!calendarGrid || !monthLabel) return;
+        const tips = getCalendarTips();
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        const lastDay = new Date(currentYear, currentMonth + 1, 0);
+        const startWeekday = firstDay.getDay();
+        const daysInMonth = lastDay.getDate();
+        let daysToShow = Math.ceil((startWeekday + daysInMonth) / 7) * 7;
+        if (daysToShow < 28) daysToShow = 28;
+        monthLabel.textContent = formatMonthYear(currentYear, currentMonth);
+
+        const fragment = document.createDocumentFragment();
+        DAY_NAMES.forEach((name) => {
+          const cell = document.createElement("div");
+          cell.style.cssText = "padding: 0.35em; font-weight: 600; background: #f0f0f0; font-size: 0.85em;";
+          cell.textContent = name;
+          fragment.appendChild(cell);
+        });
+        for (let i = 0; i < daysToShow; i++) {
+          const cell = document.createElement("div");
+          cell.style.cssText = "min-height: 80px; padding: 0.35em; background: #fff; font-size: 0.85em; overflow: auto;";
+          const dayIndex = i - startWeekday + 1;
+          if (dayIndex >= 1 && dayIndex <= daysInMonth) {
+            const dayStr = dayToStr(currentYear, currentMonth, dayIndex);
+            cell.textContent = String(dayIndex);
+            const tipsOnDay = tips.filter((t) => t.startDate <= dayStr && t.endDate >= dayStr);
+            tipsOnDay.forEach((tip) => {
+              const block = document.createElement("button");
+              block.type = "button";
+              block.className = "calendar-tip-entry";
+              block.style.cssText = `display: block; width: 100%; margin-top: 2px; padding: 0.2em 0.35em; text-align: left; font-size: 0.75em; border: none; border-radius: 2px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ${STATUS_COLORS[tip.status]?.bg ? `background: ${STATUS_COLORS[tip.status].bg}; color: ${STATUS_COLORS[tip.status].color};` : "background: #e8e8e8; color: #333;"}`;
+              block.textContent = tip.title;
+              block.dataset.contentId = String(tip.content_id);
+              block.dataset.startDate = tip.startDate;
+              block.title = tip.title + " (" + tip.status + ")";
+              block.addEventListener("click", () => {
+                tableView?.style.setProperty("display", "");
+                calendarView?.style.setProperty("display", "none");
+                viewTableBtn?.classList.add("active");
+                viewTableBtn?.style.setProperty("font-weight", "600");
+                viewCalendarBtn?.classList.remove("active");
+                viewCalendarBtn?.style.setProperty("font-weight", "");
+                const statusFilter = document.getElementById("filter-status") as HTMLSelectElement;
+                const emailFilter = document.getElementById("filter-email") as HTMLSelectElement;
+                if (statusFilter) statusFilter.value = "";
+                if (emailFilter) emailFilter.value = "";
+                statusFilter?.dispatchEvent(new Event("change"));
+                const row = document.querySelector(`tr[data-sort-content-id="${tip.content_id}"][data-sort-date="${tip.startDate}"]`);
+                if (row) {
+                  const editBtn = row.querySelector(".edit-tip-btn") as HTMLElement;
+                  const endDate = editBtn?.dataset.endDate ?? "";
+                  const emailDone = editBtn?.dataset.emailDone === "1";
+                  setEditMode(tip.content_id, tip.startDate, endDate, emailDone);
+                  row.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                }
+              });
+              cell.appendChild(block);
+            });
+          } else {
+            cell.style.background = "#f8f8f8";
+            cell.style.color = "#999";
+          }
+          fragment.appendChild(cell);
+        }
+        calendarGrid.innerHTML = "";
+        calendarGrid.appendChild(fragment);
+      }
+
+      viewTableBtn?.addEventListener("click", () => {
+        tableView?.style.setProperty("display", "");
+        calendarView?.style.setProperty("display", "none");
+        viewTableBtn?.classList.add("active");
+        viewTableBtn?.style.setProperty("font-weight", "600");
+        viewCalendarBtn?.classList.remove("active");
+        viewCalendarBtn?.style.setProperty("font-weight", "");
+      });
+      viewCalendarBtn?.addEventListener("click", () => {
+        calendarView?.style.setProperty("display", "");
+        tableView?.style.setProperty("display", "none");
+        viewCalendarBtn?.classList.add("active");
+        viewCalendarBtn?.style.setProperty("font-weight", "600");
+        viewTableBtn?.classList.remove("active");
+        viewTableBtn?.style.setProperty("font-weight", "");
+        renderCalendar();
+      });
+      prevBtn?.addEventListener("click", () => {
+        currentMonth--;
+        if (currentMonth < 0) {
+          currentMonth = 11;
+          currentYear--;
+        }
+        renderCalendar();
+      });
+      nextBtn?.addEventListener("click", () => {
+        currentMonth++;
+        if (currentMonth > 11) {
+          currentMonth = 0;
+          currentYear++;
+        }
+        renderCalendar();
+      });
+    })();
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!errorEl || !submitBtn) return;
+
+      errorEl.style.display = "none";
+      errorEl.textContent = "";
+
+      const contentId = contentIdInput?.value?.trim();
+      const startDate = startDateInput?.value?.trim();
+
+      if (!contentId) {
+        errorEl.textContent = "Content ID is required.";
+        errorEl.style.display = "block";
+        return;
+      }
+      if (!startDate) {
+        errorEl.textContent = "Start date is required.";
+        errorEl.style.display = "block";
+        return;
+      }
+      const endDateVal = endDateInput?.value?.trim() ?? "";
+      if (endDateVal && new Date(endDateVal) < new Date(startDate)) {
+        errorEl.textContent = "End date must not be earlier than start date.";
+        errorEl.style.display = "block";
+        return;
+      }
+
+      submitBtn.disabled = true;
+      const editing = isEditMode();
+      const endDate = endDateInput?.value?.trim() ?? "";
+      const url = "/api/admin/tips";
+      const body = editing
+        ? {
+            originalContentId: parseInt(originalContentIdEl?.value ?? "0", 10),
+            originalStartDate: originalStartDateEl?.value?.trim() ?? "",
+            content_id: parseInt(contentId, 10),
+            startDate,
+            endDate: endDate || null,
+            emailDone: emailDoneInput?.checked ?? false,
+          }
+        : {
+            content_id: parseInt(contentId, 10),
+            startDate,
+            emailDone: emailDoneInput?.checked ?? false,
+            ...(endDate ? { endDate } : {}),
+          };
+
+      try {
+        const res = await fetch(url, {
+          method: editing ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = (await res.json()) as { success?: boolean; error?: string };
+        if (res.ok && data.success) {
+          window.location.reload();
+          return;
+        }
+        errorEl.textContent = data.error ?? "Something went wrong.";
+        errorEl.style.display = "block";
+      } catch {
+        errorEl.textContent = "Could not save. Please try again.";
+        errorEl.style.display = "block";
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</Layout>

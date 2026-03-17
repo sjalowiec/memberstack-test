@@ -763,6 +763,12 @@ import Tooltip from "../../components/Tooltip.astro";
         document.documentElement.classList.add('troubleshoot-access-ready');
       }
 
+      /* Dev-only gating bypass: show gated content on localhost without login. */
+      if (window.__DEV_BYPASS_GATING) {
+        showContent();
+        return;
+      }
+
       async function resolveAccess() {
         try {
           if (!window.$memberstackDom) {

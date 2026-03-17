@@ -2925,19 +2925,7 @@
     "active": true,
     "vimeoIds": []
   },
-  {
-    "glossaryId": 591,
-    "english": "Pattern Notes",
-    "example": "",
-    "helpinfo": "When building or modifying a Dynamic pattern, you can \t\t \t\t\t \t\t\t \t\t\t\t1 \t\t\t \t\trename the pattern and add  \t\t\t \t\t\t \t\t\t\t2 \t\t\t \t\t personal notes \t    \tPrint the pattern in PDF format and the name and notes are included \t    \tThe name and notes are also displayed here",
-    "image": "",
-    "image_alt": "NULL",
-    "image_description": "NULL",
-    "metaTitle": "NULL",
-    "metaDescription": "NULL",
-    "active": true,
-    "vimeoIds": []
-  },
+  
   {
     "glossaryId": 592,
     "english": "Logging In",
@@ -2964,19 +2952,7 @@
     "active": false,
     "vimeoIds": []
   },
-  {
-    "glossaryId": 594,
-    "english": "Craft Yarn Council",
-    "example": "",
-    "helpinfo": "An organization based in the US, the Craft Yarn Council (CYC) represents the leading yarn companies, accessory manufacturers, magazine, book publishers, and consultants in the yarn industry. The CYC offers instruction and standards used by millions of knitters worldwide  Website Standard Yarn Weight System Standard Body Measurement/Sizing",
-    "image": "/images/glossary/cyc-logo.jpg",
-    "image_alt": "NULL",
-    "image_description": "NULL",
-    "metaTitle": "NULL",
-    "metaDescription": "NULL",
-    "active": false,
-    "vimeoIds": []
-  },
+  
   {
     "glossaryId": 595,
     "english": "Ladder",

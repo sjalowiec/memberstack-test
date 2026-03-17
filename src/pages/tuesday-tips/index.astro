@@ -1,0 +1,230 @@
+---
+/**
+* Tuesday Tips landing page (public).
+* Shows the current featured Tuesday Tip video card at the top; below it, conditional
+* member vs non-member messaging. This page is not gated — anyone can view it.
+*
+* How to change the featured Tuesday Tip each week:
+* In src/data/videos-public.json, set "isTipOfWeek": true on exactly one video
+* (the one you want to feature). Set "isTipOfWeek": false or remove it from all others.
+*/
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+import FeaturedTipCard from "../../components/FeaturedTipCard.astro";
+import videos from "../../data/videos-public.json";
+
+// --- Current featured Tuesday Tip (single source: isTipOfWeek in videos-public.json) ---
+const featuredTipVideo = Array.isArray(videos)
+? videos.find((v: { isTipOfWeek?: boolean }) => v.isTipOfWeek === true)
+: null;
+const featuredTip = featuredTipVideo
+? {
+href: `/videos/${(featuredTipVideo as { content_id: number }).content_id}`,
+title: (featuredTipVideo as { title?: string }).title ?? "This Week's Quick Win",
+posterUrl: (featuredTipVideo as { posterUrl?: string }).posterUrl ?? (featuredTipVideo as { poster_url?: string }).poster_url ?? "",
+}
+: null;
+---
+
+<Layout title="Tuesday Tips" description="Weekly machine knitting tips and quick wins from Knit by Machine." bodyClass="page--tight-header">
+    <div class="page-wrap tips-page">
+        <PageHead title="Tuesday Tips" hideTitle />
+
+        <header class="tips-hero">
+            <h1>Tuesday Tips</h1>
+            <p class="tips-intro">
+                A weekly quick tip or technique to help you get more from your machine knitting.
+                Watch the featured tip below, or browse the full video library when you're ready for more.
+            </p>
+        </header>
+
+        {/* Featured Tuesday Tip: thumbnail + play overlay, links to video detail page */}
+        {featuredTip ? (
+        <section class="tips-feature" aria-labelledby="tuesday-tip-heading">
+            <h2 id="tuesday-tip-heading" class="sr-only">This week's tip</h2>
+            <div class="tips-feature__header">
+                <img src="/images/tuesday-tip.svg" alt="" class="tips-feature__icon" aria-hidden="true" />
+            </div>
+            <div class="tips-feature__card">
+                <FeaturedTipCard href={featuredTip.href} title={featuredTip.title} posterUrl={featuredTip.posterUrl} />
+            </div>
+            <p class="tips-feature__title">{featuredTip.title}</p>
+        </section>
+        ) : (
+        <section class="tips-feature tips-feature--empty" aria-label="Tuesday Tip">
+            <p>No tip is featured this week. Check back soon or browse <a href="/videos">all videos</a>.</p>
+        </section>
+        )}
+
+        {/* Conditional messaging: member thank-you vs non-member CTA (Memberstack data-ms-content) */}
+        <div class="tips-messages">
+            <section data-ms-content="members" class="tips-message tips-message--member" aria-label="Message for members">
+                <p><strong>Thanks for being a member.</strong> We're glad you're here.</p>
+            </section>
+            <section data-ms-content="!members" class="tips-message tips-message--guest" aria-labelledby="tips-cta-heading">
+                <h2 id="tips-cta-heading" class="tips-message__headline">Want more tips and tutorials?</h2>
+                <p>Members get full access to the video library, step-by-step guides, and machine-specific help. Join to watch this tip and hundreds more whenever you need them.</p>
+                <p class="tips-message__cta-wrap">
+                    <a href="/membership" class="tips-message__cta">Explore membership</a>
+                </p>
+            </section>
+        </div>
+    </div>
+</Layout>
+
+<style>
+    .tips-page.page-wrap {
+        padding-top: 8px;
+        max-width: var(--max-content-width, 1100px);
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .tips-hero {
+        margin-bottom: 1.5rem;
+    }
+
+    .tips-hero h1 {
+        margin: 0 0 0.5rem;
+        font-size: clamp(1.75rem, 4vw, 2.25rem);
+        line-height: 1.2;
+    }
+
+    .tips-intro {
+        margin: 0;
+        max-width: 52ch;
+        line-height: 1.6;
+        color: #374151;
+    }
+
+    /* Featured tip block: same visual language as videos catalog tip card */
+    .tips-feature {
+        padding: 18px;
+        border-radius: 18px;
+        background: #f7f9f4;
+        border: 1px solid #e4eadb;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.75rem;
+    }
+
+    .tips-feature--empty {
+        text-align: center;
+        color: #6b7280;
+    }
+
+    .tips-feature--empty a {
+        color: var(--kbm-green, #52682d);
+        text-decoration: underline;
+    }
+
+    .tips-feature__header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .tips-feature__icon {
+        display: block;
+        max-width: 160px;
+        height: auto;
+    }
+
+    .tips-feature__card {
+        width: 100%;
+        max-width: 640px;
+        margin: 0 auto;
+    }
+
+    .tips-feature__title {
+        margin: 10px 0 0;
+        font-size: 1rem;
+        font-weight: 600;
+        text-align: center;
+        color: #243015;
+    }
+
+    /* Member / non-member message panels */
+    .tips-messages {
+        margin-top: 1.5rem;
+    }
+
+    .tips-message {
+        margin: 18px 0 22px;
+        padding: 24px 24px 28px;
+        border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .tips-message--member {
+        background: rgba(82, 104, 45, 0.06);
+        border: 1px solid rgba(82, 104, 45, 0.18);
+        border-left: 4px solid var(--kbm-green, #52682d);
+    }
+
+    .tips-message--member p {
+        margin: 0;
+        line-height: 1.6;
+        color: #374151;
+    }
+
+    .tips-message--guest {
+        background: rgba(82, 104, 45, 0.06);
+        border: 1px solid rgba(82, 104, 45, 0.18);
+        border-left: 4px solid var(--kbm-green, #52682d);
+    }
+
+    .tips-message__headline {
+        margin: 0 0 12px;
+        font-size: 1.25rem;
+        line-height: 1.3;
+        color: #243015;
+    }
+
+    .tips-message--guest p {
+        margin: 0 0 10px;
+        line-height: 1.6;
+        color: #374151;
+    }
+
+    .-tips-message__cta-wrap {
+        margin: 20px 0 0 !important;
+    }
+
+    .tips-message__cta {
+        display: inline-block;
+        padding: 12px 20px;
+        background: var(--kbm-green, #52682d);
+        color: #fff;
+        font-weight: 600;
+        text-decoration: none;
+        border-radius: 10px;
+        transition: background 0.2s ease, transform 0.15s ease;
+    }
+
+    .tips-message__cta:hover {
+        background: var(--kbm-green-hover, #445626);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .tips-message__cta:focus-visible {
+        outline: 2px solid var(--kbm-green, #52682d);
+        outline-offset: 2px;
+    }
+
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+</style>

@@ -2,38 +2,99 @@
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
 import videos from "../../data/videos-public.json";
+import { getPreviewMember } from "../../lib/getPreviewMember";
+
+// --- Featured tip (Tuesday Tip / Weekly Quick Win) ---
+// Set the Vimeo video ID for the featured tip card. Leave empty to hide the card.
+// Link, thumbnail, and title are resolved from videos-public.json by matching vimeo_id.
+const featuredTipVideo = Array.isArray(videos)
+  ? videos.find((v: { isTipOfWeek?: boolean }) => v.isTipOfWeek === true)
+  : null;
+const indexQuery = Astro.url.search || "";
+const featuredTip = featuredTipVideo
+  ? {
+      href: "/tips",
+      title: (featuredTipVideo as { title?: string }).title ?? "This Week's Quick Win",
+      posterUrl: (featuredTipVideo as { posterUrl?: string }).posterUrl ?? (featuredTipVideo as { poster_url?: string }).poster_url ?? "",
+    }
+  : null;
+
+/** Preview state for dev/testing; in production always "default" */
+const previewMember = getPreviewMember(Astro.url);
+const forceMemberView =
+  previewMember === "member"
+    ? true
+    : previewMember === "nonmember"
+      ? false
+      : null;
 ---
 
-<Layout title="Videos" description="Browse and search videos.">
+<Layout title="Videos" description="Browse and search videos." bodyClass="page--tight-header">
   <div class="page-wrap">
-
 
     <PageHead
       title="Tutorials"
-      
       hideTitle
     />
 
-    <div class="video-title-row">
-      <h1 class="video-page-title">Tutorials</h1>
-      <input
-        id="videoSearch"
-        type="search"
-        placeholder="Search videos…"
-        autocomplete="off"
-        class="video-search"
-      />
-    </div>
+    <section class="video-catalog-hero">
+      <div class="video-catalog-hero__grid">
+        <div class="video-catalog-hero__intro">
+          <p class="video-catalog-hero__eyebrow">Video Tutorials</p>
+          <h1>Learn with clear, practical machine knitting videos</h1>
+          <p>
+            Browse tutorials, technique lessons, and quick help videos designed
+            to help you build skills and solve problems as you knit.
+          </p>
+          <p>
+            Whether you want to learn something new or find a quick solution,
+            this library gives you a place to start.
+          </p>
+        </div>
+        {/* Tuesday Tip / Weekly Quick Win: KBM card with ribbon, SVG, title, thumbnail + play overlay */}
+        {featuredTip && (
+          <aside class="tuesday-tip-feature" aria-label="Tuesday Tip">
+            <a href={featuredTip.href} class="kbm-card tip-of-week-card">
+              <span class="kbm-card-ribbon">Latest</span>
+              <img
+                src="/images/tuesday-tip.svg"
+                class="tip-header"
+                alt="Tuesday Tip"
+              />
+              {featuredTip.title && (
+                <h3 class="tip-title">{featuredTip.title}</h3>
+              )}
+              <div class="tip-thumb-wrap">
+                {featuredTip.posterUrl ? (
+                  <>
+                    <img
+                      src={featuredTip.posterUrl}
+                      alt={featuredTip.title}
+                      class="tip-image"
+                      loading="lazy"
+                    />
+                    <span class="tip-play" aria-hidden="true">
+                      <svg viewBox="0 0 68 68" class="tip-play__icon" focusable="false">
+                        <circle cx="34" cy="34" r="34"></circle>
+                        <polygon points="28,22 28,46 48,34"></polygon>
+                      </svg>
+                    </span>
+                  </>
+                ) : (
+                  <div class="tip-image-placeholder" aria-hidden="true" />
+                )}
+              </div>
+            </a>
+          </aside>
+        )}
+      </div>
+    </section>
 
-    <div class="category-band">
-      <div class="category-band__inner">
+    <div class="video-toolbar">
+      <div class="video-category">
         <div class="category-bar" id="categoryBar">
           <label for="category-select" class="sr-only">Category</label>
-
-          <!-- Keep the select for fallback + data/state, but hide it -->
           <select id="category-select" class="sr-only" aria-label="Video category"></select>
-
-          <!-- Custom UI -->
           <button
             id="categoryTrigger"
             class="category-trigger"
@@ -43,12 +104,19 @@ import videos from "../../data/videos-public.json";
             aria-controls="categoryMenu"
           >
             <span class="category-prefix">Category:</span>
-          <span id="categoryLabel" class="category-label">All Videos</span>
+            <span id="categoryLabel" class="category-label">All Videos</span>
             <span class="category-chevron" aria-hidden="true">▾</span>
           </button>
-
           <div id="categoryMenu" class="category-menu" role="listbox" aria-label="Video categories" hidden></div>
         </div>
+      </div>
+      <div class="video-search">
+        <input
+          id="videoSearch"
+          type="search"
+          placeholder="Search by technique or keyword"
+          autocomplete="off"
+        />
       </div>
     </div>
 
@@ -58,6 +126,9 @@ import videos from "../../data/videos-public.json";
   </div>
 
   <script id="videos-data" type="application/json" set:html={JSON.stringify(videos)} />
+  <script is:inline define:vars={{ forceMemberView }}>
+    window.__PREVIEW_FORCE_MEMBER__ = forceMemberView;
+  </script>
 
   <script is:inline>
     (function () {
@@ -77,11 +148,21 @@ import videos from "../../data/videos-public.json";
 
       const grid = document.getElementById("video-grid");
       const selectEl = document.getElementById("category-select");
+      const searchInput = document.getElementById("videoSearch");
 
       const categories = Array.from(new Set(videos.map(v => v.category).filter(Boolean))).sort();
 
-    const requested = new URLSearchParams(location.search).get("cat");
-    const defaultCategory = (requested && categories.includes(requested)) ? requested : (categories[0] || "");
+    const urlParams = new URLSearchParams(location.search);
+    const requested = urlParams.get("cat");
+    const matchedCategory = requested && categories.find((c) => c.toLowerCase() === requested.toLowerCase());
+    const defaultCategory = matchedCategory ? matchedCategory : "";
+    const initialQ = urlParams.get("q") || "";
+    const initialSort = urlParams.get("sort") || "";
+
+    let currentSearch = initialQ;
+    let currentCategory = defaultCategory;
+    let currentSort = initialSort;
+    let searchTimer;
 
     const MEMBER_PLAN_IDS = new Set([
       "pln_dev-kin-member-eim6011h",
@@ -129,28 +210,87 @@ import videos from "../../data/videos-public.json";
       return null;
     }
 
+    function updateUrl() {
+      const params = new URLSearchParams();
+      if (currentCategory) params.set("cat", currentCategory);
+      if (currentSearch) params.set("q", currentSearch);
+      if (currentSort) params.set("sort", currentSort);
+      const qs = params.toString();
+      history.replaceState(null, "", location.pathname + (qs ? "?" + qs : ""));
+    }
+
     function setCat(cat) {
-      const qs = cat ? "?cat=" + encodeURIComponent(cat) : "";
-      history.replaceState(null, "", location.pathname + qs);
+      currentCategory = cat || "";
+      currentSearch = "";
+
+      if (searchInput) {
+        searchInput.value = "";
+      }
+
+      updateUrl();
     }
 
     function render(cat) {
-      const filtered = cat ? videos.filter(v => v.category === cat) : videos;
+
+      currentCategory = cat || "";
+
+      let filtered = currentCategory
+        ? videos.filter(v => v.category === currentCategory)
+        : videos;
+
+      if (currentSearch) {
+        const q = currentSearch.toLowerCase();
+
+        filtered = filtered.filter(v =>
+          (v.title || "").toLowerCase().includes(q) ||
+          (v.description || "").toLowerCase().includes(q) ||
+          (v.summary || "").toLowerCase().includes(q) ||
+          (v.category || "").toLowerCase().includes(q)
+        );
+      }
+
       filtered.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
 
       if (!grid) return;
+
       if (filtered.length === 0) {
-        grid.innerHTML = "<p style=\"padding:12px;\">No videos found for this category.</p>";
+        grid.innerHTML =
+          "<div class=\"video-grid-empty-state\">" +
+          "<div class=\"video-grid-empty-state__card\">" +
+          "<p class=\"video-grid-empty-state__title\">We couldn't find that.</p>" +
+          "<p class=\"video-grid-empty-state__text\">" +
+          "<a href=\"#\" class=\"video-grid-empty-state__link empty-state-try-again\">Try again</a>" +
+          " or take a look at this week's " +
+          "<a href=\"tips\" class=\"video-grid-empty-state__link\">Tuesday Tip.</a>" +
+          "</p>" +
+          "</div>" +
+          "</div>";
         return;
       }
 
+      /* Member access: preview override (dev only), dev bypass, or real Memberstack. */
+      const previewForce = window.__PREVIEW_FORCE_MEMBER__;
+      const hasAccess =
+        previewForce === true
+          ? true
+          : previewForce === false
+            ? false
+            : window.__DEV_BYPASS_GATING || VIEWER.isMember;
+      const listParams = new URLSearchParams();
+      if (currentCategory) listParams.set("cat", currentCategory);
+      if (currentSearch) listParams.set("q", currentSearch);
+      if (currentSort) listParams.set("sort", currentSort);
+      const listQuery = listParams.toString();
+      const listQueryString = listQuery ? "?" + listQuery : "";
+
       grid.innerHTML = filtered.map(v => {
         const isFree = v.access_level === "open";
-        const href = v.content_id ? "/videos/" + v.content_id : "/videos/" + (v.slug || "");
+        const baseHref = v.content_id ? "/videos/" + v.content_id : "/videos/" + (v.slug || "");
+        const href = baseHref + listQueryString;
         const title = (v.title || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         const poster = v.posterUrl
           ? "<div class=\"video-thumb\"><img class=\"video-card__img\" src=\"" + v.posterUrl.replace(/"/g, "&quot;") + "\" alt=\"\" loading=\"lazy\" />" +
-            (!VIEWER.isMember
+            (!hasAccess
               ? (isFree ? "<div class=\"badge-free\">FREE</div>" : "<div class=\"badge-lock\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"3\" y=\"11\" width=\"18\" height=\"11\" rx=\"2\"></rect><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"></path></svg></div>")
               : "") +
             "</div>"
@@ -167,20 +307,7 @@ import videos from "../../data/videos-public.json";
       }).join("");
     }
 
-    (async function () {
-      render(defaultCategory);
-
-      const res = await waitForMemberstackReady();
-      if (res && res.data && res.data.member) {
-        VIEWER = await getViewerState();
-      } else {
-        VIEWER = { isLoggedIn: false, isMember: false, member: null };
-      }
-
-      render(defaultCategory);
-    })();
-
-    /* ---------- Custom dropdown UI ---------- */
+    /* ---------- Custom dropdown UI (build and sync before first render so URL category wins) ---------- */
     const trigger = document.getElementById("categoryTrigger");
     const label = document.getElementById("categoryLabel");
     const menu = document.getElementById("categoryMenu");
@@ -268,8 +395,25 @@ import videos from "../../data/videos-public.json";
 
     buildMenuOptions(categories);
 
-    // Initial UI sync
-    syncSelectedUI(defaultCategory);
+    // Initial UI sync from URL (must run before first render so category is not reset to All)
+    syncSelectedUI(currentCategory);
+
+    if (searchInput) {
+      searchInput.value = currentSearch;
+    }
+
+    (async function () {
+      render(currentCategory);
+
+      const res = await waitForMemberstackReady();
+      if (res && res.data && res.data.member) {
+        VIEWER = await getViewerState();
+      } else {
+        VIEWER = { isLoggedIn: false, isMember: false, member: null };
+      }
+
+      render(currentCategory);
+    })();
 
     // Toggle open/close
     if (trigger) {
@@ -305,8 +449,8 @@ import videos from "../../data/videos-public.json";
       if (e.key === "Escape") closeMenu();
     });
 
-    // Add a "stuck" class for polish once the band pins to the top
-    const band = document.querySelector(".category-band");
+    // Add a "stuck" class for polish once the toolbar pins to the top
+    const band = document.querySelector(".video-toolbar");
     if (band) {
       const onScroll = () => {
         const r = band.getBoundingClientRect();
@@ -320,6 +464,41 @@ import videos from "../../data/videos-public.json";
       onScroll(); // run once so it sets correctly on load
     }
     /* ---------- end custom dropdown ---------- */
+
+    if (searchInput) {
+
+      searchInput.addEventListener("input", function () {
+
+        clearTimeout(searchTimer);
+
+        const value = this.value || "";
+
+        searchTimer = setTimeout(function () {
+
+          currentSearch = value.trim();
+
+          updateUrl();
+
+          render(currentCategory);
+
+        }, 150);
+
+      });
+
+    }
+
+    // Empty state "Try again" — clear search and re-render
+    if (grid) {
+      grid.addEventListener("click", function (e) {
+        const tryAgain = e.target && e.target.closest ? e.target.closest(".empty-state-try-again") : null;
+        if (!tryAgain) return;
+        e.preventDefault();
+        currentSearch = "";
+        if (searchInput) searchInput.value = "";
+        updateUrl();
+        render(currentCategory);
+      });
+    }
     })();
   </script>
 
@@ -328,6 +507,183 @@ import videos from "../../data/videos-public.json";
       max-width: 1100px;
       margin: 0 auto;
       padding: 8px 20px 80px;
+    }
+
+    /* --- Video catalog hero --- */
+    .video-catalog-hero {
+      margin-bottom: 2rem;
+    }
+    .video-catalog-hero__grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+    @media (min-width: 720px) {
+      .video-catalog-hero__grid {
+        grid-template-columns: 1fr minmax(280px, 380px);
+      }
+    }
+    .video-catalog-hero__eyebrow {
+      margin: 0 0 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--kbm-green, #52682d);
+    }
+    .video-catalog-hero__intro h1 {
+      margin: 0 0 1rem;
+      font-size: var(--text-xxl, 1.75rem);
+      line-height: 1.25;
+    }
+    .video-catalog-hero__intro p {
+      margin: 0 0 0.75rem;
+      max-width: 52ch;
+    }
+
+    /* --- Tuesday Tip / Weekly Quick Win: KBM card with ribbon --- */
+    .tuesday-tip-feature {
+      padding: 18px;
+      border-radius: 18px;
+      background: #f7f9f4;
+      border: 1px solid #e4eadb;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+    }
+    .tip-of-week-card {
+      text-decoration: none;
+      color: inherit;
+    }
+    .tip-of-week-card:focus-visible {
+      outline: 2px solid var(--kbm-green, #52682d);
+      outline-offset: 2px;
+    }
+    /* Ribbon text for this card: "This week" — shifted left and down to fit in fold */
+    .tip-of-week-card .kbm-card-ribbon::after {
+      content: "This week" !important;
+      top: 30px;
+      left: 2px;
+      transform-origin: center center;
+    }
+    .tip-header {
+      display: block;
+      max-width: 160px;
+      height: auto;
+      margin: 0 auto 10px;
+    }
+    .tip-title {
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0.5rem 0 0.75rem;
+      color: #333;
+    }
+    .tip-thumb-wrap {
+      position: relative;
+      width: 100%;
+    }
+    .tip-of-week-card img,
+    .tip-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+      transition: transform 0.2s ease;
+    }
+    .tip-of-week-card:hover img {
+      transform: scale(1.01);
+    }
+    .tip-play {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .tip-play__icon {
+      width: 68px;
+      height: 68px;
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.22));
+      transition: transform 0.18s ease;
+    }
+    .tip-play__icon circle {
+      fill: rgba(0, 0, 0, 0.45);
+    }
+    .tip-play__icon polygon {
+      fill: #ffffff;
+    }
+    .tip-of-week-card:hover .tip-play__icon,
+    .tip-of-week-card:focus-visible .tip-play__icon {
+      transform: scale(1.04);
+    }
+    .tip-image-placeholder {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+      border-radius: 12px;
+    }
+
+    /* --- Video toolbar (category + search) --- */
+    .video-toolbar {
+      position: sticky;
+      top: calc(var(--header-offset, 170px) + var(--header-buffer, 24px));
+      z-index: 40;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+
+      padding: 14px 18px;
+      background: #f3f4f2;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+
+      transition: box-shadow 200ms ease;
+    }
+
+    .video-toolbar.is-stuck {
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .video-category {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .video-search {
+      max-width: 360px;
+      width: 100%;
+      border: none;
+      background: transparent;
+      padding: 0;
+    }
+
+    .video-search input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #cfd4c6;
+      font-size: 15px;
+    }
+
+    .video-search input:focus {
+      outline: none;
+      border-color: #738c52;
+      box-shadow: 0 0 0 2px rgba(115, 140, 82, 0.15);
+    }
+
+    @media (max-width: 700px) {
+      .video-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .video-search {
+        max-width: none;
+      }
     }
 
     /* =====================================
@@ -432,14 +788,6 @@ import videos from "../../data/videos-public.json";
       font-weight: 600;
     }
 
-    .video-title-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin: 8px 0 12px;
-    }
-
     .video-page-title {
       margin: 0;
       font-size: var(--text-xxl);
@@ -499,25 +847,12 @@ import videos from "../../data/videos-public.json";
     .video-search {
       width: 100%;
       max-width: 420px;
-      padding: 10px 12px;
-      border: 1px solid rgba(0, 0, 0, 0.2);
-      border-radius: 8px;
-      font-size: 1rem;
-    }
-
-    .video-search:focus {
-      outline: none;
-      border-color: rgba(0, 0, 0, 0.35);
-    }
-
-    .video-list {
-      list-style: none;
+      border: none;
+      background: transparent;
       padding: 0;
-      display: grid;
-      gap: 12px;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     }
 
+    /* Video grid: cards use global .kbm-card, .kbm-card__title, .kbm-card__desc */
     #video-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -525,58 +860,81 @@ import videos from "../../data/videos-public.json";
       align-items: start;
     }
 
-    .video-card {
-      display: block;
-      text-decoration: none;
+  </style>
+
+  <style is:global>
+    /* Empty state when no videos match search/filter (injected via JS so needs global) */
+    #video-grid .video-grid-empty-state {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+    }
+    #video-grid .video-grid-empty-state__card {
+      padding: 1.5rem 1.75rem;
+      text-align: center;
+      background: rgb(249, 248, 243);
+      border: 1px solid rgba(52, 91, 56, 0.2);
+      border-radius: 14px;
+      color: rgb(52, 91, 56);
+      max-width: 420px;
+    }
+    #video-grid .video-grid-empty-state__title {
+      margin: 0 0 0.5rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    #video-grid .video-grid-empty-state__text {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 400;
+    }
+    #video-grid .video-grid-empty-state__link {
       color: inherit;
-      border-radius: 12px;
-      overflow: hidden;
+      text-decoration: underline;
     }
-
-    .video-card__img {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      height: auto;
-      object-fit: cover;
-      display: block;
-      border-radius: 12px;
+    #video-grid .video-grid-empty-state__link:hover {
+      text-decoration-thickness: 2px;
     }
-
-    .video-card__title {
-      padding: 10px 12px;
-      font-weight: 600;
-    }
-
-    .video-link {
-      display: grid;
-      grid-template-columns: 120px 1fr;
-      gap: 12px;
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .video-meta {
-      padding: 10px 10px 10px 0;
-    }
-
-    .video-title {
-      font-weight: 600;
-    }
-
-    .video-access {
-      font-size: 0.9rem;
-      opacity: 0.75;
-      margin-top: 4px;
+    #video-grid .video-grid-empty-state__link:focus-visible {
+      outline: 2px solid rgb(52, 91, 56);
+      outline-offset: 2px;
     }
   </style>
 
   <style is:global>
-    /* Video card thumb + badges (JS-injected) */
-    .video-thumb {
-      position: relative;
-      overflow: hidden;
+    /* Override: remove gray frame/outline on video card thumbnails (overrides global .video-thumb / .kbm-card styles) */
+    .kbm-card .video-thumb,
+    .kbm-card .video-thumb picture,
+    .kbm-card .video-thumb img {
+      background: transparent !important;
+      border: none !important;
+      padding: 0 !important;
+      box-shadow: none !important;
     }
 
+    .kbm-card .video-thumb {
+      position: relative;
+      overflow: hidden;
+      border-radius: 14px;
+      height: 140px;
+    }
+
+    .kbm-card .video-thumb picture {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .kbm-card .video-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Video card badges (JS-injected) */
     .badge-lock,
     .badge-free {
       position: absolute;
@@ -606,39 +964,6 @@ import videos from "../../data/videos-public.json";
       background: #16a34a;
       color: white;
       letter-spacing: 0.5px;
-    }
-
-    /* Full-width sticky band behind the dropdown */
-    .category-band {
-      position: sticky;
-      top: calc(var(--header-offset, 170px) + var(--header-buffer, 24px));
-      z-index: 40;
-
-      background: rgba(82, 104, 45, 0.06); /* always visible */
-      backdrop-filter: blur(6px);          /* always on, subtle */
-
-      padding: 0.2rem 0;              /* was 0.35rem */
-      margin: 0.5rem 0 1rem 0;        /* slightly tighter */
-
-      border-bottom: 1px solid rgba(0,0,0,0.05);
-
-      transition: box-shadow 200ms ease, backdrop-filter 200ms ease;
-    }
-
-    /* stronger only when stuck */
-    .category-band.is-stuck {
-      box-shadow: 0 8px 30px rgba(0,0,0,0.10);
-      backdrop-filter: blur(10px);
-    }
-
-    /* Align band content to the same width as your page content */
-    .category-band__inner {
-      max-width: var(--page-max, 1100px);
-      margin: 0 auto;
-      padding: 0 var(--page-pad, 16px);
-
-      display: flex;
-      justify-content: flex-start;
     }
 
     .category-prefix {
