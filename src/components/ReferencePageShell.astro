@@ -3,6 +3,7 @@ import PageHead from "./PageHead.astro";
 
 interface Props {
   title: string;
+  icon?: string;
   subhead?: string;
   breadcrumb?: string;
   meta?: string;
@@ -12,6 +13,7 @@ interface Props {
 
 const {
   title,
+  icon,
   subhead,
   breadcrumb,
   meta,
@@ -28,11 +30,18 @@ const {
   </div>
 
   <div class="page-wrap">
+    {icon && (
+      <h1 class="page-title reference-shell__title-row">
+        <i class={`${icon} reference-shell__title-icon`} aria-hidden="true"></i>
+        <span class="reference-shell__title-text">{title}</span>
+      </h1>
+    )}
     <PageHead
       title={title}
       subhead={subhead}
       breadcrumb={breadcrumb}
       meta={meta}
+      hideTitle={!!icon}
     />
 
     <slot />
@@ -44,7 +53,7 @@ const {
     position: relative;
     z-index: 5;
     margin-top: 0;
-    padding-top: 12px;
+    padding-top: 1px;
   }
 
   .reference-shell :global(.page-wrap) {
@@ -53,10 +62,25 @@ const {
 
   .reference-shell :global(.page-head) {
     margin-top: 0;
+    margin-bottom: 0.25rem;
     padding-top: 0;
   }
 
   .reference-shell :global(.page-title) {
     margin-top: 0;
+  }
+
+  .reference-shell__title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .reference-shell__title-icon {
+    color: #52682d;
+  }
+
+  .reference-shell__title-text {
+    white-space: pre-line;
   }
 </style>

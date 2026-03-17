@@ -1154,31 +1154,39 @@ div[data-ms-modal-overlay] {
       </div>
 
       <!-- Right zone: CTA + account + hamburger (mobile shows compact "Free Guide") -->
-      <div class="kbm-nav-right">
-        <a href="/troubleshoot" class="kbm-cta-guide" data-testid="cta-free-guide">
-          <span class="kbm-cta-desktop">Get the Free guide</span>
-          <span class="kbm-cta-mobile">Free Guide</span>
-        </a>
-        <div class="kbm-account-wrap">
-          <!-- Logged OUT -->
-          <div data-ms-content="!members">
-            <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="login"></a> Log in</a>
-            <a href="#" class="kbm-btn kbm-btn--primary" data-ms-modal="signup" data-ms-plan:add="pln_free-plan-8n34u0qnx" Join Free</a>
-          </div>
-          <!-- Logged IN -->
-          <div data-ms-content="members">
-            <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="profile">Account</a>
-            <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-action="logout">Log out</a>
-          </div>
-        </div>
-        <button class="kbm-hamburger" aria-label="Toggle menu" aria-expanded="false">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-      </div>
+<div class="kbm-nav-right">
+  <a href="/troubleshoot" class="kbm-cta-guide" data-testid="cta-free-guide">
+    <span class="kbm-cta-desktop">Get the Free guide</span>
+    <span class="kbm-cta-mobile">Free Guide</span>
+  </a>
+
+  <div class="kbm-account-wrap">
+    <!-- Logged OUT -->
+    <div data-ms-content="!members">
+      <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="login">Log in</a>
+      <a
+        href="#"
+        class="kbm-btn kbm-btn--primary"
+        data-ms-modal="signup"
+        data-ms-plan:add="pln_free-plan-8n34u0qnx"
+      >
+        Join Free
+      </a>
     </div>
-  </header>
+
+    <!-- Logged IN -->
+    <div data-ms-content="members">
+      <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="profile">Account</a>
+      <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-action="logout">Log out</a>
+    </div>
+  </div>
+
+  <button class="kbm-hamburger" aria-label="Toggle menu" aria-expanded="false">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</div>
 
   <div id="auth-msg" class="auth-msg" style="display:none;" role="status" aria-live="polite">
     <span id="auth-msg-text"></span>
