@@ -55,7 +55,9 @@ function redirectToTalkyard(loginSecret: string, thenGoTo: string) {
   const redirectUrl =
     `${TALKYARD_BASE}/-/v0/login-with-secret` +
     `?oneTimeSecret=${encodeURIComponent(loginSecret)}` +
-    `&thenGoTo=${encodeURIComponent(thenGoTo || "/")}`;
+    `&thenGoTo=${encodeURIComponent(
+      !thenGoTo || thenGoTo === "undefined" ? "/" : thenGoTo
+    )}`;
 
   return new Response(null, {
     status: 302,
@@ -130,7 +132,9 @@ export const POST: APIRoute = async ({ request }) => {
   const redirectUrl =
   `${TALKYARD_BASE}/-/v0/login-with-secret` +
   `?oneTimeSecret=${encodeURIComponent(result.loginSecret)}` +
-  `&thenGoTo=${encodeURIComponent(thenGoTo || "/")}`;
+  `&thenGoTo=${encodeURIComponent(
+  !thenGoTo || thenGoTo === "undefined" ? "/" : thenGoTo
+)}`;
 
 return new Response(JSON.stringify({ redirectUrl }), {
   status: 200,
