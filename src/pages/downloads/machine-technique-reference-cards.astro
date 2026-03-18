@@ -1,0 +1,213 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+import { printables } from "../../data/printables";
+
+const title = "Machine Technique Reference Cards | Knit it Now";
+const description = "Printable reference cards to record machine settings, technique notes, and reminders for future use. Includes Brother/Knit King, Singer/Silver/Studio, Silver Reed 840, and Taitexma 160 versions.";
+
+const previewMember = Astro.url.searchParams.get("previewMember");
+const previewMode = previewMember === "member" || previewMember === "nonmember";
+const actualIsMember = false;
+const isMember =
+  previewMember === "member"
+    ? true
+    : previewMember === "nonmember"
+      ? false
+      : actualIsMember;
+
+      const product = printables.find(
+  (p) => p.slug === "machine-technique-reference-cards"
+);
+
+const showMemberDownload = isMember && product.memberFree;
+---
+
+<Layout title={title} description={description}>
+  <PageHead title={title} />
+  <div class="download-detail-page">
+    {previewMode && (
+      <div class="alert alert-info" style="margin-bottom: 2rem;">
+        Preview mode:
+        <strong>{isMember ? " Member" : " Non-member"}</strong>
+      </div>
+    )}
+
+    <p class="download-detail-back">
+      <a href="/shop/downloads">← Back to Printable Tools</a>
+    </p>
+
+    <article class="download-detail kbm-card">
+      <h1 class="download-detail__title">{product.title}</h1>
+
+      <div class="download-detail__thumb">
+        <img
+          src={product.image}
+          alt={product.title}
+          class="download-detail__thumb-image"
+          loading="eager"
+        />
+      </div>
+
+      <p class="download-detail__intro">{product.description}</p>
+
+      <section class="download-detail__includes">
+        <h2 class="download-detail__heading">What's included</h2>
+        <ul class="download-detail__list">
+          {product.includes.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      </section>
+
+      {product.memberFree && (
+        <p class="download-detail__member-note">
+          <strong>Member benefit:</strong> This download is included free with your membership.
+        </p>
+      )}
+
+      <div class="download-detail__actions">
+        {showMemberDownload ? (
+          <a
+            href={product.file}
+            class="download-detail__cta download-detail__cta--primary"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Download Free as a Member
+          </a>
+        ) : (
+          <a
+            href={product.stripeLink}
+            class="download-detail__cta download-detail__cta--primary"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Buy Now — ${product.price}
+          </a>
+        )}
+        <a href="/shop/downloads" class="download-detail__cta download-detail__cta--outline">
+          Back to Printable Tools
+        </a>
+      </div>
+    </article>
+  </div>
+</Layout>
+
+<style>
+  .download-detail-page {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .download-detail-back {
+    margin: 0 0 1.5rem 0;
+    font-size: 0.95rem;
+  }
+
+  .download-detail-back a {
+    color: var(--kbm-green);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .download-detail-back a:hover {
+    color: var(--kbm-green-hover, #445626);
+  }
+
+  .download-detail {
+    padding: 1.5rem;
+  }
+
+  .download-detail__title {
+    font-size: 1.75rem;
+    color: var(--kbm-green);
+    margin: 0 0 1rem 0;
+    font-weight: 600;
+  }
+
+  .download-detail__thumb {
+    margin-bottom: 1.25rem;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #eef3e6;
+    border: 1px solid #d7e2c8;
+  }
+
+  .download-detail__thumb-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 320px;
+  }
+
+  .download-detail__intro {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #5a6b47;
+    margin: 0 0 1.25rem 0;
+  }
+
+  .download-detail__heading {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: var(--kbm-green);
+  }
+
+  .download-detail__list {
+    margin: 0 0 1.25rem 0;
+    padding-left: 1.5rem;
+    line-height: 1.6;
+    color: #5a6b47;
+  }
+
+  .download-detail__member-note {
+    padding: 0.75rem 1rem;
+    background: #eef3e6;
+    border: 1px solid #d7e2c8;
+    border-radius: 8px;
+    color: #52682d;
+    font-size: 0.95rem;
+    margin: 0 0 1.5rem 0;
+  }
+
+  .download-detail__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .download-detail__cta {
+    display: inline-block;
+    padding: 0.6rem 1.25rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease;
+    align-self: flex-start;
+  }
+
+  .download-detail__cta--primary {
+    background: var(--kbm-green);
+    color: #ffffff;
+  }
+
+  .download-detail__cta--primary:hover {
+    background: var(--kbm-green-hover, #445626);
+  }
+
+  .download-detail__cta--outline {
+    background: transparent;
+    color: var(--kbm-green);
+    border: 2px solid var(--kbm-green);
+  }
+
+  .download-detail__cta--outline:hover {
+    background: rgba(82, 104, 45, 0.08);
+  }
+</style>

@@ -1,6 +1,7 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import PageHead from "../../../components/PageHead.astro";
+import { printables } from "../../../data/printables";
 
 const title = "Downloads | Knit it Now";
 const description = "Printable templates and other resources for machine knitters.";
@@ -19,41 +20,7 @@ const isMember =
       ? false
       : actualIsMember;
 
-const downloads = [
-  {
-    slug: "cut-n-sew-neckline-templates",
-    title: "Cut 'n Sew Neckline Templates",
-    description: "Printable templates to create smooth, professional neckline curves using the cut-and-sew method.",
-    stripeLink: "https://buy.stripe.com/YOUR_LINK_HERE",
-    file: "/downloads/cut-n-sew-neckline-templates.pdf",
-    price: 5,
-    memberFree: true,
-    image: "/images/shop/downloads/cut-n-sew-neckline-template.jpg"
-  },
-  {
-    slug: "charting-rulers",
-    title: "Charting Rulers",
-    description: "Printable rulers to help you measure, plan, and chart your knitting accurately.",
-    stripeLink: "https://buy.stripe.com/YOUR_LINK_HERE",
-    file: "/downloads/charting-rulers.pdf",
-    price: 5,
-    memberFree: false,
-    detailsPage: "/shop/downloads/charting-rulers",
-    image:"/images/shop/downloads/machine-knitting-printable-gauge-rulers.jpg"
-  },
-  {
-    slug: "cheat-sheets-for-hand-manipulated-stitch-patterns",
-    title: "Cheat Sheets for Hand Manipulated Stitch Patterns",
-    description: "Cheat sheets to help make hand selecting needles a snap! Use with 3.6mm, 4.5mm, 6mm, 6.5mm, 7mm, 8mm, 9mm knitting machines.",
-    stripeLink: "#",
-    file: "/downloads/cheat-sheets-for-hand-manipulated-stitch-patterns.pdf",
-    price: 9.99,
-    memberFree: true,
-    detailsPage: "/shop/downloads/cheat-sheets-for-hand-manipulated-stitch-patterns",
-    image:"/images/shop/downloads/cheat-sheets-for-hand-manipulated-stitches.jpg"
-    
-  }
-];
+      const downloads = printables;
 ---
 <Layout title={title} description="Printable templates and tools to help you measure, plan, and work more accurately.">
   <PageHead title={title} />
@@ -73,55 +40,41 @@ const downloads = [
     )}
 
     <div class="downloads-grid">
-      {downloads.map((item) => {
-        const showFreeMemberButton = isMember && item.memberFree;
-        return (
-          <article class="download-card kbm-card kbm-card--download" data-testid={`card-download-${item.slug}`}>
-            {item.memberFree && (
-              <span class="kbm-card-ribbon">MEMBER BONUS</span>
-            )}
- <div class="download-card-icon">
-  <img src={item.image} alt={item.title} class="download-card-image" loading="lazy" />
-</div>
-            <h2 class="kbm-card__title">{item.title}</h2>
-            <p class="kbm-card__desc">{item.description}</p>
-            {item.memberFree && (
-              <p class="kbm-card__meta">
-                {isMember ? "Included with your membership" : "Free for members"}
-              </p>
-            )}
-            <div class="download-card-actions">
-              {showFreeMemberButton ? (
-                <a
-                  href={item.file}
-                  class="download-card-cta"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-testid={`link-download-${item.slug}`}
-                >
-                  Download Free as a Member
-                </a>
-              ) : (
-                <a
-                  href={item.stripeLink}
-                  class="download-card-cta download-card-cta--outline"
-                  target={item.stripeLink.startsWith("http") ? "_blank" : undefined}
-                  rel={item.stripeLink.startsWith("http") ? "noopener noreferrer" : undefined}
-                  data-testid={`link-download-${item.slug}`}
-                >
-                  Buy Now
-                </a>
-              )}
-              {item.detailsPage !== "#" && (
-                <a href={item.detailsPage} class="download-card-learn">
-                  Learn more
-                </a>
-              )}
-            </div>
-       
-          </article>
-        );
-      })}
+      {downloads.map((item) => (
+        <article class="download-card kbm-card kbm-card--download" data-testid={`card-download-${item.slug}`}>
+          {item.memberFree && (
+            <span class="kbm-card-ribbon">MEMBER BONUS</span>
+          )}
+
+          <div class="download-card-thumb">
+            <a href={item.detailsPage} class="download-card-thumb-link">
+              <img
+                src={item.image}
+                alt={item.title}
+                class="download-card-thumb-image"
+                loading="lazy"
+              />
+            </a>
+          </div>
+
+          <h2 class="kbm-card__title">
+            <a href={item.detailsPage} class="download-card__title-link">{item.title}</a>
+          </h2>
+          <p class="kbm-card__desc">{item.description}</p>
+
+          {item.memberFree && (
+            <p class="kbm-card__meta">
+              {isMember ? "Included with your membership" : "Free for members"}
+            </p>
+          )}
+
+          <div class="download-card-actions">
+            <a href={item.detailsPage} class="download-card-cta" data-testid={`link-download-${item.slug}`}>
+              Learn more
+            </a>
+          </div>
+        </article>
+      ))}
     </div>
   </div>
 </Layout>
@@ -167,6 +120,7 @@ const downloads = [
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.75rem;
+    align-items: stretch;
   }
 
   @media (min-width: 640px) {
@@ -182,7 +136,11 @@ const downloads = [
   }
 
   /* Card is content container with multiple links, not one big link */
-  .download-card.kbm-card {
+  .download-card.kbm-card,
+  .downloads-grid .kbm-card--download {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     cursor: default;
     text-decoration: none;
   }
@@ -193,8 +151,27 @@ const downloads = [
     margin: 0.5rem 0 0.75rem 0;
   }
 
+  .download-card__title-link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .download-card__title-link:hover {
+    color: var(--kbm-green);
+  }
+
+  .download-card-thumb-link {
+    display: block;
+    text-decoration: none;
+  }
+
   .download-card .kbm-card__desc {
     font-weight: 400;
+    margin-bottom: 0.75rem;
+  }
+
+  .download-card .kbm-card__meta {
+    margin-bottom: 1rem;
   }
 
   /* Download cards — ribbon (page-only); transparent span text so only ::after label shows */

@@ -1,0 +1,4 @@
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    Basic-Auth = "admin:knit741"

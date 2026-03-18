@@ -51,19 +51,6 @@ async function upsertAndGetLoginSecret(args: {
   return { ok: true as const, loginSecret };
 }
 
-function redirectToTalkyard(loginSecret: string, thenGoTo: string) {
-  const redirectUrl =
-    `${TALKYARD_BASE}/-/v0/login-with-secret` +
-    `?oneTimeSecret=${encodeURIComponent(loginSecret)}` +
-    `&thenGoTo=${encodeURIComponent(
-      !thenGoTo || thenGoTo === "undefined" ? "/" : thenGoTo
-    )}`;
-
-  return new Response(null, {
-    status: 302,
-    headers: { location: redirectUrl },
-  });
-}
 
 // ✅ GET stays as your working "test user" endpoint (so you can always confirm SSO works)
 export const GET: APIRoute = async ({ request }) => {

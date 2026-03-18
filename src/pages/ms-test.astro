@@ -71,7 +71,7 @@ import Layout from "../layouts/Layout.astro";
     if (!window.$memberstackDom || typeof window.$memberstackDom.on !== "function") return;
 
     window.$memberstackDom.on("member.login", function () {
-      window.location.reload();
+      console.log("Member logged in");
     });
   })();
 </script>
