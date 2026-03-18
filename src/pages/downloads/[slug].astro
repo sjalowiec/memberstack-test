@@ -1,0 +1,214 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+import { printables } from "../../data/printables";
+
+export async function getStaticPaths() {
+  return printables.map((product) => ({
+    params: { slug: product.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const product = printables.find((p) => p.slug === slug);
+
+if (!product) {
+  throw new Error("Printable not found");
+}
+
+const previewMember = Astro.url.searchParams.get("previewMember");
+const previewMode =
+  previewMember === "member"
+    ? true
+    : previewMember === "nonmember"
+      ? false
+      : null;
+
+// Adjust this if you already have a real member check in place
+const actualIsMember = false;
+const isMember = previewMode !== null ? previewMode : actualIsMember;
+
+const showMemberDownload = !!product.memberFree && isMember;
+const pageTitle = `${product.title} | Knit it Now`;
+const pageDescription = product.description;
+
+const productImg = product.productImage?.value || product.image;
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+  <PageHead title={pageTitle} description={pageDescription} hideTitle />
+  <section class="printable-details">
+    <div class="printable-details__inner">
+      <p class="printable-details__back">
+        <a href="/shop/downloads">← Back to Printable Tools</a>
+      </p>
+
+      <div class="product-hero">
+        <div class="product-copy">
+          <h1 class="printable-details__title">{product.title}</h1>
+
+        
+          <p class="printable-details__intro">{product.description}</p>
+          {product.salesFocus && (
+            <p class="printable-details__focus">{product.salesFocus}</p>
+          )}
+
+          {product.media && product.media.type === "vimeo" && (
+            <p class="printable-details__video-link">
+              Need help using this?
+              <a
+                href={`https://vimeo.com/${product.media.value}`}
+                target="_blank"
+                rel="noopener"
+              >
+                ▶ Watch a quick demo →
+              </a>
+            </p>
+          )}
+
+          <div class="printable-details__section">
+            <h2>What’s Included</h2>
+            <ul>
+              {product.includes.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          </div>
+
+       
+
+          <div class="printable-details__actions">
+            {showMemberDownload && (
+              <a
+                href={product.file}
+                class="kbm-button"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Download Your Printable
+              </a>
+            )}
+            {!showMemberDownload && (
+              <a
+                href={product.stripeLink}
+                class="kbm-button"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Buy Now
+              </a>
+            )}
+          </div>
+        </div>
+
+        {productImg && (
+          <div class="product-media">
+            <img
+              src={productImg}
+              alt={`${product.title} preview`}
+              class="product-media__image"
+              loading="lazy"
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .printable-details {
+    padding: 2rem 1rem 4rem;
+  }
+
+  .printable-details__inner {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .product-hero {
+    display: grid;
+    grid-template-columns: 1.2fr 0.9fr;
+    gap: 2rem;
+    align-items: start;
+    margin-top: 0.5rem;
+  }
+
+  .product-copy {
+    min-width: 0;
+  }
+
+  .product-media {
+    position: sticky;
+    top: 1rem;
+    text-align: center;
+  }
+
+  .product-media__image {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-radius: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .product-hero {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .product-media {
+      position: static;
+      order: 2;
+    }
+
+    .product-copy {
+      order: 1;
+    }
+  }
+
+  .printable-details__back {
+    margin-bottom: 1rem;
+  }
+
+  .printable-details__back a {
+    text-decoration: none;
+  }
+
+  .printable-details__title {
+    margin-bottom: 1.5rem;
+  }
+
+  .printable-details__intro,
+  .printable-details__focus {
+    margin-bottom: 1rem;
+  }
+
+  .printable-details__video-link {
+    margin: 1rem 0;
+  }
+
+  .printable-details__section {
+    margin: 2rem 0;
+  }
+
+  .printable-details__member-note {
+    margin: 1.5rem 0;
+    font-weight: 600;
+  }
+
+  .printable-details__actions {
+    margin-top: 2rem;
+    text-align: center;
+  }
+
+  .printable-details__cta {
+    display: inline-block;
+    padding: 0.85rem 1.25rem;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 600;
+  }
+</style>

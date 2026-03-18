@@ -13,6 +13,7 @@ interface Props {
 const { title, description, bodyClass = "", skipGlobalHyvor = false } = Astro.props;
 ---
 
+<!-- This layout does not render a visible page heading; title is used only for <title> in BaseLayout. -->
 <BaseLayout
   title={title}
   description={description}

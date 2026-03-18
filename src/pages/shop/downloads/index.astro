@@ -3,7 +3,7 @@ import Layout from "../../../layouts/Layout.astro";
 import PageHead from "../../../components/PageHead.astro";
 import { printables } from "../../../data/printables";
 
-const title = "Downloads | Knit it Now";
+const title = "Printables | Knit it Now";
 const description = "Printable templates and other resources for machine knitters.";
 
 const previewMember = Astro.url.searchParams.get("previewMember"); // 'member' | 'nonmember'
@@ -57,20 +57,16 @@ const isMember =
             </a>
           </div>
 
-          <h2 class="kbm-card__title">
-            <a href={item.detailsPage} class="download-card__title-link">{item.title}</a>
-          </h2>
-          <p class="kbm-card__desc">{item.description}</p>
-
-          {item.memberFree && (
-            <p class="kbm-card__meta">
-              {isMember ? "Included with your membership" : "Free for members"}
-            </p>
-          )}
+          <div class="download-card-content">
+            <h2 class="kbm-card__title">
+              <a href={item.detailsPage} class="download-card__title-link">{item.title}</a>
+            </h2>
+            <p class="kbm-card__desc">{item.shortDescription}</p>
+          </div>
 
           <div class="download-card-actions">
             <a href={item.detailsPage} class="download-card-cta" data-testid={`link-download-${item.slug}`}>
-              Learn more
+              View Details
             </a>
           </div>
         </article>
@@ -117,11 +113,29 @@ const isMember =
   }
 
   .downloads-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.75rem;
-    align-items: stretch;
-  }
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.download-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.download-card-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.download-card-actions {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+}
 
   @media (min-width: 640px) {
     .downloads-grid {
@@ -140,9 +154,14 @@ const isMember =
   .downloads-grid .kbm-card--download {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    justify-content: flex-start;
+    height: auto;
     cursor: default;
     text-decoration: none;
+  }
+
+  .downloads-grid .kbm-card--download:hover {
+    transform: none;
   }
 
   .download-card .kbm-card__title {
@@ -168,6 +187,7 @@ const isMember =
   .download-card .kbm-card__desc {
     font-weight: 400;
     margin-bottom: 0.75rem;
+    flex: none;
   }
 
   .download-card .kbm-card__meta {
@@ -229,11 +249,16 @@ const isMember =
     font-size: 1.35rem;
   }
 
+  .downloads-grid .kbm-card--download .download-card-actions {
+    margin-top: 1rem;
+  }
+
   .download-card-actions {
-    margin-top: auto;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
   }
 
   .download-card-cta {
@@ -247,7 +272,6 @@ const isMember =
     text-decoration: none;
     text-align: center;
     transition: background 0.2s ease;
-    align-self: flex-start;
   }
 
   .download-card-cta:hover {
