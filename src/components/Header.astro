@@ -227,6 +227,19 @@
   white-space: nowrap;
 }
 
+/* TEMP: Memberstack login-state visibility test — remove when done */
+.kbm-nav-bar .ms-debug-state {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.95);
+  white-space: nowrap;
+  padding: 3px 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.45);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
 .kbm-nav-bar .kbm-logo-section {
   padding: 0.25rem 0;
 }
@@ -1150,17 +1163,23 @@ div[data-ms-modal-overlay] {
       <!-- Right zone: account + hamburger (mobile) -->
       <div class="kbm-nav-right">
         <div class="kbm-header-auth">
-          <div data-ms-content="!logged-in">
+          <div data-ms-content="!member">
             <a href="#" data-ms-modal="login" class="kbm-btn kbm-btn-outline">
               Log In
             </a>
           </div>
 
-          <div data-ms-content="logged-in">
+          <div data-ms-content="member">
             <a href="/account" class="kbm-btn kbm-btn-outline">
               My Account
             </a>
           </div>
+        </div>
+
+        <!-- TEMP: MS login-state test — remove after verifying Memberstack -->
+        <div class="ms-debug-state" aria-hidden="true">
+          <div data-ms-content="member">LOGGED IN</div>
+          <div data-ms-content="!member">LOGGED OUT</div>
         </div>
 
         <button class="kbm-hamburger" aria-label="Toggle menu" aria-expanded="false">
