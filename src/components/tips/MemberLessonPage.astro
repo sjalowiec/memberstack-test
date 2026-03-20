@@ -1,0 +1,177 @@
+---
+interface LessonData {
+  title: string;
+  description?: string;
+  vimeoEmbedUrl: string;
+}
+
+interface Props {
+  lesson: LessonData;
+  hasAccess?: boolean | null;
+  membershipHref?: string;
+  ctaText?: string;
+}
+
+const {
+  lesson,
+  hasAccess = null,
+  membershipHref = "/membership",
+  ctaText = "Become a Member",
+} = Astro.props;
+---
+
+<section class="member-lesson-page">
+  <div class="member-lesson-page__inner">
+    <h1 class="member-lesson-page__title">{lesson.title}</h1>
+
+    {lesson.description && (
+      <p class="member-lesson-page__description">{lesson.description}</p>
+    )}
+
+    {typeof hasAccess === "boolean" ? (
+      hasAccess ? (
+        <div class="member-lesson-page__video-shell">
+          <div class="member-lesson-page__video-aspect">
+            <iframe
+              src={lesson.vimeoEmbedUrl}
+              class="member-lesson-page__iframe"
+              title={lesson.title}
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowfullscreen
+            />
+          </div>
+        </div>
+      ) : (
+        <div class="member-lesson-page__locked">
+          <h2 class="member-lesson-page__locked-heading">This lesson is for members.</h2>
+          <p class="member-lesson-page__locked-text">
+            Become a member to watch the full lesson and go deeper with this technique.
+          </p>
+          <a href={membershipHref} class="member-lesson-page__cta">
+            {ctaText}
+          </a>
+        </div>
+      )
+    ) : (
+      <>
+        <div class="member-lesson-page__video-shell" data-ms-content="members">
+          <div class="member-lesson-page__video-aspect">
+            <iframe
+              src={lesson.vimeoEmbedUrl}
+              class="member-lesson-page__iframe"
+              title={lesson.title}
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowfullscreen
+            />
+          </div>
+        </div>
+
+        <div class="member-lesson-page__locked" data-ms-content="!members">
+          <h2 class="member-lesson-page__locked-heading">This lesson is for members.</h2>
+          <p class="member-lesson-page__locked-text">
+            Become a member to watch the full lesson and go deeper with this technique.
+          </p>
+          <a href={membershipHref} class="member-lesson-page__cta">
+            {ctaText}
+          </a>
+        </div>
+      </>
+    )}
+  </div>
+</section>
+
+<style>
+  .member-lesson-page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 1rem 3rem;
+  }
+
+  .member-lesson-page__inner {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .member-lesson-page__title {
+    margin: 0;
+    font-size: clamp(1.7rem, 3.2vw, 2.2rem);
+    line-height: 1.2;
+    color: #1f2937;
+  }
+
+  .member-lesson-page__description {
+    margin: 0;
+    color: #4b5563;
+    max-width: 68ch;
+    line-height: 1.6;
+  }
+
+  .member-lesson-page__video-shell {
+    margin-top: 0.35rem;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    padding: 0.5rem;
+  }
+
+  .member-lesson-page__video-aspect {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #0f172a;
+  }
+
+  .member-lesson-page__iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .member-lesson-page__locked {
+    margin-top: 0.35rem;
+    border-radius: 14px;
+    border: 1px solid rgba(82, 104, 45, 0.22);
+    background: rgba(82, 104, 45, 0.07);
+    padding: clamp(1rem, 2.4vw, 1.8rem);
+  }
+
+  .member-lesson-page__locked-heading {
+    margin: 0 0 0.45rem;
+    font-size: clamp(1.15rem, 2vw, 1.4rem);
+    color: #243015;
+    line-height: 1.3;
+  }
+
+  .member-lesson-page__locked-text {
+    margin: 0 0 1rem;
+    color: #3f4b35;
+    line-height: 1.6;
+    max-width: 62ch;
+  }
+
+  .member-lesson-page__cta {
+    display: inline-block;
+    padding: 0.72rem 1.05rem;
+    border-radius: 10px;
+    background: var(--kbm-green, #52682d);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    line-height: 1;
+    transition: background 0.2s ease;
+  }
+
+  .member-lesson-page__cta:hover {
+    background: var(--kbm-green-hover, #445626);
+  }
+
+  .member-lesson-page__cta:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+</style>

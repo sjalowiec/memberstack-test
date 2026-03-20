@@ -1,0 +1,23 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import MemberLessonPage from "../../components/tips/MemberLessonPage.astro";
+
+const lesson = {
+  title: "Cut and Sew Full Lesson",
+  description: "See the complete walkthrough for this technique.",
+  vimeoEmbedUrl: "https://player.vimeo.com/video/151819909",
+};
+
+// Placeholder access state. Swap this to real member logic when needed.
+// If omitted, MemberLessonPage falls back to current Memberstack data-ms-content gating.
+const hasAccess = null;
+---
+
+<Layout title={`${lesson.title} | Knit it Now`} description={lesson.description}>
+  <MemberLessonPage
+    lesson={lesson}
+    hasAccess={hasAccess}
+    membershipHref="/membership"
+    ctaText="Become a Member"
+  />
+</Layout>
