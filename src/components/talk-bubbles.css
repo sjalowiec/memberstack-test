@@ -1,0 +1,169 @@
+/* =========================================
+   TALK / SPEECH BUBBLES
+========================================= */
+
+/* Base bubble */
+.talk-bubble {
+  position: relative;
+  display: inline-block;
+  max-width: 420px;
+  padding: 14px 20px;
+  border-radius: 22px;
+  border: 2px solid #52682d;
+  background: #f0f4e8;
+  color: #2e3a18;
+  font-size: 0.95rem;
+  line-height: 1.6;
+
+  /* subtle lift */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* spacing helper */
+.talk-bubble + .talk-bubble {
+  margin-top: 1.5rem;
+}
+
+/* layout helpers */
+.talk-row {
+  display: flex;
+  margin: 1.5rem 0;
+}
+
+.talk-left {
+  justify-content: flex-start;
+}
+
+.talk-right {
+  justify-content: flex-end;
+}
+
+/* tail base */
+.talk-bubble::after,
+.talk-bubble::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+/* =========================================
+   TAILS
+========================================= */
+
+/* bottom-left */
+.bubble-bl::after {
+  bottom: -18px;
+  left: 28px;
+  border-left: 10px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 18px solid #52682d;
+}
+.bubble-bl::before {
+  content: "";
+  position: absolute;
+  bottom: -13px;
+  left: 30px;
+  border-left: 8px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 15px solid #f0f4e8;
+  z-index: 1;
+}
+
+/* bottom-right */
+.bubble-br::after {
+  bottom: -18px;
+  right: 28px;
+  border-left: 6px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 18px solid #52682d;
+}
+.bubble-br::before {
+  content: "";
+  position: absolute;
+  bottom: -13px;
+  right: 30px;
+  border-left: 4px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 15px solid #f0f4e8;
+  z-index: 1;
+}
+
+/* top-left */
+.bubble-tl::after {
+  top: -18px;
+  left: 28px;
+  border-left: 10px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 18px solid #52682d;
+}
+.bubble-tl::before {
+  top: -13px;
+  left: 30px;
+  border-left: 8px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 15px solid #f0f4e8;
+  z-index: 1;
+}
+
+/* top-right */
+.bubble-tr::after {
+  top: -18px;
+  right: 28px;
+  border-left: 6px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 18px solid #52682d;
+}
+.bubble-tr::before {
+  top: -13px;
+  right: 30px;
+  border-left: 4px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 15px solid #f0f4e8;
+  z-index: 1;
+}
+
+/* =========================================
+   QUESTION / ANSWER BADGES
+========================================= */
+
+/* ensure positioning */
+.talk-bubble.bubble-question,
+.talk-bubble.bubble-answer {
+  position: relative;
+}
+
+/* shared badge placement */
+.bubble-badge {
+  position: absolute;
+  top: -14px;
+  left: -16px;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+/* QUESTION badge */
+.bubble-badge-question {
+  background: #ffffff;
+  border: 2px solid #52682d;
+  border-radius: 50%;
+  color: #2e3a18;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+/* ANSWER badge */
+.bubble-badge-answer {
+  background: url("/images/KINlogo1.svg") no-repeat center;
+  background-size: contain;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  pointer-events: none;
+}

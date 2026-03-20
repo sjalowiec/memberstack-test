@@ -1,0 +1,99 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const title = "Tuesday Tip of the Week";
+const description =
+  "Weekly machine-knitting tips—short lessons to build confidence. New tips are on the way.";
+---
+
+<Layout title={title} description={description}>
+  <div class="tt-page">
+    <section class="tt-block tt-block--title" aria-labelledby="tt-heading">
+      <h1 id="tt-heading">Tuesday Tip of the Week</h1>
+    </section>
+
+    <section class="tt-block tt-block--image">
+      <img
+        class="tt-image"
+        src="/images/tuesday-tip.svg"
+        alt="Tuesday Tips graphic"
+        width="580"
+        height="301"
+        loading="eager"
+      />
+    </section>
+
+    <section class="tt-block tt-block--message">
+      <p class="tt-message">
+        New weekly tips are on the way. These quick lessons will help you move forward with more confidence and fewer
+        frustrations.
+      </p>
+    </section>
+
+    <section class="tt-block tt-block--cta">
+      <a href="/community" class="tt-btn">Go to Community</a>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .tt-page {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 8px 16px 56px;
+    text-align: center;
+    font-family: var(--font, "Poppins", system-ui, sans-serif);
+  }
+
+  .tt-block {
+    margin-bottom: 1.75rem;
+  }
+
+  .tt-block--title h1 {
+    margin: 0;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 700;
+    color: #243015;
+    line-height: 1.25;
+  }
+
+  .tt-block--image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .tt-image {
+    display: block;
+    width: min(100%, 440px);
+    height: auto;
+  }
+
+  .tt-message {
+    margin: 0 auto;
+    max-width: 34rem;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: #333;
+  }
+
+  .tt-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    background: #52682d;
+    color: #fff;
+    border: 1px solid rgba(82, 104, 45, 0.35);
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .tt-btn:hover {
+    background: #455725;
+    color: #fff;
+  }
+</style>

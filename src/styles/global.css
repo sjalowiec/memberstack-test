@@ -3,6 +3,10 @@
    ============================================ */
 @import './lego/floating-input.css';
 
+/* SOFT LAUNCH: hide homepage “Where are you right now?” block. Remove .kbm-hidden-softlaunch from #where-are-you when re-enabling. */
+.kbm-hidden-softlaunch {
+  display: none !important;
+}
 
 /* 
  * TYPOGRAPHY: html font-size is set inline in BaseLayout.astro with !important
@@ -24,8 +28,7 @@
     background: #dcdcdc; /* lighter bezel */
     padding: 8px;        /* thinner frame */
     border-radius: 20px;
-    box-shadow:
-
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   }
   
   .video-thumb img{
@@ -207,7 +210,7 @@ p {
   display: none;
 }
 
-/* === Knit by Machine Tooltip Component === */
+/* === Knit it Now Tooltip Component === */
 
 .kbm-tooltip {
   position: relative;
@@ -1709,32 +1712,6 @@ p {
     font-size: 1.75rem;
   }
 }
-  /* ================================
-   KBM Primary Button
-   ================================ */
-
-.kbm-button {
-  display: inline-block;
-  padding: 0.75rem 1.5rem;
-  border-radius: 10px;
-  background-color: #52682D;
-  color: #ffffff !important;
-  font-weight: 600;
-  text-decoration: none;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.08s ease;
-}
-
-.kbm-button:hover {
-  background-color: #465924; /* slightly darker */
-}
-
-.kbm-button:active {
-  transform: translateY(1px);
-}
-
-
 /* --- Prose / Rich Text (sitewide) --- */
 .prose {
   line-height: 1.7;
@@ -1982,5 +1959,240 @@ div[data-ms-message="error"]:empty {
   .back-link a::before {
     content: "← ";
     font-family: system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+  }
+}
+
+/* ============================================
+   KBM BUTTON SYSTEM (CLEAN)
+   ============================================ */
+
+:root {
+  --kbm-green: #52682d;
+  --kbm-green-hover: #445626;
+
+  --kbm-accent: #c2614e;
+  --kbm-accent-hover: #a94e3d;
+}
+
+/* Base button */
+.kbm-btn {
+  display: inline-block;
+  padding: 10px 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.kbm-btn:hover,
+.kbm-btn:focus,
+.kbm-btn:focus-visible {
+  text-decoration: none;
+}
+
+/* PRIMARY = GREEN */
+.kbm-btn-primary {
+  background-color: var(--kbm-green);
+  color: #ffffff;
+}
+
+.kbm-btn-primary:hover {
+  background-color: var(--kbm-green-hover);
+}
+
+/* ACCENT = TERRACOTTA */
+.kbm-btn-accent {
+  background-color: var(--kbm-accent);
+  color: #ffffff !important;
+}
+
+.kbm-btn-accent:hover {
+  background-color: var(--kbm-accent-hover);
+  color: #ffffff !important;
+}
+
+/* Outline option */
+.kbm-btn-outline {
+  background: #ffffff;
+  border: 2px solid var(--kbm-green);
+  color: var(--kbm-green);
+}
+
+.kbm-btn-outline:hover {
+  background: var(--kbm-green);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.kbm-btn-primary:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.kbm-btn-outline:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   Homepage welcome — notebook / founder note card
+   ============================================ */
+
+.kbm-welcome {
+  margin: 2.5rem 0 3rem;
+  padding: 2rem;
+  background: #fcfbf7;
+  border: 1px solid #d8d6c8;
+  border-left: 5px solid #c2614e;
+  border-radius: 18px;
+  box-shadow: none;
+}
+
+.kbm-welcome--branded {
+  position: relative;
+  overflow: hidden;
+}
+
+.kbm-welcome--branded::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 40px;
+  left: -100px;
+  width: 300px;
+  height: 300px;
+  background-image: url("/images/KINlogo.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.kbm-welcome--branded * {
+  position: relative;
+  z-index: 1;
+}
+
+.kbm-welcome-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 0 0 1rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #2c3a57;
+  line-height: 1.35;
+}
+
+.kbm-welcome-intro {
+  margin: 0 0 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #ddd8c8;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #2f3a2f;
+  max-width: 42rem;
+}
+
+.kbm-welcome-founder {
+  margin-top: 0.5rem;
+}
+
+.kbm-welcome-founder__text p {
+  margin: 0 0 1rem;
+  line-height: 1.8;
+  color: #3a4334;
+}
+
+.kbm-welcome-founder__text p:last-child {
+  margin-bottom: 0;
+}
+
+.kbm-welcome-founder__closing {
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .kbm-welcome {
+    margin: 1.75rem 0 2.25rem;
+    padding: 1.35rem 1.15rem;
+    border-radius: 14px;
+  }
+
+  .kbm-welcome-title {
+    font-size: 1.2rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .kbm-welcome-intro {
+    font-size: 1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+  }
+}
+
+/* ============================================
+   Homepage welcome — founder row layout (index.astro)
+   ============================================ */
+
+.kbm-welcome-founder__content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  flex-wrap: wrap;
+  min-width: 0;
+  width: 100%;
+  text-align: left;
+}
+
+.kbm-welcome-founder__text {
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.kbm-welcome-founder__photo {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.kbm-welcome-founder__photo img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  opacity: 0.95;
+}
+
+.kbm-welcome-founder__caption {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: #6b7280;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .kbm-welcome-founder__content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .kbm-welcome-founder__photo {
+    margin-top: 15px;
+  }
+
+  .kbm-welcome--branded::before {
+    top: 52px;
+    left: -72px;
   }
 }

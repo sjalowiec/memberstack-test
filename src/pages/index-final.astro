@@ -40,17 +40,13 @@ import "../styles/global.css";
             <p class="kbm-hero__text">
              Get clear, step-by-step guidance so you can start strong, fix issues fast, and finish with confidence.
             </p>
-            <div class="kbm-hero__actions">
-              <a href="/tips" class="kbm-btn kbm-btn-accent">Try This Week’s Tip</a>
-              <a href="/community" class="kbm-btn kbm-btn-outline">Join the Community</a>
-            </div>
           </div>
           <div class="kbm-hero__image">
             <picture>
               <source srcset="/images/seeit-loveit-knitit.webp" type="image/webp" />
               <img 
                 src="/images/machine-knitting-cast-on.webp" 
-                alt="Machine knitting in progress with a latch tool fixing stitches on a knitting machine, with the words See it • Love it • Knit it — machine set up and ready to knit."
+                alt="Machine knitting in progress with a latch tool fixing stitches on a knitting machine, with the words See it • Love it • Knit it"hine set up and ready to knit." 
                 loading="eager"
                 data-testid="img-hero"
               />
@@ -58,52 +54,6 @@ import "../styles/global.css";
           </div>
         </div>
       </section>
-
-      <div class="kbm-welcome kbm-welcome--branded">
-        <p class="kbm-welcome-title">
-          <img
-            src="/images/KINlogo.svg"
-            alt=""
-            class="kbm-welcome-title-logo"
-            width="32"
-            height="32"
-            loading="lazy"
-            decoding="async"
-          />
-          <span>Welcome to the new Knit it Now</span>
-        </p>
-
-        <p class="kbm-welcome-intro">
-          Things may look a little different — but you’re in the right place. You don’t need to figure everything out today. Just take one small step.
-        </p>
-
-        <div class="kbm-welcome-founder">
-          <div class="kbm-welcome-founder__content">
-            <div class="kbm-welcome-founder__text">
-              <p>
-                We’re rebuilding this platform from the ground up so every tool, pattern, and tip helps you knit with total confidence.
-              </p>
-
-              <p>
-                Rather than waiting until everything is “perfect,” I’ve chosen to build in public - so you can start getting value right away.
-              </p>
-
-              <p>
-                We’re starting with our <a href="/tips">Tuesday Tips</a> and our <a href="/community">Community</a>, with much more arriving each week.
-              </p>
-
-              <p class="kbm-welcome-founder__closing">
-                Thank you for being here - I’m so glad you’re part of this new beginning.
-              </p>
-            </div>
-
-            <div class="kbm-welcome-founder__photo">
-              <img src="/images/sue_icon9.png" alt="Sue" width="120" height="120" loading="lazy" decoding="async" />
-              <div class="kbm-welcome-founder__caption">~Sue</div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- SOFT LAUNCH: Hidden temporarily. Bring back after initial onboarding phase -->
       <!-- WHERE ARE YOU RIGHT NOW? SECTION -->
@@ -116,63 +66,46 @@ import "../styles/global.css";
           </div>
 
           <div class="kbm-hex-grid">
-          <!-- Card 1: I'm just starting — same wrapper pattern as shop/downloads (article + download-card-link) -->
-          <article class="download-card kbm-card kbm-card--download kbm-hex-card">
-            <a href="/start-here" class="download-card-link kbm-hex-card--link" data-testid="card-start-phase">
-              <span class="kbm-card-ribbon">LIVE</span>
-              <div class="kbm-hex-icon">
-                <img src="/images/KINlogo.svg" alt="" />
-              </div>
-              <h3>I'm just getting started</h3>
-              <p>Learn the basics so you can knit your first confident rows.</p>
-              <span class="btn primary kbm-cta-guide" data-testid="button-getting-started">Start with the basics</span>
-            </a>
-          </article>
+          <!-- Card 1: I'm just starting -->
+          <a href="/start/just-opened-the-box" class="kbm-hex-card kbm-hex-card--link" data-testid="card-start-phase">
+            <div class="kbm-hex-icon">
+              <img src="/images/KINlogo.svg" alt="" />
+            </div>
+            <h3>I'm just getting started</h3>
+            <p>Learn the basics so you can knit your first confident rows.</p>
+            <span class="btn primary kbm-cta-guide" data-testid="button-getting-started">Start with the basics</span>
+          </a>
 
           <!-- Card 2: I've knitted a little -->
-          <article class="download-card kbm-card kbm-card--download kbm-hex-card">
-            <a href="/start-here" class="download-card-link kbm-hex-card--link" data-testid="card-skills-phase">
-              <span class="kbm-card-ribbon" aria-label="In Progress">
-                <i class="fa-solid fa-screwdriver-wrench" style="color: rgb(255, 255, 255);" aria-hidden="true"></i>
-              </span>
-              <div class="kbm-hex-icon">
-                <img src="/images/KINlogo.svg" alt="" />
-              </div>
-              <h3>I've knitted a little</h3>
-              <p>Build your skills with small, low-pressure projects.</p>
-              <span class="btn primary kbm-cta-guide" data-testid="button-skill-builders">Practice Key Skills</span>
-            </a>
-          </article>
+          <a href="/practice-projects" class="kbm-hex-card kbm-hex-card--link" data-testid="card-skills-phase">
+            <div class="kbm-hex-icon">
+              <img src="/images/KINlogo.svg" alt="" />  </div>
+            <h3>I've knitted a little</h3>
+            <p>Build your skills with small, low-pressure projects.</p>
+            <span class="btn primary kbm-cta-guide" data-testid="button-skill-builders">Practice Key Skills</span>
+          </a>
 
           <!-- Card 3: I'm ready to make something -->
-          <article class="download-card kbm-card kbm-card--download kbm-hex-card">
-            <a href="/start-here" class="download-card-link kbm-hex-card--link" data-testid="card-projects-phase">
-              <span class="kbm-card-ribbon" aria-label="In Progress">
-                <i class="fa-solid fa-screwdriver-wrench" style="color: rgb(255, 255, 255);" aria-hidden="true"></i>
-              </span>
-              <div class="kbm-hex-icon">
-                <img src="/images/KINlogo.svg" alt="" />
-              </div>
-              <h3>I'm ready to make something</h3>
-              <p>Start with patterns that give you a solid place to begin.</p>
-              <span class="btn primary kbm-cta-guide" data-testid="button-rsk">Start a project</span>
-            </a>
-          </article>
+          <a href="/patterns" class="kbm-hex-card kbm-hex-card--link" data-testid="card-projects-phase">
+            <div class="kbm-hex-icon">
+              <img src="/images/KINlogo.svg" alt="" />
+            </div>
+            <h3>I'm ready to make something</h3>
+            <p>Start with patterns that give you a solid place to begin.</p>
+            <span class="btn primary kbm-cta-guide" data-testid="button-rsk">Start a project</span>
+          </a>
 
           <!-- Card 4: Help Hub (support destination) -->
-          <article class="download-card kbm-card kbm-card--download kbm-hex-card kbm-hex-card--help">
-            <a href="/start-here" class="download-card-link kbm-hex-card--link" data-testid="card-need-help">
-              <span class="kbm-card-ribbon" aria-label="In Progress">
-                <i class="fa-solid fa-screwdriver-wrench" style="color: rgb(255, 255, 255);" aria-hidden="true"></i>
-              </span>
-              <div class="kbm-hex-icon">
-                <img src="/images/KINlogo.svg" alt="" />
-              </div>
-              <h3>Help Hub</h3>
-              <p>Find troubleshooting tips, answers, and your next step.</p>
-              <span class="btn primary kbm-cta-guide" data-testid="button-need-help">Get Help</span>
-            </a>
-          </article>
+          <a href="/start-here" class="kbm-hex-card kbm-hex-card--link kbm-hex-card--help" data-testid="card-need-help">
+            <div class="kbm-hex-icon">
+              <img src="/images/KINlogo.svg" alt="" />
+            </div>
+            <h3>Help Hub</h3>
+            <p>Find troubleshooting tips, answers, and your next step.</p>
+            <span class="btn primary kbm-cta-guide" data-testid="button-need-help">Get Help</span>
+          </a>
+
+          
           </div>
         </div>
       </section>
@@ -180,7 +113,7 @@ import "../styles/global.css";
       <!-- WHAT YOU'LL FIND SECTION -->
       <section class="kbm-reassurance-section">
         <div class="kbm-section-header">
-          <h2>Here’s how Knit it Now helps you knit with confidence</h2>
+          <h2>What you'll find at Knit It Now</h2>
           <p class="kbm-section-framing">Straightforward help for getting more done on your machine — without guessing, overwhelm, or endless scrolling online.</p>
           
         </div>
@@ -199,6 +132,22 @@ import "../styles/global.css";
           <div class="kbm-reassurance-item" data-testid="reassurance-support">
             <h4>Support when you get stuck</h4>
             <p>Find clear answers and targeted troubleshooters when something goes wrong, so you can fix the problem and keep knitting.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABOUT-LITE STRIP -->
+      <section class="kbm-about-strip">
+        <div class="kbm-about-strip__inner">
+          <div class="kbm-about-strip__image">
+            <img src="/images/sue_icon9.png" alt="Sue at a knitting machine." data-testid="img-sue-headshot" />
+          </div>
+          <div class="kbm-about-strip__content">
+            <h3>Clear guidance, from a knitter who understands machines.</h3> 
+            <p>
+              I'm Sue, your guide here at Knit it Now. I've helped thousands of knitters feel confident using their machines. I'll walk with you one small win at a time.
+            </p>
+            <a href="/about" class="kbm-about-link" data-testid="link-about">Learn more about Knit it Now</a>
           </div>
         </div>
       </section>
@@ -267,14 +216,6 @@ import "../styles/global.css";
     margin: 0 0 0.5rem;
   }
 
-  .kbm-section-framing {
-    margin: 0 auto;
-    max-width: 40rem;
-    font-size: 1rem;
-    line-height: 1.6;
-    color: #4d5a48;
-  }
-
   .kbm-section-subtitle {
     color: #4d5a48;
     font-size: 1rem;
@@ -298,7 +239,7 @@ import "../styles/global.css";
 
   /* ========== HERO SECTION ========== */
   .kbm-hero {
-    margin-bottom: 2.5rem;
+    margin-bottom: 1.5rem;
     padding-top: 0.5rem;
   }
 
@@ -341,7 +282,7 @@ import "../styles/global.css";
 
   .kbm-hero__text {
     max-width: 42rem;
-    margin: 0 auto 1.85rem;
+    margin: 0 auto 1.5rem;
     font-size: 1rem;
     line-height: 1.6;
     color: #4d5a48;
@@ -352,16 +293,7 @@ import "../styles/global.css";
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex-wrap: wrap;
-    gap: 0.85rem;
-  }
-
-  /* Hero CTAs: slightly larger tap targets; same global .kbm-btn system */
-  .kbm-hero__actions .kbm-btn {
-    padding: 0.55rem 1.35rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-    text-decoration: none;
+    gap: 0.5rem;
   }
 
   .kbm-hero__helper {
@@ -400,28 +332,15 @@ import "../styles/global.css";
 
     .kbm-hero__text {
       margin-left: 0;
-      margin-right: 0;
     }
 
     .kbm-hero__actions {
-      align-items: flex-start;
-      justify-content: flex-start;
-      flex-direction: row;
+      align-items: center;
     }
 
     .kbm-hero__image img {
       max-width: 100%;
     }
-  }
-
-  /* Welcome / founder card: global.css (.kbm-welcome*, .kbm-welcome-founder*) */
-
-  .kbm-welcome-title-logo {
-    width: 2rem;
-    height: 2rem;
-    flex-shrink: 0;
-    object-fit: contain;
-    display: block;
   }
 
   /* ========== WHERE ARE YOU SECTION ========== */
@@ -524,37 +443,6 @@ import "../styles/global.css";
     text-decoration: none;
     cursor: pointer;
     color: inherit;
-  }
-
-  /* Same card shell as shop/downloads: article.download-card.kbm-card.kbm-card--download + .download-card-link */
-  .kbm-hex-grid > article.kbm-hex-card.download-card.kbm-card.kbm-card--download {
-    padding: 1.5rem 1.25rem !important;
-    font-size: 1rem !important;
-    font-weight: 400 !important;
-    color: #222;
-    overflow: hidden;
-    cursor: default;
-    height: auto;
-    justify-content: flex-start;
-    transform: none;
-    text-decoration: none;
-  }
-
-  .kbm-hex-grid > article.kbm-hex-card.download-card.kbm-card.kbm-card--download:hover {
-    background-color: #f6f8f2;
-    transform: translateY(-4px) !important;
-    box-shadow: 0 8px 20px rgba(82, 104, 45, 0.12);
-    border-color: var(--kbm-green);
-  }
-
-  .kbm-hex-grid .kbm-hex-card.download-card .download-card-link {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    text-decoration: none;
-    color: inherit;
-    cursor: pointer;
   }
 
   .kbm-hex-icon {
@@ -684,7 +572,58 @@ import "../styles/global.css";
     margin-top: 0.5rem;
   }
 
-  /* ========== ABOUT LINK (welcome + founder block) ========== */
+  /* ========== ABOUT-LITE STRIP ========== */
+  .kbm-about-strip {
+    margin-bottom: 2rem;
+  }
+
+  .kbm-about-strip__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.5rem;
+    background: #ffffff;
+    border-radius: 1.25rem;
+    padding: 2rem 1.5rem;
+    border: 1px solid #e0e5d8;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  @media (min-width: 600px) {
+    .kbm-about-strip__inner {
+      flex-direction: row;
+      text-align: left;
+      padding: 2rem;
+    }
+  }
+
+  .kbm-about-strip__image {
+    flex-shrink: 0;
+  }
+
+  .kbm-about-strip__image img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #c7d8a4;
+    background: #e0e5d8;
+  }
+
+  .kbm-about-strip__content h3 {
+    font-size: 1.15rem;
+    color: #2c3a57;
+    margin: 0 0 0.5rem;
+  }
+
+  .kbm-about-strip__content p {
+    font-size: 0.95rem;
+    color: #4d5a48;
+    line-height: 1.6;
+    margin: 0 0 0.75rem;
+  }
+
   .kbm-about-link {
     color: var(--kbm-green);
     font-weight: 600;
@@ -740,75 +679,5 @@ import "../styles/global.css";
     40%  { transform: scale(1.03); }
     100% { transform: scale(1); }
   }
-
-  /* Ribbons: match shop/downloads/index.astro (.kbm-card--download .kbm-card-ribbon); !important beats global .kbm-card-ribbon */
-  .kbm-hex-grid .kbm-card--download .kbm-card-ribbon {
-    width: 96px !important;
-    height: 96px !important;
-    padding: 0 !important;
-    font-size: 0.62rem;
-    line-height: 1;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: transparent;
-    display: flex !important;
-    align-items: flex-start;
-    justify-content: flex-start;
-    box-sizing: border-box;
-  }
-
-  .kbm-hex-grid .kbm-card--download .kbm-card-ribbon::before {
-    background: #52682d !important;
-    z-index: 0;
-  }
-
-  .kbm-hex-grid .kbm-card--download .kbm-card-ribbon::after {
-    content: "Member Bonus" !important;
-    position: absolute;
-    top: 42px;
-    left: -3px;
-    width: 70px;
-    font-size: 0.6rem;
-    line-height: 1.1;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: none;
-    color: #ffffff !important;
-    text-align: center;
-    transform: rotate(-45deg);
-    transform-origin: top left;
-    z-index: 1;
-  }
-
-  .kbm-hex-grid .kbm-card--download:first-child .kbm-card-ribbon::before {
-    background: #c2614e !important;
-    border-right-color: rgba(130, 55, 45, 0.35);
-    border-bottom-color: rgba(130, 55, 45, 0.35);
-  }
-
-  .kbm-hex-grid .kbm-card--download:first-child .kbm-card-ribbon::after {
-  content: "LIVE" !important;
-  top: 48px;
-  left: 17px;
-  width: auto;
-  font-size: 1rem;
-  letter-spacing: 0.2em;
-  text-align: center;
-}
-
-  .kbm-hex-grid .kbm-card--download:nth-child(n + 2) .kbm-card-ribbon::after {
-    content: "In Progress" !important;
-    top: 60px;
-    left: 3%;
-    width: 88px;
-    font-size: 0.9rem;
-    line-height: 1.2;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-  }
-
-
 
 </style>

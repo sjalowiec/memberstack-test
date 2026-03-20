@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
+import VimeoModal from "../../components/VimeoModal.astro";
 import { printables } from "../../data/printables";
 
 export async function getStaticPaths() {
@@ -36,7 +37,7 @@ const productImg = product.productImage?.value || product.image;
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
-  <PageHead title={pageTitle} description={pageDescription} hideTitle />
+  <PageHead title={pageTitle} hideTitle />
   <section class="printable-details">
     <div class="printable-details__inner">
       <p class="printable-details__back">
@@ -54,16 +55,7 @@ const productImg = product.productImage?.value || product.image;
           )}
 
           {product.media && product.media.type === "vimeo" && (
-            <p class="printable-details__video-link">
-              Need help using this?
-              <a
-                href={`https://vimeo.com/${product.media.value}`}
-                target="_blank"
-                rel="noopener"
-              >
-                ▶ Watch a quick demo →
-              </a>
-            </p>
+            <VimeoModal value={product.media.value} />
           )}
 
           <div class="printable-details__section">
@@ -81,7 +73,7 @@ const productImg = product.productImage?.value || product.image;
             {showMemberDownload && (
               <a
                 href={product.file}
-                class="kbm-button"
+                class="kbm-btn kbm-btn-accent"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -91,7 +83,7 @@ const productImg = product.productImage?.value || product.image;
             {!showMemberDownload && (
               <a
                 href={product.stripeLink}
-                class="kbm-button"
+                class="kbm-btn kbm-btn-accent"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -99,6 +91,7 @@ const productImg = product.productImage?.value || product.image;
               </a>
             )}
           </div>
+          
         </div>
 
         {productImg && (
@@ -184,10 +177,6 @@ const productImg = product.productImage?.value || product.image;
   .printable-details__intro,
   .printable-details__focus {
     margin-bottom: 1rem;
-  }
-
-  .printable-details__video-link {
-    margin: 1rem 0;
   }
 
   .printable-details__section {

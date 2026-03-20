@@ -1,343 +1,642 @@
 ---
-/**
- * Tuesday Tip — single-column video-first layout.
- * Order: tip banner, video, video title, description, transcript / remaining detail content.
- * Data: featured tip from src/data/videos-public.json (isTipOfWeek: true).
- *
- * JSON fields currently used: title, description, content_id, vimeo_id, access_level, isTipOfWeek.
- * Jump links: expected from JSON as "chapters" or "jump_links" (array of { label, time? }); section omitted when absent.
- * Transcript: placeholder at .tuesday-tip__transcript-placeholder when "transcript" is missing in JSON; wire later to same field or shared video data.
- */
 import Layout from "../layouts/Layout.astro";
-import GatedVimeoEmbed from "../components/videos/GatedVimeoEmbed.astro";
-import videos from "../data/videos-public.json";
-import { getPreviewMember } from "../lib/getPreviewMember";
+import PageHead from "../components/PageHead.astro";
+import "../components/talk-bubbles.css";
+import tipsContent from "../data/tips-content.json";
 
-interface VideoEntry {
-  content_id: number;
-  title?: string;
-  description?: string;
-  vimeo_id: number;
-  access_level?: "open" | "member";
-  isTipOfWeek?: boolean;
-  // Jump links: when available, expect chapters or jump_links array (e.g. { label: string; time?: number }[]) in JSON.
-  // chapters?: Array<{ label: string; time?: number }>;
-  // transcript?: string;
+type TipRecord = {
+  content_id?: number;
+  slug?: string;
+  status?: string;
+  readyToPublish?: boolean;
+  startDate?: string | null;
+  endDate?: string | null;
+  question?: string;
+  quickAnswer?: string;
+  bridge?: string;
+  videoUrl?: string;
+  tryTitle?: string;
+  trySteps?: string[];
+  memberHeading?: string;
+  memberText?: string;
+  memberLink?: string;
+  memberButton?: string;
+  communityHeading?: string;
+  communityText?: string;
+  communityLink?: string;
+  communityButton?: string;
+};
+
+function getTodayIso(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
-const featuredTipVideo = Array.isArray(videos)
-  ? (videos as VideoEntry[]).find((v) => v.isTipOfWeek === true)
-  : null;
+const today = getTodayIso();
+const tips = Array.isArray(tipsContent) ? (tipsContent as TipRecord[]) : [];
 
-const tipTitle = featuredTipVideo?.title ?? "";
-const description = (featuredTipVideo as VideoEntry)?.description ?? "";
-const vimeoId = featuredTipVideo?.vimeo_id ?? 0;
-const accessLevel = featuredTipVideo?.access_level ?? "member";
-const contentId = featuredTipVideo?.content_id;
+// Live tip is sourced from tips-content.json using published + ready + active date range.
+const liveTip = tips.find((tip) => {
+  const startDate = typeof tip.startDate === "string" ? tip.startDate.trim() : "";
+  const endDate = typeof tip.endDate === "string" ? tip.endDate.trim() : "";
+  return (
+    tip.status === "published" &&
+    tip.readyToPublish === true &&
+    !!startDate &&
+    !!endDate &&
+    startDate <= today &&
+    endDate >= today
+  );
+});
 
-// Jump links: render only when chapter/jump link data exists in JSON. Expected field: chapters or jump_links.
-const jumpLinks = (featuredTipVideo as any)?.chapters ?? (featuredTipVideo as any)?.jump_links ?? null;
-const hasJumpLinks = Array.isArray(jumpLinks) && jumpLinks.length > 0;
+const debugLiveExplanation = !liveTip
+  ? 'No record matched the live rule: status must be "published", readyToPublish must be true, startDate and endDate must be set (YYYY-MM-DD), and startDate ≤ today ≤ endDate (string compare).'
+  : "";
 
-// Transcript: use when present in data; otherwise show placeholder.
-const transcript = (featuredTipVideo as any)?.transcript ?? "";
-const hasTranscript = Boolean(transcript && transcript.trim());
-
-/** Preview state for dev/testing: member => force member view, nonmember => force non-member, default => normal logic */
-const previewMember = getPreviewMember(Astro.url);
-const forceMemberView = previewMember === "member" ? true : previewMember === "nonmember" ? false : null;
+/** Toggle to show the temporary tips debug panel (today / records / live match / table). */
+const showTipsPageDebug = false;
 ---
 
-<Layout title="Tuesday Tip" description="A quick win you can try on your machine today.">
-  <section class="tuesday-tip-page" aria-labelledby="tuesday-tip-heading">
-    <article class="tuesday-tip__content video-detail">
-          {/* 1. Tuesday Tip banner (member / non-member message), then video player */}
-          {vimeoId ? (
-            <>
-              <div class={`tip-banner ${forceMemberView === true ? "tip-banner--member" : "tip-banner--nonmember"}`}>
-                <img src="/images/tuesday-tip-white-bulb.svg" alt="Tuesday Tip" class="tip-banner-logo" />
+<Layout
+  title={
+    liveTip?.question
+      ? `Tuesday Tip — ${liveTip.question.length > 55 ? `${liveTip.question.slice(0, 55)}…` : liveTip.question} | Knit it Now`
+      : "Tuesday Tip Coming Soon | Knit it Now"
+  }
+  description={
+    liveTip?.quickAnswer ||
+    "A new Tuesday Tip is not live right now. Please check back soon."
+  }
+>
+  {/*
+    When a live tip exists, question + quickAnswer appear only in speech bubbles (not in PageHead),
+    so we don’t duplicate the same text as a page title + subhead.
+  */}
+  <PageHead
+    title="Tuesday Tip Coming Soon"
+    subhead={
+      liveTip
+        ? undefined
+        : "A new Tuesday Tip is not live right now. Please check back soon."
+    }
+    hideTitle={!!liveTip}
+  />
 
-                <div class="tip-banner-message">
-                  {forceMemberView === true ? (
-                    <p>Thank you for your membership. Enjoy this week's tip.</p>
-                  ) : (
-                    <>
-                      <p class="tip-banner-headline">Enjoy this tip? Become a member for more.</p>
-                      <p class="tip-banner-sub">
-                        Unlock step-by-step tutorials, practical tools, and expert guidance for machine knitters.
-                      </p>
-                      <a href="/subscribe/plans.cfm" class="tip-banner-btn">Become a Member</a>
-                    </>
-                  )}
-                </div>
-              </div>
-              <section class="tuesday-tip__player" id="tuesday-tip-player" aria-label="Video player">
-                <GatedVimeoEmbed
-                videoId={vimeoId}
-                title={tipTitle}
-                access_level={accessLevel}
-                aspect="16/9"
+  <section class="container py-5 tips-page-section">
+    {liveTip ? (
+      <>
+        <div class="tuesday-tip-hero">
+          <div class="tuesday-tip-hero__intro">
+            <div class="tuesday-tip-header tuesday-tip-header--hero">
+              <img
+                src="/images/tuesday-tip.svg"
+                alt="Tuesday Tip"
+                class="tuesday-tip-logo"
+                loading="eager"
               />
-              </section>
-            </>
-          ) : (
-            <div class="tuesday-tip__video-placeholder" aria-hidden="true">
-              <p>No tip featured this week. Check back soon.</p>
             </div>
-          )}
-
-          {featuredTipVideo && (
-            <>
-              {/* 2. Video title */}
-              <h1 id="tuesday-tip-heading" class="tuesday-tip__video-title">
-                {tipTitle || "Tuesday Tip"}
-              </h1>
-
-              {/* 3. Description — only show when description exists in JSON */}
-              {description.trim() && (
-                <section class="video-description tuesday-tip__description" aria-labelledby="tip-desc-heading">
-                  <h2 id="tip-desc-heading">Description</h2>
-                  <div class="video-desc-text" set:html={description}></div>
-                </section>
+            <div class="tuesday-tip-bubbles">
+              {liveTip.question && (
+                <div class="talk-row talk-left tuesday-tip-bubble-row">
+                  <h2 class="talk-bubble bubble-bl bubble-question tuesday-tip__question">
+                    {liveTip.question}
+                  </h2>
+                </div>
               )}
-
-              {/* 4. Jump links — render only when chapters/jump_links exist in JSON. Expected field: chapters or jump_links. */}
-              {hasJumpLinks && (
-                <nav class="video-jumplinks tuesday-tip__jumplinks" aria-label="Jump to section">
-                  <div class="jumplinks-head">
-                    <h2>Jump to</h2>
+              {liveTip.quickAnswer && (
+                <div class="talk-row talk-right tuesday-tip-bubble-row">
+                  <div class="talk-bubble bubble-br bubble-answer tuesday-tip__answer">
+                    <div class="tuesday-tip__answer-inner">
+                      <img
+                        src="/images/KINlogo.svg"
+                        alt="Knit it Now"
+                        class="tuesday-tip__logo"
+                        width="60"
+                        height="60"
+                      />
+                      <div class="tuesday-tip__answer-text" set:html={liveTip.quickAnswer} />
+                    </div>
                   </div>
-                  <ul class="tuesday-tip__jumplinks-list">
-                    {jumpLinks.map((item: { label: string; time?: number }, i: number) => (
-                      <li>
-                        <a href={`#tuesday-tip-player`} data-time={item.time ?? undefined}>
-                          {item.label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
+                </div>
               )}
-
-              {/* 5. Transcript — when transcript exists in JSON, render it; otherwise show placeholder structure. */}
-              <section class="tuesday-tip__transcript" aria-labelledby="tip-transcript-heading">
-                <h2 id="tip-transcript-heading">Transcript</h2>
-                {hasTranscript ? (
-                  <div class="tuesday-tip__transcript-body" set:html={transcript}></div>
+            </div>
+          </div>
+          <div class="tuesday-tip-hero__media">
+            <div class="tuesday-tip-video-shell">
+              <div class="tuesday-tip-video-aspect">
+                {liveTip.videoUrl ? (
+                  <iframe
+                    src={liveTip.videoUrl}
+                    class="tuesday-tip-video-iframe"
+                    title={liveTip.question || "Tuesday Tip video"}
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowfullscreen
+                  />
                 ) : (
-                  /* Transcript content will be inserted here when transcript data is wired into the Tuesday Tip JSON or shared video data structure. */
-                  <div class="tuesday-tip__transcript-placeholder" aria-hidden="true">
-                    <p class="tuesday-tip__transcript-placeholder-text">Transcript will appear here when available.</p>
+                  <div class="tuesday-tip-video-fallback">
+                    <p class="tuesday-tip-video-fallback__text">Video for this tip will appear here when a link is added.</p>
                   </div>
                 )}
-              </section>
-            </>
-          )}
-    </article>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {showTipsPageDebug && (
+          <div class="tips-debug-panel" aria-label="Tuesday Tip data debug (temporary)">
+            <p class="tips-debug-panel__title"><strong>Temporary debug</strong> — JSON load &amp; live match</p>
+            <ul class="tips-debug-panel__list">
+              <li><strong>Today (page):</strong> {today}</li>
+              <li><strong>tips-content.json loaded:</strong> {tips.length > 0 || tipsContent !== undefined ? `yes (${tips.length} record${tips.length === 1 ? "" : "s"})` : "no / empty"}</li>
+              <li><strong>Live tip found:</strong> {liveTip ? "yes" : "no"}</li>
+            </ul>
+            {liveTip ? (
+              <div class="tips-debug-panel__live">
+                <p class="tips-debug-panel__subhead">Matched record (first match):</p>
+                <ul class="tips-debug-panel__list">
+                  <li><strong>content_id:</strong> {liveTip.content_id ?? "—"}</li>
+                  <li><strong>slug:</strong> {liveTip.slug ?? "—"}</li>
+                  <li><strong>status:</strong> {liveTip.status ?? "—"}</li>
+                  <li><strong>readyToPublish:</strong> {String(liveTip.readyToPublish)}</li>
+                  <li><strong>startDate:</strong> {liveTip.startDate ?? "—"}</li>
+                  <li><strong>endDate:</strong> {liveTip.endDate ?? "—"}</li>
+                </ul>
+              </div>
+            ) : (
+              <p class="tips-debug-panel__explain">{debugLiveExplanation}</p>
+            )}
+            <p class="tips-debug-panel__subhead">All records in tips-content.json</p>
+            <div class="tips-debug-table-wrap">
+              <table class="tips-debug-table">
+                <thead>
+                  <tr>
+                    <th>content_id</th>
+                    <th>slug</th>
+                    <th>status</th>
+                    <th>readyToPublish</th>
+                    <th>startDate</th>
+                    <th>endDate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tips.length === 0 ? (
+                    <tr>
+                      <td colspan="6">(no rows)</td>
+                    </tr>
+                  ) : (
+                    tips.map((row) => (
+                      <tr>
+                        <td>{row.content_id ?? "—"}</td>
+                        <td>{row.slug ?? "—"}</td>
+                        <td>{row.status ?? "—"}</td>
+                        <td>{String(row.readyToPublish)}</td>
+                        <td>{row.startDate ?? "—"}</td>
+                        <td>{row.endDate ?? "—"}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {liveTip.bridge?.trim() && (
+          <p class="tuesday-tip__bridge">{liveTip.bridge}</p>
+        )}
+
+        <!-- Try This -->
+        {Array.isArray(liveTip.trySteps) && liveTip.trySteps.length > 0 && (
+          <section class="tuesday-tip__try-section">
+            <div class="tuesday-tip__try-card">
+              <h3 class="tuesday-tip__try-heading">{liveTip.tryTitle || "Try This"}</h3>
+              <div class="tuesday-tip__try-body">
+                <ul>
+                  {liveTip.trySteps.map((step) => <li>{step}</li>)}
+                </ul>
+              </div>
+            </div>
+          </section>
+        )}
+
+        <!-- Member CTA -->
+        {(liveTip.memberHeading || liveTip.memberText || liveTip.memberLink || liveTip.memberButton) && (
+          <section class="tuesday-tip__cta">
+            <div class="kbm-card">
+              <div class="kbm-card-body">
+                {liveTip.memberHeading && <h3>{liveTip.memberHeading}</h3>}
+                {liveTip.memberText && <p>{liveTip.memberText}</p>}
+                {liveTip.memberLink && liveTip.memberButton && (
+                  <a href={liveTip.memberLink} class="btn btn-primary">
+                    {liveTip.memberButton}
+                  </a>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section class="tuesday-tip-discussion">
+          <h2>Have a question about this technique?</h2>
+            Join the discussion below! Our community loves helping each other master new skills.
+          <div
+            id="hyvor-talk-view"
+            data-hyvor-website="14706"
+            data-talk-id={typeof liveTip.slug === "string" && liveTip.slug.trim() !== ""
+              ? liveTip.slug.trim()
+              : String(liveTip.content_id ?? "")}
+          >
+          </div>
+          <script is:inline>
+            (function () {
+              var el = document.getElementById("hyvor-talk-view");
+              if (!el) return;
+              var talkId = el.getAttribute("data-talk-id") || "";
+              var websiteStr = el.getAttribute("data-hyvor-website") || "14706";
+              var websiteId = parseInt(websiteStr, 10);
+              if (!Number.isFinite(websiteId)) websiteId = 14706;
+              console.log("Hyvor talk id:", talkId);
+              console.log("Hyvor website id:", websiteId);
+              window.HYVOR_TALK_WEBSITE = websiteId;
+              window.HYVOR_TALK_CONFIG = {
+                url: window.location.href,
+                id: talkId,
+              };
+              var s = document.createElement("script");
+              s.async = true;
+              s.type = "text/javascript";
+              s.src = "https://talk.hyvor.com/web-api/embed";
+              if (el.parentNode) {
+                el.parentNode.insertBefore(s, el.nextSibling);
+              } else {
+                (document.head || document.documentElement).appendChild(s);
+              }
+            })();
+          </script>
+        </section>
+      </>
+    ) : (
+      <>
+        <div class="tuesday-tip-header">
+          <img
+            src="/images/tuesday-tip.svg"
+            alt="Tuesday Tip"
+            class="tuesday-tip-logo"
+            loading="eager"
+          />
+        </div>
+        {showTipsPageDebug && (
+          <div class="tips-debug-panel" aria-label="Tuesday Tip data debug (temporary)">
+            <p class="tips-debug-panel__title"><strong>Temporary debug</strong> — JSON load &amp; live match</p>
+            <ul class="tips-debug-panel__list">
+              <li><strong>Today (page):</strong> {today}</li>
+              <li><strong>tips-content.json loaded:</strong> {tips.length > 0 || tipsContent !== undefined ? `yes (${tips.length} record${tips.length === 1 ? "" : "s"})` : "no / empty"}</li>
+              <li><strong>Live tip found:</strong> no</li>
+            </ul>
+            <p class="tips-debug-panel__explain">{debugLiveExplanation}</p>
+            <p class="tips-debug-panel__subhead">All records in tips-content.json</p>
+            <div class="tips-debug-table-wrap">
+              <table class="tips-debug-table">
+                <thead>
+                  <tr>
+                    <th>content_id</th>
+                    <th>slug</th>
+                    <th>status</th>
+                    <th>readyToPublish</th>
+                    <th>startDate</th>
+                    <th>endDate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tips.length === 0 ? (
+                    <tr>
+                      <td colspan="6">(no rows)</td>
+                    </tr>
+                  ) : (
+                    tips.map((row) => (
+                      <tr>
+                        <td>{row.content_id ?? "—"}</td>
+                        <td>{row.slug ?? "—"}</td>
+                        <td>{row.status ?? "—"}</td>
+                        <td>{String(row.readyToPublish)}</td>
+                        <td>{row.startDate ?? "—"}</td>
+                        <td>{row.endDate ?? "—"}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+        {/*
+          Title + “coming soon” message come from PageHead only (no second heading here).
+        */}
+        <section class="mt-4">
+          <div class="kbm-card">
+            <div class="kbm-card-body">
+              <h3>Want to ask a question now?</h3>
+              <p>Join the conversation in the community and connect with other machine knitters.</p>
+              <a href="/community" class="btn btn-primary">
+                Go to the Community
+              </a>
+            </div>
+          </div>
+        </section>
+      </>
+    )}
   </section>
 </Layout>
 
 <style>
-  .tuesday-tip-page {
-    padding: 2rem 0 3rem;
-    max-width: var(--max-content-width, 1100px);
+  .tips-page-section {
+    max-width: min(1180px, 100%);
     margin-left: auto;
     margin-right: auto;
-    padding-left: 1rem;
-    padding-right: 1rem;
   }
 
-  /* Single-column main content */
-  .tuesday-tip__content {
+  /* —— Hero: logo + bubbles | 16:9 video —— */
+  .tuesday-tip-hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: start;
+    margin-bottom: 2.5rem;
+  }
+
+  @media (min-width: 900px) {
+    .tuesday-tip-hero {
+      grid-template-columns: minmax(300px, 1fr) minmax(320px, 1.12fr);
+      gap: clamp(1.75rem, 4vw, 2.75rem);
+      align-items: center;
+    }
+  }
+
+  .tuesday-tip-hero__intro {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.35rem;
+    min-width: 0;
   }
 
-  .tuesday-tip__player {
+  .tuesday-tip-header--hero {
+    text-align: left;
     margin: 0;
   }
 
-  .tuesday-tip__video-title {
-    margin: 0;
-    font-size: clamp(1.35rem, 3.5vw, 1.85rem);
-    line-height: 1.3;
-    color: var(--kbm-green, #52682d);
-    font-weight: 700;
+  .tuesday-tip-header--hero .tuesday-tip-logo {
+    margin-left: 0;
+    margin-right: 0;
   }
 
-  .tuesday-tip__description {
-    margin: 0;
+  .tuesday-tip-bubbles {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
   }
 
-  .tuesday-tip__description .video-desc-text {
-    margin-top: 0.5rem;
-    font-size: var(--text-base, 1rem);
-    line-height: 1.6;
-    color: #374151;
-  }
-
-  .tuesday-tip__description .video-desc-text :global(ul),
-  .tuesday-tip__description .video-desc-text :global(ol) {
-    margin: 0.5rem 0 0 1.25rem;
-  }
-
-  .tuesday-tip__description h2,
-  .tuesday-tip__jumplinks .jumplinks-head h2,
-  .tuesday-tip__transcript h2 {
-    margin: 0 0 0.5rem;
-    font-size: var(--text-lg, 1.125rem);
-    font-weight: 600;
-    color: var(--kbm-green, #52682d);
-  }
-
-  .tuesday-tip__jumplinks {
+  .tuesday-tip-bubble-row.talk-row {
     margin: 0;
   }
 
-  .tuesday-tip__jumplinks-list {
-    margin: 0.5rem 0 0;
-    padding-left: 1.25rem;
-    list-style: none;
+  .tuesday-tip-bubbles .talk-bubble {
+    max-width: 100%;
   }
 
-  .tuesday-tip__jumplinks-list li {
-    margin-bottom: 0.35rem;
+  .tuesday-tip-hero__media {
+    min-width: 0;
   }
 
-  .tuesday-tip__jumplinks-list a {
-    color: var(--kbm-green, #52682d);
-    text-decoration: underline;
-    text-underline-offset: 2px;
+  .tuesday-tip-video-shell {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    padding: 0.5rem;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
   }
 
-  .tuesday-tip__jumplinks-list a:hover {
-    color: #243015;
+  /* 16:9 responsive frame */
+  .tuesday-tip-video-aspect {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #0f172a;
   }
 
-  .tuesday-tip__transcript {
-    margin: 0;
+  .tuesday-tip-video-iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
   }
 
-  .tuesday-tip__transcript-body {
-    margin-top: 0.5rem;
-    font-size: var(--text-base, 1rem);
-    line-height: 1.6;
-    color: #374151;
-  }
-
-  .tuesday-tip__transcript-placeholder {
-    margin-top: 0.5rem;
-    padding: 1rem 1.25rem;
-    background: rgba(82, 104, 45, 0.06);
-    border: 1px dashed rgba(82, 104, 45, 0.25);
-    border-radius: 10px;
-  }
-
-  .tuesday-tip__transcript-placeholder-text {
-    margin: 0;
-    font-size: var(--text-sm, 0.875rem);
-    color: #6b7280;
-    font-style: italic;
-  }
-
-  @media (min-width: 768px) {
-    .tuesday-tip__content {
-      gap: 1.5rem;
-    }
-  }
-
-  @media (min-width: 1025px) {
-    .tuesday-tip__content {
-      gap: 1.75rem;
-    }
-  }
-
-  .tuesday-tip__video-placeholder {
-    aspect-ratio: 16 / 9;
-    background: var(--kbm-bg, #e9ece7);
-    border-radius: 14px;
+  .tuesday-tip-video-fallback {
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
-    text-align: center;
-    color: #6b7280;
+    padding: 1.25rem;
+    background: linear-gradient(160deg, #f1f5f9 0%, #e2e8f0 100%);
   }
 
-  .tuesday-tip__video-placeholder p {
+  .tuesday-tip-video-fallback__text {
     margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #64748b;
+    text-align: center;
+    max-width: 16rem;
   }
 
-  /* Tuesday Tip banner above video (member / non-member message) */
-  .tip-banner {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-
-    padding: 10px 18px;
-    border-radius: 10px;
-
-    margin-top: 6px;
-    margin-bottom: 6px;
+  .tuesday-tip-header {
+    text-align: center;
+    margin: 20px 0 30px;
   }
 
-  .tip-banner--member {
-    background: #eef4e3;
-  }
-
-  .tip-banner--nonmember {
-    background: #E7C677;
-  }
-
-  .tip-banner-logo {
-    width: 180px;
+  .tuesday-tip-logo {
+    display: block;
+    max-width: 220px;
+    width: 100%;
     height: auto;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .tips-debug-panel {
+    margin-bottom: 1.75rem;
+    padding: 1rem 1.1rem;
+    border: 2px dashed #64748b;
+    border-radius: 8px;
+    background: #f8fafc;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: #1e293b;
+  }
+
+  .tips-debug-panel__title {
+    margin: 0 0 0.65rem 0;
+    font-size: 0.95rem;
+  }
+
+  .tips-debug-panel__list {
+    margin: 0 0 0.75rem 1.1rem;
+    padding: 0;
+  }
+
+  .tips-debug-panel__list li {
+    margin-bottom: 0.25rem;
+  }
+
+  .tips-debug-panel__subhead {
+    margin: 0.85rem 0 0.4rem 0;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #334155;
+  }
+
+  .tips-debug-panel__explain {
+    margin: 0 0 0.85rem 0;
+    padding: 0.6rem 0.75rem;
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    border-radius: 6px;
+    font-size: 0.88rem;
+  }
+
+  .tips-debug-panel__live {
+    margin-bottom: 0.75rem;
+  }
+
+  .tips-debug-table-wrap {
+    overflow-x: auto;
+    margin-top: 0.35rem;
+  }
+
+  .tips-debug-table {
+    width: 100%;
+    min-width: 520px;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    background: #fff;
+  }
+
+  .tips-debug-table th,
+  .tips-debug-table td {
+    border: 1px solid #cbd5e1;
+    padding: 0.35rem 0.5rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .tips-debug-table th {
+    background: #e2e8f0;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .tuesday-tip-discussion {
+    margin-top: 40px;
+  }
+
+  .tuesday-tip-discussion h2 {
+    margin-bottom: 15px;
+  }
+
+  /* Question vs answer: hierarchy only (no size/layout changes) */
+  .talk-bubble.tuesday-tip__question {
+    color: #6f8550;
+  }
+
+  .talk-bubble.tuesday-tip__answer {
+    font-weight: 500;
+    padding:  16px 20px 16px 20px;
+    margin-left: 60px;
+  }
+
+  .tuesday-tip__answer-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .tuesday-tip__logo {
+    width: 60px;
+    height: 60px;
     flex-shrink: 0;
   }
 
-  .tip-banner-message {
+  .tuesday-tip__answer-text {
     flex: 1;
-    line-height: 1.45;
   }
 
-  .tip-banner-message > p {
+  .tuesday-tip__bridge {
+    margin: 12px 0;
+    font-size: 0.95rem;
+    color: #666;
+    font-style: italic;
+  }
+
+  .tuesday-tip__try-card {
+    width: 70%;
+    margin: 24px auto 0;
+    padding: 28px;
+    border: 2px dashed #52682d;
+    border-radius: 12px;
+    background: #f9faf9;
+  }
+
+  @media (max-width: 768px) {
+    .tuesday-tip__try-card {
+      width: 95%;
+      padding: 22px;
+    }
+  }
+
+  .tuesday-tip__try-heading {
+    text-align: center;
+    margin: 0 0 16px;
+  }
+
+  .tuesday-tip__try-body ul {
+    list-style: none;
+    padding-left: 0;
     margin: 0;
-    line-height: 1.4;
   }
 
-  .tip-banner-headline {
-    margin: 0 0 6px 0;
-    font-weight: 700;
-    line-height: 1.25;
+  .tuesday-tip__try-body li {
+    position: relative;
+    padding-left: 1.6rem;
+    margin-bottom: 10px;
   }
 
-  .tip-banner-sub {
-    margin: 0;
-    font-size: 1rem;
-    line-height: 1.45;
-  }
-
-  .tip-banner-btn {
-    display: inline-block;
-    width: auto;
-
-    margin: 10px auto 0 auto;
-
-    padding: 10px 18px;
-    border-radius: 10px;
-
-    background: #ffffff;
-    color: #52682d;
+  .tuesday-tip__try-body li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.45em;
+    width: 10px;
+    height: 10px;
     border: 2px solid #52682d;
-
-    font-weight: 700;
-    text-decoration: none;
-    line-height: 1.2;
+    border-radius: 2px;
+    transform: translateY(-50%);
   }
 
-  .tip-banner-btn:hover {
-    background: #52682d;
-    color: white;
+  .tuesday-tip__try-body .pro-tip {
+    color: #6b6b6b;
+    font-size: 0.95em;
+  }
+
+  .tuesday-tip__cta {
+    margin-top: 32px;
   }
 </style>

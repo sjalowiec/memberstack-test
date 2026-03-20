@@ -30,6 +30,13 @@ const isMember =
       <p class="page-intro">
         Printable templates and tools to help you measure, plan, and work more accurately.
       </p>
+      <p class="printables-subnote">
+        Instant downloads. Some tools are free for members — others can be purchased individually.
+      </p>
+      <p class="printables-cta-inline">
+        Want these included with membership?
+        <a href="/membership">Join Knit it Now</a>
+      </p>
     </header>
 
     {previewMode && (
@@ -40,37 +47,52 @@ const isMember =
     )}
 
     <div class="downloads-grid">
-      {downloads.map((item) => (
-        <article class="download-card kbm-card kbm-card--download" data-testid={`card-download-${item.slug}`}>
-          {item.memberFree && (
-            <span class="kbm-card-ribbon">MEMBER BONUS</span>
-          )}
+      {downloads.map((item) => {
+        const detailsUrl = item.detailsPage || `/downloads/${item.slug}`;
+        return (
+        <article
+          class="download-card kbm-card kbm-card--download"
+          data-testid={`card-download-${item.slug}`}
+          data-ribbon={item.memberFree === true ? "member" : "paid"}
+        >
+          <a
+            href={detailsUrl}
+            class="download-card-link"
+            data-testid={`card-link-${item.slug}`}
+          >
+            {item.memberFree === true ? (
+              <span class="kbm-card-ribbon">Member Bonus</span>
+            ) : (
+              <span class="kbm-card-ribbon kbm-card-ribbon--paid" aria-label="Paid item">
+                <i class="fa-solid fa-cart-shopping" style="color: rgb(255, 255, 255);" aria-hidden="true"></i>
+              </span>
+            )}
 
-          <div class="download-card-thumb">
-            <a href={item.detailsPage} class="download-card-thumb-link">
-              <img
-                src={item.image}
-                alt={item.title}
-                class="download-card-thumb-image"
-                loading="lazy"
-              />
-            </a>
-          </div>
+            <div class="download-card-thumb">
+              <span class="download-card-thumb-link">
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  class="download-card-thumb-image"
+                  loading="lazy"
+                />
+              </span>
+            </div>
 
-          <div class="download-card-content">
-            <h2 class="kbm-card__title">
-              <a href={item.detailsPage} class="download-card__title-link">{item.title}</a>
-            </h2>
-            <p class="kbm-card__desc">{item.shortDescription}</p>
-          </div>
+            <div class="download-card-content">
+              <h2 class="kbm-card__title">
+                <span class="download-card__title-link">{item.title}</span>
+              </h2>
+              <p class="kbm-card__desc">{item.shortDescription}</p>
+            </div>
 
-          <div class="download-card-actions">
-            <a href={item.detailsPage} class="download-card-cta" data-testid={`link-download-${item.slug}`}>
-              View Details
-            </a>
-          </div>
+            <div class="download-card-actions">
+              <span class="download-card-cta">Learn More</span>
+            </div>
+          </a>
         </article>
-      ))}
+        );
+      })}
     </div>
   </div>
 </Layout>
@@ -117,12 +139,23 @@ const isMember =
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
   align-items: stretch;
+  justify-items: center; /* ADD THIS */
 }
 
 .download-card {
   display: flex;
   flex-direction: column;
   height: 100%;
+}
+
+.download-card-link {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 .download-card-content {
@@ -149,14 +182,13 @@ const isMember =
     }
   }
 
-  /* Card is content container with multiple links, not one big link */
+  /* Card wrapper: one link to details page for whole card */
   .download-card.kbm-card,
   .downloads-grid .kbm-card--download {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     height: auto;
-    cursor: default;
     text-decoration: none;
   }
 
@@ -212,13 +244,13 @@ const isMember =
   }
 
   .kbm-card--download .kbm-card-ribbon::before {
-    background: #c7d8a4;
+    background: #52682d;
     z-index: 0;
   }
 
   /* Text sits along the fold: position then rotate -45° from top-left corner */
   .kbm-card--download .kbm-card-ribbon::after {
-    content: "MEMBER BONUS" !important;
+    content: "Member Bonus" !important;
     position: absolute;
     top: 42px;
     left: -3px;
@@ -227,12 +259,41 @@ const isMember =
     line-height: 1.1;
     font-weight: 700;
     letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: #52682d;
+    text-transform: none;
+    color: #ffffff;
     text-align: center;
     transform: rotate(-45deg);
     transform-origin: top left;
     z-index: 1;
+  }
+
+  /* Paid ribbon: dark green to match Member Bonus */
+  .kbm-card-ribbon--paid {
+    background-color: transparent;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .kbm-card--download .kbm-card-ribbon--paid::before {
+    background: #52682d;
+    border-right: 1px solid rgba(82, 104, 45, 0.18);
+    border-bottom: 1px solid rgba(82, 104, 45, 0.18);
+    z-index: 0;
+  }
+
+  .kbm-card--download .kbm-card-ribbon--paid::after {
+    content: "" !important;
+  }
+
+  .kbm-card-ribbon--paid i.fa-cart-shopping {
+    position: relative;
+    z-index: 1;
+    transform: rotate(-45deg);
+    font-size: 0.9rem;
+    line-height: 1;
+    color: #ffffff;
   }
 
   .download-card-icon {
@@ -264,8 +325,6 @@ const isMember =
   .download-card-cta {
     display: inline-block;
     padding: 0.6rem 1.25rem;
-    background: var(--kbm-green);
-    color: #ffffff;
     font-weight: 600;
     font-size: 0.95rem;
     border-radius: 8px;
@@ -274,8 +333,22 @@ const isMember =
     transition: background 0.2s ease;
   }
 
-  .download-card-cta:hover {
-    background: var(--kbm-green-hover, #445626);
+  .download-card-cta,
+  .download-card-cta.kbm-btn-primary,
+  a.download-card-cta,
+  span.download-card-cta {
+    background-color: #B36D61;
+    border-color: #B36D61;
+    color: #ffffff;
+  }
+
+  .download-card-cta:hover,
+  .download-card-cta.kbm-btn-primary:hover,
+  a.download-card-cta:hover,
+  span.download-card-cta:hover {
+    background-color: #9e5e54;
+    border-color: #9e5e54;
+    color: #ffffff;
   }
 
   .download-card-cta--outline {
@@ -303,6 +376,29 @@ const isMember =
   }
 
   .download-card-learn:hover {
+    color: var(--kbm-green-hover, #445626);
+  }
+
+  .printables-subnote {
+    font-size: 0.9rem;
+    color: #738c52;
+    margin: 0.5rem 0 0 0;
+  }
+
+  .printables-cta-inline {
+    font-size: 0.9rem;
+    color: #738c52;
+    margin: 0.35rem 0 0 0;
+  }
+
+  .printables-cta-inline a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .printables-cta-inline a:hover {
     color: var(--kbm-green-hover, #445626);
   }
 </style>

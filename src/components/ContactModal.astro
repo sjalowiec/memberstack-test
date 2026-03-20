@@ -76,7 +76,7 @@
       
 
       <div class="contact-form__submit-wrap">
-        <button type="submit" class="contact-form__submit">
+        <button type="submit" class="contact-form__submit kbm-btn kbm-btn-primary">
           Send message
         </button>
         <span class="contact-form__submit-note">😊 I usually respond within 1–2 business days.</span>
@@ -343,6 +343,18 @@
     font-size: 1rem;
     border: none;
     border-radius: 8px;
+  }
+
+  /* Contact modal: primary CTA uses clay style */
+  #contact-modal .contact-form__submit.kbm-btn-primary {
+    background-color: #B36D61;
+    border: 1px solid #B36D61;
+    color: #ffffff;
+  }
+  #contact-modal .contact-form__submit.kbm-btn-primary:hover {
+    background-color: #9e5e54;
+    border-color: #9e5e54;
+    color: #ffffff;
   }
 
   #contact-modal .contact-form__submit-note {

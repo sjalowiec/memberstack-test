@@ -1,0 +1,218 @@
+---
+interface Props {
+  /** Vimeo video ID or full URL */
+  value: string;
+}
+
+const { value } = Astro.props;
+---
+
+<p class="printable-details__video-link">
+  Need help using this?
+  <button
+    type="button"
+    id="kbm-detail-video-trigger"
+    class="printable-details__video-trigger"
+    data-vimeo-value={value}
+    aria-haspopup="dialog"
+    aria-controls="kbmVimeoModal"
+  >
+    ▶ Watch a quick demo →
+  </button>
+</p>
+
+<div
+  id="kbmVimeoModal"
+  class="kbm-vimeo-modal"
+  hidden
+  aria-hidden="true"
+>
+  <div class="kbm-vimeo-modal__backdrop" data-close="true" />
+  <div
+    class="kbm-vimeo-modal__panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="kbmVimeoModalTitle"
+  >
+    <h2 id="kbmVimeoModalTitle" class="sr-only">Video preview</h2>
+    <button
+      type="button"
+      id="kbmVimeoModalClose"
+      class="kbm-vimeo-modal__close"
+      aria-label="Close video"
+    >
+      ×
+    </button>
+    <div class="kbm-vimeo-modal__frame">
+      <iframe
+        id="kbmVimeoIframe"
+        title="Vimeo video player"
+        frameborder="0"
+        loading="lazy"
+        allow="autoplay; fullscreen; picture-in-picture"
+        allowfullscreen
+      />
+    </div>
+  </div>
+</div>
+
+<style>
+  .printable-details__video-link {
+    margin: 1rem 0;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+  .printable-details__video-trigger {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .printable-details__video-trigger:hover {
+    color: var(--kbm-green, #52682d);
+  }
+  .kbm-vimeo-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .kbm-vimeo-modal[hidden],
+  .kbm-vimeo-modal[aria-hidden="true"] {
+    display: none !important;
+  }
+  .kbm-vimeo-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+  }
+  .kbm-vimeo-modal__panel {
+    position: relative;
+    width: min(960px, 100%);
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    max-height: calc(100vh - 2rem);
+    display: flex;
+    flex-direction: column;
+  }
+  .kbm-vimeo-modal__close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    z-index: 2;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.9);
+    color: #111;
+    font-size: 1.5rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .kbm-vimeo-modal__frame {
+    width: 100%;
+    position: relative;
+    padding-top: 56.25%;
+    background: #000000;
+  }
+  .kbm-vimeo-modal__frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+</style>
+
+<script is:inline>
+  (function() {
+    var path = typeof window !== "undefined" ? window.location.pathname : "";
+    var isShopIndex = path === "/shop/downloads" || path === "/shop/downloads/" || path.indexOf("/shop/downloads") === 0;
+    var isDetailPage = path.indexOf("/downloads/") === 0 && path.length > "/downloads/".length && path.split("/").filter(Boolean).length === 2;
+    if (isShopIndex || !isDetailPage) return;
+
+    var trigger = document.getElementById("kbm-detail-video-trigger");
+    var modal = document.getElementById("kbmVimeoModal");
+    var iframe = document.getElementById("kbmVimeoIframe");
+    var closeBtn = document.getElementById("kbmVimeoModalClose");
+    if (!trigger || !modal || !iframe || !closeBtn) return;
+
+    function keepModalClosed() {
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      iframe.src = "";
+      document.body.style.overflow = "";
+    }
+
+    keepModalClosed();
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", keepModalClosed);
+    }
+
+    function extractVimeoId(input) {
+      var value = String(input || "").trim();
+      if (!value) return null;
+      var numeric = value.match(/^(\d+)$/);
+      if (numeric) return numeric[1];
+      var match = value.match(/vimeo\.com\/(?:video\/)?(\d+)/) || value.match(/player\.vimeo\.com\/video\/(\d+)/);
+      return match ? match[1] : null;
+    }
+
+    var lastFocused = null;
+
+    function openModal() {
+      var raw = trigger.getAttribute("data-vimeo-value");
+      var vimeoId = extractVimeoId(raw);
+      if (!vimeoId) return;
+      lastFocused = document.activeElement;
+      iframe.src = "https://player.vimeo.com/video/" + vimeoId + "?autoplay=1";
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      closeBtn.focus();
+    }
+
+    function closeModal() {
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      iframe.src = "";
+      document.body.style.overflow = "";
+      if (lastFocused && lastFocused.focus) lastFocused.focus();
+    }
+
+    trigger.addEventListener("click", function(e) {
+      var p = window.location.pathname;
+      var onDetail = p.indexOf("/downloads/") === 0 && p.length > "/downloads/".length && p.split("/").filter(Boolean).length === 2;
+      if (!onDetail) return;
+      e.preventDefault();
+      openModal();
+    });
+
+    modal.querySelector(".kbm-vimeo-modal__backdrop").addEventListener("click", closeModal);
+    closeBtn.addEventListener("click", closeModal);
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape" && !modal.hidden) closeModal();
+    });
+  })();
+</script>

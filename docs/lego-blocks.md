@@ -1,6 +1,6 @@
-# Knit by Machine – Lego Block Reference
+# Knit it Now – Lego Block Reference
 
-This file keeps track of reusable components (“Lego Blocks”) used in the Knit by Machine tools and wizards.
+This file keeps track of reusable components (“Lego Blocks”) used in the Knit it Now tools and wizards.
 
 It helps remember:
 - what blocks exist

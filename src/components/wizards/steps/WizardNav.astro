@@ -46,7 +46,7 @@ const {
   {showReset && (
     <button
       type="button"
-      class="kbm-button kbm-button--primary"
+      class="kbm-btn kbm-btn-primary"
       id={resetId}
       data-testid="button-start-over"
     >
@@ -57,7 +57,7 @@ const {
   {showBack && (
     <button
       type="button"
-      class="kbm-button kbm-button--secondary"
+      class="kbm-btn kbm-btn-outline"
       id={backId}
       data-testid="button-back"
     >
@@ -68,7 +68,7 @@ const {
   {changeLabel && (
     <button
       type="button"
-      class="kbm-button kbm-button--secondary"
+      class="kbm-btn kbm-btn-outline"
       id={changeId}
       data-testid="button-change-answer"
       style="border-radius: 24px;"
@@ -87,5 +87,5 @@ const {
     flex-wrap: wrap;
   }
   
-  /* Styles for buttons inherited from wizard.css - .kbm-button classes */
+  /* Styles for buttons: global .kbm-btn + .kbm-btn-primary / .kbm-btn-outline */
 </style>

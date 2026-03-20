@@ -1,0 +1,238 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+
+export const prerender = true;
+
+const title = "I've Knitted a Little — Build Skills Step by Step | Knit it Now";
+const description =
+  "You've knitted a little and know the basics—build confidence with low-pressure, guided projects and skill-building tools.";
+---
+
+<Layout title={title} description={description}>
+  <div class="ive-knitted-page">
+    <!-- 1. Hero -->
+    <section class="ive-hero" aria-label="Skill-building pathway introduction">
+      <PageHead title="Not a beginner anymore? Let's build your skills—step by step." />
+      <p class="ive-hero__lead">
+        If you've knitted a little, you already know the basics—but things don't always go as planned. This is where you
+        build confidence with simple, guided projects designed to help you improve without the pressure.
+      </p>
+      <p class="ive-hero__cta">
+        <a class="kbm-btn kbm-btn-primary" href="#projects">Start Building Skills</a>
+      </p>
+    </section>
+
+    <!-- 2. This is for you if -->
+    <section class="ive-section ive-for-you" aria-labelledby="ive-for-you-heading">
+      <h2 id="ive-for-you-heading" class="ive-section__title">This is for you if:</h2>
+      <ul class="ive-for-you__list">
+        <li>You've completed a few projects, but still feel unsure</li>
+        <li>You can follow instructions, but don't always understand why</li>
+        <li>You want to improve, but don't want to jump into something overwhelming</li>
+        <li>You've had things not turn out—and aren't sure what went wrong</li>
+      </ul>
+    </section>
+
+    <!-- 3. What you'll find here -->
+    <section class="ive-section" aria-labelledby="ive-find-heading">
+      <h2 id="ive-find-heading" class="ive-section__title">What you'll find here</h2>
+      <div class="ive-card-grid">
+        <article class="kbm-card ive-card">
+          <h3 class="kbm-card__title">Low-pressure projects</h3>
+          <p class="kbm-card__desc">
+            Small, focused projects that help you practice specific skills without feeling overwhelming.
+          </p>
+        </article>
+        <article class="kbm-card ive-card">
+          <h3 class="kbm-card__title">Guided learning</h3>
+          <p class="kbm-card__desc">Clear direction so you're not guessing what to do next.</p>
+        </article>
+        <article class="kbm-card ive-card">
+          <h3 class="kbm-card__title">Skill-building tools</h3>
+          <p class="kbm-card__desc">Simple tools and walkthroughs that help things click.</p>
+        </article>
+        <article class="kbm-card ive-card">
+          <h3 class="kbm-card__title">Real progress</h3>
+          <p class="kbm-card__desc">Projects designed to help you improve—not just finish something.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- 4. Reassurance -->
+    <section class="ive-section ive-reassure" aria-labelledby="ive-reassure-heading">
+      <h2 id="ive-reassure-heading" class="sr-only">A gentle note</h2>
+      <p class="ive-reassure__text">
+        You don't need to figure everything out before you start.<br />
+        You just need the right next step—and a project that helps you take it.
+      </p>
+    </section>
+
+    <!-- 5. Projects placeholder -->
+    <section class="ive-section ive-projects" id="projects" aria-labelledby="ive-projects-heading">
+      <h2 id="ive-projects-heading" class="ive-section__title">Start with a Project</h2>
+      <p class="ive-projects__intro">Choose a simple project and start building confidence right away.</p>
+      <div class="ive-projects__placeholder" aria-hidden="true">
+        <!-- Placeholder for future project cards -->
+      </div>
+    </section>
+
+    <!-- 6. Final CTA -->
+    <section class="ive-final" aria-labelledby="ive-final-heading">
+      <h2 id="ive-final-heading" class="sr-only">Next step</h2>
+      <p class="ive-final__line">You're closer than you think. Let's build from here.</p>
+      <p class="ive-final__cta">
+        <a class="kbm-btn kbm-btn-primary" href="#projects">Explore Skill-Building Projects</a>
+      </p>
+    </section>
+  </div>
+
+  <style>
+    .ive-knitted-page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 1.25rem 4rem;
+      text-align: center;
+    }
+
+    .ive-hero {
+      padding: 2.5rem 1.5rem 3rem;
+      margin-bottom: 2.5rem;
+      border-radius: 18px;
+      background: #f3f6ef;
+      border: 1px solid rgba(82, 104, 45, 0.15);
+    }
+
+    .ive-hero :global(.page-head) {
+      margin-bottom: 1.25rem;
+      text-align: center;
+    }
+
+    .ive-hero :global(.page-title) {
+      margin-bottom: 0;
+      font-size: clamp(1.35rem, 4vw, 1.85rem);
+      line-height: 1.25;
+    }
+
+    .ive-hero__lead {
+      margin: 0 auto 1.75rem;
+      max-width: 38rem;
+      font-size: var(--text-lg, 1.125rem);
+      line-height: 1.65;
+      text-align: center;
+      color: #374151;
+    }
+
+    .ive-hero__cta {
+      margin: 0;
+    }
+
+    .ive-section {
+      margin-bottom: 3.5rem;
+    }
+
+    .ive-section__title {
+      margin: 0 0 1.25rem;
+      font-size: var(--text-xl, 1.35rem);
+      color: var(--kbm-green, #52682d);
+      font-weight: 700;
+    }
+
+    .ive-for-you__list {
+      margin: 0 auto;
+      padding-left: 1.25rem;
+      max-width: 32rem;
+      text-align: left;
+      line-height: 1.75;
+      color: #374151;
+    }
+
+    .ive-for-you__list li {
+      margin-bottom: 0.65rem;
+    }
+
+    .ive-for-you__list li:last-child {
+      margin-bottom: 0;
+    }
+
+    .ive-card-grid {
+      display: grid;
+      gap: 1.25rem;
+      text-align: left;
+    }
+
+    @media (min-width: 640px) {
+      .ive-card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    /* Static info cards: keep global .kbm-card look, without “clickable” affordance */
+    .ive-card.kbm-card {
+      cursor: default;
+    }
+
+    .ive-card.kbm-card:hover {
+      transform: none;
+      background-color: #ffffff;
+      border-color: #c7d8a4;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .ive-reassure {
+      margin-bottom: 3rem;
+      padding: 2rem 1.5rem;
+      border-radius: 14px;
+      background: #fafbf8;
+      border: 1px solid rgba(82, 104, 45, 0.12);
+    }
+
+    .ive-reassure__text {
+      margin: 0;
+      font-size: var(--text-lg, 1.125rem);
+      line-height: 1.65;
+      color: #374151;
+    }
+
+    .ive-projects__intro {
+      margin: 0 0 1.5rem;
+      line-height: 1.6;
+      color: #4b5563;
+    }
+
+    .ive-projects__placeholder {
+      min-height: 8rem;
+      border-radius: 16px;
+      border: 2px dashed rgba(82, 104, 45, 0.2);
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    .ive-final {
+      padding-top: 1rem;
+    }
+
+    .ive-final__line {
+      margin: 0 0 1.5rem;
+      font-size: var(--text-lg, 1.125rem);
+      line-height: 1.6;
+      font-weight: 600;
+      color: var(--kbm-green, #52682d);
+    }
+
+    .ive-final__cta {
+      margin: 0;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+</Layout>

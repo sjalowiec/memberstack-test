@@ -3,7 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 
 import PageHead from "../../components/PageHead.astro";
 
-const title = "Shop | Knit by Machine";
+const title = "Shop | Knit it Now";
 const description = "Find knitting machines, accessories, software, cables, and guided workshops. Choose what you're looking for.";
 
 const categories = [
@@ -135,8 +135,6 @@ const categories = [
   .category-cta {
     display: inline-block;
     padding: 0.75rem 1.5rem;
-    background: var(--kbm-green);
-    color: #ffffff;
     font-weight: 600;
     font-size: 0.95rem;
     border-radius: 8px;
@@ -146,7 +144,21 @@ const categories = [
     align-self: flex-start;
   }
 
-  .category-cta:hover {
-    background: var(--kbm-green-hover, #445626);
+  .shop-page .category-cta,
+  .shop-page .category-cta.kbm-btn-primary,
+  .shop-page a.category-cta,
+  .shop-page .kbm-btn-primary {
+    background-color: #B36D61;
+    border-color: #B36D61;
+    color: #ffffff;
+  }
+
+  .shop-page .category-cta:hover,
+  .shop-page .category-cta.kbm-btn-primary:hover,
+  .shop-page a.category-cta:hover,
+  .shop-page .kbm-btn-primary:hover {
+    background-color: #9e5e54;
+    border-color: #9e5e54;
+    color: #ffffff;
   }
 </style>

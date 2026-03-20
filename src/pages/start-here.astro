@@ -1,0 +1,98 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Start Here | Knit it Now"
+  description="New to the new Knit it Now? Start here."
+>
+
+  <section class="container py-5 start-here-page">
+    <div class="start-here-inner">
+      <header class="start-here-header">
+        <h1>Start Here</h1>
+        <p class="start-here-intro">
+          Welcome to the new Knit it Now.<br />
+          We’re opening the doors with two simple places to begin.
+        </p>
+      </header>
+
+      <div class="start-here-choice-grid">
+        <article class="kbm-card start-here-card">
+          <h2 class="kbm-card__title">Join the Community</h2>
+          <p class="kbm-card__desc">
+            Ask questions, share what you’re working on, and connect with other machine knitters.
+          </p>
+          <a href="/community" class="kbm-btn kbm-btn-primary">Go to the Community</a>
+        </article>
+
+        <article class="kbm-card start-here-card">
+          <h2 class="kbm-card__title">Watch the Tuesday Tip</h2>
+          <p class="kbm-card__desc">
+            Start with a quick, practical tip you can use right away on your machine.
+          </p>
+          <a href="/tuesday-tips" class="kbm-btn kbm-btn-primary">See This Week’s Tip</a>
+        </article>
+      </div>
+
+      <p class="start-here-footnote">
+        We’re building the new Knit it Now step by step, with more tools, patterns, and guided help to come.
+      </p>
+    </div>
+  </section>
+
+  <style>
+    .start-here-inner {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .start-here-header {
+      margin-bottom: 2.5rem;
+      text-align: center;
+    }
+
+    .start-here-header h1 {
+      font-size: var(--text-xxl);
+      font-weight: 600;
+      color: var(--kbm-green);
+      margin: 0 0 1rem 0;
+    }
+
+    .start-here-intro {
+      font-size: var(--text-lg);
+      color: #243015;
+      line-height: 1.65;
+      margin: 0 auto;
+      max-width: 36rem;
+    }
+
+    .start-here-choice-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .start-here-choice-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 1.75rem;
+      }
+    }
+
+    .start-here-card.kbm-card {
+      cursor: default;
+      margin: 0;
+    }
+
+    .start-here-footnote {
+      font-size: var(--text-base);
+      color: #6b7280;
+      line-height: 1.6;
+      text-align: center;
+      margin: 0 auto;
+      max-width: 40rem;
+    }
+  </style>
+</Layout>

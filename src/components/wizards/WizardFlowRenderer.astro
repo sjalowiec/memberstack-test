@@ -89,7 +89,7 @@ const flowDataJson = JSON.stringify({
   }
 }
 
-.kbm-button--primary-large {
+.kbm-btn--primary-large {
   font-size: 1.25rem;
   padding: 1rem 2.5rem;
   min-height: 3.5rem;
@@ -98,7 +98,7 @@ const flowDataJson = JSON.stringify({
 
 @media print {
   .wizard-flow-container .options-grid,
-  .wizard-flow-container .kbm-button {
+  .wizard-flow-container .kbm-btn {
     display: none !important;
   }
 }
@@ -149,7 +149,7 @@ const flowDataJson = JSON.stringify({
           </div>
           <div class="kbm-card__footer">
             <button
-              class="kbm-button kbm-button--primary"
+              class="kbm-btn kbm-btn-primary"
               id="btn-start"
               data-testid="button-start"
             >
@@ -186,14 +186,14 @@ const flowDataJson = JSON.stringify({
           </div>
           <div class="kbm-card__footer">
             <button
-              class="kbm-button kbm-button--secondary"
+              class="kbm-btn kbm-btn-outline"
               id="btn-back"
               data-testid="button-back"
             >
               Back
             </button>
             <button
-              class="kbm-button kbm-button--primary kbm-button--primary-large"
+              class="kbm-btn kbm-btn-primary kbm-btn--primary-large"
               id="btn-see-result"
               data-testid="button-see-result"
               ${!selectedOptionId ? 'disabled' : ''}
@@ -263,14 +263,14 @@ const flowDataJson = JSON.stringify({
           </div>
           <div class="kbm-card__footer">
             <button
-              class="kbm-button kbm-button--primary"
+              class="kbm-btn kbm-btn-primary"
               id="btn-start-over"
               data-testid="button-start-over"
             >
               Start over
             </button>
             <button
-              class="kbm-button kbm-button--secondary"
+              class="kbm-btn kbm-btn-outline"
               id="btn-change-answer"
               data-testid="button-change-answer"
               style="border-radius: 24px;"

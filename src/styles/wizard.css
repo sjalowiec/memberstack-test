@@ -444,65 +444,6 @@
   font-style: italic;
 }
 
-/* Buttons */
-.kbm-button {
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-
-.kbm-button--primary {
-  background: var(--kbm-green);
-  color: white;
-}
-
-.kbm-button--primary:hover:not(:disabled) {
-  background: #3f5123;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(82, 104, 45, 0.25);
-}
-
-.kbm-button--primary:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.kbm-button--primary:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.kbm-button--secondary {
-  background: #e5e7eb;
-  color: #374151;
-}
-
-.kbm-button--secondary:hover {
-  background: #d1d5db;
-  transform: translateY(-1px);
-}
-
-.kbm-button--ghost {
-  background: transparent;
-  color: var(--kbm-green);
-  border: 1px solid var(--kbm-green);
-}
-
-.kbm-button--ghost:hover {
-  background: rgba(82, 104, 45, 0.1);
-}
-
-/* Small button size modifier - adjusts only size (font-size and padding) */
-.kbm-button--sm {
-  font-size: 0.875rem;
-  padding: 0.45rem 0.85rem;
-}
-
 /* ========================================
    Speech Bubble Buttons (ANA Catalog Style)
    Shared across ANA catalog and wizards
@@ -720,7 +661,7 @@
     font-size: 1.5rem;
   }
   
-  .kbm-button {
+  .kbm-btn {
     padding: 1rem 1.75rem;
     font-size: 1.35rem;
   }

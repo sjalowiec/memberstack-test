@@ -2,7 +2,7 @@
  * Shaping Utilities
  * 
  * Reusable "lego block" utilities for generating and displaying
- * knitting shaping instructions across the Knit by Machine site.
+ * knitting shaping instructions across the Knit it Now site.
  */
 
 export {

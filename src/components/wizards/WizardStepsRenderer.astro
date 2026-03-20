@@ -164,7 +164,7 @@ const stepsDataJson = JSON.stringify({
 
 @media print {
   .wizard-steps-container .options-grid,
-  .wizard-steps-container .kbm-button,
+  .wizard-steps-container .kbm-btn,
   .wizard-steps-container .wizard-nav {
     display: none !important;
   }
@@ -263,7 +263,7 @@ const stepsDataJson = JSON.stringify({
           '<p class="kbm-lede" data-testid="text-intro-description">' + introDescription + '</p>' +
         '</div>' +
         '<div class="kbm-card__footer">' +
-          '<button class="kbm-button kbm-button--primary" id="btn-start" data-testid="button-start">' + 
+          '<button class="kbm-btn kbm-btn-primary" id="btn-start" data-testid="button-start">' + 
             startButtonLabel + 
           '</button>' +
         '</div>' +
@@ -276,7 +276,7 @@ const stepsDataJson = JSON.stringify({
         return '<div class="kbm-card kbm-card--shadow">' +
           '<div class="kbm-card__body">' +
             '<p>Unable to load step. Please start over.</p>' +
-            '<button class="kbm-button kbm-button--primary" id="btn-start-over" data-testid="button-start-over">Start Over</button>' +
+            '<button class="kbm-btn kbm-btn-primary" id="btn-start-over" data-testid="button-start-over">Start Over</button>' +
           '</div>' +
         '</div>';
       }
@@ -330,8 +330,8 @@ const stepsDataJson = JSON.stringify({
           '<div class="options-grid">' + choicesHtml + '</div>' +
           feedbackHtml +
           '<div class="wizard-nav">' +
-            (isFirstStep ? '' : '<button class="kbm-button kbm-button--secondary" id="btn-back" data-testid="button-back">Back</button>') +
-            '<button class="kbm-button kbm-button--primary" id="btn-next" data-testid="button-next"' + 
+            (isFirstStep ? '' : '<button class="kbm-btn kbm-btn-outline" id="btn-back" data-testid="button-back">Back</button>') +
+            '<button class="kbm-btn kbm-btn-primary" id="btn-next" data-testid="button-next"' + 
               (canContinue ? '' : ' disabled') + '>Next</button>' +
           '</div>' +
         '</div>' +
@@ -413,8 +413,8 @@ const stepsDataJson = JSON.stringify({
           summaryHtml +
         '</div>' +
         '<div class="kbm-card__footer" style="justify-content: center;">' +
-          '<button class="kbm-button kbm-button--primary" id="btn-start-over" data-testid="button-start-over">Start Over</button>' +
-          (config.ctaHref !== '#' ? '<a href="' + config.ctaHref + '" class="kbm-button kbm-button--secondary" data-testid="button-cta">' + config.ctaLabel + '</a>' : '') +
+          '<button class="kbm-btn kbm-btn-primary" id="btn-start-over" data-testid="button-start-over">Start Over</button>' +
+          (config.ctaHref !== '#' ? '<a href="' + config.ctaHref + '" class="kbm-btn kbm-btn-outline" data-testid="button-cta">' + config.ctaLabel + '</a>' : '') +
         '</div>' +
       '</div>';
     }

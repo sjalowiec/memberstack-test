@@ -1,0 +1,61 @@
+[
+  {
+    "content_id": 615,
+    "slug": "what-is-cut-and-sew",
+    "status": "published",
+    "readyToPublish": true,
+    "startDate": "2026-03-19",
+    "endDate": "2026-03-25",
+    "lastPublishedDate": "2026-03-19",
+    "emailDone": false,
+    "emailSentDate": null,
+    "question": "What is Cut and Sew — and why would I use it?",
+    "quickAnswer": "<strong>Cut and Sew</strong> lets you shape knitted fabric by cutting and finishing edges, instead of doing all the shaping on the machine.",
+    "bridge": "Cutting your knitting for the first time feels a bit like a leap of faith! Start with this simple practice exercise to get a feel for how the fabric behaves before you move on to a real garment.",
+    "videoUrl": "https://player.vimeo.com/video/XXXXXXX",
+    "tryTitle": "Try This",
+    "trySteps": [
+      "Knit a small swatch: Use a 4\" x 4\" square in a light-colored yarn so your stitches are easy to see.",
+      "Mark your line: Use a contrasting thread or tailor’s chalk to mark exactly where you want to \"cut.\"",
+      "Practice the cut: Use your sharpest shears to cut 3/8\" away from your line and watch how the stitches react."
+    ],
+    "memberHeading": "Want to see this step-by-step?",
+    "memberText": "Members can watch the full lesson and see how this technique works in more detail.",
+    "memberLink": "/membership",
+    "memberButton": "Watch the Full Lesson",
+    "communityHeading": "Have a question or want to share what you tried?",
+    "communityText": "Join the conversation in the community and connect with other machine knitters.",
+    "communityLink": "/community",
+    "communityButton": "Go to the Community"
+  },
+  {
+    "content_id": 616,
+    "slug": "616-test",
+    "status": "published",
+    "readyToPublish": true,
+    "startDate": "2026-03-24",
+    "endDate": "2026-03-31",
+    "lastPublishedDate": "2026-03-24",
+    "emailDone": false,
+    "emailSentDate": null,
+    "question": "616 questino",
+    "quickAnswer": "616 answer",
+    "bridge": "Take it one step at a time—small experiments build confidence before you use the idea on a full project.",
+    "videoUrl": "lk;jdf ;jkj;",
+    "tryTitle": "try title",
+    "trySteps": [
+      "step 1",
+      "step 2",
+      "step 3",
+      "step 4"
+    ],
+    "memberHeading": "member heading",
+    "memberText": "member text",
+    "memberLink": "member link",
+    "memberButton": "member button",
+    "communityHeading": "community heding",
+    "communityText": "community text",
+    "communityLink": "community link",
+    "communityButton": "community button"
+  }
+]

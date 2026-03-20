@@ -1,0 +1,332 @@
+---
+/**
+ * Soft-launch “Start Here” page — uses Header-softlaunch without modifying Layout.astro.
+ */
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+
+const title = "Start Here";
+const description =
+  "A calm place to begin — learn what Knit it Now offers and take a simple first step.";
+---
+
+<Layout title={title} description={description}>
+  <Header />
+
+  <!-- Right-side intro drawer (opened by billboard “see what’s here” in header) -->
+  <dialog
+    id="intro-drawer"
+    class="kbm-drawer"
+    aria-labelledby="drawer-title"
+    aria-describedby="drawer-description"
+    data-testid="dialog-intro-drawer"
+  >
+    <div class="kbm-drawer-content">
+      <header class="kbm-drawer-header">
+        <h2 id="drawer-title" class="kbm-drawer-title">
+          Clear answers and practical tools for machine knitters
+        </h2>
+        <button
+          type="button"
+          class="kbm-drawer-close"
+          aria-label="Close drawer"
+          data-testid="button-drawer-close">&times;</button>
+      </header>
+
+      <div id="drawer-description" class="kbm-drawer-body">
+        <p>
+          Knit it Now has been given a fresh new look. It is a focused space for machine knitters who want clear answers
+          and practical tools — without digging through forums or scattered resources.
+        </p>
+        <p>
+          Whether you're restarting, refreshing skills, or trying something new you'll find Patterns, Tools, and Guides to
+          help you get started — with more being added as Knit it Now continues to grow.
+        </p>
+        <p>New here?</p>
+        <a href="/#where-are-you" id="drawer-where-link" class="kbm-drawer-link" data-testid="link-where-drawer">
+          See where to start →
+        </a>
+      </div>
+    </div>
+  </dialog>
+
+  <script is:inline>
+    (function () {
+      const openBtn = document.getElementById("open-intro-drawer");
+      const drawer = document.getElementById("intro-drawer");
+      const closeBtn = drawer?.querySelector(".kbm-drawer-close");
+
+      function openDrawer() {
+        if (drawer) {
+          drawer.showModal();
+          drawer.classList.add("kbm-drawer--open");
+        }
+      }
+
+      function closeDrawer() {
+        if (!drawer) return;
+        drawer.classList.remove("kbm-drawer--open");
+        setTimeout(function () {
+          drawer.close();
+        }, 200);
+      }
+
+      if (openBtn) openBtn.addEventListener("click", openDrawer);
+      if (closeBtn) closeBtn.addEventListener("click", closeDrawer);
+
+      if (drawer) {
+        drawer.addEventListener("click", function (e) {
+          if (e.target === drawer) closeDrawer();
+        });
+        drawer.addEventListener("cancel", function (e) {
+          e.preventDefault();
+          closeDrawer();
+        });
+      }
+
+      var whereLink = document.getElementById("drawer-where-link");
+      if (whereLink) {
+        whereLink.addEventListener("click", function (e) {
+          e.preventDefault();
+          closeDrawer();
+          setTimeout(function () {
+            var target = document.getElementById("where-are-you");
+            var headerEl = document.querySelector("header") || document.querySelector(".kbm-header-wrap");
+            var headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 160;
+            if (target) {
+              var y = target.getBoundingClientRect().top + window.scrollY - headerHeight - 16;
+              window.scrollTo({ top: y, behavior: "smooth" });
+            } else {
+              window.location.href = whereLink.getAttribute("href") || "/#where-are-you";
+            }
+          }, 220);
+        });
+      }
+    })();
+  </script>
+
+  <main class="site-content" style="padding-top: calc(var(--header-offset, 150px) + var(--header-buffer, 24px));">
+    <div class="start-here-page">
+      <section class="sh-hero" aria-labelledby="sh-hero-title">
+        <h1 id="sh-hero-title">Start Here</h1>
+        <p class="sh-lead">
+          If you’re new here—or simply wondering where to begin—you’re in the right place. Take a breath: you don’t need
+          to figure everything out at once. This page points you to one gentle next step.
+        </p>
+      </section>
+
+      <section class="sh-section" aria-labelledby="sh-what-heading">
+        <h2 id="sh-what-heading">What You’ll Find Here</h2>
+        <p class="sh-prose">
+          Knit it Now is built for machine knitters who want steady progress without overwhelm. You’ll find support
+          to learn, practice, and troubleshoot with more confidence—so you can enjoy your machine and your projects, one step
+          at a time.
+        </p>
+      </section>
+
+      <section class="sh-section" aria-labelledby="sh-step-heading">
+        <h2 id="sh-step-heading">Your First Step</h2>
+        <div class="sh-card">
+          <h3 class="sh-card-title">This Week’s Tip</h3>
+          <p class="sh-card-text">
+            A short, practical idea you can try on your next session—no long prep required. (We’ll link the real tip here
+            when it’s ready.)
+          </p>
+          <a href="#" class="sh-btn sh-btn--primary">Read this week’s tip</a>
+        </div>
+      </section>
+
+      <section class="sh-section sh-section--community" aria-labelledby="sh-community-heading">
+        <h2 id="sh-community-heading">Join the Conversation</h2>
+        <p class="sh-prose">
+          You’re not alone in this. Stop by the community to say hello, ask a question, or see what others are working on—it’s
+          a friendly place to connect with fellow machine knitters.
+        </p>
+        <a href="/community" class="sh-btn sh-btn--primary">Go to community</a>
+      </section>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<style is:global>
+  :root {
+    --header-offset: 170px;
+    --header-buffer: 36px;
+  }
+
+  @media (max-width: 1024px) {
+    :root {
+      --header-buffer: 24px;
+    }
+  }
+
+  html {
+    scroll-padding-top: calc(var(--header-offset, 170px) + var(--header-buffer, 24px));
+  }
+
+  .site-content > :first-child {
+    margin-top: 0;
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    function setHeaderOffset() {
+      const fallback = 170;
+      const headerWrap = document.querySelector(".kbm-header-wrap");
+      const headerEl = headerWrap || document.querySelector("header");
+
+      if (!headerEl) {
+        document.documentElement.style.setProperty("--header-offset", fallback + "px");
+        return;
+      }
+
+      const headerHeight = Math.ceil(headerEl.getBoundingClientRect().height);
+      let debugHeight = 0;
+      const debugPill =
+        headerEl &&
+        Array.from(headerEl.querySelectorAll("*")).find((el) => {
+          const txt = (el.textContent || "").trim();
+          return txt.startsWith("MS:ready") || txt.includes("MS:ready loggedIn");
+        });
+
+      if (debugPill) {
+        debugHeight = Math.ceil(debugPill.getBoundingClientRect().height);
+      }
+
+      const safety = 12;
+      const corrected = Math.max(fallback, headerHeight - debugHeight + safety);
+      document.documentElement.style.setProperty("--header-offset", corrected + "px");
+    }
+
+    window.addEventListener("load", setHeaderOffset);
+    window.addEventListener("resize", setHeaderOffset);
+    setTimeout(setHeaderOffset, 50);
+    setTimeout(setHeaderOffset, 250);
+    setTimeout(setHeaderOffset, 1000);
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(setHeaderOffset).catch(function () {});
+    }
+
+    window.addEventListener("load", function () {
+      const wrap = document.querySelector(".kbm-header-wrap");
+      if (!wrap || typeof ResizeObserver === "undefined") return;
+      const observer = new ResizeObserver(setHeaderOffset);
+      observer.observe(wrap);
+    });
+  })();
+</script>
+
+<style>
+  .start-here-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 8px 16px 56px;
+    font-family: var(--font, "Poppins", system-ui, sans-serif);
+  }
+
+  .sh-hero {
+    padding: 36px 28px;
+    border-radius: 18px;
+    background: #f3f6ef;
+    border: 1px solid rgba(82, 104, 45, 0.15);
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .sh-hero h1 {
+    margin: 0 0 14px;
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    font-weight: 700;
+    color: #243015;
+    line-height: 1.2;
+  }
+
+  .sh-lead {
+    margin: 0 auto;
+    max-width: 38rem;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: #2a3318;
+    opacity: 0.95;
+  }
+
+  .sh-section {
+    margin-bottom: 2.25rem;
+  }
+
+  .sh-section h2 {
+    margin: 0 0 12px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #243015;
+  }
+
+  .sh-prose {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: #333;
+  }
+
+  .sh-card {
+    margin-top: 4px;
+    padding: 1.25rem 1.35rem;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
+    max-width: 100%;
+  }
+
+  .sh-card-title {
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #243015;
+  }
+
+  .sh-card-text {
+    margin: 0 0 16px;
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: #444;
+  }
+
+  .sh-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: 1px solid transparent;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .sh-btn--primary {
+    background: #52682d;
+    color: #fff;
+    border-color: rgba(82, 104, 45, 0.35);
+  }
+
+  .sh-btn--primary:hover {
+    background: #455725;
+    color: #fff;
+  }
+
+  .sh-section--community .sh-btn {
+    margin-top: 14px;
+  }
+
+  @media (max-width: 600px) {
+    .sh-hero {
+      padding: 28px 18px;
+    }
+  }
+</style>

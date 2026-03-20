@@ -31,7 +31,7 @@ const {
   price, 
   level, 
   timeEstimate,
-  metaDescription = "Learn machine knitting skills step-by-step with Knit by Machine.",
+  metaDescription = "Learn machine knitting skills step-by-step with Knit it Now.",
   faqs = []
 } = Astro.props;
 
@@ -50,7 +50,7 @@ const faqSchema = faqs.length > 0 ? JSON.stringify({
 }) : null;
 ---
 
-<BaseLayout title={`${title} | Skill Builder | Knit by Machine`} description={metaDescription}>
+<BaseLayout title={`${title} | Skill Builder | Knit it Now`} description={metaDescription}>
   
   {/* Inject FAQPage JSON-LD schema into head if FAQs exist */}
   {faqSchema && (

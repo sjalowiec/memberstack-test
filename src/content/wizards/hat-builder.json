@@ -41,7 +41,7 @@
     "name": "Custom-Fit Machine-Knit Hat",
     "@type": "Product",
     "brand": {
-      "name": "Knit by Machine",
+      "name": "Knit it Now",
       "@type": "Brand"
     },
     "@context": "https://schema.org",

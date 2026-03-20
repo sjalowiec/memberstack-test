@@ -1,5 +1,14 @@
 ---
-/* Centered Logo Header for Knit it Now — soft launch (simplified nav) */
+/* Centered Logo Header for Knit it Now */
+
+/** Learn submenu items (placeholder routes until pages exist). Reuse this pattern for other dropdowns. */
+const LEARN_SUBMENU = [
+  { label: "Tutorials", href: "/videos" },
+  { label: "Workshops & Guides", href: "/placeholder?section=Workshops & Guides" },
+  { label: "Skill Builders", href: "/placeholder?section=Skill Builders" },
+  { label: "Reference", href: "/learn/reference"},
+  { label: "Learning Paths", href: "/placeholder?section=Learning Paths" },
+];
 ---
 <style is:global>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
@@ -1098,7 +1107,7 @@ div[data-ms-modal-overlay] {
     </div>
   </div>
 
-  <!-- Main nav bar: left (logo) | center (nav) | right (hamburger mobile) -->
+  <!-- Main nav bar: left (logo) | center (nav + search) | right (CTA + account) -->
   <header class="site-header kbm-nav-bar">
     <div class="kbm-container">
       <!-- Left zone: logo -->
@@ -1111,44 +1120,101 @@ div[data-ms-modal-overlay] {
         </div>
       </div>
 
-      <!-- Center zone: primary nav (soft launch — 4 links) -->
+      <!-- Center zone: primary nav + search icon -->
       <div class="kbm-nav-center">
         <div class="kbm-nav-row menu-row">
           <ul class="kbm-menu">
-            <li><a href="/" data-testid="nav-home">Home</a></li>
-            <li><a href="/tips" data-testid="nav-start-here">Tips</a></li>
-            <li><a href="/community" data-testid="nav-community">Community</a></li>
-            <li>
-              <div class="kbm-account-wrap">
-                <div data-ms-content="!members">
-            <!--      <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="login">Login</a> 
-                </div>
-                <div data-ms-content="members">
-                  <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="profile">Account</a>
-                  <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-action="logout">Log out</a>
-                </div>
+            <li><a href="/patterns" data-testid="nav-patterns">Patterns</a></li>
+            <li class="dd">
+              <button type="button" class="dd-trigger" data-testid="nav-learn" aria-haspopup="true" aria-expanded="false" aria-controls="learn-submenu">
+                Learn
+              </button>
+              <div id="learn-submenu" class="dd-panel" role="menu" aria-label="Learn">
+                <ul role="none">
+                  {LEARN_SUBMENU.map((item) => (
+                    <li role="none">
+                      <a href={item.href} role="menuitem">{item.label}</a>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              </div>-->
             </li>
+            <li><a href="/tools" data-testid="nav-tools">Tools</a></li>
+            <li><a href="/get-help" data-testid="nav-get-help">Get Help</a></li>
+            <li><a href="/shop" data-testid="nav-shop">Shop</a></li>
           </ul>
+          <!-- Search icon as last item in nav (desktop); full search in mobile drawer -->
+          <button type="button" class="kbm-search-icon" aria-label="Search" data-testid="button-search-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.3-4.3"></path>
+            </svg>
+          </button>
+          <div class="kbm-search-wrap">
+            <input class="kbm-search-input" type="search" placeholder="Search..." aria-label="Search" data-testid="input-search" />
+            <button class="kbm-search-btn" aria-label="Submit search" data-testid="button-search">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.3-4.3"></path>
+              </svg>
+            </button>
+          </div>
+          <!-- Mobile drawer only: CTA + Account/Log out (hidden on desktop) -->
+          <div class="kbm-drawer-actions">
+            <a href="/troubleshoot" class="kbm-cta-guide kbm-drawer-cta" data-testid="drawer-cta-free-guide">Try a 60-Second Reset</a>
+            <div class="kbm-drawer-account">
+              <div data-ms-content="!members">
+                <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="login">Log in</a>
+                <a href="#" class="kbm-btn kbm-btn--primary" data-ms-modal="signup" data-ms-plan:add="pln_free-plan-8n34u0qnx" data-ms-redirect="true">Join Free</a>
+              </div>
+              <div data-ms-content="members">
+                <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="profile">Account</a>
+                <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-action="logout">Log out</a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Right zone: hamburger (mobile) -->
-      <div class="kbm-nav-right">
-        <button class="kbm-hamburger" aria-label="Toggle menu" aria-expanded="false">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-      </div>
+      <!-- Right zone: CTA + account + hamburger (mobile shows compact "Free Guide") -->
+<div class="kbm-nav-right">
+  <a href="/troubleshoot" class="kbm-cta-guide" data-testid="cta-free-guide">
+    <span class="kbm-cta-desktop">Try a 60-Second Reset</span>
+    <span class="kbm-cta-mobile">Reset in 60s</span>
+  </a>
+
+  <div class="kbm-account-wrap">
+    <!-- Logged OUT -->
+    <div data-ms-content="!members">
+      <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="login">Log in</a>
+      <a
+        href="#"
+        class="kbm-btn kbm-btn--primary"
+        data-ms-modal="signup"
+        data-ms-plan:add="pln_free-plan-8n34u0qnx"
+      >
+        Join Free
+      </a>
     </div>
 
-    <div id="auth-msg" class="auth-msg" style="display:none;" role="status" aria-live="polite">
-      <span id="auth-msg-text"></span>
-      <button type="button" id="auth-msg-close" class="auth-msg-close" aria-label="Dismiss">×</button>
+    <!-- Logged IN -->
+    <div data-ms-content="members">
+      <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="profile">Account</a>
+      <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-action="logout">Log out</a>
     </div>
-  </header>
+  </div>
+
+  <button class="kbm-hamburger" aria-label="Toggle menu" aria-expanded="false">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</div>
+
+  <div id="auth-msg" class="auth-msg" style="display:none;" role="status" aria-live="polite">
+    <span id="auth-msg-text"></span>
+    <button type="button" id="auth-msg-close" class="auth-msg-close" aria-label="Dismiss">×</button>
+  </div>
 </section>
 
 <script is:inline>
