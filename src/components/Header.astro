@@ -214,6 +214,19 @@
   flex-shrink: 0;
 }
 
+.kbm-nav-bar .kbm-header-auth {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.kbm-nav-bar .kbm-header-auth .kbm-btn-outline {
+  font-size: 0.9rem;
+  padding: 8px 14px;
+  white-space: nowrap;
+}
+
 .kbm-nav-bar .kbm-logo-section {
   padding: 0.25rem 0;
 }
@@ -1134,8 +1147,22 @@ div[data-ms-modal-overlay] {
         </div>
       </div>
 
-      <!-- Right zone: hamburger (mobile) -->
+      <!-- Right zone: account + hamburger (mobile) -->
       <div class="kbm-nav-right">
+        <div class="kbm-header-auth">
+          <div data-ms-content="!logged-in">
+            <a href="#" data-ms-modal="login" class="kbm-btn kbm-btn-outline">
+              Log In
+            </a>
+          </div>
+
+          <div data-ms-content="logged-in">
+            <a href="/account" class="kbm-btn kbm-btn-outline">
+              My Account
+            </a>
+          </div>
+        </div>
+
         <button class="kbm-hamburger" aria-label="Toggle menu" aria-expanded="false">
           <span></span>
           <span></span>
