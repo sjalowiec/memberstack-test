@@ -238,6 +238,15 @@ const tipsContentJson = JSON.stringify(tipsContent).replaceAll("</script", "\\u0
             <input type="text" name="videoUrl" />
           </label>
 
+          <label class="field-full">
+            <span>Member Video URL</span>
+            <input
+              type="text"
+              name="memberVideoUrl"
+              placeholder="https://player.vimeo.com/video/XXXXXXXXX"
+            />
+          </label>
+
           <label>
             <span>tryTitle</span>
             <input type="text" name="tryTitle" />
@@ -896,6 +905,7 @@ const tipsContentJson = JSON.stringify(tipsContent).replaceAll("</script", "\\u0
       quickAnswer: string;
       bridge: string;
       videoUrl: string;
+      memberVideoUrl: string;
       tryTitle: string;
       trySteps: string[];
       memberHeading: string;
@@ -992,6 +1002,7 @@ const tipsContentJson = JSON.stringify(tipsContent).replaceAll("</script", "\\u0
         quickAnswer: textValue("quickAnswer"),
         bridge: textValue("bridge"),
         videoUrl: textValue("videoUrl"),
+        memberVideoUrl: textValue("memberVideoUrl") || "",
         tryTitle: textValue("tryTitle"),
         trySteps,
         memberHeading: textValue("memberHeading"),
@@ -1046,6 +1057,7 @@ const tipsContentJson = JSON.stringify(tipsContent).replaceAll("</script", "\\u0
         quickAnswer: str("quickAnswer"),
         bridge: str("bridge"),
         videoUrl: str("videoUrl"),
+        memberVideoUrl: str("memberVideoUrl"),
         tryTitle: str("tryTitle"),
         trySteps,
         memberHeading: str("memberHeading"),
@@ -1185,6 +1197,7 @@ const tipsContentJson = JSON.stringify(tipsContent).replaceAll("</script", "\\u0
       setFieldValue("quickAnswer", "");
       setFieldValue("bridge", "");
       setFieldValue("videoUrl", "");
+      setFieldValue("memberVideoUrl", "");
       setFieldValue("tryTitle", "");
       setFieldValue("trySteps", "");
       setFieldValue("memberHeading", "");
@@ -1218,6 +1231,7 @@ const tipsContentJson = JSON.stringify(tipsContent).replaceAll("</script", "\\u0
       setFieldValue("quickAnswer", record.quickAnswer ?? "");
       setFieldValue("bridge", record.bridge ?? "");
       setFieldValue("videoUrl", record.videoUrl ?? "");
+      setFieldValue("memberVideoUrl", record.memberVideoUrl ?? "");
       setFieldValue("tryTitle", record.tryTitle ?? "");
       setFieldValue("trySteps", tryStepsToFormText(record.trySteps));
       setFieldValue("memberHeading", record.memberHeading ?? "");

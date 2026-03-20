@@ -2004,6 +2004,16 @@ div[data-ms-message="error"]:empty {
   background-color: var(--kbm-green-hover);
 }
 
+/* BEM alias — same visual as .kbm-btn-primary (used on some pages) */
+.kbm-btn--primary {
+  background-color: var(--kbm-green);
+  color: #ffffff;
+}
+
+.kbm-btn--primary:hover {
+  background-color: var(--kbm-green-hover);
+}
+
 /* ACCENT = TERRACOTTA */
 .kbm-btn-accent {
   background-color: var(--kbm-accent);

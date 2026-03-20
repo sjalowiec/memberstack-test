@@ -1,0 +1,275 @@
+---
+import tips from "../../data/tips-content.json" assert { type: "json" };
+import Layout from "../../layouts/Layout.astro";
+import "../../components/talk-bubbles.css";
+
+export async function getStaticPaths() {
+  return tips.map((tip) => ({
+    params: { slug: tip.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const lesson = tips.find((tip) => tip.slug === slug);
+const lessonVideoUrl = lesson?.memberVideoUrl || lesson?.videoUrl || "";
+
+// TEMP preview toggle via URL param (do not use for real access control)
+const url = new URL(Astro.request.url);
+const memberParam = url.searchParams.get("member");
+
+// default to false if not set
+const isMember = memberParam === "true";
+---
+
+<Layout
+  title={`${lesson?.question || "Lesson"} | Knit it Now`}
+  description={lesson?.quickAnswer || "Member lesson from Knit it Now."}
+  bodyClass="page--tight-header"
+>
+  {!lesson ? (
+    <section class="member-lesson-page">
+      <div class="member-lesson-page__inner">
+        <h1 class="member-lesson-page__title">Lesson not found</h1>
+        <p class="member-lesson-page__intro">We could not find this lesson right now.</p>
+      </div>
+    </section>
+  ) : (
+    <section class="member-lesson-page">
+      <div class="member-lesson-page__inner">
+        <a href="/tips" class="lesson-back-link lesson-back-link--top">
+          ← Back to this week’s tip
+        </a>
+
+        <h1 class="member-lesson-page__title">{lesson.question}</h1>
+
+        {lesson.quickAnswer && (
+          <p class="member-lesson-page__intro" set:html={lesson.quickAnswer} />
+        )}
+
+        {isMember ? (
+          <>
+            <section class="member-lesson-page__tip-intro" aria-label="Tuesday Tip lesson intro">
+              <div class="member-lesson-page__tip-header">
+                <img
+                  src="/images/tuesday-tip.svg"
+                  alt="Tuesday Tip"
+                  class="member-lesson-page__tip-logo"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div class="member-lesson-page__tip-bubbles">
+                <div class="talk-row talk-left member-lesson-page__bubble-row member-lesson-page__bubble-row--question">
+                  <p class="talk-bubble bubble-bl bubble-question member-lesson-page__question">
+                    Thank you for being a member. Here&apos;s the full lesson for this tip.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section class="member-lesson-page__video-shell" aria-label="Full member lesson video">
+              <div class="member-lesson-page__video-aspect">
+                <iframe
+                  src={lessonVideoUrl}
+                  class="member-lesson-page__iframe"
+                  title={lesson.question}
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowfullscreen
+                />
+              </div>
+            </section>
+            <a href="/tips" class="lesson-back-link lesson-back-link--bottom">
+              ← Back to this week’s tip
+            </a>
+<!-- 
+            <section class="member-lesson-page__notes-placeholder" aria-label="Lesson notes placeholder">
+              <h3>Lesson Notes</h3>
+              <p>Notes and transcript coming soon.</p>
+            </section>-->
+          </>
+        ) : (
+          <div class="member-lesson-page__locked">
+            <div class="talk-row talk-left member-lesson-page__locked-bubble-row">
+              <p class="talk-bubble bubble-bl bubble-question member-lesson-page__locked-bubble">
+                This full lesson is included with membership. Join to watch and learn how to apply this with confidence.
+              </p>
+            </div>
+            <div class="lesson-cta">
+              <a href="/membership" class="kbm-btn kbm-btn-accent">
+                Unlock the Full Lesson
+              </a>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  )}
+</Layout>
+
+<style>
+  .member-lesson-page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 1rem 3rem;
+  }
+
+  .member-lesson-page__inner {
+    display: grid;
+    gap: 0.95rem;
+    max-width: 920px;
+    margin: 0 auto;
+  }
+
+  .member-lesson-page__title {
+    margin: 0;
+    color: #1f2937;
+    font-size: clamp(1.7rem, 3.2vw, 2.2rem);
+    line-height: 1.2;
+  }
+
+  .member-lesson-page__intro {
+    margin: 0;
+    color: #4b5563;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    max-width: 70ch;
+  }
+
+  .lesson-back-link {
+    display: inline-block;
+    font-size: 0.95rem;
+    color: var(--kbm-green);
+    text-decoration: none;
+  }
+
+  .lesson-back-link:hover {
+    text-decoration: underline;
+  }
+
+  .lesson-back-link--top {
+    margin: 1rem 0 0.75rem;
+  }
+
+  .lesson-back-link--bottom {
+    margin: 2rem 0 0;
+  }
+
+  .member-lesson-page__tip-intro {
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    background: #f8fafc;
+    padding: clamp(0.72rem, 1.8vw, 1rem);
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .member-lesson-page__tip-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.15rem;
+  }
+
+  .member-lesson-page__tip-logo {
+    width: clamp(85px, 12vw, 130px);
+    height: auto;
+    display: block;
+  }
+
+  .member-lesson-page__tip-bubbles {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .member-lesson-page__bubble-row {
+    margin: 0;
+  }
+
+  .member-lesson-page__bubble-row--question {
+    padding-right: 1.2rem;
+    padding-left: 0.25rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .member-lesson-page__question {
+    margin: 0;
+    color: #243015;
+    font-size: clamp(1.08rem, 1.9vw, 1.24rem);
+    line-height: 1.45;
+    max-width: 100%;
+    padding: 0.68rem 0.92rem;
+  }
+
+  .member-lesson-page__video-shell {
+    margin: 1.65rem auto 0.65rem;
+    width: 100%;
+    max-width: 860px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    padding: 0.65rem;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+  }
+
+  .member-lesson-page__video-aspect {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%;
+    border-radius: 8px;
+    background: #0f172a;
+    overflow: hidden;
+  }
+
+  .member-lesson-page__iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .member-lesson-page__locked {
+    margin-top: 0.4rem;
+    border-radius: 14px;
+    border: 1px solid rgba(82, 104, 45, 0.2);
+    background: rgba(82, 104, 45, 0.07);
+    padding: clamp(1rem, 2.3vw, 1.7rem);
+  }
+
+  .member-lesson-page__locked-bubble-row {
+    margin: 0;
+  }
+
+  .member-lesson-page__locked-bubble {
+    margin: 0;
+    max-width: 100%;
+    color: #2e3a18;
+    line-height: 1.55;
+    padding: 0.72rem 0.95rem;
+  }
+
+  .lesson-cta {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+  }
+
+  .member-lesson-page__notes-placeholder {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 0.8rem;
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .member-lesson-page__notes-placeholder h3 {
+    margin: 0;
+    color: #243015;
+    font-size: 1rem;
+  }
+
+  .member-lesson-page__notes-placeholder p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.95rem;
+  }
+</style>

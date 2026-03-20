@@ -106,6 +106,7 @@ const showTipsPageDebug = false;
                   </h2>
                 </div>
               )}
+              
               {liveTip.quickAnswer && (
                 <div class="talk-row talk-right tuesday-tip-bubble-row">
                   <div class="talk-bubble bubble-br bubble-answer tuesday-tip__answer">
@@ -230,9 +231,14 @@ const showTipsPageDebug = false;
                 {liveTip.memberHeading && <h3>{liveTip.memberHeading}</h3>}
                 {liveTip.memberText && <p>{liveTip.memberText}</p>}
                 {liveTip.memberLink && liveTip.memberButton && (
-                  <a href={liveTip.memberLink} class="btn btn-primary">
-                    {liveTip.memberButton}
-                  </a>
+                  <>
+                    <a href={liveTip.memberLink} class="btn btn-primary">
+                      {liveTip.memberButton}
+                    </a>
+                    <p class="tip-member-helper">
+                      Already a member? Use the lesson link in your Tuesday email for direct access.
+                    </p>
+                  </>
                 )}
               </div>
             </div>
@@ -367,9 +373,9 @@ const showTipsPageDebug = false;
     margin-bottom: 2.5rem;
   }
 
-  @media (min-width: 900px) {
+  @media (min-width: 1080px) {
     .tuesday-tip-hero {
-      grid-template-columns: minmax(300px, 1fr) minmax(320px, 1.12fr);
+      grid-template-columns: minmax(300px, 1fr) minmax(460px, 1.12fr);
       gap: clamp(1.75rem, 4vw, 2.75rem);
       align-items: center;
     }
@@ -408,6 +414,7 @@ const showTipsPageDebug = false;
 
   .tuesday-tip-hero__media {
     min-width: 0;
+    width: 100%;
   }
 
   .tuesday-tip-video-shell {
@@ -416,18 +423,20 @@ const showTipsPageDebug = false;
     background: #f8fafc;
     padding: 0.5rem;
     box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+    width: 100%;
+    max-width: 100%;
   }
 
   /* 16:9 responsive frame */
   .tuesday-tip-video-aspect {
-    position: relative;
-    width: 100%;
-    padding-bottom: 56.25%;
-    height: 0;
-    overflow: hidden;
-    border-radius: 8px;
-    background: #0f172a;
-  }
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: visible;
+  border-radius: 8px;
+  background: #0f172a;
+}
 
   .tuesday-tip-video-iframe {
     position: absolute;
@@ -638,5 +647,11 @@ const showTipsPageDebug = false;
 
   .tuesday-tip__cta {
     margin-top: 32px;
+  }
+
+  .tip-member-helper {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: #6b7280;
   }
 </style>

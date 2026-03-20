@@ -1,7 +1,7 @@
 [
   {
     "content_id": 615,
-    "slug": "what-is-cut-and-sew",
+    "slug": "cut-and-sew",
     "status": "published",
     "readyToPublish": true,
     "startDate": "2026-03-19",
@@ -9,10 +9,11 @@
     "lastPublishedDate": "2026-03-19",
     "emailDone": false,
     "emailSentDate": null,
-    "question": "What is Cut and Sew — and why would I use it?",
+    "question": "What is Cut and Sew - and why would I use it?",
     "quickAnswer": "<strong>Cut and Sew</strong> lets you shape knitted fabric by cutting and finishing edges, instead of doing all the shaping on the machine.",
     "bridge": "Cutting your knitting for the first time feels a bit like a leap of faith! Start with this simple practice exercise to get a feel for how the fabric behaves before you move on to a real garment.",
-    "videoUrl": "https://player.vimeo.com/video/1152515583",
+    "videoUrl": "https://player.vimeo.com/video/294441633",
+    "memberVideoUrl": "https://player.vimeo.com/video/151819909",
     "tryTitle": "Try This",
     "trySteps": [
       "Knit a small swatch: Use a 4\" x 4\" square in a light-colored yarn so your stitches are easy to see.",
@@ -21,7 +22,7 @@
     ],
     "memberHeading": "Want to see this step-by-step?",
     "memberText": "Members can watch the full lesson and see how this technique works in more detail.",
-    "memberLink": "/membership",
+    "memberLink": "/lessons/cut-and-sew",
     "memberButton": "Watch the Member Lesson",
     "communityHeading": "Have a question or want to share what you tried?",
     "communityText": "Join the conversation in the community and connect with other machine knitters.",
