@@ -120,6 +120,22 @@ const { title, description, bodyClass = "", skipGlobalHyvor = false } = Astro.pr
   </main>
 
   <Footer />
+
+  <!-- Local preview: ?member=true / ?guest=true adds body classes (does not affect Memberstack) -->
+  <script is:inline>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get("member") === "true") {
+          document.body.classList.add("preview-member");
+          document.body.classList.remove("preview-guest");
+        } else if (params.get("guest") === "true") {
+          document.body.classList.add("preview-guest");
+          document.body.classList.remove("preview-member");
+        }
+      } catch (e) {}
+    })();
+  </script>
 </BaseLayout>
 
 <style is:global>
