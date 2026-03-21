@@ -88,6 +88,7 @@ const showTipsPageDebug = false;
   <section class="container py-5 tips-page-section">
     {liveTip ? (
       <>
+        <div data-ms-content="logged-in">
         <div class="tuesday-tip-hero">
           <div class="tuesday-tip-hero__intro">
             <div class="tuesday-tip-header tuesday-tip-header--hero">
@@ -283,6 +284,19 @@ const showTipsPageDebug = false;
             })();
           </script>
         </section>
+        </div>
+
+        <div data-ms-content="!logged-in" class="tuesday-tip__locked">
+
+          <p class="tuesday-tip__locked-message">
+            Quick step to access this tip — just confirm your email and you're in.
+          </p>
+
+          <a href="#" data-ms-modal="login" class="kbm-btn kbm-btn-primary">
+            Access This Tip
+          </a>
+
+        </div>
       </>
     ) : (
       <>
@@ -653,5 +667,26 @@ const showTipsPageDebug = false;
     margin-top: 0.75rem;
     font-size: 0.9rem;
     color: #6b7280;
+  }
+
+  .tuesday-tip__locked {
+    margin-top: 1.5rem;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .tuesday-tip__locked-message {
+    margin: 0;
+    max-width: 36ch;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: #334155;
   }
 </style>

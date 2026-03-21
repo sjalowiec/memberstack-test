@@ -267,5 +267,30 @@ const isProduction =
       </script>
     )}
 
+    <script is:inline>
+      document.addEventListener("DOMContentLoaded", async () => {
+        const memberstack = window.$memberstackDom;
+
+        if (!memberstack) return;
+
+        const member = await memberstack.getCurrentMember();
+
+        // Not logged in
+        if (!member.data) {
+          document.body.classList.add("logged-out");
+          return;
+        }
+
+        const plans = member.data.planConnections || [];
+
+        // Logged in + has ANY plan
+        if (plans.length > 0) {
+          document.body.classList.add("logged-in-paid");
+        } else {
+          document.body.classList.add("logged-in-free");
+        }
+      });
+    </script>
+
   </body>
 </html>

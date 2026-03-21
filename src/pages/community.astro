@@ -20,6 +20,7 @@ import Layout from "../layouts/Layout.astro";
         You can sign in with Google or create an account for our community forum using your email.
       </p>
      
+      <div data-ms-content="members">
       <p style="margin-top: 1.5rem;">
         <a
           href="https://knititnow.talkyard.net"
@@ -34,6 +35,42 @@ import Layout from "../layouts/Layout.astro";
       <p style="font-size: 0.9rem; color: #666;">
         Returning knitters: Please create a new login for this space.
       </p>
+      </div>
+
+      <div data-ms-content="!members" class="community-locked">
+
+        <p class="community-locked-message">
+          The Knit It Now community is open — just confirm your email to join the conversation.
+        </p>
+
+        <a href="#" data-ms-modal="login" class="kbm-btn kbm-btn-primary">
+          Access Community
+        </a>
+
+      </div>
     </div>
   </div>
 </Layout>
+
+<style>
+  .community-locked {
+    margin-top: 1.5rem;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .community-locked-message {
+    margin: 0;
+    max-width: 36ch;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: #334155;
+  }
+</style>
