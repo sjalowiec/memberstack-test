@@ -41,7 +41,14 @@ import "../styles/global.css";
               Start with this week’s machine knitting tip — just enter your email to unlock it.
             </p>
             <div class="kbm-hero__actions">
-              <a href="/tips" class="kbm-btn kbm-btn-accent">Get This Week’s Tip</a>
+              <a href="/tips" id="weekly-tip-cta" class="kbm-btn kbm-btn-accent">Get This Week’s Tip</a>
+              <a
+                href="#"
+                id="weekly-tip-ms-modal-trigger"
+                data-ms-modal="signup"
+                style="position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0"
+                aria-hidden="true"
+                tabindex="-1">Open signup</a>
               <a href="/community" class="kbm-btn kbm-btn-outline" target="_blank" rel="noopener noreferrer">Connect with Fellow Knitters</a>
               <div data-ms-content="!members">
                 <a href="#" data-ms-modal="signup" class="kbm-btn kbm-btn-outline">
@@ -64,7 +71,7 @@ import "../styles/global.css";
         </div>
       </section>
 
-      <div class="kbm-welcome kbm-welcome--branded">
+      <div id="weekly-tip-content" class="kbm-welcome kbm-welcome--branded">
         <p class="kbm-welcome-title">
           <img
             src="/images/KINlogo.svg"
@@ -207,9 +214,62 @@ import "../styles/global.css";
           </div>
         </div>
       </section>
+
+      <!-- Custom Unlock Tip Modal -->
+      <div id="unlock-tip-modal" class="kbm-modal" style="display:none;">
+
+        <div class="kbm-modal-content">
+
+          <h2>Unlock This Week’s Tip</h2>
+
+          <p>Enter your email to continue</p>
+
+          <form data-ms-form="signup">
+
+            <input
+              type="email"
+              placeholder="Your email address"
+              data-ms-member="email"
+              required
+            />
+
+            <button type="submit">Unlock the Tip</button>
+
+          </form>
+
+          <p style="font-size: 0.9rem; margin-top: 10px;">
+            Already have an account? Just enter your email — we’ll log you in.
+          </p>
+
+        </div>
+      </div>
     </main>
 
-    
+    <script is:inline>
+      document.addEventListener("DOMContentLoaded", function () {
+        var cta = document.getElementById("weekly-tip-cta");
+        var target = document.getElementById("weekly-tip-content");
+        var msTrigger = document.getElementById("weekly-tip-ms-modal-trigger");
+        if (!cta) return;
+
+        cta.addEventListener("click", function (e) {
+          e.preventDefault();
+          var body = document.body;
+          if (body.classList.contains("logged-in-free") || body.classList.contains("logged-in-paid")) {
+            if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+            return;
+          }
+          if (body.classList.contains("logged-out")) {
+            document.getElementById("unlock-tip-modal").style.display = "block";
+            var input = document.querySelector('#unlock-tip-modal input[type="email"]');
+            if (input) input.focus();
+            return;
+          }
+          window.location.href = cta.getAttribute("href") || "/tips";
+        });
+      });
+    </script>
+
   
 </Layout>
 

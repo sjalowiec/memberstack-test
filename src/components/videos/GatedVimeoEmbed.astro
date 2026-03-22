@@ -78,8 +78,8 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
   </div>
 `;
 
-    /* Dev-only gating bypass: show member video on localhost without login. */
-    if (devBypass) {
+    /* Dev-only: env bypass or localhost ?member=true (window.__KBM_DEV_MEMBER__ in BaseLayout). */
+    if (devBypass || window.__KBM_DEV_MEMBER__ === true) {
       slot.innerHTML = `
         <iframe
           src="${iframeSrc}"

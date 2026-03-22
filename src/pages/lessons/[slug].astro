@@ -40,6 +40,10 @@ const isMember = memberParam === "true";
           ← Back to this week’s tip
         </a>
 
+        {typeof lesson.hook === "string" && lesson.hook.trim() !== "" && (
+          <p class="tuesday-tip-hook">{lesson.hook}</p>
+        )}
+
         <h1 class="member-lesson-page__title">{lesson.question}</h1>
 
         {lesson.quickAnswer && (
@@ -118,6 +122,15 @@ const isMember = memberParam === "true";
     gap: 0.95rem;
     max-width: 920px;
     margin: 0 auto;
+  }
+
+  .tuesday-tip-hook {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1rem, 2vw, 1.12rem);
+    line-height: 1.55;
+    color: #64748b;
+    font-style: italic;
+    max-width: 70ch;
   }
 
   .member-lesson-page__title {

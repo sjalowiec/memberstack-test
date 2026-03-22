@@ -763,8 +763,8 @@ import Tooltip from "../../components/Tooltip.astro";
         document.documentElement.classList.add('troubleshoot-access-ready');
       }
 
-      /* Dev-only gating bypass: show gated content on localhost without login. */
-      if (window.__DEV_BYPASS_GATING) {
+      /* Dev-only gating bypass: env flag or localhost ?member=true (see BaseLayout). */
+      if (window.__DEV_BYPASS_GATING || window.__KBM_DEV_MEMBER__) {
         showContent();
         return;
       }

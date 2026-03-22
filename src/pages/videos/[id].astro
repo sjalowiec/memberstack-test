@@ -183,8 +183,8 @@ const posterSrc =
             // default: locked
             setAccess(false);
 
-            // Dev-only gating bypass: show gated content on localhost without login. Off in production.
-            if (window.__DEV_BYPASS_GATING) {
+            // Dev-only gating bypass: env flag or localhost ?member=true (see BaseLayout).
+            if (window.__DEV_BYPASS_GATING || window.__KBM_DEV_MEMBER__) {
               setAccess(true);
               return;
             }

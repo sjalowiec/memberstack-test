@@ -1,16 +1,51 @@
 [
   {
-    "content_id": 249,
+    "content_id": "249",
     "slug": "introduction-to-cut-and-sew",
     "title": "Introduction to Cut and Sew",
-    "description": "The Cut ‘n Sew method of shaping is very useful for machine knitters.<ul><li>\r\nDon’t like to shape necklines?  Use cut ‘n sew!</li><li>\r\nKnitting in pattern, or lace?  Who wants to be shaping and doing hand manipulation at the same time?  Use cut ‘n sew!</li><li>\r\nPrefer to knit yardage, then use a sewing pattern to create your garment?  You are using cut ‘n sew!</li><li>\r\nThe techniques shown can be used for other shaped edges as well. For example, match a shaped armhole to a cut ‘n sew armhole on a vest.</li>\r\n</ul>\r\nSuggested: <a href=\"/store/product/474/cut-n-sew-neckline-template/digitialdownload\">Knit it Now Neckline Template</a><br>\r\nMultiple sizes for round neck perfection.",
+    "description": "The Cut ‘n Sew method of shaping is very useful for machine knitters.<ul><li>\r\nDon’t like to shape necklines? Use cut ‘n sew!</li><li>\r\nKnitting in pattern, or lace? Who wants to be shaping and doing hand manipulation at the same time? Use cut ‘n sew!</li><li>\r\nPrefer to knit yardage, then use a sewing pattern to create your garment? You are using cut ‘n sew!</li><li>\r\nThe techniques shown can be used for other shaped edges as well.</li>\r\n</ul>",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/1024014450-e4a09546ccf6b28fb3cbb7bc0fd0b54126bbac4871b5a030c22069a1df9b1f05-d_1280x720?r=pad",
     "category": "Cut N Sew",
     "subcategory": "Basics",
     "vimeo_id": 151819909,
-    "isTipOfWeek": true
+    "isTipOfWeek": true,
+  
+    "videoType": "full",
+    "clips": ["249-1", "249-2"]
   },
+
+  {
+    "content_id": "249-1",
+    "slug": "cut-and-sew-cutting",
+    "title": "How to Cut and Secure Your Knitting Safely",
+    "description": "Learn how to secure your knitting with a sewing machine and confidently cut into your fabric without damage. This is the foundation of the cut and sew technique.",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/1024014450-e4a09546ccf6b28fb3cbb7bc0fd0b54126bbac4871b5a030c22069a1df9b1f05-d_1280x720?r=pad",
+    "category": "Cut N Sew",
+    "subcategory": "Technique",
+    "vimeo_id": 1175910961, 
+    "isTipOfWeek": false,
+  
+    "videoType": "clip",
+    "sourceVideoId": "249"
+  },
+  {
+    "content_id": "249-2",
+    "slug": "cut-and-sew-sandwich-band",
+    "title": "Finish a Cut Edge with a Sandwich Band",
+    "description": "After cutting your knitting, learn how to add a clean, professional sandwich band to finish the edge. This technique creates a polished neckline or opening.",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/1024014450-e4a09546ccf6b28fb3cbb7bc0fd0b54126bbac4871b5a030c22069a1df9b1f05-d_1280x720?r=pad",
+    "category": "Cut N Sew",
+    "subcategory": "Finishing",
+    "vimeo_id": 1175910979,
+    "isTipOfWeek": false,
+  
+    "videoType": "clip",
+    "sourceVideoId": "249"
+  },
+
   {
     "content_id": 257,
     "slug": "kitchener-stitch-on-the-machine-knit-side",

@@ -2,7 +2,14 @@
 import Layout from "../layouts/Layout.astro";
 import PageHead from "../components/PageHead.astro";
 import "../components/talk-bubbles.css";
-import tipsContent from "../data/tips-content.json";
+import helpHubData from "../data/help-hub.json";
+
+type TipTryThis = {
+  quickActionTitle?: string;
+  quickAction?: string[];
+  proExerciseTitle?: string;
+  proExercise?: string[];
+};
 
 type TipRecord = {
   content_id?: number;
@@ -11,20 +18,32 @@ type TipRecord = {
   readyToPublish?: boolean;
   startDate?: string | null;
   endDate?: string | null;
+  hook?: string;
   question?: string;
   quickAnswer?: string;
+  /** Help-hub style short answer (alias for quickAnswer). */
+  bubbleAnswer?: string;
   bridge?: string;
   videoUrl?: string;
+  /** Help-hub style video URL (alias for videoUrl). */
+  mediaUrl?: string;
   tryTitle?: string;
+  tryThisTitle?: string;
   trySteps?: string[];
+  tryThis?: TipTryThis;
   memberHeading?: string;
   memberText?: string;
   memberLink?: string;
   memberButton?: string;
+  memberLessonUrl?: string;
   communityHeading?: string;
   communityText?: string;
   communityLink?: string;
   communityButton?: string;
+  /** Optional long-form body for “About This Tip”; falls back to `bridge` when absent. */
+  description?: string;
+  /** Future: in-page anchor links; render nav only when present and non-empty. */
+  jumpLinks?: { label: string; href: string }[];
 };
 
 function getTodayIso(): string {
@@ -36,21 +55,44 @@ function getTodayIso(): string {
 }
 
 const today = getTodayIso();
-const tips = Array.isArray(tipsContent) ? (tipsContent as TipRecord[]) : [];
+const tips = Array.isArray(helpHubData) ? (helpHubData as TipRecord[]) : [];
 
-// Live tip is sourced from tips-content.json using published + ready + active date range.
-const liveTip = tips.find((tip) => {
+const rawLiveTip = tips.find((tip) => {
+  if (tip.status !== "published") return false;
   const startDate = typeof tip.startDate === "string" ? tip.startDate.trim() : "";
   const endDate = typeof tip.endDate === "string" ? tip.endDate.trim() : "";
-  return (
-    tip.status === "published" &&
-    tip.readyToPublish === true &&
-    !!startDate &&
-    !!endDate &&
-    startDate <= today &&
-    endDate >= today
-  );
+  if (startDate && endDate) {
+    return (
+      tip.readyToPublish === true &&
+      startDate <= today &&
+      endDate >= today
+    );
+  }
+  if (tip.readyToPublish === false) return false;
+  return true;
 });
+
+/** Single live tip with help-hub field names merged into Tuesday-tip shape used by the template. */
+const liveTip: TipRecord | undefined = rawLiveTip
+  ? {
+      ...rawLiveTip,
+      quickAnswer: rawLiveTip.quickAnswer ?? rawLiveTip.bubbleAnswer,
+      videoUrl: rawLiveTip.videoUrl ?? rawLiveTip.mediaUrl,
+      tryTitle: rawLiveTip.tryTitle ?? rawLiveTip.tryThisTitle,
+      trySteps:
+        rawLiveTip.trySteps ??
+        (rawLiveTip.tryThis
+          ? [
+              ...(Array.isArray(rawLiveTip.tryThis.quickAction)
+                ? rawLiveTip.tryThis.quickAction
+                : []),
+              ...(Array.isArray(rawLiveTip.tryThis.proExercise)
+                ? rawLiveTip.tryThis.proExercise
+                : []),
+            ]
+          : undefined),
+    }
+  : undefined;
 
 const debugLiveExplanation = !liveTip
   ? 'No record matched the live rule: status must be "published", readyToPublish must be true, startDate and endDate must be set (YYYY-MM-DD), and startDate ≤ today ≤ endDate (string compare).'
@@ -58,6 +100,26 @@ const debugLiveExplanation = !liveTip
 
 /** Toggle to show the temporary tips debug panel (today / records / live match / table). */
 const showTipsPageDebug = false;
+
+const tipAboutDescription = liveTip
+  ? typeof liveTip.description === "string" && liveTip.description.trim() !== ""
+    ? liveTip.description.trim()
+    : typeof liveTip.bridge === "string" && liveTip.bridge.trim() !== ""
+      ? liveTip.bridge.trim()
+      : ""
+  : "";
+
+const tipJumpLinks: { label: string; href: string }[] =
+  liveTip && Array.isArray(liveTip.jumpLinks)
+    ? liveTip.jumpLinks.filter(
+        (j): j is { label: string; href: string } =>
+          !!j &&
+          typeof j.label === "string" &&
+          j.label.trim() !== "" &&
+          typeof j.href === "string" &&
+          j.href.trim() !== ""
+      )
+    : [];
 ---
 
 <Layout
@@ -90,41 +152,35 @@ const showTipsPageDebug = false;
       <>
         <div data-ms-content="logged-in">
         <div class="tuesday-tip-hero">
-          <div class="tuesday-tip-hero__intro">
-            <div class="tuesday-tip-header tuesday-tip-header--hero">
-              <img
-                src="/images/tuesday-tip.svg"
-                alt="Tuesday Tip"
-                class="tuesday-tip-logo"
-                loading="eager"
-              />
-            </div>
-            <div class="tuesday-tip-bubbles">
-              {liveTip.question && (
-                <div class="talk-row talk-left tuesday-tip-bubble-row">
-                  <h2 class="talk-bubble bubble-bl bubble-question tuesday-tip__question">
-                    {liveTip.question}
-                  </h2>
-                </div>
+          <div class="tuesday-tip-bubbles">
+            {liveTip.question && (
+              <div class="talk-row talk-left tuesday-tip-bubble-row tuesday-tip-bubble-row--hero">
+                <h1 class="talk-bubble bubble-bl bubble-question tuesday-tip__question tuesday-tip__question--hero">
+                  {liveTip.question}
+                </h1>
+              </div>
+            )}
+            {liveTip.question &&
+              typeof liveTip.hook === "string" &&
+              liveTip.hook.trim() !== "" && (
+                <p class="tuesday-tip-hook">{liveTip.hook}</p>
               )}
-              
-              {liveTip.quickAnswer && (
-                <div class="talk-row talk-right tuesday-tip-bubble-row">
-                  <div class="talk-bubble bubble-br bubble-answer tuesday-tip__answer">
-                    <div class="tuesday-tip__answer-inner">
-                      <img
-                        src="/images/KINlogo.svg"
-                        alt="Knit it Now"
-                        class="tuesday-tip__logo"
-                        width="60"
-                        height="60"
-                      />
-                      <div class="tuesday-tip__answer-text" set:html={liveTip.quickAnswer} />
-                    </div>
+            {liveTip.quickAnswer && String(liveTip.quickAnswer).trim() !== "" && (
+              <div class="talk-row talk-right tuesday-tip-bubble-row tuesday-tip-bubble-row--answer">
+                <div class="talk-bubble bubble-br bubble-answer tuesday-tip__answer">
+                  <div class="tuesday-tip__answer-inner">
+                    <img
+                      src="/images/help-hub.svg"
+                      alt="Knit it Now"
+                      class="tuesday-tip__logo"
+                      width="52"
+                      height="52"
+                    />
+                    <div class="tuesday-tip__answer-text" set:html={String(liveTip.quickAnswer)} />
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
           <div class="tuesday-tip-hero__media">
             <div class="tuesday-tip-video-shell">
@@ -144,6 +200,25 @@ const showTipsPageDebug = false;
                 )}
               </div>
             </div>
+            <section class="tuesday-tip__details" aria-label="About this tip">
+              <h2 class="tuesday-tip__section-heading">About This Tip</h2>
+              {tipAboutDescription && (
+                <p class="tuesday-tip__description">{tipAboutDescription}</p>
+              )}
+              {tipJumpLinks.length > 0 && (
+                <nav class="tuesday-tip__jump-links" aria-label="Jump to sections on this page">
+                  <ul class="tuesday-tip__jump-links-list">
+                    {tipJumpLinks.map((j) => (
+                      <li>
+                        <a href={j.href.trim()}>{j.label.trim()}</a>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              )}
+              {/* Transcript: render inside `.tuesday-tip__transcript` when `liveTip.transcript` (or similar) exists in JSON */}
+              <section class="tuesday-tip__transcript" data-placeholder="transcript"></section>
+            </section>
           </div>
         </div>
 
@@ -152,7 +227,7 @@ const showTipsPageDebug = false;
             <p class="tips-debug-panel__title"><strong>Temporary debug</strong> — JSON load &amp; live match</p>
             <ul class="tips-debug-panel__list">
               <li><strong>Today (page):</strong> {today}</li>
-              <li><strong>tips-content.json loaded:</strong> {tips.length > 0 || tipsContent !== undefined ? `yes (${tips.length} record${tips.length === 1 ? "" : "s"})` : "no / empty"}</li>
+              <li><strong>help-hub.json loaded:</strong> {tips.length > 0 ? `yes (${tips.length} record${tips.length === 1 ? "" : "s"})` : "no / empty"}</li>
               <li><strong>Live tip found:</strong> {liveTip ? "yes" : "no"}</li>
             </ul>
             {liveTip ? (
@@ -170,7 +245,7 @@ const showTipsPageDebug = false;
             ) : (
               <p class="tips-debug-panel__explain">{debugLiveExplanation}</p>
             )}
-            <p class="tips-debug-panel__subhead">All records in tips-content.json</p>
+            <p class="tips-debug-panel__subhead">All records in help-hub.json</p>
             <div class="tips-debug-table-wrap">
               <table class="tips-debug-table">
                 <thead>
@@ -206,10 +281,6 @@ const showTipsPageDebug = false;
           </div>
         )}
 
-        {liveTip.bridge?.trim() && (
-          <p class="tuesday-tip__bridge">{liveTip.bridge}</p>
-        )}
-
         <!-- Try This -->
         {Array.isArray(liveTip.trySteps) && liveTip.trySteps.length > 0 && (
           <section class="tuesday-tip__try-section">
@@ -225,19 +296,27 @@ const showTipsPageDebug = false;
         )}
 
         <!-- Member CTA -->
-        {(liveTip.memberHeading || liveTip.memberText || liveTip.memberLink || liveTip.memberButton) && (
+        {(liveTip.memberHeading ||
+          liveTip.memberText ||
+          (typeof liveTip.memberLessonUrl === "string" && liveTip.memberLessonUrl.trim() !== "")) && (
           <section class="tuesday-tip__cta">
             <div class="kbm-card">
               <div class="kbm-card-body">
                 {liveTip.memberHeading && <h3>{liveTip.memberHeading}</h3>}
                 {liveTip.memberText && <p>{liveTip.memberText}</p>}
-                {liveTip.memberLink && liveTip.memberButton && (
+                {typeof liveTip.memberLessonUrl === "string" &&
+                  liveTip.memberLessonUrl.trim() !== "" && (
                   <>
-                    <a href={liveTip.memberLink} class="btn btn-primary">
-                      {liveTip.memberButton}
+                    <a
+                      href={liveTip.memberLessonUrl.trim()}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="kbm-btn kbm-btn-primary"
+                    >
+                      Watch the Full Lesson (Members)
                     </a>
-                    <p class="tip-member-helper">
-                      Already a member? Use the lesson link in your Tuesday email for direct access.
+                    <p class="kbm-member-note">
+                      This lesson opens in our current Knit It Now library.
                     </p>
                   </>
                 )}
@@ -302,7 +381,7 @@ const showTipsPageDebug = false;
       <>
         <div class="tuesday-tip-header">
           <img
-            src="/images/tuesday-tip.svg"
+            src="/images/help-hub.svg"
             alt="Tuesday Tip"
             class="tuesday-tip-logo"
             loading="eager"
@@ -313,11 +392,11 @@ const showTipsPageDebug = false;
             <p class="tips-debug-panel__title"><strong>Temporary debug</strong> — JSON load &amp; live match</p>
             <ul class="tips-debug-panel__list">
               <li><strong>Today (page):</strong> {today}</li>
-              <li><strong>tips-content.json loaded:</strong> {tips.length > 0 || tipsContent !== undefined ? `yes (${tips.length} record${tips.length === 1 ? "" : "s"})` : "no / empty"}</li>
+              <li><strong>help-hub.json loaded:</strong> {tips.length > 0 ? `yes (${tips.length} record${tips.length === 1 ? "" : "s"})` : "no / empty"}</li>
               <li><strong>Live tip found:</strong> no</li>
             </ul>
             <p class="tips-debug-panel__explain">{debugLiveExplanation}</p>
-            <p class="tips-debug-panel__subhead">All records in tips-content.json</p>
+            <p class="tips-debug-panel__subhead">All records in help-hub.json</p>
             <div class="tips-debug-table-wrap">
               <table class="tips-debug-table">
                 <thead>
@@ -378,57 +457,100 @@ const showTipsPageDebug = false;
     margin-right: auto;
   }
 
-  /* —— Hero: logo + bubbles | 16:9 video —— */
+  /* —— Hero: intro + bubbles | 16:9 video —— */
   .tuesday-tip-hero {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 1.5rem;
     align-items: start;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2.25rem;
   }
 
   @media (min-width: 1080px) {
     .tuesday-tip-hero {
       grid-template-columns: minmax(300px, 1fr) minmax(460px, 1.12fr);
-      gap: clamp(1.75rem, 4vw, 2.75rem);
-      align-items: center;
+      gap: clamp(1.5rem, 3.5vw, 2.25rem);
+      align-items: start;
     }
-  }
-
-  .tuesday-tip-hero__intro {
-    display: flex;
-    flex-direction: column;
-    gap: 1.35rem;
-    min-width: 0;
-  }
-
-  .tuesday-tip-header--hero {
-    text-align: left;
-    margin: 0;
-  }
-
-  .tuesday-tip-header--hero .tuesday-tip-logo {
-    margin-left: 0;
-    margin-right: 0;
   }
 
   .tuesday-tip-bubbles {
     display: flex;
     flex-direction: column;
-    gap: 1.15rem;
+    gap: 0;
+    min-width: 0;
+  }
+
+  .tuesday-tip-hook {
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: #4a5568; /* soft gray */
+    margin: 0 0 0.4rem 0;
+    font-style: italic;
+    max-width: 100%;
   }
 
   .tuesday-tip-bubble-row.talk-row {
     margin: 0;
   }
 
+  .tuesday-tip-bubble-row--hero.talk-row {
+    /* Room for bottom-left tail (pseudo-elements don’t extend layout height). */
+    padding-bottom: 1.15rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .tuesday-tip-bubble-row--answer.talk-row {
+    margin-top: 0.15rem;
+  }
+
   .tuesday-tip-bubbles .talk-bubble {
     max-width: 100%;
+  }
+
+  /* Hero headline: large question bubble, full column width, multi-line wrap */
+  .talk-bubble.tuesday-tip__question--hero {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    font-weight: 700;
+    font-size: clamp(1.28rem, 3.6vw, 2.05rem);
+    line-height: 1.28;
+    letter-spacing: -0.02em;
+    padding: clamp(1.05rem, 2.4vw, 1.55rem) clamp(1.2rem, 3vw, 1.85rem);
+    border-radius: clamp(22px, 4vw, 28px);
+    box-shadow: 0 4px 14px rgba(46, 58, 24, 0.12);
+  }
+
+  .talk-bubble.tuesday-tip__question--hero:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(46, 58, 24, 0.14);
+  }
+
+  /* Slightly larger tail for hero bubble-bl (keeps speech-bubble read) */
+  .talk-bubble.tuesday-tip__question--hero.bubble-bl::after {
+    bottom: -20px;
+    left: clamp(22px, 7vw, 38px);
+    border-left: 11px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 20px solid #52682d;
+  }
+
+  .talk-bubble.tuesday-tip__question--hero.bubble-bl::before {
+    bottom: -14px;
+    left: clamp(24px, 7vw, 40px);
+    border-left: 9px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 16px solid #f0f4e8;
   }
 
   .tuesday-tip-hero__media {
     min-width: 0;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .tuesday-tip-video-shell {
@@ -575,38 +697,101 @@ const showTipsPageDebug = false;
     margin-bottom: 15px;
   }
 
-  /* Question vs answer: hierarchy only (no size/layout changes) */
-  .talk-bubble.tuesday-tip__question {
+  .talk-bubble.tuesday-tip__question:not(.tuesday-tip__question--hero) {
     color: #6f8550;
   }
 
+  .talk-bubble.tuesday-tip__question--hero {
+    color: #3d4d22;
+  }
+
+  /* Answer stays smaller / secondary vs hero question */
   .talk-bubble.tuesday-tip__answer {
     font-weight: 500;
-    padding:  16px 20px 16px 20px;
-    margin-left: 60px;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    padding: 12px 16px;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: min(100%, 36rem);
+    margin-inline-start: auto;
+  }
+
+  @media (min-width: 480px) {
+    .talk-bubble.tuesday-tip__answer {
+      margin-inline-start: 2rem;
+    }
   }
 
   .tuesday-tip__answer-inner {
     display: flex;
     align-items: flex-start;
-    gap: 16px;
+    gap: 12px;
   }
 
   .tuesday-tip__logo {
-    width: 60px;
-    height: 60px;
+    width: 52px;
+    height: 52px;
     flex-shrink: 0;
+    margin-top: 2px;
   }
 
   .tuesday-tip__answer-text {
     flex: 1;
   }
 
-  .tuesday-tip__bridge {
-    margin: 12px 0;
-    font-size: 0.95rem;
-    color: #666;
-    font-style: italic;
+  .tuesday-tip__details {
+    text-align: left;
+    margin-top: 1.15rem;
+    margin-bottom: 0;
+    padding-top: 0;
+  }
+
+  .tuesday-tip__section-heading {
+    margin: 0 0 0.85rem;
+    font-size: clamp(1.12rem, 2.1vw, 1.32rem);
+    font-weight: 600;
+    line-height: 1.3;
+    color: #1f2937;
+  }
+
+  .tuesday-tip__description {
+    margin: 0 0 1rem;
+    max-width: 100%;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: #374151;
+  }
+
+  .tuesday-tip__jump-links {
+    margin: 0 0 1rem;
+    max-width: 100%;
+  }
+
+  .tuesday-tip__jump-links-list {
+    margin: 0;
+    padding-left: 1.25rem;
+    line-height: 1.6;
+    color: #334155;
+  }
+
+  .tuesday-tip__jump-links a {
+    color: var(--kbm-green, #52682d);
+    text-decoration: none;
+  }
+
+  .tuesday-tip__jump-links a:hover {
+    text-decoration: underline;
+  }
+
+  .tuesday-tip__transcript {
+    margin-top: 1.25rem;
+    max-width: 100%;
+  }
+
+  .tuesday-tip__transcript:not(:empty) {
+    padding-top: 1.15rem;
+    border-top: 1px solid #e5e7eb;
   }
 
   .tuesday-tip__try-card {

@@ -219,6 +219,12 @@ const tipsContentJson = JSON.stringify(tipsContent).replaceAll("</script", "\\u0
         <h2>Tip Content</h2>
         <div class="field-grid">
           <label class="field-full">
+            <span>Hook</span>
+            <input type="text" name="hook" autocomplete="off" />
+            <span class="field-hint">Short one-line intro shown above the question on the tip page</span>
+          </label>
+
+          <label class="field-full">
             <span>question</span>
             <textarea name="question" rows="2"></textarea>
           </label>
@@ -901,6 +907,7 @@ const tipsContentJson = JSON.stringify(tipsContent).replaceAll("</script", "\\u0
       lastPublishedDate: string | null;
       emailDone: boolean;
       emailSentDate: string | null;
+      hook: string;
       question: string;
       quickAnswer: string;
       bridge: string;
@@ -998,6 +1005,7 @@ const tipsContentJson = JSON.stringify(tipsContent).replaceAll("</script", "\\u0
         lastPublishedDate: valueOrNull("lastPublishedDate"),
         emailDone: checkedValue("emailDone"),
         emailSentDate: valueOrNull("emailSentDate"),
+        hook: textValue("hook"),
         question: textValue("question"),
         quickAnswer: textValue("quickAnswer"),
         bridge: textValue("bridge"),
@@ -1053,6 +1061,7 @@ const tipsContentJson = JSON.stringify(tipsContent).replaceAll("</script", "\\u0
         lastPublishedDate: optStr("lastPublishedDate"),
         emailDone: r.emailDone === true,
         emailSentDate: optStr("emailSentDate"),
+        hook: str("hook"),
         question: str("question"),
         quickAnswer: str("quickAnswer"),
         bridge: str("bridge"),
@@ -1193,6 +1202,7 @@ const tipsContentJson = JSON.stringify(tipsContent).replaceAll("</script", "\\u0
       setFieldValue("lastPublishedDate", "");
       setCheckboxValue("emailDone", false);
       setFieldValue("emailSentDate", "");
+      setFieldValue("hook", "");
       setFieldValue("question", "");
       setFieldValue("quickAnswer", "");
       setFieldValue("bridge", "");
@@ -1227,6 +1237,7 @@ const tipsContentJson = JSON.stringify(tipsContent).replaceAll("</script", "\\u0
       setFieldValue("lastPublishedDate", record.lastPublishedDate ?? "");
       setCheckboxValue("emailDone", record.emailDone === true);
       setFieldValue("emailSentDate", record.emailSentDate ?? "");
+      setFieldValue("hook", record.hook ?? "");
       setFieldValue("question", record.question ?? "");
       setFieldValue("quickAnswer", record.quickAnswer ?? "");
       setFieldValue("bridge", record.bridge ?? "");

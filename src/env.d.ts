@@ -5,6 +5,8 @@
 declare global {
   interface Window {
     __DEV_BYPASS_GATING?: boolean;
+    /** Localhost + ?member=true: set in BaseLayout for client-side gates (videos, etc.). */
+    __KBM_DEV_MEMBER__?: boolean;
   }
 }
 

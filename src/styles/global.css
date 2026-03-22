@@ -69,6 +69,31 @@ body.dev-bypass-gating [data-gated="locked"] {
   display: none !important;
 }
 
+/*
+ * Local: localhost + ?member=true → body.dev-member + window.__KBM_DEV_MEMBER__ (BaseLayout).
+ * Tips: logged-in / !logged-in; Memberstack UI: members / !members; video pages: data-gated.
+ */
+body.dev-member [data-ms-content="members"],
+body.dev-member [data-ms-content="logged-in"] {
+  display: block !important;
+}
+
+body.dev-member [data-ms-content="!members"],
+body.dev-member [data-ms-content="!logged-in"] {
+  display: none !important;
+}
+
+body.dev-member .member-only,
+body.dev-member [data-gated="content"] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+body.dev-member [data-gated="locked"] {
+  display: none !important;
+}
+
   /* Layout spacing */
   --header-height: 7rem;
   --site-header-offset: var(--header-height); /* sticky bars sit below fixed header */
@@ -1995,25 +2020,21 @@ div[data-ms-message="error"]:empty {
 }
 
 /* PRIMARY = GREEN */
-.kbm-btn-primary {
-  background-color: var(--kbm-green);
-  color: #ffffff;
-}
-
-.kbm-btn-primary:hover {
-  background-color: var(--kbm-green-hover);
-}
-
-/* BEM alias — same visual as .kbm-btn-primary (used on some pages) */
+.kbm-btn-primary,
 .kbm-btn--primary {
   background-color: var(--kbm-green);
   color: #ffffff;
 }
 
-.kbm-btn--primary:hover {
+.kbm-btn-primary:hover,
+.kbm-btn-primary:focus,
+.kbm-btn-primary:focus-visible,
+.kbm-btn--primary:hover,
+.kbm-btn--primary:focus,
+.kbm-btn--primary:focus-visible {
   background-color: var(--kbm-green-hover);
+  color: #ffffff;
 }
-
 /* ACCENT = TERRACOTTA */
 .kbm-btn-accent {
   background-color: var(--kbm-accent);
@@ -2048,7 +2069,12 @@ div[data-ms-message="error"]:empty {
   opacity: 0.55;
   cursor: not-allowed;
 }
-
+a.kbm-btn-primary,
+a.kbm-btn--primary,
+a.kbm-btn-primary:hover,
+a.kbm-btn--primary:hover {
+  color: #ffffff !important;
+}
 /* ============================================
    Homepage welcome — notebook / founder note card
    ============================================ */
@@ -2205,4 +2231,10 @@ div[data-ms-message="error"]:empty {
     top: 52px;
     left: -72px;
   }
+}
+
+.kbm-member-note {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #6b7280; /* soft gray */
 }

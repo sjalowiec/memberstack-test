@@ -275,7 +275,7 @@ const forceMemberView =
           ? true
           : previewForce === false
             ? false
-            : window.__DEV_BYPASS_GATING || VIEWER.isMember;
+            : window.__DEV_BYPASS_GATING || window.__KBM_DEV_MEMBER__ || VIEWER.isMember;
       const listParams = new URLSearchParams();
       if (currentCategory) listParams.set("cat", currentCategory);
       if (currentSearch) listParams.set("q", currentSearch);

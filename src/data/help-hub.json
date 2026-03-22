@@ -1,0 +1,85 @@
+[
+  {
+    "slug": "cut-and-sew-shaping",
+    "status": "published",
+    "featured": true,
+
+    "lastFeaturedDate": "2026-03-22",
+    "timesFeatured": 1,
+    "featureHistory": [
+      "2026-03-22"
+    ],
+
+    "sortOrder": 5,
+  
+    "category": "Fit & Shaping",
+    "categoryPill": "Technique",
+  
+    "title": "Shape Any Pattern with Cut 'n Sew",
+    "question": "How do I shape a neckline without losing my lace or tuck pattern?",
+  
+    "hook": "Stop fighting with complex stitches and start shaping like a pro.",
+    "bubbleAnswer": "Forget hand-manipulation. Secure your knitting with a sewing machine and cut the shape you need.",
+  
+    "mediaType": "video",
+    "mediaUrl": "path/to/cut-and-sew-part1.mp4",
+    "mediaPoster": "images/posters/cut-and-sew-shaping.jpg",
+    "mediaAlt": "Sue demonstrating how to secure a knitted curve with a sewing machine before cutting.",
+  
+    "aboutTitle": "Why This Works",
+    "bridge": "Shaping while knitting complex patterns like lace or Fair Isle is a recipe for dropped stitches and frustration. The Cut 'n Sew method lets you knit 'yardage' first, focusing entirely on your stitch pattern. Then, you use a sewing machine to secure the stitches and cut the exact shape you need. It’s the ultimate shortcut for perfect necklines and armholes.",
+  
+    "tryThisTitle": "Try This",
+    "tryThis": {
+      "quickActionTitle": "The 'No-Fail' Setup",
+      "quickAction": [
+        "Knit a 10\" x 10\" swatch...",
+        "...",
+        "..."
+      ],
+      "proExerciseTitle": "The Security Check",
+      "proExercise": [
+        "...",
+        "...",
+        "..."
+      ]
+    },
+    "tags": ["shaping", "necklines", "sewing", "intermediate", "lace", "tuck"]
+  },
+  {
+  "slug": "sandwich-neckband-finish",
+  "status": "published",
+  "sortOrder": 10,
+  "category": "The Finishing Touch",
+  "categoryPill": "Pro-Finish",
+  "title": "The Perfect Sandwich Band",
+  "question": "How do I finish a raw or cut edge so it looks professional?",
+  "hook": "Give your necklines a boutique-quality finish that looks great on both sides.",
+  "bubbleAnswer": "Encase the raw edge between two knitted layers for a clean, reversible finish.",
+  "mediaType": "video",
+  "mediaUrl": "path/to/sandwich-band-video.mp4",
+  "mediaPoster": "images/posters/sandwich-band-poster.jpg",
+  "mediaAlt": "Sue demonstrating how to sandwich a cut knitted edge between two band layers on the machine.",
+  "aboutTitle": "About This Finish",
+  "bridge": "A raw, cut edge doesn't have to be a weakness; it's an opportunity for a high-end finish. By 'sandwiching' that edge between two mirrored band pieces, you hide the cut stitches completely. The secret to a professional look is 'graded tension'—knitting the band slightly tighter at the curves so it hugs the neckline perfectly without ruffling or flipping.",
+  "tryThisTitle": "Try This",
+  "tryThis": {
+    "quickActionTitle": "Mastering the Tension Grade",
+    "quickAction": [
+      "Calculate your band stitches by multiplying your edge measurement by your stitch gauge.",
+      "Knit the first half of the band (approx. 1 inch), grading the tension tighter every 2 rows (e.g., MT, MT-1, MT-2).",
+      "Remove the first half onto waste yarn or a garter bar."
+    ],
+    "proExerciseTitle": "The Professional Sandwich",
+    "proExercise": [
+      "Hang the garment neckline onto the needles with the 'private side' facing you.",
+      "Rehang the first band piece, then knit 2 rows at garment tension with all latches closed to prevent snagging.",
+      "Mirror the tension grading for the second half of the band, join the cast-on edge, and bind off loosely for a reversible finish."
+    ]
+  },
+  "featured": false,
+  "lastFeaturedDate": "",
+  "timesFeatured": 0,
+  "featureHistory": []
+  }
+]

@@ -1,0 +1,222 @@
+---
+import Layout from "../layouts/Layout.astro";
+import "../components/talk-bubbles.css";
+import helpHubData from '../data/help-hub.json';
+
+/** Placeholder grouped data — swap for JSON-driven content later. */
+const fixCategories = [
+  {
+    category: "Carriage & Machine Issues",
+    fixes: [
+      { symptom: "Why is my carriage jammed?", title: "The Stuck Carriage Rescue", slug: "stuck-carriage" },
+      { symptom: "Why is my carriage making a loud grinding noise?", title: "The Maintenance Minute", slug: "grinding-noise" },
+      { symptom: "My knitting is falling off the machine.", title: "The Gravity Check", slug: "falling-off" }
+    ]
+  },
+  {
+    category: "Edges, Cast-On & Bind-Off",
+    fixes: [
+      { symptom: "Why are my edges looping/messy?", title: "The Clean Edge Secret", slug: "messy-edges" },
+      { symptom: "How do I cast on without it bunching up?", title: "The Smooth Start", slug: "cast-on-bunching" },
+      { symptom: "How do I bind off so it doesn't pull tight?", title: "The Stretchy Finish", slug: "tight-bindoff" }
+    ]
+  },
+  {
+    category: "Stitches, Gauge & Yarn",
+    fixes: [
+      { symptom: "How do I fix a dropped stitch 10 rows down?", title: "The Ladder Rescue", slug: "dropped-stitch" },
+      { symptom: "Why is my yarn breaking/shredding?", title: "The Tension Tamer", slug: "yarn-breaking" },
+      { symptom: "My swatches never match my finished garment.", title: "The Gauge Truth", slug: "gauge-off" }
+    ]
+  },
+  {
+    category: "Ribber",
+    fixes: [
+      { symptom: "My ribbing is full of holes.", title: "The Ribber Reset", slug: "ribbing-holes" }
+    ]
+  }
+];
+---
+
+<Layout
+  title="Knit Fix Hub | Knit it Now"
+  description="Clear, focused fixes and guided paths for common machine knitting problems — get back to knitting with confidence."
+>
+  <section
+    class="container py-5 knit-fix-hub"
+    aria-labelledby="knit-fix-hub-heading"
+  >
+    <div class="knit-fix-hub-inner">
+      <div class="fix-hub-banner">
+        <div class="fix-hub-banner-logo">
+          <img
+            id="knit-fix-hub-heading"
+            src="/images/help-hub.svg"
+            alt="Let's Fix This"
+            class="fix-hub-logo"
+          />
+        </div>
+        <div class="fix-hub-banner-text">
+          <p class="fix-hub-tagline">Stop searching and start knitting again.</p>
+          <p>Whether something isn’t working or you just want a better way forward, machine knitting advice can send you down a rabbit hole.</p>
+          <p>
+            Here, you’ll find clear, focused fixes and guided paths that help you avoid
+            the frustration - and get back to creating knits you’ll be proud of.
+          </p>
+        </div>
+      </div>
+
+      <h2 class="visually-hidden">Browse fixes</h2>
+      <div class="fix-hub-divider"></div>
+
+      <div class="fix-category-list">
+        {fixCategories.map((group) => (
+          <section class="fix-category-section">
+            <h2 class="fix-category-heading">{group.category}</h2>
+            <div class="fix-bubble-grid">
+              {group.fixes.map((fix) => (
+                <a href={`/fixes/${fix.slug}`} class="talk-bubble bubble-bl bubble-question">
+                  <strong>{fix.symptom}</strong>
+                  <br />
+                  <span>{fix.title}</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .knit-fix-hub-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      padding-bottom: 3rem;
+    }
+
+    .fix-hub-banner {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      padding: 2rem 2.25rem;
+      border-radius: 32px;
+      margin-bottom: 2rem;
+    }
+
+    .fix-hub-banner-logo {
+      flex: 0 0 auto;
+    }
+
+    .fix-hub-logo {
+      width: 180px;
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .fix-hub-banner-text {
+      flex: 1 1 auto;
+    }
+
+    .fix-hub-tagline {
+      font-size: 1.9rem;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--kbm-green);
+      margin: 0 0 1rem 0;
+    }
+
+    .fix-hub-banner-text p:not(.fix-hub-tagline) {
+      margin: 0 0 0.9rem 0;
+      font-size: var(--text-base);
+      color: #243015;
+      line-height: 1.65;
+    }
+
+    .fix-hub-banner-text p:not(.fix-hub-tagline):last-of-type {
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 768px) {
+      .fix-hub-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1.5rem;
+      }
+
+      .fix-hub-logo {
+        width: 150px;
+      }
+
+      .fix-hub-tagline {
+        font-size: 1.5rem;
+      }
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .fix-hub-divider {
+      height: 1px;
+      background: rgba(82, 104, 45, 0.2);
+      margin: 2rem 0 2.5rem;
+    }
+
+    .fix-category-section {
+      margin-bottom: 2.5rem;
+    }
+
+    .fix-category-heading {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--kbm-green);
+      margin-bottom: 1rem;
+    }
+
+    .fix-bubble-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 2.5rem;
+      row-gap: 2.25rem;
+      align-items: start;
+    }
+
+    .fix-bubble-grid .talk-bubble {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      margin: 0 !important;
+    }
+
+    .fix-bubble-grid .talk-bubble + .talk-bubble {
+      margin-top: 0 !important;
+    }
+
+    @media (max-width: 768px) {
+      .fix-bubble-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Links use talk-bubble visuals; keep them readable and focusable. */
+    .knit-fix-hub .fix-bubble-grid a.talk-bubble {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .knit-fix-hub .fix-bubble-grid a.talk-bubble:focus-visible {
+      outline: 2px solid var(--kbm-green, #52682d);
+      outline-offset: 3px;
+    }
+  </style>
+</Layout>

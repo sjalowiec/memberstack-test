@@ -292,5 +292,34 @@ const isProduction =
       });
     </script>
 
+    <script is:inline>
+      (function () {
+        var params = new URLSearchParams(window.location.search);
+        var localMember =
+          window.location.hostname === "localhost" && params.get("member") === "true";
+
+        if (!localMember) return;
+
+        document.body.classList.add("dev-member");
+        window.__KBM_DEV_MEMBER__ = true;
+
+        document.addEventListener(
+          "click",
+          function (e) {
+            var t = e.target;
+            if (!t || typeof t.closest !== "function") return;
+            var a = t.closest("a[href]");
+            if (!a) return;
+            var raw = a.getAttribute("href") || "";
+            var path = raw.split("#")[0].split("?")[0];
+            if (path === "/membership" || /\/membership$/.test(path)) {
+              e.preventDefault();
+            }
+          },
+          true
+        );
+      })();
+    </script>
+
   </body>
 </html>
