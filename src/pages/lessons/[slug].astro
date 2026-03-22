@@ -1,16 +1,16 @@
 ---
-import tips from "../../data/tips-content.json" assert { type: "json" };
+import tips from "../../data/help-hub.json" assert { type: "json" };
 import Layout from "../../layouts/Layout.astro";
 import "../../components/talk-bubbles.css";
 
 export async function getStaticPaths() {
-  return tips.map((tip) => ({
+  return helpHubData.map((tip) => ({
     params: { slug: tip.slug },
   }));
 }
 
 const { slug } = Astro.params;
-const lesson = tips.find((tip) => tip.slug === slug);
+const lesson = helpHubData.find((tip) => tip.slug === slug);
 const lessonVideoUrl = lesson?.memberVideoUrl || lesson?.videoUrl || "";
 
 // TEMP preview toggle via URL param (do not use for real access control)

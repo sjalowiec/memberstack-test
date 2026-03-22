@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import tipsContent from "../../data/tips-content.json";
-const tipsContentJson = JSON.stringify(tipsContent).replaceAll("</script", "\\u003c/script");
+import helpHubData from "../../data/help-hub.json";
+const helpHubDataJson = JSON.stringify(helpHubData).replaceAll("</script", "\\u003c/script");
 ---
 
 <BaseLayout
@@ -14,7 +14,7 @@ const tipsContentJson = JSON.stringify(tipsContent).replaceAll("</script", "\\u0
     <header class="tips-admin-page-head">
       <h1 class="tips-admin-page-title">Tuesday Tips Admin</h1>
       <p class="tips-admin-page-sub">
-        Full-width workspace. <strong>Save Tip</strong> writes to <code>src/data/tips-content.json</code> via the API.
+        Full-width workspace. <strong>Save Tip</strong> writes to <code>src/data/help-hub.json</code> via the API.
       </p>
     </header>
 
