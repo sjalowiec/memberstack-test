@@ -1,0 +1,36 @@
+[
+  {
+    "id": 101,
+    "slug": "finish-clean-neckband",
+    "title": "Finish a Clean Neckband",
+    "summary": "Learn how to finish a clean, professional neckband after shaping or cutting your knitting.",
+    "type": "video",
+    "vimeoEmbedUrl": "https://player.vimeo.com/video/1175910979",
+    "access": "free",
+    "associatedTip": "cut-and-sew-shaping",
+    "url": "/lessons/finish-clean-neckband",
+    "encouragement": "If neat necklines have felt intimidating, you’re not alone. This is one of those finishing steps that gets easier once you can see it and try it on a real swatch first.",
+    "exerciseTitle": "Step-by-Step: Knit Your Neckband",
+    "exerciseItems": [
+      "Watch the lesson all the way through (04:28) before touching your knitting.",
+      "Practice on a swatch before trying it on your project.",
+      "Establish the correct number of stitches for your band piece.",
+      "Scrap on (waste yarn and ravel cord).",
+      "Knit the first side of the band - grading the tension as you go.",
+      "Scrap off the stitches from the first side of the band.",
+        "Hang the garment edge with the wrong (private side) facing you.",
+        "Rehang the first band with the wrong (private side) facing you.",
+        "Pull all needles out (stitches behind the latches).",
+        "Close the latches.",
+      "Knit the second side of the band - grading the tension as you go.",
+      "Close the sandwich: Pick up the initial cast on stitches",
+      "Loosely bind off the stitches."
+         ],
+    "noteTitle": "Grade the band tension",
+"noteText": "By grading the tension as you knit the band, the band will lay flat against the body and not pop out.",
+"supportImage": "/images/lessons/grade-neckband.webp",
+"supportImageAlt": "Grade the band tension",
+    "templateLink": "/downloads/shop/cut-n-sew-neckline-templates.pdf",
+    "templateLinkText": "Download the neckline template printable"
+  }
+]

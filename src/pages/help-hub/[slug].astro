@@ -1,0 +1,840 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+import "../../components/talk-bubbles.css";
+import helpHubData from "../../data/help-hub.json";
+import lessonsData from "../../data/lessons.json";
+
+type HelpHubTryThis = {
+  quickActionTitle?: string;
+  quickAction?: string[];
+  proExerciseTitle?: string;
+  proExercise?: string[];
+};
+
+type HelpHubLessonCta = {
+  eyebrow?: string;
+  title?: string;
+  text?: string;
+  buttonText?: string;
+  note?: string;
+};
+
+/** Current Help Hub tip record shape (src/data/help-hub.json). */
+type HelpHubRecord = {
+  slug?: string;
+  status?: string;
+  title?: string;
+  question?: string;
+  hook?: string;
+  bubbleAnswer?: string;
+  mediaType?: string;
+  mediaUrl?: string;
+  mediaPoster?: string;
+  mediaAlt?: string;
+  aboutTitle?: string;
+  bridge?: string;
+  tryThisTitle?: string;
+  tryThis?: HelpHubTryThis;
+  lessonCta?: HelpHubLessonCta;
+  /** Slug of the related row in lessons.json (e.g. finish-clean-neckband). */
+  relatedLesson?: string;
+  jumpLinks?: { label: string; href: string }[];
+};
+
+type LessonRecord = {
+  slug?: string;
+  title?: string;
+  url?: string;
+  summary?: string;
+};
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  const rows = Array.isArray(helpHubData)
+    ? (helpHubData as HelpHubRecord[])
+    : [];
+  return rows
+    .filter(
+      (t) =>
+        t.status === "published" &&
+        typeof t.slug === "string" &&
+        t.slug.trim() !== ""
+    )
+    .map((t) => ({ params: { slug: t.slug!.trim() } }));
+}
+
+const rawSlug =
+  typeof Astro.params.slug === "string" ? Astro.params.slug.trim() : "";
+const tips = Array.isArray(helpHubData)
+  ? (helpHubData as HelpHubRecord[])
+  : [];
+const tip: HelpHubRecord | undefined = rawSlug
+  ? tips.find((t) => typeof t.slug === "string" && t.slug.trim() === rawSlug)
+  : undefined;
+
+if (!tip || tip.status !== "published") {
+  return Astro.redirect("/404");
+}
+
+const lessons = Array.isArray(lessonsData)
+  ? (lessonsData as LessonRecord[])
+  : [];
+
+const relatedLessonSlug =
+  typeof tip.relatedLesson === "string" ? tip.relatedLesson.trim() : "";
+
+const relatedLesson: LessonRecord | undefined = relatedLessonSlug
+  ? lessons.find(
+      (l) => typeof l.slug === "string" && l.slug.trim() === relatedLessonSlug
+    )
+  : undefined;
+
+const lessonUrl =
+  typeof relatedLesson?.url === "string" && relatedLesson.url.trim() !== ""
+    ? relatedLesson.url.trim()
+    : "";
+
+const whyBody =
+  typeof tip.bridge === "string" && tip.bridge.trim() !== ""
+    ? tip.bridge.trim()
+    : "";
+
+const tipJumpLinks: { label: string; href: string }[] =
+  Array.isArray(tip.jumpLinks)
+    ? tip.jumpLinks.filter(
+        (j): j is { label: string; href: string } =>
+          !!j &&
+          typeof j.label === "string" &&
+          j.label.trim() !== "" &&
+          typeof j.href === "string" &&
+          j.href.trim() !== ""
+      )
+    : [];
+
+function filterTrySteps(steps: unknown): string[] {
+  if (!Array.isArray(steps)) return [];
+  return steps.filter(
+    (step): step is string =>
+      typeof step === "string" &&
+      step.trim() !== "" &&
+      step.trim() !== "..."
+  );
+}
+
+const quickSteps = filterTrySteps(tip.tryThis?.quickAction);
+const proSteps = filterTrySteps(tip.tryThis?.proExercise);
+const hasTrySection =
+  quickSteps.length > 0 ||
+  proSteps.length > 0 ||
+  (typeof tip.tryThisTitle === "string" && tip.tryThisTitle.trim() !== "");
+
+const mediaType = typeof tip.mediaType === "string" ? tip.mediaType : "";
+const mediaUrl = typeof tip.mediaUrl === "string" ? tip.mediaUrl.trim() : "";
+const mediaPoster =
+  typeof tip.mediaPoster === "string" ? tip.mediaPoster.trim() : "";
+const mediaAlt = typeof tip.mediaAlt === "string" ? tip.mediaAlt.trim() : "";
+
+const pageTitleBase =
+  tip.question && tip.question.trim() !== ""
+    ? tip.question
+    : tip.title && tip.title.trim() !== ""
+      ? tip.title
+      : "Help Hub";
+const layoutTitle =
+  pageTitleBase.length > 55
+    ? `Help Hub — ${pageTitleBase.slice(0, 55)}… | Knit it Now`
+    : `Help Hub — ${pageTitleBase} | Knit it Now`;
+
+const metaDescription =
+  (typeof tip.hook === "string" && tip.hook.trim() !== ""
+    ? tip.hook.trim()
+    : whyBody) ||
+  "Machine knitting help from Knit it Now.";
+
+const hyvorId =
+  typeof tip.slug === "string" && tip.slug.trim() !== ""
+    ? tip.slug.trim()
+    : rawSlug;
+
+const aboutHeading =
+  typeof tip.aboutTitle === "string" && tip.aboutTitle.trim() !== ""
+    ? tip.aboutTitle.trim()
+    : "Why This Works";
+
+const tryHeading =
+  typeof tip.tryThisTitle === "string" && tip.tryThisTitle.trim() !== ""
+    ? tip.tryThisTitle.trim()
+    : "Try This";
+
+const cta = tip.lessonCta;
+
+/** CTA block needs a real lesson URL from lessons.json; copy can come from lessonCta and/or lesson. */
+const showLessonCta = lessonUrl !== "" && relatedLesson !== undefined;
+---
+
+<Layout title={layoutTitle} description={metaDescription} bodyClass="page--tight-header">
+  <PageHead title="Help Hub" subhead={undefined} hideTitle={true} />
+
+  <section class="container py-5 tips-page-section">
+    <div class="tuesday-tip-hero">
+      <div class="tuesday-tip-hero__content">
+        <div class="tuesday-tip-bubbles">
+          {typeof tip.hook === "string" && tip.hook.trim() !== "" && (
+            <p class="bubble-hook" data-placeholder="short subtitle/supporting sentence">
+              {tip.hook}
+            </p>
+          )}
+
+          {(tip.question || tip.title) && (
+            <div class="talk-row talk-left tuesday-tip-bubble-row">
+              <h1 class="talk-bubble bubble-bl bubble-question tuesday-tip__question" data-placeholder="title">
+                {tip.question || tip.title || "Help Hub"}
+              </h1>
+            </div>
+          )}
+
+          {typeof tip.bubbleAnswer === "string" &&
+            tip.bubbleAnswer.trim() !== "" && (
+              <div class="talk-row talk-right tuesday-tip-bubble-row" aria-label="Quick answer">
+                <div class="talk-bubble bubble-br bubble-answer tuesday-tip__answer">
+                  <div class="tuesday-tip__answer-inner">
+                    <img
+                      src="/images/KINlogo.svg"
+                      alt="Knit it Now"
+                      class="tuesday-tip__logo"
+                      width="60"
+                      height="60"
+                    />
+                    <div
+                      class="tuesday-tip__answer-text"
+                      data-placeholder="quick answer"
+                      set:html={tip.bubbleAnswer}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+        </div>
+      </div>
+
+      <aside class="tuesday-tip-hero__media" aria-label="Free visual">
+        <div class="tuesday-tip-video-shell" data-placeholder="hero media">
+          <div class="tuesday-tip-video-aspect">
+            {mediaType === "image" && mediaUrl ? (
+              <img
+                src={mediaUrl}
+                alt={mediaAlt}
+                class="tuesday-tip-media-image"
+                loading="lazy"
+              />
+            ) : mediaType === "vimeo" && mediaUrl ? (
+              <div class="help-hub-media">
+                <iframe
+                  src={`https://player.vimeo.com/video/${mediaUrl}`}
+                  class="tuesday-tip-video-iframe"
+                  title={tip.question || tip.title || "Help Hub video"}
+                  frameborder="0"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowfullscreen
+                ></iframe>
+              </div>
+            ) : mediaType === "video" && mediaUrl ? (
+              <video
+                class="tuesday-tip-video-native"
+                controls
+                playsinline
+                preload="metadata"
+                poster={mediaPoster || undefined}
+              >
+                <source src={mediaUrl} />
+                {mediaAlt ? <p>{mediaAlt}</p> : null}
+              </video>
+            ) : (
+              <div class="tuesday-tip-video-fallback">
+                <p class="tuesday-tip-video-fallback__text">
+                  Media will appear here when a published media URL is set in the Help Hub
+                  record.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <section
+      class="tuesday-tip__section tuesday-tip__section--why"
+      aria-labelledby="help-hub-why-heading"
+    >
+      <h2 id="help-hub-why-heading" class="tuesday-tip__section-heading">
+        {aboutHeading}
+      </h2>
+      <div class="tuesday-tip__section-card">
+        {whyBody ? (
+          <p class="tuesday-tip__description" data-placeholder="why this works text">
+            {whyBody}
+          </p>
+        ) : (
+          <p class="tuesday-tip__description" data-placeholder="why this works text">
+            More detail for this tip will appear here when the Help Hub record includes a
+            bridge.
+          </p>
+        )}
+        {tipJumpLinks.length > 0 && (
+          <nav class="tuesday-tip__jump-links" aria-label="Jump to sections on this page">
+            <ul class="tuesday-tip__jump-links-list">
+              {tipJumpLinks.map((j) => (
+                <li>
+                  <a href={j.href.trim()}>{j.label.trim()}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+        <section class="tuesday-tip__transcript" data-placeholder="transcript"></section>
+        <div class="tip-help-cta">
+          <p class="tip-help-text">Want a little extra help?</p>
+
+          <div class="tip-help-actions">
+            <a href="/work-with-me" class="kbm-button">Work With Me (3-Week Sprint)</a>
+
+            <a href="/unstuck-session" class="kbm-button">Get Quick Help (15-Min SOS Call)</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {hasTrySection && (quickSteps.length > 0 || proSteps.length > 0) && (
+      <section class="tuesday-tip__section tuesday-tip__try-section">
+        <div class="tuesday-tip__try-card">
+          <h2 class="tuesday-tip__section-heading tuesday-tip__try-heading">{tryHeading}</h2>
+          {quickSteps.length > 0 && (
+            <>
+              {typeof tip.tryThis?.quickActionTitle === "string" &&
+                tip.tryThis.quickActionTitle.trim() !== "" && (
+                  <p class="tuesday-tip__try-subhead">{tip.tryThis.quickActionTitle}</p>
+                )}
+              <div class="tuesday-tip__try-body">
+                <ul data-placeholder="try this checklist">
+                  {quickSteps.map((step) => (
+                    <li set:html={step} />
+                  ))}
+                </ul>
+              </div>
+            </>
+          )}
+          {proSteps.length > 0 && (
+            <>
+              {typeof tip.tryThis?.proExerciseTitle === "string" &&
+                tip.tryThis.proExerciseTitle.trim() !== "" && (
+                  <p
+                    class:list={[
+                      "tuesday-tip__try-subhead",
+                      quickSteps.length > 0 ? "tuesday-tip__try-subhead--spaced" : "",
+                    ]}
+                  >
+                    {tip.tryThis.proExerciseTitle}
+                  </p>
+                )}
+              <div class="tuesday-tip__try-body">
+                <ul data-placeholder="pro exercise checklist">
+                  {proSteps.map((step) => (
+                    <li set:html={step} />
+                  ))}
+                </ul>
+              </div>
+            </>
+          )}
+        </div>
+      </section>
+    )}
+
+    {showLessonCta && (
+      <section class="help-hub-lesson-cta" aria-labelledby="lesson-cta-title">
+        <div class="help-hub-lesson-cta__content">
+          <p class="help-hub-lesson-cta__eyebrow">
+            {cta && typeof cta.eyebrow === "string" && cta.eyebrow.trim() !== ""
+              ? cta.eyebrow
+              : "Related lesson"}
+          </p>
+
+          <h2 id="lesson-cta-title" class="help-hub-lesson-cta__title">
+            {cta && typeof cta.title === "string" && cta.title.trim() !== ""
+              ? cta.title
+              : relatedLesson?.title
+                ? `Continue with ${relatedLesson.title}`
+                : "Continue with the related lesson"}
+          </h2>
+
+          <p class="help-hub-lesson-cta__text">
+            {cta && typeof cta.text === "string" && cta.text.trim() !== ""
+              ? cta.text
+              : typeof relatedLesson?.summary === "string" &&
+                  relatedLesson.summary.trim() !== ""
+                ? relatedLesson.summary
+                : "Follow the step-by-step lesson to try this on your machine."}
+          </p>
+
+          <div class="help-hub-lesson-cta__actions">
+            <a href={lessonUrl} class="help-hub-lesson-cta__button">
+              {cta && typeof cta.buttonText === "string" && cta.buttonText.trim() !== ""
+                ? cta.buttonText
+                : "Open lesson →"}
+            </a>
+
+            <p class="help-hub-lesson-cta__note">
+              {cta && typeof cta.note === "string" && cta.note.trim() !== ""
+                ? cta.note
+                : "Included with Knit it Now membership"}
+            </p>
+          </div>
+        </div>
+      </section>
+    )}
+
+    <section class="tuesday-tip__section tuesday-tip-discussion">
+      <h2>Tried this? I’d love to hear how it went</h2>
+      Join the discussion below! Our community loves helping each other master new skills.
+      <div
+        id="hyvor-talk-view"
+        data-hyvor-website="14706"
+        data-talk-id={hyvorId}
+      >
+      </div>
+      <script is:inline>
+        (function () {
+          var el = document.getElementById("hyvor-talk-view");
+          if (!el) return;
+          var talkId = el.getAttribute("data-talk-id") || "";
+          var websiteStr = el.getAttribute("data-hyvor-website") || "14706";
+          var websiteId = parseInt(websiteStr, 10);
+          if (!Number.isFinite(websiteId)) websiteId = 14706;
+          window.HYVOR_TALK_WEBSITE = websiteId;
+          window.HYVOR_TALK_CONFIG = {
+            url: window.location.href,
+            id: talkId,
+          };
+          var s = document.createElement("script");
+          s.async = true;
+          s.type = "text/javascript";
+          s.src = "https://talk.hyvor.com/web-api/embed";
+          if (el.parentNode) {
+            el.parentNode.insertBefore(s, el.nextSibling);
+          } else {
+            (document.head || document.documentElement).appendChild(s);
+          }
+        })();
+      </script>
+    </section>
+  </section>
+</Layout>
+
+<style>
+  .tips-page-section {
+    max-width: min(1180px, 100%);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .tuesday-tip-hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    align-items: start;
+    margin-bottom: 1.75rem;
+    padding: clamp(1rem, 2.5vw, 1.4rem);
+    border: 1px solid rgba(82, 104, 45, 0.18);
+    border-radius: 16px;
+    background: #f8faf6;
+  }
+
+  @media (min-width: 980px) {
+    .tuesday-tip-hero {
+      grid-template-columns: minmax(320px, 1fr) minmax(420px, 1fr);
+      gap: clamp(1.2rem, 2.5vw, 2rem);
+      align-items: start;
+    }
+  }
+
+  .tuesday-tip-hero__content {
+    min-width: 0;
+  }
+
+  .tuesday-tip-bubbles {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+  }
+
+  .tuesday-tip-bubbles .bubble-hook {
+    margin: 0;
+    font-size: clamp(0.98rem, 1.45vw, 1.06rem);
+    font-weight: 400;
+    line-height: 1.55;
+    color: #5e6c4d;
+  }
+
+  .tuesday-tip-bubble-row.talk-row {
+    margin: 0;
+  }
+
+  .tuesday-tip-bubble-row.talk-left {
+    margin-top: 0.3rem;
+  }
+
+  .tuesday-tip-bubbles .talk-bubble {
+    max-width: 100%;
+  }
+
+  .talk-bubble.tuesday-tip__question {
+    font-size: clamp(1.45rem, 2.6vw, 1.95rem);
+    font-weight: 650;
+    line-height: 1.16;
+    margin: 0;
+    color: #6f8550;
+  }
+
+  .talk-bubble.tuesday-tip__answer {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.55;
+    padding: 16px 20px 16px 20px;
+    margin-left: 60px;
+  }
+
+  .tuesday-tip__answer-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .tuesday-tip__logo {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+  }
+
+  .tuesday-tip__answer-text {
+    flex: 1;
+  }
+
+  .tuesday-tip-hero__media {
+    min-width: 0;
+  }
+
+  .tuesday-tip-video-shell {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    padding: 0.5rem;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .tuesday-tip-video-aspect {
+    position: relative;
+    width: 100%;
+    padding-bottom: 60%;
+    height: 0;
+    border-radius: 8px;
+    background: #0f172a;
+  }
+
+  .tuesday-tip-video-iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .tuesday-tip-video-native {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    object-fit: contain;
+    background: #000;
+  }
+
+  .help-hub-media {
+    position: absolute;
+    inset: 0;
+  }
+
+  .tuesday-tip-media-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .tuesday-tip-video-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: linear-gradient(160deg, #f1f5f9 0%, #e2e8f0 100%);
+  }
+
+  .tuesday-tip-video-fallback__text {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #64748b;
+    text-align: center;
+    max-width: 16rem;
+  }
+
+  .tuesday-tip-discussion {
+    margin-top: 40px;
+  }
+
+  .tuesday-tip-discussion h2 {
+    margin-bottom: 15px;
+  }
+
+  .tuesday-tip__section {
+    margin-top: 2rem;
+  }
+
+  .tuesday-tip__section--why {
+    margin-top: 0.75rem;
+  }
+
+  .tuesday-tip__section-heading {
+    margin: 0 0 0.7rem;
+    font-size: clamp(1.12rem, 2.1vw, 1.32rem);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .tuesday-tip__section-card {
+    border-radius: 12px;
+    border: 1px solid rgba(82, 104, 45, 0.16);
+    background: #fff;
+    padding: clamp(0.95rem, 2.1vw, 1.15rem);
+  }
+
+  .tuesday-tip__description {
+    margin: 0;
+    max-width: 100%;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: #2f3a25;
+  }
+
+  .tuesday-tip__jump-links {
+    margin: 0 0 1rem;
+    max-width: 100%;
+  }
+
+  .tuesday-tip__jump-links-list {
+    margin: 0;
+    padding-left: 1.25rem;
+    line-height: 1.6;
+    color: #334155;
+  }
+
+  .tuesday-tip__jump-links a {
+    color: var(--kbm-green, #52682d);
+    text-decoration: none;
+  }
+
+  .tuesday-tip__jump-links a:hover {
+    text-decoration: underline;
+  }
+
+  .tuesday-tip__transcript {
+    margin-top: 1.25rem;
+    max-width: 100%;
+  }
+
+  .tuesday-tip__transcript:not(:empty) {
+    padding-top: 1.15rem;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .tuesday-tip__try-card {
+    max-width: 860px;
+    margin: 0;
+    padding: clamp(1rem, 2.2vw, 1.35rem);
+    border: 1px solid rgba(82, 104, 45, 0.25);
+    border-radius: 12px;
+    background: #f7faf4;
+  }
+
+  @media (max-width: 768px) {
+    .tuesday-tip__try-card {
+      padding: 1rem;
+    }
+  }
+
+  .tuesday-tip__try-heading {
+    margin: 0 0 0.75rem;
+  }
+
+  .tuesday-tip__try-subhead {
+    margin: 0 0 0.65rem;
+    font-weight: 600;
+    color: #3f4b35;
+  }
+
+  .tuesday-tip__try-subhead--spaced {
+    margin-top: 1.25rem;
+  }
+
+  .tuesday-tip__try-body ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+
+  .tuesday-tip__try-body li {
+    position: relative;
+    padding-left: 1.6rem;
+    margin-bottom: 10px;
+  }
+
+  .tuesday-tip__try-body li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.45em;
+    width: 10px;
+    height: 10px;
+    border: 2px solid #52682d;
+    border-radius: 3px;
+    transform: translateY(-50%);
+  }
+
+  .tip-help-cta {
+    margin-top: 24px;
+    padding: 16px;
+    background: #f5f5f5;
+    border-radius: 10px;
+  }
+
+  .tip-help-text {
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .tip-help-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .tip-help-actions a {
+    text-decoration: none;
+  }
+
+  .tip-help-actions .kbm-button {
+    background-color: #c96a4a;
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    display: inline-block;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .tip-help-actions .kbm-button:hover {
+    background-color: #b85c3e;
+  }
+
+  .help-hub-lesson-cta {
+    margin-top: 2rem;
+    background: #f5f5f5;
+    border: 1px solid #d9ddd2;
+    border-radius: 14px;
+    padding: 1.25rem;
+  }
+
+  .help-hub-lesson-cta__content {
+    max-width: 42rem;
+  }
+
+  .help-hub-lesson-cta__eyebrow {
+    margin: 0 0 0.35rem 0;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #52682d;
+  }
+
+  .help-hub-lesson-cta__title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.6rem;
+    line-height: 1.2;
+    color: #52682d;
+  }
+
+  .help-hub-lesson-cta__text {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .help-hub-lesson-cta__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .help-hub-lesson-cta__button {
+    display: inline-block;
+    background: #52682d;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    padding: 0.75rem 1.1rem;
+    border-radius: 999px;
+    transition: background 0.2s ease;
+  }
+
+  .help-hub-lesson-cta__button:hover {
+    background: #445624;
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .help-hub-lesson-cta__note {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #555;
+  }
+
+  @media (max-width: 640px) {
+    .help-hub-lesson-cta {
+      padding: 1rem;
+    }
+
+    .help-hub-lesson-cta__title {
+      font-size: 1.35rem;
+    }
+
+    .help-hub-lesson-cta__button {
+      width: 100%;
+      text-align: center;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .tuesday-tip__section {
+      margin-top: 1.5rem;
+    }
+  }
+</style>

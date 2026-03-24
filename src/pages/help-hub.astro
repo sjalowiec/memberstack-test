@@ -1,9 +1,14 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import "../components/talk-bubbles.css";
-import helpHubData from '../data/help-hub.json';
+import helpHubData from "../data/help-hub.json";
 
-/** Placeholder grouped data — swap for JSON-driven content later. */
+/** Live entries for the top “New in the Help Hub” section (isNew === true). */
+const newHelpHubItems = helpHubData.filter(
+  (item) => item.isNew === true
+);
+
+/** Placeholder grouped data — lower catalog until more entries go live. */
 const fixCategories = [
   {
     category: "Carriage & Machine Issues",
@@ -53,7 +58,7 @@ const fixCategories = [
             id="knit-fix-hub-heading"
             src="/images/help-hub.svg"
             alt="Let's Fix This"
-            class="fix-hub-logo"
+            class="fix-hub-logo help-hub-hero-icon"
           />
         </div>
         <div class="fix-hub-banner-text">
@@ -63,11 +68,44 @@ const fixCategories = [
             Here, you’ll find clear, focused fixes and guided paths that help you avoid
             the frustration - and get back to creating knits you’ll be proud of.
           </p>
+          <p class="help-hub-helper">
+            If you'd rather not figure this out on your own:
+          </p>
+          <div class="help-hub-actions">
+            <a href="/work-with-me" class="kbm-button">Work With Me (3-Week Sprint)</a>
+            <a href="/help/quick-help" class="kbm-button">Get Quick Help (15-Min SOS Call)</a>
+          </div>
         </div>
       </div>
 
       <h2 class="visually-hidden">Browse fixes</h2>
-      <div class="fix-hub-divider"></div>
+
+      {newHelpHubItems.length > 0 && (
+        <>
+          <div class="fix-hub-divider"></div>
+
+          <section
+            class="fix-category-section fix-category-section--new"
+            aria-labelledby="help-hub-new-heading"
+          >
+            <h2 id="help-hub-new-heading" class="fix-category-heading">
+              New in the Help Hub
+            </h2>
+            <div class="fix-bubble-grid">
+              {newHelpHubItems.map((item) => (
+                <a
+                  href={`/help-hub/${item.slug}`}
+                  class="talk-bubble bubble-bl bubble-question"
+                >
+                  <strong>{item.question}</strong>
+                  <br />
+                  <span>{item.title}</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        </>
+      )}
 
       <div class="fix-category-list">
         {fixCategories.map((group) => (
@@ -75,11 +113,11 @@ const fixCategories = [
             <h2 class="fix-category-heading">{group.category}</h2>
             <div class="fix-bubble-grid">
               {group.fixes.map((fix) => (
-                <a href={`/fixes/${fix.slug}`} class="talk-bubble bubble-bl bubble-question">
+                <div class="talk-bubble bubble-bl bubble-question fix-bubble--inactive">
                   <strong>{fix.symptom}</strong>
                   <br />
                   <span>{fix.title}</span>
-                </a>
+                </div>
               ))}
             </div>
           </section>
@@ -115,6 +153,11 @@ const fixCategories = [
       display: block;
     }
 
+    .help-hub-hero-icon {
+      max-width: 90px;
+      height: auto;
+    }
+
     .fix-hub-banner-text {
       flex: 1 1 auto;
     }
@@ -136,6 +179,32 @@ const fixCategories = [
 
     .fix-hub-banner-text p:not(.fix-hub-tagline):last-of-type {
       margin-bottom: 0;
+    }
+
+    .help-hub-helper {
+      margin-top: 16px;
+      margin-bottom: 8px;
+    }
+
+    .help-hub-actions {
+      margin-top: 24px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .help-hub-actions .kbm-button {
+      background-color: #C96A4A;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .help-hub-actions .kbm-button:hover {
+      background-color: #b85c3e;
     }
 
     @media (max-width: 768px) {
@@ -173,7 +242,7 @@ const fixCategories = [
     }
 
     .fix-category-section {
-      margin-bottom: 2.5rem;
+      margin-bottom: 3rem;
     }
 
     .fix-category-heading {
@@ -186,8 +255,8 @@ const fixCategories = [
     .fix-bubble-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      column-gap: 2.5rem;
-      row-gap: 2.25rem;
+      /* row gap, column gap — more room between bubbles without changing layout */
+      gap: 3rem 3.5rem;
       align-items: start;
     }
 
@@ -205,6 +274,7 @@ const fixCategories = [
     @media (max-width: 768px) {
       .fix-bubble-grid {
         grid-template-columns: 1fr;
+        gap: 1.75rem;
       }
     }
 
@@ -217,6 +287,23 @@ const fixCategories = [
     .knit-fix-hub .fix-bubble-grid a.talk-bubble:focus-visible {
       outline: 2px solid var(--kbm-green, #52682d);
       outline-offset: 3px;
+    }
+
+    .fix-category-section--new {
+      margin-bottom: 3rem;
+    }
+
+    /* Placeholder bubbles: not links, clearly inactive */
+    .fix-bubble--inactive.talk-bubble {
+      opacity: 0.5;
+      cursor: default;
+      pointer-events: none;
+      transition: none;
+    }
+
+    .fix-bubble--inactive.talk-bubble:hover {
+      transform: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     }
   </style>
 </Layout>

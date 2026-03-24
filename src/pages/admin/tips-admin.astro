@@ -1,377 +1,206 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import helpHubData from "../../data/help-hub.json";
-const helpHubDataJson = JSON.stringify(helpHubData).replaceAll("</script", "\\u003c/script");
+import lessonsData from "../../data/lessons.json";
+
+const lessonsOptions = Array.isArray(lessonsData) ? lessonsData : [];
+const lessonSelectOptions = lessonsOptions.map((l) => ({
+  id: l.id,
+  label: `${l.id} — ${l.title ?? l.slug ?? ""}`,
+}));
 ---
 
 <BaseLayout
-  title="Tuesday Tips Admin | Knit it Now"
-  description="Internal Tuesday Tips admin workspace"
+  title="Help Hub Admin | Knit it Now"
+  description="Local admin for Help Hub tips (help-hub.json)"
   skipGlobalHyvor={true}
-  bodyClass="tips-admin-body"
+  bodyClass="tips-admin-body help-hub-admin-body"
 >
-  <main class="tips-admin-wrap">
-    <header class="tips-admin-page-head">
-      <h1 class="tips-admin-page-title">Tuesday Tips Admin</h1>
-      <p class="tips-admin-page-sub">
-        Full-width workspace. <strong>Save Tip</strong> writes to <code>src/data/help-hub.json</code> via the API.
+  <main class="help-hub-admin">
+    <header class="help-hub-admin__head">
+      <h1 class="help-hub-admin__title">Help Hub Tips Admin</h1>
+      <p class="help-hub-admin__sub">
+        Edits <code>src/data/help-hub.json</code> via <code>/api/admin/help-hub</code>. IDs start at 1000 and are permanent; slug is for URLs only.
       </p>
     </header>
 
-    <section class="admin-panel">
-      <h2>Publishing Overview</h2>
-      <div class="overview-grid">
-        <article class="overview-card overview-card--live">
-          <h3>Live Now</h3>
-          <div id="overview-live" class="overview-list"></div>
-        </article>
+    <p id="help-hub-admin-status" class="help-hub-admin__status" aria-live="polite"></p>
 
-        <article class="overview-card overview-card--upcoming">
-          <h3>Coming Up</h3>
-          <div id="overview-upcoming" class="overview-list"></div>
-        </article>
+    <div class="help-hub-admin__grid">
+      <section class="admin-panel help-hub-admin__list-panel" aria-labelledby="list-heading">
+        <div class="help-hub-admin__list-head">
+          <h2 id="list-heading">All tips</h2>
+          <button type="button" id="btn-new-tip" class="kbm-btn kbm-btn-primary">
+            New Tip
+          </button>
+        </div>
+        <p id="help-hub-admin-loading" class="help-hub-admin__loading">Loading…</p>
+        <ul id="help-hub-tip-list" class="help-hub-admin__tip-list" hidden></ul>
+        <p id="help-hub-admin-empty" class="help-hub-admin__empty" hidden>No tips yet.</p>
+      </section>
 
-        <article class="overview-card overview-card--expired">
-          <h3>Recently Expired</h3>
-          <div id="overview-expired" class="overview-list"></div>
-        </article>
-      </div>
-    </section>
+      <section class="admin-panel help-hub-admin__form-panel" aria-labelledby="form-heading">
+        <h2 id="form-heading">Edit tip</h2>
+        <p id="help-hub-admin-mode" class="help-hub-admin__mode">New tip</p>
 
-    <section class="admin-panel calendar-section">
-      <div class="panel-heading-row">
-        <h2>Content Calendar</h2>
-        <button
-          type="button"
-          id="toggle-calendar-btn"
-          class="kbm-btn kbm-btn-outline panel-toggle-btn"
-          aria-expanded="false"
-          aria-controls="calendar-panel-body"
-        >
-          Show Calendar
-        </button>
-      </div>
-      <div id="calendar-panel-body" class="calendar-panel-body" hidden>
-        <div class="calendar-toolbar">
-          <div class="calendar-nav">
-            <button type="button" id="calendar-prev-month" class="kbm-btn kbm-btn-outline">Previous Month</button>
-            <button type="button" id="calendar-today" class="kbm-btn kbm-btn-outline">Today</button>
-            <button type="button" id="calendar-next-month" class="kbm-btn kbm-btn-outline">Next Month</button>
+        <form id="help-hub-admin-form" class="help-hub-admin__form" autocomplete="off">
+          <div class="field-grid">
+            <label>
+              <span>id (read-only)</span>
+              <input type="text" id="field-id" name="idDisplay" readonly disabled placeholder="(assigned on save)" />
+            </label>
+            <label class="field-full">
+              <span>title <em class="req">*</em></span>
+              <input type="text" name="title" id="field-title" required />
+            </label>
+            <label class="field-full">
+              <span>slug <em class="req">*</em></span>
+              <input type="text" name="slug" id="field-slug" required />
+              <span class="field-hint">Lowercase, hyphens. Auto-filled from title on new until you edit slug.</span>
+            </label>
+            <label>
+              <span>status <em class="req">*</em></span>
+              <select name="status" id="field-status" required>
+                <option value="draft">draft</option>
+                <option value="published">published</option>
+                <option value="archived">archived</option>
+                <option value="ready">ready</option>
+                <option value="scheduled">scheduled</option>
+              </select>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="featured" id="field-featured" />
+              <span>featured</span>
+            </label>
+            <label>
+              <span>category <em class="req">*</em></span>
+              <input type="text" name="category" id="field-category" required />
+            </label>
+            <label>
+              <span>categoryPill</span>
+              <input type="text" name="categoryPill" id="field-categoryPill" />
+            </label>
+            <label class="field-full">
+              <span>question / symptom</span>
+              <textarea name="question" id="field-question" rows="2"></textarea>
+            </label>
+            <label class="field-full">
+              <span>bubbleAnswer</span>
+              <textarea name="bubbleAnswer" id="field-bubbleAnswer" rows="3"></textarea>
+            </label>
+            <label class="field-full">
+              <span>hook</span>
+              <input type="text" name="hook" id="field-hook" />
+            </label>
+            <label>
+              <span>mediaType</span>
+              <input type="text" name="mediaType" id="field-mediaType" placeholder="vimeo, video, image" />
+            </label>
+            <label class="field-full">
+              <span>Vimeo ID</span>
+              <input type="text" name="mediaUrl" id="field-mediaUrl" />
+            </label>
+            <label class="field-full">
+              <span>Thumbnail URL</span>
+              <input type="text" name="mediaPoster" id="field-mediaPoster" />
+            </label>
+            <label class="field-full">
+              <span>mediaAlt</span>
+              <input type="text" name="mediaAlt" id="field-mediaAlt" />
+            </label>
+            <label>
+              <span>aboutTitle</span>
+              <input type="text" name="aboutTitle" id="field-aboutTitle" />
+            </label>
+            <label class="field-full">
+              <span>bridge</span>
+              <textarea name="bridge" id="field-bridge" rows="3"></textarea>
+            </label>
+            <label>
+              <span>tryThisTitle</span>
+              <input type="text" name="tryThisTitle" id="field-tryThisTitle" />
+            </label>
+            <label>
+              <span>quickActionTitle</span>
+              <input type="text" name="quickActionTitle" id="field-quickActionTitle" />
+            </label>
+            <label>
+              <span>proExerciseTitle</span>
+              <input type="text" name="proExerciseTitle" id="field-proExerciseTitle" />
+            </label>
+            <label class="field-full">
+              <span>lessonTitle → lessonCta.title</span>
+              <input type="text" name="lessonTitle" id="field-lessonTitle" />
+            </label>
+            <label class="field-full">
+              <span>lessonText → lessonCta.text</span>
+              <textarea name="lessonText" id="field-lessonText" rows="2"></textarea>
+            </label>
+            <label>
+              <span>memberHeading</span>
+              <input type="text" name="memberHeading" id="field-memberHeading" />
+            </label>
+            <label class="field-full">
+              <span>memberText</span>
+              <textarea name="memberText" id="field-memberText" rows="2"></textarea>
+            </label>
+            <label>
+              <span>relatedLessonId</span>
+              <select name="relatedLessonId" id="field-relatedLessonId">
+                <option value="">— None —</option>
+                {lessonSelectOptions.map((opt) => (
+                  <option value={String(opt.id ?? "")}>{opt.label}</option>
+                ))}
+              </select>
+              <span class="field-hint">Matches <code>id</code> in lessons.json; <code>relatedLesson</code> slug is set on save.</span>
+            </label>
+            <label>
+              <span>sortOrder</span>
+              <input type="number" name="sortOrder" id="field-sortOrder" step="1" />
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="isNew" id="field-isNew" />
+              <span>isNew</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="readyToPublish" id="field-readyToPublish" />
+              <span>readyToPublish</span>
+            </label>
+            <label class="field-full">
+              <span>trySteps (one per line)</span>
+              <textarea name="trySteps" id="field-trySteps" rows="4"></textarea>
+            </label>
+            <label class="field-full">
+              <span>quickAction (one per line) → tryThis.quickAction</span>
+              <textarea name="quickAction" id="field-quickAction" rows="5"></textarea>
+            </label>
+            <label class="field-full">
+              <span>proExercise (one per line) → tryThis.proExercise</span>
+              <textarea name="proExercise" id="field-proExercise" rows="4"></textarea>
+            </label>
           </div>
-          <p id="calendar-month-label" class="calendar-month-label" aria-live="polite"></p>
-        </div>
-        <div class="calendar-grid-wrap">
-          <div class="content-calendar" role="table" aria-label="Tuesday tips content calendar">
-            <div class="content-calendar__dow" role="rowgroup">
-              <div class="content-calendar__dow-cell" role="columnheader">Sunday</div>
-              <div class="content-calendar__dow-cell" role="columnheader">Monday</div>
-              <div class="content-calendar__dow-cell content-calendar__dow-cell--tuesday" role="columnheader">Tuesday</div>
-              <div class="content-calendar__dow-cell" role="columnheader">Wednesday</div>
-              <div class="content-calendar__dow-cell" role="columnheader">Thursday</div>
-              <div class="content-calendar__dow-cell" role="columnheader">Friday</div>
-              <div class="content-calendar__dow-cell" role="columnheader">Saturday</div>
-            </div>
-            <div id="content-calendar-days" class="content-calendar__days" role="rowgroup"></div>
+
+          <div class="help-hub-admin__form-actions">
+            <button type="button" id="btn-save-tip" class="kbm-btn kbm-btn-primary">Save</button>
+            <button type="button" id="btn-cancel-edit" class="kbm-btn kbm-btn-outline">Cancel edit</button>
+            <button type="button" id="btn-delete-tip" class="kbm-btn kbm-btn-accent">Delete</button>
+            <button type="button" id="btn-refresh-preview" class="kbm-btn kbm-btn-outline">Refresh JSON preview</button>
           </div>
-        </div>
-      </div>
-    </section>
+        </form>
 
-    <section class="admin-panel">
-      <h2>Tips Manager</h2>
-      <div class="manager-filters">
-        <label>
-          <span>Status</span>
-          <select id="filter-status">
-            <option value="all">All</option>
-            <option value="draft">draft</option>
-            <option value="ready">ready</option>
-            <option value="scheduled">scheduled</option>
-            <option value="published">published</option>
-            <option value="archived">archived</option>
-          </select>
-        </label>
-
-        <label>
-          <span>Readiness</span>
-          <select id="filter-readiness">
-            <option value="all">All</option>
-            <option value="ready">Ready to Publish</option>
-            <option value="not-ready">Not Ready</option>
-          </select>
-        </label>
-
-        <label>
-          <span>Email</span>
-          <select id="filter-email">
-            <option value="all">All</option>
-            <option value="done">Email Done</option>
-            <option value="pending">Email Not Done</option>
-          </select>
-        </label>
-
-        <label>
-          <span>Sort</span>
-          <select id="sort-tips">
-            <option value="startDate-desc">Newest Start Date</option>
-            <option value="startDate-asc">Oldest Start Date</option>
-            <option value="lastPublishedDate-desc">Last Published Date</option>
-            <option value="contentId-asc">content_id ascending</option>
-            <option value="contentId-desc">content_id descending</option>
-            <option value="question-asc">Question A-Z</option>
-          </select>
-        </label>
-
-        <label class="filter-search">
-          <span>Search</span>
-          <input id="tips-search" type="text" placeholder="Search by question, slug, or content_id" />
-        </label>
-      </div>
-      <div class="actions actions--spaced">
-        <button type="button" id="new-tip-btn" class="kbm-btn kbm-btn-outline">New Tip</button>
-        <button type="button" id="delete-selected-btn" class="kbm-btn kbm-btn-accent">Delete Selected</button>
-      </div>
-      <p id="tips-admin-status" class="status-note" aria-live="polite"></p>
-      <div class="manager-table-wrap">
-        <table class="manager-table">
-          <thead>
-            <tr>
-              <th>content_id</th>
-              <th>slug</th>
-              <th>question</th>
-              <th>status</th>
-              <th>readyToPublish</th>
-              <th>startDate</th>
-              <th>endDate</th>
-              <th>emailDone</th>
-              <th>lastPublishedDate</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="tips-manager-body"></tbody>
-        </table>
-      </div>
-      <p id="tips-manager-empty" class="manager-empty" hidden>No Tuesday Tips found yet.</p>
-    </section>
-
-    <p id="tips-admin-mode" class="mode-note mode-note--form">Creating New Tip</p>
-    <form id="tips-admin-form" class="tips-admin-form" autocomplete="off">
-      <section class="admin-panel">
-        <h2>Publishing Info</h2>
-        <div class="field-grid">
-          <label>
-            <span>content_id</span>
-            <input type="number" name="content_id" min="1" step="1" />
-          </label>
-
-          <label>
-            <span>slug</span>
-            <input type="text" name="slug" />
-            <span class="field-hint">
-              Use text (not a number): lowercase words separated by hyphens, e.g. <code>what-is-cut-and-sew</code>
-            </span>
-          </label>
-
-          <label>
-            <span>status</span>
-            <select name="status">
-              <option value="draft">draft</option>
-              <option value="ready">ready</option>
-              <option value="scheduled">scheduled</option>
-              <option value="published">published</option>
-              <option value="archived">archived</option>
-            </select>
-          </label>
-
-          <label class="checkbox-label">
-            <input type="checkbox" name="readyToPublish" />
-            <span>readyToPublish</span>
-          </label>
-
-          <label>
-            <span>startDate</span>
-            <input type="date" name="startDate" />
-          </label>
-
-          <label>
-            <span>endDate</span>
-            <input type="date" name="endDate" />
-          </label>
-
-          <label>
-            <span>lastPublishedDate</span>
-            <input type="date" name="lastPublishedDate" />
-          </label>
-
-          <label class="checkbox-label">
-            <input type="checkbox" name="emailDone" />
-            <span>emailDone</span>
-          </label>
-
-          <label>
-            <span>emailSentDate</span>
-            <input type="date" name="emailSentDate" />
-          </label>
+        <div class="help-hub-admin__preview-wrap">
+          <h3 class="help-hub-admin__preview-title">Current record (preview)</h3>
+          <pre id="help-hub-json-preview" class="help-hub-admin__preview" aria-live="polite"></pre>
         </div>
       </section>
-
-      <section class="admin-panel">
-        <h2>Tip Content</h2>
-        <div class="field-grid">
-          <label class="field-full">
-            <span>Hook</span>
-            <input type="text" name="hook" autocomplete="off" />
-            <span class="field-hint">Short one-line intro shown above the question on the tip page</span>
-          </label>
-
-          <label class="field-full">
-            <span>question</span>
-            <textarea name="question" rows="2"></textarea>
-          </label>
-
-          <label class="field-full">
-            <span>quickAnswer</span>
-            <textarea name="quickAnswer" rows="3"></textarea>
-          </label>
-
-          <label class="field-full">
-            <span>bridge</span>
-            <textarea name="bridge" rows="2"></textarea>
-          </label>
-
-          <label class="field-full">
-            <span>videoUrl</span>
-            <input type="text" name="videoUrl" />
-          </label>
-
-          <label class="field-full">
-            <span>Member Video URL</span>
-            <input
-              type="text"
-              name="memberVideoUrl"
-              placeholder="https://player.vimeo.com/video/XXXXXXXXX"
-            />
-          </label>
-
-          <label>
-            <span>tryTitle</span>
-            <input type="text" name="tryTitle" />
-          </label>
-
-          <label class="field-full">
-            <span>trySteps (one step per line)</span>
-            <textarea name="trySteps" rows="5"></textarea>
-          </label>
-        </div>
-      </section>
-
-      <section class="admin-panel">
-        <h2>Member CTA</h2>
-        <div class="field-grid">
-          <label>
-            <span>memberHeading</span>
-            <input type="text" name="memberHeading" />
-          </label>
-
-          <label class="field-full">
-            <span>memberText</span>
-            <textarea name="memberText" rows="3"></textarea>
-          </label>
-
-          <label>
-            <span>memberLink</span>
-            <input type="text" name="memberLink" />
-          </label>
-
-          <label>
-            <span>memberButton</span>
-            <input type="text" name="memberButton" />
-          </label>
-        </div>
-      </section>
-
-      <section class="admin-panel">
-        <h2>Community CTA</h2>
-        <div class="field-grid">
-          <label>
-            <span>communityHeading</span>
-            <input type="text" name="communityHeading" />
-          </label>
-
-          <label class="field-full">
-            <span>communityText</span>
-            <textarea name="communityText" rows="3"></textarea>
-          </label>
-
-          <label>
-            <span>communityLink</span>
-            <input type="text" name="communityLink" />
-          </label>
-
-          <label>
-            <span>communityButton</span>
-            <input type="text" name="communityButton" />
-          </label>
-        </div>
-      </section>
-
-      <div class="actions actions--spaced form-actions">
-        <button type="button" id="save-tip-btn" class="kbm-btn kbm-btn-primary">Save Tip</button>
-        <button type="button" id="refresh-preview-btn" class="kbm-btn kbm-btn-outline">Refresh Preview</button>
-      </div>
-    </form>
-
-    <section class="admin-panel preview-panel">
-      <div class="panel-heading-row">
-        <h2>JSON Preview</h2>
-        <button
-          type="button"
-          id="toggle-json-preview-btn"
-          class="kbm-btn kbm-btn-outline panel-toggle-btn"
-          aria-expanded="false"
-          aria-controls="json-preview-body"
-        >
-          Show JSON Preview
-        </button>
-      </div>
-      <div id="json-preview-body" class="json-preview-body" hidden>
-        <pre id="tips-json-preview" aria-live="polite">{JSON.stringify(tipsContent, null, 2)}</pre>
-      </div>
-    </section>
+    </div>
   </main>
 
   <style>
-    :global(body.tips-admin-body) {
+    :global(body.help-hub-admin-body) {
       margin: 0;
     }
 
-    .tips-admin-page-head {
-      margin-bottom: 1.25rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    .tips-admin-page-title {
-      margin: 0 0 0.35rem 0;
-      font-size: 1.65rem;
-      color: #243015;
-    }
-
-    .tips-admin-page-sub {
-      margin: 0;
-      font-size: 0.95rem;
-      color: #475569;
-      max-width: 56rem;
-    }
-
-    .tips-admin-page-sub code {
-      font-size: 0.88em;
-      background: #f1f5f9;
-      padding: 0.12rem 0.35rem;
-      border-radius: 4px;
-    }
-
-    .tips-admin-wrap {
+    .help-hub-admin {
       width: 100%;
       max-width: none;
       margin: 0;
@@ -379,233 +208,59 @@ const helpHubDataJson = JSON.stringify(helpHubData).replaceAll("</script", "\\u0
       box-sizing: border-box;
     }
 
-    .tips-admin-form {
-      display: grid;
-      gap: 1rem;
+    .help-hub-admin__head {
       margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e2e8f0;
     }
 
-    .overview-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.85rem;
-    }
-
-    @media (min-width: 980px) {
-      .overview-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-    }
-
-    .overview-card {
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      padding: 0.85rem;
-      background: #ffffff;
-    }
-
-    .overview-card h3 {
-      margin: 0 0 0.65rem 0;
-      font-size: 1rem;
+    .help-hub-admin__title {
+      margin: 0 0 0.35rem 0;
+      font-size: 1.65rem;
       color: #243015;
     }
 
-    .overview-card--live {
-      background: #f2f8f8;
+    .help-hub-admin__sub {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #475569;
+      max-width: 56rem;
     }
 
-    .overview-card--upcoming {
-      background: #fff9eb;
+    .help-hub-admin__sub code {
+      font-size: 0.88em;
+      background: #f1f5f9;
+      padding: 0.12rem 0.35rem;
+      border-radius: 4px;
     }
 
-    .overview-card--expired {
-      background: #f8fafc;
+    .help-hub-admin__status {
+      min-height: 1.4em;
+      margin: 0 0 1rem 0;
+      font-size: 0.95rem;
+      color: #374151;
     }
 
-    .overview-list {
-      display: grid;
-      gap: 0.65rem;
-    }
-
-    .overview-item {
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 0.6rem;
-      background: #fff;
-    }
-
-    .overview-item-id {
-      margin: 0 0 0.25rem 0;
-      font-size: 0.82rem;
-      color: #4b5563;
+    .help-hub-admin__status.is-error {
+      color: #b91c1c;
       font-weight: 600;
     }
 
-    .overview-item-title {
-      margin: 0 0 0.35rem 0;
-      font-size: 0.9rem;
-      color: #111827;
-      line-height: 1.35;
+    .help-hub-admin__status.is-ok {
+      color: #166534;
     }
 
-    .overview-item-meta {
-      margin: 0 0 0.45rem 0;
-      font-size: 0.82rem;
-      color: #374151;
-    }
-
-    .overview-empty {
-      margin: 0;
-      color: #4b5563;
-      font-size: 0.9rem;
-    }
-
-    .calendar-toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 0.65rem;
-      margin-bottom: 0.8rem;
-      align-items: center;
-    }
-
-    .calendar-nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .calendar-month-label {
-      margin: 0;
-      font-size: 1rem;
-      font-weight: 700;
-      color: #243015;
-    }
-
-    .calendar-grid-wrap {
-      overflow-x: auto;
-      padding-bottom: 0.25rem;
-    }
-
-    .content-calendar {
-      min-width: 840px;
-    }
-
-    .content-calendar__dow,
-    .content-calendar__days {
+    .help-hub-admin__grid {
       display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      align-items: start;
     }
 
-    .content-calendar__dow-cell {
-      border: 1px solid #e5e7eb;
-      background: #f8fafc;
-      padding: 0.5rem 0.45rem;
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: #243015;
-    }
-
-    .content-calendar__dow-cell--tuesday {
-      background: #eef3ff;
-    }
-
-    .content-calendar__day {
-      border: 1px solid #e5e7eb;
-      min-height: 138px;
-      padding: 0.35rem;
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-    }
-
-    .content-calendar__day--outside {
-      background: #f8fafc;
-      color: #6b7280;
-    }
-
-    .content-calendar__day--tuesday {
-      background: #f7f9ff;
-    }
-
-    .content-calendar__day--today {
-      outline: 2px solid #243015;
-      outline-offset: -2px;
-    }
-
-    .content-calendar__day-number {
-      margin: 0;
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: #374151;
-    }
-
-    .content-calendar__items {
-      display: grid;
-      gap: 0.3rem;
-    }
-
-    .calendar-tip-item {
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      padding: 0.3rem 0.35rem;
-      background: #fff;
-      display: grid;
-      gap: 0.2rem;
-      font-size: 0.74rem;
-      line-height: 1.25;
-      text-align: left;
-      cursor: pointer;
-    }
-
-    .calendar-tip-item:hover {
-      border-color: #94a3b8;
-    }
-
-    .calendar-tip-item--live {
-      background: #ecfdf3;
-      border-color: #86efac;
-    }
-
-    .calendar-tip-item--scheduled {
-      background: #fffbeb;
-      border-color: #fcd34d;
-    }
-
-    .calendar-tip-item--expired {
-      background: #f3f4f6;
-      border-color: #d1d5db;
-    }
-
-    .calendar-tip-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.3rem;
-    }
-
-    .calendar-tip-id {
-      font-weight: 700;
-      color: #1f2937;
-      white-space: nowrap;
-    }
-
-    .calendar-tip-status {
-      border-radius: 999px;
-      padding: 0.05rem 0.35rem;
-      font-size: 0.67rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
-      white-space: nowrap;
-      color: #1f2937;
-      background: rgba(255, 255, 255, 0.75);
-    }
-
-    .calendar-tip-title {
-      margin: 0;
-      color: #374151;
+    @media (min-width: 960px) {
+      .help-hub-admin__grid {
+        grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+      }
     }
 
     .admin-panel {
@@ -616,12 +271,12 @@ const helpHubDataJson = JSON.stringify(helpHubData).replaceAll("</script", "\\u0
     }
 
     .admin-panel h2 {
-      margin: 0 0 0.9rem 0;
+      margin: 0 0 0.75rem 0;
       font-size: 1.1rem;
       color: #243015;
     }
 
-    .panel-heading-row {
+    .help-hub-admin__list-head {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
@@ -630,43 +285,90 @@ const helpHubDataJson = JSON.stringify(helpHubData).replaceAll("</script", "\\u0
       margin-bottom: 0.75rem;
     }
 
-    .panel-heading-row h2 {
+    .help-hub-admin__list-head h2 {
       margin: 0;
     }
 
-    .panel-toggle-btn {
-      flex-shrink: 0;
-    }
-
-    .calendar-panel-body[hidden],
-    .json-preview-body[hidden] {
-      display: none !important;
-    }
-
-    .field-hint {
-      font-size: 0.82rem;
-      font-weight: 400;
+    .help-hub-admin__loading {
+      margin: 0;
       color: #64748b;
-      line-height: 1.45;
-      margin-top: 0.15rem;
+      font-size: 0.95rem;
     }
 
-    .field-hint code {
-      font-size: 0.88em;
+    .help-hub-admin__empty {
+      margin: 0;
+      color: #64748b;
+    }
+
+    .help-hub-admin__tip-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      max-height: min(70vh, 640px);
+      overflow-y: auto;
+    }
+
+    .help-hub-admin__tip-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 0.65rem 0.75rem;
+      background: #fafafa;
+    }
+
+    .help-hub-admin__tip-card.is-active {
+      outline: 2px solid #52682d;
+      outline-offset: 1px;
+      background: #f7faf4;
+    }
+
+    .help-hub-admin__tip-title {
+      margin: 0 0 0.35rem 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1.35;
+    }
+
+    .help-hub-admin__tip-meta {
+      margin: 0 0 0.5rem 0;
+      font-size: 0.8rem;
+      color: #4b5563;
+      line-height: 1.4;
+    }
+
+    .help-hub-admin__tip-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .help-hub-admin__tip-actions .kbm-btn {
+      font-size: 0.8rem;
+      padding: 0.35rem 0.6rem;
+    }
+
+    .help-hub-admin__mode {
+      margin: 0 0 0.75rem 0;
+      padding: 0.5rem 0.65rem;
+      border-radius: 8px;
       background: #f1f5f9;
-      padding: 0.1rem 0.35rem;
-      border-radius: 4px;
-      color: #334155;
+      border: 1px solid #e2e8f0;
+      font-weight: 600;
+      color: #243015;
+      font-size: 0.95rem;
     }
 
-    .field-grid {
+    .help-hub-admin__form .field-grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 0.8rem;
     }
 
-    @media (min-width: 860px) {
-      .field-grid {
+    @media (min-width: 720px) {
+      .help-hub-admin__form .field-grid {
         grid-template-columns: 1fr 1fr;
       }
     }
@@ -675,1259 +377,611 @@ const helpHubDataJson = JSON.stringify(helpHubData).replaceAll("</script", "\\u0
       grid-column: 1 / -1;
     }
 
-    label {
+    .help-hub-admin__form label {
       display: flex;
       flex-direction: column;
       gap: 0.35rem;
     }
 
-    label > span {
+    .help-hub-admin__form label > span {
       font-size: 0.95rem;
       font-weight: 600;
       color: #2e3a18;
     }
 
-    input,
-    select,
-    textarea {
+    .req {
+      color: #b91c1c;
+      font-style: normal;
+    }
+
+    .field-hint {
+      font-size: 0.82rem;
+      font-weight: 400;
+      color: #64748b;
+      line-height: 1.45;
+    }
+
+    .field-hint code {
+      font-size: 0.88em;
+      background: #f1f5f9;
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+    }
+
+    .help-hub-admin__form input,
+    .help-hub-admin__form select,
+    .help-hub-admin__form textarea {
       width: 100%;
       border: 1px solid #cbd5e1;
       border-radius: 8px;
-      padding: 0.6rem 0.7rem;
+      padding: 0.55rem 0.65rem;
       font: inherit;
       color: #111827;
       background: #fff;
       box-sizing: border-box;
     }
 
-    textarea {
+    .help-hub-admin__form input:disabled {
+      background: #f1f5f9;
+      color: #64748b;
+    }
+
+    .help-hub-admin__form textarea {
       resize: vertical;
       min-height: 72px;
     }
 
     .checkbox-label {
-      flex-direction: row;
+      flex-direction: row !important;
       align-items: center;
-      gap: 0.5rem;
-      margin-top: 1.8rem;
-    }
-
-    .checkbox-label input {
-      width: auto;
-      margin: 0;
-    }
-
-    .actions {
-      display: flex;
-      justify-content: flex-start;
+      gap: 0.5rem !important;
       margin-top: 0.25rem;
     }
 
-    .actions--spaced {
-      gap: 0.65rem;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .form-actions {
-      margin-top: 0.5rem;
-    }
-
-    .preview-panel pre {
+    .checkbox-label input {
+      width: auto !important;
       margin: 0;
-      padding: 0.9rem;
+    }
+
+    .help-hub-admin__form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.1rem;
+    }
+
+    .help-hub-admin__preview-wrap {
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .help-hub-admin__preview-title {
+      margin: 0 0 0.5rem 0;
+      font-size: 1rem;
+      color: #243015;
+    }
+
+    .help-hub-admin__preview {
+      margin: 0;
+      padding: 0.85rem;
       border-radius: 8px;
       background: #0f172a;
       color: #e2e8f0;
       overflow: auto;
-      font-size: 0.85rem;
-      line-height: 1.45;
-    }
-
-    .manager-filters {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
-    }
-
-    @media (min-width: 900px) {
-      .manager-filters {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
-
-      .filter-search {
-        grid-column: 1 / -1;
-      }
-    }
-
-    .manager-table-wrap {
-      overflow-x: auto;
-      margin-top: 1rem;
-    }
-
-    .manager-table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 1100px;
-    }
-
-    .manager-table th,
-    .manager-table td {
-      border-bottom: 1px solid #e5e7eb;
-      padding: 0.55rem 0.5rem;
-      text-align: left;
-      vertical-align: top;
-      font-size: 0.88rem;
-    }
-
-    .manager-table th {
-      font-weight: 700;
-      color: #243015;
-      background: #f8fafc;
-      white-space: nowrap;
-    }
-
-    .manager-table td[data-col="question"] {
-      min-width: 280px;
-    }
-
-    .manager-table tr.is-selected {
-      background: #f6f8f2;
-    }
-
-    .manager-table tbody tr.manager-table__data-row {
-      cursor: pointer;
-    }
-
-    .manager-table tbody tr.manager-table__data-row:hover {
-      background: #fafafa;
-    }
-
-    .manager-table tbody tr.manager-table__data-row.is-selected:hover {
-      background: #eef4e4;
-    }
-
-    .manager-empty {
-      margin-top: 0.75rem;
-      color: #4b5563;
-      font-size: 0.95rem;
-    }
-
-    .badge {
-      display: inline-block;
-      border-radius: 999px;
-      padding: 0.15rem 0.55rem;
       font-size: 0.78rem;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    .badge--status-draft { background: #e5e7eb; color: #374151; }
-    .badge--status-ready { background: #d1fae5; color: #065f46; }
-    .badge--status-scheduled { background: #dbeafe; color: #1d4ed8; }
-    .badge--status-published { background: #dcfce7; color: #166534; }
-    .badge--status-archived { background: #f3f4f6; color: #4b5563; }
-    .badge--status-default { background: #f3f4f6; color: #374151; }
-
-    .badge--ready { background: #dcfce7; color: #166534; }
-    .badge--not-ready { background: #fee2e2; color: #991b1b; }
-    .badge--email-done { background: #d1fae5; color: #065f46; }
-    .badge--email-pending { background: #fef3c7; color: #92400e; }
-
-    .table-action-btn {
-      white-space: nowrap;
-    }
-
-    .table-actions {
-      display: flex;
-      gap: 0.35rem;
-      flex-wrap: wrap;
-    }
-
-    .table-actions .table-action-btn {
-      font-size: 0.75rem;
-      padding: 0.35rem 0.55rem;
-    }
-
-    .mode-note,
-    .status-note {
-      margin: 0.75rem 0 0 0;
-      font-size: 0.95rem;
-    }
-
-    .mode-note {
-      color: #243015;
-      font-weight: 600;
-    }
-
-    .mode-note--form {
-      margin: 0 0 0.75rem 0;
-      padding: 0.65rem 0.85rem;
-      border-radius: 8px;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      font-size: 1rem;
-    }
-
-    .status-note {
-      color: #374151;
-      min-height: 1.3em;
-    }
-
-    .status-note.status-note--error {
-      color: #b91c1c;
-    }
-
-    @media (max-width: 720px) {
-      .calendar-tip-item {
-        font-size: 0.7rem;
-      }
-
-      .content-calendar__day {
-        min-height: 128px;
-      }
+      line-height: 1.45;
+      max-height: 320px;
     }
   </style>
 
-  <script
-    id="tips-admin-initial-data"
-    type="application/json"
-    set:html={tipsContentJson}
-  />
-
   <script>
-    type TipRecord = {
-      content_id: number | null;
-      slug: string;
-      status: string;
-      readyToPublish: boolean;
-      startDate: string | null;
-      endDate: string | null;
-      lastPublishedDate: string | null;
-      emailDone: boolean;
-      emailSentDate: string | null;
-      hook: string;
-      question: string;
-      quickAnswer: string;
-      bridge: string;
-      videoUrl: string;
-      memberVideoUrl: string;
-      tryTitle: string;
-      trySteps: string[];
-      memberHeading: string;
-      memberText: string;
-      memberLink: string;
-      memberButton: string;
-      communityHeading: string;
-      communityText: string;
-      communityLink: string;
-      communityButton: string;
-    };
+    const API_BASE = "/api/admin/help-hub";
 
-    const initialDataEl = document.getElementById("tips-admin-initial-data");
-    const initialTips = (initialDataEl?.textContent ? JSON.parse(initialDataEl.textContent) : []) as TipRecord[];
-    const form = document.getElementById("tips-admin-form") as HTMLFormElement | null;
-    form?.addEventListener("submit", (event) => event.preventDefault());
-    const saveTipBtn = document.getElementById("save-tip-btn");
-    const refreshPreviewBtn = document.getElementById("refresh-preview-btn");
-    const previewEl = document.getElementById("tips-json-preview");
-    const toggleCalendarBtn = document.getElementById("toggle-calendar-btn");
-    const calendarPanelBody = document.getElementById("calendar-panel-body");
-    const toggleJsonPreviewBtn = document.getElementById("toggle-json-preview-btn");
-    const jsonPreviewBody = document.getElementById("json-preview-body");
-    const newTipBtn = document.getElementById("new-tip-btn");
-    const deleteSelectedBtn = document.getElementById("delete-selected-btn");
-    const modeEl = document.getElementById("tips-admin-mode");
-    const statusEl = document.getElementById("tips-admin-status");
-    const managerBody = document.getElementById("tips-manager-body");
-    const managerEmpty = document.getElementById("tips-manager-empty");
-    const overviewLive = document.getElementById("overview-live");
-    const overviewUpcoming = document.getElementById("overview-upcoming");
-    const overviewExpired = document.getElementById("overview-expired");
-    const filterStatus = document.getElementById("filter-status") as HTMLSelectElement | null;
-    const filterReadiness = document.getElementById("filter-readiness") as HTMLSelectElement | null;
-    const filterEmail = document.getElementById("filter-email") as HTMLSelectElement | null;
-    const sortTips = document.getElementById("sort-tips") as HTMLSelectElement | null;
-    const tipsSearch = document.getElementById("tips-search") as HTMLInputElement | null;
-    const calendarDays = document.getElementById("content-calendar-days");
-    const calendarMonthLabel = document.getElementById("calendar-month-label");
-    const calendarPrevBtn = document.getElementById("calendar-prev-month");
-    const calendarNextBtn = document.getElementById("calendar-next-month");
-    const calendarTodayBtn = document.getElementById("calendar-today");
-    let tips: TipRecord[] = Array.isArray(initialTips) ? initialTips.map((tip) => normalizeTipRecord(tip)) : [];
-    /** Set when a row’s Edit was used; null = creating a new tip (Save appends). */
-    let editingContentId: number | null = null;
-    const now = new Date();
-    const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    let calendarMonthDate = new Date(todayDate.getFullYear(), todayDate.getMonth(), 1);
+    type TipRow = Record<string, unknown>;
 
-    function valueOrNull(inputName: string) {
-      const field = form?.elements?.namedItem(inputName);
-      if (!(field instanceof HTMLInputElement)) return null;
-      const value = field.value.trim();
-      return value ? value : null;
-    }
+    let tips: TipRow[] = [];
+    let editingId: number | null = null;
+    let baseline: TipRow | null = null;
+    let slugManual = false;
 
-    function textValue(inputName: string) {
-      const field = form?.elements?.namedItem(inputName);
-      if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
-        return field.value.trim();
-      }
-      return "";
-    }
+    const statusEl = document.getElementById("help-hub-admin-status");
+    const modeEl = document.getElementById("help-hub-admin-mode");
+    const loadingEl = document.getElementById("help-hub-admin-loading");
+    const listEl = document.getElementById("help-hub-tip-list");
+    const emptyEl = document.getElementById("help-hub-admin-empty");
+    const previewEl = document.getElementById("help-hub-json-preview");
+    const form = document.getElementById("help-hub-admin-form") as HTMLFormElement | null;
+    const fieldId = document.getElementById("field-id") as HTMLInputElement | null;
 
-    function checkedValue(inputName: string) {
-      const field = form?.elements?.namedItem(inputName);
-      return field instanceof HTMLInputElement ? field.checked : false;
-    }
-
-    function numberOrNull(inputName: string) {
-      const raw = textValue(inputName);
-      if (!raw) return null;
-      const parsed = Number(raw);
-      return Number.isFinite(parsed) ? parsed : null;
-    }
-
-    function buildTipRecord(): TipRecord {
-      const trySteps = textValue("trySteps")
-        .split(/\r?\n/)
-        .map((step) => step.trim())
-        .filter(Boolean);
-
-      return {
-        content_id: numberOrNull("content_id"),
-        slug: textValue("slug"),
-        status: textValue("status") || "draft",
-        readyToPublish: checkedValue("readyToPublish"),
-        startDate: valueOrNull("startDate"),
-        endDate: valueOrNull("endDate"),
-        lastPublishedDate: valueOrNull("lastPublishedDate"),
-        emailDone: checkedValue("emailDone"),
-        emailSentDate: valueOrNull("emailSentDate"),
-        hook: textValue("hook"),
-        question: textValue("question"),
-        quickAnswer: textValue("quickAnswer"),
-        bridge: textValue("bridge"),
-        videoUrl: textValue("videoUrl"),
-        memberVideoUrl: textValue("memberVideoUrl") || "",
-        tryTitle: textValue("tryTitle"),
-        trySteps,
-        memberHeading: textValue("memberHeading"),
-        memberText: textValue("memberText"),
-        memberLink: textValue("memberLink"),
-        memberButton: textValue("memberButton"),
-        communityHeading: textValue("communityHeading"),
-        communityText: textValue("communityText"),
-        communityLink: textValue("communityLink"),
-        communityButton: textValue("communityButton"),
-      };
-    }
-
-    function normalizeTipRecord(raw: unknown): TipRecord {
-      const r = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
-      const cid = r.content_id;
-      const content_id: number | null =
-        typeof cid === "number" && Number.isFinite(cid)
-          ? cid
-          : typeof cid === "string" && cid.trim() !== ""
-            ? Number(cid)
-            : null;
-
-      const tryStepsRaw = r.trySteps;
-      const trySteps = Array.isArray(tryStepsRaw)
-        ? tryStepsRaw.map((x) => String(x))
-        : [];
-
-      const str = (key: string): string => {
-        const v = r[key];
-        if (v == null) return "";
-        return typeof v === "string" ? v : String(v);
-      };
-
-      const optStr = (key: string): string | null => {
-        const v = r[key];
-        if (v == null || v === "") return null;
-        return typeof v === "string" ? v : String(v);
-      };
-
-      return {
-        content_id: content_id !== null && Number.isFinite(content_id) ? content_id : null,
-        slug: str("slug"),
-        status: str("status") || "draft",
-        readyToPublish: r.readyToPublish === true,
-        startDate: optStr("startDate"),
-        endDate: optStr("endDate"),
-        lastPublishedDate: optStr("lastPublishedDate"),
-        emailDone: r.emailDone === true,
-        emailSentDate: optStr("emailSentDate"),
-        hook: str("hook"),
-        question: str("question"),
-        quickAnswer: str("quickAnswer"),
-        bridge: str("bridge"),
-        videoUrl: str("videoUrl"),
-        memberVideoUrl: str("memberVideoUrl"),
-        tryTitle: str("tryTitle"),
-        trySteps,
-        memberHeading: str("memberHeading"),
-        memberText: str("memberText"),
-        memberLink: str("memberLink"),
-        memberButton: str("memberButton"),
-        communityHeading: str("communityHeading"),
-        communityText: str("communityText"),
-        communityLink: str("communityLink"),
-        communityButton: str("communityButton"),
-      };
-    }
-
-    type SaveTipServerOk = { ok: true; tips: TipRecord[]; saved: TipRecord };
-    type SaveTipServerErr = { ok: false; error: string };
-
-    async function saveTipToServer(
-      record: TipRecord,
-      replaceContentId: number | null
-    ): Promise<SaveTipServerOk | SaveTipServerErr> {
-      const payload: Record<string, unknown> = { ...record };
-      if (replaceContentId !== null && replaceContentId !== record.content_id) {
-        payload._adminReplaceContentId = replaceContentId;
-      }
-
-      try {
-        const response = await fetch("/api/tips-admin.json", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-
-        let data: { success?: boolean; error?: string; tips?: unknown[]; saved?: unknown } = {};
-        try {
-          data = (await response.json()) as typeof data;
-        } catch {
-          data = {};
-        }
-
-        if (!response.ok) {
-          const msg =
-            typeof data.error === "string" && data.error.trim()
-              ? data.error
-              : `Save failed (HTTP ${response.status}).`;
-          return { ok: false, error: msg };
-        }
-
-        if (!data.success) {
-          return {
-            ok: false,
-            error: typeof data.error === "string" && data.error.trim() ? data.error : "Save failed.",
-          };
-        }
-
-        if (!Array.isArray(data.tips) || data.saved === undefined || data.saved === null) {
-          return { ok: false, error: "Server returned an unexpected response (missing tips or saved)." };
-        }
-
-        return {
-          ok: true,
-          tips: data.tips.map((row) => normalizeTipRecord(row)),
-          saved: normalizeTipRecord(data.saved),
-        };
-      } catch {
-        return { ok: false, error: "Network error — could not reach /api/tips-admin.json." };
-      }
-    }
-
-    function setStatus(message: string, isError = false) {
+    function setStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral") {
       if (!statusEl) return;
       statusEl.textContent = message;
-      statusEl.classList.toggle("status-note--error", isError);
+      statusEl.classList.toggle("is-error", kind === "err");
+      statusEl.classList.toggle("is-ok", kind === "ok");
     }
 
-    function setModeNewTip() {
-      editingContentId = null;
-      if (!modeEl) return;
-      modeEl.textContent = "Creating New Tip";
+    function getTipId(row: TipRow): number | null {
+      const v = row.id;
+      if (typeof v === "number" && Number.isFinite(v)) return v;
+      if (typeof v === "string" && v.trim()) {
+        const n = parseInt(v.trim(), 10);
+        return Number.isFinite(n) ? n : null;
+      }
+      return null;
     }
 
-    function setModeEditing(contentId: number) {
-      editingContentId = contentId;
-      if (!modeEl) return;
-      modeEl.textContent = `Editing Tip ${contentId}`;
+    function slugifyTitle(raw: string): string {
+      const s = raw
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 96);
+      return s || "help-hub-tip";
     }
 
-    function tryStepsToFormText(steps: unknown): string {
-      if (Array.isArray(steps)) return steps.map((s) => String(s)).join("\n");
-      if (typeof steps === "string") return steps;
+    function linesFromTextarea(name: string): string[] {
+      const el = form?.elements?.namedItem(name);
+      if (!(el instanceof HTMLTextAreaElement)) return [];
+      return el.value
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
+    }
+
+    function textVal(name: string): string {
+      const el = form?.elements?.namedItem(name);
+      if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) {
+        return el.value.trim();
+      }
       return "";
     }
 
-    function openTipForEdit(contentId: number) {
-      const record = tips.find((tip) => Number(tip.content_id) === contentId);
-      if (!record) {
-        setStatus(`No tip with content_id ${contentId} was found.`, true);
+    function checked(name: string): boolean {
+      const el = form?.elements?.namedItem(name);
+      return el instanceof HTMLInputElement && el.type === "checkbox" ? el.checked : false;
+    }
+
+    function setField(name: string, value: string) {
+      const el = form?.elements?.namedItem(name);
+      if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) {
+        el.value = value;
+      }
+    }
+
+    function setChecked(name: string, value: boolean) {
+      const el = form?.elements?.namedItem(name);
+      if (el instanceof HTMLInputElement && el.type === "checkbox") el.checked = value;
+    }
+
+    function linesToText(lines: unknown): string {
+      if (!Array.isArray(lines)) return "";
+      return lines.map((x) => String(x)).join("\n");
+    }
+
+    function deepClone<T>(x: T): T {
+      return JSON.parse(JSON.stringify(x)) as T;
+    }
+
+    function buildRow(): TipRow {
+      const base = baseline ? deepClone(baseline) : {};
+      const tryThisPrev =
+        base.tryThis && typeof base.tryThis === "object" && !Array.isArray(base.tryThis)
+          ? (base.tryThis as Record<string, unknown>)
+          : {};
+
+      const lessonPrev =
+        base.lessonCta && typeof base.lessonCta === "object" && !Array.isArray(base.lessonCta)
+          ? (base.lessonCta as Record<string, unknown>)
+          : {};
+
+      const tryStepsLines = linesFromTextarea("trySteps");
+      const quickActionLines = linesFromTextarea("quickAction");
+      const proLines = linesFromTextarea("proExercise");
+
+      const lessonTitle = textVal("lessonTitle");
+      const lessonText = textVal("lessonText");
+
+      const lessonCta: Record<string, unknown> = { ...lessonPrev };
+      if (lessonTitle) lessonCta.title = lessonTitle;
+      else delete lessonCta.title;
+      if (lessonText) lessonCta.text = lessonText;
+      else delete lessonCta.text;
+
+      const relatedSel = textVal("relatedLessonId");
+      const sortRaw = textVal("sortOrder");
+      const sortOrder = sortRaw === "" ? undefined : parseInt(sortRaw, 10);
+
+      const row: TipRow = {
+        ...base,
+        title: textVal("title"),
+        slug: textVal("slug"),
+        status: textVal("status"),
+        featured: checked("featured"),
+        category: textVal("category"),
+        categoryPill: textVal("categoryPill"),
+        question: textVal("question"),
+        bubbleAnswer: textVal("bubbleAnswer"),
+        hook: textVal("hook"),
+        mediaType: textVal("mediaType"),
+        mediaUrl: textVal("mediaUrl"),
+        mediaPoster: textVal("mediaPoster"),
+        mediaAlt: textVal("mediaAlt"),
+        aboutTitle: textVal("aboutTitle"),
+        bridge: textVal("bridge"),
+        tryThisTitle: textVal("tryThisTitle"),
+        memberHeading: textVal("memberHeading"),
+        memberText: textVal("memberText"),
+        isNew: checked("isNew"),
+        readyToPublish: checked("readyToPublish"),
+        tryThis: {
+          ...tryThisPrev,
+          quickActionTitle: textVal("quickActionTitle"),
+          quickAction: quickActionLines,
+          proExerciseTitle: textVal("proExerciseTitle"),
+          proExercise: proLines,
+        },
+        lessonCta,
+      };
+
+      if (tryStepsLines.length > 0) {
+        row.trySteps = tryStepsLines;
+      } else {
+        delete row.trySteps;
+      }
+
+      if (Number.isFinite(sortOrder as number)) {
+        row.sortOrder = sortOrder;
+      } else if (sortRaw === "") {
+        delete row.sortOrder;
+      }
+
+      if (relatedSel === "") {
+        delete row.relatedLessonId;
+        delete row.relatedLesson;
+      } else {
+        const n = parseInt(relatedSel, 10);
+        if (Number.isFinite(n)) row.relatedLessonId = n;
+      }
+
+      if (editingId !== null) row.id = editingId;
+
+      if (Object.keys(lessonCta).length === 0) {
+        delete row.lessonCta;
+      }
+
+      return row;
+    }
+
+    function refreshPreview() {
+      if (!previewEl) return;
+      try {
+        previewEl.textContent = JSON.stringify(buildRow(), null, 2);
+      } catch {
+        previewEl.textContent = "(could not build preview)";
+      }
+    }
+
+    function loadRowToForm(row: TipRow) {
+      baseline = deepClone(row);
+      const id = getTipId(row);
+      if (fieldId) {
+        fieldId.value = id !== null ? String(id) : "";
+        fieldId.placeholder = id !== null ? String(id) : "(assigned on save)";
+      }
+
+      setField("title", String(row.title ?? ""));
+      setField("slug", String(row.slug ?? ""));
+      setField("status", String(row.status ?? "draft"));
+      setChecked("featured", row.featured === true);
+      setField("category", String(row.category ?? ""));
+      setField("categoryPill", String(row.categoryPill ?? ""));
+      setField("question", String(row.question ?? ""));
+      setField("bubbleAnswer", String(row.bubbleAnswer ?? ""));
+      setField("hook", String(row.hook ?? ""));
+      setField("mediaType", String(row.mediaType ?? ""));
+      setField("mediaUrl", String(row.mediaUrl ?? ""));
+      setField("mediaPoster", String(row.mediaPoster ?? ""));
+      setField("mediaAlt", String(row.mediaAlt ?? ""));
+      setField("aboutTitle", String(row.aboutTitle ?? ""));
+      setField("bridge", String(row.bridge ?? ""));
+      setField("tryThisTitle", String(row.tryThisTitle ?? ""));
+
+      const tt =
+        row.tryThis && typeof row.tryThis === "object" && !Array.isArray(row.tryThis)
+          ? (row.tryThis as Record<string, unknown>)
+          : {};
+      setField("quickActionTitle", String(tt.quickActionTitle ?? ""));
+      setField("proExerciseTitle", String(tt.proExerciseTitle ?? ""));
+      setField("quickAction", linesToText(tt.quickAction));
+      setField("proExercise", linesToText(tt.proExercise));
+
+      const lc =
+        row.lessonCta && typeof row.lessonCta === "object" && !Array.isArray(row.lessonCta)
+          ? (row.lessonCta as Record<string, unknown>)
+          : {};
+      setField("lessonTitle", String(lc.title ?? ""));
+      setField("lessonText", String(lc.text ?? ""));
+
+      setField("memberHeading", String(row.memberHeading ?? ""));
+      setField("memberText", String(row.memberText ?? ""));
+
+      const rid = row.relatedLessonId;
+      if (typeof rid === "number" && Number.isFinite(rid)) {
+        setField("relatedLessonId", String(rid));
+      } else if (typeof rid === "string" && rid.trim()) {
+        setField("relatedLessonId", rid.trim());
+      } else {
+        setField("relatedLessonId", "");
+      }
+
+      setField("sortOrder", row.sortOrder !== undefined && row.sortOrder !== null ? String(row.sortOrder) : "");
+      setChecked("isNew", row.isNew === true);
+      setChecked("readyToPublish", row.readyToPublish === true);
+      setField("trySteps", linesToText(row.trySteps));
+
+      slugManual = true;
+      refreshPreview();
+    }
+
+    function clearFormNew() {
+      editingId = null;
+      baseline = null;
+      slugManual = false;
+      if (fieldId) {
+        fieldId.value = "";
+        fieldId.placeholder = "(assigned on save)";
+      }
+      setField("title", "");
+      setField("slug", "");
+      setField("status", "draft");
+      setChecked("featured", false);
+      setField("category", "");
+      setField("categoryPill", "");
+      setField("question", "");
+      setField("bubbleAnswer", "");
+      setField("hook", "");
+      setField("mediaType", "");
+      setField("mediaUrl", "");
+      setField("mediaPoster", "");
+      setField("mediaAlt", "");
+      setField("aboutTitle", "");
+      setField("bridge", "");
+      setField("tryThisTitle", "");
+      setField("quickActionTitle", "");
+      setField("proExerciseTitle", "");
+      setField("quickAction", "");
+      setField("proExercise", "");
+      setField("lessonTitle", "");
+      setField("lessonText", "");
+      setField("memberHeading", "");
+      setField("memberText", "");
+      setField("relatedLessonId", "");
+      setField("sortOrder", "");
+      setChecked("isNew", false);
+      setChecked("readyToPublish", false);
+      setField("trySteps", "");
+      if (modeEl) modeEl.textContent = "New tip — slug will follow title until you edit slug";
+      renderList();
+      refreshPreview();
+    }
+
+    function renderList() {
+      if (!listEl || !emptyEl || !loadingEl) return;
+      loadingEl.hidden = true;
+      if (tips.length === 0) {
+        listEl.hidden = true;
+        emptyEl.hidden = false;
         return;
       }
-      loadRecordToForm(record);
-      renderTipsManager();
-      setStatus(`Loaded tip ${contentId} into the form.`);
-      form?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+      emptyEl.hidden = true;
+      listEl.hidden = false;
+      listEl.innerHTML = "";
 
-    function getNextContentId(): number {
-      let max = 0;
-      for (const tip of tips) {
-        const id = Number(tip.content_id);
-        if (Number.isFinite(id) && id > max) max = id;
-      }
-      return max > 0 ? max + 1 : 1;
-    }
-
-    function setFieldValue(name: string, value: string | null) {
-      const field = form?.elements?.namedItem(name);
-      if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
-        field.value = value ?? "";
-      }
-    }
-
-    function setCheckboxValue(name: string, value: boolean) {
-      const field = form?.elements?.namedItem(name);
-      if (field instanceof HTMLInputElement) field.checked = value === true;
-    }
-
-    function clearFormForNewTip() {
-      setFieldValue("content_id", String(getNextContentId()));
-      setFieldValue("slug", "");
-      setFieldValue("status", "draft");
-      setCheckboxValue("readyToPublish", false);
-      setFieldValue("startDate", "");
-      setFieldValue("endDate", "");
-      setFieldValue("lastPublishedDate", "");
-      setCheckboxValue("emailDone", false);
-      setFieldValue("emailSentDate", "");
-      setFieldValue("hook", "");
-      setFieldValue("question", "");
-      setFieldValue("quickAnswer", "");
-      setFieldValue("bridge", "");
-      setFieldValue("videoUrl", "");
-      setFieldValue("memberVideoUrl", "");
-      setFieldValue("tryTitle", "");
-      setFieldValue("trySteps", "");
-      setFieldValue("memberHeading", "");
-      setFieldValue("memberText", "");
-      setFieldValue("memberLink", "");
-      setFieldValue("memberButton", "");
-      setFieldValue("communityHeading", "");
-      setFieldValue("communityText", "");
-      setFieldValue("communityLink", "");
-      setFieldValue("communityButton", "");
-      setModeNewTip();
-    }
-
-    function loadRecordToForm(record: TipRecord) {
-      const cid = record.content_id;
-      if (typeof cid !== "number" || !Number.isFinite(cid)) {
-        setStatus("This tip has no valid content_id; it cannot be loaded into the form.", true);
-        return;
-      }
-
-      setFieldValue("content_id", String(cid));
-      setFieldValue("slug", record.slug ?? "");
-      setFieldValue("status", record.status ?? "draft");
-      setCheckboxValue("readyToPublish", record.readyToPublish === true);
-      setFieldValue("startDate", record.startDate ?? "");
-      setFieldValue("endDate", record.endDate ?? "");
-      setFieldValue("lastPublishedDate", record.lastPublishedDate ?? "");
-      setCheckboxValue("emailDone", record.emailDone === true);
-      setFieldValue("emailSentDate", record.emailSentDate ?? "");
-      setFieldValue("hook", record.hook ?? "");
-      setFieldValue("question", record.question ?? "");
-      setFieldValue("quickAnswer", record.quickAnswer ?? "");
-      setFieldValue("bridge", record.bridge ?? "");
-      setFieldValue("videoUrl", record.videoUrl ?? "");
-      setFieldValue("memberVideoUrl", record.memberVideoUrl ?? "");
-      setFieldValue("tryTitle", record.tryTitle ?? "");
-      setFieldValue("trySteps", tryStepsToFormText(record.trySteps));
-      setFieldValue("memberHeading", record.memberHeading ?? "");
-      setFieldValue("memberText", record.memberText ?? "");
-      setFieldValue("memberLink", record.memberLink ?? "");
-      setFieldValue("memberButton", record.memberButton ?? "");
-      setFieldValue("communityHeading", record.communityHeading ?? "");
-      setFieldValue("communityText", record.communityText ?? "");
-      setFieldValue("communityLink", record.communityLink ?? "");
-      setFieldValue("communityButton", record.communityButton ?? "");
-      setModeEditing(cid);
-    }
-
-    function renderArrayPreview() {
-      if (previewEl) previewEl.textContent = JSON.stringify(tips, null, 2);
-    }
-
-    function getToday(): string {
-      const now = new Date();
-      const y = now.getFullYear();
-      const m = String(now.getMonth() + 1).padStart(2, "0");
-      const d = String(now.getDate()).padStart(2, "0");
-      return `${y}-${m}-${d}`;
-    }
-
-    function addDays(dateIso: string, num: number): string {
-      const [year, month, day] = dateIso.split("-").map(Number);
-      const d = new Date(year, month - 1, day);
-      d.setDate(d.getDate() + num);
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, "0");
-      const dayNum = String(d.getDate()).padStart(2, "0");
-      return `${y}-${m}-${dayNum}`;
-    }
-
-    function getNextTuesday(): string {
-      const today = new Date();
-      const todayDay = today.getDay();
-      const tuesday = 2;
-      let offset = (tuesday - todayDay + 7) % 7;
-      if (offset === 0) offset = 7;
-      const next = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      next.setDate(next.getDate() + offset);
-      const y = next.getFullYear();
-      const m = String(next.getMonth() + 1).padStart(2, "0");
-      const d = String(next.getDate()).padStart(2, "0");
-      return `${y}-${m}-${d}`;
-    }
-
-    function isValidDateValue(value: string | null): value is string {
-      return typeof value === "string" && value.trim().length > 0;
-    }
-
-    function isLiveNow(tip: TipRecord): boolean {
-      const today = getToday();
-      return isValidDateValue(tip.startDate) && isValidDateValue(tip.endDate)
-        ? tip.startDate <= today && today <= tip.endDate
-        : false;
-    }
-
-    function isScheduledFuture(tip: TipRecord): boolean {
-      const today = getToday();
-      return (tip.status ?? "").toLowerCase() === "scheduled" && isValidDateValue(tip.startDate)
-        ? tip.startDate > today
-        : false;
-    }
-
-    function createOverviewItem(record: TipRecord, metaText: string): HTMLDivElement {
-      const wrapper = document.createElement("div");
-      wrapper.className = "overview-item";
-
-      const id = document.createElement("p");
-      id.className = "overview-item-id";
-      id.textContent = `${record.content_id ?? ""} — ${record.slug ?? ""}`;
-
-      const title = document.createElement("p");
-      title.className = "overview-item-title";
-      title.textContent = record.question || "(no question)";
-
-      const meta = document.createElement("p");
-      meta.className = "overview-item-meta";
-      meta.textContent = metaText;
-
-      const editBtn = document.createElement("button");
-      editBtn.type = "button";
-      editBtn.className = "kbm-btn kbm-btn-primary table-action-btn";
-      editBtn.textContent = "Edit";
-      editBtn.setAttribute("data-tip-edit", String(record.content_id ?? ""));
-
-      const publishBtn = document.createElement("button");
-      publishBtn.type = "button";
-      publishBtn.className = "kbm-btn kbm-btn-primary table-action-btn";
-      publishBtn.textContent = "Publish Now";
-      publishBtn.dataset.publishId = String(record.content_id ?? "");
-      publishBtn.disabled = isLiveNow(record) && (record.status ?? "").toLowerCase() === "published";
-
-      const scheduleBtn = document.createElement("button");
-      scheduleBtn.type = "button";
-      scheduleBtn.className = "kbm-btn kbm-btn-outline table-action-btn";
-      scheduleBtn.textContent = "Schedule Next Tuesday";
-      scheduleBtn.dataset.scheduleId = String(record.content_id ?? "");
-      scheduleBtn.disabled = isScheduledFuture(record);
-
-      const unpublishBtn = document.createElement("button");
-      unpublishBtn.type = "button";
-      unpublishBtn.className = "kbm-btn kbm-btn-accent table-action-btn";
-      unpublishBtn.textContent = "Unpublish";
-      unpublishBtn.dataset.unpublishId = String(record.content_id ?? "");
-
-      wrapper.appendChild(id);
-      wrapper.appendChild(title);
-      wrapper.appendChild(meta);
-      const actionRow = document.createElement("div");
-      actionRow.className = "table-actions";
-      actionRow.appendChild(editBtn);
-      actionRow.appendChild(publishBtn);
-      actionRow.appendChild(scheduleBtn);
-      actionRow.appendChild(unpublishBtn);
-      wrapper.appendChild(actionRow);
-      return wrapper;
-    }
-
-    function renderOverviewPanel(
-      container: HTMLElement | null,
-      items: TipRecord[],
-      emptyText: string,
-      getMeta: (tip: TipRecord) => string
-    ) {
-      if (!container) return;
-      container.innerHTML = "";
-      if (items.length === 0) {
-        const empty = document.createElement("p");
-        empty.className = "overview-empty";
-        empty.textContent = emptyText;
-        container.appendChild(empty);
-        return;
-      }
-      items.forEach((tip) => {
-        container.appendChild(createOverviewItem(tip, getMeta(tip)));
+      const sorted = [...tips].sort((a, b) => {
+        const ia = getTipId(a);
+        const ib = getTipId(b);
+        return (ia ?? 0) - (ib ?? 0);
       });
-    }
 
-    function renderPublishingOverview() {
-      const today = getToday();
-      const withDates = tips.filter((tip) => isValidDateValue(tip.startDate) && isValidDateValue(tip.endDate));
+      sorted.forEach((tip) => {
+        const id = getTipId(tip);
+        const li = document.createElement("li");
+        li.className = "help-hub-admin__tip-card";
+        if (editingId !== null && id === editingId) li.classList.add("is-active");
 
-      const live = withDates.filter((tip) => (tip.startDate as string) <= today && today <= (tip.endDate as string));
-      const upcoming = withDates
-        .filter((tip) => (tip.startDate as string) > today)
-        .sort((a, b) => compareDate(a.startDate, b.startDate, "asc"))
-        .slice(0, 3);
-      const expired = withDates
-        .filter((tip) => (tip.endDate as string) < today)
-        .sort((a, b) => compareDate(a.endDate, b.endDate, "desc"))
-        .slice(0, 3);
+        const title = document.createElement("p");
+        title.className = "help-hub-admin__tip-title";
+        title.textContent = String(tip.title ?? "(no title)");
 
-      renderOverviewPanel(
-        overviewLive,
-        live,
-        "No tip is currently live.",
-        (tip) => `${tip.startDate ?? ""} -> ${tip.endDate ?? ""}`
-      );
-      renderOverviewPanel(
-        overviewUpcoming,
-        upcoming,
-        "No upcoming tips scheduled.",
-        (tip) => `Starts: ${tip.startDate ?? ""}`
-      );
-      renderOverviewPanel(
-        overviewExpired,
-        expired,
-        "No recently expired tips.",
-        (tip) => `Ended: ${tip.endDate ?? ""}`
-      );
-    }
+        const meta = document.createElement("p");
+        meta.className = "help-hub-admin__tip-meta";
+        meta.innerHTML = `<strong>id</strong> ${id ?? "—"}<br /><strong>slug</strong> ${String(tip.slug ?? "")}<br /><strong>status</strong> ${String(tip.status ?? "")}<br /><strong>category</strong> ${String(tip.category ?? "")}`;
 
-    function toTimeOrNull(value: string | null): number | null {
-      if (!value) return null;
-      const time = Date.parse(value);
-      return Number.isFinite(time) ? time : null;
-    }
+        const actions = document.createElement("div");
+        actions.className = "help-hub-admin__tip-actions";
 
-    function compareDate(a: string | null, b: string | null, direction: "asc" | "desc"): number {
-      const ta = toTimeOrNull(a);
-      const tb = toTimeOrNull(b);
-      if (ta === null && tb === null) return 0;
-      if (ta === null) return 1;
-      if (tb === null) return -1;
-      return direction === "asc" ? ta - tb : tb - ta;
-    }
-
-    function statusBadgeClass(status: string): string {
-      const normalized = (status || "").toLowerCase();
-      if (normalized === "draft") return "badge--status-draft";
-      if (normalized === "ready") return "badge--status-ready";
-      if (normalized === "scheduled") return "badge--status-scheduled";
-      if (normalized === "published") return "badge--status-published";
-      if (normalized === "archived") return "badge--status-archived";
-      return "badge--status-default";
-    }
-
-    async function saveRecordViaPost(record: TipRecord): Promise<{ ok: boolean; error?: string }> {
-      const result = await saveTipToServer(record, null);
-      return result.ok ? { ok: true } : { ok: false, error: result.error };
-    }
-
-    function formatFriendlyDate(iso: string): string {
-      const [y, m, d] = iso.split("-").map(Number);
-      const local = new Date(y, m - 1, d);
-      return local.toLocaleDateString("en-US", { month: "long", day: "numeric" });
-    }
-
-    function parseIsoDate(value: string): Date {
-      const [y, m, d] = value.split("-").map(Number);
-      return new Date(y, m - 1, d);
-    }
-
-    function formatIsoDate(value: Date): string {
-      const y = value.getFullYear();
-      const m = String(value.getMonth() + 1).padStart(2, "0");
-      const d = String(value.getDate()).padStart(2, "0");
-      return `${y}-${m}-${d}`;
-    }
-
-    function tipCalendarState(tip: TipRecord): "live" | "scheduled" | "expired" {
-      const today = getToday();
-      if (isValidDateValue(tip.endDate) && tip.endDate < today) return "expired";
-      if (isValidDateValue(tip.startDate) && tip.startDate > today) return "scheduled";
-      return "live";
-    }
-
-    function tipCompactLabel(tip: TipRecord): string {
-      const slug = (tip.slug ?? "").trim();
-      if (slug) return slug.length > 24 ? `${slug.slice(0, 24)}...` : slug;
-      const question = (tip.question ?? "").trim();
-      if (!question) return "(no title)";
-      return question.length > 30 ? `${question.slice(0, 30)}...` : question;
-    }
-
-    function isTipOnDate(tip: TipRecord, dayIso: string): boolean {
-      return isValidDateValue(tip.startDate) && isValidDateValue(tip.endDate)
-        ? tip.startDate <= dayIso && dayIso <= tip.endDate
-        : false;
-    }
-
-    function renderContentCalendar() {
-      if (!calendarDays || !calendarMonthLabel) return;
-      calendarDays.innerHTML = "";
-      calendarMonthLabel.textContent = calendarMonthDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-
-      const monthStart = new Date(calendarMonthDate.getFullYear(), calendarMonthDate.getMonth(), 1);
-      const firstGridDate = new Date(monthStart.getFullYear(), monthStart.getMonth(), 1 - monthStart.getDay());
-
-      for (let index = 0; index < 42; index += 1) {
-        const cellDate = new Date(firstGridDate.getFullYear(), firstGridDate.getMonth(), firstGridDate.getDate() + index);
-        const cellIso = formatIsoDate(cellDate);
-        const isOutsideMonth = cellDate.getMonth() !== calendarMonthDate.getMonth();
-        const isTuesday = cellDate.getDay() === 2;
-        const isToday = cellDate.getTime() === todayDate.getTime();
-
-        const cell = document.createElement("div");
-        cell.className = "content-calendar__day";
-        if (isOutsideMonth) cell.classList.add("content-calendar__day--outside");
-        if (isTuesday) cell.classList.add("content-calendar__day--tuesday");
-        if (isToday) cell.classList.add("content-calendar__day--today");
-
-        const dayNumber = document.createElement("p");
-        dayNumber.className = "content-calendar__day-number";
-        dayNumber.textContent = String(cellDate.getDate());
-        cell.appendChild(dayNumber);
-
-        const items = document.createElement("div");
-        items.className = "content-calendar__items";
-        const dayTips = tips.filter((tip) => isTipOnDate(tip, cellIso));
-        dayTips.forEach((tip) => {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.className = `calendar-tip-item calendar-tip-item--${tipCalendarState(tip)}`;
-          button.setAttribute("data-tip-edit", String(tip.content_id ?? ""));
-          button.title = `Edit tip ${tip.content_id ?? ""}`;
-
-          const head = document.createElement("div");
-          head.className = "calendar-tip-head";
-
-          const id = document.createElement("span");
-          id.className = "calendar-tip-id";
-          id.textContent = `#${tip.content_id ?? "?"}`;
-
-          const status = document.createElement("span");
-          status.className = "calendar-tip-status";
-          status.textContent = tipCalendarState(tip);
-
-          head.appendChild(id);
-          head.appendChild(status);
-
-          const title = document.createElement("p");
-          title.className = "calendar-tip-title";
-          title.textContent = tipCompactLabel(tip);
-
-          button.appendChild(head);
-          button.appendChild(title);
-          items.appendChild(button);
+        const editBtn = document.createElement("button");
+        editBtn.type = "button";
+        editBtn.className = "kbm-btn kbm-btn-outline";
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => {
+          if (id === null) return;
+          editingId = id;
+          loadRowToForm(tip);
+          if (modeEl) modeEl.textContent = `Editing tip id ${id}`;
+          renderList();
+          setStatus(`Editing id ${id}.`, "neutral");
+          form?.scrollIntoView({ behavior: "smooth", block: "start" });
         });
 
-        cell.appendChild(items);
-        calendarDays.appendChild(cell);
-      }
-    }
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.className = "kbm-btn kbm-btn-accent";
+        delBtn.textContent = "Delete";
+        delBtn.addEventListener("click", () => {
+          if (id === null) return;
+          if (!confirm(`Delete tip id ${id} (${String(tip.slug ?? "")})? This cannot be undone.`)) return;
+          void deleteTip(id);
+        });
 
-    async function runQuickAction(action: "publish" | "schedule" | "unpublish", id: number) {
-      const record = tips.find((tip) => Number(tip.content_id) === id);
-      if (!record) {
-        setStatus("Selected tip was not found.", true);
-        return;
-      }
-
-      let updated: TipRecord = { ...record };
-      if (action === "publish") {
-        const today = getToday();
-        updated = {
-          ...record,
-          startDate: today,
-          endDate: addDays(today, 6),
-          status: "published",
-          readyToPublish: true,
-          lastPublishedDate: today,
-        };
-      } else if (action === "schedule") {
-        const nextTuesday = getNextTuesday();
-        updated = {
-          ...record,
-          startDate: nextTuesday,
-          endDate: addDays(nextTuesday, 6),
-          status: "scheduled",
-          readyToPublish: true,
-        };
-      } else {
-        if (!confirm(`Unpublish tip ${id}?`)) return;
-        updated = {
-          ...record,
-          status: "draft",
-          readyToPublish: false,
-          startDate: null,
-          endDate: null,
-        };
-      }
-
-      const result = await saveRecordViaPost(updated);
-      if (!result.ok) {
-        setStatus(result.error ?? "Could not update tip.", true);
-        return;
-      }
-
-      if (action === "publish") {
-        setStatus(`Tip ${id} published`);
-      } else if (action === "schedule") {
-        const nextTuesday = updated.startDate ?? getNextTuesday();
-        setStatus(`Tip ${id} scheduled for ${formatFriendlyDate(nextTuesday)}`);
-      } else {
-        setStatus(`Tip ${id} unpublished`);
-      }
-
-      window.location.reload();
-    }
-
-    function renderTipsManager() {
-      if (!managerBody || !managerEmpty) return;
-      const statusValue = filterStatus?.value ?? "all";
-      const readinessValue = filterReadiness?.value ?? "all";
-      const emailValue = filterEmail?.value ?? "all";
-      const sortValue = sortTips?.value ?? "startDate-desc";
-      const searchValue = (tipsSearch?.value ?? "").trim().toLowerCase();
-
-      const filtered = tips.filter((tip) => {
-        const statusMatch = statusValue === "all" || (tip.status ?? "").toLowerCase() === statusValue;
-        const readinessMatch =
-          readinessValue === "all" ||
-          (readinessValue === "ready" ? tip.readyToPublish === true : tip.readyToPublish !== true);
-        const emailMatch =
-          emailValue === "all" ||
-          (emailValue === "done" ? tip.emailDone === true : tip.emailDone !== true);
-        const searchBlob = `${tip.content_id ?? ""} ${tip.slug ?? ""} ${tip.question ?? ""}`.toLowerCase();
-        const searchMatch = !searchValue || searchBlob.includes(searchValue);
-        return statusMatch && readinessMatch && emailMatch && searchMatch;
-      });
-
-      filtered.sort((a, b) => {
-        switch (sortValue) {
-          case "startDate-asc":
-            return compareDate(a.startDate, b.startDate, "asc");
-          case "lastPublishedDate-desc":
-            return compareDate(a.lastPublishedDate, b.lastPublishedDate, "desc");
-          case "contentId-asc":
-            return Number(a.content_id ?? 0) - Number(b.content_id ?? 0);
-          case "contentId-desc":
-            return Number(b.content_id ?? 0) - Number(a.content_id ?? 0);
-          case "question-asc":
-            return (a.question ?? "").localeCompare(b.question ?? "");
-          case "startDate-desc":
-          default:
-            return compareDate(a.startDate, b.startDate, "desc");
-        }
-      });
-
-      managerBody.innerHTML = "";
-      const hasAnyTips = tips.length > 0;
-      if (!hasAnyTips) {
-        managerEmpty.hidden = false;
-        managerEmpty.textContent = "No Tuesday Tips found yet.";
-        return;
-      }
-      if (filtered.length === 0) {
-        managerEmpty.hidden = false;
-        managerEmpty.textContent = "No tips match the current filters.";
-        return;
-      }
-
-      managerEmpty.hidden = true;
-      filtered.forEach((tip) => {
-        const row = document.createElement("tr");
-        row.classList.add("manager-table__data-row");
-        row.setAttribute("data-tip-row-id", String(tip.content_id ?? ""));
-        if (editingContentId !== null && Number(tip.content_id) === editingContentId) {
-          row.classList.add("is-selected");
-        }
-
-        row.innerHTML = `
-          <td>${tip.content_id ?? ""}</td>
-          <td>${tip.slug ?? ""}</td>
-          <td data-col="question">${tip.question ?? ""}</td>
-          <td><span class="badge ${statusBadgeClass(tip.status ?? "")}">${tip.status ?? "unknown"}</span></td>
-          <td><span class="badge ${tip.readyToPublish ? "badge--ready" : "badge--not-ready"}">${tip.readyToPublish ? "Ready" : "Not Ready"}</span></td>
-          <td>${tip.startDate ?? ""}</td>
-          <td>${tip.endDate ?? ""}</td>
-          <td><span class="badge ${tip.emailDone ? "badge--email-done" : "badge--email-pending"}">${tip.emailDone ? "Email Sent" : "Email Pending"}</span></td>
-          <td>${tip.lastPublishedDate ?? ""}</td>
-          <td>
-            <div class="table-actions">
-              <button type="button" class="kbm-btn kbm-btn-primary table-action-btn" data-tip-edit="${tip.content_id ?? ""}">Edit</button>
-              <button type="button" class="kbm-btn kbm-btn-primary table-action-btn" data-publish-id="${tip.content_id ?? ""}" ${isLiveNow(tip) && (tip.status ?? "").toLowerCase() === "published" ? "disabled" : ""}>Publish Now</button>
-              <button type="button" class="kbm-btn kbm-btn-outline table-action-btn" data-schedule-id="${tip.content_id ?? ""}" ${isScheduledFuture(tip) ? "disabled" : ""}>Schedule Next Tuesday</button>
-              <button type="button" class="kbm-btn kbm-btn-accent table-action-btn" data-unpublish-id="${tip.content_id ?? ""}">Unpublish</button>
-            </div>
-          </td>
-        `;
-        managerBody.appendChild(row);
+        actions.appendChild(editBtn);
+        actions.appendChild(delBtn);
+        li.appendChild(title);
+        li.appendChild(meta);
+        li.appendChild(actions);
+        listEl.appendChild(li);
       });
     }
 
-    newTipBtn?.addEventListener("click", () => {
-      clearFormForNewTip();
-      setStatus("Ready for a new tip record.");
-    });
-
-    deleteSelectedBtn?.addEventListener("click", () => {
-      if (editingContentId === null) {
-        setStatus("Load a tip in edit mode before deleting.", true);
-        return;
-      }
-      const id = editingContentId;
-      const record = tips.find((tip) => Number(tip.content_id) === id);
-      if (!record) {
-        setStatus("Selected tip was not found.", true);
-        return;
-      }
-      if (!confirm(`Delete tip ${id} (${record.slug || "no slug"})?`)) return;
-      tips = tips.filter((tip) => Number(tip.content_id) !== id);
-      renderTipsManager();
-      renderPublishingOverview();
-      renderContentCalendar();
-      renderArrayPreview();
-      clearFormForNewTip();
-      setStatus(`Deleted record ${id}.`);
-    });
-
-    saveTipBtn?.addEventListener("click", () => {
-      void (async () => {
-        const record = buildTipRecord();
-        if (typeof record.content_id !== "number" || !Number.isFinite(record.content_id)) {
-          setStatus("content_id is required.", true);
+    async function fetchTips() {
+      setStatus("Loading tips…", "neutral");
+      try {
+        const res = await fetch(API_BASE);
+        const data = (await res.json()) as { ok?: boolean; tips?: TipRow[]; error?: string };
+        if (!res.ok || !data.ok || !Array.isArray(data.tips)) {
+          setStatus(data.error || `Failed to load (${res.status})`, "err");
+          if (loadingEl) loadingEl.hidden = true;
+          if (listEl) listEl.hidden = true;
+          if (emptyEl) emptyEl.hidden = false;
           return;
         }
+        tips = data.tips;
+        setStatus(`Loaded ${tips.length} tip(s).`, "ok");
+        renderList();
+        clearFormNew();
+        refreshPreview();
+      } catch {
+        setStatus("Network error loading tips.", "err");
+        if (loadingEl) loadingEl.hidden = true;
+        if (listEl) listEl.hidden = true;
+        if (emptyEl) emptyEl.hidden = false;
+      }
+    }
 
-        if (editingContentId !== null) {
-          const idx = tips.findIndex((tip) => Number(tip.content_id) === editingContentId);
-          if (idx === -1) {
-            setStatus("The tip you were editing is no longer in the list. Reload the page or pick Edit again.", true);
+    async function saveTip() {
+      const row = buildRow();
+      const title = String(row.title ?? "").trim();
+      const slug = String(row.slug ?? "").trim();
+      const category = String(row.category ?? "").trim();
+      const status = String(row.status ?? "").trim();
+      if (!title || !slug || !category || !status) {
+        setStatus("Fill required fields: title, slug, category, status.", "err");
+        return;
+      }
+
+      const payload = deepClone(row);
+      delete payload.id;
+
+      try {
+        if (editingId === null) {
+          const res = await fetch(API_BASE, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = (await res.json()) as { ok?: boolean; tips?: TipRow[]; tip?: TipRow; error?: string };
+          if (!res.ok || !data.ok || !Array.isArray(data.tips) || !data.tip) {
+            setStatus(data.error || `Save failed (${res.status})`, "err");
             return;
           }
-          if (Number(record.content_id) !== editingContentId) {
-            const clash = tips.some(
-              (tip, i) => i !== idx && Number(tip.content_id) === Number(record.content_id)
-            );
-            if (clash) {
-              setStatus("That content_id is already used by another tip. Choose a different ID.", true);
-              return;
-            }
-          }
+          tips = data.tips;
+          const newId = getTipId(data.tip);
+          editingId = newId;
+          baseline = deepClone(data.tip);
+          loadRowToForm(data.tip);
+          if (modeEl && newId !== null) modeEl.textContent = `Editing tip id ${newId} (saved)`;
+          setStatus(`Created tip id ${newId}.`, "ok");
         } else {
-          const exists = tips.some((tip) => Number(tip.content_id) === Number(record.content_id));
-          if (exists) {
-            setStatus(
-              "That content_id already exists. Click Edit on that row, or change content_id for a new tip.",
-              true
-            );
+          const res = await fetch(`${API_BASE}/${editingId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...payload, id: editingId }),
+          });
+          const data = (await res.json()) as { ok?: boolean; tips?: TipRow[]; tip?: TipRow; error?: string };
+          if (!res.ok || !data.ok || !Array.isArray(data.tips) || !data.tip) {
+            setStatus(data.error || `Save failed (${res.status})`, "err");
             return;
           }
+          tips = data.tips;
+          baseline = deepClone(data.tip);
+          loadRowToForm(data.tip);
+          setStatus(`Updated tip id ${editingId}.`, "ok");
         }
-
-        const replaceId =
-          editingContentId !== null && Number(record.content_id) !== editingContentId ? editingContentId : null;
-
-        if (saveTipBtn instanceof HTMLButtonElement) saveTipBtn.disabled = true;
-        const result = await saveTipToServer(record, replaceId);
-        if (saveTipBtn instanceof HTMLButtonElement) saveTipBtn.disabled = false;
-
-        if (!result.ok) {
-          setStatus(result.error, true);
-          return;
-        }
-
-        tips = result.tips.map((row) => ({ ...row }));
-        const saved = result.saved;
-        loadRecordToForm(saved);
-        renderTipsManager();
-        renderPublishingOverview();
-        renderContentCalendar();
-        renderArrayPreview();
-        setStatus(`Saved tip ${saved.content_id}`);
-      })();
-    });
-
-    refreshPreviewBtn?.addEventListener("click", () => {
-      renderArrayPreview();
-      setStatus("JSON preview refreshed from the current working list (form fields unchanged).");
-    });
-
-    function setCalendarPanelVisible(visible: boolean) {
-      if (!calendarPanelBody || !toggleCalendarBtn) return;
-      calendarPanelBody.hidden = !visible;
-      toggleCalendarBtn.setAttribute("aria-expanded", visible ? "true" : "false");
-      toggleCalendarBtn.textContent = visible ? "Hide Calendar" : "Show Calendar";
-      if (visible) renderContentCalendar();
+        renderList();
+        refreshPreview();
+      } catch {
+        setStatus("Network error while saving.", "err");
+      }
     }
 
-    function setJsonPreviewVisible(visible: boolean) {
-      if (!jsonPreviewBody || !toggleJsonPreviewBtn) return;
-      jsonPreviewBody.hidden = !visible;
-      toggleJsonPreviewBtn.setAttribute("aria-expanded", visible ? "true" : "false");
-      toggleJsonPreviewBtn.textContent = visible ? "Hide JSON Preview" : "Show JSON Preview";
-      if (visible) renderArrayPreview();
+    async function deleteTip(id: number) {
+      try {
+        const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+        const data = (await res.json()) as { ok?: boolean; tips?: TipRow[]; error?: string };
+        if (!res.ok || !data.ok || !Array.isArray(data.tips)) {
+          setStatus(data.error || `Delete failed (${res.status})`, "err");
+          return;
+        }
+        tips = data.tips;
+        if (editingId === id) {
+          clearFormNew();
+        } else {
+          renderList();
+        }
+        setStatus(`Deleted tip id ${id}.`, "ok");
+        refreshPreview();
+      } catch {
+        setStatus("Network error while deleting.", "err");
+      }
     }
 
-    toggleCalendarBtn?.addEventListener("click", () => {
-      const next = calendarPanelBody?.hidden !== false;
-      setCalendarPanelVisible(next);
+    document.getElementById("btn-new-tip")?.addEventListener("click", () => {
+      clearFormNew();
+      setStatus("New tip — fill the form and save.", "neutral");
     });
 
-    toggleJsonPreviewBtn?.addEventListener("click", () => {
-      const next = jsonPreviewBody?.hidden !== false;
-      setJsonPreviewVisible(next);
+    document.getElementById("btn-cancel-edit")?.addEventListener("click", () => {
+      clearFormNew();
+      setStatus("Cancelled — new tip form.", "neutral");
     });
 
-    const managerTable =
-      document.querySelector(".tips-admin-wrap table.manager-table") ??
-      document.querySelector("table.manager-table");
-    managerTable?.addEventListener("click", (event) => {
-      const target = event.target as HTMLElement | null;
-      const editButton = target?.closest<HTMLButtonElement>("[data-tip-edit]");
-      if (editButton) {
-        event.preventDefault();
-        const raw = editButton.getAttribute("data-tip-edit") ?? "";
-        const id = Number(raw);
-        if (!raw.trim() || !Number.isFinite(id)) {
-          setStatus("Could not read a valid content_id from Edit.", true);
-          return;
-        }
-        openTipForEdit(id);
+    document.getElementById("btn-save-tip")?.addEventListener("click", () => {
+      void saveTip();
+    });
+
+    document.getElementById("btn-delete-tip")?.addEventListener("click", () => {
+      if (editingId === null) {
+        setStatus("Load a tip with Edit before deleting.", "err");
         return;
       }
-
-      const publishButton = target?.closest<HTMLButtonElement>("[data-publish-id]");
-      if (publishButton) {
-        const id = Number(publishButton.dataset.publishId);
-        void runQuickAction("publish", id);
-        return;
-      }
-
-      const scheduleButton = target?.closest<HTMLButtonElement>("[data-schedule-id]");
-      if (scheduleButton) {
-        const id = Number(scheduleButton.dataset.scheduleId);
-        void runQuickAction("schedule", id);
-        return;
-      }
-
-      const unpublishButton = target?.closest<HTMLButtonElement>("[data-unpublish-id]");
-      if (unpublishButton) {
-        const id = Number(unpublishButton.dataset.unpublishId);
-        void runQuickAction("unpublish", id);
-        return;
-      }
-
-      const row = target?.closest<HTMLTableRowElement>("tr.manager-table__data-row");
-      if (row && managerBody && row.parentElement === managerBody && !target?.closest("button")) {
-        const raw = row.getAttribute("data-tip-row-id") ?? "";
-        const id = Number(raw);
-        if (raw.trim() && Number.isFinite(id)) {
-          openTipForEdit(id);
-        }
-      }
+      if (!confirm(`Delete tip id ${editingId}? This cannot be undone.`)) return;
+      void deleteTip(editingId);
     });
 
-    [overviewLive, overviewUpcoming, overviewExpired].forEach((panel) => {
-      panel?.addEventListener("click", (event) => {
-        const target = event.target as HTMLElement | null;
-        const editButton = target?.closest<HTMLButtonElement>("[data-tip-edit]");
-        if (editButton) {
-          event.preventDefault();
-          const raw = editButton.getAttribute("data-tip-edit") ?? "";
-          const id = Number(raw);
-          if (!raw.trim() || !Number.isFinite(id)) {
-            setStatus("Could not read a valid content_id from Edit.", true);
-            return;
-          }
-          openTipForEdit(id);
-          return;
-        }
-
-        const publishButton = target?.closest<HTMLButtonElement>("[data-publish-id]");
-        if (publishButton) {
-          const id = Number(publishButton.dataset.publishId);
-          void runQuickAction("publish", id);
-          return;
-        }
-
-        const scheduleButton = target?.closest<HTMLButtonElement>("[data-schedule-id]");
-        if (scheduleButton) {
-          const id = Number(scheduleButton.dataset.scheduleId);
-          void runQuickAction("schedule", id);
-          return;
-        }
-
-        const unpublishButton = target?.closest<HTMLButtonElement>("[data-unpublish-id]");
-        if (unpublishButton) {
-          const id = Number(unpublishButton.dataset.unpublishId);
-          void runQuickAction("unpublish", id);
-        }
-      });
+    document.getElementById("btn-refresh-preview")?.addEventListener("click", () => {
+      refreshPreview();
+      setStatus("Preview refreshed.", "ok");
     });
 
-    calendarDays?.addEventListener("click", (event) => {
-      const target = event.target as HTMLElement | null;
-      const editButton = target?.closest<HTMLButtonElement>("[data-tip-edit]");
-      if (!editButton) return;
-      event.preventDefault();
-      const raw = editButton.getAttribute("data-tip-edit") ?? "";
-      const id = Number(raw);
-      if (!raw.trim() || !Number.isFinite(id)) return;
-      openTipForEdit(id);
+    form?.addEventListener("submit", (e) => e.preventDefault());
+
+    document.getElementById("field-title")?.addEventListener("input", () => {
+      if (editingId !== null || slugManual) return;
+      const t = textVal("title");
+      setField("slug", slugifyTitle(t));
+      refreshPreview();
     });
 
-    calendarPrevBtn?.addEventListener("click", () => {
-      calendarMonthDate = new Date(calendarMonthDate.getFullYear(), calendarMonthDate.getMonth() - 1, 1);
-      renderContentCalendar();
+    document.getElementById("field-slug")?.addEventListener("input", () => {
+      if (editingId === null) slugManual = true;
+      refreshPreview();
     });
 
-    calendarNextBtn?.addEventListener("click", () => {
-      calendarMonthDate = new Date(calendarMonthDate.getFullYear(), calendarMonthDate.getMonth() + 1, 1);
-      renderContentCalendar();
+    form?.addEventListener("input", () => {
+      refreshPreview();
     });
 
-    calendarTodayBtn?.addEventListener("click", () => {
-      calendarMonthDate = new Date(todayDate.getFullYear(), todayDate.getMonth(), 1);
-      renderContentCalendar();
-    });
-
-    [filterStatus, filterReadiness, filterEmail, sortTips].forEach((control) => {
-      control?.addEventListener("change", renderTipsManager);
-    });
-    tipsSearch?.addEventListener("input", renderTipsManager);
-
-    clearFormForNewTip();
-    renderTipsManager();
-    renderPublishingOverview();
-    renderContentCalendar();
-    renderArrayPreview();
+    void fetchTips();
   </script>
 </BaseLayout>

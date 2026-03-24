@@ -1,5 +1,5 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
+import Layout from "../../layouts/Layout.astro";
 import "../../styles/wizard.css";
 import PrintFooter from "../../components/common/PrintFooter.astro";
 import ActionBar from "../../components/wizards/ActionBar.astro";
@@ -17,7 +17,7 @@ const wizardFlow = wizardData?.wizardFlow;
 const pageUrl = "https://knitbymachine.com/wizards/getting-started-readiness-check";
 ---
 
-<BaseLayout 
+<Layout 
   title={wizardData?.metaTitle || "Getting Started: Readiness Check | Knit by Machine"} 
   description={wizardData?.metaDescription || "A quick readiness check for machine knitters. Confirm your setup and get one clear next step before you knit."}>
 
@@ -150,7 +150,7 @@ const pageUrl = "https://knitbymachine.com/wizards/getting-started-readiness-che
   <WizardBackLink category="project wizard" />
   
   <div class="header-panel">
-    <img src={wizardData?.iconUrl || "/images/wizard.svg"} alt="Getting Started: Readiness Check" class="intro-icon">
+    <img src={wizardData?.iconUrl || "/images/kinlogo.svg"} alt="Getting Started: Readiness Check" class="intro-icon">
     <div class="header-right">
       <p class="intro-tagline">{wizardData?.hero || "Answer a few quick questions and get one clear next step before you knit."}</p>
     </div>
@@ -372,4 +372,4 @@ const pageUrl = "https://knitbymachine.com/wizards/getting-started-readiness-che
   }
 </script>
 
-</BaseLayout>
+</Layout>

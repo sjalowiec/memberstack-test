@@ -38,23 +38,14 @@ import "../styles/global.css";
           <div class="kbm-hero__content">
             <h1>See it • Love it • Knit it</h1>
             <p class="kbm-hero__text">
-              Start with this week’s machine knitting tip — just enter your email to unlock it.
+              Practical machine knitting help you can use right away.
             </p>
-            <div class="kbm-hero__actions">
-              <a href="/tips" id="weekly-tip-cta" class="kbm-btn kbm-btn-accent">Get This Week’s Tip</a>
-              <a
-                href="#"
-                id="weekly-tip-ms-modal-trigger"
-                data-ms-modal="signup"
-                style="position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0"
-                aria-hidden="true"
-                tabindex="-1">Open signup</a>
-              <a href="/community" class="kbm-btn kbm-btn-outline" target="_blank" rel="noopener noreferrer">Connect with Fellow Knitters</a>
-              <div data-ms-content="!members">
-                <a href="#" data-ms-modal="signup" class="kbm-btn kbm-btn-outline">
-                  Get Weekly Tips
-                </a>
+            <div class="kbm-hero__cta-group">
+              <div class="kbm-hero__actions">
+                <a href="/tips" class="kbm-btn kbm-btn-accent">Get Help Now</a>
+                <a href="/community" class="kbm-btn kbm-btn-outline" target="_blank" rel="noopener noreferrer">Connect with Fellow Knitters</a>
               </div>
+              
             </div>
           </div>
           <div class="kbm-hero__image">
@@ -215,60 +206,7 @@ import "../styles/global.css";
         </div>
       </section>
 
-      <!-- Custom Unlock Tip Modal -->
-      <div id="unlock-tip-modal" class="kbm-modal" style="display:none;">
-
-        <div class="kbm-modal-content">
-
-          <h2>Unlock This Week’s Tip</h2>
-
-          <p>Enter your email to continue</p>
-
-          <form data-ms-form="signup">
-
-            <input
-              type="email"
-              placeholder="Your email address"
-              data-ms-member="email"
-              required
-            />
-
-            <button type="submit">Unlock the Tip</button>
-
-          </form>
-
-          <p style="font-size: 0.9rem; margin-top: 10px;">
-            Already have an account? Just enter your email — we’ll log you in.
-          </p>
-
-        </div>
-      </div>
     </main>
-
-    <script is:inline>
-      document.addEventListener("DOMContentLoaded", function () {
-        var cta = document.getElementById("weekly-tip-cta");
-        var target = document.getElementById("weekly-tip-content");
-        var msTrigger = document.getElementById("weekly-tip-ms-modal-trigger");
-        if (!cta) return;
-
-        cta.addEventListener("click", function (e) {
-          e.preventDefault();
-          var body = document.body;
-          if (body.classList.contains("logged-in-free") || body.classList.contains("logged-in-paid")) {
-            if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-            return;
-          }
-          if (body.classList.contains("logged-out")) {
-            document.getElementById("unlock-tip-modal").style.display = "block";
-            var input = document.querySelector('#unlock-tip-modal input[type="email"]');
-            if (input) input.focus();
-            return;
-          }
-          window.location.href = cta.getAttribute("href") || "/tips";
-        });
-      });
-    </script>
 
   
 </Layout>
@@ -429,6 +367,43 @@ import "../styles/global.css";
     text-decoration: none;
   }
 
+  .kbm-hero__cta-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    max-width: 42rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .kbm-hero__support {
+    margin: 0;
+    padding-top: 0.1rem;
+    text-align: center;
+  }
+
+  .kbm-hero__support-link {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #6b7565;
+    text-decoration: underline;
+    text-decoration-color: rgba(107, 117, 101, 0.45);
+    text-underline-offset: 0.2em;
+  }
+
+  .kbm-hero__support-link:hover {
+    color: var(--kbm-green-2);
+    text-decoration-color: rgba(115, 140, 82, 0.55);
+  }
+
+  .kbm-hero__support-link:focus-visible {
+    outline: 2px solid var(--kbm-green-2);
+    outline-offset: 0.15rem;
+    border-radius: 2px;
+  }
+
   .kbm-hero__helper {
     font-style: italic;
     font-size: 0.9rem;
@@ -472,6 +447,16 @@ import "../styles/global.css";
       align-items: flex-start;
       justify-content: flex-start;
       flex-direction: row;
+    }
+
+    .kbm-hero__cta-group {
+      align-items: flex-start;
+      margin-left: 0;
+      margin-right: auto;
+    }
+
+    .kbm-hero__support {
+      text-align: left;
     }
 
     .kbm-hero__image img {

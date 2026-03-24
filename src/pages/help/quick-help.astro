@@ -1,0 +1,368 @@
+---
+import SalesLayout from "../../layouts/SalesLayout.astro";
+---
+
+<SalesLayout
+  title="15-Minute Quick Help"
+  description="Get unstuck fast with a focused 15-minute session where we figure out exactly what’s going on and map out your next steps."
+>
+  <div class="container">
+    <div class="quick-help-hero">
+
+      <div class="quick-help-hero-text">
+        <h1>15-Minute Quick Help</h1>
+
+        <p class="lead">
+          <b></b>Stop guessing. Get back to knitting in 15 minutes.</b><br>
+          Point your camera, show me the problem, and let’s get you moving again.        </p>
+
+        <div class="quick-help-cta">
+          <a href="#" class="kbm-button">Book Your 15-Minute Session</a>
+          <p class="quick-help-reassurance">
+            No small talk, no sales pitches—just 15 minutes of pure troubleshooting.
+          </p>
+          <p class="quick-help-availability">
+            I only open 5 Quick Help sessions each month.
+          </p>
+        </div>
+      </div>
+
+      <div class="quick-help-image-card">
+        <img
+          src="/images/knit-by-machine-sue.png"
+          alt="Sue helping with a knitting machine"
+        />
+      </div>
+
+    </div>
+
+    <div class="quick-help-facts-row">
+      <div class="fact">
+        <strong>Supported Machines:</strong><br />
+        Japanese, Silver Reed, Brother, Taitexma
+      </div>
+
+      <div class="fact">
+        <strong>Experience:</strong><br />
+        20+ years of machine knitting<br />
+        15+ years teaching
+      </div>
+
+      <div class="fact">
+        <strong>Guarantee:</strong><br />
+        If we can’t identify the issue, your next session is free.
+      </div>
+    </div>
+
+    <div class="quick-help-body">
+      <div class="quick-help-section">
+        <h2 class="text-primary">This is for you if…</h2>
+        <ul>
+          <li><strong>Something isn’t working</strong> (and you don’t know why)</li>
+          <li><strong>You’re stuck mid-project</strong> (and don’t want to make it worse)</li>
+          <li><strong>Your machine is doing something unexpected</strong> (and you’re not sure what to do next)</li>
+          <li><strong>You just need a second set of eyes</strong></li>
+        </ul>
+      </div>
+
+      <div class="quick-help-section">
+        <h2 class="text-primary">What Happens in 15 Minutes?</h2>
+        <p>It’s fast, it’s focused, and it’s designed to get you back to your machine.</p>
+
+        <div class="quick-help-steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-text">Show Me</div>
+          </div>
+
+          <div class="step-arrow">→</div>
+
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-text">Quick Questions</div>
+          </div>
+
+          <div class="step-arrow">→</div>
+
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-text">Identify Issue</div>
+          </div>
+
+          <div class="step-arrow">→</div>
+
+          <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-text">Get Your Plan</div>
+          </div>
+        </div>
+
+        <p><em>You don’t need to have it all figured out before we start — just show me what’s happening.</em></p>
+      </div>
+    </div>
+
+    <div class="prep-checklist">
+
+      <h2>3 Things to Do Before We Start</h2>
+
+      <ul>
+    
+        <li>
+          <label>
+            <input type="checkbox" />
+            Have your machine set up and ready to show
+          </label>
+        </li>
+
+        <li>
+          <label>
+            <input type="checkbox" />
+            Be ready to describe what’s happening (or not happening)
+          </label>
+        </li>
+
+        <li>
+          <label>
+            <input type="checkbox" />
+            Have a photo or swatch nearby if that helps explain the issue
+          </label>
+        </li>
+      </ul>
+
+    </div>
+
+    <p class="quick-help-final">
+      Still stuck? Let’s fix it together.
+    </p>
+
+    <div class="quick-help-cta">
+      <a href="#" class="kbm-button">Book Your 15-Minute Session</a>
+    </div>
+  </div>
+
+  <style>
+    .quick-help-hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .quick-help-hero-image img {
+  width: 100%;
+  display: block;
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+}
+
+    .quick-help-facts-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .fact {
+      background: #f5f5f5;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 768px) {
+      .quick-help-hero {
+        grid-template-columns: 1fr;
+      }
+
+      .quick-help-facts-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .container .lead {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      margin: 0 0 1rem;
+      color: #374151;
+    }
+
+    .container .text-primary {
+      color: var(--kbm-green, #52682d);
+      margin-top: 1.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .container .text-primary:first-of-type {
+      margin-top: 0.5rem;
+    }
+
+    .container p {
+      margin: 0 0 1rem;
+      line-height: 1.65;
+      color: #374151;
+    }
+
+    .container .kbm-button {
+      background-color: #c96a4a;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .container .kbm-button:hover {
+      background-color: #b85c3e;
+    }
+
+    .prep-checklist {
+      background: #fff8d6; /* soft yellow */
+      border: 1px solid #f0e2a0;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin: 30px 0;
+    }
+
+    .prep-checklist h2 {
+      margin-top: 0;
+      font-size: 20px;
+      color: #52682d;
+    }
+
+    .prep-checklist ul {
+      list-style: none;
+      padding: 0;
+      margin: 15px 0 0;
+    }
+
+    .prep-checklist li {
+      margin-bottom: 10px;
+    }
+
+    .prep-checklist input[type="checkbox"] {
+      margin-right: 8px;
+      transform: scale(1.1);
+    }
+
+    .prep-checklist label {
+      cursor: pointer;
+    }
+
+    .quick-help-steps {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 20px 0 30px;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f5f5f5;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.step-number {
+  background: #52682D;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.step-text {
+  white-space: nowrap;
+}
+
+.step-arrow {
+  font-size: 18px;
+  color: #999;
+}
+
+/* Mobile: stack nicely */
+@media (max-width: 768px) {
+  .quick-help-steps {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .step-arrow {
+    display: none;
+  }
+}
+
+    .quick-help-body {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .quick-help-section {
+      margin: 40px 0;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    .quick-help-section ul {
+      padding-left: 24px;
+      margin-top: 12px;
+    }
+
+    .quick-help-section li {
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+
+    .quick-help-cta {
+      text-align: center;
+      margin: 24px 0;
+    }
+
+    .quick-help-cta .kbm-button {
+      display: inline-block;
+    }
+
+    .quick-help-cta .quick-help-reassurance {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #777;
+      font-style: italic;
+    }
+
+    .quick-help-cta .quick-help-availability {
+      margin-top: 6px;
+      font-size: 14px;
+      color: #52682d;
+      font-weight: 500;
+    }
+
+    .container .quick-help-final {
+      text-align: center;
+      font-size: 18px;
+      margin: 20px 0 10px;
+      font-weight: 600;
+    }
+    .quick-help-image-card {
+  background: #ffffff;
+  padding: 8px;
+  border-radius: 14px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.18);
+}
+
+.quick-help-image-card img {
+  width: 100%;
+  display: block;
+  border-radius: 10px;
+}
+  </style>
+</SalesLayout>

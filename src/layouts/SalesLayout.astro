@@ -1,0 +1,62 @@
+---
+const { title, description } = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title ? `${title} | Knit it Now` : "Knit it Now"}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="icon" type="image/png" href="/favicon.png" />
+  </head>
+
+  <body>
+    <div class="sales-page">
+      <header class="sales-header">
+        <a href="/" class="sales-logo-link" aria-label="Back to Knit it Now home">
+          <img src="/KINlogo.svg" alt="Knit it Now" class="sales-logo" />
+        </a>
+      </header>
+
+      <main class="sales-main">
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>
+
+<style is:global>
+  @import "../styles/global.css";
+
+  .sales-page {
+    min-height: 100vh;
+    background: #fff;
+  }
+
+  .sales-header {
+    padding: 20px 0;
+    border-bottom: 1px solid #e9e9e9;
+  }
+
+  .sales-header .container,
+  .sales-main .container {
+    width: 100%;
+  }
+
+  .sales-logo-link {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+
+  .sales-logo {
+    height: 40px;
+    width: auto;
+    display: block;
+  }
+
+  .sales-main {
+    padding: 30px 0 60px;
+  }
+</style>

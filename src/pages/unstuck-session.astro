@@ -1,0 +1,144 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHead from "../components/PageHead.astro";
+---
+
+<Layout
+  title="15-Minute Unstuck Session | Knit it Now"
+  description="A short, focused session to solve one specific machine-knitting problem and get you moving again."
+  bodyClass="page--tight-header"
+>
+  <style>
+    .unstuck-session-page.page-wrap {
+      padding-top: 8px;
+    }
+
+    .unstuck-session-inner {
+      max-width: 38rem;
+      margin: 0 auto;
+    }
+
+    .unstuck-intro p {
+      margin: 0 0 1rem;
+      font-size: var(--text-base);
+      line-height: 1.65;
+      color: #374151;
+    }
+
+    .unstuck-intro p:last-child {
+      margin-bottom: 0;
+    }
+
+    .unstuck-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin: 2.25rem 0 2.5rem;
+    }
+
+    .unstuck-step-eyebrow {
+      margin: 0 0 0.35rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+
+    .unstuck-step.kbm-card .kbm-card__title {
+      margin-top: 0;
+    }
+
+    .unstuck-step.kbm-card .kbm-card__desc {
+      -webkit-line-clamp: unset;
+      display: block;
+      overflow: visible;
+    }
+
+    /* Static info cards: site .kbm-card defaults assume clickable catalog tiles */
+    .unstuck-step.kbm-card {
+      cursor: default;
+      margin: 0;
+    }
+
+    .unstuck-step.kbm-card:hover {
+      transform: none;
+      background-color: #ffffff;
+      border-color: #c7d8a4;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .unstuck-reassure {
+      margin: 0 0 1.75rem;
+      padding: 1.25rem 1.35rem;
+      border-radius: 14px;
+      background: #fafbf8;
+      border: 1px solid rgba(82, 104, 45, 0.12);
+    }
+
+    .unstuck-reassure p {
+      margin: 0;
+      font-size: var(--text-lg);
+      line-height: 1.6;
+      color: #374151;
+    }
+
+    .unstuck-cta-wrap {
+      margin-top: 0.5rem;
+    }
+  </style>
+
+  <div class="page-wrap unstuck-session-page">
+    <div class="unstuck-session-inner">
+      <PageHead title="15-Minute Unstuck Session" />
+
+      <div class="unstuck-intro">
+        <p>Stuck on a project and not sure what to do next?</p>
+        <p>
+          This quick 15-minute session is designed to help you solve one specific
+          problem so you can move forward with confidence. No long lesson. No
+          overwhelm. Just focused help when you need it most.
+        </p>
+      </div>
+
+      <div class="unstuck-steps">
+        <article class="kbm-card unstuck-step">
+          <p class="unstuck-step-eyebrow">Step 1</p>
+          <h3 class="kbm-card__title">Tell me what’s going on</h3>
+          <p class="kbm-card__desc">
+            Fill out the short intake form so I can understand your problem before
+            we meet.
+          </p>
+        </article>
+
+        <article class="kbm-card unstuck-step">
+          <p class="unstuck-step-eyebrow">Step 2</p>
+          <h3 class="kbm-card__title">Book your session</h3>
+          <p class="kbm-card__desc">
+            Once I review your form, you’ll get the next step for scheduling.
+          </p>
+        </article>
+
+        <article class="kbm-card unstuck-step">
+          <p class="unstuck-step-eyebrow">Step 3</p>
+          <h3 class="kbm-card__title">Get unstuck</h3>
+          <p class="kbm-card__desc">
+            We’ll meet on Zoom, focus on your specific issue, and get you back on
+            track.
+          </p>
+        </article>
+      </div>
+
+      <div class="unstuck-reassure">
+        <p>You don’t have to figure it out alone.</p>
+      </div>
+
+      <div class="unstuck-cta-wrap">
+        <!--
+          TODO: Replace href="#" below with the real intake / interview form URL when ready.
+        -->
+        <a href="#" class="kbm-btn kbm-btn--primary">Start My Unstuck Request</a>
+      </div>
+    </div>
+  </div>
+</Layout>

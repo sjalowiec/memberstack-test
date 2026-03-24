@@ -3,12 +3,19 @@ import Layout from "../layouts/Layout.astro";
 import PageHead from "../components/PageHead.astro";
 import "../components/talk-bubbles.css";
 import helpHubData from "../data/help-hub.json";
+import lessonsData from "../data/lessons.json";
 
 type TipTryThis = {
   quickActionTitle?: string;
   quickAction?: string[];
   proExerciseTitle?: string;
   proExercise?: string[];
+};
+
+type LessonForTip = {
+  slug: string;
+  url?: string;
+  associatedTip?: string;
 };
 
 type TipRecord = {
@@ -20,6 +27,7 @@ type TipRecord = {
   endDate?: string | null;
   hook?: string;
   question?: string;
+  title?: string;
   quickAnswer?: string;
   /** Help-hub style short answer (alias for quickAnswer). */
   bubbleAnswer?: string;
@@ -27,6 +35,9 @@ type TipRecord = {
   videoUrl?: string;
   /** Help-hub style video URL (alias for videoUrl). */
   mediaUrl?: string;
+  mediaType?: string;
+  mediaAlt?: string;
+  mediaPoster?: string;
   tryTitle?: string;
   tryThisTitle?: string;
   trySteps?: string[];
@@ -120,6 +131,28 @@ const tipJumpLinks: { label: string; href: string }[] =
           j.href.trim() !== ""
       )
     : [];
+
+const validTrySteps: string[] =
+  liveTip && Array.isArray(liveTip?.tryThis?.quickAction)
+    ? liveTip.tryThis.quickAction.filter(
+        (step): step is string =>
+          typeof step === "string" &&
+          step.trim() !== "" &&
+          step.trim() !== "..."
+      )
+    : [];
+
+const lessons = Array.isArray(lessonsData) ? (lessonsData as LessonForTip[]) : [];
+const liveTipSlug =
+  liveTip && typeof liveTip.slug === "string" && liveTip.slug.trim() !== ""
+    ? liveTip.slug.trim()
+    : "";
+const lesson: LessonForTip | undefined = liveTipSlug
+  ? lessons.find(
+      (l) =>
+        typeof l.associatedTip === "string" && l.associatedTip === liveTipSlug
+    )
+  : undefined;
 ---
 
 <Layout
@@ -150,77 +183,115 @@ const tipJumpLinks: { label: string; href: string }[] =
   <section class="container py-5 tips-page-section">
     {liveTip ? (
       <>
-        <div data-ms-content="logged-in">
         <div class="tuesday-tip-hero">
-          <div class="tuesday-tip-bubbles">
-            {liveTip.question && (
-              <div class="talk-row talk-left tuesday-tip-bubble-row tuesday-tip-bubble-row--hero">
-                <h1 class="talk-bubble bubble-bl bubble-question tuesday-tip__question tuesday-tip__question--hero">
-                  {liveTip.question}
-                </h1>
-              </div>
-            )}
-            {liveTip.question &&
-              typeof liveTip.hook === "string" &&
-              liveTip.hook.trim() !== "" && (
-                <p class="tuesday-tip-hook">{liveTip.hook}</p>
+          <div class="tuesday-tip-hero__content">
+            <div class="tuesday-tip-bubbles">
+              {typeof liveTip.hook === "string" && liveTip.hook.trim() !== "" && (
+                <p class="bubble-hook" data-placeholder="short subtitle/supporting sentence">
+                  {liveTip.hook}
+                </p>
               )}
-            {liveTip.quickAnswer && String(liveTip.quickAnswer).trim() !== "" && (
-              <div class="talk-row talk-right tuesday-tip-bubble-row tuesday-tip-bubble-row--answer">
-                <div class="talk-bubble bubble-br bubble-answer tuesday-tip__answer">
-                  <div class="tuesday-tip__answer-inner">
-                    <img
-                      src="/images/help-hub.svg"
-                      alt="Knit it Now"
-                      class="tuesday-tip__logo"
-                      width="52"
-                      height="52"
-                    />
-                    <div class="tuesday-tip__answer-text" set:html={String(liveTip.quickAnswer)} />
+
+              {(liveTip.question || liveTip.title) && (
+                <div class="talk-row talk-left tuesday-tip-bubble-row">
+                  <h1 class="talk-bubble bubble-bl bubble-question tuesday-tip__question" data-placeholder="title">
+                    {liveTip.question || liveTip.title || "Help Hub Question Title"}
+                  </h1>
+                </div>
+              )}
+
+              {liveTip.quickAnswer && String(liveTip.quickAnswer).trim() !== "" && (
+                <div class="talk-row talk-right tuesday-tip-bubble-row" aria-label="Quick answer">
+                  <div class="talk-bubble bubble-br bubble-answer tuesday-tip__answer">
+                    <div class="tuesday-tip__answer-inner">
+                      <img
+                        src="/images/KINlogo.svg"
+                        alt="Knit it Now"
+                        class="tuesday-tip__logo"
+                        width="60"
+                        height="60"
+                      />
+                      <div
+                        class="tuesday-tip__answer-text"
+                        data-placeholder="quick answer"
+                        set:html={String(liveTip.quickAnswer)}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-          <div class="tuesday-tip-hero__media">
-            <div class="tuesday-tip-video-shell">
+
+          <aside class="tuesday-tip-hero__media" aria-label="Free visual">
+            
+            <div class="tuesday-tip-video-shell" data-placeholder="hero media">
               <div class="tuesday-tip-video-aspect">
-                {liveTip.videoUrl ? (
-                  <iframe
-                    src={liveTip.videoUrl}
-                    class="tuesday-tip-video-iframe"
-                    title={liveTip.question || "Tuesday Tip video"}
-                    allow="autoplay; fullscreen; picture-in-picture"
-                    allowfullscreen
+                {liveTip.mediaType === "image" && liveTip.mediaUrl ? (
+                  <img
+                    src={liveTip.mediaUrl}
+                    alt={liveTip.mediaAlt || ""}
+                    class="tuesday-tip-media-image"
+                    loading="lazy"
                   />
+                ) : liveTip.mediaType === "vimeo" && liveTip.mediaUrl ? (
+                  <div class="help-hub-media">
+                    <iframe
+                      src={`https://player.vimeo.com/video/${liveTip.mediaUrl}`}
+                      class="tuesday-tip-video-iframe"
+                      title={liveTip.question || "Help Hub video"}
+                      frameborder="0"
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
                 ) : (
                   <div class="tuesday-tip-video-fallback">
-                    <p class="tuesday-tip-video-fallback__text">Video for this tip will appear here when a link is added.</p>
+                    <p class="tuesday-tip-video-fallback__text">Add mediaType/image URL or a Vimeo video ID to show free visual guidance here.</p>
                   </div>
                 )}
               </div>
             </div>
-            <section class="tuesday-tip__details" aria-label="About this tip">
-              <h2 class="tuesday-tip__section-heading">About This Tip</h2>
-              {tipAboutDescription && (
-                <p class="tuesday-tip__description">{tipAboutDescription}</p>
-              )}
-              {tipJumpLinks.length > 0 && (
-                <nav class="tuesday-tip__jump-links" aria-label="Jump to sections on this page">
-                  <ul class="tuesday-tip__jump-links-list">
-                    {tipJumpLinks.map((j) => (
-                      <li>
-                        <a href={j.href.trim()}>{j.label.trim()}</a>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
-              )}
-              {/* Transcript: render inside `.tuesday-tip__transcript` when `liveTip.transcript` (or similar) exists in JSON */}
-              <section class="tuesday-tip__transcript" data-placeholder="transcript"></section>
-            </section>
-          </div>
+          </aside>
         </div>
+
+        <section class="tuesday-tip__section tuesday-tip__section--why" aria-label="Why this works">
+          <h2 class="tuesday-tip__section-heading">Why This Works</h2>
+          <div class="tuesday-tip__section-card">
+            <p class="tuesday-tip__description" data-placeholder="why this works text">
+              {tipAboutDescription ||
+                "Explain briefly why this approach solves the problem and what to expect when trying it."}
+            </p>
+            {tipJumpLinks.length > 0 && (
+              <nav class="tuesday-tip__jump-links" aria-label="Jump to sections on this page">
+                <ul class="tuesday-tip__jump-links-list">
+                  {tipJumpLinks.map((j) => (
+                    <li>
+                      <a href={j.href.trim()}>{j.label.trim()}</a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            )}
+            {/* Transcript: render inside `.tuesday-tip__transcript` when `liveTip.transcript` (or similar) exists in JSON */}
+            <section class="tuesday-tip__transcript" data-placeholder="transcript"></section>
+            <div class="tip-help-cta">
+              <p class="tip-help-text">
+                Want a little extra help?
+              </p>
+
+              <div class="tip-help-actions">
+                <a href="/your-sprint-link" class="kbm-button">
+                  Work With Me (3-Week Sprint)
+                </a>
+
+                <a href="/help/quick-help" class="kbm-button">
+                  Get Quick Help (15-Min SOS Call)
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {showTipsPageDebug && (
           <div class="tips-debug-panel" aria-label="Tuesday Tip data debug (temporary)">
@@ -282,51 +353,101 @@ const tipJumpLinks: { label: string; href: string }[] =
         )}
 
         <!-- Try This -->
-        {Array.isArray(liveTip.trySteps) && liveTip.trySteps.length > 0 && (
-          <section class="tuesday-tip__try-section">
+        {validTrySteps.length > 0 && (
+          <section class="tuesday-tip__section tuesday-tip__try-section">
             <div class="tuesday-tip__try-card">
-              <h3 class="tuesday-tip__try-heading">{liveTip.tryTitle || "Try This"}</h3>
+              <h2 class="tuesday-tip__section-heading tuesday-tip__try-heading">Try This:</h2>
+              {typeof liveTip.tryThis?.quickActionTitle === "string" &&
+                liveTip.tryThis.quickActionTitle.trim() !== "" && (
+                <p>{liveTip.tryThis.quickActionTitle}</p>
+              )}
               <div class="tuesday-tip__try-body">
-                <ul>
-                  {liveTip.trySteps.map((step) => <li>{step}</li>)}
+                <ul data-placeholder="try this checklist">
+                  {validTrySteps.map((step) => <li set:html={step}></li>)}
                 </ul>
               </div>
             </div>
           </section>
         )}
 
-        <!-- Member CTA -->
+        {/* Optional full-lesson link (JSON-driven) */}
         {(liveTip.memberHeading ||
           liveTip.memberText ||
           (typeof liveTip.memberLessonUrl === "string" && liveTip.memberLessonUrl.trim() !== "")) && (
-          <section class="tuesday-tip__cta">
-            <div class="kbm-card">
-              <div class="kbm-card-body">
-                {liveTip.memberHeading && <h3>{liveTip.memberHeading}</h3>}
-                {liveTip.memberText && <p>{liveTip.memberText}</p>}
-                {typeof liveTip.memberLessonUrl === "string" &&
-                  liveTip.memberLessonUrl.trim() !== "" && (
-                  <>
-                    <a
-                      href={liveTip.memberLessonUrl.trim()}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="kbm-btn kbm-btn-primary"
-                    >
-                      Watch the Full Lesson (Members)
-                    </a>
-                    <p class="kbm-member-note">
-                      This lesson opens in our current Knit It Now library.
-                    </p>
-                  </>
-                )}
+          <section class="tuesday-tip__section tuesday-tip__member-lesson">
+            <h2 class="tuesday-tip__section-heading">{liveTip.memberHeading || "Watch the Full Lesson"}</h2>
+            <div class="kbm-card tuesday-tip__member-card">
+              <div class="kbm-card-body tuesday-tip__member-body">
+                <div class="tuesday-tip__member-thumb" data-placeholder="lesson thumbnail">
+                  {liveTip.mediaPoster ? (
+                    <img
+                      src={liveTip.mediaPoster}
+                      alt={liveTip.mediaAlt || "Member lesson thumbnail"}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span>Lesson Thumbnail</span>
+                  )}
+                </div>
+                <div class="tuesday-tip__member-content">
+                  <h3 class="tuesday-tip__member-title" data-placeholder="lesson title">
+                    {liveTip.title || "Member Lesson Title"}
+                  </h3>
+                  <p class="tuesday-tip__member-text" data-placeholder="lesson description">
+                    {liveTip.memberText ||
+                      "Go deeper with the complete walkthrough and see the full sequence start to finish."}
+                  </p>
+                  {typeof liveTip.memberLessonUrl === "string" &&
+                    liveTip.memberLessonUrl.trim() !== "" && (
+                    <>
+                      <a
+                        href={liveTip.memberLessonUrl.trim()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="kbm-btn kbm-btn-primary"
+                        data-placeholder="lesson button"
+                      >
+                        {liveTip.memberButton || "Watch the Full Lesson"}
+                      </a>
+                      <p class="kbm-member-note">
+                        Opens in the Knit it Now lesson library.
+                      </p>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </section>
         )}
 
-        <section class="tuesday-tip-discussion">
-          <h2>Have a question about this technique?</h2>
+        {lesson && lesson.url && (
+          <section class="help-hub-lesson-cta" aria-labelledby="lesson-cta-title">
+            <div class="help-hub-lesson-cta__content">
+              <p class="help-hub-lesson-cta__eyebrow">Next step</p>
+
+              <h2 id="lesson-cta-title" class="help-hub-lesson-cta__title">
+                Ready to do this step-by-step?
+              </h2>
+
+              <p class="help-hub-lesson-cta__text">
+                This lesson walks you through each step so you can follow along with confidence on your machine.
+              </p>
+
+              <div class="help-hub-lesson-cta__actions">
+                <a href={lesson.url} class="help-hub-lesson-cta__button">
+                  Open Step-by-Step Lesson →
+                </a>
+
+                <p class="help-hub-lesson-cta__note">
+                  Included with Knit it Now membership
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section class="tuesday-tip__section tuesday-tip-discussion">
+          <h2>Tried this? I’d love to hear how it went</h2>
             Join the discussion below! Our community loves helping each other master new skills.
           <div
             id="hyvor-talk-view"
@@ -363,19 +484,6 @@ const tipJumpLinks: { label: string; href: string }[] =
             })();
           </script>
         </section>
-        </div>
-
-        <div data-ms-content="!logged-in" class="tuesday-tip__locked">
-
-          <p class="tuesday-tip__locked-message">
-            Quick step to access this tip — just confirm your email and you're in.
-          </p>
-
-          <a href="#" data-ms-modal="login" class="kbm-btn kbm-btn-primary">
-            Access This Tip
-          </a>
-
-        </div>
       </>
     ) : (
       <>
@@ -457,100 +565,99 @@ const tipJumpLinks: { label: string; href: string }[] =
     margin-right: auto;
   }
 
-  /* —— Hero: intro + bubbles | 16:9 video —— */
+  /* Help Hub detail page structure */
   .tuesday-tip-hero {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1.25rem;
     align-items: start;
-    margin-bottom: 2.25rem;
+    margin-bottom: 1.75rem;
+    padding: clamp(1rem, 2.5vw, 1.4rem);
+    border: 1px solid rgba(82, 104, 45, 0.18);
+    border-radius: 16px;
+    background: #f8faf6;
   }
 
-  @media (min-width: 1080px) {
+  @media (min-width: 980px) {
     .tuesday-tip-hero {
-      grid-template-columns: minmax(300px, 1fr) minmax(460px, 1.12fr);
-      gap: clamp(1.5rem, 3.5vw, 2.25rem);
+      grid-template-columns: minmax(320px, 1fr) minmax(420px, 1fr);
+      gap: clamp(1.2rem, 2.5vw, 2rem);
       align-items: start;
     }
+  }
+
+  .tuesday-tip-hero__content {
+    min-width: 0;
   }
 
   .tuesday-tip-bubbles {
     display: flex;
     flex-direction: column;
-    gap: 0;
-    min-width: 0;
+    gap: 1.15rem;
   }
 
-  .tuesday-tip-hook {
-    font-size: 1.05rem;
-    line-height: 1.5;
-    color: #4a5568; /* soft gray */
-    margin: 0 0 0.4rem 0;
-    font-style: italic;
-    max-width: 100%;
+  .tuesday-tip-bubbles .bubble-hook {
+    margin: 0;
+    font-size: clamp(0.98rem, 1.45vw, 1.06rem);
+    font-weight: 400;
+    line-height: 1.55;
+    color: #5e6c4d;
   }
 
   .tuesday-tip-bubble-row.talk-row {
     margin: 0;
   }
 
-  .tuesday-tip-bubble-row--hero.talk-row {
-    /* Room for bottom-left tail (pseudo-elements don’t extend layout height). */
-    padding-bottom: 1.15rem;
-    margin-bottom: 0.2rem;
-  }
-
-  .tuesday-tip-bubble-row--answer.talk-row {
-    margin-top: 0.15rem;
+  .tuesday-tip-bubble-row.talk-left {
+    margin-top: 0.3rem;
   }
 
   .tuesday-tip-bubbles .talk-bubble {
     max-width: 100%;
   }
 
-  /* Hero headline: large question bubble, full column width, multi-line wrap */
-  .talk-bubble.tuesday-tip__question--hero {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
+  .talk-bubble.tuesday-tip__question {
+    font-size: clamp(1.45rem, 2.6vw, 1.95rem);
+    font-weight: 650;
+    line-height: 1.16;
     margin: 0;
-    font-weight: 700;
-    font-size: clamp(1.28rem, 3.6vw, 2.05rem);
-    line-height: 1.28;
-    letter-spacing: -0.02em;
-    padding: clamp(1.05rem, 2.4vw, 1.55rem) clamp(1.2rem, 3vw, 1.85rem);
-    border-radius: clamp(22px, 4vw, 28px);
-    box-shadow: 0 4px 14px rgba(46, 58, 24, 0.12);
+    color: #6f8550;
   }
 
-  .talk-bubble.tuesday-tip__question--hero:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 22px rgba(46, 58, 24, 0.14);
+  .talk-bubble.tuesday-tip__answer {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.55;
+    padding: 16px 20px 16px 20px;
+    margin-left: 60px;
   }
 
-  /* Slightly larger tail for hero bubble-bl (keeps speech-bubble read) */
-  .talk-bubble.tuesday-tip__question--hero.bubble-bl::after {
-    bottom: -20px;
-    left: clamp(22px, 7vw, 38px);
-    border-left: 11px solid transparent;
-    border-right: 7px solid transparent;
-    border-top: 20px solid #52682d;
+  .tuesday-tip__answer-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
   }
 
-  .talk-bubble.tuesday-tip__question--hero.bubble-bl::before {
-    bottom: -14px;
-    left: clamp(24px, 7vw, 40px);
-    border-left: 9px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 16px solid #f0f4e8;
+  .tuesday-tip__logo {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+  }
+
+  .tuesday-tip__answer-text {
+    flex: 1;
   }
 
   .tuesday-tip-hero__media {
     min-width: 0;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
+  }
+
+  .tuesday-tip-hero__media-heading {
+    margin: 0 0 0.55rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--kbm-green, #52682d);
   }
 
   .tuesday-tip-video-shell {
@@ -563,16 +670,14 @@ const tipJumpLinks: { label: string; href: string }[] =
     max-width: 100%;
   }
 
-  /* 16:9 responsive frame */
   .tuesday-tip-video-aspect {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%;
-  height: 0;
-  overflow: visible;
-  border-radius: 8px;
-  background: #0f172a;
-}
+    position: relative;
+    width: 100%;
+    padding-bottom: 60%;
+    height: 0;
+    border-radius: 8px;
+    background: #0f172a;
+  }
 
   .tuesday-tip-video-iframe {
     position: absolute;
@@ -580,6 +685,19 @@ const tipJumpLinks: { label: string; href: string }[] =
     width: 100%;
     height: 100%;
     border: 0;
+  }
+
+  .help-hub-media {
+    position: absolute;
+    inset: 0;
+  }
+
+  .tuesday-tip-media-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .tuesday-tip-video-fallback {
@@ -697,70 +815,35 @@ const tipJumpLinks: { label: string; href: string }[] =
     margin-bottom: 15px;
   }
 
-  .talk-bubble.tuesday-tip__question:not(.tuesday-tip__question--hero) {
-    color: #6f8550;
+  .tuesday-tip__section {
+    margin-top: 2rem;
   }
 
-  .talk-bubble.tuesday-tip__question--hero {
-    color: #3d4d22;
-  }
-
-  /* Answer stays smaller / secondary vs hero question */
-  .talk-bubble.tuesday-tip__answer {
-    font-weight: 500;
-    font-size: 0.95rem;
-    line-height: 1.55;
-    padding: 12px 16px;
-    margin-left: 0;
-    margin-right: 0;
-    max-width: min(100%, 36rem);
-    margin-inline-start: auto;
-  }
-
-  @media (min-width: 480px) {
-    .talk-bubble.tuesday-tip__answer {
-      margin-inline-start: 2rem;
-    }
-  }
-
-  .tuesday-tip__answer-inner {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .tuesday-tip__logo {
-    width: 52px;
-    height: 52px;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-
-  .tuesday-tip__answer-text {
-    flex: 1;
-  }
-
-  .tuesday-tip__details {
-    text-align: left;
-    margin-top: 1.15rem;
-    margin-bottom: 0;
-    padding-top: 0;
+  .tuesday-tip__section--why {
+    margin-top: 0.75rem;
   }
 
   .tuesday-tip__section-heading {
-    margin: 0 0 0.85rem;
+    margin: 0 0 0.7rem;
     font-size: clamp(1.12rem, 2.1vw, 1.32rem);
     font-weight: 600;
-    line-height: 1.3;
-    color: #1f2937;
+    line-height: 1.25;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .tuesday-tip__section-card {
+    border-radius: 12px;
+    border: 1px solid rgba(82, 104, 45, 0.16);
+    background: #fff;
+    padding: clamp(0.95rem, 2.1vw, 1.15rem);
   }
 
   .tuesday-tip__description {
-    margin: 0 0 1rem;
+    margin: 0;
     max-width: 100%;
     font-size: 1rem;
     line-height: 1.65;
-    color: #374151;
+    color: #2f3a25;
   }
 
   .tuesday-tip__jump-links {
@@ -795,24 +878,22 @@ const tipJumpLinks: { label: string; href: string }[] =
   }
 
   .tuesday-tip__try-card {
-    width: 70%;
-    margin: 24px auto 0;
-    padding: 28px;
-    border: 2px dashed #52682d;
+    max-width: 860px;
+    margin: 0;
+    padding: clamp(1rem, 2.2vw, 1.35rem);
+    border: 1px solid rgba(82, 104, 45, 0.25);
     border-radius: 12px;
-    background: #f9faf9;
+    background: #f7faf4;
   }
 
   @media (max-width: 768px) {
     .tuesday-tip__try-card {
-      width: 95%;
-      padding: 22px;
+      padding: 1rem;
     }
   }
 
   .tuesday-tip__try-heading {
-    text-align: center;
-    margin: 0 0 16px;
+    margin: 0 0 0.75rem;
   }
 
   .tuesday-tip__try-body ul {
@@ -835,7 +916,7 @@ const tipJumpLinks: { label: string; href: string }[] =
     width: 10px;
     height: 10px;
     border: 2px solid #52682d;
-    border-radius: 2px;
+    border-radius: 3px;
     transform: translateY(-50%);
   }
 
@@ -848,10 +929,93 @@ const tipJumpLinks: { label: string; href: string }[] =
     margin-top: 32px;
   }
 
+  .tuesday-tip__member-card {
+    border-color: rgba(82, 104, 45, 0.2);
+    background: #fcfdf9;
+  }
+
+  .tuesday-tip__member-body {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .tuesday-tip__member-thumb {
+    width: 120px;
+    aspect-ratio: 4 / 3;
+    border-radius: 10px;
+    border: 1px solid #dbe5cf;
+    background: #eef3e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #5d6d48;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 0.5rem;
+  }
+
+  .tuesday-tip__member-thumb img {
+    width: 100%;
+    height: 100%;
+    border-radius: 9px;
+    object-fit: cover;
+  }
+
+  .tuesday-tip__member-title {
+    margin: 0 0 0.4rem;
+    font-size: 1.07rem;
+    color: #243015;
+  }
+
+  .tuesday-tip__member-text {
+    margin: 0 0 0.8rem;
+    color: #3f4b35;
+    line-height: 1.55;
+  }
+
   .tip-member-helper {
     margin-top: 0.75rem;
     font-size: 0.9rem;
     color: #6b7280;
+  }
+
+  .tip-help-cta {
+    margin-top: 24px;
+    padding: 16px;
+    background: #f5f5f5;
+    border-radius: 10px;
+  }
+
+  .tip-help-text {
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .tip-help-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .tip-help-actions a {
+    text-decoration: none;
+  }
+
+  .tip-help-actions .kbm-button {
+    background-color: #C96A4A;
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    display: inline-block;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .tip-help-actions .kbm-button:hover {
+    background-color: #b85c3e;
   }
 
   .tuesday-tip__locked {
@@ -873,5 +1037,99 @@ const tipJumpLinks: { label: string; href: string }[] =
     font-size: 1rem;
     line-height: 1.55;
     color: #334155;
+  }
+
+  .help-hub-lesson-cta {
+    margin-top: 2rem;
+    background: #f5f5f5;
+    border: 1px solid #d9ddd2;
+    border-radius: 14px;
+    padding: 1.25rem;
+  }
+
+  .help-hub-lesson-cta__content {
+    max-width: 42rem;
+  }
+
+  .help-hub-lesson-cta__eyebrow {
+    margin: 0 0 0.35rem 0;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #52682D;
+  }
+
+  .help-hub-lesson-cta__title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.6rem;
+    line-height: 1.2;
+    color: #52682D;
+  }
+
+  .help-hub-lesson-cta__text {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .help-hub-lesson-cta__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .help-hub-lesson-cta__button {
+    display: inline-block;
+    background: #52682D;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    padding: 0.75rem 1.1rem;
+    border-radius: 999px;
+    transition: background 0.2s ease;
+  }
+
+  .help-hub-lesson-cta__button:hover {
+    background: #445624;
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .help-hub-lesson-cta__note {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #555;
+  }
+
+  @media (max-width: 640px) {
+    .help-hub-lesson-cta {
+      padding: 1rem;
+    }
+
+    .help-hub-lesson-cta__title {
+      font-size: 1.35rem;
+    }
+
+    .help-hub-lesson-cta__button {
+      width: 100%;
+      text-align: center;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .tuesday-tip__section {
+      margin-top: 1.5rem;
+    }
+
+    .tuesday-tip__member-body {
+      grid-template-columns: 1fr;
+    }
+
+    .tuesday-tip__member-thumb {
+      width: 100%;
+      max-width: 220px;
+    }
   }
 </style>

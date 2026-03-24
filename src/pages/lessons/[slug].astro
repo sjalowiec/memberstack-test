@@ -1,288 +1,394 @@
 ---
-import tips from "../../data/help-hub.json" assert { type: "json" };
 import Layout from "../../layouts/Layout.astro";
-import "../../components/talk-bubbles.css";
+import lessonsFile from "../../data/lessons.json";
+console.log("LESSONS FILE:", lessonsFile);
+
+type Lesson = {
+  id: number;
+  slug: string;
+  title: string;
+  summary?: string;
+  type: string;
+  vimeoEmbedUrl?: string;
+  access: string;
+  associatedTip?: string;
+  url?: string;
+  encouragement?: string;
+  exerciseTitle?: string;
+  exerciseItems?: string[];
+  templateLink?: string;
+  templateLinkText?: string;
+  supportImage?: string;
+  supportImageAlt?: string;
+  noteTitle?: string;
+  noteText?: string;
+};
+
+const lessons = lessonsFile as Lesson[];
 
 export async function getStaticPaths() {
-  return helpHubData.map((tip) => ({
-    params: { slug: tip.slug },
+  return lessons.map((lesson) => ({
+    params: { slug: lesson.slug },
   }));
 }
 
 const { slug } = Astro.params;
-const lesson = helpHubData.find((tip) => tip.slug === slug);
-const lessonVideoUrl = lesson?.memberVideoUrl || lesson?.videoUrl || "";
 
-// TEMP preview toggle via URL param (do not use for real access control)
-const url = new URL(Astro.request.url);
-const memberParam = url.searchParams.get("member");
+const lesson = lessons.find((item) => item.slug === slug);
 
-// default to false if not set
-const isMember = memberParam === "true";
+if (!lesson) {
+  throw new Error(`Lesson not found for slug: ${slug}`);
+}
 ---
 
-<Layout
-  title={`${lesson?.question || "Lesson"} | Knit it Now`}
-  description={lesson?.quickAnswer || "Member lesson from Knit it Now."}
-  bodyClass="page--tight-header"
->
-  {!lesson ? (
-    <section class="member-lesson-page">
-      <div class="member-lesson-page__inner">
-        <h1 class="member-lesson-page__title">Lesson not found</h1>
-        <p class="member-lesson-page__intro">We could not find this lesson right now.</p>
+<Layout>
+  <main class="site-content">
+    <div class="container">
+      <div class="lesson-header">
+        <img
+          src="/images/help-hub.svg"
+                 alt="Knit it Now Lesson Icon"
+          class="lesson-header-icon"
+        />
+        <h1>{lesson.title}</h1>
       </div>
-    </section>
-  ) : (
-    <section class="member-lesson-page">
-      <div class="member-lesson-page__inner">
-        <a href="/tips" class="lesson-back-link lesson-back-link--top">
-          ← Back to this week’s tip
-        </a>
 
-        {typeof lesson.hook === "string" && lesson.hook.trim() !== "" && (
-          <p class="tuesday-tip-hook">{lesson.hook}</p>
-        )}
+      <div class="lesson-grid">
+        <!-- LEFT COLUMN -->
+        <div class="lesson-content">
+          {lesson.summary && <p>{lesson.summary}</p>}
 
-        <h1 class="member-lesson-page__title">{lesson.question}</h1>
+          {lesson.encouragement && (
+            <div class="lesson-encouragement">
+              <p>{lesson.encouragement}</p>
+            </div>
+          )}
 
-        {lesson.quickAnswer && (
-          <p class="member-lesson-page__intro" set:html={lesson.quickAnswer} />
-        )}
+          {lesson.templateLink && (
+            <p class="lesson-template">
+              <a href={lesson.templateLink} target="_blank" rel="noopener">
+                {lesson.templateLinkText}
+              </a>
+            </p>
+          )}
 
-        {isMember ? (
-          <>
-            <section class="member-lesson-page__tip-intro" aria-label="Tuesday Tip lesson intro">
-              <div class="member-lesson-page__tip-header">
+          {lesson.exerciseItems && lesson.exerciseItems.length > 0 && (
+            <section class="lesson-exercise" id="lesson-exercise">
+              <div class="lesson-exercise__brand" aria-hidden="true">
                 <img
-                  src="/images/tuesday-tip.svg"
-                  alt="Tuesday Tip"
-                  class="member-lesson-page__tip-logo"
-                  loading="lazy"
-                  decoding="async"
+                  class="lesson-exercise__brand-logo"
+                  src="/KINlogo.svg"
+                  alt=""
+                  width="28"
+                  height="28"
                 />
-              </div>
-              <div class="member-lesson-page__tip-bubbles">
-                <div class="talk-row talk-left member-lesson-page__bubble-row member-lesson-page__bubble-row--question">
-                  <p class="talk-bubble bubble-bl bubble-question member-lesson-page__question">
-                    Thank you for being a member. Here&apos;s the full lesson for this tip.
-                  </p>
+                <div class="lesson-exercise__brand-text">
+                  <span class="lesson-exercise__brand-name">Knit it Now</span>
+                  <span class="lesson-exercise__brand-label">Lesson Worksheet</span>
                 </div>
               </div>
-            </section>
-
-            <section class="member-lesson-page__video-shell" aria-label="Full member lesson video">
-              <div class="member-lesson-page__video-aspect">
-                <iframe
-                  src={lessonVideoUrl}
-                  class="member-lesson-page__iframe"
-                  title={lesson.question}
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  allowfullscreen
-                />
+              <h1 class="lesson-exercise__print-title">{lesson.title}</h1>
+              <div class="lesson-exercise__header">
+                <h2 class="lesson-exercise__title">Follow These Steps</h2>
+                <button
+                  type="button"
+                  class="lesson-exercise__print"
+                  onclick="printLessonExercise()"
+                >
+                  Print Steps
+                </button>
               </div>
+              <ol class="lesson-exercise__list">
+                {lesson.exerciseItems.map((item) => (
+                  <li class="lesson-exercise__item">{item}</li>
+                ))}
+              </ol>
+              <footer class="lesson-exercise__print-footer">knititnow.com</footer>
             </section>
-            <a href="/tips" class="lesson-back-link lesson-back-link--bottom">
-              ← Back to this week’s tip
-            </a>
-<!-- 
-            <section class="member-lesson-page__notes-placeholder" aria-label="Lesson notes placeholder">
-              <h3>Lesson Notes</h3>
-              <p>Notes and transcript coming soon.</p>
-            </section>-->
-          </>
-        ) : (
-          <div class="member-lesson-page__locked">
-            <div class="talk-row talk-left member-lesson-page__locked-bubble-row">
-              <p class="talk-bubble bubble-bl bubble-question member-lesson-page__locked-bubble">
-                This full lesson is included with membership. Join to watch and learn how to apply this with confidence.
-              </p>
+          )}
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="lesson-media">
+          {lesson.type === "video" && lesson.vimeoEmbedUrl && (
+            <iframe
+              src={lesson.vimeoEmbedUrl}
+              title={lesson.title}
+              width="100%"
+              height="400"
+              frameborder="0"
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+          )}
+
+          {lesson.supportImage && (
+            <div class="lesson-support">
+              <img
+                src={lesson.supportImage}
+                alt={lesson.supportImageAlt || lesson.title}
+                class="lesson-support-image"
+              />
+
+              {(lesson.noteTitle || lesson.noteText) && (
+                <div class="lesson-support-note">
+                  {lesson.noteTitle && <h3>{lesson.noteTitle}</h3>}
+                  {lesson.noteText && <p>{lesson.noteText}</p>}
+                </div>
+              )}
             </div>
-            <div class="lesson-cta">
-              <a href="/membership" class="kbm-btn kbm-btn-accent">
-                Unlock the Full Lesson
-              </a>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </section>
-  )}
+
+      
+    </div>
+  </main>
 </Layout>
-
 <style>
-  .member-lesson-page {
-    max-width: 980px;
-    margin: 0 auto;
-    padding: 0 1rem 3rem;
+  .site-content {
+    padding-top: 1rem;
   }
 
-  .member-lesson-page__inner {
+  .lesson-grid {
     display: grid;
-    gap: 0.95rem;
-    max-width: 920px;
-    margin: 0 auto;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
   }
 
-  .tuesday-tip-hook {
-    margin: 0 0 0.5rem;
-    font-size: clamp(1rem, 2vw, 1.12rem);
-    line-height: 1.55;
-    color: #64748b;
-    font-style: italic;
-    max-width: 70ch;
+  .lesson-media iframe {
+    width: 100%;
+    min-height: 320px;
+    border: 0;
+    border-radius: 12px;
   }
 
-  .member-lesson-page__title {
+  .lesson-support {
+    margin-top: 1.5rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .lesson-support-image {
+    width: 100%;
+    border-radius: 10px;
+  }
+
+  .lesson-support-note {
+    background: #f5f5f5;
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .lesson-content {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .lesson-encouragement {
+    background: #f5f5f5;
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .lesson-template a {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-weight: 600;
+  }
+
+  .lesson-exercise {
+  margin-top: 1.5rem;
+  background: #f5f5f5;
+  border: 1px solid #d9ddd2;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: grid;
+  gap: 1rem;
+}
+
+  .lesson-exercise__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .lesson-exercise__title {
     margin: 0;
-    color: #1f2937;
-    font-size: clamp(1.7rem, 3.2vw, 2.2rem);
+    font-size: 1.25rem;
     line-height: 1.2;
   }
 
-  .member-lesson-page__intro {
-    margin: 0;
-    color: #4b5563;
-    font-size: 0.98rem;
-    line-height: 1.5;
-    max-width: 70ch;
-  }
+  .lesson-exercise__print {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid #52682D;
+  background: #ffffff;
+  color: #52682D;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1.2;
+}
 
-  .lesson-back-link {
-    display: inline-block;
-    font-size: 0.95rem;
-    color: var(--kbm-green);
-    text-decoration: none;
-  }
+.lesson-exercise__print:hover {
+  background: #f5f5f5;
+}
 
-  .lesson-back-link:hover {
-    text-decoration: underline;
-  }
-
-  .lesson-back-link--top {
-    margin: 1rem 0 0.75rem;
-  }
-
-  .lesson-back-link--bottom {
-    margin: 2rem 0 0;
-  }
-
-  .member-lesson-page__tip-intro {
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
-    background: #f8fafc;
-    padding: clamp(0.72rem, 1.8vw, 1rem);
-    display: grid;
-    gap: 0.5rem;
-  }
-
-  .member-lesson-page__tip-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 0.15rem;
-  }
-
-  .member-lesson-page__tip-logo {
-    width: clamp(85px, 12vw, 130px);
-    height: auto;
-    display: block;
-  }
-
-  .member-lesson-page__tip-bubbles {
-    display: grid;
-    gap: 0.25rem;
-  }
-
-  .member-lesson-page__bubble-row {
+  .lesson-exercise__list {
+    list-style-position: outside;
+    padding-left: 1.35rem;
     margin: 0;
   }
+  .lesson-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
 
-  .member-lesson-page__bubble-row--question {
-    padding-right: 1.2rem;
+.lesson-header-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  margin-top: 4px;
+}
+  .lesson-exercise__item {
+    margin-bottom: 0.7rem;
     padding-left: 0.25rem;
-    margin-bottom: 1.75rem;
-  }
-
-  .member-lesson-page__question {
-    margin: 0;
-    color: #243015;
-    font-size: clamp(1.08rem, 1.9vw, 1.24rem);
-    line-height: 1.45;
-    max-width: 100%;
-    padding: 0.68rem 0.92rem;
-  }
-
-  .member-lesson-page__video-shell {
-    margin: 1.65rem auto 0.65rem;
-    width: 100%;
-    max-width: 860px;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    background: #fff;
-    padding: 0.65rem;
-    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
-  }
-
-  .member-lesson-page__video-aspect {
-    position: relative;
-    width: 100%;
-    height: 0;
-    padding-bottom: 56.25%;
-    border-radius: 8px;
-    background: #0f172a;
-    overflow: hidden;
-  }
-
-  .member-lesson-page__iframe {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
-  }
-
-  .member-lesson-page__locked {
-    margin-top: 0.4rem;
-    border-radius: 14px;
-    border: 1px solid rgba(82, 104, 45, 0.2);
-    background: rgba(82, 104, 45, 0.07);
-    padding: clamp(1rem, 2.3vw, 1.7rem);
-  }
-
-  .member-lesson-page__locked-bubble-row {
-    margin: 0;
-  }
-
-  .member-lesson-page__locked-bubble {
-    margin: 0;
-    max-width: 100%;
-    color: #2e3a18;
     line-height: 1.55;
-    padding: 0.72rem 0.95rem;
   }
 
-  .lesson-cta {
-    display: flex;
-    justify-content: center;
-    margin-top: 1.5rem;
+  .lesson-exercise__item:last-child {
+    margin-bottom: 0;
   }
 
-  .member-lesson-page__notes-placeholder {
-    border-top: 1px solid #e2e8f0;
-    padding-top: 0.8rem;
-    display: grid;
-    gap: 0.35rem;
-  }
-
-  .member-lesson-page__notes-placeholder h3 {
+  .lesson-exercise__print-title {
+    display: none;
     margin: 0;
-    color: #243015;
-    font-size: 1rem;
   }
 
-  .member-lesson-page__notes-placeholder p {
-    margin: 0;
-    color: #64748b;
-    font-size: 0.95rem;
+  .lesson-exercise__brand,
+  .lesson-exercise__print-footer {
+    display: none;
+  }
+
+  @media print {
+    :global(body.print-exercise-only),
+    :global(body.print-exercise-only *) {
+      visibility: hidden !important;
+      box-shadow: none !important;
+      background: transparent !important;
+    }
+
+    :global(body.print-exercise-only #lesson-exercise),
+    :global(body.print-exercise-only #lesson-exercise *) {
+      visibility: visible !important;
+    }
+
+    :global(body.print-exercise-only #lesson-exercise) {
+      position: absolute !important;
+      top: 0;
+      left: 0;
+      width: 100%;
+      border: 0;
+      border-radius: 0;
+      margin: 0;
+      padding: 0.25in;
+      color: #000;
+      background: #fff !important;
+    }
+
+    .lesson-exercise__print {
+      display: none !important;
+    }
+
+    .lesson-exercise__header {
+      margin-bottom: 0.75rem;
+    }
+
+    .lesson-exercise__brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding-bottom: 0.65rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .lesson-exercise__brand-logo {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .lesson-exercise__brand-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      line-height: 1.2;
+    }
+
+    .lesson-exercise__brand-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .lesson-exercise__brand-label {
+      font-size: 0.72rem;
+      font-weight: 400;
+      color: #555;
+    }
+
+    .lesson-exercise__print-title {
+      display: block;
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .lesson-exercise__print-footer {
+      display: block;
+      margin-top: 1rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid #ddd;
+      font-size: 0.8rem;
+      color: #444;
+      text-align: center;
+    }
+
+    .lesson-exercise__list {
+      list-style: decimal outside;
+      padding-left: 1.2rem;
+      margin: 0;
+    }
+
+    @page {
+      size: auto;
+      margin: 0.5in;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .lesson-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .lesson-media {
+      order: -1;
+    }
   }
 </style>
+<script is:inline>
+  function printLessonExercise() {
+    document.body.classList.add("print-exercise-only");
+    window.print();
+  }
+
+  window.addEventListener("afterprint", () => {
+    document.body.classList.remove("print-exercise-only");
+  });
+</script>
