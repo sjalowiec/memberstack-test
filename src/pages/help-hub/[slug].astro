@@ -4,7 +4,13 @@ import PageHead from "../../components/PageHead.astro";
 import "../../components/talk-bubbles.css";
 import helpHubData from "../../data/help-hub.json";
 import lessonsData from "../../data/lessons.json";
+// at the top of [slug].astro
 
+const reservedPaths = ["guided-workshops"];
+
+if (reservedPaths.includes(Astro.params.slug)) {
+  return Astro.redirect("/404");
+}
 type HelpHubTryThis = {
   quickActionTitle?: string;
   quickAction?: string[];
@@ -294,15 +300,10 @@ const showLessonCta = lessonUrl !== "" && relatedLesson !== undefined;
           </nav>
         )}
         <section class="tuesday-tip__transcript" data-placeholder="transcript"></section>
-        <div class="tip-help-cta">
-          <p class="tip-help-text">Want a little extra help?</p>
-
-          <div class="tip-help-actions">
-            <a href="/work-with-me" class="kbm-button">Work With Me (3-Week Sprint)</a>
-
-            <a href="/unstuck-session" class="kbm-button">Get Quick Help (15-Min SOS Call)</a>
-          </div>
-        </div>
+        <p class="help-hub-cta-inline">
+          <strong>Need more help? If you'd like personal guidance,</strong>
+          <a href="/help-hub/work-with-sue" class="help-hub-cta-link">Work with Sue</a>.
+        </p>
       </div>
     </section>
 
@@ -716,41 +717,26 @@ const showLessonCta = lessonUrl !== "" && relatedLesson !== undefined;
     transform: translateY(-50%);
   }
 
-  .tip-help-cta {
-    margin-top: 24px;
-    padding: 16px;
-    background: #f5f5f5;
-    border-radius: 10px;
+  .help-hub-cta-inline {
+    margin: 1rem 0 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #334155;
   }
 
-  .tip-help-text {
-    margin-bottom: 10px;
+  .help-hub-cta-inline strong {
+    color: #3f4b35;
+  }
+
+  .help-hub-cta-inline a {
+    color: #c2614e;
+    text-decoration: underline;
+    text-underline-offset: 2px;
     font-weight: 600;
   }
 
-  .tip-help-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .tip-help-actions a {
-    text-decoration: none;
-  }
-
-  .tip-help-actions .kbm-button {
-    background-color: #c96a4a;
-    color: #fff;
-    padding: 8px 14px;
-    border-radius: 8px;
-    display: inline-block;
-    font-size: 0.95rem;
-    line-height: 1.2;
-    white-space: nowrap;
-  }
-
-  .tip-help-actions .kbm-button:hover {
-    background-color: #b85c3e;
+  .help-hub-cta-inline a:hover {
+    color: var(--kbm-accent-hover, #a94e3d);
   }
 
   .help-hub-lesson-cta {

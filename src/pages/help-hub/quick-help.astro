@@ -1,5 +1,6 @@
 ---
 import SalesLayout from "../../layouts/SalesLayout.astro";
+
 ---
 
 <SalesLayout
@@ -17,7 +18,7 @@ import SalesLayout from "../../layouts/SalesLayout.astro";
           Point your camera, show me the problem, and let’s get you moving again.        </p>
 
         <div class="quick-help-cta">
-          <a href="https://tidycal.com/quick-help/quick-help-session" class="kbm-button">Book Your 15-Minute Session</a>
+          <a href="https://tidycal.com/quick-help/quick-help-session" class="kbm-button">Book Your 15-Minute Quick Help Session</a>
           <p class="quick-help-reassurance">
             No small talk, no sales pitches—just 15 minutes of pure troubleshooting.
           </p>
@@ -136,7 +137,7 @@ import SalesLayout from "../../layouts/SalesLayout.astro";
     </p>
 
     <div class="quick-help-cta">
-      <a href="https://tidycal.com/quick-help/quick-help-session" class="kbm-button">Book Your 15-Minute Session</a>
+      <a href="https://tidycal.com/quick-help/quick-help-session" class="kbm-button">Book Your 15-Minute Quick HelpSession</a>
     </div>
   </div>
 
@@ -365,4 +366,26 @@ import SalesLayout from "../../layouts/SalesLayout.astro";
   border-radius: 10px;
 }
   </style>
+
+  <script is:inline>
+    (function () {
+      var bookUrl = "https://tidycal.com/quick-help/quick-help-session";
+      function wireCard(el) {
+        if (!el) return;
+        el.addEventListener("click", function () {
+          window.location.href = bookUrl;
+        });
+        el.setAttribute("role", "link");
+        el.setAttribute("tabindex", "0");
+        el.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            window.location.href = bookUrl;
+          }
+        });
+      }
+      document.querySelectorAll(".quick-help-facts-row .fact").forEach(wireCard);
+      document.querySelectorAll(".quick-help-image-card").forEach(wireCard);
+    })();
+  </script>
 </SalesLayout>

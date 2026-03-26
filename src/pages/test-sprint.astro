@@ -1,0 +1,248 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = "Welcome to Your Guided Workshop | Knit by Machine";
+const description = "You're officially in — get started with your personalized project intake form.";
+---
+
+<Layout {title} {description}>
+  <main class="page page--welcome">
+    
+    <!-- Hero Section -->
+    <section class="section section--hero">
+      <div class="section-inner section-inner--center">
+        <div class="hero-title-row">
+          <img
+            src="/images/guided_workshops.svg"
+            alt="Guided Workshops logo"
+            class="welcome-logo"
+          />
+          <h1 data-testid="text-page-title">Welcome to Your Guided Workshop</h1>
+        </div>
+        <p class="hero-subtitle">
+          You're officially in — I'm so glad you're here.
+        </p>
+      </div>
+    </section>
+
+    <hr class="kbm-divider" />
+
+    <!-- What Happens Next -->
+    <section class="section">
+      <div class="section-inner">
+        <h2>What Happens Next</h2>
+        <p>
+          This workshop is built around your project. Before we begin, I'll ask a few simple questions so I can understand what you want to knit, what machine you're using, and where you'd like extra support.
+        </p>
+        <p>
+          This helps me create a plan that fits your goals, your machine, and your schedule.
+        </p>
+        <div class="section-cta">
+          <a class="button button--primary" href="/guided-workshops/30-day-finish-flow/intake" data-testid="button-cta-intake-1">
+            Start Your Intake →
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <hr class="kbm-divider" />
+
+    <!-- A Quick Overview -->
+    <section class="section">
+      <div class="section-inner">
+        <h2>A Quick Overview</h2>
+        <p>Here's what you can expect next:</p>
+        <ol class="overview-steps">
+          <li>
+            <strong>Tell me about your project.</strong> A short form helps me understand your experience level and what you want to finish.
+          </li>
+          <li>
+            <strong>I build your personal roadmap.</strong> You'll receive clear, manageable steps — designed to help you make steady progress.
+          </li>
+          <li>
+            <strong>You check in when you're ready.</strong> No pressure, no deadlines. I respond to your updates and questions as soon as you complete each step.
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <hr class="kbm-divider" />
+
+    <!-- You're in good hands -->
+    <section class="section">
+      <div class="section-inner">
+        <h2>You're in good hands</h2>
+        <p>
+          If you're feeling a mix of excitement and nerves, that's completely normal. You're not doing this alone — you'll have guidance, encouragement, and a straightforward path forward.
+        </p>
+        <p>
+          If anything feels unclear, just send a message through the <a href="/contact">Contact Sue</a> page.
+        </p>
+        <div class="section-cta">
+          <a class="button button--primary" href="/guided-workshops/30-day-finish-flow/intake" data-testid="button-cta-intake-2">
+            Start Your Intake →
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</Layout>
+
+<style>
+  .page--welcome {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .section {
+    padding: 1.5rem 0;
+  }
+
+  .section-inner {
+    max-width: 100%;
+  }
+
+  .section-inner--center {
+    text-align: center;
+  }
+
+  /* Hero Section */
+  .section--hero {
+    text-align: center;
+    padding-top: 2rem;
+  }
+
+  .hero-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .welcome-logo {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+  }
+
+  @media (min-width: 640px) {
+    .welcome-logo {
+      width: 80px;
+      height: 80px;
+    }
+  }
+
+  .section--hero h1 {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: var(--kbm-green);
+    margin: 0 0 1rem;
+    line-height: 1.2;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1.1rem, 2vw, 1.35rem);
+    color: var(--kbm-green-2);
+    font-weight: 500;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* Section Headings */
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0 0 1rem;
+  }
+
+  p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #4a5a3d;
+    margin: 0 0 1rem;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Overview Steps */
+  .overview-steps {
+    margin: 1.5rem 0 0;
+    padding-left: 1.5rem;
+    line-height: 1.7;
+  }
+
+  .overview-steps li {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: #4a5a3d;
+  }
+
+  .overview-steps li strong {
+    color: var(--kbm-green);
+  }
+
+  /* Section CTA */
+  .section-cta {
+    text-align: center;
+    margin-top: 2rem;
+  }
+
+  /* Buttons */
+  .button {
+    display: inline-block;
+    padding: 0.875rem 2rem;
+    border-radius: 999px;
+    font-size: 1rem;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .button--primary {
+    background: var(--kbm-green);
+    color: white;
+    border: 2px solid var(--kbm-green);
+  }
+
+  .button--primary:hover {
+    background: var(--kbm-green-2);
+    border-color: var(--kbm-green-2);
+  }
+
+  /* Divider */
+  .kbm-divider {
+    border: none;
+    border-top: 1px solid #d4dbc8;
+    margin: 1.5rem 0;
+  }
+
+  /* Links */
+  a:not(.button) {
+    color: var(--kbm-green);
+    text-decoration: underline;
+  }
+
+  a:not(.button):hover {
+    color: var(--kbm-green-2);
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .page--welcome {
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    .welcome-logo {
+      width: 56px;
+      height: 56px;
+    }
+  }
+</style>

@@ -1,7 +1,7 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import "../components/talk-bubbles.css";
-import helpHubData from "../data/help-hub.json";
+import Layout from "../../layouts/Layout.astro";
+import "../../components/talk-bubbles.css";
+import helpHubData from "../../data/help-hub.json";
 
 /** Live entries for the top “New in the Help Hub” section (isNew === true). */
 const newHelpHubItems = helpHubData.filter(
@@ -52,6 +52,8 @@ const fixCategories = [
     aria-labelledby="knit-fix-hub-heading"
   >
     <div class="knit-fix-hub-inner">
+      <h2 class="visually-hidden">Browse fixes</h2>
+
       <div class="fix-hub-banner">
         <div class="fix-hub-banner-logo">
           <img
@@ -62,32 +64,31 @@ const fixCategories = [
           />
         </div>
         <div class="fix-hub-banner-text">
-          <p class="fix-hub-tagline">Stop searching and start knitting again.</p>
-          <p>Whether something isn’t working or you just want a better way forward, machine knitting advice can send you down a rabbit hole.</p>
-          <p>
-            Here, you’ll find clear, focused fixes and guided paths that help you avoid
-            the frustration - and get back to creating knits you’ll be proud of.
-          </p>
-          <p class="help-hub-helper">
-            If you'd rather not figure this out on your own:
-          </p>
-          <div class="help-hub-actions">
-            <a href="/work-with-me" class="kbm-button">Work With Me (3-Week Sprint)</a>
-            <a href="/help/quick-help" class="kbm-button">Get Quick Help (15-Min Call)</a>
+          <p class="fix-hub-tagline">Welcome to the Help Hub.</p>
+          <div class="help-hub-intro">
+            <p>
+              The Help Hub is where you’ll find focused help for common machine knitting
+              problems, questions, and next steps. Browse the fixes below to find the one
+              that matches what you need.
+            </p>
+            <p class="help-hub-cta">
+              If you’re in a hurry or you want a 1-on-1 fix,
+              <a href="/help-hub/work-with-sue">Work with Sue</a>
+              for more personal support.
+            </p>
           </div>
         </div>
       </div>
 
-      <h2 class="visually-hidden">Browse fixes</h2>
+      <div class="fix-hub-divider fix-hub-divider--after-cards"></div>
 
       {newHelpHubItems.length > 0 && (
         <>
-          <div class="fix-hub-divider"></div>
-
           <section
             class="fix-category-section fix-category-section--new"
             aria-labelledby="help-hub-new-heading"
           >
+            <p class="help-hub-orientation-label" aria-hidden="true">Start here</p>
             <h2 id="help-hub-new-heading" class="fix-category-heading">
               New in the Help Hub
             </h2>
@@ -123,10 +124,92 @@ const fixCategories = [
           </section>
         ))}
       </div>
+
+      <section class="help-hub-footer">
+        <h2>Not finding your problem?</h2>
+
+        <p>
+          Send me a quick note about what’s going wrong. I’m using these questions
+          to improve the Help Hub and point you in the right direction.
+        </p>
+
+        <form
+          name="help-hub-question"
+          method="POST"
+          data-netlify="true"
+          class="help-hub-form"
+        >
+          <input type="hidden" name="form-name" value="help-hub-question" />
+
+          <div class="form-row">
+            <label for="firstName">First name</label>
+            <input type="text" id="firstName" name="firstName" required />
+          </div>
+
+          <div class="form-row">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required />
+          </div>
+
+          <div class="form-row">
+            <label for="confirmEmail">Confirm email</label>
+            <input type="email" id="confirmEmail" name="confirmEmail" required />
+          </div>
+
+          <div class="form-row">
+            <label for="question">What’s going wrong?</label>
+            <textarea id="question" name="question" rows="4" required></textarea>
+          </div>
+
+          <button type="submit" class="kbm-button kbm-button-accent">
+            Send My Question
+          </button>
+        </form>
+      </section>
+
     </div>
   </section>
 
+  <script>
+    const form = document.querySelector(".help-hub-form");
+
+    if (form) {
+      form.addEventListener("submit", function (e) {
+        const emailInput = form.querySelector("#email");
+        const confirmEmailInput = form.querySelector("#confirmEmail");
+        const email =
+          emailInput instanceof HTMLInputElement ? emailInput.value : "";
+        const confirmEmail =
+          confirmEmailInput instanceof HTMLInputElement
+            ? confirmEmailInput.value
+            : "";
+
+        if (email !== confirmEmail) {
+          e.preventDefault();
+          alert("Your email addresses don’t match. Please check and try again.");
+        }
+      });
+    }
+  </script>
+
   <style>
+
+    .help-hub-cta {
+      margin-top: 0.9rem;
+    }
+
+    /* Target ONLY the link */
+    .help-hub-cta a {
+      color: var(--kbm-accent) !important;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .help-hub-cta a:hover,
+    .help-hub-cta a:focus {
+      text-decoration: underline;
+    }
+
     .knit-fix-hub-inner {
       max-width: 960px;
       margin: 0 auto;
@@ -135,11 +218,11 @@ const fixCategories = [
 
     .fix-hub-banner {
       display: flex;
-      align-items: center;
-      gap: 2rem;
-      padding: 2rem 2.25rem;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
       border-radius: 32px;
-      margin-bottom: 2rem;
+      margin-top: 0.75rem;
     }
 
     .fix-hub-banner-logo {
@@ -147,14 +230,14 @@ const fixCategories = [
     }
 
     .fix-hub-logo {
-      width: 180px;
+      width: 100px;
       max-width: 100%;
       height: auto;
       display: block;
     }
 
     .help-hub-hero-icon {
-      max-width: 90px;
+      max-width: 72px;
       height: auto;
     }
 
@@ -163,63 +246,32 @@ const fixCategories = [
     }
 
     .fix-hub-tagline {
-      font-size: 1.9rem;
-      line-height: 1.2;
-      font-weight: 700;
+      font-size: 1.2rem;
+      line-height: 1.3;
+      font-weight: 600;
       color: var(--kbm-green);
-      margin: 0 0 1rem 0;
+      margin: 0 0 0.5rem 0;
     }
 
-    .fix-hub-banner-text p:not(.fix-hub-tagline) {
-      margin: 0 0 0.9rem 0;
+    .fix-hub-banner-text .help-hub-intro p {
+      margin: 0;
       font-size: var(--text-base);
       color: #243015;
-      line-height: 1.65;
-    }
-
-    .fix-hub-banner-text p:not(.fix-hub-tagline):last-of-type {
-      margin-bottom: 0;
-    }
-
-    .help-hub-helper {
-      margin-top: 16px;
-      margin-bottom: 8px;
-    }
-
-    .help-hub-actions {
-      margin-top: 24px;
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .help-hub-actions .kbm-button {
-      background-color: #C96A4A;
-      color: #fff;
-      padding: 10px 18px;
-      border-radius: 8px;
-      text-decoration: none;
-      display: inline-block;
-      white-space: nowrap;
-    }
-
-    .help-hub-actions .kbm-button:hover {
-      background-color: #b85c3e;
+      line-height: 1.6;
     }
 
     @media (max-width: 768px) {
       .fix-hub-banner {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 1.5rem;
+        gap: 0.75rem;
+        padding: 0.9rem 1rem;
       }
 
       .fix-hub-logo {
-        width: 150px;
+        width: 86px;
       }
 
       .fix-hub-tagline {
-        font-size: 1.5rem;
+        font-size: 1.1rem;
       }
     }
 
@@ -239,6 +291,19 @@ const fixCategories = [
       height: 1px;
       background: rgba(82, 104, 45, 0.2);
       margin: 2rem 0 2.5rem;
+    }
+
+    .fix-hub-divider--after-cards {
+      margin: 2.25rem 0 0;
+    }
+
+    .help-hub-orientation-label {
+      font-size: 0.85rem;
+      line-height: 1.2;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(36, 48, 21, 0.7);
+      margin: 0 0 0.5rem 0;
     }
 
     .fix-category-section {
@@ -304,6 +369,36 @@ const fixCategories = [
     .fix-bubble--inactive.talk-bubble:hover {
       transform: none;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .help-hub-footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #ddd;
+      max-width: 600px;
+    }
+
+    .help-hub-form {
+      margin-top: 1rem;
+    }
+
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 0.75rem;
+    }
+
+    .form-row label {
+      font-size: 0.85rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .form-row input,
+    .form-row textarea {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.95rem;
     }
   </style>
 </Layout>

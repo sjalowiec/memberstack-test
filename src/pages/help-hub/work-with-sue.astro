@@ -1,0 +1,255 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+  title="Work with Sue | Knit it Now"
+  description="Personal machine knitting support with Sue: quick help or project support."
+>
+  <section class="container py-5 work-with-sue-page">
+    <div class="work-with-sue-inner">
+      <div class="work-with-sue-hero">
+        <div class="hero-text">
+          <h1>Work with Sue</h1>
+          <p class="work-with-sue-intro">
+            With over 20 years of machine knitting experience, I help knitters get unstuck, solve
+            problems, and move forward with confidence.
+          </p>
+          <p class="work-with-sue-intro-secondary">
+            Whether you're troubleshooting your machine or trying to finish a project, we'll figure
+            out the next best step together.
+          </p>
+        </div>
+
+        <div class="hero-image">
+          <div class="quick-help-image-card">
+            <img
+              src="/images/knit-by-machine-sue.png"
+              alt="Sue helping with a knitting machine"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="work-with-sue-grid">
+        <div class="kbm-card work-with-sue-card work-card">
+          <img src="/images/help.svg" alt="" class="card-icon" width="60" height="60" />
+          <h2>Quick Help Session</h2>
+          <p>
+            Stuck on something right now? This 15-minute session is for a specific machine knitting
+            question, problem, or next step.
+          </p>
+          <ul>
+            <li>Get unstuck fast</li>
+            <li>Ask your question</li>
+            <li>Leave with a clear next step</li>
+          </ul>
+          <div class="card-button">
+            <a href="/help-hub/quick-help" class="kbm-button">Book a 15-Minute Call</a>
+          </div>
+        </div>
+
+        <div class="kbm-card work-with-sue-card work-card">
+          <img src="/images/help.svg" alt="" class="card-icon" width="60" height="60" />
+          <h2>Project Support Sprint</h2>
+          <p>
+            Need more than a quick answer? This option is for knitters who want ongoing support
+            while working through a project, solving a bigger issue, or building confidence over
+            time.
+          </p>
+          <ul>
+            <li>Support while you work through your project</li>
+            <li>Help with fit, shaping, or technique</li>
+            <li>Stay on track and keep moving forward</li>
+          </ul>
+          <div class="card-button">
+            <a href="/help-hub/guided-workshop" class="kbm-button kbm-button-outline">
+              Learn About the 3-Week Sprint
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <p class="work-with-sue-closing">
+        Not sure which option is the best fit? Start with the one that feels closest to the help
+        you need right now.
+      </p>
+    </div>
+  </section>
+
+  <style>
+    .work-with-sue-inner {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .work-with-sue-hero {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      margin-bottom: 2.25rem;
+    }
+
+    .hero-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .hero-text h1 {
+      font-size: var(--text-xxl);
+      font-weight: 600;
+      color: var(--kbm-green);
+      margin: 0 0 0.85rem 0;
+    }
+
+    .hero-image {
+      flex-shrink: 0;
+    }
+
+    .hero-image .quick-help-image-card {
+      max-width: min(316px, 100%);
+    }
+
+    .hero-image img {
+      max-width: 300px;
+      width: 100%;
+      height: auto;
+    }
+
+    .quick-help-image-card {
+      background: #ffffff;
+      padding: 8px;
+      border-radius: 14px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.18);
+    }
+
+    .quick-help-image-card img {
+      width: 100%;
+      display: block;
+      border-radius: 10px;
+    }
+
+    @media (max-width: 767px) {
+      .work-with-sue-hero {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.25rem;
+      }
+
+      .hero-image {
+        align-self: center;
+      }
+
+      .hero-image .quick-help-image-card {
+        max-width: min(300px, 100%);
+      }
+    }
+
+    .card-icon {
+      width: 60px;
+      height: 60px;
+      display: block;
+      margin: 0 auto 0.4rem auto;
+    }
+
+    .card-button {
+      text-align: center;
+      margin-top: auto;
+      padding-top: 1rem;
+    }
+
+    .work-with-sue-intro,
+    .work-with-sue-intro-secondary {
+      color: #243015;
+      line-height: 1.6;
+      margin: 0;
+      max-width: 44rem;
+    }
+
+    .work-with-sue-intro {
+      font-size: var(--text-lg);
+      margin-bottom: 0.6rem;
+    }
+
+    .work-with-sue-intro-secondary {
+      font-size: var(--text-base);
+    }
+
+    .work-with-sue-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.75rem;
+    }
+
+    @media (min-width: 768px) {
+      .work-with-sue-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .work-with-sue-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      margin: 0;
+    }
+
+    .work-with-sue-card h2 {
+      font-size: var(--text-xl);
+      color: var(--kbm-green);
+      margin: 0.25rem 0 0 0;
+    }
+
+    .work-with-sue-card p {
+      margin: 0;
+      color: #243015;
+      line-height: 1.6;
+    }
+
+    .work-with-sue-card ul {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: #243015;
+      line-height: 1.6;
+    }
+
+    .work-with-sue-page .kbm-button {
+      background-color: #c96a4a;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-flex;
+      white-space: nowrap;
+    }
+
+    .work-with-sue-page .kbm-button:hover {
+      background-color: #b85c3e;
+    }
+
+    .work-with-sue-page .kbm-button.kbm-button-outline {
+      background-color: transparent;
+      color: var(--kbm-green, #52682d);
+      border: 2px solid var(--kbm-green, #52682d);
+    }
+
+    .work-with-sue-page .kbm-button.kbm-button-outline:hover {
+      background-color: rgba(82, 104, 45, 0.08);
+    }
+
+    .work-with-sue-card .card-button .kbm-button {
+      display: inline-flex;
+    }
+
+    .work-with-sue-closing {
+      margin: 0;
+      max-width: 44rem;
+      color: #243015;
+      line-height: 1.6;
+      font-size: var(--text-base);
+    }
+  </style>
+</Layout>
