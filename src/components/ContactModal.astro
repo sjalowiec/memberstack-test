@@ -415,7 +415,16 @@
 
       form.addEventListener('submit', function() {
         if (submittedAtInput) {
-          submittedAtInput.value = new Date().toISOString();
+          const now = new Date();
+
+          const date = now.toLocaleDateString('en-US');
+          const time = now.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+          });
+
+          submittedAtInput.value = `${date} – ${time}`;
         }
       });
     }
