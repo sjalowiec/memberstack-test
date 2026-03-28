@@ -59,6 +59,40 @@ export function getTipId(row: Record<string, unknown>): number | null {
   return null;
 }
 
+function parseTipSortOrder(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const n = parseInt(value.trim(), 10);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
+/** Next `sortOrder` for a newly created tip: max existing + 10, or 10 when the file is empty. */
+export function nextHelpHubSortOrder(tips: Record<string, unknown>[]): number {
+  if (tips.length === 0) return 10;
+  let max = 0;
+  for (const t of tips) {
+    const n = parseTipSortOrder(t.sortOrder);
+    if (n !== null) max = Math.max(max, n);
+  }
+  return max + 10;
+}
+
+/** Stable ascending sort by `sortOrder`; tips without `sortOrder` sort last, then by id. */
+export function sortHelpHubTipsBySortOrder(tips: Record<string, unknown>[]): Record<string, unknown>[] {
+  return [...tips].sort((a, b) => {
+    const na = parseTipSortOrder(a.sortOrder);
+    const nb = parseTipSortOrder(b.sortOrder);
+    const sa = na ?? Number.POSITIVE_INFINITY;
+    const sb = nb ?? Number.POSITIVE_INFINITY;
+    if (sa !== sb) return sa - sb;
+    const ida = getTipId(a);
+    const idb = getTipId(b);
+    return (ida ?? 0) - (idb ?? 0);
+  });
+}
+
 /** Normalize `relatedLessons` from API/admin payloads (slug strings). */
 export function normalizeRelatedLessons(value: unknown): string[] {
   if (!Array.isArray(value)) return [];

@@ -3,10 +3,34 @@ import Layout from "../../layouts/Layout.astro";
 import "../../components/talk-bubbles.css";
 import helpHubData from "../../data/help-hub.json";
 
+function helpHubTipSortOrder(item: { sortOrder?: unknown; id?: unknown }): number {
+  const v = item.sortOrder;
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string" && v.trim() !== "") {
+    const n = parseInt(v.trim(), 10);
+    if (Number.isFinite(n)) return n;
+  }
+  return Number.POSITIVE_INFINITY;
+}
+
+function helpHubTipId(item: { id?: unknown }): number {
+  const v = item.id;
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string" && v.trim() !== "") {
+    const n = parseInt(v.trim(), 10);
+    if (Number.isFinite(n)) return n;
+  }
+  return 0;
+}
+
 /** Live entries for the top “New in the Help Hub” section (isNew === true). */
-const newHelpHubItems = helpHubData.filter(
-  (item) => item.isNew === true
-);
+const newHelpHubItems = helpHubData
+  .filter((item) => item.isNew === true)
+  .sort((a, b) => {
+    const c = helpHubTipSortOrder(a) - helpHubTipSortOrder(b);
+    if (c !== 0) return c;
+    return helpHubTipId(a) - helpHubTipId(b);
+  });
 
 /** Placeholder grouped data — lower catalog until more entries go live. */
 const fixCategories = [

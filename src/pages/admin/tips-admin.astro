@@ -221,6 +221,16 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       return null;
     }
 
+    function sortOrderNum(row: TipRow): number {
+      const v = row.sortOrder;
+      if (typeof v === "number" && Number.isFinite(v)) return v;
+      if (typeof v === "string" && v.trim()) {
+        const n = parseInt(v.trim(), 10);
+        if (Number.isFinite(n)) return n;
+      }
+      return Number.POSITIVE_INFINITY;
+    }
+
     function appliesLabel(tip: TipRow): string {
       if (tip.allMachines === true) return "All machines";
       const list = tip.appliesTo;
@@ -264,6 +274,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       tbodyEl.innerHTML = "";
 
       const sorted = [...tips].sort((a, b) => {
+        const c = sortOrderNum(a) - sortOrderNum(b);
+        if (c !== 0) return c;
         const ia = getTipId(a);
         const ib = getTipId(b);
         return (ia ?? 0) - (ib ?? 0);

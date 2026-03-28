@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import {
   readHelpHubFile,
   writeHelpHubFile,
+  sortHelpHubTipsBySortOrder,
   getTipId,
   normalizeRelatedLessons,
   stripLegacyHelpHubTipFields,
@@ -107,7 +108,8 @@ export const PUT: APIRoute = async ({ params, request }) => {
     return jsonResponse({ ok: false, error: message }, 500);
   }
 
-  return jsonResponse({ ok: true, tips, tip: row });
+  const ordered = sortHelpHubTipsBySortOrder(tips);
+  return jsonResponse({ ok: true, tips: ordered, tip: row });
 };
 
 export const DELETE: APIRoute = async ({ params }) => {
@@ -136,5 +138,5 @@ export const DELETE: APIRoute = async ({ params }) => {
     return jsonResponse({ ok: false, error: message }, 500);
   }
 
-  return jsonResponse({ ok: true, tips: next });
+  return jsonResponse({ ok: true, tips: sortHelpHubTipsBySortOrder(next) });
 };

@@ -3,6 +3,8 @@ import {
   readHelpHubFile,
   writeHelpHubFile,
   nextHelpHubId,
+  nextHelpHubSortOrder,
+  sortHelpHubTipsBySortOrder,
   getTipId,
   normalizeRelatedLessons,
   stripLegacyHelpHubTipFields,
@@ -38,7 +40,7 @@ function slugTaken(
 
 export const GET: APIRoute = async () => {
   try {
-    const tips = readHelpHubFile();
+    const tips = sortHelpHubTipsBySortOrder(readHelpHubFile());
     return jsonResponse({ ok: true, tips });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Could not read help-hub.json";
@@ -83,6 +85,7 @@ export const POST: APIRoute = async ({ request }) => {
   const newId = nextHelpHubId(tips);
   const row: Record<string, unknown> = { ...body };
   delete row.id;
+  delete row.sortOrder;
   row.id = newId;
   row.title = title;
   row.slug = slug;
@@ -90,6 +93,7 @@ export const POST: APIRoute = async ({ request }) => {
   row.status = status;
   stripLegacyHelpHubTipFields(row);
   row.relatedLessons = normalizeRelatedLessons(body.relatedLessons);
+  row.sortOrder = nextHelpHubSortOrder(tips);
 
   tips.push(row);
 
@@ -100,5 +104,6 @@ export const POST: APIRoute = async ({ request }) => {
     return jsonResponse({ ok: false, error: message }, 500);
   }
 
-  return jsonResponse({ ok: true, tips, tip: row });
+  const ordered = sortHelpHubTipsBySortOrder(tips);
+  return jsonResponse({ ok: true, tips: ordered, tip: row });
 };
