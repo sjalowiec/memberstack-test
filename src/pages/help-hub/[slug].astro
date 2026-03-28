@@ -119,6 +119,9 @@ const relatedLessons: LessonRecord[] = lessonSlugs
   .map((ref) => resolveLessonFromRelatedRef(ref, lessons))
   .filter((l): l is LessonRecord => l !== undefined);
 
+const memberLessonsSectionTitle =
+  relatedLessons.length === 1 ? "Member Lesson" : "Member Lessons";
+
 const whyBody =
   typeof tip.bridge === "string" && tip.bridge.trim() !== ""
     ? tip.bridge.trim()
@@ -370,9 +373,24 @@ const tryHeading =
       aria-labelledby="member-lessons-heading"
       data-help-hub-lessons
     >
-      <h2 id="member-lessons-heading" class="help-hub-member-lessons__section-title">
-        Member Lessons
-      </h2>
+      <div class="help-hub-member-lessons__header">
+        <div class="help-hub-member-lessons__heading-row">
+          <img
+            src="/images/KINlogo.svg"
+            alt=""
+            width="48"
+            height="48"
+            class="help-hub-member-lessons__logo"
+            aria-hidden="true"
+          />
+          <h2 id="member-lessons-heading" class="help-hub-member-lessons__section-title">
+            {memberLessonsSectionTitle}
+          </h2>
+        </div>
+        <p class="help-hub-member-lessons__subhead">
+          Go deeper with step-by-step guidance.
+        </p>
+      </div>
 
       {relatedLessons.length === 0 ? (
         <p class="help-hub-member-lessons__empty">No lessons linked to this tip yet.</p>
@@ -396,8 +414,11 @@ const tryHeading =
                   <div class="help-hub-member-lessons__summary" set:html={summary}></div>
                 ) : null}
                 <div class="help-hub-member-lessons__actions">
-                  <a href={lessonHref} class="kbm-btn kbm-btn-accent">
-                    Open Lesson
+                  <a
+                    href={lessonHref}
+                    class="kbm-btn kbm-btn-accent help-hub-member-lessons__cta"
+                  >
+                    Watch the full lesson
                   </a>
                   <p class="help-hub-member-lessons__note">
                     Included with Knit it Now membership.
@@ -492,8 +513,8 @@ const tryHeading =
     -->
 
     <section class="tuesday-tip__section tuesday-tip-discussion">
-      <h2>Tried this? I’d love to hear how it went</h2>
-      Join the discussion below! Our community loves helping each other master new skills.
+      <h2>Did you try this? I’d love to hear how it went</h2>
+      Join the discussion below! Knitters love to help each other master new skills.
       <div
         id="hyvor-talk-view"
         data-hyvor-website="14706"
@@ -888,18 +909,50 @@ const tryHeading =
   }
 
   .help-hub-member-lessons {
-    margin-top: 2rem;
-    padding: 1.25rem;
-    border-radius: 14px;
-    border: 1px solid #d9ddd2;
-    background: #f5f5f5;
+    margin-top: clamp(3.5rem, 7vw, 4.75rem);
+    padding: clamp(1.35rem, 2.8vw, 1.75rem);
+    border-radius: 16px;
+    border: 1px solid rgba(82, 104, 45, 0.2);
+    background: linear-gradient(165deg, #fafbf8 0%, #f3f6ef 100%);
+    box-shadow: 0 6px 22px rgba(15, 23, 42, 0.06);
+  }
+
+  .help-hub-member-lessons__header {
+    margin: 0 0 1.15rem 0;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid rgba(82, 104, 45, 0.12);
+  }
+
+  .help-hub-member-lessons__heading-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 0.4rem 0;
+  }
+
+  .help-hub-member-lessons__subhead {
+    margin: 0;
+    padding-left: calc(48px + 0.75rem);
+    font-size: 0.98rem;
+    line-height: 1.55;
+    font-weight: 500;
+    color: #5e6c4d;
+  }
+
+  .help-hub-member-lessons__logo {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    object-fit: contain;
   }
 
   .help-hub-member-lessons__section-title {
-    margin: 0 0 1rem 0;
-    font-size: 1.35rem;
+    margin: 0;
+    font-size: clamp(1.28rem, 2.4vw, 1.5rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
     line-height: 1.2;
-    color: #52682d;
+    color: var(--kbm-green, #52682d);
   }
 
   .help-hub-member-lessons__empty {
@@ -915,28 +968,30 @@ const tryHeading =
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.15rem;
   }
 
   .help-hub-member-lessons__card {
     margin: 0;
-    padding: 1rem 1.1rem;
+    padding: clamp(1.2rem, 2.2vw, 1.45rem) clamp(1.15rem, 2.1vw, 1.4rem);
     border-radius: 12px;
     background: #fff;
-    border: 1px solid rgba(82, 104, 45, 0.2);
+    border: 1px solid rgba(82, 104, 45, 0.18);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
   }
 
   .help-hub-member-lessons__title {
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.6rem 0;
     font-size: 1.15rem;
     line-height: 1.3;
+    font-weight: 650;
     color: #3f4b35;
   }
 
   .help-hub-member-lessons__summary {
-    margin: 0 0 0.85rem 0;
+    margin: 0 0 1rem 0;
     font-size: 0.98rem;
-    line-height: 1.6;
+    line-height: 1.65;
     color: #334155;
   }
 
@@ -944,7 +999,14 @@ const tryHeading =
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.45rem;
+    gap: 0.55rem;
+    margin-top: 0.15rem;
+  }
+
+  .help-hub-member-lessons__cta {
+    font-weight: 650;
+    padding-inline: 1.35rem;
+    padding-block: 0.55rem;
   }
 
   .help-hub-member-lessons__note {
@@ -955,10 +1017,31 @@ const tryHeading =
 
   @media (max-width: 640px) {
     .help-hub-member-lessons {
-      padding: 1rem;
+      padding: 1.1rem;
     }
 
-    .help-hub-member-lessons__actions .kbm-btn {
+    .help-hub-member-lessons__header {
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+    }
+
+    .help-hub-member-lessons__heading-row {
+      gap: 0.65rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .help-hub-member-lessons__subhead {
+      padding-left: calc(42px + 0.65rem);
+      font-size: 0.95rem;
+    }
+
+    .help-hub-member-lessons__logo {
+      width: 42px;
+      height: 42px;
+    }
+
+    .help-hub-member-lessons__actions .kbm-btn,
+    .help-hub-member-lessons__cta {
       width: 100%;
       text-align: center;
     }

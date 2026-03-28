@@ -77,9 +77,31 @@
     ],
     "noteTitle": "Feel More Confident with Cut ’n Sew",
     "noteText": "This small step can make a big difference. Adding stabilizer before cutting helps prevent stretching and rippling—especially on curves like necklines—so your finished edge looks clean, smooth, and professional.",
-    "supportImage": "/images/seeit-loveit-knitit.webp",
-    "supportImageAlt": "imag alt",
-    "templateLink": "/downloads/shop/cut-n-sew-neckline-templates.pdf\"",
+    "supportImage": "/images/lessons/stabilizer.webp",
+    "supportImageAlt": "Water-soluable stabilizer for cut 'n sew",
+    "templateLink": "/downloads/shop/cut-n-sew-neckline-templates.pdf",
     "templateLinkText": "cut 'n sew templte text"
+  },
+  {
+    "id": 104,
+    "slug": "title",
+    "title": "title",
+    "summary": "this is the summary",
+    "type": "video",
+    "vimeoEmbedUrl": "12345678",
+    "access": "free",
+    "encouragement": "tip - you can do this",
+    "exerciseTitle": "try this yourself - exercise title",
+    "exerciseItems": [
+      "item1",
+      "item2",
+      "item3"
+    ],
+    "noteTitle": "note title you can do this",
+    "noteText": "note text - try , try agai",
+    "supportImage": "/images/lessons/sabilizer.webp",
+    "supportImageAlt": "alt tag",
+    "templateLink": "/downloads/lessons/sweater-panels-planner.pdf",
+    "templateLinkText": "download a sweater panels planner"
   }
 ]

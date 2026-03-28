@@ -76,16 +76,18 @@ const categoryOptions = Array.isArray(categoriesData)
               class="help-hub-admin__related-lessons-select"
               size={relatedLessonsSelectSize}
             >
-              {lessonsList.map((lesson: { slug?: string; title?: string }) => {
+              {lessonsList.map((lesson: { id?: unknown; slug?: string }) => {
                 const slug = typeof lesson.slug === "string" ? lesson.slug.trim() : "";
                 if (!slug) return null;
-                const title =
-                  typeof lesson.title === "string" && lesson.title.trim() !== ""
-                    ? lesson.title.trim()
-                    : slug;
+                const idStr =
+                  typeof lesson.id === "number" && Number.isFinite(lesson.id)
+                    ? String(Math.trunc(lesson.id))
+                    : typeof lesson.id === "string" && lesson.id.trim() !== ""
+                      ? lesson.id.trim()
+                      : "?";
                 return (
                   <option value={slug}>
-                    {title} ({slug})
+                    [{idStr}] {slug}
                   </option>
                 );
               })}

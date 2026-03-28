@@ -37,7 +37,8 @@
       ]
     },
     "relatedLessons": [
-      "use-stabilizer-for-clean-confident-cut-n-sew-edges"
+      "use-stabilizer-for-clean-confident-cut-n-sew-edges",
+      "title"
     ],
     "isNew": true,
     "tags": [
@@ -164,8 +165,8 @@
     "aboutTitle": "about title",
     "bridge": "why this works",
     "tryThisTitle": "try this title",
-    "memberHeading": "member heading",
-    "memberText": "member text",
+    "memberHeading": "",
+    "memberText": "",
     "isNew": false,
     "readyToPublish": false,
     "tryThis": {
@@ -181,7 +182,7 @@
     ],
     "id": 1004,
     "relatedLessons": [
-      "finish-clean-neckband"
+      "title"
     ]
   }
 ]
