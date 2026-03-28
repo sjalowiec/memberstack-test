@@ -675,12 +675,26 @@ const calendarTips = tipsData.map((tip) => ({
             startDate,
             endDate: endDate || null,
             emailDone: emailDoneInput?.checked ?? false,
+            tryThis: {
+              quickActionTitle:
+                (document.querySelector("[name='quickActionTitle']") as HTMLInputElement | null)?.value || "",
+              quickAction: Array.from(document.querySelectorAll("[name='quickAction[]']"))
+                .map((el) => (el as HTMLInputElement).value.trim())
+                .filter(Boolean),
+            },
           }
         : {
             content_id: parseInt(contentId, 10),
             startDate,
             emailDone: emailDoneInput?.checked ?? false,
             ...(endDate ? { endDate } : {}),
+            tryThis: {
+              quickActionTitle:
+                (document.querySelector("[name='quickActionTitle']") as HTMLInputElement | null)?.value || "",
+              quickAction: Array.from(document.querySelectorAll("[name='quickAction[]']"))
+                .map((el) => (el as HTMLInputElement).value.trim())
+                .filter(Boolean),
+            },
           };
 
       try {
