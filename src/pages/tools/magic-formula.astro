@@ -23,7 +23,7 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
 <Layout title={pageTitle} description={pageDescription}>
   <main class="wizard-page">
     <div class="wizard-shell">
-      <WizardBackLink category="tool" />
+      <WizardBackLink className="back-link" />
 
       <section class="wizard-hero">
         <div class="tool-title-row">

@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "key": "machine-not-working",
+    "label": "Something’s Not Working"
+  },
+  {
+    "id": 2,
+    "key": "knitting-doesnt-look-right",
+    "label": "My Knitting Doesn’t Look Right"
+  },
+  {
+    "id": 3,
+    "key": "edges-finishing-assembly",
+    "label": "Edges, Finishing & Assembly"
+  },
+  {
+    "id": 4,
+    "key": "shaping-fit-problems",
+    "label": "Shaping & Fit Problems"
+  },
+  {
+    "id": 5,
+    "key": "pattern-design-confusion",
+    "label": "Pattern & Design Confusion"
+  },
+  {
+    "id": 6,
+    "key": "getting-started",
+    "label": "Getting Started"
+  }
+]

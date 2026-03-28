@@ -6,11 +6,17 @@
     "featured": true,
     "lastFeaturedDate": "2026-03-22",
     "timesFeatured": 1,
-    "featureHistory": ["2026-03-22"],
+    "featureHistory": [
+      "2026-03-22"
+    ],
     "sortOrder": 5,
-    "category": "Fit & Shaping",
+    "category": "edges-finishing-assembly",
     "categoryPill": "Technique",
-    "title": "Shape Any Pattern with Cut 'n Sew",
+    "title": "Shape when knitting in pattern with Cut 'n Sew",
+    "metaTitle": "Cut and Sew Necklines on a Knitting Machine (Clean Finish)",
+    "metaDescription": "Learn how to cut and sew your knitted fabric for clean, professional necklines. A simple solution when shaping isn’t enough.",
+    "allMachines": true,
+    "appliesTo": [],
     "question": "How do I shape a neckline without losing my lace or tuck pattern?",
     "hook": "Stop fighting with complex stitches and start shaping like a pro.",
     "bubbleAnswer": "Forget hand-manipulation. Use Cut 'n Sew to secure your knitting with a sewing machine and cut the shape you need.",
@@ -28,24 +34,26 @@
         "Sew along the marked line with a sewing machine or serger",
         "Take a deep breath and cut 1/4–3/8 inch from the stitching line with a sharp pair of scissors",
         "Observe the stability of the cut edge"
-      ],
-      "proExerciseTitle": "The Security Check",
-      "proExercise": [
-        "Take a deep breath and cut 1/4–3/8 inch from the stitching line",
-        "Observe the stability of the cut edge"
       ]
     },
-    "relatedLessonId": 101,
-    "relatedLesson": "finish-clean-neckband",
-    "lessonCta": {
-      "eyebrow": "Related lesson",
-      "title": "Want help finishing the neckline?",
-      "text": "This lesson shows you how to knit and attach a clean neckband after shaping your opening.",
-      "buttonText": "Open Neckband Lesson →",
-      "note": "Included with Knit it Now membership"
-    },
+    "relatedLessons": [
+      "finish-clean-neckband",
+      "change-your-stitch-pattern-to-change-your-width",
+      "use-stabilizer-for-clean-confident-cut-n-sew-edges"
+    ],
     "isNew": true,
-    "tags": ["shaping", "necklines", "sewing", "intermediate", "lace", "tuck"]
+    "tags": [
+      "shaping",
+      "necklines",
+      "sewing",
+      "intermediate",
+      "lace",
+      "tuck"
+    ],
+    "mediaPoster": "",
+    "memberHeading": "",
+    "memberText": "",
+    "readyToPublish": false
   },
   {
     "id": 1002,
@@ -55,6 +63,10 @@
     "category": "The Finishing Touch",
     "categoryPill": "Pro-Finish",
     "title": "The Perfect Sandwich Band",
+    "metaTitle": "",
+    "metaDescription": "",
+    "allMachines": true,
+    "appliesTo": [],
     "question": "How do I finish a raw or cut edge so it looks professional?",
     "hook": "Give your necklines a boutique-quality finish that looks great on both sides.",
     "bubbleAnswer": "Encase the raw edge between two knitted layers for a clean, reversible finish.",
@@ -71,18 +83,100 @@
         "Calculate your band stitches by multiplying your edge measurement by your stitch gauge.",
         "Knit the first half of the band (approx. 1 inch), grading the tension tighter every 2 rows (e.g., MT, MT-1, MT-2).",
         "Remove the first half onto waste yarn or a garter bar."
-      ],
-      "proExerciseTitle": "The Professional Sandwich",
-      "proExercise": [
-        "Hang the garment neckline onto the needles with the 'private side' facing you.",
-        "Rehang the first band piece, then knit 2 rows at garment tension with all latches closed to prevent snagging.",
-        "Mirror the tension grading for the second half of the band, join the cast-on edge, and bind off loosely for a reversible finish."
       ]
     },
+    "relatedLessons": [],
     "featured": false,
     "lastFeaturedDate": "",
     "timesFeatured": 0,
     "featureHistory": [],
-    "isNew": true
+    "isNew": true,
+    "memberHeading": "",
+    "memberText": "",
+    "readyToPublish": false
+  },
+  {
+    "title": "Working Within Your Machine’s Limits",
+    "metaTitle": "",
+    "metaDescription": "",
+    "allMachines": false,
+    "appliesTo": [],
+    "slug": "not-enough-needles",
+    "status": "published",
+    "featured": false,
+    "category": "pattern-design-confusion",
+    "categoryPill": "",
+    "question": "I don’t have enough needles for this—now what?",
+    "bubbleAnswer": "Adjust your yarn, stitch pattern, or construction method to create the required width without needing more needles",
+    "hook": "",
+    "mediaType": "video",
+    "mediaUrl": "1177421890",
+    "mediaPoster": "",
+    "mediaAlt": "",
+    "aboutTitle": "",
+    "bridge": "Your machine width is fixed by needle count, but fabric width changes with gauge, yarn, and stitch pattern. Use the <a href=\"/tools/maximum-knitted-width\">Maximum Knitted Width tool</a> to see how wide you can knit  with your gauge on your machine.",
+    "tryThisTitle": "Try This",
+    "memberHeading": "member heading from tip",
+    "memberText": "member text from tip",
+    "isNew": true,
+    "readyToPublish": true,
+    "tryThis": {
+      "quickActionTitle": "quick action title",
+      "quickAction": []
+    },
+    "trySteps": [
+      "Quick Action Steps",
+      "Check your gauge and calculate the maximum width your machine can knit",
+      "Try a different yarn that gives fewer stitches per inch for more width",
+      "Use a wider stitch pattern like tuck or lace to increase fabric width",
+      "Split large pieces into multiple sections and seam them together",
+      "Add seams creatively (center, sides, or underarms) to maintain shaping",
+      "Consider sideways knitting for larger sizes without adding seams"
+    ],
+    "id": 1003,
+    "relatedLessons": [
+      "change-your-stitch-pattern-to-change-your-width"
+    ]
+  },
+  {
+    "title": "this is the title",
+    "metaTitle": "",
+    "metaDescription": "",
+    "allMachines": false,
+    "appliesTo": [],
+    "slug": "this-is-the-title",
+    "status": "published",
+    "featured": false,
+    "category": "machine-not-working",
+    "categoryPill": "categor pill",
+    "question": "this i the question",
+    "bubbleAnswer": "bubble answer",
+    "hook": "hook",
+    "mediaType": "",
+    "mediaUrl": "",
+    "mediaPoster": "",
+    "mediaAlt": "",
+    "aboutTitle": "about title",
+    "bridge": "why this works",
+    "tryThisTitle": "try this title",
+    "memberHeading": "member heading",
+    "memberText": "member text",
+    "isNew": false,
+    "readyToPublish": false,
+    "tryThis": {
+      "quickActionTitle": "quick action title",
+      "quickAction": [
+        "quick action 1",
+        "quick action 2"
+      ]
+    },
+    "trySteps": [
+      "try steps",
+      "try steps"
+    ],
+    "id": 1004,
+    "relatedLessons": [
+      "finish-clean-neckband"
+    ]
   }
 ]

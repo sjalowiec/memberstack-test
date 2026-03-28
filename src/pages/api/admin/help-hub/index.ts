@@ -2,10 +2,10 @@ import type { APIRoute } from "astro";
 import {
   readHelpHubFile,
   writeHelpHubFile,
-  readLessonsForAdmin,
   nextHelpHubId,
   getTipId,
-  syncRelatedLessonSlug,
+  normalizeRelatedLessons,
+  stripLegacyHelpHubTipFields,
 } from "../../../../lib/helpHubAdminFile";
 
 export const prerender = false;
@@ -20,15 +20,6 @@ function jsonResponse(data: unknown, status = 200) {
 function requireNonEmptyString(value: unknown, label: string): string | null {
   if (typeof value !== "string" || value.trim() === "") return null;
   return value.trim();
-}
-
-function validateRelatedLessonId(value: unknown): { ok: true } | { ok: false; error: string } {
-  if (value === null || value === undefined || value === "") return { ok: true };
-  const n = typeof value === "number" ? value : parseInt(String(value), 10);
-  if (!Number.isFinite(n)) {
-    return { ok: false, error: "relatedLessonId must be a number when provided." };
-  }
-  return { ok: true };
 }
 
 function slugTaken(
@@ -77,9 +68,6 @@ export const POST: APIRoute = async ({ request }) => {
   if (!category) return jsonResponse({ ok: false, error: "category is required." }, 400);
   if (!status) return jsonResponse({ ok: false, error: "status is required." }, 400);
 
-  const ridCheck = validateRelatedLessonId(body.relatedLessonId);
-  if (!ridCheck.ok) return jsonResponse({ ok: false, error: ridCheck.error }, 400);
-
   let tips: Record<string, unknown>[];
   try {
     tips = readHelpHubFile();
@@ -92,7 +80,6 @@ export const POST: APIRoute = async ({ request }) => {
     return jsonResponse({ ok: false, error: `slug "${slug}" is already in use.` }, 400);
   }
 
-  const lessons = readLessonsForAdmin();
   const newId = nextHelpHubId(tips);
   const row: Record<string, unknown> = { ...body };
   delete row.id;
@@ -101,13 +88,8 @@ export const POST: APIRoute = async ({ request }) => {
   row.slug = slug;
   row.category = category;
   row.status = status;
-
-  if (body.relatedLessonId === null || body.relatedLessonId === undefined || body.relatedLessonId === "") {
-    delete row.relatedLessonId;
-    delete row.relatedLesson;
-  } else {
-    syncRelatedLessonSlug(row, lessons);
-  }
+  stripLegacyHelpHubTipFields(row);
+  row.relatedLessons = normalizeRelatedLessons(body.relatedLessons);
 
   tips.push(row);
 

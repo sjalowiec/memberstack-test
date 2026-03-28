@@ -59,27 +59,18 @@ export function getTipId(row: Record<string, unknown>): number | null {
   return null;
 }
 
-export function syncRelatedLessonSlug(
-  row: Record<string, unknown>,
-  lessons: { id: number; slug: string }[]
-): void {
-  const raw = row.relatedLessonId;
-  if (raw === null || raw === undefined || raw === "") {
-    delete row.relatedLessonId;
-    delete row.relatedLesson;
-    return;
-  }
-  const id = typeof raw === "number" ? raw : parseInt(String(raw), 10);
-  if (!Number.isFinite(id)) {
-    delete row.relatedLessonId;
-    delete row.relatedLesson;
-    return;
-  }
-  row.relatedLessonId = id;
-  const lesson = lessons.find((l) => l.id === id);
-  if (lesson?.slug) {
-    row.relatedLesson = lesson.slug;
-  } else {
-    delete row.relatedLesson;
-  }
+/** Normalize `relatedLessons` from API/admin payloads (slug strings). */
+export function normalizeRelatedLessons(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((s) => String(s).trim())
+    .filter((s) => s.length > 0);
+}
+
+/** Remove deprecated tip fields so saves stay aligned with the current schema. */
+export function stripLegacyHelpHubTipFields(row: Record<string, unknown>): void {
+  delete row.relatedLessonId;
+  delete row.relatedLesson;
+  delete row.lessonCta;
+  delete row.lessonIDs;
 }

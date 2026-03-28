@@ -15,7 +15,7 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
 <Layout title="Ruffle / Gather — One-Row Distribution | Knit it Now" description="Distribute increases or decreases evenly across a single row. Enter starting and ending stitches and edge stitches to get clear machine-knitting instructions.">
   <main class="wizard-page">
     <div class="wizard-shell">
-      <WizardBackLink category="tool" />
+      <WizardBackLink className="back-link" />
 
       <section class="wizard-hero">
         <ToolPageHeader tool={tool} fallbackTitle="Ruffle / Gather — One-Row Distribution" />

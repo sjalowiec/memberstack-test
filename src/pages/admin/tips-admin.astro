@@ -1,203 +1,62 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import lessonsData from "../../data/lessons.json";
-
-const lessonsOptions = Array.isArray(lessonsData) ? lessonsData : [];
-const lessonSelectOptions = lessonsOptions.map((l) => ({
-  id: l.id,
-  label: `${l.id} — ${l.title ?? l.slug ?? ""}`,
-}));
 ---
 
 <BaseLayout
-  title="Help Hub Admin | Knit it Now"
-  description="Local admin for Help Hub tips (help-hub.json)"
+  title="Help Hub Tips | Knit it Now"
+  description="Browse and manage Help Hub tips (help-hub.json)"
   skipGlobalHyvor={true}
   bodyClass="tips-admin-body help-hub-admin-body"
 >
   <main class="help-hub-admin">
     <header class="help-hub-admin__head">
-      <h1 class="help-hub-admin__title">Help Hub Tips Admin</h1>
+      <h1 class="help-hub-admin__title">Help Hub Tips</h1>
       <p class="help-hub-admin__sub">
-        Edits <code>src/data/help-hub.json</code> via <code>/api/admin/help-hub</code>. IDs start at 1000 and are permanent; slug is for URLs only.
+        Data lives in <code>src/data/help-hub.json</code> and is updated via <code>/api/admin/help-hub</code>. Use Edit to change a tip; IDs are permanent.
       </p>
     </header>
 
     <p id="help-hub-admin-status" class="help-hub-admin__status" aria-live="polite"></p>
 
-    <div class="help-hub-admin__grid">
-      <section class="admin-panel help-hub-admin__list-panel" aria-labelledby="list-heading">
-        <div class="help-hub-admin__list-head">
-          <h2 id="list-heading">All tips</h2>
-          <button type="button" id="btn-new-tip" class="kbm-btn kbm-btn-primary">
-            New Tip
-          </button>
-        </div>
-        <p id="help-hub-admin-loading" class="help-hub-admin__loading">Loading…</p>
-        <ul id="help-hub-tip-list" class="help-hub-admin__tip-list" hidden></ul>
-        <p id="help-hub-admin-empty" class="help-hub-admin__empty" hidden>No tips yet.</p>
-      </section>
-
-      <section class="admin-panel help-hub-admin__form-panel" aria-labelledby="form-heading">
-        <h2 id="form-heading">Edit tip</h2>
-        <p id="help-hub-admin-mode" class="help-hub-admin__mode">New tip</p>
-
-        <form id="help-hub-admin-form" class="help-hub-admin__form" autocomplete="off">
-          <div class="field-grid">
-            <label>
-              <span>id (read-only)</span>
-              <input type="text" id="field-id" name="idDisplay" readonly disabled placeholder="(assigned on save)" />
-            </label>
-            <label class="field-full">
-              <span>title <em class="req">*</em></span>
-              <input type="text" name="title" id="field-title" required />
-            </label>
-            <label class="field-full">
-              <span>slug <em class="req">*</em></span>
-              <input type="text" name="slug" id="field-slug" required />
-              <span class="field-hint">Lowercase, hyphens. Auto-filled from title on new until you edit slug.</span>
-            </label>
-            <label>
-              <span>status <em class="req">*</em></span>
-              <select name="status" id="field-status" required>
-                <option value="draft">draft</option>
-                <option value="published">published</option>
-                <option value="archived">archived</option>
-                <option value="ready">ready</option>
-                <option value="scheduled">scheduled</option>
-              </select>
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox" name="featured" id="field-featured" />
-              <span>featured</span>
-            </label>
-            <label>
-              <span>category <em class="req">*</em></span>
-              <input type="text" name="category" id="field-category" required />
-            </label>
-            <label>
-              <span>categoryPill</span>
-              <input type="text" name="categoryPill" id="field-categoryPill" />
-            </label>
-            <label class="field-full">
-              <span>question / symptom</span>
-              <textarea name="question" id="field-question" rows="2"></textarea>
-            </label>
-            <label class="field-full">
-              <span>bubbleAnswer</span>
-              <textarea name="bubbleAnswer" id="field-bubbleAnswer" rows="3"></textarea>
-            </label>
-            <label class="field-full">
-              <span>hook</span>
-              <input type="text" name="hook" id="field-hook" />
-            </label>
-            <label>
-              <span>mediaType</span>
-              <input type="text" name="mediaType" id="field-mediaType" placeholder="vimeo, video, image" />
-            </label>
-            <label class="field-full">
-              <span>Vimeo ID</span>
-              <input type="text" name="mediaUrl" id="field-mediaUrl" />
-            </label>
-            <label class="field-full">
-              <span>Thumbnail URL</span>
-              <input type="text" name="mediaPoster" id="field-mediaPoster" />
-            </label>
-            <label class="field-full">
-              <span>mediaAlt</span>
-              <input type="text" name="mediaAlt" id="field-mediaAlt" />
-            </label>
-            <label>
-              <span>aboutTitle</span>
-              <input type="text" name="aboutTitle" id="field-aboutTitle" />
-            </label>
-            <label class="field-full">
-              <span>bridge</span>
-              <textarea name="bridge" id="field-bridge" rows="3"></textarea>
-            </label>
-            <label>
-              <span>tryThisTitle</span>
-              <input type="text" name="tryThisTitle" id="field-tryThisTitle" />
-            </label>
-            <label>
-              <span>quickActionTitle</span>
-              <input type="text" name="quickActionTitle" id="field-quickActionTitle" />
-            </label>
-            <label>
-              <span>proExerciseTitle</span>
-              <input type="text" name="proExerciseTitle" id="field-proExerciseTitle" />
-            </label>
-            <label class="field-full">
-              <span>lessonTitle → lessonCta.title</span>
-              <input type="text" name="lessonTitle" id="field-lessonTitle" />
-            </label>
-            <label class="field-full">
-              <span>lessonText → lessonCta.text</span>
-              <textarea name="lessonText" id="field-lessonText" rows="2"></textarea>
-            </label>
-            <label>
-              <span>memberHeading</span>
-              <input type="text" name="memberHeading" id="field-memberHeading" />
-            </label>
-            <label class="field-full">
-              <span>memberText</span>
-              <textarea name="memberText" id="field-memberText" rows="2"></textarea>
-            </label>
-            <label>
-              <span>relatedLessonId</span>
-              <select name="relatedLessonId" id="field-relatedLessonId">
-                <option value="">— None —</option>
-                {lessonSelectOptions.map((opt) => (
-                  <option value={String(opt.id ?? "")}>{opt.label}</option>
-                ))}
-              </select>
-              <span class="field-hint">Matches <code>id</code> in lessons.json; <code>relatedLesson</code> slug is set on save.</span>
-            </label>
-            <label>
-              <span>sortOrder</span>
-              <input type="number" name="sortOrder" id="field-sortOrder" step="1" />
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox" name="isNew" id="field-isNew" />
-              <span>isNew</span>
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox" name="readyToPublish" id="field-readyToPublish" />
-              <span>readyToPublish</span>
-            </label>
-            <label class="field-full">
-              <span>trySteps (one per line)</span>
-              <textarea name="trySteps" id="field-trySteps" rows="4"></textarea>
-            </label>
-            <label class="field-full">
-              <span>quickAction (one per line) → tryThis.quickAction</span>
-              <textarea name="quickAction" id="field-quickAction" rows="5"></textarea>
-            </label>
-            <label class="field-full">
-              <span>proExercise (one per line) → tryThis.proExercise</span>
-              <textarea name="proExercise" id="field-proExercise" rows="4"></textarea>
-            </label>
-          </div>
-
-          <div class="help-hub-admin__form-actions">
-            <button type="button" id="btn-save-tip" class="kbm-btn kbm-btn-primary">Save</button>
-            <button type="button" id="btn-cancel-edit" class="kbm-btn kbm-btn-outline">Cancel edit</button>
-            <button type="button" id="btn-delete-tip" class="kbm-btn kbm-btn-accent">Delete</button>
-            <button type="button" id="btn-refresh-preview" class="kbm-btn kbm-btn-outline">Refresh JSON preview</button>
-          </div>
-        </form>
-
-        <div class="help-hub-admin__preview-wrap">
-          <h3 class="help-hub-admin__preview-title">Current record (preview)</h3>
-          <pre id="help-hub-json-preview" class="help-hub-admin__preview" aria-live="polite"></pre>
-        </div>
-      </section>
+    <div class="help-hub-admin__toolbar">
+      <a href="/admin/tips-edit" class="kbm-btn kbm-btn-primary">+ New Tip</a>
     </div>
+
+    <section class="admin-panel help-hub-admin__table-panel" aria-labelledby="list-heading">
+      <h2 id="list-heading" class="visually-hidden">All tips</h2>
+      <p id="help-hub-admin-loading" class="help-hub-admin__loading">Loading…</p>
+      <div id="help-hub-table-wrap" class="help-hub-admin__table-wrap" hidden>
+        <table class="help-hub-admin__table">
+          <thead>
+            <tr>
+              <th scope="col">Title</th>
+              <th scope="col">Slug</th>
+              <th scope="col">Applies</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="help-hub-tip-tbody"></tbody>
+        </table>
+      </div>
+      <p id="help-hub-admin-empty" class="help-hub-admin__empty" hidden>No tips yet.</p>
+    </section>
   </main>
 
   <style>
     :global(body.help-hub-admin-body) {
       margin: 0;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     .help-hub-admin {
@@ -250,17 +109,8 @@ const lessonSelectOptions = lessonsOptions.map((l) => ({
       color: #166534;
     }
 
-    .help-hub-admin__grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.25rem;
-      align-items: start;
-    }
-
-    @media (min-width: 960px) {
-      .help-hub-admin__grid {
-        grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
-      }
+    .help-hub-admin__toolbar {
+      margin-bottom: 1rem;
     }
 
     .admin-panel {
@@ -268,25 +118,6 @@ const lessonSelectOptions = lessonsOptions.map((l) => ({
       border: 1px solid #e5e7eb;
       border-radius: 12px;
       padding: 1rem;
-    }
-
-    .admin-panel h2 {
-      margin: 0 0 0.75rem 0;
-      font-size: 1.1rem;
-      color: #243015;
-    }
-
-    .help-hub-admin__list-head {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.65rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .help-hub-admin__list-head h2 {
-      margin: 0;
     }
 
     .help-hub-admin__loading {
@@ -300,178 +131,63 @@ const lessonSelectOptions = lessonsOptions.map((l) => ({
       color: #64748b;
     }
 
-    .help-hub-admin__tip-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.65rem;
-      max-height: min(70vh, 640px);
-      overflow-y: auto;
+    .help-hub-admin__table-wrap {
+      overflow-x: auto;
     }
 
-    .help-hub-admin__tip-card {
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      padding: 0.65rem 0.75rem;
+    .help-hub-admin__table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    .help-hub-admin__table th,
+    .help-hub-admin__table td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0.65rem 0.5rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .help-hub-admin__table th {
+      font-weight: 700;
+      color: #243015;
+      background: #f8fafc;
+    }
+
+    .help-hub-admin__table tbody tr:hover {
       background: #fafafa;
     }
 
-    .help-hub-admin__tip-card.is-active {
-      outline: 2px solid #52682d;
-      outline-offset: 1px;
-      background: #f7faf4;
-    }
-
-    .help-hub-admin__tip-title {
-      margin: 0 0 0.35rem 0;
-      font-size: 0.95rem;
-      font-weight: 700;
+    .help-hub-admin__table .col-title {
+      font-weight: 600;
       color: #111827;
-      line-height: 1.35;
+      max-width: 22rem;
     }
 
-    .help-hub-admin__tip-meta {
-      margin: 0 0 0.5rem 0;
-      font-size: 0.8rem;
-      color: #4b5563;
-      line-height: 1.4;
-    }
-
-    .help-hub-admin__tip-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
-
-    .help-hub-admin__tip-actions .kbm-btn {
-      font-size: 0.8rem;
-      padding: 0.35rem 0.6rem;
-    }
-
-    .help-hub-admin__mode {
-      margin: 0 0 0.75rem 0;
-      padding: 0.5rem 0.65rem;
-      border-radius: 8px;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      font-weight: 600;
-      color: #243015;
-      font-size: 0.95rem;
-    }
-
-    .help-hub-admin__form .field-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.8rem;
-    }
-
-    @media (min-width: 720px) {
-      .help-hub-admin__form .field-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    .field-full {
-      grid-column: 1 / -1;
-    }
-
-    .help-hub-admin__form label {
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-    }
-
-    .help-hub-admin__form label > span {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #2e3a18;
-    }
-
-    .req {
-      color: #b91c1c;
-      font-style: normal;
-    }
-
-    .field-hint {
-      font-size: 0.82rem;
-      font-weight: 400;
-      color: #64748b;
-      line-height: 1.45;
-    }
-
-    .field-hint code {
-      font-size: 0.88em;
+    .help-hub-admin__table .col-slug code {
+      font-size: 0.85em;
       background: #f1f5f9;
       padding: 0.1rem 0.35rem;
       border-radius: 4px;
+      word-break: break-all;
     }
 
-    .help-hub-admin__form input,
-    .help-hub-admin__form select,
-    .help-hub-admin__form textarea {
-      width: 100%;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 0.55rem 0.65rem;
-      font: inherit;
-      color: #111827;
-      background: #fff;
-      box-sizing: border-box;
+    .help-hub-admin__table .col-applies {
+      color: #475569;
+      max-width: 16rem;
     }
 
-    .help-hub-admin__form input:disabled {
-      background: #f1f5f9;
-      color: #64748b;
-    }
-
-    .help-hub-admin__form textarea {
-      resize: vertical;
-      min-height: 72px;
-    }
-
-    .checkbox-label {
-      flex-direction: row !important;
-      align-items: center;
-      gap: 0.5rem !important;
-      margin-top: 0.25rem;
-    }
-
-    .checkbox-label input {
-      width: auto !important;
-      margin: 0;
-    }
-
-    .help-hub-admin__form-actions {
+    .help-hub-admin__actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.6rem;
-      margin-top: 1.1rem;
+      gap: 0.45rem;
+      align-items: center;
     }
 
-    .help-hub-admin__preview-wrap {
-      margin-top: 1.25rem;
-      padding-top: 1rem;
-      border-top: 1px solid #e5e7eb;
-    }
-
-    .help-hub-admin__preview-title {
-      margin: 0 0 0.5rem 0;
-      font-size: 1rem;
-      color: #243015;
-    }
-
-    .help-hub-admin__preview {
-      margin: 0;
-      padding: 0.85rem;
-      border-radius: 8px;
-      background: #0f172a;
-      color: #e2e8f0;
-      overflow: auto;
-      font-size: 0.78rem;
-      line-height: 1.45;
-      max-height: 320px;
+    .help-hub-admin__actions .kbm-btn {
+      font-size: 0.85rem;
+      padding: 0.35rem 0.6rem;
     }
   </style>
 
@@ -481,18 +197,12 @@ const lessonSelectOptions = lessonsOptions.map((l) => ({
     type TipRow = Record<string, unknown>;
 
     let tips: TipRow[] = [];
-    let editingId: number | null = null;
-    let baseline: TipRow | null = null;
-    let slugManual = false;
 
     const statusEl = document.getElementById("help-hub-admin-status");
-    const modeEl = document.getElementById("help-hub-admin-mode");
     const loadingEl = document.getElementById("help-hub-admin-loading");
-    const listEl = document.getElementById("help-hub-tip-list");
+    const tableWrapEl = document.getElementById("help-hub-table-wrap");
+    const tbodyEl = document.getElementById("help-hub-tip-tbody");
     const emptyEl = document.getElementById("help-hub-admin-empty");
-    const previewEl = document.getElementById("help-hub-json-preview");
-    const form = document.getElementById("help-hub-admin-form") as HTMLFormElement | null;
-    const fieldId = document.getElementById("field-id") as HTMLInputElement | null;
 
     function setStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral") {
       if (!statusEl) return;
@@ -511,272 +221,47 @@ const lessonSelectOptions = lessonsOptions.map((l) => ({
       return null;
     }
 
-    function slugifyTitle(raw: string): string {
-      const s = raw
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .slice(0, 96);
-      return s || "help-hub-tip";
-    }
-
-    function linesFromTextarea(name: string): string[] {
-      const el = form?.elements?.namedItem(name);
-      if (!(el instanceof HTMLTextAreaElement)) return [];
-      return el.value
-        .split(/\r?\n/)
-        .map((l) => l.trim())
-        .filter((l) => l.length > 0);
-    }
-
-    function textVal(name: string): string {
-      const el = form?.elements?.namedItem(name);
-      if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) {
-        return el.value.trim();
+    function appliesLabel(tip: TipRow): string {
+      if (tip.allMachines === true) return "All machines";
+      const list = tip.appliesTo;
+      if (Array.isArray(list) && list.length > 0) {
+        const parts = list.map((x) => String(x).trim()).filter(Boolean);
+        if (parts.length === 0) return "—";
+        if (parts.length <= 2) return parts.join(", ");
+        return `${parts.slice(0, 2).join(", ")}…`;
       }
-      return "";
+      return "—";
     }
 
-    function checked(name: string): boolean {
-      const el = form?.elements?.namedItem(name);
-      return el instanceof HTMLInputElement && el.type === "checkbox" ? el.checked : false;
-    }
-
-    function setField(name: string, value: string) {
-      const el = form?.elements?.namedItem(name);
-      if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) {
-        el.value = value;
-      }
-    }
-
-    function setChecked(name: string, value: boolean) {
-      const el = form?.elements?.namedItem(name);
-      if (el instanceof HTMLInputElement && el.type === "checkbox") el.checked = value;
-    }
-
-    function linesToText(lines: unknown): string {
-      if (!Array.isArray(lines)) return "";
-      return lines.map((x) => String(x)).join("\n");
-    }
-
-    function deepClone<T>(x: T): T {
-      return JSON.parse(JSON.stringify(x)) as T;
-    }
-
-    function buildRow(): TipRow {
-      const base = baseline ? deepClone(baseline) : {};
-      const tryThisPrev =
-        base.tryThis && typeof base.tryThis === "object" && !Array.isArray(base.tryThis)
-          ? (base.tryThis as Record<string, unknown>)
-          : {};
-
-      const lessonPrev =
-        base.lessonCta && typeof base.lessonCta === "object" && !Array.isArray(base.lessonCta)
-          ? (base.lessonCta as Record<string, unknown>)
-          : {};
-
-      const tryStepsLines = linesFromTextarea("trySteps");
-      const quickActionLines = linesFromTextarea("quickAction");
-      const proLines = linesFromTextarea("proExercise");
-
-      const lessonTitle = textVal("lessonTitle");
-      const lessonText = textVal("lessonText");
-
-      const lessonCta: Record<string, unknown> = { ...lessonPrev };
-      if (lessonTitle) lessonCta.title = lessonTitle;
-      else delete lessonCta.title;
-      if (lessonText) lessonCta.text = lessonText;
-      else delete lessonCta.text;
-
-      const relatedSel = textVal("relatedLessonId");
-      const sortRaw = textVal("sortOrder");
-      const sortOrder = sortRaw === "" ? undefined : parseInt(sortRaw, 10);
-
-      const row: TipRow = {
-        ...base,
-        title: textVal("title"),
-        slug: textVal("slug"),
-        status: textVal("status"),
-        featured: checked("featured"),
-        category: textVal("category"),
-        categoryPill: textVal("categoryPill"),
-        question: textVal("question"),
-        bubbleAnswer: textVal("bubbleAnswer"),
-        hook: textVal("hook"),
-        mediaType: textVal("mediaType"),
-        mediaUrl: textVal("mediaUrl"),
-        mediaPoster: textVal("mediaPoster"),
-        mediaAlt: textVal("mediaAlt"),
-        aboutTitle: textVal("aboutTitle"),
-        bridge: textVal("bridge"),
-        tryThisTitle: textVal("tryThisTitle"),
-        memberHeading: textVal("memberHeading"),
-        memberText: textVal("memberText"),
-        isNew: checked("isNew"),
-        readyToPublish: checked("readyToPublish"),
-        tryThis: {
-          ...tryThisPrev,
-          quickActionTitle: textVal("quickActionTitle"),
-          quickAction: quickActionLines,
-          proExerciseTitle: textVal("proExerciseTitle"),
-          proExercise: proLines,
-        },
-        lessonCta,
-      };
-
-      if (tryStepsLines.length > 0) {
-        row.trySteps = tryStepsLines;
-      } else {
-        delete row.trySteps;
-      }
-
-      if (Number.isFinite(sortOrder as number)) {
-        row.sortOrder = sortOrder;
-      } else if (sortRaw === "") {
-        delete row.sortOrder;
-      }
-
-      if (relatedSel === "") {
-        delete row.relatedLessonId;
-        delete row.relatedLesson;
-      } else {
-        const n = parseInt(relatedSel, 10);
-        if (Number.isFinite(n)) row.relatedLessonId = n;
-      }
-
-      if (editingId !== null) row.id = editingId;
-
-      if (Object.keys(lessonCta).length === 0) {
-        delete row.lessonCta;
-      }
-
-      return row;
-    }
-
-    function refreshPreview() {
-      if (!previewEl) return;
+    async function deleteTip(id: number, title: string, slug: string) {
+      if (!confirm(`Delete tip "${title}" (${slug})? This cannot be undone.`)) return;
       try {
-        previewEl.textContent = JSON.stringify(buildRow(), null, 2);
+        const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+        const data = (await res.json()) as { ok?: boolean; tips?: TipRow[]; error?: string };
+        if (!res.ok || !data.ok || !Array.isArray(data.tips)) {
+          setStatus(data.error || `Delete failed (${res.status})`, "err");
+          return;
+        }
+        tips = data.tips;
+        setStatus(`Deleted tip id ${id}.`, "ok");
+        renderTable();
       } catch {
-        previewEl.textContent = "(could not build preview)";
+        setStatus("Network error while deleting.", "err");
       }
     }
 
-    function loadRowToForm(row: TipRow) {
-      baseline = deepClone(row);
-      const id = getTipId(row);
-      if (fieldId) {
-        fieldId.value = id !== null ? String(id) : "";
-        fieldId.placeholder = id !== null ? String(id) : "(assigned on save)";
-      }
-
-      setField("title", String(row.title ?? ""));
-      setField("slug", String(row.slug ?? ""));
-      setField("status", String(row.status ?? "draft"));
-      setChecked("featured", row.featured === true);
-      setField("category", String(row.category ?? ""));
-      setField("categoryPill", String(row.categoryPill ?? ""));
-      setField("question", String(row.question ?? ""));
-      setField("bubbleAnswer", String(row.bubbleAnswer ?? ""));
-      setField("hook", String(row.hook ?? ""));
-      setField("mediaType", String(row.mediaType ?? ""));
-      setField("mediaUrl", String(row.mediaUrl ?? ""));
-      setField("mediaPoster", String(row.mediaPoster ?? ""));
-      setField("mediaAlt", String(row.mediaAlt ?? ""));
-      setField("aboutTitle", String(row.aboutTitle ?? ""));
-      setField("bridge", String(row.bridge ?? ""));
-      setField("tryThisTitle", String(row.tryThisTitle ?? ""));
-
-      const tt =
-        row.tryThis && typeof row.tryThis === "object" && !Array.isArray(row.tryThis)
-          ? (row.tryThis as Record<string, unknown>)
-          : {};
-      setField("quickActionTitle", String(tt.quickActionTitle ?? ""));
-      setField("proExerciseTitle", String(tt.proExerciseTitle ?? ""));
-      setField("quickAction", linesToText(tt.quickAction));
-      setField("proExercise", linesToText(tt.proExercise));
-
-      const lc =
-        row.lessonCta && typeof row.lessonCta === "object" && !Array.isArray(row.lessonCta)
-          ? (row.lessonCta as Record<string, unknown>)
-          : {};
-      setField("lessonTitle", String(lc.title ?? ""));
-      setField("lessonText", String(lc.text ?? ""));
-
-      setField("memberHeading", String(row.memberHeading ?? ""));
-      setField("memberText", String(row.memberText ?? ""));
-
-      const rid = row.relatedLessonId;
-      if (typeof rid === "number" && Number.isFinite(rid)) {
-        setField("relatedLessonId", String(rid));
-      } else if (typeof rid === "string" && rid.trim()) {
-        setField("relatedLessonId", rid.trim());
-      } else {
-        setField("relatedLessonId", "");
-      }
-
-      setField("sortOrder", row.sortOrder !== undefined && row.sortOrder !== null ? String(row.sortOrder) : "");
-      setChecked("isNew", row.isNew === true);
-      setChecked("readyToPublish", row.readyToPublish === true);
-      setField("trySteps", linesToText(row.trySteps));
-
-      slugManual = true;
-      refreshPreview();
-    }
-
-    function clearFormNew() {
-      editingId = null;
-      baseline = null;
-      slugManual = false;
-      if (fieldId) {
-        fieldId.value = "";
-        fieldId.placeholder = "(assigned on save)";
-      }
-      setField("title", "");
-      setField("slug", "");
-      setField("status", "draft");
-      setChecked("featured", false);
-      setField("category", "");
-      setField("categoryPill", "");
-      setField("question", "");
-      setField("bubbleAnswer", "");
-      setField("hook", "");
-      setField("mediaType", "");
-      setField("mediaUrl", "");
-      setField("mediaPoster", "");
-      setField("mediaAlt", "");
-      setField("aboutTitle", "");
-      setField("bridge", "");
-      setField("tryThisTitle", "");
-      setField("quickActionTitle", "");
-      setField("proExerciseTitle", "");
-      setField("quickAction", "");
-      setField("proExercise", "");
-      setField("lessonTitle", "");
-      setField("lessonText", "");
-      setField("memberHeading", "");
-      setField("memberText", "");
-      setField("relatedLessonId", "");
-      setField("sortOrder", "");
-      setChecked("isNew", false);
-      setChecked("readyToPublish", false);
-      setField("trySteps", "");
-      if (modeEl) modeEl.textContent = "New tip — slug will follow title until you edit slug";
-      renderList();
-      refreshPreview();
-    }
-
-    function renderList() {
-      if (!listEl || !emptyEl || !loadingEl) return;
+    function renderTable() {
+      if (!tbodyEl || !loadingEl || !tableWrapEl || !emptyEl) return;
       loadingEl.hidden = true;
       if (tips.length === 0) {
-        listEl.hidden = true;
+        tableWrapEl.hidden = true;
         emptyEl.hidden = false;
+        tbodyEl.innerHTML = "";
         return;
       }
       emptyEl.hidden = true;
-      listEl.hidden = false;
-      listEl.innerHTML = "";
+      tableWrapEl.hidden = false;
+      tbodyEl.innerHTML = "";
 
       const sorted = [...tips].sort((a, b) => {
         const ia = getTipId(a);
@@ -784,54 +269,55 @@ const lessonSelectOptions = lessonsOptions.map((l) => ({
         return (ia ?? 0) - (ib ?? 0);
       });
 
-      sorted.forEach((tip) => {
+      for (const tip of sorted) {
         const id = getTipId(tip);
-        const li = document.createElement("li");
-        li.className = "help-hub-admin__tip-card";
-        if (editingId !== null && id === editingId) li.classList.add("is-active");
+        const title = String(tip.title ?? "(no title)");
+        const slug = typeof tip.slug === "string" ? tip.slug.trim() : "";
+        const tr = document.createElement("tr");
 
-        const title = document.createElement("p");
-        title.className = "help-hub-admin__tip-title";
-        title.textContent = String(tip.title ?? "(no title)");
+        const tdTitle = document.createElement("td");
+        tdTitle.className = "col-title";
+        tdTitle.textContent = title;
 
-        const meta = document.createElement("p");
-        meta.className = "help-hub-admin__tip-meta";
-        meta.innerHTML = `<strong>id</strong> ${id ?? "—"}<br /><strong>slug</strong> ${String(tip.slug ?? "")}<br /><strong>status</strong> ${String(tip.status ?? "")}<br /><strong>category</strong> ${String(tip.category ?? "")}`;
+        const tdSlug = document.createElement("td");
+        tdSlug.className = "col-slug";
+        const code = document.createElement("code");
+        code.textContent = slug || "—";
+        tdSlug.appendChild(code);
 
-        const actions = document.createElement("div");
-        actions.className = "help-hub-admin__tip-actions";
+        const tdApplies = document.createElement("td");
+        tdApplies.className = "col-applies";
+        tdApplies.textContent = appliesLabel(tip);
 
-        const editBtn = document.createElement("button");
-        editBtn.type = "button";
-        editBtn.className = "kbm-btn kbm-btn-outline";
-        editBtn.textContent = "Edit";
-        editBtn.addEventListener("click", () => {
-          if (id === null) return;
-          editingId = id;
-          loadRowToForm(tip);
-          if (modeEl) modeEl.textContent = `Editing tip id ${id}`;
-          renderList();
-          setStatus(`Editing id ${id}.`, "neutral");
-          form?.scrollIntoView({ behavior: "smooth", block: "start" });
-        });
+        const tdActions = document.createElement("td");
+        const wrap = document.createElement("div");
+        wrap.className = "help-hub-admin__actions";
+
+        const editLink = document.createElement("a");
+        editLink.className = "kbm-btn kbm-btn-outline";
+        editLink.href = slug ? `/admin/tips-edit?slug=${encodeURIComponent(slug)}` : "/admin/tips-edit";
+        editLink.textContent = "Edit";
 
         const delBtn = document.createElement("button");
         delBtn.type = "button";
         delBtn.className = "kbm-btn kbm-btn-accent";
         delBtn.textContent = "Delete";
+        delBtn.disabled = id === null;
         delBtn.addEventListener("click", () => {
           if (id === null) return;
-          if (!confirm(`Delete tip id ${id} (${String(tip.slug ?? "")})? This cannot be undone.`)) return;
-          void deleteTip(id);
+          void deleteTip(id, title, slug || String(id));
         });
 
-        actions.appendChild(editBtn);
-        actions.appendChild(delBtn);
-        li.appendChild(title);
-        li.appendChild(meta);
-        li.appendChild(actions);
-        listEl.appendChild(li);
-      });
+        wrap.appendChild(editLink);
+        wrap.appendChild(delBtn);
+        tdActions.appendChild(wrap);
+
+        tr.appendChild(tdTitle);
+        tr.appendChild(tdSlug);
+        tr.appendChild(tdApplies);
+        tr.appendChild(tdActions);
+        tbodyEl.appendChild(tr);
+      }
     }
 
     async function fetchTips() {
@@ -841,146 +327,19 @@ const lessonSelectOptions = lessonsOptions.map((l) => ({
         const data = (await res.json()) as { ok?: boolean; tips?: TipRow[]; error?: string };
         if (!res.ok || !data.ok || !Array.isArray(data.tips)) {
           setStatus(data.error || `Failed to load (${res.status})`, "err");
-          if (loadingEl) loadingEl.hidden = true;
-          if (listEl) listEl.hidden = true;
-          if (emptyEl) emptyEl.hidden = false;
+          if (loadingEl) loadingEl.hidden = false;
+          if (tableWrapEl) tableWrapEl.hidden = true;
+          if (emptyEl) emptyEl.hidden = true;
           return;
         }
         tips = data.tips;
         setStatus(`Loaded ${tips.length} tip(s).`, "ok");
-        renderList();
-        clearFormNew();
-        refreshPreview();
+        renderTable();
       } catch {
         setStatus("Network error loading tips.", "err");
-        if (loadingEl) loadingEl.hidden = true;
-        if (listEl) listEl.hidden = true;
-        if (emptyEl) emptyEl.hidden = false;
+        if (loadingEl) loadingEl.hidden = false;
       }
     }
-
-    async function saveTip() {
-      const row = buildRow();
-      const title = String(row.title ?? "").trim();
-      const slug = String(row.slug ?? "").trim();
-      const category = String(row.category ?? "").trim();
-      const status = String(row.status ?? "").trim();
-      if (!title || !slug || !category || !status) {
-        setStatus("Fill required fields: title, slug, category, status.", "err");
-        return;
-      }
-
-      const payload = deepClone(row);
-      delete payload.id;
-
-      try {
-        if (editingId === null) {
-          const res = await fetch(API_BASE, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-          const data = (await res.json()) as { ok?: boolean; tips?: TipRow[]; tip?: TipRow; error?: string };
-          if (!res.ok || !data.ok || !Array.isArray(data.tips) || !data.tip) {
-            setStatus(data.error || `Save failed (${res.status})`, "err");
-            return;
-          }
-          tips = data.tips;
-          const newId = getTipId(data.tip);
-          editingId = newId;
-          baseline = deepClone(data.tip);
-          loadRowToForm(data.tip);
-          if (modeEl && newId !== null) modeEl.textContent = `Editing tip id ${newId} (saved)`;
-          setStatus(`Created tip id ${newId}.`, "ok");
-        } else {
-          const res = await fetch(`${API_BASE}/${editingId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...payload, id: editingId }),
-          });
-          const data = (await res.json()) as { ok?: boolean; tips?: TipRow[]; tip?: TipRow; error?: string };
-          if (!res.ok || !data.ok || !Array.isArray(data.tips) || !data.tip) {
-            setStatus(data.error || `Save failed (${res.status})`, "err");
-            return;
-          }
-          tips = data.tips;
-          baseline = deepClone(data.tip);
-          loadRowToForm(data.tip);
-          setStatus(`Updated tip id ${editingId}.`, "ok");
-        }
-        renderList();
-        refreshPreview();
-      } catch {
-        setStatus("Network error while saving.", "err");
-      }
-    }
-
-    async function deleteTip(id: number) {
-      try {
-        const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
-        const data = (await res.json()) as { ok?: boolean; tips?: TipRow[]; error?: string };
-        if (!res.ok || !data.ok || !Array.isArray(data.tips)) {
-          setStatus(data.error || `Delete failed (${res.status})`, "err");
-          return;
-        }
-        tips = data.tips;
-        if (editingId === id) {
-          clearFormNew();
-        } else {
-          renderList();
-        }
-        setStatus(`Deleted tip id ${id}.`, "ok");
-        refreshPreview();
-      } catch {
-        setStatus("Network error while deleting.", "err");
-      }
-    }
-
-    document.getElementById("btn-new-tip")?.addEventListener("click", () => {
-      clearFormNew();
-      setStatus("New tip — fill the form and save.", "neutral");
-    });
-
-    document.getElementById("btn-cancel-edit")?.addEventListener("click", () => {
-      clearFormNew();
-      setStatus("Cancelled — new tip form.", "neutral");
-    });
-
-    document.getElementById("btn-save-tip")?.addEventListener("click", () => {
-      void saveTip();
-    });
-
-    document.getElementById("btn-delete-tip")?.addEventListener("click", () => {
-      if (editingId === null) {
-        setStatus("Load a tip with Edit before deleting.", "err");
-        return;
-      }
-      if (!confirm(`Delete tip id ${editingId}? This cannot be undone.`)) return;
-      void deleteTip(editingId);
-    });
-
-    document.getElementById("btn-refresh-preview")?.addEventListener("click", () => {
-      refreshPreview();
-      setStatus("Preview refreshed.", "ok");
-    });
-
-    form?.addEventListener("submit", (e) => e.preventDefault());
-
-    document.getElementById("field-title")?.addEventListener("input", () => {
-      if (editingId !== null || slugManual) return;
-      const t = textVal("title");
-      setField("slug", slugifyTitle(t));
-      refreshPreview();
-    });
-
-    document.getElementById("field-slug")?.addEventListener("input", () => {
-      if (editingId === null) slugManual = true;
-      refreshPreview();
-    });
-
-    form?.addEventListener("input", () => {
-      refreshPreview();
-    });
 
     void fetchTips();
   </script>

@@ -1,7 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import lessonsFile from "../../data/lessons.json";
-console.log("LESSONS FILE:", lessonsFile);
+import helpHubFile from "../../data/help-hub.json";
 
 type Lesson = {
   id: number;
@@ -11,8 +11,6 @@ type Lesson = {
   type: string;
   vimeoEmbedUrl?: string;
   access: string;
-  associatedTip?: string;
-  url?: string;
   encouragement?: string;
   exerciseTitle?: string;
   exerciseItems?: string[];
@@ -22,28 +20,84 @@ type Lesson = {
   supportImageAlt?: string;
   noteTitle?: string;
   noteText?: string;
+  relatedTipSlug?: string;
+  nextLessonSlug?: string;
+};
+
+type HelpHubTip = {
+  slug?: string;
+  relatedLessons?: string[];
 };
 
 const lessons = lessonsFile as Lesson[];
-
-export async function getStaticPaths() {
-  return lessons.map((lesson) => ({
-    params: { slug: lesson.slug },
-  }));
-}
+const helpHubTips = helpHubFile as HelpHubTip[];
 
 const { slug } = Astro.params;
 
-const lesson = lessons.find((item) => item.slug === slug);
+const lesson = lessons.find((lesson) => lesson.slug === slug);
 
 if (!lesson) {
-  throw new Error(`Lesson not found for slug: ${slug}`);
+  throw new Error("Lesson not found");
 }
+
+/** Vimeo numeric id from embed URL or raw digits (matching relatedLessons refs only). */
+function vimeoNumericIdFromLesson(l: Pick<Lesson, "vimeoEmbedUrl">): string | null {
+  const raw = typeof l.vimeoEmbedUrl === "string" ? l.vimeoEmbedUrl.trim() : "";
+  if (!raw) return null;
+  if (/^\d+$/.test(raw)) return raw;
+  const m = raw.match(/\/(?:video\/)?(\d+)(?:\?|#|$)/);
+  return m ? m[1] : null;
+}
+
+function lessonMatchesRelatedRef(ref: string, current: Lesson): boolean {
+  const trimmed = ref.trim();
+  if (!trimmed) return false;
+  if (current.slug.trim() === trimmed) return true;
+  if (/^\d+$/.test(trimmed)) return vimeoNumericIdFromLesson(current) === trimmed;
+  return false;
+}
+
+function findTipForLesson(lessonRow: Lesson): HelpHubTip | undefined {
+  const explicit = typeof lessonRow.relatedTipSlug === "string" ? lessonRow.relatedTipSlug.trim() : "";
+  if (explicit) {
+    return helpHubTips.find((t) => typeof t.slug === "string" && t.slug.trim() === explicit);
+  }
+  return helpHubTips.find(
+    (t) =>
+      Array.isArray(t.relatedLessons) &&
+      t.relatedLessons.some((r) => lessonMatchesRelatedRef(String(r), lessonRow)),
+  );
+}
+
+const relatedTip = findTipForLesson(lesson);
+const relatedTipSlug =
+  relatedTip && typeof relatedTip.slug === "string" && relatedTip.slug.trim() !== ""
+    ? relatedTip.slug.trim()
+    : null;
+const relatedTipHref = relatedTipSlug ? `/help-hub/${relatedTipSlug}` : null;
+
+/** Vimeo iframe `src` only — never used for lesson page URLs. */
+function vimeoIframeSrc(raw: string): string {
+  const t = raw.trim();
+  if (!t) return "";
+  if (/^\d+$/.test(t)) return `https://player.vimeo.com/video/${t}`;
+  return t;
+}
+
+const vimeoPlayerSrc =
+  typeof lesson.vimeoEmbedUrl === "string" && lesson.vimeoEmbedUrl.trim() !== ""
+    ? vimeoIframeSrc(lesson.vimeoEmbedUrl)
+    : "";
 ---
 
 <Layout>
   <main class="site-content">
     <div class="container">
+      {relatedTipHref && (
+        <div class="lesson-nav-back">
+          <a class="kbm-btn kbm-btn-outline" href={relatedTipHref}>Back to Tip</a>
+        </div>
+      )}
       <div class="lesson-header">
         <img
           src="/images/help-hub.svg"
@@ -56,7 +110,7 @@ if (!lesson) {
       <div class="lesson-grid">
         <!-- LEFT COLUMN -->
         <div class="lesson-content">
-          {lesson.summary && <p>{lesson.summary}</p>}
+          {lesson.summary && <div set:html={lesson.summary}></div>}
 
           {lesson.encouragement && (
             <div class="lesson-encouragement">
@@ -100,7 +154,7 @@ if (!lesson) {
               </div>
               <ol class="lesson-exercise__list">
                 {lesson.exerciseItems.map((item) => (
-                  <li class="lesson-exercise__item">{item}</li>
+                  <li class="lesson-exercise__item" set:html={item}></li>
                 ))}
               </ol>
               <footer class="lesson-exercise__print-footer">knititnow.com</footer>
@@ -110,9 +164,9 @@ if (!lesson) {
 
         <!-- RIGHT COLUMN -->
         <div class="lesson-media">
-          {lesson.type === "video" && lesson.vimeoEmbedUrl && (
+          {lesson.type === "video" && vimeoPlayerSrc && (
             <iframe
-              src={lesson.vimeoEmbedUrl}
+              src={vimeoPlayerSrc}
               title={lesson.title}
               width="100%"
               height="400"
@@ -140,14 +194,16 @@ if (!lesson) {
           )}
         </div>
       </div>
-
-      
     </div>
   </main>
 </Layout>
 <style>
   .site-content {
     padding-top: 1rem;
+  }
+
+  .lesson-nav-back {
+    margin-bottom: 1rem;
   }
 
   .lesson-grid {

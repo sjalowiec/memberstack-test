@@ -141,8 +141,6 @@ const glossaryJson = JSON.stringify(
 
   <script define:vars={{ glossaryJson }} is:inline>
     (function () {
-      let VIEWER_STATE = "unknown"; // "unknown" | "stranger" | "loggedin"
-
       function setFixedHeaderVar() {
         var header = document.querySelector("header") || document.querySelector("[data-site-header]") || document.querySelector("#header");
         var h = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
@@ -214,40 +212,6 @@ const glossaryJson = JSON.stringify(
         dialog?.close();
       }
 
-      async function waitForMSReady(attempts, delayMs) {
-        attempts = attempts !== undefined ? attempts : 50;
-        delayMs = delayMs !== undefined ? delayMs : 100;
-        for (var i = 0; i < attempts; i++) {
-          if (window.$memberstackDom?.onReady) {
-            try { await window.$memberstackDom.onReady; } catch {}
-            return true;
-          }
-          await new Promise(function (r) { return setTimeout(r, delayMs); });
-        }
-        return false;
-      }
-
-      async function openSignupModal() {
-        var res;
-        try {
-          res = await window.$memberstackDom?.getCurrentMember?.();
-        } catch {}
-        if (res?.data?.member) {
-          VIEWER_STATE = "loggedin";
-          removeLockedStyling();
-          if (window.__pendingGlossarySlug) {
-            openTermModal(window.__pendingGlossarySlug);
-          }
-          return;
-        }
-        if (window.$memberstackDom?.openModal?.("signup")) {
-          pollUntilLoggedIn({ attempts: 40, delayMs: 200 });
-          return;
-        }
-        document.querySelector('[data-ms-modal="signup"]')?.click();
-        pollUntilLoggedIn({ attempts: 40, delayMs: 200 });
-      }
-
       function openTermModal(slug) {
         if (!dialog || !modalBody) return;
         dialog.showModal();
@@ -275,100 +239,6 @@ const glossaryJson = JSON.stringify(
           });
       }
 
-      function applyLockedStyling() {
-        document.querySelectorAll("[data-glossary-link]").forEach(function (el) {
-          el.classList.add("term-link", "term-link--locked");
-          el.setAttribute("aria-disabled", "true");
-          el.setAttribute("title", "Sign up free to open terms");
-        });
-      }
-
-      function removeLockedStyling() {
-        document.querySelectorAll("[data-glossary-link]").forEach(function (el) {
-          el.classList.remove("term-link", "term-link--locked");
-          el.removeAttribute("aria-disabled");
-          el.removeAttribute("title");
-        });
-      }
-
-      async function pollUntilLoggedIn(opts) {
-        opts = opts || {};
-        var attempts = opts.attempts !== undefined ? opts.attempts : 25;
-        var delayMs = opts.delayMs !== undefined ? opts.delayMs : 200;
-        if (!window.$memberstackDom || typeof window.$memberstackDom.getCurrentMember !== "function") return false;
-        for (var i = 0; i < attempts; i++) {
-          try {
-            var res = await window.$memberstackDom.getCurrentMember();
-            var data = res && res.data;
-            if (data && data.member) {
-              VIEWER_STATE = "loggedin";
-              removeLockedStyling();
-              if (typeof renderViewerStatus === "function") renderViewerStatus();
-              return true;
-            }
-            VIEWER_STATE = "stranger";
-          } catch (e) {
-            VIEWER_STATE = "stranger";
-          }
-          await new Promise(function (r) { return setTimeout(r, delayMs); });
-        }
-        return false;
-      }
-
-      function observeMemberstackModalClose() {
-        var wasOpen = false;
-        function isOpen() {
-          return Boolean(
-            document.querySelector("[data-memberstack-modal]") ||
-            document.querySelector(".ms-modal") ||
-            document.querySelector("[class*=\"memberstack\"] [role=\"dialog\"]") ||
-            document.body.classList.contains("modal-open")
-          );
-        }
-        var obs = new MutationObserver(function () {
-          var openNow = isOpen();
-          if (openNow) wasOpen = true;
-          if (wasOpen && !openNow) {
-            wasOpen = false;
-            pollUntilLoggedIn({ attempts: 25, delayMs: 200 });
-          }
-        });
-        obs.observe(document.body, { childList: true, subtree: true, attributes: true });
-      }
-
-      async function initViewerState() {
-        if (!window.$memberstackDom) {
-          VIEWER_STATE = "unknown";
-          return;
-        }
-        await window.$memberstackDom.onReady;
-        try {
-          var res = await window.$memberstackDom.getCurrentMember();
-          var data = res && res.data;
-          VIEWER_STATE = data && data.member ? "loggedin" : "stranger";
-        } catch (err) {
-          VIEWER_STATE = "stranger";
-        }
-        if (VIEWER_STATE === "stranger") applyLockedStyling();
-      }
-      initViewerState();
-      observeMemberstackModalClose();
-
-      if (window.$memberstackDom && window.$memberstackDom.onReady) {
-        window.$memberstackDom.onReady.then(function () {
-          if (typeof window.$memberstackDom.on === "function") {
-            window.$memberstackDom.on("member.login", function () {
-              VIEWER_STATE = "loggedin";
-              document.querySelectorAll("[data-glossary-link]").forEach(function (el) {
-                el.classList.remove("term-link", "term-link--locked");
-                el.removeAttribute("aria-disabled");
-                el.removeAttribute("title");
-              });
-            });
-          }
-        });
-      }
-
       (function initTermButtons() {
         var container = document.querySelector("main.glossary");
         if (container) {
@@ -384,14 +254,7 @@ const glossaryJson = JSON.stringify(
             e.preventDefault();
             e.stopPropagation();
             if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-            if (window.__AUTH?.loggedIn) {
-              removeLockedStyling();
-              openTermModal(slug);
-              return;
-            }
-            applyLockedStyling();
-            openSignupModal();
-            return;
+            openTermModal(slug);
           }, true);
         }
       })();
@@ -405,19 +268,6 @@ const glossaryJson = JSON.stringify(
       dialog?.addEventListener("keydown", function (e) {
         if (e.key === "Escape") closeModal();
       });
-
-      document.addEventListener("click", function (e) {
-        var trigger = e.target && e.target.closest
-          ? e.target.closest('[data-ms-modal="login"], [data-ms-modal="signup"]')
-          : null;
-
-        if (!trigger) return;
-
-        // Start polling shortly after the modal is triggered so the first successful login updates state.
-        setTimeout(function () {
-          pollUntilLoggedIn({ attempts: 40, delayMs: 200 });
-        }, 300);
-      }, true);
 
       // Glossary search: filter entries by term, definition, optional alt
       function initGlossarySearch() {
@@ -558,30 +408,6 @@ const glossaryJson = JSON.stringify(
       window.addEventListener("hashchange", setCurrentAzLink);
     })();
 
-    document.addEventListener("DOMContentLoaded", async () => {
-      const lockedSection = document.querySelector("[data-glossary-locked]");
-      if (!lockedSection) return;
-
-      try {
-        const { data: member } = await window.$memberstackDom.getCurrentMember();
-
-        if (!member) {
-          const termButtons = lockedSection.querySelectorAll("[data-glossary-link]");
-          termButtons.forEach((btn) => {
-            btn.disabled = true;
-            btn.tabIndex = -1;
-            btn.setAttribute("aria-disabled", "true");
-          });
-        }
-      } catch (err) {
-        const termButtons = lockedSection.querySelectorAll("[data-glossary-link]");
-        termButtons.forEach((btn) => {
-          btn.disabled = true;
-          btn.tabIndex = -1;
-          btn.setAttribute("aria-disabled", "true");
-        });
-      }
-    });
   </script>
 
   <style is:global>

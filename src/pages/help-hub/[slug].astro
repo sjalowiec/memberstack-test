@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import PageBackLink from "../../components/common/PageBackLink.astro";
 import PageHead from "../../components/PageHead.astro";
 import "../../components/talk-bubbles.css";
 import helpHubData from "../../data/help-hub.json";
@@ -14,16 +15,6 @@ if (reservedPaths.includes(Astro.params.slug)) {
 type HelpHubTryThis = {
   quickActionTitle?: string;
   quickAction?: string[];
-  proExerciseTitle?: string;
-  proExercise?: string[];
-};
-
-type HelpHubLessonCta = {
-  eyebrow?: string;
-  title?: string;
-  text?: string;
-  buttonText?: string;
-  note?: string;
 };
 
 /** Current Help Hub tip record shape (src/data/help-hub.json). */
@@ -31,6 +22,11 @@ type HelpHubRecord = {
   slug?: string;
   status?: string;
   title?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  shortAnswer?: string;
+  allMachines?: boolean;
+  appliesTo?: string[];
   question?: string;
   hook?: string;
   bubbleAnswer?: string;
@@ -42,18 +38,44 @@ type HelpHubRecord = {
   bridge?: string;
   tryThisTitle?: string;
   tryThis?: HelpHubTryThis;
-  lessonCta?: HelpHubLessonCta;
-  /** Slug of the related row in lessons.json (e.g. finish-clean-neckband). */
-  relatedLesson?: string;
+  /** Lesson slugs matching `lessons.json`. */
+  relatedLessons?: string[];
   jumpLinks?: { label: string; href: string }[];
 };
 
 type LessonRecord = {
   slug?: string;
   title?: string;
-  url?: string;
   summary?: string;
+  access?: string;
+  vimeoEmbedUrl?: string;
 };
+
+/** Vimeo numeric id from embed URL or a raw digits-only value (for matching only — never used in /lessons/ URLs). */
+function vimeoNumericIdFromLesson(l: LessonRecord): string | null {
+  const raw = typeof l.vimeoEmbedUrl === "string" ? l.vimeoEmbedUrl.trim() : "";
+  if (!raw) return null;
+  if (/^\d+$/.test(raw)) return raw;
+  const m = raw.match(/\/(?:video\/)?(\d+)(?:\?|#|$)/);
+  return m ? m[1] : null;
+}
+
+/** Resolve a tip `relatedLessons[]` entry to a lesson: by slug first, then by Vimeo id if the ref is numeric. */
+function resolveLessonFromRelatedRef(
+  ref: string,
+  allLessons: LessonRecord[],
+): LessonRecord | undefined {
+  const trimmed = ref.trim();
+  if (!trimmed) return undefined;
+  const bySlug = allLessons.find(
+    (l) => typeof l.slug === "string" && l.slug.trim() === trimmed,
+  );
+  if (bySlug) return bySlug;
+  if (/^\d+$/.test(trimmed)) {
+    return allLessons.find((l) => vimeoNumericIdFromLesson(l) === trimmed);
+  }
+  return undefined;
+}
 
 export const prerender = true;
 
@@ -88,19 +110,14 @@ const lessons = Array.isArray(lessonsData)
   ? (lessonsData as LessonRecord[])
   : [];
 
-const relatedLessonSlug =
-  typeof tip.relatedLesson === "string" ? tip.relatedLesson.trim() : "";
+const lessonSlugsRaw = Array.isArray(tip.relatedLessons) ? tip.relatedLessons : [];
+const lessonSlugs = lessonSlugsRaw
+  .map((s) => (typeof s === "string" ? s.trim() : ""))
+  .filter((s) => s.length > 0);
 
-const relatedLesson: LessonRecord | undefined = relatedLessonSlug
-  ? lessons.find(
-      (l) => typeof l.slug === "string" && l.slug.trim() === relatedLessonSlug
-    )
-  : undefined;
-
-const lessonUrl =
-  typeof relatedLesson?.url === "string" && relatedLesson.url.trim() !== ""
-    ? relatedLesson.url.trim()
-    : "";
+const relatedLessons: LessonRecord[] = lessonSlugs
+  .map((ref) => resolveLessonFromRelatedRef(ref, lessons))
+  .filter((l): l is LessonRecord => l !== undefined);
 
 const whyBody =
   typeof tip.bridge === "string" && tip.bridge.trim() !== ""
@@ -119,6 +136,14 @@ const tipJumpLinks: { label: string; href: string }[] =
       )
     : [];
 
+const appliesToList = Array.isArray(tip.appliesTo)
+  ? tip.appliesTo
+      .map((item) => (typeof item === "string" ? item.trim() : ""))
+      .filter((item) => item.length > 0)
+  : [];
+const showAllMachines = tip.allMachines === true;
+const showSpecificMachines = !showAllMachines && appliesToList.length > 0;
+
 function filterTrySteps(steps: unknown): string[] {
   if (!Array.isArray(steps)) return [];
   return steps.filter(
@@ -130,10 +155,8 @@ function filterTrySteps(steps: unknown): string[] {
 }
 
 const quickSteps = filterTrySteps(tip.tryThis?.quickAction);
-const proSteps = filterTrySteps(tip.tryThis?.proExercise);
 const hasTrySection =
   quickSteps.length > 0 ||
-  proSteps.length > 0 ||
   (typeof tip.tryThisTitle === "string" && tip.tryThisTitle.trim() !== "");
 
 const mediaType = typeof tip.mediaType === "string" ? tip.mediaType : "";
@@ -142,21 +165,25 @@ const mediaPoster =
   typeof tip.mediaPoster === "string" ? tip.mediaPoster.trim() : "";
 const mediaAlt = typeof tip.mediaAlt === "string" ? tip.mediaAlt.trim() : "";
 
-const pageTitleBase =
-  tip.question && tip.question.trim() !== ""
-    ? tip.question
-    : tip.title && tip.title.trim() !== ""
-      ? tip.title
-      : "Help Hub";
+const pageTitle =
+  (typeof tip.metaTitle === "string" && tip.metaTitle.trim() !== ""
+    ? tip.metaTitle.trim()
+    : typeof tip.title === "string" && tip.title.trim() !== ""
+      ? tip.title.trim()
+      : "") || "Help Hub";
 const layoutTitle =
-  pageTitleBase.length > 55
-    ? `Help Hub — ${pageTitleBase.slice(0, 55)}… | Knit it Now`
-    : `Help Hub — ${pageTitleBase} | Knit it Now`;
+  pageTitle.length > 55
+    ? `Help Hub — ${pageTitle.slice(0, 55)}… | Knit it Now`
+    : `Help Hub — ${pageTitle} | Knit it Now`;
 
-const metaDescription =
-  (typeof tip.hook === "string" && tip.hook.trim() !== ""
-    ? tip.hook.trim()
-    : whyBody) ||
+const pageDescription =
+  (typeof tip.metaDescription === "string" && tip.metaDescription.trim() !== ""
+    ? tip.metaDescription.trim()
+    : typeof tip.shortAnswer === "string" && tip.shortAnswer.trim() !== ""
+      ? tip.shortAnswer.trim()
+      : typeof tip.bubbleAnswer === "string" && tip.bubbleAnswer.trim() !== ""
+        ? tip.bubbleAnswer.trim()
+        : "") ||
   "Machine knitting help from Knit it Now.";
 
 const hyvorId =
@@ -173,59 +200,68 @@ const tryHeading =
   typeof tip.tryThisTitle === "string" && tip.tryThisTitle.trim() !== ""
     ? tip.tryThisTitle.trim()
     : "Try This";
-
-const cta = tip.lessonCta;
-
-/** CTA block needs a real lesson URL from lessons.json; copy can come from lessonCta and/or lesson. */
-const showLessonCta = lessonUrl !== "" && relatedLesson !== undefined;
 ---
 
-<Layout title={layoutTitle} description={metaDescription} bodyClass="page--tight-header">
+<Layout title={layoutTitle} description={pageDescription} bodyClass="page--tight-header">
   <PageHead title="Help Hub" subhead={undefined} hideTitle={true} />
 
   <section class="container py-5 tips-page-section">
+    <PageBackLink href="/help-hub" text="Back to Help Hub" />
     <div class="tuesday-tip-hero">
-      <div class="tuesday-tip-hero__content">
-        <div class="tuesday-tip-bubbles">
-          {typeof tip.hook === "string" && tip.hook.trim() !== "" && (
-            <p class="bubble-hook" data-placeholder="short subtitle/supporting sentence">
-              {tip.hook}
+      {typeof tip.hook === "string" && tip.hook.trim() !== "" && (
+        <p class="bubble-hook tuesday-tip-hero__hook" data-placeholder="short subtitle/supporting sentence">
+          {tip.hook}
+        </p>
+      )}
+
+      {(showAllMachines || showSpecificMachines) && (
+        <div class="tip-meta-row">
+          {showAllMachines ? (
+            <span class="machine-pill">All Machines</span>
+          ) : (
+            <p class="tuesday-tip-applies-to">
+              <strong>Works for:</strong> {appliesToList.join(", ")}
             </p>
           )}
+        </div>
+      )}
 
-          {(tip.question || tip.title) && (
-            <div class="talk-row talk-left tuesday-tip-bubble-row">
-              <h1 class="talk-bubble bubble-bl bubble-question tuesday-tip__question" data-placeholder="title">
-                {tip.question || tip.title || "Help Hub"}
-              </h1>
-            </div>
-          )}
-
-          {typeof tip.bubbleAnswer === "string" &&
-            tip.bubbleAnswer.trim() !== "" && (
-              <div class="talk-row talk-right tuesday-tip-bubble-row" aria-label="Quick answer">
-                <div class="talk-bubble bubble-br bubble-answer tuesday-tip__answer">
-                  <div class="tuesday-tip__answer-inner">
-                    <img
-                      src="/images/KINlogo.svg"
-                      alt="Knit it Now"
-                      class="tuesday-tip__logo"
-                      width="60"
-                      height="60"
-                    />
-                    <div
-                      class="tuesday-tip__answer-text"
-                      data-placeholder="quick answer"
-                      set:html={tip.bubbleAnswer}
-                    />
-                  </div>
-                </div>
+      <div class="tuesday-tip-hero__columns">
+        <div class="tuesday-tip-hero__content">
+          <div class="tuesday-tip-bubbles">
+            {(tip.question || tip.title) && (
+              <div class="talk-row talk-left tuesday-tip-bubble-row">
+                <h1 class="talk-bubble bubble-bl bubble-question tuesday-tip__question" data-placeholder="title">
+                  {tip.question || tip.title || "Help Hub"}
+                </h1>
               </div>
             )}
-        </div>
-      </div>
 
-      <aside class="tuesday-tip-hero__media" aria-label="Free visual">
+            {typeof tip.bubbleAnswer === "string" &&
+              tip.bubbleAnswer.trim() !== "" && (
+                <div class="talk-row talk-right tuesday-tip-bubble-row" aria-label="Quick answer">
+                  <div class="talk-bubble bubble-br bubble-answer tuesday-tip__answer">
+                    <div class="tuesday-tip__answer-inner">
+                      <img
+                        src="/images/KINlogo.svg"
+                        alt="Knit it Now"
+                        class="tuesday-tip__logo"
+                        width="60"
+                        height="60"
+                      />
+                      <div
+                        class="tuesday-tip__answer-text"
+                        data-placeholder="quick answer"
+                        set:html={tip.bubbleAnswer}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+          </div>
+        </div>
+
+        <div class="tuesday-tip-hero__media" aria-label="Free visual">
         <div class="tuesday-tip-video-shell" data-placeholder="hero media">
           <div class="tuesday-tip-video-aspect">
             {mediaType === "image" && mediaUrl ? (
@@ -267,7 +303,8 @@ const showLessonCta = lessonUrl !== "" && relatedLesson !== undefined;
             )}
           </div>
         </div>
-      </aside>
+        </div>
+      </div>
     </div>
 
     <section
@@ -279,9 +316,11 @@ const showLessonCta = lessonUrl !== "" && relatedLesson !== undefined;
       </h2>
       <div class="tuesday-tip__section-card">
         {whyBody ? (
-          <p class="tuesday-tip__description" data-placeholder="why this works text">
-            {whyBody}
-          </p>
+          <p
+            class="tuesday-tip__description"
+            data-placeholder="why this works text"
+            set:html={whyBody}
+          ></p>
         ) : (
           <p class="tuesday-tip__description" data-placeholder="why this works text">
             More detail for this tip will appear here when the Help Hub record includes a
@@ -307,93 +346,150 @@ const showLessonCta = lessonUrl !== "" && relatedLesson !== undefined;
       </div>
     </section>
 
-    {hasTrySection && (quickSteps.length > 0 || proSteps.length > 0) && (
+    {hasTrySection && quickSteps.length > 0 && (
       <section class="tuesday-tip__section tuesday-tip__try-section">
         <div class="tuesday-tip__try-card">
           <h2 class="tuesday-tip__section-heading tuesday-tip__try-heading">{tryHeading}</h2>
-          {quickSteps.length > 0 && (
-            <>
-              {typeof tip.tryThis?.quickActionTitle === "string" &&
-                tip.tryThis.quickActionTitle.trim() !== "" && (
-                  <p class="tuesday-tip__try-subhead">{tip.tryThis.quickActionTitle}</p>
-                )}
-              <div class="tuesday-tip__try-body">
-                <ul data-placeholder="try this checklist">
-                  {quickSteps.map((step) => (
-                    <li set:html={step} />
-                  ))}
-                </ul>
-              </div>
-            </>
-          )}
-          {proSteps.length > 0 && (
-            <>
-              {typeof tip.tryThis?.proExerciseTitle === "string" &&
-                tip.tryThis.proExerciseTitle.trim() !== "" && (
-                  <p
-                    class:list={[
-                      "tuesday-tip__try-subhead",
-                      quickSteps.length > 0 ? "tuesday-tip__try-subhead--spaced" : "",
-                    ]}
-                  >
-                    {tip.tryThis.proExerciseTitle}
-                  </p>
-                )}
-              <div class="tuesday-tip__try-body">
-                <ul data-placeholder="pro exercise checklist">
-                  {proSteps.map((step) => (
-                    <li set:html={step} />
-                  ))}
-                </ul>
-              </div>
-            </>
-          )}
-        </div>
-      </section>
-    )}
-
-    {showLessonCta && (
-      <section class="help-hub-lesson-cta" aria-labelledby="lesson-cta-title">
-        <div class="help-hub-lesson-cta__content">
-          <p class="help-hub-lesson-cta__eyebrow">
-            {cta && typeof cta.eyebrow === "string" && cta.eyebrow.trim() !== ""
-              ? cta.eyebrow
-              : "Related lesson"}
-          </p>
-
-          <h2 id="lesson-cta-title" class="help-hub-lesson-cta__title">
-            {cta && typeof cta.title === "string" && cta.title.trim() !== ""
-              ? cta.title
-              : relatedLesson?.title
-                ? `Continue with ${relatedLesson.title}`
-                : "Continue with the related lesson"}
-          </h2>
-
-          <p class="help-hub-lesson-cta__text">
-            {cta && typeof cta.text === "string" && cta.text.trim() !== ""
-              ? cta.text
-              : typeof relatedLesson?.summary === "string" &&
-                  relatedLesson.summary.trim() !== ""
-                ? relatedLesson.summary
-                : "Follow the step-by-step lesson to try this on your machine."}
-          </p>
-
-          <div class="help-hub-lesson-cta__actions">
-            <a href={lessonUrl} class="help-hub-lesson-cta__button">
-              {cta && typeof cta.buttonText === "string" && cta.buttonText.trim() !== ""
-                ? cta.buttonText
-                : "Open lesson →"}
-            </a>
-
-            <p class="help-hub-lesson-cta__note">
-              {cta && typeof cta.note === "string" && cta.note.trim() !== ""
-                ? cta.note
-                : "Included with Knit it Now membership"}
-            </p>
+          {typeof tip.tryThis?.quickActionTitle === "string" &&
+            tip.tryThis.quickActionTitle.trim() !== "" && (
+              <p class="tuesday-tip__try-subhead">{tip.tryThis.quickActionTitle}</p>
+            )}
+          <div class="tuesday-tip__try-body">
+            <ul data-placeholder="try this checklist">
+              {quickSteps.map((step) => (
+                <li set:html={step} />
+              ))}
+            </ul>
           </div>
         </div>
       </section>
     )}
+
+    <section
+      class="help-hub-member-lessons"
+      aria-labelledby="member-lessons-heading"
+      data-help-hub-lessons
+    >
+      <h2 id="member-lessons-heading" class="help-hub-member-lessons__section-title">
+        Member Lessons
+      </h2>
+
+      {relatedLessons.length === 0 ? (
+        <p class="help-hub-member-lessons__empty">No lessons linked to this tip yet.</p>
+      ) : (
+        <ul class="help-hub-member-lessons__list">
+          {relatedLessons.map((lesson) => {
+            const lessonSlug =
+              typeof lesson.slug === "string" ? lesson.slug.trim() : "";
+            const title =
+              typeof lesson.title === "string" && lesson.title.trim() !== ""
+                ? lesson.title
+                : lessonSlug;
+            const summary =
+              typeof lesson.summary === "string" ? lesson.summary.trim() : "";
+            const lessonHref =
+              lessonSlug.length > 0 ? `/lessons/${lessonSlug}` : "/lessons";
+            return (
+              <li class="help-hub-member-lessons__card">
+                <h3 class="help-hub-member-lessons__title">{title}</h3>
+                {summary ? (
+                  <div class="help-hub-member-lessons__summary" set:html={summary}></div>
+                ) : null}
+                <div class="help-hub-member-lessons__actions">
+                  <a href={lessonHref} class="kbm-btn kbm-btn-accent">
+                    Open Lesson
+                  </a>
+                  <p class="help-hub-member-lessons__note">
+                    Included with Knit it Now membership where marked member-only.
+                  </p>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+
+    <!--
+    <script is:inline>
+      (function () {
+        var MEMBER_PLAN_IDS = [
+          "pln_dev-kin-member-eim6011h",
+          "pln_kin-membership-monthly-a59701wy",
+          "pln_kin-membership-annual-qf9g01et",
+        ];
+        function planSet() {
+          var s = {};
+          for (var i = 0; i < MEMBER_PLAN_IDS.length; i++) s[MEMBER_PLAN_IDS[i]] = true;
+          return s;
+        }
+        var PLAN = planSet();
+
+        async function getIsMember() {
+          try {
+            var res =
+              window.$memberstackDom &&
+              (await window.$memberstackDom.getAppAndMember?.());
+            var member = res && res.data && res.data.member;
+            if (!member) return false;
+            var conns = Array.isArray(member.planConnections)
+              ? member.planConnections
+              : [];
+            for (var i = 0; i < conns.length; i++) {
+              var c = conns[i];
+              if (
+                c &&
+                c.status === "ACTIVE" &&
+                c.active &&
+                c.planId &&
+                PLAN[c.planId]
+              )
+                return true;
+            }
+            return false;
+          } catch (e) {
+            return false;
+          }
+        }
+
+        function applyLessonButtons(isMember) {
+          var root = document.querySelector("[data-help-hub-lessons]");
+          if (!root) return;
+          var btns = root.querySelectorAll("a.kbm-btn[data-lesson-access]");
+          for (var i = 0; i < btns.length; i++) {
+            var btn = btns[i];
+            var access = btn.getAttribute("data-lesson-access") || "free";
+            var openHref = btn.getAttribute("data-lesson-href") || btn.getAttribute("href") || "/lessons";
+            if (access !== "member") {
+              btn.textContent = "Open Lesson";
+              btn.setAttribute("href", openHref);
+              continue;
+            }
+            if (isMember) {
+              btn.textContent = "Open Lesson";
+              btn.setAttribute("href", openHref);
+            } else {
+              btn.textContent = "Unlock Lesson 🔒";
+              btn.setAttribute("href", "/join");
+            }
+          }
+        }
+
+        async function init() {
+          for (var j = 0; j < 35; j++) {
+            if (window.$memberstackDom && window.$memberstackDom.getAppAndMember) break;
+            await new Promise(function (r) {
+              setTimeout(r, 200);
+            });
+          }
+          var isMember = await getIsMember();
+          if (window.__DEV_BYPASS_GATING || window.__KBM_DEV_MEMBER__) isMember = true;
+          applyLessonButtons(isMember);
+        }
+        void init();
+      })();
+    </script>
+    -->
 
     <section class="tuesday-tip__section tuesday-tip-discussion">
       <h2>Tried this? I’d love to hear how it went</h2>
@@ -440,19 +536,53 @@ const showLessonCta = lessonUrl !== "" && relatedLesson !== undefined;
   }
 
   .tuesday-tip-hero {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
-    align-items: start;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     margin-bottom: 1.75rem;
     padding: clamp(1rem, 2.5vw, 1.4rem);
     border: 1px solid rgba(82, 104, 45, 0.18);
     border-radius: 16px;
     background: #f8faf6;
+    position: relative;
+  }
+
+  .tuesday-tip-hero__hook {
+    margin: 0 0 1rem 0;
+    flex: 0 0 auto;
+    order: 0;
+  }
+
+  /* Machine meta: direct child of .tuesday-tip-hero only — never inside .tuesday-tip-bubbles */
+  .tuesday-tip-hero > .tip-meta-row {
+    margin: 0 0 1rem 0;
+    width: 100%;
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    order: 1;
+    position: relative;
+    /* Uncomment to verify DOM placement: outline: 2px solid red; */
+  }
+
+  .tip-meta-row .tuesday-tip-applies-to {
+    margin: 0;
+  }
+
+  .tuesday-tip-hero__columns {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    align-items: start;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    flex: 0 1 auto;
+    order: 2;
+    position: relative;
   }
 
   @media (min-width: 980px) {
-    .tuesday-tip-hero {
+    .tuesday-tip-hero__columns {
       grid-template-columns: minmax(320px, 1fr) minmax(420px, 1fr);
       gap: clamp(1.2rem, 2.5vw, 2rem);
       align-items: start;
@@ -469,12 +599,30 @@ const showLessonCta = lessonUrl !== "" && relatedLesson !== undefined;
     gap: 1.15rem;
   }
 
-  .tuesday-tip-bubbles .bubble-hook {
-    margin: 0;
+  .tuesday-tip-hero > .tuesday-tip-hero__hook.bubble-hook {
     font-size: clamp(0.98rem, 1.45vw, 1.06rem);
     font-weight: 400;
     line-height: 1.55;
     color: #5e6c4d;
+  }
+
+  .tuesday-tip-applies-to {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: #475569;
+  }
+
+  .machine-pill {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    border: 1px solid rgba(82, 104, 45, 0.25);
+    background: rgba(82, 104, 45, 0.08);
+    color: #3f4b35;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    font-weight: 600;
   }
 
   .tuesday-tip-bubble-row.talk-row {
@@ -739,80 +887,78 @@ const showLessonCta = lessonUrl !== "" && relatedLesson !== undefined;
     color: var(--kbm-accent-hover, #a94e3d);
   }
 
-  .help-hub-lesson-cta {
+  .help-hub-member-lessons {
     margin-top: 2rem;
-    background: #f5f5f5;
-    border: 1px solid #d9ddd2;
-    border-radius: 14px;
     padding: 1.25rem;
+    border-radius: 14px;
+    border: 1px solid #d9ddd2;
+    background: #f5f5f5;
   }
 
-  .help-hub-lesson-cta__content {
-    max-width: 42rem;
-  }
-
-  .help-hub-lesson-cta__eyebrow {
-    margin: 0 0 0.35rem 0;
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: #52682d;
-  }
-
-  .help-hub-lesson-cta__title {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.6rem;
+  .help-hub-member-lessons__section-title {
+    margin: 0 0 1rem 0;
+    font-size: 1.35rem;
     line-height: 1.2;
     color: #52682d;
   }
 
-  .help-hub-lesson-cta__text {
-    margin: 0 0 1rem 0;
+  .help-hub-member-lessons__empty {
+    margin: 0;
     font-size: 1rem;
-    line-height: 1.6;
+    line-height: 1.55;
+    color: #475569;
   }
 
-  .help-hub-lesson-cta__actions {
+  .help-hub-member-lessons__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .help-hub-member-lessons__card {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid rgba(82, 104, 45, 0.2);
+  }
+
+  .help-hub-member-lessons__title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.15rem;
+    line-height: 1.3;
+    color: #3f4b35;
+  }
+
+  .help-hub-member-lessons__summary {
+    margin: 0 0 0.85rem 0;
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: #334155;
+  }
+
+  .help-hub-member-lessons__actions {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem;
+    gap: 0.45rem;
   }
 
-  .help-hub-lesson-cta__button {
-    display: inline-block;
-    background: #52682d;
-    color: #fff;
-    text-decoration: none;
-    font-weight: 700;
-    padding: 0.75rem 1.1rem;
-    border-radius: 999px;
-    transition: background 0.2s ease;
-  }
-
-  .help-hub-lesson-cta__button:hover {
-    background: #445624;
-    color: #fff;
-    text-decoration: none;
-  }
-
-  .help-hub-lesson-cta__note {
+  .help-hub-member-lessons__note {
     margin: 0;
-    font-size: 0.92rem;
-    color: #555;
+    font-size: 0.88rem;
+    color: #64748b;
   }
 
   @media (max-width: 640px) {
-    .help-hub-lesson-cta {
+    .help-hub-member-lessons {
       padding: 1rem;
     }
 
-    .help-hub-lesson-cta__title {
-      font-size: 1.35rem;
-    }
-
-    .help-hub-lesson-cta__button {
+    .help-hub-member-lessons__actions .kbm-btn {
       width: 100%;
       text-align: center;
     }

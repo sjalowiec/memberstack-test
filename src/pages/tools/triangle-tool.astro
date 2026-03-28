@@ -19,7 +19,7 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
 <Layout title="Triangle Calculator">
   <main class="wizard-page">
     <div class="wizard-shell">
-      <WizardBackLink category="tool" />
+      <WizardBackLink className="back-link" />
 
       <section class="wizard-hero">
         <ToolPageHeader tool={tool} fallbackTitle="Triangle Calculator" />

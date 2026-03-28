@@ -1,0 +1,473 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import categoriesData from "../../data/help-hub-categories.json";
+import lessonsData from "../../data/lessons.json";
+
+const lessonsList = Array.isArray(lessonsData) ? lessonsData : [];
+const relatedLessonsSelectSize = Math.min(10, Math.max(4, lessonsList.length || 4));
+
+const categoryOptions = Array.isArray(categoriesData)
+  ? categoriesData
+      .filter((c) => c && typeof c === "object")
+      .map((c) => ({
+        key: String((c as { key?: unknown }).key ?? "").trim(),
+        label: String((c as { label?: unknown }).label ?? "").trim(),
+      }))
+      .filter((c) => c.key.length > 0)
+  : [];
+---
+
+<BaseLayout
+  title="Edit Help Hub Tip | Knit it Now"
+  description="Create or edit a Help Hub tip"
+  skipGlobalHyvor={true}
+  bodyClass="tips-admin-body help-hub-admin-body"
+>
+  <main class="help-hub-admin">
+    <header class="help-hub-admin__head">
+      <h1 class="help-hub-admin__title">Help Hub Tip Editor</h1>
+      <p class="help-hub-admin__sub">
+        <a href="/admin/tips-admin">Back to tips list</a>
+      </p>
+    </header>
+
+    <p id="help-hub-admin-status" class="help-hub-admin__status" aria-live="polite"></p>
+    <section class="admin-panel help-hub-admin__form-panel" aria-labelledby="form-heading">
+      <h2 id="form-heading">Edit tip</h2>
+      <p id="help-hub-admin-mode" class="help-hub-admin__mode">Loading...</p>
+      <form id="help-hub-admin-form" class="help-hub-admin__form" autocomplete="off">
+        <div class="field-grid">
+          <label><span>id (read-only)</span><input type="text" id="field-id" name="idDisplay" readonly disabled placeholder="(assigned on save)" /></label>
+          <label class="field-full"><span>title <em class="req">*</em></span><input type="text" name="title" id="field-title" required /></label>
+          <label class="field-full"><span>Meta Title</span><input type="text" name="metaTitle" id="field-metaTitle" placeholder="Short title for search results" /></label>
+          <label class="field-full"><span>Meta Description</span><textarea name="metaDescription" id="field-metaDescription" rows="2" placeholder="1-2 sentence summary of the tip"></textarea></label>
+          <label class="field-full"><span>slug <em class="req">*</em></span><input type="text" name="slug" id="field-slug" required /><span class="field-hint">Lowercase, hyphens. Auto-filled from title on new until you edit slug.</span></label>
+          <label><span>status <em class="req">*</em></span><select name="status" id="field-status" required><option value="draft">draft</option><option value="published">published</option><option value="archived">archived</option><option value="ready">ready</option><option value="scheduled">scheduled</option></select></label>
+          <label class="checkbox-label"><input type="checkbox" name="featured" id="field-featured" /><span>featured</span></label>
+          <label><span>category <em class="req">*</em></span><select name="category" id="field-category" required><option value="">Select a category</option>{categoryOptions.map((opt) => (<option value={opt.key}>{opt.label || opt.key}</option>))}</select></label>
+          <label><span>categoryPill</span><input type="text" name="categoryPill" id="field-categoryPill" /></label>
+          <label class="field-full"><span>question / symptom</span><textarea name="question" id="field-question" rows="2"></textarea></label>
+          <label class="field-full"><span>bubbleAnswer</span><textarea name="bubbleAnswer" id="field-bubbleAnswer" rows="3"></textarea></label>
+          <label class="field-full"><span>hook</span><input type="text" name="hook" id="field-hook" /></label>
+          <label><span>mediaType</span><input type="text" name="mediaType" id="field-mediaType" placeholder="vimeo, video, image" /></label>
+          <label class="field-full"><span>Vimeo ID</span><input type="text" name="mediaUrl" id="field-mediaUrl" /></label>
+          <label class="field-full"><span>Thumbnail URL</span><input type="text" name="mediaPoster" id="field-mediaPoster" /></label>
+          <label class="field-full"><span>mediaAlt</span><input type="text" name="mediaAlt" id="field-mediaAlt" /></label>
+          <label><span>what's this about title</span><input type="text" name="aboutTitle" id="field-aboutTitle" /></label>
+          <label class="field-full"><span>What's this about text</span><textarea name="bridge" id="field-bridge" rows="3"></textarea></label>
+          <label><span>tryThisTitle (free)</span><input type="text" name="tryThisTitle" id="field-tryThisTitle" /></label>
+          <label><span>try this free subtitle (free)</span><input type="text" name="quickActionTitle" id="field-quickActionTitle" /></label>
+          <label class="field-full"><span>quickAction (one per line) → tryThis.quickAction</span><textarea name="quickAction" id="field-quickAction" rows="5"></textarea></label>
+          <label><span>memberHeading</span><input type="text" name="memberHeading" id="field-memberHeading" /></label>
+          <label class="field-full"><span>memberText</span><textarea name="memberText" id="field-memberText" rows="2"></textarea></label>
+          <label class="checkbox-label"><input type="checkbox" name="allMachines" id="field-allMachines" /><span>All Machines</span></label>
+          <label class="field-full"><span>Applies To</span><input type="text" name="appliesTo" id="field-appliesTo" placeholder="Brother KH-series, Silver Reed, LK150" /><span class="field-hint">Comma-separated list of machine names.</span></label>
+          <div class="field-full help-hub-admin__related-lessons">
+            <label for="relatedLessons" class="help-hub-admin__related-lessons-label">
+              <span>Related lessons</span>
+            </label>
+            <p class="help-hub-admin__related-lessons-help">
+              Select one or more lessons to display with this tip.
+            </p>
+            <select
+              multiple
+              id="relatedLessons"
+              name="relatedLessons"
+              class="help-hub-admin__related-lessons-select"
+              size={relatedLessonsSelectSize}
+            >
+              {lessonsList.map((lesson: { slug?: string; title?: string }) => {
+                const slug = typeof lesson.slug === "string" ? lesson.slug.trim() : "";
+                if (!slug) return null;
+                const title =
+                  typeof lesson.title === "string" && lesson.title.trim() !== ""
+                    ? lesson.title.trim()
+                    : slug;
+                return (
+                  <option value={slug}>
+                    {title} ({slug})
+                  </option>
+                );
+              })}
+            </select>
+            <span class="field-hint">
+              Hold Ctrl (Windows) or ⌘ (Mac) to select multiple, or remove items below.
+            </span>
+            <p class="help-hub-admin__related-lessons-chosen-heading">Selected lessons</p>
+            <ul
+              id="relatedLessons-chosen"
+              class="help-hub-admin__related-lessons-chosen"
+              aria-label="Selected related lessons"
+            ></ul>
+          </div>
+          <label><span>sortOrder</span><input type="number" name="sortOrder" id="field-sortOrder" step="1" /></label>
+          <label class="checkbox-label"><input type="checkbox" name="isNew" id="field-isNew" /><span>isNew</span></label>
+          <label class="checkbox-label"><input type="checkbox" name="readyToPublish" id="field-readyToPublish" /><span>readyToPublish</span></label>
+          <!--<label class="field-full"><span>trySteps (one per line)</span><textarea name="trySteps" id="field-trySteps" rows="4"></textarea></label> -->
+          <!-- <label class="field-full"><span>proExercise (one per line) → tryThis.proExercise</span><textarea name="proExercise" id="field-proExercise" rows="4"></textarea></label>
+          <label class="field-full"><span>proExercise (one per line) → tryThis.proExercise</span><textarea name="proExercise" id="field-proExercise" rows="4"></textarea></label>-->
+        </div>
+        <div class="help-hub-admin__form-actions help-hub-admin__form-actions--sticky">
+          <button type="button" id="btn-save-tip" class="kbm-btn kbm-btn-primary">Save</button>
+          <button type="button" id="btn-cancel-edit" class="kbm-btn kbm-btn-outline">Cancel edit</button>
+          <button type="button" id="btn-delete-tip" class="kbm-btn kbm-btn-accent">Delete</button>
+        </div>
+      </form>
+      <div class="help-hub-admin__preview-wrap">
+        <div class="help-hub-admin__preview-head">
+          <h3 class="help-hub-admin__preview-title">Current record (preview)</h3>
+          <button type="button" id="btn-refresh-preview" class="kbm-btn kbm-btn-outline">Refresh JSON preview</button>
+        </div>
+        <pre id="help-hub-json-preview" class="help-hub-admin__preview" aria-live="polite"></pre>
+      </div>
+    </section>
+  </main>
+
+  <style>
+    :global(body.help-hub-admin-body) { margin: 0; }
+    .help-hub-admin { width: 100%; max-width: none; margin: 0; padding: 1rem 1.25rem 2rem; box-sizing: border-box; }
+    .help-hub-admin__head { margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid #e2e8f0; }
+    .help-hub-admin__title { margin: 0 0 0.35rem 0; font-size: 1.65rem; color: #243015; }
+    .help-hub-admin__sub { margin: 0; font-size: 0.95rem; }
+    .help-hub-admin__status { min-height: 1.4em; margin: 0 0 0.75rem 0; font-size: 0.95rem; color: #374151; }
+    .help-hub-admin__status.is-error { color: #b91c1c; font-weight: 600; }
+    .help-hub-admin__status.is-ok { color: #166534; }
+    .admin-panel { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 0.85rem; }
+    .help-hub-admin__mode { margin: 0 0 0.75rem 0; padding: 0.5rem 0.65rem; border-radius: 8px; background: #f1f5f9; border: 1px solid #e2e8f0; font-weight: 600; color: #243015; font-size: 0.95rem; }
+    .help-hub-admin__form .field-grid { display: grid; grid-template-columns: 1fr; gap: 0.65rem; }
+    @media (min-width: 720px) { .help-hub-admin__form .field-grid { grid-template-columns: 1fr 1fr; } }
+    .field-full { grid-column: 1 / -1; }
+    .help-hub-admin__form label { display: flex; flex-direction: column; gap: 0.35rem; }
+    .help-hub-admin__form label > span { font-size: 0.95rem; font-weight: 600; color: #2e3a18; }
+    .req { color: #b91c1c; font-style: normal; }
+    .field-hint { font-size: 0.82rem; font-weight: 400; color: #64748b; line-height: 1.45; }
+    .help-hub-admin__form input, .help-hub-admin__form select, .help-hub-admin__form textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0.55rem 0.65rem; font: inherit; color: #111827; background: #fff; box-sizing: border-box; }
+    .help-hub-admin__form input:disabled { background: #f1f5f9; color: #64748b; }
+    .help-hub-admin__form textarea { resize: vertical; min-height: 72px; }
+    .checkbox-label { flex-direction: row !important; align-items: center; gap: 0.5rem !important; margin-top: 0.25rem; }
+    .checkbox-label input { width: auto !important; margin: 0; }
+    .help-hub-admin__form-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.1rem; }
+    .help-hub-admin__form-actions--sticky { position: sticky; bottom: 0; z-index: 8; padding: 0.6rem 0; margin-top: 1rem; background: linear-gradient(to top, #fff 78%, rgba(255, 255, 255, 0)); border-top: 1px solid #e5e7eb; }
+    .help-hub-admin__preview-wrap { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #e5e7eb; }
+    .help-hub-admin__preview-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem; margin-bottom: 0.5rem; }
+    .help-hub-admin__preview-title { margin: 0; font-size: 1rem; color: #243015; }
+    .help-hub-admin__preview { margin: 0; padding: 0.85rem; border-radius: 8px; background: #0f172a; color: #e2e8f0; overflow: auto; font-size: 0.78rem; line-height: 1.45; max-height: 320px; }
+    .help-hub-admin__related-lessons-label span { font-size: 0.95rem; font-weight: 600; color: #2e3a18; }
+    .help-hub-admin__related-lessons-help { margin: 0 0 0.4rem 0; font-size: 0.9rem; line-height: 1.45; color: #475569; }
+    .help-hub-admin__related-lessons-select { min-height: 6.5rem; }
+    .help-hub-admin__related-lessons-chosen-heading { margin: 0.65rem 0 0.35rem 0; font-size: 0.9rem; font-weight: 600; color: #2e3a18; }
+    .help-hub-admin__related-lessons-chosen { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+    .help-hub-admin__related-lessons-chosen li {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+      padding: 0.45rem 0.55rem; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; font-size: 0.9rem; color: #1e293b;
+    }
+    .help-hub-admin__related-lessons-chosen li span { flex: 1; min-width: 0; }
+    .help-hub-admin__related-lessons-chosen .kbm-btn { flex-shrink: 0; padding: 0.35rem 0.55rem; font-size: 0.82rem; }
+    .help-hub-admin__related-lessons-chosen li.help-hub-admin__related-lessons-empty {
+      justify-content: flex-start; border-style: dashed; color: #64748b; font-size: 0.88rem; font-weight: 400;
+    }
+  </style>
+
+  <script>
+    const API_BASE = "/api/admin/help-hub";
+    type TipRow = Record<string, any>;
+    let editingId: number | null = null;
+    let baseline: TipRow | null = null;
+    let slugManual = false;
+    let tips: TipRow[] = [];
+    const params = new URLSearchParams(window.location.search);
+    const rawSlug = params.get("slug");
+    const loadSlug = rawSlug !== null && rawSlug.trim() !== "" ? rawSlug.trim() : null;
+    const rawId = params.get("id");
+    if (!loadSlug && rawId && /^\d+$/.test(rawId)) editingId = parseInt(rawId, 10);
+
+    const statusEl = document.getElementById("help-hub-admin-status");
+    const modeEl = document.getElementById("help-hub-admin-mode");
+    const previewEl = document.getElementById("help-hub-json-preview");
+    const form = document.getElementById("help-hub-admin-form") as HTMLFormElement | null;
+    const fieldId = document.getElementById("field-id") as HTMLInputElement | null;
+
+    function setStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral") {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.classList.toggle("is-error", kind === "err");
+      statusEl.classList.toggle("is-ok", kind === "ok");
+    }
+    function getTipId(row: TipRow) { const v = row?.id; const n = parseInt(String(v ?? ""), 10); return Number.isFinite(n) ? n : null; }
+    function slugifyTitle(raw: string) { const s = raw.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 96); return s || "help-hub-tip"; }
+    function linesFromTextarea(name: string) { const el = form?.elements?.namedItem(name); if (!(el instanceof HTMLTextAreaElement)) return []; return el.value.split(/\r?\n/).map((l) => l.trim()).filter(Boolean); }
+    function textVal(name: string) { const el = form?.elements?.namedItem(name); return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement ? el.value.trim() : ""; }
+    function checked(name: string) { const el = form?.elements?.namedItem(name); return el instanceof HTMLInputElement && el.type === "checkbox" ? el.checked : false; }
+    function setField(name: string, value: string) { const el = form?.elements?.namedItem(name); if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) el.value = value; }
+    function setChecked(name: string, value: boolean) { const el = form?.elements?.namedItem(name); if (el instanceof HTMLInputElement && el.type === "checkbox") el.checked = value; }
+    function linesToText(lines: unknown) { return Array.isArray(lines) ? lines.map((x: unknown) => String(x)).join("\n") : ""; }
+    function deepClone<T>(x: T): T { return JSON.parse(JSON.stringify(x)) as T; }
+    function parseCommaList(raw: string) {
+      return raw.split(",").map((item) => item.trim()).filter((item) => item.length > 0);
+    }
+
+    function relatedLessonsFromSelect(): string[] {
+      const el = document.getElementById("relatedLessons");
+      if (!(el instanceof HTMLSelectElement)) return [];
+      const seen = new Set<string>();
+      const out: string[] = [];
+      for (const opt of Array.from(el.selectedOptions)) {
+        const v = opt.value.trim();
+        if (v.length > 0 && !seen.has(v)) {
+          seen.add(v);
+          out.push(v);
+        }
+      }
+      return out;
+    }
+
+    function setRelatedLessonsSelection(slugs: string[]): void {
+      const el = document.getElementById("relatedLessons");
+      if (!(el instanceof HTMLSelectElement)) return;
+      const seen = new Set<string>();
+      const uniq: string[] = [];
+      for (const s of slugs.map((s) => s.trim()).filter(Boolean)) {
+        if (!seen.has(s)) {
+          seen.add(s);
+          uniq.push(s);
+        }
+      }
+      const set = new Set(uniq);
+      for (let i = 0; i < el.options.length; i++) {
+        const opt = el.options[i];
+        opt.selected = set.has(opt.value);
+      }
+    }
+
+    function lessonLabelForSlug(slug: string): string {
+      const el = document.getElementById("relatedLessons");
+      if (!(el instanceof HTMLSelectElement)) return slug;
+      const opt = Array.from(el.options).find((o) => o.value === slug);
+      return opt?.textContent?.trim() || slug;
+    }
+
+    function renderRelatedLessonsChosenList(): void {
+      const ul = document.getElementById("relatedLessons-chosen");
+      if (!ul) return;
+      ul.replaceChildren();
+      const slugs = relatedLessonsFromSelect();
+      if (slugs.length === 0) {
+        const li = document.createElement("li");
+        li.className = "help-hub-admin__related-lessons-empty";
+        li.textContent = "None selected.";
+        ul.appendChild(li);
+        return;
+      }
+      for (const slug of slugs) {
+        const li = document.createElement("li");
+        const span = document.createElement("span");
+        span.textContent = lessonLabelForSlug(slug);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "kbm-btn kbm-btn-outline";
+        btn.textContent = "Remove";
+        btn.setAttribute("aria-label", `Remove related lesson ${slug}`);
+        btn.addEventListener("click", () => {
+          const next = relatedLessonsFromSelect().filter((s) => s !== slug);
+          setRelatedLessonsSelection(next);
+          renderRelatedLessonsChosenList();
+          refreshPreview();
+        });
+        li.appendChild(span);
+        li.appendChild(btn);
+        ul.appendChild(li);
+      }
+    }
+
+    function buildRow() {
+      const base = baseline ? deepClone(baseline) : {};
+      const tryThisPrev = base.tryThis && typeof base.tryThis === "object" && !Array.isArray(base.tryThis) ? base.tryThis : {};
+      const sortRaw = textVal("sortOrder");
+      const sortOrder = sortRaw === "" ? undefined : parseInt(sortRaw, 10);
+      const tryThisOut: Record<string, unknown> = {
+        ...tryThisPrev,
+        quickActionTitle: textVal("quickActionTitle"),
+        quickAction: linesFromTextarea("quickAction"),
+      };
+      delete tryThisOut.proExerciseTitle;
+      delete tryThisOut.proExercise;
+      const row: TipRow = {
+        ...base, title: textVal("title"), slug: textVal("slug"), status: textVal("status"), featured: checked("featured"),
+        metaTitle: textVal("metaTitle"),
+        metaDescription: textVal("metaDescription"),
+        appliesTo: parseCommaList(textVal("appliesTo")),
+        allMachines: checked("allMachines"),
+        category: textVal("category"), categoryPill: textVal("categoryPill"), question: textVal("question"), bubbleAnswer: textVal("bubbleAnswer"),
+        hook: textVal("hook"), mediaType: textVal("mediaType"), mediaUrl: textVal("mediaUrl"), mediaPoster: textVal("mediaPoster"), mediaAlt: textVal("mediaAlt"),
+        aboutTitle: textVal("aboutTitle"), bridge: textVal("bridge"), tryThisTitle: textVal("tryThisTitle"), memberHeading: textVal("memberHeading"), memberText: textVal("memberText"),
+        isNew: checked("isNew"), readyToPublish: checked("readyToPublish"),
+        tryThis: tryThisOut,
+        relatedLessons: relatedLessonsFromSelect(),
+      };
+      delete row.lessonCta;
+      delete row.relatedLessonId;
+      delete row.relatedLesson;
+      delete row.lessonIDs;
+      const trySteps = linesFromTextarea("trySteps");
+      if (trySteps.length) row.trySteps = trySteps; else delete row.trySteps;
+      if (Number.isFinite(sortOrder)) row.sortOrder = sortOrder; else if (sortRaw === "") delete row.sortOrder;
+      if (editingId !== null) row.id = editingId;
+      return row;
+    }
+
+    function refreshPreview() { if (previewEl) previewEl.textContent = JSON.stringify(buildRow(), null, 2); }
+    function loadRowToForm(row: TipRow) {
+      baseline = deepClone(row);
+      const id = getTipId(row);
+      if (fieldId) { fieldId.value = id !== null ? String(id) : ""; fieldId.placeholder = id !== null ? String(id) : "(assigned on save)"; }
+      setField("title", String(row.title ?? "")); setField("slug", String(row.slug ?? "")); setField("status", String(row.status ?? "draft")); setChecked("featured", row.featured === true);
+      setField("metaTitle", String(row.metaTitle ?? ""));
+      setField("metaDescription", String(row.metaDescription ?? ""));
+      setField("category", String(row.category ?? "")); setField("categoryPill", String(row.categoryPill ?? "")); setField("question", String(row.question ?? "")); setField("bubbleAnswer", String(row.bubbleAnswer ?? ""));
+      setField("hook", String(row.hook ?? "")); setField("mediaType", String(row.mediaType ?? "")); setField("mediaUrl", String(row.mediaUrl ?? "")); setField("mediaPoster", String(row.mediaPoster ?? ""));
+      setField("mediaAlt", String(row.mediaAlt ?? "")); setField("aboutTitle", String(row.aboutTitle ?? "")); setField("bridge", String(row.bridge ?? "")); setField("tryThisTitle", String(row.tryThisTitle ?? ""));
+      const tt = row.tryThis && typeof row.tryThis === "object" && !Array.isArray(row.tryThis) ? row.tryThis : {};
+      setField("quickActionTitle", String(tt.quickActionTitle ?? "")); setField("quickAction", linesToText(tt.quickAction));
+      setField("memberHeading", String(row.memberHeading ?? "")); setField("memberText", String(row.memberText ?? ""));
+      setChecked("allMachines", row.allMachines === true);
+      setField("appliesTo", Array.isArray(row.appliesTo) ? row.appliesTo.map((v: unknown) => String(v).trim()).filter(Boolean).join(", ") : "");
+      const relRaw = Array.isArray(row.relatedLessons) && row.relatedLessons.length > 0
+        ? row.relatedLessons.map((s: unknown) => String(s).trim()).filter(Boolean)
+        : typeof (row as { relatedLesson?: string }).relatedLesson === "string" && (row as { relatedLesson?: string }).relatedLesson!.trim()
+          ? [(row as { relatedLesson?: string }).relatedLesson!.trim()]
+          : [];
+      const rel = [...new Set(relRaw)];
+      setRelatedLessonsSelection(rel);
+      renderRelatedLessonsChosenList();
+      setField("sortOrder", row.sortOrder !== undefined && row.sortOrder !== null ? String(row.sortOrder) : "");
+      setChecked("isNew", row.isNew === true); setChecked("readyToPublish", row.readyToPublish === true); setField("trySteps", linesToText(row.trySteps));
+      slugManual = true; refreshPreview();
+    }
+    function clearFormNew() {
+      editingId = null; baseline = null; slugManual = false;
+      if (fieldId) { fieldId.value = ""; fieldId.placeholder = "(assigned on save)"; }
+      ["title","metaTitle","metaDescription","slug","category","categoryPill","question","bubbleAnswer","hook","mediaType","mediaUrl","mediaPoster","mediaAlt","aboutTitle","bridge","tryThisTitle","quickActionTitle","quickAction","memberHeading","memberText","appliesTo","sortOrder","trySteps"].forEach((n) => setField(n, ""));
+      setChecked("allMachines", true);
+      setRelatedLessonsSelection([]);
+      renderRelatedLessonsChosenList();
+      setField("status","draft"); setChecked("featured", false); setChecked("isNew", false); setChecked("readyToPublish", false);
+      if (modeEl) modeEl.textContent = "New tip — slug will follow title until you edit slug";
+      refreshPreview();
+    }
+
+    async function fetchTips() {
+      try {
+        const res = await fetch(API_BASE);
+        const data = await res.json();
+        if (!res.ok || !data?.ok || !Array.isArray(data.tips)) {
+          setStatus(data?.error || `Failed to load (${res.status})`, "err");
+          return;
+        }
+        tips = data.tips;
+
+        if (loadSlug) {
+          const row = tips.find((t) => typeof t.slug === "string" && t.slug.trim() === loadSlug);
+          if (!row) {
+            setStatus(`No tip with slug "${loadSlug}".`, "err");
+            clearFormNew();
+            return;
+          }
+          editingId = getTipId(row);
+          loadRowToForm(row);
+          if (modeEl) modeEl.textContent = `Editing: ${loadSlug}`;
+          setStatus(`Loaded tip "${loadSlug}".`, "ok");
+          return;
+        }
+
+        if (editingId !== null) {
+          const row = tips.find((t) => getTipId(t) === editingId);
+          if (!row) {
+            setStatus(`Tip id ${editingId} not found.`, "err");
+            clearFormNew();
+            return;
+          }
+          loadRowToForm(row);
+          if (modeEl) modeEl.textContent = `Editing tip id ${editingId}`;
+          setStatus(`Loaded tip id ${editingId}.`, "ok");
+          return;
+        }
+
+        clearFormNew();
+        setStatus("New tip — fill the form and save.", "neutral");
+      } catch {
+        setStatus("Network error loading tips.", "err");
+      }
+    }
+
+    async function saveTip() {
+      const row = buildRow();
+      const titleEl = document.getElementById("field-title") as HTMLInputElement | null;
+      const slugEl = document.getElementById("field-slug") as HTMLInputElement | null;
+      const title = String(titleEl?.value ?? row.title ?? "").trim();
+      const slug = String(slugEl?.value ?? row.slug ?? "").trim();
+      row.title = title;
+      row.slug = slug;
+      const category = String(row.category ?? "").trim(); const status = String(row.status ?? "").trim();
+      if (!title || !slug || !category || !status) { setStatus("Fill required fields: title, slug, category, status.", "err"); return; }
+      const payload = deepClone(row);
+      payload.title = title;
+      payload.slug = slug;
+      delete payload.id;
+      try {
+        if (editingId === null) {
+          const res = await fetch(API_BASE, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+          const data = await res.json();
+          if (!res.ok || !data?.ok || !data.tip) {
+            setStatus(data?.error || `Save failed (${res.status})`, "err");
+            return;
+          }
+          setStatus("Saved.", "ok");
+          window.location.href = "/admin/tips-admin";
+        } else {
+          const res = await fetch(`${API_BASE}/${editingId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...payload, id: editingId, title, slug }),
+          });
+          const data = await res.json();
+          if (!res.ok || !data?.ok || !data.tip) {
+            setStatus(data?.error || `Save failed (${res.status})`, "err");
+            return;
+          }
+          setStatus("Saved.", "ok");
+          window.location.href = "/admin/tips-admin";
+        }
+      } catch {
+        setStatus("Network error while saving.", "err");
+      }
+    }
+    async function deleteTip(id: number) {
+      try {
+        const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+        const data = await res.json();
+        if (!res.ok || !data?.ok) { setStatus(data?.error || `Delete failed (${res.status})`, "err"); return; }
+        setStatus(`Deleted tip id ${id}.`, "ok");
+        window.location.href = "/admin/tips-admin";
+      } catch { setStatus("Network error while deleting.", "err"); }
+    }
+
+    document.getElementById("btn-cancel-edit")?.addEventListener("click", () => { window.location.href = "/admin/tips-admin"; });
+    document.getElementById("btn-save-tip")?.addEventListener("click", () => { void saveTip(); });
+    document.getElementById("btn-delete-tip")?.addEventListener("click", () => {
+      if (editingId === null) { setStatus("Only saved tips can be deleted.", "err"); return; }
+      if (!confirm(`Delete tip id ${editingId}? This cannot be undone.`)) return;
+      void deleteTip(editingId);
+    });
+    document.getElementById("btn-refresh-preview")?.addEventListener("click", () => { refreshPreview(); setStatus("Preview refreshed.", "ok"); });
+    form?.addEventListener("submit", (e) => e.preventDefault());
+    document.getElementById("field-title")?.addEventListener("input", () => { if (editingId !== null || slugManual) return; setField("slug", slugifyTitle(textVal("title"))); refreshPreview(); });
+    document.getElementById("field-slug")?.addEventListener("input", () => { if (editingId === null) slugManual = true; refreshPreview(); });
+    form?.addEventListener("input", () => refreshPreview());
+    document.getElementById("relatedLessons")?.addEventListener("change", () => {
+      renderRelatedLessonsChosenList();
+      refreshPreview();
+    });
+    renderRelatedLessonsChosenList();
+    void fetchTips();
+  </script>
+</BaseLayout>

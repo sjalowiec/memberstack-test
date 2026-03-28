@@ -1,0 +1,28 @@
+---
+interface Props {
+  href: string;
+  text: string;
+}
+
+const { href, text } = Astro.props;
+---
+
+<div class="page-back-link">
+  <a href={href}>← {text}</a>
+</div>
+
+<style>
+  .page-back-link {
+    margin-bottom: 1.25rem;
+  }
+
+  .page-back-link a {
+    font-size: 0.85rem;
+    color: #6b7280;
+    text-decoration: none;
+  }
+
+  .page-back-link a:hover {
+    text-decoration: underline;
+  }
+</style>
