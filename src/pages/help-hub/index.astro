@@ -37,7 +37,7 @@ const fixCategories = [
   {
     category: "Carriage & Machine Issues",
     fixes: [
-      { symptom: "Why is my carriage jammed?", title: "The Stuck Carriage Rescue", slug: "stuck-carriage" },
+      { symptom: "Help! My carriage is jammed", title: "The Stuck Carriage Rescue", slug: "stuck-carriage" },
       { symptom: "Why is my carriage making a loud grinding noise?", title: "The Maintenance Minute", slug: "grinding-noise" },
       { symptom: "My knitting is falling off the machine.", title: "The Gravity Check", slug: "falling-off" }
     ]
@@ -46,7 +46,7 @@ const fixCategories = [
     category: "Edges, Cast-On & Bind-Off",
     fixes: [
       { symptom: "Why are my edges looping/messy?", title: "The Clean Edge Secret", slug: "messy-edges" },
-      { symptom: "How do I cast on without it bunching up?", title: "The Smooth Start", slug: "cast-on-bunching" },
+      { symptom: "What's the best way to cast on?", title: "The Smooth Start", slug: "cast-on-bunching" },
       { symptom: "How do I bind off so it doesn't pull tight?", title: "The Stretchy Finish", slug: "tight-bindoff" }
     ]
   },
@@ -55,13 +55,14 @@ const fixCategories = [
     fixes: [
       { symptom: "How do I fix a dropped stitch 10 rows down?", title: "The Ladder Rescue", slug: "dropped-stitch" },
       { symptom: "Why is my yarn breaking/shredding?", title: "The Tension Tamer", slug: "yarn-breaking" },
-      { symptom: "My swatches never match my finished garment.", title: "The Gauge Truth", slug: "gauge-off" }
+      { symptom: "Nothing I knit fits, what's wrong?", title: "The Gauge Truth", slug: "gauge-off" }
     ]
   },
   {
     category: "Ribber",
     fixes: [
-      { symptom: "My ribbing is full of holes.", title: "The Ribber Reset", slug: "ribbing-holes" }
+      { symptom: "My ribbing cast on is ugly.", title: "The Ribber Reset", slug: "ribbing-holes" },
+      { symptom: "Do I need a ribber?", title: "using a ribber", slug: "why-ribber" }
     ]
   }
 ];
@@ -154,12 +155,10 @@ const fixCategories = [
       </div>
 
       <section id="help-request" class="help-hub-footer">
-        <h2>Not finding your problem?</h2>
+        <h2>Not finding your answer?</h2>
 
         <p>
-          Send me a quick note about what’s going wrong. I’m using these questions
-          to improve the Help Hub and point you in the right direction.
-        </p>
+          Send me a quick note about what’s going wrong. I’ll help point you in the right direction — and I can improve the Help Hub for other knitters      </p>
 
         <form
           name="help-hub-question"
