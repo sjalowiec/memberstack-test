@@ -105,8 +105,15 @@ const supportImageForPreview =
 const videoPreviewUsesSupportImage = supportImageForPreview.length > 0;
 const videoOpenLabel = `Play video: ${lesson.title}`;
 
+/** Same URL is already the video preview thumb; omit duplicate img in `.lesson-support`. */
+const supportImageDuplicateOfVideoPreview = hasLessonVideo && videoPreviewUsesSupportImage;
+const showSupportImageInCard =
+  typeof lesson.supportImage === "string" &&
+  lesson.supportImage.trim() !== "" &&
+  !supportImageDuplicateOfVideoPreview;
+
 const hasSupportCard =
-  (typeof lesson.supportImage === "string" && lesson.supportImage.trim() !== "") ||
+  showSupportImageInCard ||
   (typeof lesson.noteTitle === "string" && lesson.noteTitle.trim() !== "") ||
   (typeof lesson.noteText === "string" && lesson.noteText.trim() !== "");
 ---
@@ -228,7 +235,7 @@ const hasSupportCard =
 
           {hasSupportCard && (
             <div class="lesson-support">
-              {typeof lesson.supportImage === "string" && lesson.supportImage.trim() !== "" && (
+              {showSupportImageInCard && (
                 <img
                   src={lesson.supportImage}
                   alt={

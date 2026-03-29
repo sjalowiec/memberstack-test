@@ -49,9 +49,21 @@ export default async (req) => {
     }
 
     // --- Validate required fields (prevents empty spam) ---
-    const name = (formData.get("name") || "").toString().trim();
+    const name = (
+      formData.get("name") ||
+      formData.get("firstName") ||
+      ""
+    )
+      .toString()
+      .trim();
     const email = (formData.get("email") || "").toString().trim();
-    const message = (formData.get("message") || "").toString().trim();
+    const message = (
+      formData.get("message") ||
+      formData.get("question") ||
+      ""
+    )
+      .toString()
+      .trim();
     const pageUrl = (formData.get("page_url") || "").toString().trim();
     const submittedAt = (formData.get("submitted_at") || "").toString().trim();
     const formSource = (formData.get("form_source") || "").toString().trim();
