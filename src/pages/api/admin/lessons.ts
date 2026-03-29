@@ -14,6 +14,8 @@ export type LessonRecord = {
   type: string;
   vimeoEmbedUrl: string;
   access: "free" | "member";
+  /** Optional Help Hub tip slug (or label) linking this lesson to a tip. */
+  associatedTip?: string;
   encouragement: string;
     exerciseTitle: string;
   exerciseItems: string[];
@@ -86,6 +88,7 @@ function normalizeLesson(
     return { ok: false, error: `Lesson id ${id}: exerciseItems must be an array.` };
   }
 
+  const associatedTip = trimStr(o.associatedTip);
   const lesson: LessonRecord = {
     id,
     slug,
@@ -104,6 +107,7 @@ function normalizeLesson(
     templateLink: trimStr(o.templateLink),
     templateLinkText: trimStr(o.templateLinkText),
   };
+  if (associatedTip) lesson.associatedTip = associatedTip;
 
   return { ok: true, lesson };
 }

@@ -1,0 +1,635 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ActionBar from "../../components/wizards/ActionBar.astro";
+import Tooltip from "../../components/Tooltip.astro";
+import PrintFooter from "../../components/common/PrintFooter.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import GaugeInput from "../../components/wizards/components/GaugeInput.astro";
+import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
+
+const pageUrl = "https://knitbymachine.com/wizards/neckline-and-shoulder-shaping";
+---
+
+<BaseLayout 
+  title="Neckline and Shoulder Shaping | Knit by Machine" 
+  description="A hands-on way to practice shaping the neckline and shoulder together for a better-fitting sweater. Enter your gauge to create a simple, skill-building sample.">
+
+<style>
+.wizard-page {
+  padding-top: 120px;
+  padding-bottom: 3rem;
+  min-height: 100vh;
+  background: var(--page-bg);
+}
+
+.page-header {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  padding: 0 1rem;
+}
+
+.page-header-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .page-header-title {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+.page-header h1 {
+  color: var(--kbm-green);
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.page-header p {
+  color: #6b7280;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.video-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: #e5e7eb;
+  color: #374151;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: all 0.2s;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.video-button:hover {
+  background: #d1d5db;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.wizard-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem 120px 1rem;
+}
+
+.calculator-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 2rem;
+}
+
+
+.section-title {
+  color: var(--kbm-green);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(82, 104, 45, 0.2);
+}
+
+.input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.input-group {
+  margin-bottom: 1.5rem;
+}
+
+.input-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--kbm-green);
+}
+
+.input-group input.error {
+  border-color: #dc3545;
+}
+
+.input-group input.warning {
+  border-color: #ffc107;
+}
+
+.validation-message {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.validation-message.error {
+  color: #dc3545;
+}
+
+.validation-message.warning {
+  color: #ff8c00;
+}
+
+.info-box {
+  background: rgba(82, 104, 45, 0.1);
+  border-left: 4px solid var(--kbm-green);
+  padding: 1rem 1.25rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.info-box p {
+  color: var(--kbm-green);
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.results-section {
+  margin-top: 2rem;
+}
+
+.results-card {
+  background: rgba(82, 104, 45, 0.05);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid var(--kbm-green);
+  margin-bottom: 1rem;
+}
+
+.results-card h4 {
+  color: var(--kbm-green);
+  font-weight: 700;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.result-row {
+  background: white;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.result-label {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.result-value {
+  color: var(--kbm-green);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.shaping-steps {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-top: 1rem;
+}
+
+.shaping-steps ol {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.shaping-steps li {
+  color: #374151;
+  line-height: 1.8;
+  margin-bottom: 0.5rem;
+}
+
+.shaping-steps strong {
+  color: var(--kbm-green);
+}
+
+.combined-steps {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 6px;
+  margin-top: 1rem;
+}
+
+.combined-steps h5 {
+  color: var(--kbm-green);
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.step-highlight {
+  background: rgba(82, 104, 45, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  margin: 0.5rem 0;
+  border-left: 3px solid var(--kbm-green);
+}
+
+@media (max-width: 640px) {
+  .input-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  .wizard-page {
+    padding-top: 20px;
+  }
+  
+  .page-header, .video-button, .units-toggle, .info-box {
+    display: none;
+  }
+  
+  .calculator-card {
+    box-shadow: none;
+  }
+}
+
+.back-link {
+  display: inline-block;
+  color: #52682D;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #3d4e21;
+  text-decoration: underline;
+}
+
+</style>
+
+  <div class="wizard-page">
+    <div style="max-width: 800px; margin: 0 auto; padding: 0 1rem;">
+      <WizardBackLink category="skill builder" />
+    </div>
+
+  <div class="page-header">
+    <div class="page-header-title">
+      <h1>Neckline and Shoulder Shaping</h1>
+    </div>
+    <p>
+      Master the trickiest shaping combo: neckline and shoulder. Practice creating professional-looking garment tops with clear guidance.
+    </p>
+  </div>
+
+  <div class="wizard-container">
+    <div class="calculator-card">
+      <h2 class="wizard-title">Neckline & Shoulder Practice</h2>
+      
+      <!-- Unit Toggle - left-aligned, above first input -->
+      <UnitToggle id="neckline" />
+
+      <div class="info-box">
+        <p><strong>Advanced Practice:</strong> This tool shows you how to work the neckline and shoulder shaping simultaneously — a key skill for professional-looking sweaters.</p>
+      </div>
+
+      <!-- Gauge Section -->
+      <GaugeInput id="neckline" toggleId="neckline" showTitle={true} showToggle={false} />
+
+      <!-- Practice Piece Dimensions -->
+      <h3 class="section-title">Practice Piece Dimensions</h3>
+      <div class="input-grid">
+        <div class="input-group">
+          <label for="piece-width">Width</label>
+          <input 
+            type="number" 
+            id="piece-width" 
+            step="0.5" 
+            placeholder="e.g., 14"
+          />
+        </div>
+        <div class="input-group">
+          <label for="neckline-depth">Neckline Depth</label>
+          <input 
+            type="number" 
+            id="neckline-depth" 
+            step="0.5" 
+            placeholder="e.g., 8"
+          />
+        </div>
+      </div>
+
+      <div class="input-grid">
+        <div class="input-group">
+          <label for="neck-width">Neck Opening Width</label>
+          <input 
+            type="number" 
+            id="neck-width" 
+            step="0.5" 
+            placeholder="e.g., 5"
+          />
+        </div>
+        <div class="input-group">
+          <label for="shoulder-depth">Shoulder Depth</label>
+          <input 
+            type="number" 
+            id="shoulder-depth" 
+            step="0.5" 
+            placeholder="e.g., 2"
+          />
+        </div>
+      </div>
+
+      <!-- Results Section -->
+      <div id="results" style="display: none;">
+        <div class="results-section">
+          <div class="results-card">
+            <h4>Practice Piece Setup</h4>
+            <div class="result-row">
+              <span class="result-label">Cast on:</span>
+              <span class="result-value" id="cast-on">--</span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">Knit straight for:</span>
+              <span class="result-value" id="straight-rows">--</span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">Shoulder width (each):</span>
+              <span class="result-value" id="shoulder-width">--</span>
+            </div>
+          </div>
+
+          <div class="results-card">
+            <h4>Combined Shaping Instructions</h4>
+            <div class="combined-steps" id="combined-instructions">
+              <!-- Instructions will be inserted here -->
+            </div>
+          </div>
+
+          <div class="results-card">
+            <h4>Neckline Shaping Only</h4>
+            <div class="shaping-steps" id="neckline-instructions">
+              <!-- Instructions will be inserted here -->
+            </div>
+          </div>
+
+          <div class="results-card">
+            <h4>Shoulder Shaping Details</h4>
+            <div class="shaping-steps" id="shoulder-instructions">
+              <!-- Instructions will be inserted here -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <PrintFooter url={pageUrl} />
+</div>
+
+<ActionBar />
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // State
+  let units = 'inches';
+  let stitchesGauge = '';
+  let rowsGauge = '';
+  let pieceWidth = '';
+  let necklineDepth = '';
+  let neckWidth = '';
+  let shoulderDepth = '';
+
+  // DOM elements - using GaugeInput component IDs
+  const btnInches = document.getElementById('neckline-btn-inches');
+  const btnCm = document.getElementById('neckline-btn-cm');
+  const inputStitches = document.getElementById('neckline-stitch-gauge');
+  const inputRows = document.getElementById('neckline-row-gauge');
+  const inputWidth = document.getElementById('piece-width');
+  const inputDepth = document.getElementById('neckline-depth');
+  const inputNeck = document.getElementById('neck-width');
+  const inputShoulder = document.getElementById('shoulder-depth');
+  const resultsSection = document.getElementById('results');
+  const actionBar = document.getElementById('action-bar');
+  const startOverBtn = document.getElementById('start-over-btn');
+  const printBtn = document.getElementById('print-btn');
+
+  // Unit toggle - GaugeInput handles label updates automatically
+  btnInches.addEventListener('click', () => {
+    units = 'inches';
+    calculate();
+  });
+
+  btnCm.addEventListener('click', () => {
+    units = 'cm';
+    calculate();
+  });
+
+  // Input handlers
+  inputStitches.addEventListener('input', (e) => {
+    stitchesGauge = e.target.value;
+    calculate();
+  });
+
+  inputRows.addEventListener('input', (e) => {
+    rowsGauge = e.target.value;
+    calculate();
+  });
+
+  inputWidth.addEventListener('input', (e) => {
+    pieceWidth = e.target.value;
+    calculate();
+  });
+
+  inputDepth.addEventListener('input', (e) => {
+    necklineDepth = e.target.value;
+    calculate();
+  });
+
+  inputNeck.addEventListener('input', (e) => {
+    neckWidth = e.target.value;
+    calculate();
+  });
+
+  inputShoulder.addEventListener('input', (e) => {
+    shoulderDepth = e.target.value;
+    calculate();
+  });
+
+  startOverBtn.addEventListener('click', () => {
+    inputStitches.value = '';
+    inputRows.value = '';
+    inputWidth.value = '';
+    inputDepth.value = '';
+    inputNeck.value = '';
+    inputShoulder.value = '';
+    stitchesGauge = rowsGauge = pieceWidth = necklineDepth = neckWidth = shoulderDepth = '';
+    units = 'inches';
+    btnInches.classList.add('active');
+    btnCm.classList.remove('active');
+    resultsSection.style.display = 'none';
+    actionBar.style.display = 'none';
+  });
+
+  printBtn.addEventListener('click', () => {
+    window.print();
+  });
+
+  // Neckline calculation with shoulder shaping
+  function calculateNeckline(widthSts, depthRows, neckWidthSts, shoulderDropRows) {
+    let adjustedNeckSts = neckWidthSts;
+    if ((widthSts - neckWidthSts) % 2 !== 0) {
+      adjustedNeckSts = neckWidthSts + 1;
+    }
+    
+    const shoulderSts = Math.floor((widthSts - adjustedNeckSts) / 2);
+    const bindOffSts = Math.floor(widthSts / 3);
+    const sideTotal = Math.floor(widthSts / 2);
+    const totalDecreases = Math.max(0, adjustedNeckSts - bindOffSts);
+    const perSideDecreases = Math.floor(totalDecreases / 2);
+    
+    const section1Decreases = Math.floor(perSideDecreases / 2);
+    const section2Decreases = perSideDecreases - section1Decreases;
+    
+    const section1Rows = section1Decreases * 2;
+    const section2Rows = section2Decreases;
+    const shapingRows = section1Rows + section2Rows;
+    
+    // Use provided shoulder depth (already converted to rows)
+    const actualShoulderRows = shoulderDropRows;
+    const remainingRows = Math.max(0, depthRows - shapingRows - actualShoulderRows);
+    
+    const turnBlocks = [];
+    if (actualShoulderRows > 0 && shoulderSts > 0) {
+      const perGroup = Math.floor(shoulderSts / actualShoulderRows);
+      const extra = shoulderSts % actualShoulderRows;
+      for (let i = 0; i < actualShoulderRows; i++) {
+        turnBlocks.push(perGroup + (i < extra ? 1 : 0));
+      }
+    }
+    
+    return {
+      shoulderSts,
+      bindOffSts,
+      sideTotal,
+      section1Decreases,
+      section2Decreases,
+      section1Rows,
+      section2Rows,
+      remainingRows,
+      shoulderDropRows: actualShoulderRows,
+      turnBlocks
+    };
+  }
+
+  function calculate() {
+    const divisor = units === 'inches' ? 4 : 10;
+    const stsPerUnit = parseFloat(stitchesGauge) / divisor;
+    const rowsPerUnit = parseFloat(rowsGauge) / divisor;
+    
+    const width = parseFloat(pieceWidth);
+    const depth = parseFloat(necklineDepth);
+    const neck = parseFloat(neckWidth);
+    const shoulder = parseFloat(shoulderDepth);
+    
+    if (!stsPerUnit || !rowsPerUnit || !width || !depth || !neck || !shoulder) {
+      resultsSection.style.display = 'none';
+      return;
+    }
+    
+    // Convert measurements to stitches/rows
+    const widthSts = Math.round(width * stsPerUnit);
+    const depthRows = Math.round(depth * rowsPerUnit);
+    const neckWidthSts = Math.round(neck * stsPerUnit);
+    const shoulderRows = Math.round(shoulder * rowsPerUnit);
+    
+    const result = calculateNeckline(widthSts, depthRows, neckWidthSts, shoulderRows);
+    
+    // Display results
+    document.getElementById('cast-on').textContent = `${widthSts} stitches`;
+    document.getElementById('straight-rows').textContent = `${depthRows} rows before neckline`;
+    document.getElementById('shoulder-width').textContent = `${result.shoulderSts} stitches`;
+    
+    // Combined instructions
+    let combinedHTML = '<h5>Working Both at Once</h5>';
+    combinedHTML += '<div class="step-highlight">';
+    combinedHTML += `<p><strong>Key Concept:</strong> You'll shape the neckline edge AND the shoulder edge simultaneously on each side.</p>`;
+    combinedHTML += '</div>';
+    combinedHTML += '<ol>';
+    combinedHTML += `<li>Bind off ${result.bindOffSts} center stitches</li>`;
+    combinedHTML += `<li>Put ${result.sideTotal} stitches on scrap yarn (right side)</li>`;
+    combinedHTML += '<li><strong>Left Side - Work these together:</strong><ul style="margin-top: 0.5rem;">';
+    if (result.section1Decreases > 0) {
+      combinedHTML += `<li>Neckline: Dec 1 st every 2 rows, ${result.section1Decreases}× (while also doing shoulder shaping)</li>`;
+    }
+    combinedHTML += `<li>Shoulder: ${result.turnBlocks.length} short-row groups across ${result.shoulderSts} sts</li>`;
+    combinedHTML += '</ul></li>';
+    combinedHTML += '<li>Repeat for right side</li>';
+    combinedHTML += '</ol>';
+    document.getElementById('combined-instructions').innerHTML = combinedHTML;
+    
+    // Neckline only
+    let necklineHTML = '<ol>';
+    necklineHTML += `<li>Bind off ${result.bindOffSts} center stitches</li>`;
+    if (result.section1Decreases > 0) {
+      necklineHTML += `<li>Decrease 1 stitch every 2 rows, ${result.section1Decreases} times (${result.section1Rows} rows)</li>`;
+    }
+    if (result.section2Decreases > 0) {
+      necklineHTML += `<li>Decrease 1 stitch every row, ${result.section2Decreases} times (${result.section2Rows} rows)</li>`;
+    }
+    if (result.remainingRows > 0) {
+      necklineHTML += `<li>Knit ${result.remainingRows} rows straight</li>`;
+    }
+    necklineHTML += `<li>Final shoulder: ${result.shoulderSts} stitches</li>`;
+    necklineHTML += '</ol>';
+    document.getElementById('neckline-instructions').innerHTML = necklineHTML;
+    
+    // Shoulder details
+    let shoulderHTML = '<ol>';
+    shoulderHTML += `<li>Work ${result.turnBlocks.length} short-row groups across ${result.shoulderSts} shoulder stitches</li>`;
+    shoulderHTML += '<li>Distribution:<ul style="margin-top: 0.5rem;">';
+    result.turnBlocks.forEach((sts, i) => {
+      shoulderHTML += `<li>Group ${i + 1}: Turn ${sts} stitches from shoulder edge</li>`;
+    });
+    shoulderHTML += '</ul></li>';
+    shoulderHTML += `<li>Bind off remaining ${result.shoulderSts} stitches</li>`;
+    shoulderHTML += '</ol>';
+    document.getElementById('shoulder-instructions').innerHTML = shoulderHTML;
+    
+    resultsSection.style.display = 'block';
+    actionBar.style.display = 'flex';
+    printBtn.style.display = 'inline-flex';
+  }
+});
+</script>
+
+</BaseLayout>

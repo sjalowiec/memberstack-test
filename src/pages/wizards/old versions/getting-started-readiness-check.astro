@@ -1,0 +1,375 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/wizard.css";
+import PrintFooter from "../../components/common/PrintFooter.astro";
+import ActionBar from "../../components/wizards/ActionBar.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import WizardStepsLayout from "../../components/wizards/steps/WizardStepsLayout.astro";
+import WizardThoughtBubble from "../../components/wizards/steps/WizardThoughtBubble.astro";
+import WizardResultCard from "../../components/wizards/steps/WizardResultCard.astro";
+import WizardNav from "../../components/wizards/steps/WizardNav.astro";
+import { getEntry } from "astro:content";
+
+const entry = await getEntry("wizards", "getting-started-readiness-check");
+const wizardData = entry?.data;
+const wizardFlow = wizardData?.wizardFlow;
+
+const pageUrl = "https://knitbymachine.com/wizards/getting-started-readiness-check";
+---
+
+<BaseLayout 
+  title={wizardData?.metaTitle || "Getting Started: Readiness Check | Knit by Machine"} 
+  description={wizardData?.metaDescription || "A quick readiness check for machine knitters. Confirm your setup and get one clear next step before you knit."}>
+
+<style>
+.wizard-page {
+  padding-top: 4.5rem;
+  padding-bottom: 3rem;
+  min-height: 100vh;
+  background: var(--page-bg);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.header-panel {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(82, 104, 45, 0.1);
+  padding: 0.625rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.intro-icon {
+  width: 180px;
+  height: 180px;
+  flex-shrink: 0;
+}
+
+.header-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  min-width: 0;
+}
+
+.intro-tagline {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #2c3a57;
+  line-height: 1.6;
+}
+
+.wizard-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin: 2rem 0;
+}
+
+@media (min-width: 640px) {
+  .options-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .options-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+.kbm-button--primary-large {
+  font-size: 1.25rem;
+  padding: 1rem 2.5rem;
+  min-height: 3.5rem;
+  font-weight: 600;
+}
+
+/* Step visibility - controlled by JS */
+.wizard-step {
+  display: none;
+}
+
+.wizard-step.active {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .header-panel {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .intro-icon {
+    width: 150px;
+    height: 150px;
+  }
+}
+
+@media print {
+  .wizard-page {
+    padding-top: 0 !important;
+    background: white !important;
+  }
+  
+  .header-panel,
+  .back-link,
+  .no-print {
+    display: none !important;
+  }
+  
+  .wizard-container {
+    padding: 0 !important;
+    background: white !important;
+  }
+  
+  .options-grid,
+  .kbm-button {
+    display: none !important;
+  }
+}
+</style>
+
+<div class="wizard-page">
+  <WizardBackLink category="project wizard" />
+  
+  <div class="header-panel">
+    <img src={wizardData?.iconUrl || "/images/wizard.svg"} alt="Getting Started: Readiness Check" class="intro-icon">
+    <div class="header-right">
+      <p class="intro-tagline">{wizardData?.hero || "Answer a few quick questions and get one clear next step before you knit."}</p>
+    </div>
+  </div>
+
+  <div class="wizard-container">
+    <ActionBar />
+    
+    {wizardFlow ? (
+      <WizardStepsLayout>
+        <!-- INTRO STEP -->
+        <div class="wizard-step active" id="step-intro" data-testid="step-intro">
+          <div class="kbm-card kbm-card--shadow">
+            <div class="kbm-card__header">
+              <h2 class="kbm-card__title" data-testid="text-wizard-title">
+                {wizardData?.title}
+              </h2>
+            </div>
+            <div class="kbm-card__body">
+              <p class="kbm-lede" data-testid="text-intro-description">
+                This short readiness check helps you avoid the most common early problems: jams, sticking carriages, and mystery dropped stitches.
+              </p>
+            </div>
+            <div class="kbm-card__footer">
+              <button
+                class="kbm-button kbm-button--primary"
+                id="btn-start"
+                data-testid="button-start"
+              >
+                Start
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUESTION STEP -->
+        <div class="wizard-step" id="step-question" data-testid="step-question">
+          <div class="kbm-card kbm-card--shadow">
+            <div class="kbm-card__header">
+              <h2 class="kbm-card__title" data-testid="text-question-title">
+                {wizardFlow.questionTitle || "Where are you right now in your setup?"}
+              </h2>
+              <p class="kbm-card__subtitle" data-testid="text-question-helper">
+                {wizardFlow.questionSubtitle || "Choose the option that sounds most like your current situation."}
+              </p>
+            </div>
+            <div class="kbm-card__body">
+              <div class="options-grid">
+                {wizardFlow.options.map((option) => (
+                  <WizardThoughtBubble 
+                    label={option.label} 
+                    optionId={option.id}
+                    resultId={option.resultId}
+                  />
+                ))}
+              </div>
+            </div>
+            <div class="kbm-card__footer">
+              <button
+                class="kbm-button kbm-button--secondary"
+                id="btn-back"
+                data-testid="button-back"
+              >
+                Back
+              </button>
+              <button
+                class="kbm-button kbm-button--primary kbm-button--primary-large"
+                id="btn-see-result"
+                data-testid="button-see-result"
+                disabled
+              >
+                Let's take a look
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RESULT STEPS - One for each result -->
+        {wizardFlow.results.map((result) => (
+          <div class="wizard-step" id={`step-result-${result.id}`} data-testid={`step-result-${result.id}`}>
+            <WizardResultCard
+              eyebrow="Likely cause"
+              title={result.causeTitle}
+              explanation={result.explanation}
+              items={result.tryThisItems}
+              itemsHeading="Try this next:"
+              encouragement={result.encouragement}
+            >
+              <WizardNav slot="actions" showBack={false} />
+            </WizardResultCard>
+          </div>
+        ))}
+      </WizardStepsLayout>
+    ) : (
+      <div class="kbm-card kbm-card--shadow">
+        <div class="kbm-card__body">
+          <p>This wizard is not yet configured. Please add interactive flow data in the admin.</p>
+        </div>
+      </div>
+    )}
+  </div>
+  
+  <PrintFooter url={pageUrl} />
+</div>
+
+<script>
+  // Store the options mapping for result lookup
+  var optionButtons = document.querySelectorAll('[data-option-id]');
+  var optionToResult = {};
+  
+  optionButtons.forEach(function(btn) {
+    var optionId = btn.getAttribute('data-option-id');
+    var resultId = btn.getAttribute('data-result-id');
+    if (optionId && resultId) {
+      optionToResult[optionId] = resultId;
+    }
+  });
+
+  var selectedOptionId = null;
+
+  function showStep(stepId) {
+    // Hide all steps
+    document.querySelectorAll('.wizard-step').forEach(function(step) {
+      step.classList.remove('active');
+    });
+    
+    // Show the target step
+    var targetStep = document.getElementById(stepId);
+    if (targetStep) {
+      targetStep.classList.add('active');
+    }
+    
+    // Toggle action bar visibility
+    var actionBar = document.getElementById('action-bar');
+    var printBtnEl = document.getElementById('print-btn');
+    var isResultStep = stepId.indexOf('step-result-') === 0;
+    
+    if (actionBar) actionBar.style.display = isResultStep ? 'flex' : 'none';
+    if (printBtnEl) printBtnEl.style.display = isResultStep ? 'block' : 'none';
+  }
+
+  function updateOptionSelection() {
+    optionButtons.forEach(function(btn) {
+      var optionId = btn.getAttribute('data-option-id');
+      if (optionId === selectedOptionId) {
+        btn.classList.add('selected');
+      } else {
+        btn.classList.remove('selected');
+      }
+    });
+    
+    // Enable/disable the "Let's take a look" button
+    var seeResultBtn = document.getElementById('btn-see-result');
+    if (seeResultBtn) {
+      seeResultBtn.disabled = !selectedOptionId;
+    }
+  }
+
+  // Start button
+  var btnStart = document.getElementById('btn-start');
+  if (btnStart) {
+    btnStart.addEventListener('click', function() {
+      showStep('step-question');
+    });
+  }
+
+  // Back button (question step)
+  var btnBack = document.getElementById('btn-back');
+  if (btnBack) {
+    btnBack.addEventListener('click', function() {
+      showStep('step-intro');
+    });
+  }
+
+  // See result button
+  var btnSeeResult = document.getElementById('btn-see-result');
+  if (btnSeeResult) {
+    btnSeeResult.addEventListener('click', function() {
+      if (selectedOptionId && optionToResult[selectedOptionId]) {
+        var resultId = optionToResult[selectedOptionId];
+        showStep('step-result-' + resultId);
+      }
+    });
+  }
+
+  // Option bubbles
+  optionButtons.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      selectedOptionId = btn.getAttribute('data-option-id');
+      updateOptionSelection();
+    });
+  });
+
+  // Start over buttons (use class selector since there are multiple)
+  document.querySelectorAll('[data-testid="button-start-over"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      selectedOptionId = null;
+      updateOptionSelection();
+      showStep('step-intro');
+    });
+  });
+
+  // External start over button (from action bar)
+  var externalStartOver = document.getElementById('start-over-btn');
+  if (externalStartOver) {
+    externalStartOver.addEventListener('click', function() {
+      selectedOptionId = null;
+      updateOptionSelection();
+      showStep('step-intro');
+    });
+  }
+
+  // Print button
+  var printBtnAction = document.getElementById('print-btn');
+  if (printBtnAction) {
+    printBtnAction.addEventListener('click', function() {
+      window.print();
+    });
+  }
+</script>
+
+</BaseLayout>

@@ -1,0 +1,1233 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ActionBar from "../../components/wizards/ActionBar.astro";
+import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
+import GaugeInput from "../../components/wizards/components/GaugeInput.astro";
+import PatternDiagram from "../../components/wizards/PatternDiagram.astro";
+import Tooltip from "../../components/Tooltip.astro";
+import WhyUseThisToolTooltip from "../../components/common/WhyUseThisToolTooltip.astro";
+import PrintFooter from "../../components/common/PrintFooter.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+
+// Import shared wizard styles
+import '../../styles/wizard.css';
+
+const pageUrl = "https://knitbymachine.com/wizards/hat-builder";
+
+// Fetch wizard metadata at build time
+const wizardSlug = 'hat-builder';
+let whyUseThisTool = '';
+let wizardTitle = 'Hat Builder'; // Fallback title
+let wizardDescription = 'Design the perfect custom hat with precise sizing, brim options, and crown shaping. Get complete knitting instructions with an illustrated diagram.';
+
+try {
+  const response = await fetch(`https://api.github.com/repos/sjalowiec/knitbymachine-site/contents/astro-site/src/content/wizards/${wizardSlug}.json`);
+  if (response.ok) {
+    const fileData = await response.json();
+    // Use download_url to get raw JSON directly (avoids base64 decoding)
+    const contentResponse = await fetch(fileData.download_url);
+    if (contentResponse.ok) {
+      const wizardData = await contentResponse.json();
+      whyUseThisTool = wizardData.whyUseThisTool || '';
+      wizardTitle = wizardData.title || wizardTitle;
+      wizardDescription = wizardData.hero || wizardData.excerpt || wizardDescription;
+    }
+  }
+} catch (e) {
+  // Silently fail - use fallback values
+}
+---
+
+<BaseLayout 
+  title={`${wizardTitle} | Knit by Machine`}
+  description={wizardDescription}>
+
+<style>
+/* Hat-specific styles only */
+.back-link {
+  display: inline-block;
+  color: #52682D;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #3d4e21;
+  text-decoration: underline;
+}
+
+.title-icon {
+  width: 48px;
+  height: 48px;
+  vertical-align: middle;
+  margin-right: 0.75rem;
+  display: inline-block;
+}
+
+/* Pattern term tooltip styling - :global needed for dynamically generated content */
+:global(.pattern-term) {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: #52682D;
+  text-underline-offset: 2px;
+  cursor: help;
+  position: relative;
+}
+
+:global(.pattern-term)::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-style: normal;
+  font-weight: normal;
+  white-space: normal;
+  width: max-content;
+  max-width: 280px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  z-index: 100;
+  pointer-events: none;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+:global(.pattern-term):hover::after,
+:global(.pattern-term):focus::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Pattern Terms section - compact reference block */
+:global(.pattern-terms) {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+:global(.pattern-terms) h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.95rem;
+  color: #52682D;
+}
+
+:global(.pattern-terms) p {
+  margin: 0.25rem 0;
+}
+
+/* Disabled select styling */
+select.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f5f5f5;
+}
+
+/* Helper text for inputs */
+.helper-text {
+  display: block;
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+/* At-a-Glance summary block styling */
+.summary-block {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.summary-block h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.summary-total {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #52682D;
+  margin-bottom: 1rem;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.summary-table th,
+.summary-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.summary-table th {
+  font-weight: 600;
+  color: #555;
+  background: #f0f0f0;
+}
+
+.summary-table td:nth-child(2),
+.summary-table td:nth-child(3),
+.summary-table th:nth-child(2),
+.summary-table th:nth-child(3) {
+  text-align: center;
+}
+
+.summary-crown-style {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.summary-crown-style-inline {
+  font-size: 0.85rem;
+  font-weight: normal;
+  color: #666;
+}
+
+/* Tips styling - :global needed for dynamically generated content */
+:global(.pattern-tip) {
+  font-size: 0.85rem;
+  color: #666;
+  border-left: 2px solid #ccc;
+  padding-left: 0.75rem;
+  margin: 0.5rem 0 0.75rem 0.5rem;
+  line-height: 1.4;
+}
+
+:global(.pattern-tip strong) {
+  color: #555;
+}
+
+/* Results container styling */
+.results-container {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.results-heading {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.results-reassurance {
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* Tips toggle button - placed in pattern content above Finished Measurements */
+:global(.tips-toggle-btn) {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #555;
+  margin-bottom: 1rem;
+}
+
+:global(.tips-toggle-btn:hover) {
+  background: #e9ecef;
+}
+
+/* Print summary - hidden on screen, shown on print */
+.print-summary {
+  display: none;
+}
+
+.print-summary h3 {
+  font-size: 0.95rem;
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+  color: #333;
+}
+
+.print-summary p {
+  margin: 0.15rem 0;
+  font-size: 0.85rem;
+  color: #444;
+}
+
+/* Tips visibility control - hidden by default, syncs screen and print */
+:global(#pattern-content[data-show-tips="false"] .pattern-tip) {
+  display: none;
+}
+
+:global(#pattern-content[data-show-tips="true"] .pattern-tip) {
+  display: block;
+}
+
+/* Print-specific overrides for hat patterns */
+@media print {
+  @page {
+    margin: 0.75in;
+    @bottom-center {
+      content: "Page " counter(page) " of " counter(pages);
+    }
+  }
+  
+  * {
+    background: white !important;
+    background-color: white !important;
+  }
+  
+  body {
+    background: white !important;
+  }
+  
+  .page-header, .video-button {
+    display: none;
+  }
+  
+  /* Print header with pattern name */
+  .print-header {
+    display: block !important;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #333;
+  }
+  
+  .highlight-box {
+    background: white !important;
+    border-left: 2px solid #333 !important;
+    padding: 0.5rem !important;
+  }
+  
+  :global(.pattern-term)::after {
+    display: none !important;
+  }
+  
+  .pattern-terms {
+    display: block !important;
+    border: 1px solid #333 !important;
+    padding: 0.75rem !important;
+    margin-top: 1rem !important;
+  }
+  
+  /* Hide tips toggle button in print */
+  :global(.tips-toggle-btn) {
+    display: none !important;
+  }
+  
+  /* Hide wizard inputs on print */
+  .section-title,
+  .input-group,
+  .checkbox-group,
+  .wizard-header,
+  #standard-size,
+  #custom-size,
+  .gauge-inputs {
+    display: none !important;
+  }
+  
+  /* Show print summary on print */
+  .print-summary {
+    display: block !important;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  /* Print tips visibility syncs with screen visibility */
+  :global(#pattern-content[data-show-tips="false"] .pattern-tip) {
+    display: none !important;
+  }
+  
+  :global(#pattern-content[data-show-tips="true"] .pattern-tip) {
+    display: block !important;
+    border-left: 1px solid #333 !important;
+  }
+}
+</style>
+
+<div class="wizard-page">
+  <div style="max-width: 800px; margin: 0 auto; padding: 0 1rem;">
+    <WizardBackLink category="pattern" />
+  </div>
+
+  <div class="page-header no-print">
+    <div class="page-header-title">
+      <h1>
+        <img src="/images/hat.svg" alt="Hat" class="title-icon" />
+        {wizardTitle}
+      </h1>
+      {whyUseThisTool && (
+        <WhyUseThisToolTooltip text={whyUseThisTool} variant="inline" />
+      )}
+    </div>
+    <p>
+      {wizardDescription}
+    </p>
+  </div>
+  
+  <div class="wizard-container">
+    <div class="calculator-card">
+      <!-- Unit Toggle - left-aligned, above first input -->
+      <UnitToggle id="hat" />
+
+      <!-- Size Selection -->
+      <h3 class="section-title">Hat Size</h3>
+      
+      <div class="checkbox-group">
+        <input type="checkbox" id="use-custom" data-testid="checkbox-custom-size">
+        <label for="use-custom">Use Custom Head Circumference</label>
+      </div>
+
+      <div id="standard-size" style="display: block;">
+        <div class="input-group">
+          <label for="hat-size">Select Standard Size</label>
+          <select id="hat-size" data-testid="select-hat-size">
+            <option value="">Choose a size...</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="custom-size" style="display: none;">
+        <div class="input-group">
+          <label for="custom-circumference">Head Circumference</label>
+          <input 
+            type="number" 
+            id="custom-circumference" 
+            step="0.25" 
+            placeholder="Enter head circumference"
+            data-testid="input-custom-circumference"
+          />
+        </div>
+      </div>
+
+      <!-- Brim Style -->
+      <h3 class="section-title">Brim Style</h3>
+      <div class="input-group">
+        <label for="brim">Brim Type</label>
+        <select id="brim" data-testid="select-brim">
+          <option value="rib">Ribbed (1x1, 2x2, or Mock Ribbing)</option>
+          <option value="roll">Rolled Edge</option>
+          <option value="fold">Fold-Up Brim</option>
+          <option value="hem">Hung Hem</option>
+        </select>
+      </div>
+
+      <!-- Crown Shaping -->
+      <h3 class="section-title">Crown Shaping</h3>
+      <div class="input-group">
+        <label for="crown">Crown Style</label>
+        <select id="crown" data-testid="select-crown">
+          <option value="gathered">Gathered (cinched top)</option>
+          <option value="wedge-4">4-Wedge Decreases</option>
+          <option value="wedge-6">6-Wedge Decreases</option>
+          <option value="spiral">Spiral Crown (Smooth, Continuous)</option>
+        </select>
+      </div>
+
+      <!-- Hat Length -->
+      <h3 class="section-title">Hat Length</h3>
+      <div class="input-group">
+        <label for="fit">Hat length options</label>
+        <select id="fit" data-testid="select-fit">
+          <option value="beanie">Beanie (7" total height)</option>
+          <option value="watchcap">Watch Cap (8.5" total height)</option>
+          <option value="slouchy">Slouchy (10" total height)</option>
+          <option value="relaxed">Relaxed (9" total height)</option>
+        </select>
+      </div>
+      
+      <div class="checkbox-group">
+        <input type="checkbox" id="use-custom-length" data-testid="checkbox-custom-length">
+        <label for="use-custom-length">Use a custom hat length</label>
+      </div>
+      
+      <div id="custom-length-div" style="display: none;">
+        <div class="input-group">
+          <label for="custom-hat-length">Custom hat length</label>
+          <input 
+            type="number" 
+            id="custom-hat-length" 
+            step="0.25" 
+            placeholder="Enter total hat length"
+            data-testid="input-custom-hat-length"
+          />
+          <small class="helper-text">Measure from the cast-on edge to the top of the hat.</small>
+        </div>
+      </div>
+
+      <!-- Gauge (using shared GaugeInput component) -->
+      <GaugeInput id="hat" showToggle={false} toggleId="hat" />
+
+      <!-- Print Header (hidden on screen, shown on print) -->
+      <div class="print-header" style="display: none;" id="print-header-title">{wizardTitle} Pattern</div>
+      
+      <!-- Print Summary (hidden on screen, shown on print) -->
+      <div id="print-summary" class="print-summary">
+        <h3>Your Hat Settings</h3>
+        <p id="print-size"></p>
+        <p id="print-brim"></p>
+        <p id="print-crown"></p>
+        <p id="print-fit"></p>
+        <p id="print-gauge"></p>
+      </div>
+
+      <!-- Results Section -->
+      <div id="results" class="results-container" style="display: none;">
+        <h2 id="hat-pattern-results-heading" class="results-heading scroll-mt-[96px]">Your Custom Hat Pattern</h2>
+        <p class="results-reassurance">This pattern is generated from your measurements, gauge, and style choices. You can adjust inputs above at any time.</p>
+        
+        <ActionBar />
+        
+        <div class="results-section">
+          <div class="pattern-card">
+            <div id="pattern-content" data-show-tips="false">
+              <!-- Will be populated by JavaScript -->
+            </div>
+          </div>
+
+          <div class="diagram-container">
+            <h3>Hat Dimensions</h3>
+            <div id="diagram-content">
+              <!-- Will be populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <PrintFooter url={pageUrl} />
+</div>
+
+<!-- Load shared wizard utilities -->
+<script is:inline src="/js/wizard-utils.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+  console.log('Wizard initializing...');
+  
+  // Use shared wizard utilities from window.WizardUtils (or shorthand WU)
+  const {
+    convertLength,
+    formatLength,
+    formatLengthWithUnit,
+    gaugeToPerUnit,
+    getPlaceholders,
+    createUnitStore,
+    showResults,
+    setupAutoCalculate,
+    updateHTML
+  } = window.WizardUtils;
+  
+  // ========== HAT BUILDER SPECIFIC CODE ==========
+  
+  // State
+  let hatSizingData = [];
+  const unitStore = createUnitStore('hat-unit', 'inches');
+  
+  // DOM Elements
+  const btnInches = document.getElementById('hat-btn-inches');
+  const btnCm = document.getElementById('hat-btn-cm');
+  const useCustomCheckbox = document.getElementById('use-custom');
+  const standardSizeDiv = document.getElementById('standard-size');
+  const customSizeDiv = document.getElementById('custom-size');
+  const hatSizeSelect = document.getElementById('hat-size');
+  const customCircInput = document.getElementById('custom-circumference');
+  const brimSelect = document.getElementById('brim');
+  const crownSelect = document.getElementById('crown');
+  const fitSelect = document.getElementById('fit');
+  const useCustomLengthCheckbox = document.getElementById('use-custom-length');
+  const customLengthDiv = document.getElementById('custom-length-div');
+  const customHatLengthInput = document.getElementById('custom-hat-length');
+  const stitchGaugeInput = document.getElementById('hat-stitch-gauge');
+  const rowGaugeInput = document.getElementById('hat-row-gauge');
+  const printBtn = document.getElementById('print-btn');
+  const startOverBtn = document.getElementById('start-over-btn');
+  
+  // Load hat sizing data
+  try {
+    const response = await fetch('/data/sizing_hats.json');
+    hatSizingData = await response.json();
+    console.log('Loaded hat sizing data:', hatSizingData.length, 'sizes');
+    
+    // Populate size dropdown
+    hatSizingData.forEach(size => {
+      const option = document.createElement('option');
+      option.value = size.size;
+      option.textContent = size.extended_label;
+      hatSizeSelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error('Failed to load hat sizing data:', error);
+  }
+  
+  // Unit Toggle
+  function updateUnitToggle() {
+    const currentUnit = unitStore.get();
+    if (currentUnit === 'inches') {
+      btnInches.classList.add('active');
+      btnCm.classList.remove('active');
+    } else {
+      btnCm.classList.add('active');
+      btnInches.classList.remove('active');
+    }
+    updatePlaceholders();
+  }
+  
+  function updatePlaceholders() {
+    const currentUnit = unitStore.get();
+    const placeholders = getPlaceholders(currentUnit);
+    
+    // Note: Gauge inputs use floating labels (handled by GaugeInput component)
+    // Only update circumference placeholder here
+    customCircInput.placeholder = placeholders.circumference;
+  }
+  
+  btnInches.addEventListener('click', () => {
+    unitStore.set('inches');
+    updateUnitToggle();
+    const resultsDiv = document.getElementById('results');
+    if (resultsDiv.style.display === 'block') calculate();
+  });
+  
+  btnCm.addEventListener('click', () => {
+    unitStore.set('cm');
+    updateUnitToggle();
+    const resultsDiv = document.getElementById('results');
+    if (resultsDiv.style.display === 'block') calculate();
+  });
+  
+  updateUnitToggle();
+  
+  // Custom Size Toggle
+  useCustomCheckbox.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      standardSizeDiv.style.display = 'none';
+      customSizeDiv.style.display = 'block';
+      hatSizeSelect.value = '';
+    } else {
+      standardSizeDiv.style.display = 'block';
+      customSizeDiv.style.display = 'none';
+      customCircInput.value = '';
+    }
+  });
+  
+  // Custom Hat Length Toggle
+  useCustomLengthCheckbox.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      // Get the current dropdown value to pre-fill
+      const fitHeightsInit = { beanie: 7, watchcap: 8.5, slouchy: 10, relaxed: 9 };
+      const currentFit = fitSelect.value || 'beanie';
+      const currentHeight = fitHeightsInit[currentFit] || 7;
+      
+      // Convert to current unit if needed
+      const currentUnit = unitStore.get();
+      const displayHeight = currentUnit === 'inches' 
+        ? currentHeight 
+        : convertLength(currentHeight, 'inches', 'cm');
+      
+      customHatLengthInput.value = displayHeight.toFixed(1);
+      fitSelect.disabled = true;
+      fitSelect.classList.add('disabled');
+      customLengthDiv.style.display = 'block';
+      
+      // Focus the input and scroll into view gently
+      setTimeout(() => {
+        customHatLengthInput.focus();
+        customHatLengthInput.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+      }, 50);
+    } else {
+      fitSelect.disabled = false;
+      fitSelect.classList.remove('disabled');
+      customLengthDiv.style.display = 'none';
+      customHatLengthInput.value = '';
+    }
+  });
+  
+  // Auto-scroll state - resets when user edits after scrolling
+  let hasAutoScrolled = false;
+  
+  // Auto-scroll helper function
+  function maybeAutoScroll() {
+    const resultsEl = document.getElementById('results');
+    const isPatternVisible = resultsEl && resultsEl.style.display !== 'none';
+    
+    if (isPatternVisible && !hasAutoScrolled) {
+      hasAutoScrolled = true;
+      
+      // Use requestAnimationFrame for timing, then a small delay for DOM settle
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const headingEl = document.getElementById('hat-pattern-results-heading');
+          if (headingEl) {
+            const siteHeader = document.querySelector('.kbm-header-wrap');
+            const headerHeight = siteHeader?.offsetHeight ?? 120;
+            const headerOffset = headerHeight + 16;
+            const elementPosition = headingEl.getBoundingClientRect().top + window.scrollY;
+            const offsetPosition = elementPosition - headerOffset;
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: prefersReducedMotion ? 'auto' : 'smooth'
+            });
+          }
+        }, 150); // Small delay for DOM to settle
+      });
+    }
+  }
+  
+  // Reset scroll flag when user edits any field after scrolling
+  const allInputs = [hatSizeSelect, customCircInput, brimSelect, crownSelect, fitSelect, customHatLengthInput, stitchGaugeInput, rowGaugeInput];
+  allInputs.forEach(input => {
+    if (input) {
+      input.addEventListener('input', () => {
+        if (hasAutoScrolled) {
+          hasAutoScrolled = false;
+        }
+      });
+    }
+  });
+  
+  // Auto-calculate (live updates as user types)
+  setupAutoCalculate(
+    [hatSizeSelect, customCircInput, brimSelect, crownSelect, fitSelect, customHatLengthInput, stitchGaugeInput, rowGaugeInput],
+    calculate
+  );
+  
+  // Auto-scroll triggers on last required input (row gauge)
+  // Triggers on: blur OR Enter key press
+  if (rowGaugeInput) {
+    rowGaugeInput.addEventListener('blur', maybeAutoScroll);
+    
+    rowGaugeInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        rowGaugeInput.blur(); // Blur will trigger maybeAutoScroll
+      }
+    });
+  }
+  
+  // Action Bar
+  printBtn.addEventListener('click', () => {
+    window.print();
+  });
+  
+  startOverBtn.addEventListener('click', () => {
+    hatSizeSelect.value = '';
+    customCircInput.value = '';
+    useCustomCheckbox.checked = false;
+    standardSizeDiv.style.display = 'block';
+    customSizeDiv.style.display = 'none';
+    brimSelect.value = 'rib';
+    crownSelect.value = 'gathered';
+    fitSelect.value = 'beanie';
+    fitSelect.disabled = false;
+    fitSelect.classList.remove('disabled');
+    useCustomLengthCheckbox.checked = false;
+    customLengthDiv.style.display = 'none';
+    customHatLengthInput.value = '';
+    stitchGaugeInput.value = '';
+    rowGaugeInput.value = '';
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('action-bar').style.display = 'none';
+    hasAutoScrolled = false; // Reset scroll flag for next pattern generation
+  });
+  
+  // Tips Toggle Functionality - called after pattern content is rendered
+  const patternContent = document.getElementById('pattern-content');
+  
+  // Apply saved preference to pattern content on initial load
+  const savedShowTips = localStorage.getItem('hat-show-tips') === 'true';
+  patternContent.dataset.showTips = savedShowTips ? 'true' : 'false';
+  
+  function attachTipsToggleListener() {
+    const tipsToggleBtn = document.getElementById('tips-toggle-btn');
+    if (!tipsToggleBtn) return;
+    
+    tipsToggleBtn.addEventListener('click', () => {
+      const isShowing = patternContent.dataset.showTips === 'true';
+      const newState = !isShowing;
+      patternContent.dataset.showTips = newState ? 'true' : 'false';
+      tipsToggleBtn.textContent = newState ? 'Hide pattern tips' : 'Show pattern tips';
+      localStorage.setItem('hat-show-tips', newState ? 'true' : 'false');
+    });
+  }
+  
+  // Calculate Function
+  function calculate() {
+    const currentUnit = unitStore.get();
+    
+    // Get head circumference
+    let headCirc = 0;
+    let depth = 7; // default beanie depth
+    
+    if (useCustomCheckbox.checked) {
+      headCirc = parseFloat(customCircInput.value) || 0;
+    } else {
+      const selectedSize = hatSizingData.find(s => s.size === hatSizeSelect.value);
+      if (selectedSize) {
+        headCirc = selectedSize.circumference;
+        depth = selectedSize.depth;
+      }
+    }
+    
+    // Get other inputs
+    const brim = brimSelect.value;
+    const crown = crownSelect.value;
+    const fit = fitSelect.value;
+    const stitchGauge = parseFloat(stitchGaugeInput.value) || 0;
+    const rowGauge = parseFloat(rowGaugeInput.value) || 0;
+    
+    // Validate
+    if (!headCirc || !stitchGauge || !rowGauge) {
+      return; // Not ready yet
+    }
+    
+    // Convert to inches for calculations
+    // Note: Sizing data from dropdown is always in inches
+    // Only convert custom input when in cm mode
+    let headCircInches;
+    if (useCustomCheckbox.checked) {
+      // Custom input - convert if in cm mode
+      headCircInches = currentUnit === 'inches' 
+        ? headCirc 
+        : convertLength(headCirc, 'cm', 'inches');
+    } else {
+      // Standard size from dropdown - already in inches
+      headCircInches = headCirc;
+    }
+    
+    const stGaugePerInch = gaugeToPerUnit(stitchGauge, currentUnit);
+    const rowGaugePerInch = gaugeToPerUnit(rowGauge, currentUnit);
+    
+    // Calculations
+    const negativeEase = 0.90;
+    const targetWidth = headCircInches * negativeEase;
+    const castOnSts = Math.round(targetWidth * stGaugePerInch);
+    
+    // Hat heights - single source of truth: totalHatLength
+    const fitHeights = {
+      beanie: 7,
+      watchcap: 8.5,
+      slouchy: 10,
+      relaxed: 9
+    };
+    
+    // Determine totalHatLength from custom input or dropdown
+    let totalHatLength;
+    if (useCustomLengthCheckbox.checked) {
+      const customLengthValue = parseFloat(customHatLengthInput.value) || 0;
+      if (customLengthValue > 0) {
+        // Convert from current unit to inches if needed
+        totalHatLength = currentUnit === 'inches' 
+          ? customLengthValue 
+          : convertLength(customLengthValue, 'cm', 'inches');
+      } else {
+        // Invalid custom length, fall back to dropdown
+        totalHatLength = fitHeights[fit] || 7;
+      }
+    } else {
+      totalHatLength = fitHeights[fit] || 7;
+    }
+    const hatHeight = totalHatLength;
+    
+    // Brim calculations
+    const brimDepths = {
+      rib: 2,
+      roll: 1.5,
+      fold: 3,
+      hem: 2.5
+    };
+    const brimDepth = brimDepths[brim];
+    const brimRows = Math.round(brimDepth * rowGaugePerInch);
+    
+    // Crown row calculations - compute FIRST to derive body height correctly
+    // Helper to calculate wedge crown rows
+    function calcWedgeCrownRowsForCalc(wedgeCount, originalCastOn) {
+      const adjustedCastOn = originalCastOn - (originalCastOn % wedgeCount);
+      const wedgeStitches = adjustedCastOn / wedgeCount;
+      const targetStitchesPerWedge = 2;
+      const decreaseRows = Math.max(0, Math.floor((wedgeStitches - targetStitchesPerWedge) / 2));
+      return decreaseRows * 2; // Each decrease row followed by a knit row
+    }
+    
+    let crownRowCount = 0;
+    if (crown === 'gathered') {
+      crownRowCount = 0; // No decrease rows, body extends to full height
+    } else if (crown === 'wedge-4') {
+      crownRowCount = calcWedgeCrownRowsForCalc(4, castOnSts);
+    } else if (crown === 'wedge-6') {
+      crownRowCount = calcWedgeCrownRowsForCalc(6, castOnSts);
+    } else if (crown === 'spiral') {
+      crownRowCount = 18; // Approximate for spiral crown
+    }
+    
+    // Calculate body height: total height minus brim minus crown
+    const crownHeightInches = crownRowCount / rowGaugePerInch;
+    const bodyHeightInches = Math.max(0, hatHeight - brimDepth - crownHeightInches);
+    const bodyRows = Math.round(bodyHeightInches * rowGaugePerInch);
+    
+    // Generate pattern
+    generatePattern({
+      headCircInches,
+      targetWidth,
+      castOnSts,
+      hatHeight,
+      brimDepth,
+      brimRows,
+      bodyRows,
+      crownRowCount,
+      brim,
+      crown,
+      fit,
+      stGaugePerInch,
+      rowGaugePerInch,
+      stitchGaugeRaw: stitchGauge,
+      rowGaugeRaw: rowGauge
+    });
+    
+    // Show results
+    showResults({
+      resultsSelector: '#results',
+      actionBarSelector: '#action-bar',
+      printButtonSelector: '#print-btn',
+      printFooterSelector: '#print-footer'
+    });
+    
+    // Attach tips toggle event listener (button is now in pattern content)
+    attachTipsToggleListener();
+    
+    // Update print summary
+    updatePrintSummary({
+      headCirc,
+      headCircInches,
+      brim,
+      crown,
+      fit,
+      hatHeight,
+      stitchGauge,
+      rowGauge,
+      isCustom: useCustomCheckbox.checked,
+      isCustomLength: useCustomLengthCheckbox.checked,
+      currentUnit
+    });
+  }
+  
+  function updatePrintSummary(data) {
+    const { headCirc, headCircInches, brim, crown, fit, hatHeight, stitchGauge, rowGauge, isCustom, isCustomLength, currentUnit } = data;
+    
+    // Size display
+    const sizeLabel = isCustom 
+      ? `Custom — ${headCirc}${currentUnit === 'inches' ? '"' : ' cm'}`
+      : hatSizeSelect.options[hatSizeSelect.selectedIndex].text;
+    document.getElementById('print-size').textContent = `Hat size: ${sizeLabel}`;
+    
+    // Brim display
+    const brimLabels = {
+      rib: 'Ribbed (1x1, 2x2, or Mock Ribbing)',
+      roll: 'Rolled Edge',
+      fold: 'Fold-Up Brim',
+      hem: 'Hung Hem'
+    };
+    document.getElementById('print-brim').textContent = `Brim: ${brimLabels[brim]}`;
+    
+    // Crown display
+    const crownLabels = {
+      gathered: 'Gathered (cinched top)',
+      'wedge-4': '4-Wedge Decreases',
+      'wedge-6': '6-Wedge Decreases',
+      spiral: 'Spiral Crown (Smooth, Continuous)'
+    };
+    document.getElementById('print-crown').textContent = `Crown: ${crownLabels[crown]}`;
+    
+    // Hat length display
+    let lengthLabel;
+    if (isCustomLength) {
+      const displayHeight = currentUnit === 'inches' 
+        ? hatHeight 
+        : convertLength(hatHeight, 'inches', 'cm');
+      lengthLabel = `Custom — ${displayHeight.toFixed(1)}${currentUnit === 'inches' ? '"' : ' cm'}`;
+    } else {
+      const fitLabels = {
+        beanie: 'Beanie (7" height)',
+        watchcap: 'Watch Cap (8.5" height)',
+        slouchy: 'Slouchy (10" height)',
+        relaxed: 'Relaxed (9" height)'
+      };
+      lengthLabel = fitLabels[fit];
+    }
+    document.getElementById('print-fit').textContent = `Hat length: ${lengthLabel}`;
+    
+    // Gauge display
+    document.getElementById('print-gauge').textContent = `Gauge: ${stitchGauge} sts / ${rowGauge} rows per 4"`;
+  }
+  
+  function generatePattern(calc) {
+    const currentUnit = unitStore.get();
+    const { headCircInches, targetWidth, castOnSts, hatHeight, brimDepth, brimRows, bodyRows, crownRowCount, brim, crown, fit, stGaugePerInch, rowGaugePerInch, stitchGaugeRaw, rowGaugeRaw } = calc;
+    
+    // Convert display values
+    const displayHeadCirc = currentUnit === 'inches' 
+      ? formatLength(headCircInches, 'inches')
+      : formatLength(convertLength(headCircInches, 'inches', 'cm'), 'cm');
+    
+    const displayWidth = currentUnit === 'inches'
+      ? formatLength(targetWidth, 'inches')
+      : formatLength(convertLength(targetWidth, 'inches', 'cm'), 'cm');
+    
+    const displayHeight = currentUnit === 'inches'
+      ? formatLength(hatHeight, 'inches')
+      : formatLength(convertLength(hatHeight, 'inches', 'cm'), 'cm');
+    
+    const displayBrimDepth = currentUnit === 'inches'
+      ? formatLength(brimDepth, 'inches')
+      : formatLength(convertLength(brimDepth, 'inches', 'cm'), 'cm');
+    
+    const unit = currentUnit === 'inches' ? 'inches' : 'cm';
+    
+    // Brim instructions
+    const brimInstructions = {
+      rib: 'Work in 1x1 or 2x2 ribbing or <span class="pattern-term" data-tooltip="Stitch pattern that copies knit and purl ribbing by having needles out of work. A favorite for knitters without a ribber.">mock ribbing</span>.',
+      roll: 'Work in stockinette stitch. The edge will naturally roll.',
+      fold: 'Work in stockinette stitch for a fold-up brim. Fold up when wearing.',
+      hem: 'Work stockinette for half the brim depth, place a <span class="pattern-term" data-tooltip="For a doubled hem or band, a single row that creates a sharp crease at the fold line.">turning row</span> (purl on knit side or use picot edge), then work stockinette for remaining rows. Fold at turning row and tack hem to wrong side to create a <span class="pattern-term" data-tooltip="A folded, double-layer hem formed by hanging the cast-on stitches back onto the needles.">hung hem</span>.'
+    };
+    
+    // Crown shaping - bodyRows already calculated and passed in
+    let crownInstructions = '';
+    let crownHeading = 'Crown Shaping';
+    
+    // Helper function to build wedge crown sections (segmented wedge approach)
+    // Uses adjusted cast-on (rounded down to multiple of wedgeCount) for even wedges
+    function buildWedgeCrownSection(wedgeCount, originalCastOn, adjustedCastOn, bodyRowsAfterBrim) {
+      const wedgeStitches = adjustedCastOn / wedgeCount;
+      const targetStitchesPerWedge = 2;
+      const decreaseRows = Math.max(0, Math.floor((wedgeStitches - targetStitchesPerWedge) / 2));
+      const scrapOffStitches = adjustedCastOn - wedgeStitches;
+      
+      // Build adjustment note if cast-on was adjusted
+      const adjustmentNote = (originalCastOn !== adjustedCastOn) 
+        ? `<p><em>Note: Cast on has been adjusted from ${originalCastOn} to ${adjustedCastOn} stitches to create evenly sized wedges.</em></p>`
+        : '';
+      
+      return `
+        <p><strong>${wedgeCount}-Wedge Crown (Knit Wedges Separately)</strong></p>
+        ${adjustmentNote}
+        <p><strong>Work one wedge at a time:</strong></p>
+        <ul>
+          <li><span class="pattern-term" data-tooltip="Remove knitting from the machine using waste yarn to hold live stitches.">Scrap off</span> / place on waste yarn ${scrapOffStitches} stitches, leaving ${wedgeStitches} stitches (one wedge) on the machine.</li>
+          <li>Shape the wedge by decreasing at BOTH edges every other row:<br/>
+            <strong>Decrease Row:</strong> <span class="pattern-term" data-tooltip="Transfer the next stitch to its neighboring needle, then shift stitches to fill the empty needle.">Decrease</span> 1 stitch at the left edge AND decrease 1 stitch at the right edge. (2 stitches decreased total)<br/>
+            Knit the row.</li>
+          <li>For each wedge: Repeat the decrease row ${decreaseRows} times (${targetStitchesPerWedge} stitches remain).</li>
+          <li>Pull tail thru the last stitches or put on stitch holder.</li>
+        </ul>
+        <p>Rehang the next wedge (${wedgeStitches} stitches) and repeat until all ${wedgeCount} wedges are complete.</p>
+        <p><strong>Finish:</strong> Thread yarn through the remaining crown stitches and pull tight to close the top; secure.</p>
+      `;
+    }
+    
+    // Calculate adjusted cast-on for segmented wedge crowns (round down to multiple of wedgeCount)
+    let patternCastOnSts = castOnSts; // Default: use original cast-on
+    
+    if (crown === 'gathered') {
+      crownHeading = 'Crown Shaping (No Decreases)';
+      crownInstructions = `
+        <p>Work even in pattern until desired height.</p>
+        <p><strong>Finish:</strong> Gather the remaining stitches to close the top and secure.</p>
+      `;
+    } else if (crown === 'wedge-4') {
+      const adjustedCastOn = castOnSts - (castOnSts % 4);
+      patternCastOnSts = adjustedCastOn;
+      crownInstructions = buildWedgeCrownSection(4, castOnSts, adjustedCastOn, bodyRows);
+    } else if (crown === 'wedge-6') {
+      const adjustedCastOn = castOnSts - (castOnSts % 6);
+      patternCastOnSts = adjustedCastOn;
+      crownInstructions = buildWedgeCrownSection(6, castOnSts, adjustedCastOn, bodyRows);
+    } else if (crown === 'spiral') {
+      // Spiral Crown (Smooth, Continuous): two-phase decrease system
+      crownHeading = 'Crown Shaping';
+      crownInstructions = `
+        <p><strong>Spiral Crown (Smooth, Continuous)</strong></p>
+        
+        <p><span class="pattern-term" data-tooltip="Transfer the next stitch to its neighboring needle, then shift stitches to fill the empty needle.">Decrease 1 stitch:</span> Transfer the next stitch to its neighboring needle, then shift stitches to fill the empty needle.</p>
+        
+        <p>Spiral decreases are worked in two phases. Each decrease round reduces the number of stitches between decreases, creating a smooth spiral effect.</p>
+        
+        <p><strong>PHASE 1 — Establish the Spiral</strong></p>
+        
+        <p><strong>Decrease Row:</strong><br/>
+        Count 8 stitches. Decrease 1 stitch (transfer and shift).<br/>
+        Repeat evenly across the row.<br/>
+        Knit the row.</p>
+        
+        <p>Work 2 rows even.</p>
+        
+        <p><strong>Next Decrease Row:</strong><br/>
+        Count 7 stitches. Decrease 1 stitch (transfer and shift).<br/>
+        Repeat evenly across the row.<br/>
+        Knit the row.</p>
+        
+        <p>Continue working decrease rows every 3rd row, each time counting 1 fewer stitch between decreases (6, 5, 4, etc.), until approximately 12 stitches remain.</p>
+        
+        <p><strong>PHASE 2 — Close the Crown</strong></p>
+        
+        <p>Work decrease rows every row, continuing to reduce the spacing between decreases, until 4–6 stitches remain.</p>
+        
+        <p><strong>Finish:</strong> Cut yarn, thread through remaining stitches, pull tight, and secure.</p>
+      `;
+    }
+    
+    // Terms data for the pattern
+    const patternTerms = [
+      { term: 'Decrease', definition: 'Transfer the next stitch to its neighboring needle, then shift stitches to fill the empty needle.' },
+      { term: 'Scrap off', definition: 'Remove knitting from the machine using waste yarn to hold live stitches.' },
+      { term: 'Mock ribbing', definition: 'Stitch pattern that copies knit and purl ribbing by having needles out of work. A favorite for knitters without a ribber.' },
+      { term: 'Mattress stitch', definition: 'An invisible, right-side seaming method that joins two edges neatly.' },
+      { term: 'Block', definition: 'Wet or steam to set the finished shape.' },
+      { term: 'Hung hem', definition: 'A folded, double-layer hem formed by hanging the cast-on stitches back onto the needles.' },
+      { term: 'Turning row', definition: 'For a doubled hem or band, a single row that creates a sharp crease at the fold line.' }
+    ];
+    
+    // Build Terms block HTML (mirrors TermsBlock.astro component)
+    function buildTermsBlock(terms, title = 'Terms') {
+      const termItems = terms.map(item => 
+        `<p><span class="pattern-term" data-tooltip="${item.tooltipText || item.definition}">${item.term}:</span> ${item.definition}</p>`
+      ).join('\n        ');
+      
+      return `
+      <section class="pattern-terms">
+        <h4>${title}</h4>
+        ${termItems}
+      </section>`;
+    }
+    
+    // Pattern HTML - includes tips toggle button before Finished Measurements
+    const savedShowTipsForBtn = localStorage.getItem('hat-show-tips') === 'true';
+    const patternHTML = `
+      <button type="button" class="tips-toggle-btn" id="tips-toggle-btn" data-testid="button-tips-toggle">${savedShowTipsForBtn ? 'Hide pattern tips' : 'Show pattern tips'}</button>
+      <div class="highlight-box">
+        <p><strong>Finished Measurements:</strong></p>
+        <p>Head Circumference: ${displayHeadCirc} ${unit} → Hat Width: ${displayWidth} ${unit} (with <span data-tooltip-term="negative-ease">negative ease</span>)</p>
+        <p>Total Height: ${displayHeight} ${unit} | Brim Depth: ${displayBrimDepth} ${unit}</p>
+      </div>
+      
+      <h4>Gauge</h4>
+      <p>${stitchGaugeRaw} stitches & ${rowGaugeRaw} rows per 4" (10cm)</p>
+      
+      <h4>Cast-On</h4>
+      <p>Cast on <strong>${patternCastOnSts} stitches</strong>.</p>
+      <div class="pattern-tip" data-tip><strong>Tip:</strong> Use the cast-on method of your choice.</div>
+      
+      <h4>Brim (${displayBrimDepth} ${unit})</h4>
+      <p>Work ${brimRows} rows:</p>
+      <p>${brimInstructions[brim]}</p>
+      <div class="pattern-tip" data-tip><strong>Tip:</strong> Want a deeper brim? Knit extra brim rows before continuing to the body.</div>
+      
+      <h4>Body</h4>
+      <p>Work ${bodyRows} rows in pattern after the brim.</p>
+      
+      <h4>${crownHeading}</h4>
+      ${crownInstructions}
+      
+      <h4>Finishing</h4>
+      <p>Seam each crown wedge first, then seam the body using <span class="pattern-term" data-tooltip="An invisible, right-side seaming method that joins two edges neatly.">mattress stitch</span> or your preferred method. <span class="pattern-term" data-tooltip="Wet or steam to set the finished shape.">Block</span> if desired and weave in all ends.</p>
+      ${crown === 'gathered' ? '<div class="pattern-tip" data-tip><strong>Tip:</strong> Use the bind-off method of your choice.</div>' : ''}
+      
+      ${buildTermsBlock(patternTerms)}
+    `;
+    
+    updateHTML('#pattern-content', patternHTML);
+    
+    // Generate diagram
+    generateDiagram(calc);
+  }
+  
+  async function generateDiagram(calc) {
+    const currentUnit = unitStore.get();
+    const { hatHeight, brimDepth, targetWidth, castOnSts, brimRows, bodyRows, crown, crownRowCount } = calc;
+    
+    // Format values with units
+    const displayWidth = formatLengthWithUnit(
+      currentUnit === 'inches' ? targetWidth : convertLength(targetWidth, 'inches', currentUnit),
+      currentUnit
+    );
+    
+    const displayHeight = formatLengthWithUnit(
+      currentUnit === 'inches' ? hatHeight : convertLength(hatHeight, 'inches', currentUnit),
+      currentUnit
+    );
+    
+    const displayBrimDepth = formatLengthWithUnit(
+      currentUnit === 'inches' ? brimDepth : convertLength(brimDepth, 'inches', currentUnit),
+      currentUnit
+    );
+    
+    // Calculate adjusted cast-on for wedge crowns (for display)
+    let displayCastOnSts = castOnSts;
+    if (crown === 'wedge-4') {
+      displayCastOnSts = castOnSts - (castOnSts % 4);
+    } else if (crown === 'wedge-6') {
+      displayCastOnSts = castOnSts - (castOnSts % 6);
+    }
+    
+    // Map crown type to template name
+    let templateName;
+    
+    // Map crown values to correct SVG filenames
+    if (crown === 'wedge-4') {
+      templateName = 'hat-4-wedge';
+    } else if (crown === 'wedge-6') {
+      templateName = 'hat-6-wedge';
+    } else {
+      templateName = `hat-${crown}`; // gathered, spiral
+    }
+    
+    try {
+      // Load SVG template from diagrams directory
+      const response = await fetch(`/diagrams/${templateName}.svg`);
+      let svgContent = await response.text();
+      
+      // Replace placeholders with fully-formatted values (including units)
+      svgContent = svgContent
+        .replace(/{{WIDTH}}/g, displayWidth)
+        .replace(/{{HEIGHT}}/g, displayHeight)
+        .replace(/{{BRIM_DEPTH}}/g, displayBrimDepth)
+        .replace(/{{CAST_ON_STS}}/g, `${displayCastOnSts} sts`)
+        .replace(/{{BRIM_ROWS}}/g, `${brimRows} rows`)
+        .replace(/{{BODY_ROWS}}/g, `${bodyRows} rows`)
+        .replace(/{{CROWN_ROWS}}/g, `${crownRowCount} rows`);
+      
+      updateHTML('#diagram-content', svgContent);
+    } catch (error) {
+      console.error('Failed to load diagram template:', templateName, error);
+      updateHTML('#diagram-content', '<p style="text-align: center; color: #6b7280;">Diagram unavailable</p>');
+    }
+  }
+});
+</script>
+
+</BaseLayout>

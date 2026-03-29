@@ -107,4 +107,5 @@ export function stripLegacyHelpHubTipFields(row: Record<string, unknown>): void 
   delete row.relatedLesson;
   delete row.lessonCta;
   delete row.lessonIDs;
+  delete row.readyToPublish;
 }

@@ -15,6 +15,7 @@ if (reservedPaths.includes(Astro.params.slug)) {
 type HelpHubTryThis = {
   quickActionTitle?: string;
   quickAction?: string[];
+  quickActionNote?: string;
 };
 
 /** Current Help Hub tip record shape (src/data/help-hub.json). */
@@ -363,6 +364,9 @@ const tryHeading =
                 <li set:html={step} />
               ))}
             </ul>
+            {tip.tryThis?.quickActionNote && (
+              <div class="try-this-note" set:html={tip.tryThis.quickActionNote}></div>
+            )}
           </div>
         </div>
       </section>
@@ -886,6 +890,46 @@ const tryHeading =
     transform: translateY(-50%);
   }
 
+  .try-this-note {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #555;
+    padding-top: 8px;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .try-this-note div:first-child {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .gauge-table {
+    width: 100%;
+    margin-top: 10px;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .gauge-table tr {
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .gauge-table td {
+    padding: 10px 0;
+    vertical-align: top;
+  }
+
+  .gauge-table td:first-child {
+    font-weight: 600;
+    width: 42%;
+  }
+
+  .gauge-table tr:first-child td {
+    padding-top: 0;
+    padding-bottom: 6px;
+    font-weight: 700;
+  }
+
   .help-hub-cta-inline {
     margin: 1rem 0 0;
     font-size: 0.95rem;
@@ -1051,5 +1095,18 @@ const tryHeading =
     .tuesday-tip__section {
       margin-top: 1.5rem;
     }
+    .gauge-table {
+  margin-top: 6px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.gauge-table td {
+  padding: 2px 10px 2px 0;
+}
+
+.gauge-table td:first-child {
+  font-weight: 600;
+}
   }
 </style>

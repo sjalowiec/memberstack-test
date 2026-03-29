@@ -8,9 +8,13 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   skipGlobalHyvor={true}
   bodyClass="tips-admin-body help-hub-admin-body"
 >
+  <Fragment slot="head">
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.min.js"></script>
+  </Fragment>
   <main class="help-hub-admin">
     <header class="help-hub-admin__head">
-      <h1 class="help-hub-admin__title">Help Hub Tips</h1>
+      <h1 class="help-hub-admin__title">Help Hub Tips </h1><a href="lessons-admin">💡Lessons Admin</a>
       <p class="help-hub-admin__sub">
         Data lives in <code>src/data/help-hub.json</code> and is updated via <code>/api/admin/help-hub</code>. Use Edit to change a tip; IDs are permanent.
       </p>
@@ -26,13 +30,16 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <h2 id="list-heading" class="visually-hidden">All tips</h2>
       <p id="help-hub-admin-loading" class="help-hub-admin__loading">Loading…</p>
       <div id="help-hub-table-wrap" class="help-hub-admin__table-wrap" hidden>
-        <table class="help-hub-admin__table">
+        <table id="help-hub-admin-table" class="help-hub-admin__table">
           <thead>
             <tr>
+              <th scope="col" class="help-hub-admin__th-remove"><span class="visually-hidden">Delete</span></th>
+              <th scope="col">ID</th>
               <th scope="col">Title</th>
+              <th scope="col">Status</th>
               <th scope="col">Slug</th>
               <th scope="col">Applies</th>
-              <th scope="col">Actions</th>
+              <th scope="col" class="help-hub-admin__th-actions">Actions</th>
             </tr>
           </thead>
           <tbody id="help-hub-tip-tbody"></tbody>
@@ -159,6 +166,46 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       background: #fafafa;
     }
 
+    .help-hub-admin__table .col-remove {
+      width: 1%;
+      padding-left: 0.35rem;
+      padding-right: 0.35rem;
+      vertical-align: middle;
+      text-align: center;
+    }
+
+    .help-hub-admin__row-remove {
+      appearance: none;
+      background: transparent;
+      border: none;
+      padding: 0.15rem 0.35rem;
+      margin: 0;
+      line-height: 1;
+      font-size: 16px;
+      font-weight: 700;
+      color: #999;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .help-hub-admin__row-remove:hover:not(:disabled),
+    .help-hub-admin__row-remove:focus-visible:not(:disabled) {
+      color: #b91c1c;
+      background: #fef2f2;
+    }
+
+    .help-hub-admin__row-remove:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .help-hub-admin__table .col-id {
+      font-variant-numeric: tabular-nums;
+      color: #475569;
+      white-space: nowrap;
+      width: 4rem;
+    }
+
     .help-hub-admin__table .col-title {
       font-weight: 600;
       color: #111827;
@@ -176,6 +223,54 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     .help-hub-admin__table .col-applies {
       color: #475569;
       max-width: 16rem;
+    }
+
+    .help-hub-admin__table .col-status {
+      white-space: nowrap;
+      width: 6.5rem;
+    }
+
+    .help-hub-admin__status-pill {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      letter-spacing: 0.02em;
+    }
+
+    .help-hub-admin__status-pill--active {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+    }
+
+    .help-hub-admin__status-pill--inactive {
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+    }
+
+    .help-hub-admin__th-actions,
+    .help-hub-admin__th-remove {
+      width: 1%;
+    }
+
+    .help-hub-admin__table thead th {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .help-hub-admin__table thead th.help-hub-admin__th-actions,
+    .help-hub-admin__table thead th.help-hub-admin__th-remove {
+      cursor: default;
+      user-select: auto;
+    }
+
+    .help-hub-admin__table thead th.tablesorter-headerAsc,
+    .help-hub-admin__table thead th.tablesorter-headerDesc {
+      background: #ecfdf5;
+      color: #14532d;
     }
 
     .help-hub-admin__actions {
@@ -221,16 +316,6 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       return null;
     }
 
-    function sortOrderNum(row: TipRow): number {
-      const v = row.sortOrder;
-      if (typeof v === "number" && Number.isFinite(v)) return v;
-      if (typeof v === "string" && v.trim()) {
-        const n = parseInt(v.trim(), 10);
-        if (Number.isFinite(n)) return n;
-      }
-      return Number.POSITIVE_INFINITY;
-    }
-
     function appliesLabel(tip: TipRow): string {
       if (tip.allMachines === true) return "All machines";
       const list = tip.appliesTo;
@@ -241,6 +326,46 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         return `${parts.slice(0, 2).join(", ")}…`;
       }
       return "—";
+    }
+
+    /** Active = published or missing; anything else (e.g. draft) = Inactive. */
+    function listTipIsActive(tip: TipRow): boolean {
+      const s = tip.status;
+      if (s === undefined || s === null) return true;
+      if (typeof s !== "string") return false;
+      const t = s.trim();
+      if (t === "") return true;
+      return t.toLowerCase() === "published";
+    }
+
+    let tableSorterInited = false;
+
+    function refreshTableSorter() {
+      const w = window as unknown as { jQuery?: (sel: string) => { length: number; tablesorter: (opts?: object) => unknown; trigger: (name: string, ...args: unknown[]) => unknown } };
+      const $ = w.jQuery;
+      if (!$) return;
+      const $tab = $("#help-hub-admin-table");
+      if ($tab.length === 0) return;
+      if (tips.length === 0) {
+        if (tableSorterInited) {
+          $tab.trigger("destroy");
+          tableSorterInited = false;
+        }
+        return;
+      }
+      if (!tableSorterInited) {
+        $tab.tablesorter({
+          headers: {
+            0: { sorter: false },
+            1: { sorter: "digit" },
+            6: { sorter: false },
+          },
+          sortList: [[1, 1]],
+        });
+        tableSorterInited = true;
+      } else {
+        $tab.trigger("update");
+      }
     }
 
     async function deleteTip(id: number, title: string, slug: string) {
@@ -273,23 +398,43 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       tableWrapEl.hidden = false;
       tbodyEl.innerHTML = "";
 
-      const sorted = [...tips].sort((a, b) => {
-        const c = sortOrderNum(a) - sortOrderNum(b);
-        if (c !== 0) return c;
-        const ia = getTipId(a);
-        const ib = getTipId(b);
-        return (ia ?? 0) - (ib ?? 0);
-      });
-
-      for (const tip of sorted) {
+      for (const tip of tips) {
         const id = getTipId(tip);
         const title = String(tip.title ?? "(no title)");
         const slug = typeof tip.slug === "string" ? tip.slug.trim() : "";
         const tr = document.createElement("tr");
 
+        const tdRemove = document.createElement("td");
+        tdRemove.className = "col-remove";
+        const rmBtn = document.createElement("button");
+        rmBtn.type = "button";
+        rmBtn.className = "help-hub-admin__row-remove";
+        rmBtn.textContent = "×";
+        rmBtn.setAttribute("aria-label", `Delete tip: ${title}`);
+        rmBtn.disabled = id === null;
+        rmBtn.addEventListener("click", () => {
+          if (id === null) return;
+          void deleteTip(id, title, slug || String(id));
+        });
+        tdRemove.appendChild(rmBtn);
+
+        const tdId = document.createElement("td");
+        tdId.className = "col-id";
+        tdId.textContent = id !== null ? String(id) : "—";
+
         const tdTitle = document.createElement("td");
         tdTitle.className = "col-title";
         tdTitle.textContent = title;
+
+        const active = listTipIsActive(tip);
+        const tdStatus = document.createElement("td");
+        tdStatus.className = "col-status";
+        const pill = document.createElement("span");
+        pill.className = active
+          ? "help-hub-admin__status-pill help-hub-admin__status-pill--active"
+          : "help-hub-admin__status-pill help-hub-admin__status-pill--inactive";
+        pill.textContent = active ? "Active" : "Inactive";
+        tdStatus.appendChild(pill);
 
         const tdSlug = document.createElement("td");
         tdSlug.className = "col-slug";
@@ -315,26 +460,20 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
               : "/admin/tips-edit";
         editLink.textContent = "Edit";
 
-        const delBtn = document.createElement("button");
-        delBtn.type = "button";
-        delBtn.className = "kbm-btn kbm-btn-accent";
-        delBtn.textContent = "Delete";
-        delBtn.disabled = id === null;
-        delBtn.addEventListener("click", () => {
-          if (id === null) return;
-          void deleteTip(id, title, slug || String(id));
-        });
-
         wrap.appendChild(editLink);
-        wrap.appendChild(delBtn);
         tdActions.appendChild(wrap);
 
+        tr.appendChild(tdRemove);
+        tr.appendChild(tdId);
         tr.appendChild(tdTitle);
+        tr.appendChild(tdStatus);
         tr.appendChild(tdSlug);
         tr.appendChild(tdApplies);
         tr.appendChild(tdActions);
         tbodyEl.appendChild(tr);
       }
+
+      refreshTableSorter();
     }
 
     async function fetchTips() {

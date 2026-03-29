@@ -1,0 +1,643 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Tooltip from "../../components/Tooltip.astro";
+import PrintFooter from "../../components/common/PrintFooter.astro";
+import ActionBar from "../../components/wizards/ActionBar.astro";
+import WhyUseThisToolTooltip from "../../components/common/WhyUseThisToolTooltip.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import GaugeInput from "../../components/wizards/components/GaugeInput.astro";
+import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
+
+const pageUrl = "https://knitbymachine.com/wizards/gauge-conversion-calculator";
+
+// Fetch wizard metadata at build time
+const wizardSlug = 'gauge-conversion-calculator';
+let whyUseThisTool = '';
+
+try {
+  const response = await fetch(`https://api.github.com/repos/sjalowiec/knitbymachine-site/contents/astro-site/src/content/wizards/${wizardSlug}.json`);
+  if (response.ok) {
+    const fileData = await response.json();
+    const contentResponse = await fetch(fileData.download_url);
+    if (contentResponse.ok) {
+      const wizardData = await contentResponse.json();
+      whyUseThisTool = wizardData.whyUseThisTool || '';
+    }
+  }
+} catch (e) {
+  // Silently fail - tooltip just won't show
+}
+---
+
+<BaseLayout 
+  title="Gauge Conversion Calculator | Knit by Machine" 
+  description="Convert any pattern to match your gauge. Enter the pattern's gauge and your own, and this tool instantly recalculates your stitch and row counts.">
+
+<style>
+.wizard-page {
+  padding-top: 120px;
+  padding-bottom: 3rem;
+  min-height: 100vh;
+  background: var(--page-bg);
+}
+
+.page-header {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  padding: 0 1rem;
+}
+
+.page-header-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .page-header-title {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+.page-header h1 {
+  color: var(--kbm-green);
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.page-header p {
+  color: #6b7280;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.video-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: #e5e7eb;
+  color: #374151;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: all 0.2s;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.video-button:hover {
+  background: #d1d5db;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.wizard-container {
+  max-width: 700px;
+  margin: 0 auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+
+.section-title {
+  color: var(--kbm-green);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(82, 104, 45, 0.2);
+}
+
+.input-group {
+  margin-bottom: 1.5rem;
+}
+
+.input-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--kbm-green);
+}
+
+.input-group input::placeholder {
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+.input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.section-divider {
+  margin: 2rem 0;
+}
+
+.multiplier-display {
+  background: rgba(82, 104, 45, 0.05);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.multiplier-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.multiplier-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--kbm-green);
+}
+
+.results-section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(82, 104, 45, 0.05);
+  border-radius: 8px;
+  border-left: 4px solid var(--kbm-green);
+}
+
+.result-item {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.result-item:last-child {
+  margin-bottom: 0;
+}
+
+.result-label {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.result-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--kbm-green);
+}
+
+.tips-section {
+  margin-top: 2rem;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.tips-header {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.tips-header:hover {
+  background: #f9fafb;
+}
+
+.tips-header h4 {
+  color: var(--kbm-green);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.tips-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.tips-content.open {
+  max-height: 600px;
+}
+
+.tips-content ul {
+  padding: 0 1.25rem 1.25rem 2.5rem;
+  color: #6b7280;
+  line-height: 1.8;
+}
+
+.tips-content li {
+  margin-bottom: 0.5rem;
+}
+
+.chevron {
+  transition: transform 0.3s ease;
+  color: var(--kbm-green);
+}
+
+.chevron.rotated {
+  transform: rotate(180deg);
+}
+
+@media (max-width: 640px) {
+  .input-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.back-link {
+  display: inline-block;
+  color: #52682D;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #3d4e21;
+  text-decoration: underline;
+}
+
+/* Print styles - hide input sections */
+@media print {
+  .wizard-page {
+    padding-top: 0 !important;
+    background: white !important;
+  }
+  
+  .page-header,
+  .video-button,
+  .back-link,
+  .toggle-group,
+  .form-grid,
+  .section-label,
+  .section-divider,
+  .floating-input,
+  .form-row-2,
+  .form-row-3,
+  .icon-toggle-group,
+  .calculate-btn,
+  .results-actions,
+  .no-print,
+  .units-toggle,
+  .input-grid,
+  .input-group,
+  form {
+    display: none !important;
+  }
+  
+  .wizard-container,
+  .calculator-card {
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: white !important;
+    border: none !important;
+  }
+  
+  .results,
+  #results {
+    border-top: none !important;
+    padding-top: 0 !important;
+    background: white !important;
+  }
+}
+
+</style>
+
+  <div class="wizard-page">
+    <div style="max-width: 800px; margin: 0 auto; padding: 0 1rem;">
+      <WizardBackLink category="tool" />
+    </div>
+
+  <div class="page-header">
+    <div class="page-header-title">
+      <h1>Gauge Conversion Calculator</h1>
+      {whyUseThisTool && (
+        <WhyUseThisToolTooltip text={whyUseThisTool} variant="inline" />
+      )}
+    </div>
+    <p>
+      Adjust any pattern to your yarn or tension — no math, no guesswork. Convert any pattern to match your gauge instantly.
+    </p>
+  </div>
+
+  <div class="wizard-container">
+    <!-- Unit Toggle - left-aligned, above first input -->
+    <UnitToggle id="gc" />
+
+    <!-- Pattern Gauge Section -->
+    <GaugeInput id="pattern" title="Pattern Gauge (what the pattern calls for)" showToggle={false} toggleId="gc" />
+
+    <!-- Your Gauge Section -->
+    <GaugeInput id="your" title="Your Gauge (what you actually get)" showToggle={false} toggleId="gc" />
+
+    <!-- Multipliers Display -->
+    <div id="multipliers" style="display: none;">
+      <div class="input-grid">
+        <div class="multiplier-display">
+          <div class="multiplier-label">Stitch Multiplier</div>
+          <div class="multiplier-value" id="stitch-multiplier">1.00</div>
+        </div>
+        <div class="multiplier-display">
+          <div class="multiplier-label">Row Multiplier</div>
+          <div class="multiplier-value" id="row-multiplier">1.00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test Conversion Section -->
+    <div class="section-divider">
+      <h3 class="section-title">Convert Pattern Numbers</h3>
+      <div class="input-grid">
+        <div class="input-group">
+          <label for="test-stitches">Pattern says (stitches)</label>
+          <input 
+            type="number" 
+            id="test-stitches" 
+            step="1" 
+            placeholder="e.g., 100"
+          />
+        </div>
+        <div class="input-group">
+          <label for="test-rows">Pattern says (rows)</label>
+          <input 
+            type="number" 
+            id="test-rows" 
+            step="1" 
+            placeholder="e.g., 50"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results" class="results-section" style="display: none;">
+      <ActionBar />
+      <div class="result-item">
+        <span class="result-label">You should cast on:</span>
+        <span class="result-value" id="converted-stitches">--</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">You should knit:</span>
+        <span class="result-value" id="converted-rows">--</span>
+      </div>
+    </div>
+
+    <!-- Tips Section -->
+    <div class="tips-section">
+      <button class="tips-header" id="tips-toggle">
+        <h4>Tips for Using This Tool</h4>
+        <svg class="chevron" id="tips-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="tips-content" id="tips-content">
+        <ul>
+          <li><strong>When to use:</strong> This tool is perfect when you want to use a different yarn weight or knit at a different tension than the pattern specifies.</li>
+          <li><strong>How it works:</strong> The multipliers show you how much larger or smaller your knitting will be compared to the pattern. Numbers above 1.0 mean you need MORE stitches/rows, below 1.0 means FEWER.</li>
+          <li><strong>Example:</strong> If the pattern says "Cast on 100 stitches" and your multiplier is 1.15, you'd cast on 115 stitches instead.</li>
+          <li><strong>Important:</strong> This works best for simple shapes. For detailed shaping, you may need additional calculations.</li>
+          <li><strong>Pro tip:</strong> Always knit a swatch in your yarn to get an accurate gauge before starting your project.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <PrintFooter url={pageUrl} />
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // State management with localStorage
+  let units = localStorage.getItem('gaugeConversion.unit') || 'inches';
+  let patternStitches = localStorage.getItem('gaugeConversion.patternSts') || '';
+  let patternRows = localStorage.getItem('gaugeConversion.patternRows') || '';
+  let yourStitches = localStorage.getItem('gaugeConversion.yourSts') || '';
+  let yourRows = localStorage.getItem('gaugeConversion.yourRows') || '';
+  let testStitches = localStorage.getItem('gaugeConversion.testSts') || '';
+  let testRows = localStorage.getItem('gaugeConversion.testRows') || '';
+
+  // DOM elements - UnitToggle now uses gc-btn-inches/gc-btn-cm IDs
+  const btnInches = document.getElementById('gc-btn-inches');
+  const btnCm = document.getElementById('gc-btn-cm');
+  const inputPatternStitches = document.getElementById('pattern-stitch-gauge');
+  const inputPatternRows = document.getElementById('pattern-row-gauge');
+  const inputYourStitches = document.getElementById('your-stitch-gauge');
+  const inputYourRows = document.getElementById('your-row-gauge');
+  const inputTestStitches = document.getElementById('test-stitches');
+  const inputTestRows = document.getElementById('test-rows');
+  const multipliersSection = document.getElementById('multipliers');
+  const stitchMultiplierEl = document.getElementById('stitch-multiplier');
+  const rowMultiplierEl = document.getElementById('row-multiplier');
+  const resultsSection = document.getElementById('results');
+  const convertedStitchesEl = document.getElementById('converted-stitches');
+  const convertedRowsEl = document.getElementById('converted-rows');
+  const tipsToggle = document.getElementById('tips-toggle');
+  const tipsContent = document.getElementById('tips-content');
+  const tipsChevron = document.getElementById('tips-chevron');
+
+  // Action Bar buttons
+  const actionBar = document.getElementById('action-bar');
+  const startOverBtn = document.getElementById('start-over-btn');
+  const printBtn = document.getElementById('print-btn');
+
+  // Start Over handler
+  if (startOverBtn) {
+    startOverBtn.addEventListener('click', () => {
+      resultsSection.style.display = 'none';
+      if (actionBar) actionBar.style.display = 'none';
+    });
+  }
+
+  // Print handler
+  if (printBtn) {
+    printBtn.addEventListener('click', () => {
+      window.print();
+    });
+  }
+
+  // Initialize inputs from localStorage
+  inputPatternStitches.value = patternStitches;
+  inputPatternRows.value = patternRows;
+  inputYourStitches.value = yourStitches;
+  inputYourRows.value = yourRows;
+  inputTestStitches.value = testStitches;
+  inputTestRows.value = testRows;
+
+  // Update units UI - labels are now handled by GaugeInput component
+  function updateUnitsUI() {
+    if (units === 'inches') {
+      btnInches.classList.add('active');
+      btnCm.classList.remove('active');
+    } else {
+      btnCm.classList.add('active');
+      btnInches.classList.remove('active');
+    }
+  }
+
+  updateUnitsUI();
+
+  // Unit toggle handlers
+  btnInches.addEventListener('click', () => {
+    units = 'inches';
+    localStorage.setItem('gaugeConversion.unit', units);
+    updateUnitsUI();
+    calculate();
+  });
+
+  btnCm.addEventListener('click', () => {
+    units = 'cm';
+    localStorage.setItem('gaugeConversion.unit', units);
+    updateUnitsUI();
+    calculate();
+  });
+
+  // Listen for unit changes from UnitToggle component
+  window.addEventListener('kbm:units-change', (e) => {
+    units = e.detail.unit === 'in' ? 'inches' : 'cm';
+    localStorage.setItem('gaugeConversion.unit', units);
+    updateUnitsUI();
+    calculate();
+  });
+
+  // Input handlers
+  inputPatternStitches.addEventListener('input', (e) => {
+    patternStitches = e.target.value;
+    localStorage.setItem('gaugeConversion.patternSts', patternStitches);
+    calculate();
+  });
+
+  inputPatternRows.addEventListener('input', (e) => {
+    patternRows = e.target.value;
+    localStorage.setItem('gaugeConversion.patternRows', patternRows);
+    calculate();
+  });
+
+  inputYourStitches.addEventListener('input', (e) => {
+    yourStitches = e.target.value;
+    localStorage.setItem('gaugeConversion.yourSts', yourStitches);
+    calculate();
+  });
+
+  inputYourRows.addEventListener('input', (e) => {
+    yourRows = e.target.value;
+    localStorage.setItem('gaugeConversion.yourRows', yourRows);
+    calculate();
+  });
+
+  inputTestStitches.addEventListener('input', (e) => {
+    testStitches = e.target.value;
+    localStorage.setItem('gaugeConversion.testSts', testStitches);
+    calculate();
+  });
+
+  inputTestRows.addEventListener('input', (e) => {
+    testRows = e.target.value;
+    localStorage.setItem('gaugeConversion.testRows', testRows);
+    calculate();
+  });
+
+  // Tips toggle
+  tipsToggle.addEventListener('click', () => {
+    tipsContent.classList.toggle('open');
+    tipsChevron.classList.toggle('rotated');
+  });
+
+  // Calculate conversion
+  function calculate() {
+    const pSts = parseFloat(patternStitches) || 0;
+    const pRows = parseFloat(patternRows) || 0;
+    const ySts = parseFloat(yourStitches) || 0;
+    const yRows = parseFloat(yourRows) || 0;
+
+    // Calculate multipliers
+    const stitchMultiplier = pSts > 0 ? ySts / pSts : 0;
+    const rowMultiplier = pRows > 0 ? yRows / pRows : 0;
+
+    if (stitchMultiplier > 0 && rowMultiplier > 0) {
+      stitchMultiplierEl.textContent = stitchMultiplier.toFixed(2);
+      rowMultiplierEl.textContent = rowMultiplier.toFixed(2);
+      multipliersSection.style.display = 'block';
+    } else {
+      multipliersSection.style.display = 'none';
+    }
+
+    // Calculate test conversions
+    const testStsNum = parseFloat(testStitches) || 0;
+    const testRowsNum = parseFloat(testRows) || 0;
+
+    if (testStsNum > 0 || testRowsNum > 0) {
+      const convertedStitches = testStsNum > 0 && stitchMultiplier > 0 
+        ? Math.round(testStsNum * stitchMultiplier) 
+        : 0;
+      const convertedRows = testRowsNum > 0 && rowMultiplier > 0 
+        ? Math.round(testRowsNum * rowMultiplier) 
+        : 0;
+
+      if (convertedStitches > 0) {
+        convertedStitchesEl.textContent = `${convertedStitches} stitches`;
+      } else {
+        convertedStitchesEl.textContent = '--';
+      }
+
+      if (convertedRows > 0) {
+        convertedRowsEl.textContent = `${convertedRows} rows`;
+      } else {
+        convertedRowsEl.textContent = '--';
+      }
+
+      if (convertedStitches > 0 || convertedRows > 0) {
+        resultsSection.style.display = 'block';
+        if (actionBar) actionBar.style.display = 'flex';
+        if (printBtn) printBtn.style.display = 'block';
+      } else {
+        resultsSection.style.display = 'none';
+        if (actionBar) actionBar.style.display = 'none';
+      }
+    } else {
+      resultsSection.style.display = 'none';
+      if (actionBar) actionBar.style.display = 'none';
+    }
+  }
+
+  // Initial calculation
+  calculate();
+});
+</script>
+
+</BaseLayout>

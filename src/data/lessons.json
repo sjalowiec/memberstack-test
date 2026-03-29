@@ -29,7 +29,8 @@
     "supportImage": "/images/lessons/grade-neckband.webp",
     "supportImageAlt": "Grade the band tension",
     "templateLink": "/downloads/shop/cut-n-sew-neckline-templates.pdf",
-    "templateLinkText": "Download the neckline template printable"
+    "templateLinkText": "Download the neckline template printable",
+    "associatedTip": "sandwich-neckband-finish"
   },
   {
     "id": 102,
@@ -55,7 +56,8 @@
     "supportImage": "/images/lessons/stitch-types.webp",
     "supportImageAlt": "compare machine knit stitch patterns for weight and size",
     "templateLink": "",
-    "templateLinkText": ""
+    "templateLinkText": "",
+    "associatedTip": "not-enough-needles"
   },
   {
     "id": 103,
@@ -80,28 +82,38 @@
     "supportImage": "/images/lessons/wash-away-stabilizer-cut-n-sew.webp",
     "supportImageAlt": "Water-soluable stabilizer for cut 'n sew",
     "templateLink": "/downloads/shop/cut-n-sew-neckline-templates.pdf",
-    "templateLinkText": "Download a FREE Cut 'n Sew Template"
+    "templateLinkText": "Download a FREE Cut 'n Sew Template",
+    "associatedTip": "cut-and-sew-shaping"
   },
   {
     "id": 104,
-    "slug": "title",
-    "title": "title",
-    "summary": "this is the summary",
+    "slug": "knit-a-proper-swatch",
+    "title": "Knit a Proper Swatch",
+    "summary": "Knitting a proper swatch is the foundation of every successful project. In this lesson, you’ll walk through how to cast on, knit enough fabric for accurate measurement, place stitch and row markers, and finish your swatch so it reflects how your fabric really behaves. You’ll also learn how to record key details - like tension and gauge - so your swatch becomes a reliable reference, not just a quick test.",
     "type": "video",
-    "vimeoEmbedUrl": "12345678",
+    "vimeoEmbedUrl": "1046394794",
     "access": "free",
-    "encouragement": "tip - you can do this",
-    "exerciseTitle": "try this yourself - exercise title",
+    "encouragement": "If swatching has ever felt like a chore - or something you’ve skipped - you’re not alone. But this is where things start to click. A good swatch takes the guesswork out of your knitting and gives you confidence before you even begin your project. You’re setting yourself up for success, and that’s time well spent.",
+    "exerciseTitle": "Knit and Measure a Proper Swatch",
     "exerciseItems": [
-      "item1",
-      "item2",
-      "item3"
+      "Cast on enough stitches for your machine and yarn (avoid small swatches)",
+      "Knit several rows in your chosen stitch pattern to establish the fabric",
+      "Add stitch markers to identify a measured section in the center",
+      "Add row markers to track a fixed number of rows (knit 1-2 contrasting rows)",
+      "Continue knitting beyond the marked areas to avoid edge distortion",
+      "Bind off and remove the swatch from the machine",
+      "<b>Let the swatch rest (and block if needed) before measuring</b>",
+      "Measure the width and height of your marked section",
+      "👉 Use the Knit it Now <a href=/tools/gauge-calculator\">Gauge Calculator</a> to turn your measurements into usable numbers",
+      "Record your stitch count, row count, and resulting measurements",
+      "Note your machine settings (tension, yarn, stitch pattern) for future reference"
     ],
-    "noteTitle": "note title you can do this",
-    "noteText": "note text - try , try agai",
-    "supportImage": "/images/lessons/sabilizer.webp",
-    "supportImageAlt": "alt tag",
-    "templateLink": "/downloads/lessons/sweater-panels-planner.pdf",
-    "templateLinkText": "download a sweater panels planner"
+    "noteTitle": "Why This Swatch Matters",
+    "noteText": "This swatch isn’t just a step - it’s your starting point for everything that follows. The measurements you get here are what your patterns depend on, so the goal isn’t perfection—it’s accuracy. By working with a set number of stitches and rows, you’re matching how your machine actually knits, not trying to force your fabric into a fixed measurement. Keep this swatch as a reference - you may come back to it as your project takes shape.",
+    "supportImage": "/images/lessons/knit-a-proper-swatch.webp",
+    "supportImageAlt": "knit a proper swatch for machine knitting",
+    "templateLink": "",
+    "templateLinkText": "",
+    "associatedTip": "measure-gauge-on-a-knitting-machine"
   }
 ]

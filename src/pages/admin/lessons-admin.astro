@@ -4,131 +4,51 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="Lessons Admin | Knit it Now"
-  description="Manage lesson records in lessons.json"
+  description="Browse and manage lessons (lessons.json)"
   skipGlobalHyvor={true}
   bodyClass="lessons-admin-body help-hub-admin-body"
 >
-  <main class="lessons-admin">
-    <header class="lessons-admin__head">
-      <h1 class="lessons-admin__title">Lessons Admin</h1>
-      <div class="lessons-admin__head-actions">
-        <button type="button" id="btn-add-lesson" class="kbm-btn kbm-btn-primary">Add New Lesson</button>
-        <p class="lessons-admin__sub">
-          <a href="/admin/tips-admin">Help Hub tips</a>
-        </p>
-      </div>
+  <Fragment slot="head">
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.min.js"></script>
+  </Fragment>
+  <main class="help-hub-admin">
+    <header class="help-hub-admin__head">
+      <h1 class="help-hub-admin__title">Lessons Admin</h1><a href="tips-admin">💡Help Hub Tips</a>
+      <p class="help-hub-admin__sub">
+        Data lives in <code>src/data/lessons.json</code> and is updated via <code>/api/admin/lessons</code>. Use Edit to change a lesson; IDs are permanent.
+      </p>
     </header>
 
-    <p id="lessons-admin-status" class="lessons-admin__status" aria-live="polite"></p>
+    <p id="lessons-admin-status" class="help-hub-admin__status" aria-live="polite"></p>
 
-    <section class="lessons-admin__panel" aria-labelledby="list-heading">
-      <h2 id="list-heading" class="lessons-admin__h2">All lessons</h2>
-      <div class="lessons-table-wrap">
-        <table class="lessons-table" id="lessons-table">
+    <div class="help-hub-admin__toolbar">
+      <a href="/admin/lessons-edit" class="kbm-btn kbm-btn-primary">+ New Lesson</a>
+      <p class="lessons-admin__sub-nav">
+        <a href="/admin/tips-admin">Help Hub tips</a>
+      </p>
+    </div>
+
+    <section class="admin-panel help-hub-admin__table-panel" aria-labelledby="list-heading">
+      <h2 id="list-heading" class="visually-hidden">All lessons</h2>
+      <p id="lessons-admin-loading" class="help-hub-admin__loading">Loading…</p>
+      <div id="lessons-table-wrap" class="help-hub-admin__table-wrap" hidden>
+        <table id="lessons-admin-table" class="help-hub-admin__table">
           <thead>
             <tr>
-              <th>id</th>
-              <th>title</th>
-              <th>slug</th>
-              <th>type</th>
-              <th>access</th>
-              <th>actions</th>
+              <th scope="col" class="help-hub-admin__th-remove"><span class="visually-hidden">Delete</span></th>
+              <th scope="col">ID</th>
+              <th scope="col">Title</th>
+              <th scope="col">Slug</th>
+              <th scope="col">Access</th>
+              <th scope="col">Associated Tip</th>
+              <th scope="col" class="help-hub-admin__th-actions">Actions</th>
             </tr>
           </thead>
           <tbody id="lessons-table-body"></tbody>
         </table>
       </div>
-    </section>
-
-    <section class="admin-panel lessons-admin__form-panel" aria-labelledby="form-heading">
-      <h2 id="form-heading" class="lessons-admin__h2">Lesson editor</h2>
-      <p id="lessons-admin-mode" class="lessons-admin__mode">Loading…</p>
-
-      <form id="lessons-admin-form" class="lessons-admin__form" autocomplete="off">
-        <div class="field-grid">
-          <label>
-            <span>id <em class="req">*</em></span>
-            <input type="number" name="id" id="field-id" min="1" step="1" required />
-            <span class="field-hint">Read-only while editing an existing lesson. New rows use the next free id by default.</span>
-          </label>
-          <label class="field-full">
-            <span>title <em class="req">*</em></span>
-            <input type="text" name="title" id="field-title" required />
-          </label>
-          <label class="field-full">
-            <span>slug <em class="req">*</em></span>
-            <input type="text" name="slug" id="field-slug" required />
-            <span class="field-hint">Lowercase, hyphens. For new lessons, filled from title until you edit slug.</span>
-          </label>
-          <label class="field-full">
-            <span>summary <em class="req">*</em></span>
-            <textarea name="summary" id="field-summary" rows="3" required></textarea>
-          </label>
-          <label>
-            <span>type <em class="req">*</em></span>
-            <select name="type" id="field-type" required>
-              <option value="video">video</option>
-              <option value="article">article</option>
-              <!-option value="text">text</option>
-            </select>
-          </label>
-          <label>
-            <span>access <em class="req">*</em></span>
-            <select name="access" id="field-access" required>
-              <option value="free">free</option>
-              <option value="member">member</option>
-            </select>
-          </label>
-          <label class="field-full">
-            <span>vimeoEmbedUrl(number only)</span>
-            <input type="text" name="vimeoEmbedUrl" id="field-vimeoEmbedUrl" />
-          </label>
-          <label class="field-full">
-            <span>video-thumbnail (images/lessons)</span>
-            <input type="text" name="supportImage" id="field-supportImage" />
-          </label>
-          <label class="field-full">
-            <span>video-thumbnail-Alt</span>
-            <input type="text" name="supportImageAlt" id="field-supportImageAlt" />
-          </label>
-
-
-          <label class="field-full">
-            <span>encouragement (you can do this / tip)</span>
-            <textarea name="encouragement" id="field-encouragement" rows="3"></textarea>
-          </label>
-          <label class="field-full">
-            <span>Paid exerciseTitle</span>
-            <input type="text" name="exerciseTitle" id="field-exerciseTitle" />
-          </label>
-          <label class="field-full">
-            <span>exerciseItems (one per line auto list tags)</span>
-            <textarea name="exerciseItems" id="field-exerciseItems" rows="8"></textarea>
-          </label>
-          <label>
-            <span>noteTitle (feel more confident - add a designer touch)</span>
-            <input type="text" name="noteTitle" id="field-noteTitle" />
-          </label>
-          <label class="field-full">
-            <span>noteText (more encouragement)</span>
-            <textarea name="noteText" id="field-noteText" rows="3"></textarea>
-          </label>
-         
-          <label class="field-full">
-            <span>templateLink (downloads/lessons)</span>
-            <input type="text" name="templateLink" id="field-templateLink" />
-          </label>
-          <label class="field-full">
-            <span>templateLinkText</span>
-            <input type="text" name="templateLinkText" id="field-templateLinkText" />
-          </label>
-        </div>
-
-        <div class="lessons-admin__form-actions lessons-admin__form-actions--sticky">
-          <button type="button" id="btn-save-lesson" class="kbm-btn kbm-btn-primary">Save</button>
-          <button type="button" id="btn-cancel-lesson" class="kbm-btn kbm-btn-outline">Cancel</button>
-        </div>
-      </form>
+      <p id="lessons-admin-empty" class="help-hub-admin__empty" hidden>No lessons yet.</p>
     </section>
   </main>
 
@@ -136,194 +56,240 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     :global(body.help-hub-admin-body) {
       margin: 0;
     }
-    .lessons-admin {
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .help-hub-admin {
       width: 100%;
       max-width: none;
       margin: 0;
-      padding: 1rem 1.25rem 2rem;
+      padding: 1.25rem 1.5rem 3rem;
       box-sizing: border-box;
     }
-    .lessons-admin__head {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
-      padding-bottom: 0.75rem;
+
+    .help-hub-admin__head {
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
       border-bottom: 1px solid #e2e8f0;
     }
-    .lessons-admin__title {
-      margin: 0;
+
+    .help-hub-admin__title {
+      margin: 0 0 0.35rem 0;
       font-size: 1.65rem;
       color: #243015;
     }
-    .lessons-admin__head-actions {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 0.35rem;
-    }
-    .lessons-admin__sub {
+
+    .help-hub-admin__sub {
       margin: 0;
       font-size: 0.95rem;
+      color: #475569;
+      max-width: 56rem;
     }
-    .lessons-admin__status {
+
+    .help-hub-admin__sub code {
+      font-size: 0.88em;
+      background: #f1f5f9;
+      padding: 0.12rem 0.35rem;
+      border-radius: 4px;
+    }
+
+    .help-hub-admin__status {
       min-height: 1.4em;
-      margin: 0 0 0.75rem 0;
+      margin: 0 0 1rem 0;
       font-size: 0.95rem;
       color: #374151;
     }
-    .lessons-admin__status.is-error {
+
+    .help-hub-admin__status.is-error {
       color: #b91c1c;
       font-weight: 600;
     }
-    .lessons-admin__status.is-ok {
+
+    .help-hub-admin__status.is-ok {
       color: #166534;
     }
-    .lessons-admin__panel {
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      background: #fff;
-      padding: 0.85rem;
+
+    .help-hub-admin__toolbar {
       margin-bottom: 1rem;
-    }
-    .lessons-admin__h2 {
-      margin: 0 0 0.65rem 0;
-      font-size: 1.1rem;
-      color: #243015;
-    }
-    .lessons-table-wrap {
-      overflow: auto;
-    }
-    .lessons-table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 720px;
-    }
-    .lessons-table th,
-    .lessons-table td {
-      border-bottom: 1px solid #e5e7eb;
-      text-align: left;
-      padding: 0.5rem 0.55rem;
-      font-size: 0.9rem;
-      vertical-align: top;
-    }
-    .lessons-table tbody tr:hover {
-      background: #f8fafc;
-    }
-    .lessons-table td.cell-title {
-      min-width: 200px;
-    }
-    .lessons-table td.cell-slug {
-      color: #475569;
-      min-width: 180px;
-    }
-    .lessons-table .row-actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.35rem;
+      align-items: center;
+      gap: 0.75rem 1rem;
     }
+
+    .lessons-admin__sub-nav {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
     .admin-panel {
       background: #fff;
       border: 1px solid #e5e7eb;
       border-radius: 12px;
-      padding: 0.85rem;
+      padding: 1rem;
     }
-    .lessons-admin__mode {
-      margin: 0 0 0.75rem 0;
-      padding: 0.5rem 0.65rem;
-      border-radius: 8px;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      font-weight: 600;
-      color: #243015;
-      font-size: 0.95rem;
-    }
-    .lessons-admin__form .field-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.65rem;
-    }
-    @media (min-width: 720px) {
-      .lessons-admin__form .field-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-    .field-full {
-      grid-column: 1 / -1;
-    }
-    .lessons-admin__form label {
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-    }
-    .lessons-admin__form label > span:first-of-type {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #2e3a18;
-    }
-    .req {
-      color: #b91c1c;
-      font-style: normal;
-    }
-    .field-hint {
-      font-size: 0.82rem;
-      font-weight: 400;
+
+    .help-hub-admin__loading {
+      margin: 0;
       color: #64748b;
-      line-height: 1.45;
+      font-size: 0.95rem;
     }
-    .lessons-admin__form input,
-    .lessons-admin__form select,
-    .lessons-admin__form textarea {
+
+    .help-hub-admin__empty {
+      margin: 0;
+      color: #64748b;
+    }
+
+    .help-hub-admin__table-wrap {
+      overflow-x: auto;
+    }
+
+    .help-hub-admin__table {
       width: 100%;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 0.55rem 0.65rem;
-      font: inherit;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    .help-hub-admin__table th,
+    .help-hub-admin__table td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0.65rem 0.5rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .help-hub-admin__table th {
+      font-weight: 700;
+      color: #243015;
+      background: #f8fafc;
+    }
+
+    .help-hub-admin__table tbody tr:hover {
+      background: #fafafa;
+    }
+
+    .help-hub-admin__table .col-remove {
+      width: 1%;
+      padding-left: 0.35rem;
+      padding-right: 0.35rem;
+      vertical-align: middle;
+      text-align: center;
+    }
+
+    .help-hub-admin__row-remove {
+      appearance: none;
+      background: transparent;
+      border: none;
+      padding: 0.15rem 0.35rem;
+      margin: 0;
+      line-height: 1;
+      font-size: 16px;
+      font-weight: 700;
+      color: #999;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .help-hub-admin__row-remove:hover:not(:disabled),
+    .help-hub-admin__row-remove:focus-visible:not(:disabled) {
+      color: #b91c1c;
+      background: #fef2f2;
+    }
+
+    .help-hub-admin__row-remove:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .help-hub-admin__table .col-id {
+      font-variant-numeric: tabular-nums;
+      color: #475569;
+      white-space: nowrap;
+      width: 4rem;
+    }
+
+    .help-hub-admin__table .col-title {
+      font-weight: 600;
       color: #111827;
-      background: #fff;
-      box-sizing: border-box;
+      max-width: 22rem;
     }
-    .lessons-admin__form input:read-only {
+
+    .help-hub-admin__table .col-slug code {
+      font-size: 0.85em;
       background: #f1f5f9;
-      color: #64748b;
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      word-break: break-all;
     }
-    .lessons-admin__form textarea {
-      resize: vertical;
-      min-height: 72px;
+
+    .help-hub-admin__table .col-access {
+      white-space: nowrap;
+      width: 6rem;
     }
-    .lessons-admin__form-actions {
+
+    .help-hub-admin__table .col-associated-tip {
+      color: #475569;
+      max-width: 14rem;
+      word-break: break-word;
+    }
+
+    .help-hub-admin__th-actions,
+    .help-hub-admin__th-remove {
+      width: 1%;
+    }
+
+    .help-hub-admin__table thead th {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .help-hub-admin__table thead th.help-hub-admin__th-actions,
+    .help-hub-admin__table thead th.help-hub-admin__th-remove {
+      cursor: default;
+      user-select: auto;
+    }
+
+    .help-hub-admin__table thead th.tablesorter-headerAsc,
+    .help-hub-admin__table thead th.tablesorter-headerDesc {
+      background: #ecfdf5;
+      color: #14532d;
+    }
+
+    .help-hub-admin__actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.6rem;
-      margin-top: 1.1rem;
+      gap: 0.45rem;
+      align-items: center;
     }
-    .lessons-admin__form-actions--sticky {
-      position: sticky;
-      bottom: 0;
-      z-index: 8;
-      padding: 0.6rem 0;
-      margin-top: 1rem;
-      background: linear-gradient(to top, #fff 78%, rgba(255, 255, 255, 0));
-      border-top: 1px solid #e5e7eb;
+
+    .help-hub-admin__actions .kbm-btn {
+      font-size: 0.85rem;
+      padding: 0.35rem 0.6rem;
     }
   </style>
 
   <script>
     const API_BASE = "/api/admin/lessons";
+
     type LessonRow = Record<string, unknown>;
 
     let lessons: LessonRow[] = [];
-    let editingId: number | null = null;
-    let baseline: LessonRow | null = null;
-    let slugManual = false;
 
     const statusEl = document.getElementById("lessons-admin-status");
-    const modeEl = document.getElementById("lessons-admin-mode");
-    const tableBody = document.getElementById("lessons-table-body");
-    const form = document.getElementById("lessons-admin-form") as HTMLFormElement | null;
-    const fieldId = document.getElementById("field-id") as HTMLInputElement | null;
+    const loadingEl = document.getElementById("lessons-admin-loading");
+    const tableWrapEl = document.getElementById("lessons-table-wrap");
+    const tbodyEl = document.getElementById("lessons-table-body");
+    const emptyEl = document.getElementById("lessons-admin-empty");
 
     function setStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral") {
       if (!statusEl) return;
@@ -332,251 +298,54 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       statusEl.classList.toggle("is-ok", kind === "ok");
     }
 
-    function asString(v: unknown) {
-      return v === null || v === undefined ? "" : String(v);
-    }
-
     function getLessonId(row: LessonRow): number | null {
       const v = row?.id;
       const n = typeof v === "number" ? v : parseInt(String(v ?? ""), 10);
       return Number.isFinite(n) ? n : null;
     }
 
-    function deepClone<T>(x: T): T {
-      return JSON.parse(JSON.stringify(x)) as T;
+    function asString(v: unknown) {
+      return v === null || v === undefined ? "" : String(v);
     }
 
-    function slugifyTitle(raw: string) {
-      const s = raw
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .slice(0, 96);
-      return s || "lesson";
+    function associatedTipLabel(row: LessonRow): string {
+      const t = asString(row.associatedTip).trim();
+      return t || "—";
     }
 
-    function nextFreeId(): number {
-      if (lessons.length === 0) return 1;
-      const ids = lessons
-        .map((l) => getLessonId(l))
-        .filter((n): n is number => n !== null);
-      if (ids.length === 0) return 1;
-      return Math.max(...ids) + 1;
-    }
+    let tableSorterInited = false;
 
-    function textVal(name: string) {
-      const el = form?.elements?.namedItem(name);
-      return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement
-        ? el.value.trim()
-        : "";
-    }
-
-    function setField(name: string, value: string) {
-      const el = form?.elements?.namedItem(name);
-      if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) {
-        el.value = value;
-      }
-    }
-
-    function linesFromTextarea(name: string): string[] {
-      const el = form?.elements?.namedItem(name);
-      if (!(el instanceof HTMLTextAreaElement)) return [];
-      return el.value
-        .split(/\r?\n/)
-        .map((l) => l.trim())
-        .filter((l) => l.length > 0);
-    }
-
-    function linesToText(lines: unknown): string {
-      return Array.isArray(lines) ? lines.map((x) => String(x)).join("\n") : "";
-    }
-
-    function setIdReadonly(readonly: boolean) {
-      if (!fieldId) return;
-      fieldId.readOnly = readonly;
-    }
-
-    function loadRowToForm(row: LessonRow) {
-      baseline = deepClone(row);
-      const id = getLessonId(row);
-      if (fieldId && id !== null) fieldId.value = String(id);
-
-      setField("title", asString(row.title));
-      setField("slug", asString(row.slug));
-      setField("summary", asString(row.summary));
-      setField("type", asString(row.type) || "video");
-      setField("access", asString(row.access) || "free");
-      setField("vimeoEmbedUrl", asString(row.vimeoEmbedUrl));
-      setField("encouragement", asString(row.encouragement));
-      setField("exerciseTitle", asString(row.exerciseTitle));
-      setField("exerciseItems", linesToText(row.exerciseItems));
-      setField("noteTitle", asString(row.noteTitle));
-      setField("noteText", asString(row.noteText));
-      setField("supportImage", asString(row.supportImage));
-      setField("supportImageAlt", asString(row.supportImageAlt));
-      setField("templateLink", asString(row.templateLink));
-      setField("templateLinkText", asString(row.templateLinkText));
-
-      slugManual = true;
-    }
-
-    function clearFormNew() {
-      editingId = null;
-      baseline = null;
-      slugManual = false;
-      if (fieldId) fieldId.value = String(nextFreeId());
-      setIdReadonly(false);
-      setField("title", "");
-      setField("slug", "");
-      setField("summary", "");
-      setField("type", "video");
-      setField("access", "free");
-      setField("vimeoEmbedUrl", "");
-      setField("encouragement", "");
-      setField("exerciseTitle", "");
-      setField("exerciseItems", "");
-      setField("noteTitle", "");
-      setField("noteText", "");
-      setField("supportImage", "");
-      setField("supportImageAlt", "");
-      setField("templateLink", "");
-      setField("templateLinkText", "");
-      if (modeEl) modeEl.textContent = "New lesson — slug follows title until you edit it";
-    }
-
-    function buildLessonFromForm(): LessonRow | null {
-      const idRaw = textVal("id");
-      const id = parseInt(idRaw, 10);
-      if (!Number.isFinite(id) || id < 1) {
-        setStatus("id must be a positive number.", "err");
-        return null;
-      }
-
-      const title = textVal("title");
-      const slug = textVal("slug");
-      const summary = textVal("summary");
-      const type = textVal("type");
-      const access = textVal("access");
-      if (!title || !slug || !summary || !type || !access) {
-        setStatus("Required: title, slug, summary, type, access.", "err");
-        return null;
-      }
-
-      if (access !== "free" && access !== "member") {
-        setStatus('access must be "free" or "member".', "err");
-        return null;
-      }
-
-      const exerciseItems = linesFromTextarea("exerciseItems");
-
-      return {
-        id,
-        slug,
-        title,
-        summary,
-        type,
-        vimeoEmbedUrl: textVal("vimeoEmbedUrl"),
-        access,
-        encouragement: textVal("encouragement"),
-        exerciseTitle: textVal("exerciseTitle"),
-        exerciseItems,
-        noteTitle: textVal("noteTitle"),
-        noteText: textVal("noteText"),
-        supportImage: textVal("supportImage"),
-        supportImageAlt: textVal("supportImageAlt"),
-        templateLink: textVal("templateLink"),
-        templateLinkText: textVal("templateLinkText"),
+    function refreshTableSorter() {
+      const w = window as unknown as {
+        jQuery?: (sel: string) => {
+          length: number;
+          tablesorter: (opts?: object) => unknown;
+          trigger: (name: string, ...args: unknown[]) => unknown;
+        };
       };
-    }
-
-    function mergeLessonsWithRow(row: LessonRow): LessonRow[] {
-      const rid = getLessonId(row);
-      if (rid === null) return lessons;
-      const others = lessons.filter((l) => getLessonId(l) !== rid);
-      return [...others, row].sort((a, b) => (getLessonId(a) ?? 0) - (getLessonId(b) ?? 0));
-    }
-
-    function renderTable() {
-      if (!tableBody) return;
-      tableBody.innerHTML = lessons
-        .map((row) => {
-          const id = getLessonId(row);
-          const safeId = id !== null ? id : "—";
-          return `
-            <tr>
-              <td>${safeId}</td>
-              <td class="cell-title">${asString(row.title)}</td>
-              <td class="cell-slug">${asString(row.slug)}</td>
-              <td>${asString(row.type)}</td>
-              <td>${asString(row.access)}</td>
-              <td>
-                <div class="row-actions">
-                  <button type="button" class="kbm-btn kbm-btn-outline btn-edit" data-id="${id ?? ""}">Edit</button>
-                  <button type="button" class="kbm-btn kbm-btn-accent btn-delete" data-id="${id ?? ""}">Delete</button>
-                </div>
-              </td>
-            </tr>
-          `;
-        })
-        .join("");
-
-      tableBody.querySelectorAll(".btn-edit").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const raw = btn.getAttribute("data-id");
-          const id = raw ? parseInt(raw, 10) : NaN;
-          if (!Number.isFinite(id)) return;
-          const row = lessons.find((l) => getLessonId(l) === id);
-          if (!row) {
-            setStatus(`Lesson id ${id} not found.`, "err");
-            return;
-          }
-          editingId = id;
-          loadRowToForm(row);
-          setIdReadonly(true);
-          if (modeEl) modeEl.textContent = `Editing lesson id ${id}`;
-          setStatus(`Editing lesson id ${id}.`, "ok");
-          window.scrollTo({ top: document.getElementById("form-heading")?.offsetTop ?? 0, behavior: "smooth" });
-        });
-      });
-
-      tableBody.querySelectorAll(".btn-delete").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const raw = btn.getAttribute("data-id");
-          const id = raw ? parseInt(raw, 10) : NaN;
-          if (!Number.isFinite(id)) return;
-          if (!confirm(`Delete lesson id ${id}? This cannot be undone.`)) return;
-          void deleteLesson(id);
-        });
-      });
-    }
-
-    async function fetchLessons() {
-      setStatus("Loading lessons…");
-      try {
-        const res = await fetch(API_BASE);
-        const data = await res.json();
-        if (!res.ok || !data?.ok || !Array.isArray(data.lessons)) {
-          setStatus(data?.error || `Failed to load (${res.status})`, "err");
-          return;
+      const $ = w.jQuery;
+      if (!$) return;
+      const $tab = $("#lessons-admin-table");
+      if ($tab.length === 0) return;
+      if (lessons.length === 0) {
+        if (tableSorterInited) {
+          $tab.trigger("destroy");
+          tableSorterInited = false;
         }
-        lessons = data.lessons as LessonRow[];
-        renderTable();
-        if (editingId === null) {
-          clearFormNew();
-        } else {
-          const row = lessons.find((l) => getLessonId(l) === editingId);
-          if (row) {
-            loadRowToForm(row);
-            setIdReadonly(true);
-            if (modeEl) modeEl.textContent = `Editing lesson id ${editingId}`;
-          } else {
-            setStatus(`Lesson id ${editingId} no longer exists. Switched to new lesson.`, "err");
-            clearFormNew();
-          }
-        }
-        setStatus(`Loaded ${lessons.length} lesson(s).`, "ok");
-      } catch {
-        setStatus("Network error loading lessons.", "err");
+        return;
+      }
+      if (!tableSorterInited) {
+        $tab.tablesorter({
+          headers: {
+            0: { sorter: false },
+            1: { sorter: "digit" },
+            6: { sorter: false },
+          },
+          sortList: [[1, 1]],
+        });
+        tableSorterInited = true;
+      } else {
+        $tab.trigger("update");
       }
     }
 
@@ -595,84 +364,122 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       return true;
     }
 
-    async function saveLesson() {
-      const row = buildLessonFromForm();
-      if (!row) return;
-      const rid = getLessonId(row);
-      if (rid === null) return;
-
-      if (editingId !== null && rid !== editingId) {
-        setStatus("Do not change id while editing; cancel and add a new lesson for a new id.", "err");
-        return;
-      }
-
-      const next = mergeLessonsWithRow(row);
-      setStatus("Saving…");
-      const ok = await postLessons(next);
-      if (!ok) return;
-
-      baseline = deepClone(row);
-      editingId = rid;
-      setIdReadonly(true);
-      renderTable();
-      if (modeEl) modeEl.textContent = `Editing lesson id ${rid} (saved)`;
-      setStatus(`Saved lesson id ${rid}.`, "ok");
-    }
-
     async function deleteLesson(id: number) {
+      if (!confirm(`Delete lesson id ${id}? This cannot be undone.`)) return;
       setStatus("Deleting…");
       const next = lessons.filter((l) => getLessonId(l) !== id);
       const ok = await postLessons(next);
       if (!ok) return;
-
-      renderTable();
-      if (editingId === id) {
-        clearFormNew();
-      }
       setStatus(`Deleted lesson id ${id}.`, "ok");
+      renderTable();
     }
 
-    function cancelEdit() {
-      if (editingId !== null && baseline) {
-        loadRowToForm(baseline);
-        setIdReadonly(true);
-        if (modeEl) modeEl.textContent = `Editing lesson id ${editingId} — reverted unsaved changes`;
-        setStatus("Reverted to last loaded values for this lesson.", "ok");
+    function renderTable() {
+      if (!tbodyEl || !loadingEl || !tableWrapEl || !emptyEl) return;
+      loadingEl.hidden = true;
+      if (lessons.length === 0) {
+        tableWrapEl.hidden = true;
+        emptyEl.hidden = false;
+        tbodyEl.innerHTML = "";
+        if (tableSorterInited) {
+          const w = window as unknown as { jQuery?: (sel: string) => { trigger: (name: string) => unknown } };
+          w.jQuery?.("#lessons-admin-table").trigger("destroy");
+          tableSorterInited = false;
+        }
         return;
       }
-      clearFormNew();
-      setStatus("Cleared new lesson form.", "ok");
+      emptyEl.hidden = true;
+      tableWrapEl.hidden = false;
+      tbodyEl.innerHTML = "";
+
+      for (const row of lessons) {
+        const id = getLessonId(row);
+        const title = asString(row.title) || "(no title)";
+        const slug = asString(row.slug).trim();
+        const access = asString(row.access).trim() || "—";
+        const tr = document.createElement("tr");
+
+        const tdRemove = document.createElement("td");
+        tdRemove.className = "col-remove";
+        const rmBtn = document.createElement("button");
+        rmBtn.type = "button";
+        rmBtn.className = "help-hub-admin__row-remove";
+        rmBtn.textContent = "×";
+        rmBtn.setAttribute("aria-label", `Delete lesson: ${title}`);
+        rmBtn.disabled = id === null;
+        rmBtn.addEventListener("click", () => {
+          if (id === null) return;
+          void deleteLesson(id);
+        });
+        tdRemove.appendChild(rmBtn);
+
+        const tdId = document.createElement("td");
+        tdId.className = "col-id";
+        tdId.textContent = id !== null ? String(id) : "—";
+
+        const tdTitle = document.createElement("td");
+        tdTitle.className = "col-title";
+        tdTitle.textContent = title;
+
+        const tdSlug = document.createElement("td");
+        tdSlug.className = "col-slug";
+        const code = document.createElement("code");
+        code.textContent = slug || "—";
+        tdSlug.appendChild(code);
+
+        const tdAccess = document.createElement("td");
+        tdAccess.className = "col-access";
+        tdAccess.textContent = access;
+
+        const tdTip = document.createElement("td");
+        tdTip.className = "col-associated-tip";
+        tdTip.textContent = associatedTipLabel(row);
+
+        const tdActions = document.createElement("td");
+        const wrap = document.createElement("div");
+        wrap.className = "help-hub-admin__actions";
+
+        const editLink = document.createElement("a");
+        editLink.className = "kbm-btn kbm-btn-outline";
+        editLink.href = id !== null ? `/admin/lessons-edit?id=${id}` : "/admin/lessons-edit";
+        editLink.textContent = "Edit";
+
+        wrap.appendChild(editLink);
+        tdActions.appendChild(wrap);
+
+        tr.appendChild(tdRemove);
+        tr.appendChild(tdId);
+        tr.appendChild(tdTitle);
+        tr.appendChild(tdSlug);
+        tr.appendChild(tdAccess);
+        tr.appendChild(tdTip);
+        tr.appendChild(tdActions);
+        tbodyEl.appendChild(tr);
+      }
+
+      refreshTableSorter();
     }
 
-    document.getElementById("btn-add-lesson")?.addEventListener("click", () => {
-      editingId = null;
-      clearFormNew();
-      setStatus("New lesson — fill required fields, then Save.", "ok");
-      window.scrollTo({ top: document.getElementById("form-heading")?.offsetTop ?? 0, behavior: "smooth" });
-    });
-
-    document.getElementById("btn-save-lesson")?.addEventListener("click", () => {
-      void saveLesson();
-    });
-
-    document.getElementById("btn-cancel-lesson")?.addEventListener("click", () => {
-      cancelEdit();
-    });
-
-    document.getElementById("field-title")?.addEventListener("input", () => {
-      if (editingId !== null) return;
-      if (slugManual) return;
-      if (textVal("slug") !== "") return;
-      setField("slug", slugifyTitle(textVal("title")));
-    });
-
-    document.getElementById("field-slug")?.addEventListener("input", () => {
-      const v = textVal("slug");
-      if (v === "") slugManual = false;
-      else slugManual = true;
-    });
-
-    form?.addEventListener("submit", (e) => e.preventDefault());
+    async function fetchLessons() {
+      setStatus("Loading lessons…", "neutral");
+      try {
+        const res = await fetch(API_BASE);
+        const data = (await res.json()) as { ok?: boolean; lessons?: LessonRow[]; error?: string };
+        if (!res.ok || !data.ok || !Array.isArray(data.lessons)) {
+          setStatus(data.error || `Failed to load (${res.status})`, "err");
+          if (loadingEl) loadingEl.hidden = false;
+          if (tableWrapEl) tableWrapEl.hidden = true;
+          if (emptyEl) emptyEl.hidden = true;
+          return;
+        }
+        lessons = data.lessons;
+        setStatus(`Loaded ${lessons.length} lesson(s).`, "ok");
+        renderTable();
+      } catch {
+        setStatus("Network error loading lessons.", "err");
+        if (loadingEl) loadingEl.hidden = false;
+      }
+    }
 
     void fetchLessons();
   </script>

@@ -1,0 +1,505 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Tooltip from "../../components/Tooltip.astro";
+import PrintFooter from "../../components/common/PrintFooter.astro";
+import ActionBar from "../../components/wizards/ActionBar.astro";
+import WhyUseThisToolTooltip from "../../components/common/WhyUseThisToolTooltip.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
+
+const pageUrl = "https://knitbymachine.com/wizards/gauge-difference";
+
+// Fetch wizard metadata at build time
+const wizardSlug = 'gauge-difference';
+let whyUseThisTool = '';
+
+try {
+  const response = await fetch(`https://api.github.com/repos/sjalowiec/knitbymachine-site/contents/astro-site/src/content/wizards/${wizardSlug}.json`);
+  if (response.ok) {
+    const fileData = await response.json();
+    const contentResponse = await fetch(fileData.download_url);
+    if (contentResponse.ok) {
+      const wizardData = await contentResponse.json();
+      whyUseThisTool = wizardData.whyUseThisTool || '';
+    }
+  }
+} catch (e) {
+  // Silently fail - tooltip just won't show
+}
+---
+
+<BaseLayout 
+  title="What a Difference a Stitch Makes | Knit by Machine" 
+  description="Compare two gauges and see how even one stitch can change your project's size. A tiny change in gauge can make a big difference.">
+
+<style>
+.wizard-page {
+  padding-top: 120px;
+  padding-bottom: 3rem;
+  min-height: 100vh;
+  background: var(--page-bg);
+}
+
+.page-header {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  padding: 0 1rem;
+}
+
+.page-header-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .page-header-title {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+.page-header h1 {
+  color: var(--kbm-green);
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.page-header p {
+  color: #6b7280;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.video-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: #e5e7eb;
+  color: #374151;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: all 0.2s;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.video-button:hover {
+  background: #d1d5db;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.wizard-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+
+.gauge-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.gauge-input-group {
+  background: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.gauge-input-group:focus-within {
+  border-color: var(--kbm-green);
+}
+
+.gauge-input-group label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: var(--kbm-green);
+  font-size: 1.05rem;
+}
+
+.gauge-input-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  transition: border-color 0.2s;
+  text-align: center;
+  font-weight: 600;
+}
+
+.gauge-input-group input:focus {
+  outline: none;
+  border-color: var(--kbm-green);
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 2rem;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.comparison-table thead {
+  background: var(--kbm-green);
+  color: white;
+}
+
+.comparison-table th {
+  padding: 1rem;
+  font-weight: 700;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.comparison-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.comparison-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.comparison-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.comparison-table .stitches-col {
+  font-weight: 600;
+  color: var(--kbm-green);
+}
+
+.comparison-table .difference-col {
+  font-weight: 700;
+  color: #dc2626;
+}
+
+.callout {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(82, 104, 45, 0.1), rgba(82, 104, 45, 0.05));
+  border-radius: 12px;
+  text-align: center;
+  border: 2px solid rgba(82, 104, 45, 0.2);
+  position: relative;
+}
+
+.callout-badge {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--kbm-green);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.callout p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--kbm-green);
+  margin: 8px 0 0 0;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .gauge-inputs {
+    grid-template-columns: 1fr;
+  }
+  
+  .comparison-table {
+    font-size: 0.85rem;
+  }
+  
+  .comparison-table th,
+  .comparison-table td {
+    padding: 0.5rem;
+  }
+}
+
+.back-link {
+  display: inline-block;
+  color: #52682D;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #3d4e21;
+  text-decoration: underline;
+}
+
+/* Print styles - hide input sections */
+@media print {
+  .wizard-page {
+    padding-top: 0 !important;
+    background: white !important;
+  }
+  
+  .page-header,
+  .video-button,
+  .back-link,
+  .toggle-group,
+  .form-grid,
+  .section-label,
+  .section-divider,
+  .floating-input,
+  .form-row-2,
+  .form-row-3,
+  .icon-toggle-group,
+  .calculate-btn,
+  .results-actions,
+  .no-print,
+  .units-toggle,
+  .input-grid,
+  .input-group,
+  form {
+    display: none !important;
+  }
+  
+  .wizard-container,
+  .calculator-card {
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: white !important;
+    border: none !important;
+  }
+  
+  .results,
+  #results {
+    border-top: none !important;
+    padding-top: 0 !important;
+    background: white !important;
+  }
+}
+
+</style>
+
+  <div class="wizard-page">
+    <div style="max-width: 800px; margin: 0 auto; padding: 0 1rem;">
+      <WizardBackLink category="tool" />
+    </div>
+
+  <div class="page-header">
+    <div class="page-header-title">
+      <h1>What a Difference a Stitch Makes</h1>
+      {whyUseThisTool && (
+        <WhyUseThisToolTooltip text={whyUseThisTool} variant="inline" />
+      )}
+    </div>
+    <p>
+      A tiny change in gauge can make a big difference. See how your project grows (or shrinks) — one stitch at a time.
+    </p>
+  </div>
+
+  <div class="wizard-container">
+    <!-- Unit Toggle - left-aligned, above first input -->
+    <UnitToggle id="gaugediff" />
+
+    <!-- Gauge Inputs -->
+    <div class="gauge-inputs">
+      <div class="gauge-input-group">
+        <label for="gauge1">Gauge 1 (stitches per <span id="gauge1-label">4"</span>)</label>
+        <input 
+          type="number" 
+          id="gauge1" 
+          step="0.1" 
+          placeholder="e.g., 20"
+        />
+      </div>
+      <div class="gauge-input-group">
+        <label for="gauge2">Gauge 2 (stitches per <span id="gauge2-label">4"</span>)</label>
+        <input 
+          type="number" 
+          id="gauge2" 
+          step="0.1" 
+          placeholder="e.g., 21"
+        />
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results" style="display: none;">
+      <ActionBar />
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Stitches</th>
+            <th>Width @ Gauge 1</th>
+            <th>Width @ Gauge 2</th>
+            <th>Difference</th>
+          </tr>
+        </thead>
+        <tbody id="comparison-rows">
+          <!-- Rows will be inserted here -->
+        </tbody>
+      </table>
+
+      <!-- Callout -->
+      <div class="callout" id="callout">
+        <div class="callout-badge">What this means</div>
+        <p>
+          Now imagine this difference across the full width of your sweater or blanket — even a half-stitch can change your project by several inches!
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <PrintFooter url={pageUrl} />
+</div>
+
+<script>
+  // State management
+  let units = 'inches';
+  let gauge1 = '';
+  let gauge2 = '';
+
+  // DOM elements
+  const btnInches = document.getElementById('gaugediff-btn-inches');
+  const btnCm = document.getElementById('gaugediff-btn-cm');
+  const inputGauge1 = document.getElementById('gauge1');
+  const inputGauge2 = document.getElementById('gauge2');
+  const gauge1Label = document.getElementById('gauge1-label');
+  const gauge2Label = document.getElementById('gauge2-label');
+  const resultsSection = document.getElementById('results');
+  const comparisonRowsEl = document.getElementById('comparison-rows');
+
+  // Action Bar buttons
+  const actionBar = document.getElementById('action-bar');
+  const startOverBtn = document.getElementById('start-over-btn');
+  const printBtn = document.getElementById('print-btn');
+
+  // Start Over handler
+  if (startOverBtn) {
+    startOverBtn.addEventListener('click', () => {
+      resultsSection.style.display = 'none';
+      if (actionBar) actionBar.style.display = 'none';
+    });
+  }
+
+  // Print handler
+  if (printBtn) {
+    printBtn.addEventListener('click', () => {
+      window.print();
+    });
+  }
+
+  // Update units UI
+  function updateUnitsUI() {
+    if (units === 'inches') {
+      btnInches.classList.add('active');
+      btnCm.classList.remove('active');
+      gauge1Label.textContent = '4"';
+      gauge2Label.textContent = '4"';
+    } else {
+      btnCm.classList.add('active');
+      btnInches.classList.remove('active');
+      gauge1Label.textContent = '10cm';
+      gauge2Label.textContent = '10cm';
+    }
+  }
+
+  updateUnitsUI();
+
+  // Unit toggle handlers
+  btnInches.addEventListener('click', () => {
+    units = 'inches';
+    updateUnitsUI();
+    calculate();
+  });
+
+  btnCm.addEventListener('click', () => {
+    units = 'cm';
+    updateUnitsUI();
+    calculate();
+  });
+
+  // Listen for unit changes from UnitToggle component
+  window.addEventListener('kbm:units-change', (e) => {
+    units = e.detail.unit === 'in' ? 'inches' : 'cm';
+    updateUnitsUI();
+    calculate();
+  });
+
+  // Input handlers
+  inputGauge1.addEventListener('input', (e) => {
+    gauge1 = e.target.value;
+    calculate();
+  });
+
+  inputGauge2.addEventListener('input', (e) => {
+    gauge2 = e.target.value;
+    calculate();
+  });
+
+  // Calculate and display comparison
+  function calculate() {
+    const g1 = parseFloat(gauge1) || 0;
+    const g2 = parseFloat(gauge2) || 0;
+
+    if (g1 > 0 && g2 > 0) {
+      const factor = units === 'inches' ? 4 : 10;
+      const unitDisplay = units === 'inches' ? 'inches' : 'cm';
+      
+      // Generate comparison rows
+      let rowsHTML = '';
+      for (let stitches = 50; stitches <= 200; stitches += 25) {
+        const width1 = (stitches / g1) * factor;
+        const width2 = (stitches / g2) * factor;
+        const difference = Math.abs(width1 - width2);
+        
+        rowsHTML += `
+          <tr>
+            <td class="stitches-col">${stitches}</td>
+            <td>${width1.toFixed(1)} ${unitDisplay}</td>
+            <td>${width2.toFixed(1)} ${unitDisplay}</td>
+            <td class="difference-col">${difference.toFixed(1)} ${unitDisplay}</td>
+          </tr>
+        `;
+      }
+      
+      comparisonRowsEl.innerHTML = rowsHTML;
+      resultsSection.style.display = 'block';
+      if (actionBar) actionBar.style.display = 'flex';
+      if (printBtn) printBtn.style.display = 'block';
+    } else {
+      resultsSection.style.display = 'none';
+      if (actionBar) actionBar.style.display = 'none';
+    }
+  }
+
+  // Initial calculation
+  calculate();
+</script>
+
+</BaseLayout>

@@ -50,8 +50,7 @@
     ],
     "mediaPoster": "",
     "memberHeading": "",
-    "memberText": "",
-    "readyToPublish": false
+    "memberText": ""
   },
   {
     "id": 1002,
@@ -98,8 +97,7 @@
     ],
     "featured": false,
     "memberHeading": "",
-    "memberText": "",
-    "readyToPublish": false
+    "memberText": ""
   },
   {
     "title": "Working Within Your Knitting Machine’s Limits",
@@ -125,7 +123,6 @@
     "memberHeading": "",
     "memberText": "",
     "isNew": true,
-    "readyToPublish": true,
     "tryThis": {
       "quickActionTitle": "",
       "quickAction": [
@@ -151,44 +148,45 @@
     ]
   },
   {
-    "title": "this is the title",
-    "metaTitle": "",
-    "metaDescription": "",
-    "allMachines": false,
+    "title": "Measure Gauge on a Knitting Machine",
+    "slug": "measure-gauge-on-a-knitting-machine",
+    "featured": true,
+    "metaTitle": "How to knit a swatch on the knitting machine",
+    "metaDescription": "A simple,  accurate way to measure gauge on your knitting machine using stitch and row counts",
     "appliesTo": [],
-    "slug": "this-is-the-title",
-    "status": "published",
-    "featured": false,
-    "category": "machine-not-working",
-    "categoryPill": "categor pill",
-    "question": "this i the question",
-    "bubbleAnswer": "bubble answer",
-    "hook": "hook",
-    "mediaType": "",
-    "mediaUrl": "",
+    "allMachines": true,
+    "category": "pattern-design-confusion",
+    "categoryPill": "",
+    "question": "How do I knit a swatch that gives me accurate gauge?",
+    "bubbleAnswer": "Knit a swatch large enough to measure accurately, work in your intended stitch pattern, and avoid measuring the edges. Mark a section in the center with a set number of stitches and rows so you can measure your fabric without distortion.",
+    "hook": "Don't count - measure a defined section of stitches and rows.",
+    "mediaType": "image",
+    "mediaUrl": "/images/tips/measure-swatch.gif",
     "mediaPoster": "",
-    "mediaAlt": "",
-    "aboutTitle": "about title",
-    "bridge": "why this works",
-    "tryThisTitle": "try this title",
+    "mediaAlt": "accurately measure a gauge swatch for machine knitting",
+    "aboutTitle": "What's this about",
+    "bridge": "Most knitters are taught:<br>\n“Measure 4 inches and count stitches”<br>\nThat works for hand knitting…<br>\n\n<br>But for machine knitting, it can be less reliable.<br>\nThis method works better because:<br>\n<ul>\n<li>You don't have to count or guess </li>\n<li>You’re working with exact stitch counts (like your machine does)</li>\n<li>You’re not trying to “fit” your knitting into a fixed space</li>\n<li>You can even account for 1/2  stitch</lil>\n</ul>",
+    "tryThisTitle": "The 'No-Count' Method for Accurate Gauge",
     "memberHeading": "",
     "memberText": "",
-    "isNew": false,
-    "readyToPublish": false,
+    "isNew": true,
     "tryThis": {
-      "quickActionTitle": "quick action title",
+      "quickActionTitle": "",
       "quickAction": [
-        "quick action 1",
-        "quick action 2"
-      ]
+        "Think in stitches and rows—not inches",
+        "Start with a set number of stitches and rows (see guide below)",
+        "Measure the space they create",
+        "👉 Use the Knit it Now <a href=\"/tools/gauge-calculator\">Gauge Calculator</a> to turn your measurements into usable numbers",
+        "Calculation Tip: (Number of stitches / width in inches) = Stitches per inch.",
+        "Use this gauge—it reflects how your yarn, tension, and machine actually knit."
+      ],
+      "quickActionNote": "<table class='gauge-table' style=\"width:60%; margin:10px auto;\">\n  <tr><td colspan='2'><b>MEASURE this many stitches and rows:</b></td></tr>\n  <tr><td>Standard (4.5mm)</td><td>40 stitches × 60 rows</td></tr>\n  <tr><td>Mid-gauge (6.5mm)</td><td>30 stitches × 40 rows</td></tr>\n  <tr><td>Bulky (9mm)</td><td>20 stitches × 30 rows</td></tr>\n</table>These are the stitches and rows to <b>measure</b> - <u>make the swatch larger so you can measure in the center not the edges</u><br>\n\n"
     },
-    "trySteps": [
-      "try steps",
-      "try steps"
-    ],
-    "id": 1004,
     "relatedLessons": [
-      "title"
-    ]
+      "knit-a-proper-swatch"
+    ],
+    "status": "published",
+    "id": 1004,
+    "sortOrder": 20
   }
 ]
