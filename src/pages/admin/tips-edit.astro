@@ -181,7 +181,9 @@ const categoryOptions = Array.isArray(categoriesData)
     const rawSlug = params.get("slug");
     const loadSlug = rawSlug !== null && rawSlug.trim() !== "" ? rawSlug.trim() : null;
     const rawId = params.get("id");
-    if (!loadSlug && rawId && /^\d+$/.test(rawId)) editingId = parseInt(rawId, 10);
+    if (rawId && /^\d+$/.test(rawId)) editingId = parseInt(rawId, 10);
+    /** True when the URL means “edit existing” (slug and/or numeric id param), even before fetch finishes. */
+    const urlRequestsEdit = loadSlug !== null || (rawId !== null && /^\d+$/.test(rawId));
 
     const statusEl = document.getElementById("help-hub-admin-status");
     const modeEl = document.getElementById("help-hub-admin-mode");
@@ -195,12 +197,41 @@ const categoryOptions = Array.isArray(categoriesData)
       statusEl.classList.toggle("is-error", kind === "err");
       statusEl.classList.toggle("is-ok", kind === "ok");
     }
+    function updateSaveButtonState() {
+      const btn = document.getElementById("btn-save-tip");
+      if (!(btn instanceof HTMLButtonElement)) return;
+      if (urlRequestsEdit) {
+        const waiting = baseline === null || editingId === null;
+        btn.disabled = waiting;
+        btn.title = waiting ? "Loading tip — Save is enabled after the record loads." : "";
+      } else {
+        btn.disabled = false;
+        btn.title = "";
+      }
+    }
     function getTipId(row: TipRow) { const v = row?.id; const n = parseInt(String(v ?? ""), 10); return Number.isFinite(n) ? n : null; }
     function slugifyTitle(raw: string) { const s = raw.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 96); return s || "help-hub-tip"; }
     function linesFromTextarea(name: string) { const el = form?.elements?.namedItem(name); if (!(el instanceof HTMLTextAreaElement)) return []; return el.value.split(/\r?\n/).map((l) => l.trim()).filter(Boolean); }
-    function textVal(name: string) { const el = form?.elements?.namedItem(name); return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement ? el.value.trim() : ""; }
+    function textVal(name: string) {
+      if (name === "bridge") {
+        const byId = document.getElementById("field-bridge");
+        if (byId instanceof HTMLTextAreaElement) return byId.value.trim();
+      }
+      const el = form?.elements?.namedItem(name);
+      return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement ? el.value.trim() : "";
+    }
     function checked(name: string) { const el = form?.elements?.namedItem(name); return el instanceof HTMLInputElement && el.type === "checkbox" ? el.checked : false; }
-    function setField(name: string, value: string) { const el = form?.elements?.namedItem(name); if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) el.value = value; }
+    function setField(name: string, value: string) {
+      if (name === "bridge") {
+        const byId = document.getElementById("field-bridge");
+        if (byId instanceof HTMLTextAreaElement) {
+          byId.value = value;
+          return;
+        }
+      }
+      const el = form?.elements?.namedItem(name);
+      if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) el.value = value;
+    }
     function setChecked(name: string, value: boolean) { const el = form?.elements?.namedItem(name); if (el instanceof HTMLInputElement && el.type === "checkbox") el.checked = value; }
     function linesToText(lines: unknown) { return Array.isArray(lines) ? lines.map((x: unknown) => String(x)).join("\n") : ""; }
     function deepClone<T>(x: T): T { return JSON.parse(JSON.stringify(x)) as T; }
@@ -321,6 +352,7 @@ const categoryOptions = Array.isArray(categoriesData)
     function loadRowToForm(row: TipRow) {
       baseline = deepClone(row);
       const id = getTipId(row);
+      if (id !== null) editingId = id;
       if (fieldId) { fieldId.value = id !== null ? String(id) : ""; fieldId.placeholder = id !== null ? String(id) : "(assigned on save)"; }
       setField("title", String(row.title ?? "")); setField("slug", String(row.slug ?? "")); setField("status", String(row.status ?? "draft")); setChecked("featured", row.featured === true);
       setField("metaTitle", String(row.metaTitle ?? ""));
@@ -344,6 +376,7 @@ const categoryOptions = Array.isArray(categoriesData)
       setField("sortOrder", row.sortOrder !== undefined && row.sortOrder !== null ? String(row.sortOrder) : "");
       setChecked("isNew", row.isNew === true); setChecked("readyToPublish", row.readyToPublish === true); setField("trySteps", linesToText(row.trySteps));
       slugManual = true; refreshPreview();
+      updateSaveButtonState();
     }
     function clearFormNew() {
       editingId = null; baseline = null; slugManual = false;
@@ -355,6 +388,7 @@ const categoryOptions = Array.isArray(categoriesData)
       setField("status","draft"); setChecked("featured", false); setChecked("isNew", false); setChecked("readyToPublish", false);
       if (modeEl) modeEl.textContent = "New tip — slug will follow title until you edit slug";
       refreshPreview();
+      updateSaveButtonState();
     }
 
     async function fetchTips() {
@@ -374,7 +408,6 @@ const categoryOptions = Array.isArray(categoriesData)
             clearFormNew();
             return;
           }
-          editingId = getTipId(row);
           loadRowToForm(row);
           if (modeEl) modeEl.textContent = `Editing: ${loadSlug}`;
           setStatus(`Loaded tip "${loadSlug}".`, "ok");
@@ -398,10 +431,18 @@ const categoryOptions = Array.isArray(categoriesData)
         setStatus("New tip — fill the form and save.", "neutral");
       } catch {
         setStatus("Network error loading tips.", "err");
+      } finally {
+        updateSaveButtonState();
       }
     }
 
     async function saveTip() {
+      if (urlRequestsEdit) {
+        if (baseline === null || editingId === null) {
+          setStatus("Still loading this tip — Save stays disabled until the record and id are ready.", "err");
+          return;
+        }
+      }
       const row = buildRow();
       const titleEl = document.getElementById("field-title") as HTMLInputElement | null;
       const slugEl = document.getElementById("field-slug") as HTMLInputElement | null;
@@ -409,18 +450,39 @@ const categoryOptions = Array.isArray(categoriesData)
       const slug = String(slugEl?.value ?? row.slug ?? "").trim();
       row.title = title;
       row.slug = slug;
+      const bridgeEl = document.getElementById("field-bridge");
+      row.bridge =
+        bridgeEl instanceof HTMLTextAreaElement
+          ? bridgeEl.value.trim()
+          : String(row.bridge ?? "").trim();
       const category = String(row.category ?? "").trim(); const status = String(row.status ?? "").trim();
       if (!title || !slug || !category || !status) { setStatus("Fill required fields: title, slug, category, status.", "err"); return; }
       const payload = deepClone(row);
       payload.title = title;
       payload.slug = slug;
       delete payload.id;
+      async function parseSaveResponse(res: Response): Promise<Record<string, unknown>> {
+        const rawText = await res.text();
+        const snippet = rawText.trim().replace(/\s+/g, " ").slice(0, 200);
+        if (!rawText.trim()) {
+          return { ok: false, error: `Save failed: HTTP ${res.status} with empty body.` };
+        }
+        try {
+          return JSON.parse(rawText) as Record<string, unknown>;
+        } catch (e) {
+          console.error("[tips-edit save] Non-JSON response", res.status, rawText.slice(0, 400), e);
+          return {
+            ok: false,
+            error: `Save failed: HTTP ${res.status}, body was not JSON.${snippet ? ` Preview: ${snippet}` : ""}`,
+          };
+        }
+      }
       try {
-        if (editingId === null) {
+        if (!urlRequestsEdit) {
           const res = await fetch(API_BASE, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-          const data = await res.json();
+          const data = await parseSaveResponse(res);
           if (!res.ok || !data?.ok || !data.tip) {
-            setStatus(data?.error || `Save failed (${res.status})`, "err");
+            setStatus(String(data?.error || `Save failed (${res.status})`), "err");
             return;
           }
           setStatus("Saved.", "ok");
@@ -431,15 +493,16 @@ const categoryOptions = Array.isArray(categoriesData)
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ ...payload, id: editingId, title, slug }),
           });
-          const data = await res.json();
+          const data = await parseSaveResponse(res);
           if (!res.ok || !data?.ok || !data.tip) {
-            setStatus(data?.error || `Save failed (${res.status})`, "err");
+            setStatus(String(data?.error || `Save failed (${res.status})`), "err");
             return;
           }
           setStatus("Saved.", "ok");
           window.location.href = "/admin/tips-admin";
         }
-      } catch {
+      } catch (e) {
+        console.error("[tips-edit save] Thrown error", e);
         setStatus("Network error while saving.", "err");
       }
     }
@@ -470,6 +533,7 @@ const categoryOptions = Array.isArray(categoriesData)
       refreshPreview();
     });
     renderRelatedLessonsChosenList();
+    updateSaveButtonState();
     void fetchTips();
   </script>
 </BaseLayout>

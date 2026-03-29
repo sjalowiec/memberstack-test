@@ -34,11 +34,25 @@ const lessons = lessonsFile as Lesson[];
 const helpHubTips = helpHubFile as HelpHubTip[];
 
 const { slug } = Astro.params;
-
+console.log("Looking for slug:", slug);
+console.log("Available slugs:", lessons.map(l => l.slug));
 const lesson = lessons.find((lesson) => lesson.slug === slug);
 
 if (!lesson) {
-  throw new Error("Lesson not found");
+  return new Response(
+    JSON.stringify(
+      {
+        slug,
+        availableSlugs: lessons.map((l) => l.slug),
+      },
+      null,
+      2
+    ),
+    {
+      status: 404,
+      headers: { "Content-Type": "application/json" },
+    }
+  );
 }
 
 /** Raw Vimeo field from JSON: trim string or coerce finite number to string. */
@@ -272,8 +286,7 @@ const hasSupportCard =
         >
           <div class="lesson-video-modal__inner">
             <button type="button" class="lesson-video-modal__close" aria-label="Close video">
-              ×
-            </button>
+              ×            </button>
             <h2 id="lesson-video-modal-title" class="lesson-video-modal__sr-title">
               Lesson video
             </h2>

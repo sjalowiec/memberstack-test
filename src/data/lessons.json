@@ -35,7 +35,7 @@
     "id": 102,
     "slug": "change-your-stitch-pattern-to-change-your-width",
     "title": "Change Your Stitch Pattern to Change Your Width",
-    "summary": "Different stitch patterns don’t just use different amounts of yarn—they also knit to different widths. Learn how to use stitch choice to make your project fit your machine (and your yarn).",
+    "summary": "Different stitch patterns don’t just use different amounts of yarn - they also knit to different widths. Learn how to use stitch choice to make your project fit your machine (and your yarn).",
     "type": "video",
     "vimeoEmbedUrl": "https://player.vimeo.com/video/151857740",
     "access": "free",
@@ -50,10 +50,10 @@
       "Measure each swatch and record the width difference.",
       "Consider how changing the stitch pattern could help your project fit within your needle limits."
     ],
-    "noteTitle": "Stitch pattern changes your fabric size",
+    "noteTitle": "Stitch patterns cab change your knitted piece size",
     "noteText": "Even with the same number of stitches, different stitch patterns can produce very different widths. Lace tends to open up and create more width, while slip and tuck stitches often pull in and create a denser, narrower fabric.",
-    "supportImage": "",
-    "supportImageAlt": "",
+    "supportImage": "/images/lessons/stitch-types.webp",
+    "supportImageAlt": "compare machine knit stitch patterns for weight and size",
     "templateLink": "",
     "templateLinkText": ""
   },

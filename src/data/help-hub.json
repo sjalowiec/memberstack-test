@@ -58,29 +58,30 @@
     "slug": "sandwich-neckband-finish",
     "status": "published",
     "sortOrder": 10,
-    "category": "The Finishing Touch",
+    "category": "edges-finishing-assembly",
     "categoryPill": "Pro-Finish",
     "title": "The Perfect Sandwich Band",
-    "metaTitle": "",
-    "metaDescription": "",
+    "metaTitle": "Create a Professional Neckline Finish on Your Knitting Machine",
+    "metaDescription": "Learn how to hide raw edges with a clean, reversible band finish. This simple technique gives your knitted necklines a polished, boutique-quality result.",
     "allMachines": true,
     "appliesTo": [],
-    "question": "How do I finish a raw or cut edge so it looks professional?",
+    "question": "How do I create a clean, professional band finish for my neckline?",
     "hook": "Give your necklines a boutique-quality finish that looks great on both sides.",
-    "bubbleAnswer": "Encase the raw edge between two knitted layers for a clean, reversible finish.",
+    "bubbleAnswer": "Encase the raw edge between two knitted layers for a clean, reversible finish - perfect for cut 'n sew.",
     "mediaType": "vimeo",
     "mediaUrl": "1177947516",
     "mediaPoster": "images/posters/sandwich-band-poster.jpg",
     "mediaAlt": "Sue demonstrating how to sandwich a cut knitted edge between two band layers on the machine.",
     "aboutTitle": "About This Finish",
-    "bridge": "A raw, cut edge doesn't have to be a weakness; it's an opportunity for a high-end finish. By 'sandwiching' that edge between two mirrored band pieces, you hide the cut stitches completely. The secret to a professional look is 'graded tension'—knitting the band slightly tighter at the curves so it hugs the neckline perfectly without ruffling or flipping.",
+    "bridge": "This sandwich band finish (also known as an industrial band) creates a clean, professional edge by enclosing the stitches between two knitted layers. The result is smooth, polished, and looks beautiful on both sides.<br>\n\nIt works whether you’re finishing a cut edge or a shaped edge - the goal is the same: completely hide the edge for a refined, finished look.<br>\n\nThe secret to a professional result is graded tension - knitting the band slightly tighter at curves so it hugs the neckline without ruffling or flipping.",
     "tryThisTitle": "Try This",
     "tryThis": {
       "quickActionTitle": "Knit a sandwich band",
       "quickAction": [
         "Knit the first half of the band",
         "Hang the neckline edge onto the needles",
-        "Knit the second half of the band to enclose the edge"
+        "Knit the second half of the band",
+        "Join the bands to enclose the edge"
       ]
     },
     "relatedLessons": [
@@ -94,7 +95,11 @@
       "intermediate",
       "lace",
       "tuck"
-    ]
+    ],
+    "featured": false,
+    "memberHeading": "",
+    "memberText": "",
+    "readyToPublish": false
   },
   {
     "title": "Working Within Your Knitting Machine’s Limits",
@@ -107,15 +112,15 @@
     "featured": false,
     "category": "pattern-design-confusion",
     "categoryPill": "",
-    "question": "I don’t have enough needles for this—now what?",
+    "question": "I don’t have enough needles for this - now what?",
     "bubbleAnswer": "Adjust your yarn, stitch pattern, or construction method to create the required width without needing more needles",
-    "hook": "You can still knit the project you want—even with fewer needles.",
+    "hook": "You can still knit the project you want - even with fewer needles.",
     "mediaType": "vimeo",
     "mediaUrl": "1177421890",
     "mediaPoster": "",
     "mediaAlt": "",
     "aboutTitle": "What's this about",
-    "bridge": "Your machine width is fixed by needle count, but fabric width changes with gauge, yarn, and stitch pattern. Use the <a href=\"/tools/maximum-knitted-width\">Maximum Knitted Width tool</a> to see how wide you can knit  with your gauge on your machine.",
+    "bridge": "Your machine width is fixed by needle count, but knitting width changes with gauge, yarn, and stitch pattern. Use the <a href=\"/tools/maximum-knitted-width\">Maximum Knitted Width tool</a> to see how wide you can knit  with your gauge on your machine.",
     "tryThisTitle": "Try This",
     "memberHeading": "",
     "memberText": "",
@@ -126,7 +131,9 @@
       "quickAction": [
         "check your gauge  <a href=\"/tools/maximum-knitted-width\">Maximum Knitted Width tool</a>",
         "Try a different yarn or stitch pattern",
-        "Consider knitting panels"
+        "Consider knitting panels",
+        "Not sure how to divide your pieces? Use a worksheet to plan sweater panels and keep everything aligned.",
+        "👉<a href=\"/downloads/lessons/sweater-panels-planner.pdf\"> Download the Sweaters Panel Planning Worksheet</a>"
       ]
     },
     "trySteps": [

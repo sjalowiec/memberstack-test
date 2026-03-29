@@ -307,7 +307,12 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
         const editLink = document.createElement("a");
         editLink.className = "kbm-btn kbm-btn-outline";
-        editLink.href = slug ? `/admin/tips-edit?slug=${encodeURIComponent(slug)}` : "/admin/tips-edit";
+        editLink.href =
+          slug && id !== null
+            ? `/admin/tips-edit?slug=${encodeURIComponent(slug)}&id=${id}`
+            : slug
+              ? `/admin/tips-edit?slug=${encodeURIComponent(slug)}`
+              : "/admin/tips-edit";
         editLink.textContent = "Edit";
 
         const delBtn = document.createElement("button");
