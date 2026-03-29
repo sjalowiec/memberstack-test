@@ -67,12 +67,37 @@ import Layout from "../../layouts/Layout.astro";
     .thankyou-card .btn:hover {
       background: var(--kbm-green-2, #6b8a3a);
     }
+    .thankyou-back {
+      margin: 0 0 1rem;
+      font-size: 0.95rem;
+    }
+    .thankyou-back a {
+      color: var(--kbm-green, #52682d);
+    }
+    .thankyou-back a:hover {
+      text-decoration: underline;
+    }
   </style>
 
   <div class="thankyou-wrap">
 
+    <p class="thankyou-back">
+      <a id="thankyou-back-link" href="/">Back</a>
+    </p>
+
+    <script is:inline>
+      (function () {
+        var el = document.getElementById("thankyou-back-link");
+        if (!el) return;
+        var ref = document.referrer;
+        if (typeof ref === "string" && ref.trim() !== "") {
+          el.setAttribute("href", ref);
+        }
+      })();
+    </script>
+
     <section class="thankyou-well" aria-label="Confirmation">
-      <h1>Thanks — your message was sent.</h1>
+      <h1>Thanks - your message was sent.</h1>
       <p>I've received your message and will review it shortly.</p>
       <p>You can expect a reply within <strong>1–2 business days</strong>.</p>
     </section>
