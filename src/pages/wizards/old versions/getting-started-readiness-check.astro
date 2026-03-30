@@ -1,13 +1,13 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
 import "../../styles/wizard.css";
-import PrintFooter from "../../components/common/PrintFooter.astro";
-import ActionBar from "../../components/wizards/ActionBar.astro";
-import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
-import WizardStepsLayout from "../../components/wizards/steps/WizardStepsLayout.astro";
-import WizardThoughtBubble from "../../components/wizards/steps/WizardThoughtBubble.astro";
-import WizardResultCard from "../../components/wizards/steps/WizardResultCard.astro";
-import WizardNav from "../../components/wizards/steps/WizardNav.astro";
+import PrintFooter from "../../../components/common/PrintFooter.astro";
+import ActionBar from "../../../components/wizards/ActionBar.astro";
+import WizardBackLink from "../../../components/wizards/WizardBackLink.astro";
+import WizardStepsLayout from "../../../components/wizards/steps/WizardStepsLayout.astro";
+import WizardThoughtBubble from "../../../components/wizards/steps/WizardThoughtBubble.astro";
+import WizardResultCard from "../../../components/wizards/steps/WizardResultCard.astro";
+import WizardNav from "../../../components/wizards/steps/WizardNav.astro";
 import { getEntry } from "astro:content";
 
 const entry = await getEntry("wizards", "getting-started-readiness-check");
