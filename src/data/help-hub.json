@@ -150,7 +150,7 @@
   {
     "title": "Measure Gauge on a Knitting Machine",
     "slug": "measure-gauge-on-a-knitting-machine",
-    "featured": true,
+    "featured": false,
     "metaTitle": "How to knit a swatch on the knitting machine",
     "metaDescription": "A simple,  accurate way to measure gauge on your knitting machine using stitch and row counts",
     "appliesTo": [],
@@ -169,7 +169,7 @@
     "tryThisTitle": "The 'No-Count' Method for Accurate Gauge",
     "memberHeading": "",
     "memberText": "",
-    "isNew": true,
+    "isNew": false,
     "tryThis": {
       "quickActionTitle": "",
       "quickAction": [
@@ -185,7 +185,7 @@
     "relatedLessons": [
       "knit-a-proper-swatch"
     ],
-    "status": "published",
+    "status": "draft",
     "id": 1004,
     "sortOrder": 20
   }
