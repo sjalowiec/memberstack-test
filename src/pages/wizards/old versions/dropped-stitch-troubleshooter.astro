@@ -1,10 +1,10 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
 import "../../styles/wizard.css";
-import PrintFooter from "../../components/common/PrintFooter.astro";
-import ActionBar from "../../components/wizards/ActionBar.astro";
-import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
-import WizardFlowRenderer from "../../components/wizards/WizardFlowRenderer.astro";
+import PrintFooter from "../../../components/common/PrintFooter.astro";
+import ActionBar from "../../../components/wizards/ActionBar.astro";
+import WizardBackLink from "../../../components/wizards/WizardBackLink.astro";
+import WizardFlowRenderer from "../../../components/wizards/WizardFlowRenderer.astro";
 import { getEntry } from "astro:content";
 
 const entry = await getEntry("wizards", "dropped-stitch-troubleshooter");
