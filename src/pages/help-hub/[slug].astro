@@ -5,11 +5,19 @@ import PageHead from "../../components/PageHead.astro";
 import "../../components/talk-bubbles.css";
 import helpHubData from "../../data/help-hub.json";
 import lessonsData from "../../data/lessons.json";
+import videosPublic from "../../data/videos-public.json";
+import {
+  findPublicVideoByKey,
+  vimeoNumericIdFromPublicVideo,
+  type PublicVideoRow,
+} from "../../lib/lessonVideo";
 // at the top of [slug].astro
 
 const reservedPaths = ["guided-workshops"];
 
-if (reservedPaths.includes(Astro.params.slug)) {
+const slugParam =
+  typeof Astro.params.slug === "string" ? Astro.params.slug.trim() : "";
+if (reservedPaths.includes(slugParam)) {
   return Astro.redirect("/404");
 }
 type HelpHubTryThis = {
@@ -21,6 +29,8 @@ type HelpHubTryThis = {
 /** Current Help Hub tip record shape (src/data/help-hub.json). */
 type HelpHubRecord = {
   slug?: string;
+  /** When set, overrides `status` for visibility. */
+  active?: boolean;
   status?: string;
   title?: string;
   metaTitle?: string;
@@ -49,11 +59,24 @@ type LessonRecord = {
   title?: string;
   summary?: string;
   access?: string;
+  videoSlug?: string;
   vimeoEmbedUrl?: string;
 };
 
-/** Vimeo numeric id from embed URL or a raw digits-only value (for matching only — never used in /lessons/ URLs). */
+const catalogVideosHelpHub = Array.isArray(videosPublic)
+  ? (videosPublic as PublicVideoRow[])
+  : [];
+
+/** Vimeo numeric id from catalog `videoSlug` or legacy `vimeoEmbedUrl` (matching relatedLessons refs). */
 function vimeoNumericIdFromLesson(l: LessonRecord): string | null {
+  const key = typeof l.videoSlug === "string" ? l.videoSlug.trim() : "";
+  if (key) {
+    const v = findPublicVideoByKey(catalogVideosHelpHub, key);
+    if (v) {
+      const id = vimeoNumericIdFromPublicVideo(v);
+      if (id) return id;
+    }
+  }
   const raw = typeof l.vimeoEmbedUrl === "string" ? l.vimeoEmbedUrl.trim() : "";
   if (!raw) return null;
   if (/^\d+$/.test(raw)) return raw;
@@ -78,33 +101,26 @@ function resolveLessonFromRelatedRef(
   return undefined;
 }
 
-export const prerender = true;
-
-export function getStaticPaths() {
-  const rows = Array.isArray(helpHubData)
-    ? (helpHubData as HelpHubRecord[])
-    : [];
-  return rows
-    .filter(
-      (t) =>
-        t.status === "published" &&
-        typeof t.slug === "string" &&
-        t.slug.trim() !== ""
-    )
-    .map((t) => ({ params: { slug: t.slug!.trim() } }));
+function tipIsActive(t: HelpHubRecord): boolean {
+  if (typeof t.active === "boolean") return t.active;
+  const s = typeof t.status === "string" ? t.status.trim().toLowerCase() : "";
+  return s === "published" || s === "";
 }
 
-const rawSlug =
-  typeof Astro.params.slug === "string" ? Astro.params.slug.trim() : "";
+/** Server-rendered so `?preview=true` can show draft tips; search params are not available at static build time. */
+export const prerender = false;
+
+const isPreview = Astro.url.searchParams.get("preview") === "true";
+
 const tips = Array.isArray(helpHubData)
   ? (helpHubData as HelpHubRecord[])
   : [];
-const tip: HelpHubRecord | undefined = rawSlug
-  ? tips.find((t) => typeof t.slug === "string" && t.slug.trim() === rawSlug)
+const tip: HelpHubRecord | undefined = slugParam
+  ? tips.find((t) => typeof t.slug === "string" && t.slug.trim() === slugParam)
   : undefined;
 
-if (!tip || tip.status !== "published") {
-  return Astro.redirect("/404");
+if (!tip || (!tipIsActive(tip) && !isPreview)) {
+  return await Astro.rewrite("/404");
 }
 
 const lessons = Array.isArray(lessonsData)
@@ -193,7 +209,7 @@ const pageDescription =
 const hyvorId =
   typeof tip.slug === "string" && tip.slug.trim() !== ""
     ? tip.slug.trim()
-    : rawSlug;
+    : slugParam;
 
 const aboutHeading =
   typeof tip.aboutTitle === "string" && tip.aboutTitle.trim() !== ""

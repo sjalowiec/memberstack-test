@@ -164,7 +164,7 @@ const categoryOptions = Array.isArray(categoriesData)
             >Open Preview</a>
           </p>
           <p id="help-hub-tip-preview-no-slug" class="help-hub-admin__tip-preview-placeholder">
-            Preview will appear after this tip has a valid slug.
+            Add a slug to preview this tip.
           </p>
           <div id="help-hub-tip-preview-frame-shell" class="help-hub-admin__tip-preview-frame-shell" hidden>
             <iframe
@@ -311,10 +311,27 @@ const categoryOptions = Array.isArray(categoriesData)
     const tipPreviewShell = document.getElementById("help-hub-tip-preview-frame-shell");
     const tipPreviewNoSlugEl = document.getElementById("help-hub-tip-preview-no-slug");
     const tipPreviewOpenLink = document.getElementById("help-hub-tip-preview-open") as HTMLAnchorElement | null;
-    /** Slug segment currently shown in the public Tip Preview iframe (valid slug only). */
+    /** Slug segment last assigned to the iframe `src` (valid slug only). */
     let loadedPublicPreviewSlug: string | null = null;
     let tipPreviewDebounce: ReturnType<typeof setTimeout> | null = null;
-    const TIP_PREVIEW_DEBOUNCE_MS = 220;
+    const TIP_PREVIEW_DEBOUNCE_MS = 450;
+    /** Fields that should trigger a debounced public-page iframe reload (server JSON; save to see unsaved edits). */
+    const TIP_PREVIEW_RELOAD_FIELD_IDS = new Set([
+      "field-title",
+      "field-slug",
+      "field-tipActive",
+      "field-question",
+      "field-hook",
+      "field-bubbleAnswer",
+      "field-mediaUrl",
+      "field-mediaPoster",
+      "field-mediaType",
+      "field-mediaAlt",
+      "field-tryThisTitle",
+      "field-quickActionTitle",
+      "field-quickAction",
+      "field-quickActionNote",
+    ]);
 
     /** Raw slug from the form (trimmed); may be invalid for URLs. */
     function getPreviewSlugRaw(): string {
@@ -332,10 +349,17 @@ const categoryOptions = Array.isArray(categoriesData)
       const s = getPreviewSlugRaw();
       return isValidPublicTipSlug(s) ? s : null;
     }
-    /** Absolute site URL: `{origin}/help-hub/{slug}` — pathname always starts with `/help-hub/`. */
+    /** Public tip URL with preview (no cache-buster — for “Open Preview” link). */
     function tipPreviewPublicAbsoluteUrl(slug: string): string {
-      const path = `/help-hub/${encodeURIComponent(slug)}`;
+      const path = `/help-hub/${encodeURIComponent(slug)}?preview=true`;
       return new URL(path, window.location.origin).href;
+    }
+    /** Iframe URL: same as public preview plus `_` cache-buster so reloads always fetch fresh HTML. */
+    function tipPreviewIframeUrl(slug: string): string {
+      const u = new URL(`/help-hub/${encodeURIComponent(slug)}`, window.location.origin);
+      u.searchParams.set("preview", "true");
+      u.searchParams.set("_", String(Date.now()));
+      return u.href;
     }
     function setTipPreviewOpenLink(slug: string | null): void {
       const a = tipPreviewOpenLink;
@@ -365,17 +389,18 @@ const categoryOptions = Array.isArray(categoriesData)
       if (tipPreviewIframe) tipPreviewIframe.src = "about:blank";
       syncPublicTipPreview();
     }
-    function schedulePublicTipPreviewUpdate(): void {
+    function scheduleDebouncedPublicTipPreviewReload(): void {
       if (tipPreviewDebounce !== null) clearTimeout(tipPreviewDebounce);
       tipPreviewDebounce = setTimeout(() => {
         tipPreviewDebounce = null;
         reloadPublicTipPreview();
       }, TIP_PREVIEW_DEBOUNCE_MS);
     }
-    function invalidatePublicTipPreviewIfSlugChanged(): void {
-      const slug = getValidPreviewSlug();
-      if (slug === loadedPublicPreviewSlug) return;
-      schedulePublicTipPreviewUpdate();
+    function shouldSchedulePreviewReloadFromEventTarget(t: EventTarget | null): boolean {
+      if (!(t instanceof HTMLElement)) return false;
+      if (t.id && TIP_PREVIEW_RELOAD_FIELD_IDS.has(t.id)) return true;
+      if (t.id === "relatedLessons") return true;
+      return false;
     }
     function reloadPublicTipPreview(): void {
       const slug = getValidPreviewSlug();
@@ -387,23 +412,7 @@ const categoryOptions = Array.isArray(categoriesData)
         clearTipPreviewToBlank();
         return;
       }
-      const nextHref = tipPreviewPublicAbsoluteUrl(slug);
-      try {
-        const current = tipPreviewIframe.src;
-        if (current && current !== "about:blank") {
-          const cur = new URL(current);
-          const nxt = new URL(nextHref);
-          if (cur.origin === nxt.origin && cur.pathname === nxt.pathname) {
-            tipPreviewIframe.contentWindow?.location.reload();
-            loadedPublicPreviewSlug = slug;
-            syncPublicTipPreview();
-            return;
-          }
-        }
-      } catch {
-        /* fall through to assign src */
-      }
-      tipPreviewIframe.src = nextHref;
+      tipPreviewIframe.src = tipPreviewIframeUrl(slug);
       loadedPublicPreviewSlug = slug;
       syncPublicTipPreview();
     }
@@ -532,6 +541,7 @@ const categoryOptions = Array.isArray(categoriesData)
           setRelatedLessonsSelection(next);
           renderRelatedLessonsChosenList();
           refreshPreview();
+          scheduleDebouncedPublicTipPreviewReload();
         });
         li.appendChild(span);
         li.appendChild(btn);
@@ -772,7 +782,7 @@ const categoryOptions = Array.isArray(categoriesData)
     document.getElementById("btn-refresh-preview")?.addEventListener("click", () => { refreshPreview(); setStatus("Preview refreshed.", "ok"); });
     document.getElementById("btn-refresh-tip-preview")?.addEventListener("click", () => {
       if (!getValidPreviewSlug()) {
-        setStatus("Add a valid slug (no slashes or spaces) to load the preview.", "neutral");
+        setStatus("Add a slug to preview this tip.", "neutral");
         syncPublicTipPreview();
         return;
       }
@@ -788,19 +798,24 @@ const categoryOptions = Array.isArray(categoriesData)
     document.getElementById("field-title")?.addEventListener("input", () => {
       if (editingId !== null || slugManual) return;
       setField("slug", slugifyTitle(textVal("title")));
-      refreshPreview();
-      invalidatePublicTipPreviewIfSlugChanged();
     });
     document.getElementById("field-slug")?.addEventListener("input", () => {
       if (editingId === null) slugManual = true;
-      refreshPreview();
-      invalidatePublicTipPreviewIfSlugChanged();
     });
-    document.getElementById("field-tipActive")?.addEventListener("change", () => { refreshPreview(); });
-    form?.addEventListener("input", () => refreshPreview());
+    form?.addEventListener("input", (ev) => {
+      refreshPreview();
+      if (shouldSchedulePreviewReloadFromEventTarget(ev.target)) {
+        scheduleDebouncedPublicTipPreviewReload();
+      }
+    });
+    form?.addEventListener("change", (ev) => {
+      refreshPreview();
+      if (shouldSchedulePreviewReloadFromEventTarget(ev.target)) {
+        scheduleDebouncedPublicTipPreviewReload();
+      }
+    });
     document.getElementById("relatedLessons")?.addEventListener("change", () => {
       renderRelatedLessonsChosenList();
-      refreshPreview();
     });
     renderRelatedLessonsChosenList();
     syncPublicTipPreview();

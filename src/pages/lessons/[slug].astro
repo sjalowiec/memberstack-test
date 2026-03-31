@@ -2,6 +2,12 @@
 import Layout from "../../layouts/Layout.astro";
 import lessonsFile from "../../data/lessons.json";
 import helpHubFile from "../../data/help-hub.json";
+import videosPublic from "../../data/videos-public.json";
+import {
+  findPublicVideoByKey,
+  vimeoNumericIdFromPublicVideo,
+  type PublicVideoRow,
+} from "../../lib/lessonVideo";
 
 type Lesson = {
   id: number;
@@ -9,7 +15,9 @@ type Lesson = {
   title: string;
   summary?: string;
   type: string;
-  /** Vimeo player URL, or numeric id as string or number (e.g. `1175910979`). */
+  /** Stable key into `videos-public.json`. */
+  videoSlug?: string;
+  /** @deprecated Prefer `videoSlug`; retained for legacy rows. */
   vimeoEmbedUrl?: string | number;
   access: string;
   encouragement?: string;
@@ -32,6 +40,9 @@ type HelpHubTip = {
 
 const lessons = lessonsFile as Lesson[];
 const helpHubTips = helpHubFile as HelpHubTip[];
+const catalogVideos = Array.isArray(videosPublic)
+  ? (videosPublic as PublicVideoRow[])
+  : [];
 
 const { slug } = Astro.params;
 console.log("Looking for slug:", slug);
@@ -55,17 +66,23 @@ if (!lesson) {
   );
 }
 
-/** Raw Vimeo field from JSON: trim string or coerce finite number to string. */
-function lessonVimeoRawString(l: Pick<Lesson, "vimeoEmbedUrl">): string {
-  const v = l.vimeoEmbedUrl;
-  if (typeof v === "number" && Number.isFinite(v)) return String(Math.trunc(v));
-  if (typeof v === "string") return v.trim();
-  return "";
-}
-
-/** Vimeo numeric id from embed URL or raw digits (matching relatedLessons refs only). */
-function vimeoNumericIdFromLesson(l: Pick<Lesson, "vimeoEmbedUrl">): string | null {
-  const raw = lessonVimeoRawString(l);
+/** Vimeo numeric id for matching (catalog `videoSlug` or legacy `vimeoEmbedUrl`). */
+function lessonVimeoNumericId(l: Lesson): string | null {
+  const key = typeof l.videoSlug === "string" ? l.videoSlug.trim() : "";
+  if (key) {
+    const v = findPublicVideoByKey(catalogVideos, key);
+    if (v) {
+      const id = vimeoNumericIdFromPublicVideo(v);
+      if (id) return id;
+    }
+  }
+  const rawV = l.vimeoEmbedUrl;
+  const raw =
+    typeof rawV === "number" && Number.isFinite(rawV)
+      ? String(Math.trunc(rawV))
+      : typeof rawV === "string"
+        ? rawV.trim()
+        : "";
   if (!raw) return null;
   if (/^\d+$/.test(raw)) return raw;
   const m = raw.match(/\/(?:video\/)?(\d+)(?:\?|#|$)/);
@@ -76,7 +93,7 @@ function lessonMatchesRelatedRef(ref: string, current: Lesson): boolean {
   const trimmed = ref.trim();
   if (!trimmed) return false;
   if (current.slug.trim() === trimmed) return true;
-  if (/^\d+$/.test(trimmed)) return vimeoNumericIdFromLesson(current) === trimmed;
+  if (/^\d+$/.test(trimmed)) return lessonVimeoNumericId(current) === trimmed;
   return false;
 }
 
@@ -99,16 +116,17 @@ const relatedTipSlug =
     : null;
 const relatedTipHref = relatedTipSlug ? `/help-hub/${relatedTipSlug}` : null;
 
-/** Vimeo iframe `src`: full URL if value starts with http(s); otherwise treat as Vimeo id → player embed URL. */
-function vimeoIframeSrc(raw: string): string {
-  const t = raw.trim();
-  if (!t) return "";
-  if (/^https?:\/\//i.test(t)) return t;
-  return `https://player.vimeo.com/video/${t}`;
+/** Vimeo iframe `src` from catalog `videoSlug` or legacy embed field. */
+function lessonVimeoPlayerSrc(l: Lesson): string {
+  const id = lessonVimeoNumericId(l);
+  if (id) return `https://player.vimeo.com/video/${id}`;
+  const rawV = l.vimeoEmbedUrl;
+  const raw = typeof rawV === "string" ? rawV.trim() : "";
+  if (raw && /^https?:\/\//i.test(raw)) return raw;
+  return "";
 }
 
-const vimeoRawStr = lessonVimeoRawString(lesson);
-const vimeoPlayerSrc = vimeoRawStr ? vimeoIframeSrc(vimeoRawStr) : "";
+const vimeoPlayerSrc = lessonVimeoPlayerSrc(lesson);
 
 const hasLessonVideo = lesson.type === "video" && vimeoPlayerSrc.length > 0;
 

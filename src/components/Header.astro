@@ -206,6 +206,42 @@
   min-width: 0;
 }
 
+/* Nav links + site search pill in one horizontal group (desktop) */
+.kbm-nav-bar .kbm-nav-center-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.kbm-nav-bar .header-search-trigger {
+  margin-left: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  padding: 8px 16px;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  background: transparent;
+  min-width: 220px;
+  font-size: 14px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.kbm-nav-bar .header-search-trigger:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.kbm-nav-bar .header-search-trigger:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 2px;
+}
+
+.kbm-nav-bar .search-placeholder {
+  opacity: 0.8;
+}
+
 .kbm-nav-bar .kbm-nav-right {
   justify-self: end;
   display: flex;
@@ -617,6 +653,11 @@
     flex: 0 0 0;
   }
 
+  /* Center column is collapsed on mobile; search pill lives in desktop bar only */
+  .kbm-nav-bar .header-search-trigger {
+    display: none;
+  }
+
   .kbm-nav-bar .kbm-nav-right {
     display: flex;
     align-items: center;
@@ -756,6 +797,30 @@
 .caret {
   font-size: 1.2em;
   margin-left: 2px;
+}
+
+.nav-pill-new {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 999px;
+  background-color: #c2614e;
+  color: #fff;
+  transform: rotate(-15deg);
+  transform-origin: center;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.kbm-menu > li > a.nav-whats-new-link {
+  gap: 6px;
+}
+
+.nav-whats-new-link .nav-pill-new {
+  margin-right: 0;
 }
 
 /* ===== SEARCH BAR ===== */
@@ -1033,6 +1098,17 @@
     display: block;
   }
 
+  .kbm-menu > li > a[href="/whats-new"] {
+    white-space: nowrap;
+  }
+
+  .kbm-menu > li > a.nav-whats-new-link {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
   .kbm-search-wrap {
     width: 100%;
     min-width: auto;
@@ -1178,6 +1254,75 @@
   line-height: 1;
 }
 
+/* Site-wide search “coming soon” modal */
+.search-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+
+.search-modal.active {
+  display: block;
+}
+
+.search-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.search-modal__content {
+  position: relative;
+  max-width: 420px;
+  margin: 10% auto;
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  z-index: 1;
+  text-align: center;
+}
+
+.search-modal__content h3 {
+  margin: 0 0 12px;
+  font-size: 1.25rem;
+  color: var(--kbm-green, #243015);
+}
+
+.search-modal__content p {
+  margin: 0 0 12px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.search-modal__content p:last-of-type {
+  margin-bottom: 0;
+}
+
+.search-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.search-modal__close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+  color: #333;
+}
+
+.search-modal__close:hover {
+  opacity: 0.75;
+}
+
 /* Memberstack overlay (try common selectors) */
 .ms-modal__overlay,
 .ms-overlay,
@@ -1220,11 +1365,15 @@ div[data-ms-modal-overlay] {
         </div>
       </div>
 
-      <!-- Center zone: primary nav (soft launch — 4 links) -->
+      <!-- Center zone: primary nav (soft launch) + site search (desktop) -->
       <div class="kbm-nav-center">
-        <div class="kbm-nav-row menu-row">
-          <ul class="kbm-menu">
+        <div class="kbm-nav-center-cluster">
+          <div class="kbm-nav-row menu-row">
+            <ul class="kbm-menu">
             <li><a href="/" data-testid="nav-home">Home</a></li>
+            <li>
+              <a href="/whats-new" data-testid="nav-whats-new" class="nav-whats-new-link"><span class="nav-pill-new">NEW</span> What's New</a>
+            </li>
             <li class="nav-item nav-dropdown dd">
               <button
                 type="button"
@@ -1233,7 +1382,7 @@ div[data-ms-modal-overlay] {
                 aria-expanded="false"
                 data-testid="nav-start-here"
               >
-                Help
+                Help Hub
               </button>
 
               <ul class="nav-dropdown-menu dd-panel" role="menu">
@@ -1257,7 +1406,17 @@ div[data-ms-modal-overlay] {
               </div>
               </div>-->
             </li>
-          </ul>
+            </ul>
+          </div>
+          <div
+            class="header-search-trigger"
+            id="openSearchModal"
+            role="button"
+            tabindex="0"
+            aria-label="Site-wide search"
+          >
+            <span class="search-placeholder">Site-wide search</span>
+          </div>
         </div>
       </div>
 
@@ -1311,6 +1470,29 @@ div[data-ms-modal-overlay] {
     </div>
   </header>
 </section>
+
+<div id="searchModal" class="search-modal" aria-hidden="true">
+  <div class="search-modal__overlay" id="closeSearchModal"></div>
+
+  <div class="search-modal__content" role="dialog" aria-modal="true" aria-labelledby="searchModalTitle">
+    <button type="button" class="search-modal__close" id="closeSearchModalBtn" aria-label="Close">×</button>
+
+    <h3 id="searchModalTitle">Site-wide search is coming</h3>
+
+    <p>
+      You’ll soon be able to search across everything — videos, tips, and more.
+    </p>
+
+    <p>
+      For now, try one of these:
+    </p>
+
+    <div class="search-modal__actions">
+      <a href="/video-search" class="kbm-btn kbm-btn-primary">Search Videos</a>
+      <a href="/help-hub" class="kbm-btn kbm-btn-outline">Browse Help Hub</a>
+    </div>
+  </div>
+</div>
 
 <script is:inline>
   (function () {
@@ -1584,5 +1766,47 @@ div[data-ms-modal-overlay] {
         }
       });
     }
+  })();
+</script>
+<script is:inline>
+  (() => {
+    const openBtn = document.getElementById("openSearchModal");
+    const modal = document.getElementById("searchModal");
+    const overlay = document.getElementById("closeSearchModal");
+    const closeBtn = document.getElementById("closeSearchModalBtn");
+
+    function menuDrawerOpen() {
+      return document.querySelector(".kbm-nav-row")?.classList.contains("mobile-open");
+    }
+
+    function openModal() {
+      if (!modal) return;
+      modal.classList.add("active");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeModal() {
+      if (!modal) return;
+      modal.classList.remove("active");
+      modal.setAttribute("aria-hidden", "true");
+      if (!menuDrawerOpen()) document.body.style.overflow = "";
+    }
+
+    openBtn?.addEventListener("click", openModal);
+    openBtn?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openModal();
+      }
+    });
+    overlay?.addEventListener("click", closeModal);
+    closeBtn?.addEventListener("click", closeModal);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      if (!modal?.classList.contains("active")) return;
+      closeModal();
+    });
   })();
 </script>

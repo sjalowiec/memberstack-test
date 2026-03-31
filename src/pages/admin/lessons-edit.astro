@@ -1,5 +1,33 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import videosPublic from "../../data/videos-public.json";
+import { stableVideoKey } from "../../lib/lessonVideo";
+
+type VideoRow = {
+  content_id?: string | number;
+  slug?: string;
+  title?: string;
+  vimeo_id?: number;
+  vimeo_id_public?: number;
+};
+
+function videoOptionLabel(v: VideoRow): string {
+  const title =
+    typeof v.title === "string" && v.title.trim() ? v.title.trim() : "(untitled)";
+  const id = v.vimeo_id ?? v.vimeo_id_public;
+  const idStr =
+    typeof id === "number" && Number.isFinite(id) ? String(Math.trunc(id)) : "";
+  return idStr ? `${title} (${idStr})` : title;
+}
+
+const videoRows = Array.isArray(videosPublic) ? (videosPublic as VideoRow[]) : [];
+const sortedVideos = [...videoRows]
+  .filter((v) => stableVideoKey(v) !== "")
+  .sort((a, b) => {
+    const ta = typeof a.title === "string" ? a.title : "";
+    const tb = typeof b.title === "string" ? b.title : "";
+    return ta.localeCompare(tb, undefined, { sensitivity: "base" });
+  });
 ---
 
 <BaseLayout
@@ -51,8 +79,15 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
             </select>
           </label>
           <label class="field-full">
-            <span>vimeoEmbedUrl (number only)</span>
-            <input type="text" name="vimeoEmbedUrl" id="field-vimeoEmbedUrl" />
+            <span>Video</span>
+            <select name="videoSlug" id="field-videoSlug">
+              <option value="">— No video —</option>
+              {sortedVideos.map((v) => {
+                const value = stableVideoKey(v);
+                return <option value={value}>{videoOptionLabel(v)}</option>;
+              })}
+            </select>
+            <span class="field-hint">Choose a catalog video from <code>videos-public.json</code>.</span>
           </label>
           <label>
             <span>access <em class="req">*</em></span>
@@ -580,7 +615,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       setField("type", asString(row.type) || "video");
       setField("access", asString(row.access) || "free");
       setField("associatedTip", asString(row.associatedTip));
-      setField("vimeoEmbedUrl", asString(row.vimeoEmbedUrl));
+      setField("videoSlug", asString(row.videoSlug));
       setField("encouragement", asString(row.encouragement));
       setField("exerciseTitle", asString(row.exerciseTitle));
       setField("exerciseItems", linesToText(row.exerciseItems));
@@ -609,7 +644,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       setField("type", "video");
       setField("access", "free");
       setField("associatedTip", "");
-      setField("vimeoEmbedUrl", "");
+      setField("videoSlug", "");
       setField("encouragement", "");
       setField("exerciseTitle", "");
       setField("exerciseItems", "");
@@ -651,13 +686,13 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
       const exerciseItems = linesFromTextarea("exerciseItems");
 
-      return {
+      const videoSlug = textVal("videoSlug");
+      const row: LessonRow = {
         id,
         slug,
         title,
         summary,
         type,
-        vimeoEmbedUrl: textVal("vimeoEmbedUrl"),
         access,
         associatedTip: textVal("associatedTip"),
         encouragement: textVal("encouragement"),
@@ -670,6 +705,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         templateLink: textVal("templateLink"),
         templateLinkText: textVal("templateLinkText"),
       };
+      if (videoSlug) row.videoSlug = videoSlug;
+      return row;
     }
 
     function mergeLessonsWithRow(row: LessonRow): LessonRow[] {

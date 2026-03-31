@@ -1,0 +1,347 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHead from "../components/PageHead.astro";
+
+export const prerender = true;
+
+const description =
+  "See what’s new on Knit it Now — recent additions and what’s coming next.";
+---
+
+<Layout
+  title="What's New | Knit it Now"
+  description={description}
+  bodyClass="page--tight-header page--whats-new"
+>
+  <section class="whats-new-page" aria-label="What's new at Knit it Now">
+    <div class="whats-new-container">
+      <div class="whats-new-header" role="banner">
+        <PageHead title="What's New" />
+        <p class="whats-new-intro">
+          If you’ve already taken a look, here’s what’s changed—and what’s coming next. This is an
+          early preview, so you’ll only see a small sample of what’s on the way.
+        </p>
+      </div>
+
+      <div class="whats-new-grid">
+        <section class="whats-new-box" aria-labelledby="whats-new-new">
+          <h2 class="whats-new-box__title" id="whats-new-new">
+            <span class="nav-pill-new">NEW</span> Just Added
+          </h2>
+          <ul class="whats-new-items">
+            <li class="whats-new-item">
+              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
+              <div class="whats-new-item__body">
+                <h3 class="whats-new-item__title">Designed for your phone and tablet</h3>
+                <p class="whats-new-item__desc">
+                  Use Knit it Now wherever you are - no desktop required.
+                </p>
+              </div>
+            </li>
+            <li class="whats-new-item">
+              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
+              <div class="whats-new-item__body">
+                <h3 class="whats-new-item__title"><a href="/help-hub">Help Hub</a> is growing</h3>
+                <p class="whats-new-item__desc">
+                  A growing collection of quick answers for stuck and frustrated moments.
+                </p>
+              </div>
+            </li>
+            <li class="whats-new-item">
+              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
+              <div class="whats-new-item__body">
+                <h3 class="whats-new-item__title">More on the way</h3>
+                <p class="whats-new-item__desc">
+                  I’ll keep adding new pieces here as the new Knit it Now continues to grow.
+                </p>
+              </div>
+            </li>
+          </ul>
+        </section>
+
+        <section class="whats-new-box whats-new-box--coming" aria-labelledby="whats-new-coming-soon">
+          <h2 class="whats-new-box__title" id="whats-new-coming-soon">Coming Soon</h2>
+          <ul class="whats-new-items">
+            <li class="whats-new-item">
+              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
+              <div class="whats-new-item__body">
+                <h3 class="whats-new-item__title">Shop</h3>
+                <p class="whats-new-item__desc">
+                  Tools, resources, and helpful extras in one place.
+                </p>
+              </div>
+            </li>
+            <li class="whats-new-item">
+              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
+              <div class="whats-new-item__body">
+                <h3 class="whats-new-item__title">Full Video Library</h3>
+                <p class="whats-new-item__desc">
+                  Browse more videos in a clearer, easier-to-use format.
+                </p>
+              </div>
+            </li>
+            <li class="whats-new-item">
+              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
+              <div class="whats-new-item__body">
+                <h3 class="whats-new-item__title">More Help Hub entries</h3>
+                <p class="whats-new-item__desc">
+                  More quick answers, more examples, and more support.
+                </p>
+              </div>
+            </li>
+            <li class="whats-new-item">
+              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
+              <div class="whats-new-item__body">
+                <h3 class="whats-new-item__title">Mk Terms Glossary</h3>
+                <p class="whats-new-item__desc">
+                  Not sure what something means? Look it up quickly and keep moving.
+                </p>
+              </div>
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <footer class="whats-new-footer">
+        <div class="whats-new-footer__inner">
+          <div class="whats-new-footer__image">
+            <img src="/images/sue.gif" alt="Sue" width="100" height="100" loading="lazy" />
+          </div>
+
+          <div class="whats-new-footer__content">
+            <h3>A Note from Sue</h3>
+            <p>
+              I’m building Knit it Now step by step, and I’m so glad you’re here while it grows. If
+              something is especially helpful - or if you’re looking for something you don’t see yet
+              - I’d love to hear from you.
+            </p>
+
+            <div class="whats-new-footer__cta">
+              <a href="/contact" class="kbm-btn kbm-btn-primary">Share your thoughts</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </section>
+
+  <style is:global>
+    body.page--whats-new main {
+      max-width: min(1240px, 100%);
+    }
+  </style>
+
+  <style>
+    .whats-new-container {
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 1240px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 1.25rem 0 3rem;
+      text-align: left;
+      background: #fafafa;
+    }
+
+    .whats-new-header {
+      max-width: 100%;
+      margin-bottom: 32px;
+    }
+
+    .whats-new-header :global(.page-head) {
+      margin-bottom: 1rem;
+    }
+
+    .whats-new-intro {
+      margin: 0;
+      max-width: 700px;
+      font-size: var(--text-lg);
+      line-height: 1.6;
+      color: #243015;
+    }
+
+    .whats-new-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: clamp(1.875rem, 3vw, 2.5rem);
+    }
+
+    @media (max-width: 768px) {
+      .whats-new-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .whats-new-box {
+      min-width: 0;
+      background: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .whats-new-box--coming {
+      background: #f8f8f6;
+      border: 1px solid #ece9e2;
+    }
+
+    .whats-new-box h2,
+    .whats-new-box__title {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 0 0 16px 0;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #c2614e;
+      font-size: 1.2rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--kbm-green);
+    }
+
+    .whats-new-box__title .nav-pill-new {
+      margin-right: 0;
+      flex-shrink: 0;
+      align-self: center;
+    }
+
+    .whats-new-box--coming .whats-new-box__title {
+      color: rgba(82, 104, 45, 0.88);
+      border-bottom-color: rgba(194, 97, 78, 0.55);
+    }
+
+    .whats-new-box--coming .whats-new-item__title {
+      color: #3a4530;
+    }
+
+    .whats-new-box--coming .whats-new-item__desc {
+      color: #4a5640;
+    }
+
+    .whats-new-box--coming .whats-new-item__glyph {
+      color: rgba(82, 104, 45, 0.38);
+    }
+
+    .whats-new-items {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .whats-new-box li {
+      margin-bottom: 12px;
+    }
+
+    .whats-new-box li:last-child {
+      margin-bottom: 0;
+    }
+
+    .whats-new-item {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+    }
+
+    .whats-new-item__glyph {
+      flex-shrink: 0;
+      font-size: 0.75rem;
+      line-height: 1.6;
+      color: rgba(82, 104, 45, 0.45);
+      padding-top: 0.2em;
+    }
+
+    .whats-new-item__body {
+      min-width: 0;
+    }
+
+    .whats-new-item__title {
+      margin: 0 0 0.35rem 0;
+      font-size: 1.05rem;
+      font-weight: 600;
+      line-height: 1.3;
+      color: #2c3820;
+    }
+
+    .whats-new-item__desc {
+      margin: 0;
+      font-size: var(--text-base);
+      line-height: 1.55;
+      color: #3d4a2e;
+    }
+
+    .whats-new-footer {
+      box-sizing: border-box;
+      max-width: 700px;
+      width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+      margin-top: 0;
+      padding: clamp(1.25rem, 2.5vw, 1.75rem);
+      text-align: left;
+      background: rgba(255, 253, 249, 0.92);
+      border: 1px solid rgba(82, 104, 45, 0.065);
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(82, 104, 45, 0.05);
+    }
+
+    .whats-new-footer__inner {
+      display: grid;
+      grid-template-columns: 100px minmax(0, 1fr);
+      gap: 24px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .whats-new-footer__image {
+      width: 100px;
+    }
+
+    .whats-new-footer__image img {
+      display: block;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .whats-new-footer__content {
+      min-width: 0;
+    }
+
+    .whats-new-footer__content h3 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--kbm-green);
+    }
+
+    .whats-new-footer__content p {
+      margin-top: 0;
+      margin-bottom: 16px;
+      line-height: 1.5;
+      font-size: var(--text-base);
+      color: #243015;
+    }
+
+    .whats-new-footer__cta {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    @media (max-width: 700px) {
+      .whats-new-footer__inner {
+        grid-template-columns: 1fr;
+        text-align: left;
+        align-items: start;
+      }
+
+      .whats-new-footer__image {
+        justify-self: start;
+      }
+    }
+  </style>
+</Layout>

@@ -12,7 +12,8 @@ export type LessonRecord = {
   title: string;
   summary: string;
   type: string;
-  vimeoEmbedUrl: string;
+  /** Stable key into `videos-public.json` (`slug` or `content_id`). */
+  videoSlug?: string;
   access: "free" | "member";
   /** Optional Help Hub tip slug (or label) linking this lesson to a tip. */
   associatedTip?: string;
@@ -89,13 +90,13 @@ function normalizeLesson(
   }
 
   const associatedTip = trimStr(o.associatedTip);
+  const videoSlug = trimStr(o.videoSlug);
   const lesson: LessonRecord = {
     id,
     slug,
     title,
     summary,
     type,
-    vimeoEmbedUrl: trimStr(o.vimeoEmbedUrl),
     access: accessRaw,
     encouragement: trimStr(o.encouragement),
     exerciseTitle: trimStr(o.exerciseTitle),
@@ -108,6 +109,7 @@ function normalizeLesson(
     templateLinkText: trimStr(o.templateLinkText),
   };
   if (associatedTip) lesson.associatedTip = associatedTip;
+  if (videoSlug) lesson.videoSlug = videoSlug;
 
   return { ok: true, lesson };
 }
