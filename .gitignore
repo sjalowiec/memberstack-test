@@ -16,6 +16,9 @@ scripts/
 src/data/glossary.backup.before-strip-html.json
 # environment variables
 .env
+.env.local
+.env.*
+.env
 .env.production
 glossary_export.csv
 glossary_images_extra.json
