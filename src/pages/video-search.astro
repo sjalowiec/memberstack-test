@@ -51,7 +51,7 @@ const allData = videos.flatMap(video =>
         <div class="video-search-hero__field-wrap">
           <FloatingInput
             id="searchBox"
-            label="Enter a word or phrase | Examples: cut and sew, tension, gauge swatch, casting on"
+            label="Enter a word or phrase | Examples: slip stitch, tension, gauge, DesignaKnit, Brother"
             type="text"
             autocomplete="off"
           />
@@ -196,7 +196,7 @@ const allData = videos.flatMap(video =>
         <div class="video-search-modal__header">
           <h2 id="videoSearchModalTitle" class="video-search-modal__title"></h2>
           <p id="videoSearchModalTime" class="video-search-modal__meta"></p>
-          <p id="videoSearchModalSnippet" class="video-search-modal__snippet" hidden></p>
+          <p id="videoSearchModalSnippet" class="video-result__snippet" hidden></p>
         </div>
         <div class="video-search-modal__frame">
           <iframe
@@ -613,12 +613,6 @@ const allData = videos.flatMap(video =>
         font-size: 0.95rem;
         color: #555;
       }
-      .video-search-modal__snippet {
-        margin: 0.65rem 0 0;
-        font-size: 0.95rem;
-        color: #333;
-        line-height: 1.45;
-      }
       .video-search-modal__frame {
         width: 100%;
         position: relative;
@@ -793,6 +787,10 @@ const allData = videos.flatMap(video =>
           }
         }
 
+        function formatSnippetHtml(text, query) {
+          return `“…${safeHighlight(String(text ?? ''), query)}…”`;
+        }
+
         function formatTime(seconds) {
           const s = seconds == null || Number.isNaN(Number(seconds)) ? 0 : Number(seconds);
           const mins = Math.floor(s / 60);
@@ -890,7 +888,7 @@ const allData = videos.flatMap(video =>
                       ${time ? `<span class="video-search__time-inline">(${time})</span>` : ''}
                     </span>
                   </div>
-                  <div class="video-result__snippet">“…${safeHighlight(String(snippet), queryRaw)}…”</div>
+                  <div class="video-result__snippet">${formatSnippetHtml(snippet, queryRaw)}</div>
                 </div>
               </button>
             `;
@@ -916,14 +914,18 @@ const allData = videos.flatMap(video =>
 
           const startSec = item.start ?? 0;
           const title = (item.title && String(item.title).trim()) || 'Video';
-          const snippetRaw = item.text != null ? String(item.text).trim() : '';
+          const snippetRaw = item?.snippet != null
+            ? String(item.snippet).trim()
+            : item?.text != null
+              ? String(item.text).trim()
+              : '';
 
           titleEl.textContent = title;
           timeEl.textContent = `Timestamp: ${formatTime(startSec)}`;
 
           const queryRaw = getQuery();
           if (snippetRaw) {
-            snippetEl.innerHTML = safeHighlight(snippetRaw, queryRaw);
+            snippetEl.innerHTML = formatSnippetHtml(snippetRaw, queryRaw);
             snippetEl.hidden = false;
           } else {
             snippetEl.textContent = '';

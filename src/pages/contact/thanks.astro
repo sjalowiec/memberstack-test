@@ -81,8 +81,14 @@ import Layout from "../../layouts/Layout.astro";
         var el = document.getElementById("thankyou-back-link");
         if (!el) return;
         var ref = document.referrer;
-        if (typeof ref === "string" && ref.trim() !== "") {
+        if (
+          typeof ref === "string" &&
+          ref.trim() !== "" &&
+          ref.indexOf("/.netlify/functions/contact") === -1
+        ) {
           el.setAttribute("href", ref);
+        } else {
+          el.setAttribute("href", "/help-hub");
         }
       })();
     </script>
@@ -94,7 +100,7 @@ import Layout from "../../layouts/Layout.astro";
     </section>
 
     <section class="thankyou-card" aria-label="While you're waiting">
-      <h2>I’ll take a look and point you in the right direction.
+      <h2>I’ll take a look and point you in the right direction.</h2>
         In the meantime, you can browse the <a href="/help-hub">Help Hub</a>.
     </section>
 
