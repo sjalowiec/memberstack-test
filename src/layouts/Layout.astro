@@ -21,7 +21,15 @@ const { title, description, bodyClass = "", skipGlobalHyvor = false } = Astro.pr
   skipGlobalHyvor={skipGlobalHyvor}
 >
   <Header />
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WK4VG3CNQM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
+  gtag('config', 'G-XXXXXXX');
+</script>
  
 
   <script is:inline>
