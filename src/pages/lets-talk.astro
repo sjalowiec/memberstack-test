@@ -1,0 +1,90 @@
+---
+export const prerender = true;
+import Layout from "../layouts/Layout.astro";
+
+const pageTitle = "Let's Talk | Knit It Now";
+const description =
+  "Ask questions, share what you're making, and talk with other machine knitters.";
+---
+
+<Layout
+  title={pageTitle}
+  description={description}
+  bodyClass="page--tight-header"
+  skipGlobalHyvor={true}
+>
+  <section class="container" style="max-width: 720px; margin: 0 auto; padding: 40px 20px;">
+    <h1>Let's Talk</h1>
+
+    <p>
+      This is a place to ask questions, share what you're making, and talk with other machine knitters.
+    </p>
+
+    <p>
+      Jump into the conversation below.
+    </p>
+
+    <div style="display: flex; align-items: center; gap: 20px; margin-top: 30px; margin-bottom: 20px;">
+      <!-- Logo -->
+      <div>
+        <img
+          src="/images/community-logo.svg"
+          alt="Let's Talk"
+          style="width: 120px; height: auto;"
+        />
+      </div>
+
+      <!-- Text -->
+      <div>
+        <h2 style="margin: 0 0 8px 0;">Share Your Thoughts</h2>
+        <p style="margin: 0;">
+          Leave a comment below — I’d love to hear from you.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="kin-discussion beta-feedback__hyvor">
+    <script async src="https://talk.hyvor.com/embed/embed.js" type="module"></script>
+    <!-- Replace YOUR_WEBSITE_ID with your Hyvor Talk website ID (numeric string from Hyvor console). -->
+    <hyvor-talk-comments
+      website-id="14706"
+      page-id="beta-feedback"
+    ></hyvor-talk-comments>
+  </div>
+
+  <p class="beta-feedback__footer-link">
+    <a href="/help-hub">Return to the Help Hub</a>
+  </p>
+</Layout>
+
+<style>
+  .beta-feedback__hyvor {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 3rem;
+  }
+
+  .beta-feedback__footer-link {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 20px 2rem;
+    text-align: center;
+    font-size: 0.95rem;
+  }
+
+  .beta-feedback__footer-link a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .beta-feedback__footer-link a:hover {
+    text-decoration: underline;
+  }
+</style>

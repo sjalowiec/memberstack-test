@@ -17,10 +17,9 @@
   box-sizing: border-box;
 }
 
-.floating-input input {
+.floating-input input,
+.floating-input textarea {
   width: 100% !important;
-  min-height: 52px !important;
-  padding: 1.25rem 0.75rem 0.5rem !important;
   border: 2px solid #e5e7eb !important;
   border-radius: 8px !important;
   font-family: var(--font);
@@ -28,8 +27,21 @@
   color: var(--text-dark, #374151);
   background: white !important;
   transition: border-color 0.2s, box-shadow 0.2s;
-  -moz-appearance: textfield;
   box-sizing: border-box;
+}
+
+.floating-input input {
+  min-height: 52px !important;
+  padding: 1.25rem 0.75rem 0.5rem !important;
+  -moz-appearance: textfield;
+}
+
+.floating-input textarea {
+  min-height: 7.5rem !important;
+  padding: 1.35rem 0.75rem 0.65rem !important;
+  line-height: 1.5 !important;
+  resize: vertical;
+  display: block;
 }
 
 .floating-input input::-webkit-outer-spin-button,
@@ -38,14 +50,16 @@
   margin: 0;
 }
 
-.floating-input input:focus {
+.floating-input input:focus,
+.floating-input textarea:focus {
   outline: none;
   border-color: var(--kbm-green) !important;
   box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.1) !important;
 }
 
 /* Error state */
-.floating-input input.error {
+.floating-input input.error,
+.floating-input textarea.error {
   border-color: #dc3545 !important;
 }
 
@@ -77,7 +91,9 @@
 
 /* Float/shrink label when focused or has value */
 .floating-input input:focus ~ .floating-label,
-.floating-input input:not(:placeholder-shown) ~ .floating-label {
+.floating-input input:not(:placeholder-shown) ~ .floating-label,
+.floating-input textarea:focus ~ .floating-label,
+.floating-input textarea:not(:placeholder-shown) ~ .floating-label {
   top: 0.35rem !important;
   transform: translateY(0) !important;
   font-size: 0.75rem !important;
@@ -85,17 +101,35 @@
   font-weight: 500 !important;
 }
 
+/* Textarea: label sits on first line when empty (not vertically centered in tall box) */
+.floating-input--textarea .floating-label {
+  top: 1.05rem !important;
+  transform: translateY(0) !important;
+  white-space: normal !important;
+  max-width: calc(100% - 1.5rem) !important;
+  line-height: 1.3 !important;
+}
+
+.floating-input--textarea textarea:focus ~ .floating-label,
+.floating-input--textarea textarea:not(:placeholder-shown) ~ .floating-label {
+  white-space: nowrap !important;
+  max-width: none !important;
+}
+
 /* Label error state */
-.floating-input input.error ~ .floating-label {
+.floating-input input.error ~ .floating-label,
+.floating-input textarea.error ~ .floating-label {
   color: #dc3545 !important;
 }
 
 /* Placeholder styling - hide placeholder when label is visible */
-.floating-input input::placeholder {
+.floating-input input::placeholder,
+.floating-input textarea::placeholder {
   color: transparent !important;
 }
 
-.floating-input input:focus::placeholder {
+.floating-input input:focus::placeholder,
+.floating-input textarea:focus::placeholder {
   color: #9ca3af !important;
 }
 
@@ -112,6 +146,7 @@
 }
 
 /* Show error text when input has error class */
-.floating-input input.error ~ .error-text {
+.floating-input input.error ~ .error-text,
+.floating-input textarea.error ~ .error-text {
   display: block;
 }

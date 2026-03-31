@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 export default async (req) => {
   try {
     if (req.method !== "POST") {
@@ -78,6 +80,7 @@ export default async (req) => {
 
     // --- Resend send ---
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
+    console.log("RESEND key found?", !!process.env.RESEND_API_KEY);
     if (!RESEND_API_KEY) {
       console.error("Missing RESEND_API_KEY env var");
       return new Response("Server configuration error", { status: 500 });
@@ -133,27 +136,32 @@ ${message}
     if (!resendResp.ok) {
       const errText = await resendResp.text();
       console.error("Resend error:", resendResp.status, errText);
-      // Still redirect (user experience stays smooth)
-      return new Response(null, {
-        status: 302,
-        headers: { Location: "/contact/thanks/" },
-      });
+      return Response.redirect(new URL("/contact/thanks/", req.url), 303);
     }
 
     // Redirect user to thank-you page
-    return new Response(null, {
-      status: 302,
-      headers: { Location: "/contact/thanks/" },
-    });
-
+    return new Response(`
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirecting...</title>
+    <meta http-equiv="refresh" content="0;url=/contact/thanks/" />
+    <script>window.location.href = "/contact/thanks/";</script>
+  </head>
+  <body>
+    <p>Redirecting...</p>
+  </body>
+</html>
+`, {
+  status: 200,
+  headers: { "Content-Type": "text/html; charset=utf-8" },
+});
   } catch (error) {
-    console.error(error);
-    return new Response(null, {
-      status: 302,
-      headers: { Location: "/contact/thanks/" },
-    });
+    console.error("Error in contact form handler:", error);
+    return new Response("Internal server error", { status: 500 });
   }
-};
+}
 
 function escapeHtml(str) {
   return String(str)

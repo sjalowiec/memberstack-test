@@ -844,6 +844,52 @@
   background: var(--kbm-bg);
 }
 
+/* Help dropdown (nav-* classes; shares .dd / .dd-trigger / .dd-panel behavior with existing JS) */
+.nav-dropdown {
+  position: relative;
+}
+
+.nav-dropdown-toggle {
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.kbm-menu .nav-dropdown .nav-dropdown-menu li {
+  list-style: none;
+}
+
+.kbm-menu .nav-dropdown .nav-dropdown-menu a {
+  display: block;
+  padding: 10px 16px;
+  text-decoration: none;
+}
+
+@media (min-width: 1025px) {
+  .kbm-menu .nav-dropdown .nav-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px 0;
+    min-width: 200px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    z-index: 1200;
+    transform: translateX(0) translateY(8px) scale(0.98);
+  }
+
+  .kbm-menu .nav-dropdown.dd.open > .nav-dropdown-menu,
+  .kbm-menu .nav-dropdown.dd:hover > .nav-dropdown-menu {
+    transform: translateX(0) translateY(0) scale(1);
+  }
+}
+
+.is-hidden {
+  display: none !important;
+}
+
 /* ===== HAMBURGER MENU (MOBILE) ===== */
 .kbm-hamburger {
   display: none;
@@ -1149,16 +1195,17 @@ div[data-ms-modal-overlay] {
 }
 </style>
 
+
 <section class="kbm-header-wrap">
-  <!-- Billboard strip above main nav -->
+  <!-- Billboard strip above main nav 
   <div class="kbm-billboard" data-testid="welcome-intro-wrapper">
     <div class="kbm-billboard-inner">
       <p class="kbm-billboard-text">
-        Knit It Now is growing — start with the Help Hub and Community, with more tools and patterns on the way.
-        
+        Knit It Now is growing — get help in the Help Hub or search videos to find exactly what you need.        
       </p>
     </div>
   </div>
+-->
 
   <!-- Main nav bar: left (logo) | center (nav) | right (hamburger mobile) -->
   <header class="site-header kbm-nav-bar">
@@ -1178,8 +1225,26 @@ div[data-ms-modal-overlay] {
         <div class="kbm-nav-row menu-row">
           <ul class="kbm-menu">
             <li><a href="/" data-testid="nav-home">Home</a></li>
-            <li><a href="/help-hub" data-testid="nav-start-here">Help Hub</a></li>
-            <li><a href="https://knititnow.talkyard.net" target="_blank" rel="noopener noreferrer" data-testid="nav-community">Community</a></li>
+            <li class="nav-item nav-dropdown dd">
+              <button
+                type="button"
+                class="nav-link nav-dropdown-toggle dd-trigger"
+                aria-haspopup="true"
+                aria-expanded="false"
+                data-testid="nav-start-here"
+              >
+                Help
+              </button>
+
+              <ul class="nav-dropdown-menu dd-panel" role="menu">
+                <li><a href="/help-hub" data-testid="nav-help-hub">Help Hub</a></li>
+                <li><a href="/video-search" data-testid="nav-video-search">Video Search</a></li>
+
+                <!-- Hidden for now -->
+                <li class="is-hidden"><a href="/video-library">Video Library</a></li>
+                <li class="is-hidden"><a href="/reference">Reference</a></li>
+              </ul>
+            </li>
             <li>
               <div class="kbm-account-wrap">
                 <div data-ms-content="!members">

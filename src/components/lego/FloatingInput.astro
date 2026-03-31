@@ -9,6 +9,7 @@
  * 
  * USAGE:
  *   <FloatingInput id="my-input" label="Enter value" type="number" />
+ *   <FloatingInput id="msg" name="message" label="Your message" textarea rows={5} />
  * 
  * REQUIREMENTS:
  * - Import floating-input.css in global.css (already done)
@@ -23,7 +24,13 @@ interface Props {
   label: string;
   /** Optional ID for the label element (for dynamic text updates via JS) */
   labelId?: string;
-  /** Input type (default: "text") */
+  /** Form field name (use for native form POST / Netlify) */
+  name?: string;
+  /** Render a textarea instead of an input (same floating-label pattern) */
+  textarea?: boolean;
+  /** Rows when `textarea` is true */
+  rows?: number;
+  /** Input type (default: "text"; ignored when textarea is true) */
   type?: string;
   /** Input mode for mobile keyboards */
   inputMode?: string;
@@ -35,6 +42,8 @@ interface Props {
   step?: string | number;
   /** Placeholder text (default: " " - required for floating label CSS) */
   placeholder?: string;
+  /** e.g. "off" for fields that should not trigger browser autofill */
+  autocomplete?: string;
   /** Whether the field is required */
   required?: boolean;
   /** Initial value */
@@ -53,12 +62,16 @@ const {
   id,
   label,
   labelId,
+  name,
+  textarea = false,
+  rows = 4,
   type = "text",
   inputMode,
   min,
   max,
   step,
   placeholder = " ",
+  autocomplete,
   required = false,
   value,
   testId,
@@ -66,24 +79,47 @@ const {
   errorText = "Please enter a valid value.",
   invalid = false,
 } = Astro.props;
+
+const textareaValue =
+  value !== undefined && value !== null && String(value) !== ""
+    ? String(value)
+    : "";
 ---
 
-<div class="floating-input">
-  <input
-    type={type}
-    id={id}
-    inputmode={inputMode}
-    min={min}
-    max={max}
-    step={step}
-    placeholder={placeholder}
-    required={required}
-    value={value}
-    data-testid={testId}
-    aria-describedby={errorId}
-    aria-invalid={invalid ? "true" : undefined}
-    class:list={[{ error: invalid }]}
-  />
+<div class:list={["floating-input", { "floating-input--textarea": textarea }]}>
+  {textarea ? (
+    <textarea
+      id={id}
+      name={name}
+      rows={rows}
+      placeholder={placeholder}
+      autocomplete={autocomplete}
+      required={required}
+      data-testid={testId}
+      aria-describedby={errorId}
+      aria-invalid={invalid ? "true" : undefined}
+      class:list={[{ error: invalid }]}
+      set:text={textareaValue}
+    />
+  ) : (
+    <input
+      type={type as astroHTML.JSX.InputHTMLAttributes["type"]}
+      id={id}
+      name={name}
+      inputmode={inputMode as astroHTML.JSX.InputHTMLAttributes["inputmode"]}
+      min={min}
+      max={max}
+      step={step}
+      placeholder={placeholder}
+      autocomplete={autocomplete}
+      required={required}
+      value={value}
+      data-testid={testId}
+      aria-describedby={errorId}
+      aria-invalid={invalid ? "true" : undefined}
+      class:list={[{ error: invalid }]}
+    />
+  )}
   <label for={id} id={labelId} class="floating-label">{label}</label>
   {errorId && (
     <span class="error-text" id={errorId}>{errorText}</span>

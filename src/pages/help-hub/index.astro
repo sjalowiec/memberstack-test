@@ -178,24 +178,19 @@ const fixCategories = [
           <input type="hidden" name="submitted_at" id="helpHubFormSubmittedAt" />
           <input type="hidden" name="form_source" value="help-hub" />
 
-          <div class="form-row">
-            <label for="firstName">First name</label>
-            <input type="text" id="firstName" name="firstName" required />
+          <div class="floating-input">
+            <input type="text" id="firstName" name="firstName" placeholder=" " required />
+            <label for="firstName" class="floating-label">First name</label>
           </div>
 
-          <div class="form-row">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" required />
+          <div class="floating-input">
+            <input type="email" id="email" name="email" placeholder=" " required />
+            <label for="email" class="floating-label">Email</label>
           </div>
 
-          <div class="form-row">
-            <label for="confirmEmail">Confirm email</label>
-            <input type="email" id="confirmEmail" name="confirmEmail" required />
-          </div>
-
-          <div class="form-row">
-            <label for="question">What’s going wrong?</label>
-            <textarea id="question" name="question" rows="4" required></textarea>
+          <div class="floating-input floating-input--textarea">
+            <textarea id="question" name="question" rows="4" placeholder=" " required></textarea>
+            <label for="question" class="floating-label">What do you need help with?</label>
           </div>
 
           <button type="submit" class="kbm-btn kbm-btn-primary help-hub-form__submit">
@@ -213,21 +208,6 @@ const fixCategories = [
 
     if (form) {
       form.addEventListener("submit", function (e) {
-        const emailInput = form.querySelector("#email");
-        const confirmEmailInput = form.querySelector("#confirmEmail");
-        const email =
-          emailInput instanceof HTMLInputElement ? emailInput.value : "";
-        const confirmEmail =
-          confirmEmailInput instanceof HTMLInputElement
-            ? confirmEmailInput.value
-            : "";
-
-        if (email !== confirmEmail) {
-          e.preventDefault();
-          alert("Your email addresses don’t match. Please check and try again.");
-          return;
-        }
-
         const pageUrl = form.querySelector("#helpHubFormPageUrl");
         const submittedAt = form.querySelector("#helpHubFormSubmittedAt");
         if (pageUrl instanceof HTMLInputElement) {
@@ -474,6 +454,9 @@ const fixCategories = [
 
     .help-hub-form__submit {
       margin-top: 0.5rem;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     @media (max-width: 768px) {
@@ -483,23 +466,8 @@ const fixCategories = [
       }
     }
 
-    .form-row {
-      display: flex;
-      flex-direction: column;
+    .help-hub-form .floating-input {
       margin-bottom: 0.75rem;
-    }
-
-    .form-row label {
-      font-size: 0.85rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .form-row input,
-    .form-row textarea {
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 0.95rem;
     }
   </style>
 </Layout>

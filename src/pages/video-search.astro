@@ -1,0 +1,1052 @@
+---
+import Layout from '../layouts/Layout.astro';
+import FloatingInput from '../components/lego/FloatingInput.astro';
+import { videos } from '../data/video-search/videos.js';
+import { searchVideos } from '../lib/videoSearch.js';
+
+const query = Astro.url.searchParams.get('q') || '';
+const results = query ? searchVideos(videos, query) : [];
+const allData = videos.flatMap(video =>
+  video.chunks.map(chunk => ({
+    vimeoId: video.vimeoId,
+    title: video.title,
+    category: video.category,
+    start: chunk.start,
+    end: chunk.end,
+    timestamp: chunk.timestamp,
+    text: chunk.text
+  }))
+);
+---
+<Layout>
+    <div
+      id="video-search-hero"
+      class="video-search-hero"
+    >
+      <div class="video-search-hero__inner">
+        <header class="video-search-hero__intro">
+          <div class="video-search-hero__row">
+            <img
+              class="video-search-hero__icon"
+              src="/images/magnify.svg"
+              alt=""
+              width="140"
+              height="140"
+              decoding="async"
+            />
+            <div class="video-search-hero__text">
+              <h1 class="video-search-hero__headline">Search Videos</h1>
+              <p class="video-search-hero__lede">
+                Type a word or phrase and jump straight to the <em>exact moment</em> it’s mentioned.
+              </p>
+              
+            </div>
+          </div>
+        </header>
+
+        <p class="video-search-hero__preview-note">
+          👉 This is a preview of a new way to search inside videos — we’re just getting started.
+        </p>
+
+        <div class="video-search-hero__field-wrap">
+          <FloatingInput
+            id="searchBox"
+            label="Enter a word or phrase | Examples: cut and sew, tension, gauge swatch, casting on"
+            type="text"
+            autocomplete="off"
+          />
+        </div>
+
+        <p
+          id="videoSearchEmptyHint"
+          class="video-search-empty-hint"
+          role="status"
+          aria-live="polite"
+        >
+          Start typing to search across videos. You’ll see exact moments where your topic is mentioned.
+        </p>
+      </div>
+    </div>
+
+    <div
+      id="videoSearchSticky"
+      class="video-search-sticky"
+      hidden
+      aria-hidden="true"
+    >
+      <div class="video-search-sticky__inner">
+        <div class="video-search-sticky__field">
+          <FloatingInput
+            id="searchBoxSticky"
+            label="Enter your search"
+            type="text"
+            autocomplete="off"
+          />
+          <button
+            type="button"
+            id="videoSearchStickyClear"
+            class="video-search-sticky__clear"
+            aria-label="Clear search"
+            hidden
+          >
+            ×
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="video-search-results" class="video-search__results-wrap" hidden>
+      <ul id="results" style="list-style: none; padding: 0; margin: 0;"></ul>
+    </div>
+
+    <div id="video-search-no-results" class="video-search__no-results" hidden>
+      <p class="video-search__no-results-text">
+        We couldn’t find that exact moment yet, but I can help you find it. Tell me what you’re looking for below.
+      </p>
+
+      <button type="button" class="kbm-btn kbm-btn-primary" id="video-search-help-btn">
+        Ask for Help
+      </button>
+    </div>
+
+      <section id="video-help-request" class="help-hub-footer">
+        <div class="help-hub-request-card">
+        <h2>Not finding your answer?</h2>
+
+        <p>
+          Send me a quick note about what you’re looking for. I’ll help point you in the right direction — and I can improve the Video Vault search for other knitters too.
+        </p>
+
+        <form
+          name="help-hub-question"
+          method="POST"
+          action="/.netlify/functions/contact"
+          data-netlify="true"
+          netlify-honeypot="bot-field"
+          class="help-hub-form"
+        >
+          <input type="hidden" name="form-name" value="help-hub-question" />
+          <p class="help-hub-form__honeypot" aria-hidden="true">
+            <label>Don’t fill this out: <input type="text" name="bot-field" tabindex="-1" autocomplete="off" /></label>
+          </p>
+          <input type="hidden" name="page_url" id="helpHubFormPageUrl" />
+          <input type="hidden" name="submitted_at" id="helpHubFormSubmittedAt" />
+          <input type="hidden" name="form_source" value="help-hub" />
+
+          <div class="form-row">
+            <FloatingInput
+              id="firstName"
+              name="firstName"
+              label="First name"
+              required
+              autocomplete="given-name"
+            />
+          </div>
+
+          <div class="form-row">
+            <FloatingInput
+              id="email"
+              name="email"
+              label="Email"
+              type="email"
+              required
+              autocomplete="email"
+            />
+          </div>
+
+          <div class="form-row">
+            <FloatingInput
+              id="question"
+              name="question"
+              label="What were you hoping to find?"
+              textarea
+              rows={4}
+              required
+            />
+          </div>
+
+          <button type="submit" class="kbm-btn kbm-btn-primary help-hub-form__submit">
+            Send my request
+          </button>
+        </form>
+        </div>
+      </section>
+
+    <div
+      id="videoSearchModal"
+      class="video-search-modal"
+      hidden
+      aria-hidden="true"
+    >
+      <div class="video-search-modal__backdrop"></div>
+      <div
+        class="video-search-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="videoSearchModalTitle"
+      >
+        <button
+          type="button"
+          id="videoSearchModalClose"
+          class="video-search-modal__close"
+          aria-label="Close video"
+        >
+          ×
+        </button>
+        <div class="video-search-modal__header">
+          <h2 id="videoSearchModalTitle" class="video-search-modal__title"></h2>
+          <p id="videoSearchModalTime" class="video-search-modal__meta"></p>
+          <p id="videoSearchModalSnippet" class="video-search-modal__snippet" hidden></p>
+        </div>
+        <div class="video-search-modal__frame">
+          <iframe
+            id="videoSearchModalIframe"
+            title="Vimeo video player"
+            frameborder="0"
+            loading="lazy"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    </div>
+    <style>
+      .video-search-hero {
+        scroll-margin-top: calc(var(--header-offset, 170px) + 12px);
+        padding-top: clamp(1.75rem, 4.5vw, 2.75rem);
+        padding-bottom: clamp(2rem, 5vw, 3.25rem);
+      }
+
+      .video-search-hero__inner {
+        max-width: 920px;
+        margin: 0 auto;
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+      }
+
+      .video-search-hero__intro {
+        margin-bottom: clamp(0.85rem, 2vw, 1.15rem);
+      }
+
+      .video-search-hero__row {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+      }
+
+      .video-search-hero__icon {
+        flex-shrink: 0;
+        width: clamp(120px, 18vw, 160px);
+        height: auto;
+        max-width: 100%;
+        object-fit: contain;
+        display: block;
+      }
+
+      .video-search-hero__text {
+        flex: 1;
+        min-width: 0;
+        max-width: 42rem;
+      }
+
+      .video-search-hero__headline {
+        margin: 0 0 0.75rem;
+        font-size: clamp(1.65rem, 4.5vw, 2.15rem);
+        font-weight: 700;
+        color: #1f2937;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+      }
+
+      .video-search-hero__lede {
+        margin: 0 0 0.7rem;
+        font-size: 1.05rem;
+        color: #374151;
+        line-height: 1.55;
+      }
+
+      .video-search-hero__lede em {
+        font-style: italic;
+        font-weight: inherit;
+        text-decoration: none;
+      }
+
+      .video-search-hero__preview-note {
+        margin: 0.5rem 0 0.85rem;
+        max-width: 42rem;
+        font-size: 0.9rem;
+        font-weight: 400;
+        color: #8b939e;
+        line-height: 1.5;
+      }
+
+      .video-search-hero__examples {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #6b7280;
+        line-height: 1.45;
+      }
+
+      .video-search-hero__example-phrases {
+  color: #5c6f3a;
+  font-size: 0.9rem; /* slightly smaller */
+  font-style: italic; /* same as <em> */
+}
+
+      .video-search-hero__field-wrap {
+        margin-top: 0;
+        margin-bottom: 1.15rem;
+      }
+
+      .video-search-hero__field-wrap .floating-input {
+        max-width: 600px;
+      }
+
+      .video-search-empty-hint {
+        margin: 0;
+        padding: 0;
+        font-size: 0.95rem;
+        color: #6b7280;
+        line-height: 1.5;
+      }
+
+      .video-search-empty-hint[hidden] {
+        display: none !important;
+      }
+
+      @media (max-width: 640px) {
+        .video-search-hero {
+          padding-top: clamp(1.35rem, 4vw, 2rem);
+          padding-bottom: clamp(1.65rem, 4.5vw, 2.5rem);
+        }
+
+        .video-search-hero__intro {
+          margin-bottom: 0.85rem;
+        }
+
+        .video-search-hero__preview-note {
+          margin: 0.45rem 0 0.75rem;
+        }
+
+        .video-search-hero__field-wrap {
+          margin-bottom: 1rem;
+        }
+
+        .video-search-hero__row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 1rem;
+        }
+
+        .video-search-hero__icon {
+          width: clamp(80px, 26vw, 100px);
+        }
+
+        .video-search-hero__text {
+          max-width: none;
+        }
+
+        .video-search-hero__headline {
+          min-width: 0;
+        }
+
+        .video-search-hero__lede {
+          font-size: 1rem;
+        }
+      }
+
+      .video-search-sticky {
+        position: fixed;
+        top: var(--header-offset, 170px);
+        left: 0;
+        right: 0;
+        z-index: 8000;
+        padding: 0.35rem max(1rem, env(safe-area-inset-right)) 0.4rem max(1rem, env(safe-area-inset-left));
+        background: rgba(255, 255, 255, 0.96);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+
+      .video-search-sticky[hidden] {
+        display: none !important;
+      }
+
+      .video-search-sticky__inner {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .video-search-sticky__field {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .video-search-sticky__field .floating-input {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .video-search-sticky__field .floating-input input {
+        padding-right: 2.75rem !important;
+      }
+
+      .video-search-sticky__clear {
+        position: absolute;
+        right: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border: none;
+        border-radius: 6px;
+        background: transparent;
+        color: #6b7280;
+        font-size: 1.35rem;
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .video-search-sticky__clear:hover,
+      .video-search-sticky__clear:focus-visible {
+        background: rgba(0, 0, 0, 0.06);
+        color: #111;
+      }
+
+      .video-search-sticky__clear[hidden] {
+        display: none !important;
+      }
+
+      .video-search__new-search-wrap {
+        margin: 1.25rem 0 0;
+        text-align: center;
+      }
+
+      .video-search__new-search {
+        margin: 0;
+        padding: 0;
+        border: none;
+        background: none;
+        font: inherit;
+        font-size: 0.95rem;
+        color: #52682d;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        cursor: pointer;
+      }
+
+      .video-search__new-search:hover,
+      .video-search__new-search:focus-visible {
+        color: #3d4d22;
+      }
+
+      .video-search__results-wrap {
+        margin-top: 1.5rem;
+      }
+
+      .video-search__no-results {
+        margin-top: 1.5rem;
+        padding: 1.25rem 1.25rem;
+        border: 1px solid #d8e2cc;
+        border-radius: 16px;
+        background: #f7faf3;
+        text-align: center;
+      }
+
+      .video-search__no-results-text {
+        margin: 0 0 1rem;
+        font-size: 1rem;
+        line-height: 1.6;
+        color: #374151;
+      }
+
+      @media (max-width: 640px) {
+        .video-search-sticky {
+          padding: 0.45rem max(0.65rem, env(safe-area-inset-right)) 0.5rem max(0.65rem, env(safe-area-inset-left));
+        }
+      }
+
+      :global(.video-search__result) {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 16px;
+        margin-bottom: 12px;
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        font: inherit;
+        color: inherit;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      :global(.video-search__result:hover) {
+        background: #f9f9f9;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      }
+
+      :global(.video-search__result:active) {
+        background: #eee;
+      }
+
+      :global(.video-result) {
+        text-align: left;
+      }
+
+      :global(.video-search__title) {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 16px;
+        color: #111;
+      }
+
+      :global(.video-search__play) {
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+
+      :global(.video-search__title-text) {
+        display: inline;
+        line-height: 1.4;
+        min-width: 0;
+        flex: 1 1 auto;
+      }
+
+      :global(.video-search__time-inline) {
+        font-style: italic;
+        font-weight: normal;
+        font-size: 14px;
+        color: #777;
+        margin-left: 4px;
+      }
+
+      :global(.video-result__snippet) {
+        font-style: italic;
+        opacity: 0.88;
+        margin-top: 0.5rem;
+        line-height: 1.45;
+        font-size: 0.95rem;
+        color: #374151;
+      }
+
+      :global(.video-search__highlight) {
+        font-weight: 700;
+        background: none;
+      }
+
+      .video-search-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+      .video-search-modal[hidden],
+      .video-search-modal[aria-hidden='true'] {
+        display: none !important;
+      }
+      .video-search-modal__backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+      }
+      .video-search-modal__panel {
+        position: relative;
+        z-index: 1;
+        width: min(920px, 100%);
+        max-height: calc(100vh - 2rem);
+        background: #fff;
+        border-radius: 12px;
+        overflow: auto;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+      }
+      .video-search-modal__close {
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        z-index: 2;
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        background: rgba(255, 255, 255, 0.95);
+        color: #111;
+        font-size: 1.5rem;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+      .video-search-modal__close:hover,
+      .video-search-modal__close:focus-visible {
+        background: #f0f0f0;
+      }
+      .video-search-modal__header {
+        padding: 1rem 3rem 0.75rem 1rem;
+        border-bottom: 1px solid #e8e8e8;
+        flex-shrink: 0;
+      }
+      .video-search-modal__title {
+        margin: 0 0 0.35rem;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #222;
+        line-height: 1.3;
+      }
+      .video-search-modal__meta {
+        margin: 0;
+        font-size: 0.95rem;
+        color: #555;
+      }
+      .video-search-modal__snippet {
+        margin: 0.65rem 0 0;
+        font-size: 0.95rem;
+        color: #333;
+        line-height: 1.45;
+      }
+      .video-search-modal__frame {
+        width: 100%;
+        position: relative;
+        padding-top: 56.25%;
+        background: #000;
+        flex-shrink: 0;
+      }
+      .video-search-modal__frame iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+
+      .help-hub-footer {
+        margin-top: 2.25rem;
+        padding-top: 0;
+        border-top: none;
+        max-width: none;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .help-hub-request-card {
+        width: 100%;
+        max-width: 36rem;
+        margin-top: 0;
+        padding: 1.35rem 1.35rem 1.6rem;
+        border: 1px solid rgba(82, 104, 45, 0.14);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.55);
+        box-shadow: 0 1px 3px rgba(36, 48, 21, 0.04);
+      }
+
+      .help-hub-request-card h2 {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        text-align: center;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #4b5563;
+      }
+
+      .help-hub-request-card > p {
+        text-align: center;
+        margin-bottom: 1rem;
+        color: #6b7280;
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      .help-hub-form__honeypot {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .help-hub-form {
+        margin-top: 0.25rem;
+      }
+
+      .help-hub-form__submit {
+        display: block;
+        margin-top: 0.5rem;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      @media (max-width: 768px) {
+        .help-hub-request-card {
+          padding: 1.2rem 1.05rem 1.45rem;
+          max-width: 100%;
+        }
+      }
+
+      .form-row {
+        margin-bottom: 0.75rem;
+      }
+    </style>
+
+    <script define:vars={{ allData }}>
+      function escapeRegExp(str) {
+        return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function highlightMatch(text, query) {
+        const source = String(text ?? '');
+        const q = String(query ?? '').trim();
+        if (!q) return escapeHtml(source);
+
+        const regex = new RegExp(`(${escapeRegExp(q)})`, 'ig');
+        return escapeHtml(source).replace(
+          regex,
+          '<mark class="video-search__highlight">$1</mark>'
+        );
+      }
+
+      function initVideoSearch() {
+        console.log('[video-search] script loaded');
+        const searchBox = document.getElementById('searchBox');
+        const searchBoxSticky = document.getElementById('searchBoxSticky');
+        const resultsList = document.getElementById('results');
+        const resultsContainer = document.getElementById('video-search-results');
+        const noResultsEl = document.getElementById('video-search-no-results');
+        const stickyBar = document.getElementById('videoSearchSticky');
+        const stickyClear = document.getElementById('videoSearchStickyClear');
+        const hero = document.getElementById('video-search-hero');
+        const emptyHint = document.getElementById('videoSearchEmptyHint');
+        const helpButton = document.getElementById('video-search-help-btn');
+        const helpSection = document.getElementById('video-help-request');
+        const helpMessageField = document.querySelector('#video-help-request textarea');
+        const newSearchBtn = document.getElementById('videoSearchNewSearch');
+        const modal = document.getElementById('videoSearchModal');
+        const backdrop = modal?.querySelector('.video-search-modal__backdrop');
+        const iframe = document.getElementById('videoSearchModalIframe');
+        const closeBtn = document.getElementById('videoSearchModalClose');
+        const titleEl = document.getElementById('videoSearchModalTitle');
+        const timeEl = document.getElementById('videoSearchModalTime');
+        const snippetEl = document.getElementById('videoSearchModalSnippet');
+
+        if ((!searchBox && !searchBoxSticky) || !resultsList) {
+          console.error('[video-search] Missing required DOM elements', {
+            searchBox,
+            searchBoxSticky,
+            resultsList,
+            resultsContainer,
+            noResultsEl
+          });
+          return;
+        }
+
+        const data = Array.isArray(allData) ? allData : [];
+        if (!Array.isArray(allData)) {
+          console.error('[video-search] allData is not an array', { allData });
+        }
+
+        console.log('[video-search] init complete', {
+          hasSearchBox: !!searchBox,
+          hasSearchBoxSticky: !!searchBoxSticky,
+          hasResultsList: !!resultsList,
+          hasResultsContainer: !!resultsContainer,
+          hasNoResults: !!noResultsEl,
+          dataCount: data.length
+        });
+
+        let lastFocused = null;
+
+        function safeHighlight(text, query) {
+          try {
+            return highlightMatch(text, query);
+          } catch (err) {
+            console.error('[video-search] highlight failed', err);
+            return escapeHtml(String(text ?? ''));
+          }
+        }
+
+        function formatTime(seconds) {
+          const s = seconds == null || Number.isNaN(Number(seconds)) ? 0 : Number(seconds);
+          const mins = Math.floor(s / 60);
+          const secs = Math.floor(s % 60);
+          return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function buildPlayerSrc(vimeoId, startSec) {
+          const t = Math.max(0, Math.floor(Number(startSec) || 0));
+          const id = String(vimeoId).trim();
+          return `https://player.vimeo.com/video/${encodeURIComponent(id)}?autoplay=1#t=${t}s`;
+        }
+
+        function getQuery(source) {
+          return source?.value?.trim() || '';
+        }
+
+        function syncFrom(source) {
+          const value = source?.value ?? '';
+          if (searchBox && source !== searchBox) searchBox.value = value;
+          if (searchBoxSticky && source !== searchBoxSticky) searchBoxSticky.value = value;
+        }
+
+        function updateStickyClearVisibility() {
+          if (!stickyClear) return;
+          stickyClear.hidden = getQuery().length === 0;
+        }
+
+        function setStickyBarVisible(visible) {
+          if (!stickyBar) return;
+          stickyBar.hidden = !visible;
+          stickyBar.setAttribute('aria-hidden', visible ? 'false' : 'true');
+        }
+
+        function runVideoSearch(source, reason = 'input') {
+          if (source) syncFrom(source);
+
+          const queryRaw = getQuery(source || searchBoxSticky || searchBox);
+          const query = queryRaw.toLowerCase();
+          console.log('[video-search] active source', {
+            sourceId: source?.id,
+            value: source?.value
+          });
+
+          console.log('[video-search] runVideoSearch', { reason, queryRaw, dataCount: data.length });
+
+          if (emptyHint) {
+            emptyHint.hidden = queryRaw.length > 0;
+          }
+          updateStickyClearVisibility();
+
+          if (!query) {
+            resultsList.innerHTML = '';
+            if (resultsContainer) resultsContainer.hidden = true;
+            if (noResultsEl) noResultsEl.hidden = true;
+            return;
+          }
+
+          const matches = data.filter((item) => {
+            const haystack = [
+              item?.title || '',
+              item?.snippet || '',
+              item?.transcript || '',
+              item?.text || ''
+            ].join(' ').toLowerCase();
+
+            return haystack.includes(query);
+          });
+          const topMatches = matches.slice(0, 20);
+
+          console.log('[video-search] matches', {
+            total: matches.length,
+            rendered: topMatches.length,
+            first: topMatches[0]
+          });
+
+          resultsList.innerHTML = '';
+          topMatches.forEach((item) => {
+            const li = document.createElement('li');
+            li.style.marginBottom = '16px';
+
+            const title = item?.title || 'Untitled';
+            const snippet = item?.snippet || item?.text || '';
+            const time = typeof formatTime === 'function'
+              ? formatTime(item?.start || item?.time || 0)
+              : '';
+
+            li.innerHTML = `
+              <button type="button" class="video-search__result">
+                <div class="video-result">
+                  <div class="video-search__title">
+                    <span class="video-search__play" aria-hidden="true">▶</span>
+                    <span class="video-search__title-text">
+                      ${safeHighlight(String(title), queryRaw)}
+                      ${time ? `<span class="video-search__time-inline">(${time})</span>` : ''}
+                    </span>
+                  </div>
+                  <div class="video-result__snippet">“…${safeHighlight(String(snippet), queryRaw)}…”</div>
+                </div>
+              </button>
+            `;
+
+            const btn = li.querySelector('.video-search__result');
+            if (btn instanceof HTMLButtonElement) {
+              btn.dataset.vimeoId = String(item?.vimeoId ?? '');
+              btn.dataset.start = String(item?.start ?? item?.time ?? 0);
+              if (item?.title) btn.dataset.title = String(item.title);
+              if (item?.text || item?.snippet) btn.dataset.snippet = String(item.text || item.snippet || '');
+              btn.addEventListener('click', () => openModal(item));
+            }
+
+            resultsList.appendChild(li);
+          });
+
+          if (resultsContainer) resultsContainer.hidden = matches.length === 0;
+          if (noResultsEl) noResultsEl.hidden = matches.length > 0;
+        }
+
+        function openModal(item) {
+          if (!modal || !iframe || !titleEl || !timeEl || !snippetEl || !closeBtn) return;
+
+          const startSec = item.start ?? 0;
+          const title = (item.title && String(item.title).trim()) || 'Video';
+          const snippetRaw = item.text != null ? String(item.text).trim() : '';
+
+          titleEl.textContent = title;
+          timeEl.textContent = `Timestamp: ${formatTime(startSec)}`;
+
+          const queryRaw = getQuery();
+          if (snippetRaw) {
+            snippetEl.innerHTML = safeHighlight(snippetRaw, queryRaw);
+            snippetEl.hidden = false;
+          } else {
+            snippetEl.textContent = '';
+            snippetEl.hidden = true;
+          }
+
+          lastFocused = document.activeElement;
+          iframe.src = buildPlayerSrc(item.vimeoId, startSec);
+          modal.hidden = false;
+          modal.setAttribute('aria-hidden', 'false');
+          document.body.style.overflow = 'hidden';
+          closeBtn.focus();
+        }
+
+        function closeModal() {
+          if (!modal || !iframe) return;
+          modal.hidden = true;
+          modal.setAttribute('aria-hidden', 'true');
+          iframe.src = '';
+          document.body.style.overflow = '';
+          if (snippetEl) {
+            snippetEl.textContent = '';
+            snippetEl.hidden = true;
+          }
+          if (lastFocused && typeof lastFocused.focus === 'function') {
+            lastFocused.focus();
+          }
+        }
+
+        function onKeydown(e) {
+          if (e.key === 'Escape' && modal && !modal.hidden) {
+            e.preventDefault();
+            closeModal();
+          }
+        }
+
+        if (searchBox) {
+          searchBox.addEventListener('input', () => runVideoSearch(searchBox, 'main-input'));
+          searchBox.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') runVideoSearch(searchBox, 'main-enter');
+          });
+        }
+
+        if (searchBoxSticky) {
+          searchBoxSticky.addEventListener('input', () => runVideoSearch(searchBoxSticky, 'sticky-input'));
+          searchBoxSticky.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') runVideoSearch(searchBoxSticky, 'sticky-enter');
+          });
+        }
+
+        if (backdrop) {
+          backdrop.addEventListener('click', closeModal);
+        }
+        if (closeBtn) {
+          closeBtn.addEventListener('click', closeModal);
+        }
+        document.addEventListener('keydown', onKeydown);
+
+        if (stickyClear) {
+          stickyClear.addEventListener('click', () => {
+            if (searchBox) searchBox.value = '';
+            if (searchBoxSticky) searchBoxSticky.value = '';
+            runVideoSearch(searchBoxSticky || searchBox || null, 'clear');
+            if (searchBoxSticky) searchBoxSticky.focus();
+          });
+        }
+
+        if (hero && stickyBar) {
+          const io = new IntersectionObserver(
+            (entries) => {
+              const e = entries[0];
+              setStickyBarVisible(!e.isIntersecting);
+            },
+            { threshold: 0, rootMargin: '0px' }
+          );
+          io.observe(hero);
+        }
+
+        if (helpButton && helpSection) {
+          helpButton.addEventListener('click', () => {
+            const q = getQuery();
+
+            if (
+              helpMessageField instanceof HTMLTextAreaElement &&
+              q &&
+              !helpMessageField.value.trim()
+            ) {
+              helpMessageField.value = `I searched the video library for "${q}" but didn’t find what I needed.`;
+              helpMessageField.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+
+            helpSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        }
+
+        runVideoSearch(searchBoxSticky || searchBox || null, 'init');
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initVideoSearch);
+      } else {
+        initVideoSearch();
+      }
+    </script>
+
+  <script>
+    const form = document.querySelector(".help-hub-form");
+
+    if (form) {
+      form.addEventListener("submit", function (e) {
+        const emailInput = form.querySelector("#email");
+        const email =
+          emailInput instanceof HTMLInputElement ? emailInput.value : "";
+
+        const pageUrl = form.querySelector("#helpHubFormPageUrl");
+        const submittedAt = form.querySelector("#helpHubFormSubmittedAt");
+        if (pageUrl instanceof HTMLInputElement) {
+          pageUrl.value = window.location.href;
+        }
+        if (submittedAt instanceof HTMLInputElement) {
+          submittedAt.value = new Date().toISOString();
+        }
+      });
+    }
+  </script>
+</Layout>

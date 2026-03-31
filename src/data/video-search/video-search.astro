@@ -1,0 +1,61 @@
+---
+import fs from 'fs';
+import path from 'path';
+
+// Load all JSON files in the folder
+const dataDir = path.resolve('src/data/video-search');
+const files = fs.readdirSync(dataDir);
+
+let allData = [];
+
+for (const file of files) {
+  const content = JSON.parse(
+    fs.readFileSync(path.join(dataDir, file), 'utf-8')
+  );
+  allData = allData.concat(content);
+}
+---
+
+<html>
+  <head>
+    <title>Video Search</title>
+  </head>
+  <body>
+    <h1>Search Videos</h1>
+
+    <input type="text" id="searchBox" placeholder="Search..." />
+
+    <ul id="results"></ul>
+
+    <script>
+      const data = {JSON.stringify(allData)};
+
+      const searchBox = document.getElementById('searchBox');
+      const results = document.getElementById('results');
+
+      searchBox.addEventListener('input', () => {
+        const query = searchBox.value.toLowerCase();
+        results.innerHTML = '';
+
+        if (!query) return;
+
+        const matches = data.filter(item =>
+          item.text.toLowerCase().includes(query)
+        );
+
+        matches.slice(0, 10).forEach(item => {
+          const li = document.createElement('li');
+
+          const link = document.createElement('a');
+          link.href = `https://player.vimeo.com/video/${item.vimeoId}#t=${item.start}s`;
+          link.target = '_blank';
+
+          link.textContent = `${item.text} (${item.start}s)`;
+
+          li.appendChild(link);
+          results.appendChild(li);
+        });
+      });
+    </script>
+  </body>
+</html>
