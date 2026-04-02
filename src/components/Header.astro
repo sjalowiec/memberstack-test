@@ -1370,9 +1370,20 @@ div[data-ms-modal-overlay] {
         <div class="kbm-nav-center-cluster">
           <div class="kbm-nav-row menu-row">
             <ul class="kbm-menu">
-            <li><a href="/" data-testid="nav-home">Home</a></li>
-            <li>
-              <a href="/whats-new" data-testid="nav-whats-new" class="nav-whats-new-link"><span class="nav-pill-new">NEW</span> What's New</a>
+            <li class="nav-item nav-dropdown dd">
+              <button
+                type="button"
+                class="nav-link nav-dropdown-toggle dd-trigger"
+                aria-haspopup="true"
+                aria-expanded="false"
+                data-testid="nav-knit"
+              >
+                Knit
+              </button>
+
+              <ul class="nav-dropdown-menu dd-panel" role="menu">
+                <li><a href="/stitch" data-testid="nav-stitch-library">Stitch Library (Beta)</a></li>
+              </ul>
             </li>
             <li class="nav-item nav-dropdown dd">
               <button
@@ -1393,6 +1404,9 @@ div[data-ms-modal-overlay] {
                 <li class="is-hidden"><a href="/video-library">Video Library</a></li>
                 <li class="is-hidden"><a href="/reference">Reference</a></li>
               </ul>
+            </li>
+            <li>
+              <a href="/whats-new" data-testid="nav-whats-new" class="nav-whats-new-link"><span class="nav-pill-new">NEW</span> What's New</a>
             </li>
             <li>
               <div class="kbm-account-wrap">

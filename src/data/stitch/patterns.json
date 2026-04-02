@@ -1,0 +1,2712 @@
+[
+ {
+   "id": 10,
+   "title": "509",
+   "techniqueId": 4,
+   "stitchMultiple": "8 x 4",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "3 rows of Tuck with needles out of work.",
+   "dateAdded": ""
+ },
+ {
+   "id": 11,
+   "title": "KIN 487 Tuck",
+   "techniqueId": 5,
+   "stitchMultiple": "8 x 8",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 12,
+   "title": "1079",
+   "techniqueId": 6,
+   "stitchMultiple": "8 x 12",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Multiple of 8 stitches plus 1  <ul><li>Pick up 4 yarns crossing in front of 3 knit stitches and put into hook on the 5th row.</li> <li>Pick up 4 yarns crossing in front of 5 knit stitches and put into hook on the 5th row.</li> ",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 13,
+   "title": "929",
+   "techniqueId": 6,
+   "stitchMultiple": "8 x 16",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Multiple of 8 stitches plus 1  Pick up the 2 yarns that are crossing in front of 7 knit stitches and put onto the needle on the 7th row.<br> <div class=\"text-center\">  <a class='videopopup btn btn-mini btn-primary\"data-vimeoid='901887073'><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> \"How to\" video </a></div>",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 14,
+   "title": "933",
+   "techniqueId": 6,
+   "stitchMultiple": "8 x 8",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Multiple of 8 Stitches plus 1.  Pick up the two yarns that are crossing in front of 3 knit stitches and put on the needle on the 5th row.",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 15,
+   "title": "988",
+   "techniqueId": 6,
+   "stitchMultiple": "8 x 10",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Multiple of 8 stitches plus 1.  Pick up two yarns that are crossing in front of 7 knit stitches and put onto the needle on the 8th row.",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 16,
+   "title": "995",
+   "techniqueId": 6,
+   "stitchMultiple": "8 x 8",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Multiple of 8 stitches plus 1.  Pick up 4 yarns that are crossing in front of 3 knit stitches and put onto the needle on the 5th row.",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 17,
+   "title": "995a",
+   "techniqueId": 6,
+   "stitchMultiple": "6 x 8",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Multiple of 8 stitches plus 1  <ul> <li>Pick up 2 yarns that are crossing in front of 3 knit stitches and put onto the needle on the 3rd row.</li> <li>Then pick up the second set of  2 yarns that are crossing in front of the 3 knit stitches and hang them on the needle on the 5th row.</li></ul>",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 18,
+   "title": "1012",
+   "techniqueId": 6,
+   "stitchMultiple": "8 x 16",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Multiple of 8 stitches plus 1  Pick up 4 yarns that are crossing in front of 7 knit stitches and put onto the <u>3 needles</u> on the 8th row.",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 19,
+   "title": "1012A",
+   "techniqueId": 6,
+   "stitchMultiple": "8 x 16",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Multiple of 8 stitches plus 1  Pick up 4 yarns that are crossing in front of 7 knit stitches and put onto the <u>3 needles</u> on the 8th row.",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 20,
+   "title": "1017",
+   "techniqueId": 6,
+   "stitchMultiple": "8x12",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Multiple of 8 stitches plus 1  Pick up 2 yarns crossing in front of 7 knit stitches and put into hook on the 6th row.",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 21,
+   "title": "1078",
+   "techniqueId": 6,
+   "stitchMultiple": "8 x 10",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Multiple of 8 stitches plus 1  Pick up 3 yarns crossing in front of 3 knit stitches and put into needle on the 4th row.",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 25,
+   "title": "KIN 499 Tuck",
+   "techniqueId": 4,
+   "stitchMultiple": "4 x 5",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 26,
+   "title": "KIN 440 Tuck",
+   "techniqueId": 5,
+   "stitchMultiple": "2 x 4",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 27,
+   "title": "448",
+   "techniqueId": 5,
+   "stitchMultiple": "8 x 6",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 28,
+   "title": "KIN 401 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 30",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 29,
+   "title": "KIN 402 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 45",
+   "punchcard": true,
+   "lk150": false,
+   "notes": " NOTE: With 4 row tucks, the fabric tends to pucker. It can be blocked flat, but be careful not to crush the texture of the stitch pattern.",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 30,
+   "title": "KIN 403 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 24",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 31,
+   "title": "KIN 404 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 26",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 32,
+   "title": "KIN 405 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 50",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 33,
+   "title": "KIN 406 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 10",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 34,
+   "title": "KIN 407 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 20",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 35,
+   "title": "KIN 408 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 22",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 36,
+   "title": "KIN 409 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 30",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 37,
+   "title": "KIN 410 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 38",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 38,
+   "title": "KIN 411 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 18",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 39,
+   "title": "kin 412 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 18",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 40,
+   "title": "KIN 413 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 21",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 41,
+   "title": "KIN 414 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 51",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 42,
+   "title": "KIN 415 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 60",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 43,
+   "title": "KIN 416 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 56",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 44,
+   "title": "KIN 417 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 12",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 45,
+   "title": "KIN 418 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 24",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 46,
+   "title": "KIN 419 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 24",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 47,
+   "title": "KIN 420 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 20",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 48,
+   "title": "KIN 412 Tuck",
+   "techniqueId": 5,
+   "stitchMultiple": "12 x 18",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 49,
+   "title": "KIN 414 Tuck",
+   "techniqueId": 5,
+   "stitchMultiple": "24 x 51",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 50,
+   "title": "KIN 416 Tuck",
+   "techniqueId": 5,
+   "stitchMultiple": "24 x 28",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 51,
+   "title": "KIN 417 Tuck",
+   "techniqueId": 5,
+   "stitchMultiple": "12 x 12",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 52,
+   "title": "KIN 420 Tuck",
+   "techniqueId": 5,
+   "stitchMultiple": "12 x 20",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 53,
+   "title": "KIN 403 Tuck",
+   "techniqueId": 5,
+   "stitchMultiple": "24 x 24",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 54,
+   "title": "KIN 405 Tuck",
+   "techniqueId": 5,
+   "stitchMultiple": "24 x 50",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 55,
+   "title": "KIN 406 Tuck",
+   "techniqueId": 5,
+   "stitchMultiple": "12 x 10",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 56,
+   "title": "KIN 408 Tuck",
+   "techniqueId": 5,
+   "stitchMultiple": "24 x 22",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 57,
+   "title": "KIN 806 Multi Slip",
+   "techniqueId": 8,
+   "stitchMultiple": "24 x 48",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 58,
+   "title": "KIN 808 Multi Slip",
+   "techniqueId": 8,
+   "stitchMultiple": "24 x 16",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 59,
+   "title": "KIN 804 Multi Slip",
+   "techniqueId": 8,
+   "stitchMultiple": "24 x 28",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 60,
+   "title": "KIN 816 Multi Slip",
+   "techniqueId": 8,
+   "stitchMultiple": "24 x 44",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Note how slipping over 12 stitches with plain knitting over 12 stitches creates a wave to the finished knitting.",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 61,
+   "title": "KIN 803 Multi Slip",
+   "techniqueId": 8,
+   "stitchMultiple": "24 x 24",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 62,
+   "title": "KIN 8081 Multi Slip",
+   "techniqueId": 8,
+   "stitchMultiple": "",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 63,
+   "title": "KIN 820 Multi Slip",
+   "techniqueId": 8,
+   "stitchMultiple": "8 x 8",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 64,
+   "title": "KIN 421 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "8 x 8",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 65,
+   "title": "KIN 422 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 16",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 66,
+   "title": "KIN 8102 Multi Slip",
+   "techniqueId": 8,
+   "stitchMultiple": "8 x 32",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 67,
+   "title": "KIN 8109 Multi Slip",
+   "techniqueId": 8,
+   "stitchMultiple": "",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 68,
+   "title": "KIN 441 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 X 30",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 69,
+   "title": "KIN 442 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x  20 ",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 70,
+   "title": "KIN 443 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 60",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 71,
+   "title": "KIN 444 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 50",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 72,
+   "title": "KIN 445 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 48",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 73,
+   "title": "KIN 446 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 49",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 78,
+   "title": "KIN 451 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "24 x 56",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 81,
+   "title": "KIN 454 Slip",
+   "techniqueId": 7,
+   "stitchMultiple": "4 x 8",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 82,
+   "title": "KIN 628 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "8 x 3",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "This needle arrangement makes a very wide fabric that is beautiful on both sides.",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 84,
+   "title": "KIN 625 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "22 x 26",
+   "punchcard": false,
+   "lk150": true,
+   "notes": "Note: The stitch repeat is 22 stitches, no punchcard pattern is provided.",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 85,
+   "title": "KIN 6515 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "8 x 18",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 86,
+   "title": "KIN 6555 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "8 x 18",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 87,
+   "title": "KIN 6510 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "8 x 8",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 88,
+   "title": "KIN 6488 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "8 x 12",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 89,
+   "title": "KIN 6486 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "8 X 6",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 90,
+   "title": "KIN 6487 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "12 x12",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 91,
+   "title": "KIN 701 Slip 'N Tuck",
+   "techniqueId": 9,
+   "stitchMultiple": "2 x 6",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 92,
+   "title": "KIN 703 Slip 'N Tuck",
+   "techniqueId": 9,
+   "stitchMultiple": "2 x 12",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Alternate slip settings, tuck settings and plain knitting for fabulous texture.<br> Knit loosely for a more lacy effect.",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 93,
+   "title": "KIN 702 Slip 'N Tuck",
+   "techniqueId": 9,
+   "stitchMultiple": "2 x 3",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 94,
+   "title": "KIN 704 Slip 'N Tuck",
+   "techniqueId": 9,
+   "stitchMultiple": "4 x 16",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 95,
+   "title": "KIN 705 Slip 'N Tuck",
+   "techniqueId": 9,
+   "stitchMultiple": "4 x 16",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 96,
+   "title": "KIN 706 Slip 'N Tuck",
+   "techniqueId": 9,
+   "stitchMultiple": "4 x 8",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 97,
+   "title": "KIN 707 Slip 'N Tuck",
+   "techniqueId": 9,
+   "stitchMultiple": "4 x 8",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 98,
+   "title": "KIN 7521 Slip 'N Tuck",
+   "techniqueId": 9,
+   "stitchMultiple": "8 x 16",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Examine the images carefully. Reversing the sequence of tuck and slip makes a noticeable difference with this stitch pattern.",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 99,
+   "title": "KIN 7523 Slip 'N Tuck",
+   "techniqueId": 9,
+   "stitchMultiple": "8 x 22",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Examine the images carefully. Reversing the sequence of tuck and slip makes a noticeable difference with this stitch pattern.",
+   "dateAdded": "2011-05-17 0:00:00"
+ },
+ {
+   "id": 101,
+   "title": "KIN 501 HL",
+   "techniqueId": 10,
+   "stitchMultiple": "4 x 24",
+   "punchcard": false,
+   "lk150": false,
+   "notes": "Unusual stitch transfer sequences create this simple, but beautiful lace pattern. (hand manipulated)  Breaking the rules by having 2 eyelets side by side, and using the resulting stitch construction is the secret.  Includes a detailed step by step video. <center><a href=\"http://www.knititnow.com/learn/tutorial/443/double-eyelet-lace\"><img src=\"http://www.knititnow.com/images/Blog_Images/2014/buttons/watch_how_its_done.jpg\"></a></center>  ",
+   "dateAdded": "2011-07-08 0:00:00"
+ },
+ {
+   "id": 103,
+   "title": "KIN 063",
+   "techniqueId": 11,
+   "stitchMultiple": "24 x 54",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2012-03-23 0:00:00"
+ },
+ {
+   "id": 104,
+   "title": "KIN 061",
+   "techniqueId": 11,
+   "stitchMultiple": "12 x 30",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2012-03-23 0:00:00"
+ },
+ {
+   "id": 105,
+   "title": "KIN 094",
+   "techniqueId": 11,
+   "stitchMultiple": "6 x 16",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2012-03-23 0:00:00"
+ },
+ {
+   "id": 106,
+   "title": "KIN 122",
+   "techniqueId": 11,
+   "stitchMultiple": "24 x 30",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2012-03-23 0:00:00"
+ },
+ {
+   "id": 107,
+   "title": "KIN 090",
+   "techniqueId": 11,
+   "stitchMultiple": "24 x 30",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2012-03-23 0:00:00"
+ },
+ {
+   "id": 108,
+   "title": "KIN 088",
+   "techniqueId": 11,
+   "stitchMultiple": "12 x 20",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2012-03-23 0:00:00"
+ },
+ {
+   "id": 109,
+   "title": "KIN 116",
+   "techniqueId": 11,
+   "stitchMultiple": "4 x 18",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2012-03-23 0:00:00"
+ },
+ {
+   "id": 110,
+   "title": "KIN 110",
+   "techniqueId": 11,
+   "stitchMultiple": "4 x 7",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2012-03-23 0:00:00"
+ },
+ {
+   "id": 111,
+   "title": "KIN 101",
+   "techniqueId": 11,
+   "stitchMultiple": "12 x 28",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2012-03-23 0:00:00"
+ },
+ {
+   "id": 123,
+   "title": "Block A-L",
+   "techniqueId": 12,
+   "stitchMultiple": "",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2013-06-29 0:00:00"
+ },
+ {
+   "id": 124,
+   "title": "Block M-X",
+   "techniqueId": 12,
+   "stitchMultiple": "",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2013-06-29 0:00:00"
+ },
+ {
+   "id": 125,
+   "title": "Block Y-Z",
+   "techniqueId": 12,
+   "stitchMultiple": "",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2013-06-29 0:00:00"
+ },
+ {
+   "id": 126,
+   "title": "Linen Stitch",
+   "techniqueId": 7,
+   "stitchMultiple": "2",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Knit over an even number of stitches, Linen Stitch creates a firm fabric with lots of texture.<br><br>This is a wrong-side facing fabric. In other words, the purl side with the slipped floats is the \"right\" side of the work.<br><br>The samples are knit in <a href=\"http://www.knititnow.com/store/product/350/yeoman-cannele/ConeDetails\">Yeoman Cannele</a>, a tightly twisted mercerized cotton that maintains the beautiful stitch definition of the Linen Stitch.",
+   "dateAdded": "2014-04-16 0:00:00"
+ },
+ {
+   "id": 129,
+   "title": "Diagonal Tuck",
+   "techniqueId": 24,
+   "stitchMultiple": "6x24",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "Although attractive in a single color, this stitch pattern is especially effective in 2 colors.",
+   "dateAdded": "2016-06-16 0:00:00"
+ },
+ {
+   "id": 130,
+   "title": "Vines",
+   "techniqueId": 0,
+   "stitchMultiple": null,
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Needles out of with stitch patterns.",
+   "dateAdded": "2016-06-16 0:00:00"
+ },
+ {
+   "id": 131,
+   "title": "Vines",
+   "techniqueId": 10,
+   "stitchMultiple": "Your choice",
+   "punchcard": false,
+   "lk150": false,
+   "notes": "Use 1 or 2 needles out of work, vary the number of stitches between out of work needles",
+   "dateAdded": "2016-06-16 0:00:00"
+ },
+ {
+   "id": 132,
+   "title": "Lacy Waves",
+   "techniqueId": 10,
+   "stitchMultiple": "3 stitch multiple ",
+   "punchcard": false,
+   "lk150": false,
+   "notes": "For any machine, use short rows to create the openwork \"lace\".<br> <center><a class=\"btn btn-success btn-mini\" href=\"/learn/tutorial/736/lacy-waves\">Watch the step by step video</a></center>",
+   "dateAdded": "2016-06-21 0:00:00"
+ },
+ {
+   "id": 133,
+   "title": "Handsome_Pullover",
+   "techniqueId": 24,
+   "stitchMultiple": "24 x 56",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "1 or 2 color tuck with a strong graphic design",
+   "dateAdded": "2016-06-22 0:00:00"
+ },
+ {
+   "id": 135,
+   "title": "SWIII 299",
+   "techniqueId": 7,
+   "stitchMultiple": null,
+   "punchcard": false,
+   "lk150": false,
+   "notes": "Horizontal Waves ... Consider using this sideways",
+   "dateAdded": "2016-09-10 0:00:00"
+ },
+ {
+   "id": 136,
+   "title": "KIN123",
+   "techniqueId": 11,
+   "stitchMultiple": "8 x12",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2016-12-27 0:00:00"
+ },
+ {
+   "id": 137,
+   "title": "KIN_lace40",
+   "techniqueId": 10,
+   "stitchMultiple": "4sts x 12 rows",
+   "punchcard": false,
+   "lk150": false,
+   "notes": "<br>Lots of variations possible with this simple lace transfer. Alternate the \"stripes\" of lace columns, add contrasting color in the plain section, vary the number of transfers in each vertical column. Get creative!",
+   "dateAdded": "2017-01-14 0:00:00"
+ },
+ {
+   "id": 138,
+   "title": "KIN_lace41",
+   "techniqueId": 10,
+   "stitchMultiple": "4sts x 4 rows",
+   "punchcard": false,
+   "lk150": false,
+   "notes": "<br>Columns of criss-cross lace transfers offer a variety of stitch patterns. Knit in single or multiple color horizontal stripes, knit in variegated yarn, vary the number of stitches in the plain knitting vertical columns. Add horizontal stripes of plain knitting.",
+   "dateAdded": "2017-01-14 0:00:00"
+ },
+ {
+   "id": 139,
+   "title": "Tuck Rib 69",
+   "techniqueId": 18,
+   "stitchMultiple": "8 sts x 16 rows",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "A simple, alternating tuck on the main bed. The tuck creates wavy columns of a single knit stitch on the ribber. 3x1 rib that is beautiful on both sides",
+   "dateAdded": "2017-02-07 0:00:00"
+ },
+ {
+   "id": 140,
+   "title": "Tuck Rib 70",
+   "techniqueId": 18,
+   "stitchMultiple": "4 sts x 16 rows",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "1x1 ribbing with alternating tucks. Reversible - beautiful for blankets and scarves.",
+   "dateAdded": "2017-02-07 0:00:00"
+ },
+ {
+   "id": 141,
+   "title": "Slip Hearts",
+   "techniqueId": 7,
+   "stitchMultiple": "",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "The knit \"column\" between the hearts were hand-manipulated.",
+   "dateAdded": "2017-02-08 0:00:00"
+ },
+ {
+   "id": 142,
+   "title": "Tuck Hearts",
+   "techniqueId": 5,
+   "stitchMultiple": "24x48",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2017-02-08 0:00:00"
+ },
+ {
+   "id": 143,
+   "title": "Wide Diagonal Tuck",
+   "techniqueId": 5,
+   "stitchMultiple": "24x72",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "Unusual diagonal design that looks great on both sides. Take care in punching the card.  One repeat is 72 rows.  You may need to add to a standard 60 row card to complete the design.",
+   "dateAdded": "2017-03-04 0:00:00"
+ },
+ {
+   "id": 144,
+   "title": "KIN0319",
+   "techniqueId": 11,
+   "stitchMultiple": "24 x 26",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Interesting all-over graphic design.try it with more subtle colors.  Knit in one color in slip stitch creates heavily textured fabric.",
+   "dateAdded": "2017-03-19 0:00:00"
+ },
+ {
+   "id": 147,
+   "title": "CB Zig Zag",
+   "techniqueId": 11,
+   "stitchMultiple": "24 x 6",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2017-03-23 0:00:00"
+ },
+ {
+   "id": 148,
+   "title": "Randomizer",
+   "techniqueId": 11,
+   "stitchMultiple": "",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Many fairisle designs are angular. This design gives a softer, more subtle appearance.  ",
+   "dateAdded": "2017-03-31 0:00:00"
+ },
+ {
+   "id": 149,
+   "title": "Broomstick Lace",
+   "techniqueId": 10,
+   "stitchMultiple": "",
+   "punchcard": false,
+   "lk150": false,
+   "notes": "Elongated stitches, joined in groups give a machine knit version of traditional Broomstick Lace. Use as an all-over design or add rows of lace as inserts.<br> Add garter rows to add even more dimension<br> <center> <a class=\"btn btn-success btn-mini\" href=\"/learn/content_details.cfm?contentid=692\">Watch the step by step video</a></center>   ",
+   "dateAdded": "2017-04-12 0:00:00"
+ },
+ {
+   "id": 150,
+   "title": "NOW + Cable",
+   "techniqueId": 10,
+   "stitchMultiple": "9 x 6",
+   "punchcard": false,
+   "lk150": false,
+   "notes": "Best of both worlds, an open lacy fabric with the texture of cables. Well worth the effort for a lightweight summer top.<Br>Used in the <a href=\"https://www.knititnow.com/knit/DynamicPattern/880/summer-top\">Retro Summer Top Pattern<br> <center><img class=\"img-polaroid\" width=\"150\" src=\"http://www.knititnow.com/KIN_images/garments/summer_top_with_logo.png\"></center></a>",
+   "dateAdded": "2017-04-28 0:00:00"
+ },
+ {
+   "id": 151,
+   "title": "Zig-Zag Lace",
+   "techniqueId": 10,
+   "stitchMultiple": "",
+   "punchcard": false,
+   "lk150": false,
+   "notes": "A graphic design with lots of available variations.<br>  <a class=\"btn btn-mini\" href=\"https://www.knititnow.com/learn/tutorial/771/zig-zag-lace\"><i class=\"icon-play-circle\"></i>Watch the video </a>   <a data-vimeoid=\"216102871\" class=\"subvideopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Zig Zag lace</a>",
+   "dateAdded": "2017-05-04 0:00:00"
+ },
+ {
+   "id": 152,
+   "title": "Zig-Zag Lace Flags",
+   "techniqueId": 10,
+   "stitchMultiple": "",
+   "punchcard": false,
+   "lk150": false,
+   "notes": "Zig Zag eyelets PLUS multiple stitch transfers creates a beautiful insert <center><a class=\"btn btn-mini\" href=\"https://www.knititnow.com/knit/swatch/152/563/zig-zag-lace-flags\"><i class=\"icon-play-circle\"></i>Watch the video </a></center>",
+   "dateAdded": "2017-05-05 0:00:00"
+ },
+ {
+   "id": 153,
+   "title": "Nautical Tuck",
+   "techniqueId": 24,
+   "stitchMultiple": "6x12",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "2 color tuck with graphic waves.",
+   "dateAdded": "2017-05-10 0:00:00"
+ },
+ {
+   "id": 154,
+   "title": "Tuck Baby",
+   "techniqueId": 24,
+   "stitchMultiple": "4x12",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "Changing colors transforms a basic tuck stitch into something special.",
+   "dateAdded": "2017-05-30 0:00:00"
+ },
+ {
+   "id": 155,
+   "title": "Baby Stripe",
+   "techniqueId": 11,
+   "stitchMultiple": "4 x 16",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Graphic impact with minimal floats.  Good for baby and children's sweaters.",
+   "dateAdded": "2017-06-18 0:00:00"
+ },
+ {
+   "id": 157,
+   "title": "Christmas 2017",
+   "techniqueId": 15,
+   "stitchMultiple": "24 x 78",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2017-07-14 0:00:00"
+ },
+ {
+   "id": 159,
+   "title": "Radiant Eyelet Lace",
+   "techniqueId": 10,
+   "stitchMultiple": null,
+   "punchcard": false,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2018-06-20 0:00:00"
+ },
+ {
+   "id": 160,
+   "title": "Paisley",
+   "techniqueId": 11,
+   "stitchMultiple": "80x90",
+   "punchcard": false,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2018-10-05 0:00:00"
+ },
+ {
+   "id": 161,
+   "title": "Butterfly1",
+   "techniqueId": 11,
+   "stitchMultiple": "24x34",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2019-02-26 0:00:00"
+ },
+ {
+   "id": 162,
+   "title": "Butterfly",
+   "techniqueId": 11,
+   "stitchMultiple": "24 x 36 ",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "No matter what time of year, butterflies make us think of spring and summer",
+   "dateAdded": "2019-02-26 0:00:00"
+ },
+ {
+   "id": 163,
+   "title": "Butterfly2",
+   "techniqueId": 11,
+   "stitchMultiple": "24 x 24",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2019-02-26 0:00:00"
+ },
+ {
+   "id": 164,
+   "title": "Diagonal 124",
+   "techniqueId": 5,
+   "stitchMultiple": "24x96",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "2 different tuck stitches arranged diagonally. Tons of texture and extra wide width.",
+   "dateAdded": "2019-03-14 0:00:00"
+ },
+ {
+   "id": 165,
+   "title": "Waveform Rib",
+   "techniqueId": 18,
+   "stitchMultiple": "",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Vary the number of rows and the position of the rib stitches for an unusual take on ribbing.<br> Looks best with the purl side showing (reverse stockinette).<br> We chose this needle arrangement based on 1x1, but consider 2x2, 2x1 or ???<br> We knit 4 rows before transferring needles to the main bed.",
+   "dateAdded": "2019-03-23 0:00:00"
+ },
+ {
+   "id": 166,
+   "title": "Waffle Stitch",
+   "techniqueId": 18,
+   "stitchMultiple": "",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "A beautiful variation of 1x1 ribbing that's easy to knit with no automatic patterning or hand manipulation. <br> <center><a class=\"btn btn-mini\" href=\"http://www.knititnow.com/learn/tutorial/894/waffle-stitch-ribber\" target=\"_blank\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Watch the video </a></center>",
+   "dateAdded": "2019-03-23 0:00:00"
+ },
+ {
+   "id": 167,
+   "title": "528 Penguin",
+   "techniqueId": 11,
+   "stitchMultiple": "24 x 36",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2020-04-18 0:00:00"
+ },
+ {
+   "id": 168,
+   "title": "KIN 009",
+   "techniqueId": 7,
+   "stitchMultiple": "",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2020-09-10 0:00:00"
+ },
+ {
+   "id": 1168,
+   "title": "Diamonds",
+   "techniqueId": 8,
+   "stitchMultiple": null,
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2020-09-17 0:00:00"
+ },
+ {
+   "id": 1169,
+   "title": "Kin 023",
+   "techniqueId": 18,
+   "stitchMultiple": null,
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2020-10-03 0:00:00"
+ },
+ {
+   "id": 1170,
+   "title": "KIN 90 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "12 x 8",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2021-07-29 0:00:00"
+ },
+ {
+   "id": 1171,
+   "title": "92 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "12 x 12",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-07-29 0:00:00"
+ },
+ {
+   "id": 1172,
+   "title": "93 Tuck lace",
+   "techniqueId": 4,
+   "stitchMultiple": "12 x 12",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-07-29 0:00:00"
+ },
+ {
+   "id": 1173,
+   "title": "94 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "12 x 4",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-07-29 0:00:00"
+ },
+ {
+   "id": 1174,
+   "title": "95 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "12 x 16",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-07-29 0:00:00"
+ },
+ {
+   "id": 1175,
+   "title": "96 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "12 x 20",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-07-29 0:00:00"
+ },
+ {
+   "id": 1176,
+   "title": "81 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "12x8",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-07-29 0:00:00"
+ },
+ {
+   "id": 1177,
+   "title": "82 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "12 x 8",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-07-29 0:00:00"
+ },
+ {
+   "id": 1178,
+   "title": "83 Tuck lace",
+   "techniqueId": 4,
+   "stitchMultiple": "12 x 30",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-07-29 0:00:00"
+ },
+ {
+   "id": 1179,
+   "title": "84 Tuck lace",
+   "techniqueId": 4,
+   "stitchMultiple": "12 x 16",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-07-29 0:00:00"
+ },
+ {
+   "id": 1180,
+   "title": "85 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "12 x 8",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-07-29 0:00:00"
+ },
+ {
+   "id": 1181,
+   "title": "86 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "12 x 18",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-07-29 0:00:00"
+ },
+ {
+   "id": 1182,
+   "title": "87 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "12 x 4",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-07-29 0:00:00"
+ },
+ {
+   "id": 1184,
+   "title": "88 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "12 x 18",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-07-29 0:00:00"
+ },
+ {
+   "id": 1185,
+   "title": "89 Tuck Lace",
+   "techniqueId": 4,
+   "stitchMultiple": "12 x 30",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-07-29 0:00:00"
+ },
+ {
+   "id": 1186,
+   "title": "tree10",
+   "techniqueId": 15,
+   "stitchMultiple": "17 x 29",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "this is tree 10",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1187,
+   "title": "Tree1",
+   "techniqueId": 15,
+   "stitchMultiple": "11x14",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1188,
+   "title": "Tree02",
+   "techniqueId": 15,
+   "stitchMultiple": "15x22",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1189,
+   "title": "Tree3",
+   "techniqueId": 15,
+   "stitchMultiple": "13x19",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1190,
+   "title": "Tree4",
+   "techniqueId": 15,
+   "stitchMultiple": "15x21",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1191,
+   "title": "Tree5",
+   "techniqueId": 15,
+   "stitchMultiple": "13x18",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1192,
+   "title": "Tree6",
+   "techniqueId": 15,
+   "stitchMultiple": "9x15",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1193,
+   "title": "Tree7",
+   "techniqueId": 15,
+   "stitchMultiple": "15x19",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1194,
+   "title": "Tree8",
+   "techniqueId": 15,
+   "stitchMultiple": "9x14",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1195,
+   "title": "Tree9",
+   "techniqueId": 15,
+   "stitchMultiple": "17x30",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1196,
+   "title": "Tree11",
+   "techniqueId": 15,
+   "stitchMultiple": "13x21",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1197,
+   "title": "Tree12",
+   "techniqueId": 15,
+   "stitchMultiple": "17x23",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1198,
+   "title": "Border1",
+   "techniqueId": 15,
+   "stitchMultiple": "4x6",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1199,
+   "title": "Border 2",
+   "techniqueId": 15,
+   "stitchMultiple": "4x8",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1200,
+   "title": "Border 3",
+   "techniqueId": 15,
+   "stitchMultiple": "12x10",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1201,
+   "title": "Border4",
+   "techniqueId": 15,
+   "stitchMultiple": "2x4",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1202,
+   "title": "Border 5",
+   "techniqueId": 15,
+   "stitchMultiple": "22x30",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1203,
+   "title": "Border 6",
+   "techniqueId": 15,
+   "stitchMultiple": "6x6",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1204,
+   "title": "Border7",
+   "techniqueId": 15,
+   "stitchMultiple": "6x17",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1205,
+   "title": "Border8",
+   "techniqueId": 15,
+   "stitchMultiple": "6x8",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1206,
+   "title": "Border9",
+   "techniqueId": 15,
+   "stitchMultiple": "16x8",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1207,
+   "title": "Border10",
+   "techniqueId": 15,
+   "stitchMultiple": "11x7",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1208,
+   "title": "Border11",
+   "techniqueId": 15,
+   "stitchMultiple": "10x9",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1209,
+   "title": "Border12",
+   "techniqueId": 15,
+   "stitchMultiple": "20x32",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1210,
+   "title": "Border 13",
+   "techniqueId": 15,
+   "stitchMultiple": "24x38",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1211,
+   "title": "Border14",
+   "techniqueId": 15,
+   "stitchMultiple": "12x11",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1212,
+   "title": "Candle",
+   "techniqueId": 15,
+   "stitchMultiple": "21x30",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1213,
+   "title": "Gift Box",
+   "techniqueId": 15,
+   "stitchMultiple": "13x19",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1214,
+   "title": "gift box2",
+   "techniqueId": 15,
+   "stitchMultiple": "13x19",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1215,
+   "title": "Heart",
+   "techniqueId": 15,
+   "stitchMultiple": "13x15",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1216,
+   "title": "Heart2",
+   "techniqueId": 15,
+   "stitchMultiple": "7x8",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1217,
+   "title": "Heart2",
+   "techniqueId": 15,
+   "stitchMultiple": "15x16",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-27 0:00:00"
+ },
+ {
+   "id": 1218,
+   "title": "Mitten",
+   "techniqueId": 19,
+   "stitchMultiple": "14x22",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1219,
+   "title": "Mitten1",
+   "techniqueId": 19,
+   "stitchMultiple": "24x36",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1220,
+   "title": "Mitten2",
+   "techniqueId": 19,
+   "stitchMultiple": null,
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1221,
+   "title": "ornament1",
+   "techniqueId": 19,
+   "stitchMultiple": "31x55",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1222,
+   "title": "Ornament2",
+   "techniqueId": 19,
+   "stitchMultiple": "31x55",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1223,
+   "title": "Ornament3",
+   "techniqueId": 19,
+   "stitchMultiple": "31x55",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1224,
+   "title": "Ornament4",
+   "techniqueId": 19,
+   "stitchMultiple": "31x55",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1225,
+   "title": "owl",
+   "techniqueId": 19,
+   "stitchMultiple": "29x48",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1226,
+   "title": "Owl3",
+   "techniqueId": 19,
+   "stitchMultiple": "24x27",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1227,
+   "title": "Polar Bear",
+   "techniqueId": 19,
+   "stitchMultiple": "45x46",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1228,
+   "title": "Large Reindeer",
+   "techniqueId": 19,
+   "stitchMultiple": "60x76",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1229,
+   "title": "reindeer1",
+   "techniqueId": 19,
+   "stitchMultiple": "20x25",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1230,
+   "title": "Reindeer2",
+   "techniqueId": 19,
+   "stitchMultiple": "18x21",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1231,
+   "title": "Reindeer3",
+   "techniqueId": 19,
+   "stitchMultiple": "18x24",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1232,
+   "title": "Reindeer4",
+   "techniqueId": 19,
+   "stitchMultiple": "20x23",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1233,
+   "title": "Reindeer5",
+   "techniqueId": 19,
+   "stitchMultiple": "14x28",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1234,
+   "title": "Reindeer6",
+   "techniqueId": 19,
+   "stitchMultiple": "29x49",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1235,
+   "title": "Reindeer7",
+   "techniqueId": 19,
+   "stitchMultiple": "23x26",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1236,
+   "title": "Reindeer9",
+   "techniqueId": 19,
+   "stitchMultiple": "32x28",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1237,
+   "title": "Santa_sleigh",
+   "techniqueId": 19,
+   "stitchMultiple": "55x28",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1238,
+   "title": "Sleigh",
+   "techniqueId": 19,
+   "stitchMultiple": "24x27",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1239,
+   "title": "Snowflake1",
+   "techniqueId": 20,
+   "stitchMultiple": "13x13",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1242,
+   "title": "Snowflake2",
+   "techniqueId": 20,
+   "stitchMultiple": "13x15",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1243,
+   "title": "Snowflake3",
+   "techniqueId": 20,
+   "stitchMultiple": "13x17",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1244,
+   "title": "Snowflake4",
+   "techniqueId": 20,
+   "stitchMultiple": "7x7",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1245,
+   "title": "Snowflake5",
+   "techniqueId": 20,
+   "stitchMultiple": "32x35",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1246,
+   "title": "snowflake6",
+   "techniqueId": 20,
+   "stitchMultiple": "19x23",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1247,
+   "title": "Snowflake7",
+   "techniqueId": 20,
+   "stitchMultiple": "7x7",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1248,
+   "title": "Snowflake8",
+   "techniqueId": 20,
+   "stitchMultiple": "13x15",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1250,
+   "title": "Snowflake9",
+   "techniqueId": 20,
+   "stitchMultiple": "17x19",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1251,
+   "title": "Snowflake10",
+   "techniqueId": 20,
+   "stitchMultiple": "7x9",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1252,
+   "title": "Snowflake11",
+   "techniqueId": 20,
+   "stitchMultiple": "17x21",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1253,
+   "title": "Snowflake12",
+   "techniqueId": 20,
+   "stitchMultiple": "23x29",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1254,
+   "title": "Snowflake13",
+   "techniqueId": 20,
+   "stitchMultiple": "25x29",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1255,
+   "title": "Snowflake14",
+   "techniqueId": 20,
+   "stitchMultiple": "21x29",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1256,
+   "title": "Snowman_flakes",
+   "techniqueId": 20,
+   "stitchMultiple": "24x29",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1258,
+   "title": "snowman1",
+   "techniqueId": 20,
+   "stitchMultiple": "24x26",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1259,
+   "title": "Snowman2",
+   "techniqueId": 20,
+   "stitchMultiple": "21x33",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1260,
+   "title": "Snowman4",
+   "techniqueId": 20,
+   "stitchMultiple": "21x27",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1261,
+   "title": "Border15",
+   "techniqueId": 15,
+   "stitchMultiple": "24x19",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1262,
+   "title": "Tree13",
+   "techniqueId": 15,
+   "stitchMultiple": "24x18",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1263,
+   "title": "Train",
+   "techniqueId": 20,
+   "stitchMultiple": "24x27",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1264,
+   "title": "Car",
+   "techniqueId": 20,
+   "stitchMultiple": "24x19",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1265,
+   "title": "Teddy Bear",
+   "techniqueId": 20,
+   "stitchMultiple": "24x25",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2021-09-28 0:00:00"
+ },
+ {
+   "id": 1266,
+   "title": "KIN 432",
+   "techniqueId": 7,
+   "stitchMultiple": "2x4",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Simple Slip Stitch for easy texture",
+   "dateAdded": "2022-12-08 0:00:00"
+ },
+ {
+   "id": 1267,
+   "title": "KIN431",
+   "techniqueId": 7,
+   "stitchMultiple": "2x4",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-08 0:00:00"
+ },
+ {
+   "id": 1268,
+   "title": "KIN430",
+   "techniqueId": 7,
+   "stitchMultiple": "2x2",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-08 0:00:00"
+ },
+ {
+   "id": 1269,
+   "title": "KIN 433",
+   "techniqueId": 7,
+   "stitchMultiple": "",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-08 0:00:00"
+ },
+ {
+   "id": 1270,
+   "title": "KIN_478",
+   "techniqueId": 7,
+   "stitchMultiple": "24x36",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-19 0:00:00"
+ },
+ {
+   "id": 1271,
+   "title": "Kin_4112B",
+   "techniqueId": 7,
+   "stitchMultiple": "8x5",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-19 0:00:00"
+ },
+ {
+   "id": 1272,
+   "title": "Kin_4112A",
+   "techniqueId": 7,
+   "stitchMultiple": "8x16",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-19 0:00:00"
+ },
+ {
+   "id": 1273,
+   "title": "Kin_4405",
+   "techniqueId": 7,
+   "stitchMultiple": null,
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-19 0:00:00"
+ },
+ {
+   "id": 1274,
+   "title": "KIN_4107",
+   "techniqueId": 7,
+   "stitchMultiple": "8x20",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-19 0:00:00"
+ },
+ {
+   "id": 1275,
+   "title": "KIN_4308",
+   "techniqueId": 7,
+   "stitchMultiple": "6x52",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2022-12-19 0:00:00"
+ },
+ {
+   "id": 1276,
+   "title": "KIN_0319",
+   "techniqueId": 8,
+   "stitchMultiple": null,
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-19 0:00:00"
+ },
+ {
+   "id": 1277,
+   "title": "KIN_4305",
+   "techniqueId": 7,
+   "stitchMultiple": "20x26",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-20 0:00:00"
+ },
+ {
+   "id": 1278,
+   "title": "KIN_8377",
+   "techniqueId": 8,
+   "stitchMultiple": "24x52",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-30 0:00:00"
+ },
+ {
+   "id": 1279,
+   "title": "KIN8377_1",
+   "techniqueId": 7,
+   "stitchMultiple": null,
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-30 0:00:00"
+ },
+ {
+   "id": 1280,
+   "title": "Pintuck 35",
+   "techniqueId": 18,
+   "stitchMultiple": null,
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-31 0:00:00"
+ },
+ {
+   "id": 1281,
+   "title": "Lattice_pintuck",
+   "techniqueId": 18,
+   "stitchMultiple": "12x12",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-31 0:00:00"
+ },
+ {
+   "id": 1282,
+   "title": "Pintuck 36",
+   "techniqueId": 18,
+   "stitchMultiple": "24x45",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-31 0:00:00"
+ },
+ {
+   "id": 1283,
+   "title": "Pintuck 41",
+   "techniqueId": 18,
+   "stitchMultiple": "8x8",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-31 0:00:00"
+ },
+ {
+   "id": 1284,
+   "title": "Pintuck 37 ",
+   "techniqueId": 18,
+   "stitchMultiple": "24x30",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-31 0:00:00"
+ },
+ {
+   "id": 1285,
+   "title": "Basic Pintucks",
+   "techniqueId": 18,
+   "stitchMultiple": "2x10",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2022-12-31 0:00:00"
+ },
+ {
+   "id": 1286,
+   "title": "Slip Flat Rib",
+   "techniqueId": 18,
+   "stitchMultiple": null,
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2023-01-07 0:00:00"
+ },
+ {
+   "id": 1287,
+   "title": "Slipped Flat Rib Ridges",
+   "techniqueId": 18,
+   "stitchMultiple": "",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2023-01-07 0:00:00"
+ },
+ {
+   "id": 1288,
+   "title": "811",
+   "techniqueId": 8,
+   "stitchMultiple": "24x24",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Suggested by fellow knitter, Yanna",
+   "dateAdded": "2023-01-11 0:00:00"
+ },
+ {
+   "id": 1290,
+   "title": "3305_pintuck",
+   "techniqueId": 18,
+   "stitchMultiple": null,
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2023-01-13 0:00:00"
+ },
+ {
+   "id": 1292,
+   "title": "Slip Waves",
+   "techniqueId": 7,
+   "stitchMultiple": "13 x 26",
+   "punchcard": false,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2023-06-14 0:00:00"
+ },
+ {
+   "id": 1293,
+   "title": "SW3_291",
+   "techniqueId": 7,
+   "stitchMultiple": "8 x 12",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2023-06-14 0:00:00"
+ },
+ {
+   "id": 1294,
+   "title": "Tuck Waves 1",
+   "techniqueId": 5,
+   "stitchMultiple": null,
+   "punchcard": false,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2023-06-14 0:00:00"
+ },
+ {
+   "id": 1295,
+   "title": "Tuck Waves",
+   "techniqueId": 5,
+   "stitchMultiple": "14 x 30",
+   "punchcard": false,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2023-06-14 0:00:00"
+ },
+ {
+   "id": 1296,
+   "title": "Kin_466",
+   "techniqueId": 4,
+   "stitchMultiple": null,
+   "punchcard": false,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2023-06-21 0:00:00"
+ },
+ {
+   "id": 1297,
+   "title": "KIN468",
+   "techniqueId": 4,
+   "stitchMultiple": "4x6",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2024-05-08 0:00:00"
+ },
+ {
+   "id": 1298,
+   "title": "KIN 14",
+   "techniqueId": 4,
+   "stitchMultiple": "4x5",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2023-09-04 0:00:00"
+ },
+ {
+   "id": 1299,
+   "title": "Hearts x2",
+   "techniqueId": 11,
+   "stitchMultiple": "12x18",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2024-01-25 0:00:00"
+ },
+ {
+   "id": 1300,
+   "title": "Heart Blocks",
+   "techniqueId": 11,
+   "stitchMultiple": "24 x14",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2024-01-25 0:00:00"
+ },
+ {
+   "id": 1301,
+   "title": "Heart Blocks 1",
+   "techniqueId": 11,
+   "stitchMultiple": null,
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2024-01-29 0:00:00"
+ },
+ {
+   "id": 1302,
+   "title": "Slip Rib",
+   "techniqueId": 7,
+   "stitchMultiple": "4 x 2",
+   "punchcard": false,
+   "lk150": false,
+   "notes": "Slip columns of stitches for knit stitch texture against a purl background.   <div class=\"text-center\">       <a class='videopopup btn btn-mini btn-default' data-vimeoid='908384563'>         <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> How to: Hand manipulate or use a ribber.       </a>     </div>",
+   "dateAdded": "2024-01-31 0:00:00"
+ },
+ {
+   "id": 1303,
+   "title": "Triangle Tango",
+   "techniqueId": 11,
+   "stitchMultiple": "6 x  6",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2024-02-02 0:00:00"
+ },
+ {
+   "id": 1304,
+   "title": "KIN223",
+   "techniqueId": 11,
+   "stitchMultiple": "18x24",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Can you see the X's and O's in the columns?",
+   "dateAdded": "2024-02-18 0:00:00"
+ },
+ {
+   "id": 1305,
+   "title": "cow",
+   "techniqueId": 11,
+   "stitchMultiple": "27 x 30",
+   "punchcard": false,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2024-02-22 0:00:00"
+ },
+ {
+   "id": 1306,
+   "title": "Connect the Dots",
+   "techniqueId": 23,
+   "stitchMultiple": "your choice",
+   "punchcard": false,
+   "lk150": false,
+   "notes": "Use a contrasting yarn and a few short rows for an interesting stripe sequence. <em>(no punchcard or stitch pattern available.)</em> <br> Watch how it's done <a class='videopopup btn btn-sm btn-primary' data-vimeoid='900283940'>     <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Connect the Dots (1 of 2) </a> <br> <a class='videopopup btn btn-sm btn-primary' data-vimeoid='902598708'>     <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Connect the Dots (2 of 2) </a>   ",
+   "dateAdded": "2024-02-28 0:00:00"
+ },
+ {
+   "id": 1307,
+   "title": "1x1 tuck",
+   "techniqueId": 5,
+   "stitchMultiple": "2 x 2",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2024-03-20 0:00:00"
+ },
+ {
+   "id": 1308,
+   "title": "KIN56",
+   "techniqueId": 4,
+   "stitchMultiple": "6 x 8",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "Combine needles out of work and tuck for an open, \"lace\" without stitch transfers. Work this on a manual or automatic patterning machine.",
+   "dateAdded": "2024-04-06 0:00:00"
+ },
+ {
+   "id": 1309,
+   "title": "Slipped Rib",
+   "techniqueId": 18,
+   "stitchMultiple": null,
+   "punchcard": false,
+   "lk150": false,
+   "notes": "2x2 rib, with slipped stitches for additional texture",
+   "dateAdded": "2024-04-24 0:00:00"
+ },
+ {
+   "id": 1310,
+   "title": "KIN038",
+   "techniqueId": 8,
+   "stitchMultiple": "24 x 14",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "3 color slip",
+   "dateAdded": "2024-04-30 0:00:00"
+ },
+ {
+   "id": 1311,
+   "title": "KIN TL055",
+   "techniqueId": 4,
+   "stitchMultiple": "4 x 6",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2024-05-07 0:00:00"
+ },
+ {
+   "id": 1312,
+   "title": "KIN_TL058",
+   "techniqueId": 4,
+   "stitchMultiple": "4 x 4",
+   "punchcard": false,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2024-05-07 0:00:00"
+ },
+ {
+   "id": 1313,
+   "title": "Kin265_tuck",
+   "techniqueId": 24,
+   "stitchMultiple": "",
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2024-06-10 0:00:00"
+ },
+ {
+   "id": 1314,
+   "title": "KIN500",
+   "techniqueId": 25,
+   "stitchMultiple": "24x60",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "",
+   "dateAdded": "2024-06-21 0:00:00"
+ },
+ {
+   "id": 1315,
+   "title": "KIN_322",
+   "techniqueId": 11,
+   "stitchMultiple": "8x6",
+   "punchcard": true,
+   "lk150": false,
+   "notes": "Featured in <a href=\"/knit/MachineKnittingPattern/4295/mean-streets-sweater\" target=\"_blank\"> Mean Streets Machine Knit-Able.</a><br> The \"wrong\" side was used for a casual, urban look.",
+   "dateAdded": "2024-11-20 0:00:00"
+ },
+ {
+   "id": 1316,
+   "title": "KIN325",
+   "techniqueId": 5,
+   "stitchMultiple": null,
+   "punchcard": true,
+   "lk150": true,
+   "notes": "",
+   "dateAdded": "2025-03-07 0:00:00"
+ }
+]

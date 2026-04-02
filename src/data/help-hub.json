@@ -185,8 +185,49 @@
     "relatedLessons": [
       "knit-a-proper-swatch"
     ],
-    "status": "published",
+    "status": "draft",
     "id": 1004,
     "sortOrder": 20
+  },
+  {
+    "title": "Joining Fair Isle Panels Without an Ugly Seam",
+    "slug": "seam-fairisle-panels",
+    "featured": false,
+    "metaTitle": "Seam machine knit fairisle panels",
+    "metaDescription": "how to seam machine knit fairisle panels",
+    "appliesTo": [],
+    "allMachines": true,
+    "category": "edges-finishing-assembly",
+    "categoryPill": "",
+    "question": "How do I join Fair Isle panels without an ugly seam?",
+    "bubbleAnswer": "Don’t try to hide the seam - turn it into a design feature with a visible join.",
+    "hook": "Take a closer look… your seam might be the most interesting part of joining your fairisle panels",
+    "mediaType": "",
+    "mediaUrl": "",
+    "mediaPoster": "",
+    "mediaAlt": "",
+    "aboutTitle": "Show off the seam",
+    "bridge": "When you knit panels (especially in Fair Isle or in pattern), seams can feel like a problem to solve.\n\nBut trying to make them invisible often leads to bulk, distortion, or frustration.\n\nInstead, treat the seam as part of the design:\n\n-add texture\n-add contrast\n-add structure\n\nNow your seam isn’t something to fix - it’s something to show off.",
+    "tryThisTitle": "I-Cord Join",
+    "memberHeading": "",
+    "memberText": "",
+    "isNew": true,
+    "tryThis": {
+      "quickActionTitle": "make the seam stand out",
+      "quickAction": [
+        "Knit a long I-cord first",
+        "Keep your tension consistent (this really matters!)",
+        "Hang one panel (right/public side facing you)",
+        "Hang the I-cord",
+        "Hang the second panel (wrong/private side facing you)",
+        "Knit across to join",
+        "Bind off"
+      ],
+      "quickActionNote": "👉 Result: A raised, polished seam that looks intentional and decorative"
+    },
+    "relatedLessons": [],
+    "status": "draft",
+    "id": 1005,
+    "sortOrder": 30
   }
 ]

@@ -30,6 +30,8 @@ interface Props {
   required?: boolean;
   inputmode?: InputMode;
   autocomplete?: string;
+  /** When false, disables spellcheck (e.g. search fields). Omit for browser default. */
+  spellcheck?: boolean;
   ariaDescribedby?: string;
   /** When true, shows error state (red border/label) and optional error message. */
   error?: boolean;
@@ -37,6 +39,8 @@ interface Props {
   errorMessage?: string;
   /** Extra class(es) on the wrapper div. */
   class?: string;
+  enterkeyhint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send";
+  role?: "searchbox";
   /** data-testid for the input. */
   dataTestid?: string;
   /** Additional data-* attributes to spread on the input. */
@@ -56,10 +60,13 @@ const {
   required = false,
   inputmode,
   autocomplete,
+  spellcheck,
   ariaDescribedby,
   error = false,
   errorMessage,
   class: wrapperClass,
+  enterkeyhint,
+  role,
   dataTestid,
   dataAttrs = {},
 } = Astro.props;
@@ -84,9 +91,12 @@ const describedBy = [ariaDescribedby, errorId].filter(Boolean).join(" ") || unde
     step={step}
     required={required}
     inputmode={inputmode}
+    enterkeyhint={enterkeyhint}
     autocomplete={autocomplete}
+    spellcheck={spellcheck}
     aria-describedby={describedBy}
     aria-invalid={error ? "true" : undefined}
+    role={role}
     data-testid={dataTestid}
     class:list={[{ error }]}
     {...dataAttrs}

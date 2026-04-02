@@ -1,0 +1,6932 @@
+[
+ {
+   "id": 37,
+   "patternId": 9,
+   "filename": "487_pattern.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Stitch Pattern"
+ },
+ {
+   "id": 36,
+   "patternId": 9,
+   "filename": "487.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK"
+ },
+ {
+   "id": 2066,
+   "patternId": 9,
+   "filename": "487_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2067,
+   "patternId": 9,
+   "filename": "487_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 2068,
+   "patternId": 10,
+   "filename": "509_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 529,
+   "patternId": 10,
+   "filename": "509.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Needle Setup"
+ },
+ {
+   "id": 530,
+   "patternId": 10,
+   "filename": "509_punchcard1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard"
+ },
+ {
+   "id": 1654,
+   "patternId": 10,
+   "filename": "509.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 433,
+   "patternId": 11,
+   "filename": "tuck487.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 2,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 432,
+   "patternId": 11,
+   "filename": "kin487_tuck_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard"
+ },
+ {
+   "id": 1640,
+   "patternId": 11,
+   "filename": "kin487.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2031,
+   "patternId": 11,
+   "filename": "kin487_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 146,
+   "patternId": 12,
+   "filename": "KIN1079.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK File"
+ },
+ {
+   "id": 147,
+   "patternId": 12,
+   "filename": "1079_knitweave.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 3,
+   "label": "Stitch Painter"
+ },
+ {
+   "id": 163,
+   "patternId": 12,
+   "filename": "Punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard & Diagram"
+ },
+ {
+   "id": 103,
+   "patternId": 13,
+   "filename": "kin929.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 5,
+   "label": "Stitch Painter"
+ },
+ {
+   "id": 1982,
+   "patternId": 13,
+   "filename": "KIN929_1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DesignaKnit File"
+ },
+ {
+   "id": 1984,
+   "patternId": 13,
+   "filename": "929 weave_diagram.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "weaving Diagram"
+ },
+ {
+   "id": 106,
+   "patternId": 14,
+   "filename": "KIN933.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK File"
+ },
+ {
+   "id": 107,
+   "patternId": 14,
+   "filename": "KIN933.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 5,
+   "label": "Stitch Painter"
+ },
+ {
+   "id": 108,
+   "patternId": 14,
+   "filename": "933Punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchard & Diagram"
+ },
+ {
+   "id": 109,
+   "patternId": 15,
+   "filename": "KIN988.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK File"
+ },
+ {
+   "id": 110,
+   "patternId": 15,
+   "filename": "KIN988.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 3,
+   "label": "Stitch Painter"
+ },
+ {
+   "id": 112,
+   "patternId": 15,
+   "filename": "988Punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchard & Diagram"
+ },
+ {
+   "id": 113,
+   "patternId": 16,
+   "filename": "KIN995.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK File"
+ },
+ {
+   "id": 114,
+   "patternId": 16,
+   "filename": "kin995.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 3,
+   "label": "Stitch Painter"
+ },
+ {
+   "id": 116,
+   "patternId": 16,
+   "filename": "995Punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchard & Diagram"
+ },
+ {
+   "id": 117,
+   "patternId": 17,
+   "filename": "KIN995a.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 154,
+   "patternId": 17,
+   "filename": "kin995a.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 2,
+   "label": "Stitch Painter"
+ },
+ {
+   "id": 155,
+   "patternId": 17,
+   "filename": "995a_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchard & Diagram"
+ },
+ {
+   "id": 157,
+   "patternId": 18,
+   "filename": "KIN1012.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 122,
+   "patternId": 18,
+   "filename": "KIN1012.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 2,
+   "label": "Stitch Painter"
+ },
+ {
+   "id": 156,
+   "patternId": 18,
+   "filename": "1012Punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchard & Diagram"
+ },
+ {
+   "id": 125,
+   "patternId": 19,
+   "filename": "KIN1012a.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK File"
+ },
+ {
+   "id": 126,
+   "patternId": 19,
+   "filename": "kin1012a.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 3,
+   "label": "Stitch Painter"
+ },
+ {
+   "id": 128,
+   "patternId": 19,
+   "filename": "1012APunchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchard & Diagram"
+ },
+ {
+   "id": 158,
+   "patternId": 20,
+   "filename": "KIN1017.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 160,
+   "patternId": 20,
+   "filename": "KIN1017.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 2,
+   "label": "Stitch Painter"
+ },
+ {
+   "id": 161,
+   "patternId": 20,
+   "filename": "1017Punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchard & Diagram"
+ },
+ {
+   "id": 142,
+   "patternId": 21,
+   "filename": "KIN1078.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 143,
+   "patternId": 21,
+   "filename": "kin1078.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 2,
+   "label": "Stitch Painter"
+ },
+ {
+   "id": 145,
+   "patternId": 21,
+   "filename": "1078Punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchard & Diagram"
+ },
+ {
+   "id": 76,
+   "patternId": 22,
+   "filename": "9952.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK"
+ },
+ {
+   "id": 77,
+   "patternId": 22,
+   "filename": "995_printed1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Stitch Pattern"
+ },
+ {
+   "id": 78,
+   "patternId": 23,
+   "filename": "9331.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK"
+ },
+ {
+   "id": 79,
+   "patternId": 23,
+   "filename": "933_printed1.ai",
+   "filetype": "ai",
+   "active": true,
+   "order": 5,
+   "label": "Stitch Pattern"
+ },
+ {
+   "id": 80,
+   "patternId": 24,
+   "filename": "10121.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK"
+ },
+ {
+   "id": 81,
+   "patternId": 24,
+   "filename": "1012_printed1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Stitch Pattern"
+ },
+ {
+   "id": 435,
+   "patternId": 25,
+   "filename": "499tuck.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 5,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 1646,
+   "patternId": 25,
+   "filename": "kin499.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2069,
+   "patternId": 25,
+   "filename": "kin499_tuck_lk-150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2071,
+   "patternId": 25,
+   "filename": "kin499_tuck_punchcard1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 439,
+   "patternId": 26,
+   "filename": "440Tuck.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 2,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 438,
+   "patternId": 26,
+   "filename": "kin440_tuck_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard"
+ },
+ {
+   "id": 1647,
+   "patternId": 26,
+   "filename": "KIN440.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 6,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2032,
+   "patternId": 26,
+   "filename": "kin440_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2059,
+   "patternId": 27,
+   "filename": "kin448_lk1501.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 8,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2034,
+   "patternId": 27,
+   "filename": "kin448_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 8,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2035,
+   "patternId": 27,
+   "filename": "KIN448.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 8,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2036,
+   "patternId": 27,
+   "filename": "448Punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 8,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 276,
+   "patternId": 28,
+   "filename": "KIN401_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 168,
+   "patternId": 28,
+   "filename": "kin401_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 206,
+   "patternId": 28,
+   "filename": "kin401_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 207,
+   "patternId": 29,
+   "filename": "kin402_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 277,
+   "patternId": 29,
+   "filename": "KIN402_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 166,
+   "patternId": 29,
+   "filename": "kin402_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 278,
+   "patternId": 30,
+   "filename": "KIN403_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 208,
+   "patternId": 30,
+   "filename": "kin403_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 170,
+   "patternId": 30,
+   "filename": "kin403_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 209,
+   "patternId": 31,
+   "filename": "kin404_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 279,
+   "patternId": 31,
+   "filename": "KIN404_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 1664,
+   "patternId": 31,
+   "filename": "kin404_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 210,
+   "patternId": 32,
+   "filename": "kin405_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard"
+ },
+ {
+   "id": 174,
+   "patternId": 32,
+   "filename": "kin405_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK File"
+ },
+ {
+   "id": 284,
+   "patternId": 32,
+   "filename": "KIN405_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 5,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 283,
+   "patternId": 33,
+   "filename": "KIN406_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 176,
+   "patternId": 33,
+   "filename": "kin406_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 211,
+   "patternId": 33,
+   "filename": "kin406_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 212,
+   "patternId": 34,
+   "filename": "kin407_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 178,
+   "patternId": 34,
+   "filename": "kin407_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 280,
+   "patternId": 34,
+   "filename": "KIN407_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 282,
+   "patternId": 35,
+   "filename": "KIN408_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 213,
+   "patternId": 35,
+   "filename": "kin408_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 1665,
+   "patternId": 35,
+   "filename": "kin408_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 214,
+   "patternId": 36,
+   "filename": "kin409_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 182,
+   "patternId": 36,
+   "filename": "kin409_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 285,
+   "patternId": 36,
+   "filename": "KIN409_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 286,
+   "patternId": 37,
+   "filename": "KIN410_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 184,
+   "patternId": 37,
+   "filename": "kin410_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 215,
+   "patternId": 37,
+   "filename": "kin410_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 216,
+   "patternId": 38,
+   "filename": "kin411_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 186,
+   "patternId": 38,
+   "filename": "kin411_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 287,
+   "patternId": 38,
+   "filename": "KIN411_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 288,
+   "patternId": 39,
+   "filename": "KIN412_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 188,
+   "patternId": 39,
+   "filename": "kin412_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 217,
+   "patternId": 39,
+   "filename": "kin412_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 218,
+   "patternId": 40,
+   "filename": "kin413_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 190,
+   "patternId": 40,
+   "filename": "kin413_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 289,
+   "patternId": 40,
+   "filename": "KIN413_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 290,
+   "patternId": 41,
+   "filename": "KIN414_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 192,
+   "patternId": 41,
+   "filename": "kin414_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK"
+ },
+ {
+   "id": 219,
+   "patternId": 41,
+   "filename": "kin414_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": ""
+ },
+ {
+   "id": 220,
+   "patternId": 42,
+   "filename": "kin415_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 194,
+   "patternId": 42,
+   "filename": "kin415_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 291,
+   "patternId": 42,
+   "filename": "KIN415_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 292,
+   "patternId": 43,
+   "filename": "KIN416_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 196,
+   "patternId": 43,
+   "filename": "kin416_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 221,
+   "patternId": 43,
+   "filename": "kin416_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 222,
+   "patternId": 44,
+   "filename": "kin417_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard"
+ },
+ {
+   "id": 198,
+   "patternId": 44,
+   "filename": "kin417_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK File"
+ },
+ {
+   "id": 293,
+   "patternId": 44,
+   "filename": "KIN417_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 5,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 294,
+   "patternId": 45,
+   "filename": "KIN418_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 200,
+   "patternId": 45,
+   "filename": "kin418_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 223,
+   "patternId": 45,
+   "filename": "kin418_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 224,
+   "patternId": 46,
+   "filename": "kin419_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 202,
+   "patternId": 46,
+   "filename": "kin419_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 204,
+   "patternId": 47,
+   "filename": "kin420_slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 225,
+   "patternId": 47,
+   "filename": "kin420_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 300,
+   "patternId": 47,
+   "filename": "KIN420_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 295,
+   "patternId": 48,
+   "filename": "KIN412_tuck.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 226,
+   "patternId": 48,
+   "filename": "kin412_tuck.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 227,
+   "patternId": 48,
+   "filename": "kin412_tuck.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 2033,
+   "patternId": 48,
+   "filename": "kin412_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2037,
+   "patternId": 49,
+   "filename": "kin414_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 229,
+   "patternId": 49,
+   "filename": "kin414_tuck.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 296,
+   "patternId": 49,
+   "filename": "KIN414_tuck.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 1648,
+   "patternId": 49,
+   "filename": "kin414_tuck.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1649,
+   "patternId": 50,
+   "filename": "kin416_tuck.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 297,
+   "patternId": 50,
+   "filename": "KIN416_tuck.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 3,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 231,
+   "patternId": 50,
+   "filename": "kin416_tuck.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard"
+ },
+ {
+   "id": 2038,
+   "patternId": 50,
+   "filename": "kin416_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2039,
+   "patternId": 51,
+   "filename": "kin417_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 232,
+   "patternId": 51,
+   "filename": "kin417_tuck.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 233,
+   "patternId": 51,
+   "filename": "kin417_tuck.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 298,
+   "patternId": 51,
+   "filename": "KIN417_tuck.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 299,
+   "patternId": 52,
+   "filename": "KIN420_tuck.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 5,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 234,
+   "patternId": 52,
+   "filename": "kin420_tuck.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK File"
+ },
+ {
+   "id": 235,
+   "patternId": 52,
+   "filename": "kin420_tuck.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard"
+ },
+ {
+   "id": 2040,
+   "patternId": 52,
+   "filename": "kin420_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2041,
+   "patternId": 53,
+   "filename": "kin403_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 236,
+   "patternId": 53,
+   "filename": "kin403_tuck.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 237,
+   "patternId": 53,
+   "filename": "kin403_tuck.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 301,
+   "patternId": 53,
+   "filename": "KIN403_tuck.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 302,
+   "patternId": 54,
+   "filename": "KIN405_tuck.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 238,
+   "patternId": 54,
+   "filename": "kin405_tuck.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 239,
+   "patternId": 54,
+   "filename": "kin405_tuck.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 2042,
+   "patternId": 54,
+   "filename": "kin405_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2055,
+   "patternId": 55,
+   "filename": "kin406_tuck_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 240,
+   "patternId": 55,
+   "filename": "kin406_tuck.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 241,
+   "patternId": 55,
+   "filename": "kin406_tuck.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 303,
+   "patternId": 55,
+   "filename": "KIN406_tuck.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 304,
+   "patternId": 56,
+   "filename": "KIN408_tuck.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 243,
+   "patternId": 56,
+   "filename": "kin408_tuck.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 1650,
+   "patternId": 56,
+   "filename": "kin408_tuck.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2043,
+   "patternId": 56,
+   "filename": "kin408_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 1930,
+   "patternId": 57,
+   "filename": "KIN_806_Multi_Slip.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 7,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1943,
+   "patternId": 57,
+   "filename": "KIN_806_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 257,
+   "patternId": 57,
+   "filename": "kin806_mulitSlip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 7,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 258,
+   "patternId": 58,
+   "filename": "kin808_mulitSlip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 5,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 262,
+   "patternId": 58,
+   "filename": "KIN_808_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard"
+ },
+ {
+   "id": 247,
+   "patternId": 58,
+   "filename": "kin_808.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK File"
+ },
+ {
+   "id": 1637,
+   "patternId": 59,
+   "filename": "804_slip_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1638,
+   "patternId": 59,
+   "filename": "kin_804.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 260,
+   "patternId": 60,
+   "filename": "kin816_mulitSlip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 255,
+   "patternId": 60,
+   "filename": "kin_816.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 256,
+   "patternId": 60,
+   "filename": "KIN_816_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 250,
+   "patternId": 61,
+   "filename": "kin_803.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 253,
+   "patternId": 61,
+   "filename": "KIN_803_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 261,
+   "patternId": 61,
+   "filename": "kin803_mulitSlip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 263,
+   "patternId": 62,
+   "filename": "kin_8081.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 264,
+   "patternId": 62,
+   "filename": "kin808_mulitSlip1.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 265,
+   "patternId": 62,
+   "filename": "KIN_8081_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 1635,
+   "patternId": 63,
+   "filename": "kin_820.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1636,
+   "patternId": 63,
+   "filename": "kin_820.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 2108,
+   "patternId": 63,
+   "filename": "820_lk1501.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 269,
+   "patternId": 64,
+   "filename": "slip_421.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 270,
+   "patternId": 64,
+   "filename": "kin421_Slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 1,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 272,
+   "patternId": 64,
+   "filename": "KIN_421_Punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard"
+ },
+ {
+   "id": 2085,
+   "patternId": 64,
+   "filename": "kin421_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 273,
+   "patternId": 65,
+   "filename": "slip_422.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK File"
+ },
+ {
+   "id": 274,
+   "patternId": 65,
+   "filename": "kin422_slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 5,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 275,
+   "patternId": 65,
+   "filename": "KIN_422_Punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard"
+ },
+ {
+   "id": 308,
+   "patternId": 66,
+   "filename": "kin_8102.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 305,
+   "patternId": 66,
+   "filename": "kin_8102_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard"
+ },
+ {
+   "id": 312,
+   "patternId": 66,
+   "filename": "KIN8109_multiSlip1.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 309,
+   "patternId": 67,
+   "filename": "kin_8109.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 311,
+   "patternId": 67,
+   "filename": "KIN8109_multiSlip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 2,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 310,
+   "patternId": 67,
+   "filename": "kin_8109_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard"
+ },
+ {
+   "id": 313,
+   "patternId": 68,
+   "filename": "kin441.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 315,
+   "patternId": 68,
+   "filename": "KIN441_Slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 2,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 314,
+   "patternId": 68,
+   "filename": "KIN441_Slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard"
+ },
+ {
+   "id": 317,
+   "patternId": 69,
+   "filename": "kin442.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 316,
+   "patternId": 69,
+   "filename": "KIN442_Slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 2,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 318,
+   "patternId": 69,
+   "filename": "KIN442_Slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard"
+ },
+ {
+   "id": 2030,
+   "patternId": 69,
+   "filename": "KIN442_LK150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 319,
+   "patternId": 70,
+   "filename": "kin443.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 320,
+   "patternId": 70,
+   "filename": "KIN443_Slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 321,
+   "patternId": 70,
+   "filename": "KIN443_Slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 322,
+   "patternId": 71,
+   "filename": "kin444.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 323,
+   "patternId": 71,
+   "filename": "KIN444_Slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 324,
+   "patternId": 71,
+   "filename": "KIN444_Slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 325,
+   "patternId": 72,
+   "filename": "kin445.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK File"
+ },
+ {
+   "id": 326,
+   "patternId": 72,
+   "filename": "KIN445_Slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 5,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 327,
+   "patternId": 72,
+   "filename": "KIN445_Slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard"
+ },
+ {
+   "id": 328,
+   "patternId": 73,
+   "filename": "kin446.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 329,
+   "patternId": 73,
+   "filename": "KIN446_Slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 330,
+   "patternId": 73,
+   "filename": "KIN446_Slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 331,
+   "patternId": 74,
+   "filename": "kin447.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 332,
+   "patternId": 74,
+   "filename": "KIN447_Slip1.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 333,
+   "patternId": 74,
+   "filename": "KIN447_Slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 334,
+   "patternId": 75,
+   "filename": "kin448.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK File"
+ },
+ {
+   "id": 335,
+   "patternId": 75,
+   "filename": "KIN448_Slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 5,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 336,
+   "patternId": 75,
+   "filename": "KIN448_Slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard"
+ },
+ {
+   "id": 337,
+   "patternId": 76,
+   "filename": "kin449.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 338,
+   "patternId": 76,
+   "filename": "KIN449_Slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 339,
+   "patternId": 76,
+   "filename": "KIN449_Slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 340,
+   "patternId": 77,
+   "filename": "kin450.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 341,
+   "patternId": 77,
+   "filename": "KIN450_Slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 342,
+   "patternId": 77,
+   "filename": "KIN450_Slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 343,
+   "patternId": 78,
+   "filename": "kin451.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK File"
+ },
+ {
+   "id": 344,
+   "patternId": 78,
+   "filename": "KIN451_Slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 5,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 345,
+   "patternId": 78,
+   "filename": "KIN451_Slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard"
+ },
+ {
+   "id": 346,
+   "patternId": 79,
+   "filename": "kin452.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 347,
+   "patternId": 79,
+   "filename": "KIN452_Slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 348,
+   "patternId": 79,
+   "filename": "KIN452_Slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 349,
+   "patternId": 80,
+   "filename": "kin453.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 350,
+   "patternId": 80,
+   "filename": "KIN453_Slip.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 351,
+   "patternId": 80,
+   "filename": "KIN453_Slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 352,
+   "patternId": 81,
+   "filename": "kin454.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 470,
+   "patternId": 81,
+   "filename": "kin_454_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 516,
+   "patternId": 81,
+   "filename": "kin_454.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter"
+ },
+ {
+   "id": 1655,
+   "patternId": 82,
+   "filename": "KIN628TL.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 7,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 367,
+   "patternId": 82,
+   "filename": "kin628_tucklace_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "Punchcard"
+ },
+ {
+   "id": 355,
+   "patternId": 82,
+   "filename": "KIN628_tucklace.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 7,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 357,
+   "patternId": 82,
+   "filename": "KIN628_tucklace_chart.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "Needle Setup"
+ },
+ {
+   "id": 2072,
+   "patternId": 82,
+   "filename": "kin628_TL_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2074,
+   "patternId": 83,
+   "filename": "KIN626_tucklace_chart1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 361,
+   "patternId": 83,
+   "filename": "KIN626_tucklace.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 6,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 363,
+   "patternId": 83,
+   "filename": "KIN626_tucklace_chart.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "Needle Setup"
+ },
+ {
+   "id": 368,
+   "patternId": 83,
+   "filename": "kin626_tucklace_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "Punchcard"
+ },
+ {
+   "id": 1656,
+   "patternId": 83,
+   "filename": "kin626tl.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 6,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1657,
+   "patternId": 84,
+   "filename": "KIN625tl.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 7,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 440,
+   "patternId": 84,
+   "filename": "KIN625_tucklace_chart.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "Needle Setup (no punchcard available)"
+ },
+ {
+   "id": 365,
+   "patternId": 84,
+   "filename": "kin625_tucklace.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 7,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 2073,
+   "patternId": 84,
+   "filename": "kin625_TL_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 370,
+   "patternId": 85,
+   "filename": "KIN6515_tucklace_punchard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard"
+ },
+ {
+   "id": 371,
+   "patternId": 85,
+   "filename": "KIN6515_tucklace.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 5,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 372,
+   "patternId": 85,
+   "filename": "KIN6515_tucklace_chart.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Needle Setup"
+ },
+ {
+   "id": 1658,
+   "patternId": 85,
+   "filename": "6515.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1659,
+   "patternId": 86,
+   "filename": "6555.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 7,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 374,
+   "patternId": 86,
+   "filename": "KIN6555_tucklace.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 7,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 375,
+   "patternId": 86,
+   "filename": "6555punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "Punchcard"
+ },
+ {
+   "id": 376,
+   "patternId": 86,
+   "filename": "KIN6555_tucklace_chart.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "Needle Setup"
+ },
+ {
+   "id": 2075,
+   "patternId": 86,
+   "filename": "6555_LK150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2076,
+   "patternId": 87,
+   "filename": "KIN6510_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 378,
+   "patternId": 87,
+   "filename": "KIN6510_tucklace.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 7,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 379,
+   "patternId": 87,
+   "filename": "KIN6510_tucklace_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "Punchcard"
+ },
+ {
+   "id": 380,
+   "patternId": 87,
+   "filename": "KIN6510_tucklace_chart.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "Needle Setup"
+ },
+ {
+   "id": 1660,
+   "patternId": 87,
+   "filename": "6510.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 7,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1661,
+   "patternId": 88,
+   "filename": "6488.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 7,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 382,
+   "patternId": 88,
+   "filename": "KIN6488_tucklace.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 7,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 383,
+   "patternId": 88,
+   "filename": "KIN6488_tucklace_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "Punchcard"
+ },
+ {
+   "id": 2077,
+   "patternId": 88,
+   "filename": "KIN6488_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2078,
+   "patternId": 89,
+   "filename": "KIN6486_cheat.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 386,
+   "patternId": 89,
+   "filename": "6486 punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "Punchcard"
+ },
+ {
+   "id": 387,
+   "patternId": 89,
+   "filename": "KIN6486_tucklace_chart.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "Needle Setup"
+ },
+ {
+   "id": 388,
+   "patternId": 89,
+   "filename": "64861.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 6,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 1662,
+   "patternId": 89,
+   "filename": "6486.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 6,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 389,
+   "patternId": 90,
+   "filename": "KIN6487_tucklace.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 2,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 391,
+   "patternId": 90,
+   "filename": "kin6487_tucklace_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard"
+ },
+ {
+   "id": 392,
+   "patternId": 90,
+   "filename": "kin6487_tucklace_chart.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Needle Setup"
+ },
+ {
+   "id": 1663,
+   "patternId": 90,
+   "filename": "6487.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2079,
+   "patternId": 90,
+   "filename": "kin6487_cheat.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 393,
+   "patternId": 91,
+   "filename": "701.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 6,
+   "label": "DAK File"
+ },
+ {
+   "id": 394,
+   "patternId": 91,
+   "filename": "KIN_ST701.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 6,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 395,
+   "patternId": 91,
+   "filename": "KIN_ST701_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "Punchcard"
+ },
+ {
+   "id": 396,
+   "patternId": 91,
+   "filename": "701_knit_sequence.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "Knit Sequence Chart"
+ },
+ {
+   "id": 397,
+   "patternId": 92,
+   "filename": "703.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 6,
+   "label": "DAK File"
+ },
+ {
+   "id": 398,
+   "patternId": 92,
+   "filename": "KIN_ST703.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 6,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 399,
+   "patternId": 92,
+   "filename": "KIN_ST703_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "Punchcard"
+ },
+ {
+   "id": 441,
+   "patternId": 92,
+   "filename": "703_knit_sequence.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "Knit Sequence Chart"
+ },
+ {
+   "id": 401,
+   "patternId": 93,
+   "filename": "702.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 6,
+   "label": "DAK File"
+ },
+ {
+   "id": 402,
+   "patternId": 93,
+   "filename": "KIN_ST702.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 6,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 403,
+   "patternId": 93,
+   "filename": "KIN_ST702_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "Punchcard"
+ },
+ {
+   "id": 404,
+   "patternId": 93,
+   "filename": "702_knit_sequence.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "Knit Sequence Chart"
+ },
+ {
+   "id": 405,
+   "patternId": 94,
+   "filename": "704.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK File"
+ },
+ {
+   "id": 406,
+   "patternId": 94,
+   "filename": "704.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 5,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 407,
+   "patternId": 94,
+   "filename": "KIN_ST704_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard"
+ },
+ {
+   "id": 409,
+   "patternId": 94,
+   "filename": "704_knit_sequence.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Knit Sequence Chart"
+ },
+ {
+   "id": 410,
+   "patternId": 95,
+   "filename": "705.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 411,
+   "patternId": 95,
+   "filename": "705.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 412,
+   "patternId": 95,
+   "filename": "KIN_ST705_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 413,
+   "patternId": 95,
+   "filename": "705_knit_sequence.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Knit Sequence Chart"
+ },
+ {
+   "id": 414,
+   "patternId": 96,
+   "filename": "706.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK File"
+ },
+ {
+   "id": 415,
+   "patternId": 96,
+   "filename": "706.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 416,
+   "patternId": 96,
+   "filename": "Kin_st706_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard"
+ },
+ {
+   "id": 418,
+   "patternId": 96,
+   "filename": "706_knit_sequence.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Knit Sequence Chart"
+ },
+ {
+   "id": 419,
+   "patternId": 97,
+   "filename": "707.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK File"
+ },
+ {
+   "id": 420,
+   "patternId": 97,
+   "filename": "707.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 5,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 421,
+   "patternId": 97,
+   "filename": "KIN_ST707_Punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard"
+ },
+ {
+   "id": 422,
+   "patternId": 97,
+   "filename": "707_knit_sequence.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Knit Sequence Chart"
+ },
+ {
+   "id": 423,
+   "patternId": 98,
+   "filename": "7521.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 8,
+   "label": "DAK File"
+ },
+ {
+   "id": 424,
+   "patternId": 98,
+   "filename": "7521.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 8,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 425,
+   "patternId": 98,
+   "filename": "KIN_st7521_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 8,
+   "label": "Punchcard"
+ },
+ {
+   "id": 426,
+   "patternId": 98,
+   "filename": "7521_knit_sequence.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 8,
+   "label": "Knit Sequence Chart"
+ },
+ {
+   "id": 427,
+   "patternId": 99,
+   "filename": "7523.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 7,
+   "label": "DAK File"
+ },
+ {
+   "id": 428,
+   "patternId": 99,
+   "filename": "7523.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 7,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 429,
+   "patternId": 99,
+   "filename": "KIN_st7523_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "Punchcard"
+ },
+ {
+   "id": 430,
+   "patternId": 99,
+   "filename": "7523_knit_sequence.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "Knit Sequence Chart"
+ },
+ {
+   "id": 442,
+   "patternId": 101,
+   "filename": "501_hand_lace.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Stitch Chart"
+ },
+ {
+   "id": 444,
+   "patternId": 103,
+   "filename": "KIN_0631.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 445,
+   "patternId": 103,
+   "filename": "KIN_063.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 1,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 446,
+   "patternId": 103,
+   "filename": "KIN_063_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard"
+ },
+ {
+   "id": 447,
+   "patternId": 104,
+   "filename": "KIN_061.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 448,
+   "patternId": 104,
+   "filename": "KIN_61.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 1,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 449,
+   "patternId": 104,
+   "filename": "KIN_061_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard"
+ },
+ {
+   "id": 450,
+   "patternId": 105,
+   "filename": "KIN_094.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 451,
+   "patternId": 105,
+   "filename": "KIN_101.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 1,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 452,
+   "patternId": 105,
+   "filename": "KIN_094_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard"
+ },
+ {
+   "id": 453,
+   "patternId": 106,
+   "filename": "KIN_122.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 454,
+   "patternId": 106,
+   "filename": "KIN_122.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 1,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 455,
+   "patternId": 106,
+   "filename": "KIN_122_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard"
+ },
+ {
+   "id": 456,
+   "patternId": 107,
+   "filename": "KIN_090.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 457,
+   "patternId": 107,
+   "filename": "KIN_90.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 1,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 574,
+   "patternId": 107,
+   "filename": "kin_090_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 458,
+   "patternId": 108,
+   "filename": "KIN_088.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 459,
+   "patternId": 108,
+   "filename": "KIN_088.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 1,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 460,
+   "patternId": 108,
+   "filename": "KIN_088_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard"
+ },
+ {
+   "id": 461,
+   "patternId": 109,
+   "filename": "KIN_116.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 462,
+   "patternId": 109,
+   "filename": "KIN_116.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 1,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 508,
+   "patternId": 109,
+   "filename": "KIN_116_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "Punchcard"
+ },
+ {
+   "id": 464,
+   "patternId": 110,
+   "filename": "KIN_110.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 465,
+   "patternId": 110,
+   "filename": "KIN_110.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 1,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 466,
+   "patternId": 110,
+   "filename": "KIN_110_punchcard1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard"
+ },
+ {
+   "id": 467,
+   "patternId": 111,
+   "filename": "KIN_101.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 468,
+   "patternId": 111,
+   "filename": "KIN_1011.stc",
+   "filetype": "stc",
+   "active": true,
+   "order": 1,
+   "label": "Stitch Painter File"
+ },
+ {
+   "id": 469,
+   "patternId": 111,
+   "filename": "KIN_101_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard"
+ },
+ {
+   "id": 471,
+   "patternId": 113,
+   "filename": "card1_train.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK File"
+ },
+ {
+   "id": 472,
+   "patternId": 113,
+   "filename": "card1_train_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "punchcard"
+ },
+ {
+   "id": 473,
+   "patternId": 114,
+   "filename": "card2_flake.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK File"
+ },
+ {
+   "id": 474,
+   "patternId": 114,
+   "filename": "card2_flake_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "punchcard"
+ },
+ {
+   "id": 475,
+   "patternId": 115,
+   "filename": "card3_chickies.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK File"
+ },
+ {
+   "id": 476,
+   "patternId": 115,
+   "filename": "card3_chickies_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "punchcard"
+ },
+ {
+   "id": 477,
+   "patternId": 116,
+   "filename": "card4_snowflake.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK File"
+ },
+ {
+   "id": 478,
+   "patternId": 116,
+   "filename": "card4_snowflake_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "punchcard"
+ },
+ {
+   "id": 479,
+   "patternId": 117,
+   "filename": "card5_flowers.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK File"
+ },
+ {
+   "id": 480,
+   "patternId": 117,
+   "filename": "card5_flowers_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "punchcard"
+ },
+ {
+   "id": 481,
+   "patternId": 118,
+   "filename": "card6_diamonds.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK File"
+ },
+ {
+   "id": 482,
+   "patternId": 118,
+   "filename": "card6_diamonds1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "punchcard"
+ },
+ {
+   "id": 483,
+   "patternId": 119,
+   "filename": "card7_flake.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK File"
+ },
+ {
+   "id": 484,
+   "patternId": 119,
+   "filename": "card7_flake_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "punchcard"
+ },
+ {
+   "id": 485,
+   "patternId": 120,
+   "filename": "card8_borders.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK File"
+ },
+ {
+   "id": 486,
+   "patternId": 120,
+   "filename": "card8_borders_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "punchcard"
+ },
+ {
+   "id": 487,
+   "patternId": 121,
+   "filename": "card9_house_trees.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK File"
+ },
+ {
+   "id": 488,
+   "patternId": 121,
+   "filename": "card9_house_trees_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "punchcard"
+ },
+ {
+   "id": 489,
+   "patternId": 122,
+   "filename": "card10_snowman.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK File"
+ },
+ {
+   "id": 490,
+   "patternId": 122,
+   "filename": "card10_snowman_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "punchcard"
+ },
+ {
+   "id": 494,
+   "patternId": 123,
+   "filename": "block_a_L_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "block A-L Punchcard"
+ },
+ {
+   "id": 502,
+   "patternId": 123,
+   "filename": "block_alphabet.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK A-Z"
+ },
+ {
+   "id": 505,
+   "patternId": 123,
+   "filename": "block_alphabet-inverse.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 2,
+   "label": "Right side facing alphabet"
+ },
+ {
+   "id": 499,
+   "patternId": 124,
+   "filename": "block_m_x_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "block M-X punchcard"
+ },
+ {
+   "id": 506,
+   "patternId": 124,
+   "filename": "block_alphabet-inverse1.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 2,
+   "label": "Right side facing alphabet"
+ },
+ {
+   "id": 503,
+   "patternId": 124,
+   "filename": "block_alphabet1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK A-Z"
+ },
+ {
+   "id": 501,
+   "patternId": 125,
+   "filename": "block_y_z_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "block Y-Z punchcard"
+ },
+ {
+   "id": 504,
+   "patternId": 125,
+   "filename": "block_alphabet2.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK A-Z"
+ },
+ {
+   "id": 507,
+   "patternId": 125,
+   "filename": "block_alphabet-inverse2.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 2,
+   "label": "Right side facing alphabet"
+ },
+ {
+   "id": 510,
+   "patternId": 126,
+   "filename": "Linen_stitch_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard"
+ },
+ {
+   "id": 511,
+   "patternId": 126,
+   "filename": "linen_stitch.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DesignaKnit File"
+ },
+ {
+   "id": 513,
+   "patternId": 127,
+   "filename": "Linen_stitch_punchcard1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Full-Size Punchcard"
+ },
+ {
+   "id": 512,
+   "patternId": 127,
+   "filename": "linen_stitch1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DesignaKnit File"
+ },
+ {
+   "id": 514,
+   "patternId": 128,
+   "filename": "Linen_stitch_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Full-Size Punchcard"
+ },
+ {
+   "id": 515,
+   "patternId": 128,
+   "filename": "linen_stitch.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DesignaKnit File"
+ },
+ {
+   "id": 520,
+   "patternId": 129,
+   "filename": "KIN_61616.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "punchcard"
+ },
+ {
+   "id": 526,
+   "patternId": 129,
+   "filename": "diagonal_stitch_pattern1.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 6,
+   "label": "Variation 1"
+ },
+ {
+   "id": 527,
+   "patternId": 129,
+   "filename": "diagonal_stitch_pattern2.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 6,
+   "label": "Variation 2"
+ },
+ {
+   "id": 528,
+   "patternId": 129,
+   "filename": "diagonal_stitch_pattern3.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 6,
+   "label": "Variation 3"
+ },
+ {
+   "id": 1642,
+   "patternId": 129,
+   "filename": "KIN_61616.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 6,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2057,
+   "patternId": 129,
+   "filename": "kin61616-lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 532,
+   "patternId": 131,
+   "filename": "vines_1now.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Variation 1"
+ },
+ {
+   "id": 533,
+   "patternId": 131,
+   "filename": "vines_2now.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Variation 2"
+ },
+ {
+   "id": 536,
+   "patternId": 133,
+   "filename": "handsome_tuck_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "Punchcard Template"
+ },
+ {
+   "id": 2060,
+   "patternId": 133,
+   "filename": "handsome_tuck_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 1960,
+   "patternId": 133,
+   "filename": "Handsome_tuck.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 6,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1666,
+   "patternId": 135,
+   "filename": "plus_stripes.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 538,
+   "patternId": 136,
+   "filename": "KIN123.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK"
+ },
+ {
+   "id": 539,
+   "patternId": 136,
+   "filename": "KIN_123_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard Template"
+ },
+ {
+   "id": 540,
+   "patternId": 137,
+   "filename": "KIN_Lace40_chart.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 4,
+   "label": "KIN_lace_40"
+ },
+ {
+   "id": 541,
+   "patternId": 138,
+   "filename": "KIN_Lace41_chart.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 6,
+   "label": "KIN_lace41"
+ },
+ {
+   "id": 2109,
+   "patternId": 138,
+   "filename": "kin-lace-41.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 551,
+   "patternId": 139,
+   "filename": "tuck_rib1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DesignaKnit File"
+ },
+ {
+   "id": 552,
+   "patternId": 139,
+   "filename": "tuck_rib_one_three_punchcard1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard"
+ },
+ {
+   "id": 553,
+   "patternId": 139,
+   "filename": "tuck_rib_one_needle_selection.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Needle Selection Guide"
+ },
+ {
+   "id": 548,
+   "patternId": 140,
+   "filename": "tuck_rib2.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DesignaKnit File"
+ },
+ {
+   "id": 549,
+   "patternId": 140,
+   "filename": "tuck_rib_one_needle_selection1.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Needle Selection Guide"
+ },
+ {
+   "id": 550,
+   "patternId": 140,
+   "filename": "tuck_rib_one_three_punchcard2.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard"
+ },
+ {
+   "id": 557,
+   "patternId": 141,
+   "filename": "hearts_tuck1_Punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard Template"
+ },
+ {
+   "id": 1669,
+   "patternId": 141,
+   "filename": "slip_hearts.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1672,
+   "patternId": 141,
+   "filename": "hearts_tuck1_Punchcard1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1677,
+   "patternId": 141,
+   "filename": "slip_heart9.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1651,
+   "patternId": 142,
+   "filename": "tuck_hearts.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 561,
+   "patternId": 142,
+   "filename": "hearts_tuck_Punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard Template"
+ },
+ {
+   "id": 562,
+   "patternId": 142,
+   "filename": "hearts_tuck1_Punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard Template"
+ },
+ {
+   "id": 2044,
+   "patternId": 142,
+   "filename": "tuck_hearts_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2046,
+   "patternId": 142,
+   "filename": "tuck_hearts1-lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 564,
+   "patternId": 143,
+   "filename": "diagonal_tuck.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard Template"
+ },
+ {
+   "id": 1643,
+   "patternId": 143,
+   "filename": "diagonal_tuck.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2047,
+   "patternId": 143,
+   "filename": "wide_diagonal_tuck-lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 565,
+   "patternId": 144,
+   "filename": "kin0319.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 566,
+   "patternId": 144,
+   "filename": "KIN0319.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK Stitch Pattern File"
+ },
+ {
+   "id": 567,
+   "patternId": 145,
+   "filename": "kin0319.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 568,
+   "patternId": 145,
+   "filename": "KIN0319.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 6,
+   "label": "DesignaKnit Stitch pattern"
+ },
+ {
+   "id": 569,
+   "patternId": 146,
+   "filename": "kin0319.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 570,
+   "patternId": 146,
+   "filename": "KIN0319.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 6,
+   "label": "DesignaKnit Stitch pattern"
+ },
+ {
+   "id": 2061,
+   "patternId": 146,
+   "filename": "kin0319_tuck_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 571,
+   "patternId": 147,
+   "filename": "charlie_brown.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 572,
+   "patternId": 147,
+   "filename": "charlie_brown1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "DesignaKnit Stitch pattern"
+ },
+ {
+   "id": 575,
+   "patternId": 148,
+   "filename": "randomizer.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DesignaKnit Stitch pattern"
+ },
+ {
+   "id": 576,
+   "patternId": 148,
+   "filename": "randomizer.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 2091,
+   "patternId": 148,
+   "filename": "randomizer_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2092,
+   "patternId": 148,
+   "filename": "randomizer_6mm.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "6mm cheat Sheet"
+ },
+ {
+   "id": 579,
+   "patternId": 150,
+   "filename": "summer_top_cables2.png",
+   "filetype": "png",
+   "active": true,
+   "order": 4,
+   "label": "Cables crossed on matching rows"
+ },
+ {
+   "id": 580,
+   "patternId": 150,
+   "filename": "summer_top_cables1.png",
+   "filetype": "png",
+   "active": true,
+   "order": 4,
+   "label": "Cables Crossed on Alternate Rows"
+ },
+ {
+   "id": 581,
+   "patternId": 151,
+   "filename": "zig_zag_lace_jpg_pattern.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 4,
+   "label": "Stitch Chart"
+ },
+ {
+   "id": 583,
+   "patternId": 152,
+   "filename": "zig_zag_lace_jpg_pattern1.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 4,
+   "label": "Flags Lace Chart"
+ },
+ {
+   "id": 586,
+   "patternId": 153,
+   "filename": "natutical_tuck_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "Punchcard Diagram"
+ },
+ {
+   "id": 1641,
+   "patternId": 153,
+   "filename": "nautical_tuck.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 6,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2062,
+   "patternId": 153,
+   "filename": "nautical_tuck_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2063,
+   "patternId": 154,
+   "filename": "3color_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 1653,
+   "patternId": 154,
+   "filename": "3color_tuck.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 7,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 590,
+   "patternId": 154,
+   "filename": "color_diagram.png",
+   "filetype": "png",
+   "active": true,
+   "order": 7,
+   "label": "Color Legend"
+ },
+ {
+   "id": 593,
+   "patternId": 154,
+   "filename": "tuck_baby.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "Punchcard Template"
+ },
+ {
+   "id": 595,
+   "patternId": 155,
+   "filename": "baby_stripe.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard Template"
+ },
+ {
+   "id": 596,
+   "patternId": 155,
+   "filename": "baby_stripe.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DesignaKnit Stitch pattern"
+ },
+ {
+   "id": 597,
+   "patternId": 156,
+   "filename": "christmas1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DesignaKnit Stitch pattern"
+ },
+ {
+   "id": 598,
+   "patternId": 156,
+   "filename": "Christmas1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard Template"
+ },
+ {
+   "id": 599,
+   "patternId": 157,
+   "filename": "christmas1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 7,
+   "label": "DesignaKnit Stitch pattern"
+ },
+ {
+   "id": 601,
+   "patternId": 157,
+   "filename": "Christmas1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "Punchcard Template"
+ },
+ {
+   "id": 604,
+   "patternId": 158,
+   "filename": "kin0319.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "Punchcard"
+ },
+ {
+   "id": 1673,
+   "patternId": 158,
+   "filename": "KIN0319.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 6,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 606,
+   "patternId": 159,
+   "filename": "radiant_eyelet_lace.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Hand Manipulated Instructions"
+ },
+ {
+   "id": 607,
+   "patternId": 160,
+   "filename": "paisley.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK Stitch Pattern"
+ },
+ {
+   "id": 2084,
+   "patternId": 160,
+   "filename": "paisley.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "LK150 Cheat Sheet (12 pages)"
+ },
+ {
+   "id": 619,
+   "patternId": 161,
+   "filename": "butterfly1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DesignaKnit STP file"
+ },
+ {
+   "id": 620,
+   "patternId": 161,
+   "filename": "butterfly1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard Template"
+ },
+ {
+   "id": 617,
+   "patternId": 162,
+   "filename": "butterfly.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DesignaKnit STP file"
+ },
+ {
+   "id": 618,
+   "patternId": 162,
+   "filename": "butterfly.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard Template"
+ },
+ {
+   "id": 616,
+   "patternId": 163,
+   "filename": "butterfly2.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard Template"
+ },
+ {
+   "id": 1996,
+   "patternId": 163,
+   "filename": "butterfly2.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DesignaKnit STP file"
+ },
+ {
+   "id": 2048,
+   "patternId": 164,
+   "filename": "diagonal_tuck124-lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 625,
+   "patternId": 164,
+   "filename": "diagonal_tuck124.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 6,
+   "label": "Punchcard Template"
+ },
+ {
+   "id": 1644,
+   "patternId": 164,
+   "filename": "diagonal_tuck124.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 6,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 627,
+   "patternId": 165,
+   "filename": "waveform_drawing.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Needle Arrangement"
+ },
+ {
+   "id": 628,
+   "patternId": 167,
+   "filename": "528_penguin.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 629,
+   "patternId": 167,
+   "filename": "Penguin_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard"
+ },
+ {
+   "id": 631,
+   "patternId": 168,
+   "filename": "little_pine.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 632,
+   "patternId": 168,
+   "filename": "little_pine_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1631,
+   "patternId": 1168,
+   "filename": "diamonds.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1632,
+   "patternId": 1168,
+   "filename": "diamonds_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1633,
+   "patternId": 1169,
+   "filename": "KIN23_tuck_rib.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1634,
+   "patternId": 1169,
+   "filename": "kin23_tuck_rib.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1679,
+   "patternId": 1170,
+   "filename": "90_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 2080,
+   "patternId": 1170,
+   "filename": "90.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2081,
+   "patternId": 1170,
+   "filename": "90_cheat.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 1680,
+   "patternId": 1171,
+   "filename": "921.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1681,
+   "patternId": 1171,
+   "filename": "92_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1682,
+   "patternId": 1172,
+   "filename": "93.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1683,
+   "patternId": 1172,
+   "filename": "93_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": ""
+ },
+ {
+   "id": 1684,
+   "patternId": 1173,
+   "filename": "94.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1686,
+   "patternId": 1173,
+   "filename": "94_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1687,
+   "patternId": 1174,
+   "filename": "95.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1688,
+   "patternId": 1174,
+   "filename": "95_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1689,
+   "patternId": 1175,
+   "filename": "96.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1690,
+   "patternId": 1175,
+   "filename": "96_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1691,
+   "patternId": 1176,
+   "filename": "81.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1692,
+   "patternId": 1176,
+   "filename": "81_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1693,
+   "patternId": 1177,
+   "filename": "82.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1695,
+   "patternId": 1177,
+   "filename": "82_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1696,
+   "patternId": 1178,
+   "filename": "83.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1697,
+   "patternId": 1178,
+   "filename": "83_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1698,
+   "patternId": 1179,
+   "filename": "84.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1699,
+   "patternId": 1179,
+   "filename": "84_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1700,
+   "patternId": 1180,
+   "filename": "85.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1701,
+   "patternId": 1180,
+   "filename": "85_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1702,
+   "patternId": 1181,
+   "filename": "86.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1703,
+   "patternId": 1181,
+   "filename": "86_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1704,
+   "patternId": 1182,
+   "filename": "87.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1705,
+   "patternId": 1182,
+   "filename": "87_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1706,
+   "patternId": 1184,
+   "filename": "88.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1707,
+   "patternId": 1184,
+   "filename": "88_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1708,
+   "patternId": 1185,
+   "filename": "89.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1709,
+   "patternId": 1185,
+   "filename": "89_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1712,
+   "patternId": 1186,
+   "filename": "tree10.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1713,
+   "patternId": 1186,
+   "filename": "tree10.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1714,
+   "patternId": 1187,
+   "filename": "tree1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1715,
+   "patternId": 1187,
+   "filename": "tree1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1716,
+   "patternId": 1188,
+   "filename": "tree2.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1717,
+   "patternId": 1188,
+   "filename": "tree2.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 2099,
+   "patternId": 1188,
+   "filename": "tree02_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 1718,
+   "patternId": 1189,
+   "filename": "tree3.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1719,
+   "patternId": 1189,
+   "filename": "tree3.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1720,
+   "patternId": 1190,
+   "filename": "tree4.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1721,
+   "patternId": 1190,
+   "filename": "tree4.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1722,
+   "patternId": 1191,
+   "filename": "tree5.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1723,
+   "patternId": 1191,
+   "filename": "tree5.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": ""
+ },
+ {
+   "id": 1724,
+   "patternId": 1192,
+   "filename": "tree6.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1725,
+   "patternId": 1192,
+   "filename": "tree6.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1726,
+   "patternId": 1193,
+   "filename": "tree7.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1727,
+   "patternId": 1193,
+   "filename": "tree7.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1728,
+   "patternId": 1194,
+   "filename": "tree8.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1729,
+   "patternId": 1194,
+   "filename": "tree8.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1730,
+   "patternId": 1195,
+   "filename": "tree9.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1731,
+   "patternId": 1195,
+   "filename": "tree9.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1732,
+   "patternId": 1196,
+   "filename": "tree11.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1733,
+   "patternId": 1196,
+   "filename": "tree11.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1735,
+   "patternId": 1197,
+   "filename": "tree12.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1736,
+   "patternId": 1197,
+   "filename": "tree12.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1737,
+   "patternId": 1198,
+   "filename": "border1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1738,
+   "patternId": 1198,
+   "filename": "border1a.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1739,
+   "patternId": 1199,
+   "filename": "border2.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1740,
+   "patternId": 1199,
+   "filename": "border2.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1741,
+   "patternId": 1200,
+   "filename": "border3.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1742,
+   "patternId": 1200,
+   "filename": "border3.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1743,
+   "patternId": 1200,
+   "filename": "border3_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1744,
+   "patternId": 1201,
+   "filename": "border4.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1745,
+   "patternId": 1201,
+   "filename": "border4_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1746,
+   "patternId": 1201,
+   "filename": "border4_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1747,
+   "patternId": 1202,
+   "filename": "border5.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1748,
+   "patternId": 1202,
+   "filename": "border5.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1749,
+   "patternId": 1203,
+   "filename": "border6.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1750,
+   "patternId": 1203,
+   "filename": "border6.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1751,
+   "patternId": 1204,
+   "filename": "border7.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1752,
+   "patternId": 1204,
+   "filename": "border7_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1753,
+   "patternId": 1204,
+   "filename": "border7_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1754,
+   "patternId": 1205,
+   "filename": "border8_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1755,
+   "patternId": 1205,
+   "filename": "border8_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1756,
+   "patternId": 1206,
+   "filename": "border9.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1757,
+   "patternId": 1206,
+   "filename": "border9_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1758,
+   "patternId": 1207,
+   "filename": "border10.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1759,
+   "patternId": 1207,
+   "filename": "border10_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1760,
+   "patternId": 1208,
+   "filename": "border11.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1761,
+   "patternId": 1208,
+   "filename": "border11_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1762,
+   "patternId": 1209,
+   "filename": "border12.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1763,
+   "patternId": 1209,
+   "filename": "border12_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1764,
+   "patternId": 1210,
+   "filename": "border13.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1765,
+   "patternId": 1210,
+   "filename": "border13_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1766,
+   "patternId": 1210,
+   "filename": "border13_punchcard1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1767,
+   "patternId": 1210,
+   "filename": "border13_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1768,
+   "patternId": 1211,
+   "filename": "border14.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1769,
+   "patternId": 1211,
+   "filename": "border14_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1770,
+   "patternId": 1211,
+   "filename": "border14_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1771,
+   "patternId": 1212,
+   "filename": "candle.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1772,
+   "patternId": 1212,
+   "filename": "candle.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1773,
+   "patternId": 1213,
+   "filename": "gift_box.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1774,
+   "patternId": 1213,
+   "filename": "gift_box.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1775,
+   "patternId": 1214,
+   "filename": "gift_box2.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1776,
+   "patternId": 1214,
+   "filename": "gift_box2.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1777,
+   "patternId": 1215,
+   "filename": "heart.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1778,
+   "patternId": 1215,
+   "filename": "heart2.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1779,
+   "patternId": 1216,
+   "filename": "heart1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1780,
+   "patternId": 1216,
+   "filename": "heart1_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1781,
+   "patternId": 1217,
+   "filename": "heart2.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1782,
+   "patternId": 1217,
+   "filename": "heart2+print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1783,
+   "patternId": 1218,
+   "filename": "mitten.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1785,
+   "patternId": 1218,
+   "filename": "mitten_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1789,
+   "patternId": 1218,
+   "filename": "mitten_print1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1790,
+   "patternId": 1219,
+   "filename": "mitten1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1791,
+   "patternId": 1219,
+   "filename": "mitten1_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1792,
+   "patternId": 1219,
+   "filename": "mitten1_pumchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1793,
+   "patternId": 1220,
+   "filename": "mittens2.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1794,
+   "patternId": 1220,
+   "filename": "mitten2_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1795,
+   "patternId": 1220,
+   "filename": "mitten2_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1796,
+   "patternId": 1221,
+   "filename": "ornament1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1797,
+   "patternId": 1221,
+   "filename": "ornament1_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1798,
+   "patternId": 1222,
+   "filename": "ornament22.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1799,
+   "patternId": 1222,
+   "filename": "ornament2_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1800,
+   "patternId": 1223,
+   "filename": "ornament3.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1801,
+   "patternId": 1223,
+   "filename": "ornament3.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1802,
+   "patternId": 1224,
+   "filename": "ornament4.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1803,
+   "patternId": 1224,
+   "filename": "ornament4_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1804,
+   "patternId": 1225,
+   "filename": "owl2.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1805,
+   "patternId": 1225,
+   "filename": "owl2_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1806,
+   "patternId": 1226,
+   "filename": "owl3.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1807,
+   "patternId": 1226,
+   "filename": "owl3_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1808,
+   "patternId": 1226,
+   "filename": "owl3_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 2090,
+   "patternId": 1226,
+   "filename": "owl_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 1809,
+   "patternId": 1227,
+   "filename": "polar_bear.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1810,
+   "patternId": 1227,
+   "filename": "polar_bear_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1811,
+   "patternId": 1228,
+   "filename": "large_reindeer.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1813,
+   "patternId": 1229,
+   "filename": "reindeer1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1814,
+   "patternId": 1229,
+   "filename": "reindeer1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1815,
+   "patternId": 1230,
+   "filename": "reindeer2.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1816,
+   "patternId": 1230,
+   "filename": "reindeer2.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1817,
+   "patternId": 1231,
+   "filename": "reindeer3.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1818,
+   "patternId": 1231,
+   "filename": "reindeer3.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1819,
+   "patternId": 1232,
+   "filename": "reindeer41.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1820,
+   "patternId": 1232,
+   "filename": "reindeer4.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1821,
+   "patternId": 1233,
+   "filename": "reindeer5.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1822,
+   "patternId": 1233,
+   "filename": "reindeer5.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1826,
+   "patternId": 1234,
+   "filename": "reindeer6.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1824,
+   "patternId": 1234,
+   "filename": "reindeer6.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1827,
+   "patternId": 1235,
+   "filename": "reindeer7.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1828,
+   "patternId": 1235,
+   "filename": "reindeer7.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1829,
+   "patternId": 1236,
+   "filename": "reindeer9.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1830,
+   "patternId": 1236,
+   "filename": "reindeer9.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1831,
+   "patternId": 1237,
+   "filename": "santa_sleigh.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1832,
+   "patternId": 1237,
+   "filename": "santa+sleigh.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1833,
+   "patternId": 1238,
+   "filename": "sleigh.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1834,
+   "patternId": 1238,
+   "filename": "sleigh.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1835,
+   "patternId": 1239,
+   "filename": "snowflake1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1836,
+   "patternId": 1239,
+   "filename": "snowflake1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1837,
+   "patternId": 1242,
+   "filename": "snowflake2.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1838,
+   "patternId": 1242,
+   "filename": "snowflake21.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1839,
+   "patternId": 1243,
+   "filename": "snowflake3.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1840,
+   "patternId": 1243,
+   "filename": "snowflake3.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1841,
+   "patternId": 1244,
+   "filename": "snowflake4.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1842,
+   "patternId": 1244,
+   "filename": "snowflake4.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1843,
+   "patternId": 1245,
+   "filename": "snowflake5.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1844,
+   "patternId": 1245,
+   "filename": "snowflake5.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1845,
+   "patternId": 1246,
+   "filename": "snowflake6.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1846,
+   "patternId": 1246,
+   "filename": "snowflake6.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1847,
+   "patternId": 1247,
+   "filename": "snowflake7.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1848,
+   "patternId": 1247,
+   "filename": "snowflake7.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1849,
+   "patternId": 1248,
+   "filename": "snowflake8.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1850,
+   "patternId": 1248,
+   "filename": "snowflake8.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1851,
+   "patternId": 1250,
+   "filename": "snowflake9.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1852,
+   "patternId": 1250,
+   "filename": "snowflake9.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1853,
+   "patternId": 1251,
+   "filename": "snowflake10.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1854,
+   "patternId": 1251,
+   "filename": "snowflake10.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1855,
+   "patternId": 1252,
+   "filename": "snowflake11.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1856,
+   "patternId": 1252,
+   "filename": "snowflake11.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1857,
+   "patternId": 1253,
+   "filename": "snowflake12.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1858,
+   "patternId": 1253,
+   "filename": "snowflake12.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1859,
+   "patternId": 1254,
+   "filename": "snowflake13.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1860,
+   "patternId": 1254,
+   "filename": "snowflake13.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1861,
+   "patternId": 1255,
+   "filename": "snowflake14.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1862,
+   "patternId": 1255,
+   "filename": "snowflake14.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1863,
+   "patternId": 1256,
+   "filename": "snowman_flakes_24.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1864,
+   "patternId": 1256,
+   "filename": "snowman_flakes_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1865,
+   "patternId": 1256,
+   "filename": "snowman_flakes_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1866,
+   "patternId": 1258,
+   "filename": "snowman1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1867,
+   "patternId": 1258,
+   "filename": "snowman1_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1868,
+   "patternId": 1258,
+   "filename": "snowman1_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1869,
+   "patternId": 1259,
+   "filename": "snowman2.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1870,
+   "patternId": 1259,
+   "filename": "snowman2_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1871,
+   "patternId": 1259,
+   "filename": "snowman3.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1872,
+   "patternId": 1259,
+   "filename": "snowman3_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1873,
+   "patternId": 1260,
+   "filename": "snowman4.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1874,
+   "patternId": 1260,
+   "filename": "snowman4_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1875,
+   "patternId": 1261,
+   "filename": "border15.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1876,
+   "patternId": 1261,
+   "filename": "border15_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1877,
+   "patternId": 1261,
+   "filename": "border15_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1878,
+   "patternId": 1262,
+   "filename": "tree13.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1879,
+   "patternId": 1262,
+   "filename": "tree13_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1880,
+   "patternId": 1262,
+   "filename": "tree13_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1881,
+   "patternId": 1263,
+   "filename": "train.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1882,
+   "patternId": 1263,
+   "filename": "train_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1883,
+   "patternId": 1263,
+   "filename": "train_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1884,
+   "patternId": 1264,
+   "filename": "car.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1885,
+   "patternId": 1264,
+   "filename": "car_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1886,
+   "patternId": 1264,
+   "filename": "car_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1887,
+   "patternId": 1265,
+   "filename": "teddy.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1888,
+   "patternId": 1265,
+   "filename": "teddy_print.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Printable stitch pattern"
+ },
+ {
+   "id": 1889,
+   "patternId": 1265,
+   "filename": "teddy_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1957,
+   "patternId": 1266,
+   "filename": "KIN_432.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1958,
+   "patternId": 1266,
+   "filename": "432_slip.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1900,
+   "patternId": 1267,
+   "filename": "KIN431.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1893,
+   "patternId": 1267,
+   "filename": "KIN_431.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1894,
+   "patternId": 1268,
+   "filename": "KIN_430.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1899,
+   "patternId": 1268,
+   "filename": "KIN430.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1897,
+   "patternId": 1269,
+   "filename": "KIN_433.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1898,
+   "patternId": 1269,
+   "filename": "kin433_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1904,
+   "patternId": 1270,
+   "filename": "478.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1905,
+   "patternId": 1270,
+   "filename": "478_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1907,
+   "patternId": 1271,
+   "filename": "112b.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1906,
+   "patternId": 1271,
+   "filename": "112B_puncncard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1908,
+   "patternId": 1271,
+   "filename": "112b1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1910,
+   "patternId": 1271,
+   "filename": "112B_puncncard1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1913,
+   "patternId": 1272,
+   "filename": "112a.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1914,
+   "patternId": 1272,
+   "filename": "112a_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1915,
+   "patternId": 1273,
+   "filename": "4405_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1916,
+   "patternId": 1273,
+   "filename": "4405.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1917,
+   "patternId": 1274,
+   "filename": "4107.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1918,
+   "patternId": 1274,
+   "filename": "1071.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1920,
+   "patternId": 1275,
+   "filename": "4308.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1921,
+   "patternId": 1275,
+   "filename": "4308_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 2093,
+   "patternId": 1275,
+   "filename": "4301_slip_LK150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 1922,
+   "patternId": 1276,
+   "filename": "KIN0319.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1923,
+   "patternId": 1276,
+   "filename": "kin0319.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1924,
+   "patternId": 1277,
+   "filename": "4305.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1925,
+   "patternId": 1278,
+   "filename": "kin_8377.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1926,
+   "patternId": 1278,
+   "filename": "377_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1928,
+   "patternId": 1279,
+   "filename": "kin_8377.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1929,
+   "patternId": 1279,
+   "filename": "377_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1931,
+   "patternId": 1280,
+   "filename": "pintuck35.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1932,
+   "patternId": 1280,
+   "filename": "pintuck_35_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1933,
+   "patternId": 1281,
+   "filename": "lattice_pintuck.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1934,
+   "patternId": 1281,
+   "filename": "lattice_pintuck_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1935,
+   "patternId": 1282,
+   "filename": "pintuck_36.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1936,
+   "patternId": 1282,
+   "filename": "pintuck36_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1937,
+   "patternId": 1283,
+   "filename": "pintuck_41.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1938,
+   "patternId": 1283,
+   "filename": "pintuck_41_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1939,
+   "patternId": 1284,
+   "filename": "pintuck37.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1940,
+   "patternId": 1284,
+   "filename": "pintuck_37_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 2097,
+   "patternId": 1284,
+   "filename": "Pintuck37_5mm_cheatsheet.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "5mm Cheatsheet"
+ },
+ {
+   "id": 1941,
+   "patternId": 1285,
+   "filename": "basic pintucks.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1942,
+   "patternId": 1285,
+   "filename": "basic_pintucks.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1999,
+   "patternId": 1286,
+   "filename": "flat_rib_notes.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Flat Rib Notes"
+ },
+ {
+   "id": 1948,
+   "patternId": 1288,
+   "filename": "waves.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1959,
+   "patternId": 1288,
+   "filename": "waves.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1953,
+   "patternId": 1290,
+   "filename": "3305Pintuck.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard Diagram"
+ },
+ {
+   "id": 1954,
+   "patternId": 1290,
+   "filename": "3305Pintuck.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1955,
+   "patternId": 1290,
+   "filename": "3305_pintuck.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 1,
+   "label": "Chart"
+ },
+ {
+   "id": 1963,
+   "patternId": 1292,
+   "filename": "slip_waves.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1964,
+   "patternId": 1292,
+   "filename": "slip_waves_diagram.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 3,
+   "label": "stitch diagram"
+ },
+ {
+   "id": 1965,
+   "patternId": 1293,
+   "filename": "sw3_291_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 3,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1966,
+   "patternId": 1294,
+   "filename": "tuck waves1.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 3,
+   "label": "DesignaKnit STP file"
+ },
+ {
+   "id": 1967,
+   "patternId": 1294,
+   "filename": "tuck_waves1_diagram.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 3,
+   "label": "stitch diagram"
+ },
+ {
+   "id": 2049,
+   "patternId": 1294,
+   "filename": "tuck_waves1-lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 1968,
+   "patternId": 1295,
+   "filename": "tuck waves.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DesignaKnit STP file"
+ },
+ {
+   "id": 1969,
+   "patternId": 1295,
+   "filename": "tuck_waves_diagram.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 1,
+   "label": "stitch diagram"
+ },
+ {
+   "id": 2050,
+   "patternId": 1295,
+   "filename": "tuck_waves-lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 3,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 1970,
+   "patternId": 1296,
+   "filename": "466.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1972,
+   "patternId": 1296,
+   "filename": "466_diagram.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 1,
+   "label": "Stitch Diagram"
+ },
+ {
+   "id": 2089,
+   "patternId": 1296,
+   "filename": "kin466_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 2083,
+   "patternId": 1297,
+   "filename": "468_cheat.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2021,
+   "patternId": 1297,
+   "filename": "468_needle_arrangement.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 4,
+   "label": "Needle Arrangement"
+ },
+ {
+   "id": 2022,
+   "patternId": 1297,
+   "filename": "468_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 2023,
+   "patternId": 1297,
+   "filename": "468.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1978,
+   "patternId": 1298,
+   "filename": "KIn14.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1979,
+   "patternId": 1298,
+   "filename": "Kin14_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1980,
+   "patternId": 1298,
+   "filename": "kin14_needle_arrangement.png",
+   "filetype": "png",
+   "active": true,
+   "order": 5,
+   "label": "Needle Arrangement"
+ },
+ {
+   "id": 1985,
+   "patternId": 1299,
+   "filename": "heartsx2.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1986,
+   "patternId": 1299,
+   "filename": "heartsx2_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1987,
+   "patternId": 1300,
+   "filename": "heart_block.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1988,
+   "patternId": 1300,
+   "filename": "heart-blocks.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1989,
+   "patternId": 1301,
+   "filename": "heart_block2.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1990,
+   "patternId": 1301,
+   "filename": "heart_blocks1.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 2,
+   "label": "Punchcard Diagram"
+ },
+ {
+   "id": 1991,
+   "patternId": 1303,
+   "filename": "triangle_tango.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1992,
+   "patternId": 1303,
+   "filename": "triangle_tango_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1993,
+   "patternId": 1304,
+   "filename": "KIN223..stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 1994,
+   "patternId": 1304,
+   "filename": "kin223_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 1995,
+   "patternId": 1305,
+   "filename": "cow.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 2,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2001,
+   "patternId": 1307,
+   "filename": "1x1_tuck_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 2003,
+   "patternId": 1307,
+   "filename": "1x1 tuck.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2051,
+   "patternId": 1307,
+   "filename": "1x1_tuck-lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2008,
+   "patternId": 1308,
+   "filename": "kin56.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2009,
+   "patternId": 1308,
+   "filename": "needle_arrangement.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Needle Arrangement"
+ },
+ {
+   "id": 2103,
+   "patternId": 1308,
+   "filename": "kin56_tuck_lace.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 2105,
+   "patternId": 1308,
+   "filename": "kin56_tuck_lace_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2010,
+   "patternId": 1309,
+   "filename": "slipped_rib_diagram1.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 5,
+   "label": "Diagram"
+ },
+ {
+   "id": 2012,
+   "patternId": 1310,
+   "filename": "kin038.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2013,
+   "patternId": 1310,
+   "filename": "kin038_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 2014,
+   "patternId": 1310,
+   "filename": "kin038_colors.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 4,
+   "label": "Color Change Diagram"
+ },
+ {
+   "id": 2015,
+   "patternId": 1311,
+   "filename": "tl55.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2016,
+   "patternId": 1311,
+   "filename": "tl55_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 2017,
+   "patternId": 1311,
+   "filename": "tl55_needle_arrangement.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 1,
+   "label": "Needle Arrangement"
+ },
+ {
+   "id": 2018,
+   "patternId": 1312,
+   "filename": "tl58.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2019,
+   "patternId": 1312,
+   "filename": "tl_058_punchcard.jpg",
+   "filetype": "jpg",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 2106,
+   "patternId": 1312,
+   "filename": "tl_158_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "lk150 Cheat Sheet"
+ },
+ {
+   "id": 2026,
+   "patternId": 1313,
+   "filename": "KIn265_tuck_punchcard.webp",
+   "filetype": "webp",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 2064,
+   "patternId": 1313,
+   "filename": "kin265_tuck_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 7,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2065,
+   "patternId": 1313,
+   "filename": "kin265_tuck.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 7,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2027,
+   "patternId": 1314,
+   "filename": "KIN500.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 4,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2028,
+   "patternId": 1314,
+   "filename": "kin500_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 4,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 2086,
+   "patternId": 1315,
+   "filename": "322.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 1,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2087,
+   "patternId": 1315,
+   "filename": "kin322_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 2088,
+   "patternId": 1315,
+   "filename": "kin322_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 1,
+   "label": "LK150 Cheat Sheet"
+ },
+ {
+   "id": 2100,
+   "patternId": 1316,
+   "filename": "KIN325.stp",
+   "filetype": "stp",
+   "active": true,
+   "order": 5,
+   "label": "DAK .stp file"
+ },
+ {
+   "id": 2101,
+   "patternId": 1316,
+   "filename": "KIN325_punchcard.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "Punchcard template"
+ },
+ {
+   "id": 2102,
+   "patternId": 1316,
+   "filename": "kin325_lk150.pdf",
+   "filetype": "pdf",
+   "active": true,
+   "order": 5,
+   "label": "LK150 Cheat Sheet"
+ }
+]

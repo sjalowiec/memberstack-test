@@ -1,0 +1,114 @@
+[
+  {
+    "id": 1,
+    "title": "Hearts",
+    "thumbnail": "heart_thumb.jpg",
+    "order": 1,
+    "active": true,
+    "description": ""
+  },
+  {
+    "id": 2,
+    "title": "LK150 (and manual machines)",
+    "thumbnail": null,
+    "order": 2,
+    "active": false,
+    "description": "Stitch patterns can can easily be hand selected on a non-patterning machine."
+  },
+  {
+    "id": 3,
+    "title": "8 stitch repeats",
+    "thumbnail": "8 stitch thumb.png",
+    "order": 3,
+    "active": true,
+    "description": "Useful with the LK150 using the  <a data-vimeoid=\"746202286\" class=\"subvideopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Needle Beetle</a> (a device for quickly selecting needles on manual machines)  "
+  },
+  {
+    "id": 4,
+    "title": "Holiday",
+    "thumbnail": "snowflake_thumb.png",
+    "order": 4,
+    "active": true,
+    "description": ""
+  },
+  {
+    "id": 5,
+    "title": "Passap",
+    "thumbnail": "PASSAP_THUMB.png",
+    "order": 5,
+    "active": false,
+    "description": ""
+  },
+  {
+    "id": 6,
+    "title": "Butterfly",
+    "thumbnail": "butterfly2.jpg",
+    "order": 6,
+    "active": true,
+    "description": ""
+  },
+  {
+    "id": 7,
+    "title": "Animals",
+    "thumbnail": "cow_thumb.jpg",
+    "order": 7,
+    "active": true,
+    "description": ""
+  },
+  {
+    "id": 8,
+    "title": "Flowers",
+    "thumbnail": null,
+    "order": 8,
+    "active": false,
+    "description": ""
+  },
+  {
+    "id": 9,
+    "title": "Diagonals",
+    "thumbnail": "diagonal_thumb.gif",
+    "order": 9,
+    "active": true,
+    "description": ""
+  },
+  {
+    "id": 10,
+    "title": "Miscellaneous",
+    "thumbnail": "cable_example.jpg",
+    "order": 10,
+    "active": true,
+    "description": ""
+  },
+  {
+    "id": 11,
+    "title": "Lace-Like",
+    "thumbnail": "thumb_466b_tl.jpg",
+    "order": 11,
+    "active": true,
+    "description": "Openwork stitch pattern without stitch transfers or lace carriage"
+  },
+  {
+    "id": 12,
+    "title": "Ribber",
+    "thumbnail": "slipped_rib6.jpg",
+    "order": 12,
+    "active": false,
+    "description": ""
+  },
+  {
+    "id": 13,
+    "title": "Ribber Pintuck",
+    "thumbnail": "thumb_pintuck_lattice_1.jpg",
+    "order": 13,
+    "active": true,
+    "description": "Plain or fancy, add amazing texture to your knitting."
+  },
+  {
+    "id": 14,
+    "title": "Tuck Rib",
+    "thumbnail": "swatch1.png",
+    "order": 14,
+    "active": true,
+    "description": "Tuck while using the ribber for unique textures"
+  }
+]

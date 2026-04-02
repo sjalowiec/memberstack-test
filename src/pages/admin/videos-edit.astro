@@ -1,0 +1,618 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Edit Video | Knit it Now"
+  description="Create or edit a catalog video (videos-public.json)"
+  skipGlobalHyvor={true}
+  bodyClass="videos-admin-body help-hub-admin-body"
+>
+  <main class="help-hub-admin">
+    <header class="help-hub-admin__head">
+      <h1 class="help-hub-admin__title">Video Editor</h1>
+      <p class="help-hub-admin__sub">
+        <a href="/admin/videos-admin">Back to videos list</a>
+        ·
+        <a href="/admin/lessons-admin">Lessons admin</a> uses <code>videoSlug</code> matching the <strong>Key</strong> (slug, or <code>content_id</code> if slug is empty).
+      </p>
+    </header>
+
+    <p id="videos-edit-status" class="help-hub-admin__status" aria-live="polite"></p>
+
+    <section class="admin-panel help-hub-admin__form-panel" aria-labelledby="form-heading">
+      <h2 id="form-heading">Edit video</h2>
+      <p id="videos-edit-mode" class="help-hub-admin__mode">Loading…</p>
+
+      <form id="videos-edit-form" class="help-hub-admin__form" autocomplete="off">
+        <div class="field-grid">
+          <label>
+            <span>content_id <em class="req">*</em></span>
+            <input type="text" name="content_id" id="field-content_id" required />
+            <span class="field-hint">String or number (e.g. 249 or 249-1).</span>
+          </label>
+          <label class="field-full">
+            <span>slug <em class="req">*</em></span>
+            <input type="text" name="slug" id="field-slug" required />
+          </label>
+          <label class="field-full">
+            <span>title <em class="req">*</em></span>
+            <input type="text" name="title" id="field-title" required />
+          </label>
+          <label class="field-full">
+            <span>description</span>
+            <textarea name="description" id="field-description" rows="4"></textarea>
+          </label>
+          <label>
+            <span>access_level</span>
+            <input type="text" name="access_level" id="field-access_level" placeholder="member" />
+          </label>
+          <label class="field-full">
+            <span>posterUrl</span>
+            <input type="text" name="posterUrl" id="field-posterUrl" />
+          </label>
+          <label>
+            <span>category</span>
+            <input type="text" name="category" id="field-category" />
+          </label>
+          <label>
+            <span>subcategory</span>
+            <input type="text" name="subcategory" id="field-subcategory" />
+          </label>
+          <label>
+            <span>vimeo_id <em class="req">*</em></span>
+            <input type="number" name="vimeo_id" id="field-vimeo_id" required min="1" step="1" />
+          </label>
+          <label class="checkbox-label field-full">
+            <input type="checkbox" name="isTipOfWeek" id="field-isTipOfWeek" />
+            <span>isTipOfWeek</span>
+          </label>
+          <label>
+            <span>videoType</span>
+            <select name="videoType" id="field-videoType">
+              <option value="">(not set)</option>
+              <option value="full">full</option>
+              <option value="clip">clip</option>
+            </select>
+          </label>
+          <label>
+            <span>sourceVideoId</span>
+            <input type="text" name="sourceVideoId" id="field-sourceVideoId" placeholder="Parent content_id for clips" />
+          </label>
+          <label class="field-full">
+            <span>clips (one content_id per line)</span>
+            <textarea name="clips" id="field-clips" rows="3" placeholder="249-1&#10;249-2"></textarea>
+          </label>
+          <label class="field-full">
+            <span>transcript_json (JSON, optional)</span>
+            <textarea name="transcript_json" id="field-transcript_json" rows="4" placeholder='{}'></textarea>
+            <span class="field-hint">Leave empty until transcript pipeline is ready. Must be valid JSON if set.</span>
+          </label>
+          <label class="field-full">
+            <span>vtt_url</span>
+            <input type="text" name="vtt_url" id="field-vtt_url" placeholder="https://…" />
+          </label>
+          <label class="checkbox-label field-full">
+            <input type="checkbox" name="search_ready" id="field-search_ready" />
+            <span>search_ready (future indexing)</span>
+          </label>
+        </div>
+
+        <div class="help-hub-admin__form-actions help-hub-admin__form-actions--sticky">
+          <button type="button" id="btn-save-video" class="kbm-btn kbm-btn-primary">Save</button>
+          <button type="button" id="btn-cancel-video" class="kbm-btn kbm-btn-outline">Cancel</button>
+          <button type="button" id="btn-delete-video" class="kbm-btn kbm-btn-accent" hidden>Delete</button>
+          <button type="button" id="btn-refresh-video-json-preview" class="kbm-btn kbm-btn-outline">Refresh JSON preview</button>
+        </div>
+      </form>
+
+      <div class="help-hub-admin__preview-wrap">
+        <h3 class="help-hub-admin__preview-title">Current record (preview)</h3>
+        <pre id="videos-json-preview" class="help-hub-admin__preview" aria-live="polite"></pre>
+      </div>
+    </section>
+  </main>
+
+  <style>
+    :global(body.help-hub-admin-body) {
+      margin: 0;
+    }
+    .help-hub-admin {
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 1rem 1.25rem 2rem;
+      box-sizing: border-box;
+    }
+    .help-hub-admin__head {
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .help-hub-admin__title {
+      margin: 0 0 0.35rem 0;
+      font-size: 1.65rem;
+      color: #243015;
+    }
+    .help-hub-admin__sub {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #475569;
+    }
+    .help-hub-admin__sub code {
+      font-size: 0.88em;
+      background: #f1f5f9;
+      padding: 0.12rem 0.35rem;
+      border-radius: 4px;
+    }
+    .help-hub-admin__status {
+      min-height: 1.4em;
+      margin: 0 0 0.75rem 0;
+      font-size: 0.95rem;
+      color: #374151;
+    }
+    .help-hub-admin__status.is-error {
+      color: #b91c1c;
+      font-weight: 600;
+    }
+    .help-hub-admin__status.is-ok {
+      color: #166534;
+    }
+    .admin-panel {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 0.85rem;
+    }
+    .help-hub-admin__mode {
+      margin: 0 0 0.75rem 0;
+      padding: 0.5rem 0.65rem;
+      border-radius: 8px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      font-weight: 600;
+      color: #243015;
+      font-size: 0.95rem;
+    }
+    .help-hub-admin__form .field-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.65rem;
+    }
+    @media (min-width: 720px) {
+      .help-hub-admin__form .field-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .field-full {
+      grid-column: 1 / -1;
+    }
+    .help-hub-admin__form label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .checkbox-label {
+      flex-direction: row !important;
+      align-items: center;
+      gap: 0.5rem !important;
+    }
+    .checkbox-label input {
+      width: auto !important;
+    }
+    .help-hub-admin__form label > span:first-of-type {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #2e3a18;
+    }
+    .req {
+      color: #b91c1c;
+      font-style: normal;
+    }
+    .field-hint {
+      font-size: 0.82rem;
+      font-weight: 400;
+      color: #64748b;
+      line-height: 1.45;
+    }
+    .help-hub-admin__form input,
+    .help-hub-admin__form select,
+    .help-hub-admin__form textarea {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.55rem 0.65rem;
+      font: inherit;
+      color: #111827;
+      background: #fff;
+      box-sizing: border-box;
+    }
+    .help-hub-admin__form textarea {
+      resize: vertical;
+      min-height: 72px;
+    }
+    .help-hub-admin__form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.1rem;
+    }
+    .help-hub-admin__form-actions--sticky {
+      position: sticky;
+      bottom: 0;
+      z-index: 8;
+      padding: 0.6rem 0;
+      margin-top: 1rem;
+      background: linear-gradient(to top, #fff 78%, rgba(255, 255, 255, 0));
+      border-top: 1px solid #e5e7eb;
+    }
+    .help-hub-admin__preview-wrap {
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #e5e7eb;
+    }
+    .help-hub-admin__preview-title {
+      margin: 0 0 0.5rem 0;
+      font-size: 1rem;
+      color: #243015;
+    }
+    .help-hub-admin__preview {
+      margin: 0;
+      padding: 0.85rem;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #e2e8f0;
+      overflow: auto;
+      font-size: 0.78rem;
+      line-height: 1.45;
+      max-height: 360px;
+    }
+  </style>
+
+  <script>
+    const API_BASE = "/api/admin/videos";
+    type VideoRow = Record<string, unknown>;
+
+    let videos: VideoRow[] = [];
+    let baseline: VideoRow | null = null;
+    /** Stable key (slug or content_id) when editing; null when creating */
+    let editingKey: string | null = null;
+
+    const params = new URLSearchParams(window.location.search);
+    const keyParam = params.get("key")?.trim() ?? "";
+
+    const statusEl = document.getElementById("videos-edit-status");
+    const modeEl = document.getElementById("videos-edit-mode");
+    const form = document.getElementById("videos-edit-form") as HTMLFormElement | null;
+    const btnDelete = document.getElementById("btn-delete-video") as HTMLButtonElement | null;
+    const jsonPreviewEl = document.getElementById("videos-json-preview");
+
+    function stableVideoKey(v: VideoRow): string {
+      const s = typeof v.slug === "string" ? v.slug.trim() : "";
+      if (s) return s;
+      return String(v.content_id ?? "");
+    }
+
+    function setStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral") {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.classList.toggle("is-error", kind === "err");
+      statusEl.classList.toggle("is-ok", kind === "ok");
+    }
+
+    function deepClone<T>(x: T): T {
+      return JSON.parse(JSON.stringify(x)) as T;
+    }
+
+    function textVal(name: string) {
+      const el = form?.elements?.namedItem(name);
+      return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement
+        ? el.value.trim()
+        : "";
+    }
+
+    function setField(name: string, value: string) {
+      const el = form?.elements?.namedItem(name);
+      if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) {
+        el.value = value;
+      }
+    }
+
+    function setCheckbox(name: string, checked: boolean) {
+      const el = form?.elements?.namedItem(name);
+      if (el instanceof HTMLInputElement && el.type === "checkbox") el.checked = checked;
+    }
+
+    function linesFromTextarea(name: string): string[] {
+      const el = form?.elements?.namedItem(name);
+      if (!(el instanceof HTMLTextAreaElement)) return [];
+      return el.value
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
+    }
+
+    function linesToText(lines: unknown): string {
+      return Array.isArray(lines) ? lines.map((x) => String(x)).join("\n") : "";
+    }
+
+    function parseContentIdField(raw: string): string | number {
+      const t = raw.trim();
+      if (!t) return "";
+      if (/^-?\d+$/.test(t)) {
+        const n = parseInt(t, 10);
+        if (Number.isFinite(n)) return n;
+      }
+      return t;
+    }
+
+    function refreshJsonPreview() {
+      if (!jsonPreviewEl) return;
+      const row = buildVideoFromForm({ silent: true });
+      if (row) jsonPreviewEl.textContent = JSON.stringify(row, null, 2);
+      else jsonPreviewEl.textContent = "// Fix validation errors to see full JSON.";
+    }
+
+    function buildVideoFromForm(options?: { silent?: boolean }): VideoRow | null {
+      const silent = options?.silent === true;
+      const cidRaw = textVal("content_id");
+      const content_id = parseContentIdField(cidRaw);
+      if (content_id === "") {
+        if (!silent) setStatus("content_id is required.", "err");
+        return null;
+      }
+
+      const slug = textVal("slug");
+      const title = textVal("title");
+      if (!slug || !title) {
+        if (!silent) setStatus("slug and title are required.", "err");
+        return null;
+      }
+
+      const vimeoRaw = textVal("vimeo_id");
+      const vimeo_id = parseInt(vimeoRaw, 10);
+      if (!Number.isFinite(vimeo_id)) {
+        if (!silent) setStatus("vimeo_id must be a number.", "err");
+        return null;
+      }
+
+      const transcriptRaw = textVal("transcript_json");
+      let transcript_json: unknown = undefined;
+      if (transcriptRaw) {
+        try {
+          transcript_json = JSON.parse(transcriptRaw) as unknown;
+        } catch {
+          if (!silent) setStatus("transcript_json must be valid JSON.", "err");
+          return null;
+        }
+      }
+
+      const base = baseline ? deepClone(baseline) : {};
+      const row: VideoRow = { ...base };
+
+      row.content_id = content_id;
+      row.slug = slug;
+      row.title = title;
+      row.vimeo_id = vimeo_id;
+
+      const desc = textVal("description");
+      if (desc) row.description = desc;
+      else delete row.description;
+
+      const al = textVal("access_level");
+      if (al) row.access_level = al;
+      else delete row.access_level;
+
+      const poster = textVal("posterUrl");
+      if (poster) row.posterUrl = poster;
+      else delete row.posterUrl;
+
+      const cat = textVal("category");
+      if (cat) row.category = cat;
+      else delete row.category;
+
+      const sub = textVal("subcategory");
+      if (sub) row.subcategory = sub;
+      else delete row.subcategory;
+
+      const vt = textVal("videoType");
+      if (vt) row.videoType = vt;
+      else delete row.videoType;
+
+      row.isTipOfWeek = Boolean(
+        (form?.elements?.namedItem("isTipOfWeek") as HTMLInputElement | null)?.checked
+      );
+
+      const src = textVal("sourceVideoId");
+      if (src) {
+        const p = parseContentIdField(src);
+        if (p !== "") row.sourceVideoId = p;
+        else delete row.sourceVideoId;
+      } else delete row.sourceVideoId;
+
+      const clipLines = linesFromTextarea("clips");
+      if (clipLines.length) row.clips = clipLines;
+      else delete row.clips;
+
+      if (transcript_json !== undefined) row.transcript_json = transcript_json;
+      else delete row.transcript_json;
+
+      const vtt = textVal("vtt_url");
+      if (vtt) row.vtt_url = vtt;
+      else delete row.vtt_url;
+
+      row.search_ready = Boolean(
+        (form?.elements?.namedItem("search_ready") as HTMLInputElement | null)?.checked
+      );
+
+      return row;
+    }
+
+    function loadRowToForm(row: VideoRow) {
+      baseline = deepClone(row);
+      editingKey = stableVideoKey(row);
+
+      setField("content_id", String(row.content_id ?? ""));
+      setField("slug", typeof row.slug === "string" ? row.slug : "");
+      setField("title", typeof row.title === "string" ? row.title : "");
+      setField("description", typeof row.description === "string" ? row.description : "");
+      setField("access_level", typeof row.access_level === "string" ? row.access_level : "");
+      setField("posterUrl", typeof row.posterUrl === "string" ? row.posterUrl : "");
+      setField("category", typeof row.category === "string" ? row.category : "");
+      setField("subcategory", typeof row.subcategory === "string" ? row.subcategory : "");
+      setField("vimeo_id", row.vimeo_id !== undefined ? String(row.vimeo_id) : "");
+      setCheckbox("isTipOfWeek", Boolean(row.isTipOfWeek));
+      setField("videoType", typeof row.videoType === "string" ? row.videoType : "");
+      setField(
+        "sourceVideoId",
+        row.sourceVideoId !== undefined && row.sourceVideoId !== null ? String(row.sourceVideoId) : ""
+      );
+      setField("clips", linesToText(row.clips));
+      const tj = row.transcript_json;
+      setField("transcript_json", tj !== undefined ? JSON.stringify(tj, null, 2) : "");
+      setField("vtt_url", typeof row.vtt_url === "string" ? row.vtt_url : "");
+      setCheckbox("search_ready", Boolean(row.search_ready));
+
+      if (modeEl) modeEl.textContent = `Editing: ${editingKey}`;
+      if (btnDelete) btnDelete.hidden = false;
+      refreshJsonPreview();
+    }
+
+    function clearFormNew() {
+      baseline = null;
+      editingKey = null;
+      setField("content_id", "");
+      setField("slug", "");
+      setField("title", "");
+      setField("description", "");
+      setField("access_level", "member");
+      setField("posterUrl", "");
+      setField("category", "");
+      setField("subcategory", "");
+      setField("vimeo_id", "");
+      setCheckbox("isTipOfWeek", false);
+      setField("videoType", "");
+      setField("sourceVideoId", "");
+      setField("clips", "");
+      setField("transcript_json", "");
+      setField("vtt_url", "");
+      setCheckbox("search_ready", false);
+      if (modeEl) modeEl.textContent = "New video — fill required fields and save";
+      if (btnDelete) btnDelete.hidden = true;
+      refreshJsonPreview();
+    }
+
+    async function postVideos(next: VideoRow[]) {
+      const res = await fetch(API_BASE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(next),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.ok || !Array.isArray(data.videos)) {
+        setStatus(data?.error || `Save failed (${res.status})`, "err");
+        return false;
+      }
+      videos = data.videos as VideoRow[];
+      return true;
+    }
+
+    async function save() {
+      const row = buildVideoFromForm();
+      if (!row) return;
+      const newKey = stableVideoKey(row);
+      if (!newKey) {
+        setStatus("Could not derive key from slug/content_id.", "err");
+        return;
+      }
+
+      let next = [...videos];
+      if (editingKey !== null) {
+        const idx = next.findIndex((v) => stableVideoKey(v) === editingKey);
+        if (idx < 0) {
+          setStatus("Original row not found; reload the page.", "err");
+          return;
+        }
+        if (newKey !== editingKey) {
+          const clash = next.some((v, i) => i !== idx && stableVideoKey(v) === newKey);
+          if (clash) {
+            setStatus(`Another video already uses key "${newKey}".`, "err");
+            return;
+          }
+        }
+        next[idx] = row;
+      } else {
+        const clash = next.some((v) => stableVideoKey(v) === newKey);
+        if (clash) {
+          setStatus(`A video with key "${newKey}" already exists. Edit that row or change slug/content_id.`, "err");
+          return;
+        }
+        next.push(row);
+      }
+
+      setStatus("Saving…");
+      const ok = await postVideos(next);
+      if (!ok) return;
+      setStatus("Saved.", "ok");
+      baseline = deepClone(row);
+      editingKey = newKey;
+      if (btnDelete) btnDelete.hidden = false;
+      if (modeEl) modeEl.textContent = `Editing: ${editingKey}`;
+      const url = new URL(window.location.href);
+      url.searchParams.set("key", newKey);
+      window.history.replaceState({}, "", url.toString());
+      refreshJsonPreview();
+    }
+
+    async function deleteRow() {
+      if (editingKey === null) return;
+      if (!confirm(`Delete video "${editingKey}" from the catalog? This cannot be undone.`)) return;
+      const next = videos.filter((v) => stableVideoKey(v) !== editingKey);
+      setStatus("Deleting…");
+      const ok = await postVideos(next);
+      if (!ok) return;
+      setStatus("Deleted.", "ok");
+      window.location.href = "/admin/videos-admin";
+    }
+
+    async function init() {
+      setStatus("Loading catalog…");
+      try {
+        const res = await fetch(API_BASE);
+        const data = await res.json();
+        if (!res.ok || !data?.ok || !Array.isArray(data.videos)) {
+          setStatus(data?.error || "Load failed.", "err");
+          if (modeEl) modeEl.textContent = "Error";
+          return;
+        }
+        videos = data.videos as VideoRow[];
+      } catch {
+        setStatus("Network error.", "err");
+        if (modeEl) modeEl.textContent = "Error";
+        return;
+      }
+
+      if (keyParam) {
+        const row = videos.find((v) => stableVideoKey(v) === keyParam);
+        if (row) loadRowToForm(row);
+        else {
+          clearFormNew();
+          setStatus(`No video found for key "${keyParam}".`, "err");
+        }
+      } else {
+        clearFormNew();
+      }
+
+      document.getElementById("btn-save-video")?.addEventListener("click", () => void save());
+      document.getElementById("btn-cancel-video")?.addEventListener("click", () => {
+        window.location.href = "/admin/videos-admin";
+      });
+      btnDelete?.addEventListener("click", () => void deleteRow());
+      document.getElementById("btn-refresh-video-json-preview")?.addEventListener("click", refreshJsonPreview);
+      form?.addEventListener("input", refreshJsonPreview);
+      form?.addEventListener("change", refreshJsonPreview);
+    }
+
+    init();
+  </script>
+</BaseLayout>

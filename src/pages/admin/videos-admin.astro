@@ -1,0 +1,352 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Videos Admin | Knit it Now"
+  description="Browse and manage the public video catalog (videos-public.json)"
+  skipGlobalHyvor={true}
+  bodyClass="videos-admin-body help-hub-admin-body"
+>
+  <Fragment slot="head">
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.min.js"></script>
+  </Fragment>
+  <main class="help-hub-admin">
+    <header class="help-hub-admin__head">
+      <h1 class="help-hub-admin__title">Videos Admin</h1>
+      <p class="help-hub-admin__sub">
+        Data lives in <code>src/data/videos-public.json</code> and is updated via <code>/api/admin/videos</code>.
+        Lessons pick videos by stable key (<code>slug</code> or <code>content_id</code>) in the lesson editor (<code>videoSlug</code>).
+      </p>
+    </header>
+
+    <p id="videos-admin-status" class="help-hub-admin__status" aria-live="polite"></p>
+
+    <div class="help-hub-admin__toolbar">
+      <a href="/admin/videos-edit" class="kbm-btn kbm-btn-primary">+ New video</a>
+      <p class="videos-admin__sub-nav">
+        <a href="/admin/lessons-admin">Lessons admin</a>
+        ·
+        <a href="/admin/tips-admin">Help Hub tips</a>
+      </p>
+    </div>
+
+    <section class="admin-panel help-hub-admin__table-panel" aria-labelledby="list-heading">
+      <h2 id="list-heading" class="visually-hidden">All videos</h2>
+      <p id="videos-admin-loading" class="help-hub-admin__loading">Loading…</p>
+      <div id="videos-table-wrap" class="help-hub-admin__table-wrap" hidden>
+        <table id="videos-admin-table" class="help-hub-admin__table">
+          <thead>
+            <tr>
+              <th scope="col">Key</th>
+              <th scope="col">content_id</th>
+              <th scope="col">Title</th>
+              <th scope="col">vimeo_id</th>
+              <th scope="col">Category</th>
+              <th scope="col" class="help-hub-admin__th-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="videos-table-body"></tbody>
+        </table>
+      </div>
+      <p id="videos-admin-empty" class="help-hub-admin__empty" hidden>No videos in catalog.</p>
+    </section>
+  </main>
+
+  <style>
+    :global(body.help-hub-admin-body) {
+      margin: 0;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .help-hub-admin {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 1.25rem 1.5rem 3rem;
+      box-sizing: border-box;
+    }
+
+    .help-hub-admin__head {
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .help-hub-admin__title {
+      margin: 0 0 0.35rem 0;
+      font-size: 1.65rem;
+      color: #243015;
+    }
+
+    .help-hub-admin__sub {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #475569;
+      max-width: 56rem;
+    }
+
+    .help-hub-admin__sub code {
+      font-size: 0.88em;
+      background: #f1f5f9;
+      padding: 0.12rem 0.35rem;
+      border-radius: 4px;
+    }
+
+    .help-hub-admin__status {
+      min-height: 1.4em;
+      margin: 0 0 1rem 0;
+      font-size: 0.95rem;
+      color: #374151;
+    }
+
+    .help-hub-admin__status.is-error {
+      color: #b91c1c;
+      font-weight: 600;
+    }
+
+    .help-hub-admin__status.is-ok {
+      color: #166534;
+    }
+
+    .help-hub-admin__toolbar {
+      margin-bottom: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem 1rem;
+    }
+
+    .videos-admin__sub-nav {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    .admin-panel {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .help-hub-admin__loading {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    .help-hub-admin__empty {
+      margin: 0;
+      color: #64748b;
+    }
+
+    .help-hub-admin__table-wrap {
+      overflow-x: auto;
+    }
+
+    .help-hub-admin__table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    .help-hub-admin__table th,
+    .help-hub-admin__table td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0.65rem 0.5rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .help-hub-admin__table th {
+      font-weight: 700;
+      color: #243015;
+      background: #f8fafc;
+    }
+
+    .help-hub-admin__table tbody tr:hover {
+      background: #fafafa;
+    }
+
+    .help-hub-admin__th-actions {
+      width: 1%;
+    }
+
+    .help-hub-admin__table thead th {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .help-hub-admin__table thead th.help-hub-admin__th-actions {
+      cursor: default;
+      user-select: auto;
+    }
+
+    .help-hub-admin__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      align-items: center;
+    }
+
+    .help-hub-admin__actions .kbm-btn {
+      font-size: 0.85rem;
+      padding: 0.35rem 0.6rem;
+    }
+
+    .col-title {
+      font-weight: 600;
+      color: #111827;
+      max-width: 22rem;
+    }
+
+    .col-key code {
+      font-size: 0.85em;
+      background: #f1f5f9;
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      word-break: break-all;
+    }
+  </style>
+
+  <script>
+    const API_BASE = "/api/admin/videos";
+
+    type VideoRow = Record<string, unknown>;
+
+    let videos: VideoRow[] = [];
+
+    function stableVideoKey(v: VideoRow): string {
+      const s = typeof v.slug === "string" ? v.slug.trim() : "";
+      if (s) return s;
+      return String(v.content_id ?? "");
+    }
+
+    const statusEl = document.getElementById("videos-admin-status");
+    const loadingEl = document.getElementById("videos-admin-loading");
+    const tableWrapEl = document.getElementById("videos-table-wrap");
+    const tbodyEl = document.getElementById("videos-table-body");
+    const emptyEl = document.getElementById("videos-admin-empty");
+
+    function setStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral") {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.classList.toggle("is-error", kind === "err");
+      statusEl.classList.toggle("is-ok", kind === "ok");
+    }
+
+    let tableSorterInited = false;
+
+    function refreshTableSorter() {
+      const w = window as unknown as {
+        jQuery?: (sel: string) => {
+          length: number;
+          tablesorter: (opts?: object) => unknown;
+          trigger: (name: string, ...args: unknown[]) => unknown;
+        };
+      };
+      const $ = w.jQuery;
+      if (!$) return;
+      const $tab = $("#videos-admin-table");
+      if ($tab.length === 0) return;
+      if (videos.length === 0) {
+        if (tableSorterInited) {
+          $tab.trigger("destroy");
+          tableSorterInited = false;
+        }
+        return;
+      }
+      if (!tableSorterInited) {
+        $tab.tablesorter({
+          headers: {
+            5: { sorter: false },
+          },
+        });
+        tableSorterInited = true;
+      } else {
+        $tab.trigger("update");
+      }
+    }
+
+    function asString(v: unknown) {
+      return v === null || v === undefined ? "" : String(v);
+    }
+
+    function renderTable() {
+      if (!tbodyEl || !tableWrapEl || !emptyEl || !loadingEl) return;
+      loadingEl.hidden = true;
+      if (videos.length === 0) {
+        tableWrapEl.hidden = true;
+        emptyEl.hidden = false;
+        tbodyEl.innerHTML = "";
+        refreshTableSorter();
+        return;
+      }
+      emptyEl.hidden = true;
+      tableWrapEl.hidden = false;
+      const rows = videos
+        .map((v) => ({ v, key: stableVideoKey(v) }))
+        .filter((x) => x.key.length > 0)
+        .sort((a, b) => a.key.localeCompare(b.key, undefined, { sensitivity: "base" }));
+
+      tbodyEl.innerHTML = rows
+        .map(({ v, key }) => {
+          const vid = v.vimeo_id;
+          const idStr =
+            typeof vid === "number" && Number.isFinite(vid) ? String(Math.trunc(vid)) : asString(vid);
+          const href = `/admin/videos-edit?key=${encodeURIComponent(key)}`;
+          return `<tr>
+            <td class="col-key"><code>${escapeHtml(key)}</code></td>
+            <td>${escapeHtml(asString(v.content_id))}</td>
+            <td class="col-title">${escapeHtml(asString(v.title))}</td>
+            <td>${escapeHtml(idStr)}</td>
+            <td>${escapeHtml(asString(v.category))}</td>
+            <td class="help-hub-admin__actions">
+              <a class="kbm-btn kbm-btn-outline" href="${href}">Edit</a>
+            </td>
+          </tr>`;
+        })
+        .join("");
+      refreshTableSorter();
+    }
+
+    function escapeHtml(s: string) {
+      return s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    async function load() {
+      setStatus("Loading catalog…");
+      try {
+        const res = await fetch(API_BASE);
+        const data = await res.json();
+        if (!res.ok || !data?.ok || !Array.isArray(data.videos)) {
+          setStatus(data?.error || `Load failed (${res.status})`, "err");
+          return;
+        }
+        videos = data.videos as VideoRow[];
+        setStatus(`${videos.length} video(s) loaded.`, "ok");
+        renderTable();
+      } catch {
+        setStatus("Network error loading videos.", "err");
+      }
+    }
+
+    load();
+  </script>
+</BaseLayout>

@@ -1,0 +1,849 @@
+---
+export const prerender = true;
+
+import Layout from "../../layouts/Layout.astro";
+import FloatingInput from "../../components/tools/FloatingInput.astro";
+import techniquesJson from "../../data/stitch/techniques.json" assert { type: "json" };
+import { getStitchCatalogItems } from "../../lib/stitch-data";
+
+const items = getStitchCatalogItems();
+
+type TechRow = {
+  id: number;
+  title?: string;
+  order?: number;
+  active?: boolean;
+};
+
+const techniques = techniquesJson as TechRow[];
+
+function buildTechniqueOptions() {
+  const byId = new Map(
+    techniques.filter((t) => t.active !== false).map((t) => [t.id, t])
+  );
+  const seen = new Set<number>();
+  const opts: { id: number; title: string; order: number }[] = [];
+  for (const it of items) {
+    if (it.techniqueId === 0) continue;
+    if (seen.has(it.techniqueId)) continue;
+    seen.add(it.techniqueId);
+    const t = byId.get(it.techniqueId);
+    opts.push({
+      id: it.techniqueId,
+      title: (t?.title || it.techniqueTitle || `Technique ${it.techniqueId}`).trim(),
+      order: t?.order ?? 999,
+    });
+  }
+  opts.sort(
+    (a, b) => a.order - b.order || a.title.localeCompare(b.title, undefined, { sensitivity: "base" })
+  );
+  return opts;
+}
+
+const techniqueOptions = buildTechniqueOptions();
+
+function searchBlob(it: (typeof items)[0]): string {
+  const parts = [
+    it.title,
+    it.techniqueTitle,
+    it.stitchMultiple,
+    ...it.categoryTitles,
+    it.punchcard ? "punchcard punch card" : "",
+    it.lk150 ? "lk150 lk-150 manual" : "",
+  ];
+  return parts.join(" ").toLowerCase();
+}
+
+const pageDescription =
+  "Browse machine knitting stitch patterns—swatches, punchcard layouts, DesignaKnit files, and print-ready references.";
+---
+
+<Layout title="Stitch Library" description={pageDescription} bodyClass="page--tight-header">
+  <div class="page-wrap stitch-cat">
+    <header class="stitch-cat__intro">
+      <div class="stitch-cat__header-row">
+        <div class="stitch-cat__title-block">
+          <h1>Stitch Library</h1>
+        </div>
+        <div class="stitch-cat__search-slot">
+          <FloatingInput
+            id="stitch-cat-search"
+            name="q"
+            type="text"
+            inputmode="search"
+            enterkeyhint="search"
+            role="searchbox"
+            label="Search by title, KIN, technique, repeat, or machine"
+            autocomplete="off"
+            spellcheck={false}
+            dataAttrs={{ "data-stitch-cat-search": "" }}
+          />
+        </div>
+      </div>
+      <div class="stitch-cat__dek-row">
+        <p class="stitch-cat__dek">
+          Everything you need to knit each stitch without guesswork - punchcard layouts, DesignaKnit files, and
+          print-ready references.
+        </p>
+      </div>
+    </header>
+
+    <div class="stitch-cat__filters">
+      <div class="stitch-cat__controls">
+        <div class="stitch-cat__row stitch-cat__row--machine">
+          <div
+            class="stitch-cat__machine-list"
+            role="group"
+            aria-label="Machine compatibility"
+            data-stitch-cat-machine-group
+          >
+            <button
+              type="button"
+              class="stitch-cat__machine-btn is-active"
+              data-stitch-cat-machine=""
+              data-value="all"
+              aria-pressed="true"
+            >
+              All machines
+            </button>
+            <button
+              type="button"
+              class="stitch-cat__machine-btn"
+              data-stitch-cat-machine
+              data-value="punchcard"
+              aria-pressed="false"
+            >
+              Punchcard
+            </button>
+            <button
+              type="button"
+              class="stitch-cat__machine-btn"
+              data-stitch-cat-machine
+              data-value="lk150"
+              aria-pressed="false"
+            >
+              LK150 friendly
+            </button>
+          </div>
+        </div>
+
+        <div class="stitch-cat__row stitch-cat__row--techniques">
+          <div
+            class="stitch-cat__tech-list"
+            role="group"
+            aria-label="Technique"
+            data-stitch-cat-technique-group
+          >
+            <button
+              type="button"
+              class="stitch-cat__tech-btn is-active"
+              data-stitch-cat-technique=""
+              data-value=""
+              aria-pressed="true"
+            >
+              All
+            </button>
+            {
+              techniqueOptions.map((t) => (
+                <button
+                  type="button"
+                  class="stitch-cat__tech-btn"
+                  data-stitch-cat-technique
+                  data-value={String(t.id)}
+                  aria-pressed="false"
+                >
+                  {t.title}
+                </button>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stitch-cat__empty" hidden data-stitch-cat-empty>
+      <h2>No patterns matched your search</h2>
+      <p class="stitch-cat__empty-copy">Try another keyword, clear filters, or pick a different technique.</p>
+      <button type="button" class="stitch-cat__reset" data-stitch-cat-reset>Clear filters</button>
+    </div>
+
+    <div class="stitch-cat__grid" id="stitch-cat-grid" data-stitch-cat-grid>
+      {
+        items.map((it) => (
+          <a
+            href={`/stitch/${it.id}`}
+            class="stitch-cat__tile"
+            data-stitch-tile
+            data-id={String(it.id)}
+            data-technique-id={String(it.techniqueId)}
+            data-category-ids={it.categoryIds.join(",")}
+            data-punchcard={it.punchcard ? "1" : "0"}
+            data-lk150={it.lk150 ? "1" : "0"}
+            data-date-ms={String(it.dateMs)}
+            data-sort-title={it.title.toLowerCase()}
+            data-technique-sort={it.techniqueTitle.toLowerCase()}
+            data-search={searchBlob(it)}
+          >
+            <div class="stitch-cat__figure">
+              {it.swatchSrc ? (
+                <img
+                  class="stitch-cat__img"
+                  src={it.swatchSrc}
+                  alt=""
+                  width={640}
+                  height={640}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <div class="stitch-cat__placeholder" aria-hidden="true" />
+              )}
+            </div>
+            <div class="stitch-cat__caption">
+              <span class="stitch-cat__tile-title">{it.title}</span>
+              {it.techniqueTitle || it.stitchMultiple ? (
+                <span class="stitch-cat__tile-meta">
+                  {[it.techniqueTitle, it.stitchMultiple].filter(Boolean).join(" · ")}
+                </span>
+              ) : null}
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+
+  <button
+    type="button"
+    class="stitch-cat__to-top"
+    id="stitch-cat-to-top"
+    hidden
+    aria-label="Back to top"
+  >
+    Back to top
+  </button>
+
+  <script is:inline>
+    (function () {
+      var grid = document.querySelector("[data-stitch-cat-grid]");
+      var searchEl = document.querySelector("[data-stitch-cat-search]");
+      var emptyEl = document.querySelector("[data-stitch-cat-empty]");
+      var resetBtn = document.querySelector("[data-stitch-cat-reset]");
+      var techniqueGroup = document.querySelector("[data-stitch-cat-technique-group]");
+      var machineGroup = document.querySelector("[data-stitch-cat-machine-group]");
+
+      if (!grid || !searchEl || !emptyEl) return;
+
+      /** When set (from ?category=id), only tiles containing that category id are shown. */
+      var urlCategory = "";
+
+      function readCategoryFromUrl() {
+        try {
+          var p = new URLSearchParams(window.location.search);
+          urlCategory = (p.get("category") || "").trim();
+        } catch (e) {
+          urlCategory = "";
+        }
+      }
+
+      readCategoryFromUrl();
+
+      function tiles() {
+        return Array.prototype.slice.call(grid.querySelectorAll("[data-stitch-tile]"));
+      }
+
+      function machineMatch(el, mode) {
+        if (!mode || mode === "all") return true;
+        var pc = el.getAttribute("data-punchcard") === "1";
+        var lk = el.getAttribute("data-lk150") === "1";
+        if (mode === "punchcard") return pc;
+        if (mode === "lk150") return lk;
+        return true;
+      }
+
+      function techniqueMatch(el, tid) {
+        if (!tid) return true;
+        return el.getAttribute("data-technique-id") === tid;
+      }
+
+      function categoryMatch(el, cid) {
+        if (!cid) return true;
+        var raw = el.getAttribute("data-category-ids") || "";
+        var ids = raw.split(",").map(function (s) {
+          return s.trim();
+        }).filter(Boolean);
+        return ids.indexOf(cid) !== -1;
+      }
+
+      function searchMatch(el, q) {
+        if (!q) return true;
+        var blob = el.getAttribute("data-search") || "";
+        return blob.indexOf(q) !== -1;
+      }
+
+      /** Stable default: title / KIN (not exposed in UI). */
+      function sortByTitle(a, b) {
+        var ta = a.getAttribute("data-sort-title") || "";
+        var tb = b.getAttribute("data-sort-title") || "";
+        return ta.localeCompare(tb, undefined, { sensitivity: "base" });
+      }
+
+      function activeTechniqueId() {
+        if (!techniqueGroup) return "";
+        var active = techniqueGroup.querySelector("button.is-active");
+        return active ? active.getAttribute("data-value") || "" : "";
+      }
+
+      function activeMachineMode() {
+        if (!machineGroup) return "all";
+        var active = machineGroup.querySelector("button.is-active");
+        return active ? active.getAttribute("data-value") || "all" : "all";
+      }
+
+      function setMachinePill(value) {
+        if (!machineGroup) return;
+        var target = value || "all";
+        var buttons = machineGroup.querySelectorAll("[data-stitch-cat-machine], [data-stitch-cat-machine='']");
+        buttons.forEach(function (btn) {
+          var v = btn.getAttribute("data-value") || "all";
+          var on = v === target;
+          btn.classList.toggle("is-active", on);
+          btn.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+      }
+
+      function apply() {
+        var q = (searchEl.value || "").trim().toLowerCase();
+        var machineMode = activeMachineMode();
+        var tech = activeTechniqueId();
+
+        var list = tiles();
+        var visible = list.filter(function (el) {
+          return (
+            searchMatch(el, q) &&
+            techniqueMatch(el, tech) &&
+            machineMatch(el, machineMode) &&
+            categoryMatch(el, urlCategory)
+          );
+        });
+
+        visible.sort(sortByTitle);
+
+        var hidden = list.filter(function (el) {
+          return visible.indexOf(el) === -1;
+        });
+
+        visible.forEach(function (el) {
+          el.classList.remove("is-filtered-out");
+          grid.appendChild(el);
+        });
+        hidden.forEach(function (el) {
+          el.classList.add("is-filtered-out");
+          grid.appendChild(el);
+        });
+
+        var n = visible.length;
+        emptyEl.hidden = n !== 0;
+      }
+
+      function setTechniqueChip(value) {
+        if (!techniqueGroup) return;
+        var buttons = techniqueGroup.querySelectorAll("[data-stitch-cat-technique], [data-stitch-cat-technique='']");
+        buttons.forEach(function (btn) {
+          var v = btn.getAttribute("data-value") || "";
+          var on = v === (value || "");
+          btn.classList.toggle("is-active", on);
+          btn.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+      }
+
+      function resetAll() {
+        urlCategory = "";
+        try {
+          if (window.history && window.history.replaceState) {
+            var u = new URL(window.location.href);
+            u.searchParams.delete("category");
+            var qs = u.searchParams.toString();
+            var path = u.pathname + (qs ? "?" + qs : "") + (u.hash || "");
+            window.history.replaceState({}, "", path);
+          }
+        } catch (e) {
+          /* ignore */
+        }
+        searchEl.value = "";
+        setMachinePill("all");
+        setTechniqueChip("");
+        apply();
+        searchEl.focus();
+      }
+
+      searchEl.addEventListener("input", apply);
+
+      if (machineGroup) {
+        machineGroup.addEventListener("click", function (e) {
+          var t = e.target;
+          if (!(t instanceof HTMLElement)) return;
+          var btn = t.closest("[data-stitch-cat-machine], [data-stitch-cat-machine='']");
+          if (!btn || !machineGroup.contains(btn)) return;
+          var val = btn.getAttribute("data-value") || "all";
+          setMachinePill(val);
+          apply();
+        });
+      }
+
+      if (techniqueGroup) {
+        techniqueGroup.addEventListener("click", function (e) {
+          var t = e.target;
+          if (!(t instanceof HTMLElement)) return;
+          var btn = t.closest("[data-stitch-cat-technique], [data-stitch-cat-technique='']");
+          if (!btn || !techniqueGroup.contains(btn)) return;
+          var val = btn.getAttribute("data-value") || "";
+          setTechniqueChip(val);
+          apply();
+        });
+      }
+
+      if (resetBtn) resetBtn.addEventListener("click", resetAll);
+
+      apply();
+    })();
+  </script>
+
+  <script is:inline>
+    (function () {
+      var btn = document.getElementById("stitch-cat-to-top");
+      if (!btn) return;
+
+      var threshold = 480;
+
+      function updateVisibility() {
+        var y = window.scrollY || document.documentElement.scrollTop || 0;
+        if (y > threshold) {
+          btn.removeAttribute("hidden");
+        } else {
+          btn.setAttribute("hidden", "");
+        }
+      }
+
+      function prefersReducedMotion() {
+        try {
+          return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      window.addEventListener("scroll", updateVisibility, { passive: true });
+      updateVisibility();
+
+      btn.addEventListener("click", function () {
+        var behavior = prefersReducedMotion() ? "auto" : "smooth";
+        window.scrollTo({ top: 0, behavior: behavior });
+      });
+    })();
+  </script>
+
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap");
+
+    .stitch-cat.page-wrap {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: 4.5rem;
+      padding-left: 1.35rem;
+      padding-right: 1.35rem;
+    }
+
+    @media (min-width: 768px) {
+      .stitch-cat.page-wrap {
+        padding-left: 2.25rem;
+        padding-right: 2.25rem;
+      }
+    }
+
+    .stitch-cat__title-block h1 {
+      margin: 0;
+    }
+
+    .stitch-cat__intro {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+      margin-bottom: 2.25rem;
+    }
+
+    /* Title + search only — full-width description sits in .stitch-cat__dek-row below. */
+    .stitch-cat__header-row {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+      gap: 1rem;
+    }
+
+    @media (min-width: 768px) {
+      .stitch-cat__header-row {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem 2rem;
+      }
+    }
+
+    .stitch-cat__dek-row {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    .stitch-cat__title-block {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .stitch-cat__search-slot {
+      width: 100%;
+      min-width: 0;
+      flex: 0 1 auto;
+    }
+
+    @media (min-width: 768px) {
+      .stitch-cat__search-slot {
+        width: auto;
+        flex: 0 1 min(50%, 32.5rem);
+      }
+    }
+
+    .stitch-cat__dek {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      font-family: var(--font, "Poppins", system-ui, sans-serif);
+      font-size: 1.05rem;
+      line-height: 1.65;
+      color: rgba(36, 48, 21, 0.62);
+      margin: 1.1rem 0 0;
+      font-weight: 400;
+    }
+
+    @media (min-width: 768px) {
+      .stitch-cat__dek {
+        margin-top: 1.15rem;
+      }
+    }
+
+    /* Filters scroll with the page — not sticky, so the grid stays fully visible while scrolling. */
+    .stitch-cat__filters {
+      position: static;
+      margin-bottom: 1.75rem;
+      padding-top: 0.75rem;
+    }
+
+    .stitch-cat__to-top {
+      position: fixed;
+      right: max(1rem, env(safe-area-inset-right, 0px));
+      bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+      z-index: 30;
+      max-width: calc(100vw - 2rem - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+      font-family: var(--font, "Poppins", system-ui, sans-serif);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: 0.02em;
+      padding: 0.55rem 1rem;
+      margin: 0;
+      border-radius: 999px;
+      border: 1px solid rgba(28, 36, 18, 0.14);
+      background: rgba(253, 252, 249, 0.97);
+      color: #1c2412;
+      box-shadow: 0 2px 12px rgba(28, 36, 18, 0.08), 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .stitch-cat__to-top:hover {
+      background: #fff;
+      border-color: rgba(82, 104, 45, 0.32);
+      box-shadow: 0 4px 18px rgba(28, 36, 18, 0.1);
+    }
+
+    .stitch-cat__to-top:focus-visible {
+      outline: 2px solid var(--kbm-green, #52682d);
+      outline-offset: 3px;
+    }
+
+    .stitch-cat__to-top:active {
+      transform: translateY(1px);
+    }
+
+    .stitch-cat__controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1.4rem;
+    }
+
+    .stitch-cat__row--machine {
+      border-top: 1px solid rgba(28, 36, 18, 0.055);
+      padding-top: 1.05rem;
+    }
+
+    .stitch-cat__row--techniques {
+      border-top: 1px solid rgba(28, 36, 18, 0.055);
+      padding-top: 1rem;
+    }
+
+    /* Machine: compact chips — clearer than techniques, still light */
+    .stitch-cat__machine-list {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.35rem 0.45rem;
+    }
+
+    .stitch-cat__machine-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font, "Poppins", system-ui, sans-serif);
+      font-size: 0.78rem;
+      font-weight: 500;
+      line-height: 1.2;
+      min-height: 2.125rem;
+      padding: 0.28rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid rgba(28, 36, 18, 0.1);
+      background: rgba(255, 255, 255, 0.65);
+      color: rgba(28, 36, 18, 0.58);
+      cursor: pointer;
+      text-align: center;
+      white-space: nowrap;
+      transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .stitch-cat__machine-btn:hover {
+      color: #1c2412;
+      border-color: rgba(82, 104, 45, 0.22);
+      background: rgba(82, 104, 45, 0.05);
+    }
+
+    .stitch-cat__machine-btn.is-active {
+      font-weight: 600;
+      color: #1c2412;
+      border-color: rgba(82, 104, 45, 0.32);
+      background: rgba(82, 104, 45, 0.09);
+    }
+
+    .stitch-cat__machine-btn:focus-visible {
+      outline: 2px solid var(--kbm-green, #52682d);
+      outline-offset: 2px;
+    }
+
+    /* Technique: text-link / subtle chip — minimal bulk, wraps naturally */
+    .stitch-cat__tech-list {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.25rem 0.55rem;
+    }
+
+    .stitch-cat__tech-btn {
+      display: inline-flex;
+      align-items: center;
+      font-family: var(--font, "Poppins", system-ui, sans-serif);
+      font-size: 0.8rem;
+      font-weight: 400;
+      line-height: 1.35;
+      margin: 0;
+      min-height: 2.25rem;
+      padding: 0.2rem 0.45rem;
+      border: none;
+      border-radius: 3px;
+      border-bottom: 1px solid transparent;
+      background: transparent;
+      color: rgba(28, 36, 18, 0.48);
+      cursor: pointer;
+      text-align: left;
+      white-space: normal;
+      max-width: 100%;
+      transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .stitch-cat__tech-btn:hover {
+      color: #1c2412;
+      border-bottom-color: rgba(28, 36, 18, 0.12);
+    }
+
+    .stitch-cat__tech-btn.is-active {
+      font-weight: 600;
+      color: #1c2412;
+      border-bottom-color: rgba(82, 104, 45, 0.55);
+      background: rgba(82, 104, 45, 0.055);
+    }
+
+    .stitch-cat__tech-btn:focus-visible {
+      outline: 2px solid var(--kbm-green, #52682d);
+      outline-offset: 2px;
+    }
+
+    .stitch-cat__empty {
+      text-align: center;
+      padding: 3rem 1.5rem 2rem;
+      max-width: 26rem;
+      margin: 0 auto 2rem;
+    }
+
+ 
+    .stitch-cat__empty-copy {
+      font-family: var(--font, "Poppins", system-ui, sans-serif);
+      font-size: 0.95rem;
+      line-height: 1.55;
+      color: rgba(36, 48, 21, 0.55);
+      margin: 0 0 1.25rem;
+    }
+
+    .stitch-cat__reset {
+      font-family: var(--font, "Poppins", system-ui, sans-serif);
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 0.6rem 1.25rem;
+      border-radius: 8px;
+      border: none;
+      background: #1c2412;
+      color: #fdfcf9;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+    }
+
+    .stitch-cat__reset:hover {
+      background: var(--kbm-green, #52682d);
+    }
+
+    .stitch-cat__reset:focus-visible {
+      outline: 2px solid var(--kbm-green, #52682d);
+      outline-offset: 3px;
+    }
+
+    .stitch-cat__grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: clamp(1.55rem, 3.6vw, 2.45rem) clamp(1.35rem, 2.9vw, 2.1rem);
+    }
+
+    @media (min-width: 600px) {
+      .stitch-cat__grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 960px) {
+      .stitch-cat__grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1200px) {
+      .stitch-cat__grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+    }
+
+    .stitch-cat__tile {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.18rem;
+      padding: 0.42rem 0.48rem 0.52rem;
+      text-decoration: none;
+      color: inherit;
+      border-radius: 12px;
+      background: rgba(253, 252, 249, 0.45);
+      box-shadow: 0 2px 12px rgba(28, 36, 18, 0.035);
+      transition:
+        transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.3s ease,
+        background 0.25s ease;
+    }
+
+    .stitch-cat__tile:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(28, 36, 18, 0.065);
+      background: rgba(82, 104, 45, 0.045);
+    }
+
+    .stitch-cat__tile:focus-visible {
+      outline: 2px solid var(--kbm-green, #52682d);
+      outline-offset: 4px;
+    }
+
+    .stitch-cat__tile.is-filtered-out {
+      display: none;
+    }
+
+    .stitch-cat__figure {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 6px;
+      overflow: hidden;
+      background: linear-gradient(145deg, #f0ebe3 0%, #e8e2d8 100%);
+      flex-shrink: 0;
+    }
+
+    .stitch-cat__img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1);
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      border-radius: inherit;
+    }
+
+    .stitch-cat__tile:hover .stitch-cat__img {
+      transform: scale(1.015);
+    }
+
+    .stitch-cat__placeholder {
+      width: 100%;
+      height: 100%;
+      min-height: 8rem;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.35), transparent 55%),
+        linear-gradient(160deg, #e5dfd4, #d8d2c8);
+    }
+
+    .stitch-cat__caption {
+      display: flex;
+      flex-direction: column;
+      gap: 0.04rem;
+      padding: 0 0.06rem 0;
+      min-width: 0;
+      font-size: 0.9rem;
+    }
+
+    .stitch-cat__tile-title {
+      display: block;
+      font-family: var(--font, "Poppins", system-ui, sans-serif);
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: 0.01em;
+      color: #1c2412;
+    }
+
+    .stitch-cat__tile:hover .stitch-cat__tile-title {
+      color: var(--kbm-green, #52682d);
+    }
+
+    .stitch-cat__tile-meta {
+      display: block;
+      font-family: var(--font, "Poppins", system-ui, sans-serif);
+      font-size: 0.72rem;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      color: rgba(36, 48, 21, 0.5);
+      line-height: 1.32;
+      opacity: 0.7;
+    }
+  </style>
+</Layout>

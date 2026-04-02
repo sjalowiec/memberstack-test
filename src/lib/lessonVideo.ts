@@ -8,6 +8,10 @@ export type PublicVideoRow = {
   title?: string;
   vimeo_id?: number;
   vimeo_id_public?: number;
+  /** Optional: future transcript / search pipeline */
+  transcript_json?: unknown;
+  vtt_url?: string;
+  search_ready?: boolean;
 };
 
 /** Stable key: `slug` when non-empty, else `String(content_id)`. */

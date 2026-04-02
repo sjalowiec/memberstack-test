@@ -87,7 +87,10 @@ const sortedVideos = [...videoRows]
                 return <option value={value}>{videoOptionLabel(v)}</option>;
               })}
             </select>
-            <span class="field-hint">Choose a catalog video from <code>videos-public.json</code>.</span>
+            <span class="field-hint"
+              >Choose a catalog video (stable key = slug, or <code>content_id</code> if no slug). Manage entries in
+              <a href="/admin/videos-admin">Videos admin</a>.</span
+            >
           </label>
           <label>
             <span>access <em class="req">*</em></span>
