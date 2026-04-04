@@ -368,11 +368,6 @@ const { previewOnly = false } = Astro.props;
         printBtn.style.display = 'inline-flex';
       }
     }
-    // Also activate mobile topbar
-    const topbar = document.getElementById('action-bar-topbar');
-    if (topbar) {
-      topbar.classList.add('is-active');
-    }
   }
 
   function hideResults(config) {
@@ -386,11 +381,6 @@ const { previewOnly = false } = Astro.props;
         actionBar.classList.remove('is-active');
         actionBar.style.display = 'none';
       }
-    }
-    // Also hide mobile topbar
-    const topbar = document.getElementById('action-bar-topbar');
-    if (topbar) {
-      topbar.classList.remove('is-active');
     }
     // Hide print button
     const printBtn = document.getElementById('print-btn');
@@ -481,7 +471,6 @@ const { previewOnly = false } = Astro.props;
     const btnShowPattern = document.getElementById('btn-show-pattern');
     const btnBackToSample = document.getElementById('btn-back-to-sample');
     const btnEdit = document.getElementById('edit-btn');
-    const btnStartOver = document.getElementById('start-over-btn');
     const btnPrint = document.getElementById('print-btn');
     
     const sampleState = document.querySelector('[data-state="sample"]');
@@ -1097,21 +1086,6 @@ sampleInputsSummary.innerHTML = `
       setState('edit');
     });
 
-    btnStartOver?.addEventListener('click', () => {
-      // Reset to sample defaults
-      if (inputWidth && 'value' in inputWidth) inputWidth.value = SAMPLE_DEFAULTS.width.toString();
-      if (inputLength && 'value' in inputLength) inputLength.value = SAMPLE_DEFAULTS.length.toString();
-      if (inputNeedles && 'value' in inputNeedles) inputNeedles.value = SAMPLE_DEFAULTS.needles.toString();
-      if (inputBorderSts && 'value' in inputBorderSts) inputBorderSts.value = SAMPLE_DEFAULTS.borderGaugeSts.toString();
-      if (inputBorderRows && 'value' in inputBorderRows) inputBorderRows.value = SAMPLE_DEFAULTS.borderGaugeRows.toString();
-      if (inputBodySts && 'value' in inputBodySts) inputBodySts.value = SAMPLE_DEFAULTS.bodyGaugeSts.toString();
-      if (inputBodyRows && 'value' in inputBodyRows) inputBodyRows.value = SAMPLE_DEFAULTS.bodyGaugeRows.toString();
-      if (inputBorderDepth && 'value' in inputBorderDepth) inputBorderDepth.value = SAMPLE_DEFAULTS.borderDepth.toString();
-      if (inputEdgeStitches && 'value' in inputEdgeStitches) inputEdgeStitches.value = SAMPLE_DEFAULTS.edgeSts.toString();
-      if (sizePresetSelect && 'value' in sizePresetSelect) sizePresetSelect.value = '';
-      setState('edit');
-    });
-
     // Size preset selection
     sizePresetSelect?.addEventListener('change', (e) => {
       const target = e.target;
@@ -1144,34 +1118,6 @@ sampleInputsSummary.innerHTML = `
         updateUnitLabels();
         buildSamplePattern();
       }
-    });
-
-    // Wire up mobile topbar buttons (they use data-action attributes)
-    const topbarEditBtn = document.querySelector('#action-bar-topbar [data-action="edit"]');
-    const topbarResetBtn = document.querySelector('#action-bar-topbar [data-action="reset"]');
-    const topbarPrintBtn = document.querySelector('#action-bar-topbar [data-action="print"]');
-
-    topbarEditBtn?.addEventListener('click', () => {
-      setState('edit');
-    });
-
-    topbarResetBtn?.addEventListener('click', () => {
-      // Reset to sample defaults and go to Edit state
-      if (inputWidth && 'value' in inputWidth) inputWidth.value = SAMPLE_DEFAULTS.width.toString();
-      if (inputLength && 'value' in inputLength) inputLength.value = SAMPLE_DEFAULTS.length.toString();
-      if (inputNeedles && 'value' in inputNeedles) inputNeedles.value = SAMPLE_DEFAULTS.needles.toString();
-      if (inputBorderSts && 'value' in inputBorderSts) inputBorderSts.value = SAMPLE_DEFAULTS.borderGaugeSts.toString();
-      if (inputBorderRows && 'value' in inputBorderRows) inputBorderRows.value = SAMPLE_DEFAULTS.borderGaugeRows.toString();
-      if (inputBodySts && 'value' in inputBodySts) inputBodySts.value = SAMPLE_DEFAULTS.bodyGaugeSts.toString();
-      if (inputBodyRows && 'value' in inputBodyRows) inputBodyRows.value = SAMPLE_DEFAULTS.bodyGaugeRows.toString();
-      if (inputBorderDepth && 'value' in inputBorderDepth) inputBorderDepth.value = SAMPLE_DEFAULTS.borderDepth.toString();
-      if (inputEdgeStitches && 'value' in inputEdgeStitches) inputEdgeStitches.value = SAMPLE_DEFAULTS.edgeSts.toString();
-      if (sizePresetSelect && 'value' in sizePresetSelect) sizePresetSelect.value = '';
-      setState('edit');
-    });
-
-    topbarPrintBtn?.addEventListener('click', () => {
-      window.print();
     });
 
     // Wire up print button
@@ -1739,54 +1685,8 @@ sampleInputsSummary.innerHTML = `
     display: inline-flex !important;
   }
 
-  /* Mobile: top bar buttons */
+  /* Hide floating ActionBar on mobile (shared ActionBar handles mobile helper) */
   @media (max-width: 640px) {
-    #action-bar-topbar.pattern-actions--topbar.is-active {
-      display: flex !important;
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      z-index: 1000;
-      gap: 8px;
-      padding: 8px;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    #action-bar-topbar .action-btn--icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      padding: 0;
-      display: inline-flex !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      align-items: center;
-      justify-content: center;
-      background: var(--kbm-green, #52682D) !important;
-      background-color: var(--kbm-green, #52682D) !important;
-      color: white !important;
-      border: 2px solid var(--kbm-green, #52682D) !important;
-      cursor: pointer;
-      transition: all 0.2s;
-      flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
-    }
-
-    #action-bar-topbar .action-btn--icon:hover {
-      background: #6E8B3D !important;
-      border-color: #6E8B3D !important;
-    }
-
-    #action-bar-topbar .action-btn--icon i {
-      font-size: 16px;
-    }
-
-    /* Hide floating buttons on mobile */
     #action-bar.pattern-actions--floating {
       display: none !important;
     }

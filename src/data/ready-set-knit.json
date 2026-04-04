@@ -1,0 +1,134 @@
+{
+  "projects": [
+    {
+      "title": "Hat",
+      "slug": "hat",
+      "description": "Work through a hat in three phases—Ready, Set, Knit—at your own pace.",
+      "heroImage": null,
+      "status": "active",
+      "published": true,
+      "stages": [
+        {
+          "id": "ready",
+          "title": "Ready",
+          "order": 1,
+          "steps": [
+            {
+              "order": 1,
+              "title": "Choose your hat style",
+              "summary": "Decide the overall look—style, stitch pattern, and brim—before moving on.",
+              "content": null,
+              "videoUrl": null,
+              "checklist": [],
+              "downloads": [],
+              "notes": null,
+              "published": true
+            },
+            {
+              "order": 2,
+              "title": "Choose your yarn",
+              "summary": "Select a yarn that works for your machine and make sure you have enough for the full hat.",
+              "content": null,
+              "videoUrl": null,
+              "checklist": [],
+              "downloads": [],
+              "notes": null,
+              "published": true
+            },
+            {
+              "order": 3,
+              "title": "Confirm your plan",
+              "summary": "Take a moment to review your choices so everything works together before you begin.",
+              "content": null,
+              "videoUrl": null,
+              "checklist": [],
+              "downloads": [],
+              "notes": null,
+              "published": true
+            }
+          ]
+        },
+        {
+          "id": "set",
+          "title": "Set",
+          "order": 2,
+          "steps": [
+            {
+              "order": 1,
+              "title": "Swatch",
+              "summary": "Knit a small tension swatch in your chosen stitch so your numbers are accurate.",
+              "content": null,
+              "videoUrl": null,
+              "checklist": [],
+              "downloads": [],
+              "notes": null,
+              "published": true
+            },
+            {
+              "order": 2,
+              "title": "Check gauge",
+              "summary": "Measure your stitches and record your gauge so your hat fits as expected.",
+              "content": null,
+              "videoUrl": null,
+              "checklist": [],
+              "downloads": [],
+              "notes": null,
+              "published": true
+            },
+            {
+              "order": 3,
+              "title": "Confirm your pattern",
+              "summary": "Finalize stitch counts and shaping from a pattern or your own calculations.",
+              "content": null,
+              "videoUrl": null,
+              "checklist": [],
+              "downloads": [],
+              "notes": null,
+              "published": true
+            }
+          ]
+        },
+        {
+          "id": "knit",
+          "title": "Knit",
+          "order": 3,
+          "steps": [
+            {
+              "order": 1,
+              "title": "Cast on",
+              "summary": "Get stitches on the machine and establish your starting edge or brim.",
+              "content": null,
+              "videoUrl": null,
+              "checklist": [],
+              "downloads": [],
+              "notes": null,
+              "published": true
+            },
+            {
+              "order": 2,
+              "title": "Knit the hat",
+              "summary": "Work the body and shape the crown following your plan.",
+              "content": null,
+              "videoUrl": null,
+              "checklist": [],
+              "downloads": [],
+              "notes": null,
+              "published": true
+            },
+            {
+              "order": 3,
+              "title": "Finish",
+              "summary": "Close the crown, weave in ends, and give your hat a final finish.",
+              "content": null,
+              "videoUrl": null,
+              "checklist": [],
+              "downloads": [],
+              "notes": null,
+              "published": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,457 @@
+---
+import type { RskPhase, RskProject, RskStep } from "../../data/rsk/hat-project";
+
+interface Props {
+  project: RskProject;
+  /** 1-based step shown on this page (preferred). */
+  currentStep?: number;
+  /** 0-based fallback if `currentStep` is omitted. */
+  initialStepIndex?: number;
+  helpHubHref?: string;
+  videoSearchHref?: string;
+}
+
+const {
+  project,
+  currentStep: currentStepProp,
+  initialStepIndex = 0,
+  helpHubHref = "/help-hub",
+  videoSearchHref = "/video-search",
+} = Astro.props;
+
+const steps = project.steps;
+const total = steps.length;
+
+const currentStepDisplay =
+  typeof currentStepProp === "number" &&
+  Number.isFinite(currentStepProp) &&
+  currentStepProp >= 1
+    ? Math.min(total, Math.max(1, Math.floor(currentStepProp)))
+    : Math.min(total, Math.max(1, initialStepIndex + 1));
+
+const clamped = currentStepDisplay - 1;
+
+type Group = { phase: RskPhase; items: { index: number; step: RskStep }[] };
+const groups: Group[] = [];
+let lastPhase: RskPhase | null = null;
+for (let index = 0; index < steps.length; index++) {
+  const step = steps[index];
+  if (step.phase !== lastPhase) {
+    groups.push({ phase: step.phase, items: [] });
+    lastPhase = step.phase;
+  }
+  groups[groups.length - 1].items.push({ index, step });
+}
+
+function stepNavClass(i: number): string {
+  return i + 1 === currentStepDisplay ? "rsk-step active" : "rsk-step";
+}
+
+/** Phase word on pills; matches JSON stage titles when present. */
+function rskPhasePillTitle(step: RskStep): string {
+  const t = step.phaseTitle?.trim();
+  if (t) return t;
+  if (step.phase === "ready") return "Ready";
+  if (step.phase === "set") return "Set";
+  if (step.phase === "knit") return "Knit";
+  return step.phase;
+}
+
+/** One global index per published step (Ready • 1 … Set • 6 …). */
+function rskPillLabel(step: RskStep, displayNumber: number): string {
+  return `${rskPhasePillTitle(step)} • ${displayNumber}`;
+}
+
+const lastIndex = total - 1;
+---
+
+<div
+  data-rsk-walkthrough
+  data-rsk-total={total}
+  data-rsk-initial={clamped}
+  data-step={currentStepDisplay}
+>
+  <header
+    class="text-center"
+    style="max-width: 40rem; margin: 0 auto 1rem; padding: 0 0.25rem;"
+  >
+    <slot name="heading">
+      <h1
+        style="font-size: var(--text-xxl); font-weight: 600; color: var(--kbm-green); margin: 0 0 0.5rem; line-height: 1.2;"
+      >
+        {project.title}
+      </h1>
+    </slot>
+    <p
+      style="margin: 0; font-size: var(--text-lg); color: #243015; line-height: 1.55;"
+    >
+      {project.intro}
+    </p>
+  </header>
+
+  <div
+    style="position: sticky; top: calc(var(--header-offset, 170px) + var(--header-buffer, 24px)); z-index: 10; background: var(--page-bg); padding: 0.5rem 0 0.75rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--ring);"
+  >
+    <nav aria-label="Project steps">
+      <div class="rsk-steps" data-current-step={currentStepDisplay}>
+        {
+          groups.map((g) => (
+            <div class:list={["rsk-group", g.phase]}>
+              {g.items.map(({ index, step }) => {
+                const displayNumber = index + 1;
+                const pillLabel = rskPillLabel(step, displayNumber);
+                return (
+                <button
+                  type="button"
+                  class={stepNavClass(index)}
+                  data-rsk-pill={index}
+                  data-step={displayNumber}
+                  aria-current={index === clamped ? "step" : undefined}
+                  aria-label={`${pillLabel}: ${step.title}`}
+                >
+                  {pillLabel}
+                </button>
+                );
+              })}
+            </div>
+          ))
+        }
+      </div>
+    </nav>
+  </div>
+
+  <div style="max-width: 42rem; margin: 0 auto;">
+    {
+      steps.map((step, i) => (
+        <article
+          class="ana-bubble"
+          data-rsk-panel={i}
+          id={`rsk-step-${i}`}
+          hidden={i !== clamped}
+          style={i === clamped ? "display: block;" : "display: none;"}
+        >
+          <div class="ana-bubble-content">
+            <h2
+              style="margin: 0; font-size: clamp(1.15rem, 3vw, 1.35rem); font-weight: 700; color: var(--kbm-green);"
+            >
+              {step.title}
+            </h2>
+            <p style="margin: 0; color: #243015; line-height: 1.6;">
+              <strong style="color: #52682d;">What you’re doing today:</strong>
+              {` ${step.intro}`}
+            </p>
+
+            {step.content && String(step.content).trim() !== "" && (
+              <div style="margin: 0.75rem 0 0; color: #243015; line-height: 1.6; font-size: 0.98rem;">
+                {String(step.content)
+                  .split(/\n\n+/)
+                  .map((p) => p.trim())
+                  .filter(Boolean)
+                  .map((para) => (
+                    <p style="margin: 0 0 0.65rem;">{para}</p>
+                  ))}
+              </div>
+            )}
+
+            {step.videoUrl && String(step.videoUrl).trim() !== "" && (
+              <p style="margin: 0.75rem 0 0;">
+                <a
+                  class="kbm-btn kbm-btn-outline"
+                  style="min-height: 44px; display: inline-flex; align-items: center; justify-content: center;"
+                  href={step.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <i class="fa-solid fa-play" aria-hidden="true" style="margin-right: 0.45rem;" />
+                  Watch video
+                </a>
+              </p>
+            )}
+
+            {step.showVideoPlaceholder && (!step.videoUrl || String(step.videoUrl).trim() === "") && (
+              <div
+                style="border: 2px dashed #c7d8a4; border-radius: 12px; padding: 1.75rem 1rem; text-align: center; color: #6b7280; background: #f8faf6;"
+                role="status"
+              >
+                <i class="fa-solid fa-play" aria-hidden="true" style="opacity: 0.45; font-size: 1.5rem;" />
+                <p style="margin: 0.5rem 0 0; font-size: 0.95rem;">
+                  Video placeholder — add your embed or link here later.
+                </p>
+              </div>
+            )}
+
+            {step.actions.length > 0 && (
+              <>
+                <h3
+                  style="margin: 0; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--kbm-green);"
+                >
+                  Do this
+                </h3>
+                <ul style="margin: 0; padding-left: 1.2rem; line-height: 1.55; color: #243015;">
+                  {step.actions.map((text) => (
+                    <li style="margin: 0.35rem 0;">{text}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {step.downloads && step.downloads.length > 0 && (
+              <div style="margin: 0.5rem 0 0;">
+                <h3
+                  style="margin: 0 0 0.35rem; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--kbm-green);"
+                >
+                  Downloads
+                </h3>
+                <ul style="margin: 0; padding-left: 1.2rem; line-height: 1.55; color: #243015;">
+                  {step.downloads.map((d) => (
+                    <li style="margin: 0.35rem 0;">
+                      <a href={d.url} target="_blank" rel="noopener noreferrer">
+                        {d.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {step.notes && String(step.notes).trim() !== "" && (
+              <p
+                style="margin: 0.75rem 0 0; font-size: 0.92rem; color: #5c6650; line-height: 1.5; font-style: italic;"
+              >
+                Note: {step.notes}
+              </p>
+            )}
+
+            <div class="reference-quick-links" style="margin: 0;">
+              <p class="reference-quick-links__label">Need help?</p>
+              <p style="margin: 0 0 0.75rem; font-size: 0.95rem; color: #243015; line-height: 1.5;">
+                Quick answers in the Help Hub; demos in Video Search.
+              </p>
+              <div class="reference-quick-links__list">
+                <a class="reference-quick-links__item" href={helpHubHref}>
+                  Help Hub
+                </a>
+                <a class="reference-quick-links__item" href={videoSearchHref}>
+                  Video Search
+                </a>
+              </div>
+            </div>
+
+            <div
+              style="display: flex; flex-direction: column; gap: 0.65rem; flex-wrap: wrap;"
+            >
+              {i < lastIndex ? (
+                <button
+                  type="button"
+                  class="kbm-btn kbm-btn-primary"
+                  style="min-height: 48px;"
+                  data-rsk-next-btn
+                >
+                  {step.nextButtonText}
+                </button>
+              ) : (
+                <a
+                  class="kbm-btn kbm-btn-primary"
+                  style="min-height: 48px; text-align: center;"
+                  href={helpHubHref}
+                >
+                  {step.nextButtonText}
+                </a>
+              )}
+              {i < lastIndex && (
+                <a class="kbm-btn kbm-btn-outline" style="min-height: 48px; text-align: center;" href={helpHubHref}>
+                  Browse Help Hub
+                </a>
+              )}
+            </div>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    function applyRskStepHighlight(stepsWrap) {
+      if (!stepsWrap) return;
+      var currentStep = String(stepsWrap.dataset.currentStep || "").trim();
+      if (!currentStep) return;
+      stepsWrap.querySelectorAll(".rsk-step").forEach(function (button) {
+        var step = button.dataset.step;
+        button.classList.toggle("active", step === currentStep);
+        if (step === currentStep) button.setAttribute("aria-current", "step");
+        else button.removeAttribute("aria-current");
+      });
+    }
+
+    function initRskStepHighlightsFromDom() {
+      document.querySelectorAll(".rsk-steps").forEach(applyRskStepHighlight);
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initRskStepHighlightsFromDom);
+    } else {
+      initRskStepHighlightsFromDom();
+    }
+
+    var root = document.querySelector("[data-rsk-walkthrough]");
+    if (!root) return;
+
+    var total = parseInt(root.getAttribute("data-rsk-total") || "0", 10);
+    var current = parseInt(root.getAttribute("data-rsk-initial") || "0", 10);
+    var stepsWrap = root.querySelector(".rsk-steps");
+
+    function readStepFromUrl() {
+      try {
+        var qs = new URLSearchParams(window.location.search);
+        var s = parseInt(qs.get("step") || "", 10);
+        if (!Number.isFinite(s) || s < 1) return null;
+        return Math.min(total - 1, Math.max(0, s - 1));
+      } catch (e) {
+        return null;
+      }
+    }
+
+    var fromUrl = readStepFromUrl();
+    if (fromUrl !== null) current = fromUrl;
+
+    var panels = root.querySelectorAll("[data-rsk-panel]");
+    var pills = root.querySelectorAll("[data-rsk-pill]");
+
+    function setStep(idx) {
+      current = Math.max(0, Math.min(total - 1, idx));
+
+      if (stepsWrap) stepsWrap.dataset.currentStep = String(current + 1);
+      root.setAttribute("data-step", String(current + 1));
+      applyRskStepHighlight(stepsWrap);
+
+      panels.forEach(function (p, i) {
+        var on = i === current;
+        p.hidden = !on;
+        p.style.display = on ? "block" : "none";
+      });
+
+      try {
+        var qs = new URLSearchParams(window.location.search);
+        qs.set("step", String(current + 1));
+        var path = window.location.pathname + "?" + qs.toString();
+        window.history.replaceState(null, "", path);
+      } catch (e) {}
+
+      var activePill = stepsWrap && stepsWrap.querySelector(".rsk-step.active");
+      if (activePill && typeof activePill.scrollIntoView === "function") {
+        activePill.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+      }
+    }
+
+    pills.forEach(function (pill) {
+      pill.addEventListener("click", function () {
+        var i = parseInt(pill.getAttribute("data-rsk-pill") || "0", 10);
+        setStep(i);
+      });
+    });
+
+    root.addEventListener("click", function (e) {
+      var t = e.target;
+      if (!t || typeof t.closest !== "function") return;
+      var btn = t.closest("[data-rsk-next-btn]");
+      if (!btn || !root.contains(btn)) return;
+      e.preventDefault();
+      setStep(current + 1);
+    });
+
+    window.addEventListener("popstate", function () {
+      var u = readStepFromUrl();
+      if (u !== null) setStep(u);
+    });
+
+    setStep(current);
+  })();
+</script>
+
+<style>
+  .rsk-steps {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    padding-inline: 0.25rem;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .rsk-group {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-shrink: 0;
+  }
+
+  /* Base step button */
+  .rsk-step {
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    background: transparent;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    white-space: nowrap;
+    min-height: 44px;
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+  }
+
+  /* READY — light green */
+  .rsk-group.ready .rsk-step {
+    color: #52682d;
+    background-color: #e4ecd9;
+    border-color: #cddbb8;
+  }
+
+  /* SET — medium green */
+  .rsk-group.set .rsk-step {
+    color: #52682d;
+    background-color: #b7c7a3;
+    border-color: #9fb48a;
+  }
+
+  /* KNIT — full brand green */
+  .rsk-group.knit .rsk-step {
+    color: #ffffff;
+    background-color: #52682d;
+    border-color: #52682d;
+  }
+
+  /* Active step — crisp underline (palette green), no ring/outline */
+  .rsk-step.active {
+    position: relative;
+  }
+
+  .rsk-step.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: #52682d;
+    border-radius: 1px;
+    pointer-events: none;
+  }
+
+  .rsk-group.knit .rsk-step.active::after {
+    background: #c7d8a4;
+  }
+
+  /* Optional hover (keep subtle) */
+  .rsk-step:hover {
+    opacity: 0.9;
+  }
+</style>

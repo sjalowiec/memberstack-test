@@ -1,37 +1,49 @@
 ---
+import { randomUUID } from "node:crypto";
+
 /**
- * Reusable floating-label select for tool pages.
- * Label sits inside the field and floats up on focus or when a value is selected.
- * Styles are loaded by this component (same stylesheet as FloatingInput).
+ * Reusable floating-label `<select>` for tool pages.
+ * Uses a real <label> (not the first <option> text) as the field title; value="" option is only a form placeholder.
+ * Wrapper states `.is-focused` and `.has-value` (plus CSS) match `FloatingInput` floating behavior.
  *
  * Example:
  *   import FloatingSelect from "../../components/tools/FloatingSelect.astro";
- *   <FloatingSelect id="unit" name="unit" label="Unit" options={[{ value: 'in', label: 'Inches' }, { value: 'cm', label: 'Centimeters' }]}" placeholderOption="Select one" />
+ *   <FloatingSelect
+ *     id="size"
+ *     label="Size"
+ *     options={[
+ *       { label: "Baby", value: "baby" },
+ *       { label: "Child", value: "child" },
+ *     ]}
+ *   />
+ *
+ * With value and help:
+ *   <FloatingSelect id="yarn" label="Yarn weight" value="worsted" helpText="Choose the closest match." ... />
  */
-interface SelectOption {
-  value: string;
+export interface FloatingSelectOption {
   label: string;
+  value: string;
 }
 
 interface Props {
   id: string;
   name?: string;
   label: string;
+  options: FloatingSelectOption[];
+  /** Selected option value; empty / unset shows the placeholder option. */
   value?: string;
+  /** First <option value=""> text only (hint in list / when focused); not the floating label. */
+  placeholder?: string;
   required?: boolean;
-  autocomplete?: string;
+  disabled?: boolean;
+  helpText?: string;
   ariaDescribedby?: string;
-  /** When true, shows error state (red border/label) and optional error message. */
   error?: boolean;
-  /** Message shown when error is true. */
   errorMessage?: string;
   /** Extra class(es) on the wrapper div. */
   class?: string;
-  /** Options for the select. Include a placeholder option or use placeholderOption. */
-  options: SelectOption[];
-  /** First option text when no value selected (e.g. "Select one"). Adds an option with value "". */
-  placeholderOption?: string;
-  disabled?: boolean;
+  /** Same as `class` (for callers who prefer the React-style name). */
+  className?: string;
   dataTestid?: string;
   dataAttrs?: Record<string, string>;
 }
@@ -40,49 +52,68 @@ const {
   id,
   name,
   label,
+  options,
   value,
+  placeholder = "Choose an option",
   required = false,
-  autocomplete,
+  disabled = false,
+  helpText,
   ariaDescribedby,
   error = false,
   errorMessage,
   class: wrapperClass,
-  options,
-  placeholderOption,
-  disabled = false,
+  className: classNameProp,
   dataTestid,
   dataAttrs = {},
 } = Astro.props;
 
 const errorId = errorMessage ? `${id}-error` : undefined;
-const describedBy = [ariaDescribedby, errorId].filter(Boolean).join(" ") || undefined;
+const helpId = helpText ? `${id}-help` : undefined;
+const describedBy = [ariaDescribedby, helpId, errorId].filter(Boolean).join(" ") || undefined;
 
-/** Build option list: placeholder first (if any), then options. */
-const optionList = placeholderOption
-  ? [{ value: "", label: placeholderOption }, ...options]
-  : options;
+const valueStr =
+  value !== undefined && value !== null ? String(value) : "";
+const optionValues = new Set(options.map((o) => String(o.value)));
+const hasInitialValue = valueStr.length > 0 && optionValues.has(valueStr);
+
+/** Stable per-instance key so the inline script binds to this wrapper (not getElementById). */
+const floatingSelectRootId = randomUUID();
 ---
 
 <style is:global>
   @import "../../styles/tools/floating-input.css";
 </style>
 
-<div class:list={["floating-select", wrapperClass]}>
+<div
+  data-floating-select-root={floatingSelectRootId}
+  class:list={[
+    "floating-select",
+    wrapperClass,
+    classNameProp,
+    { "has-value": hasInitialValue },
+  ]}
+>
   <select
     id={id}
     name={name}
-    value={value}
     required={required}
-    autocomplete={autocomplete}
+    disabled={disabled}
     aria-describedby={describedBy}
     aria-invalid={error ? "true" : undefined}
-    disabled={disabled}
     data-testid={dataTestid}
     class:list={[{ error }]}
     {...dataAttrs}
   >
-    {optionList.map((opt) => (
-      <option value={opt.value}>{opt.label}</option>
+    <option value="" disabled={required} selected={!hasInitialValue}>
+      {placeholder}
+    </option>
+    {options.map((opt) => (
+      <option
+        value={opt.value}
+        selected={hasInitialValue && valueStr === String(opt.value)}
+      >
+        {opt.label}
+      </option>
     ))}
   </select>
   <label for={id}>{label}</label>
@@ -91,28 +122,96 @@ const optionList = placeholderOption
       {errorMessage}
     </span>
   )}
+  {helpText && (
+    <span class="floating-help-text" id={helpId}>
+      {helpText}
+    </span>
+  )}
 </div>
 
-<script>
-  function initFloatingSelect(container: Element) {
-    const wrapper = container as HTMLElement;
-    const select = wrapper.querySelector<HTMLSelectElement>("select");
-    if (!select) return;
+<script is:inline define:vars={{ floatingSelectRootId, selectId: id }}>
+  (function () {
+    var rootId = floatingSelectRootId;
+    var expectedSelectId = selectId;
 
-    function updateHasValue() {
-      const sel = wrapper.querySelector<HTMLSelectElement>("select");
-      wrapper.classList.toggle("has-value", sel !== null && sel.value !== "");
+    function log(msg, extra) {
+      var o = extra || {};
+      o.rootId = rootId;
+      console.log("[FloatingSelect]", msg, o);
     }
 
-    updateHasValue();
-    select.addEventListener("change", updateHasValue);
-    select.addEventListener("focus", updateHasValue);
-    select.addEventListener("blur", updateHasValue);
-  }
+    function bind() {
+      var wrap = document.querySelector(
+        '[data-floating-select-root="' + rootId + '"]'
+      );
 
-  document.querySelectorAll(".floating-select").forEach((el) => initFloatingSelect(el));
+      if (!wrap) {
+        log("init FAILED — wrapper not found (querySelector by data-floating-select-root)", {});
+        return;
+      }
 
-  document.addEventListener("astro:page-load", () => {
-    document.querySelectorAll(".floating-select").forEach((el) => initFloatingSelect(el));
-  });
+      if (!wrap.classList.contains("floating-select")) {
+        log("init FAILED — element missing .floating-select", {
+          tag: wrap.tagName,
+          className: wrap.className,
+        });
+        return;
+      }
+
+      var el = wrap.querySelector("select");
+      if (!el) {
+        log("init FAILED — no select inside wrapper", {});
+        return;
+      }
+
+      if (el.id !== expectedSelectId) {
+        log("init WARNING — select id mismatch", {
+          expected: expectedSelectId,
+          actual: el.id,
+        });
+      }
+
+      log("init OK", {
+        wrapIsParent: el.parentElement === wrap,
+        selectId: el.id,
+        className: wrap.className,
+      });
+
+      function syncValue() {
+        var has = el.value !== "";
+        wrap.classList.toggle("has-value", has);
+        log("after syncValue / toggle has-value", {
+          value: el.value,
+          hasValueClass: has,
+          className: wrap.className,
+        });
+      }
+
+      function onFocus() {
+        wrap.classList.add("is-focused");
+        log("focus", { className: wrap.className });
+      }
+
+      function onBlur() {
+        wrap.classList.remove("is-focused");
+        log("blur", { className: wrap.className });
+      }
+
+      function onChange() {
+        log("change", { value: el.value });
+        syncValue();
+      }
+
+      el.addEventListener("focus", onFocus);
+      el.addEventListener("blur", onBlur);
+      el.addEventListener("change", onChange);
+      syncValue();
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", bind);
+    } else {
+      bind();
+    }
+  })();
 </script>

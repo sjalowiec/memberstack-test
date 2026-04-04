@@ -94,73 +94,145 @@
 
 /* ========================================
    Tools: Floating Select
-   Matches floating-input pattern for dropdowns.
+   Five explicit blocks + .input-group wins cascade / wizard @media (1024px).
    ======================================== */
 
+/* 1. .floating-select */
 .floating-select {
   position: relative;
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
+  isolation: isolate;
 }
 
-.floating-select select {
+/* 2. .floating-select select */
+.floating-select select,
+.input-group .floating-select select {
+  position: relative;
+  z-index: 1;
+  display: block;
   width: 100%;
-  padding: 1.25rem 2rem 0.5rem 0.875rem;
-  border: 1px solid #d0d5cc;
-  border-radius: 6px;
+  margin: 0;
+  padding: 1.25rem 2rem 0.5rem 0.875rem !important;
+  border: 1px solid #d0d5cc !important;
+  border-radius: 6px !important;
   font-family: var(--font);
-  font-size: 1rem;
+  font-size: 1rem !important;
+  line-height: 1.25;
   color: var(--text-dark);
-  background: white;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: white;
+  transition: border-color 0.2s, box-shadow 0.2s, color 0.2s ease,
+    -webkit-text-fill-color 0.2s ease;
   box-sizing: border-box;
   appearance: none;
+  -webkit-appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   cursor: pointer;
 }
 
-.floating-select select:focus {
+.floating-select:not(.has-value):not(.is-focused) select,
+.input-group .floating-select:not(.has-value):not(.is-focused) select {
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.floating-select.is-focused:not(.has-value) select,
+.input-group .floating-select.is-focused:not(.has-value) select {
+  color: #9ca3af !important;
+  -webkit-text-fill-color: #9ca3af !important;
+}
+
+.floating-select.has-value select,
+.input-group .floating-select.has-value select {
+  color: var(--text-dark) !important;
+  -webkit-text-fill-color: var(--text-dark) !important;
+}
+
+.floating-select select:focus,
+.input-group .floating-select select:focus {
   outline: none;
-  border-color: var(--kbm-green);
+  border-color: var(--kbm-green) !important;
   box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.1);
 }
 
-.floating-select select.error {
-  border-color: #dc3545;
+.floating-select select.error,
+.input-group .floating-select select.error {
+  border-color: #dc3545 !important;
 }
 
-.floating-select select:disabled {
+.floating-select select:disabled,
+.input-group .floating-select select:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
 
-.floating-select label {
-  position: absolute;
+@media (max-width: 1024px) {
+  .floating-select select,
+  .input-group .floating-select select {
+    padding: 1.25rem 2rem 0.5rem 0.875rem !important;
+    font-size: 1rem !important;
+  }
+}
+
+/* 3. .floating-select label */
+.floating-select label,
+.input-group .floating-select label {
+  position: absolute !important;
+  z-index: 5;
   left: 0.875rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.95rem;
-  color: #6b7280;
+  right: 2rem;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+  font-size: 0.95rem !important;
+  font-weight: 400 !important;
+  line-height: 1.2;
+  color: #6b7280 !important;
   pointer-events: none;
-  transition: all 0.2s ease;
+  transition: top 0.2s ease, transform 0.2s ease, font-size 0.2s ease,
+    color 0.2s ease, font-weight 0.2s ease;
   background: transparent;
   padding: 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.floating-select select:focus ~ label,
-.floating-select.has-value label {
-  top: 0.5rem;
-  transform: translateY(0);
-  font-size: 0.75rem;
-  color: var(--kbm-green);
-  font-weight: 500;
+/* 4. .floating-select.is-focused label */
+.floating-select.is-focused label,
+.input-group .floating-select.is-focused label {
+  top: 0.5rem !important;
+  transform: translateY(0) !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  color: var(--kbm-green, #52682d) !important;
+  right: 2rem;
 }
 
-.floating-select select.error ~ label {
-  color: #dc3545;
+/* 5. .floating-select.has-value label */
+.floating-select.has-value label,
+.input-group .floating-select.has-value label {
+  top: 0.5rem !important;
+  transform: translateY(0) !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  color: var(--kbm-green, #52682d) !important;
+  right: 2rem;
+}
+
+.floating-select select.error ~ label,
+.input-group .floating-select select.error ~ label {
+  color: #dc3545 !important;
+}
+
+.floating-select.is-focused select.error ~ label,
+.floating-select.has-value select.error ~ label,
+.input-group .floating-select.is-focused select.error ~ label,
+.input-group .floating-select.has-value select.error ~ label {
+  color: #dc3545 !important;
 }
 
 .floating-select .error-text {
@@ -175,5 +247,13 @@
 }
 
 .floating-select select.error ~ .error-text {
+  display: block;
+}
+
+.floating-select .floating-help-text {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: 0.35rem;
+  line-height: 1.4;
   display: block;
 }

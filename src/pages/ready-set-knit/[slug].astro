@@ -1,0 +1,54 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import RSKHeader from "../../components/RSKHeader.astro";
+import RskWalkthrough from "../../components/rsk/RskWalkthrough.astro";
+import {
+  getReadySetKnitProject,
+  listPublishedReadySetKnitSlugs,
+} from "../../data/rsk/ready-set-knit-loader";
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  return listPublishedReadySetKnitSlugs().map((slug) => ({ params: { slug } }));
+}
+
+const { slug } = Astro.params;
+const project = slug ? getReadySetKnitProject(slug) : undefined;
+
+if (!project) {
+  return Astro.redirect("/404");
+}
+
+const stepParam = Astro.url.searchParams.get("step");
+const parsed = stepParam ? parseInt(stepParam, 10) : NaN;
+const n = project.steps.length;
+const currentStep =
+  Number.isFinite(parsed) && parsed >= 1 && parsed <= n ? parsed : 1;
+
+const pageTitle = `Ready–Set–Knit: ${project.title} | Knit it Now`;
+const headingTitle = `Ready–Set–Knit: ${project.title}`;
+---
+
+<Layout title={pageTitle} description={project.intro}>
+  <div class="container py-5">
+    {
+      project.heroImage && String(project.heroImage).trim() !== "" && (
+        <div style="max-width: 42rem; margin: 0 auto 1.25rem; text-align: center;">
+          <img
+            src={project.heroImage}
+            alt=""
+            width="800"
+            height="450"
+            loading="lazy"
+            decoding="async"
+            style="max-width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--ring);"
+          />
+        </div>
+      )
+    }
+    <RskWalkthrough project={project} currentStep={currentStep}>
+      <RSKHeader slot="heading" title={headingTitle} />
+    </RskWalkthrough>
+  </div>
+</Layout>

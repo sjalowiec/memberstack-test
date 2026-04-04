@@ -1,0 +1,95 @@
+---
+// Reusable Action Bar for tools (Download, Print pattern)
+// Differs from ActionBar which has Start Over/Print for calculators
+interface Props {
+  showDownload?: boolean;
+  downloadId?: string;
+  downloadFilename?: string;
+  downloadTestId?: string;
+  showPrint?: boolean;
+}
+
+const { 
+  showDownload = true, 
+  downloadId = 'download-btn', 
+  downloadFilename = 'download.svg',
+  downloadTestId = 'link-download-svg',
+  showPrint = true 
+} = Astro.props;
+---
+
+<div id="tool-action-bar" class="tool-action-bar no-print">
+  {showDownload && (
+    <a class="tool-action-btn" id={downloadId} href="#" download={downloadFilename} data-testid={downloadTestId}>
+      <i class="fas fa-download"></i> Download
+    </a>
+  )}
+  {showPrint && (
+    <button class="tool-action-btn tool-action-btn--secondary" id="tool-print-btn" data-testid="button-print">
+      <i class="fas fa-print"></i> Print
+    </button>
+  )}
+</div>
+
+<style>
+.tool-action-bar {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.tool-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--kbm-green);
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.tool-action-btn:hover {
+  background: #3f5123;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(82, 104, 45, 0.25);
+}
+
+.tool-action-btn--secondary {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.tool-action-btn--secondary:hover {
+  background: #d1d5db;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .tool-action-bar {
+    flex-direction: column;
+  }
+  
+  .tool-action-btn {
+    width: 100%;
+  }
+}
+</style>
+
+<script>
+  const printBtn = document.getElementById('tool-print-btn');
+  printBtn?.addEventListener('click', () => window.print());
+</script>

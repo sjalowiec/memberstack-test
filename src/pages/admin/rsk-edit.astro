@@ -1,0 +1,299 @@
+---
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export const prerender = false;
+
+const RSK_PATH = join(process.cwd(), "src", "data", "ready-set-knit.json");
+
+let hatProject: unknown = null;
+let loadError: string | null = null;
+
+try {
+  const raw = readFileSync(RSK_PATH, "utf-8");
+  const data = JSON.parse(raw) as { projects?: unknown[] };
+  const projects = Array.isArray(data.projects) ? data.projects : [];
+  const found = projects.find(
+    (p) => p && typeof p === "object" && !Array.isArray(p) && (p as { slug?: string }).slug === "hat"
+  );
+  hatProject = found ?? null;
+  if (!hatProject) loadError = 'No project with slug "hat" in ready-set-knit.json.';
+} catch (e) {
+  loadError = e instanceof Error ? e.message : "Could not load ready-set-knit.json.";
+}
+
+const hatJson = hatProject ? JSON.stringify(hatProject) : "";
+---
+
+<BaseLayout
+  title="Edit Ready–Set–Knit (Hat) | Knit it Now"
+  description="Edit Ready–Set–Knit hat project JSON"
+  skipGlobalHyvor={true}
+  bodyClass="help-hub-admin-body"
+>
+  <main class="help-hub-admin">
+    <header class="help-hub-admin__head">
+      <h1 class="help-hub-admin__title">Ready–Set–Knit — Hat</h1>
+      <p class="help-hub-admin__sub">
+        <a href="/admin/admin">Admin</a>
+        ·
+        <a href="/ready-set-knit/hat">View /ready-set-knit/hat</a>
+      </p>
+    </header>
+
+    <p id="rsk-admin-status" class="help-hub-admin__status" aria-live="polite"></p>
+
+    {
+      loadError ? (
+        <section class="admin-panel help-hub-admin__form-panel">
+          <p>{loadError}</p>
+        </section>
+      ) : (
+        <form id="rsk-admin-form" class="help-hub-admin__form" autocomplete="off">
+          <div class="field-grid" style="margin-bottom: 1rem;">
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+
+          <section class="admin-panel help-hub-admin__form-panel" aria-labelledby="rsk-proj-heading">
+            <h2 id="rsk-proj-heading">Project</h2>
+            <div class="field-grid">
+              <label class="field-full">
+                <span>Title</span>
+                <input type="text" id="rsk-field-title" name="title" required />
+              </label>
+              <label class="field-full">
+                <span>Slug</span>
+                <input type="text" id="rsk-field-slug" name="slug" readonly />
+              </label>
+              <label class="field-full">
+                <span>Description</span>
+                <textarea id="rsk-field-description" name="description" rows="3"></textarea>
+              </label>
+              <label class="checkbox-label field-full">
+                <input type="checkbox" id="rsk-field-published" name="published" />
+                <span>Published</span>
+              </label>
+            </div>
+          </section>
+
+          <div id="rsk-stages-root"></div>
+
+          <div class="field-grid" style="margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+
+        <script is:inline define:vars={{ hatJson }}>
+          (function () {
+            const statusEl = document.getElementById("rsk-admin-status");
+            const form = document.getElementById("rsk-admin-form");
+            const stagesRoot = document.getElementById("rsk-stages-root");
+            if (!form || !stagesRoot || !hatJson) return;
+
+            /** @type {{ title: string; slug: string; description: string; published?: boolean; stages: Array<{ id: string; title: string; order: number; steps: Array<{ order: number; title: string; summary: string; published?: boolean }> }> }} */
+            let initial;
+            try {
+              initial = JSON.parse(hatJson);
+            } catch {
+              if (statusEl) statusEl.textContent = "Could not parse project JSON.";
+              return;
+            }
+
+            const titleInput = document.getElementById("rsk-field-title");
+            const slugInput = document.getElementById("rsk-field-slug");
+            const descInput = document.getElementById("rsk-field-description");
+            const pubInput = document.getElementById("rsk-field-published");
+
+            if (titleInput) titleInput.value = initial.title || "";
+            if (slugInput) slugInput.value = initial.slug || "";
+            if (descInput) descInput.value = initial.description || "";
+            if (pubInput) pubInput.checked = initial.published !== false;
+
+            const stages = Array.isArray(initial.stages)
+              ? [...initial.stages].sort((a, b) => (a.order || 0) - (b.order || 0))
+              : [];
+
+            stages.forEach((stage) => {
+              const sid = String(stage.id || "");
+              const section = document.createElement("section");
+              section.className = "admin-panel help-hub-admin__form-panel";
+              section.style.marginTop = "1.25rem";
+              section.setAttribute("aria-labelledby", "rsk-stage-" + sid);
+
+              const h2 = document.createElement("h2");
+              h2.id = "rsk-stage-" + sid;
+              h2.textContent = "Stage: " + (sid || "?");
+              section.appendChild(h2);
+
+              const stageGrid = document.createElement("div");
+              stageGrid.className = "field-grid";
+
+              const titleLabel = document.createElement("label");
+              titleLabel.className = "field-full";
+              titleLabel.innerHTML = "<span>Stage title (optional)</span>";
+              const stageTitle = document.createElement("input");
+              stageTitle.type = "text";
+              stageTitle.id = "rsk-stage-" + sid + "-title";
+              stageTitle.value = stage.title || "";
+              titleLabel.appendChild(stageTitle);
+              stageGrid.appendChild(titleLabel);
+
+              const orderLabel = document.createElement("label");
+              orderLabel.innerHTML = "<span>Order</span>";
+              const stageOrder = document.createElement("input");
+              stageOrder.type = "number";
+              stageOrder.id = "rsk-stage-" + sid + "-order";
+              stageOrder.step = "1";
+              stageOrder.value = String(stage.order ?? "");
+              orderLabel.appendChild(stageOrder);
+              stageGrid.appendChild(orderLabel);
+
+              section.appendChild(stageGrid);
+
+              const steps = Array.isArray(stage.steps)
+                ? [...stage.steps].sort((a, b) => (a.order || 0) - (b.order || 0))
+                : [];
+
+              steps.forEach((step, j) => {
+                const ord = step.order;
+                const stepWrap = document.createElement("div");
+                stepWrap.className = "field-full";
+                stepWrap.style.marginTop = "1rem";
+                stepWrap.style.paddingTop = "1rem";
+                stepWrap.style.borderTop = "1px solid var(--ring, #e5e7eb)";
+
+                const stepTitle = document.createElement("h3");
+                stepTitle.style.fontSize = "1rem";
+                stepTitle.style.marginBottom = "0.5rem";
+                stepTitle.textContent = "Step " + (j + 1) + " (order " + ord + ")";
+                stepWrap.appendChild(stepTitle);
+
+                const grid = document.createElement("div");
+                grid.className = "field-grid";
+
+                const tLab = document.createElement("label");
+                tLab.className = "field-full";
+                tLab.innerHTML = "<span>Title</span>";
+                const tIn = document.createElement("input");
+                tIn.type = "text";
+                tIn.id = "rsk-step-" + sid + "-" + ord + "-title";
+                tIn.value = step.title || "";
+                tLab.appendChild(tIn);
+                grid.appendChild(tLab);
+
+                const sLab = document.createElement("label");
+                sLab.className = "field-full";
+                sLab.innerHTML = "<span>Summary</span>";
+                const sIn = document.createElement("textarea");
+                sIn.rows = 3;
+                sIn.id = "rsk-step-" + sid + "-" + ord + "-summary";
+                sIn.value = step.summary || "";
+                sLab.appendChild(sIn);
+                grid.appendChild(sLab);
+
+                const oLab = document.createElement("label");
+                oLab.innerHTML = "<span>Order</span>";
+                const oIn = document.createElement("input");
+                oIn.type = "number";
+                oIn.step = "1";
+                oIn.id = "rsk-step-" + sid + "-" + ord + "-order";
+                oIn.value = String(ord ?? "");
+                oLab.appendChild(oIn);
+                grid.appendChild(oLab);
+
+                const pLab = document.createElement("label");
+                pLab.className = "checkbox-label field-full";
+                const pIn = document.createElement("input");
+                pIn.type = "checkbox";
+                pIn.id = "rsk-step-" + sid + "-" + ord + "-published";
+                pIn.checked = step.published !== false;
+                pLab.appendChild(pIn);
+                const pSpan = document.createElement("span");
+                pSpan.textContent = "Published";
+                pLab.appendChild(pSpan);
+                grid.appendChild(pLab);
+
+                stepWrap.appendChild(grid);
+                section.appendChild(stepWrap);
+              });
+
+              stagesRoot.appendChild(section);
+            });
+
+            function gatherProject() {
+              const p = JSON.parse(hatJson);
+              p.title = titleInput && "value" in titleInput ? titleInput.value : p.title;
+              p.description = descInput && "value" in descInput ? descInput.value : p.description;
+              p.published = pubInput && "checked" in pubInput ? pubInput.checked : p.published;
+
+              const stList = Array.isArray(p.stages) ? p.stages : [];
+              stList.forEach((stage) => {
+                const sid = String(stage.id || "");
+                const stTitleEl = document.getElementById("rsk-stage-" + sid + "-title");
+                const stOrderEl = document.getElementById("rsk-stage-" + sid + "-order");
+                if (stTitleEl && "value" in stTitleEl) stage.title = stTitleEl.value;
+                if (stOrderEl && "value" in stOrderEl) {
+                  const n = parseInt(String(stOrderEl.value), 10);
+                  if (Number.isFinite(n)) stage.order = n;
+                }
+
+                const steps = Array.isArray(stage.steps) ? stage.steps : [];
+                steps.forEach((step) => {
+                  const ord = step.order;
+                  const tEl = document.getElementById("rsk-step-" + sid + "-" + ord + "-title");
+                  const sEl = document.getElementById("rsk-step-" + sid + "-" + ord + "-summary");
+                  const oEl = document.getElementById("rsk-step-" + sid + "-" + ord + "-order");
+                  const pEl = document.getElementById("rsk-step-" + sid + "-" + ord + "-published");
+                  if (tEl && "value" in tEl) step.title = tEl.value;
+                  if (sEl && "value" in sEl) step.summary = sEl.value;
+                  if (oEl && "value" in oEl) {
+                    const n = parseInt(String(oEl.value), 10);
+                    if (Number.isFinite(n)) step.order = n;
+                  }
+                  if (pEl && "checked" in pEl) step.published = pEl.checked;
+                });
+              });
+
+              return p;
+            }
+
+            form.addEventListener("submit", async (e) => {
+              e.preventDefault();
+              if (statusEl) {
+                statusEl.textContent = "Saving…";
+                statusEl.removeAttribute("data-variant");
+              }
+              const project = gatherProject();
+              try {
+                const res = await fetch("/api/admin/rsk", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ project }),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.ok) {
+                  if (statusEl) {
+                    statusEl.textContent = data.error || res.statusText || "Save failed.";
+                    statusEl.setAttribute("data-variant", "error");
+                  }
+                  return;
+                }
+                if (statusEl) {
+                  statusEl.textContent = "Saved. Reloading…";
+                  statusEl.removeAttribute("data-variant");
+                }
+                window.location.reload();
+              } catch (err) {
+                if (statusEl) {
+                  statusEl.textContent = err instanceof Error ? err.message : "Save failed.";
+                  statusEl.setAttribute("data-variant", "error");
+                }
+              }
+            });
+          })();
+        </script>
+      )
+    }
+  </main>
+</BaseLayout>

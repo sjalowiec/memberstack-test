@@ -1,0 +1,22 @@
+---
+const {
+  as = "span",
+  class: className = "",
+  words = ["Ready", "Set", "Knit"],
+} = Astro.props;
+
+const Tag = as;
+---
+
+<Tag class={`rsk-inline ${className}`}>
+  {
+    words.map((word: string, index: number) => (
+      <>
+        <span>{word}</span>
+        {index < words.length - 1 && (
+          <span class="rsk-sep" aria-hidden="true">•</span>
+        )}
+      </>
+    ))
+  }
+</Tag>

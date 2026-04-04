@@ -4,8 +4,6 @@ import ActionBar from "../../components/wizards/ActionBar.astro";
 import Tooltip from "../../components/Tooltip.astro";
 import PrintFooter from "../../components/common/PrintFooter.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
-import GaugeInput from "../../components/wizards/components/GaugeInput.astro";
-import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
 
 const pageUrl = "https://knitbymachine.com/wizards/corner-to-corner";
 ---
@@ -474,7 +472,6 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Action Bar buttons
   const actionBar = document.getElementById('action-bar');
-  const startOverBtn = document.getElementById('start-over-btn');
   const printBtn = document.getElementById('print-btn');
   
   // Unit toggle
@@ -680,22 +677,6 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
   }
   
-  // Reset function
-  function reset() {
-    needlesInput.value = '';
-    stitchGaugeInput.value = '';
-    rowGaugeInput.value = '';
-    errorMessage.classList.remove('show');
-    resultsContainer.classList.remove('show');
-    
-    // Hide action bar
-    actionBar.style.display = 'none';
-    printBtn.style.display = 'none';
-    
-    // Scroll back to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-  
   // Print function
   function handlePrint() {
     window.print();
@@ -703,7 +684,6 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Event listeners
   calculateBtn.addEventListener('click', calculate);
-  startOverBtn.addEventListener('click', reset);
   printBtn.addEventListener('click', handlePrint);
   
   // Allow Enter key to calculate

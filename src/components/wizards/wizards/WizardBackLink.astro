@@ -1,0 +1,53 @@
+---
+interface Props {
+  category?: string;
+  contentType?: string;
+  wizardClass?: string;
+  classes?: string[];
+  linkClass?: string;
+}
+
+const { category, contentType, wizardClass, classes, linkClass = 'back-link' } = Astro.props;
+
+const normalizedCategory = (category || '').toLowerCase().trim();
+const normalizedContentType = (contentType || '').toLowerCase().trim();
+const normalizedClass = (wizardClass || '').toLowerCase().trim();
+const normalizedClasses = (classes || []).map(c => c.toLowerCase().trim());
+
+const isProjectWizard = 
+  normalizedContentType.includes('project wizard') ||
+  normalizedClass === 'smart guide' || 
+  normalizedClasses.includes('smart guide') || 
+  normalizedCategory === 'smart guide' ||
+  normalizedCategory === 'smart guides';
+
+const isTool = 
+  normalizedContentType === 'tool' ||
+  normalizedCategory === 'tool' || 
+  normalizedCategory === 'tools';
+
+const isPracticeProject =
+  normalizedContentType.includes('practice project') ||
+  normalizedCategory.includes('skill builder') ||
+  normalizedCategory.includes('practice');
+
+const isPattern =
+  normalizedContentType === 'pattern' ||
+  normalizedCategory.includes('pattern');
+
+let href = '/project-wizards';
+let text = '← Back to Project Wizards';
+
+if (isTool) {
+  href = '/charting-tools';
+  text = '← Back to Charting Tools';
+} else if (isPracticeProject) {
+  href = '/practice-projects';
+  text = '← Back to Practice Projects';
+} else if (isPattern) {
+  href = '/patterns';
+  text = '← Back to Patterns';
+}
+---
+
+<a href={href} class={linkClass} data-testid="link-back-catalog">{text}</a>

@@ -5,11 +5,11 @@ import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
 import toolsData from "../../../data/tools.json";
 import "../../styles/wizard.css";
 import FloatingInput from "../../components/tools/FloatingInput.astro";
-import UnitToggle from "../../components/wizards/components/UnitToggle.astro";
+import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import rectangleDiagram from "../../components/tools/diagram-rectangle.svg?raw";
 const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
 const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
-import GaugeInput from "../../components/wizards/components/GaugeInput.astro";
+import GaugeInput from "../../components/wizards/GaugeInput.astro";
 import ToolResultCard from "../../components/tools/ToolResultCard.astro";
 import PrintButton from "../../components/common/PrintButton.astro";
 

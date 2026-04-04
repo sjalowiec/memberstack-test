@@ -11,6 +11,13 @@ interface ImportMetaEnv {
 
 declare global {
   interface Window {
+    /** Pinterest pinit.js */
+    PinUtils?: { build?: () => void; parse?: () => void };
+    /** Safe PinUtils.build/parse; alias: kbmPinterestBuild */
+    kbmInitPinterestEmbeds?: () => void;
+    kbmPinterestBuild?: () => void;
+    /** rAF + short retry until PinUtils exists (tab-hidden embeds) */
+    kbmSchedulePinterestEmbedsRefresh?: () => void;
     __DEV_BYPASS_GATING?: boolean;
     /** Localhost + ?member=true: set in BaseLayout for client-side gates (videos, etc.). */
     __KBM_DEV_MEMBER__?: boolean;

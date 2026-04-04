@@ -1,0 +1,162 @@
+---
+/**
+ * ============================================================================
+ * KBM LEGO BLOCK: Unit Toggle Component
+ * ============================================================================
+ * 
+ * This is a standardized, reusable component for all KBM wizards.
+ * 
+ * PURPOSE:
+ * - Provides inches/cm switching with consistent KBM styling
+ * - LEFT-ALIGNED, compact design (30-32px height)
+ * - Appears immediately ABOVE the first input section in wizard forms
+ * - Dispatches kbm:units-change event for page-level coordination
+ * - Creates/manages hidden input for form submission
+ * 
+ * USAGE:
+ * <UnitToggle id="mywizard" />
+ * 
+ * PLACEMENT:
+ * - Insert ONCE per page, immediately above the first input section
+ * - Do NOT right-align or tie to section titles
+ * 
+ * EVENTS:
+ * - Dispatches: window.dispatchEvent(new CustomEvent("kbm:units-change", { detail: { unit: "in" | "cm" } }))
+ * - Listen with: window.addEventListener("kbm:units-change", (e) => { ... })
+ * 
+ * HIDDEN INPUT:
+ * - Creates <input type="hidden" name="unit" id="unit" value="in|cm" />
+ * - Inserted into nearest parent <form> or #wizard-form
+ */
+
+interface Props {
+  /** ID prefix for the toggle buttons (e.g., 'hat' creates 'hat-btn-inches') */
+  id?: string;
+  /** Default unit: 'in' or 'cm' */
+  defaultUnit?: 'in' | 'cm';
+  /** Additional CSS classes */
+  class?: string;
+}
+
+const { id = 'unit', defaultUnit = 'in', class: className = '' } = Astro.props;
+const isInchesActive = defaultUnit === 'in';
+---
+
+<div 
+  class={`units-toggle ${className}`}
+  role="group"
+  aria-label="Units"
+  data-unit-toggle={id}
+>
+  <button 
+    type="button"
+    class={`unit-btn ${isInchesActive ? 'active' : ''}`}
+    id={`${id}-btn-inches`}
+    data-unit="in"
+    aria-pressed={isInchesActive ? 'true' : 'false'}
+    data-testid="button-unit-inches"
+  >
+    Inches
+  </button>
+  <button 
+    type="button"
+    class={`unit-btn ${!isInchesActive ? 'active' : ''}`}
+    id={`${id}-btn-cm`}
+    data-unit="cm"
+    aria-pressed={!isInchesActive ? 'true' : 'false'}
+    data-testid="button-unit-cm"
+  >
+    Centimeters
+  </button>
+</div>
+
+<script define:vars={{ id, defaultUnit }}>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggleWrapper = document.querySelector(`[data-unit-toggle="${id}"]`);
+    if (!toggleWrapper) return;
+
+    const inchesBtn = document.getElementById(`${id}-btn-inches`);
+    const cmBtn = document.getElementById(`${id}-btn-cm`);
+    
+    if (!inchesBtn || !cmBtn) return;
+
+    // Find or create hidden input for unit value
+    let hiddenInput = document.getElementById('unit');
+    if (!hiddenInput) {
+      hiddenInput = document.createElement('input');
+      hiddenInput.type = 'hidden';
+      hiddenInput.name = 'unit';
+      hiddenInput.id = 'unit';
+      hiddenInput.value = defaultUnit;
+      
+      // Insert into wizard-form if exists, otherwise nearest form
+      const form = document.getElementById('wizard-form') || toggleWrapper.closest('form');
+      if (form) {
+        form.appendChild(hiddenInput);
+      }
+    }
+
+    function setUnit(unit) {
+      const isInches = unit === 'in';
+      
+      // Update button states
+      inchesBtn.classList.toggle('active', isInches);
+      cmBtn.classList.toggle('active', !isInches);
+      inchesBtn.setAttribute('aria-pressed', isInches ? 'true' : 'false');
+      cmBtn.setAttribute('aria-pressed', !isInches ? 'true' : 'false');
+      
+      // Update hidden input
+      if (hiddenInput) {
+        hiddenInput.value = unit;
+      }
+      
+      // Dispatch event for page-level coordination
+      window.dispatchEvent(new CustomEvent('kbm:units-change', { 
+        detail: { unit } 
+      }));
+    }
+
+    inchesBtn.addEventListener('click', () => setUnit('in'));
+    cmBtn.addEventListener('click', () => setUnit('cm'));
+  });
+</script>
+
+<style>
+/* Component-specific styles - compact, left-aligned */
+.units-toggle {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 3px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  width: fit-content;
+  margin-bottom: 1rem;
+}
+
+.unit-btn {
+  padding: 0.35rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.unit-btn.active {
+  background: var(--kbm-green, #52682D);
+  color: white;
+}
+
+.unit-btn:hover:not(.active) {
+  background: rgba(82, 104, 45, 0.1);
+}
+
+.unit-btn:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682D);
+  outline-offset: 2px;
+}
+</style>

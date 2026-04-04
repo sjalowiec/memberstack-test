@@ -1,0 +1,170 @@
+---
+/**
+ * StepsGate.astro
+ * 
+ * A reusable "lego block" component that gates content visibility based on required fields.
+ * Shows a friendly message until all required fields are complete, then reveals the content.
+ * 
+ * Usage:
+ * ------
+ * 1. Wrap your steps/instructions in this component
+ * 2. Set a unique gateId
+ * 3. In your client-side JS, dispatch events to update the gate state:
+ * 
+ *    // When requirements are met:
+ *    window.dispatchEvent(new CustomEvent('stepsgate:update', { 
+ *      detail: { id: 'my-gate-id', isComplete: true, missingFields: [] }
+ *    }));
+ * 
+ *    // When requirements are NOT met:
+ *    window.dispatchEvent(new CustomEvent('stepsgate:update', { 
+ *      detail: { id: 'my-gate-id', isComplete: false, missingFields: ['Blanket Size', 'Border Gauge'] }
+ *    }));
+ */
+
+interface Props {
+  gateId: string;
+  gateMessage?: string;
+}
+
+const { 
+  gateId,
+  gateMessage = "Fill in the missing details above to show your custom knitting steps."
+} = Astro.props;
+---
+
+<div class="steps-gate" data-stepsgate-id={gateId}>
+  <div class="steps-gate__locked" data-testid={`gate-locked-${gateId}`}>
+    <div class="steps-gate__icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+    </div>
+    <p class="steps-gate__message">{gateMessage}</p>
+    <div class="steps-gate__missing">
+      <p class="steps-gate__missing-label">Still needed:</p>
+      <ul class="steps-gate__missing-list" data-testid={`gate-missing-list-${gateId}`}>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="steps-gate__content" style="display: none;" data-testid={`gate-content-${gateId}`}>
+    <slot />
+  </div>
+</div>
+
+<script define:vars={{ gateId }}>
+document.addEventListener('DOMContentLoaded', function() {
+  const wrapper = document.querySelector(`[data-stepsgate-id="${gateId}"]`);
+  if (!wrapper) return;
+  
+  const lockedEl = wrapper.querySelector('.steps-gate__locked');
+  const contentEl = wrapper.querySelector('.steps-gate__content');
+  const missingListEl = wrapper.querySelector('.steps-gate__missing-list');
+  const missingSection = wrapper.querySelector('.steps-gate__missing');
+  
+  function updateGate(isComplete, missingFields) {
+    if (isComplete) {
+      if (lockedEl) lockedEl.style.display = 'none';
+      if (contentEl) contentEl.style.display = 'block';
+    } else {
+      if (lockedEl) lockedEl.style.display = 'flex';
+      if (contentEl) contentEl.style.display = 'none';
+      
+      if (missingListEl && missingFields && missingFields.length > 0) {
+        missingListEl.innerHTML = missingFields.map(field => `<li>${field}</li>`).join('');
+        if (missingSection) missingSection.style.display = 'block';
+      } else if (missingSection) {
+        missingSection.style.display = 'none';
+      }
+    }
+  }
+  
+  window.addEventListener('stepsgate:update', function(e) {
+    if (e.detail && e.detail.id === gateId) {
+      updateGate(e.detail.isComplete, e.detail.missingFields || []);
+    }
+  });
+});
+</script>
+
+<style>
+.steps-gate__locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+  background: linear-gradient(135deg, #f8faf5 0%, #eef2e6 100%);
+  border: 2px dashed #c5d4a8;
+  border-radius: 12px;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.steps-gate__icon {
+  width: 48px;
+  height: 48px;
+  color: #7a8f5c;
+  margin-bottom: 1rem;
+}
+
+.steps-gate__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.steps-gate__message {
+  font-size: 1.1rem;
+  color: #52682d;
+  font-weight: 500;
+  margin: 0 0 1rem 0;
+  max-width: 400px;
+}
+
+.steps-gate__missing {
+  margin-top: 0.5rem;
+}
+
+.steps-gate__missing-label {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0 0 0.5rem 0;
+  font-weight: 500;
+}
+
+.steps-gate__missing-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.steps-gate__missing-list li {
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+@media (max-width: 640px) {
+  .steps-gate__locked {
+    padding: 2rem 1rem;
+  }
+  
+  .steps-gate__icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .steps-gate__message {
+    font-size: 1rem;
+  }
+}
+</style>

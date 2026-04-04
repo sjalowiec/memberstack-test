@@ -81,15 +81,43 @@ const isProduction =
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
 
-    <!-- Pinterest Embed Script -->
+    <!-- Pinterest Embed Script (single load site-wide; re-parse via kbmSchedulePinterestEmbedsRefresh when tabs show) -->
     <script async defer src="https://assets.pinterest.com/js/pinit.js"></script>
     <script is:inline>
-      window.kbmPinterestBuild = function() {
+      window.kbmInitPinterestEmbeds = function kbmInitPinterestEmbeds() {
         try {
-          if (window.PinUtils && typeof window.PinUtils.build === "function") {
-            window.PinUtils.build();
+          var PU = window.PinUtils;
+          if (PU && typeof PU.build === "function") {
+            PU.build();
+          }
+          if (PU && typeof PU.parse === "function") {
+            PU.parse();
           }
         } catch (e) {}
+      };
+      window.kbmPinterestBuild = window.kbmInitPinterestEmbeds;
+      /**
+       * Run after layout + retry until PinUtils exists (hidden-tab embeds, slow pinit.js).
+       * Pattern pages: call when an Inspiration tab becomes visible and once on load if needed.
+       */
+      window.kbmSchedulePinterestEmbedsRefresh = function kbmSchedulePinterestEmbedsRefresh() {
+        function tryInit() {
+          try {
+            window.kbmInitPinterestEmbeds();
+          } catch (e) {}
+        }
+        requestAnimationFrame(function () {
+          requestAnimationFrame(tryInit);
+        });
+        var n = 0;
+        var max = 24;
+        var id = window.setInterval(function () {
+          n += 1;
+          tryInit();
+          if (window.PinUtils || n >= max) {
+            window.clearInterval(id);
+          }
+        }, 125);
       };
     </script>
     

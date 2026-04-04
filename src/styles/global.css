@@ -3,6 +3,37 @@
    ============================================ */
 @import './lego/floating-input.css';
 
+/* Pattern wizard tabs (e.g. hat builder) */
+.pattern-tab-nav {
+  display: flex;
+  gap: 10px;
+  border-bottom: 2px solid #e5e5e5;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #666;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-btn.active {
+  color: #52682d;
+  border-bottom: 3px solid #52682d;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
 /* SOFT LAUNCH: hide homepage “Where are you right now?” block. Remove .kbm-hidden-softlaunch from #where-are-you when re-enabling. */
 .kbm-hidden-softlaunch {
   display: none !important;
@@ -22,6 +53,7 @@
   --page-bg: #f7f8f7;
   --ring: #e5e8e0;
   --font: "Poppins", system-ui, Arial, sans-serif;
+  --text-muted: #6b7280;
 
   .video-thumb{
     position: relative;
@@ -2237,4 +2269,24 @@ a.kbm-btn--primary:hover {
   margin-top: 10px;
   font-size: 0.9rem;
   color: #6b7280; /* soft gray */
+}
+
+/* Ready • Set • Knit (inline-friendly phrase) */
+.rsk-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  font-weight: 600;
+}
+
+.rsk-sep {
+  margin: 0 6px;
+  letter-spacing: 0 !important;
+}
+
+.rsk-inline .rsk-sep {
+  font-size: 0.8em;
+  line-height: 1;
+  opacity: 0.6;
+  color: #52682d;
 }

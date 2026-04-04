@@ -1,0 +1,384 @@
+---
+/**
+ * WizardFlowRenderer.astro
+ * 
+ * Renders an interactive wizard flow from JSON data.
+ * Supports simple flows: one question with multiple answer options,
+ * each leading to a specific result.
+ * 
+ * Usage:
+ * <WizardFlowRenderer 
+ *   wizardFlow={entry.wizardFlow}
+ *   wizardTitle="Dropped Stitch Troubleshooter"
+ *   introDescription="Find out what's causing your issue..."
+ * />
+ */
+
+interface WizardFlowResult {
+  id: string;
+  causeTitle: string;
+  explanation: string;
+  tryThisItems: string[];
+  encouragement: string;
+}
+
+interface WizardFlowOption {
+  id: string;
+  label: string;
+  resultId: string;
+}
+
+interface WizardFlow {
+  version: number;
+  questionTitle?: string;
+  questionSubtitle?: string;
+  options: WizardFlowOption[];
+  results: WizardFlowResult[];
+}
+
+interface Props {
+  wizardFlow: WizardFlow;
+  wizardTitle: string;
+  introDescription?: string;
+  startButtonLabel?: string;
+  resultEyebrow?: string;
+  tryThisHeading?: string;
+}
+
+const { 
+  wizardFlow, 
+  wizardTitle,
+  introDescription = "This quick check helps you find the most likely cause and get practical guidance.",
+  startButtonLabel = "Start",
+  resultEyebrow = "Likely cause",
+  tryThisHeading = "Try this next:"
+} = Astro.props;
+
+const flowDataJson = JSON.stringify({
+  options: wizardFlow.options,
+  results: wizardFlow.results,
+  questionTitle: wizardFlow.questionTitle || "What best describes your situation?",
+  questionSubtitle: wizardFlow.questionSubtitle || "Choose the option that sounds most like what you're seeing.",
+  wizardTitle,
+  introDescription,
+  startButtonLabel,
+  resultEyebrow,
+  tryThisHeading,
+});
+---
+
+<style>
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin: 2rem 0;
+}
+
+@media (min-width: 640px) {
+  .options-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .options-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+.kbm-button--primary-large {
+  font-size: 1.25rem;
+  padding: 1rem 2.5rem;
+  min-height: 3.5rem;
+  font-weight: 600;
+}
+
+@media print {
+  .wizard-flow-container .options-grid,
+  .wizard-flow-container .kbm-button {
+    display: none !important;
+  }
+}
+</style>
+
+<div class="wizard-flow-container" id="wizard-flow-root" data-flow={flowDataJson}></div>
+
+<script>
+  const container = document.getElementById('wizard-flow-root');
+  if (container) {
+    const flowData = JSON.parse(container.dataset.flow || '{}');
+    
+    const { 
+      options, 
+      results, 
+      questionTitle, 
+      questionSubtitle, 
+      wizardTitle, 
+      introDescription,
+      startButtonLabel,
+      resultEyebrow,
+      tryThisHeading 
+    } = flowData;
+
+    let currentStep = 'intro';
+    let selectedOptionId = null;
+
+    function getResultById(resultId) {
+      return results.find(function(r) { return r.id === resultId; });
+    }
+
+    function getOptionById(optionId) {
+      return options.find(function(o) { return o.id === optionId; });
+    }
+
+    function renderIntro() {
+      return `
+        <div class="kbm-card kbm-card--shadow">
+          <div class="kbm-card__header">
+            <h2 class="kbm-card__title" data-testid="text-wizard-title">
+              ${wizardTitle}
+            </h2>
+          </div>
+          <div class="kbm-card__body">
+            <p class="kbm-lede" data-testid="text-intro-description">
+              ${introDescription}
+            </p>
+          </div>
+          <div class="kbm-card__footer">
+            <button
+              class="kbm-button kbm-button--primary"
+              id="btn-start"
+              data-testid="button-start"
+            >
+              ${startButtonLabel}
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderQuestion() {
+      return `
+        <div class="kbm-card kbm-card--shadow">
+          <div class="kbm-card__header">
+            <h2 class="kbm-card__title" data-testid="text-question-title">
+              ${questionTitle}
+            </h2>
+            <p class="kbm-card__subtitle" data-testid="text-question-helper">
+              ${questionSubtitle}
+            </p>
+          </div>
+          <div class="kbm-card__body">
+            <div class="options-grid">
+              ${options.map(function(option) { return `
+                <button
+                  class="option-bubble ${selectedOptionId === option.id ? 'selected' : ''}"
+                  data-option-id="${option.id}"
+                  data-testid="button-option-${option.id}"
+                >
+                  ${option.label}
+                </button>
+              `; }).join('')}
+            </div>
+          </div>
+          <div class="kbm-card__footer">
+            <button
+              class="kbm-button kbm-button--secondary"
+              id="btn-back"
+              data-testid="button-back"
+            >
+              Back
+            </button>
+            <button
+              class="kbm-button kbm-button--primary kbm-button--primary-large"
+              id="btn-see-result"
+              data-testid="button-see-result"
+              ${!selectedOptionId ? 'disabled' : ''}
+            >
+              Let's take a look
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderResult() {
+      if (!selectedOptionId) return '';
+      
+      const selectedOption = getOptionById(selectedOptionId);
+      if (!selectedOption) return '';
+      
+      const result = getResultById(selectedOption.resultId);
+      if (!result) return '';
+      
+      return `
+        <div class="kbm-card kbm-card--shadow">
+          <div class="kbm-card__header">
+            <div style="max-width: 500px; margin: 0 0 1.5rem;">
+              <div class="option-bubble selected" style="cursor: default; pointer-events: none;" data-testid="text-selected-option">
+                ${selectedOption.label}
+              </div>
+            </div>
+            
+            <div class="kbm-eyebrow" data-testid="text-result-eyebrow">
+              ${resultEyebrow}
+            </div>
+            <h2 class="kbm-card__title" data-testid="text-result-title">
+              ${result.causeTitle}
+            </h2>
+          </div>
+          <div class="kbm-card__body">
+            <p data-testid="text-result-explanation">${result.explanation}</p>
+
+            ${result.tryThisItems && result.tryThisItems.length > 0 ? `
+              <h3
+                class="kbm-wizard__result-heading"
+                data-testid="text-result-try-this-heading"
+              >
+                ${tryThisHeading}
+              </h3>
+              <ul
+                class="kbm-wizard__result-list"
+                data-testid="list-result-suggestions"
+              >
+                ${result.tryThisItems.map(function(item, index) { return `
+                  <li data-testid="list-item-suggestion-${index}">
+                    ${item}
+                  </li>
+                `; }).join('')}
+              </ul>
+            ` : ''}
+
+            ${result.encouragement ? `
+              <p
+                class="kbm-text-muted"
+                data-testid="text-result-encouragement"
+              >
+                ${result.encouragement}
+              </p>
+            ` : ''}
+          </div>
+          <div class="kbm-card__footer">
+            <button
+              class="kbm-button kbm-button--primary"
+              id="btn-start-over"
+              data-testid="button-start-over"
+            >
+              Start over
+            </button>
+            <button
+              class="kbm-button kbm-button--secondary"
+              id="btn-change-answer"
+              data-testid="button-change-answer"
+              style="border-radius: 24px;"
+            >
+              Change my answer
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function render() {
+      let html = '';
+      if (currentStep === 'intro') {
+        html = renderIntro();
+      } else if (currentStep === 'question') {
+        html = renderQuestion();
+      } else if (currentStep === 'result') {
+        html = renderResult();
+      }
+
+      container.innerHTML = html;
+      attachEventListeners();
+      
+      const actionBar = document.getElementById('action-bar');
+      const printBtn = document.getElementById('print-btn');
+      
+      if (currentStep === 'result') {
+        if (actionBar) actionBar.style.display = 'flex';
+        if (printBtn) printBtn.style.display = 'block';
+      } else {
+        if (actionBar) actionBar.style.display = 'none';
+      }
+    }
+
+    function attachEventListeners() {
+      const btnStart = document.getElementById('btn-start');
+      const btnBack = document.getElementById('btn-back');
+      const btnSeeResult = document.getElementById('btn-see-result');
+      const btnStartOver = document.getElementById('btn-start-over');
+      const btnChangeAnswer = document.getElementById('btn-change-answer');
+      const optionButtons = container.querySelectorAll('[data-option-id]');
+
+      if (btnStart) {
+        btnStart.addEventListener('click', () => {
+          currentStep = 'question';
+          render();
+        });
+      }
+
+      if (btnBack) {
+        btnBack.addEventListener('click', () => {
+          currentStep = 'intro';
+          render();
+        });
+      }
+
+      if (btnSeeResult) {
+        btnSeeResult.addEventListener('click', () => {
+          if (selectedOptionId) {
+            currentStep = 'result';
+            render();
+          }
+        });
+      }
+
+      if (btnStartOver) {
+        btnStartOver.addEventListener('click', () => {
+          selectedOptionId = null;
+          currentStep = 'intro';
+          render();
+        });
+      }
+
+      if (btnChangeAnswer) {
+        btnChangeAnswer.addEventListener('click', () => {
+          currentStep = 'question';
+          render();
+        });
+      }
+
+      optionButtons.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          var target = e.currentTarget;
+          if (target) {
+            selectedOptionId = target.getAttribute('data-option-id');
+          }
+          render();
+        });
+      });
+    }
+
+    const externalStartOver = document.getElementById('start-over-btn');
+    if (externalStartOver) {
+      externalStartOver.addEventListener('click', () => {
+        selectedOptionId = null;
+        currentStep = 'intro';
+        render();
+      });
+    }
+
+    const printBtn = document.getElementById('print-btn');
+    if (printBtn) {
+      printBtn.addEventListener('click', () => {
+        window.print();
+      });
+    }
+
+    render();
+  }
+</script>

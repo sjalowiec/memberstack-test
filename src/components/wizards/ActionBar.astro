@@ -1,20 +1,34 @@
 ---
 // Reusable Action Bar component for wizards
-// Fixed floating buttons in bottom-right corner (Edit/Rebuild, Start Over, Print)
-// Desktop/tablet: floating vertical stack
-// Mobile: hidden floating, show top bar instead
+// Desktop/tablet: fixed floating vertical stack (Edit / Rebuild, Print)
+// Mobile: single bottom-right helper — scroll to form (or programmatic #edit-btn click as fallback)
+
+export interface Props {
+  /**
+   * Element id to scroll into view when the mobile "↑ Edit Choices" control is used.
+   * If omitted or the element is missing, the component falls back to clicking `#edit-btn`
+   * so pages that open a drawer or switch wizard state keep working.
+   */
+  formScrollTarget?: string;
+}
+
+const { formScrollTarget = '' } = Astro.props;
 ---
 
-<!-- Mobile Top Bar (hidden on desktop, hidden initially in viewer mode) -->
-<div id="action-bar-topbar" class="pattern-actions pattern-actions--topbar no-print" aria-label="Pattern actions">
-  <button type="button" class="action-btn action-btn--icon" aria-label="Edit or rebuild" data-action="edit" data-testid="topbar-edit">
-    <i class="fas fa-edit" aria-hidden="true"></i>
-  </button>
-  <button type="button" class="action-btn action-btn--icon" aria-label="Start over" data-action="reset" data-testid="topbar-start-over">
-    <i class="fas fa-redo" aria-hidden="true"></i>
-  </button>
-  <button type="button" class="action-btn action-btn--icon" aria-label="Print" data-action="print" data-testid="topbar-print">
-    <i class="fas fa-print" aria-hidden="true"></i>
+<!-- Mobile: one helper control (hidden on desktop; visibility via .is-active on this node) -->
+<div
+  id="action-bar-topbar"
+  class="pattern-actions pattern-actions--mobile no-print"
+  aria-label="Return to pattern inputs"
+>
+  <button
+    type="button"
+    id="action-bar-mobile-scroll-btn"
+    class="pattern-actions__mobile-edit"
+    data-testid="action-bar-mobile-edit-choices"
+    aria-label="Scroll to form to edit your choices"
+  >
+    ↑ Edit Choices
   </button>
 </div>
 
@@ -24,31 +38,89 @@
     <i class="fas fa-edit" aria-hidden="true"></i>
     <span class="btn-label">Edit / Rebuild</span>
   </button>
-  <button class="wizard-action-btn" id="start-over-btn" data-testid="button-start-over" aria-label="Start over with new settings">
-    <i class="fas fa-redo" aria-hidden="true"></i>
-    <span class="btn-label">Start Over</span>
-  </button>
   <button class="wizard-action-btn" id="print-btn" data-testid="button-print" aria-label="Print pattern">
     <i class="fas fa-print" aria-hidden="true"></i>
     <span class="btn-label">Print</span>
   </button>
 </div>
 
+<script is:inline define:vars={{ formScrollTarget }}>
+  (function () {
+    function onMobileEditChoicesClick() {
+      var id = typeof formScrollTarget === 'string' ? formScrollTarget.trim() : '';
+      if (id) {
+        var el = document.getElementById(id);
+        if (el) {
+          var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+          return;
+        }
+      }
+      var editBtn = document.getElementById('edit-btn');
+      if (editBtn) editBtn.click();
+    }
+
+    function bindMobileEditChoices() {
+      var btn = document.getElementById('action-bar-mobile-scroll-btn');
+      if (!btn || btn.dataset.kbmMobileEditBound === '1') return;
+      btn.dataset.kbmMobileEditBound = '1';
+      btn.addEventListener('click', onMobileEditChoicesClick);
+    }
+
+    /** Keep #action-bar-topbar.is-active in sync with the floating bar (display:flex and/or .is-active). */
+    function syncMobileBarFromFloatingBar() {
+      var floatBar = document.getElementById('action-bar');
+      var mobileBar = document.getElementById('action-bar-topbar');
+      if (!floatBar || !mobileBar) return;
+      var logicallyVisible =
+        floatBar.classList.contains('is-active') || floatBar.style.display === 'flex';
+      mobileBar.classList.toggle('is-active', logicallyVisible);
+    }
+
+    function initActionBarClient() {
+      bindMobileEditChoices();
+      syncMobileBarFromFloatingBar();
+      var floatBar = document.getElementById('action-bar');
+      if (floatBar && typeof MutationObserver !== 'undefined') {
+        var obs = new MutationObserver(syncMobileBarFromFloatingBar);
+        obs.observe(floatBar, { attributes: true, attributeFilter: ['style', 'class'] });
+      }
+      window.matchMedia('(max-width: 640px)').addEventListener('change', syncMobileBarFromFloatingBar);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initActionBarClient);
+    } else {
+      initActionBarClient();
+    }
+  })();
+</script>
+
 <style>
-/* Default: topbar hidden, floating hidden until activated */
-.pattern-actions--topbar { display: none; }
-.pattern-actions--floating { display: none; }
+/* Default: mobile helper hidden, floating hidden until activated */
+.pattern-actions--mobile {
+  display: none;
+}
+.pattern-actions--floating {
+  display: none;
+}
 
 /* When pattern is built, JS adds .is-active class */
-.pattern-actions--floating.is-active { display: flex; }
+.pattern-actions--floating.is-active {
+  display: flex;
+}
 
 /* Print button only visible when active */
-#print-btn { display: none; }
-#print-btn.is-active { display: inline-flex; }
+#print-btn {
+  display: none;
+}
+#print-btn.is-active {
+  display: inline-flex;
+}
 
-/* Desktop (≥641px): NEVER show topbar, only show floating when active */
+/* Desktop (≥641px): NEVER show mobile helper, only show floating when active */
 @media (min-width: 641px) {
-  .pattern-actions--topbar {
+  .pattern-actions--mobile {
     display: none !important;
   }
   .pattern-actions--floating.is-active {
@@ -56,11 +128,66 @@
   }
 }
 
-/* Mobile (≤640px): show topbar when active, NEVER show floating */
+/* Mobile (≤640px): show helper when active, NEVER show floating stack */
 @media (max-width: 640px) {
-  .pattern-actions--topbar.is-active {
+  .pattern-actions--mobile.is-active {
     display: flex;
+    align-items: center;
+    justify-content: center;
+
+    position: fixed;
+    right: max(1rem, env(safe-area-inset-right, 0px));
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    left: auto;
+    top: auto;
+    z-index: 1000;
+
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    pointer-events: none;
   }
+
+  .pattern-actions__mobile-edit {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-height: 48px;
+    padding: 0.55rem 1rem;
+    margin: 0;
+    border: none;
+    border-radius: 999px;
+    background: var(--kbm-green, #52682d);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.14);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
+  }
+
+  .pattern-actions__mobile-edit:hover {
+    background: #6e8b3d;
+    box-shadow: 0 4px 12px rgba(82, 104, 45, 0.28);
+  }
+
+  .pattern-actions__mobile-edit:active {
+    transform: scale(0.98);
+  }
+
+  .pattern-actions__mobile-edit:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+
   .pattern-actions--floating {
     display: none !important;
   }
@@ -100,7 +227,7 @@
 }
 
 .wizard-action-btn:hover {
-  background: #6E8B3D;
+  background: #6e8b3d;
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(82, 104, 45, 0.35);
 }
@@ -121,59 +248,11 @@
     right: 15px;
     gap: 0.6rem;
   }
-  
+
   .wizard-action-btn {
     min-width: 140px;
     padding: 0.65rem 1.25rem;
     font-size: var(--text-base);
-  }
-}
-
-/* Mobile topbar styling (only visible when .is-active) */
-@media (max-width: 640px) {
-  .pattern-actions--topbar.is-active {
-    gap: 10px;
-    align-items: center;
-    justify-content: flex-start;
-    
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 100;
-    
-    padding: 8px 12px;
-    
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    
-    border: 1px solid var(--border, #e5e7eb);
-    border-radius: var(--radius, 18px);
-    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-  }
-  
-  .action-btn--icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 999px;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--kbm-green, #52682D);
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  
-  .action-btn--icon:hover {
-    background: #6E8B3D;
-  }
-  
-  .action-btn--icon svg,
-  .action-btn--icon i {
-    font-size: 18px;
   }
 }
 

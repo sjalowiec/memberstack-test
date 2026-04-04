@@ -1,0 +1,31 @@
+---
+import ReadySetKnitHeader from "./ReadySetKnitHeader.astro";
+
+interface Props {
+  title: string;
+  class?: string;
+}
+
+const { title, class: className = "" } = Astro.props;
+
+const colonIdx = title.indexOf(": ");
+const hasSubtitle = colonIdx >= 0;
+const tailPart = hasSubtitle ? title.slice(colonIdx + 2).trim() : "";
+---
+
+<h1
+  class={className}
+  style="font-size: var(--text-xxl); font-weight: 600; color: var(--kbm-green); margin: 0 0 0.5rem; line-height: 1.2;"
+>
+  {
+    hasSubtitle ? (
+      <>
+        <ReadySetKnitHeader as="span" />
+        {": "}
+        {tailPart}
+      </>
+    ) : (
+      title
+    )
+  }
+</h1>

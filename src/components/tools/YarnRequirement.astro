@@ -1,140 +1,184 @@
 ---
 // YarnRequirement.astro
-// Estimates yarn needed based on swatch weight and blanket dimensions
-// Supports embed mode (with props) and standalone mode (without props)
+// Estimates yarn needed from swatch weight and project dimensions (rectangle area + 10% buffer)
+// Supports embed mode (pattern-driven dimensions), hat embed, and standalone mode
+
+import YarnRequirementCalculatorCore from './YarnRequirementCalculatorCore.astro';
 
 export interface Props {
-  projectWidth?: number; // Blanket width (in lengthUnit)
-  projectLength?: number; // Blanket length (in lengthUnit)
+  projectWidth?: number; // Project width (in lengthUnit), e.g. blanket width or finished hat width
+  projectLength?: number; // Project length (in lengthUnit)
   lengthUnit?: 'in' | 'cm'; // Unit of projectWidth/projectLength (default: 'in')
   source?: 'sample' | 'custom'; // Whether dimensions are from sample or custom pattern
+  /** When "hat", uses compact collapsible UI and hat-oriented copy; embeds even if dimensions start at 0 */
+  variant?: 'default' | 'hat';
+  /** 'accordion': details/summary (default). 'panel': flat block (e.g. hat builder drawer). */
+  layout?: 'accordion' | 'panel';
+  /** 'drawer': hat-builder helper panel styling and section layout (use with layout panel + hat). */
+  presentation?: 'default' | 'drawer';
 }
 
-const { 
-  projectWidth = 0, 
-  projectLength = 0, 
+const {
+  projectWidth = 0,
+  projectLength = 0,
   lengthUnit = 'in',
-  source = 'sample'
+  source = 'sample',
+  variant = 'default',
+  layout = 'accordion',
+  presentation = 'default',
 } = Astro.props;
 
-// Determine mode: embed (has props) or standalone (no props)
-const isEmbedMode = projectWidth !== undefined && projectLength !== undefined && projectWidth > 0 && projectLength > 0;
+const isHat = variant === 'hat';
+const usePanelLayout = layout === 'panel';
+const isDrawerPresentation = presentation === 'drawer';
+const drawerLayout = isDrawerPresentation;
+// Embed: explicit hat variant, or any caller passing positive pattern dimensions (e.g. blanket pattern tab)
+const isEmbedMode = isHat || (projectWidth > 0 && projectLength > 0);
 
 // Convert to inches if needed (internal calculations always use inches)
-const widthInches = lengthUnit === 'cm' ? (projectWidth / 2.54) : projectWidth;
-const lengthInches = lengthUnit === 'cm' ? (projectLength / 2.54) : projectLength;
+const widthInches = lengthUnit === 'cm' ? projectWidth / 2.54 : projectWidth;
+const lengthInches = lengthUnit === 'cm' ? projectLength / 2.54 : projectLength;
 
-// Check if props are missing in embed mode (developer warning)
-const hasMissingProps = (projectWidth === undefined || projectLength === undefined) && isEmbedMode;
+const defaultTitle =
+  widthInches > 0 && lengthInches > 0
+    ? (() => {
+        const w = Math.round(widthInches * 10) / 10;
+        const l = Math.round(lengthInches * 10) / 10;
+        const wDisplay = w % 1 === 0 ? Math.round(w) : w;
+        const lDisplay = l % 1 === 0 ? Math.round(l) : l;
+        return `How much yarn do I need for my ${wDisplay}″ × ${lDisplay}″ project?`;
+      })()
+    : 'How much yarn do I need?';
 ---
 
-<div 
+<div
   id="yarn-requirement"
-  class="yarn-requirement-tool" 
-  data-width-inches={widthInches} 
-  data-length-inches={lengthInches} 
+  class:list={[
+    'yarn-requirement-tool',
+    isHat && 'yarn--variant-hat',
+    isDrawerPresentation && 'yarn--presentation-drawer',
+  ]}
+  data-width-inches={widthInches}
+  data-length-inches={lengthInches}
   data-embed-mode={isEmbedMode}
   data-project-width={projectWidth}
   data-project-length={projectLength}
   data-length-unit={lengthUnit}
   data-source={source}
+  data-variant={variant}
+  data-layout={layout}
+  data-presentation={presentation}
 >
-  <h3 class="yarn-heading" id="yarn-heading">
-    {widthInches > 0 && lengthInches > 0 
-      ? (() => {
-          const w = Math.round(widthInches * 10) / 10;
-          const l = Math.round(lengthInches * 10) / 10;
-          const wDisplay = w % 1 === 0 ? Math.round(w) : w;
-          const lDisplay = l % 1 === 0 ? Math.round(l) : l;
-          return `How much yarn do I need for my ${wDisplay}″ × ${lDisplay}″ blanket?`;
-        })()
-      : 'How much yarn do I need?'}
-  </h3>
-  
-  <div class="yarn-calculator" id="yarn-calculator">
-    <!-- Developer warning for missing props in embed mode -->
-    {hasMissingProps && (
-      <div class="yarn-dev-warning">
-        Blanket dimensions not provided by pattern.
-      </div>
-    )}
-    
-    <!-- Length unit toggle: in / cm -->
-    <div class="yarn-units-toggle" id="yarn-length-units-toggle">
-      <button type="button" class="yarn-unit-btn active" data-unit="in" data-testid="button-yarn-length-unit-in">Inches</button>
-      <button type="button" class="yarn-unit-btn" data-unit="cm" data-testid="button-yarn-length-unit-cm">Centimeters</button>
-    </div>
-    
-    <!-- Swatch inputs -->
-    <div class="yarn-section">
-      <span class="yarn-section-label">
-        Measure your entire swatch (edge to edge), then weigh it.<br />
-        Use a food or postal scale.
-      </span>
-      <div class="yarn-input-grid">
-        <div class="yarn-input-group">
-          <label for="yarn-swatch-width">Swatch Width (<span class="yarn-length-unit-label">in</span>)</label>
-          <input type="number" id="yarn-swatch-width" step="0.1" min="0" placeholder="e.g., 4" data-testid="input-yarn-swatch-width" />
-        </div>
-        <div class="yarn-input-group">
-          <label for="yarn-swatch-length">Swatch Length (<span class="yarn-length-unit-label">in</span>)</label>
-          <input type="number" id="yarn-swatch-length" step="0.1" min="0" placeholder="e.g., 4" data-testid="input-yarn-swatch-length" />
-        </div>
-        <div class="yarn-input-group">
-          <label for="yarn-swatch-weight">Swatch Weight</label>
-          <div class="yarn-weight-input-wrapper">
-            <input type="number" id="yarn-swatch-weight" step="0.1" min="0" placeholder="e.g., 12" data-testid="input-yarn-swatch-weight" />
-            <div class="yarn-weight-units-toggle" id="yarn-weight-units-toggle">
-              <button type="button" class="yarn-weight-unit-btn active" data-unit="g" data-testid="button-yarn-weight-unit-g">g</button>
-              <button type="button" class="yarn-weight-unit-btn" data-unit="oz" data-testid="button-yarn-weight-unit-oz">oz</button>
-            </div>
-          </div>
-        </div>
+  {usePanelLayout ? (
+    <div class:list={['yarn-outer-panel', isHat && 'yarn-outer-panel--hat']}>
+      {isHat && !isDrawerPresentation && (
+        <p class="yarn-helper-hat">
+          Enter your swatch measurements and weight to estimate yarn needed for this hat.
+        </p>
+      )}
+      {!isHat && (
+        <h2 class="yarn-heading" id="yarn-heading">{defaultTitle}</h2>
+      )}
+      <div class="yarn-calculator" id="yarn-calculator">
+        <YarnRequirementCalculatorCore isEmbedMode={isEmbedMode} drawerLayout={drawerLayout} />
       </div>
     </div>
-    
-    <!-- Blanket dimensions: only show in standalone mode -->
-    {!isEmbedMode && (
-      <div class="yarn-section">
-        <span class="yarn-section-label">Your Blanket</span>
-        <div class="yarn-input-grid">
-          <div class="yarn-input-group">
-            <label for="yarn-blanket-width">Blanket Width (<span class="yarn-length-unit-label">in</span>)</label>
-            <input type="number" id="yarn-blanket-width" step="0.1" min="0" placeholder="e.g., 48" data-testid="input-yarn-blanket-width" />
-          </div>
-          <div class="yarn-input-group">
-            <label for="yarn-blanket-length">Blanket Length (<span class="yarn-length-unit-label">in</span>)</label>
-            <input type="number" id="yarn-blanket-length" step="0.1" min="0" placeholder="e.g., 60" data-testid="input-yarn-blanket-length" />
-          </div>
-        </div>
+  ) : (
+    <details
+      class:list={['yarn-outer-details', isHat ? 'yarn-outer-details--hat' : 'yarn-outer-details--standalone']}
+      open
+    >
+      <summary class:list={['yarn-heading', isHat && 'yarn-heading--summary']} id="yarn-heading">
+        {isHat ? 'Do I have enough yarn?' : defaultTitle}
+      </summary>
+      {isHat && (
+        <p class="yarn-helper-hat">
+          Enter your swatch measurements and weight to estimate yarn needed for this hat.
+        </p>
+      )}
+      <div class="yarn-calculator" id="yarn-calculator">
+        <YarnRequirementCalculatorCore isEmbedMode={isEmbedMode} drawerLayout={drawerLayout} />
       </div>
-    )}
-    
-    <!-- Results section: two cards side-by-side -->
-    <div class="yarn-results-section" id="yarn-results-section">
-      <h4 class="yarn-results-heading">Estimated yarn needed</h4>
-      <div class="yarn-results-cards">
-        <div class="yarn-result-card">
-          <div class="yarn-result-card-title">Estimated Grams</div>
-          <div class="yarn-result-card-value" id="yarn-result-grams">---</div>
-        </div>
-        <div class="yarn-result-card">
-          <div class="yarn-result-card-title">Estimated Ounces</div>
-          <div class="yarn-result-card-value" id="yarn-result-ounces">---</div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Validation messages -->
-    <p class="yarn-message" id="yarn-message-incomplete" style="display: none;">Enter your swatch measurements to see your estimate.</p>
-    <p class="yarn-message yarn-error" id="yarn-message-error" style="display: none;">All values must be greater than zero.</p>
-  </div>
+    </details>
+  )}
 </div>
 
 <style>
+  /* Shell only: inner fields render from YarnRequirementCalculatorCore (different Astro scope). */
   .yarn-requirement-tool {
     max-width: 800px;
     margin: 0 auto;
+  }
+
+  .yarn--variant-hat {
+    max-width: none;
+    margin: 0;
+  }
+
+  .yarn--presentation-drawer.yarn-requirement-tool {
+    max-width: none;
+  }
+
+  .yarn-outer-details {
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+
+  .yarn-outer-details--standalone > summary {
+    list-style: none;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .yarn-outer-details--standalone > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .yarn-outer-details--standalone > summary::marker {
+    content: '';
+  }
+
+  .yarn-outer-details--hat > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .yarn-outer-details--hat > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .yarn-outer-details--hat > summary::marker {
+    content: '';
+  }
+
+  .yarn-outer-details--hat > summary::after {
+    content: ' ▼';
+    font-size: 0.65em;
+    color: var(--muted, #5b6472);
+    margin-left: 0.35rem;
+  }
+
+  .yarn-outer-details--hat[open] > summary::after {
+    content: ' ▲';
+  }
+
+  .yarn-outer-panel {
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+
+  .yarn-outer-panel--hat .yarn-helper-hat {
+    margin: 0 0 12px 0;
+  }
+
+  .yarn-helper-hat {
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--muted, #5b6472);
+    font-weight: 500;
   }
 
   .yarn-heading {
@@ -144,6 +188,11 @@ const hasMissingProps = (projectWidth === undefined || projectLength === undefin
     margin-bottom: 24px;
   }
 
+  .yarn--variant-hat .yarn-heading {
+    font-size: 1.05rem;
+    margin-bottom: 0.35rem;
+  }
+
   .yarn-calculator {
     background: var(--surface, #ffffff);
     border: 1px solid var(--border, #e5e7eb);
@@ -151,53 +200,182 @@ const hasMissingProps = (projectWidth === undefined || projectLength === undefin
     padding: 24px;
   }
 
-  .yarn-dev-warning {
-    padding: 12px;
-    margin-bottom: 20px;
-    background: #fff3cd;
-    border: 1px solid #ffc107;
-    border-radius: 8px;
-    color: #856404;
-    font-size: 13px;
-    font-weight: 600;
+  .yarn--variant-hat .yarn-calculator {
+    padding: 16px 18px;
   }
 
-  .yarn-units-toggle {
+  .yarn--presentation-drawer .yarn-outer-panel--hat {
     display: flex;
-    gap: 8px;
-    margin-bottom: 28px;
+    flex-direction: column;
+    gap: 0;
   }
 
-  .yarn-unit-btn {
-    padding: 8px 16px;
-    border: 1px solid var(--border, #e5e7eb);
+  .yarn--presentation-drawer .yarn-calculator {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  @media (max-width: 640px) {
+    .yarn-calculator {
+      padding: 18px 16px;
+    }
+
+    .yarn--variant-hat .yarn-calculator {
+      padding: 14px 14px;
+    }
+  }
+</style>
+
+<style is:global>
+  /* All selectors scoped to #yarn-requirement so styles don’t leak site-wide. */
+  #yarn-requirement .yarn-length-toggle-wrap {
+    margin-bottom: 16px;
+  }
+
+  #yarn-requirement .yarn-units-toggle {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  #yarn-requirement .yarn-unit-btn {
+    min-height: 44px;
+    padding: 10px 18px;
+    border: 1px solid var(--border, #ddd);
     background: var(--surface, #ffffff);
     border-radius: 8px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 14px;
-    transition: all 0.15s ease;
+    font-size: 15px;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease;
   }
 
-  .yarn-unit-btn:hover {
+  #yarn-requirement .yarn-unit-btn:hover {
     background: var(--tab-bg, #fbfbf9);
   }
 
-  .yarn-unit-btn.active {
-    background: var(--kbm-green, #52682D);
-    color: white;
-    border-color: var(--kbm-green, #52682D);
+  #yarn-requirement .yarn-unit-btn.active {
+    background: var(--kbm-green, #52682d);
+    color: #fff;
+    border-color: var(--kbm-green, #52682d);
   }
 
-  .yarn-section {
-    margin-bottom: 28px;
+  #yarn-requirement .yarn-field-stack {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
   }
 
-  .yarn-section:last-of-type {
+  #yarn-requirement .yarn-field {
+    margin-bottom: 16px;
+    width: 100%;
+    max-width: none;
+  }
+
+  #yarn-requirement .yarn-field-stack .yarn-field:last-child {
     margin-bottom: 0;
   }
 
-  .yarn-section-label {
+  #yarn-requirement .yarn-field label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text-muted, #6b7280);
+  }
+
+  #yarn-requirement .yarn-field input {
+    display: block;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border, #ddd);
+    font-size: 16px;
+    box-sizing: border-box;
+    font-family: var(--font, ui-sans-serif, system-ui);
+    background: var(--surface, #fff);
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  #yarn-requirement .yarn-field input:hover {
+    border-color: rgba(82, 104, 45, 0.28);
+  }
+
+  #yarn-requirement .yarn-field input:focus {
+    outline: none;
+    border-color: var(--kbm-green, #52682d);
+    box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.18);
+  }
+
+  #yarn-requirement .yarn-weight-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+  }
+
+  #yarn-requirement .yarn-weight-row input {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    max-width: none;
+  }
+
+  #yarn-requirement .unit-toggle {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  #yarn-requirement .unit-toggle button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 12px;
+    margin: 0;
+    border: 1px solid var(--border, #ddd);
+    border-radius: 8px;
+    background: var(--surface, #fff);
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text, #374151);
+    cursor: pointer;
+    font-family: inherit;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease;
+  }
+
+  #yarn-requirement .unit-toggle button:hover {
+    background: var(--tab-bg, #fbfbf9);
+  }
+
+  #yarn-requirement .unit-toggle button.active {
+    background: var(--kbm-green, #52682d);
+    color: #fff;
+    border-color: var(--kbm-green, #52682d);
+  }
+
+  #yarn-requirement .yarn-section {
+    margin-bottom: 28px;
+  }
+
+  #yarn-requirement .yarn-section:last-of-type {
+    margin-bottom: 0;
+  }
+
+  #yarn-requirement .yarn-section-label {
     display: block;
     font-weight: 700;
     font-size: 14px;
@@ -205,119 +383,47 @@ const hasMissingProps = (projectWidth === undefined || projectLength === undefin
     color: var(--text, #1f2937);
   }
 
-  .yarn-input-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 20px;
-  }
-
-  .yarn-input-group {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .yarn-input-group label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: var(--text, #1f2937);
-  }
-
-  .yarn-input-group input {
-    width: 100%;
-    max-width: 8ch;
-    padding: 10px 12px;
-    border: 1px solid var(--border, #e5e7eb);
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: var(--font, ui-sans-serif, system-ui);
-  }
-
-  .yarn-input-group input:focus {
-    outline: 2px solid var(--kbm-green, #52682D);
-    outline-offset: 2px;
-  }
-
-  .yarn-weight-input-wrapper {
-    display: flex;
-    gap: 8px;
-    align-items: stretch;
-    max-width: fit-content;
-  }
-
-  .yarn-weight-input-wrapper input {
-    max-width: 8ch;
-    flex: 0 0 auto;
-  }
-
-  .yarn-weight-units-toggle {
-    display: flex;
-    border: 1px solid var(--border, #e5e7eb);
-    border-radius: 8px;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-
-  .yarn-weight-unit-btn {
-    padding: 10px 16px;
-    border: none;
-    background: var(--surface, #ffffff);
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all 0.15s ease;
-    border-right: 1px solid var(--border, #e5e7eb);
-  }
-
-  .yarn-weight-unit-btn:last-child {
-    border-right: none;
-  }
-
-  .yarn-weight-unit-btn:hover {
-    background: var(--tab-bg, #fbfbf9);
-  }
-
-  .yarn-weight-unit-btn.active {
-    background: var(--kbm-green, #52682D);
-    color: white;
-  }
-
-  .yarn-results-section {
+  #yarn-requirement .yarn-results-section {
     margin-top: 32px;
     padding-top: 24px;
     border-top: 2px solid var(--border, #e5e7eb);
   }
 
-  .yarn-blanket-context {
+  #yarn-requirement .yarn-blanket-context,
+  #yarn-requirement .yarn-project-context {
     font-size: 14px;
     color: var(--muted, #5b6472);
     margin-bottom: 16px;
     font-weight: 500;
   }
 
-  .yarn-results-heading {
+  #yarn-requirement.yarn--variant-hat .yarn-project-context {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  #yarn-requirement .yarn-results-heading {
     font-size: 16px;
     font-weight: 700;
     color: var(--text, #1f2937);
     margin-bottom: 20px;
   }
 
-  .yarn-results-cards {
+  #yarn-requirement .yarn-results-cards {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
   }
 
-  .yarn-result-card {
+  #yarn-requirement .yarn-result-card {
     background: var(--tab-bg, #fbfbf9);
-    border: 2px solid var(--kbm-green, #52682D);
+    border: 2px solid var(--kbm-green, #52682d);
     border-radius: 12px;
     padding: 24px;
     text-align: center;
   }
 
-  .yarn-result-card-title {
+  #yarn-requirement .yarn-result-card-title {
     font-size: 14px;
     font-weight: 600;
     color: var(--muted, #5b6472);
@@ -326,14 +432,14 @@ const hasMissingProps = (projectWidth === undefined || projectLength === undefin
     letter-spacing: 0.5px;
   }
 
-  .yarn-result-card-value {
+  #yarn-requirement .yarn-result-card-value {
     font-size: 36px;
     font-weight: 700;
-    color: var(--kbm-green, #52682D);
+    color: var(--kbm-green, #52682d);
     line-height: 1.2;
   }
 
-  .yarn-message {
+  #yarn-requirement .yarn-message {
     margin-top: 20px;
     padding: 12px;
     border-radius: 8px;
@@ -342,32 +448,279 @@ const hasMissingProps = (projectWidth === undefined || projectLength === undefin
     color: var(--muted, #5b6472);
   }
 
-  .yarn-message.yarn-error {
+  #yarn-requirement .yarn-message.yarn-error {
     background: #fee;
     border: 1px solid #fcc;
     color: #c33;
   }
 
+  #yarn-requirement.yarn--variant-hat .yarn-section {
+    margin-bottom: 20px;
+  }
+
+  #yarn-requirement.yarn--variant-hat .yarn-results-section {
+    margin-top: 20px;
+    padding-top: 16px;
+  }
+
+  #yarn-requirement.yarn--variant-hat .yarn-result-card {
+    padding: 16px;
+  }
+
+  #yarn-requirement.yarn--variant-hat .yarn-result-card-value {
+    font-size: 28px;
+  }
+
   @media (max-width: 640px) {
-    .yarn-input-grid {
-      grid-template-columns: 1fr;
+    #yarn-requirement .yarn-field input {
+      min-height: 48px;
+      padding: 12px 14px;
     }
 
-    .yarn-results-cards {
-      grid-template-columns: 1fr;
+    #yarn-requirement .yarn-field label {
+      font-size: 0.9375rem;
+      margin-bottom: 8px;
     }
 
-    .yarn-result-card-value {
+    #yarn-requirement .yarn-section-label {
+      font-size: 15px;
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+
+    #yarn-requirement .unit-toggle button {
+      min-height: 48px;
+      min-width: 48px;
+      font-size: 16px;
+    }
+
+    #yarn-requirement .yarn-unit-btn {
+      min-height: 48px;
+      padding: 12px 18px;
+      font-size: 16px;
+    }
+
+    #yarn-requirement.yarn--variant-hat .yarn-project-context {
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    #yarn-requirement .yarn-results-cards {
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    #yarn-requirement .yarn-result-card {
+      padding: 18px 16px;
+    }
+
+    #yarn-requirement .yarn-result-card-value {
       font-size: 28px;
     }
 
-    .yarn-weight-input-wrapper {
-      max-width: 100%;
+    #yarn-requirement .yarn-results-heading {
+      font-size: 15px;
+      margin-bottom: 14px;
+    }
+  }
+
+  /* Hat builder drawer (presentation="drawer") */
+  #yarn-requirement.yarn--presentation-drawer .yarn-section--drawer-swatch {
+    margin: 0 0 1.5rem;
+    padding: 1.125rem 1.25rem 1.35rem;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(82, 104, 45, 0.12);
+    border-radius: 14px;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-drawer-section-title {
+    margin: 0 0 0.35rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6b7280;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-drawer-section-hint {
+    margin: 0 0 1.125rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    font-weight: 450;
+    color: #6b7280;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-field label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.01em;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-field input {
+    border-radius: 10px;
+    border: 1px solid rgba(55, 65, 81, 0.14);
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(55, 65, 81, 0.04);
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-field input:hover {
+    border-color: rgba(82, 104, 45, 0.25);
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-field input:focus {
+    outline: none;
+    border-color: var(--kbm-green, #52682d);
+    box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.15);
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-weight-row {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-weight-row input {
+    flex: 0 0 110px;
+    max-width: 110px;
+    width: auto;
+    min-width: 0;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-weight-row .unit-toggle {
+    display: inline-flex;
+    gap: 6px;
+    flex: 0 0 auto;
+    align-items: stretch;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .unit-toggle button {
+    min-width: 46px;
+    padding: 0 12px;
+    background: #fafaf8;
+    border-color: rgba(55, 65, 81, 0.12);
+    font-size: 0.8125rem;
+    box-shadow: 0 1px 2px rgba(55, 65, 81, 0.04);
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .unit-toggle button:hover {
+    background: #f3f4f0;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .unit-toggle button.active {
+    background: var(--kbm-green, #52682d);
+    color: #fff;
+    border-color: var(--kbm-green, #52682d);
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-project-context--drawer {
+    margin: 0 0 1.25rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    font-weight: 500;
+    color: #5c6370;
+    background: rgba(82, 104, 45, 0.06);
+    border-radius: 10px;
+    border: 1px solid rgba(82, 104, 45, 0.1);
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-results-section--drawer {
+    margin-top: 0.25rem;
+    padding: 1.35rem 1.25rem 1.5rem;
+    border-radius: 14px;
+    background: linear-gradient(165deg, rgba(82, 104, 45, 0.09) 0%, rgba(82, 104, 45, 0.04) 100%);
+    border: 1px solid rgba(82, 104, 45, 0.14);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-results-section-head {
+    margin-bottom: 1.1rem;
+    text-align: center;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-results-heading--drawer {
+    margin: 0 0 0.35rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #4b5d3a;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-results-subline {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    font-weight: 450;
+    color: #6b7280;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-results-cards--drawer {
+    gap: 0.75rem;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-results-cards--drawer .yarn-result-card {
+    padding: 1rem 0.9rem 1.15rem;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(82, 104, 45, 0.12);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(55, 65, 81, 0.06);
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-results-cards--drawer .yarn-result-card-title {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #7c8a6e;
+    margin-bottom: 0.5rem;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-results-cards--drawer .yarn-result-card-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+    letter-spacing: -0.02em;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-message {
+    margin-top: 1.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    font-size: 0.8125rem;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(55, 65, 81, 0.08);
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-message.yarn-error {
+    background: #fef2f2;
+    border-color: rgba(220, 38, 38, 0.2);
+  }
+
+  @media (max-width: 640px) {
+    #yarn-requirement.yarn--presentation-drawer .yarn-section--drawer-swatch {
+      padding: 1rem 1rem 1.2rem;
+      margin-bottom: 1.25rem;
     }
 
-    .yarn-weight-input-wrapper input {
-      max-width: none;
-      flex: 1;
+    #yarn-requirement.yarn--presentation-drawer .yarn-field input {
+      min-height: 48px;
+      padding: 0.75rem 0.9rem;
+      font-size: 16px;
+    }
+
+    #yarn-requirement.yarn--presentation-drawer .unit-toggle button {
+      min-height: 48px;
+      min-width: 48px;
+      font-size: 16px;
+    }
+
+    #yarn-requirement.yarn--presentation-drawer .yarn-results-cards--drawer .yarn-result-card-value {
+      font-size: 1.625rem;
     }
   }
 </style>
@@ -382,42 +735,38 @@ const hasMissingProps = (projectWidth === undefined || projectLength === undefin
     const blanketWidth = document.getElementById('yarn-blanket-width');
     const blanketLength = document.getElementById('yarn-blanket-length');
     const lengthUnitBtns = document.querySelectorAll('#yarn-length-units-toggle .yarn-unit-btn');
-    const lengthUnitLabels = document.querySelectorAll('.yarn-length-unit-label');
-    const weightUnitBtns = document.querySelectorAll('#yarn-weight-units-toggle .yarn-weight-unit-btn');
+    const lengthUnitLabels = document.querySelectorAll('#yarn-requirement .yarn-length-unit-label');
+    const weightUnitBtns = document.querySelectorAll('#yarn-weight-units-toggle button[type="button"]');
     const resultsSection = document.getElementById('yarn-results-section');
     const resultGrams = document.getElementById('yarn-result-grams');
     const resultOunces = document.getElementById('yarn-result-ounces');
-    const blanketContext = document.getElementById('yarn-blanket-context');
     const messageIncomplete = document.getElementById('yarn-message-incomplete');
     const messageError = document.getElementById('yarn-message-error');
-    
-    if (!swatchWidth || !swatchLength || !swatchWeight) {
-      return; // Elements not found
+
+    const wrapper = document.getElementById('yarn-requirement');
+    if (!swatchWidth || !swatchLength || !swatchWeight || !wrapper) {
+      return;
     }
-    
-    // State
+
     const LENGTH_STORAGE_KEY = 'kbm:yarnRequirement:lengthUnit';
     const WEIGHT_STORAGE_KEY = 'kbm:yarnRequirement:weightUnit';
-    let currentLengthUnit = localStorage.getItem(LENGTH_STORAGE_KEY) || 'in';
-    let currentWeightUnit = localStorage.getItem(WEIGHT_STORAGE_KEY) || 'g'; // Default to grams
+
+    const isEmbedMode = wrapper.getAttribute('data-embed-mode') === 'true';
+    const variant = wrapper.dataset.variant || 'default';
+    const isHatVariant = variant === 'hat';
+
+    const propsLengthUnit = wrapper.dataset.lengthUnit === 'cm' ? 'cm' : 'in';
+    let currentLengthUnit = isEmbedMode
+      ? propsLengthUnit
+      : localStorage.getItem(LENGTH_STORAGE_KEY) || 'in';
+    let currentWeightUnit = localStorage.getItem(WEIGHT_STORAGE_KEY) || 'g';
     let blanketWidthIn = 0;
     let blanketLengthIn = 0;
-    let hasInteracted = false; // Track if user has interacted with form
-    let isCustomPattern = false; // Track if using custom (built) pattern vs sample
-    
-    // Get wrapper element
-    const wrapper = document.getElementById('yarn-requirement');
-    if (!wrapper) {
-      return; // Component wrapper not found
-    }
-    
-    // Check if embed mode (has props)
-    const isEmbedMode = wrapper.getAttribute('data-embed-mode') === 'true';
-    
-    // Read projectWidth and projectLength from dataset (props)
+    let hasInteracted = false;
+    let isCustomPattern = false;
+
     let projectWidth = parseFloat(wrapper.dataset.projectWidth || '0');
     let projectLength = parseFloat(wrapper.dataset.projectLength || '0');
-    const propsLengthUnit = wrapper.dataset.lengthUnit || 'in';
     
     // Convert props to inches for internal calculations
     if (propsLengthUnit === 'cm') {
@@ -446,10 +795,7 @@ const hasMissingProps = (projectWidth === undefined || projectLength === undefin
         isCustomPattern = !isSampleSize;
       }
       
-      // Debug log (one-time on init)
-      console.log('[YarnRequirement] Initial projectWidth/projectLength:', projectWidth, projectLength, '(inches)');
-      
-      // Fallback: read from wizard data attributes if props are zero
+      // Fallback: read from wizard data attributes if props are zero (blanket wizard only)
       if (blanketWidthIn === 0 || blanketLengthIn === 0) {
         const wizard = document.getElementById('hybrid-blanket-wizard-v2');
         if (wizard) {
@@ -458,10 +804,9 @@ const hasMissingProps = (projectWidth === undefined || projectLength === undefin
           if (wizardWidth) blanketWidthIn = parseFloat(wizardWidth) || 0;
           if (wizardLength) blanketLengthIn = parseFloat(wizardLength) || 0;
           if (blanketWidthIn > 0 || blanketLengthIn > 0) {
-            console.log('[YarnRequirement] Using wizard dimensions:', blanketWidthIn, blanketLengthIn);
-            // Check if custom
-            const isSampleSize = Math.abs(blanketWidthIn - SAMPLE_WIDTH_IN) < tolerance && 
-                                Math.abs(blanketLengthIn - SAMPLE_LENGTH_IN) < tolerance;
+            const tol = 0.1;
+            const isSampleSize = Math.abs(blanketWidthIn - SAMPLE_WIDTH_IN) < tol && 
+                                Math.abs(blanketLengthIn - SAMPLE_LENGTH_IN) < tol;
             isCustomPattern = !isSampleSize;
           }
         }
@@ -506,7 +851,7 @@ const hasMissingProps = (projectWidth === undefined || projectLength === undefin
       });
       // Update context line when unit changes
       if (resultsSection) {
-        updateBlanketContext();
+        updateProjectContext();
       }
     }
     
@@ -534,54 +879,54 @@ const hasMissingProps = (projectWidth === undefined || projectLength === undefin
       if (!yarnHeading) {
         return;
       }
-      
+
+      if (isHatVariant) {
+        yarnHeading.textContent = 'Do I have enough yarn?';
+        return;
+      }
+
       if (blanketWidthIn > 0 && blanketLengthIn > 0) {
-        // Format dimensions: round to 1 decimal, remove .0 if whole number
         const w = Math.round(blanketWidthIn * 10) / 10;
         const l = Math.round(blanketLengthIn * 10) / 10;
         const wDisplay = w % 1 === 0 ? Math.round(w) : w;
         const lDisplay = l % 1 === 0 ? Math.round(l) : l;
-        yarnHeading.textContent = `How much yarn do I need for my ${wDisplay}″ × ${lDisplay}″ blanket?`;
+        yarnHeading.textContent = `How much yarn do I need for my ${wDisplay}″ × ${lDisplay}″ project?`;
       } else {
         yarnHeading.textContent = 'How much yarn do I need?';
       }
     }
-    
-    // Update blanket context line
-    function updateBlanketContext() {
-      // Always query fresh to avoid stale references
-      const currentBlanketContext = document.getElementById('yarn-blanket-context');
-      
-      if (!currentBlanketContext) {
+
+    // Embed mode: show which project dimensions the estimate uses
+    function updateProjectContext() {
+      const el = document.getElementById('yarn-project-context');
+      if (!el) {
         return;
       }
-      
+
       if (blanketWidthIn <= 0 || blanketLengthIn <= 0) {
-        currentBlanketContext.textContent = 'Blanket size used: ---';
+        el.textContent = isHatVariant
+          ? 'Choose hat size and length above to use this pattern’s measurements (finished width × total height).'
+          : 'Project size used: —';
         return;
       }
-      
-      // Use the same values used in calculation (blanketWidthIn/blanketLengthIn in inches)
-      // Convert to display unit based on current length unit toggle
+
       let displayW, displayL;
       const displayUnit = currentLengthUnit;
-      
+
       if (displayUnit === 'cm') {
-        // Convert inches to cm: round to whole number
         displayW = Math.round(blanketWidthIn * 2.54);
         displayL = Math.round(blanketLengthIn * 2.54);
       } else {
-        // Inches: round to 1 decimal max
         displayW = Math.round(blanketWidthIn * 10) / 10;
         displayL = Math.round(blanketLengthIn * 10) / 10;
-        // Remove .0 if whole number
         if (displayW % 1 === 0) displayW = Math.round(displayW);
         if (displayL % 1 === 0) displayL = Math.round(displayL);
       }
-      
-      const source = isCustomPattern ? 'custom' : 'sample';
+
       const unitLabel = displayUnit === 'in' ? 'in' : 'cm';
-      currentBlanketContext.textContent = `Blanket size used: ${displayW} × ${displayL} ${unitLabel} (${source})`;
+      el.textContent = isHatVariant
+        ? `Finished hat width × total height (same as your pattern): ${displayW} × ${displayL} ${unitLabel}. Rectangle area; yarn total includes 10% buffer.`
+        : `Project size used: ${displayW} × ${displayL} ${unitLabel}.`;
     }
     
     // Calculate yarn estimate
@@ -708,7 +1053,7 @@ const hasMissingProps = (projectWidth === undefined || projectLength === undefin
       if (resultOunces) resultOunces.textContent = estimatedOunces.toFixed(1) + ' oz';
       
       // Update blanket context line
-      updateBlanketContext();
+      updateProjectContext();
     }
     
     // Listen for yarn dimensions event from pattern engine (embed mode)
@@ -752,14 +1097,12 @@ const hasMissingProps = (projectWidth === undefined || projectLength === undefin
           wrapper.setAttribute('data-width-inches', blanketWidthIn.toString());
           wrapper.setAttribute('data-length-inches', blanketLengthIn.toString());
           
-          // Update heading text immediately
           updateHeading();
-          
-          // Update heading text immediately
-          updateHeading();
-          
-          // Update blanket context line immediately (even if swatch inputs aren't filled)
-          updateBlanketContext();
+
+          currentLengthUnit = eventUnit === 'cm' ? 'cm' : 'in';
+          updateLengthUnitUI();
+
+          updateProjectContext();
           
           // Recalculate (will show placeholders if swatch inputs aren't filled)
           calculateYarn();
@@ -785,13 +1128,8 @@ const hasMissingProps = (projectWidth === undefined || projectLength === undefin
             isCustomPattern = !isSampleSize;
           }
           
-          // Update heading text immediately
           updateHeading();
-          
-          // Update blanket context line immediately (even if swatch inputs aren't filled)
-          updateBlanketContext();
-          
-          // Recalculate (will show placeholders if swatch inputs aren't filled)
+          updateProjectContext();
           calculateYarn();
         }
       });
@@ -802,16 +1140,17 @@ const hasMissingProps = (projectWidth === undefined || projectLength === undefin
       hasInteracted = true;
     }
     
-    // Length unit toggle handlers
-    lengthUnitBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        markInteracted();
-        currentLengthUnit = btn.dataset.unit || 'in';
-        localStorage.setItem(LENGTH_STORAGE_KEY, currentLengthUnit);
-        updateLengthUnitUI();
-        calculateYarn();
+    if (!isEmbedMode) {
+      lengthUnitBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          markInteracted();
+          currentLengthUnit = btn.dataset.unit || 'in';
+          localStorage.setItem(LENGTH_STORAGE_KEY, currentLengthUnit);
+          updateLengthUnitUI();
+          calculateYarn();
+        });
       });
-    });
+    }
     
     // Weight unit toggle handlers
     weightUnitBtns.forEach(btn => {
@@ -864,9 +1203,10 @@ const hasMissingProps = (projectWidth === undefined || projectLength === undefin
     // Initialize
     updateLengthUnitUI();
     updateWeightUnitUI();
-    // Update heading with initial dimensions
     updateHeading();
-    // Set placeholders on init so results section is visible with ---
+    if (isEmbedMode) {
+      updateProjectContext();
+    }
     setResultsPlaceholders();
   })();
 </script>

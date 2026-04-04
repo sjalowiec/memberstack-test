@@ -1,0 +1,159 @@
+---
+export interface Props {
+  isEmbedMode: boolean;
+  /** Richer section layout for hat builder drawer only */
+  drawerLayout?: boolean;
+}
+
+const { isEmbedMode, drawerLayout = false } = Astro.props;
+---
+
+{!isEmbedMode && (
+  <div class="yarn-length-toggle-wrap">
+    <div class="yarn-units-toggle" id="yarn-length-units-toggle">
+      <button type="button" class="yarn-unit-btn active" data-unit="in" data-testid="button-yarn-length-unit-in">
+        Inches
+      </button>
+      <button type="button" class="yarn-unit-btn" data-unit="cm" data-testid="button-yarn-length-unit-cm">
+        Centimeters
+      </button>
+    </div>
+  </div>
+)}
+
+<div class:list={['yarn-section', drawerLayout && 'yarn-section--drawer-swatch']}>
+  {drawerLayout ? (
+    <>
+      <h3 class="yarn-drawer-section-title">Swatch</h3>
+      <p class="yarn-drawer-section-hint">
+        Measure edge to edge, then weigh on a kitchen or postal scale.
+      </p>
+    </>
+  ) : (
+    <span class="yarn-section-label">
+      Measure your entire swatch (edge to edge), then weigh it.<br />
+      Use a food or postal scale.
+    </span>
+  )}
+  <div class="yarn-field-stack">
+    <div class="yarn-field">
+      <label for="yarn-swatch-width">
+        Swatch Width (<span class="yarn-length-unit-label">in</span>)
+      </label>
+      <input
+        type="number"
+        id="yarn-swatch-width"
+        step="0.1"
+        min="0"
+        placeholder="e.g., 4"
+        inputmode="decimal"
+        autocomplete="off"
+        data-testid="input-yarn-swatch-width"
+      />
+    </div>
+    <div class="yarn-field">
+      <label for="yarn-swatch-length">
+        Swatch Length (<span class="yarn-length-unit-label">in</span>)
+      </label>
+      <input
+        type="number"
+        id="yarn-swatch-length"
+        step="0.1"
+        min="0"
+        placeholder="e.g., 4"
+        inputmode="decimal"
+        autocomplete="off"
+        data-testid="input-yarn-swatch-length"
+      />
+    </div>
+    <div class="yarn-field">
+      <label for="yarn-swatch-weight">Swatch Weight</label>
+      <div class="yarn-weight-row">
+        <input
+          type="number"
+          id="yarn-swatch-weight"
+          step="0.1"
+          min="0"
+          placeholder="e.g., 12"
+          inputmode="decimal"
+          autocomplete="off"
+          data-testid="input-yarn-swatch-weight"
+        />
+        <div class="unit-toggle" id="yarn-weight-units-toggle">
+          <button type="button" class="active" data-unit="g" data-testid="button-yarn-weight-unit-g">g</button>
+          <button type="button" data-unit="oz" data-testid="button-yarn-weight-unit-oz">oz</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{!isEmbedMode && (
+  <div class="yarn-section">
+    <span class="yarn-section-label">Your project</span>
+    <div class="yarn-field-stack">
+      <div class="yarn-field">
+        <label for="yarn-blanket-width">
+          Project width (<span class="yarn-length-unit-label">in</span>)
+        </label>
+        <input
+          type="number"
+          id="yarn-blanket-width"
+          step="0.1"
+          min="0"
+          placeholder="e.g., 48"
+          inputmode="decimal"
+          autocomplete="off"
+          data-testid="input-yarn-blanket-width"
+        />
+      </div>
+      <div class="yarn-field">
+        <label for="yarn-blanket-length">
+          Project length (<span class="yarn-length-unit-label">in</span>)
+        </label>
+        <input
+          type="number"
+          id="yarn-blanket-length"
+          step="0.1"
+          min="0"
+          placeholder="e.g., 60"
+          inputmode="decimal"
+          autocomplete="off"
+          data-testid="input-yarn-blanket-length"
+        />
+      </div>
+    </div>
+  </div>
+)}
+
+{isEmbedMode && (
+  <p
+    id="yarn-project-context"
+    class:list={['yarn-project-context', drawerLayout && 'yarn-project-context--drawer']}
+    aria-live="polite"
+  ></p>
+)}
+
+<div class:list={['yarn-results-section', drawerLayout && 'yarn-results-section--drawer']} id="yarn-results-section">
+  {drawerLayout ? (
+    <div class="yarn-results-section-head">
+      <h4 class="yarn-results-heading yarn-results-heading--drawer">Estimated yarn needed</h4>
+      <p class="yarn-results-subline">From your swatch density and this hat’s finished size.</p>
+    </div>
+  ) : (
+    <h4 class="yarn-results-heading">Estimated yarn needed</h4>
+  )}
+  <div class:list={['yarn-results-cards', drawerLayout && 'yarn-results-cards--drawer']}>
+    <div class="yarn-result-card">
+      <div class="yarn-result-card-title">Estimated Grams</div>
+      <div class="yarn-result-card-value" id="yarn-result-grams">---</div>
+    </div>
+    <div class="yarn-result-card">
+      <div class="yarn-result-card-title">Estimated Ounces</div>
+      <div class="yarn-result-card-value" id="yarn-result-ounces">---</div>
+    </div>
+  </div>
+</div>
+
+<p class="yarn-message" id="yarn-message-incomplete" style="display: none;">Enter your swatch measurements to see your estimate.</p>
+<p class="yarn-message yarn-error" id="yarn-message-error" style="display: none;">All values must be greater than zero.</p>
