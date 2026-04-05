@@ -1,22 +1,22 @@
 [
   {
     "size": "Small",
-    "depth": 14,
+    "hatLength": 14,
     "width": 14
   },
   {
     "size": "Medium",
-    "depth": 16,
+    "hatLength": 16,
     "width": 16
   },
   {
     "size": "Large",
-    "depth": 18,
+    "hatLength": 18,
     "width": 18
   },
   {
     "size": "X-Large",
-    "depth": 20,
+    "hatLength": 20,
     "width": 20
   }
 ]

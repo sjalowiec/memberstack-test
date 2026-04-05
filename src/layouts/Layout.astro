@@ -8,9 +8,16 @@ interface Props {
   description?: string;
   bodyClass?: string;
   skipGlobalHyvor?: boolean;
+  skipGlobalPinterest?: boolean;
 }
 
-const { title, description, bodyClass = "", skipGlobalHyvor = false } = Astro.props;
+const {
+  title,
+  description,
+  bodyClass = "",
+  skipGlobalHyvor = false,
+  skipGlobalPinterest = false
+} = Astro.props;
 ---
 
 <!-- This layout does not render a visible page heading; title is used only for <title> in BaseLayout. -->
@@ -19,6 +26,7 @@ const { title, description, bodyClass = "", skipGlobalHyvor = false } = Astro.pr
   description={description}
   bodyClass={bodyClass}
   skipGlobalHyvor={skipGlobalHyvor}
+  skipGlobalPinterest={skipGlobalPinterest}
 >
   <Header />
 <!-- Google Analytics -->

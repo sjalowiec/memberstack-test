@@ -43,6 +43,10 @@ interface Props {
   role?: "searchbox";
   /** data-testid for the input. */
   dataTestid?: string;
+  /** When set, the visible label element gets this id (e.g. for script-driven text updates). */
+  labelId?: string;
+  /** Optional class on the label (e.g. floating-label for gauge overrides). */
+  labelClass?: string;
   /** Additional data-* attributes to spread on the input. */
   dataAttrs?: Record<string, string>;
 }
@@ -68,6 +72,8 @@ const {
   enterkeyhint,
   role,
   dataTestid,
+  labelId,
+  labelClass,
   dataAttrs = {},
 } = Astro.props;
 
@@ -101,7 +107,7 @@ const describedBy = [ariaDescribedby, errorId].filter(Boolean).join(" ") || unde
     class:list={[{ error }]}
     {...dataAttrs}
   />
-  <label for={id}>{label}</label>
+  <label for={id} id={labelId} class:list={[labelClass]}>{label}</label>
   {errorMessage && (
     <span class="error-text" id={errorId} aria-live="polite">
       {errorMessage}

@@ -31,6 +31,7 @@
  * - {toggleId}-btn-cm: cm toggle button (if using external toggle)
  */
 
+import { Fragment } from 'astro/jsx-runtime';
 import UnitToggle from './UnitToggle.astro';
 import FloatingInput from '../tools/FloatingInput.astro';
 
@@ -47,6 +48,13 @@ interface Props {
   showToggle?: boolean;
   /** ID of external toggle buttons (defaults to id) */
   toggleId?: string;
+  /**
+   * When true, stitch/row inputs sit in a plain flex row (no inner bordered “gauge box”).
+   * Use inside a page section that already provides grouping (e.g. hat builder).
+   */
+  flatRow?: boolean;
+  /** When true, adds no-print on the wrapper so the Sts/Rows UI is hidden when printing (pattern copy can still show gauge in prose). */
+  noPrint?: boolean;
 }
 
 const { 
@@ -55,13 +63,28 @@ const {
   title = 'Your Gauge',
   showGaugeSubLabel = true,
   showToggle = true,
-  toggleId
+  toggleId,
+  flatRow = false,
+  noPrint = false,
 } = Astro.props;
 
 const effectiveToggleId = toggleId || "kbm-unit-toggle";
+
+/** When flatRow, omit inner row wrapper if there is nothing above the stitch/row fields (hat builder). */
+const hasGaugePrefix =
+  showTitle ||
+  showGaugeSubLabel ||
+  (!showTitle && showToggle);
 ---
 
-<div class="gauge-input-wrapper" data-toggle-id={effectiveToggleId}>
+<div
+  class:list={[
+    'gauge-input-wrapper',
+    flatRow && !hasGaugePrefix && 'gauge-input-wrapper--flat',
+    noPrint && 'no-print',
+  ]}
+  data-toggle-id={effectiveToggleId}
+>
   {showTitle && showToggle && (
     <div class="kbm-header-layout">
       <h3 class="section-title">{title}</h3>
@@ -82,32 +105,95 @@ const effectiveToggleId = toggleId || "kbm-unit-toggle";
   )}
 
   {showGaugeSubLabel && <div class="gauge-label">Gauge</div>}
-  <div class="gauge-box">
-    <FloatingInput 
-      id={`${id}-stitch-gauge`}
-      labelId={`${id}-stitch-label`}
-      label='Sts (4")'
-      type="number"
-      step="0.5"
-      min="1"
-      testId={`input-${id}-stitch-gauge`}
-    />
-    <span class="gauge-divider">×</span>
-    <FloatingInput 
-      id={`${id}-row-gauge`}
-      labelId={`${id}-row-label`}
-      label='Rows (4")'
-      type="number"
-      step="0.5"
-      min="1"
-      testId={`input-${id}-row-gauge`}
-    />
-  </div>
+  {!flatRow && (
+    <div class="gauge-box">
+      <FloatingInput 
+        id={`${id}-stitch-gauge`}
+        labelId={`${id}-stitch-label`}
+        labelClass="floating-label"
+        label='Sts (4")'
+        type="number"
+        step="0.5"
+        min="1"
+        dataTestid={`input-${id}-stitch-gauge`}
+      />
+      <span class="gauge-divider">×</span>
+      <FloatingInput 
+        id={`${id}-row-gauge`}
+        labelId={`${id}-row-label`}
+        labelClass="floating-label"
+        label='Rows (4")'
+        type="number"
+        step="0.5"
+        min="1"
+        dataTestid={`input-${id}-row-gauge`}
+      />
+    </div>
+  )}
+  {flatRow && hasGaugePrefix && (
+    <div class="gauge-row">
+      <FloatingInput 
+        id={`${id}-stitch-gauge`}
+        labelId={`${id}-stitch-label`}
+        labelClass="floating-label"
+        label='Sts (4")'
+        type="number"
+        step="0.5"
+        min="1"
+        dataTestid={`input-${id}-stitch-gauge`}
+      />
+      <span class="gauge-divider">×</span>
+      <FloatingInput 
+        id={`${id}-row-gauge`}
+        labelId={`${id}-row-label`}
+        labelClass="floating-label"
+        label='Rows (4")'
+        type="number"
+        step="0.5"
+        min="1"
+        dataTestid={`input-${id}-row-gauge`}
+      />
+    </div>
+  )}
+  {flatRow && !hasGaugePrefix && (
+    <Fragment>
+      <FloatingInput 
+        id={`${id}-stitch-gauge`}
+        labelId={`${id}-stitch-label`}
+        labelClass="floating-label"
+        label='Sts (4")'
+        type="number"
+        step="0.5"
+        min="1"
+        dataTestid={`input-${id}-stitch-gauge`}
+      />
+      <span class="gauge-divider">×</span>
+      <FloatingInput 
+        id={`${id}-row-gauge`}
+        labelId={`${id}-row-label`}
+        labelClass="floating-label"
+        label='Rows (4")'
+        type="number"
+        step="0.5"
+        min="1"
+        dataTestid={`input-${id}-row-gauge`}
+      />
+    </Fragment>
+  )}
 </div>
 
 <style is:global>
 .gauge-input-wrapper {
   margin-bottom: 1.5rem;
+}
+
+/* flatRow + no title/label/toggle: one flex row on the wrapper, fields are direct children */
+.gauge-input-wrapper--flat {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .gauge-toggle-only {
@@ -133,6 +219,20 @@ const effectiveToggleId = toggleId || "kbm-unit-toggle";
   flex-wrap: wrap;
 }
 
+/* Plain row: layout only — no second “card”; section/page supplies grouping */
+.gauge-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
 .gauge-divider {
   font-size: 18px;
   font-weight: 600;
@@ -151,7 +251,9 @@ const effectiveToggleId = toggleId || "kbm-unit-toggle";
    FLOATING INPUT STYLES FOR GAUGE INPUTS
    High specificity to override wizard.css
    =========================================== */
-.gauge-box .floating-input {
+.gauge-box .floating-input,
+.gauge-row .floating-input,
+.gauge-input-wrapper--flat > .floating-input {
   position: relative !important;
   width: 100%;
   min-width: 0;
@@ -160,7 +262,9 @@ const effectiveToggleId = toggleId || "kbm-unit-toggle";
   min-width: 120px;
 }
 
-.gauge-box .floating-input input {
+.gauge-box .floating-input input,
+.gauge-row .floating-input input,
+.gauge-input-wrapper--flat > .floating-input input {
   width: 100% !important;
   min-height: 52px !important;
   padding: 1.25rem 0.75rem 0.5rem !important;
@@ -176,18 +280,26 @@ const effectiveToggleId = toggleId || "kbm-unit-toggle";
 }
 
 .gauge-box .floating-input input::-webkit-outer-spin-button,
-.gauge-box .floating-input input::-webkit-inner-spin-button {
+.gauge-box .floating-input input::-webkit-inner-spin-button,
+.gauge-row .floating-input input::-webkit-outer-spin-button,
+.gauge-row .floating-input input::-webkit-inner-spin-button,
+.gauge-input-wrapper--flat > .floating-input input::-webkit-outer-spin-button,
+.gauge-input-wrapper--flat > .floating-input input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-.gauge-box .floating-input input:focus {
+.gauge-box .floating-input input:focus,
+.gauge-row .floating-input input:focus,
+.gauge-input-wrapper--flat > .floating-input input:focus {
   outline: none;
   border-color: var(--kbm-green) !important;
   box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.1) !important;
 }
 
-.gauge-box .floating-input .floating-label {
+.gauge-box .floating-input .floating-label,
+.gauge-row .floating-input .floating-label,
+.gauge-input-wrapper--flat > .floating-input .floating-label {
   position: absolute !important;
   left: 0.75rem !important;
   top: 50% !important;
@@ -210,7 +322,11 @@ const effectiveToggleId = toggleId || "kbm-unit-toggle";
 }
 
 .gauge-box .floating-input input:focus ~ .floating-label,
-.gauge-box .floating-input input:not(:placeholder-shown) ~ .floating-label {
+.gauge-box .floating-input input:not(:placeholder-shown) ~ .floating-label,
+.gauge-row .floating-input input:focus ~ .floating-label,
+.gauge-row .floating-input input:not(:placeholder-shown) ~ .floating-label,
+.gauge-input-wrapper--flat > .floating-input input:focus ~ .floating-label,
+.gauge-input-wrapper--flat > .floating-input input:not(:placeholder-shown) ~ .floating-label {
   top: 0.35rem !important;
   transform: translateY(0) !important;
   font-size: 0.75rem !important;
@@ -218,11 +334,15 @@ const effectiveToggleId = toggleId || "kbm-unit-toggle";
   font-weight: 500 !important;
 }
 
-.gauge-box .floating-input input::placeholder {
+.gauge-box .floating-input input::placeholder,
+.gauge-row .floating-input input::placeholder,
+.gauge-input-wrapper--flat > .floating-input input::placeholder {
   color: transparent !important;
 }
 
-.gauge-box .floating-input input:focus::placeholder {
+.gauge-box .floating-input input:focus::placeholder,
+.gauge-row .floating-input input:focus::placeholder,
+.gauge-input-wrapper--flat > .floating-input input:focus::placeholder {
   color: #9ca3af !important;
 }
 </style>
@@ -247,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!stitchLabel || !rowLabel) return;
 
       if (unit === 'cm') {
-        stitchLabel.textContent = 'Sts(10 cm)';
+        stitchLabel.textContent = 'Sts (10 cm)';
         rowLabel.textContent = 'Rows (10 cm)';
       } else {
         stitchLabel.textContent = 'Sts (4")';
@@ -277,6 +397,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const newUnit = detail?.unit ? detail.unit : 'in';
       updateLabels(newUnit);
     });
+
+    updateLabels(getCurrentUnit());
 
   });
 

@@ -1,0 +1,417 @@
+---
+import { randomUUID } from "node:crypto";
+
+interface Props {
+  src: string;
+  alt: string;
+  caption?: string;
+  class?: string;
+}
+
+const { src, alt, caption, class: className } = Astro.props;
+
+const rootId = `pattern-header-image-${randomUUID()}`;
+const dialogId = `pattern-header-lightbox-${randomUUID()}`;
+const titleId = `pattern-header-lightbox-title-${randomUUID()}`;
+---
+
+<div
+  class:list={["pattern-header-image", className]}
+  id={rootId}
+  data-ph-dialog={dialogId}
+>
+  <button
+    type="button"
+    class="pattern-header-image__trigger"
+    aria-haspopup="dialog"
+    aria-controls={dialogId}
+    aria-expanded="false"
+    aria-label={`Open larger image: ${alt}`}
+  >
+    <span class="pattern-header-image__frame">
+      <img
+        class="pattern-header-image__img"
+        src={src}
+        alt={alt}
+        decoding="async"
+        draggable="false"
+      />
+    </span>
+    <span class="pattern-header-image__hint" aria-hidden="true">
+      <svg
+        class="pattern-header-image__hint-icon"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <circle cx="11" cy="11" r="7"></circle>
+        <path d="M21 21l-4.3-4.3"></path>
+      </svg>
+      <span class="pattern-header-image__hint-text">View larger</span>
+    </span>
+  </button>
+  {
+    caption && (
+      <p class="pattern-header-image__caption">{caption}</p>
+    )
+  }
+</div>
+
+<div
+  id={dialogId}
+  class="pattern-header-lightbox"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby={titleId}
+  hidden
+  aria-hidden="true"
+>
+  <div class="pattern-header-lightbox__backdrop" data-phi-backdrop />
+  <div class="pattern-header-lightbox__panel" data-phi-panel>
+    <h2 id={titleId} class="pattern-header-lightbox__sr-title">
+      {alt}
+    </h2>
+    <button
+      type="button"
+      class="pattern-header-lightbox__close"
+      data-phi-close
+      aria-label="Close lightbox"
+    >
+      ×
+    </button>
+    <img
+      class="pattern-header-lightbox__img"
+      src={src}
+      alt={alt}
+      decoding="async"
+      draggable="false"
+    />
+    {
+      caption && (
+        <p class="pattern-header-lightbox__caption" aria-hidden="false">
+          {caption}
+        </p>
+      )
+    }
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    function bindOne(root) {
+      var dialogId = root.getAttribute("data-ph-dialog");
+      if (!dialogId || root.getAttribute("data-ph-bound") === "1") return;
+      var dialog = document.getElementById(dialogId);
+      if (!dialog) return;
+      root.setAttribute("data-ph-bound", "1");
+
+      /* Fixed + z-index only work as a true viewport overlay if we beat .kbm-header-wrap (1500)
+         and avoid transform-containing ancestors; body is the safe parent. */
+      if (dialog.parentElement !== document.body) {
+        document.body.appendChild(dialog);
+      }
+
+      var trigger = root.querySelector(".pattern-header-image__trigger");
+      var closeBtn = dialog.querySelector("[data-phi-close]");
+      var backdrop = dialog.querySelector("[data-phi-backdrop]");
+      var panel = dialog.querySelector("[data-phi-panel]");
+      var escapeHandler = null;
+
+      if (panel) {
+        panel.addEventListener("click", function (e) {
+          e.stopPropagation();
+        });
+      }
+
+      function setOpen(open) {
+        if (!trigger) return;
+        trigger.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+
+      function openDialog() {
+        dialog.hidden = false;
+        dialog.setAttribute("aria-hidden", "false");
+        document.body.classList.add("pattern-header-lightbox-open");
+        setOpen(true);
+        if (closeBtn && typeof closeBtn.focus === "function") {
+          closeBtn.focus();
+        }
+        escapeHandler = function (e) {
+          if (e.key === "Escape") {
+            e.preventDefault();
+            closeDialog();
+          }
+        };
+        document.addEventListener("keydown", escapeHandler);
+      }
+
+      function closeDialog() {
+        dialog.hidden = true;
+        dialog.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("pattern-header-lightbox-open");
+        setOpen(false);
+        if (escapeHandler) {
+          document.removeEventListener("keydown", escapeHandler);
+          escapeHandler = null;
+        }
+        if (trigger && typeof trigger.focus === "function") {
+          trigger.focus();
+        }
+      }
+
+      if (trigger) {
+        trigger.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          openDialog();
+        });
+        trigger.addEventListener("auxclick", function (e) {
+          if (e.button === 1) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        });
+      }
+      if (closeBtn) {
+        closeBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          closeDialog();
+        });
+      }
+      if (backdrop) {
+        backdrop.addEventListener("click", function () {
+          closeDialog();
+        });
+      }
+    }
+
+    function bindAll() {
+      document.querySelectorAll(".pattern-header-image[data-ph-dialog]").forEach(bindOne);
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", bindAll);
+    } else {
+      bindAll();
+    }
+  })();
+</script>
+
+<style>
+  .pattern-header-image {
+    width: 100%;
+    max-width: min(28rem, 100%);
+  }
+
+  .pattern-header-image__trigger {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: zoom-in;
+    border-radius: 8px;
+    line-height: normal;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .pattern-header-image__frame {
+    display: block;
+    position: relative;
+    line-height: 0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  /* Touches/clicks must hit the <button>, not the <img>, or mobile Safari opens the image URL. */
+  .pattern-header-image__frame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: 8px;
+    cursor: inherit;
+  }
+
+  .pattern-header-image__trigger:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 3px;
+  }
+
+  .pattern-header-image__img {
+    width: 100%;
+    height: auto;
+    max-height: min(50vh, 420px);
+    object-fit: contain;
+    border-radius: 8px;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+  }
+
+  .pattern-header-image__hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: #6b7280;
+    line-height: 1.2;
+  }
+
+  .pattern-header-image__hint-icon {
+    flex-shrink: 0;
+    opacity: 0.85;
+    color: #6b7280;
+  }
+
+  .pattern-header-image__hint-text {
+    white-space: nowrap;
+  }
+
+  .pattern-header-image__caption {
+    font-size: 0.75rem;
+    color: #777;
+    margin: 0.4rem 0 0;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .pattern-header-lightbox {
+    position: fixed;
+    inset: 0;
+    /* Above .kbm-header-wrap (1500), search modal (9999), wizard drawers (~10050) */
+    z-index: 12000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    box-sizing: border-box;
+    cursor: zoom-out;
+  }
+
+  .pattern-header-lightbox[hidden] {
+    display: none !important;
+  }
+
+  .pattern-header-lightbox__backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: rgba(0, 0, 0, 0.72);
+    cursor: zoom-out;
+  }
+
+  .pattern-header-lightbox__panel {
+    position: relative;
+    z-index: 1;
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .pattern-header-lightbox__panel > * {
+    pointer-events: auto;
+  }
+
+  .pattern-header-lightbox__sr-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .pattern-header-lightbox__close {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 2;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #1f2937;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  }
+
+  .pattern-header-lightbox__close:hover {
+    background: #fff;
+  }
+
+  .pattern-header-lightbox__close:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .pattern-header-lightbox__img {
+    max-width: min(96vw, 100%);
+    max-height: calc(100vh - 5rem);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 6px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  @media (min-width: 768px) {
+    .pattern-header-lightbox__img {
+      max-width: min(38rem, 80vw);
+      max-height: min(72vh, 32rem);
+    }
+  }
+
+  .pattern-header-lightbox__caption {
+    margin: 0;
+    max-width: min(42rem, 96vw);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.92);
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+</style>
+
+<style is:global>
+  body.pattern-header-lightbox-open {
+    overflow: hidden;
+  }
+</style>

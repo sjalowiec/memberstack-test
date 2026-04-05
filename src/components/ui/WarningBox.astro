@@ -1,0 +1,67 @@
+---
+export interface Props {
+  message: string;
+  title?: string;
+}
+
+const { message, title = "IMPORTANT" } = Astro.props;
+
+/*
+  Example usage (we will add this to pattern pages later):
+
+  import WarningBox from "../../components/ui/WarningBox.astro";
+
+  <WarningBox message="Your pattern will not be saved on this site. Please download your PDF before leaving." />
+*/
+---
+
+<div class="kbm-warning-box" role="region" aria-label={title}>
+  <span class="kbm-warning-box__icon" aria-hidden="true">⚠</span>
+  <div class="kbm-warning-box__content">
+    <p class="kbm-warning-box__title">{title}</p>
+    <p class="kbm-warning-box__message">{message}</p>
+  </div>
+</div>
+
+<style>
+  .kbm-warning-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 2px solid #c2614e;
+    background: rgba(194, 97, 78, 0.1);
+    color: #7a3b2e;
+  }
+
+  .kbm-warning-box__icon {
+    flex-shrink: 0;
+    font-size: 1.2rem;
+    line-height: 1.3;
+    margin-top: 1px;
+  }
+
+  .kbm-warning-box__content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .kbm-warning-box__title {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.35;
+    color: #7a3b2e;
+  }
+
+  .kbm-warning-box__message {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #7a3b2e;
+  }
+</style>
