@@ -41,6 +41,8 @@ type HelpHubRecord = {
   question?: string;
   hook?: string;
   bubbleAnswer?: string;
+  /** Catalog row id: matches `content_id` in videos-public.json. */
+  videoId?: string | number;
   mediaType?: string;
   mediaUrl?: string;
   mediaPoster?: string;
@@ -185,6 +187,28 @@ const mediaPoster =
   typeof tip.mediaPoster === "string" ? tip.mediaPoster.trim() : "";
 const mediaAlt = typeof tip.mediaAlt === "string" ? tip.mediaAlt.trim() : "";
 
+const tipVideoIdRaw = tip.videoId;
+const tipVideoId =
+  tipVideoIdRaw !== undefined &&
+  tipVideoIdRaw !== null &&
+  String(tipVideoIdRaw).trim() !== ""
+    ? String(tipVideoIdRaw).trim()
+    : "";
+const catalogVideoForTip =
+  tipVideoId !== ""
+    ? catalogVideosHelpHub.find(
+        (v) => String(v.content_id ?? "") === tipVideoId,
+      )
+    : undefined;
+const catalogVimeoNumericId =
+  catalogVideoForTip != null
+    ? vimeoNumericIdFromPublicVideo(catalogVideoForTip)
+    : null;
+const catalogVimeoEmbedUrl =
+  catalogVimeoNumericId != null
+    ? `https://player.vimeo.com/video/${catalogVimeoNumericId}`
+    : "";
+
 const pageTitle =
   (typeof tip.metaTitle === "string" && tip.metaTitle.trim() !== ""
     ? tip.metaTitle.trim()
@@ -284,7 +308,18 @@ const tryHeading =
         <div class="tuesday-tip-hero__media" aria-label="Free visual">
         <div class="tuesday-tip-video-shell" data-placeholder="hero media">
           <div class="tuesday-tip-video-aspect">
-            {mediaType === "image" && mediaUrl ? (
+            {catalogVimeoEmbedUrl ? (
+              <div class="help-hub-media">
+                <iframe
+                  src={catalogVimeoEmbedUrl}
+                  class="tuesday-tip-video-iframe"
+                  title={tip.question || tip.title || "Help Hub video"}
+                  frameborder="0"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowfullscreen
+                ></iframe>
+              </div>
+            ) : mediaType === "image" && mediaUrl ? (
               <img
                 src={mediaUrl}
                 alt={mediaAlt}

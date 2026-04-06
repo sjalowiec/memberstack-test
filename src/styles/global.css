@@ -6,7 +6,7 @@
 /* Pattern wizard tabs (e.g. hat builder) */
 .pattern-tab-nav {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   border-bottom: 2px solid #e5e5e5;
   margin-bottom: 20px;
 }
@@ -14,16 +14,22 @@
 .tab-btn {
   background: none;
   border: none;
-  padding: 10px 16px;
+  padding: 12px 20px;
   cursor: pointer;
+  font-size: 1.125rem;
   font-weight: 600;
+  line-height: 1.25;
   color: #666;
   border-bottom: 3px solid transparent;
 }
 
+.tab-btn:not(.active):hover {
+  color: #4d4d4d;
+}
+
 .tab-btn.active {
-  color: #52682d;
-  border-bottom: 3px solid #52682d;
+  color: #c2614e;
+  border-bottom: 3px solid #c2614e;
 }
 
 .tab-panel {
