@@ -31,7 +31,6 @@ const patternPersistWarning =
 <Layout
   title="Machine Knit Hat Pattern Builder | Knit it Now"
   description="Create a custom machine knit hat pattern with your gauge, size, brim, and crown shaping. Get clear knitting instructions instantly."
-  skipGlobalPinterest={true}
 >
 
 <style>
@@ -325,14 +324,37 @@ select.disabled {
 
 }
 
-.pinterest-embed-wrap {
+.inspiration-section {
+  margin-top: 20px;
+}
+
+.inspiration-heading {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.pinterest-embed {
+  display: flex;
+  justify-content: center;
   width: 100%;
-  max-width: 100%;
   overflow: hidden;
 }
 
-.pinterest-embed-wrap iframe {
-  width: 100% !important;
+@media (max-width: 768px) {
+  .pinterest-embed a {
+    transform: scale(0.9);
+    transform-origin: top center;
+  }
+}
+
+.hat-pinterest-fallback-link {
+  margin: 12px 0 0;
+  font-size: 0.95rem;
+}
+
+.hat-pinterest-fallback-link a {
+  color: var(--kbm-green, #52682d);
 }
 
 /* Subtle indent: custom numeric fields read as sub-fields of the custom dropdown choice */
@@ -1269,11 +1291,30 @@ select.disabled {
             <PatternComments />
           </div>
 
-          <!-- Pinterest embed temporarily disabled on this page (debug hidden-tab / pinit.js issues). -->
           <div class="tab-panel" id="tab-inspiration">
-            <p class="no-print" style="margin: 0; color: #666;">
-              Inspiration board temporarily unavailable.
-            </p>
+            <div class="inspiration-section">
+              <h3 class="inspiration-heading">Get Inspired</h3>
+
+              <div class="pinterest-embed">
+                <a
+                  data-pin-do="embedBoard"
+                  data-pin-board-width="100%"
+                  data-pin-scale-height="900"
+                  data-pin-scale-width="80"
+                  href="https://www.pinterest.com/knititnow/hats/"
+                ></a>
+              </div>
+
+              <p class="hat-pinterest-fallback-link">
+                <a
+                  href="https://www.pinterest.com/knititnow/hats/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Open the Machine Knit Hats board on Pinterest
+                </a>
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -1463,6 +1504,9 @@ async function initHatBuilder() {
       loadPatternComments();
     }
     if (target === 'inspiration') {
+      if (window.PinUtils && typeof window.PinUtils.build === 'function') {
+        window.PinUtils.build();
+      }
       window.kbmSchedulePinterestEmbedsRefresh?.();
     }
   }
@@ -1486,7 +1530,9 @@ async function initHatBuilder() {
     loadPatternComments();
   }
 
-  window.kbmSchedulePinterestEmbedsRefresh?.();
+  // Do not run Pinterest refresh on load: Inspiration tab is display:none, so
+  // pinit sees parent offsetWidth 0 and can fail to render the board. Refresh
+  // only when the user opens Inspiration (see activateWizardTab).
 
   const editBtn = document.getElementById('edit-btn');
   if (editBtn) {

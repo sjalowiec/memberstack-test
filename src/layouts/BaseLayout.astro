@@ -89,13 +89,13 @@ const isProduction =
         <!-- Pinterest Embed Script (single load site-wide; re-parse via kbmSchedulePinterestEmbedsRefresh when tabs show) -->
         <script async defer src="https://assets.pinterest.com/js/pinit.js"></script>
         <script is:inline>
-          window.kbmInitPinterestEmbeds = function kbmInitPinterestEmbeds() {
+          window.kbmInitPinterestEmbeds = function kbmInitPinterestEmbeds(root) {
             try {
               var PU = window.PinUtils;
               if (PU && typeof PU.build === "function") {
-                PU.build();
+                PU.build(root);
               }
-              if (PU && typeof PU.parse === "function") {
+              if (PU && typeof PU.parse === "function" && !root) {
                 PU.parse();
               }
             } catch (e) {}
@@ -103,19 +103,20 @@ const isProduction =
           window.kbmPinterestBuild = window.kbmInitPinterestEmbeds;
           /**
            * Run after layout + retry until PinUtils exists (hidden-tab embeds, slow pinit.js).
+           * Optional root: document subtree only (e.g. visible tab mount) so pinit gets real widths.
            * Pattern pages: call when an Inspiration tab becomes visible and once on load if needed.
            */
-          window.kbmSchedulePinterestEmbedsRefresh = function kbmSchedulePinterestEmbedsRefresh() {
+          window.kbmSchedulePinterestEmbedsRefresh = function kbmSchedulePinterestEmbedsRefresh(root) {
             function tryInit() {
               try {
-                window.kbmInitPinterestEmbeds();
+                window.kbmInitPinterestEmbeds(root);
               } catch (e) {}
             }
             requestAnimationFrame(function () {
               requestAnimationFrame(tryInit);
             });
             var n = 0;
-            var max = 24;
+            var max = 48;
             var id = window.setInterval(function () {
               n += 1;
               tryInit();

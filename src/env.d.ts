@@ -12,12 +12,15 @@ interface ImportMetaEnv {
 declare global {
   interface Window {
     /** Pinterest pinit.js */
-    PinUtils?: { build?: () => void; parse?: () => void };
-    /** Safe PinUtils.build/parse; alias: kbmPinterestBuild */
-    kbmInitPinterestEmbeds?: () => void;
-    kbmPinterestBuild?: () => void;
-    /** rAF + short retry until PinUtils exists (tab-hidden embeds) */
-    kbmSchedulePinterestEmbedsRefresh?: () => void;
+    PinUtils?: {
+      build?: (root?: Document | Element | null) => void;
+      parse?: () => void;
+    };
+    /** Safe PinUtils.build/parse; alias: kbmPinterestBuild; optional root = subtree only */
+    kbmInitPinterestEmbeds?: (root?: Document | Element | null) => void;
+    kbmPinterestBuild?: (root?: Document | Element | null) => void;
+    /** rAF + short retry until PinUtils exists (tab-hidden embeds); optional root for scoped build */
+    kbmSchedulePinterestEmbedsRefresh?: (root?: Document | Element | null) => void;
     __DEV_BYPASS_GATING?: boolean;
     /** Localhost + ?member=true: set in BaseLayout for client-side gates (videos, etc.). */
     __KBM_DEV_MEMBER__?: boolean;

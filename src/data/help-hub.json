@@ -200,14 +200,14 @@
     "category": "edges-finishing-assembly",
     "categoryPill": "",
     "question": "How do I join Fair Isle panels without an ugly seam?",
-    "bubbleAnswer": "Don’t try to hide the seam - turn it into a design feature with a visible join.",
-    "hook": "Take a closer look… your seam might be the most interesting part of joining your fairisle panels",
+    "bubbleAnswer": "Turn the seam into a design feature — don’t try to hide it.",
+    "hook": "Take a closer look… your seam might be the best part of your Fair Isle panels.",
     "mediaType": "",
-    "mediaUrl": "",
+    "mediaUrl": "688",
     "mediaPoster": "",
     "mediaAlt": "",
     "aboutTitle": "Show off the seam",
-    "bridge": "When you knit panels (especially in Fair Isle or in pattern), seams can feel like a problem to solve.\n\nBut trying to make them invisible often leads to bulk, distortion, or frustration.\n\nInstead, treat the seam as part of the design:\n\n-add texture\n-add contrast\n-add structure\n\nNow your seam isn’t something to fix - it’s something to show off.",
+    "bridge": "Fair Isle panels can create bulky or messy seams if you try to match them perfectly.\nInstead of fighting it, treat the seam as a design element — something that adds structure and interest.\nA visible join can look intentional and clean, especially with colorwork.\n\nInstead, treat the seam as part of the design:\n\n-add texture\n-add contrast\n-add structure\n\nNow your seam isn’t something to fix - it’s something to show off.",
     "tryThisTitle": "I-Cord Join",
     "memberHeading": "",
     "memberText": "",
@@ -225,7 +225,9 @@
       ],
       "quickActionNote": "👉 Result: A raised, polished seam that looks intentional and decorative"
     },
-    "relatedLessons": [],
+    "relatedLessons": [
+      "i-cord-seam"
+    ],
     "status": "draft",
     "id": 1005,
     "sortOrder": 30
