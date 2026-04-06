@@ -58,12 +58,12 @@ const pageDescription =
   "Browse machine knitting stitch patterns—swatches, punchcard layouts, DesignaKnit files, and print-ready references.";
 ---
 
-<Layout title="Stitch Library" description={pageDescription} bodyClass="page--tight-header">
+<Layout title="Stitch Browser" description={pageDescription} bodyClass="page--tight-header">
   <div class="page-wrap stitch-cat">
     <header class="stitch-cat__intro">
       <div class="stitch-cat__header-row">
         <div class="stitch-cat__title-block">
-          <h1>Stitch Library</h1>
+          <h1>Stitch Browser</h1>
         </div>
         <div class="stitch-cat__search-slot">
           <FloatingInput
@@ -73,7 +73,7 @@ const pageDescription =
             inputmode="search"
             enterkeyhint="search"
             role="searchbox"
-            label="Search by title, KIN, technique, repeat, or machine"
+            label="Search stitches, techniques, or repeats"
             autocomplete="off"
             spellcheck={false}
             dataAttrs={{ "data-stitch-cat-search": "" }}
@@ -82,8 +82,7 @@ const pageDescription =
       </div>
       <div class="stitch-cat__dek-row">
         <p class="stitch-cat__dek">
-          Everything you need to knit each stitch without guesswork - punchcard layouts, DesignaKnit files, and
-          print-ready references.
+          Explore stitch patterns, filter by what works for your machine, and find your next idea.
         </p>
       </div>
     </header>
