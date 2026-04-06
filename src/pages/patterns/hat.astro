@@ -948,6 +948,10 @@ select.disabled {
   .page-header, .video-button {
     display: none;
   }
+
+  :global(.back-link) {
+    display: none !important;
+  }
   
   /* Print header with pattern name */
   .print-header {
@@ -1037,12 +1041,49 @@ select.disabled {
   :global(.no-print) {
     display: none !important;
   }
+
+  /* Build tab: only print header + settings summary; drop inputs/sections/CTA from layout. */
+  .hat-builder-inputs #hat-builder-form > *:not(.print-header):not(#print-summary) {
+    display: none !important;
+  }
+
+  /*
+   * Shared pattern print shell (hat first; same class names for blankets/sweaters later).
+   * Global print.css sets page-break-inside: avoid on .results-section / .pattern-card — override
+   * inside .pattern-print-results so instructions can flow across pages; diagram uses .pattern-print-new-page.
+   */
+  .hat-builder-inputs #results .results-section,
+  .hat-builder-inputs #results .pattern-print-results,
+  .hat-builder-inputs #results .pattern-print-results .pattern-print-section--instructions,
+  .hat-builder-inputs #results .pattern-print-results .pattern-card {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+
+  .pattern-print-new-page {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  .pattern-print-keep-together {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .hat-builder-inputs #results .kbm-warning-box {
+    display: none !important;
+  }
+
+  /* Diagram is the last pattern content; hide trailing site footer so it is not an extra final page. */
+  .wizard-page:has(.hat-builder-inputs) > footer.kbm-print-footer {
+    display: none !important;
+  }
 }
 </style>
 
 <div class="wizard-page">
   <div style="max-width: 800px; margin: 0 auto; padding: 0 1rem;">
-    <WizardBackLink category="pattern" />
+    <WizardBackLink className="back-link no-print" category="pattern" />
   </div>
 
   <div class="page-header no-print hat-builder-page-header">
@@ -1270,16 +1311,24 @@ select.disabled {
               <ActionBar formScrollTarget="hat-builder-form-top" />
 
               <div class="results-section">
-                <div class="pattern-card">
-                  <div id="pattern-content" data-show-tips="false">
-                    <!-- Will be populated by JavaScript -->
+                <div class="pattern-print-results">
+                  <div class="pattern-print-section pattern-print-section--instructions">
+                    <div class="pattern-card">
+                      <div id="pattern-content" data-show-tips="false">
+                        <!-- Will be populated by JavaScript -->
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                <div class="diagram-container">
-                  <h3>Hat Dimensions</h3>
-                  <div id="diagram-content">
-                    <!-- Will be populated by JavaScript -->
+                  <div
+                    class="pattern-print-section pattern-print-section--diagram pattern-print-new-page pattern-print-keep-together"
+                  >
+                    <div class="diagram-container">
+                      <h3>Hat Dimensions</h3>
+                      <div id="diagram-content">
+                        <!-- Will be populated by JavaScript -->
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

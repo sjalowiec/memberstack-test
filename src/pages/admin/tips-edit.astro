@@ -39,48 +39,46 @@ const categoryOptions = Array.isArray(categoriesData)
       <form id="help-hub-admin-form" class="help-hub-admin__form" autocomplete="off">
         <div class="field-grid">
           <label><span>id (read-only)</span><input type="text" id="field-id" name="idDisplay" readonly disabled placeholder="(assigned on save)" /></label>
-          <label class="field-full"><span>title <em class="req">*</em></span><input type="text" name="title" id="field-title" required /></label>
+          <label class="field-full"><span>Title <em class="req">*</em></span><input type="text" name="title" id="field-title" required /></label>
+          <label class="field-full"><span>Slug <em class="req">*</em></span><input type="text" name="slug" id="field-slug" required /><span class="field-hint">Lowercase, hyphens. Auto-filled from title on new until you edit slug.</span></label>
           <label class="field-full"><span>Meta Title</span><input type="text" name="metaTitle" id="field-metaTitle" placeholder="Short title for search results" /></label>
           <label class="field-full"><span>Meta Description</span><textarea name="metaDescription" id="field-metaDescription" rows="2" placeholder="1-2 sentence summary of the tip"></textarea></label>
-          <label class="field-full"><span>slug <em class="req">*</em></span><input type="text" name="slug" id="field-slug" required /><span class="field-hint">Lowercase, hyphens. Auto-filled from title on new until you edit slug.</span></label>
-          
-          <label class="checkbox-label field-full help-hub-admin__active-toggle">
-            <input type="checkbox" name="tipActive" id="field-tipActive" />
-            <span>Active on Help Hub</span>
-          </label>  <p class="field-hint field-full help-hub-admin__active-hint">
-            New tips start inactive (<code>draft</code>) until you check this. Checked = live (<code>published</code>); unchecked = hidden (<code>draft</code>).
-          </p>
-          <label class="checkbox-label"><input type="checkbox" name="allMachines" id="field-allMachines" /><span>All Machines</span></label>
+
+          <label class="checkbox-label field-full"><input type="checkbox" name="allMachines" id="field-allMachines" /><span>All Machines</span></label>
           <label class="field-full"><span>Applies To</span><input type="text" name="appliesTo" id="field-appliesTo" placeholder="Brother KH-series, Silver Reed, LK150" /><span class="field-hint">Comma-separated list of machine names.</span></label>
-          
-          <label><span>sortOrder</span><input type="number" name="sortOrder" id="field-sortOrder" step="1" /></label>
-          <label class="checkbox-label"><input type="checkbox" name="isNew" id="field-isNew" /><span>isNew</span></label>
-        
-<label>==================================================</label>
 
+          <label class="field-full"><span>Hook</span><input type="text" name="hook" id="field-hook" /></label>
+          <label class="field-full"><span>Question</span><textarea name="question" id="field-question" rows="2"></textarea></label>
+          <label class="field-full"><span>Bubble Answer</span><textarea name="bubbleAnswer" id="field-bubbleAnswer" rows="3"></textarea></label>
 
-          <label class="field-full"><span>hook</span><input type="text" name="hook" id="field-hook" /></label>
-          <label class="field-full"><span>question / symptom</span><textarea name="question" id="field-question" rows="2"></textarea></label>
-          <label class="field-full"><span>bubbleAnswer</span><textarea name="bubbleAnswer" id="field-bubbleAnswer" rows="3"></textarea></label>
-         
-          <label class="field-full"><span>Vimeo ID | (gif url)</span><input type="text" name="mediaUrl" id="field-mediaUrl" /></label>
-          <label class="field-full"><span>Thumbnail URL</span><input type="text" name="mediaPoster" id="field-mediaPoster" /></label>
-         
-          <label><span>what's this about title</span><input type="text" name="aboutTitle" id="field-aboutTitle" /></label>
-          <label class="field-full"><span>What's this about text</span><textarea name="bridge" id="field-bridge" rows="3"></textarea></label>
-        
-          <label><span>tryThisTitle (free)</span><input type="text" name="tryThisTitle" id="field-tryThisTitle" /></label>
-          <label><span>try this free subtitle (free)</span><input type="text" name="quickActionTitle" id="field-quickActionTitle" /></label>
-          <label class="field-full"><span>quickAction (one per line) → tryThis.quickAction</span><textarea name="quickAction" id="field-quickAction" rows="5"></textarea></label>
+          <label class="field-full"><span>Media URL (Vimeo or Image)</span><input type="text" name="mediaUrl" id="field-mediaUrl" placeholder="/images/help-hub/example.webp or videos/123" /></label>
+          <label class="field-full"><span>mediaType</span><input type="text" name="mediaType" id="field-mediaType" placeholder="vimeo, video, image" /></label>
+          <label class="field-full"><span>Media alt</span><input type="text" name="mediaAlt" id="field-mediaAlt" /></label>
+
+          <fieldset class="field-full help-hub-admin__about-fieldset">
+            <legend class="help-hub-admin__about-legend">What's this about</legend>
+            <div class="help-hub-admin__about-fieldset-inner">
+              <label class="field-full"><span>What's this about title</span><input type="text" name="aboutTitle" id="field-aboutTitle" /></label>
+              <label class="field-full"><span>What's this about text</span><textarea name="bridge" id="field-bridge" rows="3"></textarea></label>
+            </div>
+          </fieldset>
+
+          <label><span>Try This title</span><input type="text" name="tryThisTitle" id="field-tryThisTitle" /></label>
+          <label><span>Try This subtitle</span><input type="text" name="quickActionTitle" id="field-quickActionTitle" /></label>
           <label class="field-full">
-            <span>Try This Note</span>
+            <span>Try This quick action</span>
+            <textarea name="quickAction" id="field-quickAction" rows="5"></textarea>
+            <span class="field-hint">One per line; saved as tryThis.quickAction.</span>
+          </label>
+          <label class="field-full">
+            <span>Try This note</span>
             <textarea name="quickActionNote" id="field-quickActionNote" rows="4" placeholder="Optional note below the checklist"></textarea>
             <span class="field-hint">Shown below the Try This checklist on the public tip page. HTML allowed.</span>
           </label>
 
           <div class="field-full help-hub-admin__related-lessons">
             <label for="relatedLessons" class="help-hub-admin__related-lessons-label">
-              <span>Related lessons</span>
+              <span>Lesson selection</span>
             </label>
             <p class="help-hub-admin__related-lessons-help">
               Select one or more lessons to display with this tip.
@@ -119,16 +117,18 @@ const categoryOptions = Array.isArray(categoriesData)
             ></ul>
           </div>
 
-
-
-
-
-        
+          <label class="checkbox-label field-full help-hub-admin__active-toggle">
+            <input type="checkbox" name="tipActive" id="field-tipActive" />
+            <span>Active on Help Hub</span>
+          </label>
+          <p class="field-hint field-full help-hub-admin__active-hint">
+            New tips start inactive (<code>draft</code>) until you check this. Checked = live (<code>published</code>); unchecked = hidden (<code>draft</code>).
+          </p>
+          <label><span>sortOrder</span><input type="number" name="sortOrder" id="field-sortOrder" step="1" /></label>
+          <label class="checkbox-label"><input type="checkbox" name="isNew" id="field-isNew" /><span>isNew</span></label>
           <label class="checkbox-label"><input type="checkbox" name="featured" id="field-featured" /><span>featured</span></label>
           <label><span>category <em class="req">*</em></span><select name="category" id="field-category" required><option value="">Select a category</option>{categoryOptions.map((opt) => (<option value={opt.key}>{opt.label || opt.key}</option>))}</select></label>
           <label><span>categoryPill</span><input type="text" name="categoryPill" id="field-categoryPill" /></label>
-           <label><span>mediaType</span><input type="text" name="mediaType" id="field-mediaType" placeholder="vimeo, video, image" /></label>
-           <label class="field-full"><span>mediaAlt</span><input type="text" name="mediaAlt" id="field-mediaAlt" /></label>
   <!--<label><span>memberHeading</span><input type="text" name="memberHeading" id="field-memberHeading" /></label>
           <label class="field-full"><span>memberText</span><textarea name="memberText" id="field-memberText" rows="2"></textarea></label>
         -->  <!--<label class="field-full"><span>trySteps (one per line)</span><textarea name="trySteps" id="field-trySteps" rows="4"></textarea></label> -->
@@ -225,6 +225,27 @@ const categoryOptions = Array.isArray(categoriesData)
     .help-hub-admin__form .field-grid { display: grid; grid-template-columns: 1fr; gap: 0.65rem; }
     @media (min-width: 720px) { .help-hub-admin__form .field-grid { grid-template-columns: 1fr 1fr; } }
     .field-full { grid-column: 1 / -1; }
+    .help-hub-admin__about-fieldset {
+      margin: 0;
+      padding: 0.55rem 0.75rem 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: #fafafa;
+      box-sizing: border-box;
+      min-width: 0;
+    }
+    .help-hub-admin__about-legend {
+      padding: 0 0.35rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #2e3a18;
+    }
+    .help-hub-admin__about-fieldset-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin-top: 0.25rem;
+    }
     .help-hub-admin__form label { display: flex; flex-direction: column; gap: 0.35rem; }
     .help-hub-admin__form label > span { font-size: 0.95rem; font-weight: 600; color: #2e3a18; }
     .req { color: #b91c1c; font-style: normal; }
@@ -324,7 +345,6 @@ const categoryOptions = Array.isArray(categoriesData)
       "field-hook",
       "field-bubbleAnswer",
       "field-mediaUrl",
-      "field-mediaPoster",
       "field-mediaType",
       "field-mediaAlt",
       "field-tryThisTitle",
@@ -572,7 +592,7 @@ const categoryOptions = Array.isArray(categoriesData)
         appliesTo: parseCommaList(textVal("appliesTo")),
         allMachines: checked("allMachines"),
         category: textVal("category"), categoryPill: textVal("categoryPill"), question: textVal("question"), bubbleAnswer: textVal("bubbleAnswer"),
-        hook: textVal("hook"), mediaType: textVal("mediaType"), mediaUrl: textVal("mediaUrl"), mediaPoster: textVal("mediaPoster"), mediaAlt: textVal("mediaAlt"),
+        hook: textVal("hook"), mediaType: textVal("mediaType"), mediaUrl: textVal("mediaUrl"), mediaAlt: textVal("mediaAlt"),
         aboutTitle: textVal("aboutTitle"), bridge: textVal("bridge"), tryThisTitle: textVal("tryThisTitle"), memberHeading: textVal("memberHeading"), memberText: textVal("memberText"),
         isNew: checked("isNew"),
         tryThis: tryThisOut,
@@ -608,7 +628,7 @@ const categoryOptions = Array.isArray(categoriesData)
       setField("metaTitle", String(row.metaTitle ?? ""));
       setField("metaDescription", String(row.metaDescription ?? ""));
       setField("category", String(row.category ?? "")); setField("categoryPill", String(row.categoryPill ?? "")); setField("question", String(row.question ?? "")); setField("bubbleAnswer", String(row.bubbleAnswer ?? ""));
-      setField("hook", String(row.hook ?? "")); setField("mediaType", String(row.mediaType ?? "")); setField("mediaUrl", String(row.mediaUrl ?? "")); setField("mediaPoster", String(row.mediaPoster ?? ""));
+      setField("hook", String(row.hook ?? "")); setField("mediaType", String(row.mediaType ?? "")); setField("mediaUrl", String(row.mediaUrl ?? ""));
       setField("mediaAlt", String(row.mediaAlt ?? "")); setField("aboutTitle", String(row.aboutTitle ?? "")); setField("bridge", String(row.bridge ?? "")); setField("tryThisTitle", String(row.tryThisTitle ?? ""));
       const tt = row.tryThis && typeof row.tryThis === "object" && !Array.isArray(row.tryThis) ? row.tryThis : {};
       setField("quickActionTitle", String(tt.quickActionTitle ?? "")); setField("quickAction", linesToText(tt.quickAction));
@@ -633,7 +653,7 @@ const categoryOptions = Array.isArray(categoriesData)
     function clearFormNew() {
       editingId = null; baseline = null; slugManual = false;
       if (fieldId) { fieldId.value = ""; fieldId.placeholder = "(assigned on save)"; }
-      ["title","metaTitle","metaDescription","slug","category","categoryPill","question","bubbleAnswer","hook","mediaType","mediaUrl","mediaPoster","mediaAlt","aboutTitle","bridge","tryThisTitle","quickActionTitle","quickAction","quickActionNote","memberHeading","memberText","appliesTo","sortOrder","trySteps"].forEach((n) => setField(n, ""));
+      ["title","metaTitle","metaDescription","slug","category","categoryPill","question","bubbleAnswer","hook","mediaType","mediaUrl","mediaAlt","aboutTitle","bridge","tryThisTitle","quickActionTitle","quickAction","quickActionNote","memberHeading","memberText","appliesTo","sortOrder","trySteps"].forEach((n) => setField(n, ""));
       setChecked("allMachines", true);
       setRelatedLessonsSelection([]);
       renderRelatedLessonsChosenList();

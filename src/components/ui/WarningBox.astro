@@ -64,4 +64,13 @@ const { message, title = "IMPORTANT" } = Astro.props;
     line-height: 1.4;
     color: #7a3b2e;
   }
+
+  @media print {
+    .kbm-warning-box {
+      display: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      height: 0 !important;
+    }
+  }
 </style>
