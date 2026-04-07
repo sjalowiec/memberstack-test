@@ -6,6 +6,7 @@ import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import GaugeInput from "../../components/wizards/GaugeInput.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import PatternComments from "../../components/patterns/PatternComments.astro";
+import NeedleCheckDrawer from "../../components/patterns/NeedleCheckDrawer.astro";
 import PatternHeaderImage from "../../components/patterns/PatternHeaderImage.astro";
 import WarningBox from "../../components/ui/WarningBox.astro";
 import GlossaryTooltip from "../../components/common/GlossaryTooltip.astro";
@@ -1135,7 +1136,7 @@ const patternPersistWarning =
 }
 
 .diy-blanket-builder-inputs #hat-yarn-drawer-trigger-wrap,
-.diy-blanket-builder-inputs #diy-blanket-width-drawer-trigger-wrap {
+.diy-blanket-builder-inputs #needle-check-trigger-wrap {
   margin-top: 24px;
 }
 
@@ -1324,7 +1325,7 @@ const patternPersistWarning =
   }
 
   .diy-blanket-builder-inputs #hat-yarn-drawer-trigger-wrap .needle-check__header,
-  .diy-blanket-builder-inputs #diy-blanket-width-drawer-trigger-wrap .needle-check__header {
+  .diy-blanket-builder-inputs #needle-check-trigger-wrap .needle-check__header {
     min-height: 44px;
   }
 }
@@ -1426,37 +1427,7 @@ const patternPersistWarning =
       <GaugeInput id="diy" showTitle={true} title="Enter your gauge" showToggle={false} toggleId="diy" />
 
       <!-- Width / needle estimate: same fixed drawer pattern as yarn (trigger only in flow) -->
-      <div id="diy-blanket-width-drawer-trigger-wrap" class="needle-check needle-check--width-drawer no-print" aria-live="polite">
-        <div id="diy-blanket-needle-result-preview" class="diy-blanket-needle-result-preview" hidden>
-          <p class="diy-blanket-needle-result-preview__line">
-            <strong><span id="needle-count-value-preview"></span> needles required</strong>
-          </p>
-          <p class="diy-blanket-needle-result-preview__context" id="needle-size-context-preview"></p>
-        </div>
-        <button
-          type="button"
-          id="diy-blanket-width-drawer-toggle"
-          class="needle-check__header"
-          aria-expanded="false"
-          aria-haspopup="dialog"
-          aria-controls="diy-blanket-width-drawer-panel"
-        >
-          <span class="needle-check__chevron" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M10 7l5 5-5 5"
-                stroke="currentColor"
-                stroke-width="2.25"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </span>
-          <span class="needle-check__header-text">
-            <span class="needle-check__title">Will this fit on your machine?</span>
-          </span>
-        </button>
-      </div>
+      <NeedleCheckDrawer />
 
       <!-- Yarn estimator: same accordion chrome as needle-check; opens slide-out panel (disabled until size + gauge ready) -->
       <div id="hat-yarn-drawer-trigger-wrap" class="needle-check needle-check--yarn-drawer no-print">
@@ -1718,7 +1689,7 @@ const patternPersistWarning =
     aria-hidden="true"
   >
     <div
-      id="diy-blanket-width-drawer-panel"
+      id="needle-check-panel"
       class="hat-yarn-drawer-panel"
       role="dialog"
       aria-modal="true"
@@ -1961,8 +1932,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const hatYarnDrawerCloseBtn = document.getElementById('hat-yarn-drawer-close');
   const hatYarnDrawerBackdrop = document.getElementById('hat-yarn-drawer-backdrop');
   const widthDrawerRoot = document.getElementById('diy-blanket-width-drawer');
-  const widthDrawerToggle = document.getElementById('diy-blanket-width-drawer-toggle');
-  const widthDrawerTriggerWrap = document.getElementById('diy-blanket-width-drawer-trigger-wrap');
+  const widthDrawerToggle = document.getElementById('needle-check-toggle');
+  const widthDrawerTriggerWrap = document.getElementById('needle-check-trigger-wrap');
   const widthDrawerCloseBtn = document.getElementById('diy-blanket-width-drawer-close');
   const widthDrawerBackdrop = document.getElementById('diy-blanket-width-drawer-backdrop');
   /** @type {HTMLElement | null} */

@@ -1,0 +1,48 @@
+/* Pattern builder: native <select> completion check (shared; markup: .hat-select-wrap / .hat-select-wrap__check). */
+
+/* ===== Desktop (default) ===== */
+.hat-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.hat-select-wrap select {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  box-sizing: border-box;
+}
+
+.hat-select-wrap__check {
+  visibility: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-right: 10px;
+  border-radius: 50%;
+  background-color: #52682d;
+  color: #fff;
+  line-height: 1;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.hat-select-wrap__check::before {
+  content: "";
+}
+
+.hat-select-wrap.is-complete .hat-select-wrap__check {
+  visibility: visible;
+}
+
+.hat-select-wrap.is-complete .hat-select-wrap__check::before {
+  content: "✓";
+  font-size: 18px;
+  font-weight: 700;
+}
+

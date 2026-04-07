@@ -362,6 +362,11 @@ select.disabled {
   font-size: 1rem;
 }
 
+/* Tab labels: desktop shows text; mobile shows emoji icons (see max-width: 767px block below) */
+.hat-builder-inputs .pattern-tab-nav .tab-icon {
+  display: none;
+}
+
 /* Hat builder only: Pattern tab locked until required build fields are complete */
 .hat-builder-inputs .pattern-tab-nav .tab-btn.is-disabled {
   color: #9ca3af;
@@ -379,6 +384,63 @@ select.disabled {
 .hat-builder-inputs .pattern-tab-nav .tab-btn.is-disabled.active {
   color: #9ca3af;
   border-bottom-color: transparent;
+}
+
+/* Build tab: let the form column use full main width on small screens (parent min-width / flex tracks can squeeze selects). */
+@media (max-width: 767px) {
+  :global(main.site-content):has(#hat-builder-form-top),
+  :global(.pattern-page):has(#hat-builder-form-top),
+  :global(.pattern-layout):has(#hat-builder-form-top),
+  .wizard-page,
+  #hat-builder-form-top.wizard-container,
+  .hat-builder-inputs,
+  .hat-builder-inputs .pattern-tabs,
+  .hat-builder-inputs .pattern-tab-content,
+  .hat-builder-inputs .tab-panel#tab-build,
+  .hat-builder-inputs #hat-builder-form {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  :global(main.site-content):has(#hat-builder-form-top),
+  :global(.pattern-page):has(#hat-builder-form-top),
+  :global(.pattern-layout):has(#hat-builder-form-top),
+  .wizard-page,
+  .hat-builder-inputs .pattern-tabs,
+  .hat-builder-inputs .pattern-tab-content,
+  .hat-builder-inputs .tab-panel#tab-build {
+    overflow-x: visible;
+  }
+
+  .hat-builder-inputs .pattern-tab-nav .tab-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+
+  .hat-builder-inputs .pattern-tab-nav .tab-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .hat-builder-inputs .pattern-tab-nav .tab-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
 }
 
 #create-pattern-btn.button-disabled {
@@ -501,45 +563,6 @@ select.disabled {
 #hat-size option:focus-visible {
   background-color: #dce8d0;
   color: #1f2937;
-}
-
-/* Dropdown completion: small check on the left inside the field (Build tab selects only) */
-.hat-builder-inputs .hat-select-wrap {
-  position: relative;
-  display: block;
-  width: 100%;
-}
-
-.hat-builder-inputs .hat-select-wrap__check {
-  position: absolute;
-  left: 0.65rem;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 1;
-  width: 0.75rem;
-  text-align: center;
-  font-size: 0.68rem;
-  line-height: 1;
-  font-weight: 700;
-  color: #52682d;
-  pointer-events: none;
-}
-
-.hat-builder-inputs .hat-select-wrap:not(.is-complete) .hat-select-wrap__check::before {
-  content: none;
-}
-
-.hat-builder-inputs .hat-select-wrap.is-complete .hat-select-wrap__check::before {
-  content: "\2713";
-}
-
-.hat-builder-inputs .hat-select-wrap select {
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.hat-builder-inputs .hat-select-wrap.is-complete select {
-  padding-left: 1.9rem;
 }
 
 /* Crown Shaping: label row + slot for future help icon/tooltip */
@@ -1235,16 +1258,28 @@ select.disabled {
     <div class="calculator-card hat-builder-inputs">
       <div class="pattern-tabs">
         <div class="pattern-tab-nav">
-          <button type="button" class="tab-btn active" data-tab="build">Build</button>
+          <button type="button" class="tab-btn active" data-tab="build">
+            <span class="tab-icon" aria-hidden="true">⚙️</span>
+            <span class="tab-label">Build</span>
+          </button>
           <button
             type="button"
             id="hat-tab-pattern"
             class="tab-btn is-disabled"
             data-tab="pattern"
             aria-disabled="true"
-          >Pattern</button>
-          <button type="button" class="tab-btn" data-tab="share">Ask / Share</button>
-          <button type="button" class="tab-btn" data-tab="inspiration">Inspiration</button>
+          >
+            <span class="tab-icon" aria-hidden="true">📝</span>
+            <span class="tab-label">Pattern</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="share">
+            <span class="tab-icon" aria-hidden="true">💬</span>
+            <span class="tab-label">Ask / Share</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="inspiration">
+            <span class="tab-icon" aria-hidden="true">💡</span>
+            <span class="tab-label">Inspiration</span>
+          </button>
         </div>
 
         <div class="pattern-tab-content">
@@ -1599,6 +1634,19 @@ async function initHatBuilder() {
     setupAutoCalculate,
     updateHTML
   } = window.WizardUtils;
+
+  /** Round to integer; if odd, bump up to next even (stitch/row parity). @param {number} value */
+  function roundToEvenPreferUp(value) {
+    const n = Math.round(value);
+    return n % 2 === 0 ? n : n + 1;
+  }
+
+  /** Wedge crown: trim cast-on to multiple of 4 or 6 (same as generatePattern / generateDiagram). */
+  function applyHatCrownCastOnAdjustment(castOnSts, crown) {
+    if (crown === 'wedge-4') return castOnSts - (castOnSts % 4);
+    if (crown === 'wedge-6') return castOnSts - (castOnSts % 6);
+    return castOnSts;
+  }
 
   const resultsVisibilityConfig = {
     resultsSelector: '#results',
@@ -2322,54 +2370,66 @@ async function initHatBuilder() {
   rowGaugeInput?.addEventListener('change', syncHatGaugeInputsToActiveSlot);
 
   function updateHatNeedleEstimate() {
-    const gaugeInput = document.getElementById('hat-stitch-gauge');
-    const sizeSelect = document.getElementById('hat-size');
-
     const needleValue = document.getElementById('needle-count-value-preview');
     const needleContext = document.getElementById('needle-size-context-preview');
     const previewWrap = document.getElementById('needle-check-result-preview');
 
-    if (!gaugeInput || !sizeSelect || !needleValue || !needleContext || !previewWrap) return;
-
-    const gaugeRaw = parseFloat(gaugeInput.value);
-    const selectedOption = sizeSelect.options[sizeSelect.selectedIndex];
-
-    const circumferenceInches = parseFloat(selectedOption?.dataset?.finishedSizeInches);
+    if (!needleValue || !needleContext || !previewWrap) return;
 
     const currentUnit = unitStore.get() === 'cm' ? 'cm' : 'inches';
-    const divisor = currentUnit === 'inches' ? 4 : 10;
+
+    // Same finished circumference + gauge path as calculate() → cast-on line in generatePattern()
+    let finishedCircRaw = 0;
+    const hatSizeValue = hatSizeSelect?.value ?? '';
+    if (hatSizeValue === 'custom') {
+      finishedCircRaw = parseFloat(customCircInput?.value) || 0;
+    } else if (hatSizeValue) {
+      const selectedSize = hatSizingData.find((s) => s.size === hatSizeValue);
+      if (selectedSize) finishedCircRaw = selectedSize.finishedSizeInches;
+    }
+
+    let finishedHatCircInches;
+    if (hatSizeValue === 'custom') {
+      finishedHatCircInches =
+        currentUnit === 'inches'
+          ? finishedCircRaw
+          : convertLength(finishedCircRaw, 'cm', 'inches');
+    } else {
+      finishedHatCircInches = finishedCircRaw;
+    }
+
+    const stitchGauge = parseFloat(stitchGaugeInput?.value) || 0;
+    const crown = crownSelect?.value ?? '';
 
     if (
-      !Number.isFinite(gaugeRaw) ||
-      gaugeRaw <= 0 ||
-      !Number.isFinite(circumferenceInches) ||
-      circumferenceInches <= 0
+      !Number.isFinite(finishedHatCircInches) ||
+      finishedHatCircInches <= 0 ||
+      !Number.isFinite(stitchGauge) ||
+      stitchGauge <= 0
     ) {
       previewWrap.hidden = true;
       return;
     }
 
-    const stitchesPerUnit = gaugeRaw / divisor;
-    if (!Number.isFinite(stitchesPerUnit) || stitchesPerUnit <= 0) {
-      previewWrap.hidden = true;
-      return;
-    }
-
-    const widthInMeasureUnits =
-      currentUnit === 'inches'
-        ? circumferenceInches
-        : convertLength(circumferenceInches, 'inches', 'cm');
-
-    const needles = Math.round(widthInMeasureUnits * stitchesPerUnit);
+    const stGaugePerInch = gaugeToPerUnit(stitchGauge, currentUnit);
+    const castOnSts = roundToEvenPreferUp(finishedHatCircInches * stGaugePerInch);
+    const needles = applyHatCrownCastOnAdjustment(castOnSts, crown);
 
     needleValue.textContent = String(needles);
-    needleContext.textContent = `for ${circumferenceInches}" hat`;
+    const finLabel =
+      finishedHatCircInches % 1 === 0
+        ? String(finishedHatCircInches)
+        : finishedHatCircInches.toFixed(1);
+    needleContext.textContent = `for ${finLabel}" hat`;
 
     previewWrap.hidden = false;
   }
 
   document.getElementById('hat-stitch-gauge')?.addEventListener('input', updateHatNeedleEstimate);
   document.getElementById('hat-size')?.addEventListener('change', updateHatNeedleEstimate);
+  crownSelect?.addEventListener('change', updateHatNeedleEstimate);
+  customCircInput?.addEventListener('input', updateHatNeedleEstimate);
+  customCircInput?.addEventListener('change', updateHatNeedleEstimate);
 
   /** Total finished hat length (inches): custom input, size chart hatLength, or fit style preset. */
   function resolveTotalHatLengthInches(fit, hatSizeValue, currentUnit) {
@@ -3138,12 +3198,6 @@ async function initHatBuilder() {
     updatePatternTipsIntroUi(newState);
   });
 
-  /** Round to integer; if odd, bump up to next even (stitch/row parity). @param {number} value */
-  function roundToEvenPreferUp(value) {
-    const n = Math.round(value);
-    return n % 2 === 0 ? n : n + 1;
-  }
-
   // Calculate Function
   function calculate() {
     console.log('calculate started');
@@ -3414,12 +3468,7 @@ async function initHatBuilder() {
       'Work even in your chosen brim treatment — for example 1x1 or 2x2 ribbing or <span class="pattern-term" data-tooltip="Stitch pattern that copies knit and purl ribbing by having needles out of work. A favorite for knitters without a ribber.">mock ribbing</span>, a rolled stockinette edge, a fold-up band, or a <span class="pattern-term" data-tooltip="A folded, double-layer hem formed by hanging the cast-on stitches back onto the needles.">hung hem</span> — for the depth shown.';
     
     // Adjusted cast-on for wedge crown sizes (diagram + cast-on line only; crown text is unified below)
-    let patternCastOnSts = castOnSts;
-    if (crown === 'wedge-4') {
-      patternCastOnSts = castOnSts - (castOnSts % 4);
-    } else if (crown === 'wedge-6') {
-      patternCastOnSts = castOnSts - (castOnSts % 6);
-    }
+    const patternCastOnSts = applyHatCrownCastOnAdjustment(castOnSts, crown);
 
     const crownHeading = 'Crown Decrease';
     const breakYarnTailPhrase =
@@ -3520,14 +3569,8 @@ async function initHatBuilder() {
       currentUnit
     );
     
-    // Calculate adjusted cast-on for wedge crowns (for display)
-    let displayCastOnSts = castOnSts;
-    if (crown === 'wedge-4') {
-      displayCastOnSts = castOnSts - (castOnSts % 4);
-    } else if (crown === 'wedge-6') {
-      displayCastOnSts = castOnSts - (castOnSts % 6);
-    }
-    
+    const displayCastOnSts = applyHatCrownCastOnAdjustment(castOnSts, crown);
+
     // Map crown type to template name
     let templateName;
     

@@ -2,6 +2,7 @@
    Lego Components - Import reusable styles
    ============================================ */
 @import './lego/floating-input.css';
+@import './tools/pattern-select-completion.css';
 
 /* Pattern wizard tabs (e.g. hat builder) */
 .pattern-tab-nav {

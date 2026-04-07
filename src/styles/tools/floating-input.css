@@ -4,6 +4,7 @@
    Matches the Magic Formula floating-input pattern.
    Import this in pages that use FloatingInput.astro from components/tools,
    or add: import "../../styles/tools/floating-input.css";
+   Pattern select completion: ./pattern-select-completion.css (imported from global.css).
    ======================================== */
 
 .floating-input {
