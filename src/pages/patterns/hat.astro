@@ -313,6 +313,36 @@ select.disabled {
   margin-bottom: 0;
 }
 
+/* Needle estimate preview (stitch gauge × finished circumference; same styling as DIY blanket) */
+.diy-blanket-needle-result-preview {
+  margin: 0.65rem 0 0;
+  padding: 0;
+}
+.diy-blanket-needle-result-preview__line {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #c2644e;
+}
+.diy-blanket-needle-result-preview__line strong {
+  font-weight: 700;
+}
+.diy-blanket-needle-result-preview__line #needle-count-value-preview {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+.diy-blanket-needle-result-preview__context {
+  margin: 0.2rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.35;
+  color: #9ca3af;
+}
+.diy-blanket-needle-result-preview__context:empty {
+  display: none;
+}
+
 .hat-builder-inputs :global(.gauge-input-wrapper) {
   margin-top: 0.35rem;
   margin-bottom: 1rem;
@@ -1238,7 +1268,9 @@ select.disabled {
                     <select id="hat-size" data-testid="select-hat-size" aria-label="Choose a finished hat size (inches)" data-sizes-source="ssr" autocomplete="off">
                       <option value="" disabled selected hidden>Choose a finished hat size (inches)...</option>
                       {hatSizingBuilderRows.map((row) => (
-                        <option value={row.size}>{row.optionLabel}</option>
+                        <option value={row.size} data-finished-size-inches={row.finishedSizeInches}>
+                          {row.optionLabel}
+                        </option>
                       ))}
                       <option value="custom">✏️ Enter your own finished hat size</option>
                     </select>
@@ -1367,6 +1399,16 @@ select.disabled {
             <section class="hat-form-section hat-form-section--gauge" aria-labelledby="hat-section-gauge-heading">
               <h3 id="hat-section-gauge-heading" class="hat-form-section__title hat-form-section__heading">Gauge</h3>
               <GaugeInput id="hat" showTitle={false} showToggle={false} toggleId="hat" showGaugeSubLabel={false} flatRow noPrint />
+              <div
+                id="needle-check-result-preview"
+                class="diy-blanket-needle-result-preview no-print"
+                hidden
+              >
+                <p class="diy-blanket-needle-result-preview__line">
+                  <strong><span id="needle-count-value-preview"></span> needles required</strong>
+                </p>
+                <p class="diy-blanket-needle-result-preview__context" id="needle-size-context-preview"></p>
+              </div>
             </section>
 
             <section class="hat-form-section hat-form-section--yarn" aria-labelledby="hat-section-yarn-heading">
@@ -2279,6 +2321,56 @@ async function initHatBuilder() {
   rowGaugeInput?.addEventListener('input', syncHatGaugeInputsToActiveSlot);
   rowGaugeInput?.addEventListener('change', syncHatGaugeInputsToActiveSlot);
 
+  function updateHatNeedleEstimate() {
+    const gaugeInput = document.getElementById('hat-stitch-gauge');
+    const sizeSelect = document.getElementById('hat-size');
+
+    const needleValue = document.getElementById('needle-count-value-preview');
+    const needleContext = document.getElementById('needle-size-context-preview');
+    const previewWrap = document.getElementById('needle-check-result-preview');
+
+    if (!gaugeInput || !sizeSelect || !needleValue || !needleContext || !previewWrap) return;
+
+    const gaugeRaw = parseFloat(gaugeInput.value);
+    const selectedOption = sizeSelect.options[sizeSelect.selectedIndex];
+
+    const circumferenceInches = parseFloat(selectedOption?.dataset?.finishedSizeInches);
+
+    const currentUnit = unitStore.get() === 'cm' ? 'cm' : 'inches';
+    const divisor = currentUnit === 'inches' ? 4 : 10;
+
+    if (
+      !Number.isFinite(gaugeRaw) ||
+      gaugeRaw <= 0 ||
+      !Number.isFinite(circumferenceInches) ||
+      circumferenceInches <= 0
+    ) {
+      previewWrap.hidden = true;
+      return;
+    }
+
+    const stitchesPerUnit = gaugeRaw / divisor;
+    if (!Number.isFinite(stitchesPerUnit) || stitchesPerUnit <= 0) {
+      previewWrap.hidden = true;
+      return;
+    }
+
+    const widthInMeasureUnits =
+      currentUnit === 'inches'
+        ? circumferenceInches
+        : convertLength(circumferenceInches, 'inches', 'cm');
+
+    const needles = Math.round(widthInMeasureUnits * stitchesPerUnit);
+
+    needleValue.textContent = String(needles);
+    needleContext.textContent = `for ${circumferenceInches}" hat`;
+
+    previewWrap.hidden = false;
+  }
+
+  document.getElementById('hat-stitch-gauge')?.addEventListener('input', updateHatNeedleEstimate);
+  document.getElementById('hat-size')?.addEventListener('change', updateHatNeedleEstimate);
+
   /** Total finished hat length (inches): custom input, size chart hatLength, or fit style preset. */
   function resolveTotalHatLengthInches(fit, hatSizeValue, currentUnit) {
     if (!fit) return null;
@@ -2505,6 +2597,7 @@ async function initHatBuilder() {
     rowGaugeInput.value = gaugeSlots[nextU].row;
     persistHatGaugeSlots();
     updatePatternReadinessUi();
+    updateHatNeedleEstimate();
   });
 
   hatYarnDrawerOpenBtn?.addEventListener('click', () => {
@@ -2564,6 +2657,9 @@ async function initHatBuilder() {
       hatSizingData.forEach((size) => {
         const option = document.createElement('option');
         option.value = size.size;
+        if (size.finishedSizeInches != null) {
+          option.dataset.finishedSizeInches = String(size.finishedSizeInches);
+        }
         option.textContent =
           size.optionLabel ||
           size.extended_label ||
@@ -2583,6 +2679,7 @@ async function initHatBuilder() {
     crownDepthInput = resolveCrownDepthInput() || crownDepthInput;
     restoreHatBuilderSizeFromStorage();
     syncHatYarnDimensions();
+    updateHatNeedleEstimate();
   } catch (error) {
     console.error('Failed to load hat sizing data:', error);
     if (hatSizeSelect && !Array.from(hatSizeSelect.options).some((o) => o.value === 'custom')) {
@@ -2594,6 +2691,7 @@ async function initHatBuilder() {
     crownDepthInput = resolveCrownDepthInput() || crownDepthInput;
     restoreHatBuilderSizeFromStorage();
     syncHatYarnDimensions();
+    updateHatNeedleEstimate();
   }
 
   function syncCustomSizeSection() {
