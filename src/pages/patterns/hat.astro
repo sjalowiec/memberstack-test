@@ -15,6 +15,103 @@ import PatternHeaderImage from "../../components/patterns/PatternHeaderImage.ast
 import WarningBox from "../../components/ui/WarningBox.astro";
 import hatSizingRows from "../../data/sizing_hats.json";
 
+/** Chart JSON circumference = head size (inches). Builder uses 10% negative ease, rounded to 0.5". */
+function roundFinishedHatSizeFromHead(headInches: number): number {
+  const n = Number(headInches);
+  if (!Number.isFinite(n)) return NaN;
+  return Math.round(n * 0.9 * 2) / 2;
+}
+
+function formatFinishedInchesForLabel(n: number): string {
+  if (!Number.isFinite(n)) return "";
+  const rounded = Math.round(n * 2) / 2;
+  return rounded % 1 === 0 ? String(rounded) : rounded.toFixed(1);
+}
+
+const INCH_TO_CM_DISPLAY = 2.54;
+
+/** Head measurement token(s) in inches (e.g. "14", "21–22") → display string for the active unit. */
+function formatHeadInchTokenForDisplay(
+  cleanInchPart: string,
+  displayUnit: "inches" | "cm"
+): string {
+  if (displayUnit === "inches") return cleanInchPart;
+  const parts = cleanInchPart.split(/[\u2013\-]/).map((s) => s.trim()).filter(Boolean);
+  if (parts.length === 0) return cleanInchPart;
+  const nums = parts.map((p) => {
+    const n = parseFloat(p);
+    if (!Number.isFinite(n)) return p;
+    return String(Math.round(n * INCH_TO_CM_DISPLAY));
+  });
+  return nums.length === 1 ? nums[0] : nums.join("–");
+}
+
+function hatSizeDisplayName(row: (typeof hatSizingRows)[number]): string {
+  const ext = row.extended_label || row.label || row.size;
+  const withoutHead = ext.replace(/\s*\([^)]*\bhead\b[^)]*\)\s*$/i, "").trim();
+  return withoutHead || row.label || row.size;
+}
+
+function hatFitsClause(
+  row: (typeof hatSizingRows)[number],
+  displayUnit: "inches" | "cm" = "inches"
+): string | null {
+  const ext = row.extended_label || row.label || "";
+  const paren = ext.match(/\(([^)]+)\)\s*$/);
+  if (paren) {
+    const inner = paren[1].trim();
+    if (/\bhead\b/i.test(inner)) {
+      let headPart = inner.replace(/\s*head\s*$/i, "").trim();
+      headPart = headPart.replace(/^approx\.\s*/i, "").trim();
+      const clean = headPart.replace(/["″]/g, "").trim();
+      if (displayUnit === "inches") {
+        return `fits ~${clean}" head`;
+      }
+      const display = formatHeadInchTokenForDisplay(clean, displayUnit);
+      return `fits ~${display} cm head`;
+    }
+    if (/\blbs\b|\bmonth\b|\bmonths\b|\byear\b|\byears\b/i.test(inner)) {
+      return null;
+    }
+    return null;
+  }
+  const head = Number(row.circumference);
+  if (Number.isFinite(head) && head > 0) {
+    if (displayUnit === "inches") {
+      const clean = String(head).replace(/["″]/g, "").trim();
+      return `fits ~${clean}" head`;
+    }
+    const cm = Math.round(head * INCH_TO_CM_DISPLAY);
+    return `fits ~${cm} cm head`;
+  }
+  return null;
+}
+
+function buildHatSizeOptionLabel(
+  row: (typeof hatSizingRows)[number],
+  finishedInches: number,
+  displayUnit: "inches" | "cm" = "inches"
+): string {
+  const name = hatSizeDisplayName(row);
+  const finStr =
+    displayUnit === "inches"
+      ? `${formatFinishedInchesForLabel(finishedInches)}"`
+      : `${Math.round(finishedInches * INCH_TO_CM_DISPLAY)} cm`;
+  const fits = hatFitsClause(row, displayUnit);
+  return fits
+    ? `${name} — ${finStr} finished (${fits})`
+    : `${name} — ${finStr} finished`;
+}
+
+const hatSizingBuilderRows = hatSizingRows.map((row) => {
+  const finishedSizeInches = roundFinishedHatSizeFromHead(Number(row.circumference));
+  return {
+    ...row,
+    finishedSizeInches,
+    optionLabel: buildHatSizeOptionLabel(row, finishedSizeInches),
+  };
+});
+
 // Import shared wizard styles
 import '../../styles/wizard.css';
 
@@ -1131,36 +1228,72 @@ select.disabled {
               <button id="clear-hat-builder" type="button">Clear</button>
             </div>
 
-            <section class="hat-form-section" aria-labelledby="hat-section-style-heading">
-              <h3 id="hat-section-style-heading" class="hat-form-section__title hat-form-section__heading">Style options</h3>
+            <section class="hat-form-section" aria-labelledby="hat-section-sizing-heading">
+              <h3 id="hat-section-sizing-heading" class="hat-form-section__title hat-form-section__heading">Hat Size</h3>
 
-              <div class="input-group">
-                <div class="hat-field hat-field--crown">
-                  <div class="hat-field__label-row">
-                    <label class="hat-field__label" for="crown">Crown Shaping</label>
-                    <span class="hat-field__help-slot">
-                      <button
-                        type="button"
-                        class="crown-help-trigger"
-                        id="crown-help-open"
-                        aria-label="View crown shaping examples"
-                      >?</button>
-                    </span>
-                  </div>
+              <div id="standard-size" style="display: block;">
+                <div class="input-group">
                   <div class="hat-select-wrap">
                     <span class="hat-select-wrap__check" aria-hidden="true"></span>
-                    <select id="crown" data-testid="select-crown" autocomplete="off">
-                      <!-- Not disabled: disabled placeholders cannot be selected via value="" (browser picks first enabled). -->
-                      <option value="" selected>Choose crown shaping</option>
-                      <option value="gathered" selected={false}>Gathered (cinched top)</option>
-                      <option value="wedge-4" disabled selected={false}>4-Wedge Decreases</option>
-                      <option value="wedge-6" disabled selected={false}>6-Wedge Decreases</option>
-                      <option value="spiral" disabled selected={false}>Spiral Crown (Smooth, Continuous)</option>
+                    <select id="hat-size" data-testid="select-hat-size" aria-label="Choose a finished hat size (inches)" data-sizes-source="ssr" autocomplete="off">
+                      <option value="" disabled selected hidden>Choose a finished hat size (inches)...</option>
+                      {hatSizingBuilderRows.map((row) => (
+                        <option value={row.size}>{row.optionLabel}</option>
+                      ))}
+                      <option value="custom">✏️ Enter your own finished hat size</option>
                     </select>
                   </div>
-                  <small class="helper-text">More crown styles coming soon.</small>
                 </div>
               </div>
+
+              <div id="custom-size" class="hat-builder-custom-subfield" style="display: none;">
+                <div class="input-group">
+                  <FloatingInput
+                    id="custom-circumference"
+                    type="number"
+                    step={0.25}
+                    label='Custom Finished Hat Size (inches)'
+                    placeholder=" "
+                    dataTestid="input-custom-circumference"
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section class="hat-form-section" aria-labelledby="hat-section-hat-length-heading">
+              <h3 id="hat-section-hat-length-heading" class="hat-form-section__title hat-form-section__heading">Hat Length</h3>
+
+              <div class="input-group">
+                <div class="hat-select-wrap">
+                  <span class="hat-select-wrap__check" aria-hidden="true"></span>
+                  <select id="fit" data-testid="select-fit" aria-label="Enter Finished Hat length" autocomplete="off">
+                    <option value="" disabled selected hidden>Enter Finished Hat Length...</option>
+                    <option value="beanie">Beanie (7" total height)</option>
+                    <option value="watchcap">Watch Cap (8.5" total height)</option>
+                    <option value="slouchy">Slouchy (10" total height)</option>
+                    <option value="relaxed">Relaxed (9" total height)</option>
+                    <option value="custom">✏️ Enter your own hat length</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="custom-length-div" class="hat-builder-custom-subfield" style="display: none;">
+                <div class="input-group">
+                  <FloatingInput
+                    id="custom-hat-length"
+                    type="number"
+                    step={0.25}
+                    label='Custom Hat Length (inches)'
+                    placeholder=" "
+                    dataTestid="input-custom-hat-length"
+                  />
+                  <small class="helper-text">Measure from the cast-on edge to the top of the hat.</small>
+                </div>
+              </div>
+            </section>
+
+            <section class="hat-form-section" aria-labelledby="hat-section-style-heading">
+              <h3 id="hat-section-style-heading" class="hat-form-section__title hat-form-section__heading">Style Options</h3>
 
               <div class="input-group">
                 <div class="hat-field hat-field--crown">
@@ -1170,9 +1303,9 @@ select.disabled {
                   <div class="hat-select-wrap">
                     <span class="hat-select-wrap__check" aria-hidden="true"></span>
                     <select id="brimType" data-testid="select-brim-type" aria-label="Brim Type" autocomplete="off">
-                      <option value="" selected>Choose brim type</option>
-                      <option value="single" selected={false}>Single Layer</option>
-                      <option value="folded" selected={false}>Folded Hem</option>
+                      <option value="" disabled selected hidden>Choose brim type</option>
+                      <option value="single">Single Layer</option>
+                      <option value="folded">Folded Hem</option>
                     </select>
                   </div>
                 </div>
@@ -1190,64 +1323,31 @@ select.disabled {
                 />
                 <small class="helper-text">Enter the finished brim length. Folded hems will automatically calculate extra rows.</small>
               </div>
-            </section>
-
-            <section class="hat-form-section" aria-labelledby="hat-section-sizing-heading">
-              <h3 id="hat-section-sizing-heading" class="hat-form-section__title hat-form-section__heading">Sizing</h3>
-
-              <div id="standard-size" style="display: block;">
-                <div class="input-group">
-                  <div class="hat-select-wrap">
-                    <span class="hat-select-wrap__check" aria-hidden="true"></span>
-                    <select id="hat-size" data-testid="select-hat-size" aria-label="Choose a standard hat size" data-sizes-source="ssr" autocomplete="off">
-                      <option value="" selected>Choose a standard hat size...</option>
-                      {hatSizingRows.map((row) => (
-                        <option value={row.size} selected={false}>{row.extended_label || row.label || row.size}</option>
-                      ))}
-                      <option value="custom" selected={false}>✏️ Enter your own size</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div id="custom-size" class="hat-builder-custom-subfield" style="display: none;">
-                <div class="input-group">
-                  <FloatingInput
-                    id="custom-circumference"
-                    type="number"
-                    step={0.25}
-                    label='Custom Head Measurement (inches)'
-                    placeholder=" "
-                    dataTestid="input-custom-circumference"
-                  />
-                </div>
-              </div>
 
               <div class="input-group">
-                <div class="hat-select-wrap">
-                  <span class="hat-select-wrap__check" aria-hidden="true"></span>
-                  <select id="fit" data-testid="select-fit" aria-label="Enter Finished Hat length" autocomplete="off">
-                    <option value="" selected>Enter Finished Hat Length...</option>
-                    <option value="beanie" selected={false}>Beanie (7" total height)</option>
-                    <option value="watchcap" selected={false}>Watch Cap (8.5" total height)</option>
-                    <option value="slouchy" selected={false}>Slouchy (10" total height)</option>
-                    <option value="relaxed" selected={false}>Relaxed (9" total height)</option>
-                    <option value="custom" selected={false}>✏️ Enter your own hat length</option>
-                  </select>
-                </div>
-              </div>
-
-              <div id="custom-length-div" class="hat-builder-custom-subfield" style="display: none;">
-                <div class="input-group">
-                  <FloatingInput
-                    id="custom-hat-length"
-                    type="number"
-                    step={0.25}
-                    label='Custom Hat Length (inches)'
-                    placeholder=" "
-                    dataTestid="input-custom-hat-length"
-                  />
-                  <small class="helper-text">Measure from the cast-on edge to the top of the hat.</small>
+                <div class="hat-field hat-field--crown">
+                  <div class="hat-field__label-row">
+                    <label class="hat-field__label" for="crown">Crown Shaping</label>
+                    <span class="hat-field__help-slot">
+                      <button
+                        type="button"
+                        class="crown-help-trigger"
+                        id="crown-help-open"
+                        aria-label="View crown shaping examples"
+                      >?</button>
+                    </span>
+                  </div>
+                  <div class="hat-select-wrap">
+                    <span class="hat-select-wrap__check" aria-hidden="true"></span>
+                    <select id="crown" data-testid="select-crown" autocomplete="off">
+                      <option value="" disabled selected hidden>Choose crown shaping</option>
+                      <option value="gathered">Gathered (cinched top)</option>
+                      <option value="wedge-4" disabled>4-Wedge Decreases</option>
+                      <option value="wedge-6" disabled>6-Wedge Decreases</option>
+                      <option value="spiral" disabled>Spiral Crown (Smooth, Continuous)</option>
+                    </select>
+                  </div>
+                  <small class="helper-text">More crown styles coming soon.</small>
                 </div>
               </div>
 
@@ -1439,7 +1539,7 @@ select.disabled {
 <!-- Load shared wizard utilities -->
 <script is:inline src="/js/wizard-utils.js"></script>
 
-<script define:vars={{ hatSizingRows }}>
+<script define:vars={{ hatSizingBuilderRows }}>
 async function initHatBuilder() {
   console.log('Wizard initializing...');
 
@@ -1607,13 +1707,155 @@ async function initHatBuilder() {
   }
 
   // ========== HAT BUILDER SPECIFIC CODE ==========
-  
+
+  /** Chart JSON circumference = head (in). finishedSizeInches = head × 0.9, rounded to 0.5". */
+  function roundFinishedHatSizeFromHead(headInches) {
+    const n = Number(headInches);
+    if (!Number.isFinite(n)) return NaN;
+    return Math.round(n * 0.9 * 2) / 2;
+  }
+  function formatFinishedInchesForLabel(n) {
+    if (!Number.isFinite(n)) return '';
+    const rounded = Math.round(n * 2) / 2;
+    return rounded % 1 === 0 ? String(rounded) : rounded.toFixed(1);
+  }
+  function hatSizeDisplayName(row) {
+    const ext = row.extended_label || row.label || row.size;
+    const withoutHead = ext.replace(/\s*\([^)]*\bhead\b[^)]*\)\s*$/i, '').trim();
+    return withoutHead || row.label || row.size;
+  }
+  /** Head measurement token(s) in inches (e.g. "14", "21–22") → display string for the active unit. */
+  function formatHeadInchTokenForDisplay(cleanInchPart, displayUnit) {
+    if (displayUnit === 'inches') return cleanInchPart;
+    const parts = cleanInchPart.split(/[\u2013\-]/).map((s) => s.trim()).filter(Boolean);
+    if (parts.length === 0) return cleanInchPart;
+    const nums = parts.map((p) => {
+      const n = parseFloat(p);
+      if (!Number.isFinite(n)) return p;
+      return String(Math.round(convertLength(n, 'inches', 'cm')));
+    });
+    return nums.length === 1 ? nums[0] : nums.join('–');
+  }
+  function hatFitsClause(row, displayUnit = 'inches') {
+    const ext = row.extended_label || row.label || '';
+    const paren = ext.match(/\(([^)]+)\)\s*$/);
+    if (paren) {
+      const inner = paren[1].trim();
+      if (/\bhead\b/i.test(inner)) {
+        let headPart = inner.replace(/\s*head\s*$/i, '').trim();
+        headPart = headPart.replace(/^approx\.\s*/i, '').trim();
+        const clean = headPart.replace(/["″]/g, '').trim();
+        if (displayUnit === 'inches') {
+          return `fits ~${clean}" head`;
+        }
+        const display = formatHeadInchTokenForDisplay(clean, displayUnit);
+        return `fits ~${display} cm head`;
+      }
+      if (/\blbs\b|\bmonth\b|\bmonths\b|\byear\b|\byears\b/i.test(inner)) {
+        return null;
+      }
+      return null;
+    }
+    const head = Number(row.circumference);
+    if (Number.isFinite(head) && head > 0) {
+      if (displayUnit === 'inches') {
+        const clean = String(head).replace(/["″]/g, '').trim();
+        return `fits ~${clean}" head`;
+      }
+      const cm = Math.round(convertLength(head, 'inches', 'cm'));
+      return `fits ~${cm} cm head`;
+    }
+    return null;
+  }
+  function buildHatSizeOptionLabel(row, finishedInches, displayUnit = 'inches') {
+    const name = hatSizeDisplayName(row);
+    const finStr =
+      displayUnit === 'inches'
+        ? `${formatFinishedInchesForLabel(finishedInches)}"`
+        : `${Math.round(convertLength(finishedInches, 'inches', 'cm'))} cm`;
+    const fits = hatFitsClause(row, displayUnit);
+    return fits
+      ? `${name} — ${finStr} finished (${fits})`
+      : `${name} — ${finStr} finished`;
+  }
+  function enrichHatSizingRow(row) {
+    const finishedSizeInches = roundFinishedHatSizeFromHead(Number(row.circumference));
+    return {
+      ...row,
+      finishedSizeInches,
+      optionLabel: buildHatSizeOptionLabel(row, finishedSizeInches, 'inches'),
+    };
+  }
+
   // State (SSR options + data from bundled JSON; fetch below is fallback only)
-  let hatSizingData = Array.isArray(hatSizingRows) ? hatSizingRows.slice() : [];
+  let hatSizingData = Array.isArray(hatSizingBuilderRows) ? hatSizingBuilderRows.slice() : [];
   /** Must be declared before any syncHatSelectCompletion() → updatePatternReadinessUi() (avoid TDZ on `let`). */
   let isPatternReady = false;
   const unitStore = createUnitStore('hat-unit', 'inches');
   const fitHeightsPreset = { beanie: 7, watchcap: 8.5, slouchy: 10, relaxed: 9 };
+
+  /** @param {'inches'|'cm'|undefined} displayUnitOverride — use when unit store has not been updated yet (e.g. kbm:units-change before button handler). */
+  function refreshHatSizeDropdownLabels(displayUnitOverride) {
+    if (!hatSizeSelect || !Array.isArray(hatSizingData)) return;
+    const displayUnit =
+      displayUnitOverride === 'cm' || displayUnitOverride === 'inches'
+        ? displayUnitOverride
+        : unitStore.get() === 'cm'
+          ? 'cm'
+          : 'inches';
+    Array.from(hatSizeSelect.options).forEach((opt) => {
+      const v = opt.value;
+      if (!v || v === 'custom') return;
+      const row = hatSizingData.find((s) => s.size === v);
+      if (!row) return;
+      const fin = Number(row.finishedSizeInches);
+      opt.textContent = buildHatSizeOptionLabel(row, fin, displayUnit);
+    });
+  }
+
+  const FIT_PRESET_LABEL_NAMES = {
+    beanie: 'Beanie',
+    watchcap: 'Watch Cap',
+    slouchy: 'Slouchy',
+    relaxed: 'Relaxed',
+  };
+
+  function buildFitPresetOptionLabel(fitKey, displayUnit) {
+    const inches = fitHeightsPreset[fitKey];
+    const name = FIT_PRESET_LABEL_NAMES[fitKey] || fitKey;
+    if (!Number.isFinite(inches)) return `${name} ()`;
+    if (displayUnit === 'inches') {
+      const h = inches % 1 === 0 ? String(inches) : inches.toFixed(1);
+      return `${name} (${h}" total height)`;
+    }
+    const cm = convertLength(inches, 'inches', 'cm');
+    return `${name} (${cm.toFixed(1)} cm total height)`;
+  }
+
+  /** Preset fit row labels + placeholder follow active unit (values unchanged). */
+  function refreshFitDropdownLabels(displayUnitOverride) {
+    const displayUnit =
+      displayUnitOverride === 'cm' || displayUnitOverride === 'inches'
+        ? displayUnitOverride
+        : unitStore.get() === 'cm'
+          ? 'cm'
+          : 'inches';
+    const sel = document.getElementById('fit');
+    if (!sel || !(sel instanceof HTMLSelectElement)) return;
+    const unitWord = displayUnit === 'inches' ? 'inches' : 'cm';
+    sel.setAttribute('aria-label', `Enter Finished Hat length (${unitWord})`);
+    Array.from(sel.options).forEach((opt) => {
+      const v = opt.value;
+      if (v === '') {
+        opt.textContent = `Enter Finished Hat Length (${unitWord})...`;
+        return;
+      }
+      if (v === 'custom') return;
+      if (Object.prototype.hasOwnProperty.call(fitHeightsPreset, v)) {
+        opt.textContent = buildFitPresetOptionLabel(v, displayUnit);
+      }
+    });
+  }
 
   const HAT_GAUGE_SLOTS_KEY = 'hat-builder-gauge-slots';
   const IN_TO_CM_GAUGE = 2.54;
@@ -1690,6 +1932,44 @@ async function initHatBuilder() {
     const el = resolveCrownDepthInput();
     if (!el) return;
     crownDepthInput = el;
+    const raw = el.value?.trim();
+    if (raw === '') return;
+    const n = parseFloat(raw);
+    if (!Number.isFinite(n)) return;
+    const inches =
+      prevUnit === 'inches' ? n : convertLength(n, 'cm', 'inches');
+    const displayNum =
+      nextUnit === 'inches' ? inches : convertLength(inches, 'inches', 'cm');
+    const str =
+      nextUnit === 'inches'
+        ? formatCrownDepthInchesForInput(displayNum)
+        : displayNum.toFixed(1);
+    setCrownDepthFieldValue(el, str);
+  }
+
+  /** Convert displayed brim length when switching units (same pattern as crown depth). */
+  function convertBrimLengthFieldBetweenUnits(prevUnit, nextUnit) {
+    const el = brimLengthInput;
+    if (!el || !(el instanceof HTMLInputElement)) return;
+    const raw = el.value?.trim();
+    if (raw === '') return;
+    const n = parseFloat(raw);
+    if (!Number.isFinite(n)) return;
+    const inches =
+      prevUnit === 'inches' ? n : convertLength(n, 'cm', 'inches');
+    const displayNum =
+      nextUnit === 'inches' ? inches : convertLength(inches, 'inches', 'cm');
+    const str =
+      nextUnit === 'inches'
+        ? formatCrownDepthInchesForInput(displayNum)
+        : displayNum.toFixed(1);
+    setCrownDepthFieldValue(el, str);
+  }
+
+  /** Convert displayed custom hat length when switching units (same pattern as crown depth / brim). */
+  function convertCustomHatLengthFieldBetweenUnits(prevUnit, nextUnit) {
+    const el = document.getElementById('custom-hat-length');
+    if (!el || !(el instanceof HTMLInputElement)) return;
     const raw = el.value?.trim();
     if (raw === '') return;
     const n = parseFloat(raw);
@@ -2034,21 +2314,21 @@ async function initHatBuilder() {
       return;
     }
 
-    let headCircInches = 0;
+    let finishedHatCircInches = 0;
     if (hatSizeValue === 'custom') {
-      const headCirc = parseFloat(customCircInput?.value) || 0;
-      if (headCirc <= 0) {
+      const circ = parseFloat(customCircInput?.value) || 0;
+      if (circ <= 0) {
         window.dispatchEvent(new CustomEvent('kbm:yarnDimensions', { detail: emptyDetail }));
         return;
       }
-      headCircInches = currentUnit === 'inches' ? headCirc : convertLength(headCirc, 'cm', 'inches');
+      finishedHatCircInches = currentUnit === 'inches' ? circ : convertLength(circ, 'cm', 'inches');
     } else {
       const selectedSize = hatSizingData.find((s) => s.size === hatSizeValue);
       if (!selectedSize) {
         window.dispatchEvent(new CustomEvent('kbm:yarnDimensions', { detail: emptyDetail }));
         return;
       }
-      headCircInches = selectedSize.circumference;
+      finishedHatCircInches = selectedSize.finishedSizeInches;
     }
 
     const fit = fitSelect?.value;
@@ -2063,7 +2343,7 @@ async function initHatBuilder() {
       return;
     }
 
-    const targetWidthInches = headCircInches * 0.9;
+    const targetWidthInches = finishedHatCircInches;
     let projectWidth;
     let projectLength;
     if (lengthUnit === 'in') {
@@ -2090,7 +2370,7 @@ async function initHatBuilder() {
       if (!circ || Number(circ) <= 0) return false;
     } else {
       const selectedSize = hatSizingData.find((s) => s.size === size);
-      if (!selectedSize || !(Number(selectedSize.circumference) > 0)) return false;
+      if (!selectedSize || !(Number(selectedSize.finishedSizeInches) > 0)) return false;
     }
 
     const fit = fitSelect?.value;
@@ -2119,7 +2399,7 @@ async function initHatBuilder() {
       if (!circ || Number(circ) <= 0) return false;
     } else {
       const selectedSize = hatSizingData.find((s) => s.size === size);
-      if (!selectedSize || !(Number(selectedSize.circumference) > 0)) return false;
+      if (!selectedSize || !(Number(selectedSize.finishedSizeInches) > 0)) return false;
     }
 
     const brimLen = brimLengthInput?.value?.trim();
@@ -2208,6 +2488,11 @@ async function initHatBuilder() {
   window.addEventListener('kbm:units-change', (/** @type {CustomEvent<{ unit?: string }>} */ e) => {
     const d = e.detail;
     if (!d || !d.unit) return;
+    const nextU = d.unit === 'cm' ? 'cm' : 'inches';
+    refreshHatSizeDropdownLabels(nextU);
+    refreshFitDropdownLabels(nextU);
+    updatePlaceholders(nextU);
+
     if (!stitchGaugeInput || !rowGaugeInput) return;
     const prevU = unitStore.get() === 'cm' ? 'cm' : 'inches';
     gaugeSlots[prevU] = {
@@ -2215,7 +2500,6 @@ async function initHatBuilder() {
       row: rowGaugeInput.value,
     };
     persistHatGaugeSlots();
-    const nextU = d.unit === 'cm' ? 'cm' : 'inches';
     maybeFillHatGaugeSlotFromOtherUnit(prevU, nextU);
     stitchGaugeInput.value = gaugeSlots[nextU].stitch;
     rowGaugeInput.value = gaugeSlots[nextU].row;
@@ -2238,7 +2522,7 @@ async function initHatBuilder() {
     const v = (sel.value ?? '').trim();
     if (v !== '') return;
     const idx = Array.from(sel.options).findIndex(
-      (opt) => !opt.disabled && String(opt.value ?? '').trim() === ''
+      (opt) => String(opt.value ?? '').trim() === ''
     );
     if (idx >= 0 && sel.selectedIndex !== idx) sel.selectedIndex = idx;
   }
@@ -2276,16 +2560,21 @@ async function initHatBuilder() {
         throw new Error(`Hat sizing fetch failed: ${response.status} ${response.statusText}`);
       }
       const parsed = await response.json();
-      hatSizingData = Array.isArray(parsed) ? parsed : [];
+      hatSizingData = Array.isArray(parsed) ? parsed.map(enrichHatSizingRow) : [];
       hatSizingData.forEach((size) => {
         const option = document.createElement('option');
         option.value = size.size;
-        option.textContent = size.extended_label || size.label || size.size || 'Unnamed size';
+        option.textContent =
+          size.optionLabel ||
+          size.extended_label ||
+          size.label ||
+          size.size ||
+          'Unnamed size';
         hatSizeSelect.appendChild(option);
       });
       const customOption = document.createElement('option');
       customOption.value = 'custom';
-      customOption.textContent = '✏️ Enter your own size';
+      customOption.textContent = '✏️ Enter your own finished hat size';
       hatSizeSelect.appendChild(customOption);
     } else if (!hatSizeSelect) {
       console.error('hat-size select element not found; cannot populate dropdown');
@@ -2299,7 +2588,7 @@ async function initHatBuilder() {
     if (hatSizeSelect && !Array.from(hatSizeSelect.options).some((o) => o.value === 'custom')) {
       const customOption = document.createElement('option');
       customOption.value = 'custom';
-      customOption.textContent = '✏️ Enter your own size';
+      customOption.textContent = '✏️ Enter your own finished hat size';
       hatSizeSelect.appendChild(customOption);
     }
     crownDepthInput = resolveCrownDepthInput() || crownDepthInput;
@@ -2484,28 +2773,48 @@ async function initHatBuilder() {
       }
     }
     updatePlaceholders();
+    refreshHatSizeDropdownLabels();
+    refreshFitDropdownLabels();
   }
   
-  function updateCustomFloatingLabels() {
-    const currentUnit = unitStore.get();
+  function updateCustomFloatingLabels(displayUnitOverride) {
+    const currentUnit =
+      displayUnitOverride === 'cm' || displayUnitOverride === 'inches'
+        ? displayUnitOverride
+        : unitStore.get() === 'cm'
+          ? 'cm'
+          : 'inches';
     const unitWord = currentUnit === 'inches' ? 'inches' : 'cm';
     const circLab = document.querySelector('label[for="custom-circumference"]');
     const lenLab = document.querySelector('label[for="custom-hat-length"]');
     const brimLenLab = document.querySelector('label[for="brimLength"]');
     const crownDepthLab = document.querySelector('label[for="crownDepth"]');
-    if (circLab) circLab.textContent = `Custom Head Measurement (${unitWord})`;
+    if (circLab) circLab.textContent = `Custom Finished Hat Size (${unitWord})`;
     if (lenLab) lenLab.textContent = `Custom Hat Length (${unitWord})`;
     if (brimLenLab) brimLenLab.textContent = `Finished Brim Length (${unitWord})`;
     if (crownDepthLab) crownDepthLab.textContent = `Crown Shaping Depth (${unitWord})`;
   }
 
-  function updatePlaceholders() {
-    const currentUnit = unitStore.get();
+  /** @param {'inches'|'cm'|undefined} displayUnitOverride — same as refreshHatSizeDropdownLabels */
+  function updatePlaceholders(displayUnitOverride) {
+    const currentUnit =
+      displayUnitOverride === 'cm' || displayUnitOverride === 'inches'
+        ? displayUnitOverride
+        : unitStore.get() === 'cm'
+          ? 'cm'
+          : 'inches';
     const unitWord = currentUnit === 'inches' ? 'inches' : 'cm';
 
-    updateCustomFloatingLabels();
+    updateCustomFloatingLabels(displayUnitOverride);
+    if (hatSizeSelect) {
+      hatSizeSelect.setAttribute('aria-label', `Choose a finished hat size (${unitWord})`);
+      const firstOpt = hatSizeSelect.options[0];
+      if (firstOpt && firstOpt.value === '') {
+        firstOpt.textContent = `Choose a finished hat size (${unitWord})...`;
+      }
+    }
     if (customCircInput) {
-      customCircInput.placeholder = `Enter head measurement (${unitWord})`;
+      customCircInput.placeholder = `Enter finished hat size (${unitWord})`;
     }
     if (brimLengthInput) {
       brimLengthInput.placeholder = `Enter finished brim length (${unitWord})`;
@@ -2526,6 +2835,8 @@ async function initHatBuilder() {
       const prev = unitStore.get();
       unitStore.set('inches');
       convertCrownDepthFieldBetweenUnits(prev, 'inches');
+      convertBrimLengthFieldBetweenUnits(prev, 'inches');
+      convertCustomHatLengthFieldBetweenUnits(prev, 'inches');
       updateUnitToggle();
       syncHatYarnDimensions();
       const resultsDiv = document.getElementById('results');
@@ -2538,6 +2849,8 @@ async function initHatBuilder() {
       const prev = unitStore.get();
       unitStore.set('cm');
       convertCrownDepthFieldBetweenUnits(prev, 'cm');
+      convertBrimLengthFieldBetweenUnits(prev, 'cm');
+      convertCustomHatLengthFieldBetweenUnits(prev, 'cm');
       updateUnitToggle();
       syncHatYarnDimensions();
       const resultsDiv = document.getElementById('results');
@@ -2737,17 +3050,17 @@ async function initHatBuilder() {
   function calculate() {
     console.log('calculate started');
     const currentUnit = unitStore.get();
-    
-    // Get head circumference
-    let headCirc = 0;
+
+    // Finished hat body circumference: standard sizes use precomputed finishedSizeInches (head × 0.9, rounded); custom = direct finished size
+    let finishedCircRaw = 0;
 
     const hatSizeValue = hatSizeSelect.value;
     if (hatSizeValue === 'custom') {
-      headCirc = parseFloat(customCircInput.value) || 0;
+      finishedCircRaw = parseFloat(customCircInput.value) || 0;
     } else if (hatSizeValue) {
       const selectedSize = hatSizingData.find((s) => s.size === hatSizeValue);
       if (selectedSize) {
-        headCirc = selectedSize.circumference;
+        finishedCircRaw = selectedSize.finishedSizeInches;
       }
     }
     
@@ -2769,24 +3082,23 @@ async function initHatBuilder() {
     }
 
     // Convert to inches for calculations
-    // Note: Sizing data from dropdown is always in inches
-    // Only convert custom input when in cm mode
-    let headCircInches;
+    // Standard sizes: finishedSizeInches is already in inches (ease baked into chart row)
+    // Custom: convert when display unit is cm
+    let finishedHatCircInches;
     if (hatSizeValue === 'custom') {
-      headCircInches =
+      finishedHatCircInches =
         currentUnit === 'inches'
-          ? headCirc
-          : convertLength(headCirc, 'cm', 'inches');
+          ? finishedCircRaw
+          : convertLength(finishedCircRaw, 'cm', 'inches');
     } else {
-      headCircInches = headCirc;
+      finishedHatCircInches = finishedCircRaw;
     }
-    
+
     const stGaugePerInch = gaugeToPerUnit(stitchGauge, currentUnit);
     const rowGaugePerInch = gaugeToPerUnit(rowGauge, currentUnit);
-    
-    // Calculations
-    const negativeEase = 0.90;
-    const targetWidth = headCircInches * negativeEase;
+
+    // Body width = finished circumference (chart applies 10% negative ease vs head; custom is direct)
+    const targetWidth = finishedHatCircInches;
     const castOnSts = roundToEvenPreferUp(targetWidth * stGaugePerInch);
     
     const totalHatLength = resolveTotalHatLengthInches(fit, hatSizeValue, currentUnit);
@@ -2824,7 +3136,6 @@ async function initHatBuilder() {
     
     // Generate pattern
     generatePattern({
-      headCircInches,
       targetWidth,
       castOnSts,
       hatHeight,
@@ -2843,7 +3154,7 @@ async function initHatBuilder() {
       rowGaugeRaw: rowGauge
     });
     console.log('[hat-builder debug] pattern data (after generatePattern)', {
-      headCircInches,
+      finishedHatCircInches,
       targetWidth,
       castOnSts,
       hatHeight,
@@ -2862,7 +3173,7 @@ async function initHatBuilder() {
       rowGaugeRaw: rowGauge,
     });
 
-    // Yarn estimator: same numbers as Finished Measurements (targetWidth = eased body circumference)
+    // Yarn estimator: same numbers as Finished Measurements (targetWidth = finished body circumference)
     const yarnLengthUnit = currentUnit === 'inches' ? 'in' : 'cm';
     const yarnProjectWidth =
       yarnLengthUnit === 'in'
@@ -2902,8 +3213,7 @@ async function initHatBuilder() {
 
     // Update print summary
     updatePrintSummary({
-      headCirc,
-      headCircInches,
+      headCirc: finishedCircRaw,
       brimDepth,
       crownDepthInches: crownHeightInches,
       crown,
@@ -2920,7 +3230,6 @@ async function initHatBuilder() {
   function updatePrintSummary(data) {
     const {
       headCirc,
-      headCircInches,
       brimDepth,
       crownDepthInches,
       crown,
@@ -2986,13 +3295,9 @@ async function initHatBuilder() {
   
   function generatePattern(calc) {
     const currentUnit = unitStore.get();
-    const { headCircInches, targetWidth, castOnSts, hatHeight, brimDepth, brimRows, brimType, bodyRows, crownRowCount, crown, fit, stGaugePerInch, rowGaugePerInch, stitchGaugeRaw, rowGaugeRaw } = calc;
-    
-    // Convert display values
-    const displayHeadCirc = currentUnit === 'inches' 
-      ? formatLength(headCircInches, 'inches')
-      : formatLength(convertLength(headCircInches, 'inches', 'cm'), 'cm');
-    
+    const { targetWidth, castOnSts, hatHeight, brimDepth, brimRows, brimType, bodyRows, crownRowCount, crown, fit, stGaugePerInch, rowGaugePerInch, stitchGaugeRaw, rowGaugeRaw } = calc;
+
+    // Finished body circumference (same as targetWidth; chart + custom are finished size)
     const displayWidth = currentUnit === 'inches'
       ? formatLength(targetWidth, 'inches')
       : formatLength(convertLength(targetWidth, 'inches', 'cm'), 'cm');
@@ -3049,7 +3354,7 @@ async function initHatBuilder() {
       ${tipsIntroSlotHtml}
       <div class="highlight-box">
         <p><strong>Finished Measurements:</strong></p>
-        <p>Head Circumference: ${displayHeadCirc} ${unit} → Hat Width: ${displayWidth} ${unit} (with <span data-tooltip-term="negative-ease">negative ease</span>)</p>
+        <p>Finished hat circumference (body): ${displayWidth} ${unit}</p>
         <p>Total Height: ${displayHeight} ${unit} | Brim Depth: ${displayBrimDepth} ${unit}</p>
       </div>
       

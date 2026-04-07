@@ -47,6 +47,10 @@ interface Props {
   labelId?: string;
   /** Optional class on the label (e.g. floating-label for gauge overrides). */
   labelClass?: string;
+  /** Optional modal element id; renders a ? control with data-modal (caller wires open/close). */
+  helpModalId?: string;
+  /** aria-label for the help button when helpModalId is set. */
+  helpModalAriaLabel?: string;
   /** Additional data-* attributes to spread on the input. */
   dataAttrs?: Record<string, string>;
 }
@@ -74,6 +78,8 @@ const {
   dataTestid,
   labelId,
   labelClass,
+  helpModalId,
+  helpModalAriaLabel,
   dataAttrs = {},
 } = Astro.props;
 
@@ -107,7 +113,25 @@ const describedBy = [ariaDescribedby, errorId].filter(Boolean).join(" ") || unde
     class:list={[{ error }]}
     {...dataAttrs}
   />
-  <label for={id} id={labelId} class:list={[labelClass]}>{label}</label>
+  <label
+    for={id}
+    id={labelId}
+    class:list={[labelClass, helpModalId && "field-label-with-help"]}
+  >
+    {helpModalId ? (
+      <>
+        <span id={`${id}-floating-label-text`}>{label}</span>
+        <button
+          type="button"
+          class="help-icon"
+          data-modal={helpModalId}
+          aria-label={helpModalAriaLabel ?? "Open help"}
+        >?</button>
+      </>
+    ) : (
+      label
+    )}
+  </label>
   {errorMessage && (
     <span class="error-text" id={errorId} aria-live="polite">
       {errorMessage}
