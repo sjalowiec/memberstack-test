@@ -6,16 +6,25 @@ import Layout from "../layouts/Layout.astro";
   <section class="container" style="padding: 2rem 1rem;">
     <h1>Member Test Page</h1>
 
-    <p data-ms-content="!members">
-      You are logged out.
-    </p>
+    <!-- Logged OUT -->
+    <div data-ms-content="!members">
+      <p>Please log in to access this content.</p>
+    </div>
 
-    <p data-ms-content="members">
-      You are logged in.
-    </p>
+    <!-- Logged IN (any user) -->
     <div data-ms-content="members">
-      <h2>This is members-only content</h2>
-      <p>If you can see this, you have a plan.</p>
+      <p>You are logged in.</p>
+    </div>
+
+    <!-- Logged IN, NO PLAN -->
+    <div data-ms-content="no-plans">
+      <p>You are logged in, but do not have a membership.</p>
+    </div>
+
+    <!-- LOGGED IN, PAID PLAN -->
+    <div data-ms-content="paid-plans">
+      <h2>This is paid-members-only content</h2>
+      <p>If you can see this, you have an active paid plan.</p>
     </div>
 
     <div style="margin-top: 1rem;">
