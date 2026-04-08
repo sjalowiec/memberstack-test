@@ -8,29 +8,18 @@ import Layout from "../layouts/Layout.astro";
 
     <!-- Logged OUT -->
     <div data-ms-content="!members">
-      <p>Please log in to access this content.</p>
+      <p>You are LOGGED OUT</p>
     </div>
 
-    <!-- Logged IN (any user) -->
+    <!-- Logged IN -->
     <div data-ms-content="members">
-      <p>You are logged in.</p>
-    </div>
-
-    <!-- Logged IN, NO PLAN -->
-    <div data-ms-content="no-plans">
-      <p>You are logged in, but do not have a membership.</p>
-    </div>
-
-    <!-- LOGGED IN, PAID PLAN -->
-    <div data-ms-content="paid-plans">
-      <h2>This is paid-members-only content</h2>
-      <p>If you can see this, you have an active paid plan.</p>
+      <p>You are LOGGED IN</p>
     </div>
 
     <div style="margin-top: 1rem;">
-      <a href="#" data-ms-modal="login" data-ms-redirect="/member-test">Log in</a>
-      <a href="#" data-ms-modal="signup" data-ms-redirect="/member-test">Sign up</a>
-      <a href="#" data-ms-action="logout" data-ms-redirect="/member-test">Log out</a>
+      <a href="#" data-ms-modal="login" data-ms-redirect="current-url">Log in</a>
+      <a href="#" data-ms-modal="signup" data-ms-redirect="current-url">Sign up</a>
+      <a href="#" data-ms-action="logout">Log out</a>
     </div>
   </section>
 </Layout>
