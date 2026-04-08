@@ -20,13 +20,7 @@ import TriangleRightSvg from "../../components/tools/triangle-right.svg";
           and the calculator will generate the knitting numbers.
         </p>
       </section>
-      <div data-ms-content="!paid-plans">
-        <h2>This tool is for members</h2>
-        <p>You’ll need an active membership to use this tool.</p>
-        <p><a href="/plan-test">Become a member</a></p>
-      </div>
-
-      <div data-ms-content="paid-plans">
+      <div class="triangle-tool-wrap">
       <div class="triangle-calculator-panel">
         <div class="triangle-tool-layout">
           <div class="triangle-input-column">
@@ -106,11 +100,65 @@ import TriangleRightSvg from "../../components/tools/triangle-right.svg";
         </aside>
         </div>
       </div>
+      <div data-ms-content="!paid-plans" class="triangle-member-overlay">
+        <div class="triangle-member-overlay-inner">
+          <h2>This tool is for members</h2>
+          <p>You’ll need an active membership to use this tool.</p>
+          <p><a href="/plan-test" class="wizard-button">Become a member</a></p>
+        </div>
+      </div>
       </div>
     </div>
   </main>
 
   <style>
+/* Sneak-preview wrapper: lock overlay for non–paid-plans (Memberstack) */
+.triangle-tool-wrap {
+  position: relative;
+}
+.triangle-member-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  box-sizing: border-box;
+  backdrop-filter: blur(2px);
+}
+.triangle-member-overlay-inner {
+  max-width: 22rem;
+}
+.triangle-member-overlay-inner h2 {
+  margin: 0 0 0.5em;
+  font-size: 1.25rem;
+}
+.triangle-member-overlay-inner p {
+  margin: 0.5em 0 1em;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+.triangle-member-overlay .wizard-button {
+  display: inline-block;
+  padding: 12px 22px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  background: #52682d;
+  color: #fff;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+.triangle-member-overlay .wizard-button:hover {
+  background: #445925;
+  color: #fff;
+}
+
 /* Single white panel wrapping the entire calculator working area */
 .triangle-calculator-panel {
   background: #fff;

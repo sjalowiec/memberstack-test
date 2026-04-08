@@ -209,7 +209,7 @@
   {
     "id": 30,
     "title": "Triangle Tool",
-    "href": "/tools/triangle-tool",
+    "href": "/tools/triangle-v2",
     "icon": "triangle1.svg",
     "description": "Instant shaping math for symmetrical and asymmetrical triangles.",
     "membersonly": true,
