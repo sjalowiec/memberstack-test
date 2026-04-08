@@ -1,0 +1,38 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+const monthlyPriceId = "REPLACE_WITH_MONTHLY_PRICE_ID";
+const annualPriceId = "REPLACE_WITH_ANNUAL_PRICE_ID";
+---
+
+<Layout title="Plan Test">
+  <section class="container" style="padding: 2rem 1rem;">
+    <h1>Plan Test Page</h1>
+
+    <div data-ms-content="!members">
+      <p>You are logged out.</p>
+      <a href="#" data-ms-modal="login" data-ms-redirect="current-url">Log in</a>
+      <br />
+      <a href="#" data-ms-modal="signup" data-ms-redirect="current-url">Create account</a>
+    </div>
+
+    <div data-ms-content="members">
+      <p>You are logged in.</p>
+
+      <div data-ms-content="no-plans">
+        <p>You do not have a paid membership yet.</p>
+        <p><a href="#" data-ms-price={"prc_monthly-u1h20u83"}>Buy Monthly Membership</a></p>
+        <p><a href="#" data-ms-price={"prc_annual-199-k110fou"}>Buy Annual Membership</a></p>
+      </div>
+
+      <div data-ms-content="paid-plans">
+        <p>You have a paid membership.</p>
+      </div>
+
+      <p style="margin-top: 1rem;">
+        <a href="#" data-ms-action="logout">Log out</a>
+      </p>
+    </div>
+  </section>
+</Layout>
