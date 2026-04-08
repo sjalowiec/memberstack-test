@@ -59,24 +59,25 @@ const isProduction =
     <link rel="icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
+  
     <!-- Google Analytics -->
-    {import.meta.env.PUBLIC_GA4_ID && (
-      <>
-        <script
-          async
-          src={`https://www.googletagmanager.com/gtag/js?id=${import.meta.env.PUBLIC_GA4_ID}`}
-        ></script>
-        <script
-          is:inline
-          define:vars={{ gaId: import.meta.env.PUBLIC_GA4_ID }}
-        >
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', gaId);
-        </script>
-      </>
-    )}
+{import.meta.env.PUBLIC_GA4_ID && (
+  <>
+    <script
+      async
+      src={`https://www.googletagmanager.com/gtag/js?id=${import.meta.env.PUBLIC_GA4_ID}`}
+    ></script>
+    <script
+      is:inline
+      define:vars={{ gaId: import.meta.env.PUBLIC_GA4_ID }}
+    >
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', gaId);
+    </script>
+  </>
+)}
 
     <!-- Fonts & icons -->
     <link
