@@ -13,6 +13,7 @@
  * - hidden: Optional; set when no results yet; toggle via JS when calculation succeeds
  * - title: Optional heading (e.g. "Your Pattern", "Knitting Instructions")
  * - resultsContentId: id for the text content container (default "results") so JS can inject
+ * - singleColumn: when true, one full-width column (no diagram column). Use when the diagram slot is empty.
  *
  * Slots:
  * - actions: Optional; print button or other actions
@@ -24,14 +25,15 @@ interface Props {
   hidden?: boolean;
   title?: string;
   resultsContentId?: string;
+  singleColumn?: boolean;
 }
 
-const { id, hidden = false, title, resultsContentId = "results" } = Astro.props;
+const { id, hidden = false, title, resultsContentId = "results", singleColumn = false } = Astro.props;
 ---
 
 <section
   id={id}
-  class="tool-result-card pattern-result-card"
+  class:list={["tool-result-card", "pattern-result-card", { "tool-result-card--single": singleColumn }]}
   hidden={hidden}
   aria-labelledby={title ? "tool-result-card-title" : undefined}
 >
@@ -179,6 +181,24 @@ const { id, hidden = false, title, resultsContentId = "results" } = Astro.props;
 
   .tool-result-card__diagram:empty {
     display: none;
+  }
+
+  /* No diagram: one column so content and footer are not auto-placed into a phantom second column */
+  .tool-result-card--single .tool-result-card__inner {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-result-card--single .tool-result-card__content {
+    max-width: none;
+    grid-column: 1;
+  }
+
+  .tool-result-card--single .tool-result-card__diagram {
+    grid-column: 1;
+  }
+
+  .tool-result-card--single .pattern-print-footer {
+    grid-column: 1;
   }
 
   /* Mobile: stack instructions then diagram for readability */

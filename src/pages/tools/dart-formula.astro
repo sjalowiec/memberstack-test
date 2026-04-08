@@ -1,0 +1,532 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
+import UnitToggle from "../../components/wizards/UnitToggle.astro";
+import GaugeInput from "../../components/wizards/GaugeInput.astro";
+import FloatingSelect from "../../components/tools/FloatingSelect.astro";
+import PrintButton from "../../components/common/PrintButton.astro";
+import ToolResultCard from "../../components/tools/ToolResultCard.astro";
+import MemberLockOverlay from "../../components/ui/MemberLockOverlay.astro";
+import toolsData from "../../../data/tools.json";
+import "../../styles/wizard.css";
+
+const pageTitle = "Dart Formula | Knit by Machine";
+const pageDescription =
+  "Calculate short-row bust dart shaping from cup size and gauge. Clear machine-knitting hold instructions.";
+
+const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
+const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+const toolPrintTitle = tool?.title ?? "Dart Formula";
+
+const cupOptions = [
+  { label: 'B — 3" width, 0.5" depth', value: "B" },
+  { label: 'C — 3.25" width, 1" depth', value: "C" },
+  { label: 'D — 3.5" width, 1.5" depth', value: "D" },
+  { label: 'DD — 4" width, 2" depth', value: "DD" },
+];
+---
+
+<Layout title={pageTitle} description={pageDescription} toolPrintTitle={toolPrintTitle}>
+  <main class="wizard-page">
+    <div class="wizard-shell">
+      <WizardBackLink className="back-link" />
+
+      <section class="wizard-hero">
+        <ToolPageHeader tool={tool} fallbackTitle="Dart Formula" />
+        <p class="wizard-intro">
+          Choose inches or centimeters, your cup size, then stitch and row gauge for your swatch (per 4″ or 10&nbsp;cm). The tool figures out how many
+          needles to hold on every other row.
+        </p>
+      </section>
+
+      <div class="dart-tool-wrap">
+        <div class="dart-calculator-panel kbm-tool-calculator-area">
+          <form id="wizard-form" class="dart-form" novalidate>
+            <div class="dart-tool-layout">
+              <div class="dart-input-column">
+                <UnitToggle id="dart-units" />
+
+                <FloatingSelect
+                  id="cupSize"
+                  name="cupSize"
+                  label="Cup size"
+                  placeholder="Select Cup Size"
+                  options={cupOptions}
+                  required
+                  dataTestid="select-cup-size"
+                />
+
+                <GaugeInput id="dart" showTitle={false} showToggle={false} toggleId="dart-units" />
+
+                <div id="validationSummary" class="validation-msg validation-summary" role="alert" hidden></div>
+
+                <div class="form-actions">
+                  <button type="submit" class="wizard-button" id="calculateDartBtn">Get Dart Instructions</button>
+                </div>
+              </div>
+
+              <aside class="dart-image-panel" aria-label="Dart measurement reference">
+                <img
+                  src="/images/tools/dart-input.svg"
+                  alt="Diagram of dart width and depth on a knitted piece"
+                  class="dart-reference-image"
+                  width="560"
+                  height="420"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </aside>
+            </div>
+          </form>
+        </div>
+
+        <ToolResultCard
+          id="dartResults"
+          hidden
+          title="Your dart shaping"
+          resultsContentId="dartResultsContent"
+          singleColumn
+        >
+          <PrintButton slot="actions" label="" ariaLabel="Print instructions" />
+        </ToolResultCard>
+<!--
+        <div data-ms-content="!paid-plans">
+          <MemberLockOverlay
+            title="This tool is for members"
+            message="You’ll need an active membership to use this tool."
+            ctaText="Become a member"
+          />
+        </div>-->
+      </div>
+    </div>
+  </main>
+
+  <style>
+    .dart-tool-wrap {
+      position: relative;
+    }
+    .dart-calculator-panel {
+      background: #fff;
+      padding: 1.75rem;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 640px) {
+      .dart-calculator-panel {
+        padding: 1.25rem;
+      }
+    }
+    .dart-tool-layout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      align-items: flex-start;
+    }
+    .dart-input-column {
+      flex: 1 1 320px;
+      min-width: 0;
+    }
+    .dart-input-column > :global(.units-toggle) {
+      margin-bottom: 1rem;
+    }
+    .dart-image-panel {
+      flex: 0 1 280px;
+      min-width: 0;
+      margin: 0 auto;
+    }
+    @media (max-width: 767px) {
+      .dart-image-panel {
+        display: none;
+      }
+    }
+    .dart-reference-image {
+      width: 100%;
+      max-width: 280px;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    }
+    .validation-msg {
+      color: #dc3545;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+    .validation-summary {
+      margin-bottom: 0.5rem;
+    }
+    .form-actions {
+      margin-top: 1.25rem;
+    }
+    .wizard-button {
+      padding: 12px 22px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      background: #52682d;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .wizard-button:hover {
+      background: #445626;
+    }
+    /* Injected into ToolResultCard #dartResultsContent (component root is unscoped) */
+    :global(#dartResultsContent) {
+      line-height: 1.6;
+    }
+    :global(#dartResultsContent) p {
+      margin: 0.5rem 0;
+    }
+    :global(#dartResultsContent) .results-summary {
+      font-weight: 600;
+      color: #374151;
+      margin-top: 0.75rem;
+    }
+    .dart-summary-table {
+      width: 100%;
+      max-width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      margin: 0.75rem 0 1rem;
+    }
+    .dart-summary-table th,
+    .dart-summary-table td {
+      text-align: left;
+      padding: 0.35rem 0.5rem 0.35rem 0;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: top;
+    }
+    .dart-summary-table th {
+      font-weight: 600;
+      color: #374151;
+      width: 48%;
+    }
+    .dart-summary-table td {
+      color: #4b5563;
+    }
+    .results-instruction-block {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #fff;
+      border-radius: 8px;
+      border-left: 4px solid var(--kbm-green);
+    }
+    .results-instruction-block ul {
+      margin: 0.5rem 0 0;
+      padding-left: 1.25rem;
+    }
+    .results-instruction-block li {
+      margin-bottom: 0.35rem;
+    }
+  </style>
+
+  <script is:inline>
+    (function () {
+      const CUP_DART_BY_SIZE = {
+        B: { dartWidth: 3, dartDepth: 0.5 },
+        C: { dartWidth: 3.25, dartDepth: 1 },
+        D: { dartWidth: 3.5, dartDepth: 1.5 },
+        DD: { dartWidth: 4, dartDepth: 2 },
+      };
+
+      function roundToTwoDecimals(value) {
+        return Math.round(value * 100) / 100;
+      }
+
+      function getUnitFromForm() {
+        const el = document.getElementById("unit");
+        const v =
+          el && "value" in el ? String(/** @type {HTMLInputElement} */ (el).value).trim() : "";
+        return v === "cm" ? "cm" : "in";
+      }
+
+      function formatDepthLabel(unit) {
+        return unit === "cm" ? "cm" : "in";
+      }
+
+      /** Visible cup dropdown labels only; values stay B/C/D/DD. Width/depth in inches converted for cm display. */
+      function formatDartMeasureForLabel(inches, unit) {
+        if (unit === "cm") {
+          return String(roundToTwoDecimals(inches * 2.54));
+        }
+        const r = roundToTwoDecimals(inches);
+        if (r === Math.floor(r)) return String(Math.floor(r));
+        return String(r);
+      }
+
+      function cupOptionLabel(cupKey, unit) {
+        const spec = CUP_DART_BY_SIZE[cupKey];
+        if (!spec) return cupKey;
+        const w = formatDartMeasureForLabel(spec.dartWidth, unit);
+        const d = formatDartMeasureForLabel(spec.dartDepth, unit);
+        if (unit === "cm") {
+          return `${cupKey} — ${w} cm width, ${d} cm depth`;
+        }
+        return `${cupKey} — ${w}" width, ${d}" depth`;
+      }
+
+      function syncCupSizeOptionLabels(unit) {
+        const sel = document.getElementById("cupSize");
+        if (!sel || !("options" in sel)) return;
+        const u = unit === "cm" ? "cm" : "in";
+        const opts = /** @type {HTMLSelectElement} */ (sel).options;
+        for (let i = 0; i < opts.length; i++) {
+          const opt = opts[i];
+          const key = String(opt.value).trim();
+          if (!key) continue;
+          opt.textContent = cupOptionLabel(key, u);
+        }
+      }
+
+      function formatGaugeLabel(unit) {
+        return unit === "cm" ? "10 cm" : '4"';
+      }
+
+      function computeDartShaping(params) {
+        const { cupKey, stitchGauge, rowGauge, unit } = params;
+        const spec = CUP_DART_BY_SIZE[cupKey];
+        if (!spec) {
+          return { ok: false, error: "Select a cup size." };
+        }
+        const gaugeBase = unit === "cm" ? 10 : 4;
+        const perUnitStitches = roundToTwoDecimals(stitchGauge / gaugeBase);
+        const perUnitRows = roundToTwoDecimals(rowGauge / gaugeBase);
+        const dartWidth = spec.dartWidth;
+        const dartDepth = spec.dartDepth;
+
+        const totalHeldStitches = Math.floor(dartWidth * perUnitStitches);
+        const totalDepthRows = Math.floor(dartDepth * perUnitRows);
+
+        if (totalHeldStitches < 1) {
+          return {
+            ok: false,
+            error:
+              "At this gauge, the dart width rounds to fewer than one stitch. Try a slightly different stitch gauge or cup size.",
+          };
+        }
+        if (totalDepthRows < 1) {
+          return {
+            ok: false,
+            error:
+              "At this gauge, the dart depth rounds to fewer than one row. Try a slightly different row gauge or cup size.",
+          };
+        }
+
+        let shapingPasses = Math.floor(totalDepthRows / 2);
+        if (shapingPasses % 2 !== 0) {
+          shapingPasses += 1;
+        }
+
+        if (shapingPasses < 1) {
+          return {
+            ok: false,
+            error: "Not enough depth rows to form shaping passes. Check your row gauge and cup size.",
+          };
+        }
+
+        const remainder = totalHeldStitches % shapingPasses;
+        const dividesEvenly = remainder === 0;
+        const holdPerPassWhenEven = dividesEvenly ? Math.floor(totalHeldStitches / shapingPasses) : 0;
+
+        let lowerHoldCount = 0;
+        let higherHoldCount = 0;
+        let numberOfLowerPasses = 0;
+        let numberOfHigherPasses = 0;
+
+        if (!dividesEvenly) {
+          const baseHoldRate = totalHeldStitches / shapingPasses;
+          lowerHoldCount = Math.floor(baseHoldRate);
+          higherHoldCount = lowerHoldCount + 1;
+          numberOfLowerPasses = shapingPasses * higherHoldCount - totalHeldStitches;
+          numberOfHigherPasses = shapingPasses - numberOfLowerPasses;
+        }
+
+        return {
+          ok: true,
+          cupKey,
+          unit,
+          gaugeBase,
+          perUnitStitches,
+          perUnitRows,
+          dartWidth,
+          dartDepth,
+          stitchGauge,
+          rowGauge,
+          totalHeldStitches,
+          totalDepthRows,
+          shapingPasses,
+          dividesEvenly,
+          holdPerPassWhenEven,
+          lowerHoldCount,
+          higherHoldCount,
+          numberOfLowerPasses,
+          numberOfHigherPasses,
+        };
+      }
+
+      function timesWord(n) {
+        return n === 1 ? "time" : "times";
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function buildResultsHtml(result) {
+        const unit = result.unit;
+        const gLabel = formatGaugeLabel(unit);
+        const dLabel = formatDepthLabel(unit);
+        const unitsLabel = unit === "cm" ? "Centimeters" : "Inches";
+
+        let stepsHtml = "";
+        if (result.dividesEvenly) {
+          stepsHtml += `<li>Place <strong>${result.holdPerPassWhenEven}</strong> needles in hold every other row, <strong>${result.shapingPasses}</strong> ${timesWord(result.shapingPasses)}.</li>`;
+        } else {
+          stepsHtml += `<li>Place <strong>${result.higherHoldCount}</strong> needles in hold every other row, <strong>${result.numberOfHigherPasses}</strong> ${timesWord(result.numberOfHigherPasses)}.</li>`;
+          stepsHtml += `<li>Place <strong>${result.lowerHoldCount}</strong> needles in hold every other row, <strong>${result.numberOfLowerPasses}</strong> ${timesWord(result.numberOfLowerPasses)}.</li>`;
+        }
+        stepsHtml += `<li>Turn off hold settings.</li>`;
+        stepsHtml += `<li>Start your row counter (or reset it) so the next plain row is counted correctly.</li>`;
+        stepsHtml += `<li>Continue knitting across all stitches.</li>`;
+
+        const summaryRows = [
+          ["Cup size", escapeHtml(result.cupKey)],
+          ["Stitch gauge", `${escapeHtml(String(result.stitchGauge))} sts / ${gLabel}`],
+          ["Row gauge", `${escapeHtml(String(result.rowGauge))} rows / ${gLabel}`],
+          ["Dart width", `${escapeHtml(String(result.dartWidth))} ${dLabel}`],
+          ["Dart depth", `${escapeHtml(String(result.dartDepth))} ${dLabel}`],
+          ["Units", unitsLabel],
+          ["Stitches involved (calculated)", escapeHtml(String(result.totalHeldStitches))],
+          ["Depth in rows (calculated)", escapeHtml(String(result.totalDepthRows))],
+        ];
+
+        const tableBody = summaryRows
+          .map(
+            ([k, v]) =>
+              `<tr><th scope="row">${escapeHtml(k)}</th><td>${v}</td></tr>`
+          )
+          .join("");
+
+        return `
+          <p class="results-summary"><strong>Summary</strong></p>
+          <table class="dart-summary-table">
+            <tbody>${tableBody}</tbody>
+          </table>
+          <div class="results-instruction-block">
+            <p><strong>When to work the dart:</strong></p>
+            <p>Knit to the point where you want to start your shaping.</p>
+            <p>Stop your row counter, work the dart, then reset your row counter and continue knitting.</p>
+          </div>
+          <div class="results-instruction-block">
+            <p><strong>Instructions</strong></p>
+            <p>Work the short-row shaping:</p>
+            <ul>${stepsHtml}</ul>
+          </div>
+        `;
+      }
+
+      const form = document.getElementById("wizard-form");
+      const validationSummary = document.getElementById("validationSummary");
+      const resultsEl = document.getElementById("dartResults");
+      const resultsContent = document.getElementById("dartResultsContent");
+
+      function readNumber(id) {
+        const el = document.getElementById(id);
+        if (!el || !("value" in el)) return NaN;
+        const raw = String(/** @type {HTMLInputElement} */ (el).value).trim();
+        if (raw === "") return NaN;
+        return Number.parseFloat(raw);
+      }
+
+      function validateAndCompute() {
+        const errors = [];
+        const cupEl = document.getElementById("cupSize");
+        const cupKey =
+          cupEl && "value" in cupEl ? String(/** @type {HTMLSelectElement} */ (cupEl).value).trim() : "";
+        if (!cupKey) errors.push("Select a cup size.");
+
+        const stitchGauge = readNumber("dart-stitch-gauge");
+        const rowGauge = readNumber("dart-row-gauge");
+        if (Number.isNaN(stitchGauge) || stitchGauge <= 0) {
+          errors.push("Stitch gauge must be greater than 0.");
+        }
+        if (Number.isNaN(rowGauge) || rowGauge <= 0) {
+          errors.push("Row gauge must be greater than 0.");
+        }
+
+        const unit = getUnitFromForm();
+        if (unit !== "cm" && unit !== "in") {
+          errors.push("Choose inches or centimeters.");
+        }
+
+        if (errors.length) {
+          return { ok: false, errors };
+        }
+
+        const computed = computeDartShaping({
+          cupKey,
+          stitchGauge,
+          rowGauge,
+          unit,
+        });
+
+        if (!computed.ok) {
+          return { ok: false, errors: [computed.error] };
+        }
+
+        return { ok: true, result: computed };
+      }
+
+      function runCalculation() {
+        if (!validationSummary || !resultsEl || !resultsContent) return;
+
+        validationSummary.hidden = true;
+        validationSummary.textContent = "";
+
+        const outcome = validateAndCompute();
+        if (!outcome.ok) {
+          resultsEl.hidden = true;
+          validationSummary.textContent = (outcome.errors || []).join(" ");
+          validationSummary.hidden = false;
+          return;
+        }
+
+        resultsContent.innerHTML = buildResultsHtml(outcome.result);
+        resultsEl.hidden = false;
+        resultsEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      if (form) {
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          runCalculation();
+        });
+      }
+
+      function onUnitsMaybeChanged() {
+        syncCupSizeOptionLabels(getUnitFromForm());
+      }
+
+      window.addEventListener("kbm:units-change", (e) => {
+        const d = /** @type {CustomEvent<{ unit?: string }>} */ (e).detail;
+        const u = d && d.unit === "cm" ? "cm" : "in";
+        syncCupSizeOptionLabels(u);
+      });
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", onUnitsMaybeChanged);
+      } else {
+        onUnitsMaybeChanged();
+      }
+    })();
+  </script>
+</Layout>

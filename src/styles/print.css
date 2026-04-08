@@ -104,6 +104,7 @@
      Force results to display even if hidden until calculation.
      ======================================== */
   #rectangleResults,
+  #dartResults,
   .pattern-result-card,
   .tool-result-card {
     display: block !important;
