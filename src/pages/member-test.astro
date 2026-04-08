@@ -15,11 +15,9 @@ import Layout from "../layouts/Layout.astro";
     </p>
 
     <div style="margin-top: 1rem;">
-      <a href="#" data-ms-modal="login">Log in</a>
-      &nbsp;|&nbsp;
-      <a href="#" data-ms-modal="signup">Sign up</a>
-      &nbsp;|&nbsp;
-      <a href="#" data-ms-action="logout">Log out</a>
+      <a href="#" data-ms-modal="login" data-ms-redirect="/member-test">Log in</a>
+      <a href="#" data-ms-modal="signup" data-ms-redirect="/member-test">Sign up</a>
+      <a href="#" data-ms-action="logout" data-ms-redirect="/member-test">Log out</a>
     </div>
   </section>
 </Layout>
