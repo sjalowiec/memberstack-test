@@ -1,0 +1,25 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Member Test">
+  <section class="container" style="padding: 2rem 1rem;">
+    <h1>Member Test Page</h1>
+
+    <p data-ms-content="!members">
+      You are logged out.
+    </p>
+
+    <p data-ms-content="members">
+      You are logged in.
+    </p>
+
+    <div style="margin-top: 1rem;">
+      <a href="#" data-ms-modal="login">Log in</a>
+      &nbsp;|&nbsp;
+      <a href="#" data-ms-modal="signup">Sign up</a>
+      &nbsp;|&nbsp;
+      <a href="#" data-ms-action="logout">Log out</a>
+    </div>
+  </section>
+</Layout>
