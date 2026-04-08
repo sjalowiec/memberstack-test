@@ -5,6 +5,7 @@ export const prerender = true;
 
 const description =
   "See what’s new on Knit it Now — recent additions and what’s coming next.";
+const hyvorWebsiteId = import.meta.env.PUBLIC_HYVOR_TALK_WEBSITE_ID ?? "14706";
 
 /** Sue headshot for Note from Sue card + Message Sue modal (swap file here only). */
 const sueHeadshot = "/images/sue.gif";
@@ -24,6 +25,11 @@ const sueHeadshot = "/images/sue.gif";
             <p class="whats-new-intro">
               If you’ve already taken a look, here’s what’s new — and what’s coming next. This early preview includes two new interactive patterns, a growing Help Hub, and more features on the way.
             </p>
+            <div style="text-align:center; margin: 20px 0;">
+              <a href="#comments" class="kbm-btn kbm-btn-outline">
+                Skip ahead and comment
+              </a>
+            </div>
           </div>
         </div>
 
@@ -162,6 +168,19 @@ const sueHeadshot = "/images/sue.gif";
           </ul>
         </section>
       </div>
+
+      <section id="comments" class="whats-new-conversation" aria-labelledby="whats-new-conversation-title">
+        <h2 id="whats-new-conversation-title">Join the Conversation</h2>
+        <p>
+          Have thoughts or questions about these updates? I’d love to hear what you’re noticing, what’s working, or what’s still unclear.
+        </p>
+        <ul class="whats-new-conversation__prompts">
+          <li>Have you tried any of these updates yet?</li>
+          <li>Is anything still confusing or missing?</li>
+          <li>What would you like to see next?</li>
+        </ul>
+        <div id="hyvor-talk-view" class="whats-new-conversation__comments"></div>
+      </section>
     </div>
   </section>
 
@@ -546,6 +565,39 @@ const sueHeadshot = "/images/sue.gif";
       font-family: inherit;
     }
 
+    .whats-new-conversation {
+      margin-top: clamp(1.75rem, 3.2vw, 2.5rem);
+    }
+
+    .whats-new-conversation h2 {
+      margin: 0 0 0.55rem 0;
+      font-size: clamp(1.2rem, 2.2vw, 1.4rem);
+      color: var(--kbm-green);
+    }
+
+    .whats-new-conversation p {
+      margin: 0 0 0.9rem 0;
+      max-width: 760px;
+      font-size: var(--text-base);
+      line-height: 1.55;
+      color: #243015;
+    }
+
+    .whats-new-conversation__prompts {
+      margin: 0 0 1.2rem 1.1rem;
+      padding: 0;
+      color: #2f3c22;
+      line-height: 1.5;
+    }
+
+    .whats-new-conversation__prompts li + li {
+      margin-top: 0.35rem;
+    }
+
+    .whats-new-conversation__comments {
+      min-height: 160px;
+    }
+
     /* --- Message Sue modal (page-scoped; class prefix wn-sue-modal) --- */
     .wn-sue-modal {
       position: fixed;
@@ -811,6 +863,40 @@ const sueHeadshot = "/images/sue.gif";
       }
     }
   </style>
+
+  <script is:inline define:vars={{ hyvorWebsiteId }}>
+    window.HYVOR_TALK_WEBSITE = Number(hyvorWebsiteId);
+    window.HYVOR_TALK_CONFIG = {
+      url: window.location.origin + "/whats-new",
+      id: "whats-new",
+    };
+  </script>
+
+  <script is:inline>
+    (function () {
+      var mount = document.getElementById("hyvor-talk-view");
+      if (!mount) return;
+
+      // Use the same embed path pattern already used on other pages.
+      var existing = document.querySelector('script[data-hyvor-embed="whats-new"]');
+      if (existing && window.HyvorTalk && typeof window.HyvorTalk.reload === "function") {
+        window.HyvorTalk.reload();
+        return;
+      }
+
+      var s = document.createElement("script");
+      s.async = true;
+      s.type = "text/javascript";
+      s.src = "https://talk.hyvor.com/web-api/embed";
+      s.setAttribute("data-hyvor-embed", "whats-new");
+      s.onload = function () {
+        if (window.HyvorTalk && typeof window.HyvorTalk.reload === "function") {
+          window.HyvorTalk.reload();
+        }
+      };
+      (document.body || document.documentElement).appendChild(s);
+    })();
+  </script>
 
   <script is:inline>
     (function () {
