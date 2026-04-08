@@ -1,12 +1,23 @@
 ---
+import fs from "node:fs";
+import path from "node:path";
 import Layout from "../../layouts/Layout.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import "../../styles/wizard.css";
 import IsoTriangleIcon from "../../components/tools/triangle-iso-icon.svg";
 import RightTriangleIcon from "../../components/tools/triangle-right-icon.svg";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
-import TriangleIsoSvg from "../../components/tools/triangle-iso.svg";
-import TriangleRightSvg from "../../components/tools/triangle-right.svg";
+import MemberLockOverlay from "../../components/ui/MemberLockOverlay.astro";
+
+const toolsSvgDir = path.join(process.cwd(), "public", "images", "tools");
+const trianglePreviewIsoHtml = fs.readFileSync(
+  path.join(toolsSvgDir, "triangle-iso.svg"),
+  "utf-8"
+);
+const trianglePreviewRightHtml = fs.readFileSync(
+  path.join(toolsSvgDir, "triangle-right-icon.svg"),
+  "utf-8"
+);
 ---
 <Layout title="Triangle Calculator">
   <main class="wizard-page">
@@ -102,21 +113,22 @@ import TriangleRightSvg from "../../components/tools/triangle-right.svg";
         <aside class="triangle-preview-panel" id="trianglePreviewPanel" data-current-style="isosceles">
           <div class="triangle-preview-card">
             <div class="triangle-preview-svg-wrap triangle-preview-svg-wrap--iso" data-style="isosceles">
-              <TriangleIsoSvg />
+              <Fragment set:html={trianglePreviewIsoHtml} />
             </div>
             <div class="triangle-preview-svg-wrap triangle-preview-svg-wrap--right" data-style="right">
-              <TriangleRightSvg />
+              <Fragment set:html={trianglePreviewRightHtml} />
             </div>
           </div>
         </aside>
         </div>
       </div>
-      <div data-ms-content="!paid-plans" class="triangle-member-overlay">
-        <div class="triangle-member-overlay-inner">
-          <h2>This tool is for members</h2>
-          <p>You’ll need an active membership to use this tool.</p>
-          <p><a href="/plan-test" class="wizard-button">Become a member</a></p>
-        </div>
+      <div data-ms-content="!paid-plans">
+        <MemberLockOverlay
+          title="This tool is for members"
+          message="You’ll need an active membership to use this tool."
+          ctaText="Become a member"
+          ctaLink="/plan-test"
+        />
       </div>
       </div>
     </div>
@@ -146,61 +158,6 @@ import TriangleRightSvg from "../../components/tools/triangle-right.svg";
 .triangle-tool-wrap {
   position: relative;
 }
-.triangle-member-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 1.5rem;
-  /* Minimal veil — tool stays sharp; card carries the “locked” affordance */
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(1px);
-  -webkit-backdrop-filter: blur(1px);
-  box-sizing: border-box;
-}
-.triangle-member-overlay-inner {
-  max-width: 400px;
-  width: min(400px, 92%);
-  margin: 0 auto;
-  padding: 1.4rem 1.5rem;
-  border-radius: 12px;
-  box-sizing: border-box;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.06),
-    0 12px 28px -8px rgba(0, 0, 0, 0.1);
-  transform: translateY(-40px);
-}
-.triangle-member-overlay-inner h2 {
-  margin: 0 0 0.45em;
-  font-size: 1.1rem;
-}
-.triangle-member-overlay-inner p {
-  margin: 0.45em 0 0.85em;
-  font-size: 0.875rem;
-  line-height: 1.45;
-}
-.triangle-member-overlay .wizard-button {
-  display: inline-block;
-  padding: 10px 18px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border-radius: 8px;
-  background: #52682d;
-  color: #fff;
-  text-decoration: none;
-  border: none;
-  cursor: pointer;
-}
-.triangle-member-overlay .wizard-button:hover {
-  background: #445925;
-  color: #fff;
-}
-
 /* Single white panel wrapping the entire calculator working area */
 .triangle-calculator-panel {
   background: #fff;
@@ -253,12 +210,17 @@ import TriangleRightSvg from "../../components/tools/triangle-right.svg";
   max-width: 240px;
   margin: 0 auto;
 }
-.triangle-preview-svg-wrap .triangle-preview-svg,
-.triangle-preview-svg-wrap :global(svg) {
+.triangle-preview-svg-wrap :global(svg.triangle-preview-image) {
   width: 100%;
   height: auto;
   display: block;
   color: #9ca3af;
+}
+.triangle-preview-svg-wrap :global(.triangle-shape) {
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+  opacity: 0.45;
 }
 .triangle-preview-panel[data-current-style="isosceles"] .triangle-preview-svg-wrap--iso {
   display: block;
@@ -272,12 +234,13 @@ import TriangleRightSvg from "../../components/tools/triangle-right.svg";
 .triangle-preview-panel[data-current-style="isosceles"] .triangle-preview-svg-wrap--right {
   display: none;
 }
-/* SVG part default and active highlight */
+/* SVG part default and active highlight (stroke from CSS only — no inline stroke on preview lines) */
 .triangle-preview-svg-wrap :global(.svg-part) {
   transition: stroke 0.15s ease, stroke-width 0.15s ease;
-}
-.triangle-preview-svg-wrap :global(.svg-part) {
   stroke: #9ca3af;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .triangle-preview-svg-wrap :global(.svg-part.is-active) {
   stroke: #52682D;
@@ -863,12 +826,13 @@ import TriangleRightSvg from "../../components/tools/triangle-right.svg";
       return active.getAttribute("data-highlight");
     }
     function clearAndHighlight(wrap, highlight) {
-      const allParts = wrap.querySelectorAll(".svg-part--width, .svg-part--height, #width, #height");
+      // Class-only targets: both preview SVGs live in the DOM; avoid duplicate id="width"/"height".
+      const allParts = wrap.querySelectorAll(".svg-part--width, .svg-part--height");
       allParts.forEach((el) => el.classList.remove("is-active"));
       if (highlight === "width") {
-        wrap.querySelectorAll(".svg-part--width, #width").forEach((el) => el.classList.add("is-active"));
+        wrap.querySelectorAll(".svg-part--width").forEach((el) => el.classList.add("is-active"));
       } else if (highlight === "height") {
-        wrap.querySelectorAll(".svg-part--height, #height").forEach((el) => el.classList.add("is-active"));
+        wrap.querySelectorAll(".svg-part--height").forEach((el) => el.classList.add("is-active"));
       }
     }
     function updateHighlight() {

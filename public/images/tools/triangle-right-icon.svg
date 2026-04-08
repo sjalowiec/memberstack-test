@@ -6,25 +6,25 @@
   class="triangle-preview-image triangle-preview-svg"
 >
   <path
-    d="M20 170 L100 40 L180 170"
+    d="M30 170 L30 50 L170 170 Z"
     class="triangle-shape"
     vector-effect="non-scaling-stroke"
   />
   <line
     id="width"
-    x1="20"
+    x1="30"
     y1="170"
-    x2="180"
+    x2="170"
     y2="170"
     class="svg-part svg-part--width"
     vector-effect="non-scaling-stroke"
   />
   <line
     id="height"
-    x1="100"
+    x1="30"
     y1="170"
-    x2="100"
-    y2="40"
+    x2="30"
+    y2="50"
     class="svg-part svg-part--height"
     vector-effect="non-scaling-stroke"
   />
