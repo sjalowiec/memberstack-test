@@ -4,6 +4,10 @@
 @import './lego/floating-input.css';
 @import './tools/pattern-select-completion.css';
 
+html {
+  scroll-behavior: smooth;
+}
+
 /* Pattern wizard tabs (e.g. hat builder) */
 .pattern-tab-nav {
   display: flex;

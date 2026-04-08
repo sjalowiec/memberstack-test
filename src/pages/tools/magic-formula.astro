@@ -30,8 +30,12 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
           <ToolPageHeader tool={tool} fallbackTitle="Magic Formula" />
                  </div>
         <p class="wizard-intro">
-          Use this tool to evenly distribute increases or decreases across a shaping section. Enter either stitch counts and rows, or measurements and gauge, and the tool will calculate the shaping for one side or both sides of your piece.
-        </p>
+          Use this tool to evenly distribute increases or decreases across a shaping section.
+          <br> To have the tool calculate everything for you:
+          <ul>
+              <li>Enter either stitch counts and rows</li>
+              <li>Enter measurements and gauge</li>
+          </ul>
       </section>
 
       <div class="action-bar-wrap no-print">
@@ -54,9 +58,11 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
           <p class="shaping-side-hint">One side = single slope or neckline edge. Both sides = sleeve caps, armholes, or waist shaping.</p>
           <div class="shaping-side-toggle" role="group" aria-label="Shaping side">
             <button type="button" class="shaping-side-btn active" data-side="one" id="shapeOneSide">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <polygon points="7 19.7 17 19.7 7 4.3" /> </svg>
               Shaping on one side
             </button>
             <button type="button" class="shaping-side-btn" data-side="both" id="shapeBothSides">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <polygon points="20.7 19.6 3.3 19.6 9.1 4.4 14.9 4.4" /> </svg>
               Shaping on both sides
             </button>
           </div>
@@ -135,6 +141,10 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
       flex: 1; padding: 0.65rem 1rem; border: none; background: transparent; font-family: var(--font);
       font-size: 0.9rem; font-weight: 500; color: #6b7280; cursor: pointer; transition: background 0.2s, color 0.2s;
     }
+    .shaping-side-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .shaping-side-btn svg { width: 28px; height: 28px; flex-shrink: 0; }
     .input-mode-btn:hover, .shaping-side-btn:hover { background: rgba(82, 104, 45, 0.08); color: #374151; }
     .input-mode-btn.active, .shaping-side-btn.active { background: var(--kbm-green); color: white; }
     .mode-fields { margin-top: 1rem; }
@@ -459,27 +469,53 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
         return shapingRows;
       }
 
-      // ---------- Pattern wording from result ----------
-      function formatPatternInstructions(result) {
+      /** Ordinal suffix for Nth row (2 → 2nd, 3 → 3rd, 11 → 11th). */
+      function ordinalSuffix(n) {
+        const j = n % 10;
+        const k = n % 100;
+        if (j === 1 && k !== 11) return 'st';
+        if (j === 2 && k !== 12) return 'nd';
+        if (j === 3 && k !== 13) return 'rd';
+        return 'th';
+      }
+
+      /**
+       * If all consecutive gaps are equal and positive, returns that step; else null.
+       * Used for display only (evenly spaced vs irregular lists).
+       */
+      function getUniformRowSpacing(rows) {
+        if (!rows || rows.length < 2) return null;
+        const d = rows[1] - rows[0];
+        if (d <= 0) return null;
+        for (let i = 2; i < rows.length; i++) {
+          if (rows[i] - rows[i - 1] !== d) return null;
+        }
+        return d;
+      }
+
+      function shapingEdgeAtPhrase(result) {
+        return result.shapingSides === 'one-side' ? 'at one edge' : 'at each edge';
+      }
+
+      /** Knitter-facing instructions from a row schedule (main or smoother). Display only. */
+      function buildKnitterInstructionHtml(result, rows) {
         const action = result.direction === 'increase' ? 'Increase' : 'Decrease';
-        const oneEdge = 'at one edge';
-        const eachEdge = 'at each edge';
-        const isOne = result.shapingSides === 'one-side';
-        const edge = isOne ? oneEdge : eachEdge;
-        const rowWord = (n) => n === 1 ? 'row' : `${n}th row`;
-        const singleInterval = result.longCount === 0 || result.shortCount === 0;
-        const interval = result.longCount > 0 ? result.longInterval : result.shortInterval;
-        const times = result.longCount > 0 ? result.longCount : result.shortCount;
-        if (singleInterval) {
-          return `${action} 1 stitch ${edge} every ${rowWord(interval)} ${times} times.`;
+        const edge = shapingEdgeAtPhrase(result);
+        if (!rows || rows.length === 0) return '';
+        const step = getUniformRowSpacing(rows);
+        if (step === 1) {
+          const n = rows.length;
+          const sentence = `${action} 1 stitch ${edge} every row for ${n} row${n === 1 ? '' : 's'}.`;
+          return `<p class="results-rows-list"><strong>${sentence}</strong></p>`;
         }
-        const parts = [];
-        if (result.longCount > 0) parts.push(`every ${rowWord(result.longInterval)} ${result.longCount} times`);
-        if (result.shortCount > 0) parts.push(`every ${rowWord(result.shortInterval)} ${result.shortCount} times`);
-        if (isOne) {
-          return `Work shaping ${result.shapingEvents} times total:\n  • ${parts.join('\n  • ')}`;
+        if (step != null) {
+          const times = rows.length;
+          const everyNth = `every ${step}${ordinalSuffix(step)} row`;
+          const sentence = `${action} 1 stitch ${edge} ${everyNth} ${times} time${times === 1 ? '' : 's'}.`;
+          return `<p class="results-rows-list"><strong>${sentence}</strong></p>`;
         }
-        return `Work shaping at both edges ${result.shapingEvents} times total:\n  • ${parts.join('\n  • ')}`;
+        const rowsText = rows.join(', ');
+        return `<p class="results-rows-list"><strong>${action} 1 stitch ${edge} on the following rows:</strong><br>${rowsText}</p>`;
       }
 
       function runCalculation() {
@@ -520,7 +556,6 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
         }
 
         const action = result.direction === 'increase' ? 'Increase' : 'Decrease';
-        const actionLower = result.direction === 'increase' ? 'increasing' : 'decreasing';
         const sideText = result.shapingSides === 'both-sides' ? 'both sides' : 'one side';
         let html = '';
 
@@ -531,8 +566,7 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
         }
 
         html += `<p class="results-summary"><strong>Summary</strong></p>`;
-        html += `<p>Shaping type: <strong>${result.direction}</strong>. Worked on <strong>${sideText}</strong>.</p>`;
-        html += `<p>Starting stitches: <strong>${result.startingStitches}</strong> → Ending stitches: <strong>${result.endingStitches}</strong>. Total stitch change: <strong>${result.totalChange}</strong>. Total rows: <strong>${result.totalRows}</strong>. Shaping events: <strong>${result.shapingEvents}</strong>.</p>`;
+        html += `<p><strong>${action}</strong> on ${sideText}. <strong>${result.startingStitches} sts → ${result.endingStitches} sts</strong> over <strong>${result.totalRows}</strong> rows.</p>`;
 
         if (result.steepWarning) {
           html += `<div class="note-box error"><strong>Note:</strong> There are more shaping events than rows available. This shaping is steeper than a standard every-row distribution. The instructions below are a best-effort fit.</div>`;
@@ -547,21 +581,12 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
         }
 
         html += '<p class="results-instruction"><strong>Instructions</strong></p>';
-        html += `<p>${formatPatternInstructions(result)}</p>`;
-        if (result.shortCount > 0 && result.longCount > 0) {
-          html += `<p class="note-box"><strong>Tip:</strong> Alternate between the two row intervals to spread the shaping evenly over ${result.totalRows} rows.</p>`;
-        }
 
         const shapingRows = buildShapingRows(result);
-        const rowLabel = result.direction === 'decrease' ? 'Decrease rows:' : 'Increase rows:';
-        const rowListText = shapingRows.length > 0 ? shapingRows.join(', ') : '';
-        if (rowListText) {
-          html += `<p class="results-rows-list"><strong>${rowLabel}</strong><br>${rowListText}</p>`;
-        }
+        html += buildKnitterInstructionHtml(result, shapingRows);
 
         const smootherRows = calculateEvenDistribution(result.totalRows, result.shapingEvents);
-        const smootherRowsText = smootherRows.join(', ');
-        const smootherSummary = `Shaping events: ${result.shapingEvents}. Total rows: ${result.totalRows}.`;
+        const smootherRowsBlock = buildKnitterInstructionHtml(result, smootherRows);
 
         html += `
           <div class="distributed-option-row">
@@ -575,9 +600,8 @@ const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
           <div id="distributed-instructions" hidden>
             <div class="distributed-instructions-inner">
               <h4 class="distributed-instructions-title">Smoother Shaping Option</h4>
-              <p class="distributed-instructions-intro">This version spreads the shaping more evenly across the rows.</p>
-              <p><strong>${rowLabel}</strong><br>${smootherRowsText}</p>
-              <p><strong>Shaping Summary</strong><br>${smootherSummary}</p>
+              <p class="distributed-instructions-intro">Same stitch change as above; shaping is spaced evenly across the rows.</p>
+              ${smootherRowsBlock}
             </div>
           </div>`;
 

@@ -3,14 +3,17 @@ import Layout from "../layouts/Layout.astro";
 import tools from "../../data/tools.json";
 
 // Group tools by category
-const activeTools = tools.filter(tool => tool.active === "TRUE");
+const activeTools = tools.filter(tool => tool.active === true);
 const groupedTools = Object.groupBy(activeTools, tool => tool.category);
 
-// Unique category list for filter (All Categories first)
-const categories = ["All", ...new Set(tools.map((tool: { category?: string }) => tool.category).filter(Boolean))];
+// Unique category strings exactly as in tools.json (All = no category filter)
+const categoryValues = tools
+  .map((tool: { category?: string }) => tool.category)
+  .filter((c): c is string => typeof c === "string" && c.length > 0);
+const categories = ["All", ...new Set(categoryValues)];
 ---
 
-<Layout title="Charting Tools">
+<Layout title="Charting Tools" bodyClass="page--tight-header">
 
 <section class="tools-page">
 
@@ -19,12 +22,15 @@ const categories = ["All", ...new Set(tools.map((tool: { category?: string }) =>
   <p class="tools-intro">
     From complex shaping to gauge conversions, we’ve automated the "knitting math." Plug in your numbers, get your custom chart, and get knitting.
   </p>
- 
+
+  <div class="non-member-cta">
+    <strong>Beta Note:</strong> Some tools on this page are still in progress or part of upcoming member features. During beta, you may see preview pages while we continue building and improving them.
+  </div>
 
   <div id="tool-access-filters" class="filter-pills">
     <button type="button" class="filter-pill active" data-filter="all">All</button>
-    <button type="button" class="filter-pill" data-filter="free">Free</button>
-    <button type="button" class="filter-pill" data-filter="member">Member</button>
+    <button type="button" class="filter-pill" data-filter="false">Free</button>
+    <button type="button" class="filter-pill" data-filter="true">Member</button>
   </div>
 
   <div id="tool-category-filters" class="filter-pills">
@@ -55,7 +61,7 @@ const categories = ["All", ...new Set(tools.map((tool: { category?: string }) =>
               <span class="tool-badge free">Free</span>
             );
             return isActive ? (
-              <a href={tool.href} class="kbm-card active" data-members-only={membersOnly} data-category={tool.category}>
+              <a href={tool.href} class="kbm-card active" data-membersonly={String(membersOnly)} data-category={tool.category}>
                 {badge}
                 <img
                   src={`/icons/tools/${tool.icon}`}
@@ -67,7 +73,7 @@ const categories = ["All", ...new Set(tools.map((tool: { category?: string }) =>
                 <p>{tool.description}</p>
               </a>
             ) : (
-              <div class="tool-card inactive" aria-disabled="true" data-members-only={membersOnly} data-category={tool.category}>
+              <div class="tool-card inactive" aria-disabled="true" data-membersonly={String(membersOnly)} data-category={tool.category}>
                 {badge}
                 <img
                   src={`/icons/tools/${tool.icon}`}
@@ -82,7 +88,7 @@ const categories = ["All", ...new Set(tools.map((tool: { category?: string }) =>
         </div>
         <div class="tools-coming-soon">
           <span class="tools-coming-soon-icon">✦</span>
-          <span>More tools coming to this section</span>
+          <span>More tools coming - including member-only tools for advanced shaping and pattern planning</span>
         </div>
       </div>
     </section>
@@ -93,20 +99,20 @@ const categories = ["All", ...new Set(tools.map((tool: { category?: string }) =>
 <script>
   const accessButtons = document.querySelectorAll<HTMLButtonElement>("#tool-access-filters .filter-pill");
   const categoryButtons = document.querySelectorAll<HTMLButtonElement>("#tool-category-filters .filter-pill");
-  const cards = document.querySelectorAll<HTMLElement>(".tool-card,kbm-card");
+  const cards = document.querySelectorAll<HTMLElement>(".tool-card, .kbm-card");
 
   let activeAccessFilter = "all";
   let activeCategoryFilter = "all";
 
   function applyToolFilters() {
     cards.forEach(card => {
-      const isMember = card.dataset.membersOnly === "true";
+      const isMember = card.dataset.membersonly === "true";
       const category = card.dataset.category || "";
 
       const matchesAccess =
         activeAccessFilter === "all" ||
-        (activeAccessFilter === "free" && !isMember) ||
-        (activeAccessFilter === "member" && isMember);
+        (activeAccessFilter === "false" && !isMember) ||
+        (activeAccessFilter === "true" && isMember);
 
       const matchesCategory =
         activeCategoryFilter === "all" ||
@@ -142,7 +148,7 @@ const categories = ["All", ...new Set(tools.map((tool: { category?: string }) =>
 .tools-page{
   max-width:1100px;
   margin:auto;
-  padding:40px 20px;
+  padding:12px 20px 40px;
 }
 
 .tools-intro{

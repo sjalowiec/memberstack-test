@@ -1,0 +1,126 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
+import toolsData from "../../../data/tools.json";
+import "../../styles/wizard.css";
+
+const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
+const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+---
+
+<Layout
+  title="Hood Design Tool | Knit by Machine"
+  description="Preview of the Hood Design Tool: warmth, style, and a practical approach to adding a hood to your sweater."
+>
+  <main class="wizard-page">
+    <div class="wizard-shell hood-tool-preview">
+      <WizardBackLink className="back-link" />
+
+      <div class="hood-tool-layout">
+        <div class="hood-tool-text">
+          <ToolPageHeader tool={tool} fallbackTitle="Hood Design Tool" />
+
+          <p class="hood-tool-intro">
+            Adding a hood to a sweater can give warmth and style to your project. With the right approach, you can design a hood that fits beautifully and works with your overall design.
+          </p>
+
+          <p class="hood-tool-copy">
+            Adding a hood to an existing knitting pattern can be simple. In many cases, you can pick up stitches around the neckline—just like you would for a band or collar—knit to the desired depth, bind off, and seam the top. Finish the front edge, and you have a warm, practical hood.
+          </p>
+        </div>
+
+        <aside class="hood-tool-visual" aria-label="Hood illustration">
+          <img
+            src="/images/glossary/hoods.webp"
+            alt="Knitted hood styles and shaping examples"
+            loading="lazy"
+            decoding="async"
+            class="hood-tool-image"
+          />
+        </aside>
+      </div>
+
+      <p class="hood-tool-status">Member tool — coming soon</p>
+    </div>
+  </main>
+
+  <style>
+    .hood-tool-preview {
+      max-width: 56rem;
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      padding-bottom: 2.5rem;
+    }
+
+    .hood-tool-layout {
+      display: grid;
+      gap: 2rem;
+      margin-top: 0.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .hood-tool-layout {
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+        gap: 2.5rem;
+        align-items: stretch;
+      }
+    }
+
+    .hood-tool-text {
+      min-width: 0;
+    }
+
+    .hood-tool-text :global(.tool-title) {
+      margin-bottom: 0.75rem;
+    }
+
+    .hood-tool-intro {
+      font-size: 1.075rem;
+      line-height: 1.65;
+      color: #374151;
+      margin: 0 0 1.75rem;
+    }
+
+    .hood-tool-copy {
+      margin: 0;
+      line-height: 1.65;
+      color: #4b5563;
+    }
+
+    .hood-tool-visual {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hood-tool-image {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+      display: block;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    @media (min-width: 768px) {
+      .hood-tool-image {
+        max-width: min(100%, 26rem);
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+
+    .hood-tool-status {
+      margin-top: 2.25rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid #e5e7eb;
+      font-size: 0.9rem;
+      color: #6b7280;
+      text-align: center;
+    }
+  </style>
+</Layout>

@@ -1,0 +1,180 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
+import toolsData from "../../../data/tools.json";
+import "../../styles/wizard.css";
+
+const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
+const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+---
+
+<Layout
+  title="Bust Dart Formula | Knit by Machine"
+  description="Preview of the member Bust Dart Formula tool: short-row bust darts for a smoother sweater fit."
+>
+  <main class="wizard-page">
+    <div class="wizard-shell bust-dart-preview">
+      <WizardBackLink className="back-link" />
+
+      <div class="bust-dart-layout">
+        <div class="bust-dart-text">
+          <ToolPageHeader tool={tool} fallbackTitle="Bust Dart Formula" />
+
+          <p class="bust-dart-intro">
+            Add short-row bust darts to your sweater for a smoother, more comfortable fit.
+          </p>
+
+          <section class="bust-dart-section" aria-labelledby="bust-dart-h2-1">
+            <h2 id="bust-dart-h2-1">What this tool does</h2>
+            <p>
+              Bust darts add shaping where your sweater needs it most. Instead of pulling or riding up in the front, your garment can sit properly and follow your natural shape.
+            </p>
+            <p>
+              The Bust Dart Formula calculates the short-row shaping for you — no guesswork, no complicated math.
+            </p>
+          </section>
+
+          <section class="bust-dart-section" aria-labelledby="bust-dart-h2-2">
+            <h2 id="bust-dart-h2-2">How it works</h2>
+            <ul class="bust-dart-list">
+              <li>Choose your cup size or enter your measurements</li>
+              <li>Set the width and depth of your dart</li>
+              <li>Enter your stitch and row gauge</li>
+              <li>Get step-by-step short-row instructions</li>
+            </ul>
+          </section>
+
+          <section class="bust-dart-section" aria-labelledby="bust-dart-h2-3">
+            <h2 id="bust-dart-h2-3">Why it matters</h2>
+            <p>
+              Adding darts can dramatically improve fit, especially for garments that tend to ride up or feel tight across the front.
+            </p>
+            <p>
+              This tool makes it easy to add that shaping — even if you’ve never worked with darts before.
+            </p>
+          </section>
+        </div>
+
+        <div class="bust-dart-visual">
+          <img
+            src="/images/glossary/darts.webp"
+            alt="Bust dart shaping for sweater fit"
+            loading="lazy"
+            decoding="async"
+            class="bust-dart-image"
+          />
+        </div>
+      </div>
+
+      <p class="bust-dart-status">Member tool — coming soon</p>
+    </div>
+  </main>
+
+  <style>
+    .bust-dart-preview {
+      max-width: 56rem;
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      padding-bottom: 2.5rem;
+    }
+
+    .bust-dart-layout {
+      display: grid;
+      gap: 2rem;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .bust-dart-layout {
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+        gap: 2.5rem;
+        align-items: center;
+      }
+    }
+
+    .bust-dart-text {
+      min-width: 0;
+    }
+
+    .bust-dart-text :global(.tool-title) {
+      margin-bottom: 0.75rem;
+    }
+
+    .bust-dart-intro {
+      font-size: 1.075rem;
+      line-height: 1.65;
+      color: #374151;
+      margin: 0 0 1.75rem;
+    }
+
+    .bust-dart-section {
+      margin-bottom: 1.75rem;
+    }
+
+    .bust-dart-section:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .bust-dart-section h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #374151;
+      margin: 0 0 0.65rem;
+      line-height: 1.35;
+    }
+
+    .bust-dart-section p {
+      margin: 0 0 0.85rem;
+      line-height: 1.65;
+      color: #4b5563;
+    }
+
+    .bust-dart-section p:last-child {
+      margin-bottom: 0;
+    }
+
+    .bust-dart-list {
+      margin: 0;
+      padding-left: 1.25rem;
+      line-height: 1.65;
+      color: #4b5563;
+    }
+
+    .bust-dart-list li {
+      margin-bottom: 0.4rem;
+    }
+
+    .bust-dart-list li:last-child {
+      margin-bottom: 0;
+    }
+
+    .bust-dart-visual {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bust-dart-image {
+      width: 100%;
+      max-width: 28rem;
+      height: auto;
+      border-radius: 12px;
+      display: block;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .bust-dart-status {
+      margin-top: 2.25rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid #e5e7eb;
+      font-size: 0.9rem;
+      color: #6b7280;
+      text-align: center;
+    }
+  </style>
+</Layout>

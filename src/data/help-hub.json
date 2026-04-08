@@ -202,16 +202,16 @@
     "question": "How do I join Fair Isle panels without an ugly seam?",
     "bubbleAnswer": "Turn the seam into a design feature — don’t try to hide it.",
     "hook": "Take a closer look… your seam might be the best part of your Fair Isle panels.",
-    "mediaType": "",
-    "mediaUrl": "688",
-    "mediaPoster": "",
+    "mediaType": "image",
+    "mediaUrl": "/images/tips/i-cord-seam.webp",
+    "mediaPoster": "/images/tip/i-cords-seam.webp",
     "mediaAlt": "",
     "aboutTitle": "Show off the seam",
     "bridge": "Fair Isle panels can create bulky or messy seams if you try to match them perfectly.\nInstead of fighting it, treat the seam as a design element — something that adds structure and interest.\nA visible join can look intentional and clean, especially with colorwork.\n\nInstead, treat the seam as part of the design:\n\n-add texture\n-add contrast\n-add structure\n\nNow your seam isn’t something to fix - it’s something to show off.",
     "tryThisTitle": "I-Cord Join",
     "memberHeading": "",
     "memberText": "",
-    "isNew": false,
+    "isNew": true,
     "tryThis": {
       "quickActionTitle": "make the seam stand out",
       "quickAction": [
@@ -228,7 +228,7 @@
     "relatedLessons": [
       "i-cord-seam"
     ],
-    "status": "draft",
+    "status": "published",
     "id": 1005,
     "sortOrder": 30
   }
