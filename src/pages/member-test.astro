@@ -6,19 +6,27 @@ import Layout from "../layouts/Layout.astro";
   <section class="container" style="padding: 2rem 1rem;">
     <h1>Member Test Page</h1>
 
-    <!-- Logged OUT -->
     <div data-ms-content="!members">
-      <p>You are LOGGED OUT</p>
+      <p><strong>Status:</strong> Logged out</p>
     </div>
 
-    <!-- Logged IN -->
     <div data-ms-content="members">
-      <p>You are LOGGED IN</p>
+      <p><strong>Status:</strong> Logged in</p>
+    </div>
+
+    <div data-ms-content="no-plans">
+      <p><strong>Membership:</strong> No paid plan assigned</p>
+    </div>
+
+    <div data-ms-content="paid-plans">
+      <p><strong>Membership:</strong> Paid plan assigned</p>
     </div>
 
     <div style="margin-top: 1rem;">
       <a href="#" data-ms-modal="login" data-ms-redirect="current-url">Log in</a>
+      &nbsp;|&nbsp;
       <a href="#" data-ms-modal="signup" data-ms-redirect="current-url">Sign up</a>
+      &nbsp;|&nbsp;
       <a href="#" data-ms-action="logout">Log out</a>
     </div>
   </section>
