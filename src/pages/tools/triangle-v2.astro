@@ -14,7 +14,18 @@ import TriangleRightSvg from "../../components/tools/triangle-right.svg";
       <WizardBackLink category="tool" />
 
       <section class="wizard-hero">
-                <h1>Triangle Calculator</h1>
+        <div class="triangle-v2-hero-title-row">
+          <h1>Triangle Calculator</h1>
+          <img
+            src="/icons/tools/triangle1.svg"
+            alt=""
+            width="80"
+            height="80"
+            class="triangle-v2-hero-icon"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
         <p class="wizard-intro">
           Choose your triangle style, enter your finished measurements and gauge,
           and the calculator will generate the knitting numbers.
@@ -112,6 +123,26 @@ import TriangleRightSvg from "../../components/tools/triangle-right.svg";
   </main>
 
   <style>
+/* Hero: title + icon to the right */
+.triangle-v2-hero-title-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.triangle-v2-hero-title-row h1 {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.triangle-v2-hero-icon {
+  flex-shrink: 0;
+  margin-left: auto;
+  width: 80px;
+  height: auto;
+  display: block;
+}
+
 /* Sneak-preview wrapper: lock overlay for non–paid-plans (Memberstack) */
 .triangle-tool-wrap {
   position: relative;
