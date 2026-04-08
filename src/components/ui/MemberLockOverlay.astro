@@ -3,10 +3,16 @@ export interface Props {
   title: string;
   message: string;
   ctaText: string;
-  ctaLink: string;
+  /** Defaults to /membership when omitted. */
+  ctaLink?: string;
 }
 
-const { title, message, ctaText, ctaLink } = Astro.props;
+const {
+  title,
+  message,
+  ctaText,
+  ctaLink = "/membership",
+} = Astro.props;
 ---
 
 <div class="member-lock-overlay">

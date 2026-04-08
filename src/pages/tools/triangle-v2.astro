@@ -8,6 +8,7 @@ import IsoTriangleIcon from "../../components/tools/triangle-iso-icon.svg";
 import RightTriangleIcon from "../../components/tools/triangle-right-icon.svg";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import MemberLockOverlay from "../../components/ui/MemberLockOverlay.astro";
+import FloatingInput from "../../components/tools/FloatingInput.astro";
 
 const toolsSvgDir = path.join(process.cwd(), "public", "images", "tools");
 const trianglePreviewIsoHtml = fs.readFileSync(
@@ -72,14 +73,32 @@ const trianglePreviewRightHtml = fs.readFileSync(
             <input type="hidden" id="triangleType" value="isosceles">
             <div class="triangle-input-grid">
               <div class="triangle-input-row triangle-input-row--dimensions">
-                <label class="triangle-field">
-                  <span>Width</span>
-                  <input type="number" name="finishedWidth" min="0" step="0.01" data-highlight="width" />
-                </label>
-                <label class="triangle-field">
-                  <span>Height</span>
-                  <input type="number" name="finishedHeight" min="0" step="0.01" data-highlight="height" />
-                </label>
+                <div class="triangle-field">
+                  <FloatingInput
+                    id="finishedWidth"
+                    name="finishedWidth"
+                    label="Width (in)"
+                    labelId="finishedWidthLabel"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    inputmode="decimal"
+                    dataAttrs={{ "data-highlight": "width" }}
+                  />
+                </div>
+                <div class="triangle-field">
+                  <FloatingInput
+                    id="finishedHeight"
+                    name="finishedHeight"
+                    label="Height (in)"
+                    labelId="finishedHeightLabel"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    inputmode="decimal"
+                    dataAttrs={{ "data-highlight": "height" }}
+                  />
+                </div>
               </div>
               <div class="triangle-input-row triangle-input-row--gauge">
                 <label class="triangle-field">
@@ -127,7 +146,6 @@ const trianglePreviewRightHtml = fs.readFileSync(
           title="This tool is for members"
           message="You’ll need an active membership to use this tool."
           ctaText="Become a member"
-          ctaLink="/plan-test"
         />
       </div>
       </div>
@@ -316,7 +334,12 @@ const trianglePreviewRightHtml = fs.readFileSync(
     }
 
     .triangle-input-row--gauge {
-      grid-template-columns: 1fr 1fr minmax(120px, 0.75fr);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(168px, 1fr);
+      align-items: end;
+    }
+
+    .triangle-input-row--dimensions {
+      align-items: end;
     }
 
     @media (max-width: 640px) {
@@ -330,14 +353,24 @@ const trianglePreviewRightHtml = fs.readFileSync(
       display: flex;
       flex-direction: column;
       gap: 6px;
+      min-width: 0;
     }
 
-    .triangle-field span {
+    label.triangle-field span {
       font-weight: 600;
       font-size: 0.9rem;
     }
 
-    .triangle-field input {
+    label.triangle-field--needles > span:first-of-type {
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    label.triangle-field--needles {
+      min-width: 0;
+    }
+
+    label.triangle-field input {
       padding: 10px;
       border: 1px solid #ccc;
       border-radius: 6px;
@@ -798,6 +831,9 @@ const trianglePreviewRightHtml = fs.readFileSync(
     });
   }
 
+  const calculateButton = document.getElementById("calculateTriangle");
+  const resultsPanel = document.getElementById("triangleResults");
+
   // Triangle style selector: highlight selected option and store for calculator
   document.querySelectorAll(".triangle-option").forEach((button) => {
     button.addEventListener("click", () => {
@@ -812,6 +848,10 @@ const trianglePreviewRightHtml = fs.readFileSync(
       const previewPanel = document.getElementById("trianglePreviewPanel");
       if (previewPanel) previewPanel.setAttribute("data-current-style", triangleStyle || "isosceles");
       console.log("Triangle style selected:", triangleStyle);
+      /* Refresh instructions when results already exist (DOM class check can miss; lastResultData is authoritative). */
+      if (lastResultData) {
+        runTriangleCalculation(false);
+      }
     });
   });
 
@@ -853,13 +893,11 @@ const trianglePreviewRightHtml = fs.readFileSync(
     });
   })();
 
-  const calculateButton = document.getElementById("calculateTriangle");
-  const resultsPanel = document.getElementById("triangleResults");
-
-  calculateButton.addEventListener("click", () => {
+  function runTriangleCalculation(showValidationErrors = true) {
+    if (!resultsPanel) return;
     const form = document.getElementById("triangleForm");
     const formData = form ? new FormData(form) : new FormData();
-    const finishedHeight = parseFloat(formData.get("finishedHeight")) || 0;
+    const finishedHeight = parseFloat(String(formData.get("finishedHeight") ?? "")) || 0;
 
     const baseWidth = Number(document.querySelector('[name="finishedWidth"]')?.value);
     const height = Number(document.querySelector('[name="finishedHeight"]')?.value);
@@ -870,7 +908,7 @@ const trianglePreviewRightHtml = fs.readFileSync(
     const needles = parseInt(needlesInput?.value ?? "", 10);
     if (isNaN(needles) || needles < 50 || needles > 400) {
       const needleErrorEl = document.getElementById("needle-validation-error");
-      if (needleErrorEl) needleErrorEl.hidden = false;
+      if (needleErrorEl && showValidationErrors) needleErrorEl.hidden = false;
       return;
     }
     const needleErrorEl = document.getElementById("needle-validation-error");
@@ -878,7 +916,9 @@ const trianglePreviewRightHtml = fs.readFileSync(
     const availableNeedles = needles;
 
     if (!baseWidth || !height || !stitchGauge || !rowGauge) {
-      resultsPanel.innerHTML = "<p>Please enter width, depth, stitch gauge, and row gauge.</p>";
+      if (showValidationErrors) {
+        resultsPanel.innerHTML = "<p>Please enter width, depth, stitch gauge, and row gauge.</p>";
+      }
       return;
     }
 
@@ -1104,7 +1144,24 @@ const trianglePreviewRightHtml = fs.readFileSync(
     if (printBtn) {
       printBtn.addEventListener("click", () => window.print());
     }
-  });
+  }
+
+  calculateButton?.addEventListener("click", () => runTriangleCalculation(true));
+
+  function updateDimensionLabels(unit) {
+    const w = document.getElementById("finishedWidthLabel");
+    const h = document.getElementById("finishedHeightLabel");
+    const wInput = document.getElementById("finishedWidth");
+    const hInput = document.getElementById("finishedHeight");
+    if (!w || !h) return;
+    const u = unit === "cm" ? "cm" : "in";
+    w.textContent = `Width (${u})`;
+    h.textContent = `Height (${u})`;
+    /* Shown on focus (tools floating-input.css); reinforces unit without fighting the label. */
+    const ph = unit === "cm" ? "cm" : "in";
+    if (wInput instanceof HTMLInputElement) wInput.placeholder = ph;
+    if (hInput instanceof HTMLInputElement) hInput.placeholder = ph;
+  }
 
   function updateGaugePlaceholders(unit) {
     const stitchesInput = document.getElementById("stitchesInput");
@@ -1124,9 +1181,12 @@ const trianglePreviewRightHtml = fs.readFileSync(
   window.addEventListener("kbm:units-change", (e) => {
     const unit = e.detail && e.detail.unit ? e.detail.unit : "in";
     updateGaugePlaceholders(unit);
+    updateDimensionLabels(unit);
   });
 
-  updateGaugePlaceholders(localStorage.getItem("kbm-units") || "in");
+  const initialUnit = localStorage.getItem("kbm-units") || "in";
+  updateGaugePlaceholders(initialUnit);
+  updateDimensionLabels(initialUnit);
 
   const availableNeedlesInput = document.querySelector('[name="availableNeedles"]');
   const needleValidationError = document.getElementById("needle-validation-error");
