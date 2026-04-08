@@ -1,0 +1,17 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Protected Test">
+  <section class="container" style="padding: 2rem 1rem;">
+    <div data-ms-content="members">
+      <h1>Protected Test</h1>
+      <p>If you can see this, you are logged in.</p>
+    </div>
+
+    <div data-ms-content="!members">
+      <p>You must be logged in to view this page.</p>
+      <a href="#" data-ms-modal="login" data-ms-redirect="current-url">Log in</a>
+    </div>
+  </section>
+</Layout>
