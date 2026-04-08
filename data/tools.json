@@ -54,7 +54,7 @@
     "href": "custom_sleeve.cfm",
     "icon": "custom_sleeve.svg",
     "description": "Generate sleeve shaping for drop or square armholes.",
-    "membersonly": false,
+    "membersonly": true,
     "helpID": 6020,
     "category": "Charting Help",
     "help_text": "You've found the perfect pattern, and sleeveless just isn't comfortable for you. With a few measurements and the Knit it Now Custom Sleeves pattern, you're the designer!\n\nTake a sleeveless sweater pattern (with dropped shoulders) and add sleeves.",
