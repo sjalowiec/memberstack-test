@@ -4,6 +4,11 @@
    all Knit by Machine tools and wizards
    ======================================== */
 
+/* Screen: tool attribution line (shown only when printing) */
+.tool-print-footer {
+  display: none;
+}
+
 @media print {
   /* ========================================
      HIDE: Global Chrome & Navigation
@@ -486,6 +491,15 @@
 
   .kbm-print-footer__url {
     color: #666666 !important;
+  }
+
+  /* Tool pages: dynamic title + site URL */
+  .tool-print-footer {
+    display: block !important;
+    margin-top: 2rem !important;
+    font-size: 12px !important;
+    text-align: center !important;
+    color: #333333 !important;
   }
 
   /* ========================================

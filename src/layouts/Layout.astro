@@ -2,6 +2,7 @@
 import BaseLayout from "./BaseLayout.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import ToolPrintFooter from "../components/tools/ToolPrintFooter.astro";
 
 interface Props {
   title?: string;
@@ -9,6 +10,8 @@ interface Props {
   bodyClass?: string;
   skipGlobalHyvor?: boolean;
   skipGlobalPinterest?: boolean;
+  /** Print-only tool attribution (see ToolPrintFooter). */
+  toolPrintTitle?: string;
 }
 
 const {
@@ -16,7 +19,8 @@ const {
   description,
   bodyClass = "",
   skipGlobalHyvor = false,
-  skipGlobalPinterest = false
+  skipGlobalPinterest = false,
+  toolPrintTitle
 } = Astro.props;
 ---
 
@@ -95,6 +99,7 @@ const {
 
   <main class="site-content" style="padding-top: calc(var(--header-offset, 150px) + var(--header-buffer, 24px));">
     <slot />
+    {toolPrintTitle && <ToolPrintFooter toolTitle={toolPrintTitle} />}
   </main>
 
   <Footer />

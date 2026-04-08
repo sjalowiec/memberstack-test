@@ -2,15 +2,12 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Tooltip from "../../components/Tooltip.astro";
 import WhyUseThisToolTooltip from "../../components/common/WhyUseThisToolTooltip.astro";
-import PrintFooter from "../../components/common/PrintFooter.astro";
 import ActionBar from "../../components/wizards/ActionBar.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
 
 const pageTitle = "Shaping Formula – By Measurement | Knit by Machine";
 const pageDescription = "Calculate shaping from measurements. Enter your starting and ending widths plus gauge to create clear knitting instructions.";
-const pageUrl = "https://knitbymachine.com/wizards/magic-formula-measurement";
-
 // Fetch wizard metadata at build time
 const wizardSlug = 'magic-formula-measurement';
 let whyUseThisTool = '';
@@ -33,7 +30,11 @@ try {
 }
 ---
 
-<BaseLayout title={pageTitle} description={pageDescription}>
+<BaseLayout
+  title={pageTitle}
+  description={pageDescription}
+  toolPrintTitle="Shaping Formula – By Measurement"
+>
 
 <style>
 .wizard-page {
@@ -790,7 +791,6 @@ try {
       </div>
     </div>
   </div>
-  <PrintFooter url={pageUrl} />
 </div>
 
 <script is:inline src="/js/generateRowByRow.js"></script>

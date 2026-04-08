@@ -10,13 +10,12 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ActionBar from "../../components/wizards/ActionBar.astro";
 import Tooltip from "../../components/Tooltip.astro";
-import PrintFooter from "../../components/common/PrintFooter.astro";
+import ToolPrintFooter from "../../components/tools/ToolPrintFooter.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import GaugeInput from "../../components/wizards/GaugeInput.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import PinterestEmbed from "../../components/PinterestEmbed.astro";
 
-const pageUrl = "https://knitbymachine.com/wizards/hand-machine-blanket";
 ---
 
 <BaseLayout 
@@ -1224,7 +1223,7 @@ const pageUrl = "https://knitbymachine.com/wizards/hand-machine-blanket";
     <PinterestEmbed pinterestUrl="https://www.pinterest.com/knitbymachine/hybrid-blankets/" />
   </div>
   
-  <PrintFooter url={pageUrl} />
+  <ToolPrintFooter toolTitle="The Hybrid Blanket Pattern" />
 </div>
 
 <script>

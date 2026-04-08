@@ -1,17 +1,17 @@
 ---
 import WizardLayout from "../../layouts/WizardLayout.astro";
 import Tooltip from "../../components/Tooltip.astro";
-import PrintFooter from "../../components/common/PrintFooter.astro";
 import ActionBar from "../../components/wizards/ActionBar.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import "../../styles/global.css";
 
-const pageUrl = "https://knitbymachine.com/wizards/boat-neck-sweater";
 ---
 
 <WizardLayout 
   title="Boat Neck Sweater Pattern | Knit by Machine" 
-  description="Create your own boat neck sweater — sleeveless or with sleeves of any length. Enter your gauge, adjust sizing, and knit it in any yarn or stitch pattern.">
+  description="Create your own boat neck sweater — sleeveless or with sleeves of any length. Enter your gauge, adjust sizing, and knit it in any yarn or stitch pattern."
+  toolPrintTitle="Boat Neck Sweater Pattern"
+>
 
 <style>
 .wizard-page {
@@ -160,7 +160,6 @@ const pageUrl = "https://knitbymachine.com/wizards/boat-neck-sweater";
       title="Boat Neck Sweater Pattern Tool"
     ></iframe>
   </div>
-  <PrintFooter url={pageUrl} />
 </div>
 
 <script>

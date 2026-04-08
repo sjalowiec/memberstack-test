@@ -1,13 +1,10 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Tooltip from "../../components/Tooltip.astro";
-import PrintFooter from "../../components/common/PrintFooter.astro";
 import ActionBar from "../../components/wizards/ActionBar.astro";
 import WhyUseThisToolTooltip from "../../components/common/WhyUseThisToolTooltip.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
-
-const pageUrl = "https://knitbymachine.com/wizards/gauge-difference";
 
 // Fetch wizard metadata at build time
 const wizardSlug = 'gauge-difference';
@@ -30,7 +27,9 @@ try {
 
 <BaseLayout 
   title="What a Difference a Stitch Makes | Knit  it Now" 
-  description="Compare two gauges and see how even one stitch can change your project's size. A tiny change in gauge can make a big difference.">
+  description="Compare two gauges and see how even one stitch can change your project's size. A tiny change in gauge can make a big difference."
+  toolPrintTitle="What a Difference a Stitch Makes"
+>
 
 <style>
 .wizard-page {
@@ -375,7 +374,6 @@ try {
     </div>
   </div>
 
-  <PrintFooter url={pageUrl} />
 </div>
 
 <script>

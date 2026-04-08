@@ -7,11 +7,13 @@ import "../../styles/wizard.css";
 
 const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
 const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+const toolPrintTitle = tool?.title ?? "Hood Design Tool";
 ---
 
 <Layout
   title="Hood Design Tool | Knit by Machine"
   description="Preview of the Hood Design Tool: warmth, style, and a practical approach to adding a hood to your sweater."
+  toolPrintTitle={toolPrintTitle}
 >
   <main class="wizard-page">
     <div class="wizard-shell hood-tool-preview">

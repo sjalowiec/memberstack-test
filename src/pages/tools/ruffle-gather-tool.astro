@@ -10,9 +10,10 @@ import ToolHelpToggle from "../../components/tools/ToolHelpToggle.astro";
 
 const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
 const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+const toolPrintTitle = tool?.title ?? "Ruffle / Gather — One-Row Distribution";
 ---
 
-<Layout title="Ruffle / Gather — One-Row Distribution | Knit it Now" description="Distribute increases or decreases evenly across a single row. Enter starting and ending stitches and edge stitches to get clear machine-knitting instructions.">
+<Layout title="Ruffle / Gather — One-Row Distribution | Knit it Now" description="Distribute increases or decreases evenly across a single row. Enter starting and ending stitches and edge stitches to get clear machine-knitting instructions." toolPrintTitle={toolPrintTitle}>
   <main class="wizard-page">
     <div class="wizard-shell">
       <WizardBackLink className="back-link" />

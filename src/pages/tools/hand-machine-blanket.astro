@@ -14,14 +14,13 @@ export const prerender = true;
 
 import PatternLayout from "../../layouts/PatternLayout.astro";
 import ActionBar from "../../components/wizards/ActionBar.astro";
-import PrintFooter from "../../components/common/PrintFooter.astro";
+import ToolPrintFooter from "../../components/tools/ToolPrintFooter.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import PinterestEmbed from "../../components/PinterestEmbed.astro";
 import VimeoEmbed from "../../components/media/VimeoEmbed.astro";
 import wizardData from "../../content/wizards/hand-machine-blanket.json";
 import "../../styles/wizard.css";
 
-const pageUrl = "https://knitbymachine.com/wizards/hand-machine-blanket";
 const hyvorPageId = wizardData.hyvorPageId || "wizards-hand-machine-blanket";
 
 // Access level from JSON - "free" or "paid"
@@ -2040,7 +2039,7 @@ const price = wizardData.price || "$9.99";
     </div>
   </dialog>
   
-  <PrintFooter url={pageUrl} />
+  <ToolPrintFooter toolTitle="The Hybrid Blanket Pattern" />
     </div>
   </div>
 

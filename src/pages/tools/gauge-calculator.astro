@@ -12,15 +12,17 @@ import GlossaryTooltip from "../../components/common/GlossaryTooltip.astro";
 
 const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
 const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+const toolPrintTitle = tool?.title ?? "Gauge Calculator";
 ---
 
 <Layout
   title="Gauge Calculator | Knit it Now"
   description="Calculate your stitch and row gauge from a measured swatch. Enter swatch dimensions and stitch/row counts to get gauge in inches or centimeters."
+  toolPrintTitle={toolPrintTitle}
 >
   <main class="wizard-page">
     <div class="wizard-shell">
-      <a href="/help-hub" onclick="if (document.referrer) { history.back(); return false; }">← Back</a>
+      <WizardBackLink fallback="/help-hub" label="← Back" />
       <section class="wizard-hero">
         <ToolPageHeader tool={tool} fallbackTitle="Gauge Calculator" />
         <p class="wizard-intro">

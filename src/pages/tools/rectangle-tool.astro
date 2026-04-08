@@ -13,9 +13,10 @@ import GaugeInput from "../../components/wizards/GaugeInput.astro";
 import ToolResultCard from "../../components/tools/ToolResultCard.astro";
 import PrintButton from "../../components/common/PrintButton.astro";
 
+const toolPrintTitle = tool?.title ?? "Rectangle / Square Calculator";
 ---
 
-<Layout title="Rectangle / Square Calculator">
+<Layout title="Rectangle / Square Calculator" toolPrintTitle={toolPrintTitle}>
   <main class="wizard-page">
     <div class="wizard-shell">
       <WizardBackLink className="back-link" />

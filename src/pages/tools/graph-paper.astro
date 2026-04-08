@@ -1,18 +1,18 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import PrintFooter from "../../components/common/PrintFooter.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import ToolActionBar from "../../components/wizards/ToolActionBar.astro";
 import GaugeInput from "../../components/wizards/GaugeInput.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import "../../styles/wizard.css";
 
-const pageUrl = "https://knitbymachine.com/tools/graph-paper";
 ---
 
 <BaseLayout 
   title="Graph Paper Tool | Knit by Machine" 
-  description="Create full-scale knitter's graph paper based on your stitch and row gauge. Download printable SVG graph paper for shaping, motifs, and intarsia.">
+  description="Create full-scale knitter's graph paper based on your stitch and row gauge. Download printable SVG graph paper for shaping, motifs, and intarsia."
+  toolPrintTitle="Graph Paper Tool"
+>
 
 <style>
 /* Tool-specific container (wider than default wizard-container) */
@@ -131,7 +131,6 @@ const pageUrl = "https://knitbymachine.com/tools/graph-paper";
     </div>
   </div>
   
-  <PrintFooter url={pageUrl} />
 </div>
 
 <script>

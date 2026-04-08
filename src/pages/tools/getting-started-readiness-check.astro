@@ -1,7 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import "../../styles/wizard.css";
-import PrintFooter from "../../components/common/PrintFooter.astro";
 import ActionBar from "../../components/wizards/ActionBar.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import WizardStepsLayout from "../../components/wizards/steps/WizardStepsLayout.astro";
@@ -14,12 +13,14 @@ const entry = await getEntry("wizards", "getting-started-readiness-check");
 const wizardData = entry?.data;
 const wizardFlow = wizardData?.wizardFlow;
 
-const pageUrl = "https://knitbymachine.com/wizards/getting-started-readiness-check";
+const toolPrintTitle = wizardData?.title ?? "Getting Started: Readiness Check";
 ---
 
 <Layout 
   title={wizardData?.metaTitle || "Getting Started: Readiness Check | Knit by Machine"} 
-  description={wizardData?.metaDescription || "A quick readiness check for machine knitters. Confirm your setup and get one clear next step before you knit."}>
+  description={wizardData?.metaDescription || "A quick readiness check for machine knitters. Confirm your setup and get one clear next step before you knit."}
+  toolPrintTitle={toolPrintTitle}
+>
 
 <style>
 .wizard-page {
@@ -253,7 +254,6 @@ const pageUrl = "https://knitbymachine.com/wizards/getting-started-readiness-che
     )}
   </div>
   
-  <PrintFooter url={pageUrl} />
 </div>
 
 <script>

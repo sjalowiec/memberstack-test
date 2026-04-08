@@ -23,14 +23,17 @@
 import BaseLayout from "./BaseLayout.astro";
 import Footer from "../components/Footer.astro";
 import LoadingState from "../components/ui/LoadingState.astro";
+import ToolPrintFooter from "../components/tools/ToolPrintFooter.astro";
 
 interface Props {
   title: string;
   description?: string;
   schemaMarkup?: object;
+  /** Print-only tool attribution (see ToolPrintFooter). */
+  toolPrintTitle?: string;
 }
 
-const { title, description = "", schemaMarkup } = Astro.props;
+const { title, description = "", schemaMarkup, toolPrintTitle } = Astro.props;
 ---
 
 <BaseLayout title={title} description={description} skipGlobalHyvor={true}>
@@ -50,6 +53,7 @@ const { title, description = "", schemaMarkup } = Astro.props;
     
     <div id="wizard-content" class="wizard-content">
       <slot />
+      {toolPrintTitle && <ToolPrintFooter toolTitle={toolPrintTitle} />}
     </div>
   </div>
   

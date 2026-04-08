@@ -10,7 +10,7 @@ const { fallback = "/tools", className = "", label = "← Back" } = Astro.props;
 
 <a
   href={fallback}
-  class={className}
+  class:list={["wizard-back-link", "back-link", className]}
   data-testid="link-back-catalog"
   onclick={`if (window.history.length > 1) { event.preventDefault(); window.history.back(); }`}
 >

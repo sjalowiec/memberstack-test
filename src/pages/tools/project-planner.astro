@@ -1,15 +1,14 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import PrintFooter from "../../components/common/PrintFooter.astro";
 import ActionBar from "../../components/wizards/ActionBar.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
-
-const pageUrl = "https://knitbymachine.com/wizards/project-planner";
 ---
 
 <BaseLayout 
   title="Project Planner | Knit it Now" 
-  description="What do you want to knit? Use our interactive project planner to explore knitting project ideas and get started.">
+  description="What do you want to knit? Use our interactive project planner to explore knitting project ideas and get started."
+  toolPrintTitle="Project Planner"
+>
 
 <style>
 .wizard-page {
@@ -133,7 +132,6 @@ const pageUrl = "https://knitbymachine.com/wizards/project-planner";
       ></iframe>
     </section>
   </div>
-  <PrintFooter url={pageUrl} />
 </div>
 
 <script>

@@ -3,6 +3,7 @@ import "../styles/global.css";
 
 import "../styles/print.css";
 import ContactModal from "../components/ContactModal.astro";
+import ToolPrintFooter from "../components/tools/ToolPrintFooter.astro";
 
 interface Props {
   title?: string;
@@ -11,6 +12,8 @@ interface Props {
   skipGlobalHyvor?: boolean;
   /** Omit Pinterest pinit.js and helpers (e.g. wizard pages debugging hidden-tab embeds). */
   skipGlobalPinterest?: boolean;
+  /** When set (e.g. tool pages using BaseLayout directly), adds a print-only attribution line. */
+  toolPrintTitle?: string;
 }
 
 const {
@@ -18,7 +21,8 @@ const {
   description = "Machine knitting tools and patterns",
   bodyClass = "",
   skipGlobalHyvor = false,
-  skipGlobalPinterest = false
+  skipGlobalPinterest = false,
+  toolPrintTitle
 } = Astro.props;
 
 const hostname =
@@ -208,6 +212,8 @@ const isProduction =
       <div class="ms-top-error__text"></div>
     </div>
     <slot /> <!-- Page content (or Layout wrapper) goes here -->
+
+    {toolPrintTitle && <ToolPrintFooter toolTitle={toolPrintTitle} />}
 
     <ContactModal />
 

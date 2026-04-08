@@ -1,0 +1,15 @@
+---
+/**
+ * Print-only attribution for tool pages. Hidden on screen via global .tool-print-footer rules.
+ */
+interface Props {
+  toolTitle: string;
+}
+
+const { toolTitle } = Astro.props;
+const siteUrl = "https://www.knititnow.com";
+---
+
+<div class="tool-print-footer" aria-hidden="true">
+  {toolTitle} tool created by {siteUrl}
+</div>
