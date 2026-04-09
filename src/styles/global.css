@@ -664,10 +664,10 @@ p {
 
 /* Recreate the FREE text subtly */
 .kbm-card-ribbon::after {
-  content: "FREE" !important;
+  content: attr(data-label);
   position: absolute;
   top: 14px;
-  left: 4px;
+  left: 6px;
 
   font-size: 0.72rem;
   font-weight: 800;
@@ -679,8 +679,22 @@ p {
   transform: rotate(-45deg);
   transform-origin: center center;
 }
-.download-card-icon {
-  width: 100%;
+.kbm-card-ribbon--member::after {
+  top: 28px;
+  left: 2px;
+}
+.kbm-card-ribbon--soon::after {
+  top: 26px;
+  left: 2px;
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+}
+
+.tool-card-link.disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+.download-card-icon {width: 100%;
   height: 220px;
   overflow: hidden;
   border-radius: 12px;

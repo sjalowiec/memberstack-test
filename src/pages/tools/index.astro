@@ -1,10 +1,14 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import tools from "../../data/tools.json";
+import Layout from "../../layouts/Layout.astro";
+import CardRibbon from "../../components/ui/CardRibbon.astro";
+import tools from "../../../data/tools.json";
 
-// Group tools by category
-const activeTools = tools.filter(tool => tool.active === true);
-const groupedTools = Object.groupBy(activeTools, tool => tool.category);
+// Group tools by category (live tools plus optional coming-soon cards)
+const listedTools = tools.filter(
+  (tool: { active?: boolean; status?: string }) =>
+    tool.active === true || tool.status === "coming-soon"
+);
+const groupedTools = Object.groupBy(listedTools, (tool) => tool.category);
 
 // Unique category strings exactly as in tools.json (All = no category filter)
 const categoryValues = tools
@@ -25,15 +29,24 @@ const categories = ["All", ...new Set(categoryValues)];
 
   <div class="non-member-cta">
     <strong>Beta Note:</strong> Some tools on this page are still in progress or part of upcoming member features. During beta, you may see preview pages while we continue building and improving them.
+    <p class="small text-muted">
+      Use the filters to see what’s ready now, or browse the full tool collection.
+    </p>
   </div>
 
   <div id="tool-access-filters" class="filter-pills">
     <button type="button" class="filter-pill active" data-filter="all">All</button>
     <button type="button" class="filter-pill" data-filter="false">Free</button>
     <button type="button" class="filter-pill" data-filter="true">Member</button>
+    <button type="button" class="filter-pill" data-filter="available">Available Now</button>
   </div>
 
+  <p class="small text-muted">Filter by Category</p>
+
   <div id="tool-category-filters" class="filter-pills">
+    <button type="button" id="show-all-category-tools" class="filter-pill" hidden>
+      Show All Tools
+    </button>
     {categories.map((category, index) => (
       <button
         type="button"
@@ -46,43 +59,42 @@ const categories = ["All", ...new Set(categoryValues)];
   </div>
 
   {Object.entries(groupedTools).map(([category, items]) => (
-    <section class="tool-category">
+    <section class="tool-category" data-category-section={category}>
       <div class="tool-category-inner">
         <h2>{category}</h2>
         <div class="tools-grid">
           {(items ?? []).map((tool) => {
-            const isActive = String(tool.active ?? true).toUpperCase() !== "FALSE";
             const membersOnly = tool.membersonly ?? false;
-            const badge = !isActive ? (
-              <span class="tool-badge coming">Coming Soon</span>
-            ) : membersOnly ? (
-              <span class="tool-badge member">🔒 Member</span>
-            ) : (
-              <span class="tool-badge free">Free</span>
-            );
-            return isActive ? (
-              <a href={tool.href} class="kbm-card active" data-membersonly={String(membersOnly)} data-category={tool.category}>
-                {badge}
+            const isComingSoon = tool.status === "coming-soon";
+            const cardAttrs = {
+              class: `kbm-card active tool-card-link${isComingSoon ? " disabled" : ""}`,
+              "data-membersonly": String(membersOnly),
+              "data-category": tool.category,
+              "data-coming-soon": isComingSoon ? "true" : "false",
+            };
+            const inner = (
+              <>
+                {isComingSoon && <CardRibbon label="Coming Soon" variant="soon" />}
+                {tool.membersonly && !isComingSoon && (
+                  <CardRibbon label="Member" variant="member" />
+                )}
                 <img
                   src={`/icons/tools/${tool.icon}`}
                   alt=""
                   class="tool-icon"
                 />
                 <h3>{tool.title} </h3>
-                
                 <p>{tool.description}</p>
-              </a>
-            ) : (
-              <div class="tool-card inactive" aria-disabled="true" data-membersonly={String(membersOnly)} data-category={tool.category}>
-                {badge}
-                <img
-                  src={`/icons/tools/${tool.icon}`}
-                  alt=""
-                  class="tool-icon"
-                />
-                <h3>{tool.title}</h3>
-                <p>{tool.description}</p>
+              </>
+            );
+            return isComingSoon ? (
+              <div {...cardAttrs} aria-disabled="true">
+                {inner}
               </div>
+            ) : (
+              <a href={tool.href} {...cardAttrs}>
+                {inner}
+              </a>
             );
           })}
         </div>
@@ -98,21 +110,40 @@ const categories = ["All", ...new Set(categoryValues)];
 
 <script>
   const accessButtons = document.querySelectorAll<HTMLButtonElement>("#tool-access-filters .filter-pill");
-  const categoryButtons = document.querySelectorAll<HTMLButtonElement>("#tool-category-filters .filter-pill");
+  const categoryButtons = document.querySelectorAll<HTMLButtonElement>(
+    "#tool-category-filters .filter-pill[data-category-filter]"
+  );
+  const categorySections = document.querySelectorAll<HTMLElement>(".tool-category[data-category-section]");
+  const showAllCategoryToolsBtn = document.getElementById("show-all-category-tools");
   const cards = document.querySelectorAll<HTMLElement>(".tool-card, .kbm-card");
 
   let activeAccessFilter = "all";
   let activeCategoryFilter = "all";
 
   function applyToolFilters() {
+    if (showAllCategoryToolsBtn) {
+      showAllCategoryToolsBtn.hidden = activeCategoryFilter === "all";
+    }
+
+    categorySections.forEach((section) => {
+      const sectionCat = section.dataset.categorySection ?? "";
+      if (activeCategoryFilter === "all") {
+        section.style.display = "";
+      } else {
+        section.style.display = sectionCat === activeCategoryFilter ? "" : "none";
+      }
+    });
+
     cards.forEach(card => {
       const isMember = card.dataset.membersonly === "true";
+      const isComingSoonCard = card.dataset.comingSoon === "true";
       const category = card.dataset.category || "";
 
       const matchesAccess =
         activeAccessFilter === "all" ||
         (activeAccessFilter === "false" && !isMember) ||
-        (activeAccessFilter === "true" && isMember);
+        (activeAccessFilter === "true" && isMember) ||
+        (activeAccessFilter === "available" && !isComingSoonCard);
 
       const matchesCategory =
         activeCategoryFilter === "all" ||
@@ -140,6 +171,18 @@ const categories = ["All", ...new Set(categoryValues)];
     });
   });
 
+  showAllCategoryToolsBtn?.addEventListener("click", () => {
+    const allPill = document.querySelector<HTMLButtonElement>(
+      '#tool-category-filters .filter-pill[data-category-filter="all"]'
+    );
+    if (allPill) {
+      categoryButtons.forEach(b => b.classList.remove("active"));
+      allPill.classList.add("active");
+    }
+    activeCategoryFilter = "all";
+    applyToolFilters();
+  });
+
   applyToolFilters();
 </script>
 
@@ -154,6 +197,13 @@ const categories = ["All", ...new Set(categoryValues)];
 .tools-intro{
   max-width:700px;
   margin-bottom:30px;
+}
+
+.tools-page .small.text-muted {
+  font-size: 0.875rem;
+  color: var(--text-muted, #6b7280);
+  margin: 0.75rem 0 0;
+  line-height: 1.5;
 }
 
 #tool-access-filters.filter-pills {
@@ -214,16 +264,6 @@ const categories = ["All", ...new Set(categoryValues)];
   z-index:2;
 }
 
-.tool-badge.member{
-  background:#ececec;
-  color:#333;
-}
-
-.tool-badge.free{
-  background:#e8f5e9;
-  color:#2e7d32;
-}
-
 .tool-badge.coming{
   background:#f3f3f3;
   color:#888;
@@ -248,7 +288,11 @@ const categories = ["All", ...new Set(categoryValues)];
   color:inherit;
 }
 
-.tool-icon{
+.tools-grid .kbm-card .tool-icon,
+.tools-grid .tool-card .tool-icon{
+  display:block;
+  margin-left:auto;
+  margin-right:auto;
   width:64px;
   height:64px;
   margin-bottom:16px;

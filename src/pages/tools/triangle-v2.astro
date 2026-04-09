@@ -9,6 +9,11 @@ import RightTriangleIcon from "../../components/tools/triangle-right-icon.svg";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import MemberLockOverlay from "../../components/ui/MemberLockOverlay.astro";
 import FloatingInput from "../../components/tools/FloatingInput.astro";
+import toolsData from "../../../data/tools.json";
+
+const tools = toolsData as Array<{ href?: string; membersonly?: boolean }>;
+const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+const isMemberOnly = tool?.membersonly === true;
 
 const toolsSvgDir = path.join(process.cwd(), "public", "images", "tools");
 const trianglePreviewIsoHtml = fs.readFileSync(
@@ -142,13 +147,15 @@ const trianglePreviewRightHtml = fs.readFileSync(
         </aside>
         </div>
       </div>
-      <div data-ms-content="!paid-plans">
-        <MemberLockOverlay
-          title="This tool is for members"
-          message="You’ll need an active membership to use this tool."
-          ctaText="Become a member"
-        />
-      </div>
+      {isMemberOnly && (
+        <div data-ms-content="!paid-plans">
+          <MemberLockOverlay
+            title="This tool is for members"
+            message="You’ll need an active membership to use this tool."
+            ctaText="Become a member"
+          />
+        </div>
+      )}
       </div>
     </div>
   </main>
@@ -173,7 +180,7 @@ const trianglePreviewRightHtml = fs.readFileSync(
   display: block;
 }
 
-/* Sneak-preview wrapper: lock overlay for non–paid-plans (Memberstack) */
+/* Member lock overlay when tools.json has membersonly (Memberstack shows for !paid-plans) */
 .triangle-tool-wrap {
   position: relative;
 }

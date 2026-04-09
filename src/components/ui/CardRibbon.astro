@@ -1,0 +1,19 @@
+---
+interface Props {
+  label?: string;
+  variant?: string;
+  className?: string;
+}
+
+const {
+  label = 'FREE',
+  variant = '',
+  className = ''
+} = Astro.props;
+---
+
+<span
+  class={`kbm-card-ribbon ${variant ? `kbm-card-ribbon--${variant}` : ''} ${className}`}
+  data-label={label}
+  aria-hidden="true"
+></span>
