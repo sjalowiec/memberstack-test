@@ -224,7 +224,7 @@
     "href": "/tools/triangle-v2",
     "icon": "triangle1.svg",
     "description": "Instant shaping math for symmetrical and asymmetrical triangles.",
-    "membersonly": true,
+    "membersonly": false,
     "helpID": "NULL",
     "category": "Shaping and Charting",
     "help_text": "Whether it’s a simple shawl or a complex garment insert, get the exact increase and decrease rates you need. Just enter your finished dimensions and let us handle the slopes.",
