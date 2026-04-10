@@ -115,7 +115,7 @@
     "active": true
   },
   {
-    "id": true,
+    "id": 33,
     "title": "Gauge Conversion",
     "href": "GaugeConversion.cfm",
     "icon": "gaugeconversion.svg",
@@ -173,7 +173,7 @@
     "description": "Calculate stitch pickup for neck bands.",
     "membersonly": true,
     "helpID": 4143,
-    "category": "Design Elements",
+    "category": "Buttons and Bands",
     "help_text": "Use this tool to estimate the number of stitches needed for neck bands.\n\nEnter your gauge and the dimensions of the neck opening. The tool calculates how many stitches to pick up for the band across both the front and back neck edges.",
     "active": false,
     "status": "coming-soon"
@@ -200,7 +200,7 @@
     "description": "Adjust stitch counts to fit complete stitch pattern repeats.",
     "membersonly": true,
     "helpID": 6239,
-    "category": "Shaping and Charting",
+    "category": "Design Elements",
     "help_text": "Use this tool to adjust stitch counts so a stitch pattern fits correctly.\n\nEnter the number of stitches required for the stitch pattern repeat and the number of stitches available in your piece. The tool calculates the nearest stitch count that allows complete pattern repeats.",
     "active": false,
     "status": "coming-soon"
@@ -262,11 +262,11 @@
     "title": "Ruffle / Gather",
     "href": "/tools/ruffle-gather-tool",
     "icon": "ruffle-gather.svg",
-    "description": "Calculate increases or decreases evenly across a row for ruffles, gathers, or single-row shaping.",
+    "description": "Change stitch count evenly across a row for ruffles, gathers, or single-row adjustments.",
     "membersonly": false,
     "helpID": "NULL",
     "category": "Shaping and Charting",
-    "help_text": "Use this tool to calculate increases or decreases evenly across a row for ruffles, gathers, or single-row shaping.\n\nEnter starting and ending stitch counts and how many stitches to leave untouched at each edge. The tool gives you an even distribution and clear machine-knitting instructions.",
+    "help_text": "Use this tool to plan a one-row change in stitch count for ruffles, gathers, or other even distributions.\n\nEnter starting and ending stitch counts. The tool spaces the change evenly across the row and gives clear machine-knitting instructions for rehanging centered on the needle bed.",
     "active": true
   }
 ]

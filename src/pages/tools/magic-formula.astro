@@ -38,7 +38,7 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
       </section>
 
       <div class="action-bar-wrap no-print">
-        <ActionBar />
+        <ActionBar formScrollTarget="wizard-form" />
       </div>
 
       <div class="magic-formula-panel">
@@ -107,9 +107,6 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
         <div id="results" class="results no-print" hidden>
           <h2 class="results-title">Your Shaping Instructions</h2>
           <div id="resultsContent" class="results-content print-only-show"></div>
-          <div class="results-actions">
-            <button type="button" id="copyBtn" class="copy-btn">Copy instructions</button>
-          </div>
         </div>
       </div>
     </div>
@@ -181,8 +178,6 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
     :global(#distributed-instructions) { margin-top: 14px; padding: 12px; border-left: 4px solid #52682D; background: #f8f8f8; }
     :global(.distributed-instructions-title) { margin: 0 0 6px 0; font-size: 1rem; font-weight: 700; }
     :global(.distributed-instructions-intro) { margin: 0 0 12px 0; font-size: 14px; color: #555; line-height: 1.5; }
-    .copy-btn { margin-top: 1rem; padding: 0.65rem 1.25rem; background: white; color: var(--kbm-green); border: 2px solid var(--kbm-green); border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-    .copy-btn:hover { background: var(--kbm-green); color: white; }
     @media print {
       .no-print { display: none !important; }
       .results { border: none !important; background: white !important; }
@@ -190,7 +185,7 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
     }
   </style>
 
-  <script define:vars={{ pageUrl }}>
+  <script>
     (function() {
       const form = document.getElementById('wizard-form');
       const stitchModeFields = document.getElementById('stitchModeFields');
@@ -203,10 +198,30 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
       const resultsContent = document.getElementById('resultsContent');
       const validationSummary = document.getElementById('validationSummary');
       const calculateBtn = document.getElementById('calculateBtn');
-      const copyBtn = document.getElementById('copyBtn');
+      const actionBar = document.getElementById('action-bar');
+      const printBtn = document.getElementById('print-btn');
+      const editBtn = document.getElementById('edit-btn');
 
       let inputMode = 'stitch';
       let useCm = false;
+
+      function showToolActionBar() {
+        if (actionBar) actionBar.style.display = 'flex';
+        if (printBtn) printBtn.style.display = 'inline-flex';
+      }
+
+      if (printBtn) {
+        printBtn.addEventListener('click', () => window.print());
+      }
+      if (editBtn) {
+        editBtn.addEventListener('click', () => {
+          const el = document.getElementById('wizard-form');
+          if (el) {
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+          }
+        });
+      }
 
       function getUnit() {
         const unitInput = document.getElementById('unit');
@@ -547,8 +562,8 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
         if (result.noShaping) {
           resultsContent.innerHTML = `<p><strong>No shaping is needed for this section.</strong></p><p>Starting and ending stitch counts are the same (${result.startingStitches} stitches). Knit ${result.totalRows} rows with no increases or decreases.</p>`;
           resultsEl.hidden = false;
+          showToolActionBar();
           resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          window.currentInstructions = resultsContent.innerText;
           return;
         }
 
@@ -625,7 +640,7 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
         }
 
         resultsEl.hidden = false;
-        window.currentInstructions = resultsContent.innerText;
+        showToolActionBar();
         resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
 
@@ -644,16 +659,6 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         runCalculation();
-      });
-
-      copyBtn.addEventListener('click', () => {
-        if (window.currentInstructions) {
-          navigator.clipboard.writeText(window.currentInstructions).then(() => {
-            const orig = copyBtn.textContent;
-            copyBtn.textContent = 'Copied!';
-            setTimeout(() => { copyBtn.textContent = orig; }, 2000);
-          });
-        }
       });
 
       window.addEventListener('kbm:units-change', (e) => {

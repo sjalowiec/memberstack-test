@@ -1,10 +1,11 @@
 ---
 interface Props {
-  term: string;
+  term?: string;
+  text?: string;
   position?: "top" | "right" | "bottom" | "left";
 }
 
-const { term, position = "top" } = Astro.props;
+const { term, text, position = "top" } = Astro.props;
 const positionClass = `tooltip--${position}`;
 
 // ✅ Adjust this import path if needed
@@ -62,21 +63,26 @@ const truncate = (text: string, max = 180) => {
 
 let tooltipText = "";
 
-try {
-  const entries: any[] = Array.isArray(glossary) ? glossary : ((glossary as { entries?: any[] })?.entries || []);
-  const found = entries.find((e) => matchesTerm(e?.english || "", term));
+const manualText = (text ?? "").trim();
+if (manualText) {
+  tooltipText = manualText;
+} else if (term) {
+  try {
+    const entries: any[] = Array.isArray(glossary) ? glossary : ((glossary as { entries?: any[] })?.entries || []);
+    const found = entries.find((e) => matchesTerm(e?.english || "", term));
 
-  if (found?.example) {
-    tooltipText = truncate(htmlToText(found.example));
-  } else if (found?.metaDescription) {
-    tooltipText = truncate(firstSentence(htmlToText(found.metaDescription)));
-  } else if (found?.english) {
-    tooltipText = found.english;
-  } else {
+    if (found?.example) {
+      tooltipText = truncate(htmlToText(found.example));
+    } else if (found?.metaDescription) {
+      tooltipText = truncate(firstSentence(htmlToText(found.metaDescription)));
+    } else if (found?.english) {
+      tooltipText = found.english;
+    } else {
+      tooltipText = term;
+    }
+  } catch (e) {
     tooltipText = term;
   }
-} catch (e) {
-  tooltipText = term;
 }
 ---
 
