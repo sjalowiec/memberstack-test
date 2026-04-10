@@ -500,17 +500,27 @@ p {
   font-size: 0.85rem;
   line-height: 1.2;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .filter-pill:hover {
+  transform: translateY(-1px);
+}
+
+.filter-pill:hover:not(.active) {
   background: #eef3e6;
 }
 
 .filter-pill.active {
-  background: #52682d;
-  color: #ffffff;
+  background-color: #52682d;
+  color: #fff;
   border-color: #52682d;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.filter-pill:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 .filter-pill:focus-visible {

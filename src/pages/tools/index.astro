@@ -15,6 +15,7 @@ const categoryValues = tools
   .map((tool: { category?: string }) => tool.category)
   .filter((c): c is string => typeof c === "string" && c.length > 0);
 const categories = ["All", ...new Set(categoryValues)];
+
 ---
 
 <Layout title="Customize Your Knitting" bodyClass="page--tight-header">
@@ -33,29 +34,82 @@ const categories = ["All", ...new Set(categoryValues)];
     </p>
   </div>
 
-  <div id="tool-access-filters" class="filter-pills">
-    <button type="button" class="filter-pill active" data-filter="all">All</button>
-    <button type="button" class="filter-pill" data-filter="false">Free</button>
-    <button type="button" class="filter-pill" data-filter="true">Member</button>
-    <button type="button" class="filter-pill" data-filter="available">Available Now</button>
-  </div>
-
-  <p class="small text-muted">Filter by Category</p>
-
-  <div id="tool-category-filters" class="filter-pills">
-    <button type="button" id="show-all-category-tools" class="filter-pill" hidden>
-      Show All Tools
-    </button>
-    {categories.map((category, index) => (
+  <div class="tools-access-toolbar">
+    <div id="tool-access-filters" class="filter-pills tools-access-filters">
+      <button type="button" class="filter-pill active" data-filter="available">Available Now</button>
+      <button type="button" class="filter-pill" data-filter="all">All Tools</button>
+      <button type="button" class="filter-pill" data-filter="false">Free</button>
+      <button type="button" class="filter-pill" data-filter="true">Member</button>
+    </div>
+    <div id="tools-search-panel" class="tools-search-panel">
       <button
         type="button"
-        class={`filter-pill ${index === 0 ? "active" : ""}`}
-        data-category-filter={category === "All" ? "all" : category}
+        id="tools-search-toggle"
+        class="filter-pill tools-search-toggle"
+        aria-label="Focus search"
       >
-        {category === "All" ? "All Categories" : category}
+        <svg class="tools-search-toggle__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
       </button>
-    ))}
+      <input
+        type="search"
+        id="tools-search-input"
+        class="tools-search-input"
+        placeholder="Search tools…"
+        autocomplete="off"
+        enterkeyhint="search"
+        aria-label="Search tools"
+      />
+      <button type="button" id="tools-search-clear" class="filter-pill tools-search-clear" hidden>Clear</button>
+    </div>
   </div>
+
+  <p id="tools-search-results-line" class="tools-search-results-line small text-muted" hidden>
+    Showing results for: <span id="tools-search-term-display" class="tools-search-term-display"></span>
+  </p>
+
+  <div id="tools-category-section" class="tools-category-section">
+    <button
+      type="button"
+      id="tools-category-toggle"
+      class="tools-category-toggle"
+      aria-expanded="false"
+      aria-controls="tools-category-collapsible"
+    >
+      <span class="tools-category-toggle__label">
+        Filter by Category<span
+          id="tools-category-toggle-indicator"
+          class="tools-category-toggle__indicator"
+          hidden
+          aria-hidden="true"
+        >•</span>
+      </span>
+      <svg class="tools-category-toggle__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m6 9 6 6 6-6" />
+      </svg>
+    </button>
+
+    <div id="tools-category-collapsible" class="tools-category-collapsible" hidden>
+      <div id="tool-category-filters" class="filter-pills tools-category-filter-pills">
+        <button type="button" id="show-all-category-tools" class="filter-pill" hidden>
+          Show All Tools
+        </button>
+        {categories.map((category, index) => (
+          <button
+            type="button"
+            class={`filter-pill ${index === 0 ? "active" : ""}`}
+            data-category-filter={category === "All" ? "all" : category}
+          >
+            {category === "All" ? "All Categories" : category}
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <p id="tools-search-empty" class="tools-search-empty small text-muted" hidden>No tools match your search. Try another word or clear the search.</p>
 
   {Object.entries(groupedTools).map(([category, items]) => (
     <section class="tool-category" data-category-section={category}>
@@ -65,11 +119,16 @@ const categories = ["All", ...new Set(categoryValues)];
           {(items ?? []).map((tool) => {
             const membersOnly = tool.membersonly ?? false;
             const isComingSoon = tool.status === "coming-soon";
+            const searchBlob = `${tool.title} ${tool.description}`
+              .toLowerCase()
+              .replace(/\s+/g, " ")
+              .trim();
             const cardAttrs = {
               class: `kbm-card active tool-card-link${isComingSoon ? " disabled" : ""}`,
               "data-membersonly": String(membersOnly),
               "data-category": tool.category,
               "data-coming-soon": isComingSoon ? "true" : "false",
+              "data-tool-search": searchBlob,
             };
             const inner = (
               <>
@@ -108,64 +167,171 @@ const categories = ["All", ...new Set(categoryValues)];
 </section>
 
 <script>
+  const toolsPage = document.querySelector<HTMLElement>(".tools-page");
   const accessButtons = document.querySelectorAll<HTMLButtonElement>("#tool-access-filters .filter-pill");
   const categoryButtons = document.querySelectorAll<HTMLButtonElement>(
     "#tool-category-filters .filter-pill[data-category-filter]"
   );
   const categorySections = document.querySelectorAll<HTMLElement>(".tool-category[data-category-section]");
   const showAllCategoryToolsBtn = document.getElementById("show-all-category-tools");
-  const cards = document.querySelectorAll<HTMLElement>(".tool-card, .kbm-card");
+  const cards = document.querySelectorAll<HTMLElement>(".tools-grid .kbm-card");
+  const searchToggle = document.getElementById("tools-search-toggle");
+  const searchInput = document.getElementById("tools-search-input") as HTMLInputElement | null;
+  const searchClearBtn = document.getElementById("tools-search-clear");
+  const searchResultsLine = document.getElementById("tools-search-results-line");
+  const searchTermDisplay = document.getElementById("tools-search-term-display");
+  const toolsCategorySection = document.getElementById("tools-category-section");
+  const toolsCategoryToggle = document.getElementById("tools-category-toggle");
+  const toolsCategoryCollapsible = document.getElementById("tools-category-collapsible");
+  const searchEmptyMsg = document.getElementById("tools-search-empty");
 
-  let activeAccessFilter = "all";
+  let activeAccessFilter = "available";
   let activeCategoryFilter = "all";
+  let categoryPanelExpanded = false;
+
+  function getSearchQuery(): string {
+    return (searchInput?.value ?? "").trim().toLowerCase();
+  }
+
+  function updateSearchChrome() {
+    const q = getSearchQuery();
+    const hasQuery = q.length > 0;
+
+    toolsPage?.classList.toggle("tools-page--search-query", hasQuery);
+    searchToggle?.classList.toggle("active", hasQuery);
+
+    if (searchResultsLine && searchTermDisplay) {
+      searchResultsLine.hidden = !hasQuery;
+      searchTermDisplay.textContent = hasQuery ? (searchInput?.value ?? "").trim() : "";
+    }
+
+    if (toolsCategorySection) toolsCategorySection.hidden = hasQuery;
+
+    if (!hasQuery && toolsCategoryCollapsible && toolsCategoryToggle) {
+      const forceOpen = activeCategoryFilter !== "all";
+      const showPills = forceOpen || categoryPanelExpanded;
+      toolsCategoryCollapsible.hidden = !showPills;
+      toolsCategoryToggle.setAttribute("aria-expanded", showPills ? "true" : "false");
+    }
+
+    if (searchClearBtn) searchClearBtn.hidden = !hasQuery;
+  }
+
+  function syncCategoryToggleIndicator() {
+    const indicator = document.getElementById("tools-category-toggle-indicator");
+    if (!indicator) return;
+    indicator.hidden = activeCategoryFilter === "all";
+  }
 
   function applyToolFilters() {
+    const q = getSearchQuery();
+
     if (showAllCategoryToolsBtn) {
-      showAllCategoryToolsBtn.hidden = activeCategoryFilter === "all";
+      showAllCategoryToolsBtn.hidden = activeCategoryFilter === "all" || q.length > 0;
     }
 
     categorySections.forEach((section) => {
       const sectionCat = section.dataset.categorySection ?? "";
-      if (activeCategoryFilter === "all") {
+      if (q.length > 0) {
+        section.style.display = "";
+      } else if (activeCategoryFilter === "all") {
         section.style.display = "";
       } else {
         section.style.display = sectionCat === activeCategoryFilter ? "" : "none";
       }
     });
 
-    cards.forEach(card => {
+    cards.forEach((card) => {
       const isMember = card.dataset.membersonly === "true";
       const isComingSoonCard = card.dataset.comingSoon === "true";
       const category = card.dataset.category || "";
+      const blob = card.dataset.toolSearch ?? "";
 
       const matchesAccess =
+        (activeAccessFilter === "available" && !isComingSoonCard) ||
         activeAccessFilter === "all" ||
         (activeAccessFilter === "false" && !isMember) ||
-        (activeAccessFilter === "true" && isMember) ||
-        (activeAccessFilter === "available" && !isComingSoonCard);
+        (activeAccessFilter === "true" && isMember);
 
       const matchesCategory =
+        q.length > 0 ||
         activeCategoryFilter === "all" ||
         category === activeCategoryFilter;
 
-      card.style.display = matchesAccess && matchesCategory ? "" : "none";
+      const matchesSearch = !q || blob.includes(q);
+
+      card.style.display = matchesAccess && matchesCategory && matchesSearch ? "" : "none";
     });
+
+    categorySections.forEach((section) => {
+      const visibleInSection = section.querySelectorAll<HTMLElement>(
+        ".tools-grid .kbm-card"
+      );
+      let any = false;
+      visibleInSection.forEach((c) => {
+        if (c.style.display !== "none") any = true;
+      });
+      section.style.display = any ? "" : "none";
+    });
+
+    updateSearchChrome();
+
+    let visibleCount = 0;
+    cards.forEach((c) => {
+      if (c.style.display !== "none") visibleCount++;
+    });
+    if (searchEmptyMsg) {
+      searchEmptyMsg.hidden = !(q.length > 0 && visibleCount === 0);
+    }
+
+    syncCategoryToggleIndicator();
   }
 
-  accessButtons.forEach(button => {
+  searchToggle?.addEventListener("click", () => {
+    searchInput?.focus();
+  });
+
+  searchClearBtn?.addEventListener("click", () => {
+    if (searchInput) searchInput.value = "";
+    applyToolFilters();
+    searchInput?.focus();
+  });
+
+  searchInput?.addEventListener("input", () => {
+    applyToolFilters();
+  });
+
+  searchInput?.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      searchInput?.blur();
+      searchToggle?.focus();
+    }
+  });
+
+  accessButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      accessButtons.forEach(b => b.classList.remove("active"));
+      accessButtons.forEach((b) => b.classList.remove("active"));
       button.classList.add("active");
-      activeAccessFilter = button.dataset.filter || "all";
+      activeAccessFilter = button.dataset.filter || "available";
       applyToolFilters();
     });
   });
 
-  categoryButtons.forEach(button => {
+  toolsCategoryToggle?.addEventListener("click", () => {
+    if (activeCategoryFilter !== "all") return;
+    categoryPanelExpanded = !categoryPanelExpanded;
+    applyToolFilters();
+  });
+
+  categoryButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      categoryButtons.forEach(b => b.classList.remove("active"));
+      categoryButtons.forEach((b) => b.classList.remove("active"));
       button.classList.add("active");
       activeCategoryFilter = button.dataset.categoryFilter || "all";
+      if (activeCategoryFilter === "all") {
+        categoryPanelExpanded = false;
+      }
       applyToolFilters();
     });
   });
@@ -175,10 +341,11 @@ const categories = ["All", ...new Set(categoryValues)];
       '#tool-category-filters .filter-pill[data-category-filter="all"]'
     );
     if (allPill) {
-      categoryButtons.forEach(b => b.classList.remove("active"));
+      categoryButtons.forEach((b) => b.classList.remove("active"));
       allPill.classList.add("active");
     }
     activeCategoryFilter = "all";
+    categoryPanelExpanded = false;
     applyToolFilters();
   });
 
@@ -205,12 +372,166 @@ const categories = ["All", ...new Set(categoryValues)];
   line-height: 1.5;
 }
 
-#tool-access-filters.filter-pills {
-  margin-top: 20px;
+.tools-access-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
 }
 
-#tool-category-filters.filter-pills {
-  margin-bottom: 30px;
+.tools-access-filters.filter-pills {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.tools-search-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 200px;
+  min-width: min(100%, 12rem);
+}
+
+.tools-search-toggle.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  flex-shrink: 0;
+}
+
+.tools-search-toggle__icon {
+  display: block;
+}
+
+.tools-search-input {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1 1 10rem;
+  min-width: 0;
+  max-width: 22rem;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 6px 14px;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  line-height: 1.2;
+  color: #243015;
+  background: #fff;
+  border: 1px solid #d7e2c8;
+  border-radius: 999px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tools-search-input::-webkit-search-decoration,
+.tools-search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.tools-search-input::placeholder {
+  color: var(--text-muted, #6b7280);
+  opacity: 1;
+}
+
+.tools-search-input:focus {
+  outline: 2px solid rgba(82, 104, 45, 0.25);
+  outline-offset: 2px;
+  border-color: var(--kbm-green, #52682d);
+}
+
+.tools-search-clear.filter-pill {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  font-weight: 600;
+}
+
+.tools-search-results-line {
+  margin-top: 0.5rem;
+}
+
+.tools-search-term-display {
+  font-weight: 600;
+  color: var(--text-muted, #4b5563);
+}
+
+.tools-search-empty {
+  margin: 1rem 0 0;
+}
+
+.tools-page--search-query .tool-category {
+  margin-top: 1.25rem;
+}
+
+.tools-page--search-query .tool-category h2 {
+  display: none;
+}
+
+.tools-page--search-query .tools-coming-soon {
+  display: none;
+}
+
+#tool-access-filters.filter-pills {
+  margin-top: 0;
+}
+
+.tools-category-section {
+  margin-top: 0.75rem;
+}
+
+.tools-category-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--font);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--text-muted, #6b7280);
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.15s ease;
+}
+
+.tools-category-toggle:hover {
+  color: var(--kbm-green, #52682d);
+}
+
+.tools-category-toggle:focus-visible {
+  outline: 2px solid rgba(82, 104, 45, 0.25);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.tools-category-toggle__chevron {
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.tools-category-toggle[aria-expanded="true"] .tools-category-toggle__chevron {
+  transform: rotate(180deg);
+}
+
+.tools-category-toggle__indicator {
+  margin-left: 0.2em;
+  color: var(--kbm-green, #52682d);
+  opacity: 0.65;
+  font-weight: 600;
+}
+
+.tools-category-collapsible {
+  margin-top: 0.65rem;
+}
+
+.tools-category-filter-pills.filter-pills {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
 }
 
 .tool-category{
