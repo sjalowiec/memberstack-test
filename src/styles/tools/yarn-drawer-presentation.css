@@ -1,0 +1,293 @@
+/**
+ * Shared inner layout for pattern yarn drawers (hat builder + DIY blanket).
+ * Dual selectors: hat keeps #yarn specificity; blanket uses .yarn-drawer-presentation only.
+ */
+
+#yarn-requirement.yarn--presentation-drawer .yarn-field-stack,
+.yarn-drawer-presentation .yarn-field-stack {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-field,
+.yarn-drawer-presentation .yarn-field {
+  margin-bottom: 16px;
+  width: 100%;
+  max-width: none;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-field-stack .yarn-field:last-child,
+.yarn-drawer-presentation .yarn-field-stack .yarn-field:last-child {
+  margin-bottom: 0;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-results-cards,
+.yarn-drawer-presentation .yarn-results-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-section--drawer-swatch,
+.yarn-drawer-presentation .yarn-section--drawer-swatch {
+  margin: 0 0 1.5rem;
+  padding: 1.125rem 1.25rem 1.35rem;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(82, 104, 45, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-drawer-section-title,
+.yarn-drawer-presentation .yarn-drawer-section-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-drawer-section-hint,
+.yarn-drawer-presentation .yarn-drawer-section-hint {
+  margin: 0 0 1.125rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-weight: 450;
+  color: #6b7280;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-field label,
+.yarn-drawer-presentation .yarn-field label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.01em;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-field input,
+.yarn-drawer-presentation .yarn-field input {
+  display: block;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  font-size: 16px;
+  box-sizing: border-box;
+  font-family: inherit;
+  border-radius: 10px;
+  border: 1px solid rgba(55, 65, 81, 0.14);
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(55, 65, 81, 0.04);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-field input:hover,
+.yarn-drawer-presentation .yarn-field input:hover {
+  border-color: rgba(82, 104, 45, 0.25);
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-field input:focus,
+.yarn-drawer-presentation .yarn-field input:focus {
+  outline: none;
+  border-color: var(--kbm-green, #52682d);
+  box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.15);
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-weight-row,
+.yarn-drawer-presentation .yarn-weight-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-weight-row input,
+.yarn-drawer-presentation .yarn-weight-row input {
+  flex: 0 0 110px;
+  max-width: 110px;
+  width: auto;
+  min-width: 0;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-weight-row .unit-toggle,
+.yarn-drawer-presentation .yarn-weight-row .unit-toggle {
+  display: inline-flex;
+  gap: 6px;
+  flex: 0 0 auto;
+  align-items: stretch;
+}
+
+#yarn-requirement.yarn--presentation-drawer .unit-toggle button,
+.yarn-drawer-presentation .unit-toggle button {
+  min-width: 46px;
+  min-height: 44px;
+  padding: 0 12px;
+  margin: 0;
+  border: 1px solid rgba(55, 65, 81, 0.12);
+  border-radius: 8px;
+  background: #fafaf8;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text, #374151);
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 1px 2px rgba(55, 65, 81, 0.04);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+#yarn-requirement.yarn--presentation-drawer .unit-toggle button:hover,
+.yarn-drawer-presentation .unit-toggle button:hover {
+  background: #f3f4f0;
+}
+
+#yarn-requirement.yarn--presentation-drawer .unit-toggle button.active,
+.yarn-drawer-presentation .unit-toggle button.active {
+  background: var(--kbm-green, #52682d);
+  color: #fff;
+  border-color: var(--kbm-green, #52682d);
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-project-context--drawer,
+.yarn-drawer-presentation .yarn-project-context--drawer {
+  margin: 0 0 1.25rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  font-weight: 500;
+  color: #5c6370;
+  background: rgba(82, 104, 45, 0.06);
+  border-radius: 10px;
+  border: 1px solid rgba(82, 104, 45, 0.1);
+}
+
+.yarn-drawer-presentation .yarn-project-context--drawer.is-placeholder {
+  color: #6b7280;
+  font-weight: 450;
+  background: rgba(107, 114, 128, 0.08);
+  border-color: rgba(107, 114, 128, 0.12);
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-results-section--drawer,
+.yarn-drawer-presentation .yarn-results-section--drawer {
+  margin-top: 0.25rem;
+  padding: 1.35rem 1.25rem 1.5rem;
+  border-radius: 14px;
+  background: linear-gradient(165deg, rgba(82, 104, 45, 0.09) 0%, rgba(82, 104, 45, 0.04) 100%);
+  border: 1px solid rgba(82, 104, 45, 0.14);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-results-section-head,
+.yarn-drawer-presentation .yarn-results-section-head {
+  margin-bottom: 1.1rem;
+  text-align: center;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-results-heading--drawer,
+.yarn-drawer-presentation .yarn-results-heading--drawer {
+  margin: 0 0 0.35rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #4b5d3a;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-results-subline,
+.yarn-drawer-presentation .yarn-results-subline {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  font-weight: 450;
+  color: #6b7280;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-results-cards--drawer,
+.yarn-drawer-presentation .yarn-results-cards--drawer {
+  gap: 0.75rem;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-results-cards--drawer .yarn-result-card,
+.yarn-drawer-presentation .yarn-results-cards--drawer .yarn-result-card {
+  padding: 1rem 0.9rem 1.15rem;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(82, 104, 45, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(55, 65, 81, 0.06);
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-results-cards--drawer .yarn-result-card-title,
+.yarn-drawer-presentation .yarn-results-cards--drawer .yarn-result-card-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7c8a6e;
+  margin-bottom: 0.5rem;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-results-cards--drawer .yarn-result-card-value,
+.yarn-drawer-presentation .yarn-results-cards--drawer .yarn-result-card-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--kbm-green, #52682d);
+  letter-spacing: -0.02em;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-message,
+.yarn-drawer-presentation .yarn-message {
+  margin-top: 1.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(55, 65, 81, 0.08);
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-message.yarn-error,
+.yarn-drawer-presentation .yarn-message.yarn-error {
+  background: #fef2f2;
+  border-color: rgba(220, 38, 38, 0.2);
+}
+
+@media (max-width: 640px) {
+  #yarn-requirement.yarn--presentation-drawer .yarn-results-cards,
+  .yarn-drawer-presentation .yarn-results-cards {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-section--drawer-swatch,
+  .yarn-drawer-presentation .yarn-section--drawer-swatch {
+    padding: 1rem 1rem 1.2rem;
+    margin-bottom: 1.25rem;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-field input,
+  .yarn-drawer-presentation .yarn-field input {
+    min-height: 48px;
+    padding: 0.75rem 0.9rem;
+    font-size: 16px;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .unit-toggle button,
+  .yarn-drawer-presentation .unit-toggle button {
+    min-height: 48px;
+    min-width: 48px;
+    font-size: 16px;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-results-cards--drawer .yarn-result-card-value,
+  .yarn-drawer-presentation .yarn-results-cards--drawer .yarn-result-card-value {
+    font-size: 1.625rem;
+  }
+}
