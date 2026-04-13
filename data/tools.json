@@ -112,7 +112,7 @@
     "helpID": null,
     "category": "Swatching and Gauge",
     "help_text": "Skip the math. Just measure your swatch.”\n\nEnter the number of stitches and rows you measured, along with the width and height of that measured section. The tool calculates your stitch and row gauge per 4 inches or 10 cm instantly.\n\nBe sure to measure between your markers—not across the entire swatch—for the most accurate results.",
-    "active": true
+    "active": false
   },
   {
     "id": 33,
