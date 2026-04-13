@@ -3480,12 +3480,14 @@ async function initHatBuilder() {
       <div class="pattern-tip" data-tip><strong>Tip:</strong> Keep 2 stitches in work on each edge for seaming.</div>
       <p>Knit ${crownRowCount} rows.</p>
       <p>Break yarn, leaving ${breakYarnTailPhrase}.</p>
-    `;
+      <p>Using a darning needle, run the tail through the top of the hat to secure the stitches.</p>
+      <div class="pattern-tip" data-tip><strong>Tip:</strong> You can also use a yarn needle to secure the stitches.</div>
+    ;
 
     const finishingHtml =
       crown === 'gathered'
-        ? ` 
-        <p>Block the hat to set the shape.</p>
+         ` 
+        <p>Block the hat flat to set the shape.</p>
       <p>Pull the tail tight to gather the top of the hat.</p>
       <p>Use the tail to seam the body.</p>
       <p>Work in yarn ends.</p>`
