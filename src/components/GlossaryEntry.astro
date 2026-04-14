@@ -21,6 +21,15 @@ function isNonemptyHelpinfo(raw: string): boolean {
   return /<img\b/i.test(s);
 }
 const showHelpinfo = isNonemptyHelpinfo(helpinfoRaw);
+
+const relatedToolsRaw = entry?.relatedTools;
+const relatedTools = Array.isArray(relatedToolsRaw)
+  ? relatedToolsRaw.filter(
+      (t: { name?: string; url?: string; icon?: string }) =>
+        t && typeof t.url === "string" && t.url.trim() && typeof t.name === "string" && t.name.trim()
+    )
+  : [];
+const showRelatedTools = relatedTools.length > 0;
 ---
 
 <style>
@@ -87,6 +96,79 @@ const showHelpinfo = isNonemptyHelpinfo(helpinfoRaw);
     line-height: 1.65;
     color: #374151;
     font-size: 1.05rem;
+  }
+
+  /* Template + helpinfo (set:html): injected nodes lack scoped data-astro attrs — use :global under helpinfo */
+  .glossary-related-tools,
+  .glossary-entry-helpinfo :global(.glossary-related-tools) {
+    margin-top: 1.25rem;
+    padding: 0.9rem 1rem;
+    border-radius: 10px;
+    background: rgba(82, 104, 45, 0.06);
+    border: 1px solid rgba(82, 104, 45, 0.15);
+  }
+
+  .glossary-related-tools__heading,
+  .glossary-entry-helpinfo :global(.glossary-related-tools__heading) {
+    margin: 0 0 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #52682d;
+  }
+
+  .glossary-related-tools__list,
+  .glossary-entry-helpinfo :global(.glossary-related-tools ul) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .glossary-related-tools__item,
+  .glossary-entry-helpinfo :global(.glossary-related-tools li) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .glossary-related-tools__link,
+  .glossary-entry-helpinfo :global(.glossary-related-tools__link) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.65rem;
+    padding: 0.4rem 0.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #1f2937;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .glossary-related-tools__link:hover,
+  .glossary-related-tools__link:focus-visible,
+  .glossary-entry-helpinfo :global(.glossary-related-tools__link:hover),
+  .glossary-entry-helpinfo :global(.glossary-related-tools__link:focus-visible) {
+    background: rgba(82, 104, 45, 0.12);
+    color: #52682d;
+    outline: none;
+  }
+
+  .glossary-related-tools__icon,
+  .glossary-entry-helpinfo :global(.glossary-related-tools__link img) {
+    width: 26px;
+    height: 26px;
+    max-width: 26px;
+    max-height: 26px;
+    flex-shrink: 0;
+    display: block;
+    object-fit: contain;
+  }
+
+  .glossary-related-tools__name {
+    display: inline-block;
   }
 
   .glossary-entry-tail {
@@ -331,6 +413,31 @@ const showHelpinfo = isNonemptyHelpinfo(helpinfoRaw);
     )}
     {showHelpinfo && (
       <div class="glossary-entry-helpinfo" set:html={helpinfoRaw} />
+    )}
+    {showRelatedTools && (
+      <div class="glossary-related-tools">
+        <p class="glossary-related-tools__heading">Use this tool</p>
+        <ul class="glossary-related-tools__list">
+          {relatedTools.map((tool: { name: string; url: string; icon?: string }) => (
+            <li class="glossary-related-tools__item">
+              <a href={tool.url} class="glossary-related-tools__link">
+                {tool.icon ? (
+                  <img
+                    src={tool.icon}
+                    alt=""
+                    class="glossary-related-tools__icon"
+                    width="26"
+                    height="26"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : null}
+                <span class="glossary-related-tools__name">{tool.name}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
     )}
     <div class="glossary-entry-tail">
       {entry?.tooltip && <p class="term-tooltip"><em>{entry.tooltip}</em></p>}

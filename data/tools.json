@@ -259,14 +259,14 @@
   },
   {
     "id": 30,
-    "title": "Ruffle / Gather",
+    "title": "Increase / Decrease Evenly",
     "href": "/tools/ruffle-gather-tool",
     "icon": "ruffle-gather.svg",
-    "description": "Change stitch count evenly across a row for ruffles, gathers, or single-row adjustments.",
+    "description": "Space stitch-count changes evenly across one row.",
     "membersonly": false,
     "helpID": "NULL",
     "category": "Shaping and Charting",
-    "help_text": "Use this tool to plan a one-row change in stitch count for ruffles, gathers, or other even distributions.\n\nEnter starting and ending stitch counts. The tool spaces the change evenly across the row and gives clear machine-knitting instructions for rehanging centered on the needle bed.",
+    "help_text": "Use the Increase / Decrease Evenly Calculator when you need more or fewer stitches across a single row—for example ruffles, gathers, or other even distributions.\n\nEnter starting and ending stitch counts. The tool spaces the change evenly across the row and gives clear machine-knitting instructions for rehanging centered on the needle bed.",
     "active": true
   }
 ]

@@ -3162,14 +3162,21 @@
     "glossaryId": 616,
     "english": "Gauge",
     "example": "Gauge is a measure of the number of stitches and rows in a specific area. Gauge is commonly measured:  Stitches and rows PER INCH ~or~ stitches and rows PER 4\" (10cm)",
-    "helpinfo": "Classroom: Swatching is NOT Optional    NOTE: The term \"gauge\" can also refer to the pitch of a knitting machine. For example a machine with needles that are 4.5mm apart is referred to as a STANDARD GAUGE machine Common terms:  3.5mm = Fine Gauge 4.5mm = Standard Gauge 6 / 6.5 / 7 mm = Mid-Gauge 9mm = Bulky Gauge",
+    "helpinfo": " NOTE: The term \"gauge\" can also refer to the pitch of a knitting machine. For example a machine with needles that are 4.5mm apart is referred to as a STANDARD GAUGE machine ",
     "image": "/images/glossary/gauge.jpg",
     "image_alt": "Illustration showing how to measure a knitting machine swatch for accurate gauge calculation",
     "image_description": "Measure Gauge with a proper swatch Knit it Now",
     "metaTitle": "Gauge in Machine Knitting | Knit It Now Glossary",
     "metaDescription": "Understand gauge in machine knitting—why it matters, how it’s measured, and its impact on fit and fabric. A key concept every knitter should know.",
     "active": true,
-    "vimeoIds": []
+    "vimeoIds": [],
+    "relatedTools": [
+      {
+        "name": "Gauge Calculator",
+        "url": "/tools/gauge-calculator",
+        "icon": "/icons/tools/gauge-calculator.svg"
+      }
+    ]
   },
   {
     "glossaryId": 617,
@@ -3552,7 +3559,7 @@
     "glossaryId": 645,
     "english": "Increase Evenly",
     "example": "Increase 10 stitches evenly across the row.",
-    "helpinfo": "After removing the stitches from the machine, pull out the desired number of needles and rehang the stitches, skipping needles. Fill in the empty needles with the purl strand from the row below, or leave the needles empty for eyelets, increasing the number of stitches in work. ",
+    "helpinfo": "After removing the stitches from the machine, pull out the desired number of needles and rehang the stitches, skipping needles. Fill in the empty needles with the purl strand from the row below, or leave the needles empty for eyelets, increasing the number of stitches in work. <div class=\"glossary-related-tools\">\n  <p class=\"glossary-related-tools__heading\">Use this tool</p>\n  <ul>\n    <li>\n      <a href=\"/tools/ruffle-gather-tool\" class=\"glossary-related-tools__link\">\n        <img src=\"/icons/tools/ruffle-gather.svg\" alt=\"\" width=\"26\" height=\"26\">\n        Increase / Decrease Evenly Calculator\n      </a>\n    </li>\n  </ul>\n</div>",
     "image": "",
     "image_alt": "NULL",
     "image_description": "NULL",
@@ -3565,7 +3572,7 @@
     "glossaryId": 646,
     "english": "Decrease Evenly",
     "example": "Decrease evenly across the row ",
-    "helpinfo": "There are times when you are instructed to increase or decrease evenly across a row.  This instruction could be used for creating gathers or reducing a large number of stitches in work. Unlike in hand knitting, machine knitters need to remove the knitting from the machine, then rehang the stitches accordingly. Stitches can be removed with a garter bar, waste knitting or a hand knitting needle. ",
+    "helpinfo": "There are times when you are instructed to increase or decrease evenly across a row.  This instruction could be used for creating gathers or reducing a large number of stitches in work. Unlike in hand knitting, machine knitters need to remove the knitting from the machine, then rehang the stitches accordingly. Stitches can be removed with a garter bar, waste knitting or a hand knitting needle. <div class=\"glossary-related-tools\">\n  <p class=\"glossary-related-tools__heading\">Use this tool</p>\n  <ul>\n    <li>\n      <a href=\"/tools/ruffle-gather-tool\" class=\"glossary-related-tools__link\">\n        <img src=\"/icons/tools/ruffle-gather.svg\" alt=\"\" width=\"26\" height=\"26\">\n        Increase / Decrease Evenly Calculator\n      </a>\n    </li>\n  </ul>\n</div>",
     "image": "",
     "image_alt": "NULL",
     "image_description": "NULL",

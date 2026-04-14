@@ -137,6 +137,9 @@ const wizardDescription = 'Design the perfect custom hat with precise sizing, br
 
 const patternPersistWarning =
   "Your pattern will not be saved on this site. Please be sure to download and save your PDF — once you leave this page, your pattern will be gone.";
+
+const hatZeroBodyRowsWarningMessage =
+  "Your current settings don't leave any room for the body of the hat. Try increasing the finished hat length or reducing the brim or crown depth.";
 ---
 
 <Layout
@@ -1610,6 +1613,10 @@ select.disabled {
                   <small class="helper-text">Enter the finished hat length as it will be worn. We'll calculate the crown shaping and any brim adjustments for you.</small>
                 </div>
               </div>
+
+              <div id="hat-zero-body-warning" class="no-print" hidden>
+                <WarningBox title="Notice" message={hatZeroBodyRowsWarningMessage} />
+              </div>
             </section>
 
             <section class="hat-form-section" aria-labelledby="hat-section-style-heading">
@@ -3081,6 +3088,7 @@ async function initHatBuilder() {
     }
 
     if (!ready) {
+      setHatZeroBodyWarningVisible(false);
       const patternNavBtn =
         document.getElementById('hat-tab-pattern') ||
         document.querySelector('.pattern-tabs .tab-btn[data-tab="pattern"]');
@@ -3659,6 +3667,13 @@ async function initHatBuilder() {
     updatePatternTipsIntroUi(newState);
   });
 
+  function setHatZeroBodyWarningVisible(visible) {
+    const el = document.getElementById('hat-zero-body-warning');
+    if (!el) return;
+    if (visible) el.removeAttribute('hidden');
+    else el.setAttribute('hidden', '');
+  }
+
   // Calculate Function
   function calculate() {
     console.log('calculate started');
@@ -3687,6 +3702,7 @@ async function initHatBuilder() {
       hideResults(resultsVisibilityConfig);
       const printFooterEl = document.querySelector(resultsVisibilityConfig.printFooterSelector);
       if (printFooterEl) printFooterEl.style.display = 'none';
+      setHatZeroBodyWarningVisible(false);
     }
 
     if (!requiredPatternInputsComplete()) {
@@ -3767,6 +3783,7 @@ async function initHatBuilder() {
       rowGaugeRaw: rowGauge
     };
     generatePattern(patternCalc);
+    setHatZeroBodyWarningVisible(bodyRows <= 0);
     console.log('[hat-builder debug] pattern data (after generatePattern)', {
       finishedHatCircInches,
       targetWidth,
@@ -4079,6 +4096,16 @@ async function initHatBuilder() {
     const tipsIntroSlotHtml = savedShowTipsForBtn
       ? `<div class="pattern-tips-intro-slot"><div class="pattern-tip pattern-tip-intro" data-tip><strong>Tip:</strong> Pattern Tips are on to give you quick help and helpful reminders as you knit. <a href="#" class="tips-inline-toggle" data-testid="link-tips-toggle">Hide tips</a></div></div>`
       : `<div class="pattern-tips-intro-slot"><p class="pattern-tips-off-row"><i class="fa-regular fa-lightbulb" style="color: #c2614e;"></i><a href="#" class="tips-inline-toggle" data-testid="link-tips-toggle"> Show pattern tips</a></p></div>`;
+    const brimDeeperBodyTipHtml =
+      bodyRows > 0
+        ? `<div class="pattern-tip" data-tip><strong>Tip:</strong> Want a deeper brim? Knit extra brim rows before continuing to the body.</div>`
+        : '';
+    const bodySectionHtml =
+      bodyRows > 0
+        ? `<h4>Body</h4>
+      <p>Work ${bodyRows} rows in pattern after the brim.</p>
+      `
+        : '';
     const patternHTML = `
       ${tipsIntroSlotHtml}
       <div class="highlight-box">
@@ -4098,11 +4125,9 @@ async function initHatBuilder() {
       <p>Work ${brimRows} rows:</p>
       ${brimType === 'folded' ? '<div class="pattern-tip" data-tip><strong>Tip:</strong> This length includes extra rows for folding.</div>' : ''}
       <p>${brimInstructionHtml}</p>
-      <div class="pattern-tip" data-tip><strong>Tip:</strong> Want a deeper brim? Knit extra brim rows before continuing to the body.</div>
+      ${brimDeeperBodyTipHtml}
       
-      <h4>Body</h4>
-      <p>Work ${bodyRows} rows in pattern after the brim.</p>
-      
+      ${bodySectionHtml}
       <p><strong>Begin Crown Shaping at Row ${crownStartRow}.</strong></p>
       <h4>${crownHeading}</h4>
       ${crownInstructions}
@@ -4263,6 +4288,9 @@ if (document.readyState === 'loading') {
       // Hide results
       const results = document.getElementById('results');
       if (results) results.style.display = 'none';
+
+      const zeroBodyWarn = document.getElementById('hat-zero-body-warning');
+      if (zeroBodyWarn) zeroBodyWarn.setAttribute('hidden', '');
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });

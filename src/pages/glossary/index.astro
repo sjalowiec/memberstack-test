@@ -230,6 +230,7 @@ const glossaryJson = JSON.stringify(
             var title = h1 ? h1.textContent.trim() : "";
             if (modalTitleEl) modalTitleEl.textContent = title;
             modalBody.querySelectorAll("img").forEach(function (img) {
+              if (img.closest && img.closest(".glossary-related-tools")) return;
               img.style.maxWidth = "100%";
               img.style.height = "auto";
             });
@@ -774,14 +775,15 @@ const glossaryJson = JSON.stringify(
       margin-top: 0 !important;
     }
 
-    .glossaryModal__body :global(main.glossaryEntry) {
+    /* Plain selectors (no :global()) — this block is already is:global; :global() would emit invalid CSS in the bundle */
+    .glossaryModal__body main.glossaryEntry {
       margin-top: 0 !important;
       padding-top: 0 !important;
     }
 
     /* Entry title: was hidden; show compact so modal uses vertical space for content */
-    dialog.glossaryModal .glossaryModal__body :global(.glossaryEntry h1),
-    dialog.glossaryModal .glossaryModal__body :global(.glossary-entry__title) {
+    dialog.glossaryModal .glossaryModal__body .glossaryEntry h1,
+    dialog.glossaryModal .glossaryModal__body .glossary-entry__title {
       display: block !important;
       margin: 0 44px 0.35rem 0;
       padding: 0;
@@ -791,17 +793,17 @@ const glossaryJson = JSON.stringify(
       color: #1f2937;
     }
 
-    dialog.glossaryModal .glossaryModal__body :global(.term-intro) {
+    dialog.glossaryModal .glossaryModal__body .term-intro {
       margin-top: 0;
       margin-bottom: 0.65rem;
     }
 
-    dialog.glossaryModal .glossaryModal__body :global(.term-body) {
+    dialog.glossaryModal .glossaryModal__body .term-body {
       margin-top: 0.65rem;
       padding: 1.1rem;
     }
 
-    dialog.glossaryModal .glossaryModal__body :global(.glossary-entry-image) {
+    dialog.glossaryModal .glossaryModal__body .glossary-entry-image {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -811,38 +813,114 @@ const glossaryJson = JSON.stringify(
       box-sizing: border-box;
     }
 
-    dialog.glossaryModal .glossaryModal__body :global(.glossary-entry-image img),
-    dialog.glossaryModal .glossaryModal__body :global(.glossary-entry-image .glossary-image) {
+    dialog.glossaryModal .glossaryModal__body .glossary-entry-image img,
+    dialog.glossaryModal .glossaryModal__body .glossary-entry-image .glossary-image {
       display: block;
       margin: 0 auto;
       max-width: 100%;
       height: auto;
     }
 
-    dialog.glossaryModal .glossaryModal__body :global(.glossary-entry-helpinfo) {
+    dialog.glossaryModal .glossaryModal__body .glossary-entry-helpinfo {
       margin: 0 0 1.25rem;
       line-height: 1.6;
       color: #374151;
     }
 
-    dialog.glossaryModal .glossaryModal__body :global(img) {
+    /* Related tools: modal injects main HTML only — GlossaryEntry scoped CSS is not in the page */
+    dialog.glossaryModal .glossaryModal__body .glossary-related-tools {
+      margin: 0.8rem auto 0;
+      padding: 0.45rem 0.65rem;
+      border-radius: 10px;
+      background: rgba(82, 104, 45, 0.06);
+      border: 1px solid rgba(82, 104, 45, 0.15);
+      max-width: 80%;
+    }
+
+    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__heading {
+      margin: 0 0 0.2rem;
+      padding: 0;
+      font-size: 0.72rem;
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #52682d;
+    }
+
+    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__list,
+    dialog.glossaryModal .glossaryModal__body .glossary-related-tools ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      line-height: 1.2;
+    }
+
+    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__item,
+    dialog.glossaryModal .glossaryModal__body .glossary-related-tools li {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      line-height: 1.2;
+    }
+
+    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.5rem;
+      padding: 0.25rem 0.3rem;
+      border-radius: 8px;
+      line-height: 1.2;
+      text-decoration: none;
+      color: #1f2937;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__link:hover,
+    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__link:focus-visible {
+      background: rgba(82, 104, 45, 0.12);
+      color: #52682d;
+      outline: none;
+    }
+
+    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__icon,
+    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__link img {
+      width: 26px;
+      height: 26px;
+      max-width: 26px;
+      max-height: 26px;
+      flex-shrink: 0;
+      display: block;
+      margin: 0;
+      object-fit: contain;
+    }
+
+    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__name {
+      display: inline-block;
+      line-height: 1.2;
+    }
+
+    dialog.glossaryModal .glossaryModal__body img:not(.glossary-related-tools__icon) {
       max-width: 100%;
       height: auto;
       max-height: 45vh;
       object-fit: contain;
     }
 
-    dialog.glossaryModal .glossaryModal__body :global(.back-link) {
+    dialog.glossaryModal .glossaryModal__body .back-link {
       display: none;
     }
 
-    .glossaryModal__body :global(*) {
+    .glossaryModal__body * {
       max-width: 100%;
       box-sizing: border-box;
     }
 
-    .glossaryModal__body :global(video),
-    .glossaryModal__body :global(iframe) {
+    .glossaryModal__body video,
+    .glossaryModal__body iframe {
       max-width: 100% !important;
       height: auto !important;
     }
