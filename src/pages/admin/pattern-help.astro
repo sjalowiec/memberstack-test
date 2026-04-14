@@ -1,0 +1,620 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Pattern help library | Admin"
+  description="Edit pattern help entries stored in pattern-help.json"
+  skipGlobalHyvor={true}
+  bodyClass="pattern-help-admin-body help-hub-admin-body"
+>
+  <main class="help-hub-admin pattern-help-admin">
+    <header class="help-hub-admin__head">
+      <h1 class="help-hub-admin__title">Pattern help library</h1>
+      <p class="help-hub-admin__sub">
+        Data file: <code>src/data/pattern-help.json</code>. Saved via <code>/api/admin/pattern-help</code> (local dev) or
+        <strong>Download JSON</strong> when the server cannot write the file — see comment on the API route and the note below.
+      </p>
+    </header>
+
+    <!--
+      MANUAL SETUP: If PUT save fails on your host, click "Download JSON" and copy the file into
+      src/data/pattern-help.json in the repo, then commit. No extra env vars required for this page.
+    -->
+    <p id="pattern-help-status" class="help-hub-admin__status" aria-live="polite"></p>
+    <p id="pattern-help-warnings" class="pattern-help-admin__warnings" aria-live="polite" hidden></p>
+
+    <div class="help-hub-admin__toolbar pattern-help-admin__toolbar">
+      <button type="button" id="pattern-help-add" class="kbm-btn kbm-btn-primary">+ New help item</button>
+      <button type="button" id="pattern-help-save" class="kbm-btn kbm-btn-accent">Save to server</button>
+      <button type="button" id="pattern-help-download" class="kbm-btn kbm-btn-outline">Download JSON</button>
+      <a href="/admin/tips-admin" class="kbm-btn kbm-btn-outline">Tips admin</a>
+    </div>
+
+    <p id="pattern-help-loading" class="help-hub-admin__loading">Loading…</p>
+    <div id="pattern-help-rows" class="pattern-help-admin__rows" hidden></div>
+    <p id="pattern-help-empty" class="help-hub-admin__empty" hidden>No help items yet. Add one to get started.</p>
+  </main>
+
+  <style>
+    :global(body.pattern-help-admin-body) {
+      margin: 0;
+    }
+
+    .pattern-help-admin__toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .pattern-help-admin__warnings {
+      margin: 0 0 1rem 0;
+      padding: 0.65rem 0.85rem;
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-radius: 8px;
+      color: #92400e;
+      font-size: 0.92rem;
+    }
+
+    .pattern-help-admin__warnings.is-error {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #991b1b;
+    }
+
+    .pattern-help-admin__rows {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .pattern-help-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+    }
+
+    .pattern-help-card__head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.65rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .pattern-help-card__head h2 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #243015;
+    }
+
+    .pattern-help-card__fields {
+      display: grid;
+      gap: 0.85rem;
+    }
+
+    @media (min-width: 720px) {
+      .pattern-help-card__fields {
+        grid-template-columns: 1fr 1fr;
+      }
+      .pattern-help-card__field--full {
+        grid-column: 1 / -1;
+      }
+    }
+
+    .pattern-help-field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 0.25rem;
+    }
+
+    .pattern-help-field input[type="text"],
+    .pattern-help-field textarea {
+      width: 100%;
+      box-sizing: border-box;
+      font: inherit;
+      padding: 0.45rem 0.55rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+    }
+
+    .pattern-help-field textarea {
+      min-height: 7rem;
+      resize: vertical;
+    }
+
+    .pattern-help-field--id input:invalid {
+      border-color: #f87171;
+    }
+
+    .pattern-help-card__delete {
+      appearance: none;
+      background: transparent;
+      border: 1px solid #e2e8f0;
+      color: #64748b;
+      font-size: 0.85rem;
+      padding: 0.35rem 0.65rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .pattern-help-card__delete:hover,
+    .pattern-help-card__delete:focus-visible {
+      color: #b91c1c;
+      border-color: #fecaca;
+      background: #fef2f2;
+    }
+
+    .pattern-help-preview {
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      background: #f8fafc;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: #334155;
+    }
+
+    .pattern-help-preview h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .pattern-help-preview__paras p {
+      margin: 0 0 0.5rem 0;
+    }
+
+    .pattern-help-preview__paras p:last-child {
+      margin-bottom: 0;
+    }
+
+    .pattern-help-preview__paras--empty {
+      color: #94a3b8;
+      font-style: italic;
+    }
+
+    .pattern-help-vimeo {
+      margin-top: 0.75rem;
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+      border-radius: 8px;
+      background: #0f172a;
+      max-width: 480px;
+    }
+
+    .pattern-help-vimeo iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .pattern-help-vimeo--empty {
+      padding: 0.75rem;
+      height: auto;
+      background: #f1f5f9;
+      color: #64748b;
+      font-size: 0.88rem;
+    }
+  </style>
+
+  <script>
+    const API = "/api/admin/pattern-help";
+
+    type Row = {
+      clientId: string;
+      helpId: string;
+      title: string;
+      body: string;
+      vimeoId: string;
+    };
+
+    let rows: Row[] = [];
+
+    const statusEl = document.getElementById("pattern-help-status");
+    const warningsEl = document.getElementById("pattern-help-warnings");
+    const loadingEl = document.getElementById("pattern-help-loading");
+    const rowsEl = document.getElementById("pattern-help-rows");
+    const emptyEl = document.getElementById("pattern-help-empty");
+
+    function setStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral") {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.classList.toggle("is-error", kind === "err");
+      statusEl.classList.toggle("is-ok", kind === "ok");
+    }
+
+    function setWarnings(lines: string[], isError = false) {
+      if (!warningsEl) return;
+      if (lines.length === 0) {
+        warningsEl.hidden = true;
+        warningsEl.textContent = "";
+        warningsEl.classList.toggle("is-error", false);
+        return;
+      }
+      warningsEl.hidden = false;
+      warningsEl.classList.toggle("is-error", isError);
+      warningsEl.innerHTML = lines.map((l) => `<div>${escapeHtml(l)}</div>`).join("");
+    }
+
+    function escapeHtml(s: string): string {
+      return s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    /** Paragraphs: split on blank lines; if a single block, split on single line breaks. */
+    function textToArray(text: string): string[] {
+      const t = text.trim();
+      if (!t) return [];
+      const byBlank = t
+        .split(/\n\s*\n/)
+        .map((p) => p.trim())
+        .filter(Boolean);
+      if (byBlank.length > 1) return byBlank;
+      return t
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+    }
+
+    function arrayToTextarea(text: string[]): string {
+      if (text.length === 0) return "";
+      const hasInternalNewlines = text.some((p) => p.includes("\n"));
+      if (hasInternalNewlines) return text.join("\n\n");
+      if (text.length === 1) return text[0] ?? "";
+      const singleLineEach = text.every((p) => !p.includes("\n"));
+      if (singleLineEach) return text.join("\n");
+      return text.join("\n\n");
+    }
+
+    function newClientId(): string {
+      if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+      return `r-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    }
+
+    function rowFromServer(key: string, entry: { title?: string; text?: unknown; vimeoId?: string }): Row {
+      const textArr = Array.isArray(entry.text) ? entry.text.map((x) => String(x)) : [];
+      return {
+        clientId: newClientId(),
+        helpId: key,
+        title: typeof entry.title === "string" ? entry.title : "",
+        body: arrayToTextarea(textArr),
+        vimeoId: typeof entry.vimeoId === "string" ? entry.vimeoId : "",
+      };
+    }
+
+    function buildPayload(): { data: Record<string, { title: string; text: string[]; vimeoId: string }> } | null {
+      const data: Record<string, { title: string; text: string[]; vimeoId: string }> = {};
+      const blankIds: number[] = [];
+      const seen = new Map<string, number[]>();
+
+      rows.forEach((r, index) => {
+        const id = r.helpId.trim();
+        if (!id) blankIds.push(index + 1);
+        else {
+          const list = seen.get(id) ?? [];
+          list.push(index + 1);
+          seen.set(id, list);
+        }
+      });
+
+      const warn: string[] = [];
+      if (blankIds.length > 0) {
+        warn.push(`Help ID is required (card(s): ${blankIds.join(", ")}).`);
+      }
+      for (const [id, cardNums] of seen) {
+        if (cardNums.length > 1) {
+          warn.push(`Duplicate help ID "${id}" on cards ${cardNums.join(", ")}.`);
+        }
+      }
+      if (warn.length > 0) {
+        setWarnings(warn, true);
+        return null;
+      }
+      setWarnings([]);
+
+      for (const r of rows) {
+        const id = r.helpId.trim();
+        data[id] = {
+          title: r.title.trim(),
+          text: textToArray(r.body),
+          vimeoId: r.vimeoId.trim(),
+        };
+      }
+      return { data };
+    }
+
+    function vimeoEmbedUrl(id: string): string | null {
+      const t = id.trim();
+      if (!t) return null;
+      if (!/^\d+$/.test(t)) return null;
+      return `https://player.vimeo.com/video/${t}`;
+    }
+
+    function updateCardPreview(card: HTMLElement) {
+      const bodyTa = card.querySelector<HTMLTextAreaElement>('[data-field="body"]');
+      const vidIn = card.querySelector<HTMLInputElement>('[data-field="vimeoId"]');
+      const parasEl = card.querySelector(".pattern-help-preview__paras");
+      const vimeoHost = card.querySelector(".pattern-help-vimeo");
+
+      if (parasEl && bodyTa) {
+        const paras = textToArray(bodyTa.value);
+        if (paras.length === 0) {
+          parasEl.classList.add("pattern-help-preview__paras--empty");
+          parasEl.innerHTML = "<p>No paragraphs yet.</p>";
+        } else {
+          parasEl.classList.remove("pattern-help-preview__paras--empty");
+          parasEl.innerHTML = paras.map((p) => `<p>${escapeHtml(p)}</p>`).join("");
+        }
+      }
+
+      if (vimeoHost && vidIn) {
+        const url = vimeoEmbedUrl(vidIn.value);
+        if (url) {
+          vimeoHost.classList.remove("pattern-help-vimeo--empty");
+          vimeoHost.innerHTML = `<iframe title="Vimeo preview" src="${url}" allowfullscreen></iframe>`;
+        } else {
+          vimeoHost.classList.add("pattern-help-vimeo--empty");
+          vimeoHost.innerHTML =
+            vidIn.value.trim() === ""
+              ? "Enter a numeric Vimeo video ID to preview."
+              : "Vimeo ID should be digits only (e.g. 123456789).";
+        }
+      }
+    }
+
+    function wireCard(card: HTMLElement) {
+      const inputs = card.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        '[data-field="body"], [data-field="vimeoId"]'
+      );
+      inputs.forEach((el) => {
+        el.addEventListener("input", () => updateCardPreview(card));
+      });
+      const helpIdInput = card.querySelector<HTMLInputElement>('[data-field="helpId"]');
+      helpIdInput?.addEventListener("input", () => {
+        const v = helpIdInput.value.trim();
+        helpIdInput.setCustomValidity(v ? "" : "Help ID is required");
+      });
+      updateCardPreview(card);
+    }
+
+    function render() {
+      if (!rowsEl || !loadingEl || !emptyEl) return;
+      loadingEl.hidden = true;
+
+      if (rows.length === 0) {
+        rowsEl.hidden = true;
+        emptyEl.hidden = false;
+        rowsEl.innerHTML = "";
+        return;
+      }
+      emptyEl.hidden = true;
+      rowsEl.hidden = false;
+      rowsEl.innerHTML = "";
+
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i]!;
+        const card = document.createElement("article");
+        card.className = "pattern-help-card";
+        card.dataset.clientId = r.clientId;
+
+        card.innerHTML = `
+          <div class="pattern-help-card__head">
+            <h2>Help item ${i + 1}</h2>
+            <button type="button" class="pattern-help-card__delete" data-action="delete">Delete item</button>
+          </div>
+          <div class="pattern-help-card__fields">
+            <div class="pattern-help-field pattern-help-field--id pattern-help-card__field--full">
+              <label for="hid-${r.clientId}">Help ID (JSON key)</label>
+              <input type="text" id="hid-${r.clientId}" data-field="helpId" required autocomplete="off" value="" />
+            </div>
+            <div class="pattern-help-field pattern-help-card__field--full">
+              <label for="title-${r.clientId}">Title</label>
+              <input type="text" id="title-${r.clientId}" data-field="title" autocomplete="off" value="" />
+            </div>
+            <div class="pattern-help-field pattern-help-card__field--full">
+              <label for="body-${r.clientId}">Help text</label>
+              <textarea id="body-${r.clientId}" data-field="body" placeholder="One paragraph per line, or separate paragraphs with a blank line."></textarea>
+            </div>
+            <div class="pattern-help-field">
+              <label for="vimeo-${r.clientId}">Vimeo ID</label>
+              <input type="text" id="vimeo-${r.clientId}" data-field="vimeoId" inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 123456789" autocomplete="off" value="" />
+            </div>
+            <div class="pattern-help-field pattern-help-card__field--full">
+              <div class="pattern-help-preview">
+                <h3>Paragraph preview</h3>
+                <div class="pattern-help-preview__paras"></div>
+                <h3 style="margin-top:0.75rem">Video preview</h3>
+                <div class="pattern-help-vimeo pattern-help-vimeo--empty"></div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        rowsEl.appendChild(card);
+
+        const helpIdInput = card.querySelector<HTMLInputElement>('[data-field="helpId"]');
+        const titleInput = card.querySelector<HTMLInputElement>('[data-field="title"]');
+        const bodyTa = card.querySelector<HTMLTextAreaElement>('[data-field="body"]');
+        const vimeoInput = card.querySelector<HTMLInputElement>('[data-field="vimeoId"]');
+        if (helpIdInput) helpIdInput.value = r.helpId;
+        if (titleInput) titleInput.value = r.title;
+        if (bodyTa) bodyTa.value = r.body;
+        if (vimeoInput) vimeoInput.value = r.vimeoId;
+
+        helpIdInput?.setCustomValidity(r.helpId.trim() ? "" : "Help ID is required");
+
+        card.querySelector('[data-action="delete"]')?.addEventListener("click", () => {
+          if (!confirm("Delete this help item from the list? (Save or download to persist.)")) return;
+          rows = rows.filter((x) => x.clientId !== r.clientId);
+          render();
+          setStatus("Item removed from editor.", "neutral");
+        });
+
+        const syncRow = () => {
+          const row = rows.find((x) => x.clientId === r.clientId);
+          if (!row) return;
+          row.helpId = helpIdInput?.value ?? "";
+          row.title = titleInput?.value ?? "";
+          row.body = bodyTa?.value ?? "";
+          row.vimeoId = vimeoInput?.value ?? "";
+        };
+
+        card.querySelectorAll("input, textarea").forEach((el) => {
+          el.addEventListener("change", syncRow);
+          el.addEventListener("blur", syncRow);
+        });
+
+        helpIdInput?.addEventListener("input", () => {
+          syncRow();
+          refreshDuplicateWarnings();
+        });
+
+        wireCard(card);
+      }
+
+      refreshDuplicateWarnings();
+    }
+
+    function refreshDuplicateWarnings() {
+      const seen = new Map<string, number[]>();
+      rows.forEach((r, index) => {
+        const id = r.helpId.trim();
+        if (!id) return;
+        const list = seen.get(id) ?? [];
+        list.push(index + 1);
+        seen.set(id, list);
+      });
+      const dups: string[] = [];
+      for (const [id, nums] of seen) {
+        if (nums.length > 1) dups.push(`Duplicate help ID "${id}" on cards ${nums.join(", ")}.`);
+      }
+      const blank = rows.map((r, i) => (r.helpId.trim() === "" ? i + 1 : null)).filter((x): x is number => x !== null);
+      const lines: string[] = [...dups];
+      if (blank.length > 0) lines.push(`Help ID is missing on card(s): ${blank.join(", ")}.`);
+      setWarnings(lines, dups.length > 0 || blank.length > 0);
+    }
+
+    function syncAllRowsFromDom() {
+      if (!rowsEl) return;
+      for (const r of rows) {
+        const card = rowsEl.querySelector<HTMLElement>(`[data-client-id="${CSS.escape(r.clientId)}"]`);
+        if (!card) continue;
+        r.helpId = card.querySelector<HTMLInputElement>('[data-field="helpId"]')?.value ?? "";
+        r.title = card.querySelector<HTMLInputElement>('[data-field="title"]')?.value ?? "";
+        r.body = card.querySelector<HTMLTextAreaElement>('[data-field="body"]')?.value ?? "";
+        r.vimeoId = card.querySelector<HTMLInputElement>('[data-field="vimeoId"]')?.value ?? "";
+      }
+    }
+
+    document.getElementById("pattern-help-add")?.addEventListener("click", () => {
+      syncAllRowsFromDom();
+      rows.push({
+        clientId: newClientId(),
+        helpId: "",
+        title: "",
+        body: "",
+        vimeoId: "",
+      });
+      render();
+      setStatus("New item added — set Help ID before saving.", "neutral");
+    });
+
+    function downloadJson(obj: unknown, filename: string) {
+      const blob = new Blob([JSON.stringify(obj, null, 2) + "\n"], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    document.getElementById("pattern-help-download")?.addEventListener("click", () => {
+      syncAllRowsFromDom();
+      const payload = buildPayload();
+      if (!payload) {
+        setStatus("Fix validation issues before downloading.", "err");
+        return;
+      }
+      downloadJson(payload.data, "pattern-help.json");
+      setStatus("Download started — replace src/data/pattern-help.json in the repo if needed.", "ok");
+    });
+
+    document.getElementById("pattern-help-save")?.addEventListener("click", async () => {
+      syncAllRowsFromDom();
+      const payload = buildPayload();
+      if (!payload) {
+        setStatus("Fix validation issues before saving.", "err");
+        return;
+      }
+      setStatus("Saving…", "neutral");
+      try {
+        const res = await fetch(API, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = (await res.json()) as { ok?: boolean; error?: string; hint?: string };
+        if (!res.ok || !data.ok) {
+          if (data.hint === "download") {
+            setStatus(
+              `${data.error || "Save failed."} Use Download JSON and copy the file into src/data/pattern-help.json.`,
+              "err"
+            );
+          } else {
+            setStatus(data.error || `Save failed (${res.status})`, "err");
+          }
+          return;
+        }
+        setStatus("Saved to src/data/pattern-help.json.", "ok");
+      } catch {
+        setStatus("Network error while saving. Try Download JSON.", "err");
+      }
+    });
+
+    async function load() {
+      setStatus("Loading…", "neutral");
+      try {
+        const res = await fetch(API);
+        const json = (await res.json()) as {
+          ok?: boolean;
+          data?: Record<string, { title?: string; text?: unknown; vimeoId?: string }>;
+          error?: string;
+        };
+        if (!res.ok || !json.ok || !json.data) {
+          setStatus(json.error || `Failed to load (${res.status})`, "err");
+          if (loadingEl) loadingEl.hidden = false;
+          return;
+        }
+        const entries = Object.entries(json.data).sort(([a], [b]) => a.localeCompare(b));
+        rows = entries.map(([k, v]) => rowFromServer(k, v));
+        setStatus(`Loaded ${rows.length} help item(s).`, "ok");
+        render();
+      } catch {
+        setStatus("Network error loading data.", "err");
+        if (loadingEl) loadingEl.hidden = false;
+      }
+    }
+
+    void load();
+  </script>
+</BaseLayout>
