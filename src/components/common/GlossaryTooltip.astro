@@ -179,8 +179,7 @@ const titleId = `gt-title-${randomUUID()}`;
     >
       <button
         type="button"
-        class:list={["glossary-tooltip", "glossary-tooltip-trigger", tooltipText && "kbm-tooltip"]}
-        {...(tooltipText ? { "data-tip": tooltipText } : {})}
+        class:list={["glossary-tooltip", "glossary-tooltip-trigger"]}
         aria-haspopup="dialog"
         aria-expanded="false"
         aria-controls={`${rootId}-popup`}
@@ -223,6 +222,42 @@ const titleId = `gt-title-${randomUUID()}`;
 {hasPopup && (
   <script is:inline define:vars={{ rootId }}>
     (function () {
+      var w = window;
+      if (!w.__kbmGlossaryApi) {
+        w.__kbmGlossaryApi = {
+          closeAll: function () {
+            document.querySelectorAll(".glossary-tooltip-wrap").forEach(function (wrap) {
+              var p = wrap.querySelector("[data-glossary-popup]");
+              var b = wrap.querySelector(".glossary-tooltip-trigger");
+              if (p instanceof HTMLElement) p.setAttribute("hidden", "");
+              if (b instanceof HTMLElement) b.setAttribute("aria-expanded", "false");
+              wrap.classList.remove("glossary-tooltip-wrap--open");
+            });
+          },
+          ensureGlobalListeners: function () {
+            if (w.__kbmGlossaryGlobalsBound) return;
+            w.__kbmGlossaryGlobalsBound = true;
+            document.addEventListener(
+              "pointerdown",
+              function (e) {
+                var t = e.target;
+                if (!(t instanceof Element)) return;
+                if (t.closest(".glossary-tooltip-wrap")) return;
+                w.__kbmGlossaryApi.closeAll();
+              },
+              true
+            );
+            document.addEventListener("keydown", function (e) {
+              if (e.key !== "Escape") return;
+              if (!document.querySelector(".glossary-tooltip-wrap--open")) return;
+              e.preventDefault();
+              w.__kbmGlossaryApi.closeAll();
+            });
+          },
+        };
+      }
+      w.__kbmGlossaryApi.ensureGlobalListeners();
+
       var root = document.getElementById(rootId);
       if (!root) return;
       var btn = root.querySelector(".glossary-tooltip-trigger");
@@ -231,6 +266,7 @@ const titleId = `gt-title-${randomUUID()}`;
 
       var lsKey = root.getAttribute("data-glossary-ls-key") || "";
       var autoOnce = root.getAttribute("data-glossary-auto-once") === "true";
+      var api = w.__kbmGlossaryApi;
 
       function markSeen() {
         if (!autoOnce || !lsKey) return;
@@ -258,6 +294,7 @@ const titleId = `gt-title-${randomUUID()}`;
       }
 
       function openPopup() {
+        api.closeAll();
         popup.removeAttribute("hidden");
         setExpanded(true);
         markSeen();
@@ -287,6 +324,7 @@ const titleId = `gt-title-${randomUUID()}`;
       closeBtn &&
         closeBtn.addEventListener("click", function (e) {
           e.stopPropagation();
+          e.preventDefault();
           closePopup();
         });
 
@@ -295,31 +333,6 @@ const titleId = `gt-title-${randomUUID()}`;
         scrim.addEventListener("click", function () {
           closePopup();
         });
-
-      document.addEventListener(
-        "click",
-        function (e) {
-          if (!isOpen()) return;
-          var t = e.target;
-          if (t instanceof Node && root.contains(t)) return;
-          closePopup();
-        },
-        false
-      );
-
-      document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape" && isOpen()) {
-          e.preventDefault();
-          closePopup();
-        }
-      });
-
-      popup.addEventListener("keydown", function (e) {
-        if (e.key === "Escape" && isOpen()) {
-          e.preventDefault();
-          closePopup();
-        }
-      });
 
       if (autoOnce && lsKey && !isSeen()) {
         requestAnimationFrame(function () {
@@ -339,8 +352,14 @@ const titleId = `gt-title-${randomUUID()}`;
     max-width: 100%;
   }
 
+  /* Popups are position:absolute; avoid clipping inside pattern cards with implicit overflow. */
+  :global(.pattern-card:has(.glossary-tooltip-wrap--open)) {
+    overflow: visible;
+  }
+
   .glossary-tooltip-wrap--open {
-    z-index: 50;
+    z-index: 10020;
+    isolation: isolate;
   }
 
   .glossary-tooltip {
@@ -387,7 +406,7 @@ const titleId = `gt-title-${randomUUID()}`;
     position: absolute;
     top: calc(100% + 8px);
     left: 0;
-    z-index: 50;
+    z-index: 10050;
     width: min(420px, 85vw);
     max-height: min(70vh, 520px);
     display: flex;
@@ -398,6 +417,11 @@ const titleId = `gt-title-${randomUUID()}`;
     padding: 12px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     box-sizing: border-box;
+    pointer-events: auto;
+  }
+
+  .glossary-popup[hidden] {
+    display: none !important;
   }
 
   .glossary-popup-sr-title {
@@ -427,7 +451,9 @@ const titleId = `gt-title-${randomUUID()}`;
     line-height: 1;
     cursor: pointer;
     flex-shrink: 0;
-    z-index: 1;
+    z-index: 10;
+    pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .glossary-close:hover {
