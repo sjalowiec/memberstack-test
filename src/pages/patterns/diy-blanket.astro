@@ -1611,7 +1611,6 @@ document.addEventListener('DOMContentLoaded', function() {
     tabPanels.forEach((p) => {
       p.classList.toggle('active', p.id === `tab-${target}`);
     });
-    window.__kbmGlossaryApi?.closeAll?.();
     if (target === 'share') {
       loadPatternComments();
     }
@@ -2475,7 +2474,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Main calculate function (updates Pattern tab content when build is complete; same math as before)
   function calculate() {
-    window.__kbmGlossaryApi?.closeAll?.();
     updateYarnCalculatorVisibility();
     updateYarnEstimate();
     updateNeedleCount();
