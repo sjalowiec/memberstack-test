@@ -6,13 +6,15 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "vitest run"
   },
   "dependencies": {
     "@netlify/blobs": "^10.7.4",
     "astro": "^5.17.1"
   },
   "devDependencies": {
+    "vitest": "^3.2.4",
     "@astrojs/check": "^0.9.8",
     "@astrojs/netlify": "^6.6.4",
     "@types/node": "^25.3.0",

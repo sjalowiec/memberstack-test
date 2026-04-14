@@ -1662,13 +1662,10 @@ select.disabled {
                     <select id="crown" data-testid="select-crown" autocomplete="off">
                       <option value="" disabled selected hidden>Choose crown shaping</option>
                       <option value="gathered">Gathered (cinched top)</option>
-                      <option value="wedge-4-decrease">4 Wedge Decrease</option>
-                      <option value="wedge-4" disabled>4-Wedge Decreases</option>
-                      <option value="wedge-6" disabled>6-Wedge Decreases</option>
-                      <option value="spiral" disabled>Spiral Crown (Smooth, Continuous)</option>
+                      <option value="wedge-4-decrease">4-Wedge Decrease</option>
+                      <option value="spiral">Spiral Crown (Smooth, Continuous)</option>
                     </select>
                   </div>
-                  <small class="helper-text">More crown styles coming soon.</small>
                 </div>
               </div>
 
@@ -1903,10 +1900,9 @@ async function initHatBuilder() {
     return n % 2 === 0 ? n : n + 1;
   }
 
-  /** Wedge crown: trim cast-on to multiple of 4 or 6 (same as generatePattern / generateDiagram). */
+  /** Wedge crown: trim cast-on for legacy wedge-4; 4-wedge decrease rounds up to multiple of 4. */
   function applyHatCrownCastOnAdjustment(castOnSts, crown) {
     if (crown === 'wedge-4') return castOnSts - (castOnSts % 4);
-    if (crown === 'wedge-6') return castOnSts - (castOnSts % 6);
     if (crown === 'wedge-4-decrease') {
       // 4 wedge crown setup
       // stitch count must be divisible by 4
@@ -2587,8 +2583,9 @@ async function initHatBuilder() {
       }
 
       if (crownSelect) {
-        const crownVal =
+        let crownVal =
           typeof o.crownShaping === 'string' ? o.crownShaping.trim() : '';
+        if (crownVal === 'wedge-4') crownVal = 'wedge-4-decrease';
         if (crownVal) {
           const match = Array.from(crownSelect.options).find(
             (opt) => opt.value === crownVal && !opt.disabled
@@ -3012,7 +3009,9 @@ async function initHatBuilder() {
     const crownDepthEl = resolveCrownDepthInput();
     const crownDep = crownDepthEl?.value?.trim();
     if (!brimLen || Number(brimLen) <= 0 || !crownDep || Number(crownDep) <= 0) return false;
-    if (!crownSelect?.value) return false;
+    const crownVal = crownSelect?.value ?? '';
+    const allowedCrowns = new Set(['gathered', 'wedge-4-decrease', 'spiral']);
+    if (!allowedCrowns.has(crownVal)) return false;
     const bt = brimTypeSelect?.value;
     if (bt !== 'single' && bt !== 'folded') return false;
 
@@ -3880,12 +3879,12 @@ async function initHatBuilder() {
     // Crown display
     const crownLabels = {
       gathered: 'Gathered (cinched top)',
-      'wedge-4-decrease': '4 Wedge Decrease',
-      'wedge-4': '4-Wedge Decreases',
-      'wedge-6': '6-Wedge Decreases',
-      spiral: 'Spiral Crown (Smooth, Continuous)'
+      'wedge-4-decrease': '4-Wedge Decrease',
+      'wedge-4': '4-Wedge Decrease',
+      spiral: 'Spiral Crown (Smooth, Continuous)',
     };
-    document.getElementById('print-crown').textContent = `Crown: ${crownLabels[crown]} — depth ${displayCrownDep}${unitSuffix}`;
+    const crownPrintLabel = crownLabels[crown] ?? crown;
+    document.getElementById('print-crown').textContent = `Crown: ${crownPrintLabel} — depth ${displayCrownDep}${unitSuffix}`;
     
     // Hat length display
     let lengthLabel;
@@ -4057,15 +4056,23 @@ async function initHatBuilder() {
     `;
     }
 
-    const finishingHtml =
-      crown === 'gathered'
-        ? ` 
+    const finishingGathered = `
         <p>Block the hat to set the shape.</p>
       <p>Pull the tail tight to gather the top of the hat.</p>
       <p>Use the tail to seam the body.</p>
-      <p>Work in yarn ends.</p>`
-        : `
+      <p>Work in yarn ends.</p>`;
+    const finishingSpiral = `
+      <p>Block the hat to set the shape.</p>
+      <p>Weave in the crown tail once the spiral crown is complete.</p>
+      <p>Seam the body using <span class="pattern-term" data-tooltip="An invisible, right-side seaming method that joins two edges neatly.">mattress stitch</span> or your preferred method. <span class="pattern-term" data-tooltip="Wet or steam to set the finished shape.">Block</span> if desired and weave in all ends.</p>`;
+    const finishingWedgeSeamed = `
       <p>Seam each crown wedge first, then seam the body using <span class="pattern-term" data-tooltip="An invisible, right-side seaming method that joins two edges neatly.">mattress stitch</span> or your preferred method. <span class="pattern-term" data-tooltip="Wet or steam to set the finished shape.">Block</span> if desired and weave in all ends.</p>`;
+    const finishingHtml =
+      crown === 'gathered'
+        ? finishingGathered
+        : crown === 'spiral'
+          ? finishingSpiral
+          : finishingWedgeSeamed;
     
     // Pattern HTML — ON: full intro tip + Hide link; OFF: quiet “Show pattern tips” row only
     const savedShowTipsForBtn = localStorage.getItem('hat-show-tips') === 'true';
@@ -4171,10 +4178,9 @@ async function initHatBuilder() {
     // Map crown values to correct SVG filenames
     if (crown === 'wedge-4' || crown === 'wedge-4-decrease') {
       templateName = 'hat-4-wedge';
-    } else if (crown === 'wedge-6') {
-      templateName = 'hat-6-wedge';
     } else {
-      templateName = `hat-${crown}`; // gathered, spiral
+      // gathered + spiral: use gathered dimension diagram (no hat-spiral.svg in /diagrams yet)
+      templateName = 'hat-gathered';
     }
     
     try {
