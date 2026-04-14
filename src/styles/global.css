@@ -111,6 +111,20 @@ body.dev-bypass-gating [data-gated="content"] {
 body.dev-bypass-gating [data-gated="locked"] {
   display: none !important;
 }
+/* Row of yarn symbols */
+.yarn-symbol-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 15px 0;
+  flex-wrap: wrap;
+}
+
+.yarn-symbol-row img {
+  width: 60px;
+  height: auto;
+}
+
 
 /*
  * Local: localhost + ?member=true → body.dev-member + window.__KBM_DEV_MEMBER__ (BaseLayout).
@@ -223,6 +237,35 @@ main {
   body.glossary-page main {
     padding-top: calc(var(--header-height) + 8px);
   }
+}
+
+/* Center images inside glossary modal (dialog on glossary index) and glossary term popups */
+dialog.glossaryModal .glossaryModal__body img,
+.glossary-content img {
+  display: block;
+  margin: 20px auto;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Reduce top spacing in glossary modal (fetched entry uses <main>; strip global main offset) */
+dialog.glossaryModal main {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+dialog.glossaryModal .glossaryModal__body {
+  padding-top: 0 !important;
+}
+
+dialog.glossaryModal .glossaryModal__top {
+  padding-bottom: 0;
+}
+
+dialog.glossaryModal .glossaryModal__body .glossary-entry h1,
+dialog.glossaryModal .glossaryModal__body .glossary-entry h2,
+dialog.glossaryModal .glossaryModal__body .glossary-entry__title {
+  margin-top: 0;
 }
 
 /* Headings */

@@ -1,0 +1,155 @@
+/* Knitting machine brands reference — scoped to .machine-brands-page */
+
+.machine-brands-page.page-wrap {
+  max-width: 1100px;
+  /* main.site-content already clears the fixed header; avoid stacking .page-wrap’s default top padding */
+  padding-top: 8px;
+  padding-bottom: 2.5rem;
+  background: var(--kbm-bg, #e9ece7);
+  border-radius: 14px;
+}
+
+.machine-brands-page .page-head {
+  margin-bottom: 1rem;
+}
+
+.machine-brands-page .page-subhead {
+  max-width: 52rem;
+  line-height: 1.55;
+}
+
+.machine-brands-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem 2.25rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .machine-brands-layout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+.machine-brands-col--right {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.machine-brands-region {
+  background: #dfe3da;
+  border-radius: 16px;
+  padding: 1.35rem 1.25rem 1.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.machine-brands-region__title {
+  margin: 0 0 1.1rem;
+  font-size: var(--text-lg, 1.125rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--kbm-green, #52682d);
+  line-height: 1.25;
+}
+
+.machine-brands-region__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.machine-brands-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .machine-brands-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.machine-brands-row--vintage {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 900px) {
+  .machine-brands-row--vintage {
+    grid-template-columns: 1fr;
+  }
+}
+
+.machine-brands-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.1rem 1.15rem 1.15rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 14px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.machine-brands-card--wide {
+  grid-column: 1 / -1;
+}
+
+.machine-brands-card--compact {
+  padding: 0.85rem 0.95rem 1rem;
+}
+
+.machine-brands-card__block + .machine-brands-card__block {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ring, #e5e8e0);
+}
+
+.machine-brands-brand {
+  margin: 0 0 0.45rem;
+  font-size: var(--text-base, 1rem);
+  font-weight: 700;
+  line-height: 1.3;
+  color: #1f2933;
+}
+
+.machine-brands-brand .machine-brands-tag {
+  font-weight: 600;
+  font-size: 0.85em;
+  font-style: italic;
+  color: var(--text-muted, #6b7280);
+}
+
+.machine-brands-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  list-style-type: disc;
+}
+
+.machine-brands-list li {
+  margin: 0.28rem 0;
+  padding-left: 0.15rem;
+  line-height: 1.45;
+  font-size: var(--text-sm, 0.9375rem);
+  color: #374151;
+}
+
+.machine-brands-note {
+  font-style: italic;
+  font-size: 0.92em;
+  color: var(--text-muted, #6b7280);
+}
+
+.machine-brands-list li .machine-brands-note {
+  margin-left: 0.15rem;
+}
+
+.machine-brands-passap-note {
+  display: block;
+  margin-top: 0.35rem;
+  font-style: italic;
+  font-size: 0.9em;
+  color: var(--text-muted, #6b7280);
+}

@@ -1,73 +1,197 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import ReferencePageShell from "../../components/ReferencePageShell.astro";
-
+import PageHead from "../../components/PageHead.astro";
+import "../../styles/pages/machine-brands.css";
 ---
 
-<Layout title="Knitting Machine Brand Names Worldwide">
+<Layout title="Knitting Machine Brands">
+  <div class="page-wrap machine-brands-page">
+    <PageHead
+      title="Knitting Machine Brands"
+      subhead="Use this guide to identify your knitting machine brand and its related names across different countries."
+    />
 
-<ReferencePageShell
-  title="Knitting Machine Brand Names Worldwide"
-  subhead="Many knitting machines were sold under different brand names around the world. This chart helps identify equivalent machines across Brother, Silver Reed, Studio, KnitKing, Elna, and other brands."
-  backHref="/learn/reference#category-machine-reference"
-  backLabel="Back to Machine References"
->
-    <figure class="machine-brand-chart">
-      <img
-        src="/images/references/Knitting-machine-brands-worldwide.jpg"
-        alt="Knitting machine brand names worldwide comparison chart"
-      />
+    <div class="machine-brands-layout">
+      <div class="machine-brands-col machine-brands-col--left">
+        <section
+          class="machine-brands-region"
+          aria-labelledby="machine-brands-japanese"
+        >
+          <h2 id="machine-brands-japanese" class="machine-brands-region__title">
+            Japanese
+          </h2>
+          <div class="machine-brands-region__body">
+            <div class="machine-brands-row">
+              <article class="machine-brands-card">
+                <div class="machine-brands-card__block">
+                  <h3 class="machine-brands-brand">Brother</h3>
+                  <ul class="machine-brands-list">
+                    <li>KnitKing <span class="machine-brands-note">(US)</span></li>
+                    <li>Defendi Brother <span class="machine-brands-note">(IT)</span></li>
+                    <li>Jones <span class="machine-brands-note">(UK)</span></li>
+                    <li>Erka <span class="machine-brands-note">(F)</span></li>
+                  </ul>
+                </div>
+                <div class="machine-brands-card__block">
+                  <h3 class="machine-brands-brand">
+                    Chinese clones <span class="machine-brands-tag">(new)</span>
+                  </h3>
+                  <ul class="machine-brands-list">
+                    <li>Artisan <span class="machine-brands-note">(US)</span></li>
+                    <li>Creative</li>
+                    <li>Taitexma</li>
+                  </ul>
+                </div>
+              </article>
 
-      <figcaption>
-        Knitting machines were frequently sold under different brand names depending
-        on the country where they were distributed.
-      </figcaption>
-    </figure>
+              <article class="machine-brands-card">
+                <div class="machine-brands-card__block">
+                  <h3 class="machine-brands-brand">Toyota</h3>
+                  <ul class="machine-brands-list">
+                    <li>Elna <span class="machine-brands-note">(SW)</span></li>
+                  </ul>
+                </div>
+                <div class="machine-brands-card__block">
+                  <h3 class="machine-brands-brand">Juki</h3>
+                  <ul class="machine-brands-list">
+                    <li>Erka <span class="machine-brands-note">(F)</span></li>
+                    <li>Gritzner <span class="machine-brands-note">(DE)</span></li>
+                    <li>Singer /Lemair <span class="machine-brands-note">(AU)</span></li>
+                  </ul>
+                </div>
+                <div class="machine-brands-card__block">
+                  <h3 class="machine-brands-brand">
+                    Corona <span class="machine-brands-note">(even 11 mm)</span>
+                  </h3>
+                  <ul class="machine-brands-list">
+                    <li>Studio 121 <span class="machine-brands-note">(11mm)</span></li>
+                  </ul>
+                </div>
+              </article>
+            </div>
 
-    <section class="reference-notes">
+            <article class="machine-brands-card machine-brands-card--wide">
+              <div class="machine-brands-card__block">
+                <h3 class="machine-brands-brand">Silver Reed</h3>
+                <ul class="machine-brands-list">
+                  <li>
+                    Silver Reed <span class="machine-brands-note">(UK)</span>
+                    <span class="machine-brands-note">(until 2011)</span>
+                  </li>
+                  <li>Dimac <span class="machine-brands-note">(Bulky8 /SK120)</span></li>
+                  <li>Elna <span class="machine-brands-note">(SW)</span></li>
+                  <li>Necchi/Vigorelli <span class="machine-brands-note">(IT)</span></li>
+                  <li>Norsy <span class="machine-brands-note">(NO)</span></li>
+                  <li>Riccar <span class="machine-brands-note">(RU)</span></li>
+                  <li>Knitmaster / Singer <span class="machine-brands-note">(AU)</span></li>
+                  <li>Empisal Knitmaster <span class="machine-brands-note">(UK)</span></li>
+                  <li>Singer <span class="machine-brands-note">(US)</span></li>
+                  <li>Studio <span class="machine-brands-note">(CA)</span></li>
+                </ul>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
 
-      <h2>Why machines have different brand names</h2>
+      <div class="machine-brands-col machine-brands-col--right">
+        <section
+          class="machine-brands-region"
+          aria-labelledby="machine-brands-european"
+        >
+          <h2 id="machine-brands-european" class="machine-brands-region__title">
+            European
+          </h2>
+          <div class="machine-brands-region__body">
+            <div class="machine-brands-row">
+              <article class="machine-brands-card">
+                <div class="machine-brands-card__block">
+                  <h3 class="machine-brands-brand">Passap</h3>
+                  <ul class="machine-brands-list">
+                    <li>
+                      Pfaff <span class="machine-brands-note">(DE-UK)</span>
+                      <span class="machine-brands-passap-note">(even 3.123mm)</span>
+                    </li>
+                  </ul>
+                </div>
+                <div class="machine-brands-card__block">
+                  <h3 class="machine-brands-brand">
+                    Bond <span class="machine-brands-note">(UK)</span>
+                  </h3>
+                  <ul class="machine-brands-list">
+                    <li>Incredible Sweater Machine (ISM)</li>
+                  </ul>
+                </div>
+              </article>
 
-      <p>
-        During the peak years of home knitting machines, manufacturers often partnered
-        with distributors in different countries. The same machine might appear under
-        several different brand names even though the underlying design and parts were
-        identical.
-      </p>
+              <article class="machine-brands-card">
+                <div class="machine-brands-card__block">
+                  <h3 class="machine-brands-brand">
+                    Superba
+                    <span class="machine-brands-note">(F-EU-CA-US-AU-AS)</span>
+                  </h3>
+                  <ul class="machine-brands-list">
+                    <li>White <span class="machine-brands-note">(US)</span></li>
+                    <li>Singer <span class="machine-brands-note">(EU-UK)</span></li>
+                    <li>Phildar <span class="machine-brands-note">(F)</span></li>
+                  </ul>
+                </div>
+              </article>
+            </div>
 
-      <p>
-        Understanding these relationships can make it easier to find manuals,
-        accessories, replacement parts, and tutorials for your machine.
-      </p>
+            <article class="machine-brands-card machine-brands-card--wide">
+              <div class="machine-brands-card__block">
+                <h3 class="machine-brands-brand">
+                  Other brands <span class="machine-brands-note">(vintage)</span>
+                </h3>
+                <ul class="machine-brands-list">
+                  <li>Girotex <span class="machine-brands-note">(F)</span></li>
+                  <li>Dopleta <span class="machine-brands-note">(CZ)</span></li>
+                  <li>Veritas <span class="machine-brands-note">(DE/DDR)</span></li>
+                  <li>Knittax <span class="machine-brands-note">(DE)</span></li>
+                </ul>
+              </div>
+            </article>
+          </div>
+        </section>
 
-    </section>
+        <section
+          class="machine-brands-region"
+          aria-labelledby="machine-brands-vintage"
+        >
+          <h2 id="machine-brands-vintage" class="machine-brands-region__title">
+            Vintage
+          </h2>
+          <div class="machine-brands-region__body">
+            <div class="machine-brands-row machine-brands-row--vintage">
+              <article class="machine-brands-card machine-brands-card--compact">
+                <h3 class="machine-brands-brand">Prior Purl</h3>
+                <ul class="machine-brands-list">
+                  <li>
+                    <span class="machine-brands-note">(AU)</span> Garter Stitch
+                  </li>
+                </ul>
+              </article>
 
-</ReferencePageShell>
+              <article class="machine-brands-card machine-brands-card--compact">
+                <h3 class="machine-brands-brand">Neva Severianka</h3>
+                <ul class="machine-brands-list">
+                  <li><span class="machine-brands-note">(RU)</span> 5mm</li>
+                </ul>
+              </article>
 
+              <article class="machine-brands-card machine-brands-card--compact">
+                <h3 class="machine-brands-brand">Simac</h3>
+                <ul class="machine-brands-list">
+                  <li>Sona</li>
+                  <li>Inaisa</li>
+                  <li><span class="machine-brands-note">(IN)</span> 4.5</li>
+                </ul>
+              </article>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
 </Layout>
-
-<style>
-
-.machine-brand-chart {
-  margin: 40px auto;
-  text-align: center;
-}
-
-.machine-brand-chart img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-}
-
-.machine-brand-chart figcaption {
-  font-size: 0.9rem;
-  margin-top: 10px;
-  color: #666;
-}
-
-.reference-notes {
-  max-width: 800px;
-  margin: 40px auto;
-}
-
-</style>
