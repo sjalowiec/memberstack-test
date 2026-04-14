@@ -4,6 +4,8 @@ import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import FloatingInput from "../../components/tools/FloatingInput.astro";
+import PrintButton from "../../components/common/PrintButton.astro";
+import ToolResultCard from "../../components/tools/ToolResultCard.astro";
 import MemberLockOverlay from "../../components/ui/MemberLockOverlay.astro";
 import toolsData from "../../../data/tools.json";
 import "../../styles/wizard.css";
@@ -21,108 +23,153 @@ const toolPrintTitle = tool?.title ?? "Gauge Calculator";
 
 <Layout
   title="Gauge Calculator | Knit by Machine"
-  description="Calculate stitch and row gauge from a measured section of your swatch. Enter stitch and row counts with the width and height of that same section."
+  description="Figure out stitch gauge and row gauge from your swatch measurements. Enter stitches, rows, width, and height for results per 4 inches or 10 cm."
   toolPrintTitle={toolPrintTitle}
 >
   <main class="wizard-page">
     <div class="wizard-shell">
-      <WizardBackLink fallback="/help-hub" className="back-link" label="← Back" />
+      <WizardBackLink className="back-link" />
 
-      <section class="wizard-hero">
+      <section class="wizard-hero gauge-hero">
         <ToolPageHeader tool={tool} fallbackTitle="Gauge Calculator" />
-        <h2 class="gauge-hero-heading">Skip the math. Just measure your swatch.</h2>
-        <p class="wizard-intro">
-          Enter your stitches, rows, width, and height—we’ll calculate your gauge.
+        <h2 class="gauge-tagline">Skip the Math!</h2>
+        <p class="wizard-intro gauge-hero-intro">
+          The Gauge Calculator helps you figure out the stitch gauge and row gauge of your knitted swatch.
+        </p>
+        <p class="wizard-intro gauge-hero-intro">
+          Accurate gauge measurements help your projects turn out the way you expect.
         </p>
       </section>
 
       <div class="gauge-tool-wrap">
         <div class="gauge-calculator-panel kbm-tool-calculator-area">
           <form id="wizard-form" class="gauge-form" novalidate>
-            <div class="dart-tool-layout">
-              <div class="dart-input-column">
-                <div class="section-header-with-toggle">
-                  <h2>Enter your measurements</h2>
+            <div class="gauge-tool-layout">
+              <div class="gauge-input-column">
+                <h2 class="gauge-form-section-title gauge-form-section-title--inline-help">
+                  <span class="gauge-form-heading-text">Enter your measurements</span>
+                  <button
+                    type="button"
+                    class="gauge-help-trigger"
+                    id="gauge-measure-help-open"
+                    aria-haspopup="dialog"
+                    aria-controls="gauge-measure-dialog"
+                    aria-label="How to measure"
+                    title="How to measure"
+                  >
+                    <img
+                      src="/images/help.svg"
+                      alt=""
+                      width="18"
+                      height="32"
+                      decoding="async"
+                    />
+                  </button>
+                </h2>
+
+                <div class="gauge-units-block">
+                  <p class="gauge-units-label">Units (inches or cm)</p>
                   <UnitToggle id="gauge-units" />
                 </div>
 
                 <div class="gauge-input-grid">
-                  <FloatingInput
-                    id="numStitches"
-                    name="numStitches"
-                    label="Measured stitch count"
-                    type="number"
-                    min={1}
-                    step={1}
-                    inputmode="numeric"
-                    placeholder=" "
-                  />
-                  <FloatingInput
-                    id="numRows"
-                    name="numRows"
-                    label="Measured row count"
-                    type="number"
-                    min={1}
-                    step={1}
-                    inputmode="numeric"
-                    placeholder=" "
-                  />
-                  <FloatingInput
-                    id="measuredWidth"
-                    name="measuredWidth"
-                    label="Measured width (inches)"
-                    labelId="measuredWidthLabel"
-                    type="number"
-                    min={0.01}
-                    step={0.01}
-                    inputmode="decimal"
-                    placeholder=" "
-                  />
-                  <FloatingInput
-                    id="measuredHeight"
-                    name="measuredHeight"
-                    label="Measured height (inches)"
-                    labelId="measuredHeightLabel"
-                    type="number"
-                    min={0.01}
-                    step={0.01}
-                    inputmode="decimal"
-                    placeholder=" "
-                  />
+                  <div class="gauge-field">
+                    <FloatingInput
+                      id="measuredStitches"
+                      name="measuredStitches"
+                      label="Measured Stitches"
+                      type="number"
+                      min={1}
+                      step={1}
+                      inputmode="numeric"
+                      placeholder=" "
+                    />
+                    <p class="gauge-field-hint">Count stitches between markers only.</p>
+                  </div>
+                  <div class="gauge-field">
+                    <FloatingInput
+                      id="measuredRows"
+                      name="measuredRows"
+                      label="Measured Rows"
+                      type="number"
+                      min={1}
+                      step={1}
+                      inputmode="numeric"
+                      placeholder=" "
+                    />
+                    <p class="gauge-field-hint">Count rows between markers only.</p>
+                  </div>
+                  <div class="gauge-field">
+                    <FloatingInput
+                      id="widthMeasured"
+                      name="widthMeasured"
+                      label="Width Measured"
+                      type="number"
+                      min={0.01}
+                      step={0.01}
+                      inputmode="decimal"
+                      placeholder=" "
+                    />
+                    <p class="gauge-field-hint">Width across those stitches.</p>
+                  </div>
+                  <div class="gauge-field">
+                    <FloatingInput
+                      id="heightMeasured"
+                      name="heightMeasured"
+                      label="Height Measured"
+                      type="number"
+                      min={0.01}
+                      step={0.01}
+                      inputmode="decimal"
+                      placeholder=" "
+                    />
+                    <p class="gauge-field-hint">Height across those rows.</p>
+                  </div>
                 </div>
 
                 <div class="gauge-actions">
-                  <button type="submit" class="wizard-button" id="gaugeCalculateBtn">Calculate</button>
+                  <button type="submit" class="wizard-button" id="gaugeCalculateBtn">Calculate Gauge</button>
                 </div>
 
                 <div id="gaugeValidation" class="gauge-validation" role="alert" hidden></div>
-
-                <div id="gaugeResults" class="gauge-results" hidden>
-                  <div class="gauge-result-card">
-                    <div class="gauge-result-label">Stitch Gauge</div>
-                    <div class="gauge-result-primary" id="stitchGaugeResult"></div>
-                  </div>
-                  <div class="gauge-result-card">
-                    <div class="gauge-result-label">Row Gauge</div>
-                    <div class="gauge-result-primary" id="rowGaugeResult"></div>
-                  </div>
-                </div>
               </div>
 
-              <aside class="dart-image-panel" aria-label="Gauge illustration">
-                <img
-                  src="/images/tools/gauge-generator.png"
-                  alt=""
-                  class="dart-reference-image"
-                  width="520"
-                  height="400"
-                  loading="lazy"
-                  decoding="async"
-                />
+              <aside class="gauge-image-panel" aria-label="Swatch measurement reference">
+                <div class="gauge-image-panel__card">
+                  <img
+                    src="/images/tools/gauge-generator.png"
+                    alt=""
+                    class="gauge-reference-image"
+                    width="520"
+                    height="400"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
               </aside>
             </div>
           </form>
         </div>
+
+        <ToolResultCard
+          id="gaugeResultsCard"
+          hidden
+          title="Your gauge"
+          resultsContentId="gaugeResultsContent"
+          singleColumn={true}
+        >
+          <PrintButton slot="actions" label="" ariaLabel="Print gauge results" />
+          <div class="gauge-results-body">
+            <div class="gauge-result-row">
+              <div class="gauge-result-row__label">Stitch Gauge</div>
+              <div class="gauge-result-row__value" id="stitchGaugeResult"></div>
+            </div>
+            <div class="gauge-result-row">
+              <div class="gauge-result-row__label">Row Gauge</div>
+              <div class="gauge-result-row__value" id="rowGaugeResult"></div>
+            </div>
+          </div>
+        </ToolResultCard>
 
         {isMemberOnly && (
           <div data-ms-content="!paid-plans">
@@ -134,41 +181,77 @@ const toolPrintTitle = tool?.title ?? "Gauge Calculator";
           </div>
         )}
       </div>
-
-      <div class="gauge-below-calculator">
-        <div class="gauge-important-note" role="note">
-          <strong>Important:</strong> Measure between your markers, not across the entire swatch.
-        </div>
-        <p class="gauge-note-follow">
-          Enter the number of stitches and rows measured inside that marked area, then enter the width and height of that same section.
-        </p>
-      </div>
     </div>
+
+    <dialog id="gauge-measure-dialog" class="gauge-measure-dialog" aria-labelledby="gauge-measure-dialog-title">
+      <div class="gauge-measure-dialog__shell">
+        <div class="gauge-measure-dialog__header">
+          <h2 id="gauge-measure-dialog-title" class="gauge-measure-dialog__title">How to measure</h2>
+          <button type="button" class="gauge-measure-dialog__close" id="gauge-measure-dialog-close" aria-label="Close">
+            ✕
+          </button>
+        </div>
+        <div class="gauge-measure-dialog__body">
+          <p><strong>Choose inches or cm</strong></p>
+          <p>Select the unit you used to measure your swatch.</p>
+
+          <p><strong>Enter stitch count</strong></p>
+          <p>Enter the total number of stitches you measured across your swatch.</p>
+          <p>Measure between the marked stitches, not across the entire swatch.</p>
+
+          <p><strong>Enter row count</strong></p>
+          <p>Enter the total number of rows you measured from top to bottom.</p>
+          <p>Measure between the marked rows, not the entire swatch.</p>
+
+          <p><strong>Enter width measurement</strong></p>
+          <p>Enter the width of the measured stitches in inches or cm.</p>
+
+          <p><strong>Enter height measurement</strong></p>
+          <p>Enter the height of the measured rows in inches or cm.</p>
+
+          <p><strong>Click Calculate Gauge</strong></p>
+          <p>The tool will calculate:</p>
+          <ul class="gauge-measure-dialog__list">
+            <li><strong>Stitch Gauge:</strong> stitches per 4" or 10 cm</li>
+            <li><strong>Row Gauge:</strong> rows per 4" or 10 cm</li>
+          </ul>
+
+          <p><strong>Tips for more accurate gauge:</strong></p>
+          <ul class="gauge-measure-dialog__list">
+            <li>Measure your swatch after it has rested and been blocked</li>
+            <li>Use a ruler with clear markings</li>
+            <li>Measure more than one area of the swatch and average the results when needed</li>
+          </ul>
+        </div>
+      </div>
+    </dialog>
   </main>
 
   <style>
-    .gauge-hero-heading {
-      margin: 0.35rem 0 0.75rem;
-      font-size: 1.5rem;
+    /* Compact hero — form stays high on the page (Dart-style) */
+    .gauge-hero .gauge-tagline {
+      margin: 0.2rem 0 0.35rem;
+      font-size: 1.25rem;
       font-weight: 700;
       color: var(--kbm-green);
       line-height: 1.25;
     }
 
-    .gauge-tool-wrap {
-      position: relative;
-      margin-bottom: 1.5rem;
+    .gauge-hero .gauge-hero-intro {
+      margin: 0.2rem 0;
+      max-width: 44rem;
     }
 
-    .gauge-below-calculator {
-      max-width: 42rem;
+    .gauge-hero .gauge-hero-intro:last-of-type {
+      margin-bottom: 0.65rem;
+    }
+
+    .gauge-tool-wrap {
+      position: relative;
       margin-bottom: 2rem;
     }
 
-    .gauge-below-calculator .gauge-important-note {
-      margin-top: 0;
-    }
-
+    /* Match Dart Formula calculator panel */
     .gauge-calculator-panel {
       background: #fff;
       padding: 1.75rem;
@@ -184,62 +267,225 @@ const toolPrintTitle = tool?.title ?? "Gauge Calculator";
       }
     }
 
-    /* Same two-column layout as Dart Formula tool */
-    .dart-tool-layout {
+    .gauge-tool-layout {
       display: flex;
       flex-wrap: wrap;
       gap: 1.5rem;
       align-items: flex-start;
     }
-    .dart-input-column {
+
+    .gauge-input-column {
       flex: 1 1 320px;
       min-width: 0;
     }
-    .dart-input-column > :global(.units-toggle) {
-      margin-bottom: 1rem;
-    }
-    .dart-image-panel {
+
+    .gauge-image-panel {
       flex: 0 1 280px;
       min-width: 0;
       margin: 0 auto;
     }
+
     @media (max-width: 767px) {
-      .dart-image-panel {
-        display: none;
+      .gauge-tool-layout {
+        flex-direction: column;
+      }
+
+      .gauge-image-panel {
+        flex: 1 1 auto;
+        width: 100%;
+        max-width: 280px;
       }
     }
-    .dart-reference-image {
+
+    .gauge-image-panel__card {
+      background: #fafaf8;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .gauge-reference-image {
       width: 100%;
       max-width: 280px;
       height: auto;
       display: block;
-      border-radius: 12px;
+      margin: 0 auto;
+      border-radius: 8px;
       box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
     }
 
-    .section-header-with-toggle {
-      display: flex;
+    .gauge-form-section-title--inline-help {
+      display: inline-flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
+      gap: 7px;
+      flex-wrap: wrap;
+      margin: 0 0 0.75rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #2f3a2f;
+      line-height: 1.3;
     }
 
-    .section-header-with-toggle h2 {
+    .gauge-form-heading-text {
       margin: 0;
-      font-size: 1.25rem;
+    }
+
+    .gauge-help-trigger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin: 0;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      border-radius: 4px;
+      line-height: 0;
+      opacity: 0.8;
+    }
+
+    .gauge-help-trigger:hover {
+      opacity: 1;
+    }
+
+    .gauge-help-trigger:focus-visible {
+      outline: 2px solid #52682d;
+      outline-offset: 2px;
+      opacity: 1;
+    }
+
+    .gauge-help-trigger img {
+      display: block;
+      width: 17px;
+      height: auto;
+    }
+
+    /* Native <dialog> — same pattern as glossary modal (positioning below fixed header) */
+    dialog.gauge-measure-dialog {
+      position: fixed;
+      top: calc(var(--header-offset, 170px) + 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(480px, 92vw);
+      max-height: calc(100vh - var(--header-offset, 170px) - 24px);
+      margin: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      z-index: 99999;
+    }
+
+    dialog.gauge-measure-dialog::backdrop {
+      background: rgba(0, 0, 0, 0.45);
+    }
+
+    .gauge-measure-dialog__shell {
+      display: flex;
+      flex-direction: column;
+      max-height: inherit;
+      min-height: 0;
+    }
+
+    .gauge-measure-dialog__header {
+      position: relative;
+      flex: 0 0 auto;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 1rem 2.75rem 0.75rem 1.25rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .gauge-measure-dialog__title {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #1f2937;
+      line-height: 1.3;
+    }
+
+    .gauge-measure-dialog__close {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 40px;
+      height: 40px;
+      margin: 0;
+      padding: 0;
+      line-height: 1;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      background: #fff;
+      color: #374151;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    .gauge-measure-dialog__close:hover {
+      background: #f3f4f6;
+    }
+
+    .gauge-measure-dialog__body {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 1rem 1.25rem 1.25rem;
+      font-size: 0.9375rem;
+      line-height: 1.55;
+      color: #4b5563;
+    }
+
+    .gauge-measure-dialog__body p {
+      margin: 0 0 0.5rem;
+    }
+
+    .gauge-measure-dialog__body p strong {
+      color: #374151;
+    }
+
+    .gauge-measure-dialog__list {
+      margin: 0 0 0.75rem;
+      padding-left: 1.2rem;
+    }
+
+    .gauge-measure-dialog__list li + li {
+      margin-top: 0.25rem;
+    }
+
+    .gauge-units-block {
+      margin-bottom: 1rem;
+    }
+
+    .gauge-units-label {
+      margin: 0 0 0.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #374151;
     }
 
     .gauge-input-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-top: 8px;
+      gap: 1rem 1.25rem;
     }
 
     @media (max-width: 640px) {
       .gauge-input-grid {
         grid-template-columns: 1fr;
       }
+    }
+
+    .gauge-field-hint {
+      margin: 0.3rem 0 0;
+      font-size: 0.8rem;
+      line-height: 1.35;
+      color: #6b7280;
     }
 
     .gauge-actions {
@@ -255,6 +501,7 @@ const toolPrintTitle = tool?.title ?? "Gauge Calculator";
       color: #fff;
       border: none;
       cursor: pointer;
+      transition: background 0.2s;
     }
 
     .gauge-actions .wizard-button:hover {
@@ -279,79 +526,47 @@ const toolPrintTitle = tool?.title ?? "Gauge Calculator";
       display: block;
     }
 
-    .gauge-results {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1rem;
-      margin-top: 1.5rem;
+    :global(#gaugeResultsContent) {
+      line-height: 1.55;
     }
 
-    .gauge-result-card {
-      background: #f8f8f5;
-      border: 1px solid #e3e5de;
-      border-radius: 14px;
-      padding: 1.25rem;
+    .gauge-results-body {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
     }
 
-    .gauge-result-label {
+    .gauge-result-row__label {
       font-size: 0.95rem;
       font-weight: 600;
       color: #52682d;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.35rem;
     }
 
-    .gauge-result-primary {
-      font-size: 1.5rem;
+    .gauge-result-row__value {
+      font-size: 1.45rem;
       font-weight: 700;
-      line-height: 1.25;
+      line-height: 1.3;
       color: #1f2937;
-    }
-
-    @media (max-width: 640px) {
-      .gauge-results {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .gauge-important-note {
-      margin: 1.25rem 0 0.5rem;
-      padding: 14px 18px;
-      border-left: 4px solid #52682d;
-      background: #f9fafb;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      line-height: 1.5;
-      color: #374151;
-    }
-
-    .gauge-note-follow {
-      margin: 0 0 0.5rem;
-      font-size: 0.95rem;
-      line-height: 1.55;
-      color: #6b7280;
     }
   </style>
 
   <script>
     const form = document.getElementById("wizard-form") as HTMLFormElement | null;
     const validationEl = document.getElementById("gaugeValidation");
-    const resultsPanel = document.getElementById("gaugeResults");
+    const resultsCard = document.getElementById("gaugeResultsCard");
     const stitchGaugeResult = document.getElementById("stitchGaugeResult");
     const rowGaugeResult = document.getElementById("rowGaugeResult");
-    const widthLabel = document.getElementById("measuredWidthLabel");
-    const heightLabel = document.getElementById("measuredHeightLabel");
 
-    if (!form || !validationEl || !resultsPanel || !stitchGaugeResult || !rowGaugeResult || !widthLabel || !heightLabel) {
+    if (!form || !validationEl || !resultsCard || !stitchGaugeResult || !rowGaugeResult) {
       throw new Error("Gauge calculator: missing DOM elements");
     }
 
     const formEl = form;
     const validationElEl = validationEl;
-    const resultsPanelEl = resultsPanel;
+    const resultsCardEl = resultsCard;
     const stitchGaugeResultEl = stitchGaugeResult;
     const rowGaugeResultEl = rowGaugeResult;
-    const widthLabelEl = widthLabel;
-    const heightLabelEl = heightLabel;
 
     function getUnit(): "in" | "cm" {
       const el = document.getElementById("unit") as HTMLInputElement | null;
@@ -359,21 +574,10 @@ const toolPrintTitle = tool?.title ?? "Gauge Calculator";
       return v === "cm" ? "cm" : "in";
     }
 
-    function updateDimensionLabels(unit: "in" | "cm"): void {
-      if (unit === "cm") {
-        widthLabelEl.textContent = "Measured width (cm)";
-        heightLabelEl.textContent = "Measured height (cm)";
-      } else {
-        widthLabelEl.textContent = "Measured width (inches)";
-        heightLabelEl.textContent = "Measured height (inches)";
-      }
-    }
-
-    /** Round to 2 decimals; trim trailing zeros (32 not 32.00; 32.5 not 32.50). */
+    /** Always show two decimal places. */
     function formatGaugeValue(value: number): string {
       const rounded = Math.round(value * 100) / 100;
-      if (Number.isInteger(rounded)) return String(rounded);
-      return rounded.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+      return rounded.toFixed(2);
     }
 
     function parsePositiveNumber(raw: string): number | null {
@@ -384,12 +588,14 @@ const toolPrintTitle = tool?.title ?? "Gauge Calculator";
       return n;
     }
 
-    function validateAndCollect(): { ok: true; stitches: number; rows: number; width: number; height: number } | { ok: false; message: string } {
+    function validateAndCollect():
+      | { ok: true; stitches: number; rows: number; width: number; height: number }
+      | { ok: false; message: string } {
       const fd = new FormData(formEl);
-      const stitchesRaw = (fd.get("numStitches") ?? "").toString();
-      const rowsRaw = (fd.get("numRows") ?? "").toString();
-      const widthRaw = (fd.get("measuredWidth") ?? "").toString();
-      const heightRaw = (fd.get("measuredHeight") ?? "").toString();
+      const stitchesRaw = (fd.get("measuredStitches") ?? "").toString();
+      const rowsRaw = (fd.get("measuredRows") ?? "").toString();
+      const widthRaw = (fd.get("widthMeasured") ?? "").toString();
+      const heightRaw = (fd.get("heightMeasured") ?? "").toString();
 
       const stitches = parsePositiveNumber(stitchesRaw);
       const rows = parsePositiveNumber(rowsRaw);
@@ -397,10 +603,10 @@ const toolPrintTitle = tool?.title ?? "Gauge Calculator";
       const height = parsePositiveNumber(heightRaw);
 
       const missing: string[] = [];
-      if (stitches === null) missing.push("stitch count");
-      if (rows === null) missing.push("row count");
-      if (width === null) missing.push("width");
-      if (height === null) missing.push("height");
+      if (stitches === null) missing.push("measured stitches");
+      if (rows === null) missing.push("measured rows");
+      if (width === null) missing.push("width measured");
+      if (height === null) missing.push("height measured");
 
       if (missing.length > 0) {
         return {
@@ -413,7 +619,7 @@ const toolPrintTitle = tool?.title ?? "Gauge Calculator";
     }
 
     function hideResults(): void {
-      resultsPanelEl.hidden = true;
+      resultsCardEl.hidden = true;
     }
 
     formEl.addEventListener("input", () => {
@@ -442,34 +648,42 @@ const toolPrintTitle = tool?.title ?? "Gauge Calculator";
       if (unit === "in") {
         stitchGauge = (parsed.stitches / parsed.width) * 4;
         rowGauge = (parsed.rows / parsed.height) * 4;
-        stitchLine = `${formatGaugeValue(stitchGauge)} sts per 4″`;
+        stitchLine = `${formatGaugeValue(stitchGauge)} stitches per 4″`;
         rowLine = `${formatGaugeValue(rowGauge)} rows per 4″`;
       } else {
         stitchGauge = (parsed.stitches / parsed.width) * 10;
         rowGauge = (parsed.rows / parsed.height) * 10;
-        stitchLine = `${formatGaugeValue(stitchGauge)} sts per 10 cm`;
+        stitchLine = `${formatGaugeValue(stitchGauge)} stitches per 10 cm`;
         rowLine = `${formatGaugeValue(rowGauge)} rows per 10 cm`;
       }
 
       stitchGaugeResultEl.textContent = stitchLine;
       rowGaugeResultEl.textContent = rowLine;
-      resultsPanelEl.hidden = false;
+      resultsCardEl.hidden = false;
     });
 
-    window.addEventListener("kbm:units-change", (ev: Event) => {
-      const unit = (ev as CustomEvent<{ unit?: string }>).detail?.unit === "cm" ? "cm" : "in";
-      updateDimensionLabels(unit);
+    window.addEventListener("kbm:units-change", () => {
       validationElEl.hidden = true;
       hideResults();
     });
 
-    function syncLabelsFromUnit(): void {
-      updateDimensionLabels(getUnit());
+    const measureDialog = document.getElementById("gauge-measure-dialog") as HTMLDialogElement | null;
+    const measureHelpOpen = document.getElementById("gauge-measure-help-open");
+    const measureDialogClose = document.getElementById("gauge-measure-dialog-close");
+
+    function closeMeasureDialog(): void {
+      measureDialog?.close();
     }
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", syncLabelsFromUnit);
-    } else {
-      syncLabelsFromUnit();
-    }
+
+    measureHelpOpen?.addEventListener("click", () => {
+      measureDialog?.showModal();
+      measureDialogClose?.focus();
+    });
+
+    measureDialogClose?.addEventListener("click", closeMeasureDialog);
+
+    measureDialog?.addEventListener("click", (e) => {
+      if (e.target === measureDialog) closeMeasureDialog();
+    });
   </script>
 </Layout>
