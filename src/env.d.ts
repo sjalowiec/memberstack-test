@@ -31,6 +31,12 @@ declare global {
       /** JWT for Authorization header when calling site APIs (if available). */
       getMemberCookie?: () => string | null | Promise<string | null>;
     };
+    /** Inline scripts in `GlossaryTooltip.astro`; pages may call `closeAll` on tab change / rebuild. */
+    __kbmGlossaryApi?: {
+      closeAll: () => void;
+      ensureGlobalListeners?: () => void;
+    };
+    __kbmGlossaryGlobalsBound?: boolean;
   }
 }
 

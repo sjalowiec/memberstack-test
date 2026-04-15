@@ -10,16 +10,16 @@ import Tooltip from "../../components/Tooltip.astro";
 
 const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
 const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
-const toolPrintTitle = tool?.title ?? "Ruffle / Gather — One-Row Distribution";
+const toolPrintTitle = tool?.title ?? "Increase / Decrease Evenly Calculator";
 ---
 
-<Layout title="Ruffle / Gather — One-Row Distribution | Knit it Now" description="Change stitch count evenly across a single row for ruffles, gathers, or one-row adjustments. Enter starting and ending stitch counts for clear machine-knitting instructions." toolPrintTitle={toolPrintTitle}>
+<Layout title="Increase / Decrease Evenly Calculator | Knit it Now" description="Increase / Decrease Evenly Calculator: space stitch-count changes evenly across one row (ruffles, gathers, or other one-row adjustments). Enter starting and ending stitch counts for clear machine-knitting instructions." toolPrintTitle={toolPrintTitle}>
   <main class="wizard-page">
     <div class="wizard-shell">
       <WizardBackLink className="back-link" />
 
       <section class="wizard-hero">
-        <ToolPageHeader tool={tool} fallbackTitle="Ruffle / Gather — One-Row Distribution" />
+        <ToolPageHeader tool={tool} fallbackTitle="Increase / Decrease Evenly Calculator" />
         <p class="wizard-intro">
           Stop guessing. Get precise instructions to change from your starting stitch count to your ending stitch count, worked evenly across one row.
         </p>

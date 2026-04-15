@@ -13,3 +13,13 @@ export {
   type RowEntry,
   type GenerateRowByRowOptions,
 } from './generateRowByRow';
+
+export {
+  computeAutoShaping,
+  magicFormulaIntervals,
+  type AutoShapingInput,
+  type AutoShapingResult,
+  type ShapingMethod,
+  type ShapingDirection,
+  type StructuredShapingStep,
+} from './autoShaping';

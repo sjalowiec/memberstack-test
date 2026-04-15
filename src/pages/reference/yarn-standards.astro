@@ -1,0 +1,266 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import ReferencePageShell from "../../components/ReferencePageShell.astro";
+
+const symbolImages = [
+  { src: "/images/glossary/0.png", alt: "Lace" },
+  { src: "/images/glossary/1.png", alt: "Super Fine" },
+  { src: "/images/glossary/2.png", alt: "Fine" },
+  { src: "/images/glossary/3.png", alt: "Light" },
+  { src: "/images/glossary/4.png", alt: "Medium" },
+  { src: "/images/glossary/5.png", alt: "Bulky" },
+  { src: "/images/glossary/6.png", alt: "Super Bulky" },
+] as const;
+---
+
+<Layout
+  title="Yarn Standards"
+  description="Yarn weight categories, stitch counts, and machine gauge notes for machine knitters. A starting-point reference based on common yarn standards."
+>
+  <ReferencePageShell
+    title="Yarn Standards"
+    subhead="General yarn categories, typical yardage, stitch gauge, and how they relate to common machine gauges."
+    backHref="/learn/reference"
+    backLabel="Back to Reference"
+  >
+    <div class="yarn-standards-page">
+      <p class="yarn-standards-page__glossary-note">
+        Looking for a quick definition?
+        <a href="/glossary/yarn-standards">See the Yarn Standards glossary entry</a>.
+      </p>
+
+      <div class="yarn-standards-page__intro kbm-intro-callout">
+        <p>
+          Yarn standards are general categories that describe how thick a yarn is. For machine
+          knitters, they help you estimate which yarns might work on different machine gauges.
+          Treat them as a starting point only: fiber, twist, construction, and your machine setup
+          all matter.
+        </p>
+      </div>
+
+      <div class="yarn-standards-page__symbols" aria-label="Yarn standard category symbols">
+        {symbolImages.map(({ src, alt }) => (
+          <figure class="yarn-standards-page__symbol">
+            <img src={src} alt={alt} width="84" height="84" loading="lazy" decoding="async" />
+            <figcaption>{alt}</figcaption>
+          </figure>
+        ))}
+      </div>
+
+      <div class="yarn-standards-page__table-wrap">
+        <table class="yarn-standards-page__table">
+          <thead>
+            <tr>
+              <th scope="col">Category</th>
+              <th scope="col">Yarn Types</th>
+              <th scope="col">Yards / lb</th>
+              <th scope="col">4&quot; (10cm)</th>
+              <th scope="col">Machine / Pitch</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Lace</th>
+              <td>Lace, Fingering, 2-ply, 10-count crochet thread</td>
+              <td>4000–10000</td>
+              <td>33–40 sts</td>
+              <td>Standard 4.5mm (stranded)</td>
+            </tr>
+            <tr>
+              <th scope="row">Super Fine</th>
+              <td>Sock, Fingering, Baby, 3-ply</td>
+              <td>3000–4000</td>
+              <td>27–32 sts</td>
+              <td>Standard 4.5mm (stranded)</td>
+            </tr>
+            <tr>
+              <th scope="row">Fine</th>
+              <td>Sport, Baby, 4-ply</td>
+              <td>2000–3000</td>
+              <td>23–26 sts</td>
+              <td>Standard 4.5mm / Double Bed</td>
+            </tr>
+            <tr>
+              <th scope="row">Light</th>
+              <td>DK, Light Worsted</td>
+              <td>1000–2000</td>
+              <td>21–24 sts</td>
+              <td>Mid-Gauge 6.0 | 6.5 | 7mm / Standard 4.5mm</td>
+            </tr>
+            <tr>
+              <th scope="row">Medium</th>
+              <td>Worsted, Afghan, Aran</td>
+              <td>800–1000</td>
+              <td>16–20 sts</td>
+              <td>Mid-Gauge 6.0 | 6.5 | 7mm / Bulky 9mm</td>
+            </tr>
+            <tr>
+              <th scope="row">Bulky</th>
+              <td>Chunky, Craft, Rug</td>
+              <td>500–800</td>
+              <td>12–15 sts</td>
+              <td>Bulky 9mm</td>
+            </tr>
+            <tr>
+              <th scope="row">Super Bulky</th>
+              <td>Super Bulky, Roving</td>
+              <td>100–500</td>
+              <td>6–11 sts</td>
+              <td>May not be appropriate</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="yarn-standards-page__note">
+        These standards are a helpful starting point, but machine knitting success also depends on
+        yarn fiber, texture, construction, and your machine setup. Always swatch when possible.
+      </p>
+
+      <p class="yarn-standards-page__source">
+        Source: Craft Yarn Council (<a
+          href="https://www.yarnstandards.com/"
+          target="_blank"
+          rel="noopener noreferrer">www.YarnStandards.com</a
+        >)
+      </p>
+    </div>
+  </ReferencePageShell>
+</Layout>
+
+<style>
+  .yarn-standards-page {
+    max-width: 56rem;
+    margin: 0 auto 3rem;
+    padding: 0 0.25rem;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: #374151;
+  }
+
+  .yarn-standards-page__glossary-note {
+    margin: 0 0 1.25rem;
+    font-size: 1rem;
+    color: #4b5563;
+  }
+
+  .yarn-standards-page__glossary-note a {
+    font-weight: 600;
+  }
+
+  .yarn-standards-page__intro {
+    margin-bottom: 1.75rem;
+  }
+
+  .yarn-standards-page__intro p {
+    margin: 0;
+  }
+
+  .yarn-standards-page__symbols {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-items: flex-end;
+    gap: 1rem 1.25rem;
+    margin: 0 0 2.25rem;
+    padding: 1.25rem 1rem;
+    background: #fafaf8;
+    border: 1px solid #e8e8e0;
+    border-radius: 12px;
+  }
+
+  .yarn-standards-page__symbol {
+    margin: 0;
+    flex: 0 1 auto;
+    text-align: center;
+    min-width: 4.5rem;
+  }
+
+  .yarn-standards-page__symbol img {
+    display: block;
+    margin: 0 auto 0.4rem;
+    width: clamp(3.25rem, 8vw, 5.25rem);
+    height: auto;
+    object-fit: contain;
+  }
+
+  .yarn-standards-page__symbol figcaption {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #52682d;
+    line-height: 1.25;
+  }
+
+  .yarn-standards-page__table-wrap {
+    overflow-x: auto;
+    margin: 0 0 1.75rem;
+    border-radius: 10px;
+    border: 1px solid #e5e5df;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  .yarn-standards-page__table {
+    width: 100%;
+    min-width: 44rem;
+    border-collapse: collapse;
+    font-size: 1rem;
+  }
+
+  .yarn-standards-page__table thead th {
+    text-align: left;
+    padding: 0.85rem 1rem;
+    background: #f3f4ef;
+    color: #374151;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    border-bottom: 2px solid #d6d9cf;
+    white-space: nowrap;
+  }
+
+  .yarn-standards-page__table tbody th[scope="row"] {
+    text-align: left;
+    padding: 0.85rem 1rem;
+    font-weight: 700;
+    color: #1f2937;
+    background: #fcfcfa;
+    border-bottom: 1px solid #ecece8;
+    white-space: nowrap;
+    vertical-align: top;
+  }
+
+  .yarn-standards-page__table td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid #ecece8;
+    vertical-align: top;
+  }
+
+  .yarn-standards-page__table tbody tr:last-child th,
+  .yarn-standards-page__table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .yarn-standards-page__table tbody tr:nth-child(even) td {
+    background: #fafaf8;
+  }
+
+  .yarn-standards-page__table tbody tr:nth-child(even) th[scope="row"] {
+    background: #f6f6f2;
+  }
+
+  .yarn-standards-page__note {
+    margin: 0 0 2rem;
+    padding: 1rem 1.15rem;
+    background: #f9faf6;
+    border-left: 4px solid #52682d;
+    border-radius: 0 8px 8px 0;
+    font-size: 1.02rem;
+  }
+
+  .yarn-standards-page__source {
+    margin: 0;
+    font-size: 0.98rem;
+    color: #6b7280;
+  }
+</style>

@@ -211,7 +211,7 @@
     "tryThisTitle": "I-Cord Join",
     "memberHeading": "",
     "memberText": "",
-    "isNew": true,
+    "isNew": false,
     "tryThis": {
       "quickActionTitle": "make the seam stand out",
       "quickAction": [
@@ -228,7 +228,7 @@
     "relatedLessons": [
       "i-cord-seam"
     ],
-    "status": "published",
+    "status": "draft",
     "id": 1005,
     "sortOrder": 30
   }

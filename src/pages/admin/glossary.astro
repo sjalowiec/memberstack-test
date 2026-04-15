@@ -1,0 +1,766 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Glossary Editor">
+  <div class="ga">
+    <div class="ga-sticky-head" id="ga-sticky-head">
+      <header class="ga-toolbar" id="ga-toolbar">
+        <div class="ga-toolbar-inner">
+          <div class="ga-toolbar-title">
+            <h1 class="ga-h1">Glossary Editor</h1>
+            <span class="ga-unsaved" id="ga-unsaved" hidden>Unsaved changes</span>
+          </div>
+          <div class="ga-toolbar-actions">
+            <button type="button" class="ga-btn ga-btn--primary" id="ga-save">Save changes</button>
+            <button type="button" class="ga-btn" id="ga-add">Add new glossary entry</button>
+          </div>
+          <p class="ga-status" id="ga-status" aria-live="polite"></p>
+        </div>
+      </header>
+
+      <div class="ga-filters">
+        <label class="ga-filter-field ga-filter-field--grow">
+          <span class="ga-label">Search</span>
+          <input type="search" class="ga-input" id="ga-search" placeholder="Search by term title (english)…" autocomplete="off" />
+        </label>
+        <div class="ga-filter-checks">
+          <label class="ga-inline">
+            <input type="checkbox" id="ga-filter-active" />
+            Show active only
+          </label>
+          <label class="ga-inline">
+            <input type="checkbox" id="ga-filter-inactive" />
+            Show inactive only
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="ga-main">
+      <p class="ga-note">
+        Edits <code>src/data/glossary.json</code> on save. On read-only hosts, download from repo and deploy instead.
+      </p>
+
+      <div class="ga-cards-column">
+        <div class="ga-loading" id="ga-loading">Loading glossary…</div>
+        <p class="ga-empty" id="ga-empty" hidden>No entries match your search or filters.</p>
+        <div class="ga-entries" id="ga-entries" hidden></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // @ts-nocheck
+    /** @typedef {{ glossaryId: number, english: string, example: string, helpinfo: string, image: string, image_alt: string, image_description: string, metaTitle: string, metaDescription: string, active: boolean, vimeoIds: string[] }} GlossaryEntry */
+
+    const entriesEl = document.getElementById("ga-entries");
+    const loadingEl = document.getElementById("ga-loading");
+    const statusEl = document.getElementById("ga-status");
+    const unsavedEl = document.getElementById("ga-unsaved");
+    const searchEl = document.getElementById("ga-search");
+    const filterActiveEl = document.getElementById("ga-filter-active");
+    const filterInactiveEl = document.getElementById("ga-filter-inactive");
+
+    const SCROLL_RESTORE_GLOSSARY_ID_KEY = "ga-admin-glossary-scroll-restore-id";
+
+    /** Last entry the user focused inside (Save moves focus off fields). */
+    let lastFocusedGlossaryId = /** @type {string | null} */ (null);
+
+    /** @type {GlossaryEntry[]} */
+    let glossary = [];
+    let lastSavedSnapshot = "";
+
+    function snapshot() {
+      return JSON.stringify(glossary);
+    }
+
+    function updateDirtyState() {
+      const dirty = snapshot() !== lastSavedSnapshot;
+      if (unsavedEl) unsavedEl.hidden = !dirty;
+      return dirty;
+    }
+
+    function setStatus(text, kind) {
+      if (!statusEl) return;
+      statusEl.textContent = text;
+      statusEl.classList.remove("ga-status--ok", "ga-status--err");
+      if (kind === "ok") statusEl.classList.add("ga-status--ok");
+      if (kind === "err") statusEl.classList.add("ga-status--err");
+    }
+
+    function passesFilters(/** @type {GlossaryEntry} */ entry, q, activeOnly, inactiveOnly) {
+      const titleHay = String(entry.english ?? "")
+        .replace(/<[^>]*>/g, "")
+        .toLowerCase();
+      if (q && !titleHay.includes(q)) return false;
+      if (activeOnly && !inactiveOnly) return !!entry.active;
+      if (!activeOnly && inactiveOnly) return !entry.active;
+      return true;
+    }
+
+    function getDisplayIndices() {
+      const q = (searchEl?.value ?? "").trim().toLowerCase();
+      const activeOnly = !!(filterActiveEl && filterActiveEl.checked);
+      const inactiveOnly = !!(filterInactiveEl && filterInactiveEl.checked);
+      let idx = glossary.map((_, i) => i).filter((i) => passesFilters(glossary[i], q, activeOnly, inactiveOnly));
+      idx.sort((a, b) =>
+        String(glossary[a].english ?? "").localeCompare(String(glossary[b].english ?? ""), undefined, {
+          sensitivity: "base",
+        }),
+      );
+      return idx;
+    }
+
+    function el(tag, className, text = undefined) {
+      const n = document.createElement(tag);
+      if (className) n.className = className;
+      if (text !== undefined) n.textContent = text;
+      return n;
+    }
+
+    function fieldDomId(index, field) {
+      return `ga-e-${index}-${String(field).replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+    }
+
+    function bind(/** @type {HTMLElement} */ node, index, field, type) {
+      node.dataset.glossaryIndex = String(index);
+      node.dataset.field = field;
+      if (type) node.dataset.type = type;
+    }
+
+    /**
+     * One vertical row: label above control. Same binding as before.
+     * @param {HTMLElement} parent
+     * @param {number} index
+     * @param {string} field
+     * @param {string} labelText
+     * @param {HTMLElement} control
+     * @param {{ checkbox?: boolean, bindType?: string }} [opts]
+     */
+    function appendBoundField(parent, index, field, labelText, control, opts) {
+      const o = opts || {};
+      bind(control, index, field, o.bindType);
+      const wrap = document.createElement("div");
+      wrap.className = o.checkbox ? "ga-field ga-field-checkbox" : "ga-field";
+      const fid = fieldDomId(index, field);
+      const lab = document.createElement("label");
+      lab.setAttribute("for", fid);
+      lab.textContent = labelText;
+      control.id = fid;
+      wrap.appendChild(lab);
+      wrap.appendChild(control);
+      parent.appendChild(wrap);
+    }
+
+    function scrollToCardByGlossaryId(/** @type {string} */ glossaryIdStr) {
+      if (!entriesEl || !glossaryIdStr) return;
+      const safeId =
+        typeof CSS !== "undefined" && typeof CSS.escape === "function"
+          ? CSS.escape(glossaryIdStr)
+          : String(glossaryIdStr).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+      const card = entriesEl.querySelector(`[data-glossary-id="${safeId}"]`);
+      if (card instanceof HTMLElement) {
+        card.scrollIntoView({ block: "center", behavior: "auto" });
+      }
+    }
+
+    function consumeScrollRestoreFromSession() {
+      let id = null;
+      try {
+        id = sessionStorage.getItem(SCROLL_RESTORE_GLOSSARY_ID_KEY);
+        if (id) sessionStorage.removeItem(SCROLL_RESTORE_GLOSSARY_ID_KEY);
+      } catch {
+        return;
+      }
+      if (!id) return;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => scrollToCardByGlossaryId(id));
+      });
+    }
+
+    function renderCard(/** @type {number} */ index) {
+      const entry = glossary[index];
+      const card = el("article", "ga-card");
+      card.dataset.glossaryIndex = String(index);
+      card.dataset.glossaryId = String(entry.glossaryId ?? "");
+
+      const meta = el("div", "ga-card-meta");
+      meta.appendChild(el("p", "ga-card-id", `glossaryId: ${entry.glossaryId ?? "—"}`));
+      card.appendChild(meta);
+
+      const mainFields = el("div", "ga-card-fields");
+
+      const englishIn = /** @type {HTMLInputElement} */ (document.createElement("input"));
+      englishIn.type = "text";
+      englishIn.className = "ga-input";
+      englishIn.value = String(entry.english ?? "");
+      appendBoundField(mainFields, index, "english", "English", englishIn, { bindType: "string" });
+
+      const exTa = document.createElement("textarea");
+      exTa.className = "ga-textarea ga-textarea--example";
+      exTa.rows = 3;
+      exTa.value = String(entry.example ?? "");
+      appendBoundField(mainFields, index, "example", "Example", exTa, { bindType: "string" });
+
+      const helpTa = document.createElement("textarea");
+      helpTa.className = "ga-textarea ga-textarea--helpinfo";
+      helpTa.rows = 10;
+      helpTa.value = String(entry.helpinfo ?? "");
+      appendBoundField(mainFields, index, "helpinfo", "Helpinfo", helpTa, { bindType: "string" });
+
+      const actCb = document.createElement("input");
+      actCb.type = "checkbox";
+      actCb.checked = !!entry.active;
+      appendBoundField(mainFields, index, "active", "Active", actCb, { checkbox: true, bindType: "bool" });
+
+      card.appendChild(mainFields);
+
+      const adv = document.createElement("details");
+      adv.className = "ga-advanced";
+      const summ = document.createElement("summary");
+      summ.className = "ga-advanced-summary";
+      summ.textContent = "Advanced (image, SEO, video IDs)";
+      adv.appendChild(summ);
+
+      const advFields = el("div", "ga-advanced-fields");
+
+      const imageIn = /** @type {HTMLInputElement} */ (document.createElement("input"));
+      imageIn.type = "text";
+      imageIn.className = "ga-input";
+      imageIn.value = String(entry.image ?? "");
+      appendBoundField(advFields, index, "image", "Image", imageIn, { bindType: "string" });
+
+      const altIn = /** @type {HTMLInputElement} */ (document.createElement("input"));
+      altIn.type = "text";
+      altIn.className = "ga-input";
+      altIn.value = String(entry.image_alt ?? "");
+      appendBoundField(advFields, index, "image_alt", "Image alt", altIn, { bindType: "string" });
+
+      const idesc = document.createElement("textarea");
+      idesc.className = "ga-textarea ga-textarea--desc";
+      idesc.rows = 4;
+      idesc.value = String(entry.image_description ?? "");
+      appendBoundField(advFields, index, "image_description", "Image description", idesc, { bindType: "string" });
+
+      const mtIn = /** @type {HTMLInputElement} */ (document.createElement("input"));
+      mtIn.type = "text";
+      mtIn.className = "ga-input";
+      mtIn.value = String(entry.metaTitle ?? "");
+      appendBoundField(advFields, index, "metaTitle", "Meta title", mtIn, { bindType: "string" });
+
+      const mdesc = document.createElement("textarea");
+      mdesc.className = "ga-textarea ga-textarea--desc";
+      mdesc.rows = 4;
+      mdesc.value = String(entry.metaDescription ?? "");
+      appendBoundField(advFields, index, "metaDescription", "Meta description", mdesc, { bindType: "string" });
+
+      const vimTa = document.createElement("textarea");
+      vimTa.className = "ga-textarea ga-textarea--vimeo";
+      vimTa.rows = 2;
+      vimTa.value = Array.isArray(entry.vimeoIds) ? entry.vimeoIds.join(", ") : "";
+      appendBoundField(advFields, index, "vimeoIds", "Vimeo IDs", vimTa, { bindType: "vimeo" });
+
+      adv.appendChild(advFields);
+      card.appendChild(adv);
+
+      return card;
+    }
+
+    function applyInputToModel(/** @type {HTMLElement} */ target) {
+      if (!target.dataset.glossaryIndex || !target.dataset.field) return;
+      const i = Number(target.dataset.glossaryIndex);
+      const field = target.dataset.field;
+      const type = target.dataset.type;
+      const row = glossary[i];
+      if (!row) return;
+
+      if (field === "active" && target instanceof HTMLInputElement && target.type === "checkbox") {
+        row.active = target.checked;
+      } else if (field === "vimeoIds" && type === "vimeo") {
+        const raw = target instanceof HTMLTextAreaElement ? target.value : "";
+        row.vimeoIds = raw
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      } else if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+        /** @type {string} */
+        const v = target.value;
+        row[field] = v;
+      }
+      updateDirtyState();
+    }
+
+    function render() {
+      if (!entriesEl) return;
+      entriesEl.innerHTML = "";
+      const indices = getDisplayIndices();
+      for (const i of indices) {
+        entriesEl.appendChild(renderCard(i));
+      }
+      const emptyEl = document.getElementById("ga-empty");
+      if (emptyEl) {
+        if (glossary.length === 0) {
+          emptyEl.hidden = false;
+          emptyEl.textContent = "No entries loaded.";
+        } else if (indices.length === 0) {
+          emptyEl.hidden = false;
+          emptyEl.textContent = "No entries match your search or filters.";
+        } else {
+          emptyEl.hidden = true;
+        }
+      }
+      entriesEl.hidden = indices.length === 0;
+      if (loadingEl) loadingEl.hidden = true;
+    }
+
+    function onDelegatedInput(/** @type {Event} */ e) {
+      const t = e.target;
+      if (t instanceof HTMLElement) applyInputToModel(t);
+    }
+
+    entriesEl?.addEventListener("input", onDelegatedInput);
+    entriesEl?.addEventListener("change", onDelegatedInput);
+
+    entriesEl?.addEventListener("focusin", (e) => {
+      const t = e.target;
+      if (!(t instanceof HTMLElement)) return;
+      const card = t.closest("[data-glossary-index]");
+      if (!card || card.dataset.glossaryIndex == null) return;
+      const i = Number(card.dataset.glossaryIndex);
+      const row = glossary[i];
+      if (row != null && row.glossaryId != null) {
+        lastFocusedGlossaryId = String(row.glossaryId);
+      }
+    });
+
+    let searchTimer = 0;
+    searchEl?.addEventListener("input", () => {
+      window.clearTimeout(searchTimer);
+      searchTimer = window.setTimeout(() => render(), 220);
+    });
+    filterActiveEl?.addEventListener("change", () => render());
+    filterInactiveEl?.addEventListener("change", () => render());
+
+    window.addEventListener("beforeunload", (e) => {
+      if (updateDirtyState()) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    });
+
+    async function load() {
+      setStatus("Loading…");
+      lastFocusedGlossaryId = null;
+      try {
+        const res = await fetch("/api/admin/glossary");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error("Expected a JSON array");
+        glossary = data.map(mergeEntry);
+        lastSavedSnapshot = snapshot();
+        updateDirtyState();
+        setStatus("");
+        render();
+        consumeScrollRestoreFromSession();
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Load failed";
+        setStatus(msg, "err");
+        if (loadingEl) loadingEl.textContent = "Could not load glossary.";
+      }
+    }
+
+    /** @param {Record<string, unknown>} raw */
+    function mergeEntry(raw) {
+      const o = { ...(typeof raw === "object" && raw !== null ? raw : {}) };
+      const gid = o.glossaryId;
+      o.glossaryId = typeof gid === "number" && Number.isFinite(gid) ? gid : Number(gid) || 0;
+      o.english = String(o.english ?? "");
+      o.example = String(o.example ?? "");
+      o.helpinfo = String(o.helpinfo ?? "");
+      o.image = String(o.image ?? "");
+      o.image_alt = String(o.image_alt ?? "");
+      o.image_description = String(o.image_description ?? "");
+      o.metaTitle = String(o.metaTitle ?? "");
+      o.metaDescription = String(o.metaDescription ?? "");
+      o.active = !!o.active;
+      const v = o.vimeoIds;
+      o.vimeoIds = Array.isArray(v) ? v.map((x) => String(x)) : [];
+      return o;
+    }
+
+    document.getElementById("ga-save")?.addEventListener("click", async () => {
+      const restoreId = lastFocusedGlossaryId;
+      if (restoreId) {
+        try {
+          sessionStorage.setItem(SCROLL_RESTORE_GLOSSARY_ID_KEY, restoreId);
+        } catch {
+          /* ignore */
+        }
+      }
+      setStatus("Saving…");
+      try {
+        const res = await fetch("/api/admin/glossary", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(glossary),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(typeof data.error === "string" ? data.error : `HTTP ${res.status}`);
+        }
+        lastSavedSnapshot = snapshot();
+        updateDirtyState();
+        setStatus("Saved successfully.", "ok");
+        if (restoreId) {
+          scrollToCardByGlossaryId(restoreId);
+          try {
+            sessionStorage.removeItem(SCROLL_RESTORE_GLOSSARY_ID_KEY);
+          } catch {
+            /* ignore */
+          }
+        }
+        window.setTimeout(() => {
+          if (statusEl?.textContent === "Saved successfully.") setStatus("");
+        }, 4000);
+      } catch (err) {
+        try {
+          sessionStorage.removeItem(SCROLL_RESTORE_GLOSSARY_ID_KEY);
+        } catch {
+          /* ignore */
+        }
+        const msg = err instanceof Error ? err.message : "Save failed";
+        setStatus(msg, "err");
+      }
+    });
+
+    document.getElementById("ga-add")?.addEventListener("click", () => {
+      glossary.push(
+        mergeEntry({
+          glossaryId: Date.now(),
+          english: "",
+          example: "",
+          helpinfo: "",
+          image: "",
+          image_alt: "",
+          image_description: "",
+          metaTitle: "",
+          metaDescription: "",
+          active: true,
+          vimeoIds: [],
+        }),
+      );
+      const newIndex = glossary.length - 1;
+      updateDirtyState();
+      if (searchEl) searchEl.value = "";
+      if (filterActiveEl) filterActiveEl.checked = false;
+      if (filterInactiveEl) filterInactiveEl.checked = false;
+      render();
+      window.requestAnimationFrame(() => {
+        const card = document.querySelector(`[data-glossary-index="${newIndex}"]`);
+        card?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        const first = card?.querySelector(".ga-card-fields .ga-field input");
+        if (first instanceof HTMLInputElement) first.focus();
+      });
+    });
+
+    load();
+  </script>
+
+  <!-- Client-rendered cards/inputs are not in the compiled template, so default scoped Astro
+       CSS would not match them. is:global is required; .ga-* is only used on this page. -->
+  <style is:global>
+    .ga {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 20px 48px;
+      box-sizing: border-box;
+    }
+
+    .ga-cards-column {
+      max-width: 920px;
+      width: 100%;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+
+    /* Same top offset as Layout’s main padding so bar clears the fixed site header */
+    .ga-sticky-head {
+      position: sticky;
+      top: calc(var(--header-offset, 150px) + var(--header-buffer, 24px));
+      z-index: 100;
+      margin: 0 -20px;
+      padding: 14px 20px 18px;
+      background: #f4f4f1;
+      border-bottom: 1px solid #d9d6d1;
+      box-shadow: 0 4px 14px rgba(15, 15, 15, 0.06);
+    }
+
+    .ga-toolbar {
+      margin: 0;
+      padding: 0 0 14px;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+
+    .ga-toolbar-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px 16px;
+    }
+
+    .ga-toolbar-title {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 10px 16px;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .ga-h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1c1917;
+    }
+
+    .ga-unsaved {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #b45309;
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .ga-toolbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .ga-btn {
+      font: inherit;
+      font-size: 16px;
+      padding: 12px 20px;
+      border-radius: 10px;
+      border: 1px solid #d6d3d1;
+      background: #fff;
+      cursor: pointer;
+      color: #292524;
+    }
+
+    .ga-btn:hover {
+      background: #f5f5f4;
+    }
+
+    .ga-btn--primary {
+      background: #365314;
+      border-color: #365314;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .ga-btn--primary:hover {
+      background: #3f6212;
+    }
+
+    .ga-status {
+      width: 100%;
+      margin: 0;
+      font-size: 0.9rem;
+      min-height: 1.2em;
+    }
+
+    .ga-status--ok {
+      color: #15803d;
+      font-weight: 600;
+    }
+
+    .ga-status--err {
+      color: #b91c1c;
+    }
+
+    .ga-main {
+      padding-top: 20px;
+    }
+
+    .ga-note {
+      font-size: 0.9rem;
+      color: #57534e;
+      margin: 0 0 20px;
+      line-height: 1.45;
+    }
+
+    .ga-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px 24px;
+      align-items: flex-end;
+      margin: 0;
+      padding-top: 4px;
+    }
+
+    .ga-filter-field--grow {
+      flex: 1;
+      min-width: 240px;
+    }
+
+    .ga-filter-checks {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.95rem;
+      color: #44403c;
+    }
+
+    .ga-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #57534e;
+      margin-bottom: 6px;
+    }
+
+    .ga-input,
+    .ga-textarea {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      font: inherit;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      background: #fff;
+      color: #1c1917;
+    }
+
+    .ga-input {
+      min-height: 44px;
+      padding: 12px 14px;
+      line-height: 1.5;
+    }
+
+    .ga-textarea {
+      resize: vertical;
+      min-height: 110px;
+      padding: 12px 14px;
+      line-height: 1.5;
+    }
+
+    .ga-textarea--helpinfo {
+      min-height: 220px;
+    }
+
+    .ga-textarea--example {
+      min-height: 90px;
+    }
+
+    .ga-textarea--desc {
+      min-height: 120px;
+    }
+
+    .ga-textarea--vimeo {
+      min-height: 70px;
+    }
+
+    .ga-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .ga-loading {
+      padding: 24px;
+      color: #78716c;
+    }
+
+    .ga-entries {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .ga-entries .ga-card + .ga-card {
+      margin-top: 28px;
+    }
+
+    .ga-card {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+    }
+
+    .ga-card-meta {
+      margin-bottom: 20px;
+    }
+
+    .ga-card-id {
+      margin: 0;
+      font-size: 0.8rem;
+      color: #78716c;
+      font-family: ui-monospace, monospace;
+    }
+
+    .ga-card-fields,
+    .ga-advanced-fields {
+      display: block;
+    }
+
+    .ga-card .ga-field {
+      display: block;
+      width: 100%;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+
+    .ga-card .ga-field label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .ga-field-checkbox input {
+      width: auto;
+      min-height: auto;
+      display: block;
+      cursor: pointer;
+    }
+
+    .ga-advanced {
+      margin-top: 0;
+      border: 1px dashed #ccc;
+      border-radius: 12px;
+      padding: 16px 18px 18px;
+      background: #fafafa;
+    }
+
+    .ga-advanced-summary {
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #444;
+      padding: 4px 0;
+    }
+
+    .ga-advanced[open] .ga-advanced-summary {
+      margin-bottom: 12px;
+    }
+  </style>
+</Layout>

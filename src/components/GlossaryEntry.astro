@@ -6,19 +6,30 @@ interface Props {
 
 const { entry, relatedTermsData = [] } = Astro.props;
 
-const videoUrl =
-  entry?.videoUrl
-    ? entry.videoUrl
-    : entry?.vimeoIds?.length
-      ? `https://player.vimeo.com/video/${entry.vimeoIds[0]}`
-      : '';
-
-const termLabel = (entry?.english ?? "").toString().replace(/<[^>]*>/g, "").trim();
 const imageSrc = entry?.image
   ? (entry.image.startsWith("http") || entry.image.startsWith("/")
     ? entry.image
     : `/images/glossary/${String(entry.image).replace(/^\.?\//, "")}`)
   : "";
+
+const helpinfoRaw = (entry?.helpinfo ?? entry?.helpInfo ?? entry?.Helpinfo ?? "").toString();
+function isNonemptyHelpinfo(raw: string): boolean {
+  const s = raw.trim();
+  if (!s || s.toUpperCase() === "NULL") return false;
+  const textOnly = s.replace(/<[^>]*>/g, "").replace(/&nbsp;/gi, " ").replace(/\s+/g, " ").trim();
+  if (textOnly.length > 0) return true;
+  return /<img\b/i.test(s);
+}
+const showHelpinfo = isNonemptyHelpinfo(helpinfoRaw);
+
+const relatedToolsRaw = entry?.relatedTools;
+const relatedTools = Array.isArray(relatedToolsRaw)
+  ? relatedToolsRaw.filter(
+      (t: { name?: string; url?: string; icon?: string }) =>
+        t && typeof t.url === "string" && t.url.trim() && typeof t.name === "string" && t.name.trim()
+    )
+  : [];
+const showRelatedTools = relatedTools.length > 0;
 ---
 
 <style>
@@ -58,34 +69,112 @@ const imageSrc = entry?.image
     text-decoration: underline;
   }
 
-  .two-col {
+  .glossary-entry-image {
     display: flex;
-    flex-direction: row;
-    gap: 2rem;
-    align-items: flex-start;
-    margin-top: 1rem;
-  }
-
-  .two-col .image-col {
-    flex-shrink: 0;
-    width: 320px;
-    max-width: 320px;
-  }
-
-  .two-col .glossary-image {
+    justify-content: center;
+    align-items: center;
     width: 100%;
+    margin: 0 0 1.25rem;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .glossary-entry-image .glossary-image {
+    display: block;
+    margin: 0 auto;
+    max-width: min(100%, 520px);
+    width: auto;
     height: auto;
-    max-width: 100%;
     border-radius: 12px;
     border: 1px solid #e2e6df;
-    display: block;
-    object-fit: cover;
+    object-fit: contain;
   }
 
-  .two-col .content-col {
-    min-width: 0;
-    flex: 1;
+ 
+  .glossary-entry-helpinfo {
+    margin: 0 auto 1.5rem;
     max-width: 680px;
+    line-height: 1.65;
+    color: #374151;
+    font-size: 1.05rem;
+  }
+
+  /* Template + helpinfo (set:html): injected nodes lack scoped data-astro attrs — use :global under helpinfo */
+  .glossary-related-tools,
+  .glossary-entry-helpinfo :global(.glossary-related-tools) {
+    margin-top: 1.25rem;
+    padding: 0.9rem 1rem;
+    border-radius: 10px;
+    background: rgba(82, 104, 45, 0.06);
+    border: 1px solid rgba(82, 104, 45, 0.15);
+  }
+
+  .glossary-related-tools__heading,
+  .glossary-entry-helpinfo :global(.glossary-related-tools__heading) {
+    margin: 0 0 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #52682d;
+  }
+
+  .glossary-related-tools__list,
+  .glossary-entry-helpinfo :global(.glossary-related-tools ul) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .glossary-related-tools__item,
+  .glossary-entry-helpinfo :global(.glossary-related-tools li) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .glossary-related-tools__link,
+  .glossary-entry-helpinfo :global(.glossary-related-tools__link) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.65rem;
+    padding: 0.4rem 0.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #1f2937;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .glossary-related-tools__link:hover,
+  .glossary-related-tools__link:focus-visible,
+  .glossary-entry-helpinfo :global(.glossary-related-tools__link:hover),
+  .glossary-entry-helpinfo :global(.glossary-related-tools__link:focus-visible) {
+    background: rgba(82, 104, 45, 0.12);
+    color: #52682d;
+    outline: none;
+  }
+
+  .glossary-related-tools__icon,
+  .glossary-entry-helpinfo :global(.glossary-related-tools__link img) {
+    width: 26px;
+    height: 26px;
+    max-width: 26px;
+    max-height: 26px;
+    flex-shrink: 0;
+    display: block;
+    object-fit: contain;
+  }
+
+  .glossary-related-tools__name {
+    display: inline-block;
+  }
+
+  .glossary-entry-tail {
+    max-width: 680px;
+    margin: 0 auto;
   }
 
   .term-title {
@@ -126,10 +215,6 @@ const imageSrc = entry?.image
     color: #6b7280;
     margin: 0 0 1.5rem;
     font-style: italic;
-  }
-
-  .term-description {
-    margin-bottom: 1.5rem;
   }
 
   .term-example {
@@ -269,20 +354,6 @@ const imageSrc = entry?.image
     font-size: 1.3rem;
   }
 
-  .video-player {
-    width: 100%;
-    aspect-ratio: 16/9;
-    border-radius: 8px;
-    background: #000;
-  }
-
-  .video-player iframe,
-  .video-player video {
-    width: 100%;
-    height: 100%;
-    border-radius: 8px;
-  }
-
   .non-member-cta {
     background: linear-gradient(135deg, #f0f4ea 0%, #ffffff 100%);
     text-align: center;
@@ -310,24 +381,8 @@ const imageSrc = entry?.image
   }
 
   @media (max-width: 768px) {
-    .two-col {
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-
-    .two-col .image-col {
-      width: 100%;
+    .glossary-entry-image .glossary-image {
       max-width: 100%;
-    }
-
-    .two-col .glossary-image {
-      width: 100%;
-      max-width: 100%;
-      height: auto;
-      object-fit: cover;
-      border-radius: 12px;
-      display: block;
-      border: 1px solid #e2e6df;
     }
 
     .term-title {
@@ -344,106 +399,84 @@ const imageSrc = entry?.image
   <h1 class="glossary-entry__title">{entry?.english ?? ""}</h1>
   <a href="/glossary" class="back-link">← Back to Glossary </a>
   {entry?.example && (
-    <p class="term-intro">{entry.example}</p>
+    <div class="term-intro" set:html={entry.example}></div>
   )}
 
   <div class="term-body">
-    <div class="two-col">
-      {imageSrc && (
-        <div class="image-col">
+    {imageSrc && (
+      <div class="glossary-entry-image">
+        {entry?.link && String(entry.link).trim() ? (
+          <a href={String(entry.link).trim()} class="easter-egg-link">
+            <img
+  src={imageSrc}
+  alt={entry?.image_alt ?? entry?.imageAlt ?? entry?.english ?? ""}
+  class="glossary-image"
+  style="cursor:pointer; transition: transform 0.2s ease;"
+  onmouseover="this.style.transform='scale(1.05)'"
+  onmouseout="this.style.transform='scale(1)'"
+/>
+          </a>
+        ) : (
           <img
             class="glossary-image"
             src={imageSrc}
-            alt={entry?.imageAlt || entry?.english || ""}
+            alt={entry?.image_alt ?? entry?.imageAlt ?? entry?.english ?? ""}
           />
-        </div>
-      )}
-      <div class="content-col">
-        {entry?.tooltip && <p class="term-tooltip"><em>{entry.tooltip}</em></p>}
-
-        <div class="term-description" set:html={entry?.helpInfo ?? ""}></div>
-
-        {entry?.promoText && (
-          <div class="term-promo" set:html={entry.promoText} />
-        )}
-
-        {relatedTermsData && relatedTermsData.length > 0 && (
-          <div class="related-terms">
-            <div class="related-terms-label">Related terms:</div>
-            <div class="related-terms-list">
-              {relatedTermsData.map((relatedTerm: any) => (
-                <a href={`/glossary/${relatedTerm.slug}`} class="related-term-link">
-                  <img
-                    src="/images/glossary/glossary_logo.svg"
-                    alt=""
-                    class="related-term-icon"
-                  />
-                  {relatedTerm.term}
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {videoUrl && (
-          <>
-            {entry?.isMemberOnly ? (
-              <>
-                <div class="member-only" data-member="true" style="display:none;">
-                  <h3>Watch it in action</h3>
-                  <div class="video-player">
-                    {videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') ? (
-                      <iframe
-                        src={videoUrl.includes('youtube.com/embed') ? videoUrl : videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
-                        title={`Video: ${termLabel}`}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen
-                      ></iframe>
-                    ) : videoUrl.includes('vimeo.com') ? (
-                      <iframe
-                        src={videoUrl.includes('player.vimeo.com/video') ? videoUrl : videoUrl.replace('vimeo.com/', 'player.vimeo.com/video/')}
-                        title={`Video: ${termLabel}`}
-                        allow="autoplay; fullscreen; picture-in-picture"
-                        allowfullscreen
-                      ></iframe>
-                    ) : (
-                      <video controls src={videoUrl}></video>
-                    )}
-                  </div>
-                </div>
-
-                <div class="non-member-cta" data-member="false">
-                  <p>This video is available for members only.</p>
-                  <a href="/subscribe" class="btn-primary kbm-cta-guide">Join Now</a>
-                </div>
-              </>
-            ) : (
-              <div class="member-only">
-                <h3>Watch it in action</h3>
-                <div class="video-player">
-                  {videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') ? (
-                    <iframe
-                      src={videoUrl.includes('youtube.com/embed') ? videoUrl : videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
-                      title={`Video: ${termLabel}`}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowfullscreen
-                    ></iframe>
-                  ) : videoUrl.includes('vimeo.com') ? (
-                    <iframe
-                      src={videoUrl.includes('player.vimeo.com/video') ? videoUrl : videoUrl.replace('vimeo.com/', 'player.vimeo.com/video/')}
-                      title={`Video: ${termLabel}`}
-                      allow="autoplay; fullscreen; picture-in-picture"
-                      allowfullscreen
-                    ></iframe>
-                  ) : (
-                    <video controls src={videoUrl}></video>
-                  )}
-                </div>
-              </div>
-            )}
-          </>
         )}
       </div>
+    )}
+    {showHelpinfo && (
+      <div class="glossary-entry-helpinfo" set:html={helpinfoRaw} />
+    )}
+    {showRelatedTools && (
+      <div class="glossary-related-tools">
+        <p class="glossary-related-tools__heading">Use this tool</p>
+        <ul class="glossary-related-tools__list">
+          {relatedTools.map((tool: { name: string; url: string; icon?: string }) => (
+            <li class="glossary-related-tools__item">
+              <a href={tool.url} class="glossary-related-tools__link">
+                {tool.icon ? (
+                  <img
+                    src={tool.icon}
+                    alt=""
+                    class="glossary-related-tools__icon"
+                    width="26"
+                    height="26"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : null}
+                <span class="glossary-related-tools__name">{tool.name}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+    <div class="glossary-entry-tail">
+      {entry?.tooltip && <p class="term-tooltip"><em>{entry.tooltip}</em></p>}
+
+      {entry?.promoText && (
+        <div class="term-promo" set:html={entry.promoText} />
+      )}
+
+      {relatedTermsData && relatedTermsData.length > 0 && (
+        <div class="related-terms">
+          <div class="related-terms-label">Related terms:</div>
+          <div class="related-terms-list">
+            {relatedTermsData.map((relatedTerm: any) => (
+              <a href={`/glossary/${relatedTerm.slug}`} class="related-term-link">
+                <img
+                  src="/images/glossary/glossary_logo.svg"
+                  alt=""
+                  class="related-term-icon"
+                />
+                {relatedTerm.term}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   </div>
 </div>

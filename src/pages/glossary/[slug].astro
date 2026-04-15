@@ -37,7 +37,7 @@ const termLabel = cleanTerm((entry as any).english);
 ---
 
 <Layout title={`${termLabel} | Glossary`} description={`Glossary definition: ${termLabel}`}>
-  <div class="page-wrap">
+  <div class="page-wrap page-wrap--glossary-term">
     <PageHead
       title={termLabel}
       breadcrumb={`Home / Glossary / ${termLabel}`}
@@ -48,6 +48,19 @@ const termLabel = cleanTerm((entry as any).english);
   </div>
 
   <style>
+    /* Main layout already clears the fixed header; global .page-wrap adds the same again — remove duplicate top gap */
+    .page-wrap.page-wrap--glossary-term {
+      padding-top: 0;
+    }
+
+    .page-wrap--glossary-term .page-head {
+      margin-bottom: 0.85rem;
+    }
+
+    .page-wrap--glossary-term .back-link {
+      margin-bottom: 1rem;
+    }
+
     .page-wrap .kbm-breadcrumb {
       font-size: var(--text-base);
       margin-bottom: 1rem;
