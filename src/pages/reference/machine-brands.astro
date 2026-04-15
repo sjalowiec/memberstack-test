@@ -2,14 +2,25 @@
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
 import "../../styles/pages/machine-brands.css";
+import PageBackLink from "../../components/common/PageBackLink.astro";
 ---
 
 <Layout title="Knitting Machine Brands">
+  <PageBackLink href="/glossary" text="Back to Glossary" />
   <div class="page-wrap machine-brands-page">
     <PageHead
       title="Knitting Machine Brands"
-      subhead="Use this guide to identify your knitting machine brand and its related names across different countries."
+      subhead="Use this guide to identify your knitting machine brand — and uncover the different names it may go by around the world."
     />
+  
+    <div class="easter-egg-callout">
+      <span class="easter-egg-icon">🥚</span>
+      <div>
+        <strong>You found it!</strong><br />
+        Many knitting machines were sold under different brand names depending on where they were sold - which is why the same machine might go by completely different names around the world.<br /><br />
+        <em>This matters when you're searching for parts, patterns, or help - the name you’re using might not be the only one.</em>
+      </div>
+    </div>
 
     <div class="machine-brands-layout">
       <div class="machine-brands-col machine-brands-col--left">
@@ -70,7 +81,9 @@ import "../../styles/pages/machine-brands.css";
               </article>
             </div>
 
-            <article class="machine-brands-card machine-brands-card--wide">
+            <article
+              class="machine-brands-card machine-brands-card--wide"
+            >
               <div class="machine-brands-card__block">
                 <h3 class="machine-brands-brand">Silver Reed</h3>
                 <ul class="machine-brands-list">
@@ -139,7 +152,9 @@ import "../../styles/pages/machine-brands.css";
               </article>
             </div>
 
-            <article class="machine-brands-card machine-brands-card--wide">
+            <article
+              class="machine-brands-card machine-brands-card--wide"
+            >
               <div class="machine-brands-card__block">
                 <h3 class="machine-brands-brand">
                   Other brands <span class="machine-brands-note">(vintage)</span>
@@ -164,7 +179,9 @@ import "../../styles/pages/machine-brands.css";
           </h2>
           <div class="machine-brands-region__body">
             <div class="machine-brands-row machine-brands-row--vintage">
-              <article class="machine-brands-card machine-brands-card--compact">
+              <article
+                class="machine-brands-card machine-brands-card--compact"
+              >
                 <h3 class="machine-brands-brand">Prior Purl</h3>
                 <ul class="machine-brands-list">
                   <li>
@@ -173,14 +190,18 @@ import "../../styles/pages/machine-brands.css";
                 </ul>
               </article>
 
-              <article class="machine-brands-card machine-brands-card--compact">
+              <article
+                class="machine-brands-card machine-brands-card--compact"
+              >
                 <h3 class="machine-brands-brand">Neva Severianka</h3>
                 <ul class="machine-brands-list">
                   <li><span class="machine-brands-note">(RU)</span> 5mm</li>
                 </ul>
               </article>
 
-              <article class="machine-brands-card machine-brands-card--compact">
+              <article
+                class="machine-brands-card machine-brands-card--compact"
+              >
                 <h3 class="machine-brands-brand">Simac</h3>
                 <ul class="machine-brands-list">
                   <li>Sona</li>

@@ -90,6 +90,7 @@ const showRelatedTools = relatedTools.length > 0;
     object-fit: contain;
   }
 
+ 
   .glossary-entry-helpinfo {
     margin: 0 auto 1.5rem;
     max-width: 680px;
@@ -404,11 +405,24 @@ const showRelatedTools = relatedTools.length > 0;
   <div class="term-body">
     {imageSrc && (
       <div class="glossary-entry-image">
-        <img
-          class="glossary-image"
-          src={imageSrc}
-          alt={entry?.image_alt ?? entry?.imageAlt ?? entry?.english ?? ""}
-        />
+        {entry?.link && String(entry.link).trim() ? (
+          <a href={String(entry.link).trim()} class="easter-egg-link">
+            <img
+  src={imageSrc}
+  alt={entry?.image_alt ?? entry?.imageAlt ?? entry?.english ?? ""}
+  class="glossary-image"
+  style="cursor:pointer; transition: transform 0.2s ease;"
+  onmouseover="this.style.transform='scale(1.05)'"
+  onmouseout="this.style.transform='scale(1)'"
+/>
+          </a>
+        ) : (
+          <img
+            class="glossary-image"
+            src={imageSrc}
+            alt={entry?.image_alt ?? entry?.imageAlt ?? entry?.english ?? ""}
+          />
+        )}
       </div>
     )}
     {showHelpinfo && (

@@ -220,8 +220,8 @@
   {
     "glossaryId": 189,
     "english": "Right",
-    "example": "",
-    "helpinfo": "",
+    "example": "Carriage on the right or Right Side of the knitting",
+    "helpinfo": "Often instructions will refer to the right side of the needlebed;\nRight side refers to the knit side (vs purl side) or the \"public side\" that will be seen when a garment is worn.",
     "image": "",
     "image_alt": "NULL",
     "image_description": "NULL",
@@ -1795,19 +1795,6 @@
     ]
   },
   {
-    "glossaryId": 326,
-    "english": "Quick Win",
-    "example": "A section of the Knit it Now site that features make-in-a-weekend projects for inspiration, practice and success",
-    "helpinfo": "Sometimes a sweater or a big project is just too much. Quick Wins are designed to make the most of your knitting time.  \tFinish-in-a-weekend \tTry a new technique or stitch pattern on a simple project \tPractice techniques \tPlay with color \tUse up stash yarn \tSmall successes to boost your confidence  Visit the Quick Wins",
-    "image": "/images/glossary/blank.png",
-    "image_alt": "NULL",
-    "image_description": "NULL",
-    "metaTitle": "NULL",
-    "metaDescription": "NULL",
-    "active": true,
-    "vimeoIds": []
-  },
-  {
     "glossaryId": 327,
     "english": "Tubular Knitting",
     "example": "Knit with the ribber on both beds to create a tube with no seams | Circular Knitting",
@@ -2435,7 +2422,7 @@
     "glossaryId": 373,
     "english": "Racking | P/H",
     "example": "Swing P | Rack to H | Rack to P (ribber)",
-    "helpinfo": "hr.style13 { height: 10px; border: 0; box-shadow: 0 10px 10px -10px #8c8b8b inset; }      \tRefers to the position of the ribber needles in relation to the main bed needles. \t\tSome machines will have one device (lever or knob) to set Full / Half Pitch AND a separate device (racking handle) to swing the ribber.  \t\t \t\t \t\t\t \t\t  \t\t \t\tOther machines have one device (lever or knob)that controls BOTH Pitch and Swing  \t\t \t\t \t\t\t \t\t   \t\t \t\t \t\t\t  Full Pitch vs Half Pitch \t\t \t \t  \t\t  \t     \t \t\t \t\t",
+    "helpinfo": "Refers to the position of the ribber needles in relation to the main bed needles. \t\tSome machines will have one device (lever or knob) to set Full / Half Pitch AND a separate device (racking handle) to swing the ribber.  \t\t \t\t \t\t\t \t\t  \t\t \t\tOther machines have one device (lever or knob)that controls BOTH Pitch and Swing  \t\t \t\t \t\t\t \t\t   \t\t \t\t \t\t\t  Full Pitch vs Half Pitch \t\t \t \t  \t\t  \t     \t \t\t \t\t",
     "image": "/images/glossary/racking-machine-knitting.jpg",
     "image_alt": "Racking position and settings for machine knitting",
     "image_description": "Racking position and pitch settings for adjusting ribber in machine knitting",
@@ -5981,6 +5968,21 @@
     "metaDescription": "Visual of R9–R5 needle positions with zero included on the knitting machine bed. Glossary entry from Knit It Now.",
     "active": true,
     "vimeoIds": []
+  },
+  {
+    "glossaryId": 901,
+    "english": "Easter Egg",
+    "example": "🥚 You found it. Click the egg to uncover a hidden guide.",
+    "helpinfo": "",
+    "image": "/images/easter-egg.png",
+    "image_alt": "Colorful striped Easter egg",
+    "image_description": "A bright striped Easter egg representing a hidden surprise",
+    "metaTitle": "Easter Egg | Hidden Surprise at Knit It Now",
+    "metaDescription": "Discover a hidden Easter egg inside the Knit It Now glossary—click to uncover a helpful guide to knitting machine brands.",
+    "active": true,
+    "vimeoIds": [],
+    "link": "/reference/machine-brands",
+    "linkText": "Take a closer look"
   },
   {
     "glossaryId": 887,
