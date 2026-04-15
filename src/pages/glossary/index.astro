@@ -128,16 +128,16 @@ const glossaryJson = JSON.stringify(
       })}
     </div>
       </section>
-    <dialog id="glossaryModal" class="glossaryModal">
-      <div class="glossaryModal__shell">
+    <div id="glossaryModal" class="glossaryModal" hidden>
+      <div class="glossaryModal__backdrop" data-close-modal="true"></div>
+      <div class="glossaryModal__shell" role="dialog" aria-modal="true" aria-labelledby="glossaryModalTitle">
         <div class="glossaryModal__top">
-          <div class="glossaryModal__title" aria-live="polite"></div>
+          <div id="glossaryModalTitle" class="glossaryModal__title" aria-live="polite"></div>
           <button class="glossaryModal__close" aria-label="Close" type="button">✕</button>
         </div>
-
         <div id="modalBody" class="glossaryModal__body"></div>
       </div>
-    </dialog>
+    </div>
   </main>
 
   <script define:vars={{ glossaryJson }} is:inline>
@@ -204,18 +204,24 @@ const glossaryJson = JSON.stringify(
         return out.innerHTML;
       }
 
-      var dialog = document.getElementById("glossaryModal");
+      var modalRoot = document.getElementById("glossaryModal");
       var modalBody = document.getElementById("modalBody");
-      var modalTitleEl = document.querySelector(".glossaryModal__title");
-      var closeBtn = dialog ? dialog.querySelector(".glossaryModal__close") : null;
+      var modalTitleEl = document.getElementById("glossaryModalTitle");
+      var closeBtn = modalRoot ? modalRoot.querySelector(".glossaryModal__close") : null;
+      var modalBackdrop = modalRoot ? modalRoot.querySelector(".glossaryModal__backdrop") : null;
 
       function closeModal() {
-        dialog?.close();
+        if (!modalRoot) return;
+        modalRoot.classList.remove("is-open");
+        modalRoot.hidden = true;
+        document.body.style.overflow = "";
       }
 
       function openTermModal(slug) {
-        if (!dialog || !modalBody) return;
-        dialog.showModal();
+        if (!modalRoot || !modalBody) return;
+        modalRoot.hidden = false;
+        modalRoot.classList.add("is-open");
+        document.body.style.overflow = "hidden";
         modalBody.innerHTML = "<p>Loading...</p>";
         if (modalTitleEl) modalTitleEl.textContent = "";
         if (closeBtn) closeBtn.focus();
@@ -263,12 +269,12 @@ const glossaryJson = JSON.stringify(
 
       closeBtn?.addEventListener("click", closeModal);
 
-      dialog?.addEventListener("click", function (e) {
-        if (e.target === dialog) closeModal();
-      });
+      modalBackdrop?.addEventListener("click", closeModal);
 
-      dialog?.addEventListener("keydown", function (e) {
-        if (e.key === "Escape") closeModal();
+      document.addEventListener("keydown", function (e) {
+        if (e.key !== "Escape") return;
+        if (!modalRoot || modalRoot.hidden || !modalRoot.classList.contains("is-open")) return;
+        closeModal();
       });
 
       // Glossary search: filter entries by term, definition, optional alt
@@ -700,38 +706,42 @@ const glossaryJson = JSON.stringify(
       cursor: pointer;
     }
 
-    /* Glossary modal – below fixed header, body scrolls */
-    dialog.glossaryModal {
+    /* Glossary modal – full-viewport overlay, card shell scrolls */
+    .glossaryModal {
       position: fixed;
-      top: calc(var(--fixed-header, 0px) + 12px);
-      left: 50%;
-      transform: translateX(-50%);
+      inset: 0;
+      z-index: 99999;
+      display: none;
+    }
+
+    .glossaryModal.is-open {
+      display: block;
+    }
+
+    .glossaryModal__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+    }
+
+    .glossaryModal__shell {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
       width: min(900px, 92vw);
       max-height: calc(100vh - var(--fixed-header, 0px) - 24px);
-      margin: 0;
+      margin: calc(var(--fixed-header, 0px) + 12px) auto 12px;
       padding: 0 !important;
       border: 0;
       border-radius: 18px;
       overflow: hidden;
       background: #fff;
-      z-index: 99999;
-    }
-
-    dialog.glossaryModal::backdrop {
-      background: rgba(0, 0, 0, 0.45);
-    }
-
-    .glossaryModal__shell {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      min-height: 0;
-      padding: 0 !important;
-      margin: 0 !important;
     }
 
     /* Top section hidden; only floating close button shown */
-    dialog.glossaryModal .glossaryModal__top {
+    .glossaryModal .glossaryModal__top {
       display: flex;
       flex: 0 0 auto;
       position: relative;
@@ -744,11 +754,11 @@ const glossaryJson = JSON.stringify(
       overflow: visible;
     }
 
-    dialog.glossaryModal .glossaryModal__title {
+    .glossaryModal .glossaryModal__title {
       display: none !important;
     }
 
-    dialog.glossaryModal .glossaryModal__close {
+    .glossaryModal .glossaryModal__close {
       position: absolute;
       top: 6px;
       right: 8px;
@@ -763,7 +773,7 @@ const glossaryJson = JSON.stringify(
       cursor: pointer;
     }
 
-    dialog.glossaryModal .glossaryModal__body {
+    .glossaryModal .glossaryModal__body {
       flex: 1 1 auto;
       overflow: auto;
       -webkit-overflow-scrolling: touch;
@@ -783,8 +793,8 @@ const glossaryJson = JSON.stringify(
     }
 
     /* Entry title: was hidden; show compact so modal uses vertical space for content */
-    dialog.glossaryModal .glossaryModal__body .glossaryEntry h1,
-    dialog.glossaryModal .glossaryModal__body .glossary-entry__title {
+    .glossaryModal .glossaryModal__body .glossaryEntry h1,
+    .glossaryModal .glossaryModal__body .glossary-entry__title {
       display: block !important;
       margin: 0 44px 0.35rem 0;
       padding: 0;
@@ -794,17 +804,17 @@ const glossaryJson = JSON.stringify(
       color: #1f2937;
     }
 
-    dialog.glossaryModal .glossaryModal__body .term-intro {
+    .glossaryModal .glossaryModal__body .term-intro {
       margin-top: 0;
       margin-bottom: 0.65rem;
     }
 
-    dialog.glossaryModal .glossaryModal__body .term-body {
+    .glossaryModal .glossaryModal__body .term-body {
       margin-top: 0.65rem;
       padding: 1.1rem;
     }
 
-    dialog.glossaryModal .glossaryModal__body .glossary-entry-image {
+    .glossaryModal .glossaryModal__body .glossary-entry-image {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -814,22 +824,22 @@ const glossaryJson = JSON.stringify(
       box-sizing: border-box;
     }
 
-    dialog.glossaryModal .glossaryModal__body .glossary-entry-image img,
-    dialog.glossaryModal .glossaryModal__body .glossary-entry-image .glossary-image {
+    .glossaryModal .glossaryModal__body .glossary-entry-image img,
+    .glossaryModal .glossaryModal__body .glossary-entry-image .glossary-image {
       display: block;
       margin: 0 auto;
       max-width: 100%;
       height: auto;
     }
 
-    dialog.glossaryModal .glossaryModal__body .glossary-entry-helpinfo {
+    .glossaryModal .glossaryModal__body .glossary-entry-helpinfo {
       margin: 0 0 1.25rem;
       line-height: 1.6;
       color: #374151;
     }
 
     /* Related tools: modal injects main HTML only — GlossaryEntry scoped CSS is not in the page */
-    dialog.glossaryModal .glossaryModal__body .glossary-related-tools {
+    .glossaryModal .glossaryModal__body .glossary-related-tools {
       margin: 0.8rem auto 0;
       padding: 0.45rem 0.65rem;
       border-radius: 10px;
@@ -838,7 +848,7 @@ const glossaryJson = JSON.stringify(
       max-width: 80%;
     }
 
-    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__heading {
+    .glossaryModal .glossaryModal__body .glossary-related-tools__heading {
       margin: 0 0 0.2rem;
       padding: 0;
       font-size: 0.72rem;
@@ -849,23 +859,23 @@ const glossaryJson = JSON.stringify(
       color: #52682d;
     }
 
-    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__list,
-    dialog.glossaryModal .glossaryModal__body .glossary-related-tools ul {
+    .glossaryModal .glossaryModal__body .glossary-related-tools__list,
+    .glossaryModal .glossaryModal__body .glossary-related-tools ul {
       list-style: none;
       margin: 0;
       padding: 0;
       line-height: 1.2;
     }
 
-    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__item,
-    dialog.glossaryModal .glossaryModal__body .glossary-related-tools li {
+    .glossaryModal .glossaryModal__body .glossary-related-tools__item,
+    .glossaryModal .glossaryModal__body .glossary-related-tools li {
       list-style: none;
       margin: 0;
       padding: 0;
       line-height: 1.2;
     }
 
-    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__link {
+    .glossaryModal .glossaryModal__body .glossary-related-tools__link {
       display: inline-flex;
       align-items: center;
       justify-content: flex-start;
@@ -880,15 +890,15 @@ const glossaryJson = JSON.stringify(
       transition: background-color 0.15s ease, color 0.15s ease;
     }
 
-    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__link:hover,
-    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__link:focus-visible {
+    .glossaryModal .glossaryModal__body .glossary-related-tools__link:hover,
+    .glossaryModal .glossaryModal__body .glossary-related-tools__link:focus-visible {
       background: rgba(82, 104, 45, 0.12);
       color: #52682d;
       outline: none;
     }
 
-    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__icon,
-    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__link img {
+    .glossaryModal .glossaryModal__body .glossary-related-tools__icon,
+    .glossaryModal .glossaryModal__body .glossary-related-tools__link img {
       width: 26px;
       height: 26px;
       max-width: 26px;
@@ -899,19 +909,19 @@ const glossaryJson = JSON.stringify(
       object-fit: contain;
     }
 
-    dialog.glossaryModal .glossaryModal__body .glossary-related-tools__name {
+    .glossaryModal .glossaryModal__body .glossary-related-tools__name {
       display: inline-block;
       line-height: 1.2;
     }
 
-    dialog.glossaryModal .glossaryModal__body img:not(.glossary-related-tools__icon) {
+    .glossaryModal .glossaryModal__body img:not(.glossary-related-tools__icon) {
       max-width: 100%;
       height: auto;
       max-height: 45vh;
       object-fit: contain;
     }
 
-    dialog.glossaryModal .glossaryModal__body .back-link {
+    .glossaryModal .glossaryModal__body .back-link {
       display: none;
     }
 
