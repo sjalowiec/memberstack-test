@@ -399,7 +399,7 @@ const showRelatedTools = relatedTools.length > 0;
   <h1 class="glossary-entry__title">{entry?.english ?? ""}</h1>
   <a href="/glossary" class="back-link">← Back to Glossary </a>
   {entry?.example && (
-    <p class="term-intro">{entry.example}</p>
+    <div class="term-intro" set:html={entry.example}></div>
   )}
 
   <div class="term-body">

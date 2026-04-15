@@ -23,9 +23,79 @@ const sueHeadshot = "/images/sue.gif";
           <div class="whats-new-header" role="banner">
             <PageHead title="What's New" />
             <p class="whats-new-intro">
-              Here’s what’s new this week — and ready for you to explore.            </p>
+              Here’s what’s new this week - and ready for you to explore.            </p>
             
           </div>
+
+          <section class="whats-new-box" aria-labelledby="whats-new-new">
+          <h2 class="whats-new-box__title" id="whats-new-new">Take a Look...</h2>
+
+          <ul class="whats-new-items">
+            <li class="whats-new-item">
+              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
+              <div class="whats-new-item__body">
+                <h3 class="whats-new-item__title whats-new-item__title--pattern">
+                  Updated: <a href="/patterns/hat">Custom Hat Pattern Builder</a>
+                </h3>
+                <p class="whats-new-item__desc">
+                  Now includes a new hat variation so you have another option to build from.
+                </p>
+              </div>
+            </li>
+            <li class="whats-new-item">
+              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
+              <div class="whats-new-item__body">
+                <h3 class="whats-new-item__title whats-new-item__title--pattern">
+                  <span class="nav-pill-new">NEW</span> <a href="/tools/gauge-calculator">Gauge Calculator</a>
+                </h3>
+                <p class="whats-new-item__desc">
+                  Check and convert your gauge so your numbers actually work before you start knitting.
+                </p>
+              </div>
+            </li>
+            <li class="whats-new-item">
+              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
+              <div class="whats-new-item__body">
+                <h3 class="whats-new-item__title whats-new-item__title--pattern">
+                  <span class="nav-pill-new">NEW</span> <a href="/glossary">MK Terms Glossary</a>
+                </h3>
+                <p class="whats-new-item__desc">
+                  Look up unfamiliar machine knitting terms quickly while you work.
+                </p>
+              </div>
+            </li>
+            <li class="whats-new-item">
+              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
+              <div class="whats-new-item__body">
+                <h3 class="whats-new-item__title"><a href="/patterns">Improved pattern printing</a></h3>
+                <p class="whats-new-item__desc">
+                  Pattern pages are easier to follow and easier to print.
+                </p>
+              </div>
+            </li>
+            
+            <li class="whats-new-item">
+              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
+              <div class="whats-new-item__body">
+                <h3 class="whats-new-item__title whats-new-item__title--pattern">
+                  🥚 Hidden Easter Egg: <a href="/reference/machine-brands">Machine Brands Around the World</a>
+                </h3>
+                <p class="whats-new-item__desc">
+                  There’s something fun tucked into the glossary… see if you can find it.
+                </p>
+              </div>
+            </li>
+            <!--<li class="whats-new-item">
+              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
+              <div class="whats-new-item__body">
+                <h3 class="whats-new-item__title"><a href="/help-hub">Help Hub</a> is growing</h3>
+                <p class="whats-new-item__desc">
+                  A growing collection of quick answers for stuck and frustrated moments.
+                </p>
+              </div>
+            </li>-->
+          </ul>
+          </section>
         </div>
 
         <footer class="whats-new-footer">
@@ -43,83 +113,34 @@ const sueHeadshot = "/images/sue.gif";
               </p>
 
               <div class="whats-new-footer__cta">
-                <button
-                  type="button"
+                <a
                   class="kbm-btn kbm-btn-primary whats-new-footer__message-btn"
+                  href="#comments"
+                  >Join the Conversation</a>
+              </div>
+              <p class="whats-new-footer__private-hint">
+                Prefer to reach out privately?<br>
+                <a
+                  href="#"
+                  class="whats-new-footer__private-link"
                   id="whats-new-sue-modal-open"
                   aria-haspopup="dialog"
                   aria-controls="whats-new-sue-modal"
-                >
-                  Message Sue Directly
-                </button>
+                  >Message Sue directly</a>
+              </p>
+
+              <div class="whats-new-footer__feedback">
+                <p>
+                  I’m building this step by step — and your feedback is already shaping what comes
+                  next.
+                </p>
               </div>
             </div>
           </div>
         </footer>
       </section>
 
-      <div class="whats-new-grid">
-        <section class="whats-new-box" aria-labelledby="whats-new-new">
-          <h2 class="whats-new-box__title" id="whats-new-coming-soon">Start Here</h2>
-
-          <ul class="whats-new-items">
-            <li class="whats-new-item">
-              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
-              <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title whats-new-item__title--pattern">
-                  New: <a href="/patterns/hat">Custom Hat Pattern Builder</a>
-                </h3>
-                <p class="whats-new-item__desc">
-                  Build a hat that fits your head, your gauge, and your machine — with no guesswork.
-                </p>
-              </div>
-            </li>
-            <li class="whats-new-item">
-              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
-              <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title whats-new-item__title--pattern">
-                  New: <a href="/patterns/diy-blanket">DIY Blanket Pattern Builder</a>
-                </h3>
-                <p class="whats-new-item__desc">
-                  Design a blanket in the size you want, check the width for your gauge, and plan panels if needed.
-                </p>
-              </div>
-            </li>
-            <li class="whats-new-item">
-              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
-              <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title"><a href="/patterns">improved pattern printing</a></h3>
-                <p class="whats-new-item__desc">
-                </p>
-              </div>
-            </li>
-
-
-
-
-
-            
-            <li class="whats-new-item">
-              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
-              <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title"><a href="/tools"><span class="nav-pill-new">NEW</span> Charting Tools</a></h3>
-                <p class="whats-new-item__desc">
-                  Helpful calculators and planning tools for machine knitters.                </p>
-              </div>
-            </li>
-            <!--<li class="whats-new-item">
-              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
-              <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title"><a href="/help-hub">Help Hub</a> is growing</h3>
-                <p class="whats-new-item__desc">
-                  A growing collection of quick answers for stuck and frustrated moments.
-                </p>
-              </div>
-            </li>-->
-          </ul>
-        </section>
-
-        <section class="whats-new-box whats-new-box--coming" aria-labelledby="whats-new-coming-soon">
+      <section class="whats-new-box whats-new-box--coming whats-new-coming-block" aria-labelledby="whats-new-coming-soon">
           <h2 class="whats-new-box__title" id="whats-new-coming-soon">Coming Soon</h2>
           <ul class="whats-new-items">
             <li class="whats-new-item">
@@ -143,9 +164,9 @@ const sueHeadshot = "/images/sue.gif";
             <li class="whats-new-item">
               <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
               <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title">MK Terms Glossary</h3>
+                <h3 class="whats-new-item__title">More patterns</h3>
                 <p class="whats-new-item__desc">
-                  Look up unfamiliar terms quickly and keep moving.
+                  New patterns and builders are being added — with more options as we go.
                 </p>
               </div>
             </li>
@@ -159,8 +180,7 @@ const sueHeadshot = "/images/sue.gif";
               </div>
             </li>
           </ul>
-        </section>
-      </div>
+      </section>
 <hr class="whats-new-divider" aria-label="Divider" >
       <section id="comments" class="whats-new-conversation" aria-labelledby="whats-new-conversation-title">
         <h2 id="whats-new-conversation-title">Join the Conversation</h2>
@@ -305,6 +325,9 @@ const sueHeadshot = "/images/sue.gif";
     .whats-new-top__lead {
       flex: 1 1 0;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(1.25rem, 2.5vw, 1.75rem);
     }
 
     .whats-new-top .whats-new-header {
@@ -340,11 +363,7 @@ const sueHeadshot = "/images/sue.gif";
       color: #243015;
     }
 
-    .whats-new-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      align-items: stretch;
+    .whats-new-coming-block {
       margin-bottom: clamp(1.875rem, 3vw, 2.5rem);
     }
 
@@ -363,10 +382,6 @@ const sueHeadshot = "/images/sue.gif";
         min-width: 0;
         width: 100%;
         align-self: stretch;
-      }
-
-      .whats-new-grid {
-        grid-template-columns: 1fr;
       }
     }
 
@@ -552,8 +567,44 @@ const sueHeadshot = "/images/sue.gif";
       font-family: inherit;
     }
 
+    .whats-new-footer__private-hint {
+      margin: 0.5rem 0 0.65rem;
+      text-align: center;
+      font-size: var(--text-base);
+      line-height: 1.45;
+      color: #243015;
+    }
+
+    .whats-new-footer__private-link {
+      color: var(--kbm-green);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .whats-new-footer__private-link:hover,
+    .whats-new-footer__private-link:focus-visible {
+      color: #3d5a24;
+    }
+
+    .whats-new-footer__private-link:focus-visible {
+      outline: 2px solid var(--kbm-green);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+
+    .whats-new-footer__feedback {
+      margin-top: 0;
+    }
+
+    .whats-new-footer__content .whats-new-footer__feedback p {
+      margin-bottom: 0.35rem;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
     .whats-new-conversation {
       margin-top: clamp(1.75rem, 3.2vw, 2.5rem);
+      scroll-margin-top: calc(var(--header-height, 5rem) + 0.75rem);
     }
 
     .whats-new-conversation h2 {

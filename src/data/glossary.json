@@ -5146,7 +5146,7 @@
     "glossaryId": 810,
     "english": "10-0-10",
     "example": "Vintage abbreviation indicating needles to cast on or needles in work TRANSLATED: Cast on 10 needles to the right  of zero and 10 needles to the left of zero. (20 needles total)",
-    "helpinfo": "You'll find vintage patterns with this abbreviation that you may find cryptic. You may ask \"Do I cast on 20 stitches or 21 stitches?\"   Visit the Blog      From our Blog: Where is the 0 (zero) needle? ",
+    "helpinfo": "You'll find vintage patterns with this abbreviation that you may find cryptic. You may ask \"Do I cast on 20 stitches or 21 stitches?",
     "image": "/images/glossary/machine-knitting-10-0-10-pattern-abbreviation.jpg",
     "image_alt": "Printed knitting pattern highlighting the 10-0-10 abbreviation showing needle positions relative to zero.",
     "image_description": "10-0-10 notation in vintage knitting patterns",
@@ -5972,7 +5972,7 @@
   {
     "glossaryId": 901,
     "english": "Easter Egg",
-    "example": "🥚 You found it. Click the egg to uncover a hidden guide.",
+    "example": "<p class=\"easter-egg-text\">🥚 You found it. Click the egg to uncover a hidden resource.</p>",
     "helpinfo": "",
     "image": "/images/easter-egg.png",
     "image_alt": "Colorful striped Easter egg",
