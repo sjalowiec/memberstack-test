@@ -1,0 +1,89 @@
+---
+import "../../styles/patterns/pattern-tabs-scope.css";
+
+interface Props {
+  /** When true, Pattern tab cannot be activated by click (programmatic switches still work). */
+  patternTabDisabled?: boolean;
+  patternTabButtonId?: string;
+  hidePattern?: boolean;
+  hideShare?: boolean;
+  hideInspiration?: boolean;
+  /** Extra classes on the outer `.pattern-tabs` wrapper (e.g. `pattern-tabs-scope`). */
+  rootClass?: string;
+}
+
+const {
+  patternTabDisabled = false,
+  patternTabButtonId,
+  hidePattern = false,
+  hideShare = false,
+  hideInspiration = false,
+  rootClass = "",
+} = Astro.props;
+---
+
+<div class:list={["pattern-tabs", rootClass]}>
+  <div class="pattern-tab-nav">
+    <button type="button" class="tab-btn active" data-tab="build">
+      <span class="tab-icon" aria-hidden="true">⚙️</span>
+      <span class="tab-label">Build</span>
+    </button>
+    {
+      !hidePattern && (
+        <button
+          type="button"
+          id={patternTabButtonId}
+          class:list={["tab-btn", patternTabDisabled && "is-disabled"]}
+          data-tab="pattern"
+          aria-disabled={patternTabDisabled ? "true" : undefined}
+        >
+          <span class="tab-icon" aria-hidden="true">📝</span>
+          <span class="tab-label">Pattern</span>
+        </button>
+      )
+    }
+    {
+      !hideShare && (
+        <button type="button" class="tab-btn" data-tab="share">
+          <span class="tab-icon" aria-hidden="true">💬</span>
+          <span class="tab-label">Ask / Share</span>
+        </button>
+      )
+    }
+    {
+      !hideInspiration && (
+        <button type="button" class="tab-btn" data-tab="inspiration">
+          <span class="tab-icon" aria-hidden="true">💡</span>
+          <span class="tab-label">Inspiration</span>
+        </button>
+      )
+    }
+  </div>
+
+  <div class="pattern-tab-content">
+    <div class="tab-panel active" id="tab-build">
+      <slot name="build" />
+    </div>
+    {
+      !hidePattern && (
+        <div class="tab-panel" id="tab-pattern">
+          <slot name="pattern" />
+        </div>
+      )
+    }
+    {
+      !hideShare && (
+        <div class="tab-panel" id="tab-share">
+          <slot name="share" />
+        </div>
+      )
+    }
+    {
+      !hideInspiration && (
+        <div class="tab-panel" id="tab-inspiration">
+          <slot name="inspiration" />
+        </div>
+      )
+    }
+  </div>
+</div>
