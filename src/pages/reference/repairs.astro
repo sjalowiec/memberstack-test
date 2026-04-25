@@ -3,7 +3,6 @@ import Layout from "../../layouts/Layout.astro";
 import ReferencePageShell from "../../components/ReferencePageShell.astro";
 
 
-const lastUpdated = "March 2026";
 
 /** Line in a contact entry: either label+value or label+href(+linkText). */
 interface LineItem {
@@ -265,15 +264,15 @@ const countries = [
 <ReferencePageShell
   title={"Knitting machine repair\nContacts and services"}
   icon="fa-solid fa-screwdriver-wrench"
-    backHref="/learn/reference#category-machine-reference"
-  backLabel="Back to Machine References"
+    backHref="/reference"
+  backLabel="Back to Reference"
 />
   <div class="repairs-hero">
     <div class="repairs-intro">
       <p>
         Unfortunately, there aren't many people repairing knitting machines these days.
         We've put together this list of potential contacts for repairs.
-        <em><small>(updated {lastUpdated}).</small></em>
+        
       </p>
 
       <p>

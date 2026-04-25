@@ -1,37 +1,40 @@
 ---
-import MainLayout from '../../layouts/Layout.astro';
+import Layout from '../../layouts/Layout.astro';
+import ReferencePageShell from '../../components/ReferencePageShell.astro';
 import symbols from '../../data/reference/stitch-symbols.json';
 
 const pageTitle = 'Stitch Symbols';
 const pageDescription = 'A quick visual reference for commonly used stitch symbols.';
 ---
 
-<MainLayout title={pageTitle} description={pageDescription}>
-  <section class="reference-page">
-    <div class="container">
-      <header class="page-header">
-        <h1>{pageTitle}</h1>
-        <p>{pageDescription}</p>
-      </header>
-
-      <div class="symbols-reference">
-        <div class="symbols-grid">
-          {symbols.map((symbol) => (
-            <article class="symbol-card">
-              <span class="symbol-card__title">{symbol.title}</span>
-              <img
-                src={`/images/stitchSymbols/${symbol.icon}`}
-                alt={symbol.title}
-                class="symbol-card__image"
-                loading="lazy"
-              />
-            </article>
-          ))}
+<Layout title={pageTitle} description={pageDescription}>
+  <ReferencePageShell
+    title={pageTitle}
+    subhead={pageDescription}
+    backHref="/reference"
+    backLabel="Back to Reference"
+  >
+    <section class="reference-page">
+      <div class="container">
+        <div class="symbols-reference">
+          <div class="symbols-grid">
+            {symbols.map((symbol) => (
+              <article class="symbol-card">
+                <span class="symbol-card__title">{symbol.title}</span>
+                <img
+                  src={`/images/stitchSymbols/${symbol.icon}`}
+                  alt={symbol.title}
+                  class="symbol-card__image"
+                  loading="lazy"
+                />
+              </article>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
-  </section>
-</MainLayout>
+    </section>
+  </ReferencePageShell>
+</Layout>
 
 <style>
   .reference-page {
@@ -42,25 +45,6 @@ const pageDescription = 'A quick visual reference for commonly used stitch symbo
   .container {
     width: min(1040px, calc(100% - 2rem));
     margin: 0 auto;
-  }
-
-  .page-header {
-    margin-bottom: 2.4rem;
-    text-align: center;
-  }
-
-  .page-header h1 {
-    margin: 0 0 0.65rem;
-    font-size: clamp(2rem, 3vw, 2.6rem);
-    line-height: 1.15;
-  }
-
-  .page-header p {
-    margin: 0 auto;
-    max-width: 62ch;
-    font-size: 1.05rem;
-    line-height: 1.6;
-    color: #555;
   }
 
   .symbols-reference {
@@ -147,10 +131,6 @@ const pageDescription = 'A quick visual reference for commonly used stitch symbo
     .container {
       width: 100%;
       margin: 0;
-    }
-
-    .page-header {
-      margin-bottom: 1rem;
     }
 
     .symbols-reference {

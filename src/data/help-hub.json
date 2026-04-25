@@ -231,5 +231,111 @@
     "status": "draft",
     "id": 1005,
     "sortOrder": 30
+  },
+  {
+    "title": "Changing Colors on the LK150",
+    "slug": "change-colors-lk150",
+    "featured": false,
+    "metaTitle": "How to change colors on the LK150",
+    "metaDescription": "Learn how to change yarn colors on the LK150 without dropping your knitting from the machine.",
+    "appliesTo": ["LK150"],
+    "allMachines": false,
+    "category": "color-texture",
+    "categoryPill": "LK150",
+    "question": "How do I change colors on my LK150?",
+    "bubbleAnswer": "Color changes don’t have to stop your knitting - once you know this, everything flows.",
+    "hook": "Changing colors on the LK150 is easier than you might think.",
+    "mediaType": "video",
+    "mediaUrl": "change-colors-lk150",
+    "mediaPoster": "",
+    "mediaAlt": "Changing colors on the LK150",
+    "aboutTitle": "Keep your knitting moving",
+    "bridge": "Changing colors on the LK150 is simple once you know what to do. The goal is to switch yarns smoothly, make sure the new yarn is feeding correctly, and keep knitting without overthinking the process.\n\nDon’t worry about the yarn tails right now. For this first step, just focus on changing the yarn and keeping your stitches safely on the machine.",
+    "tryThisTitle": "Change colors and keep knitting",
+    "memberHeading": "Ready for the next step?",
+    "memberText": "Now that you can change colors, learn how to secure your yarn tails as you knit, make simple stripes, and try single-row stripes with free pass.",
+    "isNew": true,
+    "tryThis": {
+      "quickActionTitle": "change colors on your LK150",
+      "quickAction": [
+        "Remove the working yarn from the yarn feeder",
+        "If you aren’t cutting the yarn, loop it around the needle bed or use the <GlossaryTooltip term=\"yarn-rest\">yarn rest</GlossaryTooltip> if yours is in place",
+        "Place the new yarn into the yarn feeder, holding it from above and below",
+        "Wiggle and pull the yarn gently to make sure it is seated securely",
+        "Pull the yarn up and down to make sure it is not caught and feeds smoothly",
+        "Secure the tail with a chip clip, clothespin, or hold it with your left hand",
+        "Keep knitting"
+      ],
+      "quickActionNote": "👉 Don’t worry about finishing the tails yet. You can secure them as you go in the next step."
+    },
+    "relatedLessons": [
+      "colorwork-first-steps"
+    ],
+    "status": "published",
+    "id": 1006,
+    "sortOrder": 31
+  },
+  {
+    "title": "Easy, beautiful texture with tuck stitch",
+    "metaTitle": "How to Knit Tuck Stitch on the LK150 Knitting Machine",
+    "metaDescription": "Learn how to knit tuck stitch on the LK150 using manual needle selection and Russell levers to create texture.",
+    "allMachines": false,
+    "appliesTo": ["LK150"],
+    "slug": "how-do-i-knit-tuck-stitch-on-my-lk150",
+    "status": "published",
+    "featured": false,
+    "category": "machine-knitting-techniques",
+    "categoryPill": "",
+    "question": "How do I knit tuck stitch on myLK150?",
+    "bubbleAnswer": "Use Russell levers and manual needle selection to hold stitches, build loops, and knit them off to create tuck texture",
+    "hook": "This is a simple technique that opens up a lot of texture options",
+    "mediaType": "image",
+    "mediaUrl": "/images/tuck-pull-up-technique-machine-knitting.jpg",
+    "mediaPoster": "",
+    "mediaAlt": "Tuck stitch pull up technique on the LK150 knitting machine",
+    "aboutTitle": "What's this about",
+    "bridge": "Tuck stitch on the LK150 is created by holding selected needles while the yarn floats across them. After a few passes, those loops are knit off to create texture. Since the LK150 has no punchcards or electronics, you control the stitch pattern entirely by which needles you select and how you use the Russell levers.",
+    "tryThisTitle": "Try This",
+    "memberHeading": "",
+    "memberText": "",
+    "isNew": true,
+    "tryThis": {
+      "quickActionTitle": "",
+      "quickAction": [
+        "Cast on 20 stitches and knit a few rows",
+        "Use every-other needle selection for a basic tuck pattern",
+        "Set Russell levers to II to hold stitches",
+        "Knit two passes to build loops",
+        "Return levers to I to knit off the loops",
+        "Switch needle selection and repeat"
+      ]
+    },
+    "trySteps": [
+      "Step-by-Step Tuck on the LK150",
+      "Cast on 20 stitches and knit a few rows",
+      "End with the carriage on the right",
+      "Move needles 3, 5, 7, 9, 11, 13, 15, 17, 19 to D position",
+      "Set both Russell levers to II",
+      "Knit across to the left, then back to the right",
+      "Notice loops building over the held needles",
+      "Return both Russell levers to I",
+      "Knit across to release the loops",
+      "Knit back to the right",
+      "Move needles 2, 4, 6, 8, 10, 12, 14, 16, and 18 to D position",
+      "Set both Russell levers to II",
+      "Knit across to the left, then back to the right",
+      "Return both Russell levers to I",
+      "Knit across to release the loops",
+      "Repeat the sequence 5–6 times",
+      "Knit a few rows and bind off",
+      "Turn your swatch and choose which side you like best"
+    ],
+    "id": 1004,
+    "relatedLessons": [
+      "multi-color-tuck-lk150",
+      "translate-stitch-pattern-to-tuck-lk150",
+      "lk150-tuck-cheat-sheets",
+      "lk150-tuck-technique-card"
+    ]
   }
 ]

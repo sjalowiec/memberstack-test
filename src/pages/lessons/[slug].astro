@@ -8,6 +8,7 @@ import {
   vimeoNumericIdFromPublicVideo,
   type PublicVideoRow,
 } from "../../lib/lessonVideo";
+import GatedVimeoEmbed from "../../components/videos/GatedVimeoEmbed.astro";
 
 type Lesson = {
   id: number;
@@ -31,6 +32,8 @@ type Lesson = {
   noteText?: string;
   relatedTipSlug?: string;
   nextLessonSlug?: string;
+  /** Video library slugs (`videos-public.json` stable key). */
+  videos?: string[];
 };
 
 type HelpHubTip = {
@@ -148,6 +151,44 @@ const hasSupportCard =
   showSupportImageInCard ||
   (typeof lesson.noteTitle === "string" && lesson.noteTitle.trim() !== "") ||
   (typeof lesson.noteText === "string" && lesson.noteText.trim() !== "");
+
+type LessonLibraryVideoEmbed = {
+  key: string;
+  title: string;
+  videoId: string;
+  access_level: "open" | "member";
+};
+
+function accessLevelForPublicVideoRow(row: PublicVideoRow): "open" | "member" {
+  if (row.isTipOfWeek === true) return "open";
+  const raw = typeof row.access_level === "string" ? row.access_level.trim().toLowerCase() : "";
+  return raw === "open" ? "open" : "member";
+}
+
+function resolveLessonLibraryVideo(
+  videos: PublicVideoRow[],
+  slugKey: string,
+): LessonLibraryVideoEmbed | null {
+  const k = slugKey.trim();
+  if (!k) return null;
+  const row = findPublicVideoByKey(videos, k);
+  if (!row) return null;
+  const videoId = vimeoNumericIdFromPublicVideo(row);
+  if (!videoId) return null;
+  const title =
+    typeof row.title === "string" && row.title.trim() !== "" ? row.title.trim() : "Video";
+  return { key: k, title, videoId, access_level: accessLevelForPublicVideoRow(row) };
+}
+
+const lessonVideoSlugList = Array.isArray(lesson.videos)
+  ? lesson.videos
+      .filter((s): s is string => typeof s === "string" && s.trim() !== "")
+      .map((s) => s.trim())
+  : [];
+
+const lessonLibraryVideos: LessonLibraryVideoEmbed[] = lessonVideoSlugList
+  .map((key) => resolveLessonLibraryVideo(catalogVideos, key))
+  .filter((v): v is LessonLibraryVideoEmbed => v !== null);
 ---
 
 <Layout>
@@ -171,6 +212,18 @@ const hasSupportCard =
         <!-- LEFT COLUMN -->
         <div class="lesson-content">
           {lesson.summary && <div set:html={lesson.summary}></div>}
+
+          {lessonLibraryVideos.length > 0 && (
+            <div class="lesson-library-videos">
+              {lessonLibraryVideos.map((libVideo) => (
+                <GatedVimeoEmbed
+                  videoId={libVideo.videoId}
+                  title={libVideo.title}
+                  access_level={libVideo.access_level}
+                />
+              ))}
+            </div>
+          )}
 
           {lesson.encouragement && (
             <div class="lesson-encouragement">
@@ -608,6 +661,11 @@ const hasSupportCard =
   .lesson-content {
     display: grid;
     gap: 1rem;
+  }
+
+  .lesson-library-videos {
+    display: grid;
+    gap: 1.25rem;
   }
 
   .lesson-encouragement {

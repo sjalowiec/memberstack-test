@@ -3831,7 +3831,7 @@
   },
   {
     "glossaryId": 676,
-    "english": "Screen Link SL-USB <em><small> | DAK Cable</small></em>",
+    "english": "Screen Link SL-USB | DAK Cable",
     "example": "",
     "helpinfo": ".yellow_highlight {  background: linear-gradient(rgba(255,255,255,0) 55%,#ffff00 45%,#ffff00); }   Allows Interactive Knitting on any non-electronic machine including plastic bed machines even the plastic bed machines like the LK-150, KX-350, KH-400 and passap Vario, etc Connect the cable to you PC. The other end is velcro'd to the main bed. The magnet (provided) is attached to the carriage. The cable senses the magnet as it passes by on the carriage and forwards the pattern in DesignaKnit by one row. DAK and Manual (non-patterning) machines",
     "image": "/images/glossary/screen_link.jpg",
