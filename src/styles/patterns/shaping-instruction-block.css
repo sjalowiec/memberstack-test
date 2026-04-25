@@ -1,0 +1,92 @@
+/* Shared with client-rendered shaping HTML (triangle scarf pattern). */
+.shaping-instruction-block {
+  margin: 0 0 1rem;
+}
+
+.shaping-instruction-block--compact {
+  margin-bottom: 0.5rem;
+}
+
+.shaping-instruction-block--compact .shaping-instruction-block__sentence,
+.shaping-instruction-block--compact .shaping-instruction-block__notation-row {
+  margin-bottom: 0.2rem;
+}
+
+.shaping-instruction-block__label {
+  font-weight: 700;
+  color: var(--kbm-green, #52682d);
+  font-size: 0.9375rem;
+  margin-bottom: 0.35rem;
+}
+
+.shaping-instruction-block__sentence {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: #1f2937;
+}
+
+.shaping-instruction-block__notation-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.shaping-instruction-block__notation {
+  font-family: ui-monospace, "Cascadia Code", "JetBrains Mono", monospace;
+  font-size: 0.95em;
+  font-weight: 600;
+  color: #374151;
+  background: transparent;
+  padding: 0;
+}
+
+.shaping-instruction-block .tooltip {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.shaping-instruction-block .tooltip-term .tooltip-trigger {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shaping-instruction-block__help {
+  display: inline-flex;
+  cursor: help;
+  color: #6b7280;
+  border-radius: 999px;
+  padding: 0.1rem;
+  line-height: 0;
+}
+
+.shaping-instruction-block__help:hover,
+.shaping-instruction-block__help:focus {
+  color: var(--kbm-green, #52682d);
+  outline: none;
+}
+
+.shaping-instruction-block__help:focus-visible {
+  box-shadow: 0 0 0 2px rgba(82, 104, 45, 0.35);
+}
+
+.shaping-instruction-block__help-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+@media print {
+  .shaping-instruction-block .tooltip-text {
+    display: none;
+  }
+
+  .shaping-instruction-block__help {
+    display: none;
+  }
+}
