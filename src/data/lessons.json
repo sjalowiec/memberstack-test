@@ -168,12 +168,16 @@
       },
       {
         "type": "vimeo",
-        "title": "Cheet Sheets for Selecting Needles",
+        "title": "Cheat Sheets for Selecting Needles",
         "vimeoId": "294441633"
       },
       {
         "type": "text",
         "content": "Make selecting needles easier: Download printable <a href=\"/pdfs/lk150-cheat-sheet.pdf\" download>Cheat Sheets</a>"
+      },
+      {
+        "type": "text",
+        "content": "<h3>Printable Technique Reference Cards</h3>Print the cards. Use the filled example or create your own as you try different stitch pattern techniques.<br>\n\n Download printable <a href=\"/pdfs/technique-card.pdf\" download>Technique Card<br><center>\n<img class=\"img-responsive\" src=\"/images/help-hub/technique_card.jpg\"></center></a>"
       }
     ]
   }
