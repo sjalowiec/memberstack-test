@@ -4,7 +4,7 @@ import PageBackLink from "../../components/common/PageBackLink.astro";
 import PageHead from "../../components/PageHead.astro";
 import "../../components/talk-bubbles.css";
 import helpHubData from "../../data/help-hub.json";
-import lessonsData from "../../data/lessons.json";
+import lessons from "../../data/lessons.json";
 import videosPublic from "../../data/videos-public.json";
 import {
   findPublicVideoByKey,
@@ -51,12 +51,18 @@ type HelpHubRecord = {
   bridge?: string;
   tryThisTitle?: string;
   tryThis?: HelpHubTryThis;
-  /** Lesson slugs matching `lessons.json`. */
-  relatedLessons?: string[];
+  trySteps?: string[];
+  tryNote?: string;
+  tryImage?: string;
+  tryImageAlt?: string;
+  tryImageCaption?: string;
+  /** Lesson slugs or numeric `lessons.json` ids. */
+  relatedLessons?: (string | number)[];
   jumpLinks?: { label: string; href: string }[];
 };
 
 type LessonRecord = {
+  id?: number;
   slug?: string;
   title?: string;
   summary?: string;
@@ -125,21 +131,25 @@ if (!tip || (!tipIsActive(tip) && !isPreview)) {
   return await Astro.rewrite("/404");
 }
 
-const lessons = Array.isArray(lessonsData)
-  ? (lessonsData as LessonRecord[])
+const lessonRecords = Array.isArray(lessons)
+  ? (lessons as LessonRecord[])
   : [];
 
-const lessonSlugsRaw = Array.isArray(tip.relatedLessons) ? tip.relatedLessons : [];
-const lessonSlugs = lessonSlugsRaw
-  .map((s) => (typeof s === "string" ? s.trim() : ""))
-  .filter((s) => s.length > 0);
-
-const relatedLessons: LessonRecord[] = lessonSlugs
-  .map((ref) => resolveLessonFromRelatedRef(ref, lessons))
-  .filter((l): l is LessonRecord => l !== undefined);
+const relatedLessonsResolved: LessonRecord[] = [];
+if (Array.isArray(tip.relatedLessons)) {
+  for (const ref of tip.relatedLessons) {
+    if (typeof ref === "number") {
+      const found = lessonRecords.find((l) => l.id === ref);
+      if (found) relatedLessonsResolved.push(found);
+    } else if (typeof ref === "string") {
+      const found = resolveLessonFromRelatedRef(ref, lessonRecords);
+      if (found) relatedLessonsResolved.push(found);
+    }
+  }
+}
 
 const memberLessonsSectionTitle =
-  relatedLessons.length === 1 ? "Member Lesson" : "Member Lessons";
+  relatedLessonsResolved.length === 1 ? "Member Lesson" : "Member Lessons";
 
 const whyBody =
   typeof tip.bridge === "string" && tip.bridge.trim() !== ""
@@ -176,7 +186,15 @@ function filterTrySteps(steps: unknown): string[] {
   );
 }
 
-const quickSteps = filterTrySteps(tip.tryThis?.quickAction);
+const quickSteps = filterTrySteps(tip.trySteps ?? tip.tryThis?.quickAction);
+const tryImageUrl =
+  typeof tip.tryImage === "string" && tip.tryImage.trim() !== ""
+    ? tip.tryImage.trim()
+    : "";
+const tryImageCaptionResolved =
+  typeof tip.tryImageCaption === "string" && tip.tryImageCaption.trim() !== ""
+    ? tip.tryImageCaption.trim()
+    : "";
 const hasTrySection =
   quickSteps.length > 0 ||
   (typeof tip.tryThisTitle === "string" && tip.tryThisTitle.trim() !== "");
@@ -409,15 +427,37 @@ const tryHeading =
             tip.tryThis.quickActionTitle.trim() !== "" && (
               <p class="tuesday-tip__try-subhead">{tip.tryThis.quickActionTitle}</p>
             )}
-          <div class="tuesday-tip__try-body">
-            <ul data-placeholder="try this checklist">
-              {quickSteps.map((step) => (
-                <li set:html={step} />
-              ))}
-            </ul>
-            {tip.tryThis?.quickActionNote && (
-              <div class="try-this-note" set:html={tip.tryThis.quickActionNote}></div>
+          <div
+            class:list={[
+              "tuesday-tip__try-body",
+              tryImageUrl && "tuesday-tip__try-body--with-image",
+            ]}
+          >
+            <div class="tuesday-tip__try-checklist">
+              <ul data-placeholder="try this checklist">
+                {quickSteps.map((step) => (
+                  <li set:html={step} />
+                ))}
+              </ul>
+              {tip.tryThis?.quickActionNote && (
+                <div class="try-this-note" set:html={tip.tryThis.quickActionNote}></div>
+              )}
+            </div>
+            {tryImageUrl && (
+              <div class="tuesday-tip__try-image-wrap">
+                <img
+                  src={tip.tryImage}
+                  alt={tip.tryImageAlt || ""}
+                  loading="lazy"
+                  class="tuesday-tip__try-image"
+                />
+                {tryImageCaptionResolved ? (
+                  <p class="try-image-caption">{tryImageCaptionResolved}</p>
+                ) : null}
+              </div>
             )}
+            {tip.tryNote && (
+            <p class="try-note" set:html={tip.tryNote}></p>)}
           </div>
         </div>
       </section>
@@ -447,11 +487,11 @@ const tryHeading =
         </p>
       </div>
 
-      {relatedLessons.length === 0 ? (
+      {relatedLessonsResolved.length === 0 ? (
         <p class="help-hub-member-lessons__empty">No lessons linked to this tip yet.</p>
       ) : (
         <ul class="help-hub-member-lessons__list">
-          {relatedLessons.map((lesson) => {
+          {relatedLessonsResolved.map((lesson) => {
             const lessonSlug =
               typeof lesson.slug === "string" ? lesson.slug.trim() : "";
             const title =
@@ -460,8 +500,12 @@ const tryHeading =
                 : lessonSlug;
             const summary =
               typeof lesson.summary === "string" ? lesson.summary.trim() : "";
+            const hubSlug =
+              typeof tip.slug === "string" ? tip.slug.trim() : slugParam;
             const lessonHref =
-              lessonSlug.length > 0 ? `/lessons/${lessonSlug}` : "/lessons";
+              lessonSlug.length > 0
+                ? `/lessons/${lessonSlug}?from=help-hub&hub=${hubSlug}`
+                : `/lessons?from=help-hub&hub=${hubSlug}`;
             return (
               <li class="help-hub-member-lessons__card">
                 <h3 class="help-hub-member-lessons__title">{title}</h3>
@@ -917,6 +961,42 @@ const tryHeading =
     margin-top: 1.25rem;
   }
 
+  .tuesday-tip__try-body--with-image {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(1rem, 3vw, 1.5rem);
+    align-items: start;
+  }
+
+  @media (max-width: 768px) {
+    .tuesday-tip__try-body--with-image {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .tuesday-tip__try-image-wrap {
+    min-width: 0;
+  }
+
+  .tuesday-tip__try-image {
+    display: block;
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    object-fit: contain;
+  }
+
+  .try-image-caption {
+    margin-top: 6px;
+    padding-left: 10px;
+    font-style: italic;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #6b7280;
+    white-space: pre-line;
+  }
+
   .tuesday-tip__try-body ul {
     list-style: none;
     padding-left: 0;
@@ -952,6 +1032,12 @@ const tryHeading =
   .try-this-note div:first-child {
     font-weight: 600;
     margin-bottom: 4px;
+  }
+
+  .try-note {
+    margin-top: 12px;
+    font-size: 0.95rem;
+    color: #6b7280;
   }
 
   .gauge-table {

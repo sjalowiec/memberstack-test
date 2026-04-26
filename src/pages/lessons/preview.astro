@@ -1,0 +1,306 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export const prerender = false;
+
+type PreviewLesson = Record<string, unknown>;
+
+function asTrimmedString(v: unknown): string {
+  return typeof v === "string" ? v.trim() : "";
+}
+
+function asStringList(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .filter((item): item is string => typeof item === "string" && item.trim() !== "")
+    .map((s) => s.trim());
+}
+
+const rawParam = Astro.url.searchParams.get("data");
+
+let lesson: PreviewLesson | null = null;
+let decodeFailed = true;
+
+if (rawParam !== null && rawParam !== "") {
+  try {
+    const decoded = decodeURIComponent(rawParam);
+    const jsonText = atob(decoded);
+    const parsed: unknown = JSON.parse(jsonText);
+    if (parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)) {
+      lesson = parsed as PreviewLesson;
+      decodeFailed = false;
+    }
+  } catch {
+    decodeFailed = true;
+    lesson = null;
+  }
+}
+
+const title = lesson ? asTrimmedString(lesson.title) : "";
+const status = lesson ? asTrimmedString(lesson.status) : "";
+const intro = lesson ? asTrimmedString(lesson.intro) : "";
+const content = lesson ? asTrimmedString(lesson.content) : "";
+const mediaType = lesson ? asTrimmedString(lesson.mediaType).toLowerCase() : "";
+const mediaUrl = lesson ? asTrimmedString(lesson.mediaUrl) : "";
+const thumbnailAlt = lesson ? asTrimmedString(lesson.thumbnailAlt) : "";
+const relatedHelpHubs = lesson ? asStringList(lesson.relatedHelpHubs) : [];
+const relatedLessons = lesson ? asStringList(lesson.relatedLessons) : [];
+const category = lesson ? asTrimmedString(lesson.category) : "";
+const tags = lesson ? asStringList(lesson.tags) : [];
+
+const showMediaBlock = Boolean(mediaType && mediaUrl);
+const isImageMedia = showMediaBlock && mediaType === "image";
+const isEmbedMedia =
+  showMediaBlock && (mediaType === "vimeo" || mediaType === "youtube");
+
+const pageTitle = decodeFailed
+  ? "Lesson preview | Knit it Now"
+  : title
+    ? `${title.slice(0, 52)}${title.length > 52 ? "…" : ""} (preview) | Knit it Now`
+    : "Lesson preview | Knit it Now";
+---
+
+<BaseLayout
+  title={pageTitle}
+  description="Draft preview of a lesson entry."
+  skipGlobalHyvor={true}
+  bodyClass="lesson-preview-body"
+>
+  <main class="lesson-preview">
+    {
+      decodeFailed ? (
+        <p class="lesson-preview__error">Lesson preview data could not be loaded.</p>
+      ) : (
+        <>
+          <p class="lesson-preview__banner">Preview — not saved</p>
+
+          <h1 class="lesson-preview__title">{title || "Lesson preview"}</h1>
+
+          {status ? (
+            <p class="lesson-preview__meta">
+              <strong>Status:</strong> {status}
+            </p>
+          ) : null}
+
+          {intro ? (
+            <section class="lesson-preview__block" aria-labelledby="lesson-preview-intro">
+              <h2 id="lesson-preview-intro" class="lesson-preview__h2">
+                Intro
+              </h2>
+              <div class="lesson-preview__prose">{intro}</div>
+            </section>
+          ) : null}
+
+          {showMediaBlock ? (
+            <section class="lesson-preview__block" aria-labelledby="lesson-preview-media">
+              <h2 id="lesson-preview-media" class="lesson-preview__h2">
+                Media
+              </h2>
+              {isImageMedia ? (
+                <figure class="lesson-preview__figure">
+                  <img
+                    class="lesson-preview__img"
+                    src={mediaUrl}
+                    alt={thumbnailAlt || ""}
+                    loading="lazy"
+                  />
+                  {thumbnailAlt ? (
+                    <figcaption class="lesson-preview__caption">{thumbnailAlt}</figcaption>
+                  ) : null}
+                </figure>
+              ) : isEmbedMedia ? (
+                <div class="lesson-preview__embed-placeholder" role="note">
+                  <p class="lesson-preview__embed-line">
+                    <strong>Video placeholder</strong> ({mediaType})
+                  </p>
+                  <p class="lesson-preview__embed-line">
+                    <strong>ID / URL:</strong> {mediaUrl}
+                  </p>
+                </div>
+              ) : (
+                <div class="lesson-preview__embed-placeholder" role="note">
+                  <p class="lesson-preview__embed-line">
+                    <strong>Media</strong> ({mediaType || "unknown"})
+                  </p>
+                  <p class="lesson-preview__embed-line">
+                    <strong>ID / URL:</strong> {mediaUrl}
+                  </p>
+                </div>
+              )}
+            </section>
+          ) : null}
+
+          {content ? (
+            <section class="lesson-preview__block" aria-labelledby="lesson-preview-content">
+              <h2 id="lesson-preview-content" class="lesson-preview__h2">
+                Main content
+              </h2>
+              <div class="lesson-preview__prose">{content}</div>
+            </section>
+          ) : null}
+
+          {relatedHelpHubs.length > 0 ? (
+            <section
+              class="lesson-preview__block"
+              aria-labelledby="lesson-preview-related-help"
+            >
+              <h2 id="lesson-preview-related-help" class="lesson-preview__h2">
+                Related Help Hubs
+              </h2>
+              <ul class="lesson-preview__list">
+                {relatedHelpHubs.map((slug) => (
+                  <li>{slug}</li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
+          {relatedLessons.length > 0 ? (
+            <section
+              class="lesson-preview__block"
+              aria-labelledby="lesson-preview-related-lessons"
+            >
+              <h2 id="lesson-preview-related-lessons" class="lesson-preview__h2">
+                Related Lessons
+              </h2>
+              <ul class="lesson-preview__list">
+                {relatedLessons.map((slug) => (
+                  <li>{slug}</li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
+          {category || tags.length > 0 ? (
+            <section class="lesson-preview__block" aria-labelledby="lesson-preview-taxonomy">
+              <h2 id="lesson-preview-taxonomy" class="lesson-preview__h2">
+                Metadata
+              </h2>
+              {category ? (
+                <p class="lesson-preview__meta">
+                  <strong>Category:</strong> {category}
+                </p>
+              ) : null}
+              {tags.length > 0 ? (
+                <p class="lesson-preview__meta">
+                  <strong>Tags:</strong> {tags.join(", ")}
+                </p>
+              ) : null}
+            </section>
+          ) : null}
+        </>
+      )
+    }
+  </main>
+
+  <style>
+    :global(body.lesson-preview-body) {
+      margin: 0;
+    }
+
+    .lesson-preview {
+      max-width: 44rem;
+      margin: 0 auto;
+      padding: 1.25rem 1.25rem 2.5rem;
+      box-sizing: border-box;
+      font-family: inherit;
+      color: #1e293b;
+    }
+
+    .lesson-preview__error {
+      margin: 0;
+      padding: 1rem;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      color: #991b1b;
+    }
+
+    .lesson-preview__banner {
+      margin: 0 0 1rem 0;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #92400e;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+    }
+
+    .lesson-preview__title {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.5rem;
+      line-height: 1.25;
+      color: #243015;
+    }
+
+    .lesson-preview__meta {
+      margin: 0 0 1rem 0;
+      font-size: 0.95rem;
+      color: #475569;
+      line-height: 1.5;
+    }
+
+    .lesson-preview__block {
+      margin-bottom: 1.25rem;
+    }
+
+    .lesson-preview__h2 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .lesson-preview__prose {
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .lesson-preview__list {
+      margin: 0;
+      padding-left: 1.25rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .lesson-preview__figure {
+      margin: 0;
+    }
+
+    .lesson-preview__img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .lesson-preview__caption {
+      margin-top: 0.35rem;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    .lesson-preview__embed-placeholder {
+      margin: 0;
+      padding: 1rem;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+    }
+
+    .lesson-preview__embed-line {
+      margin: 0 0 0.35rem 0;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .lesson-preview__embed-line:last-child {
+      margin-bottom: 0;
+    }
+  </style>
+</BaseLayout>

@@ -233,19 +233,8 @@ const pageDescription =
 
       if (!grid || !searchEl || !emptyEl) return;
 
-      /** When set (from ?category=id), only tiles containing that category id are shown. */
+      /** When set (from ?category=numericId), only tiles containing that category id are shown. */
       var urlCategory = "";
-
-      function readCategoryFromUrl() {
-        try {
-          var p = new URLSearchParams(window.location.search);
-          urlCategory = (p.get("category") || "").trim();
-        } catch (e) {
-          urlCategory = "";
-        }
-      }
-
-      readCategoryFromUrl();
 
       function tiles() {
         return Array.prototype.slice.call(grid.querySelectorAll("[data-stitch-tile]"));
@@ -356,12 +345,54 @@ const pageDescription =
         });
       }
 
+      /** Match ?category=tuck to the same technique chip as clicking "Tuck" (exact label match). */
+      function techniqueValueForSlug(slug) {
+        if (!techniqueGroup || !slug) return "";
+        var want = String(slug).trim().toLowerCase();
+        if (!want) return "";
+        var buttons = techniqueGroup.querySelectorAll("[data-stitch-cat-technique][data-value]");
+        for (var i = 0; i < buttons.length; i++) {
+          var btn = buttons[i];
+          var val = btn.getAttribute("data-value");
+          if (!val) continue;
+          var label = (btn.textContent || "").trim().toLowerCase();
+          if (label === want) return val;
+        }
+        return "";
+      }
+
+      /** Read window.location.search once; same filter state as clicking the matching UI controls. URL is not rewritten. */
+      function applyFiltersFromUrl() {
+        urlCategory = "";
+        try {
+          var p = new URLSearchParams(window.location.search);
+          var machineRaw = (p.get("machine") || "").trim().toLowerCase();
+          if (machineRaw === "lk150") setMachinePill("lk150");
+
+          var catRaw = (p.get("category") || "").trim();
+          if (/^\d+$/.test(catRaw)) {
+            urlCategory = catRaw;
+          } else {
+            var slug = catRaw.toLowerCase();
+            if (slug === "tuck") {
+              var tuckTid = techniqueValueForSlug("tuck");
+              if (tuckTid) setTechniqueChip(tuckTid);
+            }
+          }
+        } catch (e) {
+          urlCategory = "";
+        }
+      }
+
+      applyFiltersFromUrl();
+
       function resetAll() {
         urlCategory = "";
         try {
           if (window.history && window.history.replaceState) {
             var u = new URL(window.location.href);
             u.searchParams.delete("category");
+            u.searchParams.delete("machine");
             var qs = u.searchParams.toString();
             var path = u.pathname + (qs ? "?" + qs : "") + (u.hash || "");
             window.history.replaceState({}, "", path);

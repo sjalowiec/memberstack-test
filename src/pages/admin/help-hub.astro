@@ -1,3 +1,254 @@
 ---
-return Astro.redirect("/admin/tips-edit", 307);
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import helpHubData from "../../data/help-hub.json";
+
+const entries = Array.isArray(helpHubData) ? helpHubData : [];
+const publishedEntries = entries.filter(
+  (e): e is (typeof entries)[number] =>
+    Boolean(e) && (e as { status?: string }).status === "published"
+);
+const draftEntries = entries.filter(
+  (e): e is (typeof entries)[number] =>
+    Boolean(e) && (e as { status?: string }).status === "draft"
+);
+const reviewEntries = entries.filter(
+  (e): e is (typeof entries)[number] =>
+    Boolean(e) && (e as { status?: string }).status === "review"
+);
+
+type HubEntry = {
+  slug?: string;
+  status?: string;
+  question?: string;
+  title?: string;
+};
+
+function entryQuestionTitle(entry: HubEntry): string {
+  const q = entry.question?.trim();
+  const t = entry.title?.trim();
+  return q || t || "Untitled";
+}
+
+const hubSections = [
+  {
+    headingId: "published-heading",
+    panelTitle: "Published Help Hub Entries",
+    items: publishedEntries,
+  },
+  {
+    headingId: "drafts-heading",
+    panelTitle: "Draft Help Hub Entries",
+    items: draftEntries,
+  },
+  {
+    headingId: "review-heading",
+    panelTitle: "Needs Review",
+    items: reviewEntries,
+  },
+] as const;
 ---
+
+<BaseLayout
+  title="Help Hub Admin | Knit it Now"
+  description="Create, review, and manage Help Hub entries."
+  skipGlobalHyvor={true}
+  bodyClass="help-hub-admin-body"
+>
+  <main class="help-hub-admin help-hub-dash">
+    <header class="help-hub-admin__head">
+      <h1 class="help-hub-admin__title">Help Hub Admin</h1>
+      <p class="help-hub-admin__sub">
+        Create, review, and manage Help Hub entries.
+      </p>
+    </header>
+
+    <div class="help-hub-admin__toolbar help-hub-dash__toolbar">
+      <a href="/admin/help-hub-edit" class="kbm-btn kbm-btn-primary">Create New Help Hub Entry</a>
+      <a href="/admin/admin" class="kbm-btn kbm-btn-outline">Back to Creator Control Panel</a>
+    </div>
+
+    <div class="help-hub-dash__sections">
+      {
+        hubSections.map(({ headingId, panelTitle, items }) => (
+          <section
+            class="admin-panel help-hub-dash__panel"
+            aria-labelledby={headingId}
+          >
+            <h2 id={headingId} class="help-hub-dash__panel-title">
+              {panelTitle}
+            </h2>
+            {items.length === 0 ? (
+              <p class="help-hub-dash__placeholder">No entries yet.</p>
+            ) : (
+              <ul class="help-hub-dash__list">
+                {items.map((raw) => {
+                  const entry = raw as HubEntry;
+                  const slug = entry.slug ?? "";
+                  return (
+                    <li class="help-hub-dash__entry">
+                      <div class="help-hub-dash__entry-line">
+                        <span class="help-hub-dash__entry-q">
+                          {entryQuestionTitle(entry)}
+                        </span>
+                      </div>
+                      <div class="help-hub-dash__entry-meta">
+                        <span class="help-hub-dash__entry-status">
+                          {entry.status ?? "—"}
+                        </span>
+                        {slug ? (
+                          <a
+                            class="help-hub-dash__entry-edit"
+                            href={`/admin/help-hub-edit?slug=${encodeURIComponent(slug)}`}
+                          >
+                            Edit
+                          </a>
+                        ) : (
+                          <span class="help-hub-dash__entry-edit help-hub-dash__entry-edit--disabled">
+                            Edit (no slug)
+                          </span>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+        ))
+      }
+    </div>
+  </main>
+
+  <style>
+    :global(body.help-hub-admin-body) {
+      margin: 0;
+    }
+
+    .help-hub-admin {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 1.25rem 1.5rem 3rem;
+      box-sizing: border-box;
+    }
+
+    .help-hub-admin__head {
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .help-hub-admin__title {
+      margin: 0 0 0.35rem 0;
+      font-size: 1.65rem;
+      color: #243015;
+    }
+
+    .help-hub-admin__sub {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #475569;
+      max-width: 56rem;
+    }
+
+    .help-hub-admin__toolbar {
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.65rem 1rem;
+    }
+
+    .admin-panel {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+    }
+
+    .help-hub-dash__sections {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 900px) {
+      .help-hub-dash__sections {
+        grid-template-columns: repeat(3, 1fr);
+        align-items: start;
+      }
+    }
+
+    .help-hub-dash__panel-title {
+      margin: 0 0 0.65rem 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #243015;
+    }
+
+    .help-hub-dash__placeholder {
+      margin: 0;
+      font-size: 0.92rem;
+      color: #64748b;
+      line-height: 1.45;
+    }
+
+    .help-hub-dash__list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .help-hub-dash__entry {
+      margin: 0;
+      padding: 0.55rem 0.65rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+
+    .help-hub-dash__entry-line {
+      margin-bottom: 0.35rem;
+    }
+
+    .help-hub-dash__entry-q {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #1e293b;
+      line-height: 1.35;
+    }
+
+    .help-hub-dash__entry-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem 0.85rem;
+      font-size: 0.85rem;
+    }
+
+    .help-hub-dash__entry-status {
+      color: #64748b;
+      text-transform: capitalize;
+    }
+
+    .help-hub-dash__entry-edit {
+      color: #3f6212;
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .help-hub-dash__entry-edit:hover {
+      color: #243015;
+    }
+
+    .help-hub-dash__entry-edit--disabled {
+      color: #94a3b8;
+      font-weight: 500;
+      text-decoration: none;
+    }
+  </style>
+</BaseLayout>

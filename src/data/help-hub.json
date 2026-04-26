@@ -286,16 +286,19 @@
     "featured": false,
     "category": "machine-knitting-techniques",
     "categoryPill": "",
-    "question": "How do I knit tuck stitch on myLK150?",
+    "successPathLevel": "Beginner",
+    "question": "How do I knit tuck stitch on my LK150?",
     "bubbleAnswer": "Use Russell levers and manual needle selection to hold stitches, build loops, and knit them off to create tuck texture",
-    "hook": "This is a simple technique that opens up a lot of texture options",
+    "hook": "This is a simple technique that opens up many of texture options",
     "mediaType": "image",
-    "mediaUrl": "/images/tuck-pull-up-technique-machine-knitting.jpg",
+    "mediaUrl": "/images/help-hub/tuck-example.jpg",
     "mediaPoster": "",
-    "mediaAlt": "Tuck stitch pull up technique on the LK150 knitting machine",
+    "thumbnailAlt": "Tuck stitch  (pull up) technique on the LK150 knitting machine",
+    "mediaAlt": "Tuck stitch  (pull up) technique on the LK150 knitting machine",
+    "intro": "What's this about",
     "aboutTitle": "What's this about",
+    "solutionText": "Tuck stitch on the LK150 is created by holding selected needles while the yarn floats across them. After a few passes, those loops are knit off to create texture. Since the LK150 has no punchcards or electronics, you control the stitch pattern entirely by which needles you select and how you use the Russell levers.",
     "bridge": "Tuck stitch on the LK150 is created by holding selected needles while the yarn floats across them. After a few passes, those loops are knit off to create texture. Since the LK150 has no punchcards or electronics, you control the stitch pattern entirely by which needles you select and how you use the Russell levers.",
-    "tryThisTitle": "Try This",
     "memberHeading": "",
     "memberText": "",
     "isNew": true,
@@ -311,31 +314,24 @@
       ]
     },
     "trySteps": [
-      "Step-by-Step Tuck on the LK150",
-      "Cast on 20 stitches and knit a few rows",
-      "End with the carriage on the right",
-      "Move needles 3, 5, 7, 9, 11, 13, 15, 17, 19 to D position",
+      "Cast on 30 stitches and knit a few rows",
+      "Pull needles to D position according to the punchcard",
       "Set both Russell levers to II",
-      "Knit across to the left, then back to the right",
-      "Notice loops building over the held needles",
-      "Return both Russell levers to I",
-      "Knit across to release the loops",
-      "Knit back to the right",
-      "Move needles 2, 4, 6, 8, 10, 12, 14, 16, and 18 to D position",
-      "Set both Russell levers to II",
-      "Knit across to the left, then back to the right",
-      "Return both Russell levers to I",
-      "Knit across to release the loops",
-      "Repeat the sequence 5–6 times",
-      "Knit a few rows and bind off",
-      "Turn your swatch and choose which side you like best"
+      "Knit 4 rows to build loops",
+      "Return both levers to I and knit 2 rows to release loops",
+      "Repeat this sequence a few times",
+      "Knit a few rows and bind off"
     ],
-    "id": 1004,
+    "tryNote": "👉 <strong>Do not tuck edge stitches.</strong> Watch the loops build, then turn your swatch to choose your favorite side.",
+    "tryImage": "/images/help-hub/tuck_card.jpg",
+    "tryImageAlt": "example tuck stitch punchcard",
+    "tryImageCaption": "Example punchcard\nWhite squares (no holes) will tuck (\"D\" position)\nHoles will knit\nSymbols will tuck (\"D\" position)",
     "relatedLessons": [
-      "multi-color-tuck-lk150",
-      "translate-stitch-pattern-to-tuck-lk150",
-      "lk150-tuck-cheat-sheets",
-      "lk150-tuck-technique-card"
-    ]
+      5002
+    ],
+    "resources": [
+      "<a href=\"/stitch?machine=lk150&category=tuck\">Browse LK150-friendly tuck stitches</a>"
+    ],
+    "id": 1004
   }
 ]

@@ -149,5 +149,32 @@
     "templateLink": "",
     "templateLinkText": "",
      "videos": ["yipes-stripes", "single-row-stripes-with-free-pass", "yarn-tails"]
+  },
+  {
+    "id": 5002,
+    "title": "Tuck on the LK150",
+    "slug": "tuck-on-the-lk150",
+    "status": "published",
+    "intro": "this is the intro",
+    "content": "this is the main content",
+    "mediaType": "vimeo",
+    "mediaUrl": "551704494",
+    "thumbnailAlt": "thumbnail",
+    "blocks": [
+      {
+        "type": "vimeo",
+        "title": "About Tuck",
+        "vimeoId": "1186687117"
+      },
+      {
+        "type": "vimeo",
+        "title": "Cheet Sheets for Selecting Needles",
+        "vimeoId": "294441633"
+      },
+      {
+        "type": "text",
+        "content": "Make selecting needles easier: Download printable <a href=\"/pdfs/lk150-cheat-sheet.pdf\" download>Cheat Sheets</a>"
+      }
+    ]
   }
 ]

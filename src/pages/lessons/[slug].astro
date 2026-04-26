@@ -1,7 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import lessonsFile from "../../data/lessons.json";
-import helpHubFile from "../../data/help-hub.json";
+import helpHub from "../../data/help-hub.json";
 import videosPublic from "../../data/videos-public.json";
 import {
   findPublicVideoByKey,
@@ -9,6 +9,11 @@ import {
   type PublicVideoRow,
 } from "../../lib/lessonVideo";
 import GatedVimeoEmbed from "../../components/videos/GatedVimeoEmbed.astro";
+import GlossaryHtml from "../../components/GlossaryHtml.astro";
+
+type LessonBodyBlock =
+  | { type: "text"; content?: string }
+  | { type: "vimeo"; title?: string; vimeoId?: string | number };
 
 type Lesson = {
   id: number;
@@ -31,18 +36,30 @@ type Lesson = {
   noteTitle?: string;
   noteText?: string;
   relatedTipSlug?: string;
+  /** Help Hub tip slugs or numeric ids from `help-hub.json`. */
+  relatedHelpHubs?: (string | number)[];
   nextLessonSlug?: string;
   /** Video library slugs (`videos-public.json` stable key). */
   videos?: string[];
+  /** Inline player: use with `mediaUrl` (Vimeo numeric id or URL fragment). */
+  mediaType?: string;
+  mediaUrl?: string;
+  /** Ordered text / Vimeo segments for the lesson body (preferred when non-empty). */
+  blocks?: LessonBodyBlock[];
+  /** When set to `draft`, the lesson is not served at `/lessons/[slug]`. Omitted = legacy published. */
+  status?: string;
 };
 
 type HelpHubTip = {
+  id?: number;
   slug?: string;
-  relatedLessons?: string[];
+  title?: string;
+  question?: string;
+  relatedLessons?: (string | number)[];
 };
 
 const lessons = lessonsFile as Lesson[];
-const helpHubTips = helpHubFile as HelpHubTip[];
+const helpHubTips = Array.isArray(helpHub) ? (helpHub as HelpHubTip[]) : [];
 const catalogVideos = Array.isArray(videosPublic)
   ? (videosPublic as PublicVideoRow[])
   : [];
@@ -52,7 +69,16 @@ console.log("Looking for slug:", slug);
 console.log("Available slugs:", lessons.map(l => l.slug));
 const lesson = lessons.find((lesson) => lesson.slug === slug);
 
-if (!lesson) {
+/** Public `/lessons/[slug]`: `published`, or no `status` (legacy rows). Draft or any other value → not found. */
+function lessonIsPubliclyPublished(l: Lesson): boolean {
+  const raw = l.status;
+  if (raw === undefined || raw === null) return true;
+  const s = typeof raw === "string" ? raw.trim().toLowerCase() : "";
+  if (s === "") return true;
+  return s === "published";
+}
+
+if (!lesson || !lessonIsPubliclyPublished(lesson)) {
   return new Response(
     JSON.stringify(
       {
@@ -68,6 +94,11 @@ if (!lesson) {
     }
   );
 }
+
+const url = new URL(Astro.request.url);
+const from = url.searchParams.get("from");
+const hubSlug = url.searchParams.get("hub");
+const showHelpHubBackLink = from === "help-hub" && !!hubSlug;
 
 /** Vimeo numeric id for matching (catalog `videoSlug` or legacy `vimeoEmbedUrl`). */
 function lessonVimeoNumericId(l: Lesson): string | null {
@@ -100,6 +131,16 @@ function lessonMatchesRelatedRef(ref: string, current: Lesson): boolean {
   return false;
 }
 
+function lessonMatchesRelatedLessonRef(ref: unknown, current: Lesson): boolean {
+  if (typeof ref === "number" && Number.isFinite(ref)) {
+    return current.id === ref;
+  }
+  if (typeof ref === "string") {
+    return lessonMatchesRelatedRef(ref, current);
+  }
+  return false;
+}
+
 function findTipForLesson(lessonRow: Lesson): HelpHubTip | undefined {
   const explicit = typeof lessonRow.relatedTipSlug === "string" ? lessonRow.relatedTipSlug.trim() : "";
   if (explicit) {
@@ -108,16 +149,41 @@ function findTipForLesson(lessonRow: Lesson): HelpHubTip | undefined {
   return helpHubTips.find(
     (t) =>
       Array.isArray(t.relatedLessons) &&
-      t.relatedLessons.some((r) => lessonMatchesRelatedRef(String(r), lessonRow)),
+      t.relatedLessons.some((r) => lessonMatchesRelatedLessonRef(r, lessonRow)),
   );
 }
 
-const relatedTip = findTipForLesson(lesson);
+const relatedHelpHubsResolved: HelpHubTip[] = [];
+if (Array.isArray(lesson.relatedHelpHubs)) {
+  for (const ref of lesson.relatedHelpHubs) {
+    if (typeof ref === "number") {
+      const found = helpHubTips.find((h) => h.id === ref);
+      if (found) relatedHelpHubsResolved.push(found);
+    } else if (typeof ref === "string") {
+      const found = helpHubTips.find(
+        (h) => typeof h.slug === "string" && h.slug.trim() === ref.trim(),
+      );
+      if (found) relatedHelpHubsResolved.push(found);
+    }
+  }
+}
+
+const relatedTip = relatedHelpHubsResolved[0] ?? findTipForLesson(lesson);
 const relatedTipSlug =
   relatedTip && typeof relatedTip.slug === "string" && relatedTip.slug.trim() !== ""
     ? relatedTip.slug.trim()
     : null;
 const relatedTipHref = relatedTipSlug ? `/help-hub/${relatedTipSlug}` : null;
+
+const backToTipHref =
+  showHelpHubBackLink && hubSlug ? `/help-hub/${hubSlug.trim()}` : "";
+const backToTipLabelLine =
+  relatedTip && typeof relatedTip.question === "string" && relatedTip.question.trim() !== ""
+    ? relatedTip.question.trim()
+    : relatedTip && typeof relatedTip.title === "string" && relatedTip.title.trim() !== ""
+      ? relatedTip.title.trim()
+      : "";
+const backToTipLabel = backToTipLabelLine ? `Back to: ${backToTipLabelLine}` : "Back to Tip";
 
 /** Vimeo iframe `src` from catalog `videoSlug` or legacy embed field. */
 function lessonVimeoPlayerSrc(l: Lesson): string {
@@ -132,6 +198,59 @@ function lessonVimeoPlayerSrc(l: Lesson): string {
 const vimeoPlayerSrc = lessonVimeoPlayerSrc(lesson);
 
 const hasLessonVideo = lesson.type === "video" && vimeoPlayerSrc.length > 0;
+
+/** Vimeo player URL from a numeric id or Vimeo URL string. */
+function vimeoPlayerUrlFromRawId(rawUnknown: unknown): string | null {
+  const raw =
+    typeof rawUnknown === "number" && Number.isFinite(rawUnknown)
+      ? String(Math.trunc(rawUnknown))
+      : typeof rawUnknown === "string"
+        ? rawUnknown.trim()
+        : "";
+  if (!raw) return null;
+  if (/^\d+$/.test(raw)) return `https://player.vimeo.com/video/${raw}`;
+  const m = raw.match(/\/(?:video\/)?(\d+)(?:\?|#|$)/);
+  return m ? `https://player.vimeo.com/video/${m[1]}` : null;
+}
+
+/** Vimeo player URL from `mediaType` / `mediaUrl` (not catalog). */
+function inlineLessonVimeoSrc(l: Lesson): string | null {
+  const mt = typeof l.mediaType === "string" ? l.mediaType.trim().toLowerCase() : "";
+  if (mt !== "vimeo") return null;
+  const raw = typeof l.mediaUrl === "string" ? l.mediaUrl.trim() : "";
+  if (!raw) return null;
+  return vimeoPlayerUrlFromRawId(raw);
+}
+
+const inlineVimeoSrc = inlineLessonVimeoSrc(lesson);
+
+const lessonBlocks = Array.isArray(lesson.blocks) ? lesson.blocks : [];
+const hasLessonBlocks = lessonBlocks.length > 0;
+
+function lessonBlockIsRenderable(block: unknown): block is LessonBodyBlock {
+  if (!block || typeof block !== "object") return false;
+  const b = block as LessonBodyBlock;
+  if (b.type === "text") {
+    return typeof b.content === "string" && b.content.trim() !== "";
+  }
+  if (b.type === "vimeo") {
+    return vimeoPlayerUrlFromRawId(b.vimeoId) !== null;
+  }
+  return false;
+}
+
+const renderableLessonBlocks = lessonBlocks.filter(lessonBlockIsRenderable);
+const hasRenderableLessonBlocks = renderableLessonBlocks.length > 0;
+
+const summaryHtml =
+  typeof lesson.summary === "string" && lesson.summary.trim() !== ""
+    ? lesson.summary.trim()
+    : "";
+
+const showLessonBodyEmptyState =
+  hasLessonBlocks && !hasRenderableLessonBlocks
+    ? true
+    : !hasLessonBlocks && !summaryHtml && !inlineVimeoSrc;
 
 const supportImageForPreview =
   typeof lesson.supportImage === "string" && lesson.supportImage.trim() !== ""
@@ -189,29 +308,110 @@ const lessonVideoSlugList = Array.isArray(lesson.videos)
 const lessonLibraryVideos: LessonLibraryVideoEmbed[] = lessonVideoSlugList
   .map((key) => resolveLessonLibraryVideo(catalogVideos, key))
   .filter((v): v is LessonLibraryVideoEmbed => v !== null);
+
 ---
 
 <Layout>
   <main class="site-content">
-    <div class="container">
-      {relatedTipHref && (
-        <div class="lesson-nav-back">
-          <a class="kbm-btn kbm-btn-outline" href={relatedTipHref}>Back to Tip</a>
-        </div>
-      )}
-      <div class="lesson-header">
-        <img
-          src="/images/help-hub.svg"
-                 alt="Knit it Now Lesson Icon"
-          class="lesson-header-icon"
-        />
-        <h1>{lesson.title}</h1>
-      </div>
+    <div class="lesson-page">
+      <div class="lesson-page__inner">
+        <header class="lesson-header">
+          {showHelpHubBackLink && (
+            <p class="lesson-back-link">
+              <a href={backToTipHref}>← {backToTipLabel}</a>
+            </p>
+          )}
+          <p class="lesson-badge">Member Lesson</p>
+          <h1 class="lesson-header__title">{lesson.title}</h1>
+          {summaryHtml && (
+            <div class="lesson-header__intro" set:html={summaryHtml} />
+          )}
+        </header>
 
-      <div class="lesson-grid">
+        <div class="lesson-grid">
         <!-- LEFT COLUMN -->
         <div class="lesson-content">
-          {lesson.summary && <div set:html={lesson.summary}></div>}
+          {hasLessonBlocks ? (
+            <div class="lesson-body-blocks">
+              {showLessonBodyEmptyState ? (
+                <p class="lesson-empty">
+                  This lesson does not have any content blocks yet. Check back soon, or explore the{" "}
+                  {relatedTipHref ? (
+                    <a href={relatedTipHref}>related Help Hub article</a>
+                  ) : (
+                    <a href="/help-hub/">Help Hub</a>
+                  )}
+                  .
+                </p>
+              ) : (
+                renderableLessonBlocks.map((block) => {
+                  if (block.type === "text") {
+                    const blockContent =
+                      typeof block.content === "string" ? block.content : "";
+                    return (
+                      <div class="lesson-block lesson-text-block">
+                        <GlossaryHtml html={blockContent} />
+                      </div>
+                    );
+                  }
+                  if (block.type === "vimeo") {
+                    const src = vimeoPlayerUrlFromRawId(block.vimeoId);
+                    if (!src) return null;
+                    const iframeTitle =
+                      typeof block.title === "string" && block.title.trim() !== ""
+                        ? block.title.trim()
+                        : lesson.title;
+                    const videoLabel =
+                      typeof block.title === "string" && block.title.trim() !== ""
+                        ? block.title.trim()
+                        : null;
+                    return (
+                      <div class="lesson-block lesson-video-block">
+                        {videoLabel && (
+                          <p class="lesson-video-block__label">{videoLabel}</p>
+                        )}
+                        <div class="lesson-video-frame">
+                          <iframe
+                            src={src}
+                            title={iframeTitle}
+                            allow="autoplay; fullscreen; picture-in-picture"
+                            allowfullscreen
+                            loading="lazy"
+                          />
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })
+              )}
+            </div>
+          ) : (
+            <>
+              {showLessonBodyEmptyState ? (
+                <p class="lesson-empty">
+                  This lesson does not have any content yet. Check back soon, or browse the{" "}
+                  <a href="/help-hub/">Help Hub</a>.
+                </p>
+              ) : (
+                <>
+                  {inlineVimeoSrc && (
+                    <div class="lesson-block lesson-video-block">
+                      <div class="lesson-video-frame">
+                        <iframe
+                          src={inlineVimeoSrc}
+                          title={lesson.title}
+                          allow="autoplay; fullscreen; picture-in-picture"
+                          allowfullscreen
+                          loading="lazy"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </>
+          )}
 
           {lessonLibraryVideos.length > 0 && (
             <div class="lesson-library-videos">
@@ -372,6 +572,7 @@ const lessonLibraryVideos: LessonLibraryVideoEmbed[] = lessonVideoSlugList
           </div>
         </dialog>
       )}
+      </div>
     </div>
   </main>
 </Layout>
@@ -432,8 +633,264 @@ const lessonLibraryVideos: LessonLibraryVideoEmbed[] = lessonVideoSlugList
     padding-top: 1rem;
   }
 
-  .lesson-nav-back {
+  .lesson-page {
+    padding: 0 1rem 2.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .lesson-page {
+      padding: 0 1.5rem 3rem;
+    }
+  }
+
+  .lesson-page__inner {
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .lesson-header {
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(82, 104, 45, 0.12);
+  }
+
+  .lesson-back-link {
     margin-bottom: 1rem;
+  }
+
+  .lesson-back-link a {
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .lesson-back-link a:hover {
+    text-decoration: underline;
+  }
+
+  .lesson-badge {
+    display: inline-block;
+    margin: 0 0 0.65rem;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #3d4a28;
+    background: rgba(82, 104, 45, 0.1);
+    border: 1px solid rgba(82, 104, 45, 0.18);
+    border-radius: 4px;
+  }
+
+  .lesson-header__title {
+    margin: 0 0 0.75rem;
+    font-size: clamp(1.45rem, 2.5vw, 1.85rem);
+    font-weight: 700;
+    line-height: 1.2;
+    color: #243015;
+  }
+
+  .lesson-header__intro {
+    font-size: 1.02rem;
+    line-height: 1.65;
+    color: #3a3f35;
+  }
+
+  .lesson-header__intro :first-child {
+    margin-top: 0;
+  }
+
+  .lesson-header__intro :last-child {
+    margin-bottom: 0;
+  }
+
+  .lesson-header__intro a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.12em;
+  }
+
+  .lesson-header__intro a:hover {
+    color: #3d4f22;
+  }
+
+  .lesson-body-blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  .lesson-block {
+    margin: 0;
+  }
+
+  .lesson-text-block {
+    padding: 1.15rem 1.25rem;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(82, 104, 45, 0.1);
+    border-radius: 10px;
+    font-size: 1.02rem;
+    line-height: 1.7;
+    color: #2b2f26;
+  }
+
+  .lesson-text-block :first-child {
+    margin-top: 0;
+  }
+
+  .lesson-text-block :last-child {
+    margin-bottom: 0;
+  }
+
+  .lesson-text-block p {
+    margin: 0 0 1em;
+  }
+
+  .lesson-text-block p:last-child {
+    margin-bottom: 0;
+  }
+
+  .lesson-text-block h2,
+  .lesson-text-block h3,
+  .lesson-text-block h4 {
+    margin: 1.35em 0 0.55em;
+    line-height: 1.25;
+    color: #243015;
+    font-weight: 700;
+  }
+
+  .lesson-text-block h2:first-child,
+  .lesson-text-block h3:first-child,
+  .lesson-text-block h4:first-child {
+    margin-top: 0;
+  }
+
+  .lesson-text-block h2 {
+    font-size: 1.2rem;
+  }
+
+  .lesson-text-block h3 {
+    font-size: 1.08rem;
+  }
+
+  .lesson-text-block h4 {
+    font-size: 1rem;
+  }
+
+  .lesson-text-block ul,
+  .lesson-text-block ol {
+    margin: 0 0 1em;
+    padding-left: 1.35rem;
+  }
+
+  .lesson-text-block li {
+    margin-bottom: 0.4em;
+  }
+
+  .lesson-text-block li:last-child {
+    margin-bottom: 0;
+  }
+
+  .lesson-text-block a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.12em;
+  }
+
+  .lesson-text-block a:hover {
+    color: #3d4f22;
+  }
+
+  .lesson-text-block strong {
+    font-weight: 700;
+    color: #1f2418;
+  }
+
+  .lesson-text-block em {
+    font-style: italic;
+  }
+
+  .lesson-text-block span[title] {
+    cursor: help;
+    border-bottom: 1px dotted rgba(82, 104, 45, 0.45);
+  }
+
+  .lesson-text-block img,
+  .lesson-text-block :global(.lesson-img) {
+    display: block;
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    margin: 1.15rem 0;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  }
+
+  .lesson-text-block img:first-child,
+  .lesson-text-block :global(.lesson-img):first-child {
+    margin-top: 0;
+  }
+
+  .lesson-text-block img:last-child,
+  .lesson-text-block :global(.lesson-img):last-child {
+    margin-bottom: 0;
+  }
+
+  .lesson-video-block {
+    padding: 0 0 0.25rem;
+  }
+
+  .lesson-video-block__label {
+    margin: 0 0 0.55rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #243015;
+    line-height: 1.35;
+  }
+
+  .lesson-video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(82, 104, 45, 0.12);
+    background: #0f172a;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .lesson-video-frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  .lesson-empty {
+    margin: 0;
+    padding: 1.25rem 1.35rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #4a5244;
+    background: rgba(82, 104, 45, 0.05);
+    border: 1px dashed rgba(82, 104, 45, 0.2);
+    border-radius: 10px;
+  }
+
+  .lesson-empty a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
   }
 
   .lesson-grid {
@@ -660,18 +1117,33 @@ const lessonLibraryVideos: LessonLibraryVideoEmbed[] = lessonVideoSlugList
 
   .lesson-content {
     display: grid;
-    gap: 1rem;
+    gap: 1.5rem;
   }
 
   .lesson-library-videos {
     display: grid;
-    gap: 1.25rem;
+    gap: 1.5rem;
   }
 
   .lesson-encouragement {
-    background: #f5f5f5;
-    padding: 1rem;
+    background: rgba(245, 245, 245, 0.95);
+    padding: 1.1rem 1.2rem;
     border-radius: 10px;
+    border: 1px solid rgba(82, 104, 45, 0.08);
+    font-size: 0.98rem;
+    line-height: 1.65;
+    color: #2b2f26;
+  }
+
+  .lesson-encouragement a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+  }
+
+  .lesson-encouragement a:hover {
+    color: #3d4f22;
   }
 
   .lesson-template .kbm-btn {
@@ -723,19 +1195,7 @@ const lessonLibraryVideos: LessonLibraryVideoEmbed[] = lessonVideoSlugList
     padding-left: 1.35rem;
     margin: 0;
   }
-  .lesson-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
 
-.lesson-header-icon {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
-  margin-top: 4px;
-}
   .lesson-exercise__item {
     margin-bottom: 0.7rem;
     padding-left: 0.25rem;

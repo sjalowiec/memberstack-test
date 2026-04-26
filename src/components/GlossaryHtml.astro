@@ -1,0 +1,22 @@
+---
+import GlossaryTooltip from "./common/GlossaryTooltip.astro";
+
+interface Props {
+  html: string;
+}
+
+const { html = "" } = Astro.props;
+
+const parts = html.split(/(<span data-glossary-id="\d+">.*?<\/span>)/g);
+---
+
+{
+  parts.map((part) => {
+    const match = part.match(/data-glossary-id="(\d+)">(.*?)<\/span>/);
+    return match ? (
+      <GlossaryTooltip id={Number(match[1])}>{match[2]}</GlossaryTooltip>
+    ) : (
+      <Fragment set:html={part} />
+    );
+  })
+}
