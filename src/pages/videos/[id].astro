@@ -29,7 +29,7 @@ const effectiveAccessLevelFromVideo = isFeaturedTip
   ? "open"
   : ((video as any)?.access_level ?? "member");
 /** Temporary until free video exceptions are restored — set false to use JSON/tip logic again. */
-const TEMPORARY_FORCE_MEMBER_WATCH = true;
+const TEMPORARY_FORCE_MEMBER_WATCH = false;
 const effectiveAccessLevel = TEMPORARY_FORCE_MEMBER_WATCH
   ? "member"
   : effectiveAccessLevelFromVideo;
