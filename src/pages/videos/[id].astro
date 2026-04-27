@@ -25,7 +25,14 @@ const description = (video as any)?.description ?? "";
 // Public exception: when this video is the featured Tuesday Tip (isTipOfWeek), show player to everyone.
 // Otherwise use access_level from JSON (default "member").
 const isFeaturedTip = (video as any)?.isTipOfWeek === true;
-const effectiveAccessLevel = isFeaturedTip ? "open" : ((video as any)?.access_level ?? "member");
+const effectiveAccessLevelFromVideo = isFeaturedTip
+  ? "open"
+  : ((video as any)?.access_level ?? "member");
+/** Temporary until free video exceptions are restored — set false to use JSON/tip logic again. */
+const TEMPORARY_FORCE_MEMBER_WATCH = true;
+const effectiveAccessLevel = TEMPORARY_FORCE_MEMBER_WATCH
+  ? "member"
+  : effectiveAccessLevelFromVideo;
 
 // thumbnail / poster: support full URL, /path, or filename → /images/filename
 const rawPosterUrl = (video as any)?.posterUrl ?? (video as any)?.poster_url ?? "";
@@ -48,7 +55,7 @@ const posterSrc =
     <a class="back-link back-to-videos-link" id="back-to-videos" href="/videos">← Back to Videos</a>
     {!video ? (
       <>
-        <PageHead title="Video not found" 
+        <PageHead title="Video not found" description="Video not found." />
         <article class="video-detail">
           <p>Video not found. <a class="back-to-videos-link" href="/videos">Back to Videos</a>.</p>
         </article>
@@ -169,7 +176,7 @@ const posterSrc =
           }
 
           function setAccess(hasFullAccess) {
-            document.querySelectorAll('[data-gated="content"]').forEach((el) => {
+            document.querySelectorAll('[data-gated="content"]').forEach((el: Element) => {
               if (hasFullAccess) el.removeAttribute("hidden");
               else el.setAttribute("hidden", "");
             });

@@ -19,6 +19,9 @@ const featuredTip = featuredTipVideo
     }
   : null;
 
+/** Temporary: treat every catalog card as member-only until free video exceptions are restored. */
+const FORCE_ALL_VIDEOS_LOCKED = true;
+
 /** Preview state for dev/testing; in production always "default" */
 const previewMember = getPreviewMember(Astro.url);
 const forceMemberView =
@@ -126,8 +129,9 @@ const forceMemberView =
   </div>
 
   <script id="videos-data" type="application/json" set:html={JSON.stringify(videos)} />
-  <script is:inline define:vars={{ forceMemberView }}>
+  <script is:inline define:vars={{ forceMemberView, FORCE_ALL_VIDEOS_LOCKED }}>
     window.__PREVIEW_FORCE_MEMBER__ = forceMemberView;
+    window.__FORCE_ALL_VIDEOS_LOCKED__ = FORCE_ALL_VIDEOS_LOCKED;
   </script>
 
   <script is:inline>
@@ -284,7 +288,9 @@ const forceMemberView =
       const listQueryString = listQuery ? "?" + listQuery : "";
 
       grid.innerHTML = filtered.map(v => {
-        const isFree = v.access_level === "open";
+        const isFreeByData = v.access_level === "open";
+        const isFree =
+          window.__FORCE_ALL_VIDEOS_LOCKED__ === true ? false : isFreeByData;
         const baseHref = v.content_id ? "/videos/" + v.content_id : "/videos/" + (v.slug || "");
         const href = baseHref + listQueryString;
         const title = (v.title || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
