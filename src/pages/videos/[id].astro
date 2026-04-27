@@ -176,7 +176,8 @@ const posterSrc =
             const isMember = [...activePlanIds].some((id) => MEMBER_PLAN_IDS.has(id));
 
             const rawKinAccess = member?.customFields?.kin_access;
-            const hasVideoAccess = hasKinVideoAccess(rawKinAccess);
+            const hasVideoAccess =
+              Boolean(member) && hasKinVideoAccess(rawKinAccess);
 
             return { isLoggedIn, isMember, hasVideoAccess, member };
           }

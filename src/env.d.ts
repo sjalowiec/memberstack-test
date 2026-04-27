@@ -24,7 +24,7 @@ declare global {
     __DEV_BYPASS_GATING?: boolean;
     /** Localhost + ?member=true: set in BaseLayout for client-side gates (videos, etc.). */
     __KBM_DEV_MEMBER__?: boolean;
-    /** Set in BaseLayout: kin_access video gate (strict true / "true" / 1 / "1" only). */
+    /** Set in BaseLayout: kin_access video gate (deny unless false / "false"). */
     kbmHasKinVideoAccess?: (rawKinAccess: unknown) => boolean;
     /** Memberstack DOM API (injected by app script). */
     $memberstackDom?: {

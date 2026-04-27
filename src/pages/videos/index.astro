@@ -194,10 +194,7 @@ const forceMemberView =
         const hasVideoAccess =
           typeof window.kbmHasKinVideoAccess === "function"
             ? window.kbmHasKinVideoAccess(rawKinAccess)
-            : rawKinAccess === true ||
-              rawKinAccess === "true" ||
-              rawKinAccess === 1 ||
-              rawKinAccess === "1";
+            : rawKinAccess !== false && rawKinAccess !== "false";
 
         return { isLoggedIn: true, isMember: isMember, hasVideoAccess: hasVideoAccess, member: member };
       } catch (e) {
