@@ -48,6 +48,7 @@ type HelpHubRecord = {
   mediaPoster?: string;
   mediaAlt?: string;
   aboutTitle?: string;
+  solutionText?: string;
   bridge?: string;
   tryThisTitle?: string;
   tryThis?: HelpHubTryThis;
@@ -192,10 +193,13 @@ if (Array.isArray(tip.relatedLessons)) {
 const memberLessonsSectionTitle =
   relatedLessonsResolved.length === 1 ? "Member Lesson" : "Member Lessons";
 
-const whyBody =
-  typeof tip.bridge === "string" && tip.bridge.trim() !== ""
-    ? tip.bridge.trim()
-    : "";
+const whyBodyRaw =
+  typeof tip.solutionText === "string" && tip.solutionText.trim() !== ""
+    ? tip.solutionText.trim()
+    : typeof tip.bridge === "string" && tip.bridge.trim() !== ""
+      ? tip.bridge.trim()
+      : "";
+const whyBody = whyBodyRaw;
 
 const tipJumpLinks: { label: string; href: string }[] =
   Array.isArray(tip.jumpLinks)
@@ -430,11 +434,11 @@ const tryHeading =
       </h2>
       <div class="tuesday-tip__section-card">
         {whyBody ? (
-          <p
+          <div
             class="tuesday-tip__description"
             data-placeholder="why this works text"
             set:html={whyBody}
-          ></p>
+          ></div>
         ) : (
           <p class="tuesday-tip__description" data-placeholder="why this works text">
             More detail for this tip will appear here when the Help Hub record includes a
@@ -575,9 +579,8 @@ const tryHeading =
     <script is:inline>
       (function () {
         var MEMBER_PLAN_IDS = [
-          "pln_dev-kin-member-eim6011h",
-          "pln_kin-membership-monthly-a59701wy",
           "pln_kin-membership-annual-qf9g01et",
+          "pln_kin-membership-monthly-a59701wy",
         ];
         function planSet() {
           var s = {};

@@ -374,10 +374,8 @@ const pageDescription =
             urlCategory = catRaw;
           } else {
             var slug = catRaw.toLowerCase();
-            if (slug === "tuck") {
-              var tuckTid = techniqueValueForSlug("tuck");
-              if (tuckTid) setTechniqueChip(tuckTid);
-            }
+            var techniqueId = techniqueValueForSlug(slug);
+            if (techniqueId) setTechniqueChip(techniqueId);
           }
         } catch (e) {
           urlCategory = "";

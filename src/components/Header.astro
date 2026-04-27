@@ -307,19 +307,6 @@
   white-space: nowrap;
 }
 
-/* TEMP: Memberstack login-state visibility test — remove when done */
-.kbm-nav-bar .ms-debug-state {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.95);
-  white-space: nowrap;
-  padding: 3px 8px;
-  border: 1px dashed rgba(255, 255, 255, 0.45);
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
 .kbm-nav-bar .kbm-logo-section {
   padding: 0.25rem 0;
 }
@@ -1441,18 +1428,6 @@ div[data-ms-modal-overlay] {
             <li>
               <a href="/whats-new" data-testid="nav-whats-new" class="nav-whats-new-link"><span class="nav-pill-new">NEW</span> What's New</a>
             </li>
-            <li>
-              <div class="kbm-account-wrap">
-                <div data-ms-content="!members">
-            <!--      <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="login">Login</a> 
-                </div>
-                <div data-ms-content="members">
-                  <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="profile">Account</a>
-                  <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-action="logout">Log out</a>
-                </div>
-              </div>
-              </div>-->
-            </li>
             </ul>
           </div>
           <div
@@ -1479,6 +1454,12 @@ div[data-ms-modal-overlay] {
           </a>
         </div>
         <div class="kbm-header-auth">
+          <div data-ms-content="!members">
+            <a href="#" data-ms-modal="login" class="kbm-btn kbm-btn-outline">
+              Log In
+            </a>
+          </div>
+
           <div data-ms-content="members">
             <a href="/account" class="kbm-btn kbm-btn-outline">
               My Account
@@ -1497,12 +1478,6 @@ div[data-ms-modal-overlay] {
           </div>
         </div>
 
-        <!-- TEMP: MS login-state test — remove after verifying Memberstack 
-        <div class="ms-debug-state">
-          <span data-ms-content="members">LOGGED IN</span>
-          <span data-ms-content="!members">LOGGED OUT</span>
-        </div>
--->
         <button class="kbm-hamburger" aria-label="Toggle menu" aria-expanded="false">
           <span></span>
           <span></span>
@@ -1544,8 +1519,8 @@ div[data-ms-modal-overlay] {
 <script is:inline>
   (function () {
     const PAID_PLAN_IDS = [
-      "pln_DEV-KIN-Member-REPLACE_ME",
-      "pln_PROD-KIN-Member-REPLACE_ME"
+      "pln_kin-membership-annual-qf9g01et",
+      "pln_kin-membership-monthly-a59701wy",
     ];
 
     const pill = document.getElementById("auth-pill");
