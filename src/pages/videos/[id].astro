@@ -142,8 +142,10 @@ const posterSrc =
         </article>
 
         <script>
+          import { hasKinVideoAccess } from "../../lib/kinVideoAccess";
+
           // --- Memberstack: client-side unlock for jump links / transcript (hasVideoAccess / kin_access) ---
-          /* Paid-tier plan IDs: used only for isMember. Unlock uses hasVideoAccess. */
+          /* Paid-tier plan IDs: used only for isMember. Unlock uses hasVideoAccess (kin_access only). */
           const MEMBER_PLAN_IDS = new Set([
             "pln_kin-membership-annual-qf9g01et",
             "pln_kin-membership-monthly-a59701wy",
@@ -173,11 +175,8 @@ const posterSrc =
             const isLoggedIn = Boolean(member);
             const isMember = [...activePlanIds].some((id) => MEMBER_PLAN_IDS.has(id));
 
-            const kinAccess = member?.customFields?.kin_access;
-            const hasVideoAccess =
-              Boolean(member) &&
-              kinAccess !== false &&
-              kinAccess !== "false";
+            const rawKinAccess = member?.customFields?.kin_access;
+            const hasVideoAccess = hasKinVideoAccess(rawKinAccess);
 
             return { isLoggedIn, isMember, hasVideoAccess, member };
           }

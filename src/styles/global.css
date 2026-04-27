@@ -152,8 +152,8 @@ body.dev-member [data-gated="locked"] {
 }
 
 /*
- * MemberStack: video access granted (body.ms-logged-in from BaseLayout; kin_access not false/"false").
- * Unlocks video detail gates and other [data-gated] regions when hasVideoAccess is true.
+ * Kin video access: body.ms-logged-in is set only when Memberstack kin_access is explicitly true
+ * (see BaseLayout kbmHasKinVideoAccess). Unlocks .member-only and [data-gated] for that access tier.
  */
 body.ms-logged-in .member-only,
 body.ms-logged-in [data-gated="content"] {

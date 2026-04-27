@@ -2,7 +2,7 @@
 /**
  * GatedVimeoEmbed.astro
  * - If access_level === "open": render iframe for everyone.
- * - If access_level === "member": iframe only when MemberStack grants access (logged in; kin_access not false/"false").
+ * - If access_level === "member": iframe only when kin_access is explicitly true (see window.kbmHasKinVideoAccess).
  * - When dev bypass is on (localhost + PUBLIC_DEV_BYPASS_GATING=true), member videos show without login.
  */
 import { devBypass } from "../../lib/devBypass";
@@ -103,11 +103,14 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
 
     try {
       const { data: member } = await window.$memberstackDom.getCurrentMember();
-      const kinAccess = member?.customFields?.kin_access;
+      const rawKinAccess = member?.customFields?.kin_access;
       const hasVideoAccess =
-        Boolean(member) &&
-        kinAccess !== false &&
-        kinAccess !== "false";
+        typeof window.kbmHasKinVideoAccess === "function"
+          ? window.kbmHasKinVideoAccess(rawKinAccess)
+          : rawKinAccess === true ||
+            rawKinAccess === "true" ||
+            rawKinAccess === 1 ||
+            rawKinAccess === "1";
 
       if (!hasVideoAccess) {
         slot.innerHTML = lockedMarkup;

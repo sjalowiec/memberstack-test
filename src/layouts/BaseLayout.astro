@@ -189,6 +189,14 @@ const isProduction =
   window.memberstackTranslations = {
     create_an_account: "Get the Weekly Tips"
   };
+  window.kbmHasKinVideoAccess = function (rawKinAccess) {
+    return (
+      rawKinAccess === true ||
+      rawKinAccess === "true" ||
+      rawKinAccess === 1 ||
+      rawKinAccess === "1"
+    );
+  };
 </script>
    
 <!-- MemberStack -->
@@ -313,11 +321,8 @@ const isProduction =
 
         try {
           const { data: member } = await window.$memberstackDom.getCurrentMember();
-          const kinAccess = member?.customFields?.kin_access;
-          const hasVideoAccess =
-            Boolean(member) &&
-            kinAccess !== false &&
-            kinAccess !== "false";
+          const rawKinAccess = member?.customFields?.kin_access;
+          const hasVideoAccess = window.kbmHasKinVideoAccess?.(rawKinAccess) ?? false;
 
           if (hasVideoAccess) {
             document.body.classList.add("ms-logged-in");

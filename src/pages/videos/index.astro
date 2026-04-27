@@ -190,11 +190,14 @@ const forceMemberView =
 
         const isMember = [...activePlanIds].some(function (id) { return MEMBER_PLAN_IDS.has(id); });
 
-        const kinAccess = member.customFields?.kin_access;
+        const rawKinAccess = member.customFields?.kin_access;
         const hasVideoAccess =
-          Boolean(member) &&
-          kinAccess !== false &&
-          kinAccess !== "false";
+          typeof window.kbmHasKinVideoAccess === "function"
+            ? window.kbmHasKinVideoAccess(rawKinAccess)
+            : rawKinAccess === true ||
+              rawKinAccess === "true" ||
+              rawKinAccess === 1 ||
+              rawKinAccess === "1";
 
         return { isLoggedIn: true, isMember: isMember, hasVideoAccess: hasVideoAccess, member: member };
       } catch (e) {
