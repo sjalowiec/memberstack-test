@@ -1,0 +1,230 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+type DashCard = {
+  href: string;
+  label: string;
+  description: string;
+};
+
+type DashSection = {
+  id: string;
+  title: string;
+  cards: DashCard[];
+};
+
+const sections: DashSection[] = [
+  {
+    id: "content-admin",
+    title: "Content Admin",
+    cards: [
+      {
+        href: "/admin/help-hub",
+        label: "Help Hub Admin",
+        description:
+          "View, edit, preview, and save Help Hub entries.",
+      },
+      {
+        href: "/admin/help-hub-edit",
+        label: "Create Help Hub Entry",
+        description: "Start a new Help Hub entry.",
+      },
+      {
+        href: "/admin/lessons",
+        label: "Lessons Admin",
+        description: "View and manage lesson entries.",
+      },
+      {
+        href: "/admin/lessons-edit",
+        label: "Create Lesson",
+        description:
+          "Create or edit a lesson with preview and JSON save prompt.",
+      },
+    ],
+  },
+  {
+    id: "legacy-admin",
+    title: "Legacy Admin",
+    cards: [
+      {
+        href: "/admin/videos-admin",
+        label: "Videos Admin",
+        description: "Existing video admin.",
+      },
+      {
+        href: "/admin/glossary",
+        label: "Glossary Admin",
+        description: "Existing glossary admin.",
+      },
+    ],
+  },
+  {
+    id: "utilities",
+    title: "Utilities",
+    cards: [
+      {
+        href: "/stitch",
+        label: "Stitch Browser",
+        description: "Browse stitch patterns and filtered views.",
+      },
+      {
+        href: "/stitch?machine=lk150&category=tuck",
+        label: "LK150 Tuck Stitches",
+        description:
+          "Direct filtered view for LK150-friendly tuck stitches.",
+      },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title="Creator Control Panel | Knit it Now"
+  description="Admin dashboard for creating and managing Knit It Now content."
+  skipGlobalHyvor={true}
+  bodyClass="admin-dash-body"
+>
+  <main class="admin-dash">
+    <header class="admin-dash__head">
+      <h1 class="admin-dash__title">Creator Control Panel</h1>
+      <p class="admin-dash__intro">
+        A clean starting point for creating and managing Knit It Now content.
+      </p>
+    </header>
+
+    {
+      sections.map((section) => (
+        <section
+          class="admin-dash__section"
+          aria-labelledby={`${section.id}-heading`}
+        >
+          <h2 id={`${section.id}-heading`} class="admin-dash__section-title">
+            {section.title}
+          </h2>
+          <div class="admin-dash__grid">
+            {section.cards.map((card) => (
+              <a class="admin-dash__card" href={card.href}>
+                <span class="admin-dash__card-label">{card.label}</span>
+                <span class="admin-dash__card-desc">{card.description}</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      ))
+    }
+  </main>
+
+  <style>
+    :global(body.admin-dash-body) {
+      margin: 0;
+    }
+
+    .admin-dash {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: calc(var(--header-height, 7rem) + 1.5rem) 1.25rem 3rem;
+      box-sizing: border-box;
+    }
+
+    .admin-dash__head {
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .admin-dash__title {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #243015;
+      line-height: 1.2;
+    }
+
+    .admin-dash__intro {
+      margin: 0;
+      font-size: 1rem;
+      color: #475569;
+      line-height: 1.5;
+      max-width: 42rem;
+    }
+
+    .admin-dash__section {
+      margin-bottom: 2rem;
+    }
+
+    .admin-dash__section:last-child {
+      margin-bottom: 0;
+    }
+
+    .admin-dash__section-title {
+      margin: 0 0 0.85rem 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #243015;
+    }
+
+    .admin-dash__grid {
+      display: grid;
+      gap: 0.85rem;
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 640px) {
+      .admin-dash__grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 900px) {
+      .admin-dash__grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .admin-dash__card {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.4rem;
+      padding: 1rem 1.1rem;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      text-decoration: none;
+      color: inherit;
+      box-sizing: border-box;
+      min-height: 5.5rem;
+      transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+    }
+
+    .admin-dash__card:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 14px rgba(36, 48, 21, 0.08);
+    }
+
+    .admin-dash__card:focus-visible {
+      outline: 2px solid #3f6212;
+      outline-offset: 2px;
+    }
+
+    .admin-dash__card-label {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1.3;
+    }
+
+    .admin-dash__card-desc {
+      font-size: 0.9rem;
+      color: #64748b;
+      line-height: 1.45;
+    }
+
+    .admin-dash__card:hover .admin-dash__card-label {
+      color: #3f6212;
+    }
+  </style>
+</BaseLayout>

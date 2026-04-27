@@ -1,0 +1,1051 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import helpHubData from "../../data/help-hub.json";
+import lessons from "../../data/lessons.json";
+
+const entries = Array.isArray(helpHubData) ? helpHubData : [];
+const lessonRecords = Array.isArray(lessons) ? lessons : [];
+
+const lessonReferenceLines = lessonRecords.reduce<
+  { id: number; title: string }[]
+>((acc, lesson) => {
+  const rec = lesson as Record<string, unknown>;
+  const id = rec.id;
+  if (typeof id !== "number" || !Number.isFinite(id)) return acc;
+  const title = rec.title;
+  const titleStr =
+    typeof title === "string" ? title : title != null ? String(title) : "";
+  acc.push({ id, title: titleStr });
+  return acc;
+}, []);
+const slug = Astro.url.searchParams.get("slug");
+const currentEntry = slug
+  ? entries.find((entry) => entry.slug === slug)
+  : null;
+const isEditing = Boolean(currentEntry);
+
+const pageTitle = isEditing
+  ? "Edit Help Hub Entry | Knit it Now"
+  : "Create Help Hub Entry | Knit it Now";
+
+const rawEntry = currentEntry as Record<string, unknown> | null;
+
+function stringifyValue(v: unknown): string {
+  if (v === undefined || v === null) return "";
+  if (Array.isArray(v)) return v.map(String).join("\n");
+  if (typeof v === "object") return "";
+  return String(v);
+}
+
+const multiKeyFields: Record<string, string[]> = {
+  thumbnailAlt: ["thumbnailAlt", "mediaAlt"],
+  solutionText: ["solutionText", "bridge"],
+  intro: ["intro", "aboutTitle"],
+  aboutTitle: ["aboutTitle"],
+  bridge: ["bridge", "solutionText"],
+  atAGlance: ["atAGlance"],
+  specificMention: ["specificMention"],
+  tags: ["tags"],
+  resources: ["resources"],
+};
+
+function tryThisIntroForForm(entry: Record<string, unknown>): string {
+  const t = entry.tryThis;
+  if (typeof t === "string") return t;
+  if (t && typeof t === "object" && !Array.isArray(t)) {
+    const o = t as { quickActionTitle?: unknown };
+    if (typeof o.quickActionTitle === "string") return o.quickActionTitle;
+  }
+  return "";
+}
+
+function tryStepsLinesForForm(entry: Record<string, unknown>): string {
+  const s = entry.trySteps;
+  if (!Array.isArray(s)) return "";
+  return s.map(String).join("\n");
+}
+
+function valueFor(key: string, fallback = ""): string {
+  if (!rawEntry) return fallback;
+
+  if (key === "tryThis") {
+    return tryThisIntroForForm(rawEntry) || fallback;
+  }
+  if (key === "trySteps") {
+    return tryStepsLinesForForm(rawEntry) || fallback;
+  }
+
+  if (key === "relatedLessons") {
+    const rl = rawEntry.relatedLessons;
+    if (!Array.isArray(rl)) return fallback;
+    const parts = rl
+      .map((x) => {
+        if (typeof x === "number" && Number.isFinite(x)) return String(x);
+        if (typeof x === "string") {
+          const t = x.trim();
+          return t.length > 0 ? t : "";
+        }
+        return "";
+      })
+      .filter((s) => s.length > 0);
+    return parts.length ? parts.join(", ") : fallback;
+  }
+
+  if (key === "mediaType") {
+    const mt = stringifyValue(rawEntry.mediaType);
+    const normalized = mt === "video" ? "youtube" : mt;
+    const allowed = ["placeholder", "image", "vimeo", "youtube"];
+    if (normalized && allowed.includes(normalized)) return normalized;
+    return fallback;
+  }
+
+  const keysToTry = multiKeyFields[key] ?? [key];
+  for (const jsonKey of keysToTry) {
+    const v = rawEntry[jsonKey];
+    if (v === undefined) continue;
+    if (Array.isArray(v)) {
+      return v.map(String).join("\n");
+    }
+    if (typeof v === "object" && v !== null) continue;
+    return stringifyValue(v);
+  }
+
+  return fallback;
+}
+
+const entryLabel = currentEntry as {
+  question?: string;
+  title?: string;
+  slug?: string;
+} | null;
+---
+
+<BaseLayout
+  title={pageTitle}
+  description="Draft the question, solution, metadata, media, resources, and CTA content for a Help Hub entry."
+  skipGlobalHyvor={true}
+  bodyClass="help-hub-admin-body"
+>
+  <main class="help-hub-admin help-hub-dash help-hub-edit">
+    <header class="help-hub-admin__head">
+      <h1 class="help-hub-admin__title">
+        {isEditing ? "Edit Help Hub Entry" : "Create Help Hub Entry"}
+      </h1>
+      <p class="help-hub-admin__sub">
+        Draft the question, solution, metadata, media, resources, and CTA content
+        for a Help Hub entry.
+      </p>
+      <p class="help-hub-edit__context">
+        {
+          isEditing && entryLabel
+            ? `Editing: ${entryLabel.question || entryLabel.title || entryLabel.slug || ""}`
+            : "New entry"
+        }
+      </p>
+    </header>
+
+    <div class="help-hub-admin__toolbar help-hub-dash__toolbar">
+      <a href="/admin/help-hub" class="kbm-btn kbm-btn-outline">Back to Help Hub Admin</a>
+    </div>
+
+    <form class="help-hub-edit__form" novalidate>
+      <div class="help-hub-edit__sections help-hub-dash__sections">
+        <section
+          class="admin-panel help-hub-dash__panel"
+          aria-labelledby="core-details-heading"
+        >
+          <h2 id="core-details-heading" class="help-hub-dash__panel-title">
+            Core Details
+          </h2>
+          <div class="help-hub-edit__fields">
+            <div class="help-hub-edit__field">
+              <label for="help-hub-question" class="help-hub-edit__label">Question</label>
+              <textarea
+                id="help-hub-question"
+                class="help-hub-edit__textarea"
+                name="question"
+                rows={3}>{valueFor("question", "")}</textarea>
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-slug" class="help-hub-edit__label">Slug</label>
+              <input
+                id="help-hub-slug"
+                class="help-hub-edit__input"
+                type="text"
+                name="slug"
+                value={valueFor("slug", "")}
+              />
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-status" class="help-hub-edit__label">Status</label>
+              <select
+                id="help-hub-status"
+                class="help-hub-edit__select"
+                name="status"
+              >
+                <option value="draft" selected={valueFor("status", "draft") === "draft"}>
+                  draft
+                </option>
+                <option value="review" selected={valueFor("status", "draft") === "review"}>
+                  review
+                </option>
+                <option
+                  value="published"
+                  selected={valueFor("status", "draft") === "published"}
+                >
+                  published
+                </option>
+              </select>
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-bubble" class="help-hub-edit__label">Bubble Answer</label>
+              <textarea
+                id="help-hub-bubble"
+                class="help-hub-edit__textarea"
+                name="bubbleAnswer"
+                rows={3}>{valueFor("bubbleAnswer", "")}</textarea>
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-hook" class="help-hub-edit__label">Hook</label>
+              <textarea
+                id="help-hub-hook"
+                class="help-hub-edit__textarea"
+                name="hook"
+                rows={2}>{valueFor("hook", "")}</textarea>
+            </div>
+          </div>
+        </section>
+
+        <section
+          class="admin-panel help-hub-dash__panel"
+          aria-labelledby="metadata-heading"
+        >
+          <h2 id="metadata-heading" class="help-hub-dash__panel-title">Metadata</h2>
+          <div class="help-hub-edit__fields">
+            <div class="help-hub-edit__field">
+              <label for="help-hub-category" class="help-hub-edit__label">Category</label>
+              <input
+                id="help-hub-category"
+                class="help-hub-edit__input"
+                type="text"
+                name="category"
+                value={valueFor("category", "")}
+              />
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-category-pill" class="help-hub-edit__label">
+                Category Pill
+              </label>
+              <input
+                id="help-hub-category-pill"
+                class="help-hub-edit__input"
+                type="text"
+                name="categoryPill"
+                value={valueFor("categoryPill", "")}
+              />
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-tags" class="help-hub-edit__label">Tags</label>
+              <textarea
+                id="help-hub-tags"
+                class="help-hub-edit__textarea"
+                name="tags"
+                rows={3}>{valueFor("tags", "")}</textarea>
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-solution-type" class="help-hub-edit__label">
+                Solution Type
+              </label>
+              <input
+                id="help-hub-solution-type"
+                class="help-hub-edit__input"
+                type="text"
+                name="solutionType"
+                value={valueFor("solutionType", "")}
+              />
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-success-path" class="help-hub-edit__label">
+                Success Path Level
+              </label>
+              <select
+                id="help-hub-success-path"
+                class="help-hub-edit__select"
+                name="successPathLevel"
+              >
+                <option
+                  value="Beginner"
+                  selected={valueFor("successPathLevel", "Beginner") === "Beginner"}
+                >
+                  Beginner
+                </option>
+                <option
+                  value="Confident Beginner"
+                  selected={valueFor("successPathLevel", "Beginner") ===
+                    "Confident Beginner"}
+                >
+                  Confident Beginner
+                </option>
+                <option
+                  value="Intermediate"
+                  selected={valueFor("successPathLevel", "Beginner") === "Intermediate"}
+                >
+                  Intermediate
+                </option>
+                <option
+                  value="Advanced"
+                  selected={valueFor("successPathLevel", "Beginner") === "Advanced"}
+                >
+                  Advanced
+                </option>
+              </select>
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-related-lessons" class="help-hub-edit__label">
+                Related Lessons
+              </label>
+              <input
+                id="help-hub-related-lessons"
+                class="help-hub-edit__input"
+                type="text"
+                name="relatedLessons"
+                value={valueFor("relatedLessons", "")}
+              />
+              <p class="help-hub-edit__hint">
+                Enter lesson IDs separated by commas, for example: 5002, 5003
+              </p>
+              <p class="help-hub-edit__hint" aria-label="Available lessons">
+                {lessonReferenceLines.map((line, i) => (
+                  <>
+                    {i > 0 ? <br /> : null}
+                    {line.title} — ID: {line.id}
+                  </>
+                ))}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section
+          class="admin-panel help-hub-dash__panel"
+          aria-labelledby="media-heading"
+        >
+          <h2 id="media-heading" class="help-hub-dash__panel-title">Media</h2>
+          <div class="help-hub-edit__fields">
+            <div class="help-hub-edit__field">
+              <label for="help-hub-media-type" class="help-hub-edit__label">Media Type</label>
+              <select
+                id="help-hub-media-type"
+                class="help-hub-edit__select"
+                name="mediaType"
+              >
+                <option
+                  value="placeholder"
+                  selected={valueFor("mediaType", "placeholder") === "placeholder"}
+                >
+                  placeholder
+                </option>
+                <option
+                  value="image"
+                  selected={valueFor("mediaType", "placeholder") === "image"}
+                >
+                  image
+                </option>
+                <option
+                  value="vimeo"
+                  selected={valueFor("mediaType", "placeholder") === "vimeo"}
+                >
+                  vimeo
+                </option>
+                <option
+                  value="youtube"
+                  selected={valueFor("mediaType", "placeholder") === "youtube"}
+                >
+                  youtube
+                </option>
+              </select>
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-media-url" class="help-hub-edit__label">
+                Media URL or ID
+              </label>
+              <input
+                id="help-hub-media-url"
+                class="help-hub-edit__input"
+                type="text"
+                name="mediaUrl"
+                value={valueFor("mediaUrl", "")}
+              />
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-thumb-alt" class="help-hub-edit__label">
+                Thumbnail Alt Text
+              </label>
+              <textarea
+                id="help-hub-thumb-alt"
+                class="help-hub-edit__textarea"
+                name="thumbnailAlt"
+                rows={2}>{valueFor("thumbnailAlt", "")}</textarea>
+            </div>
+          </div>
+        </section>
+
+        <section
+          class="admin-panel help-hub-dash__panel"
+          aria-labelledby="solution-heading"
+        >
+          <h2 id="solution-heading" class="help-hub-dash__panel-title">Solution</h2>
+          <div class="help-hub-edit__fields">
+            <div class="help-hub-edit__field">
+              <label for="help-hub-intro" class="help-hub-edit__label">Intro</label>
+              <textarea
+                id="help-hub-intro"
+                class="help-hub-edit__textarea"
+                name="intro"
+                rows={3}>{valueFor("intro", "")}</textarea>
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-at-glance" class="help-hub-edit__label">
+                At-a-Glance
+              </label>
+              <textarea
+                id="help-hub-at-glance"
+                class="help-hub-edit__textarea"
+                name="atAGlance"
+                rows={3}>{valueFor("atAGlance", "")}</textarea>
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-solution-text" class="help-hub-edit__label">
+                Solution Text
+              </label>
+              <textarea
+                id="help-hub-solution-text"
+                class="help-hub-edit__textarea"
+                name="solutionText"
+                rows={6}>{valueFor("solutionText", "")}</textarea>
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-specific" class="help-hub-edit__label">
+                Specific Mention / Warning
+              </label>
+              <textarea
+                id="help-hub-specific"
+                class="help-hub-edit__textarea"
+                name="specificMention"
+                rows={3}>{valueFor("specificMention", "")}</textarea>
+            </div>
+          </div>
+        </section>
+
+        <section
+          class="admin-panel help-hub-dash__panel"
+          aria-labelledby="public-page-sections-heading"
+        >
+          <h2 id="public-page-sections-heading" class="help-hub-dash__panel-title">
+            Public Page Sections
+          </h2>
+          <div class="help-hub-edit__fields">
+            <div class="help-hub-edit__field">
+              <label for="help-hub-about-title" class="help-hub-edit__label">
+                About Title
+              </label>
+              <input
+                id="help-hub-about-title"
+                class="help-hub-edit__input"
+                type="text"
+                name="aboutTitle"
+                value={valueFor("aboutTitle", "")}
+              />
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-bridge" class="help-hub-edit__label">Bridge</label>
+              <textarea
+                id="help-hub-bridge"
+                class="help-hub-edit__textarea"
+                name="bridge"
+                rows={6}>{valueFor("bridge", "")}</textarea>
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-try-this-intro" class="help-hub-edit__label">
+                Try This Intro
+              </label>
+              <textarea
+                id="help-hub-try-this-intro"
+                class="help-hub-edit__textarea"
+                name="tryThis"
+                rows={2}>{valueFor("tryThis", "")}</textarea>
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-try-steps" class="help-hub-edit__label">Try Steps</label>
+              <textarea
+                id="help-hub-try-steps"
+                class="help-hub-edit__textarea"
+                name="trySteps"
+                rows={10}>{valueFor("trySteps", "")}</textarea>
+              <p class="help-hub-edit__hint">One checklist item per line.</p>
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-try-note" class="help-hub-edit__label">
+                Try This Note
+              </label>
+              <textarea
+                id="help-hub-try-note"
+                class="help-hub-edit__textarea"
+                name="tryNote"
+                rows={3}>{valueFor("tryNote", "")}</textarea>
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-try-image" class="help-hub-edit__label">
+                Try This Image URL
+              </label>
+              <input
+                id="help-hub-try-image"
+                class="help-hub-edit__input"
+                type="text"
+                name="tryImage"
+                value={valueFor("tryImage", "")}
+              />
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-try-image-alt" class="help-hub-edit__label">
+                Try This Image Alt Text
+              </label>
+              <input
+                id="help-hub-try-image-alt"
+                class="help-hub-edit__input"
+                type="text"
+                name="tryImageAlt"
+                value={valueFor("tryImageAlt", "")}
+              />
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-try-image-caption" class="help-hub-edit__label">
+                Try This Image Caption
+              </label>
+              <textarea
+                id="help-hub-try-image-caption"
+                class="help-hub-edit__textarea"
+                name="tryImageCaption"
+                rows={3}>{valueFor("tryImageCaption", "")}</textarea>
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-member-heading" class="help-hub-edit__label">
+                Member Heading
+              </label>
+              <input
+                id="help-hub-member-heading"
+                class="help-hub-edit__input"
+                type="text"
+                name="memberHeading"
+                value={valueFor("memberHeading", "")}
+              />
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-member-text" class="help-hub-edit__label">
+                Member Text
+              </label>
+              <textarea
+                id="help-hub-member-text"
+                class="help-hub-edit__textarea"
+                name="memberText"
+                rows={4}>{valueFor("memberText", "")}</textarea>
+            </div>
+          </div>
+        </section>
+
+        <section
+          class="admin-panel help-hub-dash__panel"
+          aria-labelledby="resources-heading"
+        >
+          <h2 id="resources-heading" class="help-hub-dash__panel-title">Resources</h2>
+          <div class="help-hub-edit__fields">
+            <div class="help-hub-edit__field">
+              <label for="help-hub-resources" class="help-hub-edit__label">Resources</label>
+              <textarea
+                id="help-hub-resources"
+                class="help-hub-edit__textarea"
+                name="resources"
+                rows={5}>{valueFor("resources", "")}</textarea>
+              <p class="help-hub-edit__hint">One resource per line.</p>
+            </div>
+          </div>
+        </section>
+
+        <section
+          class="admin-panel help-hub-dash__panel"
+          aria-labelledby="cta-heading"
+        >
+          <h2 id="cta-heading" class="help-hub-dash__panel-title">CTA Blocks</h2>
+          <p class="help-hub-dash__placeholder">
+            CTA blocks are included automatically in the Help Hub template.
+          </p>
+        </section>
+
+        <section
+          class="admin-panel help-hub-dash__panel"
+          aria-labelledby="json-preview-heading"
+        >
+          <h2 id="json-preview-heading" class="help-hub-dash__panel-title">
+            JSON Preview
+          </h2>
+          <div class="help-hub-edit__json-preview">
+            <div class="help-hub-edit__json-preview-actions">
+              <button type="button" id="copyHelpHubJson" class="kbm-btn kbm-btn-outline">
+                Copy JSON
+              </button>
+              <button type="button" id="previewHelpHub" class="kbm-btn kbm-btn-outline">
+                Preview Entry
+              </button>
+              <span id="copyHelpHubJsonStatus" class="help-hub-edit__copy-status" aria-live="polite"></span>
+            </div>
+            <div class="help-hub-edit__json-preview-actions">
+              <button type="button" id="copyHelpHubCursorPrompt" class="kbm-btn kbm-btn-outline">
+                Copy Cursor Save Prompt
+              </button>
+              <span id="copyHelpHubCursorStatus" class="help-hub-edit__copy-status" aria-live="polite"></span>
+            </div>
+            <pre id="helpHubJsonPreview" class="help-hub-edit__json-pre"></pre>
+          </div>
+        </section>
+      </div>
+    </form>
+  </main>
+
+  <style>
+    :global(body.help-hub-admin-body) {
+      margin: 0;
+    }
+
+    .help-hub-admin {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 1.25rem 1.5rem 3rem;
+      box-sizing: border-box;
+    }
+
+    .help-hub-admin__head {
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .help-hub-admin__title {
+      margin: 0 0 0.35rem 0;
+      font-size: 1.65rem;
+      color: #243015;
+    }
+
+    .help-hub-admin__sub {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #475569;
+      max-width: 56rem;
+    }
+
+    .help-hub-admin__toolbar {
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.65rem 1rem;
+    }
+
+    .admin-panel {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+    }
+
+    .help-hub-dash__sections {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1fr;
+    }
+
+    .help-hub-edit__sections {
+      max-width: 56rem;
+    }
+
+    .help-hub-dash__panel-title {
+      margin: 0 0 0.65rem 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #243015;
+    }
+
+    .help-hub-dash__placeholder {
+      margin: 0;
+      font-size: 0.92rem;
+      color: #64748b;
+      line-height: 1.45;
+    }
+
+    .help-hub-edit__context {
+      margin: 0.5rem 0 0 0;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+
+    .help-hub-edit__form {
+      margin: 0;
+    }
+
+    .help-hub-edit__fields {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .help-hub-edit__field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .help-hub-edit__label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .help-hub-edit__input,
+    .help-hub-edit__select,
+    .help-hub-edit__textarea {
+      font-size: 0.92rem;
+      line-height: 1.45;
+      color: #1e293b;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.45rem 0.55rem;
+      background: #fff;
+      box-sizing: border-box;
+      width: 100%;
+      font-family: inherit;
+    }
+
+    .help-hub-edit__textarea {
+      resize: vertical;
+      min-height: 2.5rem;
+    }
+
+    .help-hub-edit__select {
+      max-width: 20rem;
+    }
+
+    .help-hub-edit__hint {
+      margin: 0;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+
+    .help-hub-edit__json-preview-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .help-hub-edit__json-preview-actions:last-of-type {
+      margin-bottom: 0.65rem;
+    }
+
+    .help-hub-edit__copy-status {
+      font-size: 0.85rem;
+      color: #16a34a;
+      min-height: 1.2em;
+    }
+
+    .help-hub-edit__copy-status--error {
+      color: #b91c1c;
+    }
+
+    .help-hub-edit__json-preview-actions .kbm-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .help-hub-edit__json-pre {
+      margin: 0;
+      padding: 0.75rem 0.85rem;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+        "Courier New", monospace;
+      color: #1e293b;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: auto;
+      max-height: min(70vh, 32rem);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  </style>
+
+  <script is:inline>
+    (function () {
+      var FIELD_ORDER = [
+        "question",
+        "slug",
+        "status",
+        "bubbleAnswer",
+        "hook",
+        "category",
+        "categoryPill",
+        "tags",
+        "solutionType",
+        "successPathLevel",
+        "relatedLessons",
+        "mediaType",
+        "mediaUrl",
+        "thumbnailAlt",
+        "intro",
+        "atAGlance",
+        "solutionText",
+        "specificMention",
+        "aboutTitle",
+        "bridge",
+        "tryThis",
+        "trySteps",
+        "tryNote",
+        "tryImage",
+        "tryImageAlt",
+        "tryImageCaption",
+        "memberHeading",
+        "memberText",
+        "resources",
+      ];
+
+      function trimmedFieldValue(form, name) {
+        var el = form.elements.namedItem(name);
+        if (!el) return "";
+        if ("value" in el) return String(el.value).trim();
+        return "";
+      }
+
+      function splitTags(text) {
+        if (!text) return [];
+        return text
+          .split(/[\r\n,]+/)
+          .map(function (s) {
+            return s.trim();
+          })
+          .filter(Boolean);
+      }
+
+      function splitLines(text) {
+        if (!text) return [];
+        return text
+          .split(/\r?\n/)
+          .map(function (s) {
+            return s.trim();
+          })
+          .filter(Boolean);
+      }
+
+      function parseRelatedLessonIds(text) {
+        if (!text) return [];
+        return text
+          .split(",")
+          .map(function (s) {
+            return s.trim();
+          })
+          .filter(Boolean)
+          .map(function (s) {
+            if (/^\d+$/.test(s)) {
+              var n = Number(s);
+              if (typeof n === "number" && !isNaN(n) && isFinite(n)) return n;
+            }
+            return s;
+          });
+      }
+
+      function buildHelpHubObject(form) {
+        var out = {};
+        var i;
+        var key;
+        var v;
+        var arr;
+
+        for (i = 0; i < FIELD_ORDER.length; i++) {
+          key = FIELD_ORDER[i];
+          if (key === "tags") {
+            arr = splitTags(trimmedFieldValue(form, "tags"));
+            if (arr.length) out.tags = arr;
+            continue;
+          }
+          if (key === "atAGlance") {
+            arr = splitLines(trimmedFieldValue(form, "atAGlance"));
+            if (arr.length) out.atAGlance = arr;
+            continue;
+          }
+          if (key === "resources") {
+            arr = splitLines(trimmedFieldValue(form, "resources"));
+            if (arr.length) out.resources = arr;
+            continue;
+          }
+          if (key === "trySteps") {
+            arr = splitLines(trimmedFieldValue(form, "trySteps"));
+            if (arr.length) out.trySteps = arr;
+            continue;
+          }
+          if (key === "relatedLessons") {
+            arr = parseRelatedLessonIds(trimmedFieldValue(form, "relatedLessons"));
+            if (arr.length) out.relatedLessons = arr;
+            continue;
+          }
+          v = trimmedFieldValue(form, key);
+          if (v !== "") out[key] = v;
+        }
+
+        return out;
+      }
+
+      var CURSOR_SAVE_PROMPT_PREFIX =
+        "Update src/data/help-hub.json.\n\n" +
+        "Merge the Help Hub entry below into the existing entry by slug.\n\n" +
+        "If the slug already exists, update only the fields included in ENTRY JSON and preserve any existing fields that are not included.\n" +
+        "If the slug does not exist, add it as a new object.\n" +
+        "Keep the JSON valid.\n" +
+        "Preserve existing entries.\n" +
+        "Do not modify any other files.\n\n" +
+        "ENTRY JSON:\n";
+
+      function sanitizeSlugValue(raw) {
+        return String(raw)
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9-]/g, "");
+      }
+
+      function hasRequiredFields(form) {
+        return (
+          trimmedFieldValue(form, "question") !== "" &&
+          trimmedFieldValue(form, "slug") !== "" &&
+          trimmedFieldValue(form, "status") !== ""
+        );
+      }
+
+      function init() {
+        var form = document.querySelector(".help-hub-edit__form");
+        var pre = document.getElementById("helpHubJsonPreview");
+        var copyBtn = document.getElementById("copyHelpHubJson");
+        var status = document.getElementById("copyHelpHubJsonStatus");
+        var cursorBtn = document.getElementById("copyHelpHubCursorPrompt");
+        var cursorStatus = document.getElementById("copyHelpHubCursorStatus");
+        var previewBtn = document.getElementById("previewHelpHub");
+        if (!form || !pre || !copyBtn || !status || !cursorBtn || !cursorStatus) return;
+
+        var jsonCopyTimerHolder = { current: null };
+        var cursorCopyTimerHolder = { current: null };
+
+        function copyToClipboard(text, statusEl, timerHolder) {
+          function showCopied() {
+            statusEl.textContent = "Copied";
+            if (timerHolder.current) clearTimeout(timerHolder.current);
+            timerHolder.current = window.setTimeout(function () {
+              statusEl.textContent = "";
+              timerHolder.current = null;
+            }, 2000);
+          }
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(showCopied).catch(function () {
+              statusEl.textContent = "";
+            });
+          } else {
+            try {
+              var ta = document.createElement("textarea");
+              ta.value = text;
+              ta.setAttribute("readonly", "");
+              ta.style.position = "fixed";
+              ta.style.left = "-9999px";
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand("copy");
+              document.body.removeChild(ta);
+              showCopied();
+            } catch (e) {
+              statusEl.textContent = "";
+            }
+          }
+        }
+
+        function updatePreview() {
+          var obj = buildHelpHubObject(form);
+          pre.textContent = JSON.stringify(obj, null, 2);
+        }
+
+        function updateCopyUi() {
+          var ok = hasRequiredFields(form);
+          copyBtn.disabled = !ok;
+          cursorBtn.disabled = !ok;
+          if (!ok) {
+            status.textContent = "Missing required fields";
+            cursorStatus.textContent = "Missing required fields";
+            status.classList.add("help-hub-edit__copy-status--error");
+            cursorStatus.classList.add("help-hub-edit__copy-status--error");
+          } else {
+            status.textContent = "";
+            cursorStatus.textContent = "";
+            status.classList.remove("help-hub-edit__copy-status--error");
+            cursorStatus.classList.remove("help-hub-edit__copy-status--error");
+          }
+        }
+
+        function onFormActivity(ev) {
+          var t = ev.target;
+          if (t && t.getAttribute && t.getAttribute("name") === "slug") {
+            var before = t.value;
+            var after = sanitizeSlugValue(before);
+            if (after !== before) {
+              t.value = after;
+            }
+          }
+          updatePreview();
+          updateCopyUi();
+        }
+
+        form.addEventListener("input", onFormActivity);
+        form.addEventListener("change", onFormActivity);
+        updatePreview();
+        updateCopyUi();
+
+        copyBtn.addEventListener("click", function () {
+          if (!hasRequiredFields(form)) return;
+          var text = JSON.stringify(buildHelpHubObject(form), null, 2);
+          copyToClipboard(text, status, jsonCopyTimerHolder);
+        });
+
+        cursorBtn.addEventListener("click", function () {
+          if (!hasRequiredFields(form)) return;
+          var entryJson = JSON.stringify(buildHelpHubObject(form), null, 2);
+          var promptText = CURSOR_SAVE_PROMPT_PREFIX + entryJson;
+          copyToClipboard(promptText, cursorStatus, cursorCopyTimerHolder);
+        });
+
+        if (previewBtn) {
+          previewBtn.addEventListener("click", function () {
+            var obj = buildHelpHubObject(form);
+            var data = btoa(JSON.stringify(obj));
+            var url = "/help-hub/preview?data=" + encodeURIComponent(data);
+            window.open(url, "_blank", "noopener,noreferrer");
+          });
+        }
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</BaseLayout>

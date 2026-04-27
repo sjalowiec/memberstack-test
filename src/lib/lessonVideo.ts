@@ -8,6 +8,9 @@ export type PublicVideoRow = {
   title?: string;
   vimeo_id?: number;
   vimeo_id_public?: number;
+  access_level?: string;
+  /** Public exception: featured Tuesday Tip plays for everyone. */
+  isTipOfWeek?: boolean;
   /** Optional: future transcript / search pipeline */
   transcript_json?: unknown;
   vtt_url?: string;

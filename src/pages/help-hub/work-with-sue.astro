@@ -1,12 +1,13 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import CardRibbon from "../../components/ui/CardRibbon.astro";
 ---
 
 <Layout
   title="Work with Sue | Knit it Now"
   description="Personal machine knitting support with Sue: quick help or project support."
 >
-  <section class="container py-5 work-with-sue-page">
+  <section class="work-with-sue container py-5 work-with-sue-page">
     <div class="work-with-sue-inner">
       <div class="work-with-sue-hero">
         <div class="hero-text">
@@ -33,55 +34,84 @@ import Layout from "../../layouts/Layout.astro";
         </div>
       </div>
 
-      <div class="work-with-sue-grid">
-        <div class="kbm-card work-with-sue-card work-card">
-          <img src="/images/help.svg" alt="" class="card-icon" width="60" height="60" />
-          <h2>Quick Help Session</h2>
-          <p>
-            Stuck on something right now? This 15-minute session is for a specific machine knitting
-            question, problem, or next step.
-          </p>
-          <ul>
-            <li>Get unstuck fast</li>
-            <li>Ask your question</li>
-            <li>Leave with a clear next step</li>
-          </ul>
-          <div class="card-button">
-            <a href="/help-hub/quick-help" class="kbm-button">Book a 15-Minute Call</a>
+      <div class="work-cards">
+        <div class="work-with-sue-grid__col col-md-4">
+          <div class="kbm-card work-with-sue-card work-card">
+            <img src="/images/help.svg" alt="" class="card-icon" width="60" height="60" />
+            <h2>Quick Help Session</h2>
+            <p>
+              Stuck on something right now? This 15-minute session is for a specific machine knitting
+              question, problem, or next step.
+            </p>
+            <ul>
+              <li>Get unstuck fast</li>
+              <li>Ask your question</li>
+              <li>Leave with a clear next step</li>
+            </ul>
+            <div class="card-button">
+              <a href="/help-hub/quick-help" class="kbm-button">Book a 15-Minute Call</a>
+            </div>
           </div>
         </div>
 
-        <div class="kbm-card work-with-sue-card work-card">
-          <img src="/images/help.svg" alt="" class="card-icon" width="60" height="60" />
-          <h2>Project Support Sprint</h2>
-          <p>
-            Need more than a quick answer? This option is for knitters who want ongoing support
-            while working through a project, solving a bigger issue, or building confidence over
-            time.
-          </p>
-          <ul>
-            <li>Support while you work through your project</li>
-            <li>Help with fit, shaping, or technique</li>
-            <li>Stay on track and keep moving forward</li>
-          </ul>
-          <div class="card-button">
-            <a href="/help-hub/guided-workshop" class="kbm-button kbm-button-outline">
-              Learn About the 3-Week Sprint
-            </a>
+        <div class="work-with-sue-grid__col col-md-4">
+          <div class="kbm-card work-with-sue-card work-card work-card--featured">
+            <CardRibbon label="Most Popular" className="kbm-card-ribbon--popular" />
+            <div class="work-card__icon" aria-hidden="true">
+              <i class="fas fa-lightbulb"></i>
+            </div>
+            <h2 class="work-card__title">Make This Pattern Work</h2>
+            <p>
+              Found a pattern you love but not sure how to use it on your machine? I’ll walk through
+              your exact pattern, show you how to approach it, and help you get started with
+              confidence.
+            </p>
+            <ul>
+              <li>Custom help for your specific pattern</li>
+              <li>Recorded walkthrough you can rewatch</li>
+              <li>Follow-up to make sure it all makes sense</li>
+            </ul>
+            <div class="card-button">
+              <a href="/contact" class="kbm-button">Get Help With Your Pattern</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="work-with-sue-grid__col col-md-4">
+          <div class="kbm-card work-with-sue-card work-card">
+            <img src="/images/help.svg" alt="" class="card-icon" width="60" height="60" />
+            <h2>Project Support Sprint</h2>
+            <p>
+              Need more than a quick answer? This option is for knitters who want ongoing support
+              while working through a project, solving a bigger issue, or building confidence over
+              time.
+            </p>
+            <ul>
+              <li>Support while you work through your project</li>
+              <li>Help with fit, shaping, or technique</li>
+              <li>Stay on track and keep moving forward</li>
+            </ul>
+            <div class="card-button">
+              <a href="/help-hub/guided-workshop" class="kbm-button kbm-button-outline">
+                Learn About the 3-Week Sprint
+              </a>
+            </div>
           </div>
         </div>
       </div>
 
-      <p class="work-with-sue-closing">
-        Not sure which option is the best fit? Start with the one that feels closest to the help
-        you need right now.
-      </p>
+      <div class="work-with-sue__below-text">
+        <p class="work-with-sue-closing">
+          Not sure which option is the best fit? Start with the one that feels closest to the help
+          you need right now.
+        </p>
+      </div>
     </div>
   </section>
 
   <style>
     .work-with-sue-inner {
-      max-width: 960px;
+      max-width: 1080px;
       margin: 0 auto;
     }
 
@@ -177,17 +207,60 @@ import Layout from "../../layouts/Layout.astro";
       font-size: var(--text-base);
     }
 
-    .work-with-sue-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-      margin-bottom: 1.75rem;
+    /* Three-up on desktop (~Bootstrap col-md-4); stack on small screens */
+    .work-cards {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .work-with-sue-grid__col {
+      flex: 1 1 100%;
+      min-width: 0;
+    }
+
+    .work-with-sue-grid__col .kbm-card {
+      height: 100%;
     }
 
     @media (min-width: 768px) {
-      .work-with-sue-grid {
-        grid-template-columns: 1fr 1fr;
+      .work-with-sue-grid__col.col-md-4 {
+        flex: 1 1 0;
       }
+    }
+
+    .work-card {
+      position: relative;
+    }
+
+    .work-card--featured {
+      border: 2px solid #52682d;
+      box-shadow: 0 10px 28px rgba(82, 104, 45, 0.12);
+    }
+
+    .work-with-sue-page .work-with-sue-card.kbm-card:hover {
+      transform: none;
+    }
+
+    .work-with-sue-page .work-card--featured:hover {
+      box-shadow: 0 14px 32px rgba(82, 104, 45, 0.18);
+    }
+
+    .work-card__icon {
+      text-align: center;
+      font-size: 2.25rem;
+      line-height: 1;
+      color: var(--kbm-green, #52682d);
+      margin: 0 auto 0.15rem auto;
+    }
+
+    .work-with-sue-page .kbm-card-ribbon--popular::after {
+      font-size: 0.56rem;
+      top: 26px;
+      left: 1px;
+      letter-spacing: 0.035em;
     }
 
     .work-with-sue-card {

@@ -17,81 +17,60 @@ const categoryValues = tools
 const categories = ["All", ...new Set(categoryValues)];
 
 ---
-
-<Layout title="Customize Your Knitting" bodyClass="page--tight-header">
+<Layout title="Charting Tools" bodyClass="page--tight-header">
 
 <section class="tools-page">
 
-  <h1>Customize Your Knitting</h1>
+  <h1>Charting Tools</h1>
 
   <p class="tools-intro">
     Adjust fit, add details, or change any pattern - without doing the math yourself.
   <div class="non-member-cta">
     <strong>Beta Note:</strong> We’re actively building and improving these tools. Some features may still be in progress. Thanks for being part of it!
     <p><strong>What do you want to customize?</strong></p>
-    <p class="small text-muted">
-      Choose what’s ready now, or explore all tools..
+  </div>
+
+  <div class="tools-filters">
+    <p class="tools-more-hint">
+      More tools are on the way — <button type="button" id="tools-view-all-hint" class="tools-more-hint__link">view all</button>
     </p>
-  </div>
-
-  <div class="tools-access-toolbar">
-    <div id="tool-access-filters" class="filter-pills tools-access-filters">
-      <button type="button" class="filter-pill active" data-filter="available">Available Now</button>
-      <button type="button" class="filter-pill" data-filter="all">All Tools</button>
-      <button type="button" class="filter-pill" data-filter="false">Free</button>
-      <button type="button" class="filter-pill" data-filter="true">Member</button>
+    <div class="tools-filter-row tools-access-toolbar">
+      <div id="tool-access-filters" class="filter-pills tools-access-filters">
+        <button type="button" class="filter-pill active" data-filter="available">Available Now</button>
+        <button type="button" class="filter-pill" data-filter="all">All Tools</button>
+        <button type="button" class="filter-pill" data-filter="false">Free</button>
+        <button type="button" class="filter-pill" data-filter="true">Member</button>
+      </div>
+      <div id="tools-search-panel" class="tools-search-panel">
+        <button
+          type="button"
+          id="tools-search-toggle"
+          class="filter-pill tools-search-toggle"
+          aria-label="Focus search"
+        >
+          <svg class="tools-search-toggle__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+        </button>
+        <input
+          type="search"
+          id="tools-search-input"
+          class="tools-search-input"
+          placeholder="Search tools…"
+          autocomplete="off"
+          enterkeyhint="search"
+          aria-label="Search tools"
+        />
+        <button type="button" id="tools-search-clear" class="filter-pill tools-search-clear" hidden>Clear</button>
+      </div>
     </div>
-    <div id="tools-search-panel" class="tools-search-panel">
-      <button
-        type="button"
-        id="tools-search-toggle"
-        class="filter-pill tools-search-toggle"
-        aria-label="Focus search"
-      >
-        <svg class="tools-search-toggle__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.3-4.3" />
-        </svg>
-      </button>
-      <input
-        type="search"
-        id="tools-search-input"
-        class="tools-search-input"
-        placeholder="Search tools…"
-        autocomplete="off"
-        enterkeyhint="search"
-        aria-label="Search tools"
-      />
-      <button type="button" id="tools-search-clear" class="filter-pill tools-search-clear" hidden>Clear</button>
-    </div>
-  </div>
 
-  <p id="tools-search-results-line" class="tools-search-results-line small text-muted" hidden>
-    Showing results for: <span id="tools-search-term-display" class="tools-search-term-display"></span>
-  </p>
+    <p id="tools-search-results-line" class="tools-search-results-line small text-muted" hidden>
+      Showing results for: <span id="tools-search-term-display" class="tools-search-term-display"></span>
+    </p>
 
-  <div id="tools-category-section" class="tools-category-section">
-    <button
-      type="button"
-      id="tools-category-toggle"
-      class="tools-category-toggle"
-      aria-expanded="false"
-      aria-controls="tools-category-collapsible"
-    >
-      <span class="tools-category-toggle__label">
-        Filter by Category<span
-          id="tools-category-toggle-indicator"
-          class="tools-category-toggle__indicator"
-          hidden
-          aria-hidden="true"
-        >•</span>
-      </span>
-      <svg class="tools-category-toggle__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="m6 9 6 6 6-6" />
-      </svg>
-    </button>
-
-    <div id="tools-category-collapsible" class="tools-category-collapsible" hidden>
+    <div id="tools-category-section" class="tools-category-section tools-filter-row">
       <div id="tool-category-filters" class="filter-pills tools-category-filter-pills">
         <button type="button" id="show-all-category-tools" class="filter-pill" hidden>
           Show All Tools
@@ -181,13 +160,14 @@ const categories = ["All", ...new Set(categoryValues)];
   const searchResultsLine = document.getElementById("tools-search-results-line");
   const searchTermDisplay = document.getElementById("tools-search-term-display");
   const toolsCategorySection = document.getElementById("tools-category-section");
-  const toolsCategoryToggle = document.getElementById("tools-category-toggle");
-  const toolsCategoryCollapsible = document.getElementById("tools-category-collapsible");
   const searchEmptyMsg = document.getElementById("tools-search-empty");
+  const viewAllHint = document.getElementById("tools-view-all-hint");
+  const allToolsAccessBtn = document.querySelector<HTMLButtonElement>(
+    '#tool-access-filters .filter-pill[data-filter="all"]'
+  );
 
   let activeAccessFilter = "available";
   let activeCategoryFilter = "all";
-  let categoryPanelExpanded = false;
 
   function getSearchQuery(): string {
     return (searchInput?.value ?? "").trim().toLowerCase();
@@ -207,20 +187,7 @@ const categories = ["All", ...new Set(categoryValues)];
 
     if (toolsCategorySection) toolsCategorySection.hidden = hasQuery;
 
-    if (!hasQuery && toolsCategoryCollapsible && toolsCategoryToggle) {
-      const forceOpen = activeCategoryFilter !== "all";
-      const showPills = forceOpen || categoryPanelExpanded;
-      toolsCategoryCollapsible.hidden = !showPills;
-      toolsCategoryToggle.setAttribute("aria-expanded", showPills ? "true" : "false");
-    }
-
     if (searchClearBtn) searchClearBtn.hidden = !hasQuery;
-  }
-
-  function syncCategoryToggleIndicator() {
-    const indicator = document.getElementById("tools-category-toggle-indicator");
-    if (!indicator) return;
-    indicator.hidden = activeCategoryFilter === "all";
   }
 
   function applyToolFilters() {
@@ -283,8 +250,6 @@ const categories = ["All", ...new Set(categoryValues)];
     if (searchEmptyMsg) {
       searchEmptyMsg.hidden = !(q.length > 0 && visibleCount === 0);
     }
-
-    syncCategoryToggleIndicator();
   }
 
   searchToggle?.addEventListener("click", () => {
@@ -318,10 +283,8 @@ const categories = ["All", ...new Set(categoryValues)];
     });
   });
 
-  toolsCategoryToggle?.addEventListener("click", () => {
-    if (activeCategoryFilter !== "all") return;
-    categoryPanelExpanded = !categoryPanelExpanded;
-    applyToolFilters();
+  viewAllHint?.addEventListener("click", () => {
+    allToolsAccessBtn?.click();
   });
 
   categoryButtons.forEach((button) => {
@@ -329,9 +292,6 @@ const categories = ["All", ...new Set(categoryValues)];
       categoryButtons.forEach((b) => b.classList.remove("active"));
       button.classList.add("active");
       activeCategoryFilter = button.dataset.categoryFilter || "all";
-      if (activeCategoryFilter === "all") {
-        categoryPanelExpanded = false;
-      }
       applyToolFilters();
     });
   });
@@ -345,7 +305,6 @@ const categories = ["All", ...new Set(categoryValues)];
       allPill.classList.add("active");
     }
     activeCategoryFilter = "all";
-    categoryPanelExpanded = false;
     applyToolFilters();
   });
 
@@ -360,9 +319,13 @@ const categories = ["All", ...new Set(categoryValues)];
   padding:12px 20px 40px;
 }
 
+.tools-page > h1 {
+  margin-bottom: 0.35rem;
+}
+
 .tools-intro{
   max-width:700px;
-  margin-bottom:30px;
+  margin-bottom: 0.85rem;
 }
 
 .tools-page .small.text-muted {
@@ -372,12 +335,60 @@ const categories = ["All", ...new Set(categoryValues)];
   line-height: 1.5;
 }
 
+.tools-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.tools-more-hint {
+  margin: 0;
+  padding: 0;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  font-weight: 400;
+  color: var(--text-muted, #6b7280);
+}
+
+.tools-more-hint__link {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  font-weight: 400;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tools-more-hint__link:hover {
+  color: var(--kbm-green, #52682d);
+}
+
+.tools-more-hint__link:focus-visible {
+  outline: 2px solid rgba(82, 104, 45, 0.25);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.tools-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
 .tools-access-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  margin-top: 16px;
+  gap: 8px;
+  margin-top: 0;
 }
 
 .tools-access-filters.filter-pills {
@@ -390,7 +401,7 @@ const categories = ["All", ...new Set(categoryValues)];
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex: 1 1 200px;
   min-width: min(100%, 12rem);
 }
@@ -450,7 +461,8 @@ const categories = ["All", ...new Set(categoryValues)];
 }
 
 .tools-search-results-line {
-  margin-top: 0.5rem;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .tools-search-term-display {
@@ -476,62 +488,20 @@ const categories = ["All", ...new Set(categoryValues)];
 
 #tool-access-filters.filter-pills {
   margin-top: 0;
+  gap: 6px;
 }
 
 .tools-category-section {
-  margin-top: 0.75rem;
-}
-
-.tools-category-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: none;
-  font-family: var(--font);
-  font-size: 0.875rem;
-  line-height: 1.4;
-  color: var(--text-muted, #6b7280);
-  cursor: pointer;
-  text-align: left;
-  transition: color 0.15s ease;
-}
-
-.tools-category-toggle:hover {
-  color: var(--kbm-green, #52682d);
-}
-
-.tools-category-toggle:focus-visible {
-  outline: 2px solid rgba(82, 104, 45, 0.25);
-  outline-offset: 3px;
-  border-radius: 4px;
-}
-
-.tools-category-toggle__chevron {
-  flex-shrink: 0;
-  transition: transform 0.15s ease;
-}
-
-.tools-category-toggle[aria-expanded="true"] .tools-category-toggle__chevron {
-  transform: rotate(180deg);
-}
-
-.tools-category-toggle__indicator {
-  margin-left: 0.2em;
-  color: var(--kbm-green, #52682d);
-  opacity: 0.65;
-  font-weight: 600;
-}
-
-.tools-category-collapsible {
-  margin-top: 0.65rem;
-}
-
-.tools-category-filter-pills.filter-pills {
   margin-top: 0;
-  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.tools-category-section .tools-category-filter-pills.filter-pills {
+  flex: 1 1 100%;
+  min-width: 0;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  gap: 6px;
 }
 
 .tool-category{

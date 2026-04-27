@@ -1,123 +1,32 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import ReferencePageShell from "../../components/ReferencePageShell.astro";
 
 const pageTitle = "Compare DesignaKnit Versions";
 const pageDescription =
-  "Compare DesignaKnit versions side by side to see which option fits your knitting needs.";
+  "Compare DesignaKnit versions to see which option fits your knitting needs.";
 
 const products = [
-  {
-    name: "Hand Knit",
-    price: "$199",
-    href: "https://buy.stripe.com/3cIcN49y69qz0mW8Km0oM0A",
-    recommended: false,
-    bestFor: "Best for hand knitters who want shaping and pattern design tools.",
-  },
-  {
-    name: "Machine Standard",
-    price: "$330",
-    href: "https://buy.stripe.com/4gMbJ0eSq32bb1AaSu0oM0z ",
-    recommended: false,
-    bestFor: "Best for machine knitters who want the core DesignaKnit tools.",
-  },
+  { name: "Hand Knit", price: "$199", badge: "", featured: false },
+  { name: "Machine Standard", price: "$330", badge: "", featured: false },
   {
     name: "Machine Pro",
     price: "$450",
-    href: "https://buy.stripe.com/fZu9ASaCadGPglU0dQ0oM0y", 
-    recommended: true,
-    bestFor: "Best for most machine knitters who want more advanced design options.",
+    badge: "Recommended",
+    featured: true,
   },
   {
     name: "Complete",
     price: "$500",
-    href: "https://buy.stripe.com/6oU14meSq9qz0mWgcO0oM0x ",
-
-    recommended: true,
-    bestFor: "Best for knitters who want the full DesignaKnit package.",
+    badge: "Recommended",
+    featured: false,
   },
 ];
-
-const rows = [
-  {
-    feature:
-      "Includes Standard Garment Styling, Stitch Designer, Interactive Knitting, and Graphics Studio",
-    values: ["yes", "yes", "yes", "yes"],
-  },
-  {
-    feature: "Includes Original Pattern Drafting",
-    values: [
-      "yes",
-      {
-        value: "no",
-        note: "Garments designed using Original Pattern Drafting in a different product level may be knitted, but not modified, using Machine Standard.",
-      },
-      "yes",
-      "yes",
-    ],
-  },
-  {
-    feature: "Can use optional cable links to knitting machines",
-    values: ["no", "yes", "yes", "yes"],
-  },
-  {
-    feature: "Can design and print hand knitting patterns",
-    values: [
-      "yes",
-      {
-        value: "no",
-        note: "Hand knit stitch patterns can be opened in Machine Standard or Machine Pro, but are treated as machine knit patterns.",
-      },
-      {
-        value: "no",
-        note: "Hand knit stitch patterns can be opened in Machine Standard or Machine Pro, but are treated as machine knit patterns.",
-      },
-      "yes",
-    ],
-  },
-  {
-    feature: "Can open hand knitting patterns as machine knitting patterns",
-    values: [
-      {
-        value: "no",
-        note: "Machine knit stitch patterns can be opened in Hand Knit, but are treated as hand knit patterns.",
-      },
-      "yes",
-      "yes",
-      "yes",
-    ],
-  },
-  {
-    feature:
-      "Can design machine knitting patterns and print KnitLeader, KnitRadar, color change, punch card, and mylar templates",
-    values: ["no", "yes", "yes", "yes"],
-  },
-  {
-    feature: "Can design using stitch cable crossings over 6 stitches wide",
-    values: ["yes", "no", "no", "yes"],
-  },
-  {
-    feature: "Can enter knitting instructions for custom stitch cables",
-    values: ["yes", "no", "no", "yes"],
-  },
-];
-
-function normalizeCell(cell: string | { value: string; note?: string }) {
-  if (typeof cell === "string") {
-    return { value: cell };
-  }
-  return cell;
-}
-
-function getFeaturesForProduct(productIndex: number) {
-  return rows
-    .filter((row) => normalizeCell(row.values[productIndex]).value === "yes")
-    .map((row) => row.feature);
-}
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
-  <section class="reference-page">
-    <div class="container">
+  <ReferencePageShell wide backHref="/reference" backLabel="Back to Reference">
+    <section class="reference-page">
       <nav class="dak-local-nav" aria-label="DesignaKnit navigation">
         <a href="/designaknit">DesignaKnit</a>
         <span class="dak-sep">|</span>
@@ -130,442 +39,158 @@ function getFeaturesForProduct(productIndex: number) {
       </header>
 
       <p class="kbm-intro-callout">
-        Not sure which DesignaKnit version is right for you? Use this chart to compare the
-        features side by side. Still deciding? Get clear answers in our <a href="/reference/dak-buyers-guide">DesignaKnit Buyers Guide</a>.
+        Not sure which DesignaKnit version is right for you? See the options below.
+        Still deciding? Get clear answers in our
+        <a href="/reference/dak-buyers-guide">DesignaKnit Buyers Guide</a>.
       </p>
 
-      <div class="cta-top">
-        <a
-          href="/reference/dak-buyers-guide"
-          class="kbm-btn kbm-btn-primary"
-                    >
-          Get Clear Answers Before You Buy
-        </a>
-        <div class="cta-helper">
-          <p>DesignaKnit is a digital product. Your license number and download link will be sent to you by email after purchase.</p>
-          <p>Sales on this site are available to customers in the U.S. and Canada. If you live elsewhere, please see the <a href="#">worldwide purchasing options</a>.</p>
-        </div>
-      </div>
+      <section class="dak-options-section">
+        <div class="container">
+          <div class="dak-includes-box">
+            <p><strong>All versions include:</strong></p>
+            <p>
+              Standard Garment Styling, Stitch Designer, Interactive Knitting, and
+              Graphics Studio.
+            </p>
+          </div>
 
-      <div class="compare-panels" aria-label="DesignaKnit version comparison for small screens">
-        {products.map((product, idx) => {
-          const features = getFeaturesForProduct(idx);
-          return (
-            <article class="compare-panel" data-product-index={idx}>
-              <div class="compare-panel__header">
-                <h2 class="compare-panel__title">
-                  DesignaKnit {product.name}
-                  {product.recommended && <span class="compare-panel__badge">Recommended</span>}
-                </h2>
-                <p class="compare-panel__price">{product.price}</p>
+          <div class="row">
+            {products.map((product) => (
+              <div class="col-12 col-md-6 col-lg-3 mb-4">
+                <div
+                  class:list={[
+                    "dak-option-card",
+                    product.featured && "is-featured",
+                  ]}
+                >
+                  {product.badge && (
+                    <div class="dak-option-badge">{product.badge}</div>
+                  )}
+
+                  <h3 class="dak-option-title">{product.name}</h3>
+                  <div class="dak-option-price">{product.price}</div>
+                </div>
               </div>
-              <p class="compare-panel__best-for">{product.bestFor}</p>
-              <ul class="compare-panel__features">
-                {features.map((f) => (
-                  <li>{f}</li>
-                ))}
-              </ul>
-              <p class="compare-panel__delivery">License and download link sent by email after purchase.</p>
-              <a
-                href={product.href || "#"}
-                class="compare-panel__cta"
-              >
-                Choose DesignaKnit {product.name}
-              </a>
-            </article>
-          );
-        })}
-      </div>
-
-      <div class="table-wrap">
-        <table class="dak-compare">
-          <thead>
-            <tr class="recommend-row">
-              <th></th>
-              <th></th>
-              <th></th>
-              <th colspan="2">
-                <span class="recommended-label">Recommended</span>
-              </th>
-            </tr>
-            <tr>
-              <th>Features</th>
-              {products.map((product) => (
-                <th>
-                  <a href={product.href}>
-                    <span class:list={{ recommended: product.recommended }}>
-                      {product.name}
-                    </span>
-                  </a>
-                  <br />
-                  <small><em>{product.price}</em></small>
-                </th>
-              ))}
-            </tr>
-          </thead>
-
-          <tbody>
-            {rows.map((row) => (
-              <tr>
-                <td class="feature">{row.feature}</td>
-                {row.values.map((cell) => {
-                  const item = normalizeCell(cell);
-                  return (
-                    <td>
-                      <div class="cell-mark" data-value={item.value}>
-                        {item.value === "yes" ? (
-                          <span class="yes" aria-label="Yes">✓</span>
-                        ) : (
-                          <span class="no" aria-label="No">✕</span>
-                        )}
-                      </div>
-
-                      {item.note && (
-                        <details class="cell-note">
-                          <summary>Why?</summary>
-                          <p>{item.note}</p>
-                        </details>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
             ))}
-          </tbody>
-        </table>
-      </div>
-
-      
-  <div class="kin-discussion" id="hyvor">
-    <p class="kbm-intro-callout">
-      <strong>Do you already use DesignaKnit? Your experience could make all the difference for someone considering it.</strong><br />
-      Share your tips or words of wisdom in <span class="yellow_highlight">the comments below</span> to help a fellow knitter feel more confident.
-    </p>
-    <h2 class="discussion-title">Join the Conversation</h2>
-    <script async src="https://talk.hyvor.com/embed/embed.js" type="module"></script>
-  
-    <hyvor-talk-comments
-      website-id="14706"
-      page-id="DesignaKnit"
-    ></hyvor-talk-comments>
-  </div>
-<!--
-      <div class="bonus-callout">
-        <p class="bonus-free">FREE!</p>
-        <p class="bonus-text">
-          Choose any
-          <a href="https://learndesignaknit.com/" target="_blank" rel="noopener">
-            <strong> LearnDesignaKnit </strong>
-          </a>
-          course with any DAK version purchased from Knit it Now.
-        </p>
-      </div>-->
-    </div>
-  </section>
+          </div>
+        </div>
+      </section>
+    </section>
+  </ReferencePageShell>
 </Layout>
 
-
 <style>
-main.kbm-reference-page {
-  padding-top: 0;
-}
-
-.page-nav {
-  margin-bottom: 0;
-}
-
-.kbm-intro-callout {
-  margin-top: 10px;
-}
-
-.kbm-reference-page {
-  margin-top: 0;
-}
-
-.kbm-intro-callout {
-  margin-top: 0;
-}
-
-.kbm-reference-page > :first-child {
-  margin-top: 0;
-}
-
-
-  .container {
-    width: min(1100px, 92%);
-    margin: 0 auto;
-  }
-
-  .page-header {
+  .reference-page .page-header {
     margin-bottom: 1.25rem;
   }
 
-  .page-header h1 {
+  .reference-page .page-header h1 {
     margin: 0;
   }
 
-  .intro {
-    font-size: 1.125rem;
-    line-height: 1.6;
-    color: #444;
-    margin: 0 0 1.5rem;
-  }
-
-  .intro-accent {
-    border-left: 5px solid #5e9ded;
-    background: #f5f5f5;
-    border-radius: 6px;
-    padding: 12px 16px 12px 20px;
-  }
-
-  .cta-top {
-    text-align: center;
-    margin: 1.5rem 0 2rem;
-  }
-
-  .cta-helper {
-    max-width: 36em;
-    margin: 1rem auto 0;
-    font-size: 0.875rem;
-    color: #6b6b6b;
-    line-height: 1.5;
-    text-align: center;
-  }
-
-  .cta-helper p {
-    margin: 0 0 0.5rem;
-  }
-
-  .cta-helper p:last-child {
-    margin-bottom: 0;
-  }
-
-  .cta-helper a {
-    color: var(--kbm-green, #52682d);
-    text-decoration: underline;
-  }
-
-  .cta-helper a:hover {
-    color: var(--kbm-green-hover, #445626);
-  }
-
-  .compare-panels {
-    display: none;
-    margin-bottom: 2rem;
-  }
-
-  .compare-panel {
-    background: #fff;
-    border: 1px solid #e8ebe4;
-    border-radius: 12px;
-    padding: 1.25rem 1.5rem;
+  .kbm-intro-callout {
+    margin-top: 0;
     margin-bottom: 1.25rem;
   }
 
-  .compare-panel:last-child {
-    margin-bottom: 0;
+  /* Bootstrap-compatible grid (self-contained; site does not load Bootstrap CSS) */
+  .dak-options-section .container {
+    width: min(var(--max-content-width, 1100px), 96%);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: calc(var(--bs-gutter-x, 1.5rem) * 0.5);
+    padding-right: calc(var(--bs-gutter-x, 1.5rem) * 0.5);
   }
 
-  .compare-panel__header {
+  .dak-options-section .row {
+    --bs-gutter-x: 1.5rem;
+    --bs-gutter-y: 0;
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.5rem 1rem;
-    margin-bottom: 0.75rem;
+    margin-top: calc(var(--bs-gutter-y) * -1);
+    margin-right: calc(var(--bs-gutter-x) * -0.5);
+    margin-left: calc(var(--bs-gutter-x) * -0.5);
   }
 
-  .compare-panel__title {
-    margin: 0;
-    font-size: 1.25rem;
-    color: var(--kbm-green, #52682d);
-    flex: 1 1 auto;
-  }
-
-  .compare-panel__badge {
-    display: inline-block;
-    background: #fff3a6;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 700;
-  }
-
-  .compare-panel__price {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #444;
-  }
-
-  .compare-panel__best-for {
-    margin: 0 0 0.75rem;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    color: #5a6b47;
-  }
-
-  .compare-panel__features {
-    margin: 0 0 1rem;
-    padding-left: 1.25rem;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: #444;
-  }
-
-  .compare-panel__features li {
-    margin-bottom: 0.35rem;
-  }
-
-  .compare-panel__delivery {
-    margin: 0 0 1rem;
-    font-size: 0.8rem;
-    color: #6b6b6b;
-  }
-
-  .compare-panel__cta {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    background: var(--kbm-green, #52682d);
-    color: #fff;
-    font-weight: 600;
-    font-size: 0.95rem;
-    border-radius: 8px;
-    text-decoration: none;
-    transition: background 0.2s ease;
-  }
-
-  .compare-panel__cta:hover {
-    background: var(--kbm-green-hover, #445626);
-  }
-
-  .table-wrap {
-    overflow-x: auto;
-    margin: 0 auto 2rem;
-  }
-
-  .dak-compare {
+  .dak-options-section .row > * {
+    flex-shrink: 0;
     width: 100%;
-    min-width: 860px;
-    border-collapse: collapse;
-    table-layout: fixed;
-    background: #fff;
+    max-width: 100%;
+    padding-right: calc(var(--bs-gutter-x) * 0.5);
+    padding-left: calc(var(--bs-gutter-x) * 0.5);
+    margin-top: var(--bs-gutter-y);
   }
 
-  .dak-compare th,
-  .dak-compare td {
-    border: 1px solid #ddd;
-    padding: 0.9rem;
-    text-align: center;
-    vertical-align: middle;
+  .dak-options-section .col-12 {
+    flex: 0 0 auto;
+    width: 100%;
   }
 
-  .dak-compare th:first-child,
-  .dak-compare td.feature {
-    text-align: left;
+  @media (min-width: 768px) {
+    .dak-options-section .col-md-6 {
+      flex: 0 0 auto;
+      width: 50%;
+    }
   }
 
-  .dak-compare thead th {
-    background: #fafafa;
+  @media (min-width: 992px) {
+    .dak-options-section .col-lg-3 {
+      flex: 0 0 auto;
+      width: 25%;
+    }
   }
 
-  .recommend-row th {
-    background: #fff;
-    border-bottom: 0;
+  .dak-options-section .mb-4 {
+    margin-bottom: 1.5rem !important;
   }
 
-  .recommended-label {
-    display: inline-block;
-    background: #fff3a6;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    font-weight: 700;
+  .dak-options-section {
+    padding: 2rem 0;
   }
 
-  .recommended {
-    background: linear-gradient(transparent 60%, #fff3a6 60%);
-    font-weight: 700;
-  }
-
-  .feature {
-    font-weight: 600;
-  }
-
-  .cell-mark {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 2rem;
-    font-size: 1.6rem;
-    line-height: 1;
-  }
-
-  .yes {
-    color: #96be11;
-    font-weight: 700;
-  }
-
-  .no {
-    color: #cc3333;
-    font-weight: 700;
-  }
-
-  .cell-note {
-    margin-top: 0.45rem;
-    text-align: left;
-    font-size: 0.92rem;
-  }
-
-  .cell-note summary {
-    cursor: pointer;
-    color: #52682d;
-    font-weight: 600;
-  }
-
-  .cell-note p {
-    margin: 0.5rem 0 0;
-    color: #555;
-    line-height: 1.45;
-  }
-
-  .bonus-callout {
-    text-align: center;
+  .dak-includes-box {
+    margin-bottom: 2rem;
+    padding: 1rem 1.25rem;
     background: #f5f5f5;
-    border-radius: 10px;
-    padding: 1.5rem 1rem;
+    border-radius: 12px;
   }
 
-  .bonus-free {
-    font-size: 2rem;
-    font-weight: 800;
-    margin: 0 0 0.5rem;
-    color: #d49a00;
+  .dak-option-card {
+    position: relative;
+    height: 100%;
+    padding: 1.5rem;
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    border-radius: 16px;
+    text-align: center;
   }
 
-  .bonus-text {
-    font-size: 1.125rem;
+  .dak-option-card.is-featured {
+    border: 2px solid #0166b4;
+  }
+
+  .dak-option-badge {
+    display: inline-block;
+    margin-bottom: 0.75rem;
+    padding: 0.3rem 0.7rem;
+    background: #efe08a;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-radius: 8px;
+  }
+
+  .dak-option-title {
     margin: 0;
-    line-height: 1.6;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2f4122;
   }
 
-  .bonus-text a {
-    color: inherit;
-  }
-
-  @media (max-width: 768px) {
-    .reference-page {
-      padding-top: 1.5rem;
-    }
-
-    .intro {
-      font-size: 1rem;
-    }
-
-    .compare-panels {
-      display: block;
-    }
-
-    .table-wrap {
-      display: none;
-    }
+  .dak-option-price {
+    margin-top: 0.4rem;
+    font-size: 1.1rem;
+    font-style: italic;
+    font-weight: 700;
+    color: #2f4122;
   }
 </style>

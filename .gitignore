@@ -42,3 +42,6 @@ src/data/*.csv
 
 # Backup files
 *.backup
+#course images
+public/images/courses/
+

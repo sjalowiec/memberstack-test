@@ -1,0 +1,303 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export const prerender = false;
+
+type PreviewEntry = Record<string, unknown>;
+
+function asTrimmedString(v: unknown): string {
+  return typeof v === "string" ? v.trim() : "";
+}
+
+function asStringList(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .filter((item): item is string => typeof item === "string" && item.trim() !== "")
+    .map((s) => s.trim());
+}
+
+const rawParam = Astro.url.searchParams.get("data");
+
+let entry: PreviewEntry | null = null;
+let decodeFailed = true;
+
+if (rawParam !== null && rawParam !== "") {
+  try {
+    const decoded = decodeURIComponent(rawParam);
+    const jsonText = atob(decoded);
+    const parsed: unknown = JSON.parse(jsonText);
+    if (parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)) {
+      entry = parsed as PreviewEntry;
+      decodeFailed = false;
+    }
+  } catch {
+    decodeFailed = true;
+    entry = null;
+  }
+}
+
+const question = entry ? asTrimmedString(entry.question) : "";
+const successPath = entry ? asTrimmedString(entry.successPathLevel) : "";
+const intro = entry ? asTrimmedString(entry.intro) : "";
+const atAGlance = entry ? asStringList(entry.atAGlance) : [];
+const mediaType = entry ? asTrimmedString(entry.mediaType) : "";
+const mediaUrl = entry ? asTrimmedString(entry.mediaUrl) : "";
+const showMediaPlaceholder = Boolean(mediaType || mediaUrl);
+const solutionText = entry ? asTrimmedString(entry.solutionText) : "";
+const specificMention = entry ? asTrimmedString(entry.specificMention) : "";
+const resources = entry ? asStringList(entry.resources) : [];
+
+const pageTitle = decodeFailed
+  ? "Help Hub preview | Knit it Now"
+  : question
+    ? `${question.slice(0, 52)}${question.length > 52 ? "…" : ""} (preview) | Knit it Now`
+    : "Help Hub preview | Knit it Now";
+---
+
+<BaseLayout
+  title={pageTitle}
+  description="Draft preview of a Help Hub entry."
+  skipGlobalHyvor={true}
+  bodyClass="help-hub-preview-body"
+>
+  <main class="hh-preview">
+    {
+      decodeFailed ? (
+        <p class="hh-preview__error">Preview data could not be loaded.</p>
+      ) : (
+        <>
+          <p class="hh-preview__banner">Preview — not saved</p>
+
+          {question ? <h1 class="hh-preview__title">{question}</h1> : <h1 class="hh-preview__title">Help Hub entry</h1>}
+
+          {successPath ? (
+            <p class="hh-preview__meta">
+              <strong>Success path:</strong> {successPath}
+            </p>
+          ) : null}
+
+          {intro ? (
+            <section class="hh-preview__block" aria-labelledby="hh-preview-intro">
+              <h2 id="hh-preview-intro" class="hh-preview__h2">
+                Intro
+              </h2>
+              <p class="hh-preview__text">{intro}</p>
+            </section>
+          ) : null}
+
+          {atAGlance.length > 0 ? (
+            <section class="hh-preview__block" aria-labelledby="hh-preview-glance">
+              <h2 id="hh-preview-glance" class="hh-preview__h2">
+                At-a-glance
+              </h2>
+              <ul class="hh-preview__list">
+                {atAGlance.map((line) => (
+                  <li>{line}</li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
+          {showMediaPlaceholder ? (
+            <section class="hh-preview__block hh-preview__media" aria-labelledby="hh-preview-media">
+              <h2 id="hh-preview-media" class="hh-preview__h2">
+                Media (preview)
+              </h2>
+              <p class="hh-preview__media-line">
+                <strong>Type:</strong> {mediaType || "—"}
+              </p>
+              <p class="hh-preview__media-line">
+                <strong>URL / ID:</strong> {mediaUrl || "—"}
+              </p>
+            </section>
+          ) : null}
+
+          {solutionText ? (
+            <section class="hh-preview__block" aria-labelledby="hh-preview-solution">
+              <h2 id="hh-preview-solution" class="hh-preview__h2">
+                Solution
+              </h2>
+              <p class="hh-preview__text">{solutionText}</p>
+            </section>
+          ) : null}
+
+          {specificMention ? (
+            <section class="hh-preview__block hh-preview__warn" aria-labelledby="hh-preview-specific">
+              <h2 id="hh-preview-specific" class="hh-preview__h2">
+                Specific mention
+              </h2>
+              <p class="hh-preview__text">{specificMention}</p>
+            </section>
+          ) : null}
+
+          {resources.length > 0 ? (
+            <section class="hh-preview__block" aria-labelledby="hh-preview-resources">
+              <h2 id="hh-preview-resources" class="hh-preview__h2">
+                Resources
+              </h2>
+              <ul class="hh-preview__list">
+                {resources.map((r) => (
+                  <li>{r}</li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
+          <section class="hh-preview__cta hh-preview__cta--public" aria-labelledby="hh-preview-cta-public">
+            <h2 id="hh-preview-cta-public" class="hh-preview__h2">
+              Not a member yet?
+            </h2>
+            <p class="hh-preview__text">
+              Unlock full lessons, patterns, and personalized help with a Knit it Now membership.
+            </p>
+            <p class="hh-preview__cta-actions">
+              <a class="hh-preview__link" href="/join">
+                View membership
+              </a>
+            </p>
+          </section>
+
+          <section class="hh-preview__cta hh-preview__cta--member" aria-labelledby="hh-preview-cta-member">
+            <h2 id="hh-preview-cta-member" class="hh-preview__h2">
+              Thank you, members
+            </h2>
+            <p class="hh-preview__text">
+              Thanks for being part of Knit it Now — your support helps us keep the Help Hub and lessons
+              growing.
+            </p>
+          </section>
+        </>
+      )
+    }
+  </main>
+
+  <style>
+    :global(body.help-hub-preview-body) {
+      margin: 0;
+    }
+
+    .hh-preview {
+      max-width: 44rem;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+      box-sizing: border-box;
+    }
+
+    .hh-preview__error {
+      margin: 2rem 0;
+      font-size: 1.05rem;
+      color: #64748b;
+    }
+
+    .hh-preview__banner {
+      margin: 0 0 1rem;
+      padding: 0.4rem 0.65rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #92400e;
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-radius: 6px;
+    }
+
+    .hh-preview__title {
+      margin: 0 0 0.75rem;
+      font-size: clamp(1.35rem, 3vw, 1.75rem);
+      line-height: 1.2;
+      color: #3f4b35;
+    }
+
+    .hh-preview__meta {
+      margin: 0 0 1.25rem;
+      font-size: 0.95rem;
+      color: #475569;
+    }
+
+    .hh-preview__block {
+      margin-bottom: 1.35rem;
+      padding: 1rem 1.1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .hh-preview__media {
+      background: #f8fafc;
+    }
+
+    .hh-preview__media-line {
+      margin: 0.35rem 0 0;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      color: #334155;
+      word-break: break-word;
+    }
+
+    .hh-preview__media-line:first-of-type {
+      margin-top: 0;
+    }
+
+    .hh-preview__warn {
+      border-color: #fecaca;
+      background: #fff7f7;
+    }
+
+    .hh-preview__h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #52682d;
+    }
+
+    .hh-preview__text {
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #1e293b;
+      white-space: pre-wrap;
+    }
+
+    .hh-preview__list {
+      margin: 0;
+      padding-left: 1.2rem;
+      font-size: 0.95rem;
+      line-height: 1.55;
+      color: #1e293b;
+    }
+
+    .hh-preview__list li {
+      margin-bottom: 0.35rem;
+    }
+
+    .hh-preview__cta {
+      margin-bottom: 1.25rem;
+      padding: 1rem 1.1rem;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .hh-preview__cta--public {
+      background: #faf9f7;
+    }
+
+    .hh-preview__cta--member {
+      background: #f3f6ef;
+      border-color: rgba(82, 104, 45, 0.25);
+    }
+
+    .hh-preview__cta-actions {
+      margin: 0.75rem 0 0;
+    }
+
+    .hh-preview__link {
+      font-weight: 600;
+      color: #c2614e;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .hh-preview__link:hover {
+      color: #a94e3d;
+    }
+  </style>
+</BaseLayout>

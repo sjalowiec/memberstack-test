@@ -132,5 +132,92 @@
     "supportImageAlt": "",
     "templateLink": "",
     "templateLinkText": ""
+  },
+  {
+    "id": 5001,
+    "slug": "colorwork-first-steps",
+    "title": "Your Next Steps with Color",
+"summary": "Now that you can change colors, here’s how to start using that skill in your knitting.",    "type": "video",
+    "access": "member",
+    "encouragement": "",
+    "exerciseTitle": "",
+    "exerciseItems": [],
+    "noteTitle": "",
+    "noteText": "",
+    "supportImage": "",
+    "supportImageAlt": "",
+    "templateLink": "",
+    "templateLinkText": "",
+     "videos": ["yipes-stripes", "single-row-stripes-with-free-pass", "yarn-tails"]
+  },
+  {
+    "id": 5002,
+    "title": "Tuck on the LK150",
+    "slug": "tuck-on-the-lk150",
+    "status": "published",
+    "intro": "this is the intro",
+    "content": "this is the main content",
+    "mediaType": "vimeo",
+    "mediaUrl": "551704494",
+    "thumbnailAlt": "thumbnail",
+    "blocks": [
+      {
+        "type": "vimeo",
+        "title": "About Tuck",
+        "vimeoId": "1186687117"
+      },
+      {
+        "type": "vimeo",
+        "title": "Cheat Sheets for Selecting Needles",
+        "vimeoId": "294441633"
+      },
+      {
+        "type": "text",
+        "content": "Make selecting needles easier: Download printable <a href=\"/pdfs/lk150-cheat-sheet.pdf\" download>Cheat Sheets</a>"
+      },
+      {
+        "type": "text",
+        "content": "<h3>Printable Technique Reference Cards</h3>Print the cards. Use the filled example or create your own as you try different stitch pattern techniques.<br>\n\n Download printable <a href=\"/pdfs/tuck_cards.pdf\" download>Technique Card<br><center>\n<img class=\"img-responsive\" src=\"/images/help-hub/tuck_card_example.jpg\"></center></a>"
+      },
+      {
+        "type": "vimeo",
+        "title": "",
+        "vimeoId": "551704494"
+      }
+    ]
+  },
+  {
+    "title": "Slip on the LK150",
+    "slug": "end-needle-slip-lk150",
+    "id": 5003,
+    "status": "published",
+    "intro": "Understanding needle position and Side Lever Setting for slip success",
+    "mediaType": "vimeo",
+    "mediaUrl": "1186765975",
+    "thumbnailAlt": "End needle section with Slip on the LK150",
+    "blocks": [
+      {
+        "type": "text",
+        "content": "Watch those end needles to prevent holes"
+      },
+      {
+        "type": "vimeo",
+        "title": "End needle selection",
+        "vimeoId": "1186765975"
+      },
+      {
+        "type": "vimeo",
+        "title": "About Slip Stitch",
+        "vimeoId": "1186893199"
+      },
+      {
+        "type": "text",
+        "content": "Make selecting needles easier: Download printable <a href=\"/pdfs/lk150-cheat-sheet.pdf\" download>Cheat Sheets</a>"
+      },
+      {
+        "type": "text",
+        "content": "<h3>Printable Technique Reference Cards</h3>Print the cards. Use the filled example or create your own as you try different stitch pattern techniques.<br>\n\n Download printable <a href=\"/pdfs/slip_cards.pdf\" download>Technique Card<br><center>\n<img class=\"img-responsive\" src=\"/images/help-hub/slip_card_example.jpg\"></center></a>"
+      }
+    ]
   }
 ]

@@ -1,0 +1,57 @@
+/**
+ * Scoped variants for pattern wizard tabs (hat-style: desktop labels, mobile emoji icons).
+ * Apply `.pattern-tabs-scope` on the same element as `.pattern-tabs` or an ancestor of the tab UI.
+ */
+
+.pattern-tabs-scope .pattern-tab-nav .tab-icon {
+  display: none;
+}
+
+/* Pattern tab locked (optional; hat / DIY blanket) */
+.pattern-tabs-scope .pattern-tab-nav .tab-btn.is-disabled {
+  color: #9ca3af;
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.pattern-tabs-scope .pattern-tab-nav .tab-btn.is-disabled:hover,
+.pattern-tabs-scope .pattern-tab-nav .tab-btn.is-disabled:focus-visible {
+  color: #9ca3af;
+  border-bottom-color: transparent;
+  opacity: 0.55;
+}
+
+.pattern-tabs-scope .pattern-tab-nav .tab-btn.is-disabled.active {
+  color: #9ca3af;
+  border-bottom-color: transparent;
+}
+
+@media (max-width: 767px) {
+  .pattern-tabs-scope .pattern-tab-nav .tab-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+
+  .pattern-tabs-scope .pattern-tab-nav .tab-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .pattern-tabs-scope .pattern-tab-nav .tab-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+}

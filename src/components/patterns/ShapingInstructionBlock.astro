@@ -1,0 +1,89 @@
+---
+import Tooltip from "../Tooltip.astro";
+import "../../styles/patterns/shaping-instruction-block.css";
+
+interface Props {
+  action: "increase" | "decrease";
+  stitches: number;
+  rows: number;
+  times: number;
+  side: string;
+  label?: string;
+  className?: string;
+  compact?: boolean;
+}
+
+const {
+  action,
+  stitches,
+  rows,
+  times,
+  side,
+  label = "Shaping Instructions",
+  className = "",
+  compact = false,
+} = Astro.props as Props;
+
+function formatEdgeClause(sideInput: string): string {
+  let raw = sideInput.trim();
+  if (raw.toLowerCase().startsWith("the ")) {
+    raw = raw.slice(4).trim();
+  }
+  const lower = raw.toLowerCase();
+  if (lower === "each edge" || lower === "both edges") {
+    return "on each edge";
+  }
+  return `on the ${raw}`;
+}
+
+const edgeClause = formatEdgeClause(side);
+const stitchWord = stitches === 1 ? "stitch" : "stitches";
+const rowClause = rows === 1 ? "every row" : `every ${rows} rows`;
+const timeWord = times === 1 ? "time" : "times";
+
+const verb = action === "increase" ? "Increase" : "Decrease";
+
+const instructionSentence = `${verb} ${stitches} ${stitchWord} ${edgeClause} ${rowClause}, ${times} ${timeWord}`;
+
+const actionVerbLower = action === "increase" ? "increase" : "decrease";
+
+const tooltipText = [
+  "Shaping format (stitches, rows, times).",
+  `Example: (${stitches}, ${rows}, ${times}) = ${actionVerbLower} ${stitches} ${stitchWord} ${rowClause}, ${times} ${timeWord}.`,
+].join(" ");
+
+const notation = `(${stitches}, ${rows}, ${times})`;
+
+const rootClass = [
+  "shaping-instruction-block",
+  compact ? "shaping-instruction-block--compact" : "",
+  className,
+]
+  .filter(Boolean)
+  .join(" ");
+---
+
+<div class={rootClass}>
+  {label && label.trim().length > 0 && (
+    <div class="shaping-instruction-block__label">{label}</div>
+  )}
+  <p class="shaping-instruction-block__sentence">{instructionSentence}</p>
+  <p class="shaping-instruction-block__notation-row">
+    <code class="shaping-instruction-block__notation">{notation}</code>
+    <Tooltip text={tooltipText} position="top">
+      <span
+        class="shaping-instruction-block__help"
+        tabindex="0"
+        aria-label="About shaping notation"
+      >
+        <svg class="shaping-instruction-block__help-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path
+            fill-rule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 7zm0 8a1 1 0 100-2 1 1 0 000 2z"
+            clip-rule="evenodd"
+          />
+        </svg>
+      </span>
+    </Tooltip>
+  </p>
+</div>

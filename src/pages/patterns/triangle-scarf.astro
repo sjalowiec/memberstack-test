@@ -1,0 +1,993 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import UnitToggle from "../../components/wizards/UnitToggle.astro";
+import FloatingInput from "../../components/tools/FloatingInput.astro";
+import YarnRequirement from "../../components/tools/YarnRequirement.astro";
+import PrintFooter from "../../components/common/PrintFooter.astro";
+import PatternTabs from "../../components/patterns/PatternTabs.astro";
+import PatternComments from "../../components/patterns/PatternComments.astro";
+import PinterestEmbed from "../../components/PinterestEmbed.astro";
+import "../../styles/wizard.css";
+
+import {
+  calculateTriangleScarf,
+  buildTriangleScarfPatternHtml,
+  parseTriangleScarfSearchParams,
+} from "../../lib/patterns/triangleScarfMath";
+
+const pageUrl = Astro.url.href;
+const inspirationBoardUrl =
+  "https://www.pinterest.com/knititnow/machine-knit-asymmetric-scarf-inspiration/";
+const parsed = parseTriangleScarfSearchParams(Astro.url.searchParams);
+const initialComputed = parsed ? calculateTriangleScarf(parsed) : null;
+const initialPatternHtml =
+  initialComputed?.ok === true ? buildTriangleScarfPatternHtml(initialComputed) : "";
+const initialError =
+  parsed && initialComputed && initialComputed.ok === false ? initialComputed.message : "";
+
+const defW = parsed?.width ?? 36;
+const defL = parsed?.length ?? 18;
+const defSg = parsed?.stitchGauge ?? "";
+const defRg = parsed?.rowGauge ?? "";
+const defN = parsed?.needles ?? 200;
+const defaultUnit = parsed?.unit === "cm" ? "cm" : "in";
+
+const toolHref = "/tools/triangle-v2";
+---
+
+<Layout
+  title="Weekend Triangle Scarf | Knit it Now"
+  description="Adaptive triangle scarf pattern: enter gauge and size, then follow Wide → Point or Point → Wide → Point instructions with shaping notation."
+  toolPrintTitle="Triangle Scarf Pattern"
+>
+  <main class="wizard-page ts-pattern-page">
+    <div style="max-width: 1100px; margin: 0 auto; padding: 0 1rem;">
+      <WizardBackLink className="back-link no-print" fallback="/patterns" />
+    </div>
+
+    <section class="ts-hero no-print" aria-labelledby="triangle-scarf-hero-heading">
+      <div class="ts-hero-grid">
+        <div class="ts-hero-copy">
+          <p class="ts-kicker">Pattern</p>
+          <h1 id="triangle-scarf-hero-heading" class="ts-headline">
+            Weekend Triangle Scarf
+          </h1>
+          <p class="ts-sub">
+            One KIN Smart Pattern: enter your finished size and gauge, and it builds the right shaping for you.          </p>
+          <p class="ts-hero-note">
+            Perfer to design it yourself? Use the <a href={toolHref}>Triangle Calculator</a> to plan your shaping instructions.
+          </p>
+        </div>
+        <figure class="ts-hero-visual">
+          <img
+            src="/images/triangle-scarf.png"
+            alt="Triangle scarf wrapped at the neck"
+            width="800"
+            height="600"
+            decoding="async"
+            loading="lazy"
+          />
+        </figure>
+      </div>
+    </section>
+
+    <div class="ts-pattern-shell">
+      <div id="triangle-scarf-builder-top" class="wizard-container scroll-mt-[96px]">
+        <div class="calculator-card ts-builder-inputs">
+          <PatternTabs rootClass="pattern-tabs-scope">
+            <div slot="build" class="ts-tab-slot-build">
+              <h2 class="ts-pattern-panel-title">Your measurements</h2>
+              <div class="section-header-with-toggle ts-unit-row">
+                <span class="ts-unit-label">Units</span>
+                <UnitToggle />
+              </div>
+
+              <form id="ts-pattern-form" class="ts-pattern-form">
+                <div class="ts-size-presets no-print">
+                  <span class="ts-presets-label">Quick sizes</span>
+
+                  <button type="button" class="ts-preset-btn" data-w="24" data-l="12">Small 24×12</button>
+                  <button type="button" class="ts-preset-btn" data-w="36" data-l="18">Medium 36×18</button>
+                  <button type="button" class="ts-preset-btn" data-w="45" data-l="20">Large 45×20</button>
+                </div>
+
+                <div class="triangle-input-grid ts-pattern-grid">
+                  <div class="triangle-input-row triangle-input-row--dimensions">
+                    <div class="triangle-field">
+                      <FloatingInput
+                        id="tsFinishedWidth"
+                        name="finishedWidth"
+                        label={`Finished width (${defaultUnit === "cm" ? "cm" : "in"})`}
+                        labelId="tsFinishedWidthLabel"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        inputmode="decimal"
+                        value={defW}
+                        dataAttrs={{ "data-ts": "dim" }}
+                      />
+                    </div>
+                    <div class="triangle-field">
+                      <FloatingInput
+                        id="tsFinishedLength"
+                        name="finishedLength"
+                        label={`Finished length / depth (${defaultUnit === "cm" ? "cm" : "in"})`}
+                        labelId="tsFinishedLengthLabel"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        inputmode="decimal"
+                        value={defL}
+                        dataAttrs={{ "data-ts": "dim" }}
+                      />
+                    </div>
+                  </div>
+                  <div class="triangle-input-row triangle-input-row--gauge">
+                    <label class="triangle-field">
+                      <span>Gauge stitches</span>
+                      <input
+                        type="number"
+                        id="tsStitchGauge"
+                        name="stitchesInMeasure"
+                        min={0}
+                        step={0.01}
+                        value={defSg === "" ? "" : defSg}
+                      />
+                    </label>
+                    <label class="triangle-field">
+                      <span>Gauge rows</span>
+                      <input
+                        type="number"
+                        id="tsRowGauge"
+                        name="rowsInMeasure"
+                        min={0}
+                        step={0.01}
+                        value={defRg === "" ? "" : defRg}
+                      />
+                    </label>
+                    <label class="triangle-field triangle-field--needles">
+                      <span>Available needles</span>
+                      <input type="number" name="availableNeedles" min={50} max={400} step={1} id="tsAvailableNeedles" value={defN} />
+                      <div class="needle-validation-error" id="ts-needle-validation-error" hidden>
+                        Enter the number of needles on your machine (50–400).
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="triangle-actions">
+                  <button type="button" id="tsCalculateBtn" class="wizard-button">
+                    Generate pattern instructions
+                  </button>
+                  <button type="button" id="tsStartOverBtn" class="ts-start-over-btn">
+                    Start Over
+                  </button>
+                </div>
+
+                <p id="ts-pattern-error" class="ts-pattern-error" role="alert" hidden={!initialError}>
+                  {initialError}
+                </p>
+              </form>
+
+              <section class="ts-yarn-section no-print" aria-labelledby="ts-yarn-heading">
+                <h3 id="ts-yarn-heading" class="ts-yarn-heading">Yarn estimate</h3>
+                <p class="ts-yarn-lede">
+                  Rectangle area (finished width × finished length) with a 10% buffer — same approach as our other pattern estimators.
+                </p>
+                <YarnRequirement
+                  projectWidth={defW}
+                  projectLength={defL}
+                  lengthUnit={defaultUnit === "cm" ? "cm" : "in"}
+                  source="custom"
+                  layout="accordion"
+                />
+              </section>
+            </div>
+
+            <div slot="pattern" class="ts-tab-slot-pattern">
+              <div
+                id="ts-pattern-tab-empty"
+                class="ts-pattern-tab-empty"
+                hidden={Boolean(initialPatternHtml)}
+              >
+                <p>
+                  Enter your measurements in the <strong>Build</strong> tab, then tap <strong>Generate pattern instructions</strong>.
+                </p>
+              </div>
+
+              <div
+                id="ts-pattern-results-wrap"
+                class:list={["ts-pattern-results-wrap", !initialPatternHtml && "ts-pattern-results-wrap--empty"]}
+                hidden={!initialPatternHtml}
+              >
+                <div class="triangle-instructions ts-pattern-results-card">
+                  <div class="triangle-instructions-header">
+                    <h3 class="triangle-instructions-title">Pattern instructions</h3>
+                    <button
+                      type="button"
+                      class="triangle-print-btn no-print"
+                      id="tsPatternPrintBtn"
+                      title="Print pattern"
+                      aria-label="Print pattern"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                    </button>
+                  </div>
+                  <div class="ts-pattern-results-inner" id="ts-pattern-results" set:html={initialPatternHtml} />
+                </div>
+              </div>
+            </div>
+
+            <div slot="share" class="ts-tab-slot-share">
+              <p>Ask questions or share how your scarf turned out.</p>
+              <PatternComments title="Ask or Share" />
+            </div>
+
+            <div slot="inspiration" class="ts-tab-slot-inspiration">
+              <div class="inspiration-section">
+                <h3 class="inspiration-heading">Get Inspired</h3>
+                <div class="pinterest-embed">
+                  <PinterestEmbed pinterestUrl={inspirationBoardUrl} />
+                </div>
+                <p class="ts-pinterest-fallback-link">
+                  <a href={inspirationBoardUrl} target="_blank" rel="noopener noreferrer">
+                    Open the Machine Knit Asymmetric Scarf / Shawl board on Pinterest
+                  </a>
+                </p>
+              </div>
+            </div>
+          </PatternTabs>
+        </div>
+      </div>
+    </div>
+
+    <PrintFooter url={pageUrl} />
+  </main>
+
+  <style>
+    .ts-pattern-page {
+      background: #fff;
+    }
+
+    .ts-hero {
+      padding: 0 1rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .ts-hero-grid {
+      display: grid;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    @media (min-width: 768px) {
+      .ts-hero-grid {
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+        gap: 2.5rem;
+      }
+    }
+
+    .ts-hero-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-width: 38rem;
+    }
+
+    .ts-kicker {
+      margin: 0;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--kbm-green);
+    }
+
+    .ts-headline {
+      margin: 0;
+      color: #111827;
+      font-size: clamp(1.75rem, 4.5vw, 2.25rem);
+      font-weight: 800;
+      line-height: 1.15;
+    }
+
+    .ts-sub {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 600;
+      line-height: 1.45;
+      color: #374151;
+    }
+
+    .ts-hero-note {
+      margin: 0;
+      font-size: 0.9375rem;
+      line-height: 1.55;
+      color: #6b7280;
+    }
+
+    .ts-hero-visual {
+      margin: 0;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #eef0ea;
+      line-height: 0;
+      box-shadow: 0 8px 28px rgba(17, 24, 39, 0.08);
+    }
+
+    .ts-hero-visual img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: min(52vh, 420px);
+      object-fit: cover;
+    }
+
+    .ts-pattern-shell {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 1rem 3rem;
+    }
+
+    .ts-pattern-panel-title {
+      margin: 0 0 1rem;
+      font-size: 1.35rem;
+      color: var(--kbm-green);
+      font-weight: 800;
+    }
+
+    .ts-unit-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .ts-unit-label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #374151;
+    }
+
+    .ts-size-presets {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .ts-presets-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #6b7280;
+      width: 100%;
+    }
+
+    @media (min-width: 480px) {
+      .ts-presets-label {
+        width: auto;
+        margin-right: 0.25rem;
+      }
+    }
+
+    .ts-preset-btn {
+      padding: 0.35rem 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #f9fafb;
+      color: #374151;
+      cursor: pointer;
+    }
+
+    .ts-preset-btn:hover {
+      border-color: var(--kbm-green);
+      color: var(--kbm-green);
+    }
+
+    .triangle-input-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 8px;
+    }
+
+    .triangle-input-row {
+      display: grid;
+      gap: 20px;
+    }
+
+    .triangle-input-row--dimensions {
+      grid-template-columns: repeat(2, 1fr);
+      align-items: end;
+    }
+
+    .triangle-input-row--gauge {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(168px, 1fr);
+      align-items: end;
+    }
+
+    @media (max-width: 640px) {
+      .triangle-input-row--dimensions,
+      .triangle-input-row--gauge {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .triangle-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    label.triangle-field span {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    label.triangle-field input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    .needle-validation-error {
+      margin-top: 6px;
+      color: #b94a48;
+      font-size: 14px;
+    }
+
+    .triangle-actions {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px 1.25rem;
+    }
+
+    .ts-start-over-btn {
+      padding: 0.35rem 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #6b7280;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .ts-start-over-btn:hover {
+      color: var(--kbm-green);
+    }
+
+    .ts-preset-btn.active {
+      border-color: var(--kbm-green);
+      background: rgba(82, 104, 45, 0.12);
+      color: var(--kbm-green);
+    }
+
+    .ts-pattern-error {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      background: #fff4f4;
+      border-left: 4px solid #b94a48;
+      border-radius: 6px;
+      color: #374151;
+      font-size: 0.95rem;
+    }
+
+    .ts-pattern-tab-empty {
+      padding: 0.25rem 0 1rem;
+      color: #6b7280;
+      font-size: 0.98rem;
+      line-height: 1.55;
+    }
+
+    .ts-pattern-tab-empty p {
+      margin: 0;
+    }
+
+    .ts-tab-slot-pattern .ts-pattern-results-wrap {
+      margin-top: 0;
+    }
+
+    .ts-pattern-results-wrap {
+      margin-top: 1.75rem;
+    }
+
+    .ts-pattern-results-card {
+      background: #ffffff;
+      border: 1px solid #e2e2e2;
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .triangle-instructions-header {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+    }
+
+    .triangle-instructions-title {
+      margin: 0;
+      font-size: 1.25rem;
+      flex: 1;
+    }
+
+    .triangle-print-btn {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: #52682d;
+      cursor: pointer;
+    }
+
+    .triangle-print-btn:hover {
+      background: rgba(82, 104, 45, 0.1);
+    }
+
+    .ts-pattern-results-inner :global(.ts-pattern-summary) {
+      margin-bottom: 1.25rem;
+      padding: 1rem 1.25rem;
+      background: #f8faf6;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .ts-pattern-results-inner :global(.ts-pattern-summary__title) {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--kbm-green);
+    }
+
+    .ts-pattern-results-inner :global(.ts-pattern-summary__list) {
+      margin: 0;
+      padding-left: 1.25rem;
+      line-height: 1.5;
+      color: #374151;
+    }
+
+    .ts-pattern-results-inner :global(.ts-instructions-block) {
+      border-left: 4px solid #52682d;
+      padding-left: 16px;
+      margin-bottom: 1rem;
+    }
+
+    .ts-pattern-results-inner :global(.ts-big-picture p),
+    .ts-pattern-results-inner :global(.ts-pattern-steps p) {
+      margin: 0 0 0.5rem;
+      line-height: 1.55;
+      color: #374151;
+    }
+
+    .ts-pattern-results-inner :global(.ts-cast-note) {
+      font-size: 0.9rem;
+      color: #555;
+      font-style: italic;
+    }
+
+    .ts-pattern-results-inner :global(.ts-leftover-line) {
+      margin: 0.75rem 0 0;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .ts-notation-key {
+      margin-top: 1.5rem;
+      padding: 1rem 1.25rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #fafafa;
+    }
+
+    .ts-notation-key summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--kbm-green);
+    }
+
+    .ts-notation-key-lede {
+      margin: 0.75rem 0;
+      font-size: 0.95rem;
+      color: #4b5563;
+    }
+
+    .ts-yarn-section {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .ts-yarn-heading {
+      margin: 0 0 0.5rem;
+      font-size: 1.15rem;
+      color: #111827;
+    }
+
+    .ts-yarn-lede {
+      margin: 0 0 1rem;
+      font-size: 0.95rem;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    .inspiration-section {
+      margin-top: 8px;
+    }
+
+    .inspiration-heading {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .pinterest-embed {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    @media (max-width: 768px) {
+      .pinterest-embed :global(.pinterest-embed-container a) {
+        transform: scale(0.9);
+        transform-origin: top center;
+      }
+    }
+
+    .ts-pinterest-fallback-link {
+      margin: 12px 0 0;
+      font-size: 0.95rem;
+    }
+
+    .ts-pinterest-fallback-link a {
+      color: var(--kbm-green);
+    }
+
+    .ts-tab-slot-share :global(.pattern-comments) {
+      margin-top: 1rem;
+      padding-top: 0;
+      border-top: none;
+    }
+
+    @media (max-width: 767px) {
+      :global(main.site-content):has(#triangle-scarf-builder-top),
+      :global(.pattern-page):has(#triangle-scarf-builder-top),
+      :global(.pattern-layout):has(#triangle-scarf-builder-top),
+      .wizard-page,
+      #triangle-scarf-builder-top.wizard-container,
+      .ts-builder-inputs,
+      .ts-builder-inputs .pattern-tabs,
+      .ts-builder-inputs .pattern-tab-content,
+      .ts-builder-inputs .tab-panel#tab-build,
+      .ts-builder-inputs #ts-pattern-form {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+      }
+
+      :global(main.site-content):has(#triangle-scarf-builder-top),
+      :global(.pattern-page):has(#triangle-scarf-builder-top),
+      :global(.pattern-layout):has(#triangle-scarf-builder-top),
+      .wizard-page,
+      .ts-builder-inputs .pattern-tabs,
+      .ts-builder-inputs .pattern-tab-content,
+      .ts-builder-inputs .tab-panel#tab-build {
+        overflow-x: visible;
+      }
+    }
+
+    @media print {
+      .no-print,
+      .back-link,
+      .ts-hero,
+      .ts-pattern-page .pattern-tab-nav,
+      .ts-pattern-page .pattern-tabs .tab-panel#tab-build,
+      .ts-pattern-page .pattern-tabs .tab-panel#tab-share,
+      .ts-pattern-page .pattern-tabs .tab-panel#tab-inspiration,
+      .ts-pattern-form,
+      .ts-notation-key,
+      .ts-yarn-section,
+      .section-header-with-toggle {
+        display: none !important;
+      }
+
+      .ts-pattern-page .pattern-tabs .tab-panel#tab-pattern {
+        display: block !important;
+      }
+
+      .ts-pattern-tab-empty {
+        display: none !important;
+      }
+
+      .ts-pattern-results-wrap {
+        display: block !important;
+      }
+
+      .triangle-instructions {
+        border: none !important;
+        padding: 0 !important;
+      }
+    }
+  </style>
+
+  <script>
+    import {
+      calculateTriangleScarf,
+      buildTriangleScarfPatternHtml,
+    } from "../../lib/patterns/triangleScarfMath.ts";
+    import { initPatternTabs } from "../../lib/patterns/patternTabsClient.ts";
+
+    const tabsControl = initPatternTabs(document.querySelector(".ts-pattern-shell"));
+
+    const form = document.getElementById("ts-pattern-form");
+    const btn = document.getElementById("tsCalculateBtn");
+    const startOverBtn = document.getElementById("tsStartOverBtn");
+    const errEl = document.getElementById("ts-pattern-error");
+    const emptyStateEl = document.getElementById("ts-pattern-tab-empty");
+    const resultsWrap = document.getElementById("ts-pattern-results-wrap");
+    const resultsEl = document.getElementById("ts-pattern-results");
+    const needleErr = document.getElementById("ts-needle-validation-error");
+    const needlesInput = document.getElementById("tsAvailableNeedles") as HTMLInputElement | null;
+    const wLabel = document.getElementById("tsFinishedWidthLabel");
+    const lLabel = document.getElementById("tsFinishedLengthLabel");
+    const wInput = document.getElementById("tsFinishedWidth") as HTMLInputElement | null;
+    const lInput = document.getElementById("tsFinishedLength") as HTMLInputElement | null;
+    const sgInput = document.getElementById("tsStitchGauge") as HTMLInputElement | null;
+    const rgInput = document.getElementById("tsRowGauge") as HTMLInputElement | null;
+
+    function getUnit(): "in" | "cm" {
+      return localStorage.getItem("kbm-units") === "cm" ? "cm" : "in";
+    }
+
+    function updateDimLabels() {
+      const u = getUnit() === "cm" ? "cm" : "in";
+      if (wLabel) wLabel.textContent = `Finished width (${u})`;
+      if (lLabel) lLabel.textContent = `Finished length / depth (${u})`;
+      const ph = u === "cm" ? "cm" : "in";
+      if (wInput) wInput.placeholder = ph;
+      if (lInput) lInput.placeholder = ph;
+    }
+
+    function updateGaugePlaceholders() {
+      if (!sgInput || !rgInput) return;
+      if (getUnit() === "cm") {
+        sgInput.placeholder = "in 10 cm";
+        rgInput.placeholder = "in 10 cm";
+      } else {
+        sgInput.placeholder = "in 4 inches";
+        rgInput.placeholder = "in 4 inches";
+      }
+    }
+
+    function hideError() {
+      if (errEl) errEl.hidden = true;
+    }
+
+    function showError(msg: string) {
+      if (errEl) {
+        errEl.textContent = msg;
+        errEl.hidden = false;
+      }
+    }
+
+    function syncUrl(params: URLSearchParams) {
+      const next = `${window.location.pathname}?${params.toString()}`;
+      window.history.replaceState({}, "", next);
+    }
+
+    function clearPatternUrlParams() {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+
+    const TRIANGLE_URL_KEYS = ["w", "l", "sg", "rg", "n", "u"];
+
+    function urlHasTriangleParams(): boolean {
+      const sp = new URLSearchParams(window.location.search);
+      return TRIANGLE_URL_KEYS.some((k) => sp.has(k));
+    }
+
+    function builderHasUserFacingState(): boolean {
+      const dimFilled =
+        Boolean(wInput?.value?.trim()) ||
+        Boolean(lInput?.value?.trim()) ||
+        Boolean(sgInput?.value?.trim()) ||
+        Boolean(rgInput?.value?.trim()) ||
+        Boolean(needlesInput?.value?.trim());
+      const patternVisible = resultsWrap && !resultsWrap.hidden && Boolean(resultsEl?.innerHTML?.trim());
+      const presetChosen = Boolean(document.querySelector(".ts-preset-btn.active"));
+      return dimFilled || patternVisible || presetChosen || urlHasTriangleParams();
+    }
+
+    function resetUnitToggleToDefault() {
+      (document.getElementById("unit-btn-inches") as HTMLButtonElement | null)?.click();
+    }
+
+    function clearPresetSelection() {
+      document.querySelectorAll(".ts-preset-btn").forEach((b) => b.classList.remove("active"));
+    }
+
+    function performStartOver() {
+      if (builderHasUserFacingState()) {
+        const ok = window.confirm(
+          "Discard your measurements and pattern instructions and start over?"
+        );
+        if (!ok) return;
+      }
+
+      if (wInput) wInput.value = "";
+      if (lInput) lInput.value = "";
+      if (sgInput) sgInput.value = "";
+      if (rgInput) rgInput.value = "";
+      if (needlesInput) needlesInput.value = "";
+
+      [wInput, lInput, sgInput, rgInput, needlesInput].forEach((el) => {
+        el?.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+
+      clearPresetSelection();
+      resetUnitToggleToDefault();
+
+      hideError();
+      if (needleErr) needleErr.hidden = true;
+
+      if (resultsEl) resultsEl.innerHTML = "";
+      if (resultsWrap) {
+        resultsWrap.hidden = true;
+        resultsWrap.classList.add("ts-pattern-results-wrap--empty");
+      }
+      if (emptyStateEl) emptyStateEl.hidden = false;
+
+      tabsControl?.activateTab("build");
+
+      clearPatternUrlParams();
+
+      updateDimLabels();
+      updateGaugePlaceholders();
+
+      const u = getUnit();
+      window.dispatchEvent(
+        new CustomEvent("kbm:yarnDimensions", {
+          detail: {
+            projectWidth: 0,
+            projectLength: 0,
+            lengthUnit: u,
+            source: "custom",
+          },
+        })
+      );
+    }
+
+    function runCalculate() {
+      hideError();
+      if (!resultsEl || !resultsWrap) return;
+
+      const unit = getUnit();
+      const width = parseFloat(wInput?.value ?? "");
+      const length = parseFloat(lInput?.value ?? "");
+      const stitchGauge = parseFloat(sgInput?.value ?? "");
+      const rowGauge = parseFloat(rgInput?.value ?? "");
+      const needles = parseInt(needlesInput?.value ?? "", 10);
+
+      if (needleErr && needlesInput) {
+        if (!Number.isFinite(needles) || needles < 50 || needles > 400) {
+          needleErr.hidden = false;
+          showError("Enter available needles (50–400), matching your machine bed.");
+          return;
+        }
+        needleErr.hidden = true;
+      }
+
+      const result = calculateTriangleScarf({
+        width,
+        length,
+        stitchGauge,
+        rowGauge,
+        needles,
+        unit,
+      });
+
+      if (!result.ok) {
+        showError(result.message);
+        resultsWrap.hidden = true;
+        return;
+      }
+
+      resultsEl.innerHTML = buildTriangleScarfPatternHtml(result);
+      resultsWrap.hidden = false;
+      resultsWrap.classList.remove("ts-pattern-results-wrap--empty");
+      if (emptyStateEl) emptyStateEl.hidden = true;
+
+      tabsControl?.activateTab("pattern");
+
+      const sp = new URLSearchParams();
+      sp.set("w", String(width));
+      sp.set("l", String(length));
+      sp.set("sg", String(stitchGauge));
+      sp.set("rg", String(rowGauge));
+      sp.set("n", String(needles));
+      sp.set("u", unit);
+      syncUrl(sp);
+
+      window.dispatchEvent(
+        new CustomEvent("kbm:yarnDimensions", {
+          detail: {
+            projectWidth: width,
+            projectLength: length,
+            lengthUnit: unit,
+            source: "custom",
+          },
+        })
+      );
+    }
+
+    btn?.addEventListener("click", runCalculate);
+    startOverBtn?.addEventListener("click", performStartOver);
+
+    document.querySelectorAll(".ts-preset-btn").forEach((b) => {
+      b.addEventListener("click", () => {
+        document.querySelectorAll(".ts-preset-btn").forEach((x) => x.classList.remove("active"));
+        b.classList.add("active");
+        const w = (b as HTMLElement).dataset.w;
+        const l = (b as HTMLElement).dataset.l;
+        if (wInput && w) wInput.value = w;
+        if (lInput && l) lInput.value = l;
+        wInput?.dispatchEvent(new Event("input", { bubbles: true }));
+        lInput?.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+    });
+
+    needlesInput?.addEventListener("input", () => {
+      const n = parseInt(needlesInput.value, 10);
+      if (needleErr && !Number.isNaN(n) && n >= 50 && n <= 400) needleErr.hidden = true;
+    });
+
+    window.addEventListener("kbm:units-change", () => {
+      updateDimLabels();
+      updateGaugePlaceholders();
+    });
+
+    updateDimLabels();
+    updateGaugePlaceholders();
+
+    document.getElementById("tsPatternPrintBtn")?.addEventListener("click", () => window.print());
+
+    if (resultsWrap && !resultsWrap.hidden && resultsEl?.innerHTML?.trim()) {
+      tabsControl?.activateTab("pattern");
+      const w = parseFloat(wInput?.value ?? "");
+      const l = parseFloat(lInput?.value ?? "");
+      if (Number.isFinite(w) && Number.isFinite(l)) {
+        window.dispatchEvent(
+          new CustomEvent("kbm:yarnDimensions", {
+            detail: {
+              projectWidth: w,
+              projectLength: l,
+              lengthUnit: getUnit(),
+              source: "custom",
+            },
+          })
+        );
+      }
+    }
+  </script>
+</Layout>

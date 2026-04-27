@@ -42,6 +42,7 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
       </div>
 
       <div class="magic-formula-panel">
+        <div class="kbm-tool-calculator-area">
         <form id="wizard-form" class="magic-formula-form">
           <p class="input-mode-label">How do you want to calculate your shaping?</p>
           <div class="input-mode-toggle" role="group" aria-label="Input mode">
@@ -103,10 +104,12 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
             <button type="submit" class="wizard-button" id="calculateBtn">Calculate Shaping</button>
           </div>
         </form>
+        </div>
 
-        <div id="results" class="results no-print" hidden>
-          <h2 class="results-title">Your Shaping Instructions</h2>
-          <div id="resultsContent" class="results-content print-only-show"></div>
+        <div id="results" class="results magic-formula-results" hidden>
+          <h2 class="results-title mf-screen-results">Your Shaping Instructions</h2>
+          <div id="mf-print-sheet" class="mf-print-sheet" aria-hidden="true"></div>
+          <div id="resultsContent" class="results-content mf-screen-results"></div>
         </div>
       </div>
     </div>
@@ -164,6 +167,10 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
     .note-box { margin-top: 1rem; padding: 1rem; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; font-size: 0.9rem; }
     .note-box.info { background: #e8f4fd; border-left-color: #0d6efd; }
     .note-box.error { background: #f8d7da; border-left-color: #dc3545; }
+    /* Printable worksheet (hidden on screen; populated by script from calculated values) */
+    .mf-print-sheet {
+      display: none;
+    }
     /* Simple vs Smoother shaping (mirror Triangle Tool) */
     :global(.distributed-option-row) { display: flex; align-items: center; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
     :global(.distributed-toggle-link) { padding: 0; border: 0; background: none; color: #52682D; font-size: 14px; font-weight: 600; text-decoration: underline; cursor: pointer; }
@@ -180,8 +187,106 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
     :global(.distributed-instructions-intro) { margin: 0 0 12px 0; font-size: 14px; color: #555; line-height: 1.5; }
     @media print {
       .no-print { display: none !important; }
-      .results { border: none !important; background: white !important; }
-      .print-only-show { display: block !important; }
+      /* Page is result-only: hide hero, inputs, interactive results chrome */
+      .wizard-hero,
+      .mf-screen-results {
+        display: none !important;
+      }
+      .magic-formula-panel {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: #ffffff !important;
+      }
+      .magic-formula-results {
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      .mf-print-sheet {
+        display: block !important;
+        visibility: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 11pt !important;
+        line-height: 1.45 !important;
+        color: #000000 !important;
+        background: #ffffff !important;
+      }
+      .mf-print-title {
+        font-size: 14pt !important;
+        font-weight: 700 !important;
+        margin: 0 0 10pt 0 !important;
+        color: #000000 !important;
+      }
+      .mf-print-meta-grid {
+        display: grid !important;
+        grid-template-columns: 140px 1fr !important;
+        gap: 4pt 12pt !important;
+        margin: 0 0 10pt 0 !important;
+      }
+      .mf-print-meta-grid dt {
+        margin: 0 !important;
+        font-weight: 600 !important;
+        color: #000000 !important;
+      }
+      .mf-print-meta-grid dd {
+        margin: 0 !important;
+        color: #000000 !important;
+      }
+      .mf-print-section-title {
+        font-size: 11pt !important;
+        font-weight: 700 !important;
+        margin: 10pt 0 6pt 0 !important;
+        border-bottom: 1px solid #000000 !important;
+        padding-bottom: 2pt !important;
+        color: #000000 !important;
+      }
+      .mf-print-summary-text {
+        margin: 0 0 8pt 0 !important;
+        color: #000000 !important;
+      }
+      .mf-print-sheet :global(p),
+      .mf-print-sheet :global(strong) {
+        color: #000000 !important;
+      }
+      .mf-print-instruction-wrap :global(p) {
+        margin: 0 0 6pt 0 !important;
+      }
+      .mf-print-top-cluster {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+      }
+      .mf-breakdown-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin: 8pt 0 0 0 !important;
+        font-size: 10pt !important;
+        color: #000000 !important;
+      }
+      .mf-breakdown-table th,
+      .mf-breakdown-table td {
+        border: 1px solid #000000 !important;
+        padding: 4pt 6pt !important;
+        text-align: left !important;
+        vertical-align: top !important;
+        color: #000000 !important;
+        background: #ffffff !important;
+      }
+      .mf-breakdown-table thead th {
+        font-weight: 700 !important;
+      }
+      .mf-print-note {
+        margin: 8pt 0 0 0 !important;
+        padding: 6pt 8pt !important;
+        border: 1px solid #000000 !important;
+        font-size: 10pt !important;
+        color: #000000 !important;
+      }
+      .results { border: none !important; background: #ffffff !important; }
     }
   </style>
 
@@ -196,6 +301,7 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
       const shapeBothSides = document.getElementById('shapeBothSides');
       const resultsEl = document.getElementById('results');
       const resultsContent = document.getElementById('resultsContent');
+      const printSheetEl = document.getElementById('mf-print-sheet');
       const validationSummary = document.getElementById('validationSummary');
       const calculateBtn = document.getElementById('calculateBtn');
       const actionBar = document.getElementById('action-bar');
@@ -530,6 +636,154 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
         return `<p class="results-rows-list"><strong>${action} 1 stitch ${edge} on the following rows:</strong><br>${rowsText}</p>`;
       }
 
+      function escapeHtml(str) {
+        if (str == null) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function fmtMeas(n) {
+        if (n == null || Number.isNaN(Number(n))) return '—';
+        const x = Number(n);
+        return x.toFixed(2).replace(/\.?0+$/, '') || '—';
+      }
+
+      /** Labels use the same basis as calculation (per 4 in or per 10 cm). */
+      function gaugeDisplayForPrint(rawInput) {
+        const basis = rawInput.units === 'cm' ? '10 cm' : '4 in';
+        if (rawInput.inputMode === 'stitches') {
+          const sg = rawInput.stitchGauge;
+          const rg = rawInput.rowGauge;
+          if (sg && rg && sg > 0 && rg > 0) {
+            return { stitch: `${sg} sts / ${basis}`, row: `${rg} rows / ${basis}` };
+          }
+          return { stitch: 'Not entered', row: 'Not entered' };
+        }
+        return {
+          stitch: `${rawInput.stitchGauge} sts / ${basis}`,
+          row: `${rawInput.rowGauge} rows / ${basis}`
+        };
+      }
+
+      function buildBreakdownTableHtml(breakdown) {
+        if (!breakdown || breakdown.length === 0) {
+          return '<p class="mf-print-summary-text">—</p>';
+        }
+        const rows = breakdown.map((b) =>
+          `<tr><td>${b.rowNumber}</td><td>${escapeHtml(b.action)}</td><td>${escapeHtml(b.location)}</td><td>${b.stitchesAfter}</td></tr>`
+        ).join('');
+        return `<table class="mf-breakdown-table"><thead><tr><th>Row</th><th>Action</th><th>Location</th><th>Stitches after</th></tr></thead><tbody>${rows}</tbody></table>`;
+      }
+
+      function summaryLineHtml(result) {
+        const action = result.direction === 'increase' ? 'Increase' : 'Decrease';
+        const sideText = result.shapingSides === 'both-sides' ? 'both sides' : 'one side';
+        return `<strong>${action}</strong> on ${sideText}. <strong>${result.startingStitches} sts → ${result.endingStitches} sts</strong> over <strong>${result.totalRows}</strong> rows.`;
+      }
+
+      function buildPrintSheetHtml(rawInput, result) {
+        const g = gaugeDisplayForPrint(rawInput);
+        const modeLabel = rawInput.inputMode === 'stitches' ? 'Stitches & rows' : 'Measurements';
+        const sideLabel =
+          rawInput.shapingSides === 'both-sides' ? 'Both sides (symmetrical)' : 'One side';
+
+        let dl = `
+        <dt>Calculation mode</dt><dd>${escapeHtml(modeLabel)}</dd>
+        <dt>Shaping location</dt><dd>${escapeHtml(sideLabel)}</dd>
+        <dt>Stitch gauge</dt><dd>${escapeHtml(g.stitch)}</dd>
+        <dt>Row gauge</dt><dd>${escapeHtml(g.row)}</dd>`;
+
+        if (rawInput.inputMode === 'measurements') {
+          const u = rawInput.units === 'cm' ? 'cm' : 'in';
+          dl += `
+        <dt>Starting width</dt><dd>${escapeHtml(fmtMeas(rawInput.startingWidth))} ${u}</dd>
+        <dt>Ending width</dt><dd>${escapeHtml(fmtMeas(rawInput.endingWidth))} ${u}</dd>
+        <dt>Shaping length</dt><dd>${escapeHtml(fmtMeas(rawInput.shapingLength))} ${u}</dd>`;
+        }
+
+        const shapingRows = buildShapingRows(result);
+        const instructHtml = buildKnitterInstructionHtml(result, shapingRows);
+
+        let notesHtml = '';
+        if (result.steepWarning) {
+          notesHtml +=
+            `<div class="mf-print-note"><strong>Note:</strong> More shaping events than rows in a standard distribution. The instructions below are a best-effort fit.</div>`;
+        }
+        if (result.hasRemainderStitch) {
+          notesHtml +=
+            `<div class="mf-print-note"><strong>Note:</strong> Stitch change is not perfectly symmetrical across both sides; distribute the symmetrical portion and handle 1 stitch separately.</div>`;
+        }
+        if (result.approximateLength != null) {
+          const uApprox = rawInput.units === 'cm' ? 'cm' : 'in';
+          const strApprox =
+            uApprox === 'cm'
+              ? `${Math.round(result.approximateLength)} cm`
+              : `${result.approximateLength.toFixed(1)} in`;
+          notesHtml += `<p class="mf-print-summary-text">Approximate section length: <strong>${escapeHtml(strApprox)}</strong></p>`;
+        }
+
+        let parts = '';
+        parts += `<div class="mf-print-top-cluster">`;
+        parts += `<h3 class="mf-print-title">Magic Formula – Shaping Instructions</h3>`;
+        parts += `<dl class="mf-print-meta-grid">${dl}</dl>`;
+
+        parts += `<div class="mf-print-section-title">Converted stitch & row counts</div>`;
+        parts +=
+          `<p class="mf-print-summary-text"><strong>Starting stitches:</strong> ${result.startingStitches}` +
+          ` &nbsp;|&nbsp; <strong>Ending stitches:</strong> ${result.endingStitches}` +
+          ` &nbsp;|&nbsp; <strong>Total rows:</strong> ${result.totalRows}</p>`;
+
+        parts += `<div class="mf-print-section-title">Summary</div>`;
+        parts += `<p class="mf-print-summary-text">${summaryLineHtml(result)}</p>`;
+
+        parts += notesHtml;
+
+        parts += `<div class="mf-print-section-title">Main shaping instruction</div>`;
+        parts += `<div class="mf-print-instruction-wrap">${instructHtml}</div>`;
+        parts += `</div>`;
+
+        parts += `<div class="mf-print-section-title">Row-by-row details</div>`;
+        parts +=
+          `<p class="mf-print-summary-text" style="font-size:10pt;margin-top:0">Stitch counts are totals after each shaping action.</p>`;
+        parts += buildBreakdownTableHtml(result.breakdown);
+
+        return parts;
+      }
+
+      function buildPrintSheetNoShaping(rawInput, result) {
+        const g = gaugeDisplayForPrint(rawInput);
+        const modeLabel = rawInput.inputMode === 'stitches' ? 'Stitches & rows' : 'Measurements';
+        const sideLabel =
+          rawInput.shapingSides === 'both-sides' ? 'Both sides (symmetrical)' : 'One side';
+
+        let dl = `
+        <dt>Calculation mode</dt><dd>${escapeHtml(modeLabel)}</dd>
+        <dt>Shaping location</dt><dd>${escapeHtml(sideLabel)}</dd>
+        <dt>Stitch gauge</dt><dd>${escapeHtml(g.stitch)}</dd>
+        <dt>Row gauge</dt><dd>${escapeHtml(g.row)}</dd>`;
+
+        if (rawInput.inputMode === 'measurements') {
+          const u = rawInput.units === 'cm' ? 'cm' : 'in';
+          dl += `
+        <dt>Starting width</dt><dd>${escapeHtml(fmtMeas(rawInput.startingWidth))} ${u}</dd>
+        <dt>Ending width</dt><dd>${escapeHtml(fmtMeas(rawInput.endingWidth))} ${u}</dd>
+        <dt>Shaping length</dt><dd>${escapeHtml(fmtMeas(rawInput.shapingLength))} ${u}</dd>`;
+        }
+
+        let body = '';
+        body += `<div class="mf-print-top-cluster">`;
+        body += `<h3 class="mf-print-title">Magic Formula – Shaping Instructions</h3>`;
+        body += `<dl class="mf-print-meta-grid">${dl}</dl>`;
+        body += `<div class="mf-print-section-title">Result</div>`;
+        body +=
+          `<p class="mf-print-summary-text"><strong>No shaping needed.</strong> Starting and ending stitch counts are the same (${result.startingStitches} stitches). Knit ${result.totalRows} rows with no increases or decreases.</p>`;
+        body += `</div>`;
+        return body;
+      }
+
       function runCalculation() {
         validationSummary.hidden = true;
         validationSummary.textContent = '';
@@ -545,6 +799,7 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
             document.getElementById('gaugePartialError').hidden = false;
             validationSummary.textContent = 'If you enter one gauge value, enter both.';
             validationSummary.hidden = false;
+            if (printSheetEl) printSheetEl.innerHTML = '';
             return;
           }
         }
@@ -554,6 +809,7 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
         if (!validation.isValid) {
           validationSummary.textContent = validation.errors.join(' ');
           validationSummary.hidden = false;
+          if (printSheetEl) printSheetEl.innerHTML = '';
           return;
         }
 
@@ -561,6 +817,7 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
 
         if (result.noShaping) {
           resultsContent.innerHTML = `<p><strong>No shaping is needed for this section.</strong></p><p>Starting and ending stitch counts are the same (${result.startingStitches} stitches). Knit ${result.totalRows} rows with no increases or decreases.</p>`;
+          if (printSheetEl) printSheetEl.innerHTML = buildPrintSheetNoShaping(rawInput, result);
           resultsEl.hidden = false;
           showToolActionBar();
           resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -618,6 +875,8 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
           </div>`;
 
         resultsContent.innerHTML = html;
+
+        if (printSheetEl) printSheetEl.innerHTML = buildPrintSheetHtml(rawInput, result);
 
         const distributedToggle = document.getElementById('distributed-toggle');
         const distributedSection = document.getElementById('distributed-instructions');

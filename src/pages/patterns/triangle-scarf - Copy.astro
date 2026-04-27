@@ -1,0 +1,357 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import "../../styles/wizard.css";
+
+const toolHref = "/tools/triangle-v2";
+---
+
+<Layout
+  title="Weekend Triangle Scarf | Knit it Now"
+  description="Beta weekend project: one skein, two days, and the Triangle Tool — no pattern required."
+>
+
+<style>
+  .ts-wrap {
+    background: #fff;
+  }
+
+  .ts-hero {
+    padding: 0 1rem 2.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .ts-hero-grid {
+    display: grid;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  @media (min-width: 768px) {
+    .ts-hero-grid {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      gap: 2.5rem;
+    }
+  }
+
+  .ts-hero-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 38rem;
+  }
+
+  .ts-kicker {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--kbm-green);
+  }
+
+  .ts-headline {
+    margin: 0;
+    color: #111827;
+    font-size: clamp(1.75rem, 4.5vw, 2.5rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .ts-sub {
+    margin: 0;
+    font-size: clamp(1.05rem, 2.2vw, 1.2rem);
+    font-weight: 600;
+    line-height: 1.45;
+    color: #374151;
+  }
+
+  .ts-hero-cta {
+    margin-top: 0.25rem;
+  }
+
+  .ts-hero-cta .kbm-btn-accent {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3rem;
+    padding-left: 1.75rem;
+    padding-right: 1.75rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.06);
+  }
+
+  .ts-hero-note {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: #6b7280;
+    max-width: 34rem;
+  }
+
+  .ts-hero-visual {
+    margin: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #eef0ea;
+    line-height: 0;
+    box-shadow: 0 8px 28px rgba(17, 24, 39, 0.08);
+  }
+
+  .ts-hero-visual img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: min(52vh, 420px);
+    object-fit: cover;
+    object-position: center;
+    position: relative;
+    z-index: 0;
+  }
+
+  /* Wrapper so a left-edge fade sits above the photo (not behind it). */
+  .image-fade {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: inherit;
+  }
+
+  .image-fade img {
+    position: relative;
+    z-index: 0;
+  }
+
+  .ts-how {
+    padding: 2.75rem 1rem 3rem;
+    background: #f3f4f6;
+    border-top: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .ts-how-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .ts-how-heading {
+    margin: 0 0 0.5rem;
+    color: var(--kbm-green);
+    font-size: clamp(1.35rem, 3vw, 1.65rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .ts-how-lede {
+    margin: 0 0 2rem;
+    font-size: 1.05rem;
+    line-height: 1.55;
+    color: #4b5563;
+    max-width: 42rem;
+  }
+
+  .ts-steps {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .ts-steps {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+  }
+
+  .ts-step {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 1.35rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .ts-step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    margin-bottom: 0.85rem;
+    border-radius: 999px;
+    background: var(--kbm-green);
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 800;
+  }
+
+  .ts-step h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #111827;
+    line-height: 1.3;
+  }
+
+  .ts-step p {
+    margin: 0;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: #4b5563;
+  }
+
+  .ts-rest {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2.5rem 1rem 1rem;
+  }
+
+  .ts-callout {
+    padding: 1.75rem 1.5rem;
+    border-left: 4px solid var(--kbm-green);
+    background: linear-gradient(135deg, #fafdfb 0%, #f8fafc 100%);
+  }
+
+  .ts-callout-title {
+    margin: 0 0 0.65rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--kbm-green);
+    line-height: 1.25;
+  }
+
+  .ts-callout p {
+    margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.6;
+    color: #374151;
+  }
+
+  .ts-callout strong {
+    color: #111827;
+    font-weight: 800;
+  }
+
+  .feedback-section {
+    margin-top: 60px;
+    padding-top: 20px;
+    padding-left: 20px;
+    padding-right: 20px;  
+    border-top: 1px solid #e5e5e5;
+  }
+
+  .feedback-section h3 {
+    margin-bottom: 10px;
+  }
+
+  .feedback-section p {
+    margin-bottom: 20px;
+    color: #555;
+   
+  }
+
+  .image-fade::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 120px;
+  height: 100%;
+  background: linear-gradient(to right, #f5f5f5 0%, rgba(245,245,245,0) 100%);
+  pointer-events: none;
+}
+
+</style>
+
+<div class="wizard-page ts-wrap">
+  <div style="max-width: 1100px; margin: 0 auto; padding: 0 1rem;">
+    <WizardBackLink className="back-link no-print" fallback="/patterns" />
+  </div>
+
+  <section class="ts-hero no-print" aria-labelledby="triangle-scarf-hero-heading">
+    <div class="ts-hero-grid">
+      <div class="ts-hero-copy">
+              <h1 id="triangle-scarf-hero-heading" class="ts-headline">
+          The Weekend Stash - Buster: Your Custom Triangle Scarf
+        </h1>
+        <p class="ts-sub">
+          No pattern required. Just one skein, two days, and our Triangle Tool to do the math.
+        </p>
+        <div class="ts-hero-cta">
+          <a href={toolHref} class="kbm-btn kbm-btn-accent">Start My Scarf</a>
+        </div>
+        <p class="ts-hero-note">
+          Built for our beta knitters — quick wins, clear numbers, zero decision fatigue.
+        </p>
+      </div>
+      <figure class="ts-hero-visual">
+        
+        <img
+          src="/images/triangle-scarf.png"
+          alt="Triangle scarf wrapped at the neck"
+          width="800"
+          height="600"
+          decoding="async"
+          loading="eager"
+        />
+      </figure>
+    </div>
+  </section>
+
+  <section class="ts-how" aria-labelledby="beta-challenge-heading">
+    <div class="ts-how-inner">
+      <h2 id="beta-challenge-heading" class="ts-how-heading">The Beta Challenge</h2>
+      <p class="ts-how-lede">
+        Here’s how it works — three steps, then you’re off the planner and onto the needles.
+      </p>
+      <div class="ts-steps">
+        <article class="ts-step">
+          <span class="ts-step-num" aria-hidden="true">1</span>
+          <h3>Grab one skein</h3>
+          <p>Any weight, any fiber — dig into your stash and commit.</p>
+        </article>
+        <article class="ts-step">
+          <span class="ts-step-num" aria-hidden="true">2</span>
+          <h3>Plug in your gauge</h3>
+          <p>Open the tool and enter your numbers — we handle the shaping math.</p>
+        </article>
+        <article class="ts-step">
+          <span class="ts-step-num" aria-hidden="true">3</span>
+          <h3>Just knit</h3>
+          <p>Follow the custom increases for a triangle that fits <em>your</em> yarn.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <div class="ts-rest">
+    <div class="calculator-card ts-callout">
+      <h2 class="ts-callout-title">The “no-brainer” size</h2>
+      <p>
+        Not sure what size to make? Use the <strong>Beta Standard</strong>: <strong>36&quot; wide × 18&quot; deep</strong>.
+        It’s a perfect neckerchief size — easy to wear, quick to finish.
+      </p>
+    </div>
+
+    <section class="feedback-section">
+      <h3>Tell me how it went</h3>
+      <p>Trying this out? I’d love to hear how it goes — what worked, what didn’t, and what felt confusing.</p>
+
+      <div id="hyvor-talk-view"></div>
+    </section>
+  </div>
+</div>
+
+<script is:inline async src="https://talk.hyvor.com/web-api/embed.js"></script>
+<script is:inline>
+  var HYVOR_TALK_WEBSITE = 14706;
+  var HYVOR_TALK_CONFIG = {
+    url: window.location.href,
+    id: "triangle-scarf-beta"
+  };
+</script>
+
+</Layout>
