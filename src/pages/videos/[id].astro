@@ -142,7 +142,7 @@ const posterSrc =
         </article>
 
         <script>
-          import { hasKinVideoAccess } from "../../lib/kinVideoAccess";
+          import { hasKinVideoAccess, logKinVideoAccessDebug } from "../../lib/kinVideoAccess";
 
           // --- Memberstack: client-side unlock for jump links / transcript (hasVideoAccess / kin_access) ---
           /* Paid-tier plan IDs: used only for isMember. Unlock uses hasVideoAccess (kin_access only). */
@@ -179,6 +179,12 @@ const posterSrc =
             const hasVideoAccess =
               Boolean(member) && hasKinVideoAccess(rawKinAccess);
 
+            logKinVideoAccessDebug("videos/[id].jumpLinksTranscript", {
+              member,
+              rawKinAccess,
+              finalHasVideoAccess: hasVideoAccess,
+            });
+
             return { isLoggedIn, isMember, hasVideoAccess, member };
           }
 
@@ -199,6 +205,10 @@ const posterSrc =
 
             // Dev-only gating bypass: env flag or localhost ?member=true (see BaseLayout).
             if (window.__DEV_BYPASS_GATING || window.__KBM_DEV_MEMBER__) {
+              console.log("[KBM video access debug]", "videos/[id].setAccess.unlock", {
+                __DEV_BYPASS_GATING: window.__DEV_BYPASS_GATING,
+                __KBM_DEV_MEMBER__: window.__KBM_DEV_MEMBER__,
+              });
               setAccess(true);
               return;
             }
@@ -208,6 +218,7 @@ const posterSrc =
             const devFull = urlParams.get("mode") === "full";
 
             if (devFull) {
+              console.log("[KBM video access debug]", "videos/[id].setAccess.unlock", { mode: "full" });
               setAccess(true);
               return;
             }

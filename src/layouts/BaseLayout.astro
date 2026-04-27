@@ -191,9 +191,10 @@ const isProduction =
   };
 </script>
 <script>
-  import { hasKinVideoAccess } from "../lib/kinVideoAccess";
+  import { hasKinVideoAccess, logKinVideoAccessDebug } from "../lib/kinVideoAccess";
 
   window.kbmHasKinVideoAccess = hasKinVideoAccess;
+  window.kbmLogKinVideoAccessDebug = logKinVideoAccessDebug;
 </script>
    
 <!-- MemberStack -->
@@ -322,6 +323,12 @@ const isProduction =
           const hasVideoAccess =
             Boolean(member) &&
             (window.kbmHasKinVideoAccess?.(rawKinAccess) ?? false);
+
+          window.kbmLogKinVideoAccessDebug?.("BaseLayout.ms-logged-in", {
+            member,
+            rawKinAccess,
+            finalHasVideoAccess: hasVideoAccess,
+          });
 
           if (hasVideoAccess) {
             document.body.classList.add("ms-logged-in");

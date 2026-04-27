@@ -80,6 +80,10 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
 
     /* Dev-only: env bypass or localhost ?member=true (window.__KBM_DEV_MEMBER__ in BaseLayout). */
     if (devBypass || window.__KBM_DEV_MEMBER__ === true) {
+      console.log("[KBM video access debug]", "GatedVimeoEmbed.unlock", {
+        videoId,
+        reason: devBypass ? "devBypass(PUBLIC_DEV_BYPASS_GATING)" : "__KBM_DEV_MEMBER__(localhost?member=true)",
+      });
       slot.innerHTML = `
         <iframe
           src="${iframeSrc}"
@@ -113,7 +117,13 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
       const hasVideoAccess =
         typeof window.kbmHasKinVideoAccess === "function"
           ? window.kbmHasKinVideoAccess(rawKinAccess)
-          : rawKinAccess !== false && rawKinAccess !== "false";
+          : String(rawKinAccess ?? "").trim().toLowerCase() !== "false";
+
+      window.kbmLogKinVideoAccessDebug?.("GatedVimeoEmbed.iframe", {
+        member,
+        rawKinAccess,
+        finalHasVideoAccess: hasVideoAccess,
+      });
 
       if (!hasVideoAccess) {
         slot.innerHTML = lockedMarkup;
