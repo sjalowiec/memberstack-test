@@ -309,25 +309,23 @@ const isProduction =
 
     <script is:inline>
       document.addEventListener("DOMContentLoaded", async () => {
-        const memberstack = window.$memberstackDom;
+        if (!window.$memberstackDom) return;
 
-        if (!memberstack) return;
+        try {
+          const { data: member } = await window.$memberstackDom.getCurrentMember();
+          const kinAccess = member?.customFields?.kin_access;
+          const hasVideoAccess =
+            Boolean(member) &&
+            kinAccess !== false &&
+            kinAccess !== "false";
 
-        const member = await memberstack.getCurrentMember();
-
-        // Not logged in
-        if (!member.data) {
-          document.body.classList.add("logged-out");
-          return;
-        }
-
-        const plans = member.data.planConnections || [];
-
-        // Logged in + has ANY plan
-        if (plans.length > 0) {
-          document.body.classList.add("logged-in-paid");
-        } else {
-          document.body.classList.add("logged-in-free");
+          if (hasVideoAccess) {
+            document.body.classList.add("ms-logged-in");
+          } else {
+            document.body.classList.remove("ms-logged-in");
+          }
+        } catch (error) {
+          console.warn("MemberStack member check failed", error);
         }
       });
     </script>

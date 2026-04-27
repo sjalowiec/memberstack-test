@@ -151,6 +151,21 @@ body.dev-member [data-gated="locked"] {
   display: none !important;
 }
 
+/*
+ * MemberStack: video access granted (body.ms-logged-in from BaseLayout; kin_access not false/"false").
+ * Unlocks video detail gates and other [data-gated] regions when hasVideoAccess is true.
+ */
+body.ms-logged-in .member-only,
+body.ms-logged-in [data-gated="content"] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+body.ms-logged-in [data-gated="locked"] {
+  display: none !important;
+}
+
   /* Layout spacing */
   --header-height: 7rem;
   --site-header-offset: var(--header-height); /* sticky bars sit below fixed header */

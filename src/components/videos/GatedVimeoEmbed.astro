@@ -2,7 +2,7 @@
 /**
  * GatedVimeoEmbed.astro
  * - If access_level === "open": render iframe for everyone.
- * - If access_level === "member": gate by paid plan IDs; iframe injected client-side only when allowed.
+ * - If access_level === "member": iframe only when MemberStack grants access (logged in; kin_access not false/"false").
  * - When dev bypass is on (localhost + PUBLIC_DEV_BYPASS_GATING=true), member videos show without login.
  */
 import { devBypass } from "../../lib/devBypass";
@@ -102,18 +102,12 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
     }
 
     try {
-      const res = await window.$memberstackDom.getCurrentMember();
-      const member = res?.data;
-
-      const allowedPlanIds = new Set([
-        "pln_kin-membership-annual-qf9g01et",
-        "pln_kin-membership-monthly-a59701wy",
-      ]);
-
-      const planConnections = member?.planConnections || [];
-      const hasVideoAccess = planConnections.some(
-        (pc) => pc.active && allowedPlanIds.has(pc.planId)
-      );
+      const { data: member } = await window.$memberstackDom.getCurrentMember();
+      const kinAccess = member?.customFields?.kin_access;
+      const hasVideoAccess =
+        Boolean(member) &&
+        kinAccess !== false &&
+        kinAccess !== "false";
 
       if (!hasVideoAccess) {
         slot.innerHTML = lockedMarkup;
@@ -134,7 +128,7 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
       `;
       slot.setAttribute("data-state", "ready");
     } catch (e) {
-      console.error("GatedVimeoEmbed paid check failed:", e);
+      console.error("GatedVimeoEmbed MemberStack getCurrentMember failed:", e);
       slot.innerHTML = lockedMarkup;
       slot.setAttribute("data-state", "ready");
     }

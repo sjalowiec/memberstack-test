@@ -168,6 +168,7 @@ const forceMemberView =
     let currentSort = initialSort;
     let searchTimer;
 
+    /* Paid-tier plan IDs: used only for VIEWER.isMember. Catalog lock badges use VIEWER.hasVideoAccess (kin_access). */
     const MEMBER_PLAN_IDS = new Set([
       "pln_kin-membership-annual-qf9g01et",
       "pln_kin-membership-monthly-a59701wy",
@@ -177,7 +178,7 @@ const forceMemberView =
       try {
         const res = await window.$memberstackDom?.getAppAndMember?.();
         const member = res?.data?.member || null;
-        if (!member) return { isLoggedIn: false, isMember: false, member: null };
+        if (!member) return { isLoggedIn: false, isMember: false, hasVideoAccess: false, member: null };
 
         const conns = Array.isArray(member.planConnections) ? member.planConnections : [];
         const activePlanIds = new Set(
@@ -188,13 +189,20 @@ const forceMemberView =
         );
 
         const isMember = [...activePlanIds].some(function (id) { return MEMBER_PLAN_IDS.has(id); });
-        return { isLoggedIn: true, isMember: isMember, member: member };
+
+        const kinAccess = member.customFields?.kin_access;
+        const hasVideoAccess =
+          Boolean(member) &&
+          kinAccess !== false &&
+          kinAccess !== "false";
+
+        return { isLoggedIn: true, isMember: isMember, hasVideoAccess: hasVideoAccess, member: member };
       } catch (e) {
-        return { isLoggedIn: false, isMember: false, member: null };
+        return { isLoggedIn: false, isMember: false, hasVideoAccess: false, member: null };
       }
     }
 
-    let VIEWER = { isLoggedIn: false, isMember: false, member: null };
+    let VIEWER = { isLoggedIn: false, isMember: false, hasVideoAccess: false, member: null };
 
     async function waitForMemberstackReady(opts) {
       const attempts = (opts && opts.attempts) !== undefined ? opts.attempts : 30;
@@ -271,14 +279,14 @@ const forceMemberView =
         return;
       }
 
-      /* Member access: preview override (dev only), dev bypass, or real Memberstack. */
+      /* Video access: preview override (dev), dev bypass, or Memberstack hasVideoAccess (kin_access). */
       const previewForce = window.__PREVIEW_FORCE_MEMBER__;
       const hasAccess =
         previewForce === true
           ? true
           : previewForce === false
             ? false
-            : window.__DEV_BYPASS_GATING || window.__KBM_DEV_MEMBER__ || VIEWER.isMember;
+            : window.__DEV_BYPASS_GATING || window.__KBM_DEV_MEMBER__ || VIEWER.hasVideoAccess;
       const listParams = new URLSearchParams();
       if (currentCategory) listParams.set("cat", currentCategory);
       if (currentSearch) listParams.set("q", currentSearch);
@@ -410,12 +418,8 @@ const forceMemberView =
     (async function () {
       render(currentCategory);
 
-      const res = await waitForMemberstackReady();
-      if (res && res.data && res.data.member) {
-        VIEWER = await getViewerState();
-      } else {
-        VIEWER = { isLoggedIn: false, isMember: false, member: null };
-      }
+      await waitForMemberstackReady();
+      VIEWER = await getViewerState();
 
       render(currentCategory);
     })();
