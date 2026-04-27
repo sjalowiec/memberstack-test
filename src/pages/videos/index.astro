@@ -168,7 +168,7 @@ const forceMemberView =
     let currentSort = initialSort;
     let searchTimer;
 
-    /* Paid-tier plan IDs: used only for VIEWER.isMember. Catalog lock badges use VIEWER.hasVideoAccess (kin_access). */
+    /* Paid-tier plan IDs: used only for VIEWER.isMember. Catalog lock badges use VIEWER.hasVideoAccess (kin-access). */
     const MEMBER_PLAN_IDS = new Set([
       "pln_kin-membership-annual-qf9g01et",
       "pln_kin-membership-monthly-a59701wy",
@@ -190,7 +190,7 @@ const forceMemberView =
 
         const isMember = [...activePlanIds].some(function (id) { return MEMBER_PLAN_IDS.has(id); });
 
-        const rawKinAccess = member.customFields?.kin_access;
+        const rawKinAccess = member.customFields?.["kin-access"];
         const hasVideoAccess =
           typeof window.kbmHasKinVideoAccess === "function"
             ? window.kbmHasKinVideoAccess(rawKinAccess)
@@ -285,7 +285,7 @@ const forceMemberView =
         return;
       }
 
-      /* Video access: preview override (dev), dev bypass, or Memberstack hasVideoAccess (kin_access). */
+      /* Video access: preview override (dev), dev bypass, or Memberstack hasVideoAccess (kin-access). */
       const previewForce = window.__PREVIEW_FORCE_MEMBER__;
       const hasAccess =
         previewForce === true

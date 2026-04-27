@@ -2,7 +2,7 @@
 /**
  * GatedVimeoEmbed.astro
  * - If access_level === "open": render iframe for everyone.
- * - If access_level === "member": iframe when logged in and kin_access is not false/"false" (see window.kbmHasKinVideoAccess).
+ * - If access_level === "member": iframe when logged in and kin-access is not false/"false" (see window.kbmHasKinVideoAccess).
  * - When dev bypass is on (localhost + PUBLIC_DEV_BYPASS_GATING=true), member videos show without login.
  */
 import { devBypass } from "../../lib/devBypass";
@@ -113,7 +113,7 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
         return;
       }
 
-      const rawKinAccess = member.customFields?.kin_access;
+      const rawKinAccess = member.customFields?.["kin-access"];
       const hasVideoAccess =
         typeof window.kbmHasKinVideoAccess === "function"
           ? window.kbmHasKinVideoAccess(rawKinAccess)

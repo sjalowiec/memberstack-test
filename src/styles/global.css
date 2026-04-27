@@ -152,7 +152,7 @@ body.dev-member [data-gated="locked"] {
 }
 
 /*
- * Kin video access: body.ms-logged-in when the user is logged in and kin_access is not false/"false"
+ * Kin video access: body.ms-logged-in when the user is logged in and kin-access is not false/"false"
  * (see BaseLayout kbmHasKinVideoAccess). Unlocks .member-only and [data-gated] for that access tier.
  */
 body.ms-logged-in .member-only,

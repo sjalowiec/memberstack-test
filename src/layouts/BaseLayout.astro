@@ -319,7 +319,7 @@ const isProduction =
 
         try {
           const { data: member } = await window.$memberstackDom.getCurrentMember();
-          const rawKinAccess = member?.customFields?.kin_access;
+          const rawKinAccess = member?.customFields?.["kin-access"];
           const hasVideoAccess =
             Boolean(member) &&
             (window.kbmHasKinVideoAccess?.(rawKinAccess) ?? false);

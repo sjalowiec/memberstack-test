@@ -1,10 +1,10 @@
-/** Memberstack `kin_access`: allow unless normalized value is "false". */
+/** Memberstack `kin-access` custom field: allow unless normalized value is "false". */
 export function hasKinVideoAccess(rawKinAccess: unknown): boolean {
   const normalized = String(rawKinAccess ?? "").trim().toLowerCase();
   return normalized !== "false";
 }
 
-/** Temporary: console debug for kin_access gating (remove after verification). */
+/** Temporary: console debug for kin-access gating (remove after verification). */
 export function logKinVideoAccessDebug(
   context: string,
   opts: {

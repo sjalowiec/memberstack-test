@@ -24,9 +24,9 @@ declare global {
     __DEV_BYPASS_GATING?: boolean;
     /** Localhost + ?member=true: set in BaseLayout for client-side gates (videos, etc.). */
     __KBM_DEV_MEMBER__?: boolean;
-    /** Set in BaseLayout: kin_access video gate (deny unless false / "false"). */
+    /** Set in BaseLayout: kin-access custom field video gate (deny unless false / "false"). */
     kbmHasKinVideoAccess?: (rawKinAccess: unknown) => boolean;
-    /** Temporary: kin_access debug logging from inline scripts. */
+    /** Temporary: kin-access debug logging from inline scripts. */
     kbmLogKinVideoAccessDebug?: (
       context: string,
       opts: {
