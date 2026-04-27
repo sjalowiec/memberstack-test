@@ -205,12 +205,10 @@ function vimeoPlayerUrlFromRawId(rawUnknown: unknown): string | null {
     typeof rawUnknown === "number" && Number.isFinite(rawUnknown)
       ? String(Math.trunc(rawUnknown))
       : typeof rawUnknown === "string"
-        ? rawUnknown.trim()
+        ? rawUnknown
         : "";
   if (!raw) return null;
-  if (/^\d+$/.test(raw)) return `https://player.vimeo.com/video/${raw}`;
-  const m = raw.match(/\/(?:video\/)?(\d+)(?:\?|#|$)/);
-  return m ? `https://player.vimeo.com/video/${m[1]}` : null;
+  return `https://player.vimeo.com/video/${raw}`;
 }
 
 /** Vimeo player URL from `mediaType` / `mediaUrl` (not catalog). */
@@ -355,8 +353,7 @@ const lessonLibraryVideos: LessonLibraryVideoEmbed[] = lessonVideoSlugList
                     );
                   }
                   if (block.type === "vimeo") {
-                    const src = vimeoPlayerUrlFromRawId(block.vimeoId);
-                    if (!src) return null;
+                    if (block.vimeoId === undefined || block.vimeoId === null || block.vimeoId === "") return null;
                     const iframeTitle =
                       typeof block.title === "string" && block.title.trim() !== ""
                         ? block.title.trim()
@@ -372,7 +369,7 @@ const lessonLibraryVideos: LessonLibraryVideoEmbed[] = lessonVideoSlugList
                         )}
                         <div class="lesson-video-frame">
                           <iframe
-                            src={src}
+                            src={`https://player.vimeo.com/video/${block.vimeoId}`}
                             title={iframeTitle}
                             allow="autoplay; fullscreen; picture-in-picture"
                             allowfullscreen
