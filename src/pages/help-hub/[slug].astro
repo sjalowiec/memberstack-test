@@ -56,19 +56,24 @@ type HelpHubRecord = {
   tryImage?: string;
   tryImageAlt?: string;
   tryImageCaption?: string;
-  /** Lesson slugs or numeric `lessons.json` ids. */
+  /** Lesson slugs, `lessons.json` ids, or Vimeo numeric ids (digits after slug/id checks). */
   relatedLessons?: (string | number)[];
   jumpLinks?: { label: string; href: string }[];
 };
 
 type LessonRecord = {
-  id?: number;
+  id?: number | string;
   slug?: string;
   title?: string;
   summary?: string;
   access?: string;
   videoSlug?: string;
   vimeoEmbedUrl?: string;
+  /** Inline player shape (`lessons/[slug].astro`). */
+  mediaType?: string;
+  mediaUrl?: string;
+  /** `published`, omitted, or empty = public; other values hide from `/lessons/[slug]`. */
+  status?: string;
 };
 
 const catalogVideosHelpHub = Array.isArray(videosPublic)
@@ -86,13 +91,42 @@ function vimeoNumericIdFromLesson(l: LessonRecord): string | null {
     }
   }
   const raw = typeof l.vimeoEmbedUrl === "string" ? l.vimeoEmbedUrl.trim() : "";
-  if (!raw) return null;
-  if (/^\d+$/.test(raw)) return raw;
-  const m = raw.match(/\/(?:video\/)?(\d+)(?:\?|#|$)/);
-  return m ? m[1] : null;
+  if (raw) {
+    if (/^\d+$/.test(raw)) return raw;
+    const m = raw.match(/\/(?:video\/)?(\d+)(?:\?|#|$)/);
+    if (m) return m[1];
+  }
+  const mt = typeof l.mediaType === "string" ? l.mediaType.trim().toLowerCase() : "";
+  const mu = typeof l.mediaUrl === "string" ? l.mediaUrl.trim() : "";
+  if (mt === "vimeo" && /^\d+$/.test(mu)) return mu;
+  return null;
 }
 
-/** Resolve a tip `relatedLessons[]` entry to a lesson: by slug first, then by Vimeo id if the ref is numeric. */
+/** Same rule as `src/pages/lessons/[slug].astro` `lessonIsPubliclyPublished`. */
+function lessonIsPubliclyPublished(l: LessonRecord): boolean {
+  const raw = l.status;
+  if (raw === undefined || raw === null) return true;
+  const s = typeof raw === "string" ? raw.trim().toLowerCase() : "";
+  if (s === "") return true;
+  return s === "published";
+}
+
+function lessonNumericId(l: LessonRecord): number | null {
+  const rawId: unknown = l.id;
+  if (typeof rawId === "number" && Number.isFinite(rawId)) return rawId;
+  if (typeof rawId === "string" && /^\d+$/.test(rawId.trim())) {
+    const n = Number(rawId.trim());
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
+function lessonIdMatches(refNum: number, l: LessonRecord): boolean {
+  const nid = lessonNumericId(l);
+  return nid !== null && nid === refNum;
+}
+
+/** Resolve a tip `relatedLessons[]` entry: slug, then `lessons.json` id (digits), then Vimeo id. */
 function resolveLessonFromRelatedRef(
   ref: string,
   allLessons: LessonRecord[],
@@ -104,6 +138,11 @@ function resolveLessonFromRelatedRef(
   );
   if (bySlug) return bySlug;
   if (/^\d+$/.test(trimmed)) {
+    const idNum = Number(trimmed);
+    if (Number.isFinite(idNum)) {
+      const byLessonId = allLessons.find((l) => lessonIdMatches(idNum, l));
+      if (byLessonId) return byLessonId;
+    }
     return allLessons.find((l) => vimeoNumericIdFromLesson(l) === trimmed);
   }
   return undefined;
@@ -138,12 +177,14 @@ const lessonRecords = Array.isArray(lessons)
 const relatedLessonsResolved: LessonRecord[] = [];
 if (Array.isArray(tip.relatedLessons)) {
   for (const ref of tip.relatedLessons) {
-    if (typeof ref === "number") {
-      const found = lessonRecords.find((l) => l.id === ref);
-      if (found) relatedLessonsResolved.push(found);
+    let found: LessonRecord | undefined;
+    if (typeof ref === "number" && Number.isFinite(ref)) {
+      found = lessonRecords.find((l) => lessonIdMatches(ref, l));
     } else if (typeof ref === "string") {
-      const found = resolveLessonFromRelatedRef(ref, lessonRecords);
-      if (found) relatedLessonsResolved.push(found);
+      found = resolveLessonFromRelatedRef(ref, lessonRecords);
+    }
+    if (found && lessonIsPubliclyPublished(found)) {
+      relatedLessonsResolved.push(found);
     }
   }
 }
@@ -452,8 +493,8 @@ const tryHeading =
                   class="tuesday-tip__try-image"
                 />
                 {tryImageCaptionResolved ? (
-                  <p class="try-image-caption">{tryImageCaptionResolved}</p>
-                ) : null}
+  <p class="try-image-caption" set:html={tryImageCaptionResolved}></p>
+) : null}
               </div>
             )}
             {tip.tryNote && (

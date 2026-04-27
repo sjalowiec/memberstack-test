@@ -302,17 +302,7 @@
     "memberHeading": "",
     "memberText": "",
     "isNew": true,
-    "tryThis": {
-      "quickActionTitle": "",
-      "quickAction": [
-        "Cast on 20 stitches and knit a few rows",
-        "Use every-other needle selection for a basic tuck pattern",
-        "Set Russell levers to II to hold stitches",
-        "Knit two passes to build loops",
-        "Return levers to I to knit off the loops",
-        "Switch needle selection and repeat"
-      ]
-    },
+    "tryThis": "Since you control the needle selection on the LK150, try this simple setup to see how tuck stitch forms.",
     "trySteps": [
       "Cast on 30 stitches and knit a few rows",
       "Pull needles to D position according to the punchcard",
@@ -333,5 +323,46 @@
       "<a href=\"/stitch?machine=lk150&category=tuck\">Browse LK150-friendly tuck stitches</a>"
     ],
     "id": 1004
+  },
+  {
+    "question": "How do I knit Slip Stitch on my LK150?",
+    "slug": "slip-stitch-on-the-lk150",
+    "status": "published",
+    "title": "Slip stitch on the LK150",
+    "isNew": true,
+    "bubbleAnswer": "Slip stitch works by allowing selected needles to skip knitting. The yarn passes under those needles, creating a float on the purl side of the fabric.",
+    "hook": "Slip stitch is one of the easiest ways to add texture and color without extra yarn or complicated techniques.",
+    "successPathLevel": "Beginner",
+    "relatedLessons": [
+      5003
+    ],
+    "mediaType": "image",
+    "mediaUrl": "/images/help-hub/slip-stitch-example.jpg",
+    "thumbnailAlt": "slip stitch on a knitting machine",
+    "intro": "What's this about",
+    "atAGlance": [
+      "Purl side = texture (floats visible)",
+      "Knit side = elongated stitches",
+      "Great for multicolor patterns"
+    ],
+    "solutionText": "Slip stitch works by allowing selected needles to skip knitting. The yarn passes under those needles, creating a float on the purl side of the fabric.\n\nOn the purl side, those floats stand out and create texture. On the knit side, the stitches appear elongated, adding subtle visual interest.\n\nSlip stitch can be used for simple texture in one color or bold patterning in multiple colors. It works on the LK150  by hand selecting needles.",
+    "aboutTitle": "What's this about",
+    "bridge": "Slip stitch on the LK150 is created by selected needles skipping so they do not knit while the yarn floats across them on the purl side of the knitting. Unlike tuck, those stitches are not built up over multiple rows, so the fabric stays flatter. Because the LK150 has no punchcards or electronics, you control the stitch pattern entirely by which needles you select before each row and using the side levers",
+    "tryThis": "Try this",
+    "trySteps": [
+      "Cast on 30 stitches and knit a few rows",
+      "End with carriage on the right",
+      "Set both Side levers to ● and leave them set for the entire pattern",
+      "Set both Russell levers to II",
+      "Pull knit needles to D position according to the stitch chart (needles in work will slip)",
+      "Knit left",
+      "Pull the next set of needles according to the stitch chart (needles in work will slip)",
+      "Knit right",
+      "Continue following the chart, keeping both Side levers set to ● and both Russell levers set to II",
+      "Knit a few rows and bind off"   ],
+    "tryNote": "👉 Needle selection is made on each row.<br>👉 <strong>DO NOT slip edge needles</strong><br>👉 <strong>Needles in work will slip</strong>",
+    "tryImage": "/images/help-hub/slip-card.jpg",
+    "tryImageAlt": "slip stitch chart example",
+    "tryImageCaption": "Example punchcard\nBlack holes  (D) = KNIT\nWhite & Symbols <img src=\"/images/help-hub/slip-symbol.png\" alt=\"slip symbol\"> (B) = SLIP"
   }
 ]

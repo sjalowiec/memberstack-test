@@ -79,8 +79,15 @@ function valueFor(key: string, fallback = ""): string {
     const rl = rawEntry.relatedLessons;
     if (!Array.isArray(rl)) return fallback;
     const parts = rl
-      .map((x) => (typeof x === "number" ? x : Number(x)))
-      .filter((n): n is number => typeof n === "number" && Number.isFinite(n));
+      .map((x) => {
+        if (typeof x === "number" && Number.isFinite(x)) return String(x);
+        if (typeof x === "string") {
+          const t = x.trim();
+          return t.length > 0 ? t : "";
+        }
+        return "";
+      })
+      .filter((s) => s.length > 0);
     return parts.length ? parts.join(", ") : fallback;
   }
 
@@ -852,10 +859,11 @@ const entryLabel = currentEntry as {
           })
           .filter(Boolean)
           .map(function (s) {
-            return Number(s);
-          })
-          .filter(function (n) {
-            return typeof n === "number" && !isNaN(n) && isFinite(n);
+            if (/^\d+$/.test(s)) {
+              var n = Number(s);
+              if (typeof n === "number" && !isNaN(n) && isFinite(n)) return n;
+            }
+            return s;
           });
       }
 
