@@ -1,0 +1,221 @@
+---
+import WorkspaceLayout from '../../layouts/WorkspaceLayout.astro';
+---
+
+<WorkspaceLayout title="Custom Machine Knitting Project">
+  <section class="workspace-hero">
+    <h1>Custom Machine Knitting Project</h1>
+    <p class="workspace-subtitle">
+      Private workspace for videos, notes, downloads, and questions.
+    </p>
+    <p class="workspace-status">Current status: Getting started</p>
+  </section>
+
+  <section class="workspace-section">
+    <h2>Start Here</h2>
+    <p>
+      Welcome to your project workspace. Review each lesson video in order to keep your
+      progress smooth and consistent. Use the comments section below to ask questions or
+      share progress notes as you move through each step.
+    </p>
+  </section>
+
+  <section class="workspace-section">
+    <h2>Project Videos</h2>
+    <div class="workspace-video-grid">
+      <article class="workspace-video-card">
+        <h3>Video 1: Project Overview</h3>
+        <p class="workspace-date-line">Added April 28, 2026</p>
+        <p>
+          A walkthrough of the project goals, materials checklist, and how each part will
+          build on the previous lesson.
+        </p>
+        <div class="workspace-video-placeholder">Video placeholder</div>
+        <a href="#" class="workspace-download-link">Download notes (placeholder)</a>
+      </article>
+
+      <article class="workspace-video-card">
+        <h3>Video 2: Gauge and Measurements</h3>
+        <p class="workspace-date-line">Added April 28, 2026</p>
+        <p>
+          Prepare your gauge swatch, review fit measurements, and record adjustments before
+          knitting the first section.
+        </p>
+        <div class="workspace-video-placeholder">Video placeholder</div>
+        <a href="#" class="workspace-download-link">Download worksheet (placeholder)</a>
+      </article>
+
+      <article class="workspace-video-card">
+        <h3>Video 3: Translating the First Section</h3>
+        <p class="workspace-date-line">Added April 28, 2026</p>
+        <p>
+          Convert the first section instructions into machine-ready steps and follow along
+          with pacing tips.
+        </p>
+        <div class="workspace-video-placeholder">Video placeholder</div>
+        <a href="#" class="workspace-download-link">Download chart (placeholder)</a>
+      </article>
+    </div>
+  </section>
+
+  <section class="workspace-section workspace-comments">
+    <h2>Questions &amp; Project Conversation</h2>
+    <p>
+      Use this space to ask questions, share updates, or let me know when you&apos;re ready
+      for the next step.
+    </p>
+    <div id="hyvor-talk-view">
+      <p class="workspace-comments-loading">Comments are loading...</p>
+    </div>
+    <script is:inline define:vars={{ "hyvorWebsiteId": "14706" }}>
+      window.HYVOR_TALK_WEBSITE = Number("14706");
+      window.HYVOR_TALK_CONFIG = {
+        url: window.location.origin + "/private/sample-project",
+        id: "sample-project",
+      };
+    </script>
+    <script is:inline>
+      (function () {
+        var mount = document.getElementById("hyvor-talk-view");
+        if (!mount) return;
+
+        var existing = document.querySelector('script[data-hyvor-embed="sample-project"]');
+        if (existing && window.HyvorTalk && typeof window.HyvorTalk.reload === "function") {
+          window.HyvorTalk.reload();
+          return;
+        }
+
+        var s = document.createElement("script");
+        s.async = true;
+        s.type = "text/javascript";
+        s.src = "https://talk.hyvor.com/web-api/embed";
+        s.setAttribute("data-hyvor-embed", "sample-project");
+        s.onload = function () {
+          if (window.HyvorTalk && typeof window.HyvorTalk.reload === "function") {
+            window.HyvorTalk.reload();
+          }
+        };
+        (document.body || document.documentElement).appendChild(s);
+      })();
+    </script>
+  </section>
+</WorkspaceLayout>
+
+<style>
+  .workspace-hero {
+    margin-bottom: 2rem;
+  }
+
+  .workspace-hero h1 {
+    margin: 0 0 0.5rem;
+    font-size: 1.9rem;
+    line-height: 1.2;
+  }
+
+  .workspace-subtitle {
+    margin: 0 0 0.75rem;
+    color: #4b5563;
+    font-size: 1.1rem;
+  }
+
+  .workspace-status {
+    display: inline-block;
+    margin: 0;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #374151;
+    font-size: 1rem;
+  }
+
+  .workspace-section {
+    margin: 0 0 1.5rem;
+    padding: 1.25rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #ffffff;
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  .workspace-section h2 {
+    margin-top: 0;
+  }
+
+  .workspace-video-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .workspace-video-card {
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #ffffff;
+  }
+
+  .workspace-video-card h3 {
+    margin-top: 0;
+    margin-bottom: 0.35rem;
+    font-size: 1.15rem;
+  }
+
+  .workspace-date-line {
+    margin: 0 0 0.75rem;
+    color: #6b7280;
+    font-size: 0.95rem;
+  }
+
+  .workspace-video-placeholder {
+    margin: 0.75rem 0;
+    min-height: 170px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 1rem;
+  }
+
+  .workspace-download-link {
+    color: #1d4ed8;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .workspace-comments {
+    margin-top: 2rem;
+    margin-bottom: 0;
+    padding: 1.5rem;
+    background: #fff;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: 12px;
+  }
+
+  #hyvor-talk-view {
+    margin-top: 1rem;
+    min-height: 200px;
+  }
+
+  .workspace-comments-loading,
+  .workspace-comments-error {
+    margin: 0;
+    color: #4b5563;
+    font-size: 0.95rem;
+  }
+
+  .workspace-comments-error {
+    color: #b91c1c;
+  }
+
+  @media (min-width: 920px) {
+    .workspace-video-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

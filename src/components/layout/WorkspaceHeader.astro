@@ -1,0 +1,66 @@
+<header class="workspace-header">
+  <div class="workspace-header__inner">
+    <a href="/" class="workspace-logo" aria-label="Knit it Now home">
+      <img src="/KINlogo.svg" alt="Knit it Now" class="workspace-logo__img" />
+      <span class="workspace-logo__text">Knit it Now</span>
+    </a>
+    <div class="workspace-label">Your Project Workspace</div>
+  </div>
+</header>
+
+<style>
+  .workspace-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.24);
+    background: var(--kbm-green, #52682d);
+  }
+
+  .workspace-header__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+  }
+
+  .workspace-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #ffffff;
+    text-decoration: none;
+  }
+
+  .workspace-logo__img {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+  }
+
+  .workspace-logo__text {
+    font-family: var(--font, "Poppins", Arial, sans-serif);
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .workspace-label {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  @media (max-width: 640px) {
+    .workspace-header__inner {
+      padding: 10px 12px;
+    }
+
+    .workspace-logo__text {
+      font-size: 1.05rem;
+    }
+
+    .workspace-label {
+      display: none;
+    }
+  }
+</style>

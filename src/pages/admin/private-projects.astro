@@ -1,0 +1,653 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import jillRaglanProject from "../../../data/projects/jill-raglan.json";
+
+const projectDraftSeeds: Record<string, unknown> = {
+  "jill-raglan": jillRaglanProject,
+};
+---
+
+<BaseLayout
+  title="Private Project Workspaces | Knit it Now"
+  description="Draft and manage private knitter project workspace pages."
+  skipGlobalHyvor={true}
+  bodyClass="private-projects-admin-body"
+>
+  <main class="private-projects-admin">
+    <header class="private-projects-admin__head">
+      <h1 class="private-projects-admin__title">Private Project Workspaces</h1>
+      <p class="private-projects-admin__intro">
+        Use this page to draft and manage custom knitter project workspaces.
+      </p>
+    </header>
+
+    <section class="admin-panel" aria-labelledby="project-list-heading">
+      <h2 id="project-list-heading" class="private-projects-admin__section-title">
+        Project List
+      </h2>
+      <div class="private-projects-admin__table-wrap">
+        <table class="private-projects-admin__table">
+          <thead>
+            <tr>
+              <th scope="col">Project name</th>
+              <th scope="col">Slug</th>
+              <th scope="col">Status</th>
+              <th scope="col">Page link</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Custom Machine Knitting Project</td>
+              <td><code>sample-project</code></td>
+              <td>Getting started</td>
+              <td><a href="/private/sample-project">/private/sample-project</a></td>
+              <td class="private-projects-admin__actions">
+                <a class="kbm-btn kbm-btn-outline" href="/private/sample-project">View Project</a>
+                <span
+                  class="kbm-btn kbm-btn-outline is-disabled"
+                  role="link"
+                  aria-disabled="true"
+                  tabindex="-1"
+                >
+                  Edit Draft
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>Jill Raglan</td>
+              <td><code>jill-raglan</code></td>
+              <td></td>
+              <td><a href="/private/jill-raglan">/private/jill-raglan</a></td>
+              <td class="private-projects-admin__actions">
+                <a class="kbm-btn kbm-btn-outline" href="/private/jill-raglan">View Project</a>
+                <a
+                  class="kbm-btn kbm-btn-outline"
+                  href="/admin/private-projects?slug=jill-raglan#new-project-heading"
+                >
+                  Edit Draft
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="admin-panel" aria-labelledby="new-project-heading">
+      <h2 id="new-project-heading" class="private-projects-admin__section-title">
+        New Project Draft
+      </h2>
+      <form id="private-project-draft-form" class="private-projects-admin__form" action="#" method="post">
+        <div class="private-projects-admin__form-actions private-projects-admin__form-actions--top">
+          <button type="button" id="draft-save-top" class="kbm-btn kbm-btn-primary">Save Draft</button>
+          <button type="button" id="draft-export-top" class="kbm-btn kbm-btn-outline">Export Project JSON</button>
+          <button type="button" id="draft-load-top" class="kbm-btn kbm-btn-outline">Load Draft</button>
+          <button type="button" id="draft-clear-top" class="kbm-btn kbm-btn-outline">Clear Draft</button>
+          <p id="draft-status-message" class="private-projects-admin__status" aria-live="polite"></p>
+        </div>
+
+        <div class="private-projects-admin__grid">
+          <label class="private-projects-admin__field">
+            <span>Project name</span>
+            <input type="text" name="projectName" placeholder="Custom Machine Knitting Project" />
+          </label>
+          <label class="private-projects-admin__field">
+            <span>Project slug</span>
+            <input type="text" name="projectSlug" placeholder="sample-project" />
+          </label>
+          <label class="private-projects-admin__field">
+            <span>Knitter name</span>
+            <input type="text" name="knitterName" placeholder="Knit It Now Member" />
+          </label>
+          <label class="private-projects-admin__field">
+            <span>Current status</span>
+            <input type="text" name="currentStatus" placeholder="Getting started" />
+          </label>
+        </div>
+
+        <label class="private-projects-admin__field">
+          <span>Intro note</span>
+          <textarea name="introNote" rows={3} placeholder="Welcome to your custom workspace."></textarea>
+        </label>
+
+        <label class="private-projects-admin__field">
+          <span>Start here instructions</span>
+          <textarea
+            name="startHereInstructions"
+            rows={4}
+            placeholder="Step-by-step setup notes for this project."
+          ></textarea>
+        </label>
+
+        <div class="private-projects-admin__form-actions">
+          <button type="button" id="draft-save-bottom" class="kbm-btn kbm-btn-primary">Save Draft</button>
+          <button type="button" id="draft-export-bottom" class="kbm-btn kbm-btn-outline">Export Project JSON</button>
+          <button type="button" id="draft-load-bottom" class="kbm-btn kbm-btn-outline">Load Draft</button>
+          <button type="button" id="draft-clear-bottom" class="kbm-btn kbm-btn-outline">Clear Draft</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="admin-panel" aria-labelledby="video-items-heading">
+      <h2 id="video-items-heading" class="private-projects-admin__section-title">
+        Video Items
+      </h2>
+      <p class="private-projects-admin__subnote">
+        Placeholder blocks for planning workspace video entries.
+      </p>
+      <div class="private-projects-admin__video-list">
+        {
+          [1, 2, 3].map((index) => (
+            <article class="private-projects-admin__video-card" aria-label={`Video item ${index}`}>
+              <h3 class="private-projects-admin__video-title">Video Item {index}</h3>
+              <div class="private-projects-admin__grid">
+                <label class="private-projects-admin__field">
+                  <span>Type</span>
+                  <input type="text" name={`videoType${index}`} placeholder="video" />
+                </label>
+                <label class="private-projects-admin__field">
+                  <span>Video title</span>
+                  <input type="text" name={`videoTitle${index}`} placeholder={`Video title ${index}`} />
+                </label>
+                <label class="private-projects-admin__field">
+                  <span>Added date</span>
+                  <input type="text" name={`videoDate${index}`} placeholder="YYYY-MM-DD" />
+                </label>
+              </div>
+              <label class="private-projects-admin__field">
+                <span>Notes</span>
+                <textarea name={`videoNotes${index}`} rows={3} placeholder="Short notes for this video."></textarea>
+              </label>
+              <div class="private-projects-admin__grid">
+                <label class="private-projects-admin__field">
+                  <span>Vimeo ID or video URL</span>
+                  <input type="text" name={`videoSource${index}`} placeholder="123456789 or https://vimeo.com/..." />
+                </label>
+                <label class="private-projects-admin__field">
+                  <span>Download link text</span>
+                  <input type="text" name={`downloadText${index}`} placeholder="Download worksheet" />
+                </label>
+              </div>
+              <label class="private-projects-admin__field">
+                <span>Download URL</span>
+                <input type="text" name={`downloadUrl${index}`} placeholder="https://example.com/download.pdf" />
+              </label>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="admin-panel" aria-labelledby="hyvor-settings-heading">
+      <h2 id="hyvor-settings-heading" class="private-projects-admin__section-title">
+        Hyvor Settings
+      </h2>
+      <div class="private-projects-admin__grid">
+        <label class="private-projects-admin__field">
+          <span>Hyvor website ID</span>
+          <input type="text" name="hyvorWebsiteId" value="14706" readonly />
+        </label>
+        <label class="private-projects-admin__field">
+          <span>Hyvor conversation ID / page ID</span>
+          <input type="text" name="hyvorPageId" placeholder="sample-project" />
+          <small>Suggested default: same as project slug.</small>
+        </label>
+      </div>
+    </section>
+  </main>
+
+  <style>
+    :global(body.private-projects-admin-body) {
+      margin: 0;
+    }
+
+    .private-projects-admin {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: calc(var(--header-height, 7rem) + 1.5rem) 1rem 3rem;
+      box-sizing: border-box;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .private-projects-admin__head {
+      margin-bottom: 0.3rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .private-projects-admin__title {
+      margin: 0 0 0.35rem 0;
+      color: #243015;
+      font-size: 1.65rem;
+      line-height: 1.2;
+    }
+
+    .private-projects-admin__intro {
+      margin: 0;
+      color: #475569;
+      font-size: 0.96rem;
+      line-height: 1.5;
+      max-width: 44rem;
+    }
+
+    .admin-panel {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .private-projects-admin__section-title {
+      margin: 0 0 0.75rem 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #243015;
+    }
+
+    .private-projects-admin__subnote {
+      margin: 0 0 0.9rem 0;
+      color: #64748b;
+      font-size: 0.92rem;
+    }
+
+    .private-projects-admin__table-wrap {
+      overflow-x: auto;
+    }
+
+    .private-projects-admin__table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.93rem;
+    }
+
+    .private-projects-admin__table th,
+    .private-projects-admin__table td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0.65rem 0.5rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .private-projects-admin__table th {
+      background: #f8fafc;
+      color: #243015;
+      font-weight: 700;
+    }
+
+    .private-projects-admin__table code {
+      font-size: 0.86em;
+      background: #f1f5f9;
+      border-radius: 4px;
+      padding: 0.1rem 0.35rem;
+    }
+
+    .private-projects-admin__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+
+    .private-projects-admin__actions .kbm-btn {
+      font-size: 0.84rem;
+      padding: 0.34rem 0.55rem;
+      text-decoration: none;
+    }
+
+    .private-projects-admin__actions .is-disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .private-projects-admin__form {
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .private-projects-admin__grid {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .private-projects-admin__field {
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .private-projects-admin__field > span {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .private-projects-admin__field input,
+    .private-projects-admin__field textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.55rem 0.7rem;
+      font-size: 0.92rem;
+      color: #0f172a;
+      background: #fff;
+      font-family: inherit;
+    }
+
+    .private-projects-admin__field textarea {
+      resize: vertical;
+    }
+
+    .private-projects-admin__field input:focus,
+    .private-projects-admin__field textarea:focus {
+      outline: 2px solid #86a944;
+      outline-offset: 1px;
+      border-color: #86a944;
+    }
+
+    .private-projects-admin__field small {
+      color: #64748b;
+      font-size: 0.82rem;
+    }
+
+    .private-projects-admin__form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .private-projects-admin__form-actions--top {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 0.65rem;
+      background: #f8fafc;
+    }
+
+    .private-projects-admin__status {
+      margin: 0;
+      color: #334155;
+      font-size: 0.9rem;
+      min-height: 1.35em;
+    }
+
+    .private-projects-admin__status.is-ok {
+      color: #166534;
+      font-weight: 600;
+    }
+
+    .private-projects-admin__status.is-error {
+      color: #b91c1c;
+      font-weight: 600;
+    }
+
+    .private-projects-admin__video-list {
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .private-projects-admin__video-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 0.85rem;
+      display: grid;
+      gap: 0.7rem;
+      background: #fff;
+    }
+
+    .private-projects-admin__video-title {
+      margin: 0;
+      font-size: 1rem;
+      color: #1e293b;
+    }
+
+    @media (min-width: 720px) {
+      .private-projects-admin {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+      }
+
+      .private-projects-admin__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+
+  <script define:vars={{ projectDraftSeeds }}>
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedSlug = (urlParams.get("slug") || "").trim().toLowerCase();
+    const DRAFT_KEY = selectedSlug ? `privateProjectDraft:${selectedSlug}` : "privateProjectDraft";
+    const formEl = document.getElementById("private-project-draft-form");
+    const statusEl = document.getElementById("draft-status-message");
+
+    function setStatus(message, kind = "neutral") {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.classList.toggle("is-ok", kind === "ok");
+      statusEl.classList.toggle("is-error", kind === "error");
+    }
+
+    function getField(name) {
+      const inForm = formEl?.elements?.namedItem?.(name);
+      if (inForm) return inForm;
+      return document.querySelector(`[name="${name}"]`);
+    }
+
+    function getTextValue(name) {
+      const input = getField(name);
+      return input?.value?.trim?.() ?? "";
+    }
+
+    function setTextValue(name, value) {
+      const input = getField(name);
+      if (!input) return;
+      input.value = typeof value === "string" ? value : "";
+    }
+
+    function normalizeDraftInput(raw) {
+      const source = raw && typeof raw === "object" ? raw : {};
+      const hyvor = source.hyvor && typeof source.hyvor === "object" ? source.hyvor : {};
+      const normalizedMaterials = Array.isArray(source.materials)
+        ? source.materials.map((item) => {
+            const row = item && typeof item === "object" ? item : {};
+            const download = row.download && typeof row.download === "object" ? row.download : {};
+            return {
+              type: row.type,
+              title: row.title,
+              date: row.date,
+              notes: row.notes,
+              videoUrl: row.videoUrl,
+              downloadText: row.downloadText ?? download.text,
+              downloadUrl: row.downloadUrl ?? download.url,
+            };
+          })
+        : [];
+
+      return {
+        projectName: source.projectName ?? source.title,
+        slug: source.slug,
+        knitterName: source.knitterName ?? source.knitter,
+        status: source.status,
+        intro: source.intro,
+        startHere: source.startHere,
+        hyvorId: source.hyvorId ?? hyvor.websiteId,
+        hyvorPageId: source.hyvorPageId ?? hyvor.pageId,
+        materials: normalizedMaterials,
+      };
+    }
+
+    function collectDraft() {
+      const materials = [1, 2, 3].map((index) => ({
+        type: getTextValue(`videoType${index}`),
+        title: getTextValue(`videoTitle${index}`),
+        date: getTextValue(`videoDate${index}`),
+        notes: getTextValue(`videoNotes${index}`),
+        videoUrl: getTextValue(`videoSource${index}`),
+        downloadText: getTextValue(`downloadText${index}`),
+        downloadUrl: getTextValue(`downloadUrl${index}`),
+      }));
+
+      return {
+        projectName: getTextValue("projectName"),
+        slug: getTextValue("projectSlug"),
+        knitterName: getTextValue("knitterName"),
+        status: getTextValue("currentStatus"),
+        intro: getTextValue("introNote"),
+        startHere: getTextValue("startHereInstructions"),
+        hyvorId: getTextValue("hyvorWebsiteId"),
+        hyvorPageId: getTextValue("hyvorPageId"),
+        materials,
+      };
+    }
+
+    function applyDraft(draft) {
+      const normalizedDraft = normalizeDraftInput(draft);
+      setTextValue("projectName", normalizedDraft.projectName);
+      setTextValue("projectSlug", normalizedDraft.slug);
+      setTextValue("knitterName", normalizedDraft.knitterName);
+      setTextValue("currentStatus", normalizedDraft.status);
+      setTextValue("introNote", normalizedDraft.intro);
+      setTextValue("startHereInstructions", normalizedDraft.startHere);
+      setTextValue("hyvorWebsiteId", normalizedDraft.hyvorId ?? "14706");
+      setTextValue("hyvorPageId", normalizedDraft.hyvorPageId);
+
+      const materials = Array.isArray(normalizedDraft.materials) ? normalizedDraft.materials : [];
+      for (let i = 1; i <= 3; i += 1) {
+        const row = materials[i - 1];
+        setTextValue(`videoType${i}`, row?.type);
+        setTextValue(`videoTitle${i}`, row?.title);
+        setTextValue(`videoDate${i}`, row?.date);
+        setTextValue(`videoNotes${i}`, row?.notes);
+        setTextValue(`videoSource${i}`, row?.videoUrl);
+        setTextValue(`downloadText${i}`, row?.downloadText);
+        setTextValue(`downloadUrl${i}`, row?.downloadUrl);
+      }
+    }
+
+    function clearFields() {
+      if (!formEl) return;
+      formEl.reset();
+      setTextValue("hyvorWebsiteId", "14706");
+    }
+
+    function saveDraft() {
+      try {
+        const draft = collectDraft();
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        setStatus("Draft saved in this browser", "ok");
+      } catch {
+        setStatus("Could not save draft in this browser.", "error");
+      }
+    }
+
+    function collectProjectJson() {
+      const materials = [1, 2, 3].map((index) => ({
+        type: getTextValue(`videoType${index}`),
+        title: getTextValue(`videoTitle${index}`),
+        date: getTextValue(`videoDate${index}`),
+        notes: getTextValue(`videoNotes${index}`),
+        videoUrl: getTextValue(`videoSource${index}`),
+        download: {
+          text: getTextValue(`downloadText${index}`),
+          url: getTextValue(`downloadUrl${index}`),
+        },
+      }));
+
+      const hyvorWebsiteIdRaw = getTextValue("hyvorWebsiteId");
+      const hyvorWebsiteId = Number.parseInt(hyvorWebsiteIdRaw, 10);
+
+      return {
+        title: getTextValue("projectName"),
+        slug: getTextValue("projectSlug"),
+        knitter: getTextValue("knitterName"),
+        status: getTextValue("currentStatus"),
+        intro: getTextValue("introNote"),
+        startHere: getTextValue("startHereInstructions"),
+        hyvor: {
+          websiteId: Number.isNaN(hyvorWebsiteId) ? 14706 : hyvorWebsiteId,
+          pageId: getTextValue("hyvorPageId"),
+        },
+        materials,
+      };
+    }
+
+    function exportProjectJson() {
+      try {
+        const projectData = collectProjectJson();
+        const json = JSON.stringify(projectData, null, 2);
+        const blob = new Blob([json], { type: "application/json" });
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        const rawSlug = projectData.slug ?? "";
+        const sanitizedBase = rawSlug
+          .toLowerCase()
+          .trim()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9\-_]/g, "");
+        const filename = sanitizedBase ? `${sanitizedBase}.json` : "project.json";
+
+        link.href = objectUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(objectUrl);
+
+        setStatus("JSON file downloaded", "ok");
+      } catch {
+        setStatus("Could not export project JSON.", "error");
+      }
+    }
+
+    function loadDraft(announce = true) {
+      try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (raw) {
+        const parsed = JSON.parse(raw);
+          applyDraft(parsed);
+          if (announce) setStatus("Draft loaded from this browser.", "ok");
+          return;
+        }
+
+        if (selectedSlug && projectDraftSeeds && typeof projectDraftSeeds === "object") {
+          const projectJson = projectDraftSeeds[selectedSlug];
+          if (projectJson && typeof projectJson === "object") {
+            applyDraft(projectJson);
+            if (announce) setStatus("Loaded project JSON for editing.", "ok");
+            return;
+          }
+        }
+
+        if (announce) setStatus("No saved draft found in this browser.");
+      } catch {
+        if (announce) setStatus("Saved draft could not be loaded.", "error");
+      }
+    }
+
+    function clearDraft() {
+      localStorage.removeItem(DRAFT_KEY);
+      clearFields();
+      setStatus("Draft cleared from this browser.", "ok");
+    }
+
+    function wireButton(id, action) {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      btn.addEventListener("click", action);
+    }
+
+    wireButton("draft-save-top", saveDraft);
+    wireButton("draft-save-bottom", saveDraft);
+    wireButton("draft-export-top", exportProjectJson);
+    wireButton("draft-export-bottom", exportProjectJson);
+    wireButton("draft-load-top", () => loadDraft(true));
+    wireButton("draft-load-bottom", () => loadDraft(true));
+    wireButton("draft-clear-top", clearDraft);
+    wireButton("draft-clear-bottom", clearDraft);
+
+    loadDraft(false);
+  </script>
+</BaseLayout>

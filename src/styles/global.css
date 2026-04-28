@@ -2412,3 +2412,73 @@ a.kbm-btn--primary:hover {
   opacity: 0.6;
   color: #52682d;
 }
+
+/* ============================================
+   Workspace Layout (Private Project Pages)
+   ============================================ */
+.workspace-header {
+  border-bottom: 1px solid var(--color-border, var(--ring));
+  background: #fff;
+}
+
+.workspace-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+}
+
+.workspace-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--kbm-green);
+  text-decoration: none;
+}
+
+.workspace-logo:hover {
+  color: var(--kbm-green-hover);
+}
+
+.workspace-logo__img {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+
+.workspace-logo__text {
+  font-family: var(--font);
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.workspace-label {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.workspace-footer {
+  border-top: 1px solid var(--color-border, var(--ring));
+  padding: 12px 0;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.workspace-footer__inner {
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .workspace-header__inner {
+    padding: 10px 12px;
+  }
+
+  .workspace-logo__text {
+    font-size: 1.05rem;
+  }
+
+  .workspace-label {
+    display: none;
+  }
+}
