@@ -11,6 +11,11 @@ export type PublicVideoRow = {
   access_level?: string;
   /** Public exception: featured Tuesday Tip plays for everyone. */
   isTipOfWeek?: boolean;
+  /** Alias used by admin editing; mirrored with isTipOfWeek. */
+  tipOfWeek?: boolean;
+  tipHeadline?: string;
+  tipNote?: string;
+  tipHistory?: Array<{ date: string; headline?: string; note?: string }>;
   /** Optional: future transcript / search pipeline */
   transcript_json?: unknown;
   vtt_url?: string;

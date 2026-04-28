@@ -79,7 +79,7 @@ const posterSrc =
                 <div class="locked-overlay">
                   <h2 class="locked-title">Full video available to members</h2>
                   <p class="locked-text">
-                    Watch the complete tutorial, scan key sections with jump links, and reference the transcript anytime.
+                    Watch the complete tutorial and scan key sections with jump links.
                   </p>
 
                   <div class="locked-actions">
@@ -123,28 +123,12 @@ const posterSrc =
             <h2>Description</h2>
             <div class="video-desc-text" set:html={description}></div>
           </section>
-
-          {/* TRANSCRIPT LINK (no transcript content for non-members) */}
-          <section class="video-transcript-link">
-            <h2>Transcript</h2>
-
-            <div class="gated-locked" data-gated="locked">
-              <a class="transcript-link is-disabled" aria-disabled="true" role="link" tabindex="-1">
-                View transcript (members)
-              </a>
-            </div>
-
-            <div class="gated-content" data-gated="content" hidden>
-              {/* If you have a real transcript route, link it here */}
-              <a class="transcript-link" href={`/videos/${id}/transcript`}>View transcript</a>
-            </div>
-          </section>
         </article>
 
         <script>
           import { hasKinVideoAccess, logKinVideoAccessDebug } from "../../lib/kinVideoAccess";
 
-          // --- Memberstack: client-side unlock for jump links / transcript (hasVideoAccess / kin-access) ---
+          // --- Memberstack: client-side unlock for jump links (hasVideoAccess / kin-access) ---
           /* Paid-tier plan IDs: used only for isMember. Unlock uses hasVideoAccess (kin-access only). */
           const MEMBER_PLAN_IDS = new Set([
             "pln_kin-membership-annual-qf9g01et",
@@ -179,7 +163,7 @@ const posterSrc =
             const hasVideoAccess =
               Boolean(member) && hasKinVideoAccess(rawKinAccess);
 
-            logKinVideoAccessDebug("videos/[id].jumpLinksTranscript", {
+            logKinVideoAccessDebug("videos/[id].jumpLinks", {
               member,
               rawKinAccess,
               finalHasVideoAccess: hasVideoAccess,
@@ -242,7 +226,6 @@ const posterSrc =
           .locked-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
           .btn { padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,.35); color: white; text-decoration: none; }
           .btn-primary { background: rgba(255,255,255,.15); }
-          .transcript-link.is-disabled { opacity: .55; cursor: not-allowed; text-decoration: none; }
         </style>
       </>
     )}

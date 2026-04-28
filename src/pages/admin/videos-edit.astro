@@ -63,9 +63,17 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
             <span>vimeo_id <em class="req">*</em></span>
             <input type="number" name="vimeo_id" id="field-vimeo_id" required min="1" step="1" />
           </label>
-          <label class="checkbox-label field-full">
-            <input type="checkbox" name="isTipOfWeek" id="field-isTipOfWeek" />
-            <span>isTipOfWeek</span>
+          <label class="checkbox-label field-full tip-current-wrap">
+            <input type="checkbox" name="tipOfWeek" id="field-tipOfWeek" />
+            <span>Current Tuesday Tip</span>
+          </label>
+          <label class="field-full">
+            <span>Tuesday Tip Headline</span>
+            <input type="text" name="tipHeadline" id="field-tipHeadline" />
+          </label>
+          <label class="field-full">
+            <span>Tuesday Tip Note</span>
+            <textarea name="tipNote" id="field-tipNote" rows="3"></textarea>
           </label>
           <label>
             <span>videoType</span>
@@ -97,6 +105,18 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
             <span>search_ready (future indexing)</span>
           </label>
         </div>
+
+        <section class="field-full tip-history-panel" aria-labelledby="tip-history-heading">
+          <div class="tip-history-head">
+            <h3 id="tip-history-heading">Tuesday Tip History</h3>
+            <p id="tip-history-summary" class="tip-history-summary">Used 0 times</p>
+          </div>
+          <p id="tip-history-badge" class="tip-history-badge" hidden>Used as Tuesday Tip before</p>
+          <p id="tip-current-badge" class="tip-current-badge" hidden>Currently featured as Tuesday Tip</p>
+          <p id="tip-multi-warning" class="tip-multi-warning" hidden></p>
+          <div id="tip-history-list" class="tip-history-list"></div>
+          <button type="button" id="btn-add-tip-history" class="kbm-btn kbm-btn-outline">Add history entry</button>
+        </section>
 
         <div class="help-hub-admin__form-actions help-hub-admin__form-actions--sticky">
           <button type="button" id="btn-save-video" class="kbm-btn kbm-btn-primary">Save</button>
@@ -267,11 +287,101 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       line-height: 1.45;
       max-height: 360px;
     }
+    .tip-current-wrap {
+      padding: 0.55rem 0.7rem;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+    }
+    .tip-current-wrap.is-current-tip {
+      border-color: #15803d;
+      background: #dcfce7;
+    }
+    .tip-history-panel {
+      margin-top: 0.9rem;
+      padding: 0.8rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: #f8fafc;
+    }
+    .tip-history-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+    .tip-history-head h3 {
+      margin: 0;
+      color: #243015;
+      font-size: 1rem;
+    }
+    .tip-history-summary {
+      margin: 0;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #334155;
+    }
+    .tip-history-badge,
+    .tip-current-badge,
+    .tip-multi-warning {
+      margin: 0 0 0.5rem 0;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      padding: 0.38rem 0.52rem;
+    }
+    .tip-history-badge {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+    .tip-current-badge {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+    }
+    .tip-multi-warning {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      font-weight: 600;
+    }
+    .tip-history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin: 0.75rem 0;
+    }
+    .tip-history-item {
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 0.7rem;
+      background: #fff;
+    }
+    .tip-history-item-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.5rem;
+    }
+    .tip-history-item-head strong {
+      color: #334155;
+      font-size: 0.9rem;
+    }
+    .tip-history-item .field-grid {
+      margin-bottom: 0.5rem;
+    }
+    .tip-history-empty {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #64748b;
+    }
   </style>
 
   <script>
     const API_BASE = "/api/admin/videos";
     type VideoRow = Record<string, unknown>;
+    type TipHistoryEntry = { date: string; headline?: string; note?: string };
 
     let videos: VideoRow[] = [];
     let baseline: VideoRow | null = null;
@@ -286,6 +396,14 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     const form = document.getElementById("videos-edit-form") as HTMLFormElement | null;
     const btnDelete = document.getElementById("btn-delete-video") as HTMLButtonElement | null;
     const jsonPreviewEl = document.getElementById("videos-json-preview");
+    const tipHistoryListEl = document.getElementById("tip-history-list");
+    const tipHistorySummaryEl = document.getElementById("tip-history-summary");
+    const tipHistoryBadgeEl = document.getElementById("tip-history-badge");
+    const tipCurrentBadgeEl = document.getElementById("tip-current-badge");
+    const tipMultiWarningEl = document.getElementById("tip-multi-warning");
+    const tipCurrentWrapEl = form?.querySelector(".tip-current-wrap");
+
+    let tipHistoryDraft: TipHistoryEntry[] = [];
 
     function stableVideoKey(v: VideoRow): string {
       const s = typeof v.slug === "string" ? v.slug.trim() : "";
@@ -344,6 +462,141 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         if (Number.isFinite(n)) return n;
       }
       return t;
+    }
+
+    function tipHistoryFromUnknown(value: unknown): TipHistoryEntry[] {
+      if (!Array.isArray(value)) return [];
+      const out: TipHistoryEntry[] = [];
+      for (const item of value) {
+        if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+        const rec = item as Record<string, unknown>;
+        const date = typeof rec.date === "string" ? rec.date.trim() : "";
+        if (!date) continue;
+        const entry: TipHistoryEntry = { date };
+        const headline = typeof rec.headline === "string" ? rec.headline.trim() : "";
+        const note = typeof rec.note === "string" ? rec.note.trim() : "";
+        if (headline) entry.headline = headline;
+        if (note) entry.note = note;
+        out.push(entry);
+      }
+      return out;
+    }
+
+    function updateTipVisualState() {
+      const currentChecked = Boolean(
+        (form?.elements?.namedItem("tipOfWeek") as HTMLInputElement | null)?.checked
+      );
+      tipCurrentWrapEl?.classList.toggle("is-current-tip", currentChecked);
+      if (tipCurrentBadgeEl) tipCurrentBadgeEl.hidden = !currentChecked;
+      if (tipHistorySummaryEl) {
+        const times = tipHistoryDraft.length;
+        tipHistorySummaryEl.textContent = `Used ${times} ${times === 1 ? "time" : "times"}`;
+      }
+      if (tipHistoryBadgeEl) tipHistoryBadgeEl.hidden = tipHistoryDraft.length === 0;
+
+      if (tipMultiWarningEl) {
+        let trueCount = videos.reduce((count, v) => {
+          const value = stableVideoKey(v) === editingKey ? currentChecked : Boolean(v.tipOfWeek ?? v.isTipOfWeek);
+          return count + (value ? 1 : 0);
+        }, 0);
+        if (editingKey === null && currentChecked) trueCount += 1;
+        if (trueCount > 1) {
+          tipMultiWarningEl.textContent = `Warning: ${trueCount} videos are marked as Current Tuesday Tip.`;
+          tipMultiWarningEl.hidden = false;
+        } else {
+          tipMultiWarningEl.textContent = "";
+          tipMultiWarningEl.hidden = true;
+        }
+      }
+    }
+
+    function renderTipHistoryEditor() {
+      if (!tipHistoryListEl) return;
+      tipHistoryListEl.innerHTML = "";
+      if (!tipHistoryDraft.length) {
+        const empty = document.createElement("p");
+        empty.className = "tip-history-empty";
+        empty.textContent = "No history entries yet.";
+        tipHistoryListEl.appendChild(empty);
+        updateTipVisualState();
+        return;
+      }
+
+      tipHistoryDraft.forEach((entry, idx) => {
+        const card = document.createElement("article");
+        card.className = "tip-history-item";
+
+        const head = document.createElement("div");
+        head.className = "tip-history-item-head";
+        const title = document.createElement("strong");
+        title.textContent = `Entry ${idx + 1}`;
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "kbm-btn kbm-btn-accent";
+        removeBtn.setAttribute("data-remove-tip-history", String(idx));
+        removeBtn.textContent = "Remove";
+        head.append(title, removeBtn);
+
+        const grid = document.createElement("div");
+        grid.className = "field-grid";
+
+        const dateLabel = document.createElement("label");
+        const dateLabelText = document.createElement("span");
+        dateLabelText.textContent = "Date";
+        const dateInput = document.createElement("input");
+        dateInput.type = "date";
+        dateInput.setAttribute("data-tip-date", String(idx));
+        dateInput.value = entry.date;
+        dateLabel.append(dateLabelText, dateInput);
+
+        const headlineLabel = document.createElement("label");
+        headlineLabel.className = "field-full";
+        const headlineLabelText = document.createElement("span");
+        headlineLabelText.textContent = "Headline";
+        const headlineInput = document.createElement("input");
+        headlineInput.type = "text";
+        headlineInput.setAttribute("data-tip-headline", String(idx));
+        headlineInput.value = entry.headline ?? "";
+        headlineLabel.append(headlineLabelText, headlineInput);
+
+        const noteLabel = document.createElement("label");
+        noteLabel.className = "field-full";
+        const noteLabelText = document.createElement("span");
+        noteLabelText.textContent = "Note";
+        const noteInput = document.createElement("textarea");
+        noteInput.setAttribute("data-tip-note", String(idx));
+        noteInput.rows = 3;
+        noteInput.value = entry.note ?? "";
+        noteLabel.append(noteLabelText, noteInput);
+
+        grid.append(dateLabel, headlineLabel, noteLabel);
+        card.append(head, grid);
+        tipHistoryListEl.appendChild(card);
+      });
+      updateTipVisualState();
+    }
+
+    function syncTipHistoryDraftFromDom() {
+      if (!tipHistoryListEl) return;
+      tipHistoryDraft = tipHistoryDraft
+        .map((_, idx) => {
+          const dateEl = tipHistoryListEl.querySelector(`[data-tip-date="${idx}"]`);
+          const headlineEl = tipHistoryListEl.querySelector(`[data-tip-headline="${idx}"]`);
+          const noteEl = tipHistoryListEl.querySelector(`[data-tip-note="${idx}"]`);
+          const date =
+            dateEl instanceof HTMLInputElement && typeof dateEl.value === "string" ? dateEl.value.trim() : "";
+          const headline =
+            headlineEl instanceof HTMLInputElement && typeof headlineEl.value === "string"
+              ? headlineEl.value.trim()
+              : "";
+          const note =
+            noteEl instanceof HTMLTextAreaElement && typeof noteEl.value === "string" ? noteEl.value.trim() : "";
+          const next: TipHistoryEntry = { date };
+          if (headline) next.headline = headline;
+          if (note) next.note = note;
+          return next;
+        });
+      updateTipVisualState();
     }
 
     function refreshJsonPreview() {
@@ -419,10 +672,6 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       if (vt) row.videoType = vt;
       else delete row.videoType;
 
-      row.isTipOfWeek = Boolean(
-        (form?.elements?.namedItem("isTipOfWeek") as HTMLInputElement | null)?.checked
-      );
-
       const src = textVal("sourceVideoId");
       if (src) {
         const p = parseContentIdField(src);
@@ -445,6 +694,28 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         (form?.elements?.namedItem("search_ready") as HTMLInputElement | null)?.checked
       );
 
+      row.tipOfWeek = Boolean((form?.elements?.namedItem("tipOfWeek") as HTMLInputElement | null)?.checked);
+      row.isTipOfWeek = row.tipOfWeek;
+
+      const tipHeadline = textVal("tipHeadline");
+      if (tipHeadline) row.tipHeadline = tipHeadline;
+      else delete row.tipHeadline;
+
+      const tipNote = textVal("tipNote");
+      if (tipNote) row.tipNote = tipNote;
+      else delete row.tipNote;
+
+      syncTipHistoryDraftFromDom();
+      if (!silent) {
+        const badEntry = tipHistoryDraft.find((entry) => !entry.date);
+        if (badEntry) {
+          setStatus("Every Tuesday Tip history entry must include a date.", "err");
+          return null;
+        }
+      }
+      if (tipHistoryDraft.length) row.tipHistory = deepClone(tipHistoryDraft);
+      else delete row.tipHistory;
+
       return row;
     }
 
@@ -461,7 +732,11 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       setField("category", typeof row.category === "string" ? row.category : "");
       setField("subcategory", typeof row.subcategory === "string" ? row.subcategory : "");
       setField("vimeo_id", row.vimeo_id !== undefined ? String(row.vimeo_id) : "");
-      setCheckbox("isTipOfWeek", Boolean(row.isTipOfWeek));
+      setCheckbox("tipOfWeek", Boolean(row.tipOfWeek ?? row.isTipOfWeek));
+      setField("tipHeadline", typeof row.tipHeadline === "string" ? row.tipHeadline : "");
+      setField("tipNote", typeof row.tipNote === "string" ? row.tipNote : "");
+      tipHistoryDraft = tipHistoryFromUnknown(row.tipHistory);
+      renderTipHistoryEditor();
       setField("videoType", typeof row.videoType === "string" ? row.videoType : "");
       setField(
         "sourceVideoId",
@@ -490,7 +765,11 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       setField("category", "");
       setField("subcategory", "");
       setField("vimeo_id", "");
-      setCheckbox("isTipOfWeek", false);
+      setCheckbox("tipOfWeek", false);
+      setField("tipHeadline", "");
+      setField("tipNote", "");
+      tipHistoryDraft = [];
+      renderTipHistoryEditor();
       setField("videoType", "");
       setField("sourceVideoId", "");
       setField("clips", "");
@@ -611,6 +890,29 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       document.getElementById("btn-refresh-video-json-preview")?.addEventListener("click", refreshJsonPreview);
       form?.addEventListener("input", refreshJsonPreview);
       form?.addEventListener("change", refreshJsonPreview);
+      form?.addEventListener("change", updateTipVisualState);
+      tipHistoryListEl?.addEventListener("input", () => {
+        syncTipHistoryDraftFromDom();
+        refreshJsonPreview();
+      });
+      tipHistoryListEl?.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const removeIdxRaw = target.getAttribute("data-remove-tip-history");
+        if (removeIdxRaw === null) return;
+        const idx = Number.parseInt(removeIdxRaw, 10);
+        if (!Number.isFinite(idx)) return;
+        tipHistoryDraft = tipHistoryDraft.filter((_, i) => i !== idx);
+        renderTipHistoryEditor();
+        refreshJsonPreview();
+      });
+      document.getElementById("btn-add-tip-history")?.addEventListener("click", () => {
+        syncTipHistoryDraftFromDom();
+        const today = new Date().toISOString().slice(0, 10);
+        tipHistoryDraft.push({ date: today, headline: "", note: "" });
+        renderTipHistoryEditor();
+        refreshJsonPreview();
+      });
     }
 
     init();

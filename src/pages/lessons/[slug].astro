@@ -239,6 +239,7 @@ function lessonBlockIsRenderable(block: unknown): block is LessonBodyBlock {
 
 const renderableLessonBlocks = lessonBlocks.filter(lessonBlockIsRenderable);
 const hasRenderableLessonBlocks = renderableLessonBlocks.length > 0;
+const hasRenderableBlockVideos = renderableLessonBlocks.some((block) => block.type === "vimeo");
 
 const summaryHtml =
   typeof lesson.summary === "string" && lesson.summary.trim() !== ""
@@ -249,6 +250,7 @@ const showLessonBodyEmptyState =
   hasLessonBlocks && !hasRenderableLessonBlocks
     ? true
     : !hasLessonBlocks && !summaryHtml && !inlineVimeoSrc;
+const hasLessonModalVideo = hasLessonVideo || hasRenderableBlockVideos || Boolean(inlineVimeoSrc);
 
 const supportImageForPreview =
   typeof lesson.supportImage === "string" && lesson.supportImage.trim() !== ""
@@ -367,13 +369,19 @@ const lessonLibraryVideos: LessonLibraryVideoEmbed[] = lessonVideoSlugList
                         {videoLabel && (
                           <p class="lesson-video-block__label">{videoLabel}</p>
                         )}
-                        <div class="lesson-video-frame">
+                        <div class="lesson-video-frame lesson-video-frame--modal-trigger">
                           <iframe
                             src={`https://player.vimeo.com/video/${block.vimeoId}`}
                             title={iframeTitle}
                             allow="autoplay; fullscreen; picture-in-picture"
                             allowfullscreen
                             loading="lazy"
+                          />
+                          <button
+                            type="button"
+                            class="lesson-video-frame__open"
+                            aria-label={`Open larger video: ${iframeTitle}`}
+                            data-player-src={`https://player.vimeo.com/video/${block.vimeoId}`}
                           />
                         </div>
                       </div>
@@ -394,13 +402,19 @@ const lessonLibraryVideos: LessonLibraryVideoEmbed[] = lessonVideoSlugList
                 <>
                   {inlineVimeoSrc && (
                     <div class="lesson-block lesson-video-block">
-                      <div class="lesson-video-frame">
+                      <div class="lesson-video-frame lesson-video-frame--modal-trigger">
                         <iframe
                           src={inlineVimeoSrc}
                           title={lesson.title}
                           allow="autoplay; fullscreen; picture-in-picture"
                           allowfullscreen
                           loading="lazy"
+                        />
+                        <button
+                          type="button"
+                          class="lesson-video-frame__open"
+                          aria-label={`Open larger video: ${lesson.title}`}
+                          data-player-src={inlineVimeoSrc}
                         />
                       </div>
                     </div>
@@ -545,7 +559,7 @@ const lessonLibraryVideos: LessonLibraryVideoEmbed[] = lessonVideoSlugList
         </div>
       </div>
 
-      {hasLessonVideo && (
+      {hasLessonModalVideo && (
         <dialog
           id="lesson-video-modal"
           class="lesson-video-modal"
@@ -574,37 +588,55 @@ const lessonLibraryVideos: LessonLibraryVideoEmbed[] = lessonVideoSlugList
   </main>
 </Layout>
 
-{hasLessonVideo && (
+{hasLessonModalVideo && (
   <script is:inline>
     (function () {
       var openBtn = document.getElementById("lesson-video-open");
+      var inlineOpenBtns = Array.prototype.slice.call(
+        document.querySelectorAll(".lesson-video-frame__open"),
+      );
       var dialog = document.getElementById("lesson-video-modal");
       var iframe = document.getElementById("lesson-video-modal-iframe");
       var closeBtn = dialog ? dialog.querySelector(".lesson-video-modal__close") : null;
-      if (!openBtn || !dialog || !iframe) return;
+      if ((!openBtn && inlineOpenBtns.length === 0) || !dialog || !iframe) return;
 
       var baseSrc = dialog.getAttribute("data-player-src") || "";
+      var lastFocused = null;
 
       function withAutoplay(url) {
         if (!url) return "";
         return url + (url.indexOf("?") >= 0 ? "&" : "?") + "autoplay=1";
       }
 
-      function openModal() {
-        if (!baseSrc) return;
-        iframe.setAttribute("src", withAutoplay(baseSrc));
+      function openModal(src, trigger) {
+        var resolvedSrc = src || baseSrc;
+        if (!resolvedSrc) return;
+        lastFocused = trigger || document.activeElement;
+        iframe.setAttribute("src", withAutoplay(resolvedSrc));
         dialog.showModal();
         document.body.style.overflow = "hidden";
+        if (closeBtn && typeof closeBtn.focus === "function") closeBtn.focus();
       }
 
       function closeModal() {
         iframe.removeAttribute("src");
         dialog.close();
         document.body.style.overflow = "";
+        if (lastFocused && typeof lastFocused.focus === "function") {
+          lastFocused.focus();
+        }
       }
 
-      openBtn.addEventListener("click", function () {
-        openModal();
+      if (openBtn) {
+        openBtn.addEventListener("click", function () {
+          openModal(baseSrc, openBtn);
+        });
+      }
+
+      inlineOpenBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          openModal(btn.getAttribute("data-player-src") || "", btn);
+        });
       });
 
       if (closeBtn) {
@@ -872,6 +904,26 @@ const lessonLibraryVideos: LessonLibraryVideoEmbed[] = lessonVideoSlugList
     display: block;
   }
 
+  .lesson-video-frame--modal-trigger {
+    cursor: pointer;
+  }
+
+  .lesson-video-frame__open {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .lesson-video-frame__open:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: -2px;
+  }
+
   .lesson-empty {
     margin: 0;
     padding: 1.25rem 1.35rem;
@@ -1079,6 +1131,23 @@ const lessonLibraryVideos: LessonLibraryVideoEmbed[] = lessonVideoSlugList
     border: 0;
     border-radius: 8px;
     display: block;
+  }
+
+  @media (max-width: 768px) {
+    .lesson-video-modal[open] {
+      padding: 0.35rem;
+    }
+
+    .lesson-video-modal__inner {
+      width: 100%;
+      max-height: 100dvh;
+      border-radius: 10px;
+      padding: 0.4rem;
+    }
+
+    .lesson-video-modal__frame-wrap {
+      max-height: calc(100dvh - 1rem);
+    }
   }
 
   .lesson-support {
