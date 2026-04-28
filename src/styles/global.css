@@ -704,7 +704,7 @@ p {
   left: 0 !important;
   z-index: 3 !important;
 
-  padding: 14px 0 0 16px !important; width: 84px !important;
+  padding: 10px 0 !important; width: 84px !important;
   height: 84px !important;
  
   line-height: 1.1;
@@ -747,15 +747,44 @@ p {
   transform: rotate(-45deg);
   transform-origin: center center;
 }
+
+/* FREE-only text sizing/alignment override (keeps MEMBER behavior unchanged) */
+.kbm-card-ribbon--free::after {
+  top: 16px;
+  left: 20px;
+  font-size: 1rem;
+  transform: rotate(-52deg);
+  transform-origin: center;
+}
 .kbm-card-ribbon--member::after {
-  top: 28px;
-  left: 2px;
+  content: none;
+}
+.kbm-card-ribbon--member {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+.kbm-ribbon-icon {
+  width: 18px;
+  height: 18px;
+  color: #fff;
 }
 .kbm-card-ribbon--soon::after {
-  top: 26px;
-  left: 2px;
+  top: 23px;
+  left: 12px;
   font-size: 0.58rem;
   letter-spacing: 0.04em;
+  transform: rotate(-52deg);
+  transform-origin: center;
+}
+
+/* Video cards: refine spacing between thumbnail, title, and description */
+.video-card h3 {
+  margin-top: 12px;
+}
+
+.video-card p {
+  margin-top: 8px;
 }
 
 .tool-card-link.disabled {
