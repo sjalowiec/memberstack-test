@@ -8,7 +8,7 @@ import { getPreviewMember } from "../../lib/getPreviewMember";
 // Set the Vimeo video ID for the featured tip card. Leave empty to hide the card.
 // Link, thumbnail, and title are resolved from videos-public.json by matching vimeo_id.
 const featuredTipVideo = Array.isArray(videos)
-  ? videos.find((v: { isTipOfWeek?: boolean }) => v.isTipOfWeek === true)
+  ? videos.find((v: { tipOfWeek?: boolean; isTipOfWeek?: boolean }) => v.tipOfWeek === true || v.isTipOfWeek === true)
   : null;
 const indexQuery = Astro.url.search || "";
 const featuredTipHref = featuredTipVideo
@@ -21,7 +21,16 @@ const featuredTipHref = featuredTipVideo
 const featuredTip = featuredTipVideo
   ? {
       href: featuredTipHref,
-      title: (featuredTipVideo as { title?: string }).title ?? "This Week's Quick Win",
+      isTipOfWeek:
+        (featuredTipVideo as { isTipOfWeek?: boolean; tipOfWeek?: boolean }).isTipOfWeek === true ||
+        (featuredTipVideo as { isTipOfWeek?: boolean; tipOfWeek?: boolean }).tipOfWeek === true,
+      tipHeadline: (featuredTipVideo as { tipHeadline?: string }).tipHeadline ?? "",
+      tipNote: (featuredTipVideo as { tipNote?: string }).tipNote ?? "",
+      title: (featuredTipVideo as { title?: string }).title ?? "",
+      description:
+        (featuredTipVideo as { description?: string; summary?: string }).description ??
+        (featuredTipVideo as { description?: string; summary?: string }).summary ??
+        "",
       posterUrl: (featuredTipVideo as { posterUrl?: string }).posterUrl ?? (featuredTipVideo as { poster_url?: string }).poster_url ?? "",
     }
   : null;
@@ -61,25 +70,27 @@ const forceMemberView =
             this library gives you a place to start.
           </p>
         </div>
-        {/* Tuesday Tip / Weekly Quick Win: KBM card with ribbon, SVG, title, thumbnail + play overlay */}
+        {/* Tuesday Tip / Weekly Quick Win: KBM card with SVG, title, thumbnail + play overlay */}
         {featuredTip && (
           <aside class="tuesday-tip-feature" aria-label="Tuesday Tip">
             <a href={featuredTip.href} class="kbm-card tip-of-week-card">
-              <span class="kbm-card-ribbon">Latest</span>
               <img
                 src="/images/tuesday-tip.svg"
                 class="tip-header"
                 alt="Tuesday Tip"
               />
-              {featuredTip.title && (
-                <h3 class="tip-title">{featuredTip.title}</h3>
+              {featuredTip.tipHeadline && (
+                <h3 class="kbm-tip-headline">{featuredTip.tipHeadline}</h3>
+              )}
+              {featuredTip.tipNote && (
+                <p class="kbm-tip-note">{featuredTip.tipNote}</p>
               )}
               <div class="tip-thumb-wrap">
                 {featuredTip.posterUrl ? (
                   <>
                     <img
                       src={featuredTip.posterUrl}
-                      alt={featuredTip.title}
+                      alt={featuredTip.tipHeadline || featuredTip.title || "Featured tip video"}
                       class="tip-image"
                       loading="lazy"
                     />
@@ -100,8 +111,30 @@ const forceMemberView =
       </div>
     </section>
 
-    <div class="video-toolbar">
-      <div class="video-category">
+    <div class="video-toolbar" aria-label="Video controls">
+      <section class="video-filter-search video-control-group" aria-labelledby="video-filter-search-title">
+        <h2 id="video-filter-search-title" class="video-filter-search__title">
+          <svg class="icon-search" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none"></circle>
+            <line x1="16.65" y1="16.65" x2="21" y2="21" stroke="currentColor" stroke-width="2"></line>
+          </svg>
+          <span>Find a Video</span>
+        </h2>
+        <div class="search-input-wrapper">
+          <svg class="icon-search" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none"></circle>
+            <line x1="16.65" y1="16.65" x2="21" y2="21" stroke="currentColor" stroke-width="2"></line>
+          </svg>
+          <input
+            id="videoSearch"
+            class="video-filter-search__input"
+            type="search"
+            placeholder="Search by title or description"
+            autocomplete="off"
+          />
+        </div>
+      </section>
+      <div class="video-category video-control-group">
         <div class="category-bar" id="categoryBar">
           <label for="category-select" class="sr-only">Category</label>
           <select id="category-select" class="sr-only" aria-label="Video category"></select>
@@ -113,25 +146,15 @@ const forceMemberView =
             aria-expanded="false"
             aria-controls="categoryMenu"
           >
-            <span class="category-prefix">Category:</span>
             <span id="categoryLabel" class="category-label">All Videos</span>
             <span class="category-chevron" aria-hidden="true">▾</span>
           </button>
           <div id="categoryMenu" class="category-menu" role="listbox" aria-label="Video categories" hidden></div>
         </div>
       </div>
-      <section class="video-filter-search" aria-labelledby="video-filter-search-title">
-        <h2 id="video-filter-search-title" class="video-filter-search__title">Find a Video</h2>
-        <input
-          id="videoSearch"
-          class="video-filter-search__input"
-          type="search"
-          placeholder="Search by title or description"
-          autocomplete="off"
-        />
-      </section>
     </div>
 
+    <p id="video-results-summary" class="video-results-summary" aria-live="polite" role="status"></p>
 
     <div id="video-grid" class="video-grid"></div>
     
@@ -184,7 +207,7 @@ const forceMemberView =
     let currentSort = initialSort;
     let searchTimer;
 
-    /* Paid-tier plan IDs: used only for VIEWER.isMember. Catalog lock badges use VIEWER.hasVideoAccess (kin-access). */
+    /* Paid-tier plan IDs: used only for VIEWER.isMember. */
     const MEMBER_PLAN_IDS = new Set([
       "pln_kin-membership-annual-qf9g01et",
       "pln_kin-membership-monthly-a59701wy",
@@ -269,6 +292,21 @@ const forceMemberView =
       updateUrl();
     }
 
+    function updateResultsSummary(count) {
+      const el = document.getElementById("video-results-summary");
+      if (!el) return;
+      const n = Number(count) || 0;
+      let msg = n === 1 ? "Showing 1 video" : "Showing " + n + " videos";
+      if (currentSearch) {
+        msg += " for '" + currentSearch + "'";
+      }
+      if (currentCategory) {
+        const catLabel = currentCategory === FREE_FILTER_VALUE ? "Free Videos" : currentCategory;
+        msg += " in " + catLabel;
+      }
+      el.textContent = msg;
+    }
+
     function render(cat) {
 
       currentCategory = cat || "";
@@ -290,6 +328,8 @@ const forceMemberView =
 
       filtered.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
 
+      updateResultsSummary(filtered.length);
+
       if (!grid) return;
 
       if (filtered.length === 0) {
@@ -302,19 +342,12 @@ const forceMemberView =
           " or take a look at this week's " +
           "<a href=\"tips\" class=\"video-grid-empty-state__link\">Tuesday Tip.</a>" +
           "</p>" +
+          "<button type=\"button\" class=\"kbm-clear-filters\">Clear all filters</button>" +
           "</div>" +
           "</div>";
         return;
       }
 
-      /* Video access: preview override (dev), dev bypass, or Memberstack hasVideoAccess (kin-access). */
-      const previewForce = window.__PREVIEW_FORCE_MEMBER__;
-      const hasAccess =
-        previewForce === true
-          ? true
-          : previewForce === false
-            ? false
-            : window.__DEV_BYPASS_GATING || window.__KBM_DEV_MEMBER__ || VIEWER.hasVideoAccess;
       const listParams = new URLSearchParams();
       if (currentCategory) {
         listParams.set("cat", currentCategory === FREE_FILTER_VALUE ? "free" : currentCategory);
@@ -325,26 +358,39 @@ const forceMemberView =
       const listQueryString = listQuery ? "?" + listQuery : "";
 
       grid.innerHTML = filtered.map(v => {
-        const isFree = isVideoFree(v);
         const baseHref = v.content_id ? "/videos/" + v.content_id : "/videos/" + (v.slug || "");
         const href = baseHref + listQueryString;
         const title = (v.title || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        const ribbon = !hasAccess && !isFree
-          ? "<span class=\"kbm-card-ribbon kbm-card-ribbon--member\" aria-label=\"Member-only video\"><svg class=\"kbm-ribbon-icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M12 1a5 5 0 00-5 5v3H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-1V6a5 5 0 00-5-5zm-3 8V6a3 3 0 016 0v3H9z\"/></svg></span>"
-          : "";
+        const catalogPlayOverlay =
+          "<span class=\"tip-play video-thumb__play\" aria-hidden=\"true\">" +
+          "<svg viewBox=\"0 0 68 68\" class=\"tip-play__icon\" focusable=\"false\">" +
+          "<circle cx=\"34\" cy=\"34\" r=\"34\"></circle>" +
+          "<polygon points=\"28,22 28,46 48,34\"></polygon>" +
+          "</svg></span>";
+        const lockOverlay =
+          v.access_level === "member"
+            ? "<span class=\"kbm-lock-overlay\" aria-label=\"Member-only video\"><i class=\"fa-solid fa-lock\" aria-hidden=\"true\"></i></span>"
+            : "";
         const poster = v.posterUrl
-          ? "<div class=\"video-thumb\"><img class=\"video-card__img\" src=\"" + v.posterUrl.replace(/"/g, "&quot;") + "\" alt=\"\" loading=\"lazy\" />" +
+          ? "<div class=\"video-thumb kbm-card-thumb\"><img class=\"video-card__img\" src=\"" +
+            v.posterUrl.replace(/"/g, "&quot;") +
+            "\" alt=\"\" loading=\"lazy\" />" +
+            catalogPlayOverlay +
+            lockOverlay +
             "</div>"
           : "";
         const desc = (v.description || v.summary || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
         return (
-          "<a class=\"kbm-card video-card\" href=\"" + href + "\">" +
-            ribbon +
+          "<a class=\"kbm-card video-card kbm-video-card\" href=\"" + href + "\">" +
             poster +
-            "<h3 class=\"kbm-card__title\">" + title + "</h3>" +
-            (desc ? "<p class=\"kbm-card__desc\">" + desc + "</p>" : "") +
-          "</a>"
+            "<div class=\"kbm-card-body\">" +
+            "<h3 class=\"kbm-card__title kbm-card-title\">" +
+            title +
+            "</h3>" +
+            (desc ? "<p class=\"kbm-card__desc kbm-card-description\">" + desc + "</p>" : "") +
+            "</div>" +
+            "</a>"
         );
       }).join("");
     }
@@ -394,7 +440,7 @@ const forceMemberView =
       // Add "All Videos"
       const allBtn = document.createElement("button");
       allBtn.type = "button";
-      allBtn.className = "category-option";
+      allBtn.className = "category-option kbm-dropdown-item";
       allBtn.setAttribute("role", "option");
       allBtn.setAttribute("data-value", "");
       allBtn.textContent = "All Videos";
@@ -402,7 +448,7 @@ const forceMemberView =
 
       const freeBtn = document.createElement("button");
       freeBtn.type = "button";
-      freeBtn.className = "category-option";
+      freeBtn.className = "category-option kbm-dropdown-item";
       freeBtn.setAttribute("role", "option");
       freeBtn.setAttribute("data-value", FREE_FILTER_VALUE);
       freeBtn.textContent = "Free Videos";
@@ -411,7 +457,7 @@ const forceMemberView =
       cats.forEach((c) => {
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "category-option";
+        btn.className = "category-option kbm-dropdown-item";
         btn.setAttribute("role", "option");
         btn.setAttribute("data-value", c);
         btn.textContent = c;
@@ -538,6 +584,19 @@ const forceMemberView =
     // Empty state "Try again" — re-render current category
     if (grid) {
       grid.addEventListener("click", function (e) {
+        const clearFilters = e.target && e.target.closest ? e.target.closest(".kbm-clear-filters") : null;
+        if (clearFilters) {
+          e.preventDefault();
+          clearTimeout(searchTimer);
+          currentSearch = "";
+          currentCategory = "";
+          currentSort = "";
+          if (searchInput instanceof HTMLInputElement) searchInput.value = "";
+          syncSelectedUI("");
+          history.replaceState(null, "", location.pathname);
+          render("");
+          return;
+        }
         const tryAgain = e.target && e.target.closest ? e.target.closest(".empty-state-try-again") : null;
         if (!tryAgain) return;
         e.preventDefault();
@@ -590,7 +649,7 @@ const forceMemberView =
       max-width: 52ch;
     }
 
-    /* --- Tuesday Tip / Weekly Quick Win: KBM card with ribbon --- */
+    /* --- Tuesday Tip / Weekly Quick Win: KBM card --- */
     .tuesday-tip-feature {
       padding: 18px;
       border-radius: 18px;
@@ -606,25 +665,34 @@ const forceMemberView =
       outline: 2px solid var(--kbm-green, #52682d);
       outline-offset: 2px;
     }
-    /* Ribbon text for this card: "This week" — shifted left and down to fit in fold */
-    .tip-of-week-card .kbm-card-ribbon::after {
-      content: "This week" !important;
-      top: 30px;
-      left: 2px;
-      transform-origin: center center;
-    }
     .tip-header {
       display: block;
       max-width: 160px;
       height: auto;
       margin: 0 auto 10px;
     }
-    .tip-title {
+    .kbm-tip-headline {
       text-align: center;
-      font-size: 1rem;
-      font-weight: 600;
-      margin: 0.5rem 0 0.75rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0.5rem 0 0.4rem;
       color: #333;
+    }
+    .kbm-tip-note {
+      margin: 0 0 0.35rem;
+      text-align: center;
+      font-size: 0.95rem;
+      line-height: 1.45;
+      font-weight: 400;
+      color: #4b5563;
+    }
+    .tip-subtitle {
+      margin: 0 0 0.75rem;
+      text-align: center;
+      font-size: 0.82rem;
+      line-height: 1.35;
+      font-weight: 400;
+      color: #6b7280;
     }
     .tip-thumb-wrap {
       position: relative;
@@ -673,28 +741,35 @@ const forceMemberView =
     }
 
     .video-filter-search {
-      order: 2;
       margin-bottom: 0;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
       justify-content: flex-end;
-      flex: 0 1 460px;
-      min-width: 260px;
-      margin-left: auto;
+      flex: 1 1 360px;
+      min-width: min(100%, 260px);
+      max-width: 100%;
     }
     .video-filter-search__title {
-      margin: 0 0 0.45rem;
-      font-size: 1.1rem;
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
       line-height: 1.3;
       color: #1f2937;
     }
-    .video-filter-search__input {
+    .search-input-wrapper {
       width: 100%;
-      max-width: 460px;
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: 1px solid #cfd4c6;
+      align-self: stretch;
+    }
+    .video-filter-search__input {
+      box-sizing: border-box;
+      width: 100%;
+      max-width: none;
+      min-height: 42px;
+      padding: 10px 14px 10px 38px;
+      border-radius: 10px;
+      border: 1px solid #94a3b8;
       font-size: 15px;
       background: #fff;
     }
@@ -711,37 +786,49 @@ const forceMemberView =
       z-index: 40;
 
       display: flex;
-      flex-wrap: nowrap;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: flex-end;
-      gap: 1rem 1.25rem;
+      gap: 14px;
 
-      padding: 14px 18px;
-      background: #f3f4f2;
-      border-radius: 12px;
+      padding: 18px;
+      background: var(--kbm-video-toolbar-bg, #f1f3f5);
+      border-radius: 10px;
       margin-bottom: 1.5rem;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: var(--kbm-video-toolbar-shadow, 0 2px 6px rgba(0, 0, 0, 0.05));
 
       transition: box-shadow 200ms ease;
     }
 
     .video-toolbar.is-stuck {
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    }
+
+    .video-control-group {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 0;
+      background: transparent;
+      border-radius: 0;
+      padding: 0;
     }
 
     .video-category {
-      order: 1;
       display: flex;
-      align-items: flex-end;
+      align-items: stretch;
       align-self: flex-end;
       justify-content: flex-start;
-      gap: 0.5rem;
-      flex: 0 1 auto;
-      min-width: 260px;
+      gap: 0;
+      flex: 0 1 260px;
+      min-width: min(100%, 220px);
+      max-width: 320px;
     }
 
     .video-toolbar .video-category #categoryBar.category-bar {
       margin: 0;
-      align-self: flex-end;
+      align-self: stretch;
     }
 
     @media (max-width: 700px) {
@@ -749,22 +836,26 @@ const forceMemberView =
         flex-direction: column;
         flex-wrap: nowrap;
         align-items: stretch;
+        justify-content: flex-start;
+        gap: 16px;
       }
 
       .video-filter-search,
       .video-category {
         flex: 1 1 auto;
         min-width: 0;
+        max-width: none;
         margin-left: 0;
-      }
-
-      .video-category {
-        order: 1;
-        justify-content: flex-start;
+        align-self: stretch;
       }
 
       .video-filter-search {
+        order: 1;
+      }
+
+      .video-category {
         order: 2;
+        justify-content: flex-start;
       }
 
       .video-filter-search__input {
@@ -776,17 +867,9 @@ const forceMemberView =
        Custom Category Dropdown (Styled)
        ===================================== */
 
-    .category-bar {
-      position: sticky;
-      top: calc(var(--header-offset, 170px) + var(--header-buffer, 24px));
-      z-index: 30;
-
-      background: var(--kbm-green, #52682d);
-      border-radius: 14px;
-      padding: 0.65rem 0.9rem;
-      margin: 0.75rem 0 1.5rem 0;
-
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    /* Legacy .category-bar defaults — catalog toolbar uses #categoryBar overrides (global) */
+    .video-toolbar .category-bar {
+      margin: 0;
     }
 
     /* Button that looks like a label, not an input */
@@ -799,11 +882,11 @@ const forceMemberView =
 
       background: transparent;
       border: 0;
-      padding: 0.25rem 0.35rem;
+      padding: 0;
       cursor: pointer;
 
       color: #fff;
-      font-size: 1.15rem;
+      font-size: 1.05rem;
       font-weight: 500;
       text-align: left;
     }
@@ -818,61 +901,7 @@ const forceMemberView =
       opacity: 0.9;
     }
 
-    /* Dropdown panel — calm and clean */
-    #categoryBar .category-menu {
-      margin-top: 0.6rem;
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 0.5rem;
-      border: 1px solid rgba(0,0,0,0.10);
-      box-shadow: 0 18px 44px rgba(0,0,0,0.14);
-
-      max-height: min(52vh, 420px);
-      overflow: auto;
-
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    /* Option rows — remove "input box" vibe */
-    #categoryBar .category-option {
-      all: unset;
-      box-sizing: border-box;
-
-      display: block;
-      width: 100%;
-
-      padding: 0.55rem 0.75rem;
-      border-radius: 10px;
-
-      cursor: pointer;
-      user-select: none;
-
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-
-      font-size: 0.98rem;
-      line-height: 1.2;
-      color: #1f2937;
-
-      /* IMPORTANT: no border/outline box look */
-      border: none;
-      background: transparent;
-    }
-
-    /* Hover/focus — subtle tint */
-    #categoryBar .category-option:hover,
-    #categoryBar .category-option:focus {
-      background: rgba(82,104,45,0.10);
-    }
-
-    /* Selected — slightly stronger tint */
-    #categoryBar .category-option[aria-selected="true"] {
-      background: rgba(82,104,45,0.16);
-      font-weight: 600;
-    }
+    /* Category dropdown panel: see global.css (#categoryBar .category-menu) */
 
     .video-page-title {
       margin: 0;
@@ -928,31 +957,6 @@ const forceMemberView =
       clip: rect(0, 0, 0, 0);
       white-space: nowrap;
       border: 0;
-    }
-
-    /* Video grid: cards use global .kbm-card, .kbm-card__title, .kbm-card__desc */
-    #video-grid {
-      display: grid;
-      grid-template-columns: repeat(1, minmax(0, 1fr));
-      gap: 16px;
-      align-items: stretch;
-      grid-auto-rows: 1fr;
-    }
-
-    @media (min-width: 700px) {
-      #video-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (min-width: 1024px) {
-      #video-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-    }
-
-    #video-grid > .video-card {
-      height: 100%;
     }
 
     .video-search-hero {
@@ -1292,89 +1296,14 @@ const forceMemberView =
   </style>
 
   <style is:global>
-    /* Override: remove gray frame/outline on video card thumbnails (overrides global .video-thumb / .kbm-card styles) */
-    .kbm-card .video-thumb,
-    .kbm-card .video-thumb picture,
-    .kbm-card .video-thumb img {
-      background: transparent !important;
-      border: none !important;
-      padding: 0 !important;
-      box-shadow: none !important;
-    }
-
-    .kbm-card .video-thumb {
-      position: relative;
-      overflow: hidden;
-      border-radius: 14px;
-      height: 140px;
-    }
-
-    .kbm-card .video-thumb picture {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
-    .kbm-card .video-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .video-card {
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    .video-card .kbm-card__desc {
-      --video-desc-lines: 4;
-      --video-desc-line-height: 1.5;
-      font-weight: 400;
-      line-height: var(--video-desc-line-height);
-      margin-top: 0;
-      min-height: calc(1em * var(--video-desc-line-height) * var(--video-desc-lines));
-      max-height: calc(1em * var(--video-desc-line-height) * var(--video-desc-lines));
-      display: -webkit-box;
-      -webkit-line-clamp: var(--video-desc-lines);
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .video-card .kbm-card__title {
-      margin-bottom: 0.4rem;
-    }
-
-    .video-card .kbm-ribbon-icon {
-      position: absolute;
-      top: 11px;
-      left: 4px;
-      z-index: 1;
-      width: 36px;
-      height: 36px;
-      transform: rotate(-45deg);
-      transform-origin: center;
-      pointer-events: none;
-    }
-
-    .category-prefix {
-      font-size: 0.75rem;
-      font-weight: 400;
-      opacity: 0.6;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      margin-right: 0.5rem;
-    }
+    /* Catalog grid + cards: see global.css (.video-grid, #video-grid .kbm-card, .kbm-card-thumb, .kbm-card-body) */
 
     /* Make the inner dropdown pill use its own sticky behavior = off (band handles stickiness) */
     #categoryBar.category-bar {
       position: relative; /* NOT sticky now */
       top: auto;
       z-index: 1;
+      margin: 0;
 
       background: var(--kbm-green, #52682d);
       box-shadow: 0 6px 18px rgba(0,0,0,0.08);
@@ -1390,18 +1319,23 @@ const forceMemberView =
       z-index: 50;
 
       display: inline-flex;
+      align-items: center;
       width: auto;
       min-width: 260px;
       max-width: min(100%, 600px);
+      min-height: 42px;
+      box-sizing: border-box;
 
-      padding: 0.4rem 0.8rem;   /* tighter vertical */
-      border-radius: 14px;
+      padding: 0 12px;
+      border-radius: 10px;
     }
 
     /* Button */
     #categoryBar .category-trigger {
       width: 100%;
-      padding: 0.2rem 0.4rem;
+      min-height: 42px;
+      padding: 0 2px;
+      box-sizing: border-box;
 
       font-size: 1.05rem;
       font-weight: 500;
@@ -1411,33 +1345,16 @@ const forceMemberView =
       font-size: 0.9rem;
     }
 
-    /* Dropdown panel floats, doesn't push content */
+    /* Dropdown panel layout: global.css; mobile width override kept here */
     #categoryBar #categoryMenu.category-menu {
-      position: absolute;
-      left: 0;
-      top: calc(100% + 0.5rem);
-      width: min(420px, 92vw);
-
       margin-top: 0 !important;
     }
 
-    /* Options: phone-friendly tap targets */
-    #categoryBar .category-option {
-      font-size: 1.05rem;
-      padding: 0.85rem 0.9rem;
-      min-height: 44px; /* touch target */
-    }
-
-    /* Mobile: bar and menu full width */
     @media (max-width: 768px) {
       #categoryBar.category-bar {
         width: 100%;
         display: flex;
       }
-      #categoryBar #categoryMenu.category-menu {
-        width: 100%;
-      }
-      
     }
   </style>
 </Layout>

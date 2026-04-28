@@ -14,6 +14,14 @@ export type VideoPublicRecord = {
   subcategory?: string;
   vimeo_id?: number;
   isTipOfWeek?: boolean;
+  tipOfWeek?: boolean;
+  tipHeadline?: string;
+  tipNote?: string;
+  tipHistory?: Array<{
+    date: string;
+    headline?: string;
+    note?: string;
+  }>;
   videoType?: string;
   clips?: string[];
   /** Present on some clip rows */
@@ -51,6 +59,36 @@ function parseVimeoId(v: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+function parseTipHistory(
+  value: unknown,
+  index: number
+): { ok: true; value?: Array<{ date: string; headline?: string; note?: string }> } | { ok: false; error: string } {
+  if (value === undefined || value === null) return { ok: true, value: undefined };
+  if (!Array.isArray(value)) {
+    return { ok: false, error: `Video ${index + 1}: tipHistory must be an array.` };
+  }
+
+  const out: Array<{ date: string; headline?: string; note?: string }> = [];
+  for (let i = 0; i < value.length; i++) {
+    const item = value[i];
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      return { ok: false, error: `Video ${index + 1}: tipHistory[${i}] must be an object.` };
+    }
+    const row = item as Record<string, unknown>;
+    const date = trimStr(row.date);
+    if (!date) {
+      return { ok: false, error: `Video ${index + 1}: tipHistory[${i}].date is required.` };
+    }
+    const headline = trimStr(row.headline);
+    const note = trimStr(row.note);
+    const next: { date: string; headline?: string; note?: string } = { date };
+    if (headline) next.headline = headline;
+    if (note) next.note = note;
+    out.push(next);
+  }
+  return { ok: true, value: out.length ? out : undefined };
+}
+
 /**
  * Normalize one record for API save. Preserves unknown keys from `raw` for forward compatibility
  * (e.g. `vimeo_id_public`).
@@ -86,6 +124,8 @@ export function normalizeVideoForSave(
   const subcategory = trimStr(base.subcategory);
   const videoType = trimStr(base.videoType);
   const vtt_url = trimStr(base.vtt_url);
+  const tipHeadline = trimStr(base.tipHeadline);
+  const tipNote = trimStr(base.tipNote);
 
   let clips: string[] | undefined;
   if (base.clips === undefined || base.clips === null) {
@@ -97,8 +137,11 @@ export function normalizeVideoForSave(
     return { ok: false, error: `Video ${index + 1}: clips must be an array of strings.` };
   }
 
-  const isTipOfWeek = Boolean(base.isTipOfWeek);
+  const tipOfWeek = Boolean(base.tipOfWeek ?? base.isTipOfWeek);
+  const isTipOfWeek = tipOfWeek;
   const search_ready = Boolean(base.search_ready);
+  const tipHistoryParsed = parseTipHistory(base.tipHistory, index);
+  if (!tipHistoryParsed.ok) return tipHistoryParsed;
 
   let transcript_json: unknown = undefined;
   if (base.transcript_json !== undefined && base.transcript_json !== null) {
@@ -145,6 +188,16 @@ export function normalizeVideoForSave(
   else delete out.clips;
 
   out.isTipOfWeek = isTipOfWeek;
+  out.tipOfWeek = tipOfWeek;
+
+  if (tipHeadline) out.tipHeadline = tipHeadline;
+  else delete out.tipHeadline;
+
+  if (tipNote) out.tipNote = tipNote;
+  else delete out.tipNote;
+
+  if (tipHistoryParsed.value) out.tipHistory = tipHistoryParsed.value;
+  else delete out.tipHistory;
 
   if (sourceVideoId !== undefined) out.sourceVideoId = sourceVideoId;
   else delete out.sourceVideoId;

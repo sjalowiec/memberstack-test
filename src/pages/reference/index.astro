@@ -21,7 +21,8 @@ const referenceCategories = [
     title: "Machine Reference",
     items: [
       { title: "Machine Repairs", href: "/reference/repairs", description: "Repair resources worldwide." },
-      { title: "Knitting Machine Reference", href: "/reference/machine-reference", description: "Model information, features, and helpful notes for common knitting machines." },
+      // TODO: Hidden until this page is rebuilt from SQL; current route 404s.
+      { title: "Knitting Machine Reference", href: "/reference/machine-reference", description: "Model information, features, and helpful notes for common knitting machines.", hidden: true },
       { title: "Machine Brands Worldwide", href: "/reference/machine-brands", description: "Compare machine brands." }   
      ],
   },
@@ -29,7 +30,8 @@ const referenceCategories = [
     id: "designaknit",
     title: "DesignaKnit Reference",
     items: [
-      { title: "DesignaKnit Versions", href: "/reference/DAK-compare", description: "Version differences and compatibility." },
+      // TODO: Hidden until this is rewritten and updated with a link to the shop.
+      { title: "DesignaKnit Versions", href: "/reference/DAK-compare", description: "Version differences and compatibility.", hidden: true },
       { title: "DAK Cables for Brother Machines", href: "/reference/DAK-brother-cables", description: "Cable and connection setup." },
       { title: "DesignaKnit Basics", href: "/reference/designaknit-basics", description: "Essential DesignaKnit concepts." },
     ],
@@ -69,7 +71,7 @@ const referenceCategories = [
       <section class="ref-category" aria-labelledby={`category-${category.id}`}>
         <h2 id={`category-${category.id}`} class="ref-category-title">{category.title}</h2>
         <div class="ref-cards">
-          {category.items.map((item) => (
+          {category.items.filter((item) => !item.hidden).map((item) => (
             <a href={item.href} class="ref-card" data-testid={`ref-card-${category.id}-${item.title.toLowerCase().replace(/\s+/g, "-")}`}>
               <h3 class="ref-card-title">{item.title}</h3>
               {item.description && <p class="ref-card-desc">{item.description}</p>}
