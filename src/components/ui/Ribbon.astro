@@ -1,0 +1,57 @@
+---
+interface Props {
+  label: string;
+  variant?: 'default' | 'member' | 'free' | 'new' | 'featured' | 'beta';
+  className?: string;
+}
+
+const { label, variant = 'default', className = '' } = Astro.props;
+---
+
+<div class={`site-ribbon site-ribbon--${variant} ${className}`}>
+  {label}
+</div>
+
+<style>
+.site-ribbon {
+  position: absolute;
+  top: 10px;
+  left: -35px;
+  transform: rotate(-45deg);
+  width: 140px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 6px 0;
+  color: #fff;
+  z-index: 2;
+  pointer-events: none;
+  line-height: 1.1;
+}
+
+.site-ribbon--default {
+  background: var(--color-primary, #52682d);
+}
+
+.site-ribbon--member {
+  background: var(--color-primary, #52682d);
+}
+
+.site-ribbon--free {
+  background: #5E9DED;
+}
+
+.site-ribbon--new {
+  background: #96BE11;
+}
+
+.site-ribbon--featured {
+  background: #52682d;
+}
+
+.site-ribbon--beta {
+  background: #6b7280;
+}
+</style>

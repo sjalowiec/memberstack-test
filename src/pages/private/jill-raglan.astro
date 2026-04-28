@@ -1,42 +1,9 @@
 ---
 import WorkspaceLayout from '../../layouts/WorkspaceLayout.astro';
 import project from '../../../data/projects/jill-raglan.json';
-import { extractVimeoId } from '../../lib/vimeo';
 
 const hyvorWebsiteId = project.hyvor?.websiteId ?? 14706;
 const hyvorPageId = project.hyvor?.pageId || project.slug;
-
-function projectVideoPlayerSrc(rawVideoUrl: unknown): string | null {
-  const raw =
-    typeof rawVideoUrl === 'number' && Number.isFinite(rawVideoUrl)
-      ? String(Math.trunc(rawVideoUrl))
-      : typeof rawVideoUrl === 'string'
-        ? rawVideoUrl.trim()
-        : '';
-  if (!raw) return null;
-
-  const numericIdMatch = raw.match(/^\d+$/);
-  const vimeoId = numericIdMatch ? numericIdMatch[0] : extractVimeoId(raw);
-  if (!vimeoId) return null;
-
-  let privateHash = '';
-  try {
-    const parsedUrl = new URL(raw);
-    if (parsedUrl.hostname.includes('vimeo.com')) {
-      const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
-      const hashCandidate = pathParts.find((segment) => /^[a-f0-9]{8,}$/i.test(segment) && segment !== vimeoId);
-      if (hashCandidate) privateHash = hashCandidate;
-    }
-  } catch {
-    // Non-URL raw values are handled by ID extraction above.
-  }
-
-  const params = new URLSearchParams();
-  if (privateHash) params.set('h', privateHash);
-  params.set('byline', '0');
-  params.set('portrait', '0');
-  return `https://player.vimeo.com/video/${vimeoId}?${params.toString()}`;
-}
 ---
 
 <WorkspaceLayout title={project.title}>
@@ -57,37 +24,33 @@ function projectVideoPlayerSrc(rawVideoUrl: unknown): string | null {
   <section class="workspace-section">
     <h2>Project Videos</h2>
     <div class="workspace-video-grid">
-      {project.materials.map((item) => {
-        const videoPlayerSrc = projectVideoPlayerSrc(item.videoUrl);
-        return (
-          <article class="workspace-video-card">
-            <h3>{item.title}</h3>
-            <p class="workspace-date-line">{item.date}</p>
-            <p>{item.notes}</p>
-            {item.type?.toLowerCase().includes('video') ? (
-              videoPlayerSrc ? (
-                <div class="workspace-video-embed">
-                  <iframe
-                    src={videoPlayerSrc}
-                    title={item.title || 'Project video'}
-                    frameborder="0"
-                    loading="lazy"
-                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
-                    allowfullscreen
-                  ></iframe>
-                </div>
-              ) : (
-                <div class="workspace-video-placeholder">Video placeholder</div>
-              )
-            ) : null}
-            {item.download?.url ? (
-              <a href={item.download.url} class="workspace-download-link">
-                {item.download.text || 'Download'}
-              </a>
-            ) : null}
-          </article>
-        );
-      })}
+      {project.materials.map((item) => (
+        <article class="workspace-video-card">
+          <h3>{item.title}</h3>
+          <p class="workspace-date-line">{item.date}</p>
+          <p>{item.notes}</p>
+          {item.type?.toLowerCase().includes('video') ? (
+            item.videoUrl ? (
+              <div class="workspace-video-embed">
+                <iframe
+                  src={`https://player.vimeo.com/video/${item.videoUrl}`}
+                  title={item.title || 'Project video'}
+                  loading="lazy"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowfullscreen
+                ></iframe>
+              </div>
+            ) : (
+              <div class="workspace-video-placeholder">Video placeholder</div>
+            )
+          ) : null}
+          {item.download?.url ? (
+            <a href={item.download.url} class="workspace-download-link">
+              {item.download.text || 'Download'}
+            </a>
+          ) : null}
+        </article>
+      ))}
     </div>
   </section>
 

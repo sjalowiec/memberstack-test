@@ -120,14 +120,16 @@ const forceMemberView =
           <div id="categoryMenu" class="category-menu" role="listbox" aria-label="Video categories" hidden></div>
         </div>
       </div>
-      <div class="video-search">
+      <section class="video-filter-search" aria-labelledby="video-filter-search-title">
+        <h2 id="video-filter-search-title" class="video-filter-search__title">Find a Video</h2>
         <input
           id="videoSearch"
+          class="video-filter-search__input"
           type="search"
-          placeholder="Search by technique or keyword"
+          placeholder="Search by title or description"
           autocomplete="off"
         />
-      </div>
+      </section>
     </div>
 
 
@@ -143,6 +145,7 @@ const forceMemberView =
 
   <script is:inline>
     (function () {
+      const FREE_FILTER_VALUE = "__free__";
       const raw = document.getElementById("videos-data")?.textContent || "{}";
       let parsed;
       try {
@@ -166,7 +169,13 @@ const forceMemberView =
     const urlParams = new URLSearchParams(location.search);
     const requested = urlParams.get("cat");
     const matchedCategory = requested && categories.find((c) => c.toLowerCase() === requested.toLowerCase());
-    const defaultCategory = matchedCategory ? matchedCategory : "";
+    const requestedIsFree =
+      requested && (requested.toLowerCase() === "free" || requested === FREE_FILTER_VALUE);
+    const defaultCategory = requestedIsFree
+      ? FREE_FILTER_VALUE
+      : matchedCategory
+        ? matchedCategory
+        : "";
     const initialQ = urlParams.get("q") || "";
     const initialSort = urlParams.get("sort") || "";
 
@@ -175,6 +184,7 @@ const forceMemberView =
     let currentSort = initialSort;
     let searchTimer;
 
+    /* Paid-tier plan IDs: used only for VIEWER.isMember. Catalog lock badges use VIEWER.hasVideoAccess (kin-access). */
     const MEMBER_PLAN_IDS = new Set([
       "pln_kin-membership-annual-qf9g01et",
       "pln_kin-membership-monthly-a59701wy",
@@ -184,7 +194,7 @@ const forceMemberView =
       try {
         const res = await window.$memberstackDom?.getAppAndMember?.();
         const member = res?.data?.member || null;
-        if (!member) return { isLoggedIn: false, isMember: false, member: null };
+        if (!member) return { isLoggedIn: false, isMember: false, hasVideoAccess: false, member: null };
 
         const conns = Array.isArray(member.planConnections) ? member.planConnections : [];
         const activePlanIds = new Set(
@@ -195,13 +205,26 @@ const forceMemberView =
         );
 
         const isMember = [...activePlanIds].some(function (id) { return MEMBER_PLAN_IDS.has(id); });
-        return { isLoggedIn: true, isMember: isMember, member: member };
+
+        const rawKinAccess = member.customFields?.["kin-access"];
+        const hasVideoAccess =
+          typeof window.kbmHasKinVideoAccess === "function"
+            ? window.kbmHasKinVideoAccess(rawKinAccess)
+            : String(rawKinAccess ?? "").trim().toLowerCase() !== "false";
+
+        window.kbmLogKinVideoAccessDebug?.("videos/index.catalog", {
+          member,
+          rawKinAccess,
+          finalHasVideoAccess: hasVideoAccess,
+        });
+
+        return { isLoggedIn: true, isMember: isMember, hasVideoAccess: hasVideoAccess, member: member };
       } catch (e) {
-        return { isLoggedIn: false, isMember: false, member: null };
+        return { isLoggedIn: false, isMember: false, hasVideoAccess: false, member: null };
       }
     }
 
-    let VIEWER = { isLoggedIn: false, isMember: false, member: null };
+    let VIEWER = { isLoggedIn: false, isMember: false, hasVideoAccess: false, member: null };
 
     async function waitForMemberstackReady(opts) {
       const attempts = (opts && opts.attempts) !== undefined ? opts.attempts : 30;
@@ -222,18 +245,24 @@ const forceMemberView =
 
     function updateUrl() {
       const params = new URLSearchParams();
-      if (currentCategory) params.set("cat", currentCategory);
+      if (currentCategory) {
+        params.set("cat", currentCategory === FREE_FILTER_VALUE ? "free" : currentCategory);
+      }
       if (currentSearch) params.set("q", currentSearch);
       if (currentSort) params.set("sort", currentSort);
       const qs = params.toString();
       history.replaceState(null, "", location.pathname + (qs ? "?" + qs : ""));
     }
 
+    function isVideoFree(video) {
+      const isFreeByData = video?.access_level === "open";
+      return window.__FORCE_ALL_VIDEOS_LOCKED__ === true ? false : isFreeByData;
+    }
+
     function setCat(cat) {
       currentCategory = cat || "";
       currentSearch = "";
-
-      if (searchInput) {
+      if (searchInput instanceof HTMLInputElement) {
         searchInput.value = "";
       }
 
@@ -245,17 +274,17 @@ const forceMemberView =
       currentCategory = cat || "";
 
       let filtered = currentCategory
-        ? videos.filter(v => v.category === currentCategory)
+        ? currentCategory === FREE_FILTER_VALUE
+          ? videos.filter(v => isVideoFree(v))
+          : videos.filter(v => v.category === currentCategory)
         : videos;
 
       if (currentSearch) {
         const q = currentSearch.toLowerCase();
-
         filtered = filtered.filter(v =>
           (v.title || "").toLowerCase().includes(q) ||
           (v.description || "").toLowerCase().includes(q) ||
-          (v.summary || "").toLowerCase().includes(q) ||
-          (v.category || "").toLowerCase().includes(q)
+          (v.summary || "").toLowerCase().includes(q)
         );
       }
 
@@ -278,39 +307,40 @@ const forceMemberView =
         return;
       }
 
-      /* Member access: preview override (dev only), dev bypass, or real Memberstack. */
+      /* Video access: preview override (dev), dev bypass, or Memberstack hasVideoAccess (kin-access). */
       const previewForce = window.__PREVIEW_FORCE_MEMBER__;
       const hasAccess =
         previewForce === true
           ? true
           : previewForce === false
             ? false
-            : window.__DEV_BYPASS_GATING || window.__KBM_DEV_MEMBER__ || VIEWER.isMember;
+            : window.__DEV_BYPASS_GATING || window.__KBM_DEV_MEMBER__ || VIEWER.hasVideoAccess;
       const listParams = new URLSearchParams();
-      if (currentCategory) listParams.set("cat", currentCategory);
+      if (currentCategory) {
+        listParams.set("cat", currentCategory === FREE_FILTER_VALUE ? "free" : currentCategory);
+      }
       if (currentSearch) listParams.set("q", currentSearch);
       if (currentSort) listParams.set("sort", currentSort);
       const listQuery = listParams.toString();
       const listQueryString = listQuery ? "?" + listQuery : "";
 
       grid.innerHTML = filtered.map(v => {
-        const isFreeByData = v.access_level === "open";
-        const isFree =
-          window.__FORCE_ALL_VIDEOS_LOCKED__ === true ? false : isFreeByData;
+        const isFree = isVideoFree(v);
         const baseHref = v.content_id ? "/videos/" + v.content_id : "/videos/" + (v.slug || "");
         const href = baseHref + listQueryString;
         const title = (v.title || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const ribbon = !hasAccess && !isFree
+          ? "<span class=\"kbm-card-ribbon kbm-card-ribbon--member\" aria-label=\"Member-only video\"><svg class=\"kbm-ribbon-icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M12 1a5 5 0 00-5 5v3H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-1V6a5 5 0 00-5-5zm-3 8V6a3 3 0 016 0v3H9z\"/></svg></span>"
+          : "";
         const poster = v.posterUrl
           ? "<div class=\"video-thumb\"><img class=\"video-card__img\" src=\"" + v.posterUrl.replace(/"/g, "&quot;") + "\" alt=\"\" loading=\"lazy\" />" +
-            (!hasAccess
-              ? (isFree ? "<div class=\"badge-free\">FREE</div>" : "<div class=\"badge-lock\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"3\" y=\"11\" width=\"18\" height=\"11\" rx=\"2\"></rect><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"></path></svg></div>")
-              : "") +
             "</div>"
           : "";
         const desc = (v.description || v.summary || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
         return (
-          "<a class=\"kbm-card\" href=\"" + href + "\">" +
+          "<a class=\"kbm-card video-card\" href=\"" + href + "\">" +
+            ribbon +
             poster +
             "<h3 class=\"kbm-card__title\">" + title + "</h3>" +
             (desc ? "<p class=\"kbm-card__desc\">" + desc + "</p>" : "") +
@@ -326,7 +356,15 @@ const forceMemberView =
 
     function setLabelFromValue(val) {
       if (!label) return;
-      label.textContent = val ? val : "All Videos";
+      if (!val) {
+        label.textContent = "All Videos";
+        return;
+      }
+      if (val === FREE_FILTER_VALUE) {
+        label.textContent = "Free Videos";
+        return;
+      }
+      label.textContent = val;
     }
 
     function openMenu() {
@@ -361,6 +399,14 @@ const forceMemberView =
       allBtn.setAttribute("data-value", "");
       allBtn.textContent = "All Videos";
       menu.appendChild(allBtn);
+
+      const freeBtn = document.createElement("button");
+      freeBtn.type = "button";
+      freeBtn.className = "category-option";
+      freeBtn.setAttribute("role", "option");
+      freeBtn.setAttribute("data-value", FREE_FILTER_VALUE);
+      freeBtn.textContent = "Free Videos";
+      menu.appendChild(freeBtn);
 
       cats.forEach((c) => {
         const btn = document.createElement("button");
@@ -397,6 +443,11 @@ const forceMemberView =
       optAll.textContent = "All Videos";
       selectEl.appendChild(optAll);
 
+      const optFree = document.createElement("option");
+      optFree.value = FREE_FILTER_VALUE;
+      optFree.textContent = "Free Videos";
+      selectEl.appendChild(optFree);
+
       categories.forEach((c) => {
         const o = document.createElement("option");
         o.value = c;
@@ -409,20 +460,15 @@ const forceMemberView =
 
     // Initial UI sync from URL (must run before first render so category is not reset to All)
     syncSelectedUI(currentCategory);
-
-    if (searchInput) {
+    if (searchInput instanceof HTMLInputElement) {
       searchInput.value = currentSearch;
     }
 
     (async function () {
       render(currentCategory);
 
-      const res = await waitForMemberstackReady();
-      if (res && res.data && res.data.member) {
-        VIEWER = await getViewerState();
-      } else {
-        VIEWER = { isLoggedIn: false, isMember: false, member: null };
-      }
+      await waitForMemberstackReady();
+      VIEWER = await getViewerState();
 
       render(currentCategory);
     })();
@@ -477,36 +523,26 @@ const forceMemberView =
     }
     /* ---------- end custom dropdown ---------- */
 
-    if (searchInput) {
-
+    if (searchInput instanceof HTMLInputElement) {
       searchInput.addEventListener("input", function () {
-
         clearTimeout(searchTimer);
-
         const value = this.value || "";
-
         searchTimer = setTimeout(function () {
-
           currentSearch = value.trim();
-
           updateUrl();
-
           render(currentCategory);
-
         }, 150);
-
       });
-
     }
 
-    // Empty state "Try again" — clear search and re-render
+    // Empty state "Try again" — re-render current category
     if (grid) {
       grid.addEventListener("click", function (e) {
         const tryAgain = e.target && e.target.closest ? e.target.closest(".empty-state-try-again") : null;
         if (!tryAgain) return;
         e.preventDefault();
         currentSearch = "";
-        if (searchInput) searchInput.value = "";
+        if (searchInput instanceof HTMLInputElement) searchInput.value = "";
         updateUrl();
         render(currentCategory);
       });
@@ -636,6 +672,38 @@ const forceMemberView =
       border-radius: 12px;
     }
 
+    .video-filter-search {
+      order: 2;
+      margin-bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-end;
+      flex: 0 1 460px;
+      min-width: 260px;
+      margin-left: auto;
+    }
+    .video-filter-search__title {
+      margin: 0 0 0.45rem;
+      font-size: 1.1rem;
+      line-height: 1.3;
+      color: #1f2937;
+    }
+    .video-filter-search__input {
+      width: 100%;
+      max-width: 460px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #cfd4c6;
+      font-size: 15px;
+      background: #fff;
+    }
+    .video-filter-search__input:focus {
+      outline: none;
+      border-color: #738c52;
+      box-shadow: 0 0 0 2px rgba(115, 140, 82, 0.15);
+    }
+
     /* --- Video toolbar (category + search) --- */
     .video-toolbar {
       position: sticky;
@@ -643,9 +711,10 @@ const forceMemberView =
       z-index: 40;
 
       display: flex;
+      flex-wrap: nowrap;
       justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
+      align-items: flex-end;
+      gap: 1rem 1.25rem;
 
       padding: 14px 18px;
       background: #f3f4f2;
@@ -660,40 +729,45 @@ const forceMemberView =
     }
 
     .video-category {
+      order: 1;
       display: flex;
-      align-items: center;
+      align-items: flex-end;
+      align-self: flex-end;
+      justify-content: flex-start;
       gap: 0.5rem;
+      flex: 0 1 auto;
+      min-width: 260px;
     }
 
-    .video-search {
-      max-width: 360px;
-      width: 100%;
-      border: none;
-      background: transparent;
-      padding: 0;
-    }
-
-    .video-search input {
-      width: 100%;
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: 1px solid #cfd4c6;
-      font-size: 15px;
-    }
-
-    .video-search input:focus {
-      outline: none;
-      border-color: #738c52;
-      box-shadow: 0 0 0 2px rgba(115, 140, 82, 0.15);
+    .video-toolbar .video-category #categoryBar.category-bar {
+      margin: 0;
+      align-self: flex-end;
     }
 
     @media (max-width: 700px) {
       .video-toolbar {
         flex-direction: column;
+        flex-wrap: nowrap;
         align-items: stretch;
       }
 
-      .video-search {
+      .video-filter-search,
+      .video-category {
+        flex: 1 1 auto;
+        min-width: 0;
+        margin-left: 0;
+      }
+
+      .video-category {
+        order: 1;
+        justify-content: flex-start;
+      }
+
+      .video-filter-search {
+        order: 2;
+      }
+
+      .video-filter-search__input {
         max-width: none;
       }
     }
@@ -856,20 +930,322 @@ const forceMemberView =
       border: 0;
     }
 
-    .video-search {
-      width: 100%;
-      max-width: 420px;
-      border: none;
-      background: transparent;
-      padding: 0;
-    }
-
     /* Video grid: cards use global .kbm-card, .kbm-card__title, .kbm-card__desc */
     #video-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-template-columns: repeat(1, minmax(0, 1fr));
       gap: 16px;
-      align-items: start;
+      align-items: stretch;
+      grid-auto-rows: 1fr;
+    }
+
+    @media (min-width: 700px) {
+      #video-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1024px) {
+      #video-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    #video-grid > .video-card {
+      height: 100%;
+    }
+
+    .video-search-hero {
+      scroll-margin-top: calc(var(--header-offset, 170px) + 12px);
+      padding-top: clamp(1.25rem, 3vw, 2rem);
+      padding-bottom: clamp(1rem, 3vw, 1.75rem);
+    }
+    .video-search-hero__inner {
+      max-width: 920px;
+      margin: 0 auto;
+    }
+    .video-search-hero__intro {
+      margin-bottom: clamp(0.85rem, 2vw, 1.15rem);
+    }
+    .video-search-hero__row {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .video-search-hero__icon {
+      flex-shrink: 0;
+      width: clamp(88px, 14vw, 130px);
+      height: auto;
+      max-width: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    .video-search-hero__text {
+      flex: 1;
+      min-width: 0;
+      max-width: 42rem;
+    }
+    .video-search-hero__headline {
+      margin: 0 0 0.75rem;
+      font-size: clamp(1.4rem, 3vw, 1.9rem);
+      font-weight: 700;
+      color: #1f2937;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+    .video-search-hero__lede {
+      margin: 0 0 0.7rem;
+      font-size: 1.05rem;
+      color: #374151;
+      line-height: 1.55;
+    }
+    .video-search-hero__preview-note {
+      margin: 0.5rem 0 0.85rem;
+      max-width: 42rem;
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: #8b939e;
+      line-height: 1.5;
+    }
+    .video-search-hero__field-wrap {
+      margin-top: 0;
+      margin-bottom: 1rem;
+    }
+    .video-search-hero__field-wrap .floating-input {
+      max-width: 600px;
+    }
+    .video-search-empty-hint {
+      margin: 0;
+      padding: 0;
+      font-size: 0.95rem;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+    .video-search-empty-hint[hidden] {
+      display: none !important;
+    }
+    .video-search-sticky {
+      position: fixed;
+      top: var(--header-offset, 170px);
+      left: 0;
+      right: 0;
+      z-index: 8000;
+      padding: 0.35rem max(1rem, env(safe-area-inset-right)) 0.4rem max(1rem, env(safe-area-inset-left));
+      background: rgba(255, 255, 255, 0.96);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .video-search-sticky[hidden] {
+      display: none !important;
+    }
+    .video-search-sticky__inner {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .video-search-sticky__field {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .video-search-sticky__field .floating-input {
+      flex: 1;
+      min-width: 0;
+    }
+    .video-search-sticky__field .floating-input input {
+      padding-right: 2.75rem !important;
+    }
+    .video-search-sticky__clear {
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: #6b7280;
+      font-size: 1.35rem;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .video-search-sticky__clear:hover,
+    .video-search-sticky__clear:focus-visible {
+      background: rgba(0, 0, 0, 0.06);
+      color: #111;
+    }
+    .video-search-sticky__clear[hidden] {
+      display: none !important;
+    }
+    .video-search__results-wrap {
+      margin-top: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .video-search__no-results {
+      margin-top: 1rem;
+      margin-bottom: 1.5rem;
+      padding: 1.25rem 1.25rem;
+      border: 1px solid #d8e2cc;
+      border-radius: 16px;
+      background: #f7faf3;
+      text-align: center;
+    }
+    .video-search__no-results-text {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #374151;
+    }
+    :global(.video-search__result) {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 16px;
+      margin-bottom: 12px;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      font: inherit;
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s ease, box-shadow 0.2s ease;
+    }
+    :global(.video-search__result:hover) {
+      background: #f9f9f9;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    :global(.video-search__result:active) {
+      background: #eee;
+    }
+    :global(.video-result) {
+      text-align: left;
+    }
+    :global(.video-search__title) {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      color: #111;
+    }
+    :global(.video-search__play) {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    :global(.video-search__title-text) {
+      display: inline;
+      line-height: 1.4;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    :global(.video-search__time-inline) {
+      font-style: italic;
+      font-weight: normal;
+      font-size: 14px;
+      color: #777;
+      margin-left: 4px;
+    }
+    :global(.video-result__snippet) {
+      font-style: italic;
+      opacity: 0.88;
+      margin-top: 0.5rem;
+      line-height: 1.45;
+      font-size: 0.95rem;
+      color: #374151;
+    }
+    :global(.video-search__highlight) {
+      font-weight: 700;
+      background: none;
+    }
+    .video-search-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .video-search-modal[hidden],
+    .video-search-modal[aria-hidden='true'] {
+      display: none !important;
+    }
+    .video-search-modal__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+    }
+    .video-search-modal__panel {
+      position: relative;
+      z-index: 1;
+      width: min(920px, 100%);
+      max-height: calc(100vh - 2rem);
+      background: #fff;
+      border-radius: 12px;
+      overflow: auto;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+    }
+    .video-search-modal__close {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      z-index: 2;
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      background: rgba(255, 255, 255, 0.95);
+      color: #111;
+      font-size: 1.5rem;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .video-search-modal__close:hover,
+    .video-search-modal__close:focus-visible {
+      background: #f0f0f0;
+    }
+    .video-search-modal__header {
+      padding: 1rem 3rem 0.75rem 1rem;
+      border-bottom: 1px solid #e8e8e8;
+      flex-shrink: 0;
+    }
+    .video-search-modal__title {
+      margin: 0 0 0.35rem;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #222;
+      line-height: 1.3;
+    }
+    .video-search-modal__meta {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #555;
+    }
+    .video-search-modal__frame {
+      width: 100%;
+      position: relative;
+      padding-top: 56.25%;
+      background: #000;
+      flex-shrink: 0;
+    }
+    .video-search-modal__frame iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
     }
 
   </style>
@@ -946,36 +1322,43 @@ const forceMemberView =
       display: block;
     }
 
-    /* Video card badges (JS-injected) */
-    .badge-lock,
-    .badge-free {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      padding: 6px 8px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 700;
+    .video-card {
+      position: relative;
+      overflow: hidden;
       display: flex;
-      align-items: center;
-      justify-content: center;
+      flex-direction: column;
+      height: 100%;
     }
 
-    .badge-lock {
-      background: var(--kbm-green);
-      color: white;
+    .video-card .kbm-card__desc {
+      --video-desc-lines: 4;
+      --video-desc-line-height: 1.5;
+      font-weight: 400;
+      line-height: var(--video-desc-line-height);
+      margin-top: 0;
+      min-height: calc(1em * var(--video-desc-line-height) * var(--video-desc-lines));
+      max-height: calc(1em * var(--video-desc-line-height) * var(--video-desc-lines));
+      display: -webkit-box;
+      -webkit-line-clamp: var(--video-desc-lines);
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .badge-lock svg {
-      width: 18px;
-      height: 18px;
-      stroke-width: 2.5;
+    .video-card .kbm-card__title {
+      margin-bottom: 0.4rem;
     }
 
-    .badge-free {
-      background: #16a34a;
-      color: white;
-      letter-spacing: 0.5px;
+    .video-card .kbm-ribbon-icon {
+      position: absolute;
+      top: 11px;
+      left: 4px;
+      z-index: 1;
+      width: 36px;
+      height: 36px;
+      transform: rotate(-45deg);
+      transform-origin: center;
+      pointer-events: none;
     }
 
     .category-prefix {

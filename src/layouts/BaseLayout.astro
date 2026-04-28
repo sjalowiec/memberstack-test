@@ -190,13 +190,16 @@ const isProduction =
     create_an_account: "Get the Weekly Tips"
   };
 </script>
+<script>
+  import { hasKinVideoAccess, logKinVideoAccessDebug } from "../lib/kinVideoAccess";
+
+  window.kbmHasKinVideoAccess = hasKinVideoAccess;
+  window.kbmLogKinVideoAccessDebug = logKinVideoAccessDebug;
+</script>
    
 <!-- MemberStack -->
-<script
-  is:inline
-  src="https://static.memberstack.com/scripts/v2/memberstack.js"
-  data-memberstack-app="app_cmfh3d1n802vb0wy706205810"
-></script>
+<!-- Memberstack webflow package -->
+<script data-memberstack-app="app_cmfh3d1n802vb0wy706205810" src="https://static.memberstack.com/scripts/v2/memberstack.js" type="text/javascript"></script>
 
 
   
@@ -312,25 +315,28 @@ const isProduction =
 
     <script is:inline>
       document.addEventListener("DOMContentLoaded", async () => {
-        const memberstack = window.$memberstackDom;
+        if (!window.$memberstackDom) return;
 
-        if (!memberstack) return;
+        try {
+          const { data: member } = await window.$memberstackDom.getCurrentMember();
+          const rawKinAccess = member?.customFields?.["kin-access"];
+          const hasVideoAccess =
+            Boolean(member) &&
+            (window.kbmHasKinVideoAccess?.(rawKinAccess) ?? false);
 
-        const member = await memberstack.getCurrentMember();
+          window.kbmLogKinVideoAccessDebug?.("BaseLayout.ms-logged-in", {
+            member,
+            rawKinAccess,
+            finalHasVideoAccess: hasVideoAccess,
+          });
 
-        // Not logged in
-        if (!member.data) {
-          document.body.classList.add("logged-out");
-          return;
-        }
-
-        const plans = member.data.planConnections || [];
-
-        // Logged in + has ANY plan
-        if (plans.length > 0) {
-          document.body.classList.add("logged-in-paid");
-        } else {
-          document.body.classList.add("logged-in-free");
+          if (hasVideoAccess) {
+            document.body.classList.add("ms-logged-in");
+          } else {
+            document.body.classList.remove("ms-logged-in");
+          }
+        } catch (error) {
+          console.warn("MemberStack member check failed", error);
         }
       });
     </script>

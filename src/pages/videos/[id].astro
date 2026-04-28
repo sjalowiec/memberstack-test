@@ -142,7 +142,10 @@ const posterSrc =
         </article>
 
         <script>
-          // --- Memberstack gating (client-side unlock) ---
+          import { hasKinVideoAccess, logKinVideoAccessDebug } from "../../lib/kinVideoAccess";
+
+          // --- Memberstack: client-side unlock for jump links / transcript (hasVideoAccess / kin-access) ---
+          /* Paid-tier plan IDs: used only for isMember. Unlock uses hasVideoAccess (kin-access only). */
           const MEMBER_PLAN_IDS = new Set([
             "pln_kin-membership-annual-qf9g01et",
             "pln_kin-membership-monthly-a59701wy",
@@ -171,7 +174,18 @@ const posterSrc =
 
             const isLoggedIn = Boolean(member);
             const isMember = [...activePlanIds].some((id) => MEMBER_PLAN_IDS.has(id));
-            return { isLoggedIn, isMember, member };
+
+            const rawKinAccess = member?.customFields?.["kin-access"];
+            const hasVideoAccess =
+              Boolean(member) && hasKinVideoAccess(rawKinAccess);
+
+            logKinVideoAccessDebug("videos/[id].jumpLinksTranscript", {
+              member,
+              rawKinAccess,
+              finalHasVideoAccess: hasVideoAccess,
+            });
+
+            return { isLoggedIn, isMember, hasVideoAccess, member };
           }
 
           function setAccess(hasFullAccess) {
@@ -191,6 +205,10 @@ const posterSrc =
 
             // Dev-only gating bypass: env flag or localhost ?member=true (see BaseLayout).
             if (window.__DEV_BYPASS_GATING || window.__KBM_DEV_MEMBER__) {
+              console.log("[KBM video access debug]", "videos/[id].setAccess.unlock", {
+                __DEV_BYPASS_GATING: window.__DEV_BYPASS_GATING,
+                __KBM_DEV_MEMBER__: window.__KBM_DEV_MEMBER__,
+              });
               setAccess(true);
               return;
             }
@@ -200,13 +218,14 @@ const posterSrc =
             const devFull = urlParams.get("mode") === "full";
 
             if (devFull) {
+              console.log("[KBM video access debug]", "videos/[id].setAccess.unlock", { mode: "full" });
               setAccess(true);
               return;
             }
 
             const res = await waitForMemberstackReady();
             const viewer = getViewerStateFromRes(res);
-            setAccess(Boolean(viewer.isMember));
+            setAccess(Boolean(viewer.hasVideoAccess));
           })();
         </script>
 

@@ -2,7 +2,7 @@
 /**
  * GatedVimeoEmbed.astro
  * - If access_level === "open": render iframe for everyone.
- * - If access_level === "member": gate by paid plan IDs; iframe injected client-side only when allowed.
+ * - If access_level === "member": iframe when logged in and kin-access is not false/"false" (see window.kbmHasKinVideoAccess).
  * - When dev bypass is on (localhost + PUBLIC_DEV_BYPASS_GATING=true), member videos show without login.
  */
 import { devBypass } from "../../lib/devBypass";
@@ -80,6 +80,10 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
 
     /* Dev-only: env bypass or localhost ?member=true (window.__KBM_DEV_MEMBER__ in BaseLayout). */
     if (devBypass || window.__KBM_DEV_MEMBER__ === true) {
+      console.log("[KBM video access debug]", "GatedVimeoEmbed.unlock", {
+        videoId,
+        reason: devBypass ? "devBypass(PUBLIC_DEV_BYPASS_GATING)" : "__KBM_DEV_MEMBER__(localhost?member=true)",
+      });
       slot.innerHTML = `
         <iframe
           src="${iframeSrc}"
@@ -102,18 +106,24 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
     }
 
     try {
-      const res = await window.$memberstackDom.getCurrentMember();
-      const member = res?.data;
+      const { data: member } = await window.$memberstackDom.getCurrentMember();
+      if (!member) {
+        slot.innerHTML = lockedMarkup;
+        slot.setAttribute("data-state", "ready");
+        return;
+      }
 
-      const allowedPlanIds = new Set([
-        "pln_kin-membership-annual-qf9g01et",
-        "pln_kin-membership-monthly-a59701wy",
-      ]);
+      const rawKinAccess = member.customFields?.["kin-access"];
+      const hasVideoAccess =
+        typeof window.kbmHasKinVideoAccess === "function"
+          ? window.kbmHasKinVideoAccess(rawKinAccess)
+          : String(rawKinAccess ?? "").trim().toLowerCase() !== "false";
 
-      const planConnections = member?.planConnections || [];
-      const hasVideoAccess = planConnections.some(
-        (pc) => pc.active && allowedPlanIds.has(pc.planId)
-      );
+      window.kbmLogKinVideoAccessDebug?.("GatedVimeoEmbed.iframe", {
+        member,
+        rawKinAccess,
+        finalHasVideoAccess: hasVideoAccess,
+      });
 
       if (!hasVideoAccess) {
         slot.innerHTML = lockedMarkup;
@@ -134,7 +144,7 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
       `;
       slot.setAttribute("data-state", "ready");
     } catch (e) {
-      console.error("GatedVimeoEmbed paid check failed:", e);
+      console.error("GatedVimeoEmbed MemberStack getCurrentMember failed:", e);
       slot.innerHTML = lockedMarkup;
       slot.setAttribute("data-state", "ready");
     }
