@@ -19,10 +19,22 @@ function projectVideoPlayerSrc(rawVideoUrl: unknown): string | null {
   const vimeoId = numericIdMatch ? numericIdMatch[0] : extractVimeoId(raw);
   if (!vimeoId) return null;
 
-  const params = new URLSearchParams({
-    byline: '0',
-    portrait: '0',
-  });
+  let privateHash = '';
+  try {
+    const parsedUrl = new URL(raw);
+    if (parsedUrl.hostname.includes('vimeo.com')) {
+      const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
+      const hashCandidate = pathParts.find((segment) => /^[a-f0-9]{8,}$/i.test(segment) && segment !== vimeoId);
+      if (hashCandidate) privateHash = hashCandidate;
+    }
+  } catch {
+    // Non-URL raw values are handled by ID extraction above.
+  }
+
+  const params = new URLSearchParams();
+  if (privateHash) params.set('h', privateHash);
+  params.set('byline', '0');
+  params.set('portrait', '0');
   return `https://player.vimeo.com/video/${vimeoId}?${params.toString()}`;
 }
 ---
