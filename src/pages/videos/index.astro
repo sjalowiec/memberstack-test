@@ -11,9 +11,16 @@ const featuredTipVideo = Array.isArray(videos)
   ? videos.find((v: { isTipOfWeek?: boolean }) => v.isTipOfWeek === true)
   : null;
 const indexQuery = Astro.url.search || "";
+const featuredTipHref = featuredTipVideo
+  ? (
+      (featuredTipVideo as { content_id?: string | number; slug?: string }).content_id
+        ? "/videos/" + (featuredTipVideo as { content_id?: string | number }).content_id
+        : "/videos/" + ((featuredTipVideo as { slug?: string }).slug ?? "")
+    )
+  : "";
 const featuredTip = featuredTipVideo
   ? {
-      href: "/tips",
+      href: featuredTipHref,
       title: (featuredTipVideo as { title?: string }).title ?? "This Week's Quick Win",
       posterUrl: (featuredTipVideo as { posterUrl?: string }).posterUrl ?? (featuredTipVideo as { poster_url?: string }).poster_url ?? "",
     }
