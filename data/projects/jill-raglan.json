@@ -1,0 +1,47 @@
+{
+  "title": "Jill's Raglan",
+  "slug": "jill-raglan",
+  "knitter": "Jill Browne",
+  "status": "",
+  "intro": "",
+  "startHere": "Let's convert the Avala Sweater for machine knitting.",
+  "hyvor": {
+    "websiteId": 14706,
+    "pageId": "jill-raglan"
+  },
+  "materials": [
+    {
+      "type": "Vimeo Video",
+      "title": "Overview",
+      "date": "04/28/26",
+      "notes": "",
+      "videoUrl": "1187335469",
+      "download": {
+        "text": "Download Diagram",
+        "url": "/projects/jill-raglan/jill-raglan-diagram.pdf"
+      }
+    },
+    {
+      "type": "",
+      "title": "",
+      "date": "",
+      "notes": "",
+      "videoUrl": "",
+      "download": {
+        "text": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "",
+      "title": "",
+      "date": "",
+      "notes": "",
+      "videoUrl": "",
+      "download": {
+        "text": "",
+        "url": ""
+      }
+    }
+  ]
+}
