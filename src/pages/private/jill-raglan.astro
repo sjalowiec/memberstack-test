@@ -7,6 +7,9 @@ const hyvorPageId = project.hyvor?.pageId || project.slug;
 ---
 
 <WorkspaceLayout title={project.title}>
+  <Fragment slot="head">
+    <meta name="robots" content="noindex, nofollow" />
+  </Fragment>
   <section class="workspace-hero">
     <h1>{project.title}</h1>
     <p class="workspace-subtitle">{project.intro}</p>
