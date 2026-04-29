@@ -65,10 +65,35 @@ const forceMemberView =
             Browse tutorials, technique lessons, and quick help videos designed
             to help you build skills and solve problems as you knit.
           </p>
-          <p>
+          <p class="video-catalog-hero__intro-lede">
             Whether you want to learn something new or find a quick solution,
             this library gives you a place to start.
           </p>
+          <div
+            class="videos-login-notice"
+            role="region"
+            aria-labelledby="videos-login-notice-heading"
+          >
+            <div class="videos-login-notice__layout">
+              <span class="videos-login-notice__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="5" y="11" width="14" height="10" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </span>
+              <div class="videos-login-notice__body">
+                <h2 id="videos-login-notice-heading" class="videos-login-notice__title">
+                  First time on the new Knit it Now?
+                </h2>
+                <p class="videos-login-notice__text">
+                  To watch videos, log in first. If this is your first visit, click &ldquo;Log In&rdquo; and then choose &ldquo;Forgot Password&rdquo; to create your password. <strong>Your previous Knit it Now password won&rsquo;t work here.</strong>
+                </p>
+                <button type="button" class="kbm-btn kbm-btn-primary videos-login-notice__btn" data-ms-modal="login">
+                  Log In
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
         {/* Tuesday Tip / Weekly Quick Win: KBM card with SVG, title, thumbnail + play overlay */}
         {featuredTip && (
@@ -647,6 +672,64 @@ const forceMemberView =
     .video-catalog-hero__intro p {
       margin: 0 0 0.75rem;
       max-width: 52ch;
+    }
+    .video-catalog-hero__intro .video-catalog-hero__intro-lede {
+      margin-bottom: 0.45rem;
+    }
+
+    /* --- First-time login / video access notice (compact, in hero intro column) --- */
+    .video-catalog-hero__intro .videos-login-notice {
+      width: 100%;
+      max-width: 52ch;
+      box-sizing: border-box;
+      margin: 0.35rem 0 0;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--kbm-green, #52682d) 9%, #ffffff);
+      border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 22%, #ffffff);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+    @supports not (background: color-mix(in srgb, red 10%, white)) {
+      .video-catalog-hero__intro .videos-login-notice {
+        background: #f7faf3;
+        border: 1px solid #d8e2cc;
+      }
+    }
+    .videos-login-notice__layout {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      max-width: 100%;
+    }
+    .videos-login-notice__icon {
+      flex-shrink: 0;
+      color: var(--kbm-green, #52682d);
+      line-height: 0;
+      margin-top: 1px;
+    }
+    .videos-login-notice__body {
+      flex: 1;
+      min-width: 0;
+    }
+    .videos-login-notice__title {
+      margin: 0 0 0.35rem;
+      font-size: 0.98rem;
+      font-weight: 700;
+      line-height: 1.28;
+      color: #1f2937;
+    }
+    .videos-login-notice__text {
+      margin: 0 0 0.5rem;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      color: #374151;
+    }
+    .videos-login-notice__btn.kbm-btn {
+      padding: 0.4rem 0.95rem;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     /* --- Tuesday Tip / Weekly Quick Win: KBM card --- */
