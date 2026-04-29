@@ -2815,3 +2815,31 @@ a.kbm-btn--primary:hover {
   text-align: center;
   margin-bottom: 12px;
 }
+
+@media print {
+  /* Remove backgrounds, shadows, borders, outlines (tables, cards, boxes) */
+  * {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Ensure clean readable text */
+  body {
+    color: #000 !important;
+  }
+
+  /* Optional: tighten spacing slightly */
+  section,
+  div {
+    margin: 0 0 10px 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide UI elements that shouldn't print */
+  button,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+}

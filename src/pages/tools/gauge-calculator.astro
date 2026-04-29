@@ -152,7 +152,7 @@ const toolPrintTitle = tool?.title ?? "Gauge Calculator";
         </div>
 
         <ToolResultCard
-          id="gaugeResultsCard"
+          id="gauge-results"
           hidden
           title="Your gauge"
           resultsContentId="gaugeResultsContent"
@@ -554,7 +554,7 @@ const toolPrintTitle = tool?.title ?? "Gauge Calculator";
   <script>
     const form = document.getElementById("wizard-form") as HTMLFormElement | null;
     const validationEl = document.getElementById("gaugeValidation");
-    const resultsCard = document.getElementById("gaugeResultsCard");
+    const resultsCard = document.getElementById("gauge-results");
     const stitchGaugeResult = document.getElementById("stitchGaugeResult");
     const rowGaugeResult = document.getElementById("rowGaugeResult");
 
@@ -660,6 +660,10 @@ const toolPrintTitle = tool?.title ?? "Gauge Calculator";
       stitchGaugeResultEl.textContent = stitchLine;
       rowGaugeResultEl.textContent = rowLine;
       resultsCardEl.hidden = false;
+      const resultsEl = document.getElementById("gauge-results");
+      if (resultsEl) {
+        resultsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     });
 
     window.addEventListener("kbm:units-change", () => {

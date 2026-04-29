@@ -1,0 +1,168 @@
+---
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import YarnWeightsTable from "../../components/reference/YarnWeightsTable.astro";
+import { yarnWeights } from "../../data/yarn-weights";
+import "../../styles/global.css";
+
+export const prerender = true;
+
+const pageTitle = "Yarn Weight Comparison | Knit it Now";
+const pageDescription =
+  "Compare yarn weights, gauge, and machine pitch across common yarn categories.";
+const symbolImages = yarnWeights.map((yarn) => ({
+  src: `/images/yarn/${yarn.symbol}`,
+  alt: yarn.category,
+}));
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <Header />
+
+    <main class="reference-page yarn-reference">
+      <div class="page-nav">
+        <a class="page-nav__back" href="/reference/">← Back to References</a>
+      </div>
+
+      <section class="reference-hero reference-card">
+        <h1>Yarn Weight Comparison</h1>
+        <p>
+          Yarn standards are general categories that describe how thick a yarn
+          is. For machine knitters, they help you estimate which yarns might
+          work on different machine gauges. Treat them as a starting point
+          only: fiber, twist, construction, and your machine setup all matter.
+          Always swatch when possible.
+        </p>
+      </section>
+
+      <p class="glossary-note">
+        Looking for a quick definition?
+        <a href="/glossary/yarn-standards">See the Yarn Standards glossary entry</a>.
+      </p>
+      <p class="glossary-note">
+        Need to compare ball-band yarn to cone yarn?
+        <a href="/tools/yarn-comparison-calculator">Try the Yarn Comparison Calculator</a>.
+      </p>
+
+      <section class="symbols-card reference-card" aria-label="Yarn weight category symbols">
+        {symbolImages.map(({ src, alt }) => (
+          <figure class="symbol-item">
+            <img src={src} alt={alt} width="64" height="64" loading="lazy" decoding="async" />
+            <figcaption>{alt}</figcaption>
+          </figure>
+        ))}
+      </section>
+
+      <section class="reference-card">
+        <p class="note">
+          <strong>Note:</strong> The “yarn types” terms are different in
+          different parts of the world.
+        </p>
+
+        <YarnWeightsTable />
+      </section>
+    </main>
+
+    <Footer />
+  </body>
+</html>
+
+<style>
+  .yarn-reference {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 2.5rem 1rem 4rem;
+  }
+
+  .reference-hero {
+    margin-bottom: 1rem;
+  }
+
+  .reference-hero h1 {
+    margin: 0 0 0.8rem;
+  }
+
+  .reference-hero p {
+    margin: 0;
+    line-height: 1.65;
+    color: #374151;
+  }
+
+  .glossary-note {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    color: #4b5563;
+  }
+
+  .glossary-note a {
+    font-weight: 600;
+  }
+
+  .symbols-card {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    background: #fafaf8;
+    border-color: #e8e8e0;
+  }
+
+  .symbol-item {
+    margin: 0;
+    text-align: center;
+    min-width: 4.25rem;
+  }
+
+  .symbol-item img {
+    display: block;
+    margin: 0 auto 0.35rem;
+    width: clamp(2.5rem, 7vw, 4rem);
+    height: auto;
+  }
+
+  .symbol-item figcaption {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #52682d;
+    line-height: 1.2;
+  }
+
+  .reference-card {
+    background: #fff;
+    border: 1px solid #e5e5df;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  .note {
+    margin: 0 0 1.25rem;
+    line-height: 1.5;
+    padding: 0.95rem 1rem;
+    background: #f9faf6;
+    border-left: 4px solid #52682d;
+    border-radius: 0 8px 8px 0;
+  }
+
+  @media (max-width: 700px) {
+    .reference-card {
+      padding: 1rem;
+    }
+
+    .yarn-reference {
+      padding: 2rem 0.75rem 3rem;
+    }
+
+  }
+</style>

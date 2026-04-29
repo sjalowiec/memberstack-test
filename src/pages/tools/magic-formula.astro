@@ -240,9 +240,9 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
       .mf-print-section-title {
         font-size: 11pt !important;
         font-weight: 700 !important;
-        margin: 10pt 0 6pt 0 !important;
-        border-bottom: 1px solid #000000 !important;
-        padding-bottom: 2pt !important;
+        margin: 8pt 0 4pt 0 !important;
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
         color: #000000 !important;
       }
       .mf-print-summary-text {
@@ -260,29 +260,14 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
         break-inside: avoid !important;
         page-break-inside: avoid !important;
       }
-      .mf-breakdown-table {
-        width: 100% !important;
-        border-collapse: collapse !important;
-        margin: 8pt 0 0 0 !important;
-        font-size: 10pt !important;
-        color: #000000 !important;
-      }
-      .mf-breakdown-table th,
-      .mf-breakdown-table td {
-        border: 1px solid #000000 !important;
-        padding: 4pt 6pt !important;
-        text-align: left !important;
-        vertical-align: top !important;
-        color: #000000 !important;
-        background: #ffffff !important;
-      }
-      .mf-breakdown-table thead th {
-        font-weight: 700 !important;
+      .row-by-row,
+      .detailed-steps {
+        display: none !important;
       }
       .mf-print-note {
-        margin: 8pt 0 0 0 !important;
-        padding: 6pt 8pt !important;
-        border: 1px solid #000000 !important;
+        margin: 6pt 0 0 0 !important;
+        padding: 0 !important;
+        border: none !important;
         font-size: 10pt !important;
         color: #000000 !important;
       }
@@ -615,25 +600,33 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
         return result.shapingSides === 'one-side' ? 'at one edge' : 'at each edge';
       }
 
-      /** Knitter-facing instructions from a row schedule (main or smoother). Display only. */
-      function buildKnitterInstructionHtml(result, rows) {
+      /**
+       * Plain-text summarized shaping (matches on-screen main instruction).
+       * @param {object} result - Engine result from runShapingEngine
+       * @param {number[]} rows - Cumulative row numbers for each shaping action
+       */
+      function getShapingSummary(result, rows) {
         const action = result.direction === 'increase' ? 'Increase' : 'Decrease';
         const edge = shapingEdgeAtPhrase(result);
         if (!rows || rows.length === 0) return '';
         const step = getUniformRowSpacing(rows);
         if (step === 1) {
           const n = rows.length;
-          const sentence = `${action} 1 stitch ${edge} every row for ${n} row${n === 1 ? '' : 's'}.`;
-          return `<p class="results-rows-list"><strong>${sentence}</strong></p>`;
+          return `${action} 1 stitch ${edge} every row for ${n} row${n === 1 ? '' : 's'}.`;
         }
         if (step != null) {
           const times = rows.length;
           const everyNth = `every ${step}${ordinalSuffix(step)} row`;
-          const sentence = `${action} 1 stitch ${edge} ${everyNth} ${times} time${times === 1 ? '' : 's'}.`;
-          return `<p class="results-rows-list"><strong>${sentence}</strong></p>`;
+          return `${action} 1 stitch ${edge} ${everyNth} ${times} time${times === 1 ? '' : 's'}.`;
         }
-        const rowsText = rows.join(', ');
-        return `<p class="results-rows-list"><strong>${action} 1 stitch ${edge} on the following rows:</strong><br>${rowsText}</p>`;
+        return `${action} 1 stitch ${edge} on the following rows: ${rows.join(', ')}`;
+      }
+
+      /** Knitter-facing instructions from a row schedule (main or smoother). Display only. */
+      function buildKnitterInstructionHtml(result, rows) {
+        const summary = getShapingSummary(result, rows);
+        if (!summary) return '';
+        return `<p class="results-rows-list"><strong>${escapeHtml(summary)}</strong></p>`;
       }
 
       function escapeHtml(str) {
@@ -668,16 +661,6 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
         };
       }
 
-      function buildBreakdownTableHtml(breakdown) {
-        if (!breakdown || breakdown.length === 0) {
-          return '<p class="mf-print-summary-text">—</p>';
-        }
-        const rows = breakdown.map((b) =>
-          `<tr><td>${b.rowNumber}</td><td>${escapeHtml(b.action)}</td><td>${escapeHtml(b.location)}</td><td>${b.stitchesAfter}</td></tr>`
-        ).join('');
-        return `<table class="mf-breakdown-table"><thead><tr><th>Row</th><th>Action</th><th>Location</th><th>Stitches after</th></tr></thead><tbody>${rows}</tbody></table>`;
-      }
-
       function summaryLineHtml(result) {
         const action = result.direction === 'increase' ? 'Increase' : 'Decrease';
         const sideText = result.shapingSides === 'both-sides' ? 'both sides' : 'one side';
@@ -710,11 +693,11 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
         let notesHtml = '';
         if (result.steepWarning) {
           notesHtml +=
-            `<div class="mf-print-note"><strong>Note:</strong> More shaping events than rows in a standard distribution. The instructions below are a best-effort fit.</div>`;
+            `<p class="mf-print-note"><strong>Note:</strong> More shaping events than rows in a standard distribution. Instructions are a best-effort fit.</p>`;
         }
         if (result.hasRemainderStitch) {
           notesHtml +=
-            `<div class="mf-print-note"><strong>Note:</strong> Stitch change is not perfectly symmetrical across both sides; distribute the symmetrical portion and handle 1 stitch separately.</div>`;
+            `<p class="mf-print-note"><strong>Note:</strong> Stitch change is not perfectly symmetrical across both sides; distribute the symmetrical portion and handle 1 stitch separately.</p>`;
         }
         if (result.approximateLength != null) {
           const uApprox = rawInput.units === 'cm' ? 'cm' : 'in';
@@ -741,14 +724,9 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
 
         parts += notesHtml;
 
-        parts += `<div class="mf-print-section-title">Main shaping instruction</div>`;
-        parts += `<div class="mf-print-instruction-wrap">${instructHtml}</div>`;
+        parts += `<div class="mf-print-section-title">Shaping instruction</div>`;
+        parts += `<div class="mf-print-instruction-wrap mf-print-shaping-summary">${instructHtml}</div>`;
         parts += `</div>`;
-
-        parts += `<div class="mf-print-section-title">Row-by-row details</div>`;
-        parts +=
-          `<p class="mf-print-summary-text" style="font-size:10pt;margin-top:0">Stitch counts are totals after each shaping action.</p>`;
-        parts += buildBreakdownTableHtml(result.breakdown);
 
         return parts;
       }

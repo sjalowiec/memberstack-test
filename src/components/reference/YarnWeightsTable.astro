@@ -1,0 +1,169 @@
+---
+import { yarnWeights } from "../../data/yarn-weights";
+
+interface Props {
+  tableClass?: string;
+}
+
+const { tableClass = "yarn-table" } = Astro.props;
+---
+
+<div class="table-scroll" aria-label="Yarn weight comparison table">
+  <table class={tableClass}>
+    <thead>
+      <tr>
+        <th>Symbol</th>
+        <th>Category</th>
+        <th>Yarn Types</th>
+        <th>Yards Per Pound</th>
+        <th>4&quot; <small><em>(10cm)</em></small></th>
+        <th>Machine/Pitch</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody id="yarnWeightsRows">
+      {yarnWeights.map((yarn) => (
+        <tr data-range-id={yarn.rangeId} data-category={yarn.category.toLowerCase()}>
+          <td>
+            <img
+              src={`/images/yarn/${yarn.symbol}`}
+              width="42"
+              height="42"
+              alt={`${yarn.category} yarn weight symbol`}
+              loading="lazy"
+            />
+          </td>
+          <th scope="row">{yarn.category}</th>
+          <td>
+            {yarn.types.map((type) => (
+              <>
+                {type}
+                <br />
+              </>
+            ))}
+          </td>
+          <td>{yarn.ypp}</td>
+          <td>{yarn.gauge}</td>
+          <td>
+            {yarn.machine}
+            {yarn.pitch && (
+              <>
+                <br />
+                <em><small>{yarn.pitch}</small></em>
+              </>
+            )}
+            {yarn.note && <> {yarn.note}</>}
+          </td>
+          <td>
+            <details class="details-disclosure">
+              <summary>More details</summary>
+              <div class="details-content">
+                <p><strong>UK:</strong> {yarn.uk}</p>
+                <p><strong>AUS:</strong> {yarn.aus}</p>
+                <p><strong>Hand Knitting Needle Size:</strong> {yarn.needles}</p>
+              </div>
+            </details>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  .yarn-table {
+    width: 100%;
+    min-width: 980px;
+    border-collapse: collapse;
+    font-size: 0.98rem;
+  }
+
+  .yarn-table th,
+  .yarn-table td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid #ecece8;
+  }
+
+  .yarn-table thead th {
+    font-weight: 700;
+    color: #374151;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    background: #f3f4ef;
+    border-bottom: 2px solid #d6d9cf;
+    white-space: nowrap;
+  }
+
+  .yarn-table tbody th[scope="row"] {
+    font-weight: 700;
+    color: #1f2937;
+    background: #fcfcfa;
+    white-space: nowrap;
+    vertical-align: top;
+  }
+
+  .yarn-table tbody tr:nth-child(even) td {
+    background: #fafaf8;
+  }
+
+  .yarn-table tbody tr:nth-child(even) th[scope="row"] {
+    background: #f6f6f2;
+  }
+
+  .yarn-table tbody tr:last-child td,
+  .yarn-table tbody tr:last-child th {
+    border-bottom: 0;
+  }
+
+  .yarn-table img {
+    display: block;
+  }
+
+  .yarn-table tbody tr.is-match td,
+  .yarn-table tbody tr.is-match th {
+    background: #ecf4dd !important;
+  }
+
+  .yarn-table tbody tr.is-match {
+    outline: 2px solid #b9cf89;
+    outline-offset: -2px;
+  }
+
+  .details-disclosure summary {
+    cursor: pointer;
+    color: #52682d;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    white-space: nowrap;
+  }
+
+  .details-content {
+    margin-top: 0.55rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #e5e5df;
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .details-content p {
+    margin: 0 0 0.35rem;
+    line-height: 1.45;
+  }
+
+  .details-content p:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 700px) {
+    .yarn-table {
+      font-size: 0.9rem;
+    }
+  }
+</style>

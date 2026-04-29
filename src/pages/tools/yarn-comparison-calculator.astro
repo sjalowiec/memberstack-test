@@ -1,0 +1,414 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
+import FloatingInput from "../../components/tools/FloatingInput.astro";
+import PrintButton from "../../components/common/PrintButton.astro";
+import ToolResultCard from "../../components/tools/ToolResultCard.astro";
+import YarnWeightsTable from "../../components/reference/YarnWeightsTable.astro";
+import { yarnWeights } from "../../data/yarn-weights";
+import toolsData from "../../../data/tools.json";
+import "../../styles/wizard.css";
+
+const tools = toolsData as Array<{
+  href?: string;
+  title?: string;
+  icon?: string;
+}>;
+const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+const toolPrintTitle = tool?.title ?? "Yarn Comparison Calculator";
+const rangeCategoryMap = Object.fromEntries(yarnWeights.map((item) => [item.rangeId, item.category]));
+---
+
+<Layout
+  title="Yarn Comparison Calculator | Knit it Now"
+  description="Compare yarn from balls, hanks, cakes, or skeins to cone yarn by calculating yards per pound from yarn label information."
+  toolPrintTitle={toolPrintTitle}
+>
+  <main class="wizard-page">
+    <div class="wizard-shell">
+      <WizardBackLink className="back-link" />
+
+      <section class="wizard-hero ypp-hero">
+        <ToolPageHeader tool={tool} fallbackTitle="Yarn Comparison Calculator" />
+        <p class="wizard-intro ypp-hero-intro">
+          Compare yarn from balls, hanks, cakes, or skeins to cone yarn by calculating yards per pound from the yarn label.
+        </p>
+      </section>
+
+      <div class="ypp-tool-wrap">
+        <div class="ypp-calculator-panel kbm-tool-calculator-area">
+          <form id="wizard-form" class="ypp-form" novalidate>
+            <h2 class="ypp-form-title">Enter yarn label information</h2>
+
+            <div class="ypp-input-grid">
+              <div class="ypp-field">
+                <FloatingInput
+                  id="weightGrams"
+                  name="weightGrams"
+                  label="Yarn Weight (grams)"
+                  type="number"
+                  min={0.01}
+                  step={0.01}
+                  inputmode="decimal"
+                  placeholder=" "
+                  value={50}
+                />
+                <div class="ypp-quick-buttons" role="group" aria-label="Quick yarn weight buttons">
+                  <button type="button" class="ypp-quick-btn" data-grams="50">50g</button>
+                  <button type="button" class="ypp-quick-btn" data-grams="100">100g</button>
+                </div>
+              </div>
+
+              <div class="ypp-field">
+                <FloatingInput
+                  id="length"
+                  name="length"
+                  label="Length from Ball Band"
+                  type="number"
+                  min={0.01}
+                  step={0.01}
+                  inputmode="decimal"
+                  placeholder=" "
+                />
+                <div class="ypp-length-units" role="group" aria-label="Length units">
+                  <button type="button" class="ypp-unit-btn active" data-unit="yards" aria-pressed="true">
+                    Yards
+                  </button>
+                  <button type="button" class="ypp-unit-btn" data-unit="meters" aria-pressed="false">
+                    Meters
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <input type="hidden" id="lengthUnit" name="lengthUnit" value="yards" />
+            <div id="yppValidation" class="ypp-validation" role="alert" hidden></div>
+          </form>
+        </div>
+
+        <ToolResultCard
+          id="yppResultsCard"
+          title="Your Yarn Result"
+          resultsContentId="yppResultsContent"
+          singleColumn={true}
+        >
+          <PrintButton slot="actions" label="" ariaLabel="Print yarn comparison results" />
+
+          <div id="yppSummaryMessage" class="ypp-empty-state">Enter yarn label information</div>
+
+          <div id="yppResultBody" class="ypp-result-body" hidden>
+            <p class="ypp-main-result">
+              <span id="yppValue">0</span> yards per pound
+            </p>
+            <p class="ypp-note">
+              This is an approximate guide to help you compare yarns and choose yarn that may work on your knitting machine.
+            </p>
+            <p class="ypp-caution">
+              Remember, the yarn must fit in the hooks of the needles to knit properly.
+            </p>
+          </div>
+
+          <div class="ypp-table-wrap">
+            <YarnWeightsTable />
+          </div>
+        </ToolResultCard>
+      </div>
+    </div>
+  </main>
+
+  <style>
+    .ypp-hero .ypp-hero-intro {
+      margin: 0.2rem 0 0.6rem;
+      max-width: 44rem;
+    }
+
+    .ypp-tool-wrap {
+      margin-bottom: 2rem;
+    }
+
+    .ypp-calculator-panel {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      margin-bottom: 1.25rem;
+    }
+
+    .ypp-form-title {
+      margin: 0 0 1rem;
+      font-size: 1.15rem;
+      color: #2f3a2f;
+    }
+
+    .ypp-input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem 1.25rem;
+    }
+
+    .ypp-field {
+      min-width: 0;
+    }
+
+    .ypp-quick-buttons,
+    .ypp-length-units {
+      display: inline-flex;
+      gap: 0.5rem;
+      margin-top: 0.55rem;
+      flex-wrap: wrap;
+    }
+
+    .ypp-quick-btn,
+    .ypp-unit-btn {
+      border: 1px solid #cfd6c3;
+      border-radius: 999px;
+      background: #f8faf5;
+      color: #2f3a2f;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .ypp-quick-btn:hover,
+    .ypp-unit-btn:hover {
+      border-color: #52682d;
+      background: #edf2e5;
+    }
+
+    .ypp-unit-btn.active {
+      background: #52682d;
+      border-color: #52682d;
+      color: #fff;
+    }
+
+    .ypp-validation {
+      margin-top: 1rem;
+      padding: 0.75rem 0.9rem;
+      border-left: 4px solid #d9534f;
+      background: #fff4f4;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      color: #374151;
+    }
+
+    .ypp-empty-state {
+      margin: 0 0 1rem;
+      color: #6b7280;
+      font-weight: 600;
+    }
+
+    .ypp-main-result {
+      margin: 0;
+      font-size: clamp(1.35rem, 3.4vw, 2rem);
+      font-weight: 800;
+      color: #1f2937;
+      line-height: 1.2;
+    }
+
+    .ypp-main-result #yppValue {
+      color: #52682d;
+    }
+
+    .ypp-note,
+    .ypp-caution {
+      margin: 0.75rem 0 0;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+
+    .ypp-category-line {
+      margin: 0.75rem 0 0;
+      color: #1f2937;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    .ypp-caution {
+      font-weight: 600;
+    }
+
+    .ypp-table-wrap {
+      margin-top: 1.25rem;
+      overflow-x: auto;
+    }
+
+    @media (max-width: 720px) {
+      .ypp-input-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .ypp-calculator-panel {
+        padding: 1.15rem;
+      }
+    }
+  </style>
+
+  <script define:vars={{ rangeCategoryMap }}>
+    const form = document.getElementById("wizard-form");
+    const weightInput = document.getElementById("weightGrams");
+    const lengthInput = document.getElementById("length");
+    const lengthUnitInput = document.getElementById("lengthUnit");
+    const unitButtons = Array.from(document.querySelectorAll(".ypp-unit-btn"));
+    const quickButtons = Array.from(document.querySelectorAll(".ypp-quick-btn"));
+    const validationEl = document.getElementById("yppValidation");
+    const resultBody = document.getElementById("yppResultBody");
+    const summaryMessage = document.getElementById("yppSummaryMessage");
+    const yppValue = document.getElementById("yppValue");
+    const rangeRows = Array.from(document.querySelectorAll("#yarnWeightsRows tr"));
+
+    if (
+      !form ||
+      !weightInput ||
+      !lengthInput ||
+      !lengthUnitInput ||
+      !validationEl ||
+      !resultBody ||
+      !summaryMessage ||
+      !yppValue
+    ) {
+      throw new Error("Yarn comparison calculator: missing DOM elements");
+    }
+    const formEl = form;
+    const weightInputEl = weightInput;
+    const lengthInputEl = lengthInput;
+    const lengthUnitInputEl = lengthUnitInput;
+    const validationElEl = validationEl;
+    const resultBodyEl = resultBody;
+    const summaryMessageEl = summaryMessage;
+    const yppValueEl = yppValue;
+    const defaultSummaryText = "Enter yarn label information";
+
+    function calculateYardsPerPound({ length, weightGrams, unit }) {
+      const numericLength = Number(length);
+      const numericWeight = Number(weightGrams);
+
+      if (!numericLength || !numericWeight || numericLength <= 0 || numericWeight <= 0) {
+        return null;
+      }
+
+      const yards = unit === "meters" ? numericLength * 1.09361 : numericLength;
+      return yards * (453.592 / numericWeight);
+    }
+
+    function getRangeId(ypp) {
+      if (ypp >= 4000) return "lace";
+      if (ypp >= 3000) return "super-fine";
+      if (ypp >= 2000) return "fine";
+      if (ypp >= 1000) return "light";
+      if (ypp >= 800) return "medium";
+      if (ypp >= 500) return "bulky";
+      return "super-bulky";
+    }
+
+    function getRangeLabel(rangeId) {
+      if (rangeId === "lace") return "Lace / very fine";
+      if (rangeId === "super-bulky") return "Super Bulky";
+      return rangeCategoryMap[rangeId] ?? "Super Bulky";
+    }
+
+    function isRowVisible(rowEl) {
+      const rect = rowEl.getBoundingClientRect();
+      return rect.top >= 0 && rect.bottom <= window.innerHeight;
+    }
+
+    function setActiveUnit(unit) {
+      lengthUnitInputEl.value = unit;
+      unitButtons.forEach((button) => {
+        const active = button.dataset.unit === unit;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+      recalculate();
+    }
+
+    function clearMatchRows() {
+      rangeRows.forEach((row) => row.classList.remove("is-match"));
+    }
+
+    function showEmptyState() {
+      summaryMessageEl.textContent = defaultSummaryText;
+      resultBodyEl.hidden = true;
+      clearMatchRows();
+    }
+
+    function showValidation(message) {
+      validationElEl.hidden = false;
+      validationElEl.textContent = message;
+      showEmptyState();
+    }
+
+    function clearValidation() {
+      validationElEl.hidden = true;
+      validationElEl.textContent = "";
+    }
+
+    function recalculate() {
+      clearValidation();
+
+      const weightValue = Number(weightInputEl.value);
+      const lengthValue = Number(lengthInputEl.value);
+      const hasAnyInput = weightInputEl.value.trim() !== "" || lengthInputEl.value.trim() !== "";
+
+      if (!hasAnyInput) {
+        showEmptyState();
+        return;
+      }
+
+      if ((weightInputEl.value.trim() !== "" && weightValue <= 0) || (lengthInputEl.value.trim() !== "" && lengthValue <= 0)) {
+        showValidation("Please enter positive numbers only.");
+        return;
+      }
+
+      const ypp = calculateYardsPerPound({
+        length: lengthValue,
+        weightGrams: weightValue,
+        unit: lengthUnitInputEl.value,
+      });
+
+      if (ypp === null) {
+        showEmptyState();
+        return;
+      }
+
+      const rounded = Math.round(ypp);
+      const formattedYpp = rounded.toLocaleString();
+      yppValueEl.textContent = formattedYpp;
+      resultBodyEl.hidden = false;
+
+      const matchedId = getRangeId(ypp);
+      const matchedLabel = getRangeLabel(matchedId);
+      summaryMessageEl.textContent = `This yarn falls into the ‘${matchedLabel}’ range (${formattedYpp} yards per pound).`;
+      clearMatchRows();
+      const matchedRow = rangeRows.find((row) => row.dataset.rangeId === matchedId);
+      matchedRow?.classList.add("is-match");
+      if (matchedRow && !isRowVisible(matchedRow)) {
+        matchedRow.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }
+
+    formEl.addEventListener("input", () => {
+      recalculate();
+    });
+
+    quickButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const grams = button.dataset.grams ?? "";
+        weightInputEl.value = grams;
+        recalculate();
+      });
+    });
+
+    unitButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const unit = button.dataset.unit === "meters" ? "meters" : "yards";
+        setActiveUnit(unit);
+      });
+    });
+
+    showEmptyState();
+  </script>
+</Layout>
