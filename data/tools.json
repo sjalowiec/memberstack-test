@@ -268,5 +268,17 @@
     "category": "Shaping and Charting",
     "help_text": "Use the Increase / Decrease Evenly Calculator when you need more or fewer stitches across a single row—for example ruffles, gathers, or other even distributions.\n\nEnter starting and ending stitch counts. The tool spaces the change evenly across the row and gives clear machine-knitting instructions for rehanging centered on the needle bed.",
     "active": true
+  },
+  {
+    "id": 31,
+    "title": "Yarn Comparison Calculator",
+    "href": "/tools/yarn-comparison-calculator",
+    "icon": "yarn_usage_icon1.svg",
+    "description": "Calculate yards per pound and compare yarns from ball band information.",
+    "membersonly": true,
+    "helpID": "NULL",
+    "category": "Shaping and Charting",
+    "help_text": "Use the Yarn Comparison Calculator to compare yarns based on ball band information.\n\nEnter yardage and weight to calculate yards per pound. This helps you understand how different yarns relate to each other and choose suitable substitutes for machine knitting.",
+    "active": true
   }
 ]
