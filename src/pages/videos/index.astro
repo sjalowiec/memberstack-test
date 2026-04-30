@@ -236,12 +236,6 @@ const forceMemberView =
     let currentSort = initialSort;
     let searchTimer;
 
-    /* Paid-tier plan IDs: used only for VIEWER.isMember. */
-    const MEMBER_PLAN_IDS = new Set([
-      "pln_kin-membership-annual-qf9g01et",
-      "pln_kin-membership-monthly-a59701wy",
-    ]);
-
     async function getViewerState() {
       try {
         const res = await window.$memberstackDom?.getCurrentMember?.();
@@ -250,36 +244,24 @@ const forceMemberView =
         if (!member) return { isLoggedIn: false, isMember: false, hasVideoAccess: false, member: null };
 
         const conns = Array.isArray(member.planConnections) ? member.planConnections : [];
-        const activePlanIds = new Set(
-          conns
-            .filter(function (c) {
-              if (!c) return false;
-              const status = String(c.status || "").toUpperCase();
-              return status === "ACTIVE" || status === "TRIALING";
-            })
-            .map(function (c) { return c.planId; })
-            .filter(Boolean)
-        );
+        const hasAnyActiveOrTrialPlan = conns.some(function (c) {
+          if (!c) return false;
+          const status = String(c.status || "").toUpperCase();
+          return c.active === true || status === "ACTIVE" || status === "TRIALING";
+        });
 
         // TEMP DEBUG: remove after access validation is complete.
         console.log("Memberstack member:", member);
         console.log("Memberstack planConnections:", member?.planConnections);
 
-        const isMember = [...activePlanIds].some(function (id) { return MEMBER_PLAN_IDS.has(id); });
-        const hasKinNamedActivePlan = conns.some(function (c) {
-          if (!c) return false;
-          const status = String(c.status || "").toUpperCase();
-          if (!(status === "ACTIVE" || status === "TRIALING")) return false;
-          const planId = String(c.planId || "").toLowerCase();
-          return planId.includes("kin-membership");
-        });
+        const isMember = hasAnyActiveOrTrialPlan;
 
         const rawKinAccess = member.customFields?.["kin-access"];
         const hasVideoAccess =
           typeof window.kbmHasKinVideoAccess === "function"
             ? window.kbmHasKinVideoAccess(rawKinAccess)
             : String(rawKinAccess ?? "").trim().toLowerCase() !== "false";
-        const finalHasVideoAccess = Boolean(member) && (hasVideoAccess || isMember || hasKinNamedActivePlan);
+        const finalHasVideoAccess = Boolean(member) && (hasVideoAccess || isMember);
 
         window.kbmLogKinVideoAccessDebug?.("videos/index.catalog", {
           member,
@@ -287,7 +269,7 @@ const forceMemberView =
           finalHasVideoAccess: finalHasVideoAccess,
         });
 
-        return { isLoggedIn: true, isMember: isMember || hasKinNamedActivePlan, hasVideoAccess: finalHasVideoAccess, member: member };
+        return { isLoggedIn: true, isMember: isMember, hasVideoAccess: finalHasVideoAccess, member: member };
       } catch (e) {
         return { isLoggedIn: false, isMember: false, hasVideoAccess: false, member: null };
       }
