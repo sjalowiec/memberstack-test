@@ -73,6 +73,7 @@ const forceMemberView =
             class="videos-login-notice"
             role="region"
             aria-labelledby="videos-login-notice-heading"
+            id="videosAccessNotice"
           >
             <div class="videos-login-notice__layout">
               <span class="videos-login-notice__icon" aria-hidden="true">
@@ -82,15 +83,18 @@ const forceMemberView =
                 </svg>
               </span>
               <div class="videos-login-notice__body">
-                <h2 id="videos-login-notice-heading" class="videos-login-notice__title">
+                <h2 id="videos-login-notice-heading" class="videos-login-notice__title" data-notice-title>
                   First time on the new Knit it Now?
                 </h2>
-                <p class="videos-login-notice__text">
+                <p class="videos-login-notice__text" data-notice-text>
                   To watch videos, log in first. If this is your first visit, click &ldquo;Log In&rdquo; and then choose &ldquo;Forgot Password&rdquo; to create your password. <strong>Your previous Knit it Now password won&rsquo;t work here.</strong>
                 </p>
-                <button type="button" class="kbm-btn kbm-btn-primary videos-login-notice__btn" data-ms-modal="login">
+                <button type="button" class="kbm-btn kbm-btn-primary videos-login-notice__btn" data-ms-modal="login" data-notice-login-btn>
                   Log In
                 </button>
+                <a href="/membership" class="kbm-btn kbm-btn-primary videos-login-notice__btn" data-notice-upgrade-btn hidden>
+                  Upgrade Membership
+                </a>
               </div>
             </div>
           </div>
@@ -240,48 +244,65 @@ const forceMemberView =
 
     async function getViewerState() {
       try {
-        const res = await window.$memberstackDom?.getAppAndMember?.();
-        const member = res?.data?.member || null;
+        const res = await window.$memberstackDom?.getCurrentMember?.();
+        const data = res?.data;
+        const member = (data?.member ?? data) || null;
         if (!member) return { isLoggedIn: false, isMember: false, hasVideoAccess: false, member: null };
 
         const conns = Array.isArray(member.planConnections) ? member.planConnections : [];
         const activePlanIds = new Set(
           conns
-            .filter(function (c) { return c && c.status === "ACTIVE" && c.active; })
+            .filter(function (c) {
+              if (!c) return false;
+              const status = String(c.status || "").toUpperCase();
+              return status === "ACTIVE" || status === "TRIALING";
+            })
             .map(function (c) { return c.planId; })
             .filter(Boolean)
         );
 
+        // TEMP DEBUG: remove after access validation is complete.
+        console.log("Memberstack member:", member);
+        console.log("Memberstack planConnections:", member?.planConnections);
+
         const isMember = [...activePlanIds].some(function (id) { return MEMBER_PLAN_IDS.has(id); });
+        const hasKinNamedActivePlan = conns.some(function (c) {
+          if (!c) return false;
+          const status = String(c.status || "").toUpperCase();
+          if (!(status === "ACTIVE" || status === "TRIALING")) return false;
+          const planId = String(c.planId || "").toLowerCase();
+          return planId.includes("kin-membership");
+        });
 
         const rawKinAccess = member.customFields?.["kin-access"];
         const hasVideoAccess =
           typeof window.kbmHasKinVideoAccess === "function"
             ? window.kbmHasKinVideoAccess(rawKinAccess)
             : String(rawKinAccess ?? "").trim().toLowerCase() !== "false";
+        const finalHasVideoAccess = Boolean(member) && (hasVideoAccess || isMember || hasKinNamedActivePlan);
 
         window.kbmLogKinVideoAccessDebug?.("videos/index.catalog", {
           member,
           rawKinAccess,
-          finalHasVideoAccess: hasVideoAccess,
+          finalHasVideoAccess: finalHasVideoAccess,
         });
 
-        return { isLoggedIn: true, isMember: isMember, hasVideoAccess: hasVideoAccess, member: member };
+        return { isLoggedIn: true, isMember: isMember || hasKinNamedActivePlan, hasVideoAccess: finalHasVideoAccess, member: member };
       } catch (e) {
         return { isLoggedIn: false, isMember: false, hasVideoAccess: false, member: null };
       }
     }
 
     let VIEWER = { isLoggedIn: false, isMember: false, hasVideoAccess: false, member: null };
+    let ACCESS_STATE = "checking";
 
     async function waitForMemberstackReady(opts) {
       const attempts = (opts && opts.attempts) !== undefined ? opts.attempts : 30;
       const delayMs = (opts && opts.delayMs) !== undefined ? opts.delayMs : 200;
       for (let i = 0; i < attempts; i++) {
         try {
-          if (window.$memberstackDom && window.$memberstackDom.getAppAndMember) {
-            const res = await window.$memberstackDom.getAppAndMember();
-            return res;
+          if (window.$memberstackDom && typeof window.$memberstackDom.getCurrentMember === "function") {
+            return true;
           }
         } catch (e) {
           // keep trying
@@ -289,6 +310,43 @@ const forceMemberView =
         await new Promise(function (r) { return setTimeout(r, delayMs); });
       }
       return null;
+    }
+    function applyAccessNoticeState() {
+      const notice = document.getElementById("videosAccessNotice");
+      if (!notice) return;
+      const titleEl = notice.querySelector("[data-notice-title]");
+      const textEl = notice.querySelector("[data-notice-text]");
+      const loginBtn = notice.querySelector("[data-notice-login-btn]");
+      const upgradeBtn = notice.querySelector("[data-notice-upgrade-btn]");
+
+      if (ACCESS_STATE === "has_access") {
+        notice.setAttribute("hidden", "");
+        return;
+      }
+      notice.removeAttribute("hidden");
+
+      if (ACCESS_STATE === "checking") {
+        if (titleEl) titleEl.textContent = "Checking your video access...";
+        if (textEl) textEl.textContent = "Please wait while we confirm your membership access.";
+        if (loginBtn) loginBtn.setAttribute("hidden", "");
+        if (upgradeBtn) upgradeBtn.setAttribute("hidden", "");
+        return;
+      }
+
+      if (ACCESS_STATE === "logged_out") {
+        if (titleEl) titleEl.textContent = "First time on the new Knit it Now?";
+        if (textEl) {
+          textEl.innerHTML = "To watch videos, log in first. If this is your first visit, click &ldquo;Log In&rdquo; and then choose &ldquo;Forgot Password&rdquo; to create your password. <strong>Your previous Knit it Now password won&rsquo;t work here.</strong>";
+        }
+        if (loginBtn) loginBtn.removeAttribute("hidden");
+        if (upgradeBtn) upgradeBtn.setAttribute("hidden", "");
+        return;
+      }
+
+      if (titleEl) titleEl.textContent = "Your account does not include video access";
+      if (textEl) textEl.textContent = "You are logged in, but this plan does not include the video library. Upgrade your membership to unlock all videos.";
+      if (loginBtn) loginBtn.setAttribute("hidden", "");
+      if (upgradeBtn) upgradeBtn.removeAttribute("hidden");
     }
 
     function updateUrl() {
@@ -392,8 +450,12 @@ const forceMemberView =
           "<circle cx=\"34\" cy=\"34\" r=\"34\"></circle>" +
           "<polygon points=\"28,22 28,46 48,34\"></polygon>" +
           "</svg></span>";
+        const showLocked =
+          ACCESS_STATE !== "checking" &&
+          !VIEWER.hasVideoAccess &&
+          v.access_level === "member";
         const lockOverlay =
-          v.access_level === "member"
+          showLocked
             ? "<span class=\"kbm-lock-overlay\" aria-label=\"Member-only video\"><i class=\"fa-solid fa-lock\" aria-hidden=\"true\"></i></span>"
             : "";
         const poster = v.posterUrl
@@ -536,10 +598,17 @@ const forceMemberView =
     }
 
     (async function () {
+      applyAccessNoticeState();
       render(currentCategory);
 
       await waitForMemberstackReady();
       VIEWER = await getViewerState();
+      ACCESS_STATE = !VIEWER.isLoggedIn
+        ? "logged_out"
+        : VIEWER.hasVideoAccess
+          ? "has_access"
+          : "no_access";
+      applyAccessNoticeState();
 
       render(currentCategory);
     })();
