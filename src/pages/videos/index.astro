@@ -330,6 +330,26 @@ const forceMemberView =
       if (loginBtn) loginBtn.setAttribute("hidden", "");
       if (upgradeBtn) upgradeBtn.removeAttribute("hidden");
     }
+    function applyAccessUiState() {
+      applyAccessNoticeState();
+
+      if (ACCESS_STATE === "has_access") {
+        removeLockedUiArtifacts();
+      }
+    }
+    function removeLockedUiArtifacts() {
+      // Explicitly remove any lock UI that may have been rendered before auth resolved.
+      document.querySelectorAll(".kbm-lock-overlay").forEach(function (el) { el.remove(); });
+      document.querySelectorAll(".video-card .fa-lock, .video-card [class*='lock']").forEach(function (el) {
+        if (el.classList && el.classList.contains("kbm-lock-overlay")) return;
+        const lockContainer = el.closest ? el.closest(".kbm-lock-overlay") : null;
+        if (lockContainer) lockContainer.remove();
+        else el.setAttribute("hidden", "");
+      });
+      document.querySelectorAll(".kbm-video-card[hidden], .video-card[hidden]").forEach(function (el) {
+        el.removeAttribute("hidden");
+      });
+    }
 
     function updateUrl() {
       const params = new URLSearchParams();
@@ -462,6 +482,9 @@ const forceMemberView =
             "</a>"
         );
       }).join("");
+      if (ACCESS_STATE === "has_access") {
+        removeLockedUiArtifacts();
+      }
     }
 
     /* ---------- Custom dropdown UI (build and sync before first render so URL category wins) ---------- */
@@ -580,7 +603,6 @@ const forceMemberView =
     }
 
     (async function () {
-      applyAccessNoticeState();
       render(currentCategory);
 
       await waitForMemberstackReady();
@@ -590,9 +612,8 @@ const forceMemberView =
         : VIEWER.hasVideoAccess
           ? "has_access"
           : "no_access";
-      applyAccessNoticeState();
-
       render(currentCategory);
+      applyAccessUiState();
     })();
 
     // Toggle open/close
