@@ -382,6 +382,17 @@ const forceMemberView =
       document.querySelectorAll(".kbm-video-card[hidden], .video-card[hidden]").forEach(function (el) {
         el.removeAttribute("hidden");
       });
+      document.querySelectorAll(".kbm-video-card.is-locked, .video-card.is-locked").forEach(function (el) {
+        el.classList.remove("is-locked");
+      });
+    }
+    function isMemberOnlyVideo(v) {
+      return (
+        v.access_level === "member" ||
+        v.member_only === true ||
+        v.membersonly === true ||
+        v.isMemberOnly === true
+      );
     }
 
     function updateUrl() {
@@ -486,12 +497,14 @@ const forceMemberView =
           "<circle cx=\"34\" cy=\"34\" r=\"34\"></circle>" +
           "<polygon points=\"28,22 28,46 48,34\"></polygon>" +
           "</svg></span>";
-        const isMemberOnly =
-          v.access_level === "member" ||
-          v.member_only === true ||
-          v.membersonly === true ||
-          v.isMemberOnly === true;
+        const isMemberOnly = isMemberOnlyVideo(v);
         const showLocked = isMemberOnly && !hasAccess;
+        console.log("render video lock state", {
+          title: v.title,
+          isMemberOnly,
+          hasAccess,
+          showLocked
+        });
         const lockOverlay =
           showLocked
             ? "<span class=\"kbm-lock-overlay\" aria-label=\"Member-only video\"><i class=\"fa-solid fa-lock\" aria-hidden=\"true\"></i></span>"
