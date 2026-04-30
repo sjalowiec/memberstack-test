@@ -475,6 +475,7 @@ const forceMemberView =
       const listQuery = listParams.toString();
       const listQueryString = listQuery ? "?" + listQuery : "";
 
+      const hasAccess = ACCESS_STATE === "has_access" || Boolean(VIEWER.hasVideoAccess);
       grid.innerHTML = filtered.map(v => {
         const baseHref = v.content_id ? "/videos/" + v.content_id : "/videos/" + (v.slug || "");
         const href = baseHref + listQueryString;
@@ -485,10 +486,12 @@ const forceMemberView =
           "<circle cx=\"34\" cy=\"34\" r=\"34\"></circle>" +
           "<polygon points=\"28,22 28,46 48,34\"></polygon>" +
           "</svg></span>";
-        const showLocked =
-          ACCESS_STATE !== "checking" &&
-          !VIEWER.hasVideoAccess &&
-          v.access_level === "member";
+        const isMemberOnly =
+          v.access_level === "member" ||
+          v.member_only === true ||
+          v.membersonly === true ||
+          v.isMemberOnly === true;
+        const showLocked = isMemberOnly && !hasAccess;
         const lockOverlay =
           showLocked
             ? "<span class=\"kbm-lock-overlay\" aria-label=\"Member-only video\"><i class=\"fa-solid fa-lock\" aria-hidden=\"true\"></i></span>"
@@ -504,7 +507,7 @@ const forceMemberView =
         const desc = (v.description || v.summary || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
         return (
-          "<a class=\"kbm-card video-card kbm-video-card\" href=\"" + href + "\">" +
+          "<a class=\"kbm-card video-card kbm-video-card" + (showLocked ? " is-locked" : "") + "\" href=\"" + href + "\">" +
             poster +
             "<div class=\"kbm-card-body\">" +
             "<h3 class=\"kbm-card__title kbm-card-title\">" +
