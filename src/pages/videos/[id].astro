@@ -21,6 +21,16 @@ const contentIdAttr = !Number.isNaN(contentIdForJumplinks) ? String(contentIdFor
 const vimeoId = (video as any)?.vimeo_id;
 const title = (video as any)?.title ?? "Video";
 const description = (video as any)?.description ?? "";
+const downloadUrlRaw =
+  typeof (video as any)?.downloadUrl === "string" ? String((video as any).downloadUrl).trim() : "";
+/** Only allow site-relative paths (avoid accidental open redirects from JSON). */
+const downloadUrl =
+  downloadUrlRaw.startsWith("/") && !downloadUrlRaw.startsWith("//") ? downloadUrlRaw : "";
+const downloadLabelRaw =
+  typeof (video as any)?.downloadLabel === "string"
+    ? String((video as any).downloadLabel).trim()
+    : "";
+const downloadLabel = downloadLabelRaw || "Download";
 
 // Public exception: when this video is the featured Tuesday Tip (isTipOfWeek), show player to everyone.
 // Otherwise use access_level from JSON (default "member").
@@ -118,10 +128,17 @@ const posterSrc =
             </div>
           </nav>
 
-          {/* DESCRIPTION (always visible) */}
+          {/* DESCRIPTION (always visible); plain text only — optional worksheet link via downloadUrl */}
           <section class="video-description">
             <h2>Description</h2>
-            <div class="video-desc-text" set:html={description}></div>
+            {description ? <div class="video-desc-text">{description}</div> : null}
+            {downloadUrl ? (
+              <p class="video-desc-download">
+                <a class="video-desc-download__link kbm-btn kbm-btn-primary" href={downloadUrl}>
+                  {downloadLabel}
+                </a>
+              </p>
+            ) : null}
           </section>
         </article>
 
@@ -226,6 +243,8 @@ const posterSrc =
           .locked-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
           .btn { padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,.35); color: white; text-decoration: none; }
           .btn-primary { background: rgba(255,255,255,.15); }
+          .video-desc-download { margin: 1rem 0 0; }
+          .video-desc-download__link { text-decoration: none; }
         </style>
       </>
     )}
