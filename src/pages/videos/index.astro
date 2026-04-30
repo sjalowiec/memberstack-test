@@ -59,10 +59,6 @@ const forceMemberView =
     <section class="video-catalog-hero">
       <div class="video-catalog-hero__grid">
         <div class="video-catalog-hero__intro">
-          <div id="videosAccessDebugPanel" class="videos-access-debug" hidden aria-live="polite">
-            <p class="videos-access-debug__title">Temporary Access Debug</p>
-            <pre id="videosAccessDebugContent" class="videos-access-debug__content">Waiting for Memberstack...</pre>
-          </div>
           <p class="video-catalog-hero__eyebrow">Video Tutorials</p>
           <h1>Learn with clear, practical machine knitting videos</h1>
           <p>
@@ -254,10 +250,6 @@ const forceMemberView =
           return c.active === true || status === "ACTIVE" || status === "TRIALING";
         });
 
-        // TEMP DEBUG: remove after access validation is complete.
-        console.log("Memberstack member:", member);
-        console.log("Memberstack planConnections:", member?.planConnections);
-
         const isMember = hasAnyActiveOrTrialPlan;
 
         const rawKinAccess = member.customFields?.["kin-access"];
@@ -266,8 +258,6 @@ const forceMemberView =
             ? window.kbmHasKinVideoAccess(rawKinAccess)
             : String(rawKinAccess ?? "").trim().toLowerCase() !== "false";
         const finalHasVideoAccess = Boolean(member) && (hasVideoAccess || isMember);
-        console.log("Memberstack final hasAccess:", finalHasVideoAccess);
-
         window.kbmLogKinVideoAccessDebug?.("videos/index.catalog", {
           member,
           rawKinAccess,
@@ -282,34 +272,6 @@ const forceMemberView =
 
     let VIEWER = { isLoggedIn: false, isMember: false, hasVideoAccess: false, member: null };
     let ACCESS_STATE = "checking";
-    function updateAccessDebugPanel() {
-      const panel = document.getElementById("videosAccessDebugPanel");
-      const content = document.getElementById("videosAccessDebugContent");
-      if (!panel || !content) return;
-
-      const memberExists = Boolean(VIEWER && VIEWER.member);
-      const conns = Array.isArray(VIEWER?.member?.planConnections) ? VIEWER.member.planConnections : [];
-      const connLines = conns.length
-        ? conns.map(function (c, idx) {
-            return (
-              "[" + idx + "] " +
-              "planId=" + String(c?.planId ?? "") +
-              " | status=" + String(c?.status ?? "") +
-              " | active=" + String(c?.active ?? "")
-            );
-          }).join("\n")
-        : "(none)";
-
-      const output =
-        "ACCESS_STATE: " + ACCESS_STATE + "\n" +
-        "member exists: " + memberExists + "\n" +
-        "planConnections: " + conns.length + "\n" +
-        "final hasAccess: " + String(Boolean(VIEWER?.hasVideoAccess)) + "\n" +
-        "connections:\n" + connLines;
-
-      content.textContent = output;
-      panel.removeAttribute("hidden");
-    }
 
     async function waitForMemberstackReady(opts) {
       const attempts = (opts && opts.attempts) !== undefined ? opts.attempts : 30;
@@ -512,12 +474,6 @@ const forceMemberView =
           "</svg></span>";
         const isMemberOnly = isMemberOnlyVideo(v);
         const showLocked = isMemberOnly && !hasAccess;
-        console.log("render video lock state", {
-          title: v.title,
-          isMemberOnly,
-          hasAccess,
-          showLocked
-        });
         const lockOverlay =
           showLocked
             ? "<span class=\"kbm-lock-overlay\" aria-label=\"Member-only video\"><i class=\"fa-solid fa-lock\" aria-hidden=\"true\"></i></span>"
@@ -675,7 +631,6 @@ const forceMemberView =
         : VIEWER.hasVideoAccess
           ? "has_access"
           : "no_access";
-      updateAccessDebugPanel();
       render(currentCategory);
       applyAccessUiState();
     })();
@@ -812,29 +767,6 @@ const forceMemberView =
     .video-catalog-hero__intro .video-catalog-hero__intro-lede {
       margin-bottom: 0.45rem;
     }
-    .videos-access-debug {
-      margin: 0 0 0.75rem;
-      max-width: 52ch;
-      border: 1px solid #b91c1c;
-      border-radius: 8px;
-      background: #fff1f2;
-      color: #7f1d1d;
-      padding: 0.5rem 0.65rem;
-    }
-    .videos-access-debug__title {
-      margin: 0 0 0.25rem;
-      font-size: 0.8rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-    .videos-access-debug__content {
-      margin: 0;
-      font-size: 0.78rem;
-      line-height: 1.35;
-      white-space: pre-wrap;
-    }
-
     /* --- First-time login / video access notice (compact, in hero intro column) --- */
     .video-catalog-hero__intro .videos-login-notice {
       width: 100%;
