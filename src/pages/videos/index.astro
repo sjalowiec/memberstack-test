@@ -368,6 +368,7 @@ const forceMemberView =
 
       if (ACCESS_STATE === "has_access") {
         removeLockedUiArtifacts();
+        hideAllVisibleLockIconsForAccess();
       }
     }
     function removeLockedUiArtifacts() {
@@ -393,6 +394,18 @@ const forceMemberView =
         v.membersonly === true ||
         v.isMemberOnly === true
       );
+    }
+    function hideAllVisibleLockIconsForAccess() {
+      const pageRoot = document.querySelector(".page-wrap");
+      if (!pageRoot) return;
+      pageRoot.querySelectorAll(
+        ".kbm-lock-overlay, .fa-lock, .fa-lock-open, .svg-inline--fa.fa-lock, [aria-label='Member-only video']"
+      ).forEach(function (el) {
+        if (el.classList && el.classList.contains("videos-access-debug")) return;
+        if (el.classList && el.classList.contains("videos-access-debug__content")) return;
+        if (el.classList && el.classList.contains("videos-access-debug__title")) return;
+        el.remove();
+      });
     }
 
     function updateUrl() {
@@ -533,6 +546,7 @@ const forceMemberView =
       }).join("");
       if (ACCESS_STATE === "has_access") {
         removeLockedUiArtifacts();
+        hideAllVisibleLockIconsForAccess();
       }
     }
 
