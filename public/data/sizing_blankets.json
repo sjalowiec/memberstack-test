@@ -1,0 +1,47 @@
+[
+  {
+    "size": "Adult Throw",
+    "length": 78,
+    "width": 48
+  },
+  {
+    "size": "Bassinet",
+    "length": 36,
+    "width": 16
+  },
+  {
+    "size": "Child",
+    "length": 48,
+    "width": 42
+  },
+  {
+    "size": "Cradle",
+    "length": 36,
+    "width": 20
+  },
+  {
+    "size": "Crib",
+    "length": 54,
+    "width": 30
+  },
+  {
+    "size": "Large Preemie",
+    "length": 36,
+    "width": 36
+  },
+  {
+    "size": "Small Preemie",
+    "length": 24,
+    "width": 24
+  },
+  {
+    "size": "Standard Throw",
+    "length": 60,
+    "width": 48
+  },
+  {
+    "size": "Toddler or Lapghan",
+    "length": 48,
+    "width": 36
+  }
+]
