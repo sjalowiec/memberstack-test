@@ -63,6 +63,16 @@
   text-align: center;
 }
 
+/* Pattern builder auto-save hint (sleeveless wizard) */
+.kbm-pattern-save-status {
+  margin: 0.35rem auto 0;
+  min-height: 1.25rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #9ca3af;
+  text-align: center;
+}
+
 /* Video Button */
 .video-button {
   display: inline-flex;
@@ -802,3 +812,76 @@
       align-items: flex-start;
     }
   }
+}
+
+/* Sleeveless pattern builder — “Your sweater so far” terracotta callout */
+.hat-builder-inputs .hat-form-section.sg-summary-section,
+.hat-builder-inputs .hat-form-section.sg-fit-so-far-section {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin-bottom: 1.5rem;
+}
+
+.hat-builder-inputs .hat-form-section.sg-summary-section:last-of-type,
+.hat-builder-inputs .hat-form-section.sg-fit-so-far-section:last-of-type {
+  margin-bottom: 0;
+}
+
+.builder-summary {
+  border-left: 5px solid #c2614e;
+  padding: 16px 20px;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.builder-summary-title {
+  color: #c2614e;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.builder-summary-title i,
+.builder-summary-title svg {
+  color: #c2614e;
+}
+
+.builder-summary-content {
+  margin-top: 8px;
+}
+
+.hat-builder-inputs .builder-summary-title.hat-form-section__title,
+.hat-builder-inputs .builder-summary-title.hat-form-section__heading {
+  color: #c2614e;
+  font-weight: 600;
+  margin: 0;
+  padding: 0;
+  border-bottom: none;
+  font-size: 1.125rem;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+}
+
+.builder-summary-title .sg-so-far-summary-heading__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.builder-summary-title .sg-so-far-summary-heading__svg {
+  display: block;
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.builder-summary .sg-summary-panel {
+  font-size: 0.95rem;
+  line-height: 1.35;
+  color: #374151;
+}
+
+.builder-summary .sg-summary-sentence {
+  color: #374151;
+}

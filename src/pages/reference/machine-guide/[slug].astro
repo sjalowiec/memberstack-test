@@ -1,0 +1,71 @@
+---
+import {
+  buildReferenceMachineStaticPaths,
+  type ReferenceMachine,
+} from "../../../lib/machines/referenceCatalogPaths";
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  return buildReferenceMachineStaticPaths();
+}
+
+function formatSpec(value: unknown): string {
+  if (value == null) return "—";
+  if (typeof value === "number" && Number.isNaN(value)) return "—";
+  const s = String(value).trim();
+  return s === "" ? "—" : s;
+}
+
+function machineImageUrl(base: string, relativePath: string): string {
+  const normalized = relativePath.replace(/\\/g, "/").replace(/^\/+/, "");
+  const parts = normalized.split("/").filter(Boolean).map(encodeURIComponent);
+  return `${base.replace(/\/+$/, "")}/${parts.join("/")}`;
+}
+
+const { machine } = Astro.props as { machine: ReferenceMachine };
+
+const imageBase = "https://www.knititnow.com/images/machines/";
+const images = Array.isArray(machine?.images) ? machine.images : [];
+const mainEntry =
+  images.find((img) => img && img.isMain === true) ??
+  images.find((img) => img?.url) ??
+  null;
+const mainImageRaw =
+  mainEntry?.url != null ? String(mainEntry.url).trim() : "";
+const mainImage = mainImageRaw ? machineImageUrl(imageBase, mainImageRaw) : null;
+
+const brand = formatSpec(machine?.brand);
+const model = formatSpec(machine?.model);
+const heading =
+  brand !== "—" && model !== "—"
+    ? `${brand} ${model} Knitting Machine`
+    : "Knitting Machine";
+
+const altText =
+  `${brand !== "—" ? brand : ""} ${model !== "—" ? model : ""} knitting machine`.trim() ||
+  "Knitting machine";
+---
+
+<h1>{heading}</h1>
+
+{
+  mainImage && (
+    <img
+      src={mainImage}
+      alt={altText}
+      style="max-width: 400px; width: 100%; height: auto;"
+    />
+  )
+}
+
+<h2>Machine Specs</h2>
+
+<ul>
+  <li><strong>Gauge:</strong> {formatSpec(machine?.gauge)}</li>
+  <li><strong>Needles:</strong> {formatSpec(machine?.needleCount)}</li>
+  <li><strong>Bed:</strong> {formatSpec(machine?.bed)}</li>
+  <li><strong>Style:</strong> {formatSpec(machine?.machineStyle)}</li>
+  <li><strong>Punchcard Width:</strong> {formatSpec(machine?.punchcardWidth)}</li>
+  <li><strong>Year:</strong> {formatSpec(machine?.year)}</li>
+</ul>

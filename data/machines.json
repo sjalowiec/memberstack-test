@@ -1,0 +1,6366 @@
+[
+  {
+    "machineId": 381,
+    "brand": "Artisan",
+    "model": "70D",
+    "bed": "Metal",
+    "gauge": "7.0",
+    "needleCount": 147.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "artisan 70D.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 202,
+    "brand": "Bond",
+    "model": "ISM",
+    "bed": "Plastic",
+    "gauge": "Bulky/Chunky",
+    "needleCount": 100.0,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 216,
+    "brand": "Brother",
+    "model": "581",
+    "bed": "Metal",
+    "gauge": "4.5",
+    "needleCount": 200.0,
+    "machineStyle": "Button",
+    "punchcardWidth": NaN,
+    "year": 1969.0,
+    "images": [
+      {
+        "url": "581.jpg",
+        "isMain": false
+      },
+      {
+        "url": "581_2.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Brother KH585 User Guide Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh585-user-guide-guide.html"
+      },
+      {
+        "title": "Brother KH588 User Guide Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh588-user-guide-guide.html"
+      },
+      {
+        "title": "Brother KH588 Service Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/brother-kh588-service-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 390,
+    "brand": "Brother",
+    "model": "KH110",
+    "bed": "Metal",
+    "gauge": "Fine Gauge",
+    "needleCount": 260.0,
+    "machineStyle": "Button",
+    "punchcardWidth": 8.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "kh110.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Kh110 Instruction manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com//downloadable/download/sample/sample_id/1633/"
+      }
+    ]
+  },
+  {
+    "machineId": 204,
+    "brand": "Brother",
+    "model": "KH120",
+    "bed": "Metal",
+    "gauge": "Fine Gauge",
+    "needleCount": 260.0,
+    "machineStyle": "Button",
+    "punchcardWidth": 8.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "kh120.jpg",
+        "isMain": false
+      },
+      {
+        "url": "kh120_1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Brother KH120 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh120-user-guide.html"
+      },
+      {
+        "title": "Brother KR120-KR710 Ribber User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kr120-kr710-ribber-user-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 205,
+    "brand": "Brother",
+    "model": "KH210",
+    "bed": "Metal",
+    "gauge": "Bulky/Chunky",
+    "needleCount": NaN,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1977.0,
+    "images": [
+      {
+        "url": "210.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KL-116",
+        "title": "Knit Leader",
+        "category": "Charting Device"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH210User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh210user-guide-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 206,
+    "brand": "Brother",
+    "model": "KH212",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": NaN,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1957.0,
+    "images": [
+      {
+        "url": "bronther212_2.jpg",
+        "isMain": false
+      },
+      {
+        "url": "brother212_2.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Brother KH212 User Guide Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh212-user-guide-guide.html"
+      },
+      {
+        "title": "Brother KH212-  KH218 Ribber User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh212-kh218-ribber-user-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 207,
+    "brand": "Brother",
+    "model": "KH230",
+    "bed": "Metal",
+    "gauge": "Bulky/Chunky",
+    "needleCount": 110.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1981.0,
+    "images": [
+      {
+        "url": "KH230.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KL-116",
+        "title": "Knit Leader",
+        "category": "Charting Device"
+      },
+      {
+        "model": "KE-100",
+        "title": "Motor",
+        "category": "Miscellaneous"
+      },
+      {
+        "model": "KR230",
+        "title": "KR230",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH230 User Guide Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh230-user-guide-guide.html"
+      },
+      {
+        "title": "Brother KR230 Ribber User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kr230-ribber-user-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 208,
+    "brand": "Brother",
+    "model": "KH260",
+    "bed": "Metal",
+    "gauge": "Bulky/Chunky",
+    "needleCount": 114.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1984.0,
+    "images": [
+      {
+        "url": "260_spott1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KL-116",
+        "title": "Knit Leader",
+        "category": "Charting Device"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "YC5",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KA-2600",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "KR260",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH260 User Guide Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh260-user-guide-guide.html"
+      },
+      {
+        "title": "Brother KR260 Ribber User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kr260-ribber-user-guide.html"
+      },
+      {
+        "title": "Brother KR260 Parts Manual",
+        "type": "Ribber Manuals",
+        "url": "https://mkmanuals.com/brother-kr260-parts-manual.html"
+      },
+      {
+        "title": "Brother KH260 Service Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/brother-kh260-service-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 210,
+    "brand": "Brother",
+    "model": "KH270",
+    "bed": "Metal",
+    "gauge": "Bulky/Chunky",
+    "needleCount": 114.0,
+    "machineStyle": "Electronic",
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [
+      {
+        "url": "270_main.jpg",
+        "isMain": false
+      },
+      {
+        "url": "270_main1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KL-116",
+        "title": "Knit Leader",
+        "category": "Charting Device"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KA-2600",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "KR260",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH270 Pattern Guide Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh270-pattern-guide-guide.html"
+      },
+      {
+        "title": "Brother KH270 User Guide Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh270-user-guide-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 240,
+    "brand": "Brother",
+    "model": "KH341",
+    "bed": "Plastic",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [
+      {
+        "url": "341.jpg",
+        "isMain": false
+      },
+      {
+        "url": "3411.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Brother KH341 User Guide Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh341-user-guide-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 203,
+    "brand": "Brother",
+    "model": "KH35",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 184.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1955.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 243,
+    "brand": "Brother",
+    "model": "KH370",
+    "bed": "Plastic",
+    "gauge": "Standard Gauge",
+    "needleCount": NaN,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1982.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 246,
+    "brand": "Brother",
+    "model": "KH400",
+    "bed": "Plastic",
+    "gauge": NaN,
+    "needleCount": NaN,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1955.0,
+    "images": [
+      {
+        "url": "kh400.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Brother KH400 User Guide Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh400-user-guide-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 247,
+    "brand": "Brother",
+    "model": "KH503",
+    "bed": NaN,
+    "gauge": NaN,
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1960.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 384,
+    "brand": "Brother",
+    "model": "KH531",
+    "bed": "Metal",
+    "gauge": "4.5",
+    "needleCount": NaN,
+    "machineStyle": "Button",
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [
+      {
+        "url": "531.jpg",
+        "isMain": false
+      },
+      {
+        "url": "531_1.jpg",
+        "isMain": false
+      },
+      {
+        "url": "531_2.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Brother KR531-KR551 Ribber User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kr531-kr551-ribber-user-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 212,
+    "brand": "Brother",
+    "model": "KH551",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1960.0,
+    "images": [
+      {
+        "url": "KH551_4.jpg",
+        "isMain": false
+      },
+      {
+        "url": "KH551.jpg",
+        "isMain": false
+      },
+      {
+        "url": "KH5511.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Brother KH551 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com//brother-kh551-user-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 375,
+    "brand": "Brother",
+    "model": "KH555",
+    "bed": "Metal",
+    "gauge": "4.5",
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [
+      {
+        "url": "brother555.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 213,
+    "brand": "Brother",
+    "model": "KH560",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1964.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 248,
+    "brand": "Brother",
+    "model": "KH580",
+    "bed": "Metal",
+    "gauge": "4.5",
+    "needleCount": 200.0,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1966.0,
+    "images": [
+      {
+        "url": "580.jpg",
+        "isMain": false
+      },
+      {
+        "url": "580_1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KR580 Ribber",
+        "title": "KR580 Ribber",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "KR580 Ribber User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com//brother-kr580-ribber-user-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 376,
+    "brand": "Brother",
+    "model": "KH588",
+    "bed": "Metal",
+    "gauge": "4.5",
+    "needleCount": 200.0,
+    "machineStyle": NaN,
+    "punchcardWidth": 8.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "brother588.jpg",
+        "isMain": false
+      },
+      {
+        "url": "588.jpeg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Brother KH588 User Guide Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh588-user-guide-guide.html"
+      },
+      {
+        "title": "Brother KH588 Service Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/brother-kh588-service-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 249,
+    "brand": "Brother",
+    "model": "KH601",
+    "bed": NaN,
+    "gauge": "Standard Gauge",
+    "needleCount": NaN,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 263,
+    "brand": "Brother",
+    "model": "KH710",
+    "bed": "Metal",
+    "gauge": "4.5",
+    "needleCount": 200.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [
+      {
+        "url": "Kh710.jpg",
+        "isMain": true
+      },
+      {
+        "url": "brother588_1.jpg",
+        "isMain": false
+      },
+      {
+        "url": "brother588_2.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KR710",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH710 User Guide Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh710-user-guide-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 217,
+    "brand": "Brother",
+    "model": "KH800",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 12.0,
+    "year": 1971.0,
+    "images": [
+      {
+        "url": "800_image.png",
+        "isMain": true
+      },
+      {
+        "url": "Kh80001.JPG.jpg",
+        "isMain": false
+      },
+      {
+        "url": "Brother 800.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Brother KH800 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh800-user-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 250,
+    "brand": "Brother",
+    "model": "KH810",
+    "bed": "metal",
+    "gauge": "4.5",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1973.0,
+    "images": [
+      {
+        "url": "810.jpg",
+        "isMain": false
+      },
+      {
+        "url": "8102.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 251,
+    "brand": "Brother",
+    "model": "KH820",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1974.0,
+    "images": [
+      {
+        "url": "KH820.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KL-116",
+        "title": "Knit Leader",
+        "category": "Charting Device"
+      },
+      {
+        "model": "KR810",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH820 User Guide Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh820-user-guide-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 218,
+    "brand": "Brother",
+    "model": "KH830",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1976.0,
+    "images": [
+      {
+        "url": "Kh83002.JPG1.jpg",
+        "isMain": true
+      },
+      {
+        "url": "Kh830.JPG",
+        "isMain": false
+      },
+      {
+        "url": "brother830_2.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KL-116",
+        "title": "Knit Leader",
+        "category": "Charting Device"
+      },
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC 1000E",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC840",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC900",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KG88",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KA-8210",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "KA-8310",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "Color Changer",
+        "title": "KCC",
+        "category": "Miscellaneous"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR850",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR900",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KA-8300",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      },
+      {
+        "model": "KR800",
+        "title": "Yarn/Color changer",
+        "category": "Yarn/Color changer"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH830-KH836 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com//brother-kh830-kh836-user-guide-guide.html"
+      },
+      {
+        "title": "Brother KH830-KR830-KL116-KHC820-KHC830-Service Manual",
+        "type": "Ribber Manuals",
+        "url": "https://mkmanuals.com/brother-kh830-kr830-kl116-khc820-khc830-service-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 220,
+    "brand": "Brother",
+    "model": "KH836",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1986.0,
+    "images": [
+      {
+        "url": "kh836.jpg",
+        "isMain": true
+      },
+      {
+        "url": "brother836_1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KL-116",
+        "title": "Knit Leader",
+        "category": "Charting Device"
+      },
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC 1000E",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC840",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC900",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KG88",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KA-8210",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "KA-8310",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR850",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR900",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KA-8300",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH830-KH836 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh830-kh836-user-guide-guide.html"
+      },
+      {
+        "title": "Brother KH864-KH868-KH894-KR830-KR838-KR850-KL116 Service Manual",
+        "type": "Ribber Manuals",
+        "url": "https://mkmanuals.com/brother-kh864-kh868-kh894-kr830-kr838-kr850-kl116-service-manual.html"
+      },
+      {
+        "title": "Brother KH836 Parts Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/brother-kh836-parts-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 222,
+    "brand": "Brother",
+    "model": "KH840",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1978.0,
+    "images": [
+      {
+        "url": "KH8402.jpg",
+        "isMain": false
+      },
+      {
+        "url": "brother840_1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KL-116",
+        "title": "Knit Leader",
+        "category": "Charting Device"
+      },
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC 1000E",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC840",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC900",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KG88",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KA-8210",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "KA-8310",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "Color Changer",
+        "title": "KCC",
+        "category": "Miscellaneous"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR850",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR900",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "RJ-1",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "KA-8300",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH840 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh840-user-guide.html"
+      },
+      {
+        "title": "Brother KH840 Parts Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/brother-kh840-parts-manual.html"
+      },
+      {
+        "title": "Brother KH840-Supplimentary Carriage Service Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/brother-kh840-supplimentary-carriage-service-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 224,
+    "brand": "Brother",
+    "model": "KH860",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "KH8601.jpg",
+        "isMain": true
+      },
+      {
+        "url": "KH860_2.jpg",
+        "isMain": false
+      },
+      {
+        "url": "brother860_1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KL-116",
+        "title": "Knit Leader",
+        "category": "Charting Device"
+      },
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC 1000E",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC840",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC900",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KG88",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KA-8210",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "KA-8310",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR838",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR850",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR900",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KA-8300",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH860 KH881 KH890 KH891 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh860-thru-kh891-user-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 225,
+    "brand": "Brother",
+    "model": "KH864",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "Kh864.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KL-116",
+        "title": "Knit Leader",
+        "category": "Charting Device"
+      },
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC 1000E",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC840",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC900",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KA-8210",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "KA-8310",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KA-8300",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH864 KH868 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh864-kh868-user-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 228,
+    "brand": "Brother",
+    "model": "KH864",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1979.0,
+    "images": [
+      {
+        "url": "brother890_1.jpg",
+        "isMain": true
+      },
+      {
+        "url": "Kh890.JPG",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KL-116",
+        "title": "Knit Leader",
+        "category": "Charting Device"
+      },
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC 1000E",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC840",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC900",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KG88",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG93",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG93E",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG95",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KA-8210",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "KA-8310",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR850",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR900",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KA-8300",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH860 KH881 KH890 KH891 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh860-thru-kh891-user-guide.html"
+      },
+      {
+        "title": "Brother KH890 Parts Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/brother-kh890-parts-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 226,
+    "brand": "Brother",
+    "model": "KH868",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "kh868.jpg",
+        "isMain": true
+      },
+      {
+        "url": "kh868_2.jpg",
+        "isMain": false
+      },
+      {
+        "url": "kh868_1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC 1000E",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC840",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KR838",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH864 KH868 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh864-kh868-user-guide.html"
+      },
+      {
+        "title": "Brother KH864-KH868-KH894-KR830-KR838-KR850-KL116 Service Manual",
+        "type": "Ribber Manuals",
+        "url": "https://mkmanuals.com/brother-kh864-kh868-kh894-kr830-kr838-kr850-kl116-service-manual.html"
+      },
+      {
+        "title": "Brother KH868-KH894 Parts Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/brother-kh868-kh894-parts-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 386,
+    "brand": "Brother",
+    "model": "KH871",
+    "bed": "Metal",
+    "gauge": "4.5",
+    "needleCount": NaN,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "871_2.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 227,
+    "brand": "Brother",
+    "model": "KH881",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "KH881.jpg",
+        "isMain": false
+      },
+      {
+        "url": "KH881_1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC 1000E",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC840",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC900",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KG88",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KA-8210",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "KA-8310",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR850",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR900",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KA-8300",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH860 KH881 KH890 KH891 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh860-thru-kh891-user-guide.html"
+      },
+      {
+        "title": "Brother KH881 Parts Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/brother-kh881-parts-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 371,
+    "brand": "Brother",
+    "model": "KH890",
+    "bed": "Metal",
+    "gauge": "Standard",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1986.0,
+    "images": [
+      {
+        "url": "890.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Brother KH860 KH881 KH890 KH891 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh860-thru-kh891-user-guide.html"
+      },
+      {
+        "title": "Brother KH890 Parts Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/brother-kh890-parts-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 230,
+    "brand": "Brother",
+    "model": "KH891",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "Kh891.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC 1000E",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC840",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC900",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KA-8210",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "KA-8310",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR850",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KA-8300",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH860 KH881 KH890 KH891 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh860-thru-kh891-user-guide.html"
+      },
+      {
+        "title": "Brother KH891 Parts Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/brother-kh891-parts-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 231,
+    "brand": "Brother",
+    "model": "KH892",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "kh892.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC 1000E",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC840",
+        "title": NaN,
+        "category": "Color Changer"
+      }
+    ],
+    "manuals": []
+  },
+  {
+    "machineId": 232,
+    "brand": "Brother",
+    "model": "KH894",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": NaN,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": NaN,
+    "year": 1994.0,
+    "images": [
+      {
+        "url": "KH894.jpg",
+        "isMain": false
+      },
+      {
+        "url": "KH894_2.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC 1000E",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC840",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "Color Changer",
+        "title": "KCC",
+        "category": "Miscellaneous"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH894 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh894-user-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 233,
+    "brand": "Brother",
+    "model": "KH900",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Electronic",
+    "punchcardWidth": 24.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "KH900.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KL-116",
+        "title": "Knit Leader",
+        "category": "Charting Device"
+      },
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC 1000E",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC840",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC900",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KA-8210",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "KA-8310",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "Color Changer",
+        "title": "KCC",
+        "category": "Miscellaneous"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR838",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KA-8300",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH900 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh900-user-guide.html"
+      },
+      {
+        "title": "Using The Brother Garter Carriage with KH900",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/using-the-brother-garter-carriage-with-kh900.html"
+      }
+    ]
+  },
+  {
+    "machineId": 235,
+    "brand": "Brother",
+    "model": "KH910",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Electronic",
+    "punchcardWidth": 60.0,
+    "year": 1980.0,
+    "images": [
+      {
+        "url": "HK910.jpg",
+        "isMain": false
+      },
+      {
+        "url": "HK910_2.jpg",
+        "isMain": false
+      },
+      {
+        "url": "HK910_3.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC 1000E",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC900",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KG88",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KA-8210",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "KA-8310",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "Color Changer",
+        "title": "KCC",
+        "category": "Miscellaneous"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR850",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR900",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KA-8300",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH910 Pattern Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh910-pattern-guide.html"
+      },
+      {
+        "title": "Brother KH910 Supplemental Instruction Manual for KHC820A and KRC830 Color Changers",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh910-supplemental-instruction-manual-for-color-changers.html"
+      },
+      {
+        "title": "Brother KH910 Useful Hints",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh910-useful-hints.html"
+      },
+      {
+        "title": "Brother KH910 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh910-user-guide.html"
+      },
+      {
+        "title": "Instruction Manual for KG-88 On the Electronic Knitting Machine Modified KH-910",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/instruction-manual-for-kg-88-on-the-electronic-knitting-machine-modified-kh-910.html"
+      }
+    ]
+  },
+  {
+    "machineId": 236,
+    "brand": "Brother",
+    "model": "KH950",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Electronic",
+    "punchcardWidth": 200.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "Kh950i.jpg",
+        "isMain": false
+      },
+      {
+        "url": "Kh950i_1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC 1000E",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC900",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KG88",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG93",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG93E",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG95",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KA-8210",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "KA-8310",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR850",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR900",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KA-8300",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH950 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh950-user-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 238,
+    "brand": "Brother",
+    "model": "KH950i",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Electronic",
+    "punchcardWidth": 200.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "KH950i1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC 1000E",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC900",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KG88",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG93",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG93E",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG95",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KA-8210",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "KA-8310",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR850",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR900",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KA-8300",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH950 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh950-user-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 239,
+    "brand": "Brother",
+    "model": "KH965",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": NaN,
+    "machineStyle": "Electronic",
+    "punchcardWidth": NaN,
+    "year": 1992.0,
+    "images": [
+      {
+        "url": "KH965_test.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC 1000E",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC900",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KG88",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG93",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG93E",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG95",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KA-8210",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "KA-8310",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "Color Changer",
+        "title": "KCC",
+        "category": "Miscellaneous"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR850",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR900",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KA-8300",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH965-User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh965-user-guide.html"
+      },
+      {
+        "title": "Brother KH965-Service and Parts Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/brother-kh965-service-and-parts-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 241,
+    "brand": "Brother",
+    "model": "KX350",
+    "bed": "Plastic",
+    "gauge": "Mid-Gauge",
+    "needleCount": 132.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1987.0,
+    "images": [
+      {
+        "url": "kx350_21.jpg",
+        "isMain": false
+      },
+      {
+        "url": "kx350_12.jpg",
+        "isMain": false
+      },
+      {
+        "url": "kx350.jpg",
+        "isMain": false
+      },
+      {
+        "url": "Tension Mast Assembly.png",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Brother KX350 User Guide Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kx350-user-guide-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 242,
+    "brand": "Brother",
+    "model": "KX355",
+    "bed": "Plastic",
+    "gauge": "Mid-Gauge",
+    "needleCount": 128.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 244,
+    "brand": "Brother",
+    "model": "KX390",
+    "bed": "Plastic",
+    "gauge": "Standard Gauge",
+    "needleCount": 110.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [
+      {
+        "url": "390.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "KX390 User Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com//brother-kx390-user-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 378,
+    "brand": "Brother",
+    "model": "KX395",
+    "bed": "Plastic",
+    "gauge": "4.5",
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [
+      {
+        "url": "395.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Brother KX395 Knit Leader User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kx395-knit-leader-user-guide.html"
+      },
+      {
+        "title": "Brother KX395 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kx395-user-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 372,
+    "brand": "Brother 552",
+    "model": "KH552",
+    "bed": "Metal",
+    "gauge": "Standard",
+    "needleCount": 200.0,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [
+      {
+        "url": "brother552_1.jpg",
+        "isMain": false
+      },
+      {
+        "url": "brother552.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Brother KH552 User Guide Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh552-user-guide-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 252,
+    "brand": "Brother/Knit King III",
+    "model": "KH930",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Electronic",
+    "punchcardWidth": 200.0,
+    "year": 1986.0,
+    "images": [
+      {
+        "url": "KH930.png",
+        "isMain": false
+      },
+      {
+        "url": "930E.jpg",
+        "isMain": false
+      },
+      {
+        "url": "930E_3.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KL-116",
+        "title": "Knit Leader",
+        "category": "Charting Device"
+      },
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC840",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KG88",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG93",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG93E",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG95",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "brother FB-100 Disk Drive",
+        "title": "Disk Drive",
+        "category": "Miscellaneous"
+      },
+      {
+        "model": "Color Changer",
+        "title": "KCC",
+        "category": "Miscellaneous"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR850",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR900",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH930 and KH940 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh930-and-kh940-user-guide.html"
+      },
+      {
+        "title": "Brother KH930-Service Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/brother-kh930-service-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 253,
+    "brand": "Brother/Knit King V Star",
+    "model": "KH970",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Electronic",
+    "punchcardWidth": NaN,
+    "year": 1996.0,
+    "images": [
+      {
+        "url": "KH970.jpg",
+        "isMain": true
+      },
+      {
+        "url": "KH970_1.jpg",
+        "isMain": false
+      },
+      {
+        "url": "KH970_3.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC840",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC900",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KG88",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG93",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG93E",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG95",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "Brother Lace Carriage",
+        "title": "Lace Carriage",
+        "category": "Lace Carriage"
+      },
+      {
+        "model": "KA-8310",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "Color Changer",
+        "title": "KCC",
+        "category": "Miscellaneous"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR838",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR850",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR900",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KA-8300",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH970-User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh970-user-guide.html"
+      },
+      {
+        "title": "Brother KH970-Parts Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/brother-kh970-parts-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 254,
+    "brand": "Brother/Knitking IV",
+    "model": "KH940",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Electronic",
+    "punchcardWidth": NaN,
+    "year": 1988.0,
+    "images": [
+      {
+        "url": "KH940.jpg",
+        "isMain": false
+      },
+      {
+        "url": "KH940_4.jpg",
+        "isMain": false
+      },
+      {
+        "url": "KH940_3.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC840",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC900",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KG88",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG93",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG93E",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG95",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KA-8210",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "KA-8310",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "brother FB-100 Disk Drive",
+        "title": "Disk Drive",
+        "category": "Miscellaneous"
+      },
+      {
+        "model": "Color Changer",
+        "title": "KCC",
+        "category": "Miscellaneous"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR850",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR900",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KA-8300",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH930 and KH940 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh930-and-kh940-user-guide.html"
+      },
+      {
+        "title": "Brother KH940-940 Service Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/brother-kh940-service-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 255,
+    "brand": "Brother/Knitking Vcx",
+    "model": "KH965I",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Electronic",
+    "punchcardWidth": NaN,
+    "year": 1992.0,
+    "images": [
+      {
+        "url": "KH965.jpg",
+        "isMain": false
+      },
+      {
+        "url": "KH965_2.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KHC820A",
+        "title": "KHC820A",
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC1000M",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC830",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC840",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KRC900",
+        "title": NaN,
+        "category": "Color Changer"
+      },
+      {
+        "model": "KG88",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG88IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89II",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG89IIE",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG93",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG93E",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KG95",
+        "title": "Garter Carriage - Brother",
+        "category": "Garter Carriage"
+      },
+      {
+        "model": "KA-8210",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "KA-8310",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "Color Changer",
+        "title": "KCC",
+        "category": "Miscellaneous"
+      },
+      {
+        "model": "KR830",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR850",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KR900",
+        "title": "Ribber - BROTHER",
+        "category": "Ribber"
+      },
+      {
+        "model": "KA-8300",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Brother KH965-User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kh965-user-guide.html"
+      },
+      {
+        "title": "Brother KH965-Service and Parts Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/brother-kh965-service-and-parts-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 256,
+    "brand": "Corona",
+    "model": "CN9N",
+    "bed": "Metal",
+    "gauge": "Bulky/Chunky",
+    "needleCount": NaN,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [
+      {
+        "url": "cn9.jpg",
+        "isMain": false
+      },
+      {
+        "url": "cn9_1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 257,
+    "brand": "Elna",
+    "model": "EK2300",
+    "bed": "Metal",
+    "gauge": "Bulky/Chunky",
+    "needleCount": 110.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 12.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "EK2300.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "EK2350",
+        "title": "Ribber - Elna",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "155 Chunky Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/155-chunky-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 259,
+    "brand": "Elna",
+    "model": "EK2400",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "EK2400.jpeg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "ER2450 Ribber",
+        "title": "Ribber",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": []
+  },
+  {
+    "machineId": 261,
+    "brand": "Empisal",
+    "model": "HK160",
+    "bed": "Plastic",
+    "gauge": "Mid-Gauge",
+    "needleCount": 160.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 18.0,
+    "year": 1982.0,
+    "images": [],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Singer MK70 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/singer-mk70-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "HK160 and MK70 Knitting Machine Service Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/hk160-and-mk70-knitting-machine-service-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 262,
+    "brand": "Empisal Supermatic",
+    "model": "KH 880",
+    "bed": "Metal",
+    "gauge": "4.5",
+    "needleCount": 200.0,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [
+      {
+        "url": "880.jpg",
+        "isMain": false
+      },
+      {
+        "url": "880_1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Brother Empisal Supermatic KH880 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-empisal-supermatic-kh880-user-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 387,
+    "brand": "KH585",
+    "model": "KH585",
+    "bed": "Metal",
+    "gauge": "4.5",
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": 8.0,
+    "year": 1969.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 385,
+    "brand": "Knitmaster",
+    "model": "ES302",
+    "bed": "Metal",
+    "gauge": "4.5",
+    "needleCount": 200.0,
+    "machineStyle": "Button",
+    "punchcardWidth": NaN,
+    "year": 1960.0,
+    "images": [
+      {
+        "url": "302_automatic.pdf",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Knitmaster ES302 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-es302-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 380,
+    "brand": "KnitMaster",
+    "model": "Zippy 90",
+    "bed": "Plastic",
+    "gauge": "9.0",
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1986.0,
+    "images": [
+      {
+        "url": "lk1001.jpg",
+        "isMain": false
+      },
+      {
+        "url": "lk100_11.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Knitmaster Zippy 90 (LK 100) Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-zippy-90-lk-100-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Singer LK100 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/singer-lk100-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Zippy Deluxe Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/zippy-deluxe-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 374,
+    "brand": "Maruyama",
+    "model": "MK-30",
+    "bed": "Metal",
+    "gauge": "4.5",
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [
+      {
+        "url": "maru1.jpg",
+        "isMain": false
+      },
+      {
+        "url": "maru12.jpg",
+        "isMain": false
+      },
+      {
+        "url": "maru21.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 373,
+    "brand": "Maruyama",
+    "model": "MK-70",
+    "bed": "Metal",
+    "gauge": "4.5",
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [
+      {
+        "url": "maru.jpg",
+        "isMain": false
+      },
+      {
+        "url": "maru11.jpg",
+        "isMain": false
+      },
+      {
+        "url": "maru2.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 388,
+    "brand": "mjolley28@gmail.com",
+    "model": NaN,
+    "bed": "Metal",
+    "gauge": NaN,
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1950.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 266,
+    "brand": "Passap",
+    "model": "DM80",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 179.0,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1965.0,
+    "images": [
+      {
+        "url": "2021-08-11_11-53-00.jpg",
+        "isMain": false
+      },
+      {
+        "url": "dm80_cheat_sheet.PNG",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "Passap 4 Color Changer",
+        "title": "Passap 4 Color Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "Passap Form Computer",
+        "title": "Passap Form Computer",
+        "category": "Form Computer"
+      },
+      {
+        "model": "Passap Deco",
+        "title": "Passap Deco",
+        "category": "Passap Deco"
+      }
+    ],
+    "manuals": []
+  },
+  {
+    "machineId": 268,
+    "brand": "Passap",
+    "model": "E 6000",
+    "bed": NaN,
+    "gauge": "Standard Gauge",
+    "needleCount": NaN,
+    "machineStyle": "Electronic",
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 269,
+    "brand": "Passap",
+    "model": "E 8000",
+    "bed": NaN,
+    "gauge": NaN,
+    "needleCount": NaN,
+    "machineStyle": "Electronic",
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 267,
+    "brand": "Passap",
+    "model": "M201",
+    "bed": NaN,
+    "gauge": "Standard Gauge",
+    "needleCount": 201.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1953.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 264,
+    "brand": "Passap",
+    "model": "Speed-O-Knit",
+    "bed": NaN,
+    "gauge": "Standard Gauge",
+    "needleCount": NaN,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 265,
+    "brand": "Passap",
+    "model": "Vario",
+    "bed": NaN,
+    "gauge": "Standard Gauge",
+    "needleCount": NaN,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 271,
+    "brand": "Prazisa",
+    "model": NaN,
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": NaN,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1959.0,
+    "images": [
+      {
+        "url": "praz.jpg",
+        "isMain": false
+      },
+      {
+        "url": "praz_1.jpg",
+        "isMain": false
+      },
+      {
+        "url": "praz_2.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 325,
+    "brand": "Silver Reed",
+    "model": "LK150",
+    "bed": "Plastic",
+    "gauge": "Mid-Gauge",
+    "needleCount": 150.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1989.0,
+    "images": [
+      {
+        "url": "P1000662.JPG",
+        "isMain": true
+      },
+      {
+        "url": "LK_carriage.png",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KR-10/11",
+        "title": "Knit Radar",
+        "category": "Charting Device"
+      },
+      {
+        "model": "GB-6",
+        "title": "Garter Bar",
+        "category": "Garter Bar"
+      },
+      {
+        "model": "AG-10 AG-11",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "FC6 Fairisle Carriage",
+        "title": "Fairisle Carriage",
+        "category": "Miscellaneous"
+      },
+      {
+        "model": "Needle Beetle",
+        "title": "Needle Beetle",
+        "category": "Miscellaneous"
+      },
+      {
+        "model": "LK Needles",
+        "title": "Replacement Needle",
+        "category": "Needles"
+      },
+      {
+        "model": "LS-6 LS-9",
+        "title": "Pattern Selector",
+        "category": "Pattern Selector"
+      },
+      {
+        "model": "LW-1",
+        "title": "Weaving Attachement",
+        "category": "Weaving Attachment"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Singer LK150 Knitting Machine Extension Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/singer-lk150-knitting-machine-extension-instruction-manual.html"
+      },
+      {
+        "title": "Singer LK150 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/singer-lk150-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 379,
+    "brand": "Singer",
+    "model": "888",
+    "bed": "Metal",
+    "gauge": "4.5",
+    "needleCount": 200.0,
+    "machineStyle": "Button",
+    "punchcardWidth": 8.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "singer888_21.jpg",
+        "isMain": false
+      },
+      {
+        "url": "singer888_11.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Knitmaster 302 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-302-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Knitmaster ES302 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-es302-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Knitmaster 302 Ribber Machine Instruction Manual",
+        "type": "Ribber Manuals",
+        "url": "https://mkmanuals.com/knitmaster-302-ribber-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 382,
+    "brand": "Singer 580",
+    "model": "SK580",
+    "bed": "Metal",
+    "gauge": "4.5",
+    "needleCount": NaN,
+    "machineStyle": "Electronic",
+    "punchcardWidth": NaN,
+    "year": 1988.0,
+    "images": [],
+    "accessories": [
+      {
+        "model": "YC-6",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "YC5",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "LC-580",
+        "title": "Lace Carriage",
+        "category": "Lace Carriage"
+      },
+      {
+        "model": "SRP60",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "YC 5",
+        "title": "Yarn/Color Changer",
+        "category": "Yarn Changer"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Knitmaster 580 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-580-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Knitmaster 580 Operation Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-580-operation-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Knitmaster 580 Pattern Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-580-pattern-manual.html"
+      },
+      {
+        "title": "KR580 Ribber User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com//brother-kr580-ribber-user-guide.html"
+      },
+      {
+        "title": "Studio 580 Electronic Knitting Machine Supplimentary Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/studio-580-electronic-knitting-machine-supplimentary-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 307,
+    "brand": "Studio",
+    "model": "F370",
+    "bed": "Metal",
+    "gauge": "Fine Gauge",
+    "needleCount": 250.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 30.0,
+    "year": 1982.0,
+    "images": [
+      {
+        "url": "F370kc.JPG.jpg",
+        "isMain": false
+      },
+      {
+        "url": "370.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "YC-6",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "YC5",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "AG20",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "F370/270 Knitting Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/f370-270-knitting-manual.html"
+      },
+      {
+        "title": "F370/270 Operation Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/f370-270-operation-manual.html"
+      },
+      {
+        "title": "F370K Pattern Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/f370k-pattern-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 323,
+    "brand": "Studio",
+    "model": "LK100",
+    "bed": "Plastic",
+    "gauge": "Bulky/Chunky",
+    "needleCount": 90.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1986.0,
+    "images": [
+      {
+        "url": "lk100.jpg",
+        "isMain": false
+      },
+      {
+        "url": "lk100_1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "Needle Beetle",
+        "title": "Needle Beetle",
+        "category": "Miscellaneous"
+      },
+      {
+        "model": "LK Needles",
+        "title": "Replacement Needle",
+        "category": "Needles"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Singer LK100 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/singer-lk100-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 324,
+    "brand": "Studio",
+    "model": "LK140",
+    "bed": "Plastic",
+    "gauge": "Mid-Gauge",
+    "needleCount": 140.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1988.0,
+    "images": [],
+    "accessories": [
+      {
+        "model": "AG-10 AG-11",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "Needle Beetle",
+        "title": "Needle Beetle",
+        "category": "Miscellaneous"
+      },
+      {
+        "model": "LK Needles",
+        "title": "Replacement Needle",
+        "category": "Needles"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Singer LK140 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/singer-lk140-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 322,
+    "brand": "Studio",
+    "model": "MK70",
+    "bed": "Plastic",
+    "gauge": "Mid-Gauge",
+    "needleCount": 160.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 18.0,
+    "year": 1980.0,
+    "images": [
+      {
+        "url": "mk70.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Singer MK70 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/singer-mk70-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 328,
+    "brand": "Studio",
+    "model": "SK101",
+    "bed": NaN,
+    "gauge": NaN,
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1962.0,
+    "images": [
+      {
+        "url": "sk101.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Silver Reed SK101 User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/silver-reed-sk101-user-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 329,
+    "brand": "Studio",
+    "model": "SK103",
+    "bed": "Metal",
+    "gauge": "Standard",
+    "needleCount": 200.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1963.0,
+    "images": [
+      {
+        "url": "studio103.jpg",
+        "isMain": false
+      },
+      {
+        "url": "studio103_ribber.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Silver Reed SK105 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/silver-reed-sk105-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 279,
+    "brand": "Studio",
+    "model": "SK105",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1965.0,
+    "images": [],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Silver Reed SK105 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/silver-reed-sk105-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 330,
+    "brand": "Studio",
+    "model": "SK106",
+    "bed": NaN,
+    "gauge": NaN,
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1965.0,
+    "images": [],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Brother KR120-KR710 Ribber User Guide",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/brother-kr120-kr710-ribber-user-guide.html"
+      }
+    ]
+  },
+  {
+    "machineId": 280,
+    "brand": "Studio",
+    "model": "SK120",
+    "bed": "Metal",
+    "gauge": "Bulky/Chunky",
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1978.0,
+    "images": [
+      {
+        "url": "120_1.jpg",
+        "isMain": false
+      },
+      {
+        "url": "120.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Bulky Eight S-120/S-140 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/bulky-eight-s-120-s-140-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Silver Reed SK120 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/silver-reed-sk120-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "SR120 Ribber Machine Instruction Manual",
+        "type": "Ribber Manuals",
+        "url": "https://mkmanuals.com/sr120-ribber-machine-instruction-manual.html"
+      },
+      {
+        "title": "SK120 Knitting Machine Service Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/sk120-knitting-machine-service-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 282,
+    "brand": "Studio",
+    "model": "SK140",
+    "bed": "Metal",
+    "gauge": "Bulky/Chunky",
+    "needleCount": 140.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Bulky Eight S-120/S-140 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/bulky-eight-s-120-s-140-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 283,
+    "brand": "Studio",
+    "model": "SK150 Mod-150",
+    "bed": "Metal",
+    "gauge": "Bulky/Chunky",
+    "needleCount": 110.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1983.0,
+    "images": [
+      {
+        "url": "mod1501.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "PS150",
+        "title": "Pattern Selector",
+        "category": "pattern selector"
+      },
+      {
+        "model": "SR150",
+        "title": "Ribber",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Mod 150 Chunky Knitter Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/mod-150-chunky-knitter-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 285,
+    "brand": "Studio",
+    "model": "SK151",
+    "bed": "Metal",
+    "gauge": "Bulky/Chunky",
+    "needleCount": 110.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1986.0,
+    "images": [],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "151 Chunky Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/151-chunky-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Mod 151 Chunky Knitter Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/mod-151-chunky-knitter-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 287,
+    "brand": "Studio",
+    "model": "SK155",
+    "bed": "Metal",
+    "gauge": "Bulky/Chunky",
+    "needleCount": 110.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 12.0,
+    "year": 1985.0,
+    "images": [
+      {
+        "url": "singer155.JPG",
+        "isMain": true
+      },
+      {
+        "url": "sk155.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "AG-155",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "AG-30",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "ER2450 Ribber",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "SR-155",
+        "title": "Ribber",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "155 Chunky Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/155-chunky-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "SK155 Knitting Machine Service Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/sk155-knitting-machine-service-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 288,
+    "brand": "Studio",
+    "model": "SK160",
+    "bed": "Metal",
+    "gauge": "Mid-Gauge",
+    "needleCount": 150.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [
+      {
+        "url": "image0.jpeg",
+        "isMain": false
+      },
+      {
+        "url": "image0 (1).jpeg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Silver Reed SK160 Addendum Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/silver-reed-sk160-addendum-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Silver Reed SK160 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/silver-reed-sk160-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 289,
+    "brand": "Studio",
+    "model": "SK210",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1987.0,
+    "images": [
+      {
+        "url": "2101.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Silver Reed SK 210/280 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/silver-reed-sk-280-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 290,
+    "brand": "Studio",
+    "model": "SK260",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "photo_needed.png",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "YC-6",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "YC5",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "360/260KL",
+        "title": "Lace carriage",
+        "category": "Lace Carriage"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "360-260 Knitting Machine Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-360-260-knitting-machine-manual.html"
+      },
+      {
+        "title": "360-260 Operation Knitting Machine Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-360-260-operation-knitting-machine-manual.html"
+      },
+      {
+        "title": "360-260 Pattern Book Knitting Machine Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-360-260-pattern-book-knitting-machine-manual.html"
+      },
+      {
+        "title": "SK260-SK360 Knitting Machine Service Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/sk260-sk360-knitting-machine-service-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 291,
+    "brand": "Studio",
+    "model": "SK270",
+    "bed": "Metal",
+    "gauge": "Fine Gauge",
+    "needleCount": 250.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 30.0,
+    "year": 1990.0,
+    "images": [
+      {
+        "url": "270.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KR-7",
+        "title": "Knit Contour",
+        "category": "Charting Device"
+      },
+      {
+        "model": "YC-6",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "YC5",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "AG-20",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "F-270",
+        "title": "Lace Carriage",
+        "category": "Lace Carriage"
+      },
+      {
+        "model": "FRJ80 ",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "FRP-70 / SRJ-70 ",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "AW-1",
+        "title": "Weaving Arm",
+        "category": "Weaving Attachment"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "F370/270 Knitting Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/f370-270-knitting-manual.html"
+      },
+      {
+        "title": "F370/270 Operation Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/f370-270-operation-manual.html"
+      },
+      {
+        "title": "F270-370 Knitting Machine Service Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/f270-370-knitting-machine-service-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 292,
+    "brand": "Studio",
+    "model": "SK280",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1988.0,
+    "images": [
+      {
+        "url": "sk-280.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KR-10/11",
+        "title": "Knit Radar",
+        "category": "Charting Device"
+      },
+      {
+        "model": "KR-7",
+        "title": "Knit Contour",
+        "category": "Charting Device"
+      },
+      {
+        "model": "YC-6",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "200 Needle Garter Bar",
+        "title": "Garter Bar",
+        "category": "Garter Bar"
+      },
+      {
+        "model": "AG-20",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "AG-24",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "LC-2",
+        "title": "Lace Carriage",
+        "category": "Lace Carriage"
+      },
+      {
+        "model": "SC-3",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "FRP-70 / SRJ-70 ",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "SRP60",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "AW-1",
+        "title": "Weaving Arm",
+        "category": "Weaving Attachment"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Silver Reed SK 210/280 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/silver-reed-sk-280-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 332,
+    "brand": "Studio",
+    "model": "SK301",
+    "bed": NaN,
+    "gauge": NaN,
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1964.0,
+    "images": [
+      {
+        "url": "301.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "SK301 Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com//silver-sk301-knitting-manual-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 293,
+    "brand": "Studio",
+    "model": "SK302",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1965.0,
+    "images": [
+      {
+        "url": "Es302.JPG.jpg",
+        "isMain": false
+      },
+      {
+        "url": "302.jpg",
+        "isMain": false
+      },
+      {
+        "url": "singer888_1.jpg",
+        "isMain": false
+      },
+      {
+        "url": "singer888_2.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Knitmaster 302 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-302-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Knitmaster ES302 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-es302-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Knitmaster 302 Ribber Machine Instruction Manual",
+        "type": "Ribber Manuals",
+        "url": "https://mkmanuals.com/knitmaster-302-ribber-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 334,
+    "brand": "Studio",
+    "model": "SK303",
+    "bed": NaN,
+    "gauge": "Standard",
+    "needleCount": 200.0,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 19676.0,
+    "images": [
+      {
+        "url": "303.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Silver Reed SK 303 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/silver-reed-sk-303-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 335,
+    "brand": "Studio",
+    "model": "SK305",
+    "bed": NaN,
+    "gauge": NaN,
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1971.0,
+    "images": [
+      {
+        "url": "305.jpg",
+        "isMain": false
+      },
+      {
+        "url": "305-1.jpg",
+        "isMain": false
+      },
+      {
+        "url": "305-2.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Empisal Knitmaster 305 User Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/empisal-knitmaster-305-user-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 336,
+    "brand": "Studio",
+    "model": "SK312",
+    "bed": NaN,
+    "gauge": NaN,
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1969.0,
+    "images": [
+      {
+        "url": "312.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Silver Reed SK 312 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/silver-reed-sk-312-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 294,
+    "brand": "Studio",
+    "model": "SK313",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1969.0,
+    "images": [
+      {
+        "url": "313.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Singer 313 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com//singer-313-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 295,
+    "brand": "Studio",
+    "model": "SK320",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": NaN,
+    "images": [],
+    "accessories": [
+      {
+        "model": "SC1",
+        "title": "Automatic Linker",
+        "category": "Automatic Linker"
+      },
+      {
+        "model": "SC1",
+        "title": "Automatic Linker",
+        "category": "Automatic Linker"
+      },
+      {
+        "model": "SC-3",
+        "title": "Linker",
+        "category": "Linker"
+      }
+    ],
+    "manuals": []
+  },
+  {
+    "machineId": 296,
+    "brand": "Studio",
+    "model": "SK321",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1971.0,
+    "images": [
+      {
+        "url": "knitmaster321.jpg",
+        "isMain": true
+      },
+      {
+        "url": "Sk321.jpg",
+        "isMain": false
+      },
+      {
+        "url": "321.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "YC-6",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "YC5",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "SR321",
+        "title": "Ribber",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Knitmaster 321-323 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-321-323-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Singer 321 Memomatic Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/singer-321-memomatic-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 298,
+    "brand": "Studio",
+    "model": "SK322",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1973.0,
+    "images": [],
+    "accessories": [
+      {
+        "model": "SC1",
+        "title": "Automatic Linker",
+        "category": "Automatic Linker"
+      },
+      {
+        "model": "YC-6",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "YC5",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "AG20",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "SRP20",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "SRP50",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "SRP60",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "RT1",
+        "title": "Ribber Transfer Carriage",
+        "category": "Ribber Transfer Carriage"
+      }
+    ],
+    "manuals": []
+  },
+  {
+    "machineId": 299,
+    "brand": "Studio",
+    "model": "SK323",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1973.0,
+    "images": [
+      {
+        "url": "323.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Knitmaster 321-323 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-321-323-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 300,
+    "brand": "Studio",
+    "model": "SK324",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1976.0,
+    "images": [],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Knitmaster 324-326 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-324-326-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 301,
+    "brand": "Studio",
+    "model": "SK326",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1976.0,
+    "images": [
+      {
+        "url": "Km326.jpg",
+        "isMain": false
+      },
+      {
+        "url": "Km326_01.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "YC-6",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "YC5",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "YC5",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Knitmaster 324-326 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-324-326-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 302,
+    "brand": "Studio",
+    "model": "SK327",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1977.0,
+    "images": [
+      {
+        "url": "327.jpg",
+        "isMain": false
+      },
+      {
+        "url": "327-1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "SRP50",
+        "title": "Ribber",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Sk327",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com//singer-memomatic-327-329-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 303,
+    "brand": "Studio",
+    "model": "SK328",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1978.0,
+    "images": [],
+    "accessories": [
+      {
+        "model": "SRP60",
+        "title": "Ribber",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Studio 328 Singer Memo-Matic 328 - 228 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/studio-328-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 304,
+    "brand": "Studio",
+    "model": "SK329",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1977.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 305,
+    "brand": "Studio",
+    "model": "SK350",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1980.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 306,
+    "brand": "Studio",
+    "model": "SK360",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "Km360.jpg",
+        "isMain": false
+      },
+      {
+        "url": "Km360_01.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "AG-20",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "AG-24",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "360/260KL",
+        "title": "Lace carriage",
+        "category": "Lace Carriage"
+      },
+      {
+        "model": "LC-1",
+        "title": "Lace Carriage",
+        "category": "Lace Carriage"
+      },
+      {
+        "model": "SRP60",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "RT-1",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      },
+      {
+        "model": "YC 5",
+        "title": "Yarn/Color Changer",
+        "category": "Yarn Changer"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "360-260 Knitting Machine Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-360-260-knitting-machine-manual.html"
+      },
+      {
+        "title": "360-260 Operation Knitting Machine Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-360-260-operation-knitting-machine-manual.html"
+      },
+      {
+        "title": "360-260 Pattern Book Knitting Machine Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-360-260-pattern-book-knitting-machine-manual.html"
+      },
+      {
+        "title": "SK260-SK360 Knitting Machine Service Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/sk260-sk360-knitting-machine-service-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 308,
+    "brand": "Studio",
+    "model": "SK500",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Electronic",
+    "punchcardWidth": NaN,
+    "year": 1977.0,
+    "images": [
+      {
+        "url": "500.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "YC-6",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "YC5",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Singer 500 Electronic Knitting Machine and Ribber User Guide ",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/singer-500-electronic-knitting-machine-and-ribber-user-guide.html"
+      },
+      {
+        "title": "SK500 Knitting Machine Service Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/sk500-knitting-machine-service-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 338,
+    "brand": "Studio",
+    "model": "SK501",
+    "bed": NaN,
+    "gauge": NaN,
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1965.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 339,
+    "brand": "Studio",
+    "model": "SK502",
+    "bed": NaN,
+    "gauge": NaN,
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1967.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 309,
+    "brand": "Studio",
+    "model": "SK511",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Electronic",
+    "punchcardWidth": NaN,
+    "year": 1982.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 310,
+    "brand": "Studio",
+    "model": "SK550",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Electronic",
+    "punchcardWidth": NaN,
+    "year": 1982.0,
+    "images": [
+      {
+        "url": "550_1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Knitmaster 550 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-550-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Knitmaster 550 Operation Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-550-operation-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Knitmaster 550 Pattern Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-550-pattern-manual.html"
+      },
+      {
+        "title": "Knitmaster 550-560 Operation Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-550-560-operation-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 311,
+    "brand": "Studio",
+    "model": "SK560",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Electronic",
+    "punchcardWidth": NaN,
+    "year": 1981.0,
+    "images": [
+      {
+        "url": "550.jpg",
+        "isMain": false
+      },
+      {
+        "url": "550_11.jpg",
+        "isMain": false
+      },
+      {
+        "url": "560.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "YC-6",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "YC5",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Knitmaster 550-560 Operation Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-550-560-operation-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Knitmaster 560 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-560-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Knitmaster 560 Pattern Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-560-pattern-manual.html"
+      },
+      {
+        "title": "Singer 560 Knitting Machine Knitting Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/singer-560-knitting-machine-knitting-manual.html"
+      },
+      {
+        "title": "Singer 560 Knitting Machine Operation Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/singer-560-knitting-machine-operation-manual.html"
+      },
+      {
+        "title": "Singer 560 Knitting Machine Pattern Book",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/singer-560-knitting-machine-pattern-book.html"
+      },
+      {
+        "title": "SK560 Knitting Machine Service Manual",
+        "type": "Service and Parts Manuals",
+        "url": "https://mkmanuals.com/sk560-knitting-machine-service-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 312,
+    "brand": "Studio",
+    "model": "SK561",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": NaN,
+    "machineStyle": "Electronic",
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 314,
+    "brand": "Studio",
+    "model": "SK588",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1987.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 326,
+    "brand": "Studio",
+    "model": "SK7",
+    "bed": NaN,
+    "gauge": NaN,
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1959.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 315,
+    "brand": "Studio",
+    "model": "SK700",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1989.0,
+    "images": [
+      {
+        "url": "SK700.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "YC-6",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "YC5",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "SRP60",
+        "title": "Ribber",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Knitmaster 600-700 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-600-700-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Knitmaster Studio 600-700 Pattern Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-600-700-pattern-manual.html"
+      },
+      {
+        "title": "Knitmaster Studio SK600-SK700 Operation Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/knitmaster-600-700-operation-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 321,
+    "brand": "Studio",
+    "model": "SK8",
+    "bed": "Plastic",
+    "gauge": "4.5",
+    "needleCount": 200.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1960.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 340,
+    "brand": "Studio",
+    "model": "SK810",
+    "bed": NaN,
+    "gauge": NaN,
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1972.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 316,
+    "brand": "Studio",
+    "model": "SK830",
+    "bed": "Metal",
+    "gauge": "Fine Gauge",
+    "needleCount": 250.0,
+    "machineStyle": "Electronic",
+    "punchcardWidth": NaN,
+    "year": 1991.0,
+    "images": [
+      {
+        "url": "SK-830.jpg",
+        "isMain": false
+      },
+      {
+        "url": "Kh83002.JPG.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KR-10/11",
+        "title": "Knit Radar",
+        "category": "Charting Device"
+      },
+      {
+        "model": "KR-7",
+        "title": "Knit Contour",
+        "category": "Charting Device"
+      },
+      {
+        "model": "YC-6",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "AG-20",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "LC-830",
+        "title": "Lace Carriage",
+        "category": "Lace Carriage"
+      },
+      {
+        "model": "EC-1 / PE-1",
+        "title": "Pattern Design Controller",
+        "category": "Pattern Design Controllers"
+      },
+      {
+        "model": "FRJ80 ",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "FRP-70 / SRJ-70 ",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "AW-1",
+        "title": "Weaving Arm",
+        "category": "Weaving Attachment"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Silver Reed SK830 Knitting Manual Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/silver-reed-sk830-knitting-manual-instruction-manual.html"
+      },
+      {
+        "title": "Silver Reed SK830 Operation Manual Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/silver-reed-sk830-operation-manual-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 317,
+    "brand": "Studio",
+    "model": "SK840",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Electronic",
+    "punchcardWidth": NaN,
+    "year": 1990.0,
+    "images": [
+      {
+        "url": "Sk840.jpg",
+        "isMain": false
+      },
+      {
+        "url": "sk840_v1.jpg",
+        "isMain": false
+      },
+      {
+        "url": "sk840_V3.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KR-10/11",
+        "title": "Knit Radar",
+        "category": "Charting Device"
+      },
+      {
+        "model": "KR-7",
+        "title": "Knit Contour",
+        "category": "Charting Device"
+      },
+      {
+        "model": "YC-6",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "200 Needle Garter Bar",
+        "title": "Garter Bar",
+        "category": "Garter Bar"
+      },
+      {
+        "model": "AG-20",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "AG-24",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "AG-50",
+        "title": "Electronic Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "LC-580",
+        "title": "Lace Carriage",
+        "category": "Lace Carriage"
+      },
+      {
+        "model": "SC-3",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "EC-1 / PE-1",
+        "title": "Pattern Design Controller",
+        "category": "Pattern Design Controllers"
+      },
+      {
+        "model": "RJ-1",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "SRP60",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "SRP60N",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "RT-1",
+        "title": "Transfer Carriage",
+        "category": "Transfer Carriage"
+      },
+      {
+        "model": "AW-1",
+        "title": "Weaving Arm",
+        "category": "Weaving Attachment"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Silver Reed SK 840 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/silver-reed-sk-840-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Silver Reed SK 840 Operation Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/silver-reed-sk-840-operation-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 318,
+    "brand": "Studio",
+    "model": "SK860",
+    "bed": "Metal",
+    "gauge": "Mid-Gauge",
+    "needleCount": 150.0,
+    "machineStyle": "Electronic",
+    "punchcardWidth": NaN,
+    "year": 1990.0,
+    "images": [
+      {
+        "url": "860 carriage1.webp",
+        "isMain": false
+      },
+      {
+        "url": "860_1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KR-10/11",
+        "title": "Knit Radar",
+        "category": "Charting Device"
+      },
+      {
+        "model": "KR-7",
+        "title": "Knit Contour",
+        "category": "Charting Device"
+      },
+      {
+        "model": "GB-6",
+        "title": "Garter Bar",
+        "category": "Garter Bar"
+      },
+      {
+        "model": "AG-155",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "AG-30",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "AG-40",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "EC-1 / PE-1",
+        "title": "Pattern Design Controller",
+        "category": "Pattern Design Controllers"
+      },
+      {
+        "model": "SRP- 860",
+        "title": "Ribber",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Silver Reed SK860-KC860 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/silver-reed-sk860-kc860-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 320,
+    "brand": "Studio",
+    "model": "SK890",
+    "bed": "Metal",
+    "gauge": "Bulky/Chunky",
+    "needleCount": 110.0,
+    "machineStyle": "Electronic",
+    "punchcardWidth": 24.0,
+    "year": 1990.0,
+    "images": [],
+    "accessories": [
+      {
+        "model": "KR-10/11",
+        "title": "Knit Radar",
+        "category": "Charting Device"
+      },
+      {
+        "model": "KR-7",
+        "title": "Knit Contour",
+        "category": "Charting Device"
+      },
+      {
+        "model": "YC-6",
+        "title": "Yarn Changer",
+        "category": "Color Changer"
+      },
+      {
+        "model": "GB-9",
+        "title": "Garter Bar",
+        "category": "Garter Bar"
+      },
+      {
+        "model": "AG-155",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "AG-20",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "SC-3",
+        "title": "Linker",
+        "category": "Linker"
+      },
+      {
+        "model": "FRP-70 / SRJ-70 ",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "SR-155",
+        "title": "Ribber",
+        "category": "Ribber"
+      },
+      {
+        "model": "AW-1",
+        "title": "Weaving Arm",
+        "category": "Weaving Attachment"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "Singer 890 Chunky Electronic Knitting Machine Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/studio-sk890-chunky-electronic-knitting-machine-manual.html"
+      },
+      {
+        "title": "Singer 890 Electronic Knitting Machine Supplimentary Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/studio-sk890-electronic-knitting-machine-supplimentary-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 341,
+    "brand": "Studio/Singer",
+    "model": "HK100",
+    "bed": "Plastic",
+    "gauge": "Bulky/Chunky",
+    "needleCount": 120.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1983.0,
+    "images": [
+      {
+        "url": "HK100.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "Singer HK100 Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/singer-hk100-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 367,
+    "brand": "Superba / White",
+    "model": "1402",
+    "bed": "metal",
+    "gauge": "5.0",
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 342,
+    "brand": "Superba / White",
+    "model": "1502",
+    "bed": "Metal",
+    "gauge": "5.0",
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 369,
+    "brand": "Superba / White",
+    "model": "S7",
+    "bed": NaN,
+    "gauge": "5.0",
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 368,
+    "brand": "Superba / White",
+    "model": "S9",
+    "bed": "Plastic",
+    "gauge": "9.0",
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 343,
+    "brand": "Swiss Knitter",
+    "model": NaN,
+    "bed": "Plastic",
+    "gauge": NaN,
+    "needleCount": 180.0,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 344,
+    "brand": "Synchro Knitter",
+    "model": "SH350",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 359,
+    "brand": "Taitexma",
+    "model": "TH160",
+    "bed": "Metal",
+    "gauge": "Mid-Gauge",
+    "needleCount": 164.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 2000.0,
+    "images": [
+      {
+        "url": "160_main_bed_thumb.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "TR-160",
+        "title": "Ribber - Taitexma",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": []
+  },
+  {
+    "machineId": 358,
+    "brand": "Taitexma",
+    "model": "TH260",
+    "bed": "Metal",
+    "gauge": "Bulky/Chunky",
+    "needleCount": 114.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 2000.0,
+    "images": [
+      {
+        "url": "taxema_bulky1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KA-2600",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "TA2600",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "TR-260",
+        "title": "Ribber - Taitexma",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": []
+  },
+  {
+    "machineId": 361,
+    "brand": "Taitexma",
+    "model": "TH260L",
+    "bed": "Metal",
+    "gauge": "Bulky/Chunky",
+    "needleCount": 150.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 2021.0,
+    "images": [
+      {
+        "url": "taxema_bulky11.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KA-2600",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "TA2600",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "TR-260 L",
+        "title": "Ribber - Taitexma",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": []
+  },
+  {
+    "machineId": 360,
+    "brand": "Taitexma",
+    "model": "TH860",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 18.0,
+    "year": 2000.0,
+    "images": [
+      {
+        "url": "8601.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "TA8200",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "TR-850",
+        "title": "Ribber - Taitexma",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": []
+  },
+  {
+    "machineId": 362,
+    "brand": "Taitexma",
+    "model": "TH860 L",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 272.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 2021.0,
+    "images": [
+      {
+        "url": "8602.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "TA8200",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      },
+      {
+        "model": "TR-850 L",
+        "title": "Ribber - Taitexma",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": []
+  },
+  {
+    "machineId": 345,
+    "brand": "Toyota",
+    "model": "500",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1978.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 365,
+    "brand": "Toyota",
+    "model": "510",
+    "bed": "Metal",
+    "gauge": "4.5",
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 352,
+    "brand": "Toyota",
+    "model": "600",
+    "bed": "Metal",
+    "gauge": "Bulky/Chunky",
+    "needleCount": NaN,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 12.0,
+    "year": 1969.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 364,
+    "brand": "Toyota",
+    "model": "610",
+    "bed": "Metal",
+    "gauge": "9.0",
+    "needleCount": 110.0,
+    "machineStyle": "Manual",
+    "punchcardWidth": NaN,
+    "year": 1987.0,
+    "images": [],
+    "accessories": [],
+    "manuals": [
+      {
+        "title": "151 Chunky Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/151-chunky-knitting-machine-instruction-manual.html"
+      },
+      {
+        "title": "Mod 151 Chunky Knitter Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/mod-151-chunky-knitter-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 353,
+    "brand": "Toyota",
+    "model": "650",
+    "bed": "Metal",
+    "gauge": "Bulky/Chunky",
+    "needleCount": NaN,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 12.0,
+    "year": 1987.0,
+    "images": [
+      {
+        "url": "650.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KR-7",
+        "title": "Knit Contour",
+        "category": "Charting Device"
+      }
+    ],
+    "manuals": [
+      {
+        "title": "155 Chunky Knitting Machine Instruction Manual",
+        "type": "Machine Manuals",
+        "url": "https://mkmanuals.com/155-chunky-knitting-machine-instruction-manual.html"
+      }
+    ]
+  },
+  {
+    "machineId": 346,
+    "brand": "Toyota",
+    "model": "727",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": 12.0,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 347,
+    "brand": "Toyota",
+    "model": "747",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": NaN,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 12.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "747.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "K450 - Toyota",
+        "title": "Ribber",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": []
+  },
+  {
+    "machineId": 348,
+    "brand": "Toyota",
+    "model": "787",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1977.0,
+    "images": [
+      {
+        "url": "toyota787.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "K31",
+        "title": "Toyota Knit Tracer",
+        "category": "Charting Device"
+      },
+      {
+        "model": "K80 Simulknit Kit",
+        "title": "K80 Simulknit Kit",
+        "category": "Miscellaneous"
+      }
+    ],
+    "manuals": []
+  },
+  {
+    "machineId": 349,
+    "brand": "Toyota",
+    "model": "858",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 12.0,
+    "year": NaN,
+    "images": [
+      {
+        "url": "KS858.jpg",
+        "isMain": false
+      },
+      {
+        "url": "KS858_lace.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 351,
+    "brand": "Toyota",
+    "model": "950",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1994.0,
+    "images": [
+      {
+        "url": "toyota_950.jpg",
+        "isMain": false
+      },
+      {
+        "url": "308afb82440812f0f120a2d93dry--tools-knitting-machine-toyota-ks950-grade-5.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "KR506",
+        "title": "Ribber",
+        "category": "Ribber"
+      }
+    ],
+    "manuals": []
+  },
+  {
+    "machineId": 350,
+    "brand": "Toyota",
+    "model": "KS901",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": 200.0,
+    "machineStyle": "Punchcard",
+    "punchcardWidth": 24.0,
+    "year": 1981.0,
+    "images": [
+      {
+        "url": "toyotaKS901.jpg",
+        "isMain": true
+      },
+      {
+        "url": "toyotaKS901_1.jpg",
+        "isMain": false
+      },
+      {
+        "url": "toyotaKS901_2.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [
+      {
+        "model": "k82",
+        "title": "Intarsia Carriage",
+        "category": "Intarsia Carriage"
+      }
+    ],
+    "manuals": []
+  },
+  {
+    "machineId": 389,
+    "brand": "unknown",
+    "model": "Strick Matador",
+    "bed": "Metal",
+    "gauge": "4.5",
+    "needleCount": 164.0,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1950.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 354,
+    "brand": "White Knitter Mod 7",
+    "model": NaN,
+    "bed": "Plastic",
+    "gauge": "Standard Gauge",
+    "needleCount": 163.0,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [
+      {
+        "url": "white7.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 355,
+    "brand": "White Magic Knitter",
+    "model": NaN,
+    "bed": "Plastic",
+    "gauge": "Bulky/Chunky",
+    "needleCount": 115.0,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": NaN,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  },
+  {
+    "machineId": 356,
+    "brand": "White/Superba",
+    "model": "1602 S48",
+    "bed": "Metal",
+    "gauge": "Standard Gauge",
+    "needleCount": NaN,
+    "machineStyle": NaN,
+    "punchcardWidth": NaN,
+    "year": 1987.0,
+    "images": [],
+    "accessories": [],
+    "manuals": []
+  }
+]

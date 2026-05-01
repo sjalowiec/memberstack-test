@@ -5,8 +5,7 @@ import videos from "../../data/videos-public.json";
 import { getPreviewMember } from "../../lib/getPreviewMember";
 
 // --- Featured tip (Tuesday Tip / Weekly Quick Win) ---
-// Set the Vimeo video ID for the featured tip card. Leave empty to hide the card.
-// Link, thumbnail, and title are resolved from videos-public.json by matching vimeo_id.
+// Link and text are resolved from videos-public.json via tipOfWeek/isTipOfWeek.
 const featuredTipVideo = Array.isArray(videos)
   ? videos.find((v: { tipOfWeek?: boolean; isTipOfWeek?: boolean }) => v.tipOfWeek === true || v.isTipOfWeek === true)
   : null;
@@ -31,7 +30,6 @@ const featuredTip = featuredTipVideo
         (featuredTipVideo as { description?: string; summary?: string }).description ??
         (featuredTipVideo as { description?: string; summary?: string }).summary ??
         "",
-      posterUrl: (featuredTipVideo as { posterUrl?: string }).posterUrl ?? (featuredTipVideo as { poster_url?: string }).poster_url ?? "",
     }
   : null;
 
@@ -62,79 +60,39 @@ const forceMemberView =
           <p class="video-catalog-hero__eyebrow">Video Tutorials</p>
           <h1>Learn with clear, practical machine knitting videos</h1>
           <p>
-            Browse tutorials, technique lessons, and quick help videos designed
-            to help you build skills and solve problems as you knit.
+            Browse tutorials, technique lessons, and quick help videos to build skills and solve problems as you knit.
           </p>
-          <p class="video-catalog-hero__intro-lede">
-            Whether you want to learn something new or find a quick solution,
-            this library gives you a place to start.
-          </p>
-          <div
-            class="videos-login-notice"
-            role="region"
-            aria-labelledby="videos-login-notice-heading"
-            id="videosAccessNotice"
-          >
-            <div class="videos-login-notice__layout">
-              <span class="videos-login-notice__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="5" y="11" width="14" height="10" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-              </span>
-              <div class="videos-login-notice__body">
-                <h2 id="videos-login-notice-heading" class="videos-login-notice__title" data-notice-title>
-                  First time on the new Knit it Now?
-                </h2>
-                <p class="videos-login-notice__text" data-notice-text>
-                  To watch videos, log in first. If this is your first visit, click &ldquo;Log In&rdquo; and then choose &ldquo;Forgot Password&rdquo; to create your password. <strong>Your previous Knit it Now password won&rsquo;t work here.</strong>
-                </p>
-                <button type="button" class="kbm-btn kbm-btn-primary videos-login-notice__btn" data-ms-modal="login" data-notice-login-btn>
-                  Log In
-                </button>
-                <a href="/membership" class="kbm-btn kbm-btn-primary videos-login-notice__btn" data-notice-upgrade-btn hidden>
-                  Upgrade Membership
-                </a>
-              </div>
-            </div>
-          </div>
         </div>
-        {/* Tuesday Tip / Weekly Quick Win: KBM card with SVG, title, thumbnail + play overlay */}
+        {/* Tuesday Tip / Weekly Quick Win: compact promo card */}
         {featuredTip && (
           <aside class="tuesday-tip-feature" aria-label="Tuesday Tip">
-            <a href={featuredTip.href} class="kbm-card tip-of-week-card">
+            <div class="kbm-card tip-of-week-card">
               <img
                 src="/images/tuesday-tip.svg"
                 class="tip-header"
                 alt="Tuesday Tip"
               />
-              {featuredTip.tipHeadline && (
-                <h3 class="kbm-tip-headline">{featuredTip.tipHeadline}</h3>
-              )}
-              {featuredTip.tipNote && (
-                <p class="kbm-tip-note">{featuredTip.tipNote}</p>
-              )}
-              <div class="tip-thumb-wrap">
-                {featuredTip.posterUrl ? (
-                  <>
-                    <img
-                      src={featuredTip.posterUrl}
-                      alt={featuredTip.tipHeadline || featuredTip.title || "Featured tip video"}
-                      class="tip-image"
-                      loading="lazy"
-                    />
-                    <span class="tip-play" aria-hidden="true">
-                      <svg viewBox="0 0 68 68" class="tip-play__icon" focusable="false">
-                        <circle cx="34" cy="34" r="34"></circle>
-                        <polygon points="28,22 28,46 48,34"></polygon>
-                      </svg>
-                    </span>
-                  </>
-                ) : (
-                  <div class="tip-image-placeholder" aria-hidden="true" />
-                )}
+              <div class="tip-card-top">
+                <span class="tip-play-badge" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" class="tip-play-badge__icon" focusable="false">
+                    <circle cx="12" cy="12" r="11"></circle>
+                    <polygon points="10,8 10,16 17,12"></polygon>
+                  </svg>
+                </span>
+                <div class="tip-card-content">
+                  {featuredTip.tipHeadline && (
+                    <h3 class="kbm-tip-headline">{featuredTip.tipHeadline}</h3>
+                  )}
+                  <p class="kbm-tip-title">{featuredTip.title}</p>
+                  {featuredTip.tipNote && (
+                    <p class="kbm-tip-note">{featuredTip.tipNote}</p>
+                  )}
+                </div>
               </div>
-            </a>
+              <a href={featuredTip.href} class="kbm-btn kbm-btn-primary tip-watch-btn">
+                Watch Tuesday Tip
+              </a>
+            </div>
           </aside>
         )}
       </div>
@@ -288,46 +246,7 @@ const forceMemberView =
       }
       return null;
     }
-    function applyAccessNoticeState() {
-      const notice = document.getElementById("videosAccessNotice");
-      if (!notice) return;
-      const titleEl = notice.querySelector("[data-notice-title]");
-      const textEl = notice.querySelector("[data-notice-text]");
-      const loginBtn = notice.querySelector("[data-notice-login-btn]");
-      const upgradeBtn = notice.querySelector("[data-notice-upgrade-btn]");
-
-      if (ACCESS_STATE === "has_access") {
-        notice.setAttribute("hidden", "");
-        return;
-      }
-      notice.removeAttribute("hidden");
-
-      if (ACCESS_STATE === "checking") {
-        if (titleEl) titleEl.textContent = "Checking your video access...";
-        if (textEl) textEl.textContent = "Please wait while we confirm your membership access.";
-        if (loginBtn) loginBtn.setAttribute("hidden", "");
-        if (upgradeBtn) upgradeBtn.setAttribute("hidden", "");
-        return;
-      }
-
-      if (ACCESS_STATE === "logged_out") {
-        if (titleEl) titleEl.textContent = "First time on the new Knit it Now?";
-        if (textEl) {
-          textEl.innerHTML = "To watch videos, log in first. If this is your first visit, click &ldquo;Log In&rdquo; and then choose &ldquo;Forgot Password&rdquo; to create your password. <strong>Your previous Knit it Now password won&rsquo;t work here.</strong>";
-        }
-        if (loginBtn) loginBtn.removeAttribute("hidden");
-        if (upgradeBtn) upgradeBtn.setAttribute("hidden", "");
-        return;
-      }
-
-      if (titleEl) titleEl.textContent = "Your account does not include video access";
-      if (textEl) textEl.textContent = "You are logged in, but this plan does not include the video library. Upgrade your membership to unlock all videos.";
-      if (loginBtn) loginBtn.setAttribute("hidden", "");
-      if (upgradeBtn) upgradeBtn.removeAttribute("hidden");
-    }
     function applyAccessUiState() {
-      applyAccessNoticeState();
-
       if (ACCESS_STATE === "has_access") {
         removeLockedUiArtifacts();
         hideAllVisibleLockIconsForAccess();
@@ -729,17 +648,17 @@ const forceMemberView =
     .page-wrap {
       max-width: 1100px;
       margin: 0 auto;
-      padding: 8px 20px 80px;
+      padding: 4px 20px 80px;
     }
 
     /* --- Video catalog hero --- */
     .video-catalog-hero {
-      margin-bottom: 2rem;
+      margin-bottom: 1.25rem;
     }
     .video-catalog-hero__grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 2rem;
+      gap: 1rem;
       align-items: start;
     }
     @media (min-width: 720px) {
@@ -756,83 +675,29 @@ const forceMemberView =
       color: var(--kbm-green, #52682d);
     }
     .video-catalog-hero__intro h1 {
-      margin: 0 0 1rem;
+      margin: 0 0 0.65rem;
       font-size: var(--text-xxl, 1.75rem);
       line-height: 1.25;
     }
     .video-catalog-hero__intro p {
-      margin: 0 0 0.75rem;
+      margin: 0;
       max-width: 52ch;
-    }
-    .video-catalog-hero__intro .video-catalog-hero__intro-lede {
-      margin-bottom: 0.45rem;
-    }
-    /* --- First-time login / video access notice (compact, in hero intro column) --- */
-    .video-catalog-hero__intro .videos-login-notice {
-      width: 100%;
-      max-width: 52ch;
-      box-sizing: border-box;
-      margin: 0.35rem 0 0;
-      padding: 10px 12px;
-      border-radius: 8px;
-      background: color-mix(in srgb, var(--kbm-green, #52682d) 9%, #ffffff);
-      border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 22%, #ffffff);
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-    }
-    @supports not (background: color-mix(in srgb, red 10%, white)) {
-      .video-catalog-hero__intro .videos-login-notice {
-        background: #f7faf3;
-        border: 1px solid #d8e2cc;
-      }
-    }
-    .videos-login-notice__layout {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      max-width: 100%;
-    }
-    .videos-login-notice__icon {
-      flex-shrink: 0;
-      color: var(--kbm-green, #52682d);
-      line-height: 0;
-      margin-top: 1px;
-    }
-    .videos-login-notice__body {
-      flex: 1;
-      min-width: 0;
-    }
-    .videos-login-notice__title {
-      margin: 0 0 0.35rem;
-      font-size: 0.98rem;
-      font-weight: 700;
-      line-height: 1.28;
-      color: #1f2937;
-    }
-    .videos-login-notice__text {
-      margin: 0 0 0.5rem;
-      font-size: 0.9rem;
-      line-height: 1.45;
-      color: #374151;
-    }
-    .videos-login-notice__btn.kbm-btn {
-      padding: 0.4rem 0.95rem;
-      font-size: 0.9rem;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
     }
 
     /* --- Tuesday Tip / Weekly Quick Win: KBM card --- */
     .tuesday-tip-feature {
-      padding: 18px;
-      border-radius: 18px;
+      padding: 10px 12px;
+      border-radius: 12px;
       background: #f7f9f4;
       border: 1px solid #e4eadb;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     .tip-of-week-card {
       text-decoration: none;
       color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
     }
     .tip-of-week-card:focus-visible {
       outline: 2px solid var(--kbm-green, #52682d);
@@ -840,47 +705,17 @@ const forceMemberView =
     }
     .tip-header {
       display: block;
-      max-width: 160px;
+      max-width: 126px;
       height: auto;
-      margin: 0 auto 10px;
+      margin: 0;
     }
-    .kbm-tip-headline {
-      text-align: center;
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin: 0.5rem 0 0.4rem;
-      color: #333;
+    .tip-card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
     }
-    .kbm-tip-note {
-      margin: 0 0 0.35rem;
-      text-align: center;
-      font-size: 0.95rem;
-      line-height: 1.45;
-      font-weight: 400;
-      color: #4b5563;
-    }
-    .tip-subtitle {
-      margin: 0 0 0.75rem;
-      text-align: center;
-      font-size: 0.82rem;
-      line-height: 1.35;
-      font-weight: 400;
-      color: #6b7280;
-    }
-    .tip-thumb-wrap {
-      position: relative;
-      width: 100%;
-    }
-    .tip-of-week-card img,
-    .tip-image {
-      width: 100%;
-      height: auto;
-      display: block;
-      border-radius: 12px;
-      transition: transform 0.2s ease;
-    }
-    .tip-of-week-card:hover img {
-      transform: scale(1.01);
+    .tip-card-content {
+      min-width: 0;
     }
     .tip-play {
       position: absolute;
@@ -894,7 +729,6 @@ const forceMemberView =
       width: 68px;
       height: 68px;
       filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.22));
-      transition: transform 0.18s ease;
     }
     .tip-play__icon circle {
       fill: rgba(0, 0, 0, 0.45);
@@ -902,15 +736,52 @@ const forceMemberView =
     .tip-play__icon polygon {
       fill: #ffffff;
     }
-    .tip-of-week-card:hover .tip-play__icon,
-    .tip-of-week-card:focus-visible .tip-play__icon {
-      transform: scale(1.04);
+    .tip-play-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(82, 104, 45, 0.12);
+      flex: 0 0 auto;
     }
-    .tip-image-placeholder {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
-      border-radius: 12px;
+    .tip-play-badge__icon {
+      width: 20px;
+      height: 20px;
+    }
+    .tip-play-badge__icon circle {
+      fill: #52682d;
+    }
+    .tip-play-badge__icon polygon {
+      fill: #fff;
+    }
+    .kbm-tip-headline {
+      text-align: left;
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 0 0 0.2rem;
+      color: #333;
+    }
+    .kbm-tip-title {
+      margin: 0 0 0.2rem;
+      font-size: 0.95rem;
+      line-height: 1.35;
+      color: #1f2937;
+    }
+    .kbm-tip-note {
+      margin: 0;
+      text-align: left;
+      font-size: 0.88rem;
+      line-height: 1.4;
+      font-weight: 400;
+      color: #4b5563;
+    }
+    .tip-watch-btn.kbm-btn {
+      align-self: flex-start;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.88rem;
+      line-height: 1.1;
     }
 
     .video-filter-search {

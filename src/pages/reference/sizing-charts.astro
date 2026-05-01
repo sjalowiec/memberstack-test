@@ -64,7 +64,9 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
       <!-- Dynamic chart header with icon -->
       <div id="chartHeader" class="chart-header"></div>
 
-      <div id="sizingGrid" class="sizing-grid"></div>
+      <div class="sizing-table-stage">
+        <div id="sizingGrid" class="sizing-grid"></div>
+      </div>
       <p id="errorMsg" class="error-message" style="display:none;">Error loading data.</p>
     </div>
   </ReferencePageShell>
@@ -303,9 +305,37 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
       display: block;
     }
 
+    .chart-header-body-measurements-note {
+      box-sizing: border-box;
+      width: 100%;
+      margin: 0.5rem 0 1rem 0;
+      padding: 0.3rem 0;
+      font-size: 0.875rem;
+      line-height: 1.4;
+      color: var(--kbm-green);
+      text-align: center;
+      background: rgba(82, 104, 45, 0.06);
+      border-radius: 0;
+    }
+
+    /* Wider table runway on desktop while headers/tabs stay in .page-wrap (~860px) */
+    .sizing-table-stage {
+      margin-top: 24px;
+    }
+
+    @media (min-width: 1025px) {
+      .sizing-table-stage {
+        position: relative;
+        width: min(1400px, calc(100vw - 40px));
+        margin-left: 50%;
+        transform: translateX(-50%);
+        box-sizing: border-box;
+      }
+    }
+
     .sizing-grid {
       overflow-x: auto;
-      margin-top: 24px;
+      margin-top: 0;
       opacity: 0;
       animation: fadeIn 0.3s ease-in forwards;
     }
@@ -430,7 +460,7 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
     // Chart metadata for titles and icons
     const CHART_METADATA = {
       sweaters_men: { label: 'Sweaters - Men', icon: '/images/sweater.svg', hash: 'sweaters-men-chart' },
-      sweaters_misses: { label: 'Sweaters - Misses', icon: '/images/sweater.svg', hash: 'sweaters-misses-chart' },
+      sweaters_misses: { label: 'Sweaters - Women', icon: '/images/sweater.svg', hash: 'sweaters-misses-chart' },
       sweaters_plus: { label: 'Sweaters - Plus', icon: '/images/sweater.svg', hash: 'sweaters-plus-chart' },
       sweaters_kids: { label: 'Sweaters - Kids', icon: '/images/sweater.svg', hash: 'sweaters-kids-chart' },
       sweaters_baby: { label: 'Sweaters - Baby', icon: '/images/sweater.svg', hash: 'sweaters-baby-chart' },
@@ -441,6 +471,16 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
       pillows: { label: 'Pillows Sizing Chart', icon: '/images/pillow.svg', hash: 'pillows-chart' },
       xmas_stockings: { label: 'Christmas Stockings Sizing Chart', icon: '/images/stocking.svg', hash: 'xmas-stockings-chart' }
     };
+
+    const BODY_MEASUREMENT_CHART_TYPES = new Set([
+      'sweaters_men',
+      'sweaters_misses',
+      'sweaters_plus',
+      'sweaters_kids',
+      'sweaters_baby',
+      'socks',
+      'mittens'
+    ]);
 
     let currentData = [];
     let currentType = 'sweaters_misses';
@@ -498,7 +538,10 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
     function updateChartHeader() {
       const chartHeader = document.getElementById('chartHeader');
       const metadata = CHART_METADATA[currentType];
-      
+      const bodyMeasurementsNote = BODY_MEASUREMENT_CHART_TYPES.has(currentType)
+        ? '<p class="chart-header-body-measurements-note">These charts show <strong>body measurements</strong> for sizing, not finished item measurements.</p>'
+        : '';
+
       if (metadata) {
         // Check if this is a sweater chart - if so, add dropdown
         if (currentType.startsWith('sweaters_')) {
@@ -511,17 +554,17 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
               Sweaters – 
               <div class="chart-header-dropdown">
                 <button class="chart-header-dropdown-button">
-                  ${formattedSubCategory} <span class="chart-header-dropdown-caret">▾</span>
-                </button>
+${subCategory === 'misses' ? 'Women' : formattedSubCategory} <span class="chart-header-dropdown-caret">▾</span>                </button>
                 <div class="chart-header-dropdown-content">
                   <button data-type="sweaters_men">Men</button>
-                  <button data-type="sweaters_misses">Misses</button>
+                  <button data-type="sweaters_misses">Women</button>
                   <button data-type="sweaters_plus">Plus</button>
                   <button data-type="sweaters_kids">Kids</button>
                   <button data-type="sweaters_baby">Baby</button>
                 </div>
               </div>
             </h2>
+            ${bodyMeasurementsNote}
           `;
           
           const dropdown = chartHeader.querySelector('.chart-header-dropdown');
@@ -561,6 +604,7 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
               <img src="${metadata.icon}" alt="" />
               ${metadata.label}
             </h2>
+            ${bodyMeasurementsNote}
           `;
         }
       }
@@ -640,11 +684,23 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
       const errorMsg = document.getElementById('errorMsg');
       errorMsg.style.display = 'none';
 
+      const url = DATA_URLS[type];
       try {
-        const response = await fetch(DATA_URLS[type]);
-        if (!response.ok) throw new Error('Failed to load data');
-        
-        currentData = await response.json();
+        const response = await fetch(url);
+        if (!response.ok) {
+          console.warn(url, response.status);
+          throw new Error('Failed to load data');
+        }
+
+        let parsed;
+        try {
+          parsed = await response.json();
+        } catch (parseError) {
+          console.warn('[sizing-charts] JSON parse failed:', url, parseError);
+          throw parseError;
+        }
+
+        currentData = parsed;
         renderTable(currentData);
       } catch (error) {
         console.error('Error loading data:', error);
