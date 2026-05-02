@@ -1,0 +1,1759 @@
+---
+import GaugeInput from "../../wizards/GaugeInput.astro";
+import NeckShoulderShapingChart from "../NeckShoulderShapingChart.astro";
+import SleevelessStartOver from "../SleevelessStartOver.astro";
+import { DEMO_NECK_SHOULDER_SHAPING_CHART } from "../../../lib/patterns/neckShoulderShapingChart";
+import "../../../styles/wizard.css";
+
+export interface Props {
+  embedded?: boolean;
+}
+
+const { embedded = false } = Astro.props;
+---
+
+<div class="wizard-page sg-yarn-page sg-build-panel" data-sg-build-panel="yarn">
+      <header class="page-header">
+        <p>Now let’s match your design and fit choices to the yarn, gauge, and machine width you’ll actually use.</p>
+        <p class="kbm-pattern-save-status" data-pattern-save-status aria-live="polite"></p>
+      </header>
+
+      <div class="calculator-card hat-builder-inputs" id="sleeveless-yarn-builder">
+        <h2 class="sg-section-title">Yarn &amp; Gauge</h2>
+        <section class="hat-form-section sg-fit-so-far-section" aria-labelledby="sg-yarn-so-far-heading">
+          <div class="builder-summary">
+            <h2 id="sg-yarn-so-far-heading" class="builder-summary-title hat-form-section__title hat-form-section__heading">
+              <span class="sg-so-far-summary-heading__icon" aria-hidden="true">
+                <svg
+                  class="sg-so-far-summary-heading__svg"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect>
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                  <path d="m9 14 2 2 4-4"></path>
+                </svg>
+              </span>
+              Your Sweater So Far
+            </h2>
+            <div class="builder-summary-content">
+              <div class="sg-summary-panel sg-yarn-so-far-summary">
+                <p id="garment-config-so-far-sentence" class="sg-summary-sentence">—</p>
+                <p
+                  class="sg-fit-size-copy sg-yarn-summary-adjustments"
+                  data-yarn-summary-adjustments-wrap
+                  hidden
+                >
+                  <strong>Adjustments:</strong>
+                  <span data-yarn-summary-adjustments></span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="hat-form-section sg-selector-section" aria-labelledby="sg-yarn-details-heading" data-selector-key="yarnDetails">
+          <div class="sg-section-header" data-section-toggle role="button" tabindex="0" aria-expanded="false">
+            <button type="button" class="sg-section-chevron-btn" data-section-chevron aria-label="Toggle Yarn details section">▾</button>
+            <div class="sg-section-header-main">
+              <h2 id="sg-yarn-details-heading" class="hat-form-section__title hat-form-section__heading">11. Yarn details</h2>
+              <span class="sg-section-selected-check" data-selected-check aria-hidden="true">✓</span>
+              <span class="sg-section-selected-value" data-selected-value></span>
+            </div>
+          </div>
+          <div class="sg-section-options">
+          <p class="sg-helper-text">Optional — for your notes only</p>
+          <div class="sg-yarn-field">
+            <label for="sg-yarn-notes" class="sg-yarn-label">Yarn name / notes</label>
+            <textarea
+              id="sg-yarn-notes"
+              class="sg-yarn-textarea"
+              rows="2"
+              maxlength="2000"
+              placeholder="e.g. Brand, color, dye lot, or anything you want to remember"
+              autocomplete="off"
+            ></textarea>
+          </div>
+          <div class="sg-yarn-field">
+            <label for="sg-yarn-weight" class="sg-yarn-label">Yarn weight</label>
+            <select id="sg-yarn-weight" class="sg-yarn-select">
+              <option value="">Select yarn weight…</option>
+              <option value="lace">Lace</option>
+              <option value="fingering">Fingering</option>
+              <option value="sport">Sport</option>
+              <option value="dk">DK</option>
+              <option value="worsted">Worsted</option>
+              <option value="bulky">Bulky</option>
+              <option value="other">Other / Not sure</option>
+            </select>
+          </div>
+          </div>
+        </section>
+
+        <section class="hat-form-section sg-selector-section" aria-labelledby="sg-yarn-gauge-heading" data-selector-key="gauge">
+          <div class="sg-section-header" data-section-toggle role="button" tabindex="0" aria-expanded="false">
+            <button type="button" class="sg-section-chevron-btn" data-section-chevron aria-label="Toggle Gauge section">▾</button>
+            <div class="sg-section-header-main">
+              <h2 id="sg-yarn-gauge-heading" class="hat-form-section__title hat-form-section__heading">12. Gauge</h2>
+              <button type="button" class="sg-help-link" onclick="openGaugeHelp('2189')">Need help?</button>
+              <span class="sg-section-selected-check" data-selected-check aria-hidden="true">✓</span>
+              <span class="sg-section-selected-value" data-selected-value></span>
+            </div>
+          </div>
+          <div class="sg-section-options">
+          <p class="sg-yarn-gauge-intro">
+            Enter the gauge from your swatch over 4 inches / 10 cm. We’ll do the behind-the-scenes math per inch.
+          </p>
+          <div class="sg-yarn-gauge-block">
+            <GaugeInput
+              id="sg-yarn"
+              showTitle={false}
+              showGaugeSubLabel={false}
+              showToggle={false}
+              toggleId="sleeveless"
+              stitchLabelInches='Stitch gauge — stitches over 4"'
+              stitchLabelCm="Stitch gauge — stitches over 10 cm"
+              rowLabelInches='Row gauge — rows over 4"'
+              rowLabelCm="Row gauge — rows over 10 cm"
+            />
+          </div>
+          </div>
+        </section>
+
+        <section class="hat-form-section sg-selector-section" aria-labelledby="sg-yarn-needles-heading" data-selector-key="needles">
+          <div class="sg-section-header" data-section-toggle role="button" tabindex="0" aria-expanded="false">
+            <button type="button" class="sg-section-chevron-btn" data-section-chevron aria-label="Toggle Available needles section">▾</button>
+            <div class="sg-section-header-main">
+              <h2 id="sg-yarn-needles-heading" class="hat-form-section__title hat-form-section__heading">13. Available needles</h2>
+              <span class="sg-section-selected-check" data-selected-check aria-hidden="true">✓</span>
+              <span class="sg-section-selected-value" data-selected-value></span>
+            </div>
+          </div>
+          <div class="sg-section-options">
+          <div class="sg-needle-field">
+            <span id="sg-needle-label" class="sg-yarn-label">Available needles</span>
+            <div class="sg-needle-input-group" role="group" aria-labelledby="sg-needle-label">
+              <input
+                type="number"
+                id="sg-available-needles"
+                class="sg-needle-input"
+                min="1"
+                step="1"
+                inputmode="numeric"
+                aria-label="Number of needles available"
+              />
+              <span class="sg-needle-suffix" aria-hidden="true">needles</span>
+            </div>
+            <div class="sg-needle-quick" role="group" aria-label="Common needle counts">
+              <button type="button" class="sg-needle-chip" data-needle-preset="100">100</button>
+              <button type="button" class="sg-needle-chip" data-needle-preset="110">110</button>
+              <button type="button" class="sg-needle-chip" data-needle-preset="150">150</button>
+              <button type="button" class="sg-needle-chip" data-needle-preset="200">200</button>
+              <button type="button" class="sg-needle-chip" data-needle-preset="272">272</button>
+            </div>
+          </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="sg-pattern-output sg-neck-chart-print-block" id="sg-neck-shoulder-chart-mount">
+        <NeckShoulderShapingChart
+          chart={DEMO_NECK_SHOULDER_SHAPING_CHART}
+          dataSourceNote="Using demo data fallback"
+        />
+      </div>
+
+      <div
+        class="pattern-builder-validation"
+        data-pattern-builder-validation
+        hidden
+        role="alert"
+        aria-live="polite"
+      >
+        <p class="pattern-builder-validation__intro" data-pattern-builder-validation-intro></p>
+        <ul class="pattern-builder-validation__list" data-pattern-builder-validation-list></ul>
+      </div>
+
+      <div class="wizard-next-cta wizard-next-cta--split no-print">
+        {embedded ? (
+          <>
+            <button type="button" class="kbm-btn kbm-btn-outline" data-sg-build-go="fit">
+              ← Back: Fit &amp; Measurements
+            </button>
+            <div class="wizard-next-cta__next-col">
+              <button type="button" class="kbm-btn kbm-btn-outline sg-view-pattern-btn" data-sg-open-pattern-tab>
+                View My Pattern
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <a href="/patterns/sleeveless-fit" class="kbm-btn kbm-btn-outline">← Back: Fit & Measurements</a>
+            <div class="wizard-next-cta__next-col">
+              <a href="/patterns/sleeveless-pattern" class="kbm-btn kbm-btn-outline sg-view-pattern-btn">View My Pattern</a>
+              <span class="kbm-btn kbm-btn-accent" aria-disabled="true">14. Next: Pattern math →</span>
+              <p class="sg-next-placeholder-note">Coming soon</p>
+            </div>
+          </>
+        )}
+      </div>
+      {!embedded && <SleevelessStartOver />}
+
+      <div id="gaugeHelpModal" class="sg-modal">
+        <div class="sg-modal-content">
+          <button type="button" class="sg-modal-close" onclick="closeGaugeHelp()">×</button>
+
+          <h3>How to measure your gauge</h3>
+
+          <div class="sg-video-wrapper">
+            <iframe
+              src="https://player.vimeo.com/video/1046394794"
+              frameborder="0"
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+          </div>
+
+          <p class="sg-modal-note">
+            Knit a swatch, measure stitches and rows over 4" (10 cm), and enter those numbers here.
+          </p>
+        </div>
+      </div>
+
+      <script is:inline>
+        function openGaugeHelp() {
+          document.getElementById("gaugeHelpModal").style.display = "block";
+        }
+
+        function closeGaugeHelp() {
+          document.getElementById("gaugeHelpModal").style.display = "none";
+        }
+      </script>
+</div>
+
+<style>
+  .sg-yarn-page .sg-pattern-output {
+    max-width: 52rem;
+    margin: 0 auto 1.25rem;
+    padding: 0 0.25rem;
+  }
+
+  .sg-yarn-page {
+    --sg-accent: #c2614e;
+  }
+
+  .sg-yarn-page .pattern-builder-validation {
+    margin: 0 0 1.25rem;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(194, 97, 78, 0.35);
+    background: color-mix(in srgb, var(--sg-accent, #c2614e) 10%, var(--page-bg, #fff));
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    color: #374151;
+  }
+
+  .sg-yarn-page .pattern-builder-validation__intro {
+    margin: 0 0 0.4rem;
+    font-weight: 600;
+  }
+
+  .sg-yarn-page .pattern-builder-validation__list {
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+
+  .sg-yarn-page .pattern-builder-validation__list li {
+    margin: 0.15rem 0;
+  }
+
+  .sg-yarn-page .pattern-builder-validation__list a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .hat-builder-inputs .hat-form-section {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 4.5%, var(--page-bg, #fff));
+    border: 1px solid rgba(82, 104, 45, 0.09);
+    border-radius: 12px;
+    padding: 1.15rem 1.2rem 1.2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 2px rgba(45, 55, 30, 0.04);
+  }
+
+  @supports not (background: color-mix(in srgb, white, black)) {
+    .hat-builder-inputs .hat-form-section {
+      background: rgba(82, 104, 45, 0.045);
+    }
+  }
+
+  .hat-builder-inputs .hat-form-section:last-of-type {
+    margin-bottom: 0;
+  }
+
+  .hat-builder-inputs .hat-form-section__title,
+  .hat-builder-inputs .hat-form-section__heading {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+    letter-spacing: 0.02em;
+    line-height: 1.25;
+    margin: 0 0 0.7rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(82, 104, 45, 0.14);
+  }
+
+  .sg-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .sg-section-header-main {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sg-section-selected-check {
+    color: var(--sg-accent);
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .sg-section-selected-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4b5563;
+    line-height: 1.2;
+  }
+
+  .sg-section-chevron-btn {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid color-mix(in srgb, var(--sg-accent) 45%, #ffffff);
+    background: #f7f9f3;
+    color: var(--sg-accent);
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    border-radius: 6px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 1px rgba(45, 55, 30, 0.06);
+  }
+
+  .sg-section-chevron-btn:hover {
+    background: color-mix(in srgb, var(--sg-accent) 8%, #ffffff);
+    border-color: color-mix(in srgb, var(--sg-accent) 62%, #ffffff);
+  }
+
+  @supports not (background: color-mix(in srgb, white, black)) {
+    .sg-section-chevron-btn {
+      border-color: rgba(194, 97, 78, 0.45);
+    }
+
+    .sg-section-chevron-btn:hover {
+      background: rgba(194, 97, 78, 0.08);
+      border-color: rgba(194, 97, 78, 0.62);
+    }
+  }
+
+  .sg-selector-section .sg-section-selected-check {
+    display: inline;
+  }
+
+  .sg-selector-section .sg-section-chevron-btn {
+    transform: rotate(-90deg);
+    transition: transform 0.15s ease;
+  }
+
+  .sg-selector-section.is-open .sg-section-chevron-btn {
+    transform: rotate(0deg);
+  }
+
+  /* Direct child only — matches garment/fit; !important wins over any leaked tool styles */
+  .sg-yarn-page .hat-builder-inputs .sg-selector-section:not(.is-open) > .sg-section-options {
+    display: none !important;
+  }
+
+  .sg-yarn-page .hat-builder-inputs .sg-selector-section.is-open > .sg-section-options {
+    display: block !important;
+  }
+
+  .sg-selector-section .hat-form-section__title,
+  .sg-selector-section .hat-form-section__heading {
+    margin: 0;
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .sg-summary-panel {
+    font-size: 0.95rem;
+    line-height: 1.35;
+    color: #374151;
+  }
+
+  .sg-summary-sentence {
+    margin: 0 0 0.65rem;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .sg-yarn-summary-adjustments {
+    margin: 0.35rem 0 0;
+    padding-top: 0.35rem;
+    border-top: 1px dashed rgba(82, 104, 45, 0.18);
+  }
+
+  /* innerHTML spans lack Astro scope attrs — :global so edited values match Fit page */
+  .sg-yarn-so-far-summary :global(.sg-fit-edited),
+  :global(.sg-yarn-page .sg-fit-edited) {
+    color: var(--sg-accent, #c2614e);
+    font-weight: 600;
+  }
+
+  .sg-fit-size-copy {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  .sg-yarn-field {
+    margin-bottom: 1rem;
+  }
+
+  .sg-yarn-field:last-child {
+    margin-bottom: 0;
+  }
+
+  .sg-yarn-label {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.4rem;
+  }
+
+  .sg-yarn-textarea {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 3.25rem;
+    padding: 0.65rem 0.85rem;
+    font-family: inherit;
+    font-size: 1rem;
+    line-height: 1.45;
+    color: #374151;
+    border: 1px solid rgba(82, 104, 45, 0.35);
+    border-radius: 10px;
+    background: #fff;
+    resize: vertical;
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
+  }
+
+  .sg-yarn-textarea::placeholder {
+    color: #9ca3af;
+  }
+
+  .sg-yarn-textarea:focus {
+    outline: none;
+    border-color: var(--sg-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--sg-accent) 28%, transparent);
+  }
+
+  .sg-yarn-select {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: 0.65rem 2.35rem 0.65rem 0.9rem;
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1.35;
+    font-weight: 600;
+    color: #374151;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 12px;
+    border: 1px solid rgba(82, 104, 45, 0.35);
+    border-radius: 10px;
+    appearance: none;
+    cursor: pointer;
+  }
+
+  .sg-yarn-select:focus {
+    outline: none;
+    border-color: var(--sg-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--sg-accent) 28%, transparent);
+  }
+
+  .sg-yarn-gauge-intro {
+    margin: 0 0 0.75rem;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #6b7280;
+  }
+
+  .sg-yarn-gauge-block {
+    margin-bottom: 0;
+  }
+
+  .sg-help-link {
+    color: #2E7D32; /* brand green */
+    font-size: 0.9em;
+    font-weight: 500;
+    background: none;
+    border: none;
+    padding: 0;
+    margin-left: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    opacity: 0.9;
+  }
+
+  .sg-help-link:hover,
+  .sg-help-link:focus {
+    text-decoration: underline;
+    opacity: 1;
+  }
+
+  .sg-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    padding: 100px 20px 30px;
+    overflow-y: auto;
+  }
+
+  .sg-modal-content {
+    background: #fff;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 24px;
+    border-radius: 12px;
+    position: relative;
+  }
+
+  .sg-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    border: none;
+    background: none;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  .sg-video-wrapper {
+    position: relative;
+    padding-top: 56.25%;
+  }
+
+  .sg-video-wrapper iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .sg-modal-note {
+    font-size: 14px;
+    color: #555;
+    margin-top: 10px;
+  }
+
+  .sg-needle-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .sg-needle-input-group {
+    display: flex;
+    align-items: stretch;
+    max-width: 22rem;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(82, 104, 45, 0.35);
+    background: #fff;
+  }
+
+  .sg-needle-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: none;
+    padding: 0.65rem 0.85rem;
+    font-family: inherit;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #374151;
+    background: transparent;
+  }
+
+  .sg-needle-input:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--sg-accent) 35%, transparent);
+  }
+
+  .sg-needle-suffix {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    padding: 0 0.95rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #4b5563;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #fff);
+    border-left: 1px solid rgba(82, 104, 45, 0.18);
+  }
+
+  .sg-needle-quick {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .sg-needle-chip {
+    margin: 0;
+    padding: 0.45rem 0.75rem;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+    background: #fff;
+    border: 1px solid rgba(82, 104, 45, 0.28);
+    border-radius: 999px;
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      background 0.15s;
+  }
+
+  .sg-needle-chip:hover {
+    border-color: #aeb79a;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 5%, #fff);
+  }
+
+  .sg-needle-chip:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .wizard-next-cta {
+    margin-top: 1rem;
+  }
+
+  .wizard-next-cta--split {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1rem 1.5rem;
+  }
+
+  .wizard-next-cta__next-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: min(100%, 280px);
+  }
+
+  .sg-view-pattern-btn {
+    border-color: rgba(194, 97, 78, 0.55);
+    color: #9a3f31;
+    font-weight: 600;
+  }
+
+  .sg-view-pattern-btn:hover {
+    border-color: var(--sg-accent, #c2614e);
+    background: color-mix(in srgb, var(--sg-accent, #c2614e) 10%, var(--page-bg, #fff));
+  }
+
+  .sg-next-placeholder-note {
+    margin: 0;
+    font-size: 0.82rem;
+    color: #6b7280;
+  }
+
+  @media (max-width: 520px) {
+    .wizard-next-cta--split {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .wizard-next-cta--split > .kbm-btn-outline {
+      text-align: center;
+    }
+
+    .wizard-next-cta__next-col {
+      align-items: center;
+    }
+  }
+</style>
+
+<style is:global>
+  /* Match GaugeInput lego styling for FloatingInput inside .gauge-box */
+  .sg-yarn-page .gauge-input-wrapper {
+    margin-bottom: 0;
+  }
+
+  .sg-yarn-page .gauge-label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+  }
+
+  .sg-yarn-page .gauge-box {
+    background: #f7f9fb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .sg-yarn-page .gauge-divider {
+    font-size: 18px;
+    font-weight: 600;
+    color: #6b7280;
+  }
+
+  .sg-yarn-page .gauge-box .floating-input {
+    position: relative !important;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    flex: 1 1 0;
+    min-width: 120px;
+  }
+
+  .sg-yarn-page .gauge-box .floating-input input {
+    width: 100% !important;
+    min-height: 52px !important;
+    padding: 1.25rem 0.75rem 0.5rem !important;
+    border: 2px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    font-family: var(--font);
+    font-size: 1rem !important;
+    color: var(--text-dark, #374151);
+    background: white !important;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -moz-appearance: textfield;
+    box-sizing: border-box;
+  }
+
+  .sg-yarn-page .gauge-box .floating-input input::-webkit-outer-spin-button,
+  .sg-yarn-page .gauge-box .floating-input input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .sg-yarn-page .gauge-box .floating-input input:focus {
+    outline: none;
+    border-color: var(--kbm-green) !important;
+    box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.1) !important;
+  }
+
+  .sg-yarn-page .gauge-box .floating-input .floating-label {
+    position: absolute !important;
+    left: 0.75rem !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    font-size: 0.95rem !important;
+    font-weight: normal !important;
+    color: #6b7280 !important;
+    pointer-events: none !important;
+    transition: all 0.2s ease !important;
+    z-index: 1 !important;
+  }
+
+  .sg-yarn-page .gauge-box .floating-input input:focus ~ .floating-label,
+  .sg-yarn-page .gauge-box .floating-input input:not(:placeholder-shown) ~ .floating-label {
+    top: 0.35rem !important;
+    transform: translateY(0) !important;
+    font-size: 0.75rem !important;
+    color: var(--kbm-green) !important;
+    font-weight: 500 !important;
+  }
+
+  .sg-yarn-page .gauge-box .floating-input input::placeholder {
+    color: transparent !important;
+  }
+</style>
+
+<script>
+  // @ts-nocheck
+  import {
+    getCurrentPattern,
+    saveCurrentPattern,
+    notifyPatternSaved,
+    getPatternData,
+    savePatternData,
+    getSleevelessChartAudience,
+    normalizeSleevelessAudienceV1,
+    SLEEVELESS_CHART_AUDIENCE_LABELS,
+    SLEEVELESS_CHART_INTRO,
+  } from "../../../lib/patterns/patternStorage.ts";
+  import { calculateBasicPatternNumbers } from "../../../lib/patterns/patternCalculator";
+  import {
+    validatePatternBuilderRequired,
+    PATTERN_BUILDER_FINE_TUNE_HREF,
+  } from "../../../lib/patterns/patternBuilderValidation";
+  // === DEMO BACK PATTERN TEST ===
+  import("../../../lib/patterns/sleevelessPatternOutput").then(
+    ({ demoSleevelessBackPattern }) => {
+      const demo = demoSleevelessBackPattern();
+      console.log("DEMO BACK PATTERN:\n" + demo.lines.join("\n"));
+      console.table(demo.debug);
+    }
+  );
+
+  const CHART_AUDIENCES = ["misses", "plus", "men", "kids", "baby"];
+
+  /** Same sweater chart JSON as Fit step / reference sizing charts. */
+  const SWEATER_CHART_URLS = {
+    misses: "/data/sizing_sweaters_misses.json",
+    plus: "/data/sizing_sweaters_plus.json",
+    men: "/data/sizing_sweaters_men.json",
+    kids: "/data/sizing_sweaters_kids.json",
+    baby: "/data/sizing_sweaters_baby.json",
+  };
+
+  /** Filled after fetch — mirrors Fit step defaults for edited-vs-default comparisons. */
+  const chartRowsByAudience = {};
+
+  let sweaterChartsLoadPromise = null;
+  let yarnSummaryRenderGen = 0;
+
+  const MEASUREMENT_KEYS = [
+    "finished_bust_chest",
+    "finished_waist",
+    "finished_hip",
+    "back_neck_to_hem",
+    "armhole_depth",
+    "shoulder_width",
+    "neck_width",
+    "front_neck_depth",
+    "back_neck_depth",
+  ];
+
+  const ADJUSTMENT_SHORT_LABELS = {
+    finished_bust_chest: "Bust",
+    finished_waist: "Waist",
+    finished_hip: "Hip",
+    back_neck_to_hem: "Length",
+    armhole_depth: "Armhole",
+    shoulder_width: "Shoulder",
+    neck_width: "Neck",
+    front_neck_depth: "Front neck",
+    back_neck_depth: "Back neck",
+  };
+
+  const EASE_INCHES_BY_FIT = {
+    close: 1,
+    standard: 3,
+    relaxed: 6,
+  };
+
+  /** Matches {@link GaugeInput} id — inputs are `${id}-stitch-gauge` / `${id}-row-gauge`. */
+  const GAUGE_ID_PREFIX = "sg-yarn";
+
+  /** Same id as top-level {@link UnitToggle} on sleeveless builder pages (`sleeveless-btn-inches` / `…-btn-cm`). */
+  const UNIT_TOGGLE_PAGE_ID = "sleeveless";
+
+  let suppressGaugeUnitConvert = false;
+
+  /**
+   * Yarn/gauge summary display only: whole numbers, user swatch basis (4" vs 10 cm).
+   * Internal math still uses {@link rawSwatchToPerInch} / stitches per inch elsewhere.
+   */
+  function formatGaugeLineFromRawStrings(stitchRaw, rowRaw, unit) {
+    const ts = String(stitchRaw ?? "").trim();
+    const tr = String(rowRaw ?? "").trim();
+    if (!ts || !tr) return "";
+    const s = parseFloat(ts);
+    const r = parseFloat(tr);
+    if (!Number.isFinite(s) || s <= 0 || !Number.isFinite(r) || r <= 0) return "";
+    const over = unit === "cm" ? "10 cm" : '4"';
+    return `${Math.round(s)} sts / ${Math.round(r)} rows over ${over}`;
+  }
+
+  /** Uses stored raw swatch + unit; falls back to rounded 4″ counts from per-inch only if raw missing (legacy). */
+  function formatGaugeDisplayCoreFromCfg(cfg) {
+    const ts = typeof cfg.gaugeStitchRaw === "string" ? cfg.gaugeStitchRaw.trim() : "";
+    const tr = typeof cfg.gaugeRowRaw === "string" ? cfg.gaugeRowRaw.trim() : "";
+    if (ts && tr) {
+      const unit = cfg.gaugeRawUnit === "cm" ? "cm" : "in";
+      return formatGaugeLineFromRawStrings(ts, tr, unit);
+    }
+    const st = parseFloat(String(cfg.gaugeStitchesPerInch ?? "").trim());
+    const rw = parseFloat(String(cfg.gaugeRowsPerInch ?? "").trim());
+    if (!Number.isFinite(st) || st <= 0 || !Number.isFinite(rw) || rw <= 0) return "";
+    return `${Math.round(st * 4)} sts / ${Math.round(rw * 4)} rows over 4"`;
+  }
+
+  function formatGaugeLineFromDom(root) {
+    const stEl = root.querySelector(`#${GAUGE_ID_PREFIX}-stitch-gauge`);
+    const rwEl = root.querySelector(`#${GAUGE_ID_PREFIX}-row-gauge`);
+    const stitchRaw = stEl instanceof HTMLInputElement ? stEl.value.trim() : "";
+    const rowRaw = rwEl instanceof HTMLInputElement ? rwEl.value.trim() : "";
+    return formatGaugeLineFromRawStrings(stitchRaw, rowRaw, getYarnPageGaugeUnit());
+  }
+
+  function getYarnPageGaugeUnit() {
+    const cmBtn = document.getElementById(`${UNIT_TOGGLE_PAGE_ID}-btn-cm`);
+    return cmBtn?.classList.contains("active") ? "cm" : "in";
+  }
+
+  /** Converts raw counts from the gauge Lego block to stitches/inch and rows/inch for all pattern math. */
+  function rawSwatchToPerInch(stitchRaw, rowRaw, unit) {
+    const s = parseFloat(String(stitchRaw).trim());
+    const r = parseFloat(String(rowRaw).trim());
+    let gaugeStitchesPerInch = "";
+    let gaugeRowsPerInch = "";
+    if (unit === "cm") {
+      if (Number.isFinite(s) && s > 0) gaugeStitchesPerInch = String((s / 10) * 2.54);
+      if (Number.isFinite(r) && r > 0) gaugeRowsPerInch = String((r / 10) * 2.54);
+    } else {
+      if (Number.isFinite(s) && s > 0) gaugeStitchesPerInch = String(s / 4);
+      if (Number.isFinite(r) && r > 0) gaugeRowsPerInch = String(r / 4);
+    }
+    return { gaugeStitchesPerInch, gaugeRowsPerInch };
+  }
+
+  function setYarnPageGaugeUnit(unit) {
+    const inBtn = document.getElementById(`${UNIT_TOGGLE_PAGE_ID}-btn-inches`);
+    const cmBtn = document.getElementById(`${UNIT_TOGGLE_PAGE_ID}-btn-cm`);
+    if (unit === "cm") {
+      if (cmBtn && !cmBtn.classList.contains("active")) cmBtn.click();
+    } else if (inBtn && !inBtn.classList.contains("active")) {
+      inBtn.click();
+    }
+  }
+
+  const CHART_INTRO = SLEEVELESS_CHART_INTRO;
+
+  const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
+
+  const FIT_EASE_LABELS = {
+    close: "Close fit",
+    standard: "Standard fit",
+    relaxed: "Relaxed fit",
+  };
+
+  const YARN_WEIGHT_LABELS = {
+    lace: "Lace",
+    fingering: "Fingering",
+    sport: "Sport",
+    dk: "DK",
+    worsted: "Worsted",
+    bulky: "Bulky",
+    other: "Other / Not sure",
+  };
+
+  function isYarnSelectorKey(k) {
+    return k === "yarnDetails" || k === "gauge" || k === "needles";
+  }
+
+  function getYarnSelectorSections(root) {
+    return Array.from(root.querySelectorAll(".sg-selector-section[data-selector-key]"));
+  }
+
+  function setOpenYarnSection(root, selectorKey) {
+    getYarnSelectorSections(root).forEach((section) => {
+      const isOpen = selectorKey !== null && section.getAttribute("data-selector-key") === selectorKey;
+      section.classList.toggle("is-open", isOpen);
+      const headerToggle = section.querySelector("[data-section-toggle]");
+      const chevronBtn = section.querySelector("[data-section-chevron]");
+      if (headerToggle) {
+        headerToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      }
+      if (chevronBtn) {
+        chevronBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      }
+    });
+  }
+
+  function toggleYarnSection(root, selectorKey) {
+    const currentOpen = getYarnSelectorSections(root).find((section) => section.classList.contains("is-open"));
+    const currentOpenKey = currentOpen?.getAttribute("data-selector-key");
+    if (currentOpenKey === selectorKey) {
+      setOpenYarnSection(root, null);
+      return;
+    }
+    setOpenYarnSection(root, selectorKey);
+  }
+
+  function yarnDetailsHeaderSummary(cfg) {
+    const parts = [];
+    if (cfg.yarnWeight && YARN_WEIGHT_LABELS[cfg.yarnWeight]) {
+      parts.push(YARN_WEIGHT_LABELS[cfg.yarnWeight]);
+    }
+    const n = typeof cfg.yarnNotes === "string" ? cfg.yarnNotes.trim() : "";
+    if (n) {
+      parts.push(n.length > 48 ? `${n.slice(0, 45)}…` : n);
+    }
+    return parts.join(" · ");
+  }
+
+  function gaugeHeaderSummary(cfg) {
+    const core = formatGaugeDisplayCoreFromCfg(cfg);
+    if (core) return `Gauge: ${core}`;
+    return "";
+  }
+
+  function needlesHeaderSummary(cfg) {
+    const nd = String(cfg.availableNeedles ?? "").trim();
+    if (!nd) return "";
+    const n = parseFloat(nd);
+    if (!Number.isFinite(n) || n <= 0) return "";
+    return `${nd} needles`;
+  }
+
+  function syncYarnHeaderSummaries(root, cfg) {
+    getYarnSelectorSections(root).forEach((section) => {
+      const rawKey = section.getAttribute("data-selector-key");
+      const key = isYarnSelectorKey(rawKey) ? rawKey : null;
+      if (!key) return;
+      const valueSpan = section.querySelector("[data-selected-value]");
+      const checkmark = section.querySelector("[data-selected-check]");
+      if (!valueSpan) return;
+
+      let resolved = "";
+      if (key === "yarnDetails") resolved = yarnDetailsHeaderSummary(cfg);
+      else if (key === "gauge") resolved = gaugeHeaderSummary(cfg);
+      else if (key === "needles") resolved = needlesHeaderSummary(cfg);
+
+      valueSpan.textContent = resolved;
+      if (checkmark) {
+        checkmark.style.display = resolved ? "inline" : "none";
+      }
+    });
+  }
+
+  /** Same partial shape as {@link readDomIntoPartial} / buildCfg — gauge complete if raw pair parses or per-inch pair is valid. */
+  function partialHasCompleteGauge(p) {
+    const stitchRaw = String(p.gaugeStitchRaw ?? "").trim();
+    const rowRaw = String(p.gaugeRowRaw ?? "").trim();
+    if (stitchRaw !== "" && rowRaw !== "") {
+      const s = parseFloat(stitchRaw);
+      const r = parseFloat(rowRaw);
+      return Number.isFinite(s) && s > 0 && Number.isFinite(r) && r > 0;
+    }
+    const st = parseFloat(String(p.gaugeStitchesPerInch ?? "").trim());
+    const rw = parseFloat(String(p.gaugeRowsPerInch ?? "").trim());
+    return Number.isFinite(st) && st > 0 && Number.isFinite(rw) && rw > 0;
+  }
+
+  function getDefaultOpenYarnSectionKeyFromPartial(p) {
+    const hasYarn =
+      (p.yarnWeight && p.yarnWeight !== "") ||
+      (typeof p.yarnNotes === "string" && p.yarnNotes.trim() !== "");
+    const hasGauge = partialHasCompleteGauge(p);
+    const nd = String(p.availableNeedles ?? "").trim();
+    const hasNeedles = nd !== "" && Number.isFinite(parseFloat(nd)) && parseFloat(nd) > 0;
+
+    if (!hasYarn) return "yarnDetails";
+    if (!hasGauge) return "gauge";
+    /* Yarn + gauge done but needles not: keep 12 open — avoids jumping straight to 13 on load while needles are still empty. */
+    if (!hasNeedles) return "gauge";
+    return "needles";
+  }
+
+  function bindYarnAccordion(root) {
+    root.querySelectorAll("[data-section-toggle]").forEach((header) => {
+      const onToggle = () => {
+        const section = header.closest(".sg-selector-section");
+        const rawKey = section?.getAttribute("data-selector-key");
+        const key = isYarnSelectorKey(rawKey) ? rawKey : null;
+        if (key) toggleYarnSection(root, key);
+      };
+      header.addEventListener("click", (event) => {
+        const t = event.target;
+        if (t instanceof Element) {
+          if (t.closest("[data-section-chevron]")) return;
+          if (t.closest("input, select, textarea, button, label")) return;
+        }
+        onToggle();
+      });
+      header.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          const t = event.target;
+          if (t instanceof Element && t.closest("input, select, textarea, button, label")) return;
+          event.preventDefault();
+          onToggle();
+        }
+      });
+    });
+
+    root.querySelectorAll("[data-section-chevron]").forEach((btn) => {
+      btn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const section = btn.closest(".sg-selector-section");
+        const rawKey = section?.getAttribute("data-selector-key");
+        const key = isYarnSelectorKey(rawKey) ? rawKey : null;
+        if (key) toggleYarnSection(root, key);
+      });
+    });
+  }
+
+  function chartIntroShortLabel(audienceKey) {
+    const intro = audienceKey && CHART_INTRO[audienceKey];
+    if (!intro) return "";
+    return intro.split(" — ")[0]?.trim() ?? "";
+  }
+
+  function audienceSummaryPrefix(audienceKey) {
+    const short = chartIntroShortLabel(audienceKey);
+    if (!short) return "";
+    const needle = " sweater chart";
+    const idx = short.toLowerCase().indexOf(needle);
+    if (idx === -1) return short.trim();
+    return short.slice(0, idx).trim();
+  }
+
+  function buildDesignSummarySentence(_cfg) {
+    void _cfg;
+    return "straight sleeveless pullover with a round neckline";
+  }
+
+  function buildSoFarSummarySentence(cfg) {
+    const design = buildDesignSummarySentence(cfg);
+    const aud = normalizeSleevelessAudienceV1(cfg.knitFor);
+    if (!aud || !AUDIENCE_LABELS[aud]) return design;
+    return `${AUDIENCE_LABELS[aud]} ${design}`;
+  }
+
+  function ensureSweaterChartsLoaded() {
+    if (sweaterChartsLoadPromise) return sweaterChartsLoadPromise;
+    sweaterChartsLoadPromise = Promise.all(
+      CHART_AUDIENCES.map(async (aud) => {
+        try {
+          const res = await fetch(SWEATER_CHART_URLS[aud]);
+          if (!res.ok) throw new Error(`${aud}: ${res.status}`);
+          const rows = await res.json();
+          chartRowsByAudience[aud] = Array.isArray(rows) ? rows : [];
+        } catch (e) {
+          console.error("Sweater chart load failed", aud, e);
+          chartRowsByAudience[aud] = [];
+        }
+      }),
+    );
+    return sweaterChartsLoadPromise;
+  }
+
+  function normalizeRowSize(row) {
+    if (!row || row.size === undefined || row.size === null) return "";
+    return String(row.size);
+  }
+
+  function findChartRow(audience, sizeStr) {
+    const list = chartRowsByAudience[audience];
+    if (!Array.isArray(list)) return null;
+    const key = String(sizeStr);
+    return list.find((row) => normalizeRowSize(row) === key) ?? null;
+  }
+
+  function isValidSizeForAudience(audience, size) {
+    if (!audience || size === undefined || size === null || size === "") return false;
+    return findChartRow(audience, size) !== null;
+  }
+
+  function toFiniteNumber(val) {
+    if (val === undefined || val === null || val === "") return NaN;
+    const n = typeof val === "number" ? val : parseFloat(String(val));
+    return Number.isFinite(n) ? n : NaN;
+  }
+
+  function roundQuarter(n) {
+    if (!Number.isFinite(n)) return 0;
+    return Math.round(n * 4) / 4;
+  }
+
+  function easeInchesForFit(fitPreference) {
+    const e = EASE_INCHES_BY_FIT[fitPreference];
+    return typeof e === "number" ? e : EASE_INCHES_BY_FIT.standard;
+  }
+
+  /**
+   * Same defaults as Fit step: chart `hip` is never used. Finished hip matches finished bust/chest (ease once).
+   */
+  function computeDefaultMeasurementsFromRow(row, fitPreference) {
+    const ease = easeInchesForFit(fitPreference);
+    const bust = toFiniteNumber(row.bust_or_chest);
+    const waist = toFiniteNumber(row.waist);
+    const finishedBustChest = roundQuarter(bust + ease);
+    return {
+      finished_bust_chest: finishedBustChest,
+      finished_waist: roundQuarter(waist + ease),
+      finished_hip: finishedBustChest,
+      back_neck_to_hem: roundQuarter(toFiniteNumber(row.garment_back_length)),
+      armhole_depth: roundQuarter(toFiniteNumber(row.armhole_depth)),
+      shoulder_width: roundQuarter(toFiniteNumber(row.shoulder_width)),
+      neck_width: roundQuarter(toFiniteNumber(row.neck_opening)),
+      front_neck_depth: roundQuarter(toFiniteNumber(row.front_neck_depth)),
+      back_neck_depth: roundQuarter(toFiniteNumber(row.back_neck_depth)),
+    };
+  }
+
+  function mergeMeasurements(into, from) {
+    if (!from || typeof from !== "object") return into;
+    MEASUREMENT_KEYS.forEach((k) => {
+      const n = toFiniteNumber(from[k]);
+      if (Number.isFinite(n) && n > 0) into[k] = roundQuarter(n);
+    });
+    return into;
+  }
+
+  function isEditedValue(key, selectedMeasurements, defaultMeasurements) {
+    if (!defaultMeasurements) return false;
+    const raw = selectedMeasurements[key];
+    if (raw === "" || raw === undefined || raw === null) return false;
+    const selected = Number(raw);
+    const def = Number(defaultMeasurements[key]);
+    if (!Number.isFinite(selected) || !Number.isFinite(def)) return false;
+    return Math.abs(selected - def) > 0.01;
+  }
+
+  /**
+   * Merged snapshot + chart defaults (same merge as Fit hydrate), for edited-value detection.
+   */
+  function getMeasurementSnapshotForSummary(cfg, pattern, patternData) {
+    const ft = { ...(pattern.fit || {}), ...(patternData.fit || {}) };
+    const saved = ft.selectedMeasurements;
+    const merged = {};
+    mergeMeasurements(merged, saved);
+
+    const hasAudienceSizeEase =
+      Boolean(normalizeSleevelessAudienceV1(cfg.knitFor)) &&
+      cfg.size &&
+      cfg.fitPreference &&
+      isValidSizeForAudience(cfg.knitFor, cfg.size);
+
+    let defaultMeasurements = null;
+    if (hasAudienceSizeEase) {
+      const row = findChartRow(cfg.knitFor, cfg.size);
+      if (row) {
+        defaultMeasurements = computeDefaultMeasurementsFromRow(row, cfg.fitPreference);
+        MEASUREMENT_KEYS.forEach((k) => {
+          if (merged[k] === undefined) merged[k] = defaultMeasurements[k];
+        });
+      }
+    }
+
+    return { snap: merged, defaultMeasurements };
+  }
+
+  function formatEditedAdjustmentsHtml(snap, defaultMeasurements) {
+    const parts = [];
+    MEASUREMENT_KEYS.forEach((key) => {
+      if (!isEditedValue(key, snap, defaultMeasurements)) return;
+      const raw = snap[key];
+      const n = typeof raw === "number" ? raw : parseFloat(String(raw));
+      if (!Number.isFinite(n) || n <= 0) return;
+      const q = roundQuarter(n);
+      const s = q % 1 === 0 ? String(q) : String(q);
+      const label = ADJUSTMENT_SHORT_LABELS[key] ?? key;
+      parts.push(`${label} <span class="sg-fit-edited">${s}"</span>`);
+    });
+    return parts.join(", ");
+  }
+
+  /** Whole-number summary line; prefers merged cfg (saved raw) then live DOM. */
+  function formatUserEnteredGaugeLine(cfg, root) {
+    const fromCfg = formatGaugeDisplayCoreFromCfg(cfg);
+    if (fromCfg) return fromCfg;
+    return formatGaugeLineFromDom(root);
+  }
+
+  function buildYarnSoFarSummaryLine(cfg, root) {
+    const parts = [];
+    const design = buildSoFarSummarySentence(cfg);
+    if (design) parts.push(design);
+    if (cfg.knitFor && normalizeSleevelessAudienceV1(cfg.knitFor) && cfg.size) {
+      parts.push(`Size ${cfg.size}`);
+    }
+    if (cfg.fitPreference && FIT_EASE_LABELS[cfg.fitPreference]) {
+      parts.push(FIT_EASE_LABELS[cfg.fitPreference]);
+    }
+    if (cfg.yarnWeight && YARN_WEIGHT_LABELS[cfg.yarnWeight]) {
+      parts.push(YARN_WEIGHT_LABELS[cfg.yarnWeight]);
+    }
+    const gaugeLine = formatUserEnteredGaugeLine(cfg, root);
+    if (gaugeLine) parts.push(gaugeLine);
+    return parts.length ? parts.join(" • ") : "—";
+  }
+
+  function renderPatternBuilderValidation(patternData) {
+    const wrap = document.querySelector("[data-pattern-builder-validation]");
+    const intro = document.querySelector("[data-pattern-builder-validation-intro]");
+    const listEl = document.querySelector("[data-pattern-builder-validation-list]");
+    if (!wrap || !intro || !listEl) return;
+
+    const { ok, missingItems } = validatePatternBuilderRequired(patternData);
+    if (ok) {
+      wrap.setAttribute("hidden", "");
+      intro.textContent = "";
+      listEl.replaceChildren();
+      return;
+    }
+    wrap.removeAttribute("hidden");
+    intro.textContent =
+      "Almost there! To build your custom pattern, we still need:";
+    listEl.replaceChildren(
+      ...missingItems.map((item) => {
+        const li = document.createElement("li");
+        if (item.id === "finished_bust_chest") {
+          const a = document.createElement("a");
+          a.href = PATTERN_BUILDER_FINE_TUNE_HREF;
+          a.textContent = item.label;
+          li.appendChild(a);
+        } else {
+          li.textContent = item.label;
+        }
+        return li;
+      }),
+    );
+  }
+
+  /** Shape expected by generateSleevelessBackPattern (fit + yarnGaugeMachine). */
+  function patternPayloadForSleevelessBack() {
+    const base = mergedPatternForBuilder(getCurrentPattern());
+    const pb = getPatternData();
+    const ygm = pb.yarnGaugeMachine;
+    const fromWizard =
+      ygm && typeof ygm === "object" && !Array.isArray(ygm) ? ygm : {};
+    const stitch =
+      parseFloat(String(fromWizard.gaugeStitchesPerInch ?? "")) ||
+      parseFloat(String(base.yarnGauge?.stitchGauge ?? "")) ||
+      0;
+    const rowG =
+      parseFloat(String(fromWizard.gaugeRowsPerInch ?? "")) ||
+      parseFloat(String(base.yarnGauge?.rowGauge ?? "")) ||
+      0;
+    const needles =
+      parseFloat(String(fromWizard.availableNeedles ?? "")) ||
+      parseFloat(String(base.machine?.availableNeedles ?? "")) ||
+      0;
+    return {
+      fit: base.fit || {},
+      style: base.style || {},
+      yarnGaugeMachine: {
+        gaugeStitchesPerInch: stitch,
+        gaugeRowsPerInch: rowG,
+        availableNeedles: needles,
+      },
+    };
+  }
+
+  async function refreshNeckShoulderChart() {
+    const mount = document.getElementById("sg-neck-shoulder-chart-mount");
+    if (!mount) return;
+    const [{ generateSleevelessBackPattern }, { renderNeckShoulderShapingChartSectionHtml }] =
+      await Promise.all([
+        import("../../../lib/patterns/sleevelessPatternOutput"),
+        import("../../../lib/patterns/neckShoulderShapingChartHtml"),
+      ]);
+    const result = generateSleevelessBackPattern(patternPayloadForSleevelessBack());
+    const note = result.neckShoulderChartUsesLiveRows
+      ? "Using live calculated data"
+      : "Using demo data fallback";
+    mount.innerHTML = renderNeckShoulderShapingChartSectionHtml(result.neckShoulderShapingChart, note);
+  }
+
+  /** Overlay `patternBuilderData` sections onto the canonical pattern for summaries + form bind. */
+  function mergedPatternForBuilder(base) {
+    const patternData = getPatternData();
+    const validation = validatePatternBuilderRequired(patternData);
+    if (validation.ok) {
+      const results = calculateBasicPatternNumbers(patternData);
+      if (import.meta.env.DEV) {
+        console.log("Pattern math test:", results);
+      }
+    }
+    const st = { ...(base.style || {}), ...(patternData.style || {}) };
+    const ft = { ...(base.fit || {}), ...(patternData.fit || {}) };
+    let yarnGauge = { ...(base.yarnGauge || {}) };
+    let machine = { ...(base.machine || {}) };
+    const ygm = patternData.yarnGaugeMachine;
+    if (ygm && typeof ygm === "object" && !Array.isArray(ygm)) {
+      if ("yarnNotes" in ygm) {
+        yarnGauge = {
+          ...yarnGauge,
+          yarnName: typeof ygm.yarnNotes === "string" ? ygm.yarnNotes : String(ygm.yarnNotes ?? ""),
+        };
+      }
+      if ("yarnWeight" in ygm) {
+        yarnGauge = {
+          ...yarnGauge,
+          yarnWeight: typeof ygm.yarnWeight === "string" ? ygm.yarnWeight : String(ygm.yarnWeight ?? ""),
+        };
+      }
+      if ("gaugeStitchesPerInch" in ygm) {
+        const v = ygm.gaugeStitchesPerInch;
+        yarnGauge = { ...yarnGauge, stitchGauge: v !== undefined && v !== null ? String(v) : "" };
+      }
+      if ("gaugeRowsPerInch" in ygm) {
+        const v = ygm.gaugeRowsPerInch;
+        yarnGauge = { ...yarnGauge, rowGauge: v !== undefined && v !== null ? String(v) : "" };
+      }
+      if ("gaugeStitchRaw" in ygm) {
+        const v = ygm.gaugeStitchRaw;
+        yarnGauge = { ...yarnGauge, gaugeStitchRaw: v !== undefined && v !== null ? String(v) : "" };
+      }
+      if ("gaugeRowRaw" in ygm) {
+        const v = ygm.gaugeRowRaw;
+        yarnGauge = { ...yarnGauge, gaugeRowRaw: v !== undefined && v !== null ? String(v) : "" };
+      }
+      if ("gaugeRawUnit" in ygm) {
+        const u = ygm.gaugeRawUnit;
+        yarnGauge = { ...yarnGauge, gaugeRawUnit: u === "cm" ? "cm" : "in" };
+      }
+      yarnGauge.gaugeUnits = "per_inch";
+      if ("availableNeedles" in ygm) {
+        const v = ygm.availableNeedles;
+        machine = { ...machine, availableNeedles: v !== undefined && v !== null ? String(v) : "" };
+      }
+    }
+    return { ...base, style: st, fit: ft, yarnGauge, machine };
+  }
+
+  function buildCfgFromPattern(pattern) {
+    const st = pattern.style || {};
+    const ft = pattern.fit || {};
+    const y = pattern.yarnGauge || {};
+    const m = pattern.machine || {};
+
+    const cfg = {
+      knitFor: "",
+      size: "",
+      fitPreference: "",
+      shape: "straight",
+      length: "hip",
+      frontStyle: "closed",
+      neckline: "round",
+      yarnNotes: "",
+      yarnWeight: "",
+      gaugeStitchesPerInch: "",
+      gaugeRowsPerInch: "",
+      gaugeStitchRaw: "",
+      gaugeRowRaw: "",
+      gaugeRawUnit: "in",
+      availableNeedles: "",
+    };
+
+    cfg.shape = "straight";
+    cfg.length = "hip";
+    cfg.frontStyle = "closed";
+    cfg.neckline = "round";
+
+    const chartKey = normalizeSleevelessAudienceV1(getSleevelessChartAudience(pattern));
+    if (chartKey) cfg.knitFor = chartKey;
+
+    if (typeof ft.selectedSize === "string" && ft.selectedSize !== "") cfg.size = ft.selectedSize;
+
+    const ease = ft.easeChoice ?? ft.fitChoice;
+    if (ease === "close" || ease === "standard" || ease === "relaxed") cfg.fitPreference = ease;
+
+    const yarnLabel = typeof y.yarnName === "string" ? y.yarnName : typeof y.yarnNotes === "string" ? y.yarnNotes : "";
+    cfg.yarnNotes = yarnLabel;
+    if (typeof y.yarnWeight === "string") cfg.yarnWeight = y.yarnWeight;
+    if (y.stitchGauge !== undefined && y.stitchGauge !== null) cfg.gaugeStitchesPerInch = String(y.stitchGauge);
+    if (y.rowGauge !== undefined && y.rowGauge !== null) cfg.gaugeRowsPerInch = String(y.rowGauge);
+    if (y.gaugeStitchRaw != null && String(y.gaugeStitchRaw).trim() !== "")
+      cfg.gaugeStitchRaw = String(y.gaugeStitchRaw);
+    if (y.gaugeRowRaw != null && String(y.gaugeRowRaw).trim() !== "")
+      cfg.gaugeRowRaw = String(y.gaugeRowRaw);
+    if (y.gaugeRawUnit === "cm") cfg.gaugeRawUnit = "cm";
+    else cfg.gaugeRawUnit = "in";
+
+    if (m.availableNeedles !== undefined && m.availableNeedles !== null) {
+      cfg.availableNeedles = String(m.availableNeedles);
+    }
+
+    return cfg;
+  }
+
+  function setSaveStatusMessage(message) {
+    const el = document.querySelector("[data-pattern-save-status]");
+    if (el) el.textContent = message ?? "";
+  }
+
+  function formatYarnGaugeSummary(cfg) {
+    const parts = [];
+    if (cfg.yarnWeight && YARN_WEIGHT_LABELS[cfg.yarnWeight]) {
+      parts.push(YARN_WEIGHT_LABELS[cfg.yarnWeight]);
+    }
+    const core = formatGaugeDisplayCoreFromCfg(cfg);
+    if (core) parts.push(`Gauge: ${core}`);
+    const nd = String(cfg.availableNeedles || "").trim();
+    if (nd) parts.push(`${nd} needles`);
+    return parts.length ? parts.join(" · ") : "";
+  }
+
+  function renderSummary(_cfg, root) {
+    const cfg = buildCfgFromPattern(mergedPatternForBuilder(getCurrentPattern()));
+    const sentenceEl = root.querySelector("#garment-config-so-far-sentence");
+    if (sentenceEl) {
+      sentenceEl.textContent = buildYarnSoFarSummaryLine(cfg, root);
+    }
+    const builderRoot = document.getElementById("sleeveless-yarn-builder");
+    if (builderRoot) syncYarnHeaderSummaries(builderRoot, cfg);
+    void renderYarnSummaryAdjustmentsAsync(root);
+  }
+
+  async function renderYarnSummaryAdjustmentsAsync(root) {
+    const gen = ++yarnSummaryRenderGen;
+    await ensureSweaterChartsLoaded();
+    if (gen !== yarnSummaryRenderGen) return;
+
+    const cfg = buildCfgFromPattern(mergedPatternForBuilder(getCurrentPattern()));
+    const pattern = mergedPatternForBuilder(getCurrentPattern());
+    const patternData = getPatternData();
+
+    const { snap, defaultMeasurements } = getMeasurementSnapshotForSummary(cfg, pattern, patternData);
+    const adjHtml = formatEditedAdjustmentsHtml(snap, defaultMeasurements);
+    const adjWrap = root.querySelector("[data-yarn-summary-adjustments-wrap]");
+    const adjSpan = root.querySelector("[data-yarn-summary-adjustments]");
+    if (adjWrap && adjSpan) {
+      if (adjHtml) {
+        adjSpan.innerHTML = adjHtml;
+        adjWrap.removeAttribute("hidden");
+      } else {
+        adjSpan.innerHTML = "";
+        adjWrap.setAttribute("hidden", "");
+      }
+    }
+  }
+
+  function readDomIntoPartial(root) {
+    const notes = root.querySelector("#sg-yarn-notes");
+    const weight = root.querySelector("#sg-yarn-weight");
+    const st = root.querySelector(`#${GAUGE_ID_PREFIX}-stitch-gauge`);
+    const rw = root.querySelector(`#${GAUGE_ID_PREFIX}-row-gauge`);
+    const needles = root.querySelector("#sg-available-needles");
+
+    const unit = getYarnPageGaugeUnit();
+    const stitchRawDom = st instanceof HTMLInputElement ? st.value : "";
+    const rowRawDom = rw instanceof HTMLInputElement ? rw.value : "";
+    const { gaugeStitchesPerInch, gaugeRowsPerInch } = rawSwatchToPerInch(stitchRawDom, rowRawDom, unit);
+
+    return {
+      yarnNotes: notes instanceof HTMLTextAreaElement ? notes.value : "",
+      yarnWeight: weight instanceof HTMLSelectElement ? weight.value : "",
+      gaugeStitchesPerInch,
+      gaugeRowsPerInch,
+      gaugeStitchRaw: stitchRawDom,
+      gaugeRowRaw: rowRawDom,
+      gaugeRawUnit: unit,
+      availableNeedles: needles instanceof HTMLInputElement ? needles.value.trim() : "",
+    };
+  }
+
+  function applyCfgToDom(cfg, root) {
+    const notes = root.querySelector("#sg-yarn-notes");
+    const weight = root.querySelector("#sg-yarn-weight");
+    const st = root.querySelector(`#${GAUGE_ID_PREFIX}-stitch-gauge`);
+    const rw = root.querySelector(`#${GAUGE_ID_PREFIX}-row-gauge`);
+    const needles = root.querySelector("#sg-available-needles");
+
+    if (notes instanceof HTMLTextAreaElement) notes.value = cfg.yarnNotes ?? "";
+    if (weight instanceof HTMLSelectElement) {
+      const w = cfg.yarnWeight ?? "";
+      const okWeight =
+        w === "" || ["lace", "fingering", "sport", "dk", "worsted", "bulky", "other"].includes(w);
+      weight.value = okWeight ? w : "";
+    }
+
+    suppressGaugeUnitConvert = true;
+    try {
+      setYarnPageGaugeUnit(cfg.gaugeRawUnit === "cm" ? "cm" : "in");
+
+      const displayBasis = cfg.gaugeRawUnit === "cm" ? "cm" : "in";
+      const rawS = cfg.gaugeStitchRaw != null ? String(cfg.gaugeStitchRaw) : "";
+      const rawR = cfg.gaugeRowRaw != null ? String(cfg.gaugeRowRaw) : "";
+
+      if (import.meta.env.DEV) {
+        console.debug("[sg-yarn] applyCfgToDom gauge fields", {
+          unit: displayBasis,
+          gaugeStitchRaw: rawS,
+          gaugeRowRaw: rawR,
+          gaugeStitchesPerInch: cfg.gaugeStitchesPerInch,
+          gaugeRowsPerInch: cfg.gaugeRowsPerInch,
+        });
+      }
+
+      if (st instanceof HTMLInputElement) {
+        if (rawS.trim() !== "") st.value = rawS;
+        else {
+          const spi = parseFloat(String(cfg.gaugeStitchesPerInch ?? "").trim());
+          st.value =
+            Number.isFinite(spi) && spi > 0
+              ? String(displayBasis === "cm" ? Math.round((spi / 2.54) * 10) : Math.round(spi * 4))
+              : "";
+        }
+      }
+      if (rw instanceof HTMLInputElement) {
+        if (rawR.trim() !== "") rw.value = rawR;
+        else {
+          const rpi = parseFloat(String(cfg.gaugeRowsPerInch ?? "").trim());
+          rw.value =
+            Number.isFinite(rpi) && rpi > 0
+              ? String(displayBasis === "cm" ? Math.round((rpi / 2.54) * 10) : Math.round(rpi * 4))
+              : "";
+        }
+      }
+    } finally {
+      suppressGaugeUnitConvert = false;
+    }
+
+    if (needles instanceof HTMLInputElement) needles.value = cfg.availableNeedles ?? "";
+  }
+
+  function persistYarnFromDom(root, { silent } = {}) {
+    const partial = readDomIntoPartial(root);
+    saveCurrentPattern({
+      yarnGauge: {
+        yarnName: partial.yarnNotes,
+        yarnWeight: partial.yarnWeight,
+        stitchGauge: partial.gaugeStitchesPerInch,
+        rowGauge: partial.gaugeRowsPerInch,
+        gaugeUnits: "per_inch",
+        gaugeStitchRaw: partial.gaugeStitchRaw,
+        gaugeRowRaw: partial.gaugeRowRaw,
+        gaugeRawUnit: partial.gaugeRawUnit,
+      },
+      machine: {
+        availableNeedles: partial.availableNeedles,
+      },
+    });
+    savePatternData("yarnGaugeMachine", partial);
+    if (!silent) {
+      notifyPatternSaved(setSaveStatusMessage);
+      const patternData = getPatternData();
+      renderPatternBuilderValidation(patternData);
+      const cfg = buildCfgFromPattern(mergedPatternForBuilder(getCurrentPattern()));
+      renderSummary(cfg, root);
+      void refreshNeckShoulderChart();
+    }
+  }
+
+  function activateYarnFromStorage() {
+    const root = document.getElementById("sleeveless-yarn-builder");
+    if (!root) return;
+    const pattern = mergedPatternForBuilder(getCurrentPattern());
+    const cfg = buildCfgFromPattern(pattern);
+    applyCfgToDom(cfg, root);
+    const patternData = getPatternData();
+    renderPatternBuilderValidation(patternData);
+    renderSummary(cfg, root);
+    void refreshNeckShoulderChart();
+    setOpenYarnSection(root, getDefaultOpenYarnSectionKeyFromPartial(readDomIntoPartial(root)));
+  }
+
+  window.addEventListener("kbm:sleeveless-before-step-change", (e) => {
+    if (e.detail?.from !== "yarn") return;
+    const root = document.getElementById("sleeveless-yarn-builder");
+    if (!root) return;
+    persistYarnFromDom(root, { silent: true });
+  });
+
+  window.addEventListener("kbm:sleeveless-after-step-change", (e) => {
+    if (e.detail?.step !== "yarn") return;
+    activateYarnFromStorage();
+  });
+
+  function bind(root) {
+    const persistFromDom = () => persistYarnFromDom(root, {});
+
+    const persistInput = (event) => {
+      event.stopPropagation();
+      persistFromDom();
+    };
+
+    root.querySelector("#sg-yarn-notes")?.addEventListener("input", persistInput);
+    root.querySelector("#sg-yarn-weight")?.addEventListener("change", persistInput);
+    root.querySelector(`#${GAUGE_ID_PREFIX}-stitch-gauge`)?.addEventListener("input", persistInput);
+    root.querySelector(`#${GAUGE_ID_PREFIX}-row-gauge`)?.addEventListener("input", persistInput);
+    root.querySelector("#sg-available-needles")?.addEventListener("input", persistInput);
+
+    window.addEventListener("kbm:units-change", (e) => {
+      if (suppressGaugeUnitConvert) return;
+      const u = e.detail?.unit;
+      if (u !== "in" && u !== "cm") return;
+      /* Do not rewrite stitch/row inputs — only persist yarnNotes/gauge raw + new unit from DOM. */
+      persistFromDom();
+    });
+
+    root.querySelectorAll("[data-needle-preset]").forEach((btn) => {
+      btn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const v = btn.getAttribute("data-needle-preset");
+        const input = root.querySelector("#sg-available-needles");
+        if (!v || !(input instanceof HTMLInputElement)) return;
+        input.value = v;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+    });
+
+    bindYarnAccordion(root);
+  }
+
+  function init() {
+    const root = document.getElementById("sleeveless-yarn-builder");
+    if (!root) return;
+
+    const pattern = mergedPatternForBuilder(getCurrentPattern());
+    if (import.meta.env.DEV) {
+      const st = pattern.style || {};
+      const ft = pattern.fit || {};
+      console.info("[sleeveless-yarn] summary source recipientCategory=", st.recipientCategory, "selectedSize=", ft.selectedSize);
+    }
+    const cfg = buildCfgFromPattern(pattern);
+    applyCfgToDom(cfg, root);
+    renderPatternBuilderValidation(getPatternData());
+    renderSummary(cfg, root);
+    void refreshNeckShoulderChart();
+
+    bind(root);
+    setOpenYarnSection(root, getDefaultOpenYarnSectionKeyFromPartial(readDomIntoPartial(root)));
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => void init());
+  } else {
+    void init();
+  }
+</script>

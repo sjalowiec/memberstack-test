@@ -459,10 +459,10 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
 
     // Chart metadata for titles and icons
     const CHART_METADATA = {
-      sweaters_men: { label: 'Sweaters - Men', icon: '/images/sweater.svg', hash: 'sweaters-men-chart' },
-      sweaters_misses: { label: 'Sweaters - Women', icon: '/images/sweater.svg', hash: 'sweaters-misses-chart' },
-      sweaters_plus: { label: 'Sweaters - Plus', icon: '/images/sweater.svg', hash: 'sweaters-plus-chart' },
-      sweaters_kids: { label: 'Sweaters - Kids', icon: '/images/sweater.svg', hash: 'sweaters-kids-chart' },
+      sweaters_men: { label: "Sweaters - Men's", icon: '/images/sweater.svg', hash: 'sweaters-men-chart' },
+      sweaters_misses: { label: "Sweaters - Women's", icon: '/images/sweater.svg', hash: 'sweaters-misses-chart' },
+      sweaters_plus: { label: 'Sweaters - Plus Size', icon: '/images/sweater.svg', hash: 'sweaters-plus-chart' },
+      sweaters_kids: { label: "Sweaters - Kids'", icon: '/images/sweater.svg', hash: 'sweaters-kids-chart' },
       sweaters_baby: { label: 'Sweaters - Baby', icon: '/images/sweater.svg', hash: 'sweaters-baby-chart' },
       hats: { label: 'Hats Sizing Chart', icon: '/images/hat.svg', hash: 'hats-chart' },
       mittens: { label: 'Mittens Sizing Chart', icon: '/images/mitten.svg', hash: 'mittens-chart' },
@@ -498,6 +498,15 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
       sweaters_plus: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'garment_back_length', 'hip', 'sleeve_length'],
       sweaters_kids: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'garment_back_length', 'hip', 'sleeve_length'],
       sweaters_baby: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'garment_back_length', 'hip', 'sleeve_length']
+    };
+
+    /** Display names for sweater sub-chart keys (matches pattern builder Reference terminology). */
+    const SWEATER_CHART_DROPDOWN_LABELS = {
+      men: "Men's",
+      misses: "Women's",
+      plus: 'Plus Size',
+      kids: "Kids'",
+      baby: 'Baby',
     };
 
     // Custom header mappings for specific chart types
@@ -546,7 +555,8 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
         // Check if this is a sweater chart - if so, add dropdown
         if (currentType.startsWith('sweaters_')) {
           const subCategory = currentType.replace('sweaters_', '');
-          const formattedSubCategory = formatLabel(subCategory);
+          const sweaterLabel =
+            SWEATER_CHART_DROPDOWN_LABELS[subCategory] || formatLabel(subCategory);
           
           chartHeader.innerHTML = `
             <h2 id="${metadata.hash}">
@@ -554,12 +564,12 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
               Sweaters – 
               <div class="chart-header-dropdown">
                 <button class="chart-header-dropdown-button">
-${subCategory === 'misses' ? 'Women' : formattedSubCategory} <span class="chart-header-dropdown-caret">▾</span>                </button>
+${sweaterLabel} <span class="chart-header-dropdown-caret">▾</span>                </button>
                 <div class="chart-header-dropdown-content">
-                  <button data-type="sweaters_men">Men</button>
-                  <button data-type="sweaters_misses">Women</button>
-                  <button data-type="sweaters_plus">Plus</button>
-                  <button data-type="sweaters_kids">Kids</button>
+                  <button data-type="sweaters_men">Men's</button>
+                  <button data-type="sweaters_misses">Women's</button>
+                  <button data-type="sweaters_plus">Plus Size</button>
+                  <button data-type="sweaters_kids">Kids'</button>
                   <button data-type="sweaters_baby">Baby</button>
                 </div>
               </div>

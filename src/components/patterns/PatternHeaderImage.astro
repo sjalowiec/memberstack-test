@@ -6,9 +6,11 @@ interface Props {
   alt: string;
   caption?: string;
   class?: string;
+  /** When false, hides the “View larger” hint under the image (lightbox still works). */
+  showZoomHint?: boolean;
 }
 
-const { src, alt, caption, class: className } = Astro.props;
+const { src, alt, caption, class: className, showZoomHint = true } = Astro.props;
 
 const rootId = `pattern-header-image-${randomUUID()}`;
 const dialogId = `pattern-header-lightbox-${randomUUID()}`;
@@ -37,25 +39,29 @@ const titleId = `pattern-header-lightbox-title-${randomUUID()}`;
         draggable="false"
       />
     </span>
-    <span class="pattern-header-image__hint" aria-hidden="true">
-      <svg
-        class="pattern-header-image__hint-icon"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        aria-hidden="true"
-        focusable="false"
-      >
-        <circle cx="11" cy="11" r="7"></circle>
-        <path d="M21 21l-4.3-4.3"></path>
-      </svg>
-      <span class="pattern-header-image__hint-text">View larger</span>
-    </span>
+    {
+      showZoomHint && (
+        <span class="pattern-header-image__hint" aria-hidden="true">
+          <svg
+            class="pattern-header-image__hint-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="M21 21l-4.3-4.3"></path>
+          </svg>
+          <span class="pattern-header-image__hint-text">View larger</span>
+        </span>
+      )
+    }
   </button>
   {
     caption && (

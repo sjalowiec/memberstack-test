@@ -3,10 +3,19 @@
  * Canonical store: localStorage key `kbm_current_pattern`.
  */
 
+import { swatchCountFromPerInchForDisplay } from "./gaugeDisplayFormat";
+
 export const PATTERN_STORAGE_KEY = "kbm_current_pattern";
 
 /** Older flat blob used across sleeveless pages — preserved via mirror writes for compatibility. */
 export const LEGACY_GARMENT_CONFIG_KEY = "sleeveless-garment-config";
+
+/** Combined builder sections for DevTools / unified reads (`style`, `fit`, `yarnGaugeMachine`). */
+export const PATTERN_BUILDER_DATA_KEY = "patternBuilderData";
+
+/** Query flag on `/patterns/sleeveless-garment` for post–Start Over reset (strip after handling). */
+export const SLEEVELESS_BUILDER_RESET_PARAM = "reset";
+export const SLEEVELESS_BUILDER_RESET_VALUE = "1";
 
 const LEGACY_STORAGE_CANDIDATES = [
   LEGACY_GARMENT_CONFIG_KEY,
@@ -45,6 +54,48 @@ function nowIso(): string {
 
 export function getPatternStorageKey(): string {
   return PATTERN_STORAGE_KEY;
+}
+
+export function getPatternData(): Record<string, unknown> {
+  if (typeof localStorage === "undefined") return {};
+  const existing = localStorage.getItem(PATTERN_BUILDER_DATA_KEY);
+  if (!existing) return {};
+  try {
+    const parsed = JSON.parse(existing) as unknown;
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed as Record<string, unknown>;
+    }
+  } catch {
+    /* ignore */
+  }
+  return {};
+}
+
+export function savePatternData(section: string, data: Record<string, unknown>): void {
+  if (typeof localStorage === "undefined") return;
+  const current = getPatternData();
+  const prev = current[section];
+  const sectionBase =
+    prev && typeof prev === "object" && !Array.isArray(prev) ? (prev as Record<string, unknown>) : {};
+
+  const updated: Record<string, unknown> = {
+    ...current,
+    [section]: {
+      ...sectionBase,
+      ...data,
+    },
+    updatedAt: new Date().toISOString(),
+    createdAt:
+      typeof current.createdAt === "string" && current.createdAt.length > 0
+        ? current.createdAt
+        : new Date().toISOString(),
+  };
+
+  try {
+    localStorage.setItem(PATTERN_BUILDER_DATA_KEY, JSON.stringify(updated));
+  } catch {
+    /* quota */
+  }
 }
 
 export function generatePatternId(): string {
@@ -103,12 +154,52 @@ export const SLEEVELESS_CHART_AUDIENCES = ["misses", "plus", "men", "kids", "bab
 
 export type SleevelessChartAudience = (typeof SLEEVELESS_CHART_AUDIENCES)[number];
 
+/**
+ * User-facing names for sweater chart keys (Reference page + pattern builder).
+ * Internal keys stay `misses` / `men` / etc.
+ */
+export const SLEEVELESS_CHART_AUDIENCE_LABELS: Record<SleevelessChartAudience, string> = {
+  misses: "Women's",
+  plus: "Plus Size",
+  men: "Men's",
+  kids: "Kids'",
+  baby: "Baby",
+};
+
+/** Intro line under the size chart (Fit + Yarn steps); first segment matches {@link SLEEVELESS_CHART_AUDIENCE_LABELS} + " sweater chart". */
+export const SLEEVELESS_CHART_INTRO: Record<SleevelessChartAudience, string> = {
+  misses:
+    "Women's sweater chart — pick the row that best matches the wearer. (Finished measurements and ease will hook up later.)",
+  plus:
+    "Plus Size sweater chart — pick the row that best matches the wearer. (Finished measurements and ease will hook up later.)",
+  men: "Men's sweater chart — pick the row that best matches the wearer. (Finished measurements and ease will hook up later.)",
+  kids: "Kids' sweater chart — pick the row that best matches the child. (Finished measurements and ease will hook up later.)",
+  baby: "Baby sweater chart — pick the row that best matches the child. (Finished measurements and ease will hook up later.)",
+};
+
+export function getSleevelessChartAudienceLabel(audience: string): string {
+  if ((SLEEVELESS_CHART_AUDIENCES as readonly string[]).includes(audience)) {
+    return SLEEVELESS_CHART_AUDIENCE_LABELS[audience as SleevelessChartAudience];
+  }
+  return audience;
+}
+
 /** Normalize legacy / stray casing to a stable audience key, or "". */
 export function normalizeSleevelessAudience(raw: unknown): string {
   if (raw === undefined || raw === null) return "";
   const s = String(raw).trim().toLowerCase();
   if (s === "women" || s === "woman") return "misses";
   if ((SLEEVELESS_CHART_AUDIENCES as readonly string[]).includes(s)) return s;
+  return "";
+}
+
+/**
+ * Sleeveless garment builder V1: selectable charts only (Plus maps to Women's for stored legacy sessions).
+ */
+export function normalizeSleevelessAudienceV1(raw: unknown): string {
+  let s = normalizeSleevelessAudience(raw);
+  if (s === "plus") return "misses";
+  if (s === "misses" || s === "men" || s === "kids" || s === "baby") return s;
   return "";
 }
 
@@ -170,7 +261,7 @@ function migrateLegacyFlat(legacy: Record<string, unknown>): Partial<SleevelessP
 
   let kf = legacy.knitFor;
   if (kf === "women") kf = "misses";
-  if (typeof kf === "string") {
+  if (typeof kf === "string" && kf.trim() !== "") {
     style.recipientCategory = kf;
     fit.sizingChart = kf;
   }
@@ -180,7 +271,12 @@ function migrateLegacyFlat(legacy: Record<string, unknown>): Partial<SleevelessP
     style.bodyShape = shape === "gathered" ? "straight" : shape;
   }
 
-  if (legacy.length === "top" || legacy.length === "tunic" || legacy.length === "dress") {
+  if (
+    legacy.length === "top" ||
+    legacy.length === "tunic" ||
+    legacy.length === "dress" ||
+    legacy.length === "hip"
+  ) {
     style.length = legacy.length;
   }
   if (legacy.frontStyle === "closed" || legacy.frontStyle === "open") {
@@ -214,6 +310,25 @@ function migrateLegacyFlat(legacy: Record<string, unknown>): Partial<SleevelessP
   }
   yarnGauge.gaugeUnits = "per_inch";
 
+  const legacyRawS = typeof legacy.gaugeStitchRaw === "string" ? legacy.gaugeStitchRaw.trim() : "";
+  const legacyRawR = typeof legacy.gaugeRowRaw === "string" ? legacy.gaugeRowRaw.trim() : "";
+  const legacySwatchBasis =
+    legacy.gaugeRawUnit === "cm" || legacy.gaugeRawUnit === "in" ? legacy.gaugeRawUnit : "in";
+
+  if (legacyRawS !== "" && legacyRawR !== "") {
+    yarnGauge.gaugeStitchRaw = legacyRawS;
+    yarnGauge.gaugeRowRaw = legacyRawR;
+    yarnGauge.gaugeRawUnit = legacySwatchBasis;
+  } else if (yarnGauge.stitchGauge !== undefined && yarnGauge.rowGauge !== undefined) {
+    const spi = parseFloat(String(yarnGauge.stitchGauge));
+    const rpi = parseFloat(String(yarnGauge.rowGauge));
+    if (Number.isFinite(spi) && spi > 0 && Number.isFinite(rpi) && rpi > 0) {
+      yarnGauge.gaugeStitchRaw = swatchCountFromPerInchForDisplay(spi, legacySwatchBasis);
+      yarnGauge.gaugeRowRaw = swatchCountFromPerInchForDisplay(rpi, legacySwatchBasis);
+      yarnGauge.gaugeRawUnit = legacySwatchBasis;
+    }
+  }
+
   if (legacy.availableNeedles !== undefined && legacy.availableNeedles !== null && String(legacy.availableNeedles) !== "") {
     machine.availableNeedles = String(legacy.availableNeedles);
   }
@@ -246,6 +361,10 @@ function persistCanonical(pattern: SleevelessPatternRecord): void {
 /**
  * Writes the legacy flat JSON shape still expected by any stale scripts / bookmarks.
  * Keeps knitFor, yarnNotes, gauge* field names aligned with previous builders.
+ *
+ * Important: do **not** invent garment design defaults here (straight/top/closed/round). Empty canonical
+ * style must mirror as empty strings so {@link migrateLegacyFlat} does not resurrect phantom choices
+ * when `kbm_current_pattern` is recreated or missing.
  */
 export function mirrorLegacyGarmentConfigFlat(pattern: SleevelessPatternRecord): void {
   if (typeof localStorage === "undefined") return;
@@ -256,7 +375,17 @@ export function mirrorLegacyGarmentConfigFlat(pattern: SleevelessPatternRecord):
 
   const recipientCategory = typeof style.recipientCategory === "string" ? style.recipientCategory : "";
   const bodyShape =
-    style.bodyShape === "aline" || style.bodyShape === "straight" ? style.bodyShape : "straight";
+    style.bodyShape === "aline" || style.bodyShape === "straight" ? style.bodyShape : "";
+  const length =
+    style.length === "top" ||
+    style.length === "tunic" ||
+    style.length === "dress" ||
+    style.length === "hip"
+      ? style.length
+      : "";
+  const frontStyle =
+    style.frontStyle === "closed" || style.frontStyle === "open" ? style.frontStyle : "";
+  const neckline = style.neckline === "round" || style.neckline === "v" ? style.neckline : "";
 
   const ease =
     typeof fit.easeChoice === "string"
@@ -275,9 +404,9 @@ export function mirrorLegacyGarmentConfigFlat(pattern: SleevelessPatternRecord):
   const flat: Record<string, unknown> = {
     knitFor: recipientCategory,
     shape: bodyShape,
-    length: typeof style.length === "string" ? style.length : "top",
-    frontStyle: typeof style.frontStyle === "string" ? style.frontStyle : "closed",
-    neckline: typeof style.neckline === "string" ? style.neckline : "round",
+    length,
+    frontStyle,
+    neckline,
     size: typeof fit.selectedSize === "string" ? fit.selectedSize : "",
     fitPreference:
       ease === "close" || ease === "standard" || ease === "relaxed" ? ease : "",
@@ -293,6 +422,15 @@ export function mirrorLegacyGarmentConfigFlat(pattern: SleevelessPatternRecord):
     yarn.stitchGauge !== undefined && yarn.stitchGauge !== null ? String(yarn.stitchGauge) : "";
   flat.gaugeRowsPerInch =
     yarn.rowGauge !== undefined && yarn.rowGauge !== null ? String(yarn.rowGauge) : "";
+  flat.gaugeStitchRaw =
+    yarn.gaugeStitchRaw !== undefined && yarn.gaugeStitchRaw !== null
+      ? String(yarn.gaugeStitchRaw)
+      : "";
+  flat.gaugeRowRaw =
+    yarn.gaugeRowRaw !== undefined && yarn.gaugeRowRaw !== null ? String(yarn.gaugeRowRaw) : "";
+  if (yarn.gaugeRawUnit === "cm" || yarn.gaugeRawUnit === "in") {
+    flat.gaugeRawUnit = yarn.gaugeRawUnit;
+  }
   flat.availableNeedles =
     machine.availableNeedles !== undefined && machine.availableNeedles !== null
       ? String(machine.availableNeedles)
@@ -423,6 +561,28 @@ export function clearCurrentPattern(): void {
     localStorage.removeItem(PATTERN_STORAGE_KEY);
   } catch {
     /* ignore */
+  }
+}
+
+/** All localStorage keys written by the sleeveless pattern builder (canonical, section blob, legacy mirrors). */
+const SLEEVELESS_PATTERN_BUILDER_STORAGE_KEYS: readonly string[] = [
+  PATTERN_STORAGE_KEY,
+  PATTERN_BUILDER_DATA_KEY,
+  ...LEGACY_STORAGE_CANDIDATES,
+];
+
+/**
+ * Removes every sleeveless pattern builder key from localStorage. Does not remove other app keys.
+ * Use for “start over” / reset; redirect to `/patterns/sleeveless-garment?reset=1` so the garment page can clear UI state and strip the query via `history.replaceState`.
+ */
+export function clearSleevelessPatternBuilderData(): void {
+  if (typeof localStorage === "undefined") return;
+  for (const key of SLEEVELESS_PATTERN_BUILDER_STORAGE_KEYS) {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      /* ignore */
+    }
   }
 }
 

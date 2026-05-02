@@ -10,6 +10,8 @@ interface Props {
   hideInspiration?: boolean;
   /** Extra classes on the outer `.pattern-tabs` wrapper (e.g. `pattern-tabs-scope`). */
   rootClass?: string;
+  /** Which tab is visible on first paint (`pattern` for dedicated pattern pages like sleeveless). */
+  defaultTab?: "build" | "pattern";
 }
 
 const {
@@ -19,12 +21,16 @@ const {
   hideShare = false,
   hideInspiration = false,
   rootClass = "",
+  defaultTab = "build",
 } = Astro.props;
+
+const buildTabActive = defaultTab === "build";
+const patternTabActive = defaultTab === "pattern";
 ---
 
 <div class:list={["pattern-tabs", rootClass]}>
   <div class="pattern-tab-nav">
-    <button type="button" class="tab-btn active" data-tab="build">
+    <button type="button" class:list={["tab-btn", buildTabActive && "active"]} data-tab="build">
       <span class="tab-icon" aria-hidden="true">⚙️</span>
       <span class="tab-label">Build</span>
     </button>
@@ -33,7 +39,7 @@ const {
         <button
           type="button"
           id={patternTabButtonId}
-          class:list={["tab-btn", patternTabDisabled && "is-disabled"]}
+          class:list={["tab-btn", patternTabActive && "active", patternTabDisabled && "is-disabled"]}
           data-tab="pattern"
           aria-disabled={patternTabDisabled ? "true" : undefined}
         >
@@ -61,12 +67,12 @@ const {
   </div>
 
   <div class="pattern-tab-content">
-    <div class="tab-panel active" id="tab-build">
+    <div class:list={["tab-panel", buildTabActive && "active"]} id="tab-build">
       <slot name="build" />
     </div>
     {
       !hidePattern && (
-        <div class="tab-panel" id="tab-pattern">
+        <div class:list={["tab-panel", patternTabActive && "active"]} id="tab-pattern">
           <slot name="pattern" />
         </div>
       )

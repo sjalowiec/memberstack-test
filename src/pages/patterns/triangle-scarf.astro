@@ -77,11 +77,10 @@ const toolHref = "/tools/triangle-v2";
         <div class="calculator-card ts-builder-inputs">
           <PatternTabs rootClass="pattern-tabs-scope">
             <div slot="build" class="ts-tab-slot-build">
-              <h2 class="ts-pattern-panel-title">Your measurements</h2>
-              <div class="section-header-with-toggle ts-unit-row">
-                <span class="ts-unit-label">Units</span>
-                <UnitToggle />
+              <div class="pattern-builder-unit-row no-print" style="margin-bottom: 12px;">
+                <UnitToggle id="triangle-scarf" />
               </div>
+              <h2 class="ts-pattern-panel-title">Your measurements</h2>
 
               <form id="ts-pattern-form" class="ts-pattern-form">
                 <div class="ts-size-presets no-print">
@@ -336,20 +335,6 @@ const toolHref = "/tools/triangle-v2";
       font-size: 1.35rem;
       color: var(--kbm-green);
       font-weight: 800;
-    }
-
-    .ts-unit-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-
-    .ts-unit-label {
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: #374151;
     }
 
     .ts-size-presets {
@@ -708,7 +693,7 @@ const toolHref = "/tools/triangle-v2";
       .ts-pattern-form,
       .ts-notation-key,
       .ts-yarn-section,
-      .section-header-with-toggle {
+      .pattern-builder-unit-row {
         display: none !important;
       }
 
@@ -820,7 +805,7 @@ const toolHref = "/tools/triangle-v2";
     }
 
     function resetUnitToggleToDefault() {
-      (document.getElementById("unit-btn-inches") as HTMLButtonElement | null)?.click();
+      (document.getElementById("triangle-scarf-btn-inches") as HTMLButtonElement | null)?.click();
     }
 
     function clearPresetSelection() {

@@ -125,6 +125,8 @@ const isInchesActive = defaultUnit === 'in';
     }
 
     function setUnit(unit) {
+      const previousUnit = hiddenInput && (hiddenInput.value === 'cm' ? 'cm' : 'in');
+
       const isInches = unit === 'in';
       
       // Update button states
@@ -141,9 +143,9 @@ const isInchesActive = defaultUnit === 'in';
       // Save preference (hat-unit: inches/cm for WizardUtils.createUnitStore parity)
       persistUiUnit(unit);
       
-      // Dispatch event for page-level coordination
+      // Dispatch event for page-level coordination (previousUnit: value before this change)
       window.dispatchEvent(new CustomEvent('kbm:units-change', { 
-        detail: { unit } 
+        detail: { unit, previousUnit } 
       }));
     }
 

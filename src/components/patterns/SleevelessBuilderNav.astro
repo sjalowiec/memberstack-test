@@ -1,0 +1,300 @@
+---
+import UnitToggle from "../wizards/UnitToggle.astro";
+
+export type SleevelessBuilderNavStep = "style" | "fit" | "yarn";
+
+export interface Props {
+  currentStep: SleevelessBuilderNavStep;
+  /** In-tab step switching on the unified pattern page (no full navigation). */
+  embedded?: boolean;
+  /** Inches / cm control on the right side of the step pill row. */
+  showUnitToggle?: boolean;
+}
+
+const { currentStep, embedded = false, showUnitToggle = true } = Astro.props;
+
+const steps: { id: SleevelessBuilderNavStep; label: string; href: string }[] = [
+  { id: "style", label: "Design", href: "/patterns/sleeveless-garment" },
+  { id: "fit", label: "Fit", href: "/patterns/sleeveless-fit" },
+  { id: "yarn", label: "Yarn & Gauge", href: "/patterns/sleeveless-yarn-gauge" },
+];
+---
+
+<div class="sg-builder-nav-row no-print">
+  <nav
+    class="sg-builder-nav"
+    data-sg-builder-nav
+    data-current-step={currentStep}
+    aria-label="Sleeveless pattern builder steps"
+  >
+    <ol class="sg-builder-nav__list" role="list">
+      {
+        steps.map((s, i) => (
+          <li
+            class:list={["sg-builder-nav__item", { active: currentStep === s.id }]}
+            data-step={s.id}
+          >
+            {i > 0 && <span class="sg-builder-nav__rule" aria-hidden="true" />}
+            {embedded ? (
+              <button
+                type="button"
+                class:list={[
+                  "sg-builder-nav__link",
+                  { "is-current": currentStep === s.id },
+                ]}
+                data-sg-build-go={s.id}
+                aria-current={currentStep === s.id ? "page" : undefined}
+              >
+                <span class="sg-builder-nav__pill">{s.label}</span>
+              </button>
+            ) : (
+              <a
+                class:list={[
+                  "sg-builder-nav__link",
+                  { "is-current": currentStep === s.id },
+                ]}
+                href={s.href}
+                aria-current={currentStep === s.id ? "page" : undefined}
+              >
+                <span class="sg-builder-nav__pill">{s.label}</span>
+              </a>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+  </nav>
+  {
+    showUnitToggle && (
+      <div class="sg-builder-nav-row__units">
+        <UnitToggle id="sleeveless" />
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .sg-builder-nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    flex-wrap: wrap;
+    max-width: 800px;
+    margin: 0 auto 1.25rem;
+    padding: 0 1rem;
+  }
+
+  .sg-builder-nav-row .sg-builder-nav {
+    --sg-rule-h: 3px;
+    --sg-connector-w: 48px;
+    margin: 0;
+    padding: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .sg-builder-nav-row__units {
+    flex: 0 0 auto;
+  }
+
+  .sg-builder-nav__list {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0;
+    width: fit-content;
+    max-width: min(100%, 520px);
+    margin-inline: 0;
+    margin-block: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sg-builder-nav__item {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+
+  /* Connector runs between pill centers (items align vertically with pills) */
+  .sg-builder-nav__rule {
+    flex: 0 0 auto;
+    width: var(--sg-connector-w);
+    height: var(--sg-rule-h);
+    margin: 0;
+    background: rgba(55, 65, 81, 0.2);
+    border-radius: 2px;
+    align-self: center;
+  }
+
+  .sg-builder-nav__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 999px;
+    transition:
+      opacity 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  button.sg-builder-nav__link {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .sg-builder-nav__link:hover .sg-builder-nav__pill {
+    border-color: #9ca3af;
+  }
+
+  .sg-builder-nav__link:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 3px;
+    border-radius: 999px;
+  }
+
+  .sg-builder-nav__link.is-upcoming {
+    opacity: 0.72;
+  }
+
+  .sg-builder-nav__pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 16px;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    color: #374151;
+    line-height: 1;
+    white-space: nowrap;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease,
+      border-color 0.15s ease;
+  }
+
+  .sg-builder-nav__item.active .sg-builder-nav__pill,
+  .sg-builder-nav__link[aria-current="page"] .sg-builder-nav__pill {
+    background: var(--sg-accent, #c95f4a);
+    color: #fff;
+    border-color: var(--sg-accent, #c95f4a);
+  }
+
+  .sg-builder-nav__link.is-complete:not(.is-current) .sg-builder-nav__pill {
+    border-color: var(--kbm-green, #52682d);
+    color: var(--kbm-green, #52682d);
+    background: rgba(82, 104, 45, 0.08);
+  }
+
+  @media (max-width: 576px) {
+    .sg-builder-nav-row .sg-builder-nav {
+      --sg-connector-w: 20px;
+    }
+
+    .sg-builder-nav-row__units {
+      margin-left: auto;
+    }
+
+    .sg-builder-nav__pill {
+      padding: 6px 10px;
+      font-size: clamp(0.7rem, 2.8vw, 0.85rem);
+    }
+
+    .sg-builder-nav__list {
+      max-width: 100%;
+      width: fit-content;
+      padding-bottom: 0;
+    }
+  }
+</style>
+
+<script>
+  import {
+    isSleevelessBuilderNavFitComplete,
+    isSleevelessBuilderNavStyleComplete,
+    isSleevelessBuilderNavYarnComplete,
+  } from "../../lib/patterns/patternBuilderValidation.ts";
+  import { getPatternData, PATTERN_BUILDER_DATA_KEY } from "../../lib/patterns/patternStorage.ts";
+
+  const ORDER = ["style", "fit", "yarn"] as const;
+
+  function stepComplete(id: (typeof ORDER)[number], data: Record<string, unknown>): boolean {
+    if (id === "style") return isSleevelessBuilderNavStyleComplete(data);
+    if (id === "fit") return isSleevelessBuilderNavFitComplete(data);
+    if (id === "yarn") return isSleevelessBuilderNavYarnComplete(data);
+    return false;
+  }
+
+  function syncNav(root: HTMLElement): void {
+    const current = root.getAttribute("data-current-step") as (typeof ORDER)[number] | null;
+    if (!current || !ORDER.includes(current)) return;
+
+    const curIdx = ORDER.indexOf(current);
+    const data = getPatternData();
+
+    root.querySelectorAll<HTMLElement>("[data-step]").forEach((item) => {
+      const stepId = item.getAttribute("data-step") as (typeof ORDER)[number] | null;
+      if (!stepId || !ORDER.includes(stepId)) return;
+
+      const link = item.querySelector<HTMLAnchorElement | HTMLButtonElement>(".sg-builder-nav__link");
+      if (!link) return;
+
+      const idx = ORDER.indexOf(stepId);
+      item.classList.toggle("active", stepId === current);
+      link.classList.toggle("is-current", stepId === current);
+      link.classList.toggle("is-upcoming", idx > curIdx);
+
+      const showDone = stepComplete(stepId, data);
+      link.classList.toggle("is-complete", showDone);
+      if (stepId === current) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    });
+  }
+
+  function bind(): void {
+    document.querySelectorAll<HTMLElement>("[data-sg-builder-nav]").forEach((root) => {
+      syncNav(root);
+    });
+  }
+
+  function onStorage(ev: StorageEvent): void {
+    if (ev.key !== PATTERN_BUILDER_DATA_KEY) return;
+    bind();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bind);
+  } else {
+    bind();
+  }
+
+  window.addEventListener("storage", onStorage);
+  window.addEventListener("pageshow", bind);
+  window.addEventListener("focus", bind);
+
+  window.addEventListener("kbm:sleeveless-build-step", (ev: Event) => {
+    const step = (ev as CustomEvent<{ step: (typeof ORDER)[number] }>).detail?.step;
+    if (!step || !ORDER.includes(step)) return;
+    document.querySelectorAll<HTMLElement>("[data-sg-builder-nav]").forEach((root) => {
+      root.setAttribute("data-current-step", step);
+      syncNav(root);
+    });
+  });
+</script>

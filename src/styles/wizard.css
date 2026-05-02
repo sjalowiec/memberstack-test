@@ -63,6 +63,63 @@
   text-align: center;
 }
 
+/* Sleeveless builder panels: compact header, no stacked paragraph margins */
+.sg-build-panel .page-header {
+  margin-bottom: 10px;
+  padding-bottom: 0; /* prevent extra internal spacing */
+}
+
+.sg-build-panel .page-header p {
+  margin: 0;
+  line-height: 1.4; /* tighten text block slightly */
+}
+
+.sg-build-panel .page-header p + p {
+  margin-top: 4px;
+}
+
+/* Unavailable builder options — ribbon via ::after, no extra markup */
+.sg-option.is-coming-next {
+  position: relative;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.sg-option.is-coming-next::after {
+  content: "Coming next";
+  position: absolute;
+  top: 10px;
+  right: -40px;
+  background: #c2614e;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 50px;
+  transform: rotate(35deg);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  z-index: 2;
+}
+
+.sg-build-panel .page-header + * {
+  margin-top: 10px;
+}
+
+.sg-helper-text {
+  font-size: 13px;
+  color: #888;
+  margin-top: 4px;
+  margin-bottom: 12px;
+}
+
+/* Sleeveless builder: title above main form sections */
+.sg-section-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--sg-heading, #3f5f24);
+}
+
 /* Pattern builder auto-save hint (sleeveless wizard) */
 .kbm-pattern-save-status {
   margin: 0.35rem auto 0;

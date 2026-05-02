@@ -1,0 +1,1129 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import PatternTipsToggle from "../../components/patterns/PatternTipsToggle.astro";
+import PatternTabs from "../../components/patterns/PatternTabs.astro";
+import PatternComments from "../../components/patterns/PatternComments.astro";
+import ActionBar from "../../components/wizards/ActionBar.astro";
+import PrintFooter from "../../components/common/PrintFooter.astro";
+import SleevelessBuildWorkspace from "../../components/patterns/sleeveless/SleevelessBuildWorkspace.astro";
+import PatternHeaderImage from "../../components/patterns/PatternHeaderImage.astro";
+import "../../styles/wizard.css";
+
+const pageUrl = Astro.url.href;
+---
+
+<Layout
+  title="Sleeveless Sweater Pattern | Knit it Now"
+  description="Machine-knitting pattern from your sleeveless pattern builder choices."
+>
+  <main class="wizard-page sleeveless-pattern-page">
+    <div style="max-width: 800px; margin: 0 auto; padding: 0 1rem;">
+      <WizardBackLink className="back-link no-print" fallback="/patterns/sleeveless-yarn-gauge" />
+    </div>
+
+    <div class="page-header no-print hat-builder-page-header">
+      <div class="hat-builder-page-header__media">
+        <PatternHeaderImage
+          src="/images/patterns/sleeveless/sleeveless-sweater-pattern-builder.png"
+          alt="Illustration of a sleeveless sweater pattern builder with a neutral knit top on a croquis"
+          showZoomHint={false}
+        />
+      </div>
+      <div class="hat-builder-page-header__main">
+    
+        <p class="hat-builder-page-header__subtitle">
+          Build your custom sleeveless sweater. Choose your design, enter your gauge, and generate your pattern.
+        </p>
+      </div>
+    </div>
+
+    <div id="sleeveless-pattern-top" class="wizard-container scroll-mt-[96px]">
+      <div class="calculator-card hat-builder-inputs">
+        <PatternTabs rootClass="pattern-tabs-scope" defaultTab="build">
+          <div slot="build" class="sg-tab-build sg-tab-build--embedded">
+            <SleevelessBuildWorkspace />
+          </div>
+
+          <div slot="pattern" class="sg-tab-pattern">
+            <div id="sg-pattern-incomplete" class="sg-pattern-card sg-pattern-card--muted" hidden>
+              <p class="sg-pattern-incomplete__title">Complete the Build steps to generate your pattern.</p>
+              <p class="sg-pattern-incomplete__text">
+                Finish Garment design, Fit &amp; measurements, and Yarn &amp; gauge so we can calculate stitch
+                and row counts from your saved data.
+              </p>
+              <p class="sg-pattern-incomplete__cta">
+                <button type="button" class="kbm-btn kbm-btn-accent" data-sg-tab-to-build>
+                  Return to Build
+                </button>
+              </p>
+            </div>
+
+            <div id="sg-sleeveless-results" class="sg-sleeveless-results" style="display: none">
+              <ActionBar formScrollTarget="sleeveless-pattern-top" />
+
+              <p class="sg-pattern-intro-line" data-sg-pattern-intro></p>
+
+              <PatternTipsToggle />
+
+              <p
+                class="sg-pattern-soft-warning no-print"
+                data-sg-generator-note
+                hidden
+                role="status"
+              >
+                Double-check critical measurements against your sizing chart if anything looks off.
+              </p>
+
+              <div id="pattern-content" data-pattern-content data-show-tips="false">
+                <div class="sleeveless-pattern-mount" data-sleeveless-mount>
+                  <p class="sleeveless-pattern-boot-msg">Loading pattern…</p>
+                </div>
+              </div>
+            </div>
+
+            <noscript>
+              <div class="pattern-section">
+                <h2 class="pattern-noscript-heading">Pattern</h2>
+                <p>Turn on JavaScript to load your saved builder values and generated instructions.</p>
+              </div>
+            </noscript>
+          </div>
+
+          <div slot="share" class="sg-tab-share">
+            <p class="sg-tab-share__intro">Ask questions or share your results.</p>
+            <PatternComments />
+          </div>
+
+          <div slot="inspiration" class="sg-tab-inspiration">
+            <div class="inspiration-section">
+              <h3 class="inspiration-heading">Get inspired</h3>
+              <div class="pinterest-embed">
+                <a
+                  data-pin-do="embedBoard"
+                  data-pin-board-width="100%"
+                  data-pin-scale-height="900"
+                  data-pin-scale-width="80"
+                ></a>
+              </div>
+              <p class="hat-pinterest-fallback-link">
+                <a
+                  href="https://www.pinterest.https://www.pinterest.com/knititnow/sleeeless-sweater/com/knititnow/machine-knit-blankets/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Open machine knitting inspiration on Pinterest
+                </a>
+              </p>
+            </div>
+          </div>
+        </PatternTabs>
+      </div>
+    </div>
+
+    <div id="print-footer" style="display: none">
+      <PrintFooter url={pageUrl} />
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .sleeveless-pattern-page {
+    --sg-accent: #c2614e;
+    padding-bottom: 2rem;
+  }
+
+  /* Main page header: hero image + title (matches hat / blanket pattern builders) */
+  .hat-builder-page-header {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .hat-builder-page-header__media {
+    flex-shrink: 0;
+    max-width: min(378px, 88%);
+    width: 100%;
+  }
+
+  .hat-builder-page-header__main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .hat-builder-page-header .page-header-title {
+    justify-content: flex-start;
+    margin-bottom: 0.5rem;
+  }
+
+  .hat-builder-page-header__main h1 {
+    text-align: left;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .hat-builder-page-header__subtitle {
+    text-align: left;
+    margin: 0;
+    color: #6b7280;
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 640px) {
+    .hat-builder-page-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .hat-builder-page-header__media {
+      max-width: 100%;
+    }
+
+    .hat-builder-page-header .page-header-title {
+      justify-content: center;
+    }
+
+    .hat-builder-page-header__main h1,
+    .hat-builder-page-header__subtitle {
+      text-align: center;
+    }
+  }
+
+  .sg-tab-panel-title {
+    margin: 0 0 0.75rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .sg-tab-build__intro,
+  .sg-tab-share__intro {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  .sg-build-steps-list {
+    margin: 0 0 1.25rem;
+    padding-left: 1.25rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #374151;
+  }
+
+  .sg-tab-build__cta {
+    margin: 0;
+  }
+
+  .sg-pattern-card {
+    max-width: 52rem;
+    margin: 0 auto 1rem;
+    padding: 1rem 1.1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: var(--page-bg, #fff);
+  }
+
+  .sg-pattern-card--muted {
+    border-color: rgba(82, 104, 45, 0.25);
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 6%, var(--page-bg, #fff));
+  }
+
+  @supports not (background: color-mix(in srgb, white, black)) {
+    .sg-pattern-card--muted {
+      background: #f4f6f2;
+    }
+  }
+
+  .sg-pattern-incomplete__title {
+    margin: 0 0 0.35rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .sg-pattern-incomplete__text {
+    margin: 0 0 1rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+
+  .sg-pattern-incomplete__cta {
+    margin: 0;
+  }
+
+  .sg-pattern-intro-line {
+    max-width: 52rem;
+    margin: 0 auto 0.5rem;
+    padding: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #374151;
+    font-weight: 500;
+  }
+
+  .sg-pattern-soft-warning {
+    max-width: 52rem;
+    margin: 0 auto 0.75rem;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #6b4f2a;
+    background: rgba(251, 243, 219, 0.65);
+    border-radius: 8px;
+    border: 1px solid rgba(234, 179, 8, 0.35);
+  }
+
+  .sleeveless-pattern-boot-msg {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #6b7280;
+  }
+
+  .sg-sleeveless-results {
+    padding-top: 0.25rem;
+  }
+
+  :global(.pattern-noscript-heading) {
+    font-size: 1.1rem;
+    color: var(--kbm-green, #52682d);
+    margin: 0 0 0.5rem;
+  }
+
+  /* Expandable garment sections */
+  :global(#pattern-content .pattern-section) {
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    background: #fff;
+  }
+
+  :global(#pattern-content .pattern-section__header) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 0.85rem;
+    background: rgba(82, 104, 45, 0.07);
+  }
+
+  :global(#pattern-content .pattern-section__heading h2) {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+    letter-spacing: 0.02em;
+  }
+
+  :global(#pattern-content .pattern-section__collapse-label) {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  :global(#pattern-content .pattern-section__content) {
+    padding: 0.75rem 0.85rem 1.1rem;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 3%, var(--page-bg, #fff));
+  }
+
+  @supports not (background: color-mix(in srgb, white, black)) {
+    :global(#pattern-content .pattern-section__content) {
+      background: rgba(82, 104, 45, 0.035);
+    }
+  }
+
+  :global(#pattern-content .pattern-section.is-collapsed) {
+    opacity: 0.74;
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  :global(#pattern-content .pattern-section.is-collapsed .pattern-section__header) {
+    padding: 0.35rem 0.6rem;
+  }
+
+  :global(#pattern-content .pattern-section.is-collapsed .pattern-section__content) {
+    display: none;
+  }
+
+  :global(#pattern-content .pattern-preamble p) {
+    margin: 0.35rem 0;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+
+  :global(#pattern-content .pattern-rc-open) {
+    font-family: ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin: 0 0 0.75rem;
+    color: #1f2937;
+  }
+
+  :global(#pattern-content .pattern-step) {
+    margin: 0 0 1rem;
+  }
+
+  :global(#pattern-content .pattern-step:last-child) {
+    margin-bottom: 0;
+  }
+
+  :global(#pattern-content .pattern-step-title) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.35rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  :global(#pattern-content .pattern-step-title .pattern-checkbox) {
+    margin-bottom: 0;
+  }
+
+  :global(#pattern-content .pattern-finishing-item) {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    list-style-position: outside;
+  }
+
+  :global(#pattern-content .pattern-step p) {
+    margin: 0.25rem 0 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  :global(#pattern-content .pattern-step-intro) {
+    margin: 0 0 0.85rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  :global(#pattern-content .pattern-checkbox) {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 0.35rem;
+    cursor: pointer;
+  }
+
+  :global(#pattern-content .pattern-checkbox input) {
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+  }
+
+  :global(#pattern-content .pattern-stop-rc) {
+    font-weight: 700;
+    color: #b45309;
+    margin: 0.5rem 0 0.35rem;
+  }
+
+  :global(#pattern-content .pattern-finishing-list) {
+    margin: 0;
+    padding-left: 1.2rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #374151;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  @media print {
+    .pattern-tab-nav {
+      display: none !important;
+    }
+
+    .sleeveless-pattern-page .pattern-tabs .tab-panel#tab-build,
+    .sleeveless-pattern-page .pattern-tabs .tab-panel#tab-share,
+    .sleeveless-pattern-page .pattern-tabs .tab-panel#tab-inspiration {
+      display: none !important;
+    }
+
+    .sleeveless-pattern-page .pattern-tabs .tab-panel#tab-pattern {
+      display: block !important;
+    }
+
+    :global(#pattern-content .pattern-section.is-collapsed .pattern-section__content) {
+      display: block !important;
+    }
+
+    :global(#pattern-content .pattern-section.is-collapsed) {
+      opacity: 1 !important;
+      background: #fff !important;
+    }
+
+    :global(#pattern-content .pattern-section__collapse-label) {
+      display: none !important;
+    }
+
+    :global(#pattern-content .pattern-section.is-collapsed .pattern-section__header) {
+      padding: 0.65rem 0.85rem !important;
+    }
+
+    :global(.no-print) {
+      display: none !important;
+    }
+  }
+</style>
+
+<script>
+  // @ts-nocheck
+  import {
+    getCurrentPattern,
+    getPatternData,
+    PATTERN_BUILDER_DATA_KEY,
+    getPatternStorageKey,
+    SLEEVELESS_CHART_AUDIENCE_LABELS,
+  } from "../../lib/patterns/patternStorage.ts";
+  import { validatePatternBuilderRequired } from "../../lib/patterns/patternBuilderValidation";
+  import {
+    generateSleevelessBackPattern,
+    sliceSleevelessBackPatternLines,
+    sanitizeSleevelessPatternLineForDisplay,
+    normalizeRcDisplayLine,
+  } from "../../lib/patterns/sleevelessPatternOutput.ts";
+  import { showResults, initializeActionBar } from "../../components/wizards/utils/wizardBehavior.ts";
+
+  const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
+
+  const resultsVisibilityConfig = {
+    resultsSelector: "#sg-sleeveless-results",
+    actionBarSelector: "#action-bar",
+    printButtonSelector: "#print-btn",
+    printFooterSelector: "#print-footer",
+  };
+
+  function section(obj) {
+    if (obj && typeof obj === "object" && !Array.isArray(obj)) {
+      return /** @type {Record<string, unknown>} */ (obj);
+    }
+    return {};
+  }
+
+  function mergedPatternForDisplay(base) {
+    const patternData = getPatternData();
+    const st = { ...(base.style || {}), ...(patternData.style || {}) };
+    const ft = { ...(base.fit || {}), ...(patternData.fit || {}) };
+    let yarnGauge = { ...(base.yarnGauge || {}) };
+    let machine = { ...(base.machine || {}) };
+    const ygm = patternData.yarnGaugeMachine;
+    if (ygm && typeof ygm === "object" && !Array.isArray(ygm)) {
+      if ("yarnNotes" in ygm) {
+        yarnGauge = {
+          ...yarnGauge,
+          yarnName: typeof ygm.yarnNotes === "string" ? ygm.yarnNotes : String(ygm.yarnNotes ?? ""),
+        };
+      }
+      if ("yarnWeight" in ygm) {
+        yarnGauge = {
+          ...yarnGauge,
+          yarnWeight: typeof ygm.yarnWeight === "string" ? ygm.yarnWeight : String(ygm.yarnWeight ?? ""),
+        };
+      }
+      if ("gaugeStitchesPerInch" in ygm) {
+        const v = ygm.gaugeStitchesPerInch;
+        yarnGauge = { ...yarnGauge, stitchGauge: v !== undefined && v !== null ? String(v) : "" };
+      }
+      if ("gaugeRowsPerInch" in ygm) {
+        const v = ygm.gaugeRowsPerInch;
+        yarnGauge = { ...yarnGauge, rowGauge: v !== undefined && v !== null ? String(v) : "" };
+      }
+      if ("gaugeStitchRaw" in ygm) {
+        const v = ygm.gaugeStitchRaw;
+        yarnGauge = { ...yarnGauge, gaugeStitchRaw: v !== undefined && v !== null ? String(v) : "" };
+      }
+      if ("gaugeRowRaw" in ygm) {
+        const v = ygm.gaugeRowRaw;
+        yarnGauge = { ...yarnGauge, gaugeRowRaw: v !== undefined && v !== null ? String(v) : "" };
+      }
+      if ("gaugeRawUnit" in ygm) {
+        const u = ygm.gaugeRawUnit;
+        yarnGauge = {
+          ...yarnGauge,
+          gaugeRawUnit: u === "cm" || u === "in" ? u : "",
+        };
+      }
+      yarnGauge.gaugeUnits = "per_inch";
+      if ("availableNeedles" in ygm) {
+        const v = ygm.availableNeedles;
+        machine = { ...machine, availableNeedles: v !== undefined && v !== null ? String(v) : "" };
+      }
+    }
+    return { ...base, style: st, fit: ft, yarnGauge, machine };
+  }
+
+  /** Shape expected by {@link generateSleevelessBackPattern}. */
+  function buildGeneratorPatternData(merged) {
+    const pb = getPatternData();
+    const fitMerged = { ...section(merged.fit), ...section(pb.fit) };
+    const smA = section(fitMerged.selectedMeasurements);
+    const smB = section(section(pb.fit).selectedMeasurements);
+    const fit = {
+      ...fitMerged,
+      selectedMeasurements: { ...smB, ...smA },
+    };
+    const style = { ...section(merged.style), ...section(pb.style) };
+    const ygm = pb.yarnGaugeMachine && typeof pb.yarnGaugeMachine === "object" ? pb.yarnGaugeMachine : {};
+    return {
+      fit,
+      style,
+      yarnGaugeMachine: {
+        gaugeStitchesPerInch: ygm.gaugeStitchesPerInch ?? merged.yarnGauge?.stitchGauge,
+        gaugeRowsPerInch: ygm.gaugeRowsPerInch ?? merged.yarnGauge?.rowGauge,
+        availableNeedles: ygm.availableNeedles ?? merged.machine?.availableNeedles,
+      },
+    };
+  }
+
+  /**
+   * Pattern intro: same rules as yarn step — whole-number display, user swatch basis (4" vs 10 cm), no per-inch decimals.
+   */
+  function formatGaugeIntroPhrase(ygm, yg) {
+    const rawS =
+      (ygm && ygm.gaugeStitchRaw != null ? String(ygm.gaugeStitchRaw) : "") ||
+      (yg && yg.gaugeStitchRaw != null ? String(yg.gaugeStitchRaw) : "");
+    const rawR =
+      (ygm && ygm.gaugeRowRaw != null ? String(ygm.gaugeRowRaw) : "") ||
+      (yg && yg.gaugeRowRaw != null ? String(yg.gaugeRowRaw) : "");
+    const ts = rawS.trim();
+    const tr = rawR.trim();
+    const unit =
+      (ygm && ygm.gaugeRawUnit === "cm") || (yg && yg.gaugeRawUnit === "cm") ? "cm" : "in";
+    if (ts && tr) {
+      const s = parseFloat(ts);
+      const r = parseFloat(tr);
+      if (Number.isFinite(s) && s > 0 && Number.isFinite(r) && r > 0) {
+        const over = unit === "cm" ? "10 cm" : '4"';
+        return `${Math.round(s)} sts / ${Math.round(r)} rows over ${over}`;
+      }
+    }
+    const spi = parseFloat(String(ygm?.gaugeStitchesPerInch ?? yg?.stitchGauge ?? "").trim());
+    const rpi = parseFloat(String(ygm?.gaugeRowsPerInch ?? yg?.rowGauge ?? "").trim());
+    if (Number.isFinite(spi) && spi > 0 && Number.isFinite(rpi) && rpi > 0) {
+      return `${Math.round(spi * 4)} sts / ${Math.round(rpi * 4)} rows over 4"`;
+    }
+    return "";
+  }
+
+  function audienceLabelFromPattern(st, ft) {
+    const raw =
+      (typeof st.recipientCategory === "string" && st.recipientCategory.trim()) ||
+      (typeof ft.sizingChart === "string" && ft.sizingChart.trim()) ||
+      "";
+    const key = raw.toLowerCase();
+    if (key && AUDIENCE_LABELS[key]) return AUDIENCE_LABELS[key];
+    if (raw) return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+    return "";
+  }
+
+  function garmentShapeLengthPhrase(st) {
+    const shapeKey = st.bodyShape;
+    const lenKey = st.length;
+    const shapeWord =
+      shapeKey === "aline"
+        ? "shaped"
+        : shapeKey === "straight" || shapeKey === "gathered"
+          ? "straight"
+          : shapeKey
+            ? String(shapeKey)
+            : "";
+    const lenWord =
+      lenKey === "top"
+        ? "top"
+        : lenKey === "tunic"
+          ? "tunic"
+          : lenKey === "dress"
+            ? "dress"
+            : lenKey
+              ? String(lenKey)
+              : "";
+    if (shapeWord && lenWord) return `${shapeWord} ${lenWord}`;
+    if (shapeWord) return shapeWord;
+    return lenWord || "";
+  }
+
+  function necklineIntroPhrase(st) {
+    const k = st.neckline;
+    if (k === "round") return "a round neck";
+    if (k === "v") return "a v-neck";
+    return "";
+  }
+
+  function frontIntroPhrase(st) {
+    const k = st.frontStyle;
+    if (k === "closed") return "pullover front";
+    if (k === "open") return "cardigan front";
+    return "";
+  }
+
+  /**
+   * One-line pattern intro from {@link getCurrentPattern}-aligned merged data and {@link getPatternData}.
+   */
+  function buildPatternIntroSentence(merged, patternData) {
+    const st = section(merged.style);
+    const ft = section(merged.fit);
+    const yg = section(merged.yarnGauge);
+    const ygm =
+      patternData.yarnGaugeMachine && typeof patternData.yarnGaugeMachine === "object"
+        ? section(patternData.yarnGaugeMachine)
+        : {};
+
+    const aud = audienceLabelFromPattern(st, ft);
+    const size = ft.selectedSize != null && String(ft.selectedSize).trim() ? String(ft.selectedSize).trim() : "";
+    const garment = garmentShapeLengthPhrase(st);
+    const neck = necklineIntroPhrase(st);
+    const front = frontIntroPhrase(st);
+    const gaugeStr = formatGaugeIntroPhrase(ygm, yg);
+
+    const yarnName =
+      typeof yg.yarnName === "string" && yg.yarnName.trim()
+        ? yg.yarnName.trim()
+        : typeof yg.yarnNotes === "string" && yg.yarnNotes.trim()
+          ? yg.yarnNotes.trim()
+          : typeof ygm.yarnNotes === "string" && ygm.yarnNotes.trim()
+            ? ygm.yarnNotes.trim()
+            : "";
+
+    const needlesRaw = ygm.availableNeedles ?? merged.machine?.availableNeedles;
+    const needles = needlesRaw != null && String(needlesRaw).trim() ? String(needlesRaw).trim() : "";
+
+    const audienceSize =
+      aud && size ? `${aud} size ${size}` : aud ? aud : size ? `size ${size}` : "";
+
+    const neckFront = [neck, front].filter(Boolean);
+    let bodyPhrase = "";
+    if (garment && neckFront.length) bodyPhrase = `${garment} with ${neckFront.join(" and ")}`;
+    else if (garment) bodyPhrase = garment;
+    else if (neckFront.length) bodyPhrase = `with ${neckFront.join(" and ")}`;
+
+    let s = "";
+    if (audienceSize) s += audienceSize;
+    if (bodyPhrase) {
+      if (s) s += ", ";
+      s += bodyPhrase;
+    }
+
+    if (gaugeStr) {
+      if (s) s += ", ";
+      s += `knit at ${gaugeStr}`;
+    }
+
+    if (yarnName) {
+      if (s) s += " ";
+      s += `using ${yarnName}`;
+    }
+
+    if (needles) {
+      if (s) s += " ";
+      s += `on a ${needles}-needle machine`;
+    }
+
+    if (s && !s.endsWith(".")) s += ".";
+    return s;
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function formatInstructionParagraph(rawLine) {
+    let line = normalizeRcDisplayLine(rawLine);
+    line = sanitizeSleevelessPatternLineForDisplay(line);
+    if (!line.trim()) return "";
+    const t = line.trim();
+    if (/^stop row counter/i.test(t)) {
+      return `<p class="pattern-stop-rc">${escapeHtml(line)}</p>`;
+    }
+    if (/^RC:/i.test(t)) {
+      return `<p class="pattern-rc-open">${escapeHtml(line)}</p>`;
+    }
+    return `<p>${escapeHtml(line)}</p>`;
+  }
+
+  /**
+   * Numbered blocks → hat-style steps with checkboxes (headings: Cast On, Hem, Body, …).
+   * @param {string[]} lines
+   */
+  function sliceLinesToStepsHtml(lines) {
+    const cleaned = lines.slice();
+    while (cleaned.length && cleaned[0].trim() === "BACK") cleaned.shift();
+
+    const firstNumIdx = cleaned.findIndex((l) => /^\d+\.\s/.test(l.trim()));
+    const preamble = firstNumIdx > 0 ? cleaned.slice(0, firstNumIdx) : [];
+    const stepLines = firstNumIdx >= 0 ? cleaned.slice(firstNumIdx) : cleaned;
+
+    let preHtml = "";
+    const preambleBody = preamble
+      .filter((l) => l.trim().length > 0)
+      .map(formatInstructionParagraph)
+      .filter(Boolean)
+      .join("");
+    if (preambleBody) {
+      preHtml = `<div class="pattern-preamble">${preambleBody}</div>`;
+    }
+
+    const steps = [];
+    let currentTitle = null;
+    let bodyLines = [];
+
+    function flushStep() {
+      if (!currentTitle && bodyLines.length === 0) return;
+      const inner = bodyLines.map(formatInstructionParagraph).filter(Boolean).join("");
+      const titleHtml = currentTitle
+        ? `<h3 class="pattern-step-title">
+      <label class="pattern-checkbox no-print"><input type="checkbox" aria-label="Mark complete: ${escapeHtml(currentTitle)}" /></label>
+      <span>${escapeHtml(currentTitle)}</span>
+    </h3>`
+        : "";
+      steps.push(`<div class="pattern-step">${titleHtml}${inner}</div>`);
+      bodyLines = [];
+      currentTitle = null;
+    }
+
+    for (const raw of stepLines) {
+      const tr = raw.trim();
+      if (!tr) continue;
+      const m = tr.match(/^(\d+)\.\s+(.+)$/);
+      if (m) {
+        flushStep();
+        currentTitle = humanizeStepHeading(m[2].trim());
+        continue;
+      }
+      bodyLines.push(raw);
+    }
+    flushStep();
+
+    return preHtml + steps.join("\n");
+  }
+
+  function humanizeStepHeading(title) {
+    const map = {
+      "Cast on": "Cast On",
+      "Hem": "Hem",
+      "Body to armhole": "Body",
+      "Armhole shaping": "Armhole Shaping",
+      "Knit in pattern to neckline / shoulder start": "Shoulders",
+      "Neckline and shoulder shaping": "Neckline Shaping",
+      "End of back piece": "Back complete",
+    };
+    return Object.prototype.hasOwnProperty.call(map, title) ? map[title] : title;
+  }
+
+  function wrapPatternSection(sectionId, title, innerHtml, opts) {
+    const sid = String(sectionId).replace(/[^a-zA-Z0-9_-]/g, "");
+    const defaultCollapsed = opts?.defaultCollapsed === true;
+    const collapsedClass = defaultCollapsed ? " is-collapsed" : "";
+    const checkedAttr = defaultCollapsed ? " checked" : "";
+    return `<section class="pattern-section${collapsedClass}" data-section-id="${sid}">
+  <div class="pattern-section__header">
+    <label class="pattern-section__collapse-label">
+      <input type="checkbox" class="pattern-section__collapse" data-section-id="${sid}" aria-label="Collapse this section"${checkedAttr} />
+    </label>
+    <div class="pattern-section__heading"><h2>${title}</h2></div>
+  </div>
+  <div class="pattern-section__content">${innerHtml}</div>
+</section>`;
+  }
+
+  function applyPatternSectionCollapseState(root) {
+    if (!root) return;
+    root.querySelectorAll(".pattern-section").forEach((section) => {
+      const id = section.dataset.sectionId;
+      if (!id) return;
+      const header = section.querySelector(":scope > .pattern-section__header");
+      const checkbox = header?.querySelector("input.pattern-section__collapse");
+      if (!(checkbox instanceof HTMLInputElement)) return;
+      const collapsed = localStorage.getItem(`sleevelessPattern_section_${id}`) === "true";
+      checkbox.checked = collapsed;
+      section.classList.toggle("is-collapsed", collapsed);
+    });
+  }
+
+  function bindPatternSectionCollapsePersistence(root) {
+    if (!root) return;
+    root.addEventListener("change", (e) => {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || !t.classList.contains("pattern-section__collapse")) return;
+      const section = t.closest(".pattern-section");
+      const id = t.dataset.sectionId || section?.dataset.sectionId;
+      if (!section || !id) return;
+      localStorage.setItem(`sleevelessPattern_section_${id}`, t.checked ? "true" : "false");
+      section.classList.toggle("is-collapsed", t.checked);
+    });
+  }
+
+  function buildFrontSectionHtml(style) {
+    const open = style.frontStyle === "open";
+    if (open) {
+      return `
+  <p class="pattern-step-intro">
+    You chose an open front (cardigan). Work two mirror-image front pieces; shaping depths follow the same row counts
+    as the back unless your Build choices specify otherwise.
+  </p>
+  <p class="pattern-step-intro">
+    Detailed cardigan-front breakdown will align with your neckline and buttonband choices from the builder.
+  </p>`;
+    }
+    return `
+  <p class="pattern-step-intro">
+    Work the front to match the back: same cast-on, hem, body length to the armhole, armhole shaping, and neckline /
+    shoulder treatment (mirror carriage-side conventions as needed for your machine).
+  </p>`;
+  }
+
+  function buildFinishingHtml() {
+    return `
+  <ol class="pattern-finishing-list">
+    <li class="pattern-finishing-item">
+      <label class="pattern-checkbox no-print">
+        <input type="checkbox" aria-label="Mark complete: Join shoulders" />
+      </label>
+      <span>Join shoulders.</span>
+    </li>
+    <li class="pattern-finishing-item">
+      <label class="pattern-checkbox no-print">
+        <input type="checkbox" aria-label="Mark complete: Neckline pickup" />
+      </label>
+      <span>Neckline pickup instructions will be added here.</span>
+    </li>
+    <li class="pattern-finishing-item">
+      <label class="pattern-checkbox no-print">
+        <input type="checkbox" aria-label="Mark complete: Armhole pickup" />
+      </label>
+      <span>Armhole pickup instructions will be added here.</span>
+    </li>
+    <li class="pattern-finishing-item">
+      <label class="pattern-checkbox no-print">
+        <input type="checkbox" aria-label="Mark complete: Block" />
+      </label>
+      <span>Block as desired.</span>
+    </li>
+    <li class="pattern-finishing-item">
+      <label class="pattern-checkbox no-print">
+        <input type="checkbox" aria-label="Mark complete: Skill check" />
+      </label>
+      <span>Skill check — skill check support will be added here.</span>
+    </li>
+    <li class="pattern-finishing-item">
+      <label class="pattern-checkbox no-print">
+        <input type="checkbox" aria-label="Mark complete: Practice Lab" />
+      </label>
+      <span>Practice Lab — practice support will be added here.</span>
+    </li>
+  </ol>
+`;
+  }
+
+  function activateWizardTab(target) {
+    const root = document.querySelector(".sleeveless-pattern-page .pattern-tabs");
+    if (!root) return;
+    root.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.tab === target);
+    });
+    root.querySelectorAll(".tab-panel").forEach((p) => {
+      p.classList.toggle("active", p.id === `tab-${target}`);
+    });
+
+    if (target === "share") {
+      const el = document.querySelector("[data-pattern-comments]");
+      if (!el || !(el instanceof HTMLElement)) return;
+      const commentsEl = el;
+      const alreadyLoaded = commentsEl.dataset.hyvorLoaded === "true";
+      const websiteId = commentsEl.dataset.hyvorWebsiteId;
+      const cleanPath = window.location.pathname.replace(/\/$/, "") || "/";
+      const w = window;
+      w.HYVOR_TALK_WEBSITE = Number(websiteId);
+      w.HYVOR_TALK_CONFIG = {
+        url: window.location.origin + cleanPath,
+        id: cleanPath,
+      };
+      if (alreadyLoaded) {
+        if (w.HyvorTalk && typeof w.HyvorTalk.reload === "function") {
+          w.HyvorTalk.reload();
+        }
+        return;
+      }
+      const existingScript = document.querySelector("script[data-hyvor-embed]");
+      if (existingScript) {
+        commentsEl.dataset.hyvorLoaded = "true";
+        if (w.HyvorTalk && typeof w.HyvorTalk.reload === "function") {
+          w.HyvorTalk.reload();
+        }
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://talk.hyvor.com/web-api/embed.js";
+      script.async = true;
+      script.type = "text/javascript";
+      script.setAttribute("data-hyvor-embed", "true");
+      script.onload = () => {
+        commentsEl.dataset.hyvorLoaded = "true";
+        if (w.HyvorTalk && typeof w.HyvorTalk.reload === "function") {
+          w.HyvorTalk.reload();
+        }
+      };
+      document.body.appendChild(script);
+    }
+
+    if (target === "inspiration") {
+      if (window.PinUtils && typeof window.PinUtils.build === "function") {
+        window.PinUtils.build();
+      }
+      window.kbmSchedulePinterestEmbedsRefresh?.();
+    }
+
+    if (target === "pattern" && typeof window.kbmRefreshSleevelessPattern === "function") {
+      window.kbmRefreshSleevelessPattern();
+    }
+  }
+
+  function bindTabs() {
+    const root = document.querySelector(".sleeveless-pattern-page .pattern-tabs");
+    if (!root) return;
+    root.querySelectorAll(".tab-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        const target = button.dataset.tab;
+        if (!target) return;
+        activateWizardTab(target);
+      });
+    });
+
+    document.querySelectorAll("[data-sg-tab-to-build]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activateWizardTab("build");
+        const topEl = document.getElementById("sleeveless-pattern-top");
+        if (topEl) {
+          const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          topEl.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+        }
+      });
+    });
+
+    const editBtn = document.getElementById("edit-btn");
+    if (editBtn) {
+      editBtn.addEventListener("click", () => {
+        activateWizardTab("build");
+        const topEl = document.getElementById("sleeveless-pattern-top");
+        if (topEl) {
+          const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          topEl.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+        }
+      });
+    }
+
+    window.addEventListener("kbm:sleeveless-open-pattern-tab", () => {
+      activateWizardTab("pattern");
+    });
+  }
+
+  function renderMount(patternMerged, result) {
+    const mount = document.querySelector("[data-sleeveless-mount]");
+    if (!mount) return;
+
+    const slices = sliceSleevelessBackPatternLines(result.lines);
+    const splitOk = slices.armhole.length > 0 || slices.necklineShoulderEnd.length > 0;
+
+    const backInner =
+      slices.throughBody.length > 0
+        ? sliceLinesToStepsHtml(slices.throughBody)
+        : `<p class="pattern-step-intro">Back instructions could not be split — showing full piece text.</p>${sliceLinesToStepsHtml(result.lines)}`;
+
+    const armholeSectionHtml =
+      slices.armhole.length > 0
+        ? sliceLinesToStepsHtml(slices.armhole)
+        : splitOk
+          ? `<p class="pattern-step-intro">Armhole shaping is listed with the Back instructions for this measurement set.</p>`
+          : `<p class="pattern-step-intro">Armhole shaping is included in the Back section above.</p>`;
+
+    const necklineHtml =
+      slices.necklineShoulderEnd.length > 0
+        ? sliceLinesToStepsHtml(slices.necklineShoulderEnd)
+        : splitOk
+          ? `<p class="pattern-step-intro">Neckline and shoulder shaping is listed with the Back instructions for this measurement set.</p>`
+          : `<p class="pattern-step-intro">Neckline and shoulder shaping appears in the Back section above.</p>`;
+
+    const style = section(patternMerged.style);
+
+    mount.innerHTML =
+      wrapPatternSection("sg-back", "Back", backInner, { defaultCollapsed: false }) +
+      wrapPatternSection("sg-front", "Front", buildFrontSectionHtml(style), { defaultCollapsed: true }) +
+      wrapPatternSection("sg-armholes", "Armholes", armholeSectionHtml, { defaultCollapsed: true }) +
+      wrapPatternSection("sg-neckline", "Neckline", necklineHtml, { defaultCollapsed: true }) +
+      wrapPatternSection("sg-finishing", "Finishing", buildFinishingHtml(), { defaultCollapsed: true });
+
+    applyPatternSectionCollapseState(mount);
+    bindPatternSectionCollapsePersistence(mount);
+  }
+
+  function refreshPatternTabContent() {
+    const patternMerged = mergedPatternForDisplay(getCurrentPattern());
+    const patternData = getPatternData();
+    const validation = validatePatternBuilderRequired(patternData);
+
+    const incompleteEl = document.getElementById("sg-pattern-incomplete");
+    const resultsEl = document.getElementById("sg-sleeveless-results");
+
+    const introEl = document.querySelector("[data-sg-pattern-intro]");
+    if (introEl) {
+      introEl.textContent = validation.ok ? buildPatternIntroSentence(patternMerged, patternData) : "";
+    }
+
+    if (!validation.ok) {
+      if (incompleteEl) incompleteEl.removeAttribute("hidden");
+      if (resultsEl) resultsEl.style.display = "none";
+      const mount = document.querySelector("[data-sleeveless-mount]");
+      if (mount) mount.innerHTML = "";
+      const note = document.querySelector("[data-sg-generator-note]");
+      if (note) note.setAttribute("hidden", "");
+      return;
+    }
+
+    if (incompleteEl) incompleteEl.setAttribute("hidden", "");
+    showResults(resultsVisibilityConfig);
+
+    const genInput = buildGeneratorPatternData(patternMerged);
+    const result = generateSleevelessBackPattern(genInput);
+
+    const note = document.querySelector("[data-sg-generator-note]");
+    if (note) {
+      if (result.warnings.length > 0) note.removeAttribute("hidden");
+      else note.setAttribute("hidden", "");
+    }
+
+    renderMount(patternMerged, result);
+  }
+
+  function init() {
+    window.kbmRefreshSleevelessPattern = refreshPatternTabContent;
+    bindTabs();
+    initializeActionBar(resultsVisibilityConfig);
+    refreshPatternTabContent();
+
+    const canonKey = getPatternStorageKey();
+    window.addEventListener("storage", (e) => {
+      if (!e.key || (e.key !== PATTERN_BUILDER_DATA_KEY && e.key !== canonKey)) return;
+      refreshPatternTabContent();
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => void init());
+  } else {
+    void init();
+  }
+</script>
