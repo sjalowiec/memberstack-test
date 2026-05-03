@@ -1,0 +1,398 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import wisdomData from "../../data/wisdom-from-machine-knitters.json";
+
+type WisdomEntry = {
+  id: string;
+  name: string;
+  lead: string;
+  listType: "numbered" | "bulleted";
+  items: string[];
+  extra?: string;
+};
+
+const entries = wisdomData.entries as WisdomEntry[];
+---
+
+<Layout
+  title="Wisdom from Machine Knitters | Knit it Now"
+  description="Real machine knitters share what they wish they knew when they started — reassurance and encouragement for newcomers."
+  bodyClass="page--tight-header"
+>
+  <section class="wisdom-from-machine-knitters-page wisdom-page">
+    <div class="page-nav">
+      <a class="page-nav__back" href="/reference">← Back to References</a>
+    </div>
+    <div class="wisdom-page-grid">
+      <aside class="wisdom-page-aside" aria-label="What knitters agree on">
+        <p class="wisdom-page-kicker">Wisdom from Machine Knitters</p>
+        <h1 class="wisdom-page-h1">The Common Thread</h1>
+        <p class="wisdom-page-lead">
+          If there is one thing our community of knitters agrees on, it's this: Start simple, practice often, and give
+          yourself room to learn.
+        </p>
+        <p class="wisdom-page-body">
+          Real knitters shared what they wish they knew when they started. Take your time with the voices here - you may
+          see yourself in more than one.
+        </p>
+        <a href="#what-knitters-kept-saying" class="kbm-btn kbm-btn-outline wisdom-page-jump">
+          Jump to summary
+          <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
+        </a>
+      </aside>
+
+      <div class="wisdom-page-feed">
+        {
+          entries.map((entry, index) => (
+            <article class={`kbm-card wisdom-feed-card wisdom-feed-card--a${index % 3}`} id={entry.id}>
+              <h2 class="kbm-card__title">{entry.name}</h2>
+              <p class="kbm-card__desc wisdom-feed-lead">{entry.lead}</p>
+              <ul class="wisdom-feed-tips">
+                {entry.items.map((text) => (
+                  <li class="wisdom-feed-tip">
+                    <span class="wisdom-feed-tip-marker" aria-hidden="true">
+                      <i class="fa-solid fa-circle"></i>
+                    </span>
+                    <span class="wisdom-feed-tip-text">{text}</span>
+                  </li>
+                ))}
+              </ul>
+              {entry.extra ? <p class="wisdom-feed-extra">{entry.extra}</p> : null}
+            </article>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="wisdom-page-bottom">
+      <section
+        id="what-knitters-kept-saying"
+        class="wisdom-themes"
+        aria-labelledby="wisdom-themes-heading"
+      >
+        <h2 id="wisdom-themes-heading" class="wisdom-themes-h2">What these knitters kept saying</h2>
+        <p class="wisdom-themes-intro">
+          A few themes came up again and again. Start simple, practice often, and give yourself room to learn.
+        </p>
+        <div class="wisdom-themes-cards">
+          <article class="kbm-card wisdom-theme-card">
+            <h3 class="kbm-card__title">Practice makes progress</h3>
+            <p class="kbm-card__desc wisdom-theme-body">Practice! You have to keep using your machine to increase your knowledge and grow your confidence.</p>
+          </article>
+          <article class="kbm-card wisdom-theme-card">
+            <h3 class="kbm-card__title">Use one machine</h3>
+            <p class="kbm-card__desc wisdom-theme-body">If you have multiple machines, choose one machine and master it first.</p>
+          </article>
+          <article class="kbm-card wisdom-theme-card">
+            <h3 class="kbm-card__title">Choose one pattern method</h3>
+            <p class="kbm-card__desc wisdom-theme-body">
+              Pick one pattern method and stick with it long enough to feel confident. You can use software, chart by
+              hand, or use Knit it Now patterns. The important thing is to avoid learning everything at once.
+            </p>
+          </article>
+          <article class="kbm-card wisdom-theme-card">
+            <h3 class="kbm-card__title">Choose one yarn</h3>
+            <p class="kbm-card__desc wisdom-theme-body">
+              When you are first starting out, try to use the same yarn for multiple projects. Get familiar with the
+              gauge, how it washes and drapes, and how it behaves on your machine.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <footer class="wisdom-page-footer">
+        <p class="wisdom-page-closing">
+          If you saw yourself in these, you’re in the right place.
+        </p>
+        <nav class="wisdom-page-links" aria-label="Next steps">
+          <a href="/help-hub" class="kbm-btn kbm-btn-outline">Help Hub</a>
+          <a href="/patterns" class="kbm-btn kbm-btn-outline">Patterns</a>
+          <a href="/tools" class="kbm-btn kbm-btn-outline">Tools</a>
+        </nav>
+      </footer>
+    </div>
+  </section>
+
+  <style>
+    .wisdom-from-machine-knitters-page.wisdom-page {
+      padding-top: 0;
+      padding-bottom: 2.5rem;
+    }
+
+    .wisdom-page-grid {
+      display: grid;
+      grid-template-columns: clamp(300px, 22vw, 350px) minmax(0, 1fr);
+      gap: clamp(1.5rem, 3vw, 2.5rem);
+      max-width: min(1200px, 100%);
+      margin: 0 auto;
+      padding: 0 clamp(1rem, 3vw, 1.5rem) 2rem;
+      align-items: start;
+    }
+
+    .wisdom-page-aside {
+      position: sticky;
+      top: calc(var(--header-height, 7rem) + 0.75rem);
+      align-self: start;
+      width: 100%;
+      box-sizing: border-box;
+      max-height: calc(100dvh - var(--header-height, 7rem) - 1.5rem);
+      overflow-y: auto;
+    }
+
+    .wisdom-page-kicker {
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin: 0 0 0.75rem;
+      font-weight: 600;
+    }
+
+    .wisdom-page-h1 {
+      font-size: var(--text-xxl);
+      font-weight: 600;
+      color: var(--kbm-green);
+      margin: 0 0 1rem;
+      line-height: 1.2;
+    }
+
+    .wisdom-page-lead {
+      font-size: var(--text-lg);
+      color: #243015;
+      line-height: 1.65;
+      margin: 0 0 1rem;
+    }
+
+    .wisdom-page-body {
+      font-size: var(--text-base);
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin: 0 0 1.25rem;
+    }
+
+    .wisdom-page-jump {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem !important;
+    }
+
+    .wisdom-page-jump i {
+      font-size: 0.75rem;
+      opacity: 0.85;
+    }
+
+    .wisdom-page-feed {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      min-width: 0;
+      padding-top: 0.25rem;
+    }
+
+    .wisdom-feed-card.kbm-card {
+      cursor: default;
+      width: 100%;
+      max-width: 600px;
+      margin-bottom: 1.5rem;
+    }
+
+    .wisdom-feed-card.kbm-card:hover {
+      transform: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      background-color: #fff;
+      border-color: #c7d8a4;
+    }
+
+    .wisdom-feed-card.kbm-card > *:last-child {
+      margin-top: 0;
+    }
+
+    .wisdom-feed-card--a0 {
+      align-self: flex-start;
+    }
+
+    .wisdom-feed-card--a1 {
+      align-self: center;
+    }
+
+    .wisdom-feed-card--a2 {
+      align-self: flex-end;
+    }
+
+    .wisdom-feed-card .kbm-card__desc.wisdom-feed-lead {
+      display: block;
+      -webkit-line-clamp: unset;
+      overflow: visible;
+      font-style: italic;
+    }
+
+    .wisdom-feed-tips {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .wisdom-feed-tip {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      margin-bottom: 0.65rem;
+      line-height: 1.75;
+      font-size: 0.95rem;
+      font-weight: 400 !important;
+      color: #243015;
+    }
+
+    .wisdom-feed-tip:last-child {
+      margin-bottom: 0;
+    }
+
+    .wisdom-feed-tip-marker {
+      flex-shrink: 0;
+      width: 1rem;
+      text-align: center;
+      line-height: 1.75;
+      padding-top: 0.35em;
+    }
+
+    .wisdom-feed-tip-marker i {
+      font-size: 0.4rem;
+      color: var(--kbm-green-2, #738c52);
+      opacity: 0.55;
+    }
+
+    .wisdom-feed-tip-text {
+      flex: 1;
+      min-width: 0;
+      font-weight: 400 !important;
+    }
+
+    .wisdom-feed-extra {
+      margin: 1rem 0 0;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--ring);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      font-weight: 400 !important;
+      color: #243015;
+    }
+
+    .wisdom-page-bottom {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 clamp(1rem, 3vw, 1.5rem);
+    }
+
+    .wisdom-themes {
+      padding-top: 1.5rem;
+      margin-bottom: 2rem;
+      border-top: 1px solid var(--ring);
+      scroll-margin-top: 6rem;
+    }
+
+    .wisdom-themes-h2 {
+      font-size: var(--text-xl);
+      font-weight: 600;
+      color: var(--kbm-green);
+      text-align: center;
+      margin: 0 0 0.65rem;
+      line-height: 1.25;
+    }
+
+    .wisdom-themes-intro {
+      text-align: center;
+      font-size: var(--text-base);
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin: 0 auto 1.25rem;
+      max-width: 36rem;
+    }
+
+    .wisdom-themes-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .wisdom-theme-card.kbm-card {
+      cursor: default;
+      margin: 0;
+    }
+
+    .wisdom-theme-card.kbm-card > *:last-child {
+      margin-top: 0;
+    }
+
+    .wisdom-theme-card.kbm-card:hover {
+      transform: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      background-color: #fff;
+      border-color: #c7d8a4;
+    }
+
+    .wisdom-theme-card .kbm-card__title {
+      font-size: clamp(1rem, 2vw, 1.15rem);
+    }
+
+    .wisdom-theme-card .kbm-card__desc.wisdom-theme-body {
+      display: block;
+      -webkit-line-clamp: unset;
+      overflow: visible;
+      font-weight: 400 !important;
+    }
+
+    .wisdom-page-footer {
+      text-align: center;
+      padding-top: 0.25rem;
+    }
+
+    .wisdom-page-closing {
+      font-size: var(--text-lg);
+      color: #243015;
+      line-height: 1.65;
+      margin: 0 auto 1.25rem;
+      max-width: 36rem;
+    }
+
+    .wisdom-page-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      align-items: center;
+    }
+
+    @media (max-width: 900px) {
+      .wisdom-page-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+        padding-left: clamp(1rem, 4vw, 1.5rem);
+        padding-right: clamp(1rem, 4vw, 1.5rem);
+      }
+
+      .wisdom-page-aside {
+        position: static;
+        max-height: none;
+        overflow: visible;
+        padding: 1.25rem clamp(1rem, 4vw, 1.5rem) 1.5rem;
+        margin: 0 calc(-1 * clamp(1rem, 4vw, 1.5rem)) 1.5rem;
+        background: var(--page-bg);
+        border-bottom: 1px solid var(--ring);
+      }
+
+      .wisdom-feed-card--a0,
+      .wisdom-feed-card--a1,
+      .wisdom-feed-card--a2 {
+        align-self: stretch;
+        max-width: none;
+      }
+
+      .wisdom-page-bottom {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+  </style>
+</Layout>

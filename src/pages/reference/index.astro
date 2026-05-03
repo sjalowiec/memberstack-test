@@ -56,6 +56,23 @@ const referenceCategories = [
       subhead="Quick reference resources for machine knitters. Browse definitions, machine basics, charts, and comparisons when you need to look something up quickly."
     />
 
+    <section class="ref-category ref-category--new-to-mk" aria-labelledby="category-new-to-machine-knitting">
+      <h2 id="category-new-to-machine-knitting" class="ref-category-title">New to Machine Knitting?</h2>
+   
+      <div class="ref-cards">
+        <a
+          href="/start-here/wisdom-from-machine-knitters"
+          class="ref-card"
+          data-testid="ref-card-start-here-wisdom-from-machine-knitters"
+        >
+          <h3 class="ref-card-title">Wisdom from Machine Knitters</h3>
+          <p class="ref-card-desc">
+            Real knitters share what they wish they knew when they started — a great place to begin.
+          </p>
+        </a>
+      </div>
+    </section>
+
     <div class="reference-quick-links">
       <p class="reference-quick-links__label">Popular References</p>
 
@@ -101,6 +118,15 @@ const referenceCategories = [
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 1.5rem 4rem;
+  }
+
+  .ref-category--new-to-mk {
+    margin-top: 0.5rem;
+  }
+
+  .ref-category-intro {
+    margin: 0 0 1rem;
+    max-width: 65ch;
   }
 
   .ref-category {
