@@ -172,14 +172,14 @@ const titleId = `gt-title-${randomUUID()}`;
 {
   hasPopup ? (
     <span
-      class="glossary-tooltip-wrap"
+      class:list={["glossary-tooltip", "glossary-tooltip-wrap"]}
       id={rootId}
       data-glossary-ls-key={storageKey ?? undefined}
       data-glossary-auto-once={enableAutoOnce ? "true" : undefined}
     >
       <button
         type="button"
-        class:list={["glossary-tooltip", "glossary-tooltip-trigger"]}
+        class="glossary-tooltip-trigger"
         aria-haspopup="dialog"
         aria-expanded="false"
         aria-controls={`${rootId}-popup`}
@@ -192,25 +192,7 @@ const titleId = `gt-title-${randomUUID()}`;
         </span>
       </button>
 
-      <div class="glossary-mobile-scrim" data-glossary-mobile-scrim aria-hidden="true" />
-
-      <div
-        class="glossary-popup"
-        id={`${rootId}-popup`}
-        role="dialog"
-        aria-modal="false"
-        aria-labelledby={titleId}
-        hidden
-        data-glossary-popup
-      >
-        <h2 class="glossary-popup-sr-title" id={titleId}>
-          {titlePlain}
-        </h2>
-        <button type="button" class="glossary-close" data-glossary-close aria-label="Close">
-          ×
-        </button>
-        <div class="glossary-content" set:html={cleanHtml} />
-      </div>
+      <span class="glossary-mobile-scrim" data-glossary-mobile-scrim aria-hidden="true" />
     </span>
   ) : (
     <span class:list={["glossary-tooltip-fallback", "glossary-tooltip", tooltipText && "kbm-tooltip"]} {...(tooltipText ? { "data-tip": tooltipText } : {})}>
@@ -220,14 +202,15 @@ const titleId = `gt-title-${randomUUID()}`;
 }
 
 {hasPopup && (
-  <script is:inline define:vars={{ rootId }}>
+  <script is:inline define:vars={{ rootId, cleanHtml, titlePlain, titleId }}>
     (function () {
       var w = window;
       if (!w.__kbmGlossaryApi) {
         w.__kbmGlossaryApi = {
           closeAll: function () {
             document.querySelectorAll(".glossary-tooltip-wrap").forEach(function (wrap) {
-              var p = wrap.querySelector("[data-glossary-popup]");
+              var wrapId = wrap.id || "";
+              var p = wrapId ? document.getElementById(wrapId + "-popup") : null;
               var b = wrap.querySelector(".glossary-tooltip-trigger");
               if (p instanceof HTMLElement) p.setAttribute("hidden", "");
               if (b instanceof HTMLElement) b.setAttribute("aria-expanded", "false");
@@ -243,6 +226,8 @@ const titleId = `gt-title-${randomUUID()}`;
                 var t = e.target;
                 if (!(t instanceof Element)) return;
                 if (t.closest(".glossary-tooltip-wrap")) return;
+                if (t.closest("[data-glossary-popup]")) return;
+                if (t.closest(".glossary-mobile-scrim")) return;
                 w.__kbmGlossaryApi.closeAll();
               },
               true
@@ -258,15 +243,84 @@ const titleId = `gt-title-${randomUUID()}`;
       }
       w.__kbmGlossaryApi.ensureGlobalListeners();
 
+      var popupId = rootId + "-popup";
+      var popup = document.getElementById(popupId);
+      if (!popup) {
+        popup = document.createElement("div");
+        popup.className = "glossary-popup glossary-tooltip-popup";
+        popup.id = popupId;
+        popup.setAttribute("role", "dialog");
+        popup.setAttribute("aria-modal", "false");
+        popup.setAttribute("aria-labelledby", titleId);
+        popup.setAttribute("hidden", "");
+        popup.setAttribute("data-glossary-popup", "");
+        var srH = document.createElement("h2");
+        srH.className = "glossary-popup-sr-title";
+        srH.id = titleId;
+        srH.textContent = titlePlain;
+        var closeB = document.createElement("button");
+        closeB.type = "button";
+        closeB.className = "glossary-close";
+        closeB.setAttribute("data-glossary-close", "");
+        closeB.setAttribute("aria-label", "Close");
+        closeB.textContent = "\u00d7";
+        var contentEl = document.createElement("div");
+        contentEl.className = "glossary-content";
+        contentEl.innerHTML = cleanHtml;
+        popup.appendChild(srH);
+        popup.appendChild(closeB);
+        popup.appendChild(contentEl);
+        document.body.appendChild(popup);
+      }
+
       var root = document.getElementById(rootId);
       if (!root) return;
       var btn = root.querySelector(".glossary-tooltip-trigger");
-      var popup = root.querySelector("[data-glossary-popup]");
       if (!btn || !popup || !(btn instanceof HTMLButtonElement) || !(popup instanceof HTMLElement)) return;
 
       var lsKey = root.getAttribute("data-glossary-ls-key") || "";
       var autoOnce = root.getAttribute("data-glossary-auto-once") === "true";
       var api = w.__kbmGlossaryApi;
+
+      function isOpen() {
+        return !popup.hasAttribute("hidden");
+      }
+
+      function isMobileLayout() {
+        return w.matchMedia && w.matchMedia("(max-width: 640px)").matches;
+      }
+
+      function syncPopupPosition() {
+        if (!isOpen() || !root.isConnected) return;
+        if (isMobileLayout()) {
+          popup.style.top = "50%";
+          popup.style.left = "50%";
+          popup.style.right = "auto";
+          popup.style.bottom = "auto";
+          popup.style.transform = "translate(-50%, -50%)";
+          return;
+        }
+        var r = root.getBoundingClientRect();
+        var gap = 8;
+        var vw = w.innerWidth || document.documentElement.clientWidth;
+        var estW = Math.min(420, vw * 0.85);
+        var top = r.bottom + gap;
+        var left = r.left;
+        if (left + estW > vw - 8) left = Math.max(8, vw - estW - 8);
+        if (left < 8) left = 8;
+        popup.style.top = top + "px";
+        popup.style.left = left + "px";
+        popup.style.right = "auto";
+        popup.style.bottom = "auto";
+        popup.style.transform = "none";
+      }
+
+      function onViewportChange() {
+        if (isOpen()) syncPopupPosition();
+      }
+
+      w.addEventListener("scroll", onViewportChange, true);
+      w.addEventListener("resize", onViewportChange);
 
       function markSeen() {
         if (!autoOnce || !lsKey) return;
@@ -284,10 +338,6 @@ const titleId = `gt-title-${randomUUID()}`;
         }
       }
 
-      function isOpen() {
-        return !popup.hasAttribute("hidden");
-      }
-
       function setExpanded(open) {
         btn.setAttribute("aria-expanded", open ? "true" : "false");
         root.classList.toggle("glossary-tooltip-wrap--open", open);
@@ -297,8 +347,10 @@ const titleId = `gt-title-${randomUUID()}`;
         api.closeAll();
         popup.removeAttribute("hidden");
         setExpanded(true);
+        syncPopupPosition();
         markSeen();
         requestAnimationFrame(function () {
+          syncPopupPosition();
           var closeBtn = popup.querySelector("[data-glossary-close]");
           if (closeBtn instanceof HTMLElement) closeBtn.focus();
         });
@@ -346,10 +398,12 @@ const titleId = `gt-title-${randomUUID()}`;
 )}
 
 <style>
-  .glossary-tooltip-wrap {
+  /* Inline phrasing wrapper (<p>-safe): no block-level children in SSR markup */
+  .glossary-tooltip.glossary-tooltip-wrap {
     position: relative;
-    display: inline-block;
-    max-width: 100%;
+    display: inline;
+    vertical-align: baseline;
+    max-width: none;
   }
 
   /* Popups are position:absolute; avoid clipping inside pattern cards with implicit overflow. */
@@ -362,23 +416,27 @@ const titleId = `gt-title-${randomUUID()}`;
     isolation: isolate;
   }
 
-  .glossary-tooltip {
+  .glossary-tooltip-trigger {
     background: none;
     border: none;
     padding: 0;
+    margin: 0;
     font: inherit;
     color: inherit;
     cursor: pointer;
     text-decoration: underline dotted;
     text-underline-offset: 3px;
+    display: inline;
+    max-width: none;
+    width: auto;
   }
 
-  .glossary-tooltip:hover,
-  .glossary-tooltip:focus-visible {
+  .glossary-tooltip-trigger:hover,
+  .glossary-tooltip-trigger:focus-visible {
     text-decoration-thickness: 2px;
   }
 
-  .glossary-tooltip:focus-visible {
+  .glossary-tooltip-trigger:focus-visible {
     outline: 2px solid rgba(82, 104, 45, 0.35);
     outline-offset: 2px;
     border-radius: 2px;
@@ -396,15 +454,19 @@ const titleId = `gt-title-${randomUUID()}`;
     line-height: 0;
   }
 
-  .glossary-tooltip-fallback {
+  .glossary-tooltip-fallback.glossary-tooltip {
     text-decoration: underline dotted;
     text-underline-offset: 3px;
     cursor: default;
+    display: inline;
   }
 
-  .glossary-popup {
-    position: absolute;
-    top: calc(100% + 8px);
+  /* Body-appended popup has no Astro scope hash — use :global so fixed/modal styles apply */
+  :global(.glossary-popup[data-glossary-popup]),
+  :global(.glossary-tooltip-popup[data-glossary-popup]) {
+    position: fixed;
+    margin: 0;
+    top: 0;
     left: 0;
     z-index: 10050;
     width: min(420px, 85vw);
@@ -420,11 +482,13 @@ const titleId = `gt-title-${randomUUID()}`;
     pointer-events: auto;
   }
 
-  .glossary-popup[hidden] {
+  :global(.glossary-popup[hidden]),
+  :global(.glossary-tooltip-popup[hidden]) {
     display: none !important;
   }
 
-  .glossary-popup-sr-title {
+  :global(.glossary-popup .glossary-popup-sr-title),
+  :global(.glossary-tooltip-popup .glossary-popup-sr-title) {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -436,7 +500,8 @@ const titleId = `gt-title-${randomUUID()}`;
     border: 0;
   }
 
-  .glossary-close {
+  :global(.glossary-popup .glossary-close),
+  :global(.glossary-tooltip-popup .glossary-close) {
     position: absolute;
     top: 8px;
     right: 8px;
@@ -456,16 +521,19 @@ const titleId = `gt-title-${randomUUID()}`;
     -webkit-tap-highlight-color: transparent;
   }
 
-  .glossary-close:hover {
+  :global(.glossary-popup .glossary-close:hover),
+  :global(.glossary-tooltip-popup .glossary-close:hover) {
     background: #e5e7eb;
   }
 
-  .glossary-close:focus-visible {
+  :global(.glossary-popup .glossary-close:focus-visible),
+  :global(.glossary-tooltip-popup .glossary-close:focus-visible) {
     outline: 2px solid #52682d;
     outline-offset: 2px;
   }
 
-  .glossary-content {
+  :global(.glossary-popup .glossary-content),
+  :global(.glossary-tooltip-popup .glossary-content) {
     font-size: 0.95rem;
     line-height: 1.55;
     overflow-y: auto;
@@ -474,20 +542,24 @@ const titleId = `gt-title-${randomUUID()}`;
     padding-right: 2.25rem;
   }
 
-  .glossary-content :global(img) {
+  :global(.glossary-popup .glossary-content img),
+  :global(.glossary-tooltip-popup .glossary-content img) {
     max-width: 100%;
     height: auto;
   }
 
-  .glossary-content .glossary-popup-figure {
+  :global(.glossary-popup .glossary-content .glossary-popup-figure),
+  :global(.glossary-tooltip-popup .glossary-content .glossary-popup-figure) {
     margin: 0.75rem 0 0;
   }
 
-  .glossary-content .glossary-popup-help {
+  :global(.glossary-popup .glossary-content .glossary-popup-help),
+  :global(.glossary-tooltip-popup .glossary-content .glossary-popup-help) {
     margin-top: 0.75rem;
   }
 
-  .glossary-content .glossary-popup-help :global(p:first-child) {
+  :global(.glossary-popup .glossary-content .glossary-popup-help p:first-child),
+  :global(.glossary-tooltip-popup .glossary-content .glossary-popup-help p:first-child) {
     margin-top: 0;
   }
 
@@ -505,13 +577,8 @@ const titleId = `gt-title-${randomUUID()}`;
       cursor: pointer;
     }
 
-    .glossary-tooltip-wrap .glossary-popup {
-      position: fixed;
-      left: 50%;
-      top: 50%;
-      right: auto;
-      bottom: auto;
-      transform: translate(-50%, -50%);
+    :global(.glossary-popup:not([hidden])),
+    :global(.glossary-tooltip-popup:not([hidden])) {
       width: min(420px, 85vw);
       max-height: min(75vh, 560px);
       z-index: 10050;

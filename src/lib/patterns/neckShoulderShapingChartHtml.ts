@@ -26,8 +26,7 @@ function rowClassFromHighlight(hi: ReturnType<typeof getNeckShoulderChartRowHigh
  * Full chart section markup (table + dev note + SVG preview) for client-side injection.
  */
 export function renderNeckShoulderShapingChartSectionHtml(
-  chart: NeckShoulderShapingChart,
-  dataSourceNote: string
+  chart: NeckShoulderShapingChart
 ): string {
   const shoulderPreviewSvg = renderShoulderShapingSvg(chart.rows, "right");
   const rowsHtml = chart.rows
@@ -45,10 +44,6 @@ export function renderNeckShoulderShapingChartSectionHtml(
       }</td><td class="ns-shaping-chart__td-num">${r.rightStitchCount}</td></tr>`;
     })
     .join("");
-
-  const devNote = dataSourceNote
-    ? `<p class="ns-shaping-chart__dev-note">${escapeHtml(dataSourceNote)}</p>`
-    : "";
 
   return `<section class="ns-shaping-chart" aria-labelledby="ns-shaping-chart-heading">
   <h2 id="ns-shaping-chart-heading" class="ns-shaping-chart__title">Neckline / Shoulder Shaping Chart</h2>
@@ -69,11 +64,11 @@ export function renderNeckShoulderShapingChartSectionHtml(
           <th scope="colgroup" colspan="2" class="ns-shaping-chart__th-group">Stitch count</th>
         </tr>
         <tr>
-          <th scope="col" class="ns-shaping-chart__th-sub">Side</th>
+          <th scope="col" class="ns-shaping-chart__th-sub">Armhole</th>
           <th scope="col" class="ns-shaping-chart__th-sub">Neck</th>
           <th scope="col" class="ns-shaping-chart__th-sub">Neck center</th>
           <th scope="col" class="ns-shaping-chart__th-sub">Neck</th>
-          <th scope="col" class="ns-shaping-chart__th-sub">Side</th>
+          <th scope="col" class="ns-shaping-chart__th-sub">Armhole</th>
           <th scope="col" class="ns-shaping-chart__th-sub">Left</th>
           <th scope="col" class="ns-shaping-chart__th-sub">Right</th>
         </tr>
@@ -81,10 +76,8 @@ export function renderNeckShoulderShapingChartSectionHtml(
       <tbody>${rowsHtml}</tbody>
     </table>
   </div>
-  ${devNote}
   <div class="ns-shaping-chart__preview" aria-labelledby="ns-shaping-preview-heading">
     <h3 id="ns-shaping-preview-heading" class="ns-shaping-chart__preview-title">Neckline / Shoulder Shape Preview</h3>
-    <p class="ns-shaping-chart__preview-caption">Right shoulder (same data as table). Grid: 10 px per stitch, 10 px per row.</p>
     <div class="ns-shaping-chart__preview-svg-wrap">${shoulderPreviewSvg}</div>
   </div>
 </section>`;

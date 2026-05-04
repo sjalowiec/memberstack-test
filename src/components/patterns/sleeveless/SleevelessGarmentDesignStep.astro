@@ -1,4 +1,5 @@
 ---
+import PatternModeIndicator from "../PatternModeIndicator.astro";
 import SleevelessStartOver from "../SleevelessStartOver.astro";
 import "../../../styles/wizard.css";
 
@@ -12,30 +13,7 @@ const imgBase = "/images/patterns/sleeveless";
 ---
 
 <div class="wizard-page sg-pattern-page sg-build-panel" data-sg-build-panel="style">
-      <header class="page-header">
-        <h1>Version 1.0</h1>
-
-        <p>
-          Build your custom sleeveless sweater pattern step-by-step.
-          Choose your size and fit, enter your gauge, and we'll create a pattern that works for your machine.
-        </p>
-
-        <p>
-          You're creating a straight, sleeveless pullover with a round neckline and standard armhole shaping.
-          This version focuses on a clean, classic shape that's easy to knit and easy to customize.
-        </p>
-
-        <p>
-          Your measurements and gauge will shape the final pattern.
-          You can fine-tune the neckline to suit your style.
-        </p>
-
-        <p class="text-muted">
-          <em>More design options are coming next.</em>
-        </p>
-      </header>
-
-      <div class="calculator-card hat-builder-inputs" id="sleeveless-garment-builder">
+  <PatternModeIndicator mode="custom" integratedCard cardId="sleeveless-garment-builder" cardClass="hat-builder-inputs">
         <section
           class="hat-form-section sg-selector-section is-open"
           data-selector-key="knitFor"
@@ -53,10 +31,10 @@ const imgBase = "/images/patterns/sleeveless";
           </div>
           <div class="sg-section-options">
             <p class="sg-fit-audience-intro">
-              Pick Women's, Men's, Kids', or Baby — each matches the <a href="#" onclick="openSizingModal(); return false;">sweater sizing charts</a> on the Reference page.
+              Pick Women's, Men's, Kids', or Baby — each matches the <a href="#" onclick="openSizingModal(); return false;">sweater sizing charts</a> on the Reference page. Plus sizing is coming next.
             </p>
             <div
-              class="hat-length-picker__grid sg-fit-target-grid sg-fit-target-grid--four"
+              class="hat-length-picker__grid sg-fit-target-grid sg-fit-target-grid--five"
               role="radiogroup"
               aria-labelledby="sg-section-knitfor-heading"
             >
@@ -75,6 +53,17 @@ const imgBase = "/images/patterns/sleeveless";
               <button type="button" class="hat-length-picker__option" data-fit-target-option="baby" aria-pressed="false">
                 <span class="hat-length-picker__option-label">Baby</span>
                 <span class="sg-fit-option-check" aria-hidden="true">✓</span>
+              </button>
+              <button
+                type="button"
+                class="hat-length-picker__option sg-option is-coming-next sg-fit-target-plus"
+                data-fit-target-option="plus"
+                disabled
+                aria-disabled="true"
+                aria-pressed="false"
+                aria-label="Plus sizing chart (coming next)"
+              >
+                <span class="hat-length-picker__option-label">Plus</span>
               </button>
             </div>
           </div>
@@ -120,6 +109,7 @@ const imgBase = "/images/patterns/sleeveless";
               disabled
               aria-disabled="true"
               aria-pressed="false"
+              aria-label="A-line sweater shape (coming next)"
             >
               <img
                 src={`${imgBase}/shape-aline.svg`}
@@ -129,7 +119,26 @@ const imgBase = "/images/patterns/sleeveless";
                 height="120"
                 loading="lazy"
               />
-              <span class="hat-length-picker__option-label">Shaped</span>
+              <span class="hat-length-picker__option-label">A-line</span>
+            </button>
+            <button
+              type="button"
+              class="hat-length-picker__option sg-option is-coming-next"
+              data-shape-option="waist"
+              disabled
+              aria-disabled="true"
+              aria-pressed="false"
+              aria-label="Waist shaped sweater (coming next)"
+            >
+              <img
+                src={`${imgBase}/shape-fitted.svg`}
+                alt=""
+                class="hat-length-picker__img sg-picker-img"
+                width="120"
+                height="120"
+                loading="lazy"
+              />
+              <span class="hat-length-picker__option-label">Waist Shaped</span>
             </button>
             </div>
           </div>
@@ -160,7 +169,7 @@ const imgBase = "/images/patterns/sleeveless";
               aria-pressed="false"
             >
               <img
-                src={`${imgBase}/straight-top-closed.svg`}
+                src={`${imgBase}/pullover-straight.svg`}
                 alt=""
                 class="hat-length-picker__img sg-picker-img"
                 width="120"
@@ -179,7 +188,7 @@ const imgBase = "/images/patterns/sleeveless";
               aria-pressed="false"
             >
               <img
-                src={`${imgBase}/straight-top-open.svg`}
+                src={`${imgBase}/cardigan-straight.svg`}
                 alt=""
                 class="hat-length-picker__img sg-picker-img"
                 width="120"
@@ -198,7 +207,7 @@ const imgBase = "/images/patterns/sleeveless";
             4. Length
           </h2>
           <p class="sg-fit-audience-intro sg-v1-length-note__body">
-            Hip length is worked from your selected size chart row for this release (back neck to hem). Other lengths are coming next.
+            For this beta version, length is set. Custom lengths are coming next.
           </p>
         </section>
 
@@ -288,13 +297,24 @@ const imgBase = "/images/patterns/sleeveless";
             6. Next: Custom Fit &amp; Measurements →
           </button>
         ) : (
-          <a href="/patterns/sleeveless-fit" class="kbm-btn kbm-btn-accent">6. Next: Custom Fit &amp; Measurements →</a>
+          <a href="/patterns/sleeveless/pattern?buildStep=fit" class="kbm-btn kbm-btn-accent">6. Next: Custom Fit &amp; Measurements →</a>
         )}
       </div>
       {!embedded && <SleevelessStartOver />}
+      <p class="sg-sleeveless-builder-version text-muted">Version 1.0</p>
+  </PatternModeIndicator>
 </div>
 
 <style>
+  .sg-sleeveless-builder-version {
+    margin: 1.25rem auto 0;
+    max-width: 800px;
+    padding: 0 1rem;
+    text-align: center;
+    font-size: 0.8125rem;
+    color: #9ca3af;
+  }
+
   .sg-pattern-page {
     --sg-accent: #c2614e;
   }
@@ -453,7 +473,7 @@ const imgBase = "/images/patterns/sleeveless";
 
   .sg-shape-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
     width: 100%;
     box-sizing: border-box;
@@ -482,6 +502,23 @@ const imgBase = "/images/patterns/sleeveless";
 
   .sg-fit-target-grid--four {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  /* Plus chart: same cell size as peers; ribbon scaled for compact text-only buttons */
+  .sg-fit-target-grid .hat-length-picker__option.sg-option.is-coming-next.sg-fit-target-plus {
+    pointer-events: auto;
+    cursor: not-allowed;
+  }
+
+  .sg-fit-target-grid .hat-length-picker__option.sg-option.is-coming-next.sg-fit-target-plus::after {
+    content: "Coming Next";
+    top: 6px;
+    right: -34px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 5px 42px;
+    text-transform: none;
+    letter-spacing: 0.02em;
   }
 
   .hat-length-picker__option:disabled:not(.is-coming-next) {
@@ -667,7 +704,7 @@ const imgBase = "/images/patterns/sleeveless";
 
   const IMG = "/images/patterns/sleeveless";
 
-  /** V1 builder: Plus Size is not selectable — legacy “plus” sessions map to Women's in storage. */
+  /** V1 builder: Plus is shown as “coming next” only; legacy “plus” sessions map to Women's in storage. */
   const V1_KNIT_FOR_OPTIONS = ["misses", "men", "kids", "baby"];
 
   const V1_LOCKED = {
@@ -702,8 +739,15 @@ const imgBase = "/images/patterns/sleeveless";
   const labelKnitFor = SLEEVELESS_CHART_AUDIENCE_LABELS;
   const labelShape = {
     straight: "Straight",
-    aline: "Shaped",
+    aline: "A-line",
+    waist: "Waist Shaped",
   };
+
+  /** V1: only Straight is selectable; header must never show Coming Soon shapes as the current choice. */
+  function shapeLabelForSummary(shape) {
+    if (shape === "straight") return labelShape.straight;
+    return labelShape.straight;
+  }
   const labelFront = {
     closed: "Pullover",
     open: "Cardigan",
@@ -766,10 +810,10 @@ const imgBase = "/images/patterns/sleeveless";
     const partial = {
       style: {
         recipientCategory: garmentConfig.knitFor,
-        bodyShape: V1_LOCKED.shape,
-        frontStyle: V1_LOCKED.frontStyle,
+        bodyShape: garmentConfig.shape,
+        frontStyle: garmentConfig.frontStyle,
         length: V1_LOCKED.length,
-        neckline: V1_LOCKED.neckline,
+        neckline: garmentConfig.neckline,
         armholeStyle: "standard",
         summarySentence: hasCompleteGarmentDesign() ? buildSoFarSummarySentence() : "",
       },
@@ -796,10 +840,45 @@ const imgBase = "/images/patterns/sleeveless";
     if (chart) {
       garmentConfig.knitFor = chart;
     }
-    garmentConfig.shape = V1_LOCKED.shape;
+    const rawShape = typeof s.bodyShape === "string" ? s.bodyShape : "";
+    garmentConfig.shape = normalizeStoredBodyShapeToGarmentShape(rawShape);
     garmentConfig.length = V1_LOCKED.length;
-    garmentConfig.frontStyle = V1_LOCKED.frontStyle;
-    garmentConfig.neckline = V1_LOCKED.neckline;
+    const fs = typeof s.frontStyle === "string" ? s.frontStyle.trim() : "";
+    garmentConfig.frontStyle =
+      fs === "open" || fs === "closed" ? fs : V1_LOCKED.frontStyle;
+    const nk = typeof s.neckline === "string" ? s.neckline.trim() : "";
+    garmentConfig.neckline =
+      nk === "round" || nk === "v" ? nk : V1_LOCKED.neckline;
+  }
+
+  /** Maps persisted / Step 2 bodyShape to UI shape keys (data-shape-option). Default straight. */
+  function normalizeStoredBodyShapeToGarmentShape(v) {
+    if (v == null || String(v).trim() === "") return "straight";
+    const t = String(v)
+      .toLowerCase()
+      .trim()
+      .replace(/_/g, "-");
+    if (t === "aline" || t === "a-line") return "aline";
+    if (t === "waist" || t === "waist-shaped") return "waist";
+    if (t === "straight" || t === "gathered") return "straight";
+    return "straight";
+  }
+
+  /** straight → straight; aline → a-line; waist → fitted (asset filenames). */
+  function shapeKeyToFrontImageSuffix(shape) {
+    if (shape === "aline") return "a-line";
+    if (shape === "waist") return "fitted";
+    return "straight";
+  }
+
+  function pulloverImageUrl(suffix) {
+    if (suffix === "fitted") return `${IMG}/pullover_fitted.svg`;
+    if (suffix === "a-line") return `${IMG}/pullover-a-line.svg`;
+    return `${IMG}/pullover-straight.svg`;
+  }
+
+  function cardiganImageUrl(suffix) {
+    return `${IMG}/cardigan-${suffix}.svg`;
   }
 
   function syncHeaderSummaries(root) {
@@ -814,7 +893,14 @@ const imgBase = "/images/patterns/sleeveless";
       const hasChoice =
         selectedValue !== undefined && selectedValue !== null && String(selectedValue).trim() !== "";
       const labelMap = selectorLabels[key];
-      const resolved = hasChoice ? labelMap?.[selectedValue] ?? String(selectedValue) : "";
+      const resolved =
+        key === "shape"
+          ? hasChoice
+            ? shapeLabelForSummary(selectedValue)
+            : ""
+          : hasChoice
+            ? labelMap?.[selectedValue] ?? String(selectedValue)
+            : "";
       valueSpan.textContent = resolved;
       if (checkmark) {
         checkmark.style.display = resolved ? "inline" : "none";
@@ -823,9 +909,9 @@ const imgBase = "/images/patterns/sleeveless";
   }
 
   function frontSrc(shape, front) {
-    const door = front === "open" ? "open" : "closed";
-    if (shape === "aline") return `${IMG}/a-line-top-${door}.svg`;
-    return `${IMG}/straight-top-${door}.svg`;
+    const suffix = shapeKeyToFrontImageSuffix(shape);
+    if (front === "open") return cardiganImageUrl(suffix);
+    return pulloverImageUrl(suffix);
   }
 
   function syncFrontImages() {
@@ -845,7 +931,9 @@ const imgBase = "/images/patterns/sleeveless";
 
     root.querySelectorAll("[data-shape-option]").forEach((btn) => {
       const v = btn.getAttribute("data-shape-option");
-      const on = v === garmentConfig.shape;
+      const available =
+        !btn.disabled && !btn.classList.contains("is-coming-next");
+      const on = available && v === garmentConfig.shape;
       btn.classList.toggle("is-selected", on);
       btn.setAttribute("aria-pressed", on ? "true" : "false");
     });
@@ -948,6 +1036,7 @@ const imgBase = "/images/patterns/sleeveless";
 
     root.querySelectorAll("[data-fit-target-option]").forEach((btn) => {
       btn.addEventListener("click", () => {
+        if (btn.disabled || btn.classList.contains("is-coming-next")) return;
         const v = btn.getAttribute("data-fit-target-option");
         if (V1_KNIT_FOR_OPTIONS.includes(v)) {
           garmentConfig.knitFor = v;
@@ -1015,7 +1104,9 @@ const imgBase = "/images/patterns/sleeveless";
     const pathNorm = url.pathname.replace(/\/$/, "") || "/";
     const isReset =
       url.searchParams.get(SLEEVELESS_BUILDER_RESET_PARAM) === SLEEVELESS_BUILDER_RESET_VALUE &&
-      (pathNorm.endsWith("/patterns/sleeveless-garment") ||
+      (pathNorm.endsWith("/patterns/sleeveless/design") ||
+        pathNorm.endsWith("/patterns/sleeveless-garment") ||
+        pathNorm.endsWith("/patterns/sleeveless/pattern") ||
         pathNorm.endsWith("/patterns/sleeveless-pattern"));
 
     if (isReset) {

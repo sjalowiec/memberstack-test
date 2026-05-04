@@ -13,6 +13,9 @@ import YarnRequirement from "../../components/tools/YarnRequirement.astro";
 import PatternComments from "../../components/patterns/PatternComments.astro";
 import PatternHeaderImage from "../../components/patterns/PatternHeaderImage.astro";
 import WarningBox from "../../components/ui/WarningBox.astro";
+import PatternTipsToggle from "../../components/patterns/PatternTipsToggle.astro";
+import PatternTabs from "../../components/patterns/PatternTabs.astro";
+import PatternModeIndicator from "../../components/patterns/PatternModeIndicator.astro";
 import glossaryJson from "../../data/glossary.json";
 import hatSizingRows from "../../data/sizing_hats.json";
 
@@ -571,29 +574,7 @@ select.disabled {
   font-size: 1rem;
 }
 
-/* Tab labels: desktop shows text; mobile shows emoji icons (see max-width: 767px block below) */
-.hat-builder-inputs .pattern-tab-nav .tab-icon {
-  display: none;
-}
-
-/* Hat builder only: Pattern tab locked until required build fields are complete */
-.hat-builder-inputs .pattern-tab-nav .tab-btn.is-disabled {
-  color: #9ca3af;
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.hat-builder-inputs .pattern-tab-nav .tab-btn.is-disabled:hover,
-.hat-builder-inputs .pattern-tab-nav .tab-btn.is-disabled:focus-visible {
-  color: #9ca3af;
-  border-bottom-color: transparent;
-  opacity: 0.55;
-}
-
-.hat-builder-inputs .pattern-tab-nav .tab-btn.is-disabled.active {
-  color: #9ca3af;
-  border-bottom-color: transparent;
-}
+/* Tab chrome: `pattern-tabs-scope` on PatternTabs + pattern-tabs-scope.css */
 
 /* Build tab: let the form column use full main width on small screens (parent min-width / flex tracks can squeeze selects). */
 @media (max-width: 767px) {
@@ -621,34 +602,6 @@ select.disabled {
   .hat-builder-inputs .pattern-tab-content,
   .hat-builder-inputs .tab-panel#tab-build {
     overflow-x: visible;
-  }
-
-  .hat-builder-inputs .pattern-tab-nav .tab-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    line-height: 1;
-  }
-
-  .hat-builder-inputs .pattern-tab-nav .tab-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
-  .hat-builder-inputs .pattern-tab-nav .tab-btn {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0;
   }
 }
 
@@ -1197,23 +1150,6 @@ select.disabled {
   color: #666;
 }
 
-/* Tips styling - :global needed for dynamically generated content */
-:global(.pattern-tip) {
-  font-size: 0.85rem;
-  color: #374151;
-  background: rgba(194, 97, 78, 0.07);
-  border-left: 4px solid #c2614e;
-  border-radius: 6px;
-  padding: 0.75rem 1rem;
-  margin: 0.5rem 0 0.75rem 0;
-  line-height: 1.4;
-}
-
-:global(.pattern-tip strong) {
-  font-weight: 700;
-  color: #c2614e;
-}
-
 /* 4-wedge crown: indent instructional paragraphs under each wedge header */
 :global(#pattern-content .pattern-wedge-crown-body) {
   padding-left: 1rem;
@@ -1323,37 +1259,6 @@ select.disabled {
   }
 }
 
-:global(.tips-inline-toggle) {
-  color: #c2614e;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-:global(.tips-inline-toggle:hover) {
-  text-decoration: underline;
-}
-
-:global(.tips-icon) {
-  color: #c2614e;
-  margin-right: 6px;
-  font-size: 0.9em;
-  vertical-align: middle;
-  opacity: 0.85;
-}
-
-/* Tips OFF: quiet utility link only (no tip box) */
-:global(.pattern-tips-off-row) {
-  margin: 0 0 0.5rem 0;
-  padding: 0;
-  font-size: 0.8rem;
-  line-height: 1.4;
-}
-
-:global(.pattern-tips-off-row .tips-icon) {
-  cursor: pointer;
-}
-
 /* Results container styling */
 .results-container {
   margin-top: 1.5rem;
@@ -1384,15 +1289,6 @@ select.disabled {
   margin: 0.15rem 0;
   font-size: 0.85rem;
   color: #444;
-}
-
-/* Tips visibility (OFF row is not .pattern-tip, so it stays visible) */
-:global(#pattern-content[data-show-tips="false"] .pattern-tip) {
-  display: none;
-}
-
-:global(#pattern-content[data-show-tips="true"] .pattern-tip) {
-  display: block;
 }
 
 /* Print-specific overrides for hat patterns */
@@ -1477,20 +1373,6 @@ select.disabled {
     border-bottom: 1px solid #ccc;
   }
   
-  /* Print tips: when off, hide all tips including intro; when on, show all */
-  :global(#pattern-content[data-show-tips="false"] .pattern-tip) {
-    display: none !important;
-  }
-
-  :global(#pattern-content[data-show-tips="true"] .pattern-tip) {
-    display: block !important;
-    border-left: 1px solid #333 !important;
-  }
-
-  :global(.pattern-tips-off-row) {
-    display: none !important;
-  }
-
   /* Tabs: show Build + Pattern for print (summary + instructions); hide nav and placeholder tabs */
   .pattern-tab-nav {
     display: none !important;
@@ -1586,6 +1468,7 @@ select.disabled {
       <PatternHeaderImage
         src="/images/basic-hat.webp"
         alt="Machine knit hat"
+        showZoomHint={false}
       />
     </div>
     <div class="hat-builder-page-header__main">
@@ -1601,37 +1484,18 @@ select.disabled {
   
   <div id="hat-builder-form-top" class="wizard-container scroll-mt-[96px]">
     <div class="calculator-card hat-builder-inputs">
-      <div class="pattern-tabs">
-        <div class="pattern-tab-nav">
-          <button type="button" class="tab-btn active" data-tab="build">
-            <span class="tab-icon" aria-hidden="true">⚙️</span>
-            <span class="tab-label">Build</span>
-          </button>
-          <button
-            type="button"
-            id="hat-tab-pattern"
-            class="tab-btn is-disabled"
-            data-tab="pattern"
-            aria-disabled="true"
-          >
-            <span class="tab-icon" aria-hidden="true">📝</span>
-            <span class="tab-label">Pattern</span>
-          </button>
-          <button type="button" class="tab-btn" data-tab="share">
-            <span class="tab-icon" aria-hidden="true">💬</span>
-            <span class="tab-label">Ask / Share</span>
-          </button>
-          <button type="button" class="tab-btn" data-tab="inspiration">
-            <span class="tab-icon" aria-hidden="true">💡</span>
-            <span class="tab-label">Inspiration</span>
-          </button>
-        </div>
-
-        <div class="pattern-tab-content">
-          <div class="tab-panel active" id="tab-build">
+      <PatternTabs
+        rootClass="pattern-tabs-scope"
+        patternTabDisabled={true}
+        patternTabButtonId="hat-tab-pattern"
+        managePatternReadiness={true}
+        patternInitiallyReady={false}
+      >
+        <div slot="build">
             <div class="pattern-builder-unit-row no-print" style="margin-bottom: 12px;">
               <UnitToggle id="hat" />
             </div>
+          <PatternModeIndicator mode="custom">
             <form id="hat-builder-form" autocomplete="off" novalidate>
             <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:12px;">
               <button id="clear-hat-builder" type="button">Clear</button>
@@ -2019,9 +1883,10 @@ select.disabled {
               <p id="create-pattern-feedback" class="create-pattern-feedback" role="status" aria-live="polite" hidden></p>
             </div>
             </form>
-          </div>
+          </PatternModeIndicator>
+        </div>
 
-          <div class="tab-panel" id="tab-pattern">
+        <div slot="pattern">
             <div id="results" class="results-container scroll-mt-[96px]" style="display: none;">
               <WarningBox message={patternPersistWarning} />
               <ActionBar formScrollTarget="hat-builder-form-top" />
@@ -2030,8 +1895,18 @@ select.disabled {
                 <div class="pattern-print-results">
                   <div class="pattern-print-section pattern-print-section--instructions">
                     <div class="pattern-card">
-                      <div id="pattern-content" data-show-tips="false">
-                        <!-- Will be populated by JavaScript -->
+                      <div
+                        id="hat-pattern-tips-scope"
+                        class="pattern-tips-scope"
+                        data-show-tips="true"
+                      >
+                        <PatternTipsToggle
+                          storageKey="hat-show-tips"
+                          scopeSelector="#hat-pattern-tips-scope"
+                        />
+                        <div id="pattern-content">
+                          <!-- Will be populated by JavaScript -->
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -2049,14 +1924,14 @@ select.disabled {
                 </div>
               </div>
             </div>
-          </div>
+        </div>
 
-          <div class="tab-panel" id="tab-share">
+        <div slot="share">
             <p>Ask questions or share your results here.</p>
             <PatternComments />
-          </div>
+        </div>
 
-          <div class="tab-panel" id="tab-inspiration">
+        <div slot="inspiration">
             <div class="inspiration-section">
               <h3 class="inspiration-heading">Get Inspired</h3>
 
@@ -2080,9 +1955,8 @@ select.disabled {
                 </a>
               </p>
             </div>
-          </div>
         </div>
-      </div>
+      </PatternTabs>
     </div>
   </div>
   <PrintFooter url={pageUrl} />
@@ -2515,7 +2389,7 @@ async function initHatBuilder() {
 
   tabButtons.forEach((button) => {
     button.addEventListener('click', () => {
-      if (button.classList.contains('is-disabled')) return;
+      if (button.classList.contains('is-disabled') && button.dataset.tab !== 'pattern') return;
       const target = button.dataset.tab;
       if (!target) return;
       activateWizardTab(target);
@@ -3265,9 +3139,6 @@ async function initHatBuilder() {
       console.log(
         '[hat-builder debug] Create handler: about to call activateWizardTab("pattern")'
       );
-      const patternNav = document.getElementById('hat-tab-pattern');
-      patternNav?.classList.remove('is-disabled');
-      patternNav?.removeAttribute('aria-disabled');
       activateWizardTab('pattern');
     });
     console.log('build listener attached');
@@ -3553,14 +3424,17 @@ async function initHatBuilder() {
     }, 4000);
   }
 
+  /** Pattern tab managed empty state: ready only after Create My Pattern runs and #results is visible. */
+  function hatPatternTabOutputVisible() {
+    const resultsEl = document.getElementById('results');
+    return !!(resultsEl && resultsEl.style.display === 'block');
+  }
+
   function updatePatternReadinessUi() {
     const cta = document.getElementById('build-pattern-cta');
-    const patternTabBtn =
-      document.getElementById('hat-tab-pattern') ||
-      document.querySelector('.pattern-tabs .tab-btn[data-tab="pattern"]');
     const createPatternBtn = document.getElementById('create-pattern-btn');
     isPatternReady = requiredPatternInputsComplete();
-    const ready = isPatternReady;
+    const inputsComplete = isPatternReady;
 
     if (hatYarnDrawerTriggerWrap) {
       hatYarnDrawerTriggerWrap.hidden = !isYarnEstimatorInputsReady();
@@ -3571,30 +3445,21 @@ async function initHatBuilder() {
     }
     if (createPatternBtn) {
       createPatternBtn.removeAttribute('disabled');
-      createPatternBtn.classList.toggle('button-disabled', !ready);
-      if (ready) {
+      createPatternBtn.classList.toggle('button-disabled', !inputsComplete);
+      if (inputsComplete) {
         createPatternBtn.removeAttribute('aria-disabled');
       } else {
         createPatternBtn.setAttribute('aria-disabled', 'true');
       }
     }
-    if (patternTabBtn) {
-      patternTabBtn.classList.toggle('is-disabled', !ready);
-      if (ready) {
-        patternTabBtn.removeAttribute('aria-disabled');
-      } else {
-        patternTabBtn.setAttribute('aria-disabled', 'true');
-      }
+
+    const hatTabsRoot = document.querySelector('.hat-builder-inputs .pattern-tabs');
+    if (hatTabsRoot) {
+      hatTabsRoot.classList.toggle('pattern-tabs--pattern-ready', hatPatternTabOutputVisible());
     }
 
-    if (!ready) {
+    if (!inputsComplete) {
       setHatZeroBodyWarningVisible(false);
-      const patternNavBtn =
-        document.getElementById('hat-tab-pattern') ||
-        document.querySelector('.pattern-tabs .tab-btn[data-tab="pattern"]');
-      if (patternNavBtn?.classList.contains('active')) {
-        activateWizardTab('build');
-      }
     }
   }
 
@@ -4075,38 +3940,7 @@ async function initHatBuilder() {
     window.print();
   });
   
-  // Tips Toggle Functionality - called after pattern content is rendered
   const patternContent = document.getElementById('pattern-content');
-  
-  // Apply saved preference to pattern content on initial load
-  const savedShowTips = localStorage.getItem('hat-show-tips') === 'true';
-  patternContent.dataset.showTips = savedShowTips ? 'true' : 'false';
-  
-  function updatePatternTipsIntroUi(tipsOn) {
-    const slot = patternContent.querySelector('.pattern-tips-intro-slot');
-    if (!slot) return;
-    if (tipsOn) {
-      slot.innerHTML =
-        '<div class="pattern-tip pattern-tip-intro" data-tip><strong>Tip:</strong> Pattern Tips are on to give you quick help and helpful reminders as you knit. <a href="#" class="tips-inline-toggle" data-testid="link-tips-toggle">Hide tips</a></div>';
-    } else {
-      slot.innerHTML =
-        '<p class="pattern-tips-off-row"><i class="fa-regular fa-lightbulb" style="color: #c2614e;"></i><a href="#" class="tips-inline-toggle" data-testid="link-tips-toggle"> Show pattern tips</a></p>';
-    }
-  }
-
-  patternContent.addEventListener('click', (e) => {
-    const link = e.target.closest('.tips-inline-toggle');
-    const icon = e.target.closest('.tips-icon');
-    const iconInOffRow =
-      icon && icon.closest('.pattern-tips-off-row') && patternContent.contains(icon);
-    if (!((link && patternContent.contains(link)) || iconInOffRow)) return;
-    e.preventDefault();
-    const isShowing = patternContent.dataset.showTips === 'true';
-    const newState = !isShowing;
-    patternContent.dataset.showTips = newState ? 'true' : 'false';
-    localStorage.setItem('hat-show-tips', newState ? 'true' : 'false');
-    updatePatternTipsIntroUi(newState);
-  });
 
   patternContent.addEventListener('change', (e) => {
     const t = e.target;
@@ -4158,6 +3992,7 @@ async function initHatBuilder() {
 
     if (!requiredPatternInputsComplete()) {
       abortIncomplete();
+      updatePatternReadinessUi();
       return;
     }
 
@@ -4184,6 +4019,7 @@ async function initHatBuilder() {
     const totalHatLength = resolveTotalHatLengthInches(fit, hatSizeValue, currentUnit);
     if (totalHatLength == null || totalHatLength <= 0) {
       abortIncomplete();
+      updatePatternReadinessUi();
       return;
     }
     const hatHeight = totalHatLength;
@@ -4302,6 +4138,7 @@ async function initHatBuilder() {
       });
     }
     showResults(resultsVisibilityConfig);
+    updatePatternReadinessUi();
 
     // Update print summary
     updatePrintSummary({
@@ -4664,11 +4501,6 @@ async function initHatBuilder() {
           ? finishingSpiral
           : finishingWedgeSeamed;
     
-    // Pattern HTML — ON: full intro tip + Hide link; OFF: quiet “Show pattern tips” row only
-    const savedShowTipsForBtn = localStorage.getItem('hat-show-tips') === 'true';
-    const tipsIntroSlotHtml = savedShowTipsForBtn
-      ? `<div class="pattern-tips-intro-slot"><div class="pattern-tip pattern-tip-intro" data-tip><strong>Tip:</strong> Pattern Tips are on to give you quick help and helpful reminders as you knit. <a href="#" class="tips-inline-toggle" data-testid="link-tips-toggle">Hide tips</a></div></div>`
-      : `<div class="pattern-tips-intro-slot"><p class="pattern-tips-off-row"><i class="fa-regular fa-lightbulb" style="color: #c2614e;"></i><a href="#" class="tips-inline-toggle" data-testid="link-tips-toggle"> Show pattern tips</a></p></div>`;
     const brimDeeperBodyTipHtml =
       bodyRows > 0
         ? `<div class="pattern-tip" data-tip><strong>Tip:</strong> Want a deeper brim? Knit extra brim rows before continuing to the body.</div>`
@@ -4682,7 +4514,6 @@ async function initHatBuilder() {
           )
         : '';
     const patternHTML = `
-      ${tipsIntroSlotHtml}
       ${wrapHatPatternSection(
         'measurements',
         '<h4>Finished measurements</h4>',
@@ -4723,7 +4554,6 @@ async function initHatBuilder() {
     `;
     
     updateHTML('#pattern-content', patternHTML);
-    patternContent.dataset.showTips = savedShowTipsForBtn ? 'true' : 'false';
     applyHatPatternSectionCollapseState(patternContent);
 
     // Generate diagram
@@ -4875,6 +4705,9 @@ if (document.readyState === 'loading') {
       // Hide results
       const results = document.getElementById('results');
       if (results) results.style.display = 'none';
+
+      const hatTabsRoot = document.querySelector('.hat-builder-inputs .pattern-tabs');
+      if (hatTabsRoot) hatTabsRoot.classList.remove('pattern-tabs--pattern-ready');
 
       const zeroBodyWarn = document.getElementById('hat-zero-body-warning');
       if (zeroBodyWarn) zeroBodyWarn.setAttribute('hidden', '');

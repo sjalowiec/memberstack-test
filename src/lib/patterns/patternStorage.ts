@@ -13,9 +13,15 @@ export const LEGACY_GARMENT_CONFIG_KEY = "sleeveless-garment-config";
 /** Combined builder sections for DevTools / unified reads (`style`, `fit`, `yarnGaugeMachine`). */
 export const PATTERN_BUILDER_DATA_KEY = "patternBuilderData";
 
-/** Query flag on `/patterns/sleeveless-garment` for post–Start Over reset (strip after handling). */
+/** Query flag on `/patterns/sleeveless/pattern` (legacy standalone design URL) for post–Start Over reset (strip after handling). */
 export const SLEEVELESS_BUILDER_RESET_PARAM = "reset";
 export const SLEEVELESS_BUILDER_RESET_VALUE = "1";
+
+/**
+ * Express-only wizard snapshot (`/patterns/sleeveless-express`).
+ * Not used by the Custom builder or {@link PATTERN_STORAGE_KEY} — safe to clear without affecting shared pattern data.
+ */
+export const SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY = "kbm_sleeveless_express_builder";
 
 const LEGACY_STORAGE_CANDIDATES = [
   LEGACY_GARMENT_CONFIG_KEY,
@@ -573,7 +579,7 @@ const SLEEVELESS_PATTERN_BUILDER_STORAGE_KEYS: readonly string[] = [
 
 /**
  * Removes every sleeveless pattern builder key from localStorage. Does not remove other app keys.
- * Use for “start over” / reset; redirect to `/patterns/sleeveless-garment?reset=1` so the garment page can clear UI state and strip the query via `history.replaceState`.
+ * Use for “start over” / reset; load `/patterns/sleeveless/pattern?buildStep=design&reset=1` so the unified builder can clear UI state and strip the query via `history.replaceState`.
  */
 export function clearSleevelessPatternBuilderData(): void {
   if (typeof localStorage === "undefined") return;

@@ -67,12 +67,8 @@
       btn.addEventListener("click", () => {
         if (!window.confirm(CONFIRM_MSG)) return;
         clearSleevelessPatternBuilderData();
-        const path = window.location.pathname.replace(/\/$/, "") || "/";
-        let base = "/patterns/sleeveless-garment";
-        if (path.includes("/patterns/sleeveless-pattern")) {
-          base = "/patterns/sleeveless-pattern";
-        }
-        const next = new URL(base, window.location.origin);
+        const next = new URL("/patterns/sleeveless/pattern", window.location.origin);
+        next.searchParams.set("buildStep", "design");
         next.searchParams.set(SLEEVELESS_BUILDER_RESET_PARAM, SLEEVELESS_BUILDER_RESET_VALUE);
         window.location.assign(next.pathname + next.search);
       });

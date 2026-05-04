@@ -1,18 +1,3 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import SleevelessBuilderNav from "../../components/patterns/SleevelessBuilderNav.astro";
-import SleevelessGarmentYarnGaugeStep from "../../components/patterns/sleeveless/SleevelessGarmentYarnGaugeStep.astro";
-import "../../styles/wizard.css";
+return Astro.redirect("/patterns/sleeveless/pattern?buildStep=yarn", 301);
 ---
-
-<Layout
-  title="Yarn & Gauge | Knit it Now"
-  description="Record yarn, swatch gauge, and machine needle count for your sleeveless sweater pattern."
->
-  <main class="wizard-page sg-yarn-page">
-    <div class="wizard-container">
-      <SleevelessBuilderNav currentStep="yarn" />
-      <SleevelessGarmentYarnGaugeStep />
-    </div>
-  </main>
-</Layout>

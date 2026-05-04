@@ -2,6 +2,9 @@ import { getPatternData, normalizeSleevelessAudience } from "./patternStorage";
 
 /** Stable id per required check; extend when adding new rules. */
 export type PatternBuilderRequiredCheckId =
+  | "design_choices"
+  | "selected_size"
+  | "fit_ease"
   | "finished_bust_chest"
   | "gaugeStitchesPerInch"
   | "gaugeRowsPerInch"
@@ -11,6 +14,8 @@ export type PatternBuilderMissingItem = {
   id: PatternBuilderRequiredCheckId;
   /** User-facing text; may differ from the raw storage field (e.g. size selection vs. a measurement cell). */
   label: string;
+  /** Page + fragment to fix this item (optional yarn fields are never listed). */
+  href?: string;
 };
 
 export type PatternBuilderRequiredValidation = {
@@ -18,11 +23,28 @@ export type PatternBuilderRequiredValidation = {
   missingItems: PatternBuilderMissingItem[];
 };
 
-/** Deep link to the size selection block on the fit page. */
-export const PATTERN_BUILDER_SIZE_SELECTION_HREF = "/patterns/sleeveless-fit#pattern-builder-size-selection";
+/** Deep link to the size selection block (unified builder, Fit step). */
+export const PATTERN_BUILDER_SIZE_SELECTION_HREF =
+  "/patterns/sleeveless/pattern?buildStep=fit#pattern-builder-size-selection";
 
-/** Fine-tune measurements (finished bust/chest, etc.) on the fit page. */
-export const PATTERN_BUILDER_FINE_TUNE_HREF = "/patterns/sleeveless-fit#fine-tune";
+/** Fine-tune measurements (unified builder, Fit step). */
+export const PATTERN_BUILDER_FINE_TUNE_HREF = "/patterns/sleeveless/pattern?buildStep=fit#fine-tune";
+
+/** Garment design step (unified builder, Design step). */
+export const PATTERN_BUILDER_DESIGN_HREF =
+  "/patterns/sleeveless/pattern?buildStep=design#sleeveless-garment-builder";
+
+/** Fit / ease choice section (unified builder, Fit step). */
+export const PATTERN_BUILDER_FIT_EASE_HREF =
+  "/patterns/sleeveless/pattern?buildStep=fit#sg-fit-choice-heading";
+
+/** Stitch & row gauge section (unified builder; `yarn` and legacy `gauge` both resolve to the yarn panel). */
+export const PATTERN_BUILDER_YARN_GAUGE_SECTION_HREF =
+  "/patterns/sleeveless/pattern?buildStep=yarn#sg-yarn-gauge-heading";
+
+/** Available needles (unified builder, yarn step). */
+export const PATTERN_BUILDER_YARN_NEEDLES_HREF =
+  "/patterns/sleeveless/pattern?buildStep=yarn#sg-yarn-needles-heading";
 
 /**
  * True if `value` is a positive finite number, or a string that parses to one (e.g. `42"`, ` 36 `).
@@ -52,6 +74,38 @@ function yarnGaugeMachineSection(data: Record<string, unknown>): Record<string, 
   return {};
 }
 
+function nonEmptyTrimmed(value: unknown): boolean {
+  return typeof value === "string" && value.trim() !== "";
+}
+
+function yarnGaugeSection(data: Record<string, unknown>): Record<string, unknown> {
+  const y = data.yarnGauge;
+  if (y && typeof y === "object" && !Array.isArray(y)) {
+    return y as Record<string, unknown>;
+  }
+  return {};
+}
+
+/** Stitch gauge from yarn step and/or wizard mirror (`yarnGauge` / `yarnGaugeMachine`). */
+export function patternBuilderStitchGaugeRaw(patternData: Record<string, unknown>): unknown {
+  const y = yarnGaugeSection(patternData);
+  const ygm = yarnGaugeMachineSection(patternData);
+  return y.stitchGauge ?? ygm.gaugeStitchesPerInch;
+}
+
+/** Row gauge from yarn step and/or wizard mirror. */
+export function patternBuilderRowGaugeRaw(patternData: Record<string, unknown>): unknown {
+  const y = yarnGaugeSection(patternData);
+  const ygm = yarnGaugeMachineSection(patternData);
+  return y.rowGauge ?? ygm.gaugeRowsPerInch;
+}
+
+function isFitEaseChoiceComplete(fit: Record<string, unknown>): boolean {
+  if (nonEmptyTrimmed(fit.selectedFit)) return true;
+  const ease = fit.easeChoice ?? fit.fitChoice;
+  return ease === "close" || ease === "standard" || ease === "relaxed";
+}
+
 function fitSection(data: Record<string, unknown>): Record<string, unknown> {
   const fit = data.fit;
   if (fit && typeof fit === "object" && !Array.isArray(fit)) {
@@ -69,7 +123,8 @@ function selectedMeasurements(fit: Record<string, unknown>): Record<string, unkn
 }
 
 /**
- * Required fields for building / running pattern math. Extend the checks array when adding rules.
+ * Required fields for building / running pattern math (design, fit, gauge, needles).
+ * Optional yarn notes / weight are never listed as missing.
  */
 export function validatePatternBuilderRequired(
   patternData: Record<string, unknown> = typeof localStorage !== "undefined" ? getPatternData() : {},
@@ -77,33 +132,62 @@ export function validatePatternBuilderRequired(
   const fit = fitSection(patternData);
   const sm = selectedMeasurements(fit);
   const ygm = yarnGaugeMachineSection(patternData);
+  const stitchRaw = patternBuilderStitchGaugeRaw(patternData);
+  const rowRaw = patternBuilderRowGaugeRaw(patternData);
 
-  const checks: { id: PatternBuilderRequiredCheckId; label: string; complete: boolean }[] = [
+  const checks: {
+    id: PatternBuilderRequiredCheckId;
+    label: string;
+    href: string;
+    complete: boolean;
+  }[] = [
+    {
+      id: "design_choices",
+      label: "Complete required design choices",
+      href: PATTERN_BUILDER_DESIGN_HREF,
+      complete: isSleevelessBuilderNavStyleComplete(patternData),
+    },
+    {
+      id: "selected_size",
+      label: "Choose a size",
+      href: PATTERN_BUILDER_SIZE_SELECTION_HREF,
+      complete: nonEmptyTrimmed(fit.selectedSize),
+    },
+    {
+      id: "fit_ease",
+      label: "Choose a fit",
+      href: PATTERN_BUILDER_FIT_EASE_HREF,
+      complete: !nonEmptyTrimmed(fit.selectedSize) || isFitEaseChoiceComplete(fit),
+    },
     {
       id: "finished_bust_chest",
-      label: "Finished bust/chest (Fine-tune the fit)",
+      label: "Confirm your bust/chest measurement",
+      href: PATTERN_BUILDER_FINE_TUNE_HREF,
       complete: isPositiveNumericMeasurement(sm.finished_bust_chest),
     },
     {
       id: "gaugeStitchesPerInch",
-      label: "Stitch gauge",
-      complete: isPositiveNumericMeasurement(ygm.gaugeStitchesPerInch),
+      label: "Enter stitch gauge",
+      href: PATTERN_BUILDER_YARN_GAUGE_SECTION_HREF,
+      complete: isPositiveNumericMeasurement(stitchRaw),
     },
     {
       id: "gaugeRowsPerInch",
-      label: "Row gauge",
-      complete: isPositiveNumericMeasurement(ygm.gaugeRowsPerInch),
+      label: "Enter row gauge",
+      href: PATTERN_BUILDER_YARN_GAUGE_SECTION_HREF,
+      complete: isPositiveNumericMeasurement(rowRaw),
     },
     {
       id: "availableNeedles",
-      label: "Available needles",
+      label: "Enter available needles",
+      href: PATTERN_BUILDER_YARN_NEEDLES_HREF,
       complete: isPositiveNumericMeasurement(ygm.availableNeedles),
     },
   ];
 
   const missingItems: PatternBuilderMissingItem[] = checks
     .filter((c) => !c.complete)
-    .map(({ id, label }) => ({ id, label }));
+    .map(({ id, label, href }) => ({ id, label, href }));
 
   return {
     ok: missingItems.length === 0,
@@ -136,7 +220,7 @@ export function isPatternBuilderStyleComplete(
 
 /**
  * True when the fit step has a size, ease choice, and a positive finished bust/chest
- * (matches the fit portion of {@link validatePatternBuilderRequired}).
+ * (subset of {@link validatePatternBuilderRequired} — design + yarn checks excluded).
  */
 export function isPatternBuilderFitComplete(
   patternData: Record<string, unknown> = typeof localStorage !== "undefined" ? getPatternData() : {},
@@ -149,22 +233,10 @@ export function isPatternBuilderFitComplete(
   return isPositiveNumericMeasurement(sm.finished_bust_chest);
 }
 
-function nonEmptyTrimmed(value: unknown): boolean {
-  return typeof value === "string" && value.trim() !== "";
-}
-
 function yarnGaugeMachineRaw(data: Record<string, unknown>): Record<string, unknown> {
   const ygm = data.yarnGaugeMachine;
   if (ygm && typeof ygm === "object" && !Array.isArray(ygm)) {
     return ygm as Record<string, unknown>;
-  }
-  return {};
-}
-
-function yarnGaugeSection(data: Record<string, unknown>): Record<string, unknown> {
-  const y = data.yarnGauge;
-  if (y && typeof y === "object" && !Array.isArray(y)) {
-    return y as Record<string, unknown>;
   }
   return {};
 }
@@ -213,4 +285,21 @@ export function isSleevelessBuilderNavYarnComplete(
   const stitch = y.stitchGauge ?? ygm.gaugeStitchesPerInch;
   const row = y.rowGauge ?? ygm.gaugeRowsPerInch;
   return isPositiveNumericMeasurement(stitch) && isPositiveNumericMeasurement(row);
+}
+
+/**
+ * Scroll to the element targeted by a builder deep link (`/path#element-id`).
+ * Only the hash is used (`document.querySelector` cannot take a full URL). No-op if there is no `#`,
+ * no matching element in the current document, or not in a browser.
+ */
+export function scrollToPatternBuilderDeepLink(href: string | undefined): void {
+  if (typeof document === "undefined" || typeof window === "undefined" || !href) return;
+  const idx = href.indexOf("#");
+  if (idx === -1) return;
+  const id = href.slice(idx + 1).trim();
+  if (!id) return;
+  const target = document.getElementById(id);
+  if (!target) return;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  target.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
 }

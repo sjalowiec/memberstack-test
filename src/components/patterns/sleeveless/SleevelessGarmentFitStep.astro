@@ -1,4 +1,6 @@
 ---
+import PatternModeIndicator from "../PatternModeIndicator.astro";
+import GlossaryTooltip from "../../common/GlossaryTooltip.astro";
 import SleevelessStartOver from "../SleevelessStartOver.astro";
 import "../../../styles/wizard.css";
 
@@ -11,15 +13,10 @@ const { embedded = false } = Astro.props;
 ---
 
 <div class="sg-fit-page sg-build-panel" data-sg-build-panel="fit">
-      <header class="page-header">
-        <p data-sg-fit-page-intro>
-          Pick a size from the sizing chart, then decide how closely the sweater should fit and fine-tune the numbers that matter.
-        </p>
-        <p class="kbm-pattern-save-status" data-pattern-save-status aria-live="polite"></p>
-      </header>
+  <p class="kbm-pattern-save-status" data-pattern-save-status aria-live="polite"></p>
 
-      <div class="calculator-card hat-builder-inputs" id="sleeveless-fit-builder">
-        <h2 class="sg-section-title">Set the Fit</h2>
+  <PatternModeIndicator mode="custom" integratedCard cardId="sleeveless-fit-builder" cardClass="hat-builder-inputs">
+        <h2 class="sg-section-title">Fit &amp; Measurements</h2>
         <section class="hat-form-section sg-fit-so-far-section" aria-labelledby="sg-fit-so-far-heading">
           <div class="builder-summary">
             <h2 id="sg-fit-so-far-heading" class="builder-summary-title hat-form-section__title hat-form-section__heading">
@@ -68,8 +65,6 @@ const { embedded = false } = Astro.props;
           </div>
           <div class="sg-section-options">
           <p class="sg-fit-size-copy" data-size-helper-copy>Go back to the design page to choose Women's, Men's, Kids', or Baby.</p>
-          <p class="sg-fit-size-chart-label" data-size-chart-label hidden></p>
-          <p class="sg-fit-size-copy" data-size-body-measurement-hint hidden>Choose the size that matches your body measurement.</p>
           <p class="sg-fit-size-load-msg" data-size-charts-status>Loading size charts…</p>
           <div class="sg-fit-size-charts" data-size-charts>
             <div class="sg-fit-size-chart-panel" data-size-chart="misses" data-size-audience="misses" hidden>
@@ -136,7 +131,10 @@ const { embedded = false } = Astro.props;
             </div>
           </div>
           <div class="sg-section-options">
-          <p class="sg-fit-placeholder-copy" data-fit-preference-helper-copy>Choose a size first.</p>
+          <p class="sg-fit-placeholder-copy" data-fit-preference-locked-copy>Choose a size first.</p>
+          <p class="sg-fit-placeholder-copy" data-fit-preference-unlocked-copy hidden>
+            <GlossaryTooltip id={470}>Ease</GlossaryTooltip> is added automatically. You can adjust it in the next step.
+          </p>
           <div class="hat-length-picker__grid sg-fit-preference-grid" role="radiogroup" aria-labelledby="sg-fit-choice-heading">
             <button type="button" class="hat-length-picker__option sg-fit-preference-option" data-fit-preference-option="close" aria-pressed="false">
               <img class="fit-card-image" src="/images/patterns/sleeveless/close-fit.png" alt="Close fit sleeveless garment" />
@@ -175,8 +173,15 @@ const { embedded = false } = Astro.props;
               <span class="sg-section-selected-value" data-selected-value></span>
             </div>
           </div>
+          <p
+            class="sg-fit-placeholder-copy sg-fit-detail-prereq-copy"
+            data-fit-detail-helper-copy
+            role="status"
+            aria-live="polite"
+          >
+            Choose a size and fit first.
+          </p>
           <div class="sg-section-options">
-          <p class="sg-fit-placeholder-copy" data-fit-detail-helper-copy>Choose a size first.</p>
           <div class="sg-fit-fine-tune-body" data-fit-fine-tune-body>
             <p class="sg-fit-size-copy sg-fit-fine-tune-lead" data-fit-fine-tune-lead>
               We've filled these in from the size and fit you selected. You can use them as-is, or adjust any measurement before
@@ -399,7 +404,7 @@ const { embedded = false } = Astro.props;
                   <span data-fit-summary-ease-value>—</span>
                 </p>
                 <p class="sg-fit-size-copy" data-fit-summary-line="adjustments">
-                  <strong>Adjustments:</strong>
+                  <strong>Your adjustments:</strong>
                   <span data-fit-summary-adjustments-value>—</span>
                 </p>
               </div>
@@ -420,17 +425,27 @@ const { embedded = false } = Astro.props;
           </>
         ) : (
           <>
-            <a href="/patterns/sleeveless-garment" class="kbm-btn kbm-btn-outline">← Back to Style &amp; Design</a>
-            <a href="/patterns/sleeveless-yarn-gauge" class="kbm-btn kbm-btn-accent">10. Next: Yarn &amp; Gauge →</a>
+            <a href="/patterns/sleeveless/pattern?buildStep=design" class="kbm-btn kbm-btn-outline">← Back to Style &amp; Design</a>
+            <a href="/patterns/sleeveless/pattern?buildStep=yarn" class="kbm-btn kbm-btn-accent">10. Next: Yarn &amp; Gauge →</a>
           </>
         )}
       </div>
       {!embedded && <SleevelessStartOver />}
+  </PatternModeIndicator>
 </div>
 
 <style>
   .sg-fit-page {
     --sg-accent: #c2614e;
+  }
+
+  /* Align save hint with former page-header; spacing before main card */
+  .sg-fit-page > .kbm-pattern-save-status {
+    box-sizing: border-box;
+    max-width: 800px;
+    padding: 0 1rem;
+    margin-top: 0;
+    margin-bottom: 10px;
   }
 
   .hat-builder-inputs .hat-form-section {
@@ -699,14 +714,6 @@ const { embedded = false } = Astro.props;
     font-weight: 600;
   }
 
-  .sg-fit-size-chart-label {
-    margin: 0 0 0.65rem;
-    font-size: 0.88rem;
-    font-weight: 600;
-    line-height: 1.45;
-    color: var(--kbm-green, #52682d);
-  }
-
   .sg-fit-size-charts {
     margin-top: 0;
   }
@@ -784,6 +791,14 @@ const { embedded = false } = Astro.props;
     display: none;
   }
 
+  .sg-fit-detail-prereq-copy {
+    margin: 0 0 0.65rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #b45309;
+  }
+
+  .sg-fit-detail-section:not(.is-locked) .sg-fit-detail-prereq-copy,
   .sg-fit-detail-section:not(.is-locked) .sg-fit-placeholder-copy[data-fit-detail-helper-copy] {
     display: none;
   }
@@ -1140,7 +1155,7 @@ const { embedded = false } = Astro.props;
   const EASE_INCHES_BY_FIT = {
     close: 1,
     standard: 3,
-    relaxed: 6,
+    relaxed: 5,
   };
 
   const fitConfig = {
@@ -1230,9 +1245,33 @@ const { embedded = false } = Astro.props;
     return Array.from(root.querySelectorAll(".sg-selector-section[data-selector-key]"));
   }
 
+  function canOpenFineTuneSection() {
+    return hasChosenSize() && Boolean(fitConfig.fitPreference);
+  }
+
+  function getFineTunePrereqMessage() {
+    const hasSize = hasChosenSize();
+    const hasFit = Boolean(fitConfig.fitPreference);
+    if (!hasSize && !hasFit) return "Choose a size and fit first.";
+    if (hasSize && !hasFit) return "Choose a fit first.";
+    if (!hasSize && hasFit) return "Choose a size first.";
+    return "";
+  }
+
+  function getDefaultOpenFitSectionKey(root) {
+    if (!normalizeSleevelessAudienceV1(fitConfig.knitFor)) return "size";
+    if (!hasChosenSize()) return "size";
+    if (!fitConfig.fitPreference) return "fitPreference";
+    return "fineTune";
+  }
+
   function setOpenFitSection(root, selectorKey) {
+    let key = selectorKey;
+    if (key === "fineTune" && !canOpenFineTuneSection()) {
+      key = getDefaultOpenFitSectionKey(root);
+    }
     getFitSelectorSections(root).forEach((section) => {
-      const isOpen = selectorKey !== null && section.getAttribute("data-selector-key") === selectorKey;
+      const isOpen = key !== null && section.getAttribute("data-selector-key") === key;
       section.classList.toggle("is-open", isOpen);
       const headerToggle = section.querySelector("[data-section-toggle]");
       const chevronBtn = section.querySelector("[data-section-chevron]");
@@ -1246,6 +1285,10 @@ const { embedded = false } = Astro.props;
   }
 
   function toggleFitSection(root, selectorKey) {
+    if (selectorKey === "fineTune" && !canOpenFineTuneSection()) {
+      updateFitDetailSectionState(root);
+      return;
+    }
     const currentOpen = getFitSelectorSections(root).find((section) => section.classList.contains("is-open"));
     const currentOpenKey = currentOpen?.getAttribute("data-selector-key");
     if (currentOpenKey === selectorKey) {
@@ -1253,13 +1296,6 @@ const { embedded = false } = Astro.props;
       return;
     }
     setOpenFitSection(root, selectorKey);
-  }
-
-  function getDefaultOpenFitSectionKey(root) {
-    if (!normalizeSleevelessAudienceV1(fitConfig.knitFor)) return "size";
-    if (!hasChosenSize()) return "size";
-    if (!fitConfig.fitPreference) return "fitPreference";
-    return "fineTune";
   }
 
   function bindFitAccordion(root) {
@@ -1303,6 +1339,7 @@ const { embedded = false } = Astro.props;
       if (!valueSpan) return;
 
       let resolved = "";
+      let checkmarkVisible = false;
       if (key === "size") {
         if (hasChosenSize()) {
           const audLabel = AUDIENCE_LABELS[fitConfig.knitFor] ?? fitConfig.knitFor;
@@ -1314,25 +1351,28 @@ const { embedded = false } = Astro.props;
             resolved = `${audLabel} — ${fitConfig.size}`;
           }
         }
+        checkmarkVisible = !!resolved;
       } else if (key === "fitPreference") {
         resolved =
           fitConfig.fitPreference && FIT_EASE_LABELS[fitConfig.fitPreference]
             ? FIT_EASE_LABELS[fitConfig.fitPreference]
             : "";
+        checkmarkVisible = !!resolved;
       } else if (key === "fineTune") {
+        resolved = "";
         const detail = root.querySelector("[data-fit-detail-section]");
         const unlocked = detail && !detail.classList.contains("is-locked");
         if (unlocked && hasChosenSize() && fitConfig.fitPreference) {
           const adj = formatAdjustmentsSummary(root);
           if (adj && adj !== "—") {
-            resolved = adj.length > 80 ? `${adj.slice(0, 77)}…` : adj;
+            checkmarkVisible = true;
           }
         }
       }
 
       valueSpan.textContent = resolved;
       if (checkmark) {
-        checkmark.style.display = resolved ? "inline" : "none";
+        checkmark.style.display = checkmarkVisible ? "inline" : "none";
       }
     });
   }
@@ -1791,6 +1831,7 @@ const { embedded = false } = Astro.props;
   /**
    * @param {{ asHtml?: boolean }} [options]
    * Plain text for storage and section headers; HTML only for Fit Summary adjustments line.
+   * Lists only fine-tune fields that differ from calculated defaults; otherwise “No adjustments added.” when defaults exist.
    */
   function formatAdjustmentsSummary(root, options = {}) {
     void root;
@@ -1803,18 +1844,47 @@ const { embedded = false } = Astro.props;
       const raw = snap[key];
       const n = typeof raw === "number" ? raw : parseFloat(String(raw));
       if (!Number.isFinite(n) || n <= 0) return;
+      if (!isEditedValue(key, snap, defaultMeasurements)) return;
       const label = MEASUREMENT_LABELS[key] ?? key;
       const fragment = formatFineTuneSummaryFragment(n, uiUnit);
       if (!fragment) return;
       if (asHtml) {
-        const edited = isEditedValue(key, snap, defaultMeasurements);
-        const valuePart = edited ? `<span class="sg-fit-edited">${fragment}</span>` : fragment;
+        const valuePart = `<span class="sg-fit-edited">${fragment}</span>`;
         parts.push(`${label}: ${valuePart}`);
       } else {
         parts.push(`${label}: ${fragment}`);
       }
     });
-    return parts.length ? parts.join("; ") : "—";
+    if (parts.length) {
+      return parts.join(asHtml ? " • " : "; ");
+    }
+    if (defaultMeasurements) {
+      return "No adjustments added.";
+    }
+    return "—";
+  }
+
+  /**
+   * Fine-tune lead copy for straight body only (no waist wording). Ease matches `EASE_INCHES_BY_FIT`.
+   * @param {string} fitChoice
+   * @param {'in' | 'cm'} uiUnit
+   */
+  function getStraightFitHelperText(fitChoice, uiUnit) {
+    const easeIn = easeInchesForFit(fitChoice);
+    const fitPrefix =
+      fitChoice === "close"
+        ? "Close fit"
+        : fitChoice === "standard"
+          ? "Standard fit"
+          : fitChoice === "relaxed"
+            ? "Relaxed fit"
+            : "";
+    if (!fitPrefix) return "";
+    const easePart =
+      uiUnit === "cm"
+        ? `+${garmentFinishedInchesToCmDisplay(easeIn)} cm ease at bust`
+        : `+${easeIn}" ease at bust`;
+    return `${fitPrefix}: ${easePart}. Body is straight, so hip follows bust. Adjust any values below.`;
   }
 
   /** Intro copy inside Fine-tune: reflects chart row, ease for current fit, and example bust (respects active unit). */
@@ -1848,10 +1918,12 @@ const { embedded = false } = Astro.props;
     const finishedFrag =
       Number.isFinite(finishedBust) && finishedBust > 0 ? formatFineTuneSummaryFragment(finishedBust, uiUnit) : "—";
     const shape = fitConfig.shape === "aline" ? "aline" : "straight";
-    const hipSentence =
-      shape === "aline"
-        ? ` Finished hip starts the same as finished bust/chest — increase it below if you want more room at the hem (sizing-chart hip is not applied automatically).`
-        : ` Finished hip matches finished bust/chest for a straight body (sizing-chart hip is not used).`;
+    if (shape === "straight") {
+      const straightLead = getStraightFitHelperText(fitConfig.fitPreference, uiUnit);
+      el.textContent = straightLead || fallback;
+      return;
+    }
+    const hipSentence = ` Finished hip starts the same as finished bust/chest — increase it below if you want more room at the hem (sizing-chart hip is not applied automatically).`;
     el.textContent = `These defaults use ${fitLabel}: add ${easeFrag} ease to bust and waist from your chart row (${measureWord} ${bodyFrag} → finished bust/chest ${finishedFrag}).${hipSentence} Other lengths and openings follow the chart. Adjust any value below.`;
   }
 
@@ -1882,18 +1954,17 @@ const { embedded = false } = Astro.props;
     const selectedMeasurements = snapshotFineTuneInches();
     const defaultMeasurements = getDefaultMeasurementsForSummary();
     const adjPlain = formatAdjustmentsSummary(root);
-    const adjustmentsHtml = adjPlain === "—" ? "" : formatAdjustmentsSummary(root, { asHtml: true });
 
     if (import.meta.env.DEV) {
       console.log("Fit summary selectedMeasurements", selectedMeasurements);
       console.log("Fit summary defaultMeasurements", defaultMeasurements);
-      console.log("Fit summary html", adjustmentsHtml);
+      console.log("Fit summary plain", adjPlain);
     }
 
-    if (adjPlain === "—") {
-      adjVal.textContent = "—";
+    if (adjPlain === "—" || adjPlain === "No adjustments added.") {
+      adjVal.textContent = adjPlain;
     } else {
-      adjVal.innerHTML = adjustmentsHtml;
+      adjVal.innerHTML = formatAdjustmentsSummary(root, { asHtml: true });
     }
     updateFineTuneLead(root);
     syncFitHeaderSummaries(root);
@@ -1912,7 +1983,6 @@ const { embedded = false } = Astro.props;
   }
 
   function updateVisibleSizeChart(root) {
-    const labelEl = root.querySelector("[data-size-chart-label]");
     root.querySelectorAll(".sg-fit-size-charts > [data-size-chart]").forEach((chart) => {
       if (chart.hasAttribute("data-sg-v1-hidden")) {
         chart.setAttribute("hidden", "");
@@ -1924,15 +1994,6 @@ const { embedded = false } = Astro.props;
       chart.toggleAttribute("hidden", !show);
       chart.setAttribute("aria-hidden", show ? "false" : "true");
     });
-    if (labelEl) {
-      if (fitConfig.knitFor && CHART_INTRO[fitConfig.knitFor]) {
-        labelEl.textContent = CHART_INTRO[fitConfig.knitFor];
-        labelEl.removeAttribute("hidden");
-      } else {
-        labelEl.textContent = "";
-        labelEl.setAttribute("hidden", "");
-      }
-    }
   }
 
   function updateSizeSectionState(root) {
@@ -1942,10 +2003,8 @@ const { embedded = false } = Astro.props;
     const hasAudience = Boolean(normalizeSleevelessAudienceV1(fitConfig.knitFor));
     section.classList.toggle("is-locked", !hasAudience);
     copy.textContent = hasAudience
-      ? "Pick the size from the chart for this group. Fit type (close / standard / relaxed) comes next."
+      ? "Choose the size closest to your body measurement."
       : "Go back to the design page to choose Women's, Men's, Kids', or Baby.";
-    const bodyHint = root.querySelector("[data-size-body-measurement-hint]");
-    if (bodyHint) bodyHint.toggleAttribute("hidden", !hasAudience);
     root.querySelectorAll("[data-fit-size-select]").forEach((sel) => {
       sel.disabled = !hasAudience;
     });
@@ -1956,13 +2015,10 @@ const { embedded = false } = Astro.props;
     const section = root.querySelector("[data-fit-detail-section]");
     const copy = root.querySelector("[data-fit-detail-helper-copy]");
     if (!section || !copy) return;
-    const hasSize = hasChosenSize();
-    section.classList.toggle("is-locked", !hasSize);
-    if (!hasSize) {
-      copy.textContent = "Choose a size first.";
-      copy.removeAttribute("hidden");
-    } else {
-      copy.setAttribute("hidden", "");
+    const canFineTune = canOpenFineTuneSection();
+    section.classList.toggle("is-locked", !canFineTune);
+    if (!canFineTune) {
+      copy.textContent = getFineTunePrereqMessage();
     }
   }
 
@@ -1977,13 +2033,18 @@ const { embedded = false } = Astro.props;
 
   function updateFitPreferenceSectionState(root) {
     const section = root.querySelector("[data-fit-preference-section]");
-    const copy = root.querySelector("[data-fit-preference-helper-copy]");
-    if (!section || !copy) return;
+    const lockedCopy = root.querySelector("[data-fit-preference-locked-copy]");
+    const unlockedCopy = root.querySelector("[data-fit-preference-unlocked-copy]");
+    if (!section || !lockedCopy || !unlockedCopy) return;
     const hasSize = hasChosenSize();
     section.classList.toggle("is-locked", !hasSize);
-    copy.textContent = hasSize
-      ? "Ease is the extra room added to your body measurement so the garment feels comfortable."
-      : "Choose a size first.";
+    if (hasSize) {
+      lockedCopy.setAttribute("hidden", "");
+      unlockedCopy.removeAttribute("hidden");
+    } else {
+      lockedCopy.removeAttribute("hidden");
+      unlockedCopy.setAttribute("hidden", "");
+    }
   }
 
   function renderSoFarSentence(root) {
@@ -2043,6 +2104,7 @@ const { embedded = false } = Astro.props;
             syncDefaultMeasurementsSnapshot();
             updateFineTuneEditedClasses(root);
           }
+          updateFitDetailSectionState(root);
           renderFitSummary(root);
           persistFitConfig(root);
           setOpenFitSection(root, "fineTune");

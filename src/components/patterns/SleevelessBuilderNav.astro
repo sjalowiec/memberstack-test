@@ -1,7 +1,7 @@
 ---
 import UnitToggle from "../wizards/UnitToggle.astro";
 
-export type SleevelessBuilderNavStep = "style" | "fit" | "yarn";
+export type SleevelessBuilderNavStep = "style" | "fit" | "yarn" | "pattern";
 
 export interface Props {
   currentStep: SleevelessBuilderNavStep;
@@ -13,11 +13,14 @@ export interface Props {
 
 const { currentStep, embedded = false, showUnitToggle = true } = Astro.props;
 
-const steps: { id: SleevelessBuilderNavStep; label: string; href: string }[] = [
-  { id: "style", label: "Design", href: "/patterns/sleeveless-garment" },
-  { id: "fit", label: "Fit", href: "/patterns/sleeveless-fit" },
-  { id: "yarn", label: "Yarn & Gauge", href: "/patterns/sleeveless-yarn-gauge" },
+const allSteps: { id: SleevelessBuilderNavStep; label: string; href: string }[] = [
+  { id: "style", label: "Design", href: "/patterns/sleeveless/pattern?buildStep=design" },
+  { id: "fit", label: "Fit", href: "/patterns/sleeveless/pattern?buildStep=fit" },
+  { id: "yarn", label: "Yarn & Gauge", href: "/patterns/sleeveless/pattern?buildStep=yarn" },
+  { id: "pattern", label: "Pattern", href: "/patterns/sleeveless/pattern" },
 ];
+
+const steps = embedded ? allSteps.filter((s) => s.id !== "pattern") : allSteps;
 ---
 
 <div class="sg-builder-nav-row no-print">
@@ -73,158 +76,6 @@ const steps: { id: SleevelessBuilderNavStep; label: string; href: string }[] = [
   }
 </div>
 
-<style>
-  .sg-builder-nav-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem 1rem;
-    flex-wrap: wrap;
-    max-width: 800px;
-    margin: 0 auto 1.25rem;
-    padding: 0 1rem;
-  }
-
-  .sg-builder-nav-row .sg-builder-nav {
-    --sg-rule-h: 3px;
-    --sg-connector-w: 48px;
-    margin: 0;
-    padding: 0;
-    flex: 1 1 auto;
-    min-width: 0;
-    max-width: none;
-  }
-
-  .sg-builder-nav-row__units {
-    flex: 0 0 auto;
-  }
-
-  .sg-builder-nav__list {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0;
-    width: fit-content;
-    max-width: min(100%, 520px);
-    margin-inline: 0;
-    margin-block: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .sg-builder-nav__item {
-    display: flex;
-    flex: 0 0 auto;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-    padding: 0;
-    min-width: 0;
-  }
-
-  /* Connector runs between pill centers (items align vertically with pills) */
-  .sg-builder-nav__rule {
-    flex: 0 0 auto;
-    width: var(--sg-connector-w);
-    height: var(--sg-rule-h);
-    margin: 0;
-    background: rgba(55, 65, 81, 0.2);
-    border-radius: 2px;
-    align-self: center;
-  }
-
-  .sg-builder-nav__link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 0;
-    text-decoration: none;
-    color: inherit;
-    border-radius: 999px;
-    transition:
-      opacity 0.15s ease,
-      box-shadow 0.15s ease;
-  }
-
-  button.sg-builder-nav__link {
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin: 0;
-    font: inherit;
-    cursor: pointer;
-    appearance: none;
-  }
-
-  .sg-builder-nav__link:hover .sg-builder-nav__pill {
-    border-color: #9ca3af;
-  }
-
-  .sg-builder-nav__link:focus-visible {
-    outline: 2px solid var(--kbm-green, #52682d);
-    outline-offset: 3px;
-    border-radius: 999px;
-  }
-
-  .sg-builder-nav__link.is-upcoming {
-    opacity: 0.72;
-  }
-
-  .sg-builder-nav__pill {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 7px 16px;
-    border-radius: 999px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    border: 1px solid #d1d5db;
-    background: #fff;
-    color: #374151;
-    line-height: 1;
-    white-space: nowrap;
-    transition:
-      background-color 0.15s ease,
-      color 0.15s ease,
-      border-color 0.15s ease;
-  }
-
-  .sg-builder-nav__item.active .sg-builder-nav__pill,
-  .sg-builder-nav__link[aria-current="page"] .sg-builder-nav__pill {
-    background: var(--sg-accent, #c95f4a);
-    color: #fff;
-    border-color: var(--sg-accent, #c95f4a);
-  }
-
-  .sg-builder-nav__link.is-complete:not(.is-current) .sg-builder-nav__pill {
-    border-color: var(--kbm-green, #52682d);
-    color: var(--kbm-green, #52682d);
-    background: rgba(82, 104, 45, 0.08);
-  }
-
-  @media (max-width: 576px) {
-    .sg-builder-nav-row .sg-builder-nav {
-      --sg-connector-w: 20px;
-    }
-
-    .sg-builder-nav-row__units {
-      margin-left: auto;
-    }
-
-    .sg-builder-nav__pill {
-      padding: 6px 10px;
-      font-size: clamp(0.7rem, 2.8vw, 0.85rem);
-    }
-
-    .sg-builder-nav__list {
-      max-width: 100%;
-      width: fit-content;
-      padding-bottom: 0;
-    }
-  }
-</style>
-
 <script>
   import {
     isSleevelessBuilderNavFitComplete,
@@ -233,12 +84,13 @@ const steps: { id: SleevelessBuilderNavStep; label: string; href: string }[] = [
   } from "../../lib/patterns/patternBuilderValidation.ts";
   import { getPatternData, PATTERN_BUILDER_DATA_KEY } from "../../lib/patterns/patternStorage.ts";
 
-  const ORDER = ["style", "fit", "yarn"] as const;
+  const ORDER = ["style", "fit", "yarn", "pattern"] as const;
 
   function stepComplete(id: (typeof ORDER)[number], data: Record<string, unknown>): boolean {
     if (id === "style") return isSleevelessBuilderNavStyleComplete(data);
     if (id === "fit") return isSleevelessBuilderNavFitComplete(data);
     if (id === "yarn") return isSleevelessBuilderNavYarnComplete(data);
+    if (id === "pattern") return isSleevelessBuilderNavYarnComplete(data);
     return false;
   }
 

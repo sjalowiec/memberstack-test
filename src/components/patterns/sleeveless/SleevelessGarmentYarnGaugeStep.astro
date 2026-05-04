@@ -1,8 +1,7 @@
 ---
+import PatternModeIndicator from "../PatternModeIndicator.astro";
 import GaugeInput from "../../wizards/GaugeInput.astro";
-import NeckShoulderShapingChart from "../NeckShoulderShapingChart.astro";
 import SleevelessStartOver from "../SleevelessStartOver.astro";
-import { DEMO_NECK_SHOULDER_SHAPING_CHART } from "../../../lib/patterns/neckShoulderShapingChart";
 import "../../../styles/wizard.css";
 
 export interface Props {
@@ -13,12 +12,9 @@ const { embedded = false } = Astro.props;
 ---
 
 <div class="wizard-page sg-yarn-page sg-build-panel" data-sg-build-panel="yarn">
-      <header class="page-header">
-        <p>Now let’s match your design and fit choices to the yarn, gauge, and machine width you’ll actually use.</p>
-        <p class="kbm-pattern-save-status" data-pattern-save-status aria-live="polite"></p>
-      </header>
+  <p class="kbm-pattern-save-status" data-pattern-save-status aria-live="polite"></p>
 
-      <div class="calculator-card hat-builder-inputs" id="sleeveless-yarn-builder">
+  <PatternModeIndicator mode="custom" integratedCard cardId="sleeveless-yarn-builder" cardClass="hat-builder-inputs">
         <h2 class="sg-section-title">Yarn &amp; Gauge</h2>
         <section class="hat-form-section sg-fit-so-far-section" aria-labelledby="sg-yarn-so-far-heading">
           <div class="builder-summary">
@@ -163,13 +159,6 @@ const { embedded = false } = Astro.props;
         </section>
       </div>
 
-      <div class="sg-pattern-output sg-neck-chart-print-block" id="sg-neck-shoulder-chart-mount">
-        <NeckShoulderShapingChart
-          chart={DEMO_NECK_SHOULDER_SHAPING_CHART}
-          dataSourceNote="Using demo data fallback"
-        />
-      </div>
-
       <div
         class="pattern-builder-validation"
         data-pattern-builder-validation
@@ -177,8 +166,12 @@ const { embedded = false } = Astro.props;
         role="alert"
         aria-live="polite"
       >
-        <p class="pattern-builder-validation__intro" data-pattern-builder-validation-intro></p>
-        <ul class="pattern-builder-validation__list" data-pattern-builder-validation-list></ul>
+        <h3 class="pattern-builder-validation__heading" data-pattern-builder-validation-heading></h3>
+        <p class="pattern-builder-validation__helper" data-pattern-builder-validation-helper></p>
+        <ul class="pattern-builder-validation__list" data-pattern-builder-validation-list hidden></ul>
+        <p class="pattern-builder-validation__fallback" data-pattern-builder-validation-fallback hidden>
+          Review the Build steps above, then try creating your pattern again.
+        </p>
       </div>
 
       <div class="wizard-next-cta wizard-next-cta--split no-print">
@@ -195,16 +188,20 @@ const { embedded = false } = Astro.props;
           </>
         ) : (
           <>
-            <a href="/patterns/sleeveless-fit" class="kbm-btn kbm-btn-outline">← Back: Fit & Measurements</a>
+            <a href="/patterns/sleeveless/pattern?buildStep=fit" class="kbm-btn kbm-btn-outline">← Back: Fit & Measurements</a>
             <div class="wizard-next-cta__next-col">
-              <a href="/patterns/sleeveless-pattern" class="kbm-btn kbm-btn-outline sg-view-pattern-btn">View My Pattern</a>
-              <span class="kbm-btn kbm-btn-accent" aria-disabled="true">14. Next: Pattern math →</span>
-              <p class="sg-next-placeholder-note">Coming soon</p>
+              <a
+                href="/patterns/sleeveless/pattern?buildStep=yarn&tab=pattern"
+                class="kbm-btn kbm-btn-outline sg-view-pattern-btn"
+              >
+                View My Pattern
+              </a>
             </div>
           </>
         )}
       </div>
       {!embedded && <SleevelessStartOver />}
+  </PatternModeIndicator>
 
       <div id="gaugeHelpModal" class="sg-modal">
         <div class="sg-modal-content">
@@ -239,14 +236,16 @@ const { embedded = false } = Astro.props;
 </div>
 
 <style>
-  .sg-yarn-page .sg-pattern-output {
-    max-width: 52rem;
-    margin: 0 auto 1.25rem;
-    padding: 0 0.25rem;
-  }
-
   .sg-yarn-page {
     --sg-accent: #c2614e;
+  }
+
+  .sg-yarn-page > .kbm-pattern-save-status {
+    box-sizing: border-box;
+    max-width: 800px;
+    padding: 0 1rem;
+    margin-top: 0;
+    margin-bottom: 10px;
   }
 
   .sg-yarn-page .pattern-builder-validation {
@@ -260,9 +259,18 @@ const { embedded = false } = Astro.props;
     color: #374151;
   }
 
-  .sg-yarn-page .pattern-builder-validation__intro {
-    margin: 0 0 0.4rem;
-    font-weight: 600;
+  .sg-yarn-page .pattern-builder-validation__heading {
+    margin: 0 0 0.35rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .sg-yarn-page .pattern-builder-validation__helper {
+    margin: 0 0 0.5rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: #4b5563;
   }
 
   .sg-yarn-page .pattern-builder-validation__list {
@@ -279,6 +287,13 @@ const { embedded = false } = Astro.props;
     font-weight: 600;
     text-decoration: underline;
     text-underline-offset: 2px;
+  }
+
+  .sg-yarn-page .pattern-builder-validation__fallback {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: #4b5563;
   }
 
   .hat-builder-inputs .hat-form-section {
@@ -699,12 +714,6 @@ const { embedded = false } = Astro.props;
     background: color-mix(in srgb, var(--sg-accent, #c2614e) 10%, var(--page-bg, #fff));
   }
 
-  .sg-next-placeholder-note {
-    margin: 0;
-    font-size: 0.82rem;
-    color: #6b7280;
-  }
-
   @media (max-width: 520px) {
     .wizard-next-cta--split {
       flex-direction: column;
@@ -827,10 +836,7 @@ const { embedded = false } = Astro.props;
     SLEEVELESS_CHART_INTRO,
   } from "../../../lib/patterns/patternStorage.ts";
   import { calculateBasicPatternNumbers } from "../../../lib/patterns/patternCalculator";
-  import {
-    validatePatternBuilderRequired,
-    PATTERN_BUILDER_FINE_TUNE_HREF,
-  } from "../../../lib/patterns/patternBuilderValidation";
+  import { validatePatternBuilderRequired } from "../../../lib/patterns/patternBuilderValidation";
   // === DEMO BACK PATTERN TEST ===
   import("../../../lib/patterns/sleevelessPatternOutput").then(
     ({ demoSleevelessBackPattern }) => {
@@ -884,7 +890,7 @@ const { embedded = false } = Astro.props;
   const EASE_INCHES_BY_FIT = {
     close: 1,
     standard: 3,
-    relaxed: 6,
+    relaxed: 5,
   };
 
   /** Matches {@link GaugeInput} id — inputs are `${id}-stitch-gauge` / `${id}-row-gauge`. */
@@ -1318,81 +1324,48 @@ const { embedded = false } = Astro.props;
 
   function renderPatternBuilderValidation(patternData) {
     const wrap = document.querySelector("[data-pattern-builder-validation]");
-    const intro = document.querySelector("[data-pattern-builder-validation-intro]");
+    const heading = document.querySelector("[data-pattern-builder-validation-heading]");
+    const helper = document.querySelector("[data-pattern-builder-validation-helper]");
     const listEl = document.querySelector("[data-pattern-builder-validation-list]");
-    if (!wrap || !intro || !listEl) return;
+    const fallbackEl = document.querySelector("[data-pattern-builder-validation-fallback]");
+    if (!wrap || !heading || !helper || !listEl || !fallbackEl) return;
 
     const { ok, missingItems } = validatePatternBuilderRequired(patternData);
     if (ok) {
       wrap.setAttribute("hidden", "");
-      intro.textContent = "";
+      heading.textContent = "";
+      helper.textContent = "";
       listEl.replaceChildren();
+      listEl.setAttribute("hidden", "");
+      fallbackEl.setAttribute("hidden", "");
       return;
     }
     wrap.removeAttribute("hidden");
-    intro.textContent =
-      "Almost there! To build your custom pattern, we still need:";
-    listEl.replaceChildren(
-      ...missingItems.map((item) => {
-        const li = document.createElement("li");
-        if (item.id === "finished_bust_chest") {
+    heading.textContent = "Pattern not ready yet";
+    helper.textContent =
+      "Complete the missing items below, then you'll be able to create your custom pattern.";
+    const items = Array.isArray(missingItems) ? missingItems : [];
+    if (items.length > 0) {
+      listEl.replaceChildren(
+        ...items.map((item) => {
+          const li = document.createElement("li");
           const a = document.createElement("a");
-          a.href = PATTERN_BUILDER_FINE_TUNE_HREF;
+          a.href = item.href || "#";
           a.textContent = item.label;
           li.appendChild(a);
-        } else {
-          li.textContent = item.label;
-        }
-        return li;
-      }),
-    );
+          return li;
+        }),
+      );
+      listEl.removeAttribute("hidden");
+      fallbackEl.setAttribute("hidden", "");
+    } else {
+      listEl.replaceChildren();
+      listEl.setAttribute("hidden", "");
+      fallbackEl.removeAttribute("hidden");
+    }
   }
 
   /** Shape expected by generateSleevelessBackPattern (fit + yarnGaugeMachine). */
-  function patternPayloadForSleevelessBack() {
-    const base = mergedPatternForBuilder(getCurrentPattern());
-    const pb = getPatternData();
-    const ygm = pb.yarnGaugeMachine;
-    const fromWizard =
-      ygm && typeof ygm === "object" && !Array.isArray(ygm) ? ygm : {};
-    const stitch =
-      parseFloat(String(fromWizard.gaugeStitchesPerInch ?? "")) ||
-      parseFloat(String(base.yarnGauge?.stitchGauge ?? "")) ||
-      0;
-    const rowG =
-      parseFloat(String(fromWizard.gaugeRowsPerInch ?? "")) ||
-      parseFloat(String(base.yarnGauge?.rowGauge ?? "")) ||
-      0;
-    const needles =
-      parseFloat(String(fromWizard.availableNeedles ?? "")) ||
-      parseFloat(String(base.machine?.availableNeedles ?? "")) ||
-      0;
-    return {
-      fit: base.fit || {},
-      style: base.style || {},
-      yarnGaugeMachine: {
-        gaugeStitchesPerInch: stitch,
-        gaugeRowsPerInch: rowG,
-        availableNeedles: needles,
-      },
-    };
-  }
-
-  async function refreshNeckShoulderChart() {
-    const mount = document.getElementById("sg-neck-shoulder-chart-mount");
-    if (!mount) return;
-    const [{ generateSleevelessBackPattern }, { renderNeckShoulderShapingChartSectionHtml }] =
-      await Promise.all([
-        import("../../../lib/patterns/sleevelessPatternOutput"),
-        import("../../../lib/patterns/neckShoulderShapingChartHtml"),
-      ]);
-    const result = generateSleevelessBackPattern(patternPayloadForSleevelessBack());
-    const note = result.neckShoulderChartUsesLiveRows
-      ? "Using live calculated data"
-      : "Using demo data fallback";
-    mount.innerHTML = renderNeckShoulderShapingChartSectionHtml(result.neckShoulderShapingChart, note);
-  }
-
   /** Overlay `patternBuilderData` sections onto the canonical pattern for summaries + form bind. */
   function mergedPatternForBuilder(base) {
     const patternData = getPatternData();
@@ -1666,7 +1639,6 @@ const { embedded = false } = Astro.props;
       renderPatternBuilderValidation(patternData);
       const cfg = buildCfgFromPattern(mergedPatternForBuilder(getCurrentPattern()));
       renderSummary(cfg, root);
-      void refreshNeckShoulderChart();
     }
   }
 
@@ -1679,7 +1651,6 @@ const { embedded = false } = Astro.props;
     const patternData = getPatternData();
     renderPatternBuilderValidation(patternData);
     renderSummary(cfg, root);
-    void refreshNeckShoulderChart();
     setOpenYarnSection(root, getDefaultOpenYarnSectionKeyFromPartial(readDomIntoPartial(root)));
   }
 
@@ -1745,7 +1716,6 @@ const { embedded = false } = Astro.props;
     applyCfgToDom(cfg, root);
     renderPatternBuilderValidation(getPatternData());
     renderSummary(cfg, root);
-    void refreshNeckShoulderChart();
 
     bind(root);
     setOpenYarnSection(root, getDefaultOpenYarnSectionKeyFromPartial(readDomIntoPartial(root)));

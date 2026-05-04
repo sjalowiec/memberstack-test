@@ -1,113 +1,74 @@
 ---
-import { randomUUID } from "node:crypto";
+import "../../styles/pattern-tips.css";
 
-const messageId = `pattern-tips-message-${randomUUID()}`;
+interface Props {
+  /** localStorage key, e.g. hat-show-tips, sleeveless-show-tips */
+  storageKey: string;
+  /**
+   * Element that wraps this host and all generated `.pattern-tip` blocks (gets `data-show-tips`).
+   * Must be an ancestor of the intro slot and pattern HTML so visibility applies to every tip.
+   */
+  scopeSelector?: string;
+}
+
+const { storageKey, scopeSelector = "#pattern-content" } = Astro.props;
 ---
 
-<div class="pattern-tips-toggle" data-pattern-tips-toggle>
-  <div
-    class="pattern-tips-message"
-    id={messageId}
-    data-pattern-tips-message
-  >
-    <strong>Tip:</strong>
-    <span>
-      Pattern Tips are on to give you quick help and helpful reminders as you knit.
-    </span>
-  </div>
-  <button
-    type="button"
-    class="pattern-tips-button"
-    data-pattern-tips-button
-    aria-expanded="true"
-    aria-controls={messageId}
-  >
-    Hide tips
-  </button>
+<div
+  class="pattern-tips-toggle-host"
+  data-pattern-tips-host
+  data-storage-key={storageKey}
+  data-scope-selector={scopeSelector}
+>
+  <div class="pattern-tips-intro-slot"></div>
 </div>
-
-<style>
-  .pattern-tips-toggle {
-    font-size: 0.85rem;
-    color: #374151;
-    background: rgba(194, 97, 78, 0.07);
-    border-left: 4px solid #c2614e;
-    border-radius: 6px;
-    padding: 0.75rem 1rem;
-    margin: 0.5rem 0 0.75rem 0;
-    line-height: 1.4;
-  }
-
-  .pattern-tips-message strong {
-    font-weight: 700;
-    color: #c2614e;
-  }
-
-  .pattern-tips-message span {
-    margin-left: 0.25rem;
-  }
-
-  .pattern-tips-button {
-    display: inline-block;
-    margin-top: 0.5rem;
-    padding: 0;
-    border: none;
-    background: none;
-    font: inherit;
-    color: #c2614e;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    text-align: left;
-  }
-
-  .pattern-tips-button:hover {
-    text-decoration: underline;
-  }
-
-  .pattern-tips-button:focus-visible {
-    outline: 2px solid #c2614e;
-    outline-offset: 2px;
-  }
-
-  .pattern-tips-toggle.is-hidden {
-    background: transparent;
-    border-left: none;
-    padding: 0;
-    margin: 0.35rem 0 0.5rem 0;
-  }
-
-  .pattern-tips-toggle.is-hidden .pattern-tips-message {
-    display: none;
-  }
-
-  .pattern-tips-toggle.is-hidden .pattern-tips-button {
-    margin-top: 0;
-  }
-</style>
 
 <script is:inline>
   (function () {
-    document
-      .querySelectorAll("[data-pattern-tips-toggle]:not([data-pattern-tips-init])")
-      .forEach(function (root) {
-        root.setAttribute("data-pattern-tips-init", "");
-        var btn = root.querySelector("[data-pattern-tips-button]");
-        var message = root.querySelector("[data-pattern-tips-message]");
-        if (!btn || !message) return;
+    function tipsPreferenceVisible(key) {
+      var v = localStorage.getItem(key);
+      if (v === "false") return false;
+      return true;
+    }
 
-        function setExpanded(expanded) {
-          btn.setAttribute("aria-expanded", expanded ? "true" : "false");
-          message.setAttribute("aria-hidden", expanded ? "false" : "true");
-        }
+    function renderIntro(slot, tipsOn) {
+      if (!slot) return;
+      if (tipsOn) {
+        slot.innerHTML =
+          '<div class="pattern-tip pattern-tip-intro" data-tip><strong>Tip:</strong> Pattern Tips are on to give you quick help and helpful reminders as you knit. <a href="#" class="tips-inline-toggle" data-testid="link-tips-toggle">Hide tips</a></div>';
+      } else {
+        slot.innerHTML =
+          '<p class="pattern-tips-off-row"><i class="fa-regular fa-lightbulb tips-icon" style="color: #c2614e;"></i><a href="#" class="tips-inline-toggle" data-testid="link-tips-toggle">Show pattern tips</a></p>';
+      }
+    }
 
-        setExpanded(true);
+    document.querySelectorAll("[data-pattern-tips-host]:not([data-pattern-tips-init])").forEach(function (host) {
+      host.setAttribute("data-pattern-tips-init", "");
+      var key = host.getAttribute("data-storage-key");
+      var sel = host.getAttribute("data-scope-selector") || "#pattern-content";
+      if (!key) return;
 
-        btn.addEventListener("click", function () {
-          var nowHidden = root.classList.toggle("is-hidden");
-          btn.textContent = nowHidden ? "Show tips" : "Hide tips";
-          setExpanded(!nowHidden);
-        });
+      var scope = document.querySelector(sel);
+      if (!scope) return;
+
+      var slot = host.querySelector(".pattern-tips-intro-slot");
+      var visible = tipsPreferenceVisible(key);
+      scope.setAttribute("data-show-tips", visible ? "true" : "false");
+      renderIntro(slot, visible);
+
+      scope.addEventListener("click", function (e) {
+        var link = e.target.closest(".tips-inline-toggle");
+        var icon = e.target.closest(".tips-icon");
+        var iconInOffRow =
+          icon && icon.closest(".pattern-tips-off-row") && scope.contains(icon);
+        if (!((link && scope.contains(link)) || iconInOffRow)) return;
+        e.preventDefault();
+        var isShowing = scope.getAttribute("data-show-tips") === "true";
+        var newState = !isShowing;
+        scope.setAttribute("data-show-tips", newState ? "true" : "false");
+        localStorage.setItem(key, newState ? "true" : "false");
+        renderIntro(slot, newState);
       });
+    });
   })();
 </script>

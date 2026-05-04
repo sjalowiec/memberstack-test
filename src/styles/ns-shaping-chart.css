@@ -1,0 +1,150 @@
+/* Shared by NeckShoulderShapingChart.astro and sleeveless pattern tab (client-injected chart). */
+.ns-shaping-chart {
+  margin: 1.25rem 0 1.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: #1f2937;
+}
+
+.ns-shaping-chart__title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--kbm-green, #52682d);
+  letter-spacing: 0.02em;
+}
+
+.ns-shaping-chart__intro {
+  margin: 0 0 0.65rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #374151;
+}
+
+.ns-shaping-chart__table-wrap {
+  overflow-x: auto;
+  margin: 0 0 0.6rem;
+  border: 1px solid rgba(55, 65, 81, 0.2);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.ns-shaping-chart__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.ns-shaping-chart__table th,
+.ns-shaping-chart__table td {
+  padding: 0.28rem 0.45rem;
+  border-bottom: 1px solid rgba(55, 65, 81, 0.12);
+  vertical-align: middle;
+}
+
+.ns-shaping-chart__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ns-shaping-chart__th-group {
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #374151;
+  background: rgba(82, 104, 45, 0.06);
+  border-bottom: 1px solid rgba(55, 65, 81, 0.15);
+}
+
+.ns-shaping-chart__th-sub {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.75rem;
+  background: rgba(82, 104, 45, 0.04);
+  color: #4b5563;
+}
+
+.ns-shaping-chart__th-row,
+.ns-shaping-chart__th-action {
+  text-align: left;
+  vertical-align: bottom;
+  font-weight: 700;
+  font-size: 0.75rem;
+  background: rgba(82, 104, 45, 0.06);
+  border-bottom: 1px solid rgba(55, 65, 81, 0.15);
+}
+
+.ns-shaping-chart__td-num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.ns-shaping-chart__td-center {
+  text-align: center;
+}
+
+.ns-shaping-chart__tr--neck-both td {
+  background: #f3f4f6;
+}
+
+.ns-shaping-chart__tr--shoulder-neck td {
+  background: #fdf2f8;
+}
+
+.ns-shaping-chart__tr--shoulder-both td {
+  background: #f3f4f6;
+}
+
+.ns-shaping-chart__preview {
+  margin: 1rem 0 0.75rem;
+  padding: 0.75rem 0 0;
+  border-top: 1px solid rgba(55, 65, 81, 0.12);
+}
+
+.ns-shaping-chart__preview-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--kbm-green, #52682d);
+}
+
+.ns-shaping-chart__preview-svg-wrap {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.ns-shaping-chart__preview-svg-wrap svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+@media print {
+  .ns-shaping-chart {
+    font-size: 9pt;
+    break-inside: avoid;
+  }
+
+  .ns-shaping-chart__table-wrap {
+    border-color: #999;
+  }
+
+  .ns-shaping-chart__tr--neck-both td {
+    background: #eee !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .ns-shaping-chart__tr--shoulder-neck td {
+    background: #fce7f3 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .ns-shaping-chart__tr--shoulder-both td {
+    background: #eee !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

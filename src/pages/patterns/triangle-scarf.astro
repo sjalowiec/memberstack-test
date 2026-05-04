@@ -6,6 +6,7 @@ import FloatingInput from "../../components/tools/FloatingInput.astro";
 import YarnRequirement from "../../components/tools/YarnRequirement.astro";
 import PrintFooter from "../../components/common/PrintFooter.astro";
 import PatternTabs from "../../components/patterns/PatternTabs.astro";
+import PatternModeIndicator from "../../components/patterns/PatternModeIndicator.astro";
 import PatternComments from "../../components/patterns/PatternComments.astro";
 import PinterestEmbed from "../../components/PinterestEmbed.astro";
 import "../../styles/wizard.css";
@@ -75,11 +76,16 @@ const toolHref = "/tools/triangle-v2";
     <div class="ts-pattern-shell">
       <div id="triangle-scarf-builder-top" class="wizard-container scroll-mt-[96px]">
         <div class="calculator-card ts-builder-inputs">
-          <PatternTabs rootClass="pattern-tabs-scope">
+          <PatternTabs
+            rootClass="pattern-tabs-scope"
+            managePatternReadiness={true}
+            patternInitiallyReady={Boolean(initialPatternHtml)}
+          >
             <div slot="build" class="ts-tab-slot-build">
               <div class="pattern-builder-unit-row no-print" style="margin-bottom: 12px;">
                 <UnitToggle id="triangle-scarf" />
               </div>
+              <PatternModeIndicator mode="custom">
               <h2 class="ts-pattern-panel-title">Your measurements</h2>
 
               <form id="ts-pattern-form" class="ts-pattern-form">
@@ -182,19 +188,10 @@ const toolHref = "/tools/triangle-v2";
                   layout="accordion"
                 />
               </section>
+              </PatternModeIndicator>
             </div>
 
             <div slot="pattern" class="ts-tab-slot-pattern">
-              <div
-                id="ts-pattern-tab-empty"
-                class="ts-pattern-tab-empty"
-                hidden={Boolean(initialPatternHtml)}
-              >
-                <p>
-                  Enter your measurements in the <strong>Build</strong> tab, then tap <strong>Generate pattern instructions</strong>.
-                </p>
-              </div>
-
               <div
                 id="ts-pattern-results-wrap"
                 class:list={["ts-pattern-results-wrap", !initialPatternHtml && "ts-pattern-results-wrap--empty"]}
@@ -469,17 +466,6 @@ const toolHref = "/tools/triangle-v2";
       font-size: 0.95rem;
     }
 
-    .ts-pattern-tab-empty {
-      padding: 0.25rem 0 1rem;
-      color: #6b7280;
-      font-size: 0.98rem;
-      line-height: 1.55;
-    }
-
-    .ts-pattern-tab-empty p {
-      margin: 0;
-    }
-
     .ts-tab-slot-pattern .ts-pattern-results-wrap {
       margin-top: 0;
     }
@@ -701,10 +687,6 @@ const toolHref = "/tools/triangle-v2";
         display: block !important;
       }
 
-      .ts-pattern-tab-empty {
-        display: none !important;
-      }
-
       .ts-pattern-results-wrap {
         display: block !important;
       }
@@ -721,15 +703,15 @@ const toolHref = "/tools/triangle-v2";
       calculateTriangleScarf,
       buildTriangleScarfPatternHtml,
     } from "../../lib/patterns/triangleScarfMath.ts";
-    import { initPatternTabs } from "../../lib/patterns/patternTabsClient.ts";
+    import { initPatternTabs, setPatternTabsReadiness } from "../../lib/patterns/patternTabsClient.ts";
 
+    const tsTabsRoot = document.querySelector(".ts-pattern-shell .pattern-tabs");
     const tabsControl = initPatternTabs(document.querySelector(".ts-pattern-shell"));
 
     const form = document.getElementById("ts-pattern-form");
     const btn = document.getElementById("tsCalculateBtn");
     const startOverBtn = document.getElementById("tsStartOverBtn");
     const errEl = document.getElementById("ts-pattern-error");
-    const emptyStateEl = document.getElementById("ts-pattern-tab-empty");
     const resultsWrap = document.getElementById("ts-pattern-results-wrap");
     const resultsEl = document.getElementById("ts-pattern-results");
     const needleErr = document.getElementById("ts-needle-validation-error");
@@ -841,7 +823,7 @@ const toolHref = "/tools/triangle-v2";
         resultsWrap.hidden = true;
         resultsWrap.classList.add("ts-pattern-results-wrap--empty");
       }
-      if (emptyStateEl) emptyStateEl.hidden = false;
+      setPatternTabsReadiness(tsTabsRoot, false);
 
       tabsControl?.activateTab("build");
 
@@ -878,6 +860,7 @@ const toolHref = "/tools/triangle-v2";
         if (!Number.isFinite(needles) || needles < 50 || needles > 400) {
           needleErr.hidden = false;
           showError("Enter available needles (50–400), matching your machine bed.");
+          setPatternTabsReadiness(tsTabsRoot, false);
           return;
         }
         needleErr.hidden = true;
@@ -895,13 +878,14 @@ const toolHref = "/tools/triangle-v2";
       if (!result.ok) {
         showError(result.message);
         resultsWrap.hidden = true;
+        setPatternTabsReadiness(tsTabsRoot, false);
         return;
       }
 
       resultsEl.innerHTML = buildTriangleScarfPatternHtml(result);
       resultsWrap.hidden = false;
       resultsWrap.classList.remove("ts-pattern-results-wrap--empty");
-      if (emptyStateEl) emptyStateEl.hidden = true;
+      setPatternTabsReadiness(tsTabsRoot, true);
 
       tabsControl?.activateTab("pattern");
 

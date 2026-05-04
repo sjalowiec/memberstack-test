@@ -365,5 +365,38 @@
     "tryImage": "/images/help-hub/slip-card.jpg",
     "tryImageAlt": "slip stitch chart example",
     "tryImageCaption": "Example punchcard\nBlack holes  (D) = KNIT\nWhite & Symbols <img src=\"/images/help-hub/slip-symbol.png\" alt=\"slip symbol\"> (B) = SLIP"
+  },
+  {
+    "question": "Do I really have to swatch before I knit?",
+    "slug": "why-you-need-to-swatch",
+    "status": "published",
+    "bubbleAnswer": "Yes. It’s the #1 key to knitting success. It shows you exactly how your project will fit, how much yarn you’ll need, and whether you’ll love the fabric.",
+    "hook": "Skipping your swatch is the fastest way to waste yarn and time. A few minutes now saves hours later.",
+    "mediaType": "vimeo",
+    "mediaUrl": "974307555",
+    "aboutTitle": "Swatching is NOT optional",
+    "tryThis": "Knit a \"proper\" Swatch",
+    "trySteps": [
+      "<ol>",
+      "<li>Cast on and knit a swatch that is large enough to measure the recommended stitches and rows (according to your machine)",
+      "</li>",
+      "<li>Knit a few rows in pattern with your main yarn</li>",
+      "<li>Switch to a contrasting color and knit 2 rows</li>",
+      "<li>Switch to your main yarn and knit rows according to the diagram for your machine</li>",
+      "<li>Place <a data-GlossaryId=\"772\" class=\"glossaryhelp\">Yarn Marker <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> to isolate stitches</li>",
+      "<li>Knit as in the diagram</li>",
+      "<li>Change to contrasting color andknit 2 rows</li>",
+      "<li>Change to main yarn and knit a few rows and bind off</li>",
+      "<li>Let the swatch rest AT LEAST over night.</li>",
+      "<li><a data-GlossaryId=\"652\" class=\"glossaryhelp\">Dress the Swatch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> as you will treat your finished item</li>",
+      "<li>Use a <a data-GlossaryId=\"662\" class=\"glossaryhelp\">Gauge Ruler <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> to establish YOUR gauge (measuring between the marked rows and stitch markers)</li>",
+      "~OR~",
+      "<li>Measure with a regular ruler and use the  <a class=\"subvideopopup\" data-videotitle=\"knititnow.com/GaugeTool\" data-vimeoid=\"346190764\"> <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Knit it Now Gauge Calculator</a> to establish your gauge</li>",
+      "</ol>"
+    ],
+    "tryNote": "note under try this",
+    "tryImage": "/images/tips/knit-a-proper-swatch.jpg",
+    "tryImageAlt": "knit a proper swatch to establish accurate gauge",
+    "tryImageCaption": "knit a proper swatch to establish accurate gauge"
   }
 ]

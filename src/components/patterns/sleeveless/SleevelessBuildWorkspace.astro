@@ -93,7 +93,10 @@ import SleevelessGarmentYarnGaugeStep from "./SleevelessGarmentYarnGaugeStep.ast
     try {
       const u = new URL(window.location.href);
       const q = u.searchParams.get("buildStep");
-      if (q === "style" || q === "fit" || q === "yarn") return q;
+      /** Legacy standalone URLs used design / gauge; unified page uses style / yarn internally. */
+      if (q === "design" || q === "style") return "style";
+      if (q === "fit") return "fit";
+      if (q === "gauge" || q === "yarn") return "yarn";
     } catch {
       /* ignore */
     }
@@ -111,6 +114,9 @@ import SleevelessGarmentYarnGaugeStep from "./SleevelessGarmentYarnGaugeStep.ast
       const openPattern = t.closest("[data-sg-open-pattern-tab]");
       if (openPattern) {
         e.preventDefault();
+        window.dispatchEvent(
+          new CustomEvent("kbm:sleeveless-before-step-change", { detail: { from: "yarn", to: "pattern" } }),
+        );
         window.dispatchEvent(new CustomEvent("kbm:sleeveless-open-pattern-tab"));
         return;
       }

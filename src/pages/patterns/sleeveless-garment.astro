@@ -1,18 +1,9 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import SleevelessBuilderNav from "../../components/patterns/SleevelessBuilderNav.astro";
-import SleevelessGarmentDesignStep from "../../components/patterns/sleeveless/SleevelessGarmentDesignStep.astro";
-import "../../styles/wizard.css";
----
+import { SLEEVELESS_BUILDER_RESET_PARAM } from "../../lib/patterns/patternStorage.ts";
 
-<Layout
-  title="Design Your Sleeveless Sweater | Knit it Now"
-  description="Choose a sizing chart for a straight sleeveless pullover with a round neckline (Version 1). Visual selections update your design summary."
->
-  <main class="wizard-page sg-pattern-page">
-    <div class="wizard-container">
-      <SleevelessBuilderNav currentStep="style" />
-      <SleevelessGarmentDesignStep />
-    </div>
-  </main>
-</Layout>
+const target = new URL("/patterns/sleeveless/pattern", Astro.url);
+target.searchParams.set("buildStep", "design");
+const reset = Astro.url.searchParams.get(SLEEVELESS_BUILDER_RESET_PARAM);
+if (reset) target.searchParams.set(SLEEVELESS_BUILDER_RESET_PARAM, reset);
+return Astro.redirect(`${target.pathname}${target.search}${Astro.url.hash}`, 301);
+---

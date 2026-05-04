@@ -1,29 +1,177 @@
 /**
- * Scoped variants for pattern wizard tabs (hat-style: desktop labels, mobile emoji icons).
- * Apply `.pattern-tabs-scope` on the same element as `.pattern-tabs` or an ancestor of the tab UI.
+ * Shared pattern wizard tabs (connected “folder” tabs on calculator-card).
+ * Add `pattern-tabs-scope` on PatternTabs via `rootClass` (same element as `.pattern-tabs`).
  */
+
+.pattern-tabs-scope {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pattern-tabs-scope .pattern-tab-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 6px;
+  margin: -2rem -2rem 0 -2rem;
+  padding: 12px 12px 0 12px;
+  background: var(--page-bg, #f7f8f7);
+  border-bottom: 1px solid #e4e6e0;
+  box-shadow: none;
+}
+
+.pattern-tabs-scope .pattern-tab-content {
+  padding-top: 1.25rem;
+}
+
+.pattern-tabs-scope .pattern-tab-nav .tab-btn {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: none;
+  border-radius: 10px 10px 0 0;
+  border-bottom: none;
+  box-shadow: none;
+  margin: 0;
+  padding: 12px 18px 14px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #6b7280;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.pattern-tabs-scope .pattern-tab-nav .tab-btn:not(.is-disabled):hover {
+  color: #374151;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.pattern-tabs-scope .pattern-tab-nav .tab-btn:not(.is-disabled):focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+/* Override global.css underline tabs — active tab joins the white card below */
+.pattern-tabs-scope .pattern-tab-nav .tab-btn.active:not(.is-disabled) {
+  color: var(--kbm-accent, #c2614e);
+  font-weight: 700;
+  background: #ffffff;
+  margin-bottom: -1px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #ffffff;
+  position: relative;
+  z-index: 1;
+}
 
 .pattern-tabs-scope .pattern-tab-nav .tab-icon {
   display: none;
 }
 
-/* Pattern tab locked (optional; hat / DIY blanket) */
 .pattern-tabs-scope .pattern-tab-nav .tab-btn.is-disabled {
   color: #9ca3af;
-  opacity: 0.55;
+  opacity: 0.65;
   cursor: not-allowed;
+  background: transparent;
 }
 
 .pattern-tabs-scope .pattern-tab-nav .tab-btn.is-disabled:hover,
 .pattern-tabs-scope .pattern-tab-nav .tab-btn.is-disabled:focus-visible {
   color: #9ca3af;
-  border-bottom-color: transparent;
-  opacity: 0.55;
+  opacity: 0.65;
+  background: transparent;
 }
 
 .pattern-tabs-scope .pattern-tab-nav .tab-btn.is-disabled.active {
   color: #9ca3af;
-  border-bottom-color: transparent;
+  background: transparent;
+  margin-bottom: 0;
+  padding-bottom: 14px;
+  border-bottom: none;
+  font-weight: 600;
+}
+
+/* Managed Pattern panel: empty state vs generated output (see PatternTabs.astro) */
+.pattern-tabs--pattern-managed .pattern-tab-pattern-managed {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 8rem;
+}
+
+.pattern-tabs--pattern-managed:not(.pattern-tabs--pattern-ready) .pattern-tab-pattern-body {
+  display: none !important;
+}
+
+.pattern-tabs--pattern-managed:not(.pattern-tabs--pattern-ready) .pattern-tab-empty-state {
+  display: block;
+}
+
+.pattern-tabs--pattern-managed.pattern-tabs--pattern-ready .pattern-tab-empty-state {
+  display: none !important;
+}
+
+.pattern-tabs--pattern-managed.pattern-tabs--pattern-ready .pattern-tab-pattern-body {
+  display: block;
+}
+
+.pattern-tabs--pattern-managed .pattern-tab-empty-state {
+  margin: 0;
+  padding: 1.25rem 1.25rem 1.5rem;
+  text-align: center;
+  color: #4b5563;
+  background: #f9fafb;
+  border: 1px dashed #d1d5db;
+  border-radius: 10px;
+}
+
+.pattern-tabs--pattern-managed .pattern-tab-empty-state__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.pattern-tabs--pattern-managed .pattern-tab-empty-state__body {
+  margin: 0 0 1.25rem;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+.pattern-tabs--pattern-managed .pattern-tab-empty-state__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.4rem 1.15rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--kbm-green, #52682d);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.pattern-tabs--pattern-managed .pattern-tab-empty-state__cta:hover {
+  filter: brightness(1.05);
+}
+
+.pattern-tabs--pattern-managed .pattern-tab-empty-state__cta:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+/* Managed: Pattern tab looks muted but remains clickable */
+.pattern-tabs--pattern-managed .pattern-tab-nav .tab-btn[data-tab="pattern"].is-disabled {
+  cursor: pointer;
+}
+
+.pattern-tabs--pattern-managed .pattern-tab-nav .tab-btn[data-tab="pattern"].is-disabled:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+  opacity: 0.9;
 }
 
 @media (max-width: 767px) {
@@ -53,5 +201,23 @@
     align-items: center;
     justify-content: center;
     gap: 0;
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px 14px 12px;
+  }
+
+  .pattern-tabs-scope .pattern-tab-nav .tab-btn.active:not(.is-disabled) {
+    padding-bottom: 13px;
+  }
+
+  .pattern-tabs-scope .pattern-tab-nav .tab-btn.is-disabled.active {
+    padding-bottom: 12px;
+  }
+}
+
+@media print {
+  .pattern-tabs .pattern-tab-empty-state,
+  .pattern-tabs [data-pattern-tab-empty] {
+    display: none !important;
   }
 }
