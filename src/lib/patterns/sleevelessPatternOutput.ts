@@ -18,7 +18,7 @@ import {
   type NeckShoulderShapingChartRow,
 } from "./neckShoulderShapingChart";
 import {
-  buildNeckShoulderShapingChartRows,
+  buildNeckShoulderTimelineAndChartRows,
   type NeckShoulderShapingPatternNumbers,
 } from "./neckShoulderShapingChartRows";
 
@@ -241,8 +241,10 @@ function mergeAdjacentPlainKnitBlocks(
     let total = extractPlainKnitPatternRowCount(row.paragraphs[0])!;
     const firstRc = row.rc;
     let j = i + 1;
-    while (j < rows.length && isMergeablePlainKnitBlock(rows[j])) {
-      total += extractPlainKnitPatternRowCount(rows[j].paragraphs[0])!;
+    while (j < rows.length) {
+      const candidate = rows[j];
+      if (!isMergeablePlainKnitBlock(candidate)) break;
+      total += extractPlainKnitPatternRowCount(candidate.paragraphs[0])!;
       j++;
     }
 
@@ -319,7 +321,7 @@ function backNecklineShoulderSummaryParagraphs(args: {
   ];
 }
 
-function buildSleevelessBackDisplayRows(args: {
+export function buildSleevelessBackDisplayRows(args: {
   castOnSts: number;
   hemRows: number;
   hemRowsValid: boolean;
@@ -339,6 +341,10 @@ function buildSleevelessBackDisplayRows(args: {
 }): SleevelessPatternDisplayRow[] {
   const rows: SleevelessPatternDisplayRow[] = [];
   rows.push({ kind: "piece", title: "BACK" });
+  let carriedAfterArmholeSts =
+    args.stitchesAfterArmhole !== undefined && args.stitchesAfterArmhole > 0
+      ? args.stitchesAfterArmhole
+      : undefined;
 
   const A = args.castOnSts;
   const ribs = args.hemRows;
@@ -366,6 +372,7 @@ function buildSleevelessBackDisplayRows(args: {
           "Hem rows could not be calculated — check row gauge and sizing chart. Knit your hem to the depth you prefer, then continue.",
         ],
     tipHtml: args.hemRowsValid ? RIBBED_HEM_PATTERN_TIP_HTML : undefined,
+    stitchCount: A > 0 ? A : undefined,
   });
 
   rows.push({ kind: "section", title: "BODY" });
@@ -377,6 +384,7 @@ function buildSleevelessBackDisplayRows(args: {
       : [
           "Body length to the armhole could not be calculated. Confirm back neck to hem, armhole depth, and row gauge in Fit, then try again.",
         ],
+    stitchCount: A > 0 ? A : undefined,
   });
 
   rows.push({ kind: "section", title: "ARMHOLE" });
@@ -392,9 +400,10 @@ function buildSleevelessBackDisplayRows(args: {
     const m = args.armholeMath;
     const first = args.firstArmholeRC;
     const bo = m.bindOffSts;
-    const afterBo1 = A - 2 * bo;
-    const afterBo2 = A - 4 * bo;
-    const B = args.stitchesAfterArmhole;
+    const afterBo1 = A - bo;
+    const afterBo2 = A - 2 * bo;
+    const decreasesTotal = 2 * Math.max(0, m.decreaseSts);
+    const B = afterBo2 - decreasesTotal;
     const decStart = first + 2;
     const decRowNumbers = Array.from({ length: m.decreaseSts }, (_, i) => decStart + 2 * i);
     const decRowListParen = formatRowNumbersParen(decRowNumbers);
@@ -407,7 +416,8 @@ function buildSleevelessBackDisplayRows(args: {
         `Bind off ${bo} stitches on the carriage side (armhole edge).`,
         "Knit in pattern across.",
       ],
-      stitchCount: afterBo1,
+      // Display stitches at row start; row action applies after this row.
+      stitchCount: A,
     });
     rows.push({
       kind: "block",
@@ -416,7 +426,7 @@ function buildSleevelessBackDisplayRows(args: {
         `Bind off ${bo} stitches on the carriage side (armhole edge).`,
         "Knit in pattern across.",
       ],
-      stitchCount: afterBo2,
+      stitchCount: afterBo1 > 0 ? afterBo1 : undefined,
     });
 
     if (m.decreaseSts > 0) {
@@ -427,7 +437,7 @@ function buildSleevelessBackDisplayRows(args: {
           `At each armhole edge, decrease 1 stitch every other row, ${m.decreaseSts} times total (${m.decreaseRows} shaping rows).`,
           `Work decreases on rows ${decRowListParen}.`,
         ],
-        stitchCount: B,
+        stitchCount: afterBo2 > 0 ? afterBo2 : undefined,
       });
     }
 
@@ -437,8 +447,10 @@ function buildSleevelessBackDisplayRows(args: {
         kind: "block",
         rc: formatRcColon(evStart),
         paragraphs: [`Knit in pattern for ${m.evenRows} rows.`],
+        stitchCount: B > 0 ? B : undefined,
       });
     }
+    carriedAfterArmholeSts = B > 0 ? B : carriedAfterArmholeSts;
   } else {
     rows.push({
       kind: "block",
@@ -453,6 +465,10 @@ function buildSleevelessBackDisplayRows(args: {
       kind: "block",
       rc: formatRcColon(args.upperStartRc),
       paragraphs: [`Knit in pattern for ${args.upperBackRows} rows.`],
+      stitchCount:
+        carriedAfterArmholeSts !== undefined && carriedAfterArmholeSts > 0
+          ? carriedAfterArmholeSts
+          : undefined,
     });
   }
   if (args.evenRowPadRows > 0) {
@@ -464,6 +480,10 @@ function buildSleevelessBackDisplayRows(args: {
           ? `Knit in pattern for ${args.evenRowPadRows} rows.`
           : "Knit in pattern for 1 row.",
       ],
+      stitchCount:
+        carriedAfterArmholeSts !== undefined && carriedAfterArmholeSts > 0
+          ? carriedAfterArmholeSts
+          : undefined,
     });
   }
 
@@ -587,6 +607,9 @@ export function generateSleevelessBackPattern(
   const armholeDepthIn = measurementInches(sm, "armhole_depth");
   const shoulderWidthIn = measurementInches(sm, "shoulder_width");
   const backNeckDepthIn = measurementInches(sm, "back_neck_depth");
+  /** Vertical depth of shoulder slope (inch) — timeline row span matches row gauge × depth. */
+  const shoulderDepthIn =
+    measurementInches(sm, "shoulder_depth") ?? measurementInches(sm, "shoulder_drop");
   const neckWidthIn =
     measurementInches(sm, "neck_width") ??
     measurementInches(sm, "neck_opening") ??
@@ -619,6 +642,14 @@ export function generateSleevelessBackPattern(
     rowGauge > 0 ? Math.max(12, Math.round(neckShoulderInches * rowGauge)) : 28;
 
   const nRowsForNeckShoulder = Math.min(8, Math.max(4, neckShoulderRowsEstimate));
+
+  /** Row count after center-neck bind-off: full shoulder-depth span when measurement is present. */
+  const shoulderDepthRowsFromMeasurements =
+    rowGauge > 0 && shoulderDepthIn !== undefined
+      ? Math.max(1, Math.round(shoulderDepthIn * rowGauge))
+      : undefined;
+  const neckShoulderShapingTimelineRows =
+    shoulderDepthRowsFromMeasurements ?? nRowsForNeckShoulder;
 
   const armholeDepthRows =
     armholeDepthIn && rowGauge > 0 ? Math.max(1, Math.round(armholeDepthIn * rowGauge)) : 0;
@@ -834,7 +865,7 @@ export function generateSleevelessBackPattern(
         ? [
             {
               startRC: neckStartRC + 1,
-              endRC: neckStartRC + nRowsForNeckShoulder,
+              endRC: neckStartRC + neckShoulderShapingTimelineRows,
               text: `At neck edge, decrease toward center — ${centerSts} stitches total to remove.`,
             },
           ]
@@ -843,7 +874,7 @@ export function generateSleevelessBackPattern(
     const shoulderActions: ShapingAction[] = [
       {
         startRC: neckStartRC + 1,
-        endRC: neckStartRC + nRowsForNeckShoulder,
+        endRC: neckStartRC + neckShoulderShapingTimelineRows,
         text: "At armhole edge, work shoulder slope (short-rows or bind-offs per chart).",
       },
     ];
@@ -911,11 +942,11 @@ export function generateSleevelessBackPattern(
       firstShapingRow: neckStartRC + 1,
       shoulderStitchesPerSide: shoulderStitches,
       centerNeckBindOff: necklineStitches,
-      shapingWorkRows: nRowsForNeckShoulder,
+      shapingWorkRows: neckShoulderShapingTimelineRows,
     };
-    const liveRows = buildNeckShoulderShapingChartRows(patternNumbers);
+    const { timeline, chartRows: liveRows } = buildNeckShoulderTimelineAndChartRows(patternNumbers);
     if (liveRows.length > 0) {
-      neckShoulderShapingChart = neckShoulderShapingChartFromRows(liveRows);
+      neckShoulderShapingChart = neckShoulderShapingChartFromRows(liveRows, { timeline });
       neckShoulderChartUsesLiveRows = true;
     }
   }

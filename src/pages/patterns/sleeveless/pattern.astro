@@ -317,7 +317,8 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     margin-bottom: 1rem;
     border-radius: 8px;
     border: 1px solid rgba(0, 0, 0, 0.08);
-    overflow: hidden;
+    /* overflow visible so sticky piece diagrams work inside section content */
+    overflow: visible;
     background: #fff;
   }
 
@@ -327,6 +328,7 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     gap: 0.5rem;
     padding: 0.65rem 0.85rem;
     background: rgba(82, 104, 45, 0.07);
+    border-radius: 7px 7px 0 0;
   }
 
   :global(#pattern-content .pattern-section__heading h2) {
@@ -347,11 +349,191 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
   :global(#pattern-content .pattern-section__content) {
     padding: 0.75rem 0.85rem 1.1rem;
     background: color-mix(in srgb, var(--kbm-green, #52682d) 3%, var(--page-bg, #fff));
+    border-radius: 0 0 7px 7px;
   }
 
   @supports not (background: color-mix(in srgb, white, black)) {
     :global(#pattern-content .pattern-section__content) {
       background: rgba(82, 104, 45, 0.035);
+    }
+  }
+
+  /* Back / Front: instructions + sticky schematic (desktop 60/40) */
+  :global(#pattern-content .sleeveless-piece-split) {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    align-items: stretch;
+  }
+
+  :global(#pattern-content .sleeveless-piece-split__text) {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  :global(#pattern-content .sleeveless-piece-split__diagram) {
+    order: -1;
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
+  :global(#pattern-content .sleeveless-piece-split__diagram-inner) {
+    margin: 0;
+  }
+
+  :global(#pattern-content .sleeveless-piece-split__diagram-trigger) {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: zoom-in;
+    text-align: inherit;
+  }
+
+  :global(#pattern-content .sleeveless-piece-split__diagram-trigger:focus-visible) {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  :global(#pattern-content .sleeveless-piece-split__diagram-hint) {
+    margin: 0.4rem 0 0;
+    font-size: 0.82rem;
+    line-height: 1.3;
+    color: #4b5563;
+    text-align: center;
+  }
+
+  :global(#pattern-content .sleeveless-piece-split__diagram-img) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  :global(#pattern-content .sleeveless-piece-split__diagram-svg) {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  :global(#pattern-content .sleeveless-piece-split__diagram-inline) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  :global(.sleeveless-diagram-modal[hidden]) {
+    display: none !important;
+  }
+
+  :global(.sleeveless-diagram-modal) {
+    position: fixed;
+    inset: 0;
+    z-index: 1500;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgba(17, 24, 39, 0.72);
+  }
+
+  :global(.sleeveless-diagram-modal__dialog) {
+    position: relative;
+    width: auto;
+    height: auto;
+    max-width: 95vw;
+    max-height: 95vh;
+    padding: 0.75rem;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.32);
+  }
+
+  :global(.sleeveless-diagram-modal__close) {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(17, 24, 39, 0.9);
+    color: #fff;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  :global(.sleeveless-diagram-modal__close:focus-visible) {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+
+  :global(.sleeveless-diagram-modal__content) {
+    display: grid;
+    place-items: center;
+    width: auto;
+    height: auto;
+    max-width: 95vw;
+    max-height: 95vh;
+    overflow: auto;
+  }
+
+  :global(
+    .sleeveless-diagram-modal__content .sleeveless-piece-split__diagram-inline,
+    .sleeveless-diagram-modal__content svg,
+    .sleeveless-diagram-modal__content img,
+    .sleeveless-diagram-modal__content object,
+    .sleeveless-diagram-modal__content figure,
+    .sleeveless-diagram-modal__content figure > svg,
+    .sleeveless-diagram-modal__content figure > img,
+    .sleeveless-diagram-modal__content figure > object
+  ) {
+    width: min(90vw, 900px);
+    max-width: 90vw;
+    max-height: 90vh;
+    height: auto;
+  }
+
+  :global(#pattern-content .sleeveless-piece-split__text .sleeveless-pattern-instructions) {
+    max-width: none;
+    margin: 0;
+  }
+
+  :global(#pattern-content .sleeveless-piece-split__text .sg-pattern-output.sg-neck-chart-print-block) {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  @media (min-width: 768px) {
+    :global(#pattern-content .sleeveless-piece-split) {
+      display: flex;
+      flex-direction: row;
+      gap: 1.5rem;
+      align-items: flex-start;
+    }
+
+    :global(#pattern-content .sleeveless-piece-split__text) {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    :global(#pattern-content .sleeveless-piece-split__diagram) {
+      order: 1;
+      flex: 0 0 clamp(220px, 28vw, 320px);
+      max-width: 320px;
+      min-width: 0;
+      position: sticky;
+      top: var(--fixed-header-offset, 90px);
+      align-self: flex-start;
+    }
+
+    :global(#pattern-content .sleeveless-piece-split__diagram-inner) {
+      position: static;
     }
   }
 
@@ -489,6 +671,10 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
 
     :global(#pattern-content .pattern-section.is-collapsed .pattern-section__header) {
       padding: 0.65rem 0.85rem !important;
+    }
+
+    :global(#pattern-content .sleeveless-piece-split__diagram-inner) {
+      position: static !important;
     }
 
     :global(.no-print) {
@@ -808,6 +994,295 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     return html;
   }
 
+  /**
+   * Two-column shell for Back/Front: prose + chart (left) and static SVG (right, sticky on desktop).
+   * @param {string} innerHtml
+   * @param {string} diagramSrc
+   * @param {string} diagramAlt
+   */
+  function wrapSleevelessPieceSplit(innerHtml, diagramSrc, diagramAlt) {
+    const src = escapeHtml(diagramSrc);
+    const alt = escapeHtml(diagramAlt);
+    return `<div class="sleeveless-piece-split">
+  <div class="sleeveless-piece-split__text">${innerHtml}</div>
+  <aside class="sleeveless-piece-split__diagram">
+    <div class="sleeveless-piece-split__diagram-inner">
+      <button type="button" class="sleeveless-piece-split__diagram-trigger" data-sleeveless-diagram-trigger aria-label="Open larger diagram: ${alt}">
+        <div class="sleeveless-piece-split__diagram-svg" data-sleeveless-diagram data-src="${src}" data-alt="${alt}">
+          <p class="sleeveless-pattern-boot-msg">Loading diagram…</p>
+        </div>
+      </button>
+      <p class="sleeveless-piece-split__diagram-hint">Click diagram to enlarge</p>
+    </div>
+  </aside>
+</div>`;
+  }
+
+  function isFiniteNumber(n) {
+    return typeof n === "number" && Number.isFinite(n);
+  }
+
+  function fmtNumber(n) {
+    if (!isFiniteNumber(n)) return "";
+    const rounded = Math.round(n);
+    if (Math.abs(n - rounded) < 1e-9) return String(rounded);
+    const one = Math.round(n * 10) / 10;
+    // Trim trailing .0
+    return String(one).replace(/\.0$/, "");
+  }
+
+  function inchesToUnit(inches, unit) {
+    if (!isFiniteNumber(inches)) return undefined;
+    if (unit === "cm") return inches * 2.54;
+    return inches;
+  }
+
+  function toPositiveNumber(value) {
+    const n =
+      typeof value === "number"
+        ? value
+        : typeof value === "string"
+          ? Number(value.replace(/[^\d.-]/g, ""))
+          : NaN;
+    return Number.isFinite(n) && n > 0 ? n : undefined;
+  }
+
+  function selectedMeasurementsFromPatternData(patternData) {
+    const fit = section(patternData?.fit);
+    return section(fit.selectedMeasurements);
+  }
+
+  function inferSleevelessDiagramPiece(src, alt) {
+    const s = String(src || "").toLowerCase();
+    const a = String(alt || "").toLowerCase();
+    if (s.includes("diagram-back") || a.includes(" back ")) return "back";
+    if (s.includes("diagram-front") || a.includes(" front ")) return "front";
+    return "shared";
+  }
+
+  function resolveNeckDepthFields(result, patternData, piece, unit) {
+    const d = result?.debug ?? {};
+    const sm = selectedMeasurementsFromPatternData(patternData);
+    const rpi = d.rowsPerInch;
+
+    const backDepthIn = toPositiveNumber(sm.back_neck_depth);
+    const frontDepthIn = toPositiveNumber(sm.front_neck_depth);
+
+    let pieceDepthIn;
+    if (piece === "back") pieceDepthIn = backDepthIn;
+    else if (piece === "front") pieceDepthIn = frontDepthIn;
+
+    // Piece-specific neckline depth wins for SVGs; fallback keeps prior behavior if missing.
+    const depthInches = isFiniteNumber(pieceDepthIn) ? pieceDepthIn : d.reservedNecklineShoulderInches;
+    const depthRows =
+      isFiniteNumber(pieceDepthIn) && isFiniteNumber(rpi) && rpi > 0
+        ? Math.max(0, Math.round(pieceDepthIn * rpi))
+        : d.reservedNecklineShoulderRows;
+
+    return {
+      NECK_DEPTH_ROWS: isFiniteNumber(depthRows) ? String(Math.round(depthRows)) : "",
+      NECK_DEPTH: fmtNumber(inchesToUnit(depthInches, unit)),
+    };
+  }
+
+  /**
+   * Build placeholder replacements for sleeveless diagrams.
+   * Values are sourced from {@link SleevelessBackPatternResult.debug} where possible to avoid duplicate math.
+   */
+  function buildSleevelessDiagramReplacements(result, unit, opts) {
+    const d = result?.debug ?? {};
+    const piece = opts?.piece || "shared";
+    const patternData = opts?.patternData;
+    const unitLabel = unit === "cm" ? "cm" : "in";
+    const neckDepth = resolveNeckDepthFields(result, patternData, piece, unit);
+
+    const finishedBust = isFiniteNumber(d.finishedBustChest) ? d.finishedBustChest : undefined;
+    const bustWidthIn = finishedBust !== undefined ? finishedBust / 2 : undefined;
+
+    const repl = {
+      UNIT: unitLabel,
+
+      // Overall length (neck-to-hem) for the back piece.
+      HEIGHT: fmtNumber(inchesToUnit(d.backNeckToHem, unit)),
+
+      ARMHOLE_DEPTH: fmtNumber(inchesToUnit(d.armholeDepth, unit)),
+      ARMHOLE_ROWS: isFiniteNumber(d.armholeRows) ? String(Math.round(d.armholeRows)) : "",
+
+      // Width across the piece (half of finished bust/chest circumference).
+      BUST_STS: isFiniteNumber(d.backStitches) ? String(Math.round(d.backStitches)) : "",
+      BUST_WIDTH: fmtNumber(inchesToUnit(bustWidthIn, unit)),
+
+      // After armhole shaping (chart uses these stitch counts).
+      SHOULDER_STS: isFiniteNumber(d.stitchesAfterArmhole) ? String(Math.round(d.stitchesAfterArmhole)) : "",
+      SHOULDER_WIDTH: fmtNumber(inchesToUnit(d.shoulderWidthInches, unit)),
+
+      NECK_STS: isFiniteNumber(d.necklineStitches) ? String(Math.round(d.necklineStitches)) : "",
+      NECK_WIDTH: fmtNumber(inchesToUnit(d.necklineWidthInches, unit)),
+
+      NECK_DEPTH_ROWS: neckDepth.NECK_DEPTH_ROWS,
+      NECK_DEPTH: neckDepth.NECK_DEPTH,
+
+      // Side seam hem → underarm: hem rows + body rows (see sleevelessPatternOutput debug.bodyRows / hemRows).
+      SIDE_LENGTH_ROWS:
+        isFiniteNumber(d.hemRows) && isFiniteNumber(d.bodyRows)
+          ? String(Math.max(0, Math.round(d.hemRows + d.bodyRows)))
+          : "",
+      SIDE_LENGTH: (() => {
+        const rpi = d.rowsPerInch;
+        if (!isFiniteNumber(rpi) || rpi <= 0) return "";
+        if (!isFiniteNumber(d.hemRows) || !isFiniteNumber(d.bodyRows)) return "";
+        const sideRows = Math.max(0, Math.round(d.hemRows + d.bodyRows));
+        return fmtNumber(inchesToUnit(sideRows / rpi, unit));
+      })(),
+    };
+
+    return repl;
+  }
+
+  async function inlineSvgWithReplacements(hostEl, src, alt, replacements) {
+    if (!(hostEl instanceof HTMLElement)) return;
+    try {
+      const res = await fetch(src, { credentials: "same-origin" });
+      if (!res.ok) throw new Error(`Failed to load SVG: ${src} (${res.status})`);
+      let svgText = await res.text();
+
+      // Replace known placeholders.
+      for (const [k, v] of Object.entries(replacements || {})) {
+        const safeKey = String(k).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const re = new RegExp(`\\{\\{\\s*${safeKey}\\s*\\}\\}`, "g");
+        svgText = svgText.replace(re, v == null ? "" : String(v));
+      }
+
+      // If any placeholders remain, leave them as-is but log for visibility.
+      if (/\{\{\s*[A-Z0-9_]+\s*\}\}/.test(svgText)) {
+        console.warn("[sleeveless] Unreplaced SVG placeholders remain in", src);
+      }
+
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(svgText, "image/svg+xml");
+      const svg = doc.documentElement;
+      if (!svg || svg.nodeName.toLowerCase() !== "svg") {
+        const pe = doc.querySelector("parsererror");
+        throw new Error(pe ? pe.textContent || "SVG parse error" : "SVG parse error");
+      }
+
+      svg.setAttribute("role", "img");
+      if (alt) svg.setAttribute("aria-label", alt);
+      svg.classList.add("sleeveless-piece-split__diagram-inline");
+
+      hostEl.innerHTML = "";
+      hostEl.appendChild(document.importNode(svg, true));
+    } catch (err) {
+      console.warn("[sleeveless] Diagram load failed:", err);
+      hostEl.innerHTML = `<p class="sleeveless-pattern-boot-msg">Diagram unavailable.</p>`;
+    }
+  }
+
+  async function hydrateSleevelessDiagrams(root, result, unit, patternData) {
+    if (!root) return;
+    const hosts = root.querySelectorAll("[data-sleeveless-diagram]");
+    const jobs = [];
+    hosts.forEach((el) => {
+      if (!(el instanceof HTMLElement)) return;
+      const src = el.dataset.src;
+      const alt = el.dataset.alt || "";
+      if (!src) return;
+      const piece = inferSleevelessDiagramPiece(src, alt);
+      const replacements = buildSleevelessDiagramReplacements(result, unit, {
+        piece,
+        patternData,
+      });
+      jobs.push(inlineSvgWithReplacements(el, src, alt, replacements));
+    });
+    await Promise.all(jobs);
+  }
+
+  function ensureSleevelessDiagramModal() {
+    let modal = document.querySelector("[data-sleeveless-diagram-modal]");
+    if (modal instanceof HTMLElement) return modal;
+
+    modal = document.createElement("div");
+    modal.className = "sleeveless-diagram-modal";
+    modal.hidden = true;
+    modal.setAttribute("data-sleeveless-diagram-modal", "");
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-label", "Enlarged pattern diagram");
+    modal.innerHTML = `
+      <div class="sleeveless-diagram-modal__dialog" data-sleeveless-diagram-dialog>
+        <button type="button" class="sleeveless-diagram-modal__close" data-sleeveless-diagram-close aria-label="Close enlarged diagram">X</button>
+        <div class="sleeveless-diagram-modal__content" data-sleeveless-diagram-content></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.addEventListener("click", (e) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      if (target.closest("[data-sleeveless-diagram-close]")) {
+        closeSleevelessDiagramModal();
+        return;
+      }
+      const clickedInsideDialog = target.closest("[data-sleeveless-diagram-dialog]");
+      const clickedSvg = target.closest("svg");
+      if (!clickedInsideDialog || (clickedInsideDialog && !clickedSvg)) {
+        closeSleevelessDiagramModal();
+      }
+    });
+
+    return modal;
+  }
+
+  function closeSleevelessDiagramModal() {
+    const modal = document.querySelector("[data-sleeveless-diagram-modal]");
+    if (!(modal instanceof HTMLElement)) return;
+    const content = modal.querySelector("[data-sleeveless-diagram-content]");
+    if (content instanceof HTMLElement) {
+      content.innerHTML = "";
+    }
+    modal.hidden = true;
+    document.body.classList.remove("sleeveless-diagram-modal-open");
+  }
+
+  function openSleevelessDiagramModal(triggerEl) {
+    if (!(triggerEl instanceof HTMLElement)) return;
+    const srcSvg = triggerEl.querySelector(".sleeveless-piece-split__diagram-inline");
+    if (!(srcSvg instanceof SVGElement)) return;
+
+    const modal = ensureSleevelessDiagramModal();
+    const content = modal.querySelector("[data-sleeveless-diagram-content]");
+    if (!(content instanceof HTMLElement)) return;
+
+    content.innerHTML = "";
+    const clone = srcSvg.cloneNode(true);
+    if (clone instanceof SVGElement) {
+      content.appendChild(clone);
+      modal.hidden = false;
+      document.body.classList.add("sleeveless-diagram-modal-open");
+      const closeBtn = modal.querySelector("[data-sleeveless-diagram-close]");
+      if (closeBtn instanceof HTMLElement) closeBtn.focus();
+    }
+  }
+
+  function bindSleevelessDiagramZoom(root) {
+    if (!root || root.dataset.sleevelessDiagramZoomBound === "true") return;
+    root.dataset.sleevelessDiagramZoomBound = "true";
+
+    root.addEventListener("click", (e) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      const trigger = target.closest("[data-sleeveless-diagram-trigger]");
+      if (!(trigger instanceof HTMLElement)) return;
+      openSleevelessDiagramModal(trigger);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeSleevelessDiagramModal();
+      }
+    });
+  }
+
   function wrapPatternSection(sectionId, title, innerHtml, opts) {
     const sid = String(sectionId).replace(/[^a-zA-Z0-9_-]/g, "");
     const defaultCollapsed = opts?.defaultCollapsed === true;
@@ -1004,7 +1479,7 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     });
   }
 
-  function renderMount(patternMerged, result) {
+  function renderMount(patternMerged, result, unit, patternData) {
     const mount = document.querySelector("[data-sleeveless-mount]");
     if (!mount) return;
 
@@ -1015,9 +1490,20 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
         ? renderSleevelessBackDisplayHtml(displayRows)
         : `<p class="pattern-step-intro">Pattern display is not available. Try refreshing this tab.</p>`;
 
+    const backWrapped = wrapSleevelessPieceSplit(
+      backInner,
+      "/images/patterns/sleeveless/diagram-back.svg",
+      "Sleeveless back piece diagram"
+    );
+    const frontWrapped = wrapSleevelessPieceSplit(
+      buildFrontSectionHtml(style),
+      "/images/patterns/sleeveless/diagram-front.svg",
+      "Sleeveless front piece diagram"
+    );
+
     mount.innerHTML =
-      wrapPatternSection("sg-back", "Back", backInner, { defaultCollapsed: false }) +
-      wrapPatternSection("sg-front", "Front", buildFrontSectionHtml(style), { defaultCollapsed: false }) +
+      wrapPatternSection("sg-back", "Back", backWrapped, { defaultCollapsed: false }) +
+      wrapPatternSection("sg-front", "Front", frontWrapped, { defaultCollapsed: false }) +
       wrapPatternSection("sg-finishing", "Finishing", buildFinishingHtml(), { defaultCollapsed: true });
 
     const chartHost = mount.querySelector("#sg-neck-shoulder-chart-mount");
@@ -1026,6 +1512,12 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
         result.neckShoulderShapingChart
       );
     }
+
+    // Inline SVG diagrams with placeholder replacement (Back + Front).
+    // Note: replacements come from the same result/debug used for chart/timeline (no extra shaping math here).
+    void hydrateSleevelessDiagrams(mount, result, unit, patternData);
+    ensureSleevelessDiagramModal();
+    bindSleevelessDiagramZoom(mount);
 
     applyPatternSectionCollapseState(mount);
     bindPatternSectionCollapsePersistence(mount);
@@ -1070,7 +1562,14 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
       else note.setAttribute("hidden", "");
     }
 
-    renderMount(patternMerged, result);
+    const yg = section(patternMerged.yarnGauge);
+    const ygm =
+      patternData.yarnGaugeMachine && typeof patternData.yarnGaugeMachine === "object"
+        ? section(patternData.yarnGaugeMachine)
+        : {};
+    const unit = (ygm && ygm.gaugeRawUnit === "cm") || (yg && yg.gaugeRawUnit === "cm") ? "cm" : "in";
+
+    renderMount(patternMerged, result, unit, genInput);
   }
 
   function init() {

@@ -3,6 +3,8 @@
  * Replace demo rows with calculated values when wiring live pattern math.
  */
 
+import type { RowEntry } from "./shapingTimeline";
+
 export type NeckShoulderChartAction = "Neck" | "Shoulder / Neck" | "Shoulder" | string;
 
 /** One printed row of the shaping chart (machine row numbers are intentional here). */
@@ -33,6 +35,11 @@ export type NeckShoulderShapingChart = {
     "rightStitchCount",
   ];
   rows: NeckShoulderShapingChartRow[];
+  /**
+   * Row-by-row needle edges from shapingTimeline — SVG preview uses this when present
+   * so the diagram does not re-derive geometry from chart cells.
+   */
+  timeline?: RowEntry[];
 };
 
 /** Why a row is visually emphasized (both sides worked on the same row). */
@@ -46,7 +53,8 @@ export type NeckShoulderChartRowHighlight =
  */
 /** Build a chart object from computed rows (same columnKeys as demo). */
 export function neckShoulderShapingChartFromRows(
-  rows: NeckShoulderShapingChartRow[]
+  rows: NeckShoulderShapingChartRow[],
+  options?: { timeline?: RowEntry[] }
 ): NeckShoulderShapingChart {
   return {
     columnKeys: [
@@ -61,6 +69,7 @@ export function neckShoulderShapingChartFromRows(
       "rightStitchCount",
     ],
     rows,
+    ...(options?.timeline?.length ? { timeline: options.timeline } : {}),
   };
 }
 

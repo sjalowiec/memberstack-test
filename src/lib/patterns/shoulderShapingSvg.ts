@@ -5,9 +5,13 @@
  * Visual layout: shoulder (outer) on the left, neck opening (inner) on the right; increasing machine
  * row toward the top of the SVG. Green fill = live stitches on the needles; background = removed /
  * neck opening.
+ *
+ * When the chart includes `timeline` ({@link RowEntry} from shapingTimeline), geometry and delta
+ * labels come only from row index + edge positions + events — no re-parsing of chart text cells.
  */
 
-import type { NeckShoulderShapingChartRow } from "./neckShoulderShapingChart";
+import type { NeckShoulderShapingChart, NeckShoulderShapingChartRow } from "./neckShoulderShapingChart";
+import type { RowEntry } from "./shapingTimeline";
 
 export const SHOULDER_SHAPING_SVG_GRID = 10;
 
@@ -55,14 +59,9 @@ function escapeXml(text: string): string {
 
 type Pt = { x: number; y: number };
 
-function sortRows(rows: NeckShoulderShapingChartRow[]): NeckShoulderShapingChartRow[] {
-  return [...rows].sort((a, b) => a.row - b.row);
-}
-
-function computeStates(
-  sorted: NeckShoulderShapingChartRow[],
-  side: ShoulderShapingSvgSide
-): {
+/** Shared output for path + labels (timeline or legacy chart parsing). */
+type ShoulderSvgGeometry = {
+  rowNums: number[];
   inner: number[];
   outer: number[];
   startWidth: number;
@@ -71,9 +70,97 @@ function computeStates(
   shoulderLabels: { row: number; amount: number }[];
   neckLabels: { row: number; amount: number }[];
   centerNeckLabel: string | null;
-  /** Live bind-off count for center neck (flat opening width in stitches). */
   centerNeckStitches: number | null;
-} {
+};
+
+function sortChartRows(rows: NeckShoulderShapingChartRow[]): NeckShoulderShapingChartRow[] {
+  return [...rows].sort((a, b) => a.row - b.row);
+}
+
+function sortTimeline(rows: RowEntry[]): RowEntry[] {
+  return [...rows].sort((a, b) => a.row - b.row);
+}
+
+function sumTimelineDecrease(
+  entry: RowEntry,
+  side: "left" | "right",
+  edge: "outer" | "inner"
+): number {
+  return entry.events
+    .filter((e) => e.kind === "decrease" && e.side === side && e.edge === edge)
+    .reduce((s, e) => s + e.amount, 0);
+}
+
+function centerBindOffStitches(first: RowEntry): number | null {
+  const n = first.events
+    .filter((e) => e.kind === "bindOff" && e.side === "center" && e.edge === "center")
+    .reduce((s, e) => s + e.amount, 0);
+  return n > 0 ? n : null;
+}
+
+/**
+ * Diagram x: 0 at inner (neck), startWidth at outer (shoulder/armhole).
+ * Rows map to SVG y via row number only.
+ */
+function computeStatesFromTimeline(
+  sorted: RowEntry[],
+  side: ShoulderShapingSvgSide
+): ShoulderSvgGeometry {
+  const first = sorted[0];
+  const startWidth = side === "right" ? first.stitchesR : first.stitchesL;
+  const inner0Needle =
+    side === "right" ? first.rightInnerEdge : first.leftInnerEdge;
+
+  const rowNums: number[] = [];
+  const inner: number[] = [];
+  const outer: number[] = [];
+  const shoulderLabels: { row: number; amount: number }[] = [];
+  const neckLabels: { row: number; amount: number }[] = [];
+
+  const centerN = centerBindOffStitches(first);
+  const centerNeckLabel =
+    centerN !== null && centerN > 0 ? `Center neck: ${centerN} sts` : null;
+
+  for (const e of sorted) {
+    rowNums.push(e.row);
+    let innerX: number;
+    let outerX: number;
+    if (side === "right") {
+      innerX = e.rightInnerEdge - inner0Needle;
+      outerX = e.rightOuterEdge - inner0Needle + 1;
+    } else {
+      innerX = inner0Needle - e.leftInnerEdge;
+      outerX = innerX + e.stitchesL;
+    }
+    inner.push(innerX);
+    outer.push(outerX);
+
+    const shoulderAmt = sumTimelineDecrease(e, side, "outer");
+    const neckAmt = sumTimelineDecrease(e, side, "inner");
+    if (shoulderAmt > 0) shoulderLabels.push({ row: e.row, amount: shoulderAmt });
+    if (neckAmt > 0) neckLabels.push({ row: e.row, amount: neckAmt });
+  }
+
+  return {
+    rowNums,
+    inner,
+    outer,
+    startWidth,
+    minRow: sorted[0].row,
+    maxRow: sorted[sorted.length - 1].row,
+    shoulderLabels,
+    neckLabels,
+    centerNeckLabel,
+    centerNeckStitches: centerN,
+  };
+}
+
+/** Legacy: derive geometry by summing "-" cells when no shaping timeline is available. */
+function computeStatesFromChartCells(
+  sorted: NeckShoulderShapingChartRow[],
+  side: ShoulderShapingSvgSide
+): ShoulderSvgGeometry {
+  const rowNums = sorted.map((r) => r.row);
   const startWidth =
     side === "right" ? sorted[0].rightStitchCount : sorted[0].leftStitchCount;
   let innerS = 0;
@@ -118,6 +205,7 @@ function computeStates(
     neckLabels,
     centerNeckLabel,
     centerNeckStitches: cn !== null && cn > 0 ? cn : null,
+    rowNums,
   };
 }
 
@@ -152,7 +240,7 @@ function toSvgX(
 
 function buildStairPath(
   stitchVals: number[],
-  sorted: NeckShoulderShapingChartRow[],
+  rowNums: readonly number[],
   side: ShoulderShapingSvgSide,
   startWidth: number,
   grid: number,
@@ -162,15 +250,15 @@ function buildStairPath(
   padY: number
 ): Pt[] {
   const pts: Pt[] = [];
-  const n = sorted.length;
+  const n = rowNums.length;
   for (let k = 0; k < n; k++) {
-    const y = rowToY(sorted[k].row, minRow, maxRow, grid, padY);
+    const y = rowToY(rowNums[k], minRow, maxRow, grid, padY);
     const x = toSvgX(stitchVals[k], side, startWidth, grid, padX);
     if (k === 0) {
       pts.push({ x, y });
     }
     if (k < n - 1) {
-      const yNext = rowToY(sorted[k + 1].row, minRow, maxRow, grid, padY);
+      const yNext = rowToY(rowNums[k + 1], minRow, maxRow, grid, padY);
       const xHold = toSvgX(stitchVals[k], side, startWidth, grid, padX);
       pts.push({ x: xHold, y: yNext });
       pts.push({
@@ -200,16 +288,26 @@ function ptsToClosedOutline(outerDown: Pt[], innerDown: Pt[]): string {
  * Returns an HTML string containing one inline <svg> (no image assets).
  */
 export function renderShoulderShapingSvg(
-  chartRows: NeckShoulderShapingChartRow[],
+  chart: NeckShoulderShapingChart,
   side: ShoulderShapingSvgSide
 ): string {
   const GRID = SHOULDER_SHAPING_SVG_GRID;
-  const sorted = sortRows(chartRows);
-  if (sorted.length === 0) {
+  const tl = chart.timeline?.length ? sortTimeline(chart.timeline) : null;
+  const sortedChart =
+    !tl || tl.length === 0 ? sortChartRows(chart.rows) : [];
+  const source: ShoulderSvgGeometry | null =
+    tl && tl.length > 0
+      ? computeStatesFromTimeline(tl, side)
+      : sortedChart.length > 0
+        ? computeStatesFromChartCells(sortedChart, side)
+        : null;
+
+  if (!source) {
     return `<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" aria-hidden="true"></svg>`;
   }
 
   const {
+    rowNums,
     inner,
     outer,
     startWidth,
@@ -219,7 +317,7 @@ export function renderShoulderShapingSvg(
     neckLabels,
     centerNeckLabel,
     centerNeckStitches,
-  } = computeStates(sorted, side);
+  } = source;
 
   const chartHeightPx = (maxRow - minRow) * GRID;
   const chartWidthPx = startWidth * GRID;
@@ -252,7 +350,7 @@ export function renderShoulderShapingSvg(
 
   const outerPts = buildStairPath(
     outer,
-    sorted,
+    rowNums,
     side,
     startWidth,
     GRID,
@@ -263,7 +361,7 @@ export function renderShoulderShapingSvg(
   );
   const innerPts = buildStairPath(
     inner,
-    sorted,
+    rowNums,
     side,
     startWidth,
     GRID,
@@ -300,7 +398,7 @@ export function renderShoulderShapingSvg(
   const shoulderAnchor = side === "right" ? "end" : "start";
 
   for (const sl of shoulderLabels) {
-    const k = sorted.findIndex((r) => r.row === sl.row);
+    const k = rowNums.findIndex((r) => r === sl.row);
     if (k <= 0) continue;
     const y = yAt(sl.row);
     const x0 = toSvgX(outer[k - 1], side, startWidth, GRID, padX);
@@ -319,7 +417,7 @@ export function renderShoulderShapingSvg(
   const neckAnchor = side === "right" ? "start" : "end";
 
   for (const nl of neckLabels) {
-    const k = sorted.findIndex((r) => r.row === nl.row);
+    const k = rowNums.findIndex((r) => r === nl.row);
     if (k <= 0) continue;
     const y = yAt(nl.row);
     const x0 = toSvgX(inner[k - 1], side, startWidth, GRID, padX);

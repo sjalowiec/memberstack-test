@@ -28,7 +28,7 @@ function rowClassFromHighlight(hi: ReturnType<typeof getNeckShoulderChartRowHigh
 export function renderNeckShoulderShapingChartSectionHtml(
   chart: NeckShoulderShapingChart
 ): string {
-  const shoulderPreviewSvg = renderShoulderShapingSvg(chart.rows, "right");
+  const shoulderPreviewSvg = renderShoulderShapingSvg(chart, "right");
   const rowsHtml = chart.rows
     .map((r) => {
       const hi = getNeckShoulderChartRowHighlightFromRow(r);

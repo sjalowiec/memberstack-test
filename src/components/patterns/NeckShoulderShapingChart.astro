@@ -11,8 +11,7 @@ interface Props {
 
 const { chart, class: className = "" } = Astro.props;
 
-const necklineShoulderChartRows = chart.rows;
-const shoulderPreviewSvg = renderShoulderShapingSvg(necklineShoulderChartRows, "right");
+const shoulderPreviewSvg = renderShoulderShapingSvg(chart, "right");
 ---
 
 <section class:list={["ns-shaping-chart", className]} aria-labelledby="ns-shaping-chart-heading">
