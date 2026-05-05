@@ -91,6 +91,22 @@ function sumTimelineDecrease(
     .reduce((s, e) => s + e.amount, 0);
 }
 
+/** Inner neckline: stair bind-offs + single decreases (chart uses bindOff + decrease on inner edge). */
+function sumTimelineInnerNeck(
+  entry: RowEntry,
+  side: "left" | "right"
+): number {
+  return entry.events
+    .filter(
+      (e) =>
+        e.side === side &&
+        e.edge === "inner" &&
+        e.amount > 0 &&
+        (e.kind === "decrease" || e.kind === "bindOff")
+    )
+    .reduce((s, e) => s + e.amount, 0);
+}
+
 function centerBindOffStitches(first: RowEntry): number | null {
   const n = first.events
     .filter((e) => e.kind === "bindOff" && e.side === "center" && e.edge === "center")
@@ -136,7 +152,7 @@ function computeStatesFromTimeline(
     outer.push(outerX);
 
     const shoulderAmt = sumTimelineDecrease(e, side, "outer");
-    const neckAmt = sumTimelineDecrease(e, side, "inner");
+    const neckAmt = sumTimelineInnerNeck(e, side);
     if (shoulderAmt > 0) shoulderLabels.push({ row: e.row, amount: shoulderAmt });
     if (neckAmt > 0) neckLabels.push({ row: e.row, amount: neckAmt });
   }

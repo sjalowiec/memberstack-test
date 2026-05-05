@@ -944,10 +944,11 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
   }
 
   /**
-   * Renders structured back rows: left column RC + text, right column total sts only when it changes.
+   * Renders structured rows: left column RC + text, right column total sts only when it changes.
    * @param {unknown[]} rows
+   * @param {string} chartMountId
    */
-  function renderSleevelessBackDisplayHtml(rows) {
+  function renderSleevelessDisplayHtml(rows, chartMountId) {
     const list = Array.isArray(rows) ? rows : [];
     let lastShownStitch;
     let html = '<div class="sleeveless-pattern-instructions">';
@@ -961,8 +962,7 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
         continue;
       }
       if (row.kind === "neckShoulderChartMount") {
-        html +=
-          '<div class="sg-pattern-output sg-neck-chart-print-block" id="sg-neck-shoulder-chart-mount"></div>';
+        html += `<div class="sg-pattern-output sg-neck-chart-print-block" id="${escapeHtml(chartMountId)}"></div>`;
         continue;
       }
       const showStitch =
@@ -1326,25 +1326,6 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     });
   }
 
-  function buildFrontSectionHtml(style) {
-    const open = style.frontStyle === "open";
-    if (open) {
-      return `
-  <p class="pattern-step-intro">
-    You chose an open front (cardigan). Work two mirror-image front pieces; shaping depths follow the same row counts
-    as the back unless your Build choices specify otherwise.
-  </p>
-  <p class="pattern-step-intro">
-    Detailed cardigan-front breakdown will align with your neckline and buttonband choices from the builder.
-  </p>`;
-    }
-    return `
-  <p class="pattern-step-intro">
-    Work the front to match the back: same cast-on, hem, body length to the armhole, armhole shaping, and neckline /
-    shoulder treatment (mirror carriage-side conventions as needed for your machine).
-  </p>`;
-  }
-
   function buildFinishingHtml() {
     return `
   <ol class="pattern-finishing-list">
@@ -1483,12 +1464,16 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     const mount = document.querySelector("[data-sleeveless-mount]");
     if (!mount) return;
 
-    const style = section(patternMerged.style);
     const displayRows = result.displayRows ?? [];
+    const frontDisplayRows = result.frontDisplayRows ?? [];
     const backInner =
       displayRows.length > 0
-        ? renderSleevelessBackDisplayHtml(displayRows)
+        ? renderSleevelessDisplayHtml(displayRows, "sg-neck-shoulder-chart-mount-back")
         : `<p class="pattern-step-intro">Pattern display is not available. Try refreshing this tab.</p>`;
+    const frontInner =
+      frontDisplayRows.length > 0
+        ? renderSleevelessDisplayHtml(frontDisplayRows, "sg-neck-shoulder-chart-mount-front")
+        : `<p class="pattern-step-intro">Front instructions are not available. Try refreshing this tab.</p>`;
 
     const backWrapped = wrapSleevelessPieceSplit(
       backInner,
@@ -1496,7 +1481,7 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
       "Sleeveless back piece diagram"
     );
     const frontWrapped = wrapSleevelessPieceSplit(
-      buildFrontSectionHtml(style),
+      frontInner,
       "/images/patterns/sleeveless/diagram-front.svg",
       "Sleeveless front piece diagram"
     );
@@ -1506,10 +1491,18 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
       wrapPatternSection("sg-front", "Front", frontWrapped, { defaultCollapsed: false }) +
       wrapPatternSection("sg-finishing", "Finishing", buildFinishingHtml(), { defaultCollapsed: true });
 
-    const chartHost = mount.querySelector("#sg-neck-shoulder-chart-mount");
-    if (chartHost) {
-      chartHost.innerHTML = renderNeckShoulderShapingChartSectionHtml(
-        result.neckShoulderShapingChart
+    const backChartHost = mount.querySelector("#sg-neck-shoulder-chart-mount-back");
+    if (backChartHost) {
+      backChartHost.innerHTML = renderNeckShoulderShapingChartSectionHtml(
+        result.neckShoulderShapingChart,
+        "ns-shaping-chart-back"
+      );
+    }
+    const frontChartHost = mount.querySelector("#sg-neck-shoulder-chart-mount-front");
+    if (frontChartHost) {
+      frontChartHost.innerHTML = renderNeckShoulderShapingChartSectionHtml(
+        result.frontNeckShoulderShapingChart,
+        "ns-shaping-chart-front"
       );
     }
 

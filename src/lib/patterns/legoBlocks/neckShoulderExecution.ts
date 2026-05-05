@@ -4,6 +4,8 @@
  * Does not compute neckline or shoulder math — callers supply actions and needle labels.
  */
 
+import type { RowEntry } from "../shapingTimeline";
+
 export type NeedleRange = {
   label: string;
   start: string;
@@ -148,6 +150,121 @@ function emitShapingSchedule(
     out.push(...spanToInstructionLines(span));
   }
   return out;
+}
+
+/**
+ * Row-accurate neck + shoulder {@link ShapingAction}s from a neckline timeline (same source as the printed chart).
+ */
+export function shapingActionsFromTimeline(timeline: readonly RowEntry[]): {
+  neckActions: ShapingAction[];
+  shoulderActions: ShapingAction[];
+} {
+  const neckActions: ShapingAction[] = [];
+  const shoulderActions: ShapingAction[] = [];
+
+  for (const entry of timeline) {
+    const rc = entry.row;
+    let centerBindOff = 0;
+    let neckInnerLeft = 0;
+    let neckInnerRight = 0;
+    let shoulderDecLeft = 0;
+    let shoulderDecRight = 0;
+
+    for (const e of entry.events) {
+      if (e.kind === "bindOff" && e.side === "center") {
+        centerBindOff += e.amount;
+      }
+      if (
+        (e.kind === "decrease" || e.kind === "bindOff") &&
+        e.edge === "inner" &&
+        e.amount > 0
+      ) {
+        if (e.side === "left") neckInnerLeft += e.amount;
+        if (e.side === "right") neckInnerRight += e.amount;
+      }
+      if (e.kind === "decrease" && e.edge === "outer") {
+        if (e.side === "left") shoulderDecLeft += e.amount;
+        if (e.side === "right") shoulderDecRight += e.amount;
+      }
+    }
+
+    if (centerBindOff > 0) {
+      neckActions.push({
+        startRC: rc,
+        endRC: rc,
+        text:
+          centerBindOff === 1
+            ? "At center neckline, bind off 1 stitch."
+            : `At center neckline, bind off ${centerBindOff} stitches.`,
+      });
+    }
+    const neckSym =
+      neckInnerLeft > 0 &&
+      neckInnerRight > 0 &&
+      neckInnerLeft === neckInnerRight &&
+      entry.events.some((ev) => ev.kind === "bindOff" && ev.edge === "inner");
+    if (neckInnerLeft > 0 || neckInnerRight > 0) {
+      if (neckSym) {
+        const n = neckInnerLeft;
+        neckActions.push({
+          startRC: rc,
+          endRC: rc,
+          text:
+            n === 1
+              ? "At neck edge, bind off 1 stitch on each side."
+              : `At neck edge, bind off ${n} stitches on each side.`,
+        });
+      } else if (neckInnerLeft === neckInnerRight && neckInnerLeft > 0) {
+        const n = neckInnerLeft;
+        neckActions.push({
+          startRC: rc,
+          endRC: rc,
+          text:
+            n === 1
+              ? "At neck edge, decrease 1 stitch toward center on each side."
+              : `At neck edge, decrease ${n} stitches toward center on each side.`,
+        });
+      } else {
+        neckActions.push({
+          startRC: rc,
+          endRC: rc,
+          text: `At neck edge: left −${neckInnerLeft}, right −${neckInnerRight} (toward center).`,
+        });
+      }
+    }
+    if (shoulderDecLeft > 0 || shoulderDecRight > 0) {
+      if (shoulderDecLeft === shoulderDecRight && shoulderDecLeft > 0) {
+        const n = shoulderDecLeft;
+        shoulderActions.push({
+          startRC: rc,
+          endRC: rc,
+          text:
+            n === 1
+              ? "At armhole edge, decrease 1 stitch on each shoulder."
+              : `At armhole edge, decrease ${n} stitches on each shoulder.`,
+        });
+      } else {
+        shoulderActions.push({
+          startRC: rc,
+          endRC: rc,
+          text: `At armhole edge: left shoulder −${shoulderDecLeft}, right shoulder −${shoulderDecRight}.`,
+        });
+      }
+    }
+  }
+
+  return { neckActions, shoulderActions };
+}
+
+/** Row-merged RC instruction lines only (same merge as inside {@link generateNeckShoulderExecution}). */
+export function mergedShapingInstructionLines(
+  neckActions: readonly ShapingAction[],
+  shoulderActions: readonly ShapingAction[]
+): string[] {
+  return emitShapingSchedule(
+    neckActions as ShapingAction[],
+    shoulderActions as ShapingAction[]
+  );
 }
 
 function formatRangeLine(nr: NeedleRange): string {

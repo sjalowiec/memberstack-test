@@ -1,5 +1,6 @@
 /**
- * Live neckline / shoulder shaping chart rows from sleeveless back calculations (back piece only).
+ * Live neckline / shoulder shaping chart rows from {@link buildTimeline}
+ * (sleeveless — `neckProfile` + `neckDepthRows` per piece; start RC may differ on the front).
  */
 
 import type { NeckShoulderShapingChartRow } from "./neckShoulderShapingChart";
@@ -36,23 +37,20 @@ function centerBindOff(entry: RowEntry): number {
     .reduce((sum, e) => sum + e.amount, 0);
 }
 
+/** Chart table rows from a pre-built timeline (e.g. merged front neck + shoulder). */
+export function neckShoulderChartRowsFromTimeline(timeline: RowEntry[]): NeckShoulderShapingChartRow[] {
+  return mapTimelineToChartRows(timeline);
+}
+
 function mapTimelineToChartRows(timeline: RowEntry[]): NeckShoulderShapingChartRow[] {
-  let carryLeft: number | undefined;
-  let carryRight: number | undefined;
-
   return timeline.map((entry) => {
-    const displayLeft =
-      carryLeft !== undefined ? carryLeft : Number.isFinite(entry.stitchesL) ? entry.stitchesL : 0;
-    const displayRight =
-      carryRight !== undefined ? carryRight : Number.isFinite(entry.stitchesR) ? entry.stitchesR : 0;
-
     const leftSide = sumEvents(entry, "left", "outer");
     const leftNeck = sumEvents(entry, "left", "inner");
     const rightNeck = sumEvents(entry, "right", "inner");
     const rightSide = sumEvents(entry, "right", "outer");
     const centerNeck = centerBindOff(entry);
 
-    const row: NeckShoulderShapingChartRow = {
+    return {
       row: entry.row,
       action: toChartAction(entry),
       leftSide: fmt(leftSide),
@@ -60,15 +58,9 @@ function mapTimelineToChartRows(timeline: RowEntry[]): NeckShoulderShapingChartR
       centerNeck: fmt(centerNeck),
       rightNeck: fmt(rightNeck),
       rightSide: fmt(rightSide),
-      // Display stitch counts at row start (pre-action), then carry post-action values forward.
-      leftStitchCount: displayLeft,
-      rightStitchCount: displayRight,
+      leftStitchCount: Number.isFinite(entry.stitchesL) ? entry.stitchesL : 0,
+      rightStitchCount: Number.isFinite(entry.stitchesR) ? entry.stitchesR : 0,
     };
-
-    carryLeft = Number.isFinite(entry.stitchesL) ? entry.stitchesL : 0;
-    carryRight = Number.isFinite(entry.stitchesR) ? entry.stitchesR : 0;
-
-    return row;
   });
 }
 

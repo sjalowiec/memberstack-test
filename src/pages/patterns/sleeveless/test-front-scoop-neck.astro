@@ -1,0 +1,336 @@
+---
+/**
+ * Temporary diagnostic route — front neckline math only (fixed test data).
+ * Remove when debugging is complete.
+ */
+import Layout from "../../../layouts/Layout.astro";
+import {
+  generateSleevelessBackPattern,
+  type SleevelessPatternDisplayRow,
+} from "../../../lib/patterns/sleevelessPatternOutput";
+import { renderNeckShoulderShapingChartSectionHtml } from "../../../lib/patterns/neckShoulderShapingChartHtml";
+import type { NeckShoulderShapingChart } from "../../../lib/patterns/neckShoulderShapingChart";
+import "../../../styles/ns-shaping-chart.css";
+
+/** Mirrors {@link demoSleevelessBackPattern} sample + front neck depth = 5 in (diagnostic). */
+const TEST_PATTERN_DATA: Record<string, unknown> = {
+  fit: {
+    sizingChart: "misses",
+    selectedMeasurements: {
+      finished_bust_chest: 40,
+      back_neck_to_hem: 22,
+      armhole_depth: 8,
+        neck_opening: 3,
+      shoulder_width: 4.25,
+      front_neck_depth: 5,
+      back_neck_depth: 1,
+    },
+  },
+  style: {
+    recipientCategory: "misses",
+  },
+  yarnGaugeMachine: {
+    gaugeStitchesPerInch: 5,
+    gaugeRowsPerInch: 7,
+    availableNeedles: 200,
+  },
+};
+
+const result = generateSleevelessBackPattern(TEST_PATTERN_DATA);
+const { debug, frontDisplayRows, frontNeckShoulderShapingChart, warnings } = result;
+
+function escapeHtml(s: string): string {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function renderSleevelessDisplayHtml(
+  rows: readonly SleevelessPatternDisplayRow[],
+  chart: NeckShoulderShapingChart,
+  chartHtmlIdPrefix: string
+): string {
+  let lastShownStitch: number | undefined;
+  let html = '<div class="sleeveless-pattern-instructions">';
+  for (const row of rows) {
+    if (row.kind === "piece") {
+      html += `<h2 class="sleeveless-pattern-piece">${escapeHtml(row.title)}</h2>`;
+      continue;
+    }
+    if (row.kind === "section") {
+      html += `<h3 class="sleeveless-pattern-section">${escapeHtml(row.title)}</h3>`;
+      continue;
+    }
+    if (row.kind === "neckShoulderChartMount") {
+      html += `<div class="sg-pattern-output sg-neck-chart-print-block">${renderNeckShoulderShapingChartSectionHtml(chart, chartHtmlIdPrefix)}</div>`;
+      continue;
+    }
+    const showStitch =
+      row.stitchCount !== undefined &&
+      (lastShownStitch === undefined || row.stitchCount !== lastShownStitch);
+    if (showStitch) lastShownStitch = row.stitchCount;
+
+    const leftBits: string[] = [];
+    if (row.rc) {
+      leftBits.push(`<p class="sleeveless-pattern-rc">${escapeHtml(row.rc)}</p>`);
+    }
+    for (const p of row.paragraphs) {
+      const t = String(p).trim();
+      if (t) leftBits.push(`<p class="sleeveless-pattern-line">${escapeHtml(t)}</p>`);
+    }
+    if (row.tipHtml) {
+      leftBits.push(`<div class="pattern-tip" data-tip><strong>Tip:</strong> ${row.tipHtml}</div>`);
+    }
+    const leftHtml = `<div class="sleeveless-pattern-left">${leftBits.join("")}</div>`;
+    const rightHtml = showStitch
+      ? `<div class="sleeveless-pattern-sts">${row.stitchCount} sts</div>`
+      : "";
+    const rowClass = rightHtml ? "sleeveless-pattern-row" : "sleeveless-pattern-row sleeveless-pattern-row--full";
+    html += `<div class="${rowClass}">${leftHtml}${rightHtml}</div>`;
+  }
+  html += "</div>";
+  return html;
+}
+
+const chartRows = frontNeckShoulderShapingChart.rows;
+const chartRowNums = chartRows.map((r) => r.row);
+const firstChartRowRc = chartRowNums.length ? Math.min(...chartRowNums) : null;
+const lastChartRowRc = chartRowNums.length ? Math.max(...chartRowNums) : null;
+
+const instructionsHtml = renderSleevelessDisplayHtml(
+  frontDisplayRows,
+  frontNeckShoulderShapingChart,
+  "test-front-scoop-ns-chart"
+);
+---
+
+<Layout
+  title="TEST ONLY — Front Scoop Neck Pattern | Knit it Now"
+  description="Temporary diagnostic page for sleeveless front neckline math."
+>
+  <main class="test-front-scoop-page">
+    <div class="test-front-scoop-banner" role="status">
+      <strong>TEST ONLY — Front Scoop Neck Pattern</strong>
+      <p class="test-front-scoop-banner__sub">
+        Fixed sample data (same base as sleeveless demo: 40″ bust, 5 sts/in, 7 rows/in). Front neck depth =
+        5″. Back section and finishing are omitted on purpose.
+      </p>
+    </div>
+
+    <section class="test-front-scoop-debug" aria-label="Front neckline diagnostics">
+      <h2 class="test-front-scoop-debug__title">Debug output</h2>
+      <dl class="test-front-scoop-debug__dl">
+        <dt>Piece type</dt><dd>front</dd>
+        <dt>Total rows (final RC)</dt><dd>{debug.finalRC}</dd>
+        <dt>Front neck depth (in)</dt><dd>{debug.frontNeckDepth ?? "—"}</dd>
+        <dt>Front neck depth (rows)</dt><dd>{debug.frontNeckDepthRows}</dd>
+        <dt>Front neckline start RC</dt><dd>{debug.frontNecklineStartRC}</dd>
+        <dt>Center neck opening stitches</dt><dd>{debug.centerNeckBindOffStitches ?? "—"}</dd>
+        <dt>Shoulder stitches (each side)</dt><dd>{debug.shoulderStitches ?? "—"}</dd>
+        <dt>Chart row count</dt><dd>{chartRows.length}</dd>
+        <dt>First neckline shaping row (chart RC)</dt><dd>{firstChartRowRc ?? "—"}</dd>
+        <dt>Last neckline shaping row (chart RC)</dt><dd>{lastChartRowRc ?? "—"}</dd>
+      </dl>
+      <p class="test-front-scoop-debug__note">
+        Expected: changing front neck depth should adjust only <strong>front neckline start RC</strong>,
+        <strong>front neck depth (rows)</strong>, and the chart row span — not cast-on, center neck stitches,
+        shoulder stitches, or armhole math (same inputs as back). The first chart RC should equal
+        front neckline start RC + 1 when generation succeeds.
+      </p>
+    </section>
+
+    {
+      warnings.length > 0 && (
+        <section class="test-front-scoop-warnings" aria-label="Generator warnings">
+          <h2 class="test-front-scoop-warnings__title">Warnings</h2>
+          <ul>
+            {warnings.map((w) => (
+              <li>{w}</li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    <div class="test-front-scoop-pattern" set:html={instructionsHtml} aria-label="Front pattern output"></div>
+  </main>
+</Layout>
+
+<style>
+  .test-front-scoop-page {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 1.25rem 1rem 3rem;
+    --sg-accent: #c2614e;
+  }
+
+  .test-front-scoop-banner {
+    margin-bottom: 1.25rem;
+    padding: 1rem 1.1rem;
+    border-radius: 8px;
+    border: 2px dashed #ca8a04;
+    background: rgba(254, 243, 199, 0.65);
+    color: #422006;
+    font-size: 1.05rem;
+  }
+
+  .test-front-scoop-banner__sub {
+    margin: 0.5rem 0 0;
+    font-size: 0.92rem;
+    font-weight: 400;
+    line-height: 1.45;
+  }
+
+  .test-front-scoop-debug {
+    margin-bottom: 1.5rem;
+    padding: 0.85rem 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(82, 104, 45, 0.25);
+    background: rgba(82, 104, 45, 0.06);
+  }
+
+  .test-front-scoop-debug__title {
+    margin: 0 0 0.65rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .test-front-scoop-debug__dl {
+    display: grid;
+    grid-template-columns: minmax(10rem, 42%) 1fr;
+    gap: 0.35rem 1rem;
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  .test-front-scoop-debug__dl dt {
+    margin: 0;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .test-front-scoop-debug__dl dd {
+    margin: 0;
+    font-family: ui-monospace, monospace;
+    font-size: 0.88rem;
+  }
+
+  .test-front-scoop-debug__note {
+    margin: 0.85rem 0 0;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: #4b5563;
+  }
+
+  .test-front-scoop-warnings {
+    margin-bottom: 1.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(220, 38, 38, 0.35);
+    background: rgba(254, 226, 226, 0.45);
+  }
+
+  .test-front-scoop-warnings__title {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    color: #991b1b;
+  }
+
+  .test-front-scoop-warnings ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    font-size: 0.92rem;
+  }
+
+  :global(.test-front-scoop-pattern .sleeveless-pattern-instructions) {
+    max-width: 52rem;
+    margin: 0 auto;
+  }
+
+  :global(.test-front-scoop-pattern .sleeveless-pattern-piece) {
+    margin: 0 0 0.75rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: #1f2937;
+  }
+
+  :global(.test-front-scoop-pattern .sleeveless-pattern-section) {
+    margin: 1.15rem 0 0.5rem;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: var(--kbm-green, #52682d);
+  }
+
+  :global(.test-front-scoop-pattern .sleeveless-pattern-row) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.2rem 1.25rem;
+    margin-bottom: 0.85rem;
+  }
+
+  :global(.test-front-scoop-pattern .sleeveless-pattern-row--full) {
+    display: block;
+  }
+
+  :global(.test-front-scoop-pattern .sleeveless-pattern-left) {
+    flex: 1 1 14rem;
+    min-width: 0;
+  }
+
+  :global(.test-front-scoop-pattern .sleeveless-pattern-rc) {
+    margin: 0 0 0.2rem;
+    font-family: ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #1f2937;
+  }
+
+  :global(.test-front-scoop-pattern .sleeveless-pattern-line) {
+    margin: 0.2rem 0 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  :global(.test-front-scoop-pattern .sleeveless-pattern-sts) {
+    flex: 0 0 auto;
+    min-width: 3.25rem;
+    margin: 0;
+    padding-top: 0.05rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #4b5563;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  :global(.test-front-scoop-pattern .sg-pattern-output.sg-neck-chart-print-block) {
+    max-width: 52rem;
+    margin: 1rem auto 0;
+    padding: 0;
+  }
+
+  @media (max-width: 560px) {
+    :global(.test-front-scoop-pattern .sleeveless-pattern-row) {
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    :global(.test-front-scoop-pattern .sleeveless-pattern-sts) {
+      text-align: left;
+      align-self: flex-start;
+      padding-top: 0;
+    }
+
+    .test-front-scoop-debug__dl {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

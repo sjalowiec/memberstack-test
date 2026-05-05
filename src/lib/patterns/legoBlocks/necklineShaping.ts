@@ -3,6 +3,23 @@ export type NecklineStep = {
   times: number;
 };
 
+export {
+  calculateRoundNecklinePlan,
+  calculateRoundNecklineShaping,
+  minRowsForBalancedEdgeRemainder,
+  partitionNecklineThirds,
+  rowsRequiredForDeepPlan,
+  stairBindOffStepsForSide,
+  type RoundNecklinePlanResult,
+  type RoundNecklineShapingResult,
+  type RoundNecklineSidePlan,
+  type RoundNecklineStrategy,
+} from "./roundNeckline";
+
+/**
+ * Distribute a known neck-edge decrease total evenly across `steps` (remainder spaced first).
+ * Legacy helper for even spacing; round-neck source of truth is {@link calculateRoundNecklineShaping}.
+ */
 export function calculateNecklineShaping(stitches: number, steps: number): NecklineStep[] {
   if (!Number.isFinite(stitches) || !Number.isFinite(steps)) return [];
   if (stitches <= 0 || steps <= 0) return [];

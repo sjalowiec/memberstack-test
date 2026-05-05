@@ -26,8 +26,11 @@ function rowClassFromHighlight(hi: ReturnType<typeof getNeckShoulderChartRowHigh
  * Full chart section markup (table + dev note + SVG preview) for client-side injection.
  */
 export function renderNeckShoulderShapingChartSectionHtml(
-  chart: NeckShoulderShapingChart
+  chart: NeckShoulderShapingChart,
+  idPrefix = "ns-shaping-chart"
 ): string {
+  const headingId = `${idPrefix}-heading`;
+  const previewHeadingId = `${idPrefix}-preview-heading`;
   const shoulderPreviewSvg = renderShoulderShapingSvg(chart, "right");
   const rowsHtml = chart.rows
     .map((r) => {
@@ -45,8 +48,8 @@ export function renderNeckShoulderShapingChartSectionHtml(
     })
     .join("");
 
-  return `<section class="ns-shaping-chart" aria-labelledby="ns-shaping-chart-heading">
-  <h2 id="ns-shaping-chart-heading" class="ns-shaping-chart__title">Neckline / Shoulder Shaping Chart</h2>
+  return `<section class="ns-shaping-chart" aria-labelledby="${escapeHtml(headingId)}">
+  <h2 id="${escapeHtml(headingId)}" class="ns-shaping-chart__title">Neckline / Shoulder Shaping Chart</h2>
   <p class="ns-shaping-chart__intro">
     Work each shoulder separately.<br />
     Right and Left refer to each side on the needlebed.<br />
@@ -76,8 +79,8 @@ export function renderNeckShoulderShapingChartSectionHtml(
       <tbody>${rowsHtml}</tbody>
     </table>
   </div>
-  <div class="ns-shaping-chart__preview" aria-labelledby="ns-shaping-preview-heading">
-    <h3 id="ns-shaping-preview-heading" class="ns-shaping-chart__preview-title">Neckline / Shoulder Shape Preview</h3>
+  <div class="ns-shaping-chart__preview" aria-labelledby="${escapeHtml(previewHeadingId)}">
+    <h3 id="${escapeHtml(previewHeadingId)}" class="ns-shaping-chart__preview-title">Neckline / Shoulder Shape Preview</h3>
     <div class="ns-shaping-chart__preview-svg-wrap">${shoulderPreviewSvg}</div>
   </div>
 </section>`;
