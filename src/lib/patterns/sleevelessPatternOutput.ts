@@ -364,9 +364,14 @@ function parseRcBoundsFromExecutionLines(lines: readonly string[]): {
   return { min: Math.min(...nums), max: Math.max(...nums) };
 }
 
+/** Published neckline/shoulder prose when chart + SVG carry row-by-row detail. */
+const NECKLINE_SHOULDER_INSTRUCTION_PARAGRAPHS: readonly string[] = [
+  "Follow the chart row by row for neckline shaping. Stitch counts shown are the stitches remaining after the action on that row. Knit all rows not listed with shaping in pattern.",
+  "When neckline shaping is complete, bind off the remaining shoulder stitches. Repeat for the second side.",
+];
+
 /**
- * Short summary for BACK NECKLINE & SHOULDERS — matches round-neck math (partial center BO + inner-neck decreases).
- * Chart row 0 overrides bind-off count when live rows are present.
+ * Short summary for BACK NECKLINE & SHOULDERS — chart row 0 overrides bind-off count when live rows are present.
  */
 function backNecklineShoulderSummaryParagraphs(args: {
   neckChartRows: readonly NeckShoulderShapingChartRow[];
@@ -411,21 +416,7 @@ function backNecklineShoulderSummaryParagraphs(args: {
     return null;
   }
 
-  const partialOpening = bindOffCenter < totalNeck;
-
-  if (partialOpening) {
-    return [
-      `Bind off ${bindOffCenter} stitch${bindOffCenter === 1 ? "" : "es"} at the center neckline to begin the opening (${totalNeck} stitches total neckline width; remaining width is shaped at the inner neck edge per the chart).`,
-      `Work neckline and shoulder shaping on the remaining ${leftS} left and ${rightS} right shoulder stitches.`,
-      "Note: Neckline and shoulder shaping may happen on the same rows. Follow the chart and diagram below row by row.",
-    ];
-  }
-
-  return [
-    `Bind off center ${bindOffCenter} stitch${bindOffCenter === 1 ? "" : "es"}.`,
-    `Work neckline and shoulder shaping on the remaining ${leftS} left and ${rightS} right shoulder stitches.`,
-    "Note: Neckline and shoulder shaping may happen on the same rows. Follow the chart and diagram below row by row.",
-  ];
+  return [...NECKLINE_SHOULDER_INSTRUCTION_PARAGRAPHS];
 }
 
 export function buildSleevelessBackDisplayRows(args: {
@@ -654,7 +645,6 @@ export function buildSleevelessFrontDisplayRows(args: {
   shoulderStitches?: number;
   /** When set and less than {@link necklineStitches}, summary describes partial first bind-off + gradual scoop. */
   scoopFirstCenterBindOff?: number;
-  executionLines: readonly string[];
 }): SleevelessPatternDisplayRow[] {
   const rows: SleevelessPatternDisplayRow[] = [];
   rows.push({ kind: "piece", title: "FRONT" });
@@ -683,13 +673,6 @@ export function buildSleevelessFrontDisplayRows(args: {
 
   rows.push({ kind: "neckShoulderChartMount" });
 
-  const executionParagraphs = args.executionLines
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
-  if (executionParagraphs.length > 0) {
-    rows.push({ kind: "section", title: "FRONT EXECUTION" });
-    rows.push({ kind: "block", paragraphs: executionParagraphs });
-  }
   return rows;
 }
 
@@ -1299,7 +1282,6 @@ export function generateSleevelessBackPattern(
       necklineStitches,
       shoulderStitches,
       scoopFirstCenterBindOff: frontScoopFirstCenterBindOff,
-      executionLines: frontExec.lines,
     })
   );
 

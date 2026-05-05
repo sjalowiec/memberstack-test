@@ -51,10 +51,12 @@ describe("sleevelessPatternOutput RC progression", () => {
     expect(neckBlock?.kind).toBe("block");
     if (neckBlock?.kind === "block") {
       const joined = neckBlock.paragraphs.join("\n");
-      expect(joined).toMatch(/^Bind off center \d+ stitch(es)?\.|^Bind off \d+ stitch(es)? at the center neckline/);
-      expect(joined).toContain("left");
-      expect(joined).toContain("right shoulder stitches");
-      expect(joined).toContain("Follow the chart and diagram below");
+      expect(joined).toContain(
+        "Follow the chart row by row for neckline shaping. Stitch counts shown are the stitches remaining after the action on that row.",
+      );
+      expect(joined).toContain(
+        "When neckline shaping is complete, bind off the remaining shoulder stitches. Repeat for the second side.",
+      );
     }
   });
 
