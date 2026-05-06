@@ -306,6 +306,17 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     padding: 0;
   }
 
+  :global(#pattern-content .sleeveless-piece-ns-preview) {
+    width: 100%;
+    min-width: 0;
+  }
+
+  :global(#pattern-content .sleeveless-piece-ns-preview .sg-neck-chart-print-block--preview) {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
   :global(.pattern-noscript-heading) {
     font-size: 1.1rem;
     color: var(--kbm-green, #52682d);
@@ -695,7 +706,10 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
   import { validatePatternBuilderRequired } from "../../../lib/patterns/patternBuilderValidation";
   import { setPatternTabsReadiness } from "../../../lib/patterns/patternTabsClient.ts";
   import { generateSleevelessBackPattern } from "../../../lib/patterns/sleevelessPatternOutput.ts";
-  import { renderNeckShoulderShapingChartSectionHtml } from "../../../lib/patterns/neckShoulderShapingChartHtml.ts";
+  import {
+    renderNeckShoulderShapingPreviewOnlyHtml,
+    renderNeckShoulderShapingChartTableOnlyHtml,
+  } from "../../../lib/patterns/neckShoulderShapingChartHtml.ts";
   import { showResults, initializeActionBar } from "../../../components/wizards/utils/wizardBehavior.ts";
 
   const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
@@ -945,26 +959,24 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
 
   /**
    * Renders structured rows: left column RC + text, right column total sts only when it changes.
+   * Chart table stays in the left column; shape preview mounts below the two-column piece split.
    * @param {unknown[]} rows
-   * @param {string} chartMountId
+   * @param {string} chartTableMountId
+   * @param {string} chartPreviewMountId
    */
-  function renderSleevelessDisplayHtml(rows, chartMountId) {
+  function renderSleevelessDisplayHtml(rows, chartTableMountId, chartPreviewMountId) {
     const list = Array.isArray(rows) ? rows : [];
     let lastShownStitch;
-    let html = '<div class="sleeveless-pattern-instructions">';
-    for (const row of list) {
-      if (row.kind === "piece") {
-        html += `<h2 class="sleeveless-pattern-piece">${escapeHtml(row.title)}</h2>`;
-        continue;
-      }
-      if (row.kind === "section") {
-        html += `<h3 class="sleeveless-pattern-section">${escapeHtml(row.title)}</h3>`;
-        continue;
-      }
-      if (row.kind === "neckShoulderChartMount") {
-        html += `<div class="sg-pattern-output sg-neck-chart-print-block" id="${escapeHtml(chartMountId)}"></div>`;
-        continue;
-      }
+    /** @type {string[]} */
+    const splitParts = [];
+    /** @type {string[]} */
+    const postParts = [];
+    let zone = "split";
+
+    /**
+     * @param {Extract<(typeof list)[number], { kind: "block" }>} row
+     */
+    function instructionRowHtml(row) {
       const showStitch =
         row.stitchCount !== undefined &&
         (lastShownStitch === undefined || row.stitchCount !== lastShownStitch);
@@ -988,21 +1000,59 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
         ? `<div class="sleeveless-pattern-sts">${row.stitchCount} sts</div>`
         : "";
       const rowClass = rightHtml ? "sleeveless-pattern-row" : "sleeveless-pattern-row sleeveless-pattern-row--full";
-      html += `<div class="${rowClass}">${leftHtml}${rightHtml}</div>`;
+      return `<div class="${rowClass}">${leftHtml}${rightHtml}</div>`;
     }
-    html += "</div>";
-    return html;
+
+    for (const row of list) {
+      if (row.kind === "neckShoulderChartPreviewMount") {
+        zone = "post";
+        postParts.push(
+          `<div class="sg-pattern-output sg-neck-chart-print-block sg-neck-chart-print-block--preview" id="${escapeHtml(chartPreviewMountId)}"></div>`
+        );
+        continue;
+      }
+      if (row.kind === "piece") {
+        const chunk = `<h2 class="sleeveless-pattern-piece">${escapeHtml(row.title)}</h2>`;
+        if (zone === "split") splitParts.push(chunk);
+        else postParts.push(chunk);
+        continue;
+      }
+      if (row.kind === "section") {
+        const chunk = `<h3 class="sleeveless-pattern-section">${escapeHtml(row.title)}</h3>`;
+        if (zone === "split") splitParts.push(chunk);
+        else postParts.push(chunk);
+        continue;
+      }
+      if (row.kind === "neckShoulderChartTableMount") {
+        splitParts.push(
+          `<div class="sg-pattern-output sg-neck-chart-print-block" id="${escapeHtml(chartTableMountId)}"></div>`
+        );
+        continue;
+      }
+      if (row.kind !== "block") continue;
+      const chunk = instructionRowHtml(row);
+      if (zone === "split") splitParts.push(chunk);
+      else postParts.push(chunk);
+    }
+
+    const splitInner = `<div class="sleeveless-pattern-instructions">${splitParts.join("")}</div>`;
+    const postSplit =
+      postParts.length > 0 ? `<div class="sleeveless-piece-ns-preview">${postParts.join("")}</div>` : "";
+    return { splitInner, postSplit };
   }
 
   /**
    * Two-column shell for Back/Front: prose + chart (left) and static SVG (right, sticky on desktop).
+   * Optional full-width block after the split (e.g. neckline shape preview).
    * @param {string} innerHtml
    * @param {string} diagramSrc
    * @param {string} diagramAlt
+   * @param {string} [postSplitHtml]
    */
-  function wrapSleevelessPieceSplit(innerHtml, diagramSrc, diagramAlt) {
+  function wrapSleevelessPieceSplit(innerHtml, diagramSrc, diagramAlt, postSplitHtml) {
     const src = escapeHtml(diagramSrc);
     const alt = escapeHtml(diagramAlt);
+    const post = postSplitHtml || "";
     return `<div class="sleeveless-piece-split">
   <div class="sleeveless-piece-split__text">${innerHtml}</div>
   <aside class="sleeveless-piece-split__diagram">
@@ -1015,7 +1065,7 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
       <p class="sleeveless-piece-split__diagram-hint">Click diagram to enlarge</p>
     </div>
   </aside>
-</div>`;
+</div>${post}`;
   }
 
   function isFiniteNumber(n) {
@@ -1466,24 +1516,40 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
 
     const displayRows = result.displayRows ?? [];
     const frontDisplayRows = result.frontDisplayRows ?? [];
-    const backInner =
+    const backRendered =
       displayRows.length > 0
-        ? renderSleevelessDisplayHtml(displayRows, "sg-neck-shoulder-chart-mount-back")
-        : `<p class="pattern-step-intro">Pattern display is not available. Try refreshing this tab.</p>`;
-    const frontInner =
+        ? renderSleevelessDisplayHtml(
+            displayRows,
+            "sg-neck-shoulder-chart-table-back",
+            "sg-neck-shoulder-chart-preview-back"
+          )
+        : null;
+    const frontRendered =
       frontDisplayRows.length > 0
-        ? renderSleevelessDisplayHtml(frontDisplayRows, "sg-neck-shoulder-chart-mount-front")
-        : `<p class="pattern-step-intro">Front instructions are not available. Try refreshing this tab.</p>`;
+        ? renderSleevelessDisplayHtml(
+            frontDisplayRows,
+            "sg-neck-shoulder-chart-table-front",
+            "sg-neck-shoulder-chart-preview-front"
+          )
+        : null;
+
+    const backInner = backRendered?.splitInner ?? `<p class="pattern-step-intro">Pattern display is not available. Try refreshing this tab.</p>`;
+    const backPost = backRendered?.postSplit ?? "";
+    const frontInner =
+      frontRendered?.splitInner ?? `<p class="pattern-step-intro">Front instructions are not available. Try refreshing this tab.</p>`;
+    const frontPost = frontRendered?.postSplit ?? "";
 
     const backWrapped = wrapSleevelessPieceSplit(
       backInner,
       "/images/patterns/sleeveless/diagram-back.svg",
-      "Sleeveless back piece diagram"
+      "Sleeveless back piece diagram",
+      backPost
     );
     const frontWrapped = wrapSleevelessPieceSplit(
       frontInner,
       "/images/patterns/sleeveless/diagram-front.svg",
-      "Sleeveless front piece diagram"
+      "Sleeveless front piece diagram",
+      frontPost
     );
 
     mount.innerHTML =
@@ -1491,18 +1557,34 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
       wrapPatternSection("sg-front", "Front", frontWrapped, { defaultCollapsed: false }) +
       wrapPatternSection("sg-finishing", "Finishing", buildFinishingHtml(), { defaultCollapsed: true });
 
-    const backChartHost = mount.querySelector("#sg-neck-shoulder-chart-mount-back");
-    if (backChartHost) {
-      backChartHost.innerHTML = renderNeckShoulderShapingChartSectionHtml(
+    const backChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-back");
+    if (backChartTableHost) {
+      backChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back"
       );
     }
-    const frontChartHost = mount.querySelector("#sg-neck-shoulder-chart-mount-front");
-    if (frontChartHost) {
-      frontChartHost.innerHTML = renderNeckShoulderShapingChartSectionHtml(
+    const backChartPreviewHost = mount.querySelector("#sg-neck-shoulder-chart-preview-back");
+    if (backChartPreviewHost) {
+      backChartPreviewHost.innerHTML = renderNeckShoulderShapingPreviewOnlyHtml(
+        result.neckShoulderShapingChart,
+        "ns-shaping-chart-back",
+        "back"
+      );
+    }
+    const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
+    if (frontChartTableHost) {
+      frontChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.frontNeckShoulderShapingChart,
         "ns-shaping-chart-front"
+      );
+    }
+    const frontChartPreviewHost = mount.querySelector("#sg-neck-shoulder-chart-preview-front");
+    if (frontChartPreviewHost) {
+      frontChartPreviewHost.innerHTML = renderNeckShoulderShapingPreviewOnlyHtml(
+        result.frontNeckShoulderShapingChart,
+        "ns-shaping-chart-front",
+        "front"
       );
     }
 

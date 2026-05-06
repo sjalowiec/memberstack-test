@@ -18,7 +18,13 @@ function fmt(v: number): string {
 
 function toChartAction(entry: RowEntry): string {
   const hasNeck = entry.events.some((e) => e.side !== "center" && e.edge === "inner" && e.amount > 0);
-  const hasShoulder = entry.events.some((e) => e.side !== "center" && e.edge === "outer" && e.amount > 0);
+  const hasShoulder = entry.events.some(
+    (e) =>
+      e.side !== "center" &&
+      e.edge === "outer" &&
+      e.amount > 0 &&
+      (e.kind === "bindOff" || e.kind === "decrease")
+  );
   if (hasNeck && hasShoulder) return "Shoulder / Neck";
   if (hasNeck) return "Neck";
   if (hasShoulder) return "Shoulder";
@@ -27,7 +33,13 @@ function toChartAction(entry: RowEntry): string {
 
 function sumEvents(entry: RowEntry, side: "left" | "right", edge: "outer" | "inner"): number {
   return entry.events
-    .filter((e) => e.side === side && e.edge === edge)
+    .filter((e) => {
+      if (e.side !== side || e.edge !== edge) return false;
+      if (edge === "outer") {
+        return e.amount > 0 && (e.kind === "bindOff" || e.kind === "decrease");
+      }
+      return true;
+    })
     .reduce((sum, e) => sum + e.amount, 0);
 }
 

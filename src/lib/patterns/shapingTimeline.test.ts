@@ -7,6 +7,9 @@ import {
   neckEdgeDecreasesPerSide,
 } from "./legoBlocks/roundNeckline";
 
+/** Typical shoulder-bind-off span used in tests (≈1" at 7 rpi). */
+const SHOULDER_BINDOFF_ROWS = 7;
+
 /** Symmetric fixture: B = N + 2×S (full shoulder line + neck opening). */
 function stitchesAfterArmholeFixture(necklineStitches: number, shoulderPerSide: number): number {
   return necklineStitches + 2 * shoulderPerSide;
@@ -27,6 +30,7 @@ describe("buildTimeline round neckline (back profile)", () => {
       neckDepthRows: postCenter + 1,
       neckProfile: "back",
       stitchesAfterArmhole: B,
+      shoulderBindoffRows: SHOULDER_BINDOFF_ROWS,
     });
     const row0 = timeline[0]!;
     const centerBo = row0.events
@@ -61,6 +65,7 @@ describe("buildTimeline round neckline (back profile)", () => {
       neckDepthRows: postCenter + 1,
       neckProfile: "back",
       stitchesAfterArmhole: B,
+      shoulderBindoffRows: SHOULDER_BINDOFF_ROWS,
     });
     const [, ...afterCenter] = timeline;
     for (let i = 0; i < stairRows; i++) {
@@ -81,23 +86,48 @@ describe("buildTimeline round neckline (back profile)", () => {
     }
   });
 
-  it("does not emit outer-edge stitch decreases (shoulder slope funded separately from neck-edge budget)", () => {
+  it("schedules outer shoulder bind-offs only in the final post-center rows (tail overlay)", () => {
     const N = 53;
     const S = 38;
     const B = stitchesAfterArmholeFixture(N, S);
+    const neckDepthRows = 41;
+    const workRows = neckDepthRows - 1;
+    const placement = Math.min(SHOULDER_BINDOFF_ROWS, workRows);
+    const firstShoulderIndex = workRows - placement;
     const timeline = buildTimeline({
       firstShapingRow: 300,
       shoulderStitchesPerSide: S,
       centerNeckBindOff: N,
-      neckDepthRows: 41,
+      neckDepthRows,
       neckProfile: "back",
       stitchesAfterArmhole: B,
+      shoulderBindoffRows: SHOULDER_BINDOFF_ROWS,
     });
     const [, ...afterCenter] = timeline;
-    const hasOuter = afterCenter.some((row) =>
-      row.events.some((e) => e.edge === "outer" && e.amount > 0)
+    for (let i = 0; i < firstShoulderIndex; i++) {
+      const hasOuter = afterCenter[i]!.events.some(
+        (e) => e.edge === "outer" && e.kind === "bindOff" && e.amount > 0
+      );
+      expect(hasOuter).toBe(false);
+    }
+    const outerSumL = afterCenter.reduce(
+      (s, row) =>
+        s +
+        row.events
+          .filter((e) => e.side === "left" && e.edge === "outer" && e.kind === "bindOff")
+          .reduce((a, e) => a + e.amount, 0),
+      0
     );
-    expect(hasOuter).toBe(false);
+    const outerSumR = afterCenter.reduce(
+      (s, row) =>
+        s +
+        row.events
+          .filter((e) => e.side === "right" && e.edge === "outer" && e.kind === "bindOff")
+          .reduce((a, e) => a + e.amount, 0),
+      0
+    );
+    expect(outerSumL).toBe(Math.floor((B - N) / 2));
+    expect(outerSumR).toBe(Math.ceil((B - N) / 2));
   });
 
   it("places stair neck bind-offs before single neck decreases for N=53", () => {
@@ -111,6 +141,7 @@ describe("buildTimeline round neckline (back profile)", () => {
       neckDepthRows: 41,
       neckProfile: "back",
       stitchesAfterArmhole: B,
+      shoulderBindoffRows: SHOULDER_BINDOFF_ROWS,
     });
     const [, ...afterCenter] = timeline;
     expect(
@@ -133,6 +164,7 @@ describe("buildTimeline round neckline (back profile)", () => {
       neckDepthRows: 6,
       neckProfile: "back" as const,
       stitchesAfterArmhole: 10 + 40,
+      shoulderBindoffRows: SHOULDER_BINDOFF_ROWS,
     };
     const chartRows = buildNeckShoulderShapingChartRows(input);
     const timeline = buildTimeline(input);
@@ -146,7 +178,7 @@ describe("buildTimeline round neckline (back profile)", () => {
     }
   });
 
-  it("ends at shoulderStitchesPerSide per side when inner neck completes in the row budget", () => {
+  it("ends at 0/0 — shoulder bind-offs consume the shoulder band after neckline shaping", () => {
     const N = 53;
     const S = 38;
     const B = stitchesAfterArmholeFixture(N, S);
@@ -157,9 +189,10 @@ describe("buildTimeline round neckline (back profile)", () => {
       neckDepthRows: 41,
       neckProfile: "back",
       stitchesAfterArmhole: B,
+      shoulderBindoffRows: SHOULDER_BINDOFF_ROWS,
     });
     const last = timeline[timeline.length - 1]!;
-    expect(last.stitchesL).toBe(S);
-    expect(last.stitchesR).toBe(S);
+    expect(last.stitchesL).toBe(0);
+    expect(last.stitchesR).toBe(0);
   });
 });

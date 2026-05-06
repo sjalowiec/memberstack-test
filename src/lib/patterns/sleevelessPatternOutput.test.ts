@@ -253,8 +253,10 @@ describe("sleevelessPatternOutput RC progression", () => {
 
     const lastBack = backRows[backRows.length - 1];
     const lastFront = frontRows[frontRows.length - 1];
-    expect(lastFront.leftStitchCount).toBe(lastBack.leftStitchCount);
-    expect(lastFront.rightStitchCount).toBe(lastBack.rightStitchCount);
+    expect(lastBack.leftStitchCount).toBe(0);
+    expect(lastBack.rightStitchCount).toBe(0);
+    expect(lastFront.leftStitchCount).toBe(0);
+    expect(lastFront.rightStitchCount).toBe(0);
 
     expect(result.debug.frontNecklineStartRC).toBeLessThan(result.debug.backNecklineStartRC);
 
@@ -309,31 +311,24 @@ describe("sleevelessPatternOutput RC progression", () => {
     expect(debug.frontNecklineStartRC).toBeLessThan(debug.backNecklineStartRC);
   });
 
-  it("back neckline chart spans exactly back neck depth rows (shoulder every other row within that budget)", () => {
-    const data = {
-      ...patternData,
-      fit: {
-        ...(patternData.fit as object),
-        selectedMeasurements: {
-          ...(patternData.fit as { selectedMeasurements: Record<string, unknown> }).selectedMeasurements,
-          shoulder_depth: 1,
-        },
-      },
-    };
-    const result = generateSleevelessBackPattern(data);
+  it("back neckline chart spans exactly back neck depth rows; shoulder bind-offs cluster at section end", () => {
+    const result = generateSleevelessBackPattern(patternData);
     expect(result.neckShoulderChartUsesLiveRows).toBe(true);
 
     const chartRows = result.neckShoulderShapingChart.rows;
     expect(chartRows.length).toBe(result.debug.backNeckDepthRows);
 
-    const afterCenterBindOff = chartRows.slice(1);
-    const shoulderRowIndices = afterCenterBindOff
-      .map((r, i) =>
-        parseShapingDecrease(r.leftSide) > 0 || parseShapingDecrease(r.rightSide) > 0 ? i : -1
-      )
-      .filter((i) => i >= 0);
-    for (let k = 1; k < shoulderRowIndices.length; k++) {
-      expect(shoulderRowIndices[k]! - shoulderRowIndices[k - 1]!).toBe(2);
+    const last = chartRows[chartRows.length - 1]!;
+    expect(last.leftStitchCount).toBe(0);
+    expect(last.rightStitchCount).toBe(0);
+
+    const workRows = chartRows.length - 1;
+    const placement = Math.min(result.debug.shoulderBindoffRows ?? 1, workRows);
+    const firstShoulderPostCenterIdx = workRows - placement;
+    const afterCenter = chartRows.slice(1);
+    for (let i = 0; i < firstShoulderPostCenterIdx; i++) {
+      expect(parseShapingDecrease(afterCenter[i]!.leftSide)).toBe(0);
+      expect(parseShapingDecrease(afterCenter[i]!.rightSide)).toBe(0);
     }
   });
 });

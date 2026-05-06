@@ -79,6 +79,8 @@ export type SleevelessBackPatternDebug = {
   frontNeckDepthRows: number;
   /** Back neck depth in rows — unified timeline row budget with shoulder shaping. */
   backNeckDepthRows: number;
+  /** RC rows for shoulder bind-off placement span (1" at row gauge). */
+  shoulderBindoffRows: number | undefined;
   /** RC where back neckline / shoulder block begins (same total stitches as front; front may start earlier). */
   backNecklineStartRC: number;
   frontNecklineStartRC: number;
@@ -108,8 +110,10 @@ export type SleevelessBackPatternDebug = {
 export type SleevelessPatternDisplayRow =
   | { kind: "piece"; title: string }
   | { kind: "section"; title: string }
-  /** Filled client-side with table + SVG (see pattern tab). */
-  | { kind: "neckShoulderChartMount" }
+  /** Filled client-side with chart table (see pattern tab). */
+  | { kind: "neckShoulderChartTableMount" }
+  /** Filled client-side with shape preview SVG (see pattern tab); rendered below two-column piece layout. */
+  | { kind: "neckShoulderChartPreviewMount" }
   | {
       kind: "block";
       /** e.g. RC:014 — optional when block is prose-only */
@@ -237,8 +241,10 @@ function flattenDisplayRowsToLines(rows: readonly SleevelessPatternDisplayRow[])
       out.push(r.title, "");
     } else if (r.kind === "section") {
       out.push(r.title, "");
-    } else if (r.kind === "neckShoulderChartMount") {
+    } else if (r.kind === "neckShoulderChartTableMount") {
       out.push("Neckline / shoulder shaping chart", "");
+    } else if (r.kind === "neckShoulderChartPreviewMount") {
+      out.push("Neckline / shoulder shape preview", "");
     } else {
       if (r.rc) out.push(r.rc);
       for (const p of r.paragraphs) {
@@ -283,7 +289,7 @@ function mergeAdjacentPlainKnitBlocks(
   let i = 0;
     while (i < rows.length) {
     const row = rows[i];
-    if (row.kind === "neckShoulderChartMount") {
+    if (row.kind === "neckShoulderChartTableMount" || row.kind === "neckShoulderChartPreviewMount") {
       out.push(row);
       i++;
       continue;
@@ -366,7 +372,7 @@ function parseRcBoundsFromExecutionLines(lines: readonly string[]): {
 
 /** Published neckline/shoulder prose when chart + SVG carry row-by-row detail. */
 const NECKLINE_SHOULDER_INSTRUCTION_PARAGRAPHS: readonly string[] = [
-  "Follow the chart row by row for neckline shaping. Stitch counts shown are the stitches remaining after the action on that row. Knit all rows not listed with shaping in pattern.",
+  "Follow the chart row by row for neckline shaping. Stitch counts shown are the stitches remaining after the action on that row.",
   "When neckline shaping is complete, bind off the remaining shoulder stitches. Repeat for the second side.",
 ];
 
@@ -632,7 +638,8 @@ export function buildSleevelessBackDisplayRows(args: {
     });
   }
 
-  rows.push({ kind: "neckShoulderChartMount" });
+  rows.push({ kind: "neckShoulderChartTableMount" });
+  rows.push({ kind: "neckShoulderChartPreviewMount" });
 
   return rows;
 }
@@ -671,7 +678,8 @@ export function buildSleevelessFrontDisplayRows(args: {
     });
   }
 
-  rows.push({ kind: "neckShoulderChartMount" });
+  rows.push({ kind: "neckShoulderChartTableMount" });
+  rows.push({ kind: "neckShoulderChartPreviewMount" });
 
   return rows;
 }
@@ -989,6 +997,8 @@ export function generateSleevelessBackPattern(
   /** Back neckline vertical depth in rows (single budget for unified neck + shoulder timeline). */
   const backNeckDepthRows =
     rowGauge > 0 ? Math.max(1, Math.round((backNeckDepthIn ?? 2.5) * rowGauge)) : 0;
+  const shoulderBindoffRows =
+    rowGauge > 0 ? Math.max(1, Math.round(rowGauge * 1)) : 1;
   const frontNecklineStartRC = Math.max(0, rc - Math.max(0, frontNeckDepthRows) + 1);
 
   let neckShoulderShapingChart: NeckShoulderShapingChart = DEMO_NECK_SHOULDER_SHAPING_CHART;
@@ -1036,6 +1046,7 @@ export function generateSleevelessBackPattern(
       neckDepthRows: backNeckDepthRows,
       neckProfile: "back",
       stitchesAfterArmhole: stitchesAfterArmhole!,
+      shoulderBindoffRows,
     };
     const { timeline, chartRows: liveRows } = buildNeckShoulderTimelineAndChartRows(patternNumbers);
 
@@ -1048,6 +1059,7 @@ export function generateSleevelessBackPattern(
             neckDepthRows: frontNeckDepthRows,
             neckProfile: "front",
             stitchesAfterArmhole: stitchesAfterArmhole!,
+            shoulderBindoffRows,
           }
         : {
             firstShapingRow: frontNecklineStartRC,
@@ -1056,6 +1068,7 @@ export function generateSleevelessBackPattern(
             neckDepthRows: backNeckDepthRows,
             neckProfile: "back",
             stitchesAfterArmhole: stitchesAfterArmhole!,
+            shoulderBindoffRows,
           };
 
     let frontTimeline: RowEntry[] = [];
@@ -1237,6 +1250,7 @@ export function generateSleevelessBackPattern(
     frontNeckDepth: frontNeckDepthIn,
     frontNeckDepthRows,
     backNeckDepthRows,
+    shoulderBindoffRows: rowGauge > 0 ? shoulderBindoffRows : undefined,
     backNecklineStartRC: neckStartRC,
     frontNecklineStartRC,
     finalRC: rc,

@@ -6,6 +6,16 @@
   color: #1f2937;
 }
 
+/* Wraps shape preview when rendered outside the chart table section (e.g. full-width below two-column layout). */
+.ns-shaping-chart--preview-block {
+  margin: 1.25rem 0 1.5rem;
+}
+
+/* Avoid stacking outer section margin with preview-block margin when table + preview are consecutive siblings. */
+.ns-shaping-chart + .ns-shaping-chart--preview-block {
+  margin-top: 0;
+}
+
 .ns-shaping-chart__title {
   margin: 0 0 0.5rem;
   font-size: 1rem;

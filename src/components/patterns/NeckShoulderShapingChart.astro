@@ -2,16 +2,21 @@
 import "../../styles/ns-shaping-chart.css";
 import type { NeckShoulderShapingChart } from "../../lib/patterns/neckShoulderShapingChart";
 import { getNeckShoulderChartRowHighlightFromRow } from "../../lib/patterns/neckShoulderShapingChart";
-import { renderShoulderShapingSvg } from "../../lib/patterns/shoulderShapingSvg";
+import {
+  renderShoulderShapingSvg,
+  type ShoulderShapingSvgPiece,
+} from "../../lib/patterns/shoulderShapingSvg";
 
 interface Props {
   chart: NeckShoulderShapingChart;
   class?: string;
+  /** Display-only tint for front vs back previews */
+  piece?: ShoulderShapingSvgPiece;
 }
 
-const { chart, class: className = "" } = Astro.props;
+const { chart, class: className = "", piece } = Astro.props;
 
-const shoulderPreviewSvg = renderShoulderShapingSvg(chart, "right");
+const shoulderPreviewSvg = renderShoulderShapingSvg(chart, "right", piece ? { piece } : undefined);
 ---
 
 <section class:list={["ns-shaping-chart", className]} aria-labelledby="ns-shaping-chart-heading">

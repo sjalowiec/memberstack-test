@@ -167,8 +167,8 @@ export function shapingActionsFromTimeline(timeline: readonly RowEntry[]): {
     let centerBindOff = 0;
     let neckInnerLeft = 0;
     let neckInnerRight = 0;
-    let shoulderDecLeft = 0;
-    let shoulderDecRight = 0;
+    let shoulderOuterLeft = 0;
+    let shoulderOuterRight = 0;
 
     for (const e of entry.events) {
       if (e.kind === "bindOff" && e.side === "center") {
@@ -182,9 +182,13 @@ export function shapingActionsFromTimeline(timeline: readonly RowEntry[]): {
         if (e.side === "left") neckInnerLeft += e.amount;
         if (e.side === "right") neckInnerRight += e.amount;
       }
-      if (e.kind === "decrease" && e.edge === "outer") {
-        if (e.side === "left") shoulderDecLeft += e.amount;
-        if (e.side === "right") shoulderDecRight += e.amount;
+      if (
+        (e.kind === "decrease" || e.kind === "bindOff") &&
+        e.edge === "outer" &&
+        e.amount > 0
+      ) {
+        if (e.side === "left") shoulderOuterLeft += e.amount;
+        if (e.side === "right") shoulderOuterRight += e.amount;
       }
     }
 
@@ -232,9 +236,36 @@ export function shapingActionsFromTimeline(timeline: readonly RowEntry[]): {
         });
       }
     }
-    if (shoulderDecLeft > 0 || shoulderDecRight > 0) {
-      if (shoulderDecLeft === shoulderDecRight && shoulderDecLeft > 0) {
-        const n = shoulderDecLeft;
+    if (shoulderOuterLeft > 0 || shoulderOuterRight > 0) {
+      const outerShoulderEvents = entry.events.filter(
+        (ev) =>
+          ev.edge === "outer" &&
+          ev.amount > 0 &&
+          (ev.kind === "bindOff" || ev.kind === "decrease")
+      );
+      const shoulderBindOffOnly =
+        outerShoulderEvents.length > 0 && outerShoulderEvents.every((ev) => ev.kind === "bindOff");
+
+      if (shoulderBindOffOnly) {
+        if (shoulderOuterLeft === shoulderOuterRight && shoulderOuterLeft > 0) {
+          const n = shoulderOuterLeft;
+          shoulderActions.push({
+            startRC: rc,
+            endRC: rc,
+            text:
+              n === 1
+                ? "At armhole edge, bind off 1 stitch on each shoulder."
+                : `At armhole edge, bind off ${n} stitches on each shoulder.`,
+          });
+        } else {
+          shoulderActions.push({
+            startRC: rc,
+            endRC: rc,
+            text: `At armhole edge: bind off left −${shoulderOuterLeft}, right −${shoulderOuterRight}.`,
+          });
+        }
+      } else if (shoulderOuterLeft === shoulderOuterRight && shoulderOuterLeft > 0) {
+        const n = shoulderOuterLeft;
         shoulderActions.push({
           startRC: rc,
           endRC: rc,
@@ -247,7 +278,7 @@ export function shapingActionsFromTimeline(timeline: readonly RowEntry[]): {
         shoulderActions.push({
           startRC: rc,
           endRC: rc,
-          text: `At armhole edge: left shoulder −${shoulderDecLeft}, right shoulder −${shoulderDecRight}.`,
+          text: `At armhole edge: left shoulder −${shoulderOuterLeft}, right shoulder −${shoulderOuterRight}.`,
         });
       }
     }

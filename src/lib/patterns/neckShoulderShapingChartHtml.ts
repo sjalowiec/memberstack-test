@@ -5,7 +5,7 @@
 
 import type { NeckShoulderShapingChart } from "./neckShoulderShapingChart";
 import { getNeckShoulderChartRowHighlightFromRow } from "./neckShoulderShapingChart";
-import { renderShoulderShapingSvg } from "./shoulderShapingSvg";
+import { renderShoulderShapingSvg, type ShoulderShapingSvgPiece } from "./shoulderShapingSvg";
 
 function escapeHtml(text: string): string {
   return text
@@ -22,17 +22,8 @@ function rowClassFromHighlight(hi: ReturnType<typeof getNeckShoulderChartRowHigh
   return "ns-shaping-chart__tr";
 }
 
-/**
- * Full chart section markup (table + dev note + SVG preview) for client-side injection.
- */
-export function renderNeckShoulderShapingChartSectionHtml(
-  chart: NeckShoulderShapingChart,
-  idPrefix = "ns-shaping-chart"
-): string {
-  const headingId = `${idPrefix}-heading`;
-  const previewHeadingId = `${idPrefix}-preview-heading`;
-  const shoulderPreviewSvg = renderShoulderShapingSvg(chart, "right");
-  const rowsHtml = chart.rows
+function chartBodyRowsHtml(chart: NeckShoulderShapingChart): string {
+  return chart.rows
     .map((r) => {
       const hi = getNeckShoulderChartRowHighlightFromRow(r);
       const trClass = rowClassFromHighlight(hi);
@@ -47,6 +38,15 @@ export function renderNeckShoulderShapingChartSectionHtml(
       }</td><td class="ns-shaping-chart__td-num">${r.rightStitchCount}</td></tr>`;
     })
     .join("");
+}
+
+/** Chart title, intro, and table only — pairs with {@link renderNeckShoulderShapingPreviewOnlyHtml}. */
+export function renderNeckShoulderShapingChartTableOnlyHtml(
+  chart: NeckShoulderShapingChart,
+  idPrefix = "ns-shaping-chart"
+): string {
+  const headingId = `${idPrefix}-heading`;
+  const rowsHtml = chartBodyRowsHtml(chart);
 
   return `<section class="ns-shaping-chart" aria-labelledby="${escapeHtml(headingId)}">
   <h2 id="${escapeHtml(headingId)}" class="ns-shaping-chart__title">Neckline / Shoulder Shaping Chart</h2>
@@ -79,9 +79,36 @@ export function renderNeckShoulderShapingChartSectionHtml(
       <tbody>${rowsHtml}</tbody>
     </table>
   </div>
-  <div class="ns-shaping-chart__preview" aria-labelledby="${escapeHtml(previewHeadingId)}">
+</section>`;
+}
+
+/** Shape preview block only — render below the two-column piece layout on the pattern tab. */
+export function renderNeckShoulderShapingPreviewOnlyHtml(
+  chart: NeckShoulderShapingChart,
+  idPrefix = "ns-shaping-chart",
+  piece?: ShoulderShapingSvgPiece
+): string {
+  const previewHeadingId = `${idPrefix}-preview-heading`;
+  const shoulderPreviewSvg = renderShoulderShapingSvg(chart, "right", piece ? { piece } : undefined);
+
+  return `<div class="ns-shaping-chart ns-shaping-chart--preview-block" aria-labelledby="${escapeHtml(previewHeadingId)}">
+  <div class="ns-shaping-chart__preview">
     <h3 id="${escapeHtml(previewHeadingId)}" class="ns-shaping-chart__preview-title">Neckline / Shoulder Shape Preview</h3>
     <div class="ns-shaping-chart__preview-svg-wrap">${shoulderPreviewSvg}</div>
   </div>
-</section>`;
+</div>`;
+}
+
+/**
+ * Full chart section markup (table + SVG preview) for client-side injection or legacy single-column hosts.
+ */
+export function renderNeckShoulderShapingChartSectionHtml(
+  chart: NeckShoulderShapingChart,
+  idPrefix = "ns-shaping-chart",
+  piece?: ShoulderShapingSvgPiece
+): string {
+  return (
+    renderNeckShoulderShapingChartTableOnlyHtml(chart, idPrefix) +
+    renderNeckShoulderShapingPreviewOnlyHtml(chart, idPrefix, piece)
+  );
 }

@@ -8,7 +8,10 @@ import {
   generateSleevelessBackPattern,
   type SleevelessPatternDisplayRow,
 } from "../../../lib/patterns/sleevelessPatternOutput";
-import { renderNeckShoulderShapingChartSectionHtml } from "../../../lib/patterns/neckShoulderShapingChartHtml";
+import {
+  renderNeckShoulderShapingPreviewOnlyHtml,
+  renderNeckShoulderShapingChartTableOnlyHtml,
+} from "../../../lib/patterns/neckShoulderShapingChartHtml";
 import type { NeckShoulderShapingChart } from "../../../lib/patterns/neckShoulderShapingChart";
 import "../../../styles/ns-shaping-chart.css";
 
@@ -63,8 +66,12 @@ function renderSleevelessDisplayHtml(
       html += `<h3 class="sleeveless-pattern-section">${escapeHtml(row.title)}</h3>`;
       continue;
     }
-    if (row.kind === "neckShoulderChartMount") {
-      html += `<div class="sg-pattern-output sg-neck-chart-print-block">${renderNeckShoulderShapingChartSectionHtml(chart, chartHtmlIdPrefix)}</div>`;
+    if (row.kind === "neckShoulderChartTableMount") {
+      html += `<div class="sg-pattern-output sg-neck-chart-print-block">${renderNeckShoulderShapingChartTableOnlyHtml(chart, chartHtmlIdPrefix)}</div>`;
+      continue;
+    }
+    if (row.kind === "neckShoulderChartPreviewMount") {
+      html += `<div class="sg-pattern-output sg-neck-chart-print-block">${renderNeckShoulderShapingPreviewOnlyHtml(chart, chartHtmlIdPrefix, "front")}</div>`;
       continue;
     }
     const showStitch =

@@ -23,6 +23,11 @@ export type ShapingTimelineInputs = {
    * left/right ≈ floor/ceil((B−N)/2) + floor/ceil((N−C)/2), and left + (N−C) + right = B−C.
    */
   stitchesAfterArmhole: number;
+  /**
+   * Vertical span for shoulder bind-offs (typically 1" at row gauge).
+   * Bind-offs overlay only the last min(shoulderBindoffRows, workRows) post-center rows.
+   */
+  shoulderBindoffRows: number;
 };
 
 export type ShapingEvent = {
@@ -66,6 +71,21 @@ function assertRowInvariants(row: RowEntry, expectedLeft: number, expectedRight:
     row.stitchesR === expectedRight,
     `[buildTimeline] right stitch total mismatch at row ${row.row}`
   );
+}
+
+/** Spread whole stitches across row slots; remainder stitches go to the earliest rows. */
+export function distributeTotalAcrossRows(total: number, rows: number): number[] {
+  const r = Math.max(0, Math.floor(rows));
+  if (r === 0) return [];
+  const t = Math.max(0, Math.round(total));
+  if (t === 0) return Array(r).fill(0);
+  const base = Math.floor(t / r);
+  const rem = t % r;
+  const out: number[] = [];
+  for (let i = 0; i < r; i++) {
+    out.push(base + (i < rem ? 1 : 0));
+  }
+  return out;
 }
 
 /** Inner-neck events for one post-center row index (back — round neckline stair + singles). */
@@ -160,13 +180,15 @@ export function buildTimeline(inputs: ShapingTimelineInputs): RowEntry[] {
   const neckDepthRows = Math.floor(inputs.neckDepthRows);
   const profile = inputs.neckProfile;
   const B = Math.round(inputs.stitchesAfterArmhole);
+  const shoulderBindoffRowsRaw = inputs.shoulderBindoffRows;
 
   if (
     !Number.isFinite(firstRow) ||
     !Number.isFinite(S) ||
     !Number.isFinite(N) ||
     !Number.isFinite(neckDepthRows) ||
-    !Number.isFinite(B)
+    !Number.isFinite(B) ||
+    !Number.isFinite(shoulderBindoffRowsRaw)
   ) {
     return [];
   }
@@ -232,9 +254,27 @@ export function buildTimeline(inputs: ShapingTimelineInputs): RowEntry[] {
   const rightStart =
     Math.ceil(shoulderBandTotal / 2) + Math.ceil(neckOpeningRemainingAfterBo / 2);
 
-  /** Outer-edge shoulder decreases (reserved — do not fund from S − innerPlanned). */
+  const shoulderBindoffRowsIn = Math.max(1, Math.floor(shoulderBindoffRowsRaw));
+  const leftShoulderTotal = Math.floor(shoulderBandTotal / 2);
+  const rightShoulderTotal = Math.ceil(shoulderBandTotal / 2);
+  const placementRows = Math.min(shoulderBindoffRowsIn, workRows);
+
   const shoulderLeftPerRow = Array(workRows).fill(0);
   const shoulderRightPerRow = Array(workRows).fill(0);
+  if (placementRows > 0 && shoulderBandTotal > 0) {
+    const leftChunks = distributeTotalAcrossRows(leftShoulderTotal, placementRows);
+    const rightChunks = distributeTotalAcrossRows(rightShoulderTotal, placementRows);
+    const startI = workRows - placementRows;
+    for (let k = 0; k < placementRows; k++) {
+      shoulderLeftPerRow[startI + k] = leftChunks[k] ?? 0;
+      shoulderRightPerRow[startI + k] = rightChunks[k] ?? 0;
+    }
+  }
+
+  let shoulderRemL = leftShoulderTotal;
+  let shoulderRemR = rightShoulderTotal;
+  let carryShoulderL = 0;
+  let carryShoulderR = 0;
 
   let leftOuterEdge = 1;
   let leftInnerEdge = leftStart;
@@ -275,8 +315,8 @@ export function buildTimeline(inputs: ShapingTimelineInputs): RowEntry[] {
   for (let i = 0; i < workRows; i++) {
     const rc = firstRow + 1 + i;
     const events: ShapingEvent[] = [];
-    let shoulderDecL = 0;
-    let shoulderDecR = 0;
+    let shoulderBoL = 0;
+    let shoulderBoR = 0;
     let innerNetL = 0;
     let innerNetR = 0;
 
@@ -320,24 +360,39 @@ export function buildTimeline(inputs: ShapingTimelineInputs): RowEntry[] {
       }
     }
 
-    shoulderDecL = Math.max(0, shoulderLeftPerRow[i] ?? 0);
-    shoulderDecR = Math.max(0, shoulderRightPerRow[i] ?? 0);
-    if (shoulderDecL > 0) {
-      events.push({ kind: "decrease", side: "left", edge: "outer", amount: shoulderDecL });
-      leftOuterEdge += shoulderDecL;
-      leftCount -= shoulderDecL;
+    const wantShoulderL = (shoulderLeftPerRow[i] ?? 0) + carryShoulderL;
+    const wantShoulderR = (shoulderRightPerRow[i] ?? 0) + carryShoulderR;
+    const capShoulderL = Math.min(wantShoulderL, shoulderRemL);
+    const capShoulderR = Math.min(wantShoulderR, shoulderRemR);
+    shoulderBoL = Math.min(capShoulderL, leftCount);
+    shoulderBoR = Math.min(capShoulderR, rightCount);
+    shoulderRemL -= shoulderBoL;
+    shoulderRemR -= shoulderBoR;
+    carryShoulderL =
+      shoulderBoL < wantShoulderL && shoulderBoL === leftCount && leftCount < capShoulderL
+        ? wantShoulderL - shoulderBoL
+        : 0;
+    carryShoulderR =
+      shoulderBoR < wantShoulderR && shoulderBoR === rightCount && rightCount < capShoulderR
+        ? wantShoulderR - shoulderBoR
+        : 0;
+
+    if (shoulderBoL > 0) {
+      events.push({ kind: "bindOff", side: "left", edge: "outer", amount: shoulderBoL });
+      leftOuterEdge += shoulderBoL;
+      leftCount -= shoulderBoL;
     }
-    if (shoulderDecR > 0) {
-      events.push({ kind: "decrease", side: "right", edge: "outer", amount: shoulderDecR });
-      rightOuterEdge -= shoulderDecR;
-      rightCount -= shoulderDecR;
+    if (shoulderBoR > 0) {
+      events.push({ kind: "bindOff", side: "right", edge: "outer", amount: shoulderBoR });
+      rightOuterEdge -= shoulderBoR;
+      rightCount -= shoulderBoR;
     }
 
     leftCount = Math.max(0, leftCount);
     rightCount = Math.max(0, rightCount);
 
-    const netL = shoulderDecL + innerNetL;
-    const netR = shoulderDecR + innerNetR;
+    const netL = shoulderBoL + innerNetL;
+    const netR = shoulderBoR + innerNetR;
 
     const rowEntry: RowEntry = {
       row: rc,

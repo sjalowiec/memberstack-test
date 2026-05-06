@@ -8,5 +8,6 @@ describe("neckShoulderWiringDebug", () => {
     expect(out).toContain("bindOff left inner ×3");
     expect(out).toContain("RC 251"); // first neck stair row after center bind-off at RC 249
     expect(out).toMatch(/decrease left inner/);
+    expect(out).toMatch(/bindOff left outer ×/);
   });
 });

@@ -16,6 +16,8 @@ export type NeckShoulderWiringDebugCase = {
   firstShapingRow: number;
   /** B — stitches after armhole (N + 2× shoulder per side for symmetric split). */
   stitchesAfterArmhole: number;
+  /** Shoulder bind-off row span (default 7 ≈ 1" at 7 rpi). */
+  shoulderBindoffRows?: number;
 };
 
 /** Example from product: 53 sts, 38 per side; center bind-off / first timeline row = RC 249 (same RC as sleeveless front neckline start). */
@@ -25,6 +27,7 @@ export const DEBUG_CASE_FRONT_53: NeckShoulderWiringDebugCase = {
   neckDepthRows: 41,
   firstShapingRow: 249,
   stitchesAfterArmhole: 53 + 38 * 2,
+  shoulderBindoffRows: 7,
 };
 
 function summarizeTimelineRow(e: RowEntry): string {
@@ -54,6 +57,7 @@ function svgActionSummaryFromTimeline(sorted: RowEntry[]): string[] {
  */
 export function formatNeckShoulderWiringDebug(c: NeckShoulderWiringDebugCase): string {
   const plan = calculateRoundNecklineShaping({ necklineStitches: c.necklineStitches });
+  const shoulderBindoffRows = c.shoulderBindoffRows ?? 7;
   const timeline = buildTimeline({
     firstShapingRow: c.firstShapingRow,
     shoulderStitchesPerSide: c.shoulderStitchesPerSide,
@@ -61,6 +65,7 @@ export function formatNeckShoulderWiringDebug(c: NeckShoulderWiringDebugCase): s
     neckDepthRows: c.neckDepthRows,
     neckProfile: "back",
     stitchesAfterArmhole: c.stitchesAfterArmhole,
+    shoulderBindoffRows,
   });
   const chartRows = buildNeckShoulderShapingChartRows({
     firstShapingRow: c.firstShapingRow,
@@ -69,6 +74,7 @@ export function formatNeckShoulderWiringDebug(c: NeckShoulderWiringDebugCase): s
     neckDepthRows: c.neckDepthRows,
     neckProfile: "back",
     stitchesAfterArmhole: c.stitchesAfterArmhole,
+    shoulderBindoffRows,
   });
   const chart = neckShoulderShapingChartFromRows(chartRows, { timeline });
   const svgHtml = renderShoulderShapingSvg(chart, "right");
