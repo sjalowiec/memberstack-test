@@ -85,6 +85,20 @@
   border-bottom: 1px solid rgba(55, 65, 81, 0.15);
 }
 
+.ns-shaping-chart__th-complete {
+  text-align: center;
+  vertical-align: bottom;
+  width: 2.4rem;
+  min-width: 2.4rem;
+  font-weight: 700;
+  font-size: 0.69rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #374151;
+  background: rgba(82, 104, 45, 0.06);
+  border-bottom: 1px solid rgba(55, 65, 81, 0.15);
+}
+
 .ns-shaping-chart__td-num {
   text-align: right;
   white-space: nowrap;
@@ -92,6 +106,33 @@
 
 .ns-shaping-chart__td-center {
   text-align: center;
+}
+
+.ns-shaping-chart__td-complete {
+  text-align: center;
+  width: 2.4rem;
+  min-width: 2.4rem;
+}
+
+.ns-shaping-chart__row-check-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ns-shaping-chart__row-check {
+  margin: 0;
+  inline-size: 0.92rem;
+  block-size: 0.92rem;
+  accent-color: var(--kbm-green);
+}
+
+.ns-shaping-chart__tr:has(.ns-shaping-chart__row-check:checked) td {
+  opacity: 0.86;
+}
+
+.ns-shaping-chart__tr:has(.ns-shaping-chart__row-check:checked) td:first-child {
+  opacity: 1;
 }
 
 .ns-shaping-chart__tr--neck-both td {

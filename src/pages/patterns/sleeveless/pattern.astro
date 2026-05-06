@@ -306,17 +306,6 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     padding: 0;
   }
 
-  :global(#pattern-content .sleeveless-piece-ns-preview) {
-    width: 100%;
-    min-width: 0;
-  }
-
-  :global(#pattern-content .sleeveless-piece-ns-preview .sg-neck-chart-print-block--preview) {
-    max-width: none;
-    margin-left: 0;
-    margin-right: 0;
-  }
-
   :global(.pattern-noscript-heading) {
     font-size: 1.1rem;
     color: var(--kbm-green, #52682d);
@@ -357,10 +346,41 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     cursor: pointer;
   }
 
+  :global(#pattern-content .pattern-section__collapse-label input[type="checkbox"]) {
+    accent-color: var(--kbm-green);
+  }
+
   :global(#pattern-content .pattern-section__content) {
     padding: 0.75rem 0.85rem 1.1rem;
     background: color-mix(in srgb, var(--kbm-green, #52682d) 3%, var(--page-bg, #fff));
     border-radius: 0 0 7px 7px;
+  }
+
+  :global(#pattern-content .pattern-subsection) {
+    margin: 0.75rem 0 0;
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    border-radius: 7px;
+    background: #fff;
+  }
+
+  :global(#pattern-content .pattern-subsection:first-child) {
+    margin-top: 0;
+  }
+
+  :global(#pattern-content .pattern-subsection .pattern-section__header) {
+    padding: 0.5rem 0.65rem;
+    background: rgba(82, 104, 45, 0.04);
+  }
+
+  :global(#pattern-content .pattern-subsection .pattern-section__heading h2) {
+    font-size: 0.92rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  :global(#pattern-content .pattern-subsection .pattern-section__content) {
+    padding: 0.65rem 0.75rem 0.85rem;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 2.5%, var(--page-bg, #fff));
   }
 
   @supports not (background: color-mix(in srgb, white, black)) {
@@ -496,10 +516,12 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
   :global(
     .sleeveless-diagram-modal__content .sleeveless-piece-split__diagram-inline,
     .sleeveless-diagram-modal__content svg,
+    .sleeveless-diagram-modal__content iframe,
     .sleeveless-diagram-modal__content img,
     .sleeveless-diagram-modal__content object,
     .sleeveless-diagram-modal__content figure,
     .sleeveless-diagram-modal__content figure > svg,
+    .sleeveless-diagram-modal__content figure > iframe,
     .sleeveless-diagram-modal__content figure > img,
     .sleeveless-diagram-modal__content figure > object
   ) {
@@ -518,6 +540,159 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     max-width: none;
     margin-left: 0;
     margin-right: 0;
+  }
+
+  :global(#pattern-content .sleeveless-piece-chart-fullwidth) {
+    width: 100%;
+    max-width: 100%;
+    clear: both;
+  }
+
+  :global(#pattern-content .sleeveless-piece-chart-fullwidth .ns-shaping-chart__table) {
+    width: 100%;
+  }
+
+  :global(#pattern-content #neckline-shoulder-chart-print-area),
+  :global(#pattern-content #front-neckline-shoulder-chart-print-area) {
+    width: 100%;
+  }
+
+  :global(#pattern-content .neckline-chart-print-controls) {
+    display: none;
+  }
+
+  :global(#pattern-content .chart-print-btn),
+  :global(#pattern-content .neckline-chart-print-button) {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: #4b5563;
+    border-radius: 4px;
+    padding: 0.05rem;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  :global(#pattern-content .chart-print-btn:hover),
+  :global(#pattern-content .neckline-chart-print-button:hover) {
+    color: #1f2937;
+  }
+
+  :global(#pattern-content .chart-print-btn:focus-visible),
+  :global(#pattern-content .neckline-chart-print-button:focus-visible) {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  :global(#pattern-content .neckline-chart-header-row),
+  :global(#pattern-content .neckline-chart-header) {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  :global(#pattern-content .neckline-chart-print-only-header),
+  :global(#pattern-content .neckline-chart-print-only-footer) {
+    display: none;
+  }
+
+  :global(#pattern-content .neckline-chart-print-only-header-title) {
+    margin: 0 0 0.25rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  :global(#pattern-content .neckline-chart-print-only-header-intro) {
+    margin: 0 0 0.8rem;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: #1f2937;
+  }
+
+  :global(#pattern-content .neckline-chart-print-only-footer) {
+    margin-top: 0.7rem;
+    padding-top: 0.45rem;
+    border-top: 1px solid #d1d5db;
+    font-size: 0.82rem;
+    color: #4b5563;
+  }
+
+  :global(#pattern-content .sleeveless-neck-shoulder-help) {
+    display: grid;
+    grid-template-columns: 124px minmax(0, 1fr);
+    align-items: start;
+    gap: 0.45rem 0.7rem;
+    margin: 0.15rem 0 0.5rem;
+  }
+
+  :global(#pattern-content .sleeveless-neck-shoulder-help__icon) {
+    width: min(100%, 118px);
+    height: auto;
+    display: block;
+    align-self: start;
+    justify-self: start;
+  }
+
+  :global(#pattern-content .sleeveless-neck-shoulder-help__text) {
+    margin: 0;
+    font-size: 0.84rem;
+    line-height: 1.4;
+    color: #374151;
+  }
+
+  :global(#pattern-content .pattern-shaping-intro) {
+    margin: 0 0 0.65rem;
+  }
+
+  :global(#pattern-content .pattern-shaping-intro p) {
+    margin: 0 0 0.45rem;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #374151;
+  }
+
+  :global(#pattern-content .pattern-shaping-intro p:last-child) {
+    margin-bottom: 0;
+  }
+
+  :global(#pattern-content .pattern-shaping-intro .small.text-muted) {
+    font-size: 0.82rem;
+    color: #6b7280;
+  }
+
+  :global(#pattern-content .sleeveless-shaping-help-toggle) {
+    margin: 0 0 0.65rem;
+    padding: 0.6rem 0.8rem;
+  }
+
+  :global(#pattern-content .sleeveless-shaping-help-toggle summary) {
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  :global(#pattern-content .sleeveless-shaping-help-toggle p) {
+    margin: 0.55rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
+  :global(#pattern-content .sleeveless-shaping-help-toggle ul) {
+    margin: 0.45rem 0 0;
+    padding-left: 1.1rem;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #374151;
+  }
+
+  :global(#pattern-content .sleeveless-shaping-help__video-link) {
+    color: var(--kbm-green, #52682d);
+    font-weight: 700;
+    text-underline-offset: 2px;
   }
 
   @media (min-width: 768px) {
@@ -548,16 +723,39 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     }
   }
 
-  :global(#pattern-content .pattern-section.is-collapsed) {
+  @media (max-width: 560px) {
+    :global(#pattern-content .sleeveless-neck-shoulder-help) {
+      grid-template-columns: 96px minmax(0, 1fr);
+      gap: 0.4rem 0.5rem;
+      margin-bottom: 0.45rem;
+    }
+
+    :global(#pattern-content .sleeveless-neck-shoulder-help__icon) {
+      width: min(100%, 90px);
+    }
+
+    :global(#pattern-content .sleeveless-neck-shoulder-help__text) {
+      font-size: 0.82rem;
+      line-height: 1.35;
+    }
+  }
+
+  :global(#pattern-content .pattern-section.is-collapsed, #pattern-content .pattern-subsection.is-collapsed) {
     opacity: 0.74;
     background: rgba(0, 0, 0, 0.02);
   }
 
-  :global(#pattern-content .pattern-section.is-collapsed .pattern-section__header) {
+  :global(
+    #pattern-content .pattern-section.is-collapsed .pattern-section__header,
+    #pattern-content .pattern-subsection.is-collapsed .pattern-section__header
+  ) {
     padding: 0.35rem 0.6rem;
   }
 
-  :global(#pattern-content .pattern-section.is-collapsed .pattern-section__content) {
+  :global(
+    #pattern-content .pattern-section.is-collapsed .pattern-section__content,
+    #pattern-content .pattern-subsection.is-collapsed .pattern-section__content
+  ) {
     display: none;
   }
 
@@ -569,11 +767,12 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
   }
 
   :global(#pattern-content .pattern-rc-open) {
-    font-family: ui-monospace, monospace;
-    font-weight: 700;
-    font-size: 0.9rem;
-    margin: 0 0 0.75rem;
-    color: #1f2937;
+    font-family: inherit;
+    font-weight: 400;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    margin: 0 0 0.55rem;
+    color: #374151;
   }
 
   :global(#pattern-content .pattern-step) {
@@ -633,6 +832,7 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
   :global(#pattern-content .pattern-checkbox input) {
     margin-top: 0.2rem;
     flex-shrink: 0;
+    accent-color: var(--kbm-green);
   }
 
   :global(#pattern-content .pattern-stop-rc) {
@@ -652,6 +852,45 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     gap: 0.55rem;
   }
 
+  :global(#pattern-content .pattern-finishing-toggle-list) {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  :global(#pattern-content .pattern-finishing-toggle) {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 7px;
+    background: #fff;
+    padding: 0.45rem 0.65rem 0.55rem;
+  }
+
+  :global(#pattern-content .pattern-finishing-toggle summary) {
+    cursor: pointer;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1.35;
+  }
+
+  :global(#pattern-content .pattern-finishing-toggle ul) {
+    margin: 0.45rem 0 0;
+    padding-left: 1.1rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: #374151;
+  }
+
+  :global(#pattern-content .pattern-finishing-toggle p) {
+    margin: 0.45rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #4b5563;
+  }
+
   @media print {
     .pattern-tab-nav {
       display: none !important;
@@ -667,11 +906,14 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
       display: block !important;
     }
 
-    :global(#pattern-content .pattern-section.is-collapsed .pattern-section__content) {
+    :global(
+      #pattern-content .pattern-section.is-collapsed .pattern-section__content,
+      #pattern-content .pattern-subsection.is-collapsed .pattern-section__content
+    ) {
       display: block !important;
     }
 
-    :global(#pattern-content .pattern-section.is-collapsed) {
+    :global(#pattern-content .pattern-section.is-collapsed, #pattern-content .pattern-subsection.is-collapsed) {
       opacity: 1 !important;
       background: #fff !important;
     }
@@ -680,7 +922,10 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
       display: none !important;
     }
 
-    :global(#pattern-content .pattern-section.is-collapsed .pattern-section__header) {
+    :global(
+      #pattern-content .pattern-section.is-collapsed .pattern-section__header,
+      #pattern-content .pattern-subsection.is-collapsed .pattern-section__header
+    ) {
       padding: 0.65rem 0.85rem !important;
     }
 
@@ -690,6 +935,10 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
 
     :global(.no-print) {
       display: none !important;
+    }
+
+    :global(#pattern-content .pattern-finishing-toggle > *:not(summary)) {
+      display: block !important;
     }
   }
 </style>
@@ -707,7 +956,6 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
   import { setPatternTabsReadiness } from "../../../lib/patterns/patternTabsClient.ts";
   import { generateSleevelessBackPattern } from "../../../lib/patterns/sleevelessPatternOutput.ts";
   import {
-    renderNeckShoulderShapingPreviewOnlyHtml,
     renderNeckShoulderShapingChartTableOnlyHtml,
   } from "../../../lib/patterns/neckShoulderShapingChartHtml.ts";
   import { showResults, initializeActionBar } from "../../../components/wizards/utils/wizardBehavior.ts";
@@ -958,20 +1206,105 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
   }
 
   /**
+   * Intro + collapsible help shown directly beneath the chart heading.
+   * @param {number | string | undefined} startRow
+   */
+  function neckShoulderChartHelpRowHtml(startRow) {
+    const numericStartRow = Number(startRow);
+    const startRowLabel =
+      Number.isFinite(numericStartRow) && numericStartRow > 0 ? String(Math.round(numericStartRow)) : "";
+    return `<div class="pattern-shaping-intro">
+  <p class="pattern-rc-line pattern-rc-open"><strong>RC: ${escapeHtml(startRowLabel)}</strong> Start here.</p>
+  <p>Bind off the center neckline stitches as shown in the chart below.</p>
+  <p>Place the opposite shoulder stitches on hold or scrap yarn and work one shoulder at a time, following the chart row by row.</p>
+  <p class="small text-muted">The chart below combines neckline and shoulder shaping into one row-by-row guide, including rows where shaping happens at the same time.</p>
+</div>
+<details class="pattern-tip sleeveless-shaping-help-toggle no-print">
+  <summary>Need help reading the shaping chart?</summary>
+  <p>This section combines neckline shaping and shoulder shaping into one row-by-row chart.</p>
+  <ul>
+    <li>Read the chart one row at a time</li>
+    <li>Stitch counts update after the shaping on that row is completed</li>
+    <li>Some rows include both neckline and shoulder shaping</li>
+    <li>Blank rows mean knit even with no shaping</li>
+    <li>Use the checkboxes to help keep your place as you knit</li>
+  </ul>
+</details>
+<details class="pattern-tip sleeveless-shaping-help-toggle no-print">
+  <summary>New to shaping necklines on the machine?</summary>
+  <p>Neckline shaping can feel intimidating at first, especially when shoulder shaping happens at the same time. The chart is designed to guide you step by step so you can focus on one row at a time.</p>
+  <p>
+    Need a walkthrough?
+    <a
+      href="/videos/535"
+      class="sleeveless-shaping-help__video-link"
+      data-video-id="535"
+      data-video-slug="easy-round-neck-shaping"
+    >
+      Watch easy-round-neck-shaping
+    </a>
+  </p>
+</details>`;
+  }
+
+  /**
    * Renders structured rows: left column RC + text, right column total sts only when it changes.
    * Chart table stays in the left column; shape preview mounts below the two-column piece split.
    * @param {unknown[]} rows
    * @param {string} chartTableMountId
    * @param {string} chartPreviewMountId
    */
-  function renderSleevelessDisplayHtml(rows, chartTableMountId, chartPreviewMountId) {
+  function renderSleevelessDisplayHtml(
+    rows,
+    chartTableMountId,
+    pieceSectionId,
+    patternIntroSentence,
+    neckChartStartRow
+  ) {
     const list = Array.isArray(rows) ? rows : [];
     let lastShownStitch;
+    let currentPiece = "";
     /** @type {string[]} */
     const splitParts = [];
     /** @type {string[]} */
     const postParts = [];
-    let zone = "split";
+    /** @type {string | null} */
+    let openSectionTitle = null;
+    let openSectionIsPost = false;
+    /** @type {string[]} */
+    let openSectionParts = [];
+    const NECK_SHOULDER_SECTION_RE = /NECKLINE\s*&\s*SHOULDERS/i;
+    const ARMHOLE_SECTION_RE = /ARMHOLE/i;
+    const numericStartRow = Number(neckChartStartRow);
+    const startRowLabel =
+      Number.isFinite(numericStartRow) && numericStartRow > 0 ? String(Math.round(numericStartRow)) : "";
+
+    function flushOpenSection() {
+      if (!openSectionTitle) return;
+      if (!openSectionIsPost && ARMHOLE_SECTION_RE.test(openSectionTitle) && startRowLabel) {
+        openSectionParts.push(
+          `<p class="pattern-rc-line pattern-rc-open"><strong>RC: ${escapeHtml(startRowLabel)}</strong> Start neckline and shoulder shaping.</p>`
+        );
+      }
+      const sectionSlug = openSectionTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      const targetParts = openSectionIsPost ? postParts : splitParts;
+      targetParts.push(
+        wrapPatternSection(
+          `sg-${pieceSectionId}-${sectionSlug || "section"}`,
+          openSectionTitle,
+          openSectionParts.join(""),
+          {
+            defaultCollapsed: false,
+            sectionClassName: openSectionIsPost
+              ? "pattern-subsection sleeveless-piece-chart-fullwidth"
+              : "pattern-subsection",
+          }
+        )
+      );
+      openSectionTitle = null;
+      openSectionIsPost = false;
+      openSectionParts = [];
+    }
 
     /**
      * @param {Extract<(typeof list)[number], { kind: "block" }>} row
@@ -995,6 +1328,9 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
           `<div class="pattern-tip" data-tip><strong>Tip:</strong> ${row.tipHtml}</div>`
         );
       }
+      if (row.collapsibleTipHtml) {
+        leftBits.push(row.collapsibleTipHtml);
+      }
       const leftHtml = `<div class="sleeveless-pattern-left">${leftBits.join("")}</div>`;
       const rightHtml = showStitch
         ? `<div class="sleeveless-pattern-sts">${row.stitchCount} sts</div>`
@@ -1004,50 +1340,62 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     }
 
     for (const row of list) {
-      if (row.kind === "neckShoulderChartPreviewMount") {
-        zone = "post";
-        postParts.push(
-          `<div class="sg-pattern-output sg-neck-chart-print-block sg-neck-chart-print-block--preview" id="${escapeHtml(chartPreviewMountId)}"></div>`
-        );
-        continue;
-      }
       if (row.kind === "piece") {
+        flushOpenSection();
+        currentPiece = row.title;
         const chunk = `<h2 class="sleeveless-pattern-piece">${escapeHtml(row.title)}</h2>`;
-        if (zone === "split") splitParts.push(chunk);
-        else postParts.push(chunk);
+        splitParts.push(chunk);
         continue;
       }
       if (row.kind === "section") {
-        const chunk = `<h3 class="sleeveless-pattern-section">${escapeHtml(row.title)}</h3>`;
-        if (zone === "split") splitParts.push(chunk);
-        else postParts.push(chunk);
+        flushOpenSection();
+        openSectionTitle = escapeHtml(row.title);
+        openSectionIsPost = NECK_SHOULDER_SECTION_RE.test(String(row.title || ""));
         continue;
       }
       if (row.kind === "neckShoulderChartTableMount") {
-        splitParts.push(
-          `<div class="sg-pattern-output sg-neck-chart-print-block" id="${escapeHtml(chartTableMountId)}"></div>`
-        );
+        const printPatternTitle = "Sleeveless Sweater Pattern";
+        const intro = String(patternIntroSentence || "").trim();
+        const printIntro = intro
+          ? intro.charAt(0).toUpperCase() + intro.slice(1)
+          : "Custom sleeveless sweater pattern based on your saved builder choices.";
+        const chartAreaId =
+          pieceSectionId === "front"
+            ? "front-neckline-shoulder-chart-print-area"
+            : "neckline-shoulder-chart-print-area";
+        const chartAreaOpen = `<div id="${chartAreaId}">`;
+        const chartChunk = `${chartAreaOpen}
+  <div class="neckline-chart-print-only-header" aria-hidden="true">
+    <p class="neckline-chart-print-only-header-title">${escapeHtml(printPatternTitle)}</p>
+    <p class="neckline-chart-print-only-header-intro">Custom pattern for ${escapeHtml(printIntro)}</p>
+  </div>
+  <div class="sg-pattern-output sg-neck-chart-print-block" id="${escapeHtml(chartTableMountId)}"></div>
+  <p class="neckline-chart-print-only-footer">Created by Knit It Now · Printed <span data-neckline-chart-print-date></span></p>
+</div>`;
+        if (openSectionTitle) {
+          openSectionParts.push(chartChunk);
+          continue;
+        }
+        postParts.push(`<section class="sleeveless-piece-chart-fullwidth">${chartChunk}</section>`);
         continue;
       }
       if (row.kind !== "block") continue;
       const chunk = instructionRowHtml(row);
-      if (zone === "split") splitParts.push(chunk);
-      else postParts.push(chunk);
+      if (openSectionTitle) openSectionParts.push(chunk);
+      else splitParts.push(chunk);
     }
+    flushOpenSection();
 
     const splitInner = `<div class="sleeveless-pattern-instructions">${splitParts.join("")}</div>`;
-    const postSplit =
-      postParts.length > 0 ? `<div class="sleeveless-piece-ns-preview">${postParts.join("")}</div>` : "";
+    const postSplit = postParts.join("");
     return { splitInner, postSplit };
   }
 
   /**
    * Two-column shell for Back/Front: prose + chart (left) and static SVG (right, sticky on desktop).
-   * Optional full-width block after the split (e.g. neckline shape preview).
    * @param {string} innerHtml
    * @param {string} diagramSrc
    * @param {string} diagramAlt
-   * @param {string} [postSplitHtml]
    */
   function wrapSleevelessPieceSplit(innerHtml, diagramSrc, diagramAlt, postSplitHtml) {
     const src = escapeHtml(diagramSrc);
@@ -1314,6 +1662,73 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     }
   }
 
+  function ensureSleevelessVideoModal() {
+    let modal = document.querySelector("[data-sleeveless-video-modal]");
+    if (modal instanceof HTMLElement) return modal;
+
+    modal = document.createElement("div");
+    modal.className = "sleeveless-diagram-modal";
+    modal.hidden = true;
+    modal.setAttribute("data-sleeveless-video-modal", "");
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-label", "Video tutorial");
+    modal.innerHTML = `
+      <div class="sleeveless-diagram-modal__dialog" data-sleeveless-video-dialog>
+        <button type="button" class="sleeveless-diagram-modal__close" data-sleeveless-video-close aria-label="Close video tutorial">X</button>
+        <div class="sleeveless-diagram-modal__content" data-sleeveless-video-content></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.addEventListener("click", (e) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      if (target.closest("[data-sleeveless-video-close]")) {
+        closeSleevelessVideoModal();
+        return;
+      }
+      if (!target.closest("[data-sleeveless-video-dialog]")) {
+        closeSleevelessVideoModal();
+      }
+    });
+
+    return modal;
+  }
+
+  function closeSleevelessVideoModal() {
+    const modal = document.querySelector("[data-sleeveless-video-modal]");
+    if (!(modal instanceof HTMLElement)) return;
+    const content = modal.querySelector("[data-sleeveless-video-content]");
+    if (content instanceof HTMLElement) {
+      content.innerHTML = "";
+    }
+    modal.hidden = true;
+    document.body.classList.remove("sleeveless-diagram-modal-open");
+  }
+
+  function openSleevelessVideoModal(vimeoId) {
+    const cleanId = String(vimeoId || "").trim();
+    if (!/^\d+$/.test(cleanId)) return;
+    const modal = ensureSleevelessVideoModal();
+    const content = modal.querySelector("[data-sleeveless-video-content]");
+    if (!(content instanceof HTMLElement)) return;
+    const src = `https://player.vimeo.com/video/${cleanId}?autoplay=1`;
+    content.innerHTML = `<iframe
+      src="${src}"
+      title="Neckband video tutorial"
+      loading="lazy"
+      allow="autoplay; fullscreen; picture-in-picture"
+      allowfullscreen
+      referrerpolicy="strict-origin-when-cross-origin"
+      style="aspect-ratio:16/9; width:min(90vw, 960px); height:auto; border:0; border-radius:6px; background:#000;"
+    ></iframe>`;
+    modal.hidden = false;
+    document.body.classList.add("sleeveless-diagram-modal-open");
+    const closeBtn = modal.querySelector("[data-sleeveless-video-close]");
+    if (closeBtn instanceof HTMLElement) closeBtn.focus();
+  }
+
   function bindSleevelessDiagramZoom(root) {
     if (!root || root.dataset.sleevelessDiagramZoomBound === "true") return;
     root.dataset.sleevelessDiagramZoomBound = "true";
@@ -1333,12 +1748,319 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     });
   }
 
+  function bindSleevelessVideoHelp(root) {
+    if (!root || root.dataset.sleevelessVideoHelpBound === "true") return;
+    root.dataset.sleevelessVideoHelpBound = "true";
+
+    root.addEventListener("click", (e) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      const link = target.closest("[data-sleeveless-video-id]");
+      if (!(link instanceof HTMLElement)) return;
+      e.preventDefault();
+      const videoId = link.getAttribute("data-sleeveless-video-id");
+      if (!videoId) return;
+      openSleevelessVideoModal(videoId);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeSleevelessVideoModal();
+      }
+    });
+  }
+
+  function formatPrintDate(date) {
+    try {
+      return date.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+    } catch {
+      return date.toLocaleDateString();
+    }
+  }
+
+  function necklineChartPrintCss() {
+    return `
+      @page { size: auto; margin: 0.5in; }
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: #fff;
+        color: #111827;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      #neckline-shoulder-chart-print-area,
+      #front-neckline-shoulder-chart-print-area {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        overflow: visible;
+      }
+      .neckline-chart-print-controls,
+      .chart-print-btn,
+      .neckline-chart-print-button {
+        display: none !important;
+      }
+      .neckline-chart-print-only-header,
+      .neckline-chart-print-only-footer {
+        display: block !important;
+      }
+      .neckline-chart-print-only-header-title {
+        margin: 0 0 0.2rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+      }
+      .neckline-chart-print-only-header-intro {
+        margin: 0 0 0.75rem;
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+      .neckline-chart-print-only-footer {
+        margin-top: 0.7rem;
+        padding-top: 0.45rem;
+        border-top: 1px solid #d1d5db;
+        font-size: 0.82rem;
+        color: #4b5563;
+      }
+      .sg-pattern-output,
+      .ns-shaping-chart,
+      .ns-shaping-chart__table-wrap,
+      .ns-shaping-chart__table {
+        width: 100%;
+        max-width: none !important;
+        overflow: visible !important;
+      }
+      .ns-shaping-chart {
+        margin: 0;
+        font-size: 9pt;
+        line-height: 1.35;
+        color: #1f2937;
+        break-inside: auto;
+        page-break-inside: auto;
+      }
+      .ns-shaping-chart__title {
+        margin: 0 0 0.45rem;
+        font-size: 1rem;
+        font-weight: 700;
+      }
+      .ns-shaping-chart__intro {
+        margin: 0 0 0.55rem;
+      }
+      .ns-shaping-chart__table-wrap {
+        border: 1px solid #9ca3af;
+        border-radius: 0;
+        margin: 0;
+      }
+      .ns-shaping-chart__table {
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+      .ns-shaping-chart__table th,
+      .ns-shaping-chart__table td {
+        border: 1px solid #d1d5db;
+        padding: 0.22rem 0.32rem;
+        vertical-align: middle;
+      }
+      .ns-shaping-chart__th-group,
+      .ns-shaping-chart__th-sub,
+      .ns-shaping-chart__th-row,
+      .ns-shaping-chart__th-action,
+      .ns-shaping-chart__th-complete {
+        background: #f3f4f6;
+      }
+      .ns-shaping-chart__td-center {
+        text-align: center;
+      }
+      .ns-shaping-chart__td-num {
+        text-align: right;
+        white-space: nowrap;
+      }
+      .ns-shaping-chart__td-complete,
+      .ns-shaping-chart__th-complete {
+        text-align: center;
+        width: 2rem;
+      }
+      .ns-shaping-chart__row-check {
+        width: 0.9rem;
+        height: 0.9rem;
+        margin: 0;
+        appearance: auto;
+        -webkit-appearance: checkbox;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+      .sleeveless-neck-shoulder-help {
+        display: none !important;
+      }
+      .ns-shaping-chart__preview {
+        display: none !important;
+      }
+      [style*="position: sticky"] {
+        position: static !important;
+      }
+      [style*="max-height"] {
+        max-height: none !important;
+      }
+      @media print {
+        html, body { margin: 0; }
+      }
+    `;
+  }
+
+  function printNecklineShoulderChart(chartAreaId, chartTitle) {
+    const chart = document.getElementById(String(chartAreaId || ""));
+    if (!(chart instanceof HTMLElement)) {
+      console.error("Neckline/shoulder chart print area not found");
+      return;
+    }
+    console.log("chart found");
+
+    const chartClone = chart.cloneNode(true);
+    if (!(chartClone instanceof HTMLElement)) return;
+    console.log("chart clone html length", chartClone.innerHTML.length);
+    if (chartClone.innerHTML.length === 0) {
+      console.error("Neckline/shoulder chart print area clone is empty");
+      return;
+    }
+
+    const dateEl = chartClone.querySelector("[data-neckline-chart-print-date]");
+    if (dateEl) dateEl.textContent = formatPrintDate(new Date());
+    chartClone
+      .querySelectorAll(
+        "#neckline-shoulder-chart-print-btn, #front-neckline-shoulder-chart-print-btn, .chart-print-btn"
+      )
+      .forEach((el) => el.remove());
+
+    const printTitle = String(chartTitle || "Neckline Shoulder Shaping Chart");
+    const printHtml = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${printTitle}</title>
+    <style>
+${necklineChartPrintCss()}
+.print-chart-root,
+.print-chart-root * {
+  visibility: visible !important;
+}
+.print-chart-root {
+  display: block !important;
+  position: static !important;
+  overflow: visible !important;
+  max-height: none !important;
+  width: 100% !important;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+    </style>
+  </head>
+  <body>
+    <div class="print-chart-root">${chartClone.outerHTML}</div>
+  </body>
+</html>`;
+    console.log("printHtml length", printHtml.length);
+    console.log(printHtml.slice(0, 500));
+
+    const printWindow = window.open("", "_blank", "width=900,height=700");
+    if (!printWindow) {
+      console.error("Print window could not be opened");
+      return;
+    }
+    console.log("print window opened");
+
+    printWindow.document.open();
+    printWindow.document.write(printHtml);
+    printWindow.document.close();
+
+    setTimeout(() => {
+      console.log("print window body length", printWindow.document.body?.innerHTML?.length);
+      printWindow.focus();
+      printWindow.print();
+    }, 500);
+  }
+
+  function setupNecklineChartPrint(buttonId, chartAreaId, chartTitle) {
+    const btn = document.getElementById(String(buttonId || ""));
+    const chart = document.getElementById(String(chartAreaId || ""));
+
+    if (!btn) {
+      console.error("Neckline/shoulder chart print button not found");
+      return;
+    }
+    console.log("button found");
+
+    if (!chart) {
+      console.error("Neckline/shoulder chart print area not found");
+      return;
+    }
+    console.log("chart found");
+
+    if (btn instanceof HTMLElement && btn.dataset.necklineChartPrintBound === "true") return;
+    if (btn instanceof HTMLElement) btn.dataset.necklineChartPrintBound = "true";
+
+    btn.addEventListener("click", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      console.log("Print neckline/shoulder chart clicked");
+      console.log("print clicked");
+
+      printNecklineShoulderChart(chartAreaId, chartTitle);
+    });
+  }
+
+  function mountNecklineChartPrintInHeader(chartAreaId, buttonId) {
+    const area = document.getElementById(String(chartAreaId || ""));
+    if (!(area instanceof HTMLElement)) return;
+    const chartRoot = area.querySelector(".ns-shaping-chart");
+    if (!(chartRoot instanceof HTMLElement)) return;
+    const title = chartRoot.querySelector(".ns-shaping-chart__title");
+    if (!(title instanceof HTMLElement)) return;
+
+    title.classList.add("neckline-chart-header");
+
+    let headerRow = chartRoot.querySelector(".neckline-chart-header-row");
+    if (!(headerRow instanceof HTMLElement)) {
+      headerRow = document.createElement("div");
+      headerRow.className = "neckline-chart-header-row";
+      title.insertAdjacentElement("beforebegin", headerRow);
+      headerRow.appendChild(title);
+    }
+
+    let btn = document.getElementById(String(buttonId || ""));
+    if (!(btn instanceof HTMLButtonElement)) {
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "chart-print-btn neckline-chart-print-button no-print";
+      btn.id = String(buttonId || "");
+      btn.setAttribute("aria-label", "Print this chart");
+      btn.innerHTML = `<i class="fas fa-print" aria-hidden="true"></i>`;
+    } else {
+      btn.classList.add("no-print");
+      btn.classList.add("chart-print-btn");
+      btn.classList.add("neckline-chart-print-button");
+      btn.setAttribute("aria-label", "Print this chart");
+      if (!btn.querySelector("i")) {
+        btn.innerHTML = `<i class="fas fa-print" aria-hidden="true"></i>`;
+      }
+    }
+
+    headerRow.appendChild(btn);
+  }
+
   function wrapPatternSection(sectionId, title, innerHtml, opts) {
     const sid = String(sectionId).replace(/[^a-zA-Z0-9_-]/g, "");
     const defaultCollapsed = opts?.defaultCollapsed === true;
+    const sectionClassName =
+      typeof opts?.sectionClassName === "string" && opts.sectionClassName.trim()
+        ? ` ${opts.sectionClassName.trim()}`
+        : "";
     const collapsedClass = defaultCollapsed ? " is-collapsed" : "";
     const checkedAttr = defaultCollapsed ? " checked" : "";
-    return `<section class="pattern-section${collapsedClass}" data-section-id="${sid}">
+    return `<section class="pattern-section${sectionClassName}${collapsedClass}" data-section-id="${sid}">
   <div class="pattern-section__header">
     <label class="pattern-section__collapse-label">
       <input type="checkbox" class="pattern-section__collapse" data-section-id="${sid}" aria-label="Collapse this section"${checkedAttr} />
@@ -1378,44 +2100,92 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
 
   function buildFinishingHtml() {
     return `
-  <ol class="pattern-finishing-list">
-    <li class="pattern-finishing-item">
-      <label class="pattern-checkbox no-print">
-        <input type="checkbox" aria-label="Mark complete: Join shoulders" />
-      </label>
-      <span>Join shoulders.</span>
+  <ul class="pattern-finishing-toggle-list">
+    <li>
+      <details class="pattern-finishing-toggle" open>
+        <summary>Block Pieces (Optional)</summary>
+        <ul>
+          <li>Lightly steam or wet block pieces to measurements.</li>
+          <li>Allow pieces to dry completely before assembly.</li>
+          <li>Pin edges flat if needed.</li>
+        </ul>
+        <p>Blocking before seaming helps neckline and armhole edges relax and makes finishing easier.</p>
+      </details>
     </li>
-    <li class="pattern-finishing-item">
-      <label class="pattern-checkbox no-print">
-        <input type="checkbox" aria-label="Mark complete: Neckline pickup" />
-      </label>
-      <span>Neckline pickup instructions will be added here.</span>
+
+    <li>
+      <details class="pattern-finishing-toggle">
+        <summary>Join Shoulders</summary>
+        <ul>
+          
+          <li>Seam shoulders using your preferred method.</li>
+          <li>mattress stitch</li>
+          <li>linker</li>
+          <li>crochet slip stitch</li>
+          <li>machine bind-off method</li>
+        </ul>
+      </details>
     </li>
-    <li class="pattern-finishing-item">
-      <label class="pattern-checkbox no-print">
-        <input type="checkbox" aria-label="Mark complete: Armhole pickup" />
-      </label>
-      <span>Armhole pickup instructions will be added here.</span>
+
+    <li>
+      <details class="pattern-finishing-toggle">
+        <summary>Finish Neckline</summary>
+        <ul>
+          <li>Join one shoulder seam.</li>
+          <li>Work the neckline trim or neckband.</li>
+          <li>Finish the neckband as desired.</li>
+          <li>Join the remaining shoulder seam and neckband seam.</li>
+        </ul>
+        <details class="pattern-tip sleeveless-shaping-help-toggle">
+          <summary>Need help?</summary>
+          <ul>
+            <li>
+              <a
+                href="https://player.vimeo.com/video/1189760201"
+                class="sleeveless-shaping-help__video-link"
+                data-sleeveless-video-id="1189760201"
+              >
+                Neckband video tutorial
+              </a>
+            </li>
+          </ul>
+        </details>
+      </details>
     </li>
-    <li class="pattern-finishing-item">
-      <label class="pattern-checkbox no-print">
-        <input type="checkbox" aria-label="Mark complete: Block" />
-      </label>
-      <span>Block as desired.</span>
+
+    <li>
+      <details class="pattern-finishing-toggle">
+        <summary>Finish Armholes</summary>
+        <ul>
+          <li>Work both armhole trims the same way.</li>
+          <li>Be careful not to stretch the armhole edge while finishing.</li>
+        </ul>
+      </details>
     </li>
-    <li class="pattern-finishing-item">
-      <label class="pattern-checkbox no-print">
-        <input type="checkbox" aria-label="Mark complete: Skill check" />
-      </label>
-      <span>Skill check — skill check support will be added here.</span>
+
+    <li>
+      <details class="pattern-finishing-toggle">
+        <summary>Join Side Seams</summary>
+        <ul>
+          <li>Match armhole edges and hem.</li>
+          <li>Match markers (if added).</li>
+          <li>Seam from hem to underarm.</li>
+          <li>Leave armhole opening unseamed.</li>
+        </ul>
+      </details>
     </li>
-    <li class="pattern-finishing-item">
-      <label class="pattern-checkbox no-print">
-        <input type="checkbox" aria-label="Mark complete: Practice Lab" />
-      </label>
-      <span>Practice Lab — practice support will be added here.</span>
+
+    <li>
+      <details class="pattern-finishing-toggle">
+        <summary>Final Pressing</summary>
+        <ul>
+          <li>Lightly steam seams if needed.</li>
+          <li>Weave in ends.</li>
+          <li>Allow garment to rest before wearing.</li>
+        </ul>
+      </details>
     </li>
-  </ol>
+  </ul>
 `;
   }
 
@@ -1516,12 +2286,15 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
 
     const displayRows = result.displayRows ?? [];
     const frontDisplayRows = result.frontDisplayRows ?? [];
+    const patternIntroSentence = buildPatternIntroSentence(patternMerged, patternData);
     const backRendered =
       displayRows.length > 0
         ? renderSleevelessDisplayHtml(
             displayRows,
             "sg-neck-shoulder-chart-table-back",
-            "sg-neck-shoulder-chart-preview-back"
+            "back",
+            patternIntroSentence,
+            result?.neckShoulderShapingChart?.rows?.[0]?.row
           )
         : null;
     const frontRendered =
@@ -1529,7 +2302,9 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
         ? renderSleevelessDisplayHtml(
             frontDisplayRows,
             "sg-neck-shoulder-chart-table-front",
-            "sg-neck-shoulder-chart-preview-front"
+            "front",
+            patternIntroSentence,
+            result?.frontNeckShoulderShapingChart?.rows?.[0]?.row
           )
         : null;
 
@@ -1561,38 +2336,44 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     if (backChartTableHost) {
       backChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.neckShoulderShapingChart,
-        "ns-shaping-chart-back"
-      );
-    }
-    const backChartPreviewHost = mount.querySelector("#sg-neck-shoulder-chart-preview-back");
-    if (backChartPreviewHost) {
-      backChartPreviewHost.innerHTML = renderNeckShoulderShapingPreviewOnlyHtml(
-        result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
-        "back"
+        neckShoulderChartHelpRowHtml(result?.neckShoulderShapingChart?.rows?.[0]?.row)
       );
     }
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
     if (frontChartTableHost) {
       frontChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.frontNeckShoulderShapingChart,
-        "ns-shaping-chart-front"
-      );
-    }
-    const frontChartPreviewHost = mount.querySelector("#sg-neck-shoulder-chart-preview-front");
-    if (frontChartPreviewHost) {
-      frontChartPreviewHost.innerHTML = renderNeckShoulderShapingPreviewOnlyHtml(
-        result.frontNeckShoulderShapingChart,
         "ns-shaping-chart-front",
-        "front"
+        neckShoulderChartHelpRowHtml(result?.frontNeckShoulderShapingChart?.rows?.[0]?.row)
       );
     }
+    mountNecklineChartPrintInHeader(
+      "neckline-shoulder-chart-print-area",
+      "neckline-shoulder-chart-print-btn"
+    );
+    mountNecklineChartPrintInHeader(
+      "front-neckline-shoulder-chart-print-area",
+      "front-neckline-shoulder-chart-print-btn"
+    );
 
     // Inline SVG diagrams with placeholder replacement (Back + Front).
     // Note: replacements come from the same result/debug used for chart/timeline (no extra shaping math here).
     void hydrateSleevelessDiagrams(mount, result, unit, patternData);
     ensureSleevelessDiagramModal();
     bindSleevelessDiagramZoom(mount);
+    ensureSleevelessVideoModal();
+    bindSleevelessVideoHelp(mount);
+    setupNecklineChartPrint(
+      "neckline-shoulder-chart-print-btn",
+      "neckline-shoulder-chart-print-area",
+      "Back Neckline / Shoulder Shaping Chart"
+    );
+    setupNecklineChartPrint(
+      "front-neckline-shoulder-chart-print-btn",
+      "front-neckline-shoulder-chart-print-area",
+      "Front Neckline / Shoulder Shaping Chart"
+    );
 
     applyPatternSectionCollapseState(mount);
     bindPatternSectionCollapsePersistence(mount);

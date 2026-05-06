@@ -1,7 +1,10 @@
 ---
 import "../../styles/ns-shaping-chart.css";
 import type { NeckShoulderShapingChart } from "../../lib/patterns/neckShoulderShapingChart";
-import { getNeckShoulderChartRowHighlightFromRow } from "../../lib/patterns/neckShoulderShapingChart";
+import {
+  collapsePlainChartRows,
+  getNeckShoulderChartRowHighlightFromRow,
+} from "../../lib/patterns/neckShoulderShapingChart";
 import {
   renderShoulderShapingSvg,
   type ShoulderShapingSvgPiece,
@@ -17,6 +20,7 @@ interface Props {
 const { chart, class: className = "", piece } = Astro.props;
 
 const shoulderPreviewSvg = renderShoulderShapingSvg(chart, "right", piece ? { piece } : undefined);
+const displayRows = collapsePlainChartRows(chart.rows);
 ---
 
 <section class:list={["ns-shaping-chart", className]} aria-labelledby="ns-shaping-chart-heading">
@@ -30,6 +34,9 @@ const shoulderPreviewSvg = renderShoulderShapingSvg(chart, "right", piece ? { pi
     <table class="ns-shaping-chart__table">
       <thead>
         <tr>
+          <th scope="col" rowspan="2" class="ns-shaping-chart__th-complete" aria-label="Completion status">
+            Done
+          </th>
           <th scope="col" rowspan="2" class="ns-shaping-chart__th-row">Row</th>
           <th scope="col" rowspan="2" class="ns-shaping-chart__th-action">Action</th>
           <th scope="colgroup" colspan="2" class="ns-shaping-chart__th-group">Left</th>
@@ -49,7 +56,8 @@ const shoulderPreviewSvg = renderShoulderShapingSvg(chart, "right", piece ? { pi
       </thead>
       <tbody>
         {
-          chart.rows.map((r) => {
+          displayRows.map((displayRow) => {
+            const r = displayRow.sourceRow;
             const hi = getNeckShoulderChartRowHighlightFromRow(r);
             const rowClass =
               hi === "neckBothSides"
@@ -61,8 +69,17 @@ const shoulderPreviewSvg = renderShoulderShapingSvg(chart, "right", piece ? { pi
                     : "ns-shaping-chart__tr";
             return (
               <tr class={rowClass}>
-                <td class="ns-shaping-chart__td-num">{r.row}</td>
-                <td>{r.action}</td>
+                <td class="ns-shaping-chart__td-complete">
+                  <label class="ns-shaping-chart__row-check-label">
+                    <input
+                      type="checkbox"
+                      class="ns-shaping-chart__row-check"
+                      aria-label={`Mark chart row ${Math.max(0, Math.floor(r.row))} complete`}
+                    />
+                  </label>
+                </td>
+                <td class="ns-shaping-chart__td-num">{displayRow.rowLabel}</td>
+                <td>{displayRow.actionLabel}</td>
                 <td class="ns-shaping-chart__td-center">{r.leftSide}</td>
                 <td class="ns-shaping-chart__td-center">{r.leftNeck}</td>
                 <td class="ns-shaping-chart__td-center">{r.centerNeck}</td>

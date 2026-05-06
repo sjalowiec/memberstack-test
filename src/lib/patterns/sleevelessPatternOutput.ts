@@ -34,7 +34,11 @@ import {
  * Same wording as hat brim tip — render only via innerHTML from pattern output, never user input.
  */
 export const RIBBED_HEM_PATTERN_TIP_HTML =
-  'Work even in your chosen brim treatment — for example 1x1 or 2x2 ribbing or <span class="pattern-term" data-tooltip="Stitch pattern that copies knit and purl ribbing by having needles out of work. A favorite for knitters without a ribber.">mock ribbing</span>, a rolled stockinette edge, a fold-up band, or a <span class="pattern-term" data-tooltip="A folded, double-layer hem formed by hanging the cast-on stitches back onto the needles.">hung hem</span> — for the depth shown.';
+  'Work even in your chosen hem treatment — for example 1x1 or 2x2 ribbing or <span class="pattern-term" data-tooltip="Stitch pattern that copies knit and purl ribbing by having needles out of work. A favorite for knitters without a ribber.">mock ribbing</span>, a rolled stockinette edge, a fold-up band, or a <span class="pattern-term" data-tooltip="A folded, double-layer hem formed by hanging the cast-on stitches back onto the needles.">hung hem</span> — for the depth shown.';
+
+/** Trusted HTML for collapsible body-shaping marker tip (glossary id 310). */
+export const BODY_MARKER_TIP_DETAILS_HTML =
+  '<details class="pattern-tip sleeveless-shaping-help-toggle"><summary>Tip: Use markers to track shaping</summary><p>Many machine knitters place small removable <span class="pattern-term" data-glossary-id="310" data-tooltip="Hang a contrasting loop on the edge needle to locate a specific row or checkpoint later.">markers</span> directly into the edge of the fabric at shaping rows or length checkpoints. This makes it easier to verify your progress while the garment is still on the machine.</p></details>';
 
 /** Row/stitch audit for console — verify math before changing pattern wording. */
 export type SleevelessBackPatternDebug = {
@@ -121,6 +125,8 @@ export type SleevelessPatternDisplayRow =
       paragraphs: string[];
       /** Trusted HTML only (e.g. {@link RIBBED_HEM_PATTERN_TIP_HTML}); rendered as innerHTML in the pattern tab. */
       tipHtml?: string;
+      /** Trusted HTML for expandable tip blocks (`<details>` UI). */
+      collapsibleTipHtml?: string;
       /** Total stitches on the piece after this block; right column only when different from last shown */
       stitchCount?: number;
     };
@@ -251,6 +257,7 @@ function flattenDisplayRowsToLines(rows: readonly SleevelessPatternDisplayRow[])
         if (p.trim()) out.push(p);
       }
       if (r.tipHtml) out.push(tipHtmlToPlainLine(r.tipHtml));
+      if (r.collapsibleTipHtml) out.push(tipHtmlToPlainLine(r.collapsibleTipHtml));
       if (r.stitchCount !== undefined) out.push(`${r.stitchCount} sts`);
       out.push("");
     }
@@ -273,6 +280,7 @@ function isMergeablePlainKnitBlock(
 ): row is Extract<SleevelessPatternDisplayRow, { kind: "block" }> & { paragraphs: [string] } {
   if (row.kind !== "block") return false;
   if (row.tipHtml) return false;
+  if (row.collapsibleTipHtml) return false;
   if (row.stitchCount !== undefined) return false;
   if (row.paragraphs.length !== 1) return false;
   return extractPlainKnitPatternRowCount(row.paragraphs[0]) !== undefined;
@@ -373,7 +381,7 @@ function parseRcBoundsFromExecutionLines(lines: readonly string[]): {
 /** Published neckline/shoulder prose when chart + SVG carry row-by-row detail. */
 const NECKLINE_SHOULDER_INSTRUCTION_PARAGRAPHS: readonly string[] = [
   "Follow the chart row by row for neckline shaping. Stitch counts shown are the stitches remaining after the action on that row.",
-  "When neckline shaping is complete, bind off the remaining shoulder stitches. Repeat for the second side.",
+  " Repeat for the second side.",
 ];
 
 /**
@@ -488,6 +496,7 @@ export function buildSleevelessBackDisplayRows(args: {
       : [
           "Body length to the armhole could not be calculated. Confirm back neck to hem, armhole depth, and row gauge in Fit, then try again.",
         ],
+    collapsibleTipHtml: BODY_MARKER_TIP_DETAILS_HTML,
     stitchCount: A > 0 ? A : undefined,
   });
 
@@ -646,6 +655,7 @@ export function buildSleevelessBackDisplayRows(args: {
 
 export function buildSleevelessFrontDisplayRows(args: {
   frontNecklineStartRC: number;
+  sharedExecutionRows: readonly SleevelessPatternDisplayRow[];
   useNeckChartRows: boolean;
   neckChartRows: readonly NeckShoulderShapingChartRow[];
   necklineStitches?: number;
@@ -653,12 +663,37 @@ export function buildSleevelessFrontDisplayRows(args: {
   /** When set and less than {@link necklineStitches}, summary describes partial first bind-off + gradual scoop. */
   scoopFirstCenterBindOff?: number;
 }): SleevelessPatternDisplayRow[] {
+  const sharedRows = args.sharedExecutionRows
+    .filter((row) => {
+      if (row.kind === "piece") return false;
+      if (row.kind === "section" && row.title === "BACK NECKLINE & SHOULDERS") return false;
+      if (row.kind === "neckShoulderChartTableMount" || row.kind === "neckShoulderChartPreviewMount") {
+        return false;
+      }
+      return true;
+    })
+    .map((row): SleevelessPatternDisplayRow => {
+      if (row.kind !== "block") return row;
+      return {
+        ...row,
+        paragraphs: row.paragraphs.map((p) =>
+          p.replace(/\bfor the back\b/gi, (m) => (m[0] === "f" ? "for the front" : "For the front"))
+        ),
+      };
+    });
+
   const rows: SleevelessPatternDisplayRow[] = [];
   rows.push({ kind: "piece", title: "FRONT" });
   rows.push({
     kind: "block",
-    paragraphs: [`Work as for Back to RC ${Math.max(0, Math.floor(args.frontNecklineStartRC))}.`],
+    paragraphs: [
+      `Front follows the same sequence as the back until neckline shaping begins at RC ${Math.max(
+        0,
+        Math.floor(args.frontNecklineStartRC)
+      )}.`,
+    ],
   });
+  rows.push(...sharedRows);
 
   rows.push({ kind: "section", title: "FRONT NECKLINE & SHOULDERS" });
   if (args.useNeckChartRows && args.neckChartRows.length > 0) {
@@ -1268,29 +1303,29 @@ export function generateSleevelessBackPattern(
     frontFirstShapingRowPassedToTimeline: frontNecklineStartRC,
   };
 
-  const displayRows = mergeAdjacentPlainKnitBlocks(
-    buildSleevelessBackDisplayRows({
-      castOnSts,
-      hemRows,
-      hemRowsValid: hemRows > 0,
-      bodyToArmholeRows,
-      bodyRowsValid: bodyToArmholeRows > 0,
-      armholeMath: armholeMathResult,
-      firstArmholeRC: firstArmholeRCNum,
-      stitchesAfterArmhole,
-      upperBackRows,
-      upperStartRc,
-      evenRowPadRows,
-      padStartRc,
-      neckChartRows: neckShoulderShapingChart.rows,
-      useNeckChartRows: neckShoulderChartUsesLiveRows,
-      necklineStitches,
-      shoulderStitches,
-    })
-  );
+  const backDisplayRowsRaw = buildSleevelessBackDisplayRows({
+    castOnSts,
+    hemRows,
+    hemRowsValid: hemRows > 0,
+    bodyToArmholeRows,
+    bodyRowsValid: bodyToArmholeRows > 0,
+    armholeMath: armholeMathResult,
+    firstArmholeRC: firstArmholeRCNum,
+    stitchesAfterArmhole,
+    upperBackRows,
+    upperStartRc,
+    evenRowPadRows,
+    padStartRc,
+    neckChartRows: neckShoulderShapingChart.rows,
+    useNeckChartRows: neckShoulderChartUsesLiveRows,
+    necklineStitches,
+    shoulderStitches,
+  });
+  const displayRows = mergeAdjacentPlainKnitBlocks(backDisplayRowsRaw);
   const frontDisplayRows = mergeAdjacentPlainKnitBlocks(
     buildSleevelessFrontDisplayRows({
       frontNecklineStartRC,
+      sharedExecutionRows: backDisplayRowsRaw,
       useNeckChartRows: frontNeckShoulderChartUsesLiveRows,
       neckChartRows: frontNeckShoulderShapingChart.rows,
       necklineStitches,

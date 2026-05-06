@@ -4,7 +4,7 @@
  */
 
 import type { NeckShoulderShapingChart } from "./neckShoulderShapingChart";
-import { getNeckShoulderChartRowHighlightFromRow } from "./neckShoulderShapingChart";
+import { collapsePlainChartRows, getNeckShoulderChartRowHighlightFromRow } from "./neckShoulderShapingChart";
 import { renderShoulderShapingSvg, type ShoulderShapingSvgPiece } from "./shoulderShapingSvg";
 
 function escapeHtml(text: string): string {
@@ -23,12 +23,14 @@ function rowClassFromHighlight(hi: ReturnType<typeof getNeckShoulderChartRowHigh
 }
 
 function chartBodyRowsHtml(chart: NeckShoulderShapingChart): string {
-  return chart.rows
-    .map((r) => {
+  return collapsePlainChartRows(chart.rows)
+    .map((displayRow) => {
+      const r = displayRow.sourceRow;
       const hi = getNeckShoulderChartRowHighlightFromRow(r);
       const trClass = rowClassFromHighlight(hi);
-      return `<tr class="${trClass}"><td class="ns-shaping-chart__td-num">${r.row}</td><td>${escapeHtml(
-        String(r.action)
+      const rowNum = Math.max(0, Math.floor(r.row));
+      return `<tr class="${trClass}"><td class="ns-shaping-chart__td-complete"><label class="ns-shaping-chart__row-check-label"><input type="checkbox" class="ns-shaping-chart__row-check" aria-label="Mark chart row ${rowNum} complete" /></label></td><td class="ns-shaping-chart__td-num">${escapeHtml(displayRow.rowLabel)}</td><td>${escapeHtml(
+        String(displayRow.actionLabel)
       )}</td><td class="ns-shaping-chart__td-center">${escapeHtml(r.leftSide)}</td><td class="ns-shaping-chart__td-center">${escapeHtml(
         r.leftNeck
       )}</td><td class="ns-shaping-chart__td-center">${escapeHtml(r.centerNeck)}</td><td class="ns-shaping-chart__td-center">${escapeHtml(
@@ -40,25 +42,26 @@ function chartBodyRowsHtml(chart: NeckShoulderShapingChart): string {
     .join("");
 }
 
-/** Chart title, intro, and table only — pairs with {@link renderNeckShoulderShapingPreviewOnlyHtml}. */
+/** Chart title and table only — pairs with {@link renderNeckShoulderShapingPreviewOnlyHtml}. */
 export function renderNeckShoulderShapingChartTableOnlyHtml(
   chart: NeckShoulderShapingChart,
-  idPrefix = "ns-shaping-chart"
+  idPrefix = "ns-shaping-chart",
+  introHtml?: string
 ): string {
   const headingId = `${idPrefix}-heading`;
   const rowsHtml = chartBodyRowsHtml(chart);
+  const intro = typeof introHtml === "string" && introHtml.trim() ? introHtml : "";
 
   return `<section class="ns-shaping-chart" aria-labelledby="${escapeHtml(headingId)}">
   <h2 id="${escapeHtml(headingId)}" class="ns-shaping-chart__title">Neckline / Shoulder Shaping Chart</h2>
-  <p class="ns-shaping-chart__intro">
-    Work each shoulder separately.<br />
-    Right and Left refer to each side on the needlebed.<br />
-    Highlighted rows indicate action happening on both sides.
-  </p>
+  ${intro}
   <div class="ns-shaping-chart__table-wrap">
     <table class="ns-shaping-chart__table">
       <thead>
         <tr>
+          <th scope="col" rowspan="2" class="ns-shaping-chart__th-complete" aria-label="Completion status">
+            Done
+          </th>
           <th scope="col" rowspan="2" class="ns-shaping-chart__th-row">Row</th>
           <th scope="col" rowspan="2" class="ns-shaping-chart__th-action">Action</th>
           <th scope="colgroup" colspan="2" class="ns-shaping-chart__th-group">Left</th>

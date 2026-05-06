@@ -60,7 +60,7 @@ describe("sleevelessPatternOutput RC progression", () => {
     }
   });
 
-  it("renders front intro row using front neckline depth start RC", () => {
+  it("renders standalone front intro and duplicate execution sections", () => {
     const data = {
       ...patternData,
       fit: {
@@ -75,9 +75,21 @@ describe("sleevelessPatternOutput RC progression", () => {
     const frontBlocks = result.frontDisplayRows.filter((r) => r.kind === "block") as Array<
       Extract<(typeof result.frontDisplayRows)[number], { kind: "block" }>
     >;
-    const intro = frontBlocks.find((b) => b.paragraphs.some((p) => p.startsWith("Work as for Back to RC ")));
+    const intro = frontBlocks.find((b) =>
+      b.paragraphs.some((p) => p.startsWith("Front follows the same sequence as the back until neckline shaping begins at RC "))
+    );
     expect(intro).toBeDefined();
-    expect(intro?.paragraphs[0]).toBe(`Work as for Back to RC ${result.debug.frontNecklineStartRC}.`);
+    expect(intro?.paragraphs[0]).toBe(
+      `Front follows the same sequence as the back until neckline shaping begins at RC ${result.debug.frontNecklineStartRC}.`
+    );
+
+    const frontSectionTitles = result.frontDisplayRows
+      .filter((r): r is Extract<(typeof result.frontDisplayRows)[number], { kind: "section" }> => r.kind === "section")
+      .map((r) => r.title);
+    expect(frontSectionTitles).toContain("RIBBED HEM");
+    expect(frontSectionTitles).toContain("BODY");
+    expect(frontSectionTitles).toContain("ARMHOLE");
+    expect(frontSectionTitles).toContain("FRONT NECKLINE & SHOULDERS");
   });
 
   it("shows stitch counts at row start, then carries updates to the next row", () => {

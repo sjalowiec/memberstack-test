@@ -264,20 +264,78 @@ function buildStairPathD(
 ): string {
   const n = rowNums.length;
   if (n === 0) return "";
-  let d = "";
-  for (let k = 0; k < n; k++) {
+  const transitionIdx: number[] = [];
+  for (let k = 0; k < n - 1; k++) {
+    if (stitchVals[k + 1] !== stitchVals[k]) transitionIdx.push(k);
+  }
+  if (transitionIdx.length === 0) return "";
+
+  const first = transitionIdx[0];
+  const xStart = toSvgX(stitchVals[first], side, spanStitches, grid, padX);
+  const yStart = rowToY(rowNums[first], minRow, maxRow, grid, padY);
+  const yAfterFirst = rowToY(rowNums[first + 1], minRow, maxRow, grid, padY);
+  const xAfterFirst = toSvgX(stitchVals[first + 1], side, spanStitches, grid, padX);
+
+  // Start directly with the first vertical shaping transition (no baseline lead-in).
+  let d = `M ${xStart} ${yStart} L ${xStart} ${yAfterFirst} L ${xAfterFirst} ${yAfterFirst}`;
+  let currentX = xAfterFirst;
+  let currentY = yAfterFirst;
+
+  for (let i = 1; i < transitionIdx.length; i++) {
+    const k = transitionIdx[i];
     const y = rowToY(rowNums[k], minRow, maxRow, grid, padY);
-    const x = toSvgX(stitchVals[k], side, spanStitches, grid, padX);
-    if (k === 0) {
-      d = `M ${x} ${y}`;
-    }
-    if (k < n - 1) {
-      const yNext = rowToY(rowNums[k + 1], minRow, maxRow, grid, padY);
-      const xHold = toSvgX(stitchVals[k], side, spanStitches, grid, padX);
-      d += ` L ${xHold} ${yNext} L ${toSvgX(stitchVals[k + 1], side, spanStitches, grid, padX)} ${yNext}`;
+    const yNext = rowToY(rowNums[k + 1], minRow, maxRow, grid, padY);
+    const x0 = toSvgX(stitchVals[k], side, spanStitches, grid, padX);
+    const x1 = toSvgX(stitchVals[k + 1], side, spanStitches, grid, padX);
+
+    // Carry vertically through unchanged rows to the next shaping row.
+    if (currentY !== y) d += ` L ${currentX} ${y}`;
+    // Draw the shaping stair: vertical row transition, then horizontal stitch shift.
+    d += ` L ${x0} ${yNext} L ${x1} ${yNext}`;
+    currentX = x1;
+    currentY = yNext;
+  }
+
+  return d;
+}
+
+type ShoulderBindoffMarker = { x: number; yTop: number; yBottom: number; yMid: number };
+
+function shoulderBindoffMarkerForRow(
+  row: number,
+  rowNums: readonly number[],
+  outer: readonly number[],
+  side: ShoulderShapingSvgSide,
+  spanStitches: number,
+  grid: number,
+  padX: number,
+  minRow: number,
+  maxRow: number,
+  padY: number
+): ShoulderBindoffMarker | null {
+  const k = rowNums.findIndex((r) => r === row);
+  if (k < 0) return null;
+
+  let fromIdx = k > 0 ? k - 1 : k;
+  let toIdx = k > 0 ? k : Math.min(k + 1, rowNums.length - 1);
+  if (fromIdx === toIdx) return null;
+
+  if (outer[fromIdx] === outer[toIdx]) {
+    const altFrom = Math.max(0, k);
+    const altTo = Math.min(k + 1, rowNums.length - 1);
+    if (altFrom !== altTo && outer[altFrom] !== outer[altTo]) {
+      fromIdx = altFrom;
+      toIdx = altTo;
     }
   }
-  return d;
+  if (outer[fromIdx] === outer[toIdx]) return null;
+
+  const y0 = rowToY(rowNums[fromIdx], minRow, maxRow, grid, padY);
+  const y1 = rowToY(rowNums[toIdx], minRow, maxRow, grid, padY);
+  const yMid = (y0 + y1) / 2;
+  const tickHalf = Math.max(3, Math.round(grid * 0.35));
+  const x = toSvgX(outer[fromIdx], side, spanStitches, grid, padX);
+  return { x, yTop: yMid - tickHalf, yBottom: yMid + tickHalf, yMid };
 }
 
 /**
@@ -340,16 +398,26 @@ export function renderShoulderShapingSvg(
   const deltaStr = (n: number) => `-${n}`;
 
   for (const sl of shoulderLabels) {
-    const k = rowNums.findIndex((r) => r === sl.row);
-    if (k <= 0) continue;
-    const r0 = chartRelX(outer[k - 1], side, chartSpanStitches, GRID);
-    const r1 = chartRelX(outer[k], side, chartSpanStitches, GRID);
+    const marker = shoulderBindoffMarkerForRow(
+      sl.row,
+      rowNums,
+      outer,
+      side,
+      chartSpanStitches,
+      GRID,
+      0,
+      minRow,
+      maxRow,
+      0
+    );
+    if (!marker) continue;
+    const r0 = marker.x;
     const w = approxTextWidthPx(deltaStr(sl.amount));
     if (side === "right") {
-      const tx = Math.min(r0, r1) - LABEL_GAP;
+      const tx = r0 - LABEL_GAP;
       inkMinX = Math.min(inkMinX, tx - w);
     } else {
-      const tx = Math.max(r0, r1) + LABEL_GAP;
+      const tx = r0 + LABEL_GAP;
       inkMaxX = Math.max(inkMaxX, tx + w);
     }
   }
@@ -372,7 +440,7 @@ export function renderShoulderShapingSvg(
   /* Center neck tick + label from neck edge */
   if (centerNeckLabel && centerNeckStitches != null && centerNeckStitches > 0) {
     const xe = chartWidthPx;
-    inkMaxX = Math.max(inkMaxX, xe + 8 + approxTextWidthPx(centerNeckLabel));
+    inkMaxX = Math.max(inkMaxX, xe + 10 + approxTextWidthPx(centerNeckLabel));
     inkMinX = Math.min(inkMinX, xe - 2);
   }
 
@@ -391,7 +459,7 @@ export function renderShoulderShapingSvg(
   const svgW = padX + chartWidthPx + padXRight;
   const svgH = padY + chartHeightPx + padYBottom;
 
-  const outerD = buildStairPathD(outer, rowNums, side, chartSpanStitches, GRID, padX, minRow, maxRow, padY);
+  const outerD = "";
   const innerD = buildStairPathD(inner, rowNums, side, chartSpanStitches, GRID, padX, minRow, maxRow, padY);
 
   const gridLines: string[] = [];
@@ -415,19 +483,30 @@ export function renderShoulderShapingSvg(
   const yAt = (row: number) => rowToY(row, minRow, maxRow, GRID, padY);
 
   const deltaLabels: string[] = [];
-  const shoulderOut = (x0: number, x1: number) =>
-    side === "right" ? Math.min(x0, x1) - LABEL_GAP : Math.max(x0, x1) + LABEL_GAP;
+  const shoulderOut = (x: number) => (side === "right" ? x - LABEL_GAP : x + LABEL_GAP);
   const shoulderAnchor = side === "right" ? "end" : "start";
+  const shoulderMarks: string[] = [];
 
   for (const sl of shoulderLabels) {
-    const k = rowNums.findIndex((r) => r === sl.row);
-    if (k <= 0) continue;
-    const y = yAt(sl.row);
-    const x0 = toSvgX(outer[k - 1], side, chartSpanStitches, GRID, padX);
-    const x1 = toSvgX(outer[k], side, chartSpanStitches, GRID, padX);
-    const tx = shoulderOut(x0, x1);
+    const marker = shoulderBindoffMarkerForRow(
+      sl.row,
+      rowNums,
+      outer,
+      side,
+      chartSpanStitches,
+      GRID,
+      padX,
+      minRow,
+      maxRow,
+      padY
+    );
+    if (!marker) continue;
+    shoulderMarks.push(
+      `<line x1="${marker.x}" y1="${marker.yTop}" x2="${marker.x}" y2="${marker.yBottom}" stroke="${LINE_STROKE}" stroke-width="${LINE_WIDTH}" stroke-linecap="square" />`
+    );
+    const tx = shoulderOut(marker.x);
     deltaLabels.push(
-      `<text x="${tx}" y="${y + 4}" font-size="${FONT_DELTA}" fill="${LABEL_FILL}" text-anchor="${shoulderAnchor}" dominant-baseline="middle" font-family="system-ui,sans-serif">${escapeXml(
+      `<text x="${tx}" y="${marker.yMid + 4}" font-size="${FONT_DELTA}" fill="${LABEL_FILL}" text-anchor="${shoulderAnchor}" dominant-baseline="middle" font-family="system-ui,sans-serif">${escapeXml(
         deltaStr(sl.amount)
       )}</text>`
     );
@@ -455,10 +534,11 @@ export function renderShoulderShapingSvg(
   if (centerNeckStitches != null && centerNeckStitches > 0 && centerNeckLabel) {
     const yb = yAt(minRow);
     const xe = side === "right" ? gx1 : gx0;
+    const centerLabelPad = 10;
     centerMark = `
   <g class="ns-shoulder-svg__center">
     <line x1="${xe}" y1="${yb - 6}" x2="${xe}" y2="${yb + 6}" stroke="${LINE_STROKE}" stroke-width="${LINE_WIDTH}" stroke-linecap="square" />
-    <text x="${xe + (side === "right" ? 8 : -8)}" y="${yb + 3}" font-size="${FONT_NOTE}" fill="${LABEL_FILL}" font-family="system-ui,sans-serif" text-anchor="${side === "right" ? "start" : "end"}">${escapeXml(centerNeckLabel)}</text>
+    <text x="${xe + centerLabelPad}" y="${yb + 3}" font-size="${FONT_NOTE}" fill="${LABEL_FILL}" font-family="system-ui,sans-serif" text-anchor="start">${escapeXml(centerNeckLabel)}</text>
   </g>`;
   }
 
@@ -478,8 +558,9 @@ export function renderShoulderShapingSvg(
   <title>Neck and shoulder shaping diagram</title>
   <rect x="0" y="0" width="${svgW}" height="${svgH}" fill="#ffffff"/>
   ${gridLines.join("\n  ")}
-  <path d="${outerD}" fill="none" stroke="${LINE_STROKE}" stroke-width="${LINE_WIDTH}" stroke-linecap="square" stroke-linejoin="miter" />
+  ${outerD ? `<path d="${outerD}" fill="none" stroke="${LINE_STROKE}" stroke-width="${LINE_WIDTH}" stroke-linecap="square" stroke-linejoin="miter" />` : ""}
   <path d="${innerD}" fill="none" stroke="${LINE_STROKE}" stroke-width="${LINE_WIDTH}" stroke-linecap="square" stroke-linejoin="miter" />
+  <g class="ns-shoulder-svg__shoulder-marks">${shoulderMarks.join("\n  ")}</g>
   <g class="ns-shoulder-svg__delta-labels">${deltaLabels.join("\n  ")}</g>
   ${centerMark}
   ${titles}

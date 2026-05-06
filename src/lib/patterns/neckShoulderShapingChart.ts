@@ -42,6 +42,109 @@ export type NeckShoulderShapingChart = {
   timeline?: RowEntry[];
 };
 
+export type NeckShoulderShapingChartDisplayRow = {
+  rowLabel: string;
+  actionLabel: string;
+  sourceRow: NeckShoulderShapingChartRow;
+};
+
+const COLLAPSED_PLAIN_ACTION_TEXT = "Knit plain, no neckline or shoulder shaping";
+
+function parseCellNumber(value: unknown): number {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  const text = String(value ?? "").trim();
+  if (!text || text === "-") return 0;
+  const normalized = text.replace(/[^\d.-]/g, "");
+  const n = Number(normalized);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function hasMeaningfulActionValue(value: unknown): boolean {
+  const text = String(value ?? "").trim();
+  if (!text) return false;
+  if (text === "-" || text === "0") return false;
+  const numeric = parseCellNumber(text);
+  if (numeric === 0) return false;
+  return true;
+}
+
+function hasMeaningfulActionLabel(action: string): boolean {
+  const text = String(action ?? "").trim();
+  if (!text) return false;
+  if (text === "-" || text === "0") return false;
+  const normalized = text.toLowerCase();
+  if (normalized === "none" || normalized === "no action") return false;
+  return true;
+}
+
+function isNoActionChartRow(row: NeckShoulderShapingChartRow): boolean {
+  if (hasMeaningfulActionLabel(row.action)) return false;
+  return ![
+    row.leftSide,
+    row.leftNeck,
+    row.centerNeck,
+    row.rightNeck,
+    row.rightSide,
+  ].some((cell) => hasMeaningfulActionValue(cell));
+}
+
+/**
+ * Display-only compaction for table rendering.
+ * Keeps every shaping row, while collapsing consecutive no-action rows into a range.
+ */
+export function collapsePlainChartRows(
+  rows: readonly NeckShoulderShapingChartRow[]
+): NeckShoulderShapingChartDisplayRow[] {
+  const out: NeckShoulderShapingChartDisplayRow[] = [];
+  let i = 0;
+  while (i < rows.length) {
+    const row = rows[i];
+    if (!isNoActionChartRow(row)) {
+      out.push({
+        rowLabel: String(row.row),
+        actionLabel: String(row.action ?? ""),
+        sourceRow: row,
+      });
+      i += 1;
+      continue;
+    }
+
+    let j = i + 1;
+    while (j < rows.length) {
+      const next = rows[j];
+      if (!isNoActionChartRow(next)) break;
+      if (
+        next.leftStitchCount !== row.leftStitchCount ||
+        next.rightStitchCount !== row.rightStitchCount
+      ) {
+        break;
+      }
+      if (next.row !== rows[j - 1].row + 1) break;
+      j += 1;
+    }
+
+    if (j === i + 1) {
+      out.push({
+        rowLabel: String(row.row),
+        actionLabel: COLLAPSED_PLAIN_ACTION_TEXT,
+        sourceRow: row,
+      });
+      i += 1;
+      continue;
+    }
+
+    const first = row.row;
+    const last = rows[j - 1].row;
+    out.push({
+      rowLabel: `${first}\u2013${last}`,
+      actionLabel: COLLAPSED_PLAIN_ACTION_TEXT,
+      sourceRow: row,
+    });
+    i = j;
+  }
+  return out;
+}
+
 /** Why a row is visually emphasized (both sides worked on the same row). */
 export type NeckShoulderChartRowHighlight =
   | "neckBothSides"
