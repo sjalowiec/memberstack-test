@@ -770,7 +770,19 @@ export function generateSleevelessBackPattern(
   const warnings: string[] = [];
 
   const basic = calculateBasicPatternNumbers(patternData);
-  const { stitchesPerInch, rowsPerInch, bustChestStitches, stitchesAfterArmhole } = basic;
+  const {
+    stitchesPerInch,
+    rowsPerInch,
+    bustChestStitches,
+    stitchesAfterArmhole: rawStitchesAfterArmhole,
+  } = basic;
+  // Keep left/right shaping balanced by normalizing the post-armhole total to an even count.
+  const stitchesAfterArmhole =
+    rawStitchesAfterArmhole !== undefined && rawStitchesAfterArmhole > 0
+      ? rawStitchesAfterArmhole % 2 === 0
+        ? rawStitchesAfterArmhole
+        : rawStitchesAfterArmhole + 1
+      : rawStitchesAfterArmhole;
 
   if (!Number.isFinite(rowsPerInch) || rowsPerInch <= 0) {
     warnings.push("Row gauge is missing or invalid — row counts and RC targets may be wrong.");
@@ -794,10 +806,15 @@ export function generateSleevelessBackPattern(
     measurementInches(sm, "neckOpening");
 
   const castOnSts =
-    backStitchesFromPattern(bustChestStitches) ||
-    (finishedBust > 0 && stitchesPerInch > 0
-      ? Math.round((finishedBust * stitchesPerInch) / 2)
-      : 0);
+    (() => {
+      const baseCastOn =
+        backStitchesFromPattern(bustChestStitches) ||
+        (finishedBust > 0 && stitchesPerInch > 0
+          ? Math.round((finishedBust * stitchesPerInch) / 2)
+          : 0);
+      // Keep the pattern symmetrical by using an even cast-on stitch count.
+      return baseCastOn > 0 && baseCastOn % 2 !== 0 ? baseCastOn + 1 : baseCastOn;
+    })();
 
   const hemRows = calculateHemRows(rowsPerInch, audience);
   const rowGauge = rowsPerInch;
@@ -848,7 +865,12 @@ export function generateSleevelessBackPattern(
     if (neckOpeningStitchesExplicit !== undefined && neckOpeningStitchesExplicit > 0) {
       N = neckOpeningStitchesExplicit;
     } else {
-      N = Math.round(neckWidthIn! * stitchesPerInch);
+      let neckOpeningStitches = Math.round(neckWidthIn! * stitchesPerInch);
+      // Normalize neckline opening stitch count for symmetrical shaping
+      if (neckOpeningStitches % 2 !== 0) {
+        neckOpeningStitches -= 1;
+      }
+      N = neckOpeningStitches;
     }
     N = Math.max(1, N);
     /** No cap vs B — neck opening and shoulders come from the same base split as the back; front scoop only shifts RC / row span. */
