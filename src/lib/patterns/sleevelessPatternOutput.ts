@@ -23,7 +23,6 @@ import {
   type NeckShoulderShapingPatternNumbers,
 } from "./neckShoulderShapingChartRows";
 import { type RowEntry } from "./shapingTimeline";
-import { calculateRoundFrontNeckline } from "./legoBlocks/roundFrontNeckline";
 import {
   initialCenterNeckStitches,
   neckEdgeDecreasesPerSide,
@@ -1130,17 +1129,6 @@ export function generateSleevelessBackPattern(
 
     let frontTimeline: RowEntry[] = [];
     let frontLiveRows: NeckShoulderShapingChartRow[] = [];
-    let roundFrontNeckResult: ReturnType<typeof calculateRoundFrontNeckline> | undefined;
-
-    if (frontNeckDepthRows > 0) {
-      roundFrontNeckResult = calculateRoundFrontNeckline({
-        necklineStitches,
-        neckDepthRows: frontNeckDepthRows,
-        startRC: frontNecklineStartRC,
-        shoulderStitchesPerSide: shoulderSts,
-      });
-      warnings.push(...roundFrontNeckResult.warnings);
-    }
 
     const builtFront = buildNeckShoulderTimelineAndChartRows(frontPatternNumbers);
     frontTimeline = builtFront.timeline;
@@ -1172,15 +1160,9 @@ export function generateSleevelessBackPattern(
       const firstRowCenterBo = centerBindOffAmountFirstTimelineRow(frontTimeline);
       const centerFrontBindOff: NeedleRange = {
         ...center,
-        stitchCount:
-          roundFrontNeckResult !== undefined
-            ? roundFrontNeckResult.centerBindOff
-            : firstRowCenterBo > 0
-              ? firstRowCenterBo
-              : initialCenterSts,
+        stitchCount: firstRowCenterBo > 0 ? firstRowCenterBo : initialCenterSts,
       };
-      const effectiveFrontCenterBo =
-        roundFrontNeckResult !== undefined ? roundFrontNeckResult.centerBindOff : firstRowCenterBo;
+      const effectiveFrontCenterBo = firstRowCenterBo > 0 ? firstRowCenterBo : initialCenterSts;
       if (effectiveFrontCenterBo > 0 && effectiveFrontCenterBo < necklineStitches!) {
         frontScoopFirstCenterBindOff = effectiveFrontCenterBo;
       }

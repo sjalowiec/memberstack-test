@@ -1,3 +1,5 @@
+import { calculateRoundNecklineShaping } from "./roundNeckline";
+
 /**
  * Round Front Neckline — lego block
  *
@@ -111,11 +113,10 @@ export function calculateRoundFrontNeckline(
     warnings.push("neckDepthRows must be a positive number.");
   }
 
-  // --- Step 1: Center bind-off (~1/3 of N, matching parity of N) ---
-  let centerBindOff = Math.round(N / 3);
-  // Match parity so remainder splits evenly to both sides
-  if (centerBindOff % 2 !== N % 2) centerBindOff += 1;
-  centerBindOff = Math.max(1, Math.min(centerBindOff, N - 2));
+  // --- Step 1: Center bind-off — same count as back {@link calculateRoundNecklineShaping} ---
+  const centerBindOff = calculateRoundNecklineShaping({
+    necklineStitches: Math.round(N),
+  }).centerBindOff;
 
   const remaining = N - centerBindOff; // stitches to shape at neck edges
 

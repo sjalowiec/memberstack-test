@@ -1,7 +1,7 @@
 /**
  * Round neckline (LEGO): total neckline width N splits into three ~equal phases —
- * center bind-off/hold, neck-edge stair bind-offs (2s and 3s, 3s first), and
- * single neck-edge decreases — mirrored left/right with ≤1 stitch imbalance.
+ * center bind-off/hold, neck-edge stair bind-offs (2s and 3s, larger groups first), and
+ * single neck-edge decreases — same stair sequence and per-side singles left/right.
  */
 
 export type RoundNecklineSidePlan = {
@@ -74,6 +74,50 @@ export function stairBindOffStepsForSide(stitches: number): number[] {
 
 function sumSteps(steps: number[]): number {
   return steps.reduce((a, b) => a + b, 0);
+}
+
+/** Center bind-off nearest to N/3 such that (N − center) is divisible by 4 (stair/singles split evenly per side). */
+function pickCenterBindOffForThirds(neckSts: number): number {
+  const rawCenter = Math.round(neckSts / 3);
+  let best = rawCenter;
+  let bestDist = Infinity;
+  for (let c = 0; c <= neckSts; c++) {
+    if (((neckSts - c) % 4 + 4) % 4 !== 0) continue;
+    const d = Math.abs(c - rawCenter);
+    if (d < bestDist || (d === bestDist && c < best)) {
+      bestDist = d;
+      best = c;
+    }
+  }
+  return best;
+}
+
+/** Per-side stair-step groups using mostly 2s and 3s; larger groups first. */
+export function distributeStairGroups(sts: number): number[] {
+  if (sts <= 0) return [];
+
+  if (sts === 1) {
+    throw new Error(
+      "Invalid stair group size: 1. Move this stitch into single decreases instead."
+    );
+  }
+
+  if (sts === 2) return [2];
+  if (sts === 3) return [3];
+  if (sts === 4) return [2, 2];
+
+  const mod = sts % 3;
+
+  if (mod === 0) {
+    return Array(sts / 3).fill(3);
+  }
+
+  if (mod === 2) {
+    return [...Array(Math.floor(sts / 3)).fill(3), 2];
+  }
+
+  // mod === 1: avoid a group of 1 by using two 2s at the end
+  return [...Array(Math.floor((sts - 4) / 3)).fill(3), 2, 2];
 }
 
 /**
@@ -350,15 +394,21 @@ export function resolveRoundNeckStairSingles(
 }
 
 /**
- * Source of truth for round neckline shaping: ~1/3 center, ~1/3 stair bind-offs at neck edges,
- * ~1/3 single neck-edge decreases; left/right each ≤1 stitch apart where needed.
+ * Source of truth for round neckline shaping: ~1/3 center, ~1/3 stair bind-offs at neck edges (total),
+ * ~1/3 single neck-edge decreases (total); stair and singles each split evenly left/right; same stair
+ * sequence on both sides.
+ *
+ * Odd `necklineStitches` values are supported: center is chosen nearest to N/3 with (N − center) divisible
+ * by 4 so stair/single totals split cleanly per side. For product rules that require an **even** neck
+ * opening only, round to the nearest even count before calling (some callers already enforce this when
+ * converting inches to stitches).
  */
 export function calculateRoundNecklineShaping(inputs: {
   necklineStitches: number;
 }): RoundNecklineShapingResult {
-  const N = Math.max(0, Math.round(inputs.necklineStitches));
+  const neckSts = Math.max(0, Math.round(inputs.necklineStitches));
 
-  if (N === 0) {
+  if (neckSts === 0) {
     return {
       necklineStitches: 0,
       centerBindOff: 0,
@@ -368,42 +418,55 @@ export function calculateRoundNecklineShaping(inputs: {
     };
   }
 
-  if (N <= 2) {
+  if (neckSts <= 2) {
     return {
-      necklineStitches: N,
-      centerBindOff: N,
+      necklineStitches: neckSts,
+      centerBindOff: neckSts,
       left: { stairSteps: [], singleDecreaseCount: 0 },
       right: { stairSteps: [], singleDecreaseCount: 0 },
-      totalCheck: N,
+      totalCheck: neckSts,
     };
   }
 
-  const [c0, stairTotal, singlesTotal] = partitionNecklineThirds(N);
-  let center = c0;
-  const r = resolveRoundNeckStairSingles(stairTotal, singlesTotal);
-  const leftSteps = stairBindOffStepsForSide(r.leftStair);
-  const rightSteps = stairBindOffStepsForSide(r.rightStair);
+  let center = pickCenterBindOffForThirds(neckSts);
+  let remaining = neckSts - center;
+  const stairTotal = remaining / 2;
+  const singleTotal = remaining / 2;
+  let stairPerSide = stairTotal / 2;
+  let singlePerSide = singleTotal / 2;
 
-  let neckEdgeTotal =
-    center + sumSteps(leftSteps) + sumSteps(rightSteps) + r.leftSingles + r.rightSingles;
+  // Cannot form a stair row of 1 st/side — fold into single decreases.
+  if (stairPerSide === 1) {
+    stairPerSide = 0;
+    singlePerSide += 1;
+  }
 
-  if (neckEdgeTotal !== N) {
-    center += N - neckEdgeTotal;
-    neckEdgeTotal = N;
+  let stairGroups: number[] = [];
+  if (stairPerSide > 0) {
+    stairGroups = distributeStairGroups(stairPerSide);
+  }
+
+  const check =
+    center + stairPerSide * 2 + singlePerSide * 2;
+
+  if (check !== neckSts) {
+    throw new Error(
+      `Neck shaping math error: ${center} + ${stairPerSide * 2} + ${singlePerSide * 2} = ${check}, expected ${neckSts}`
+    );
   }
 
   return {
-    necklineStitches: N,
+    necklineStitches: neckSts,
     centerBindOff: center,
     left: {
-      stairSteps: leftSteps,
-      singleDecreaseCount: r.leftSingles,
+      stairSteps: [...stairGroups],
+      singleDecreaseCount: singlePerSide,
     },
     right: {
-      stairSteps: rightSteps,
-      singleDecreaseCount: r.rightSingles,
+      stairSteps: [...stairGroups],
+      singleDecreaseCount: singlePerSide,
     },
-    totalCheck: neckEdgeTotal,
+    totalCheck: check,
   };
 }
 

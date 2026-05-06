@@ -1,4 +1,3 @@
-import { calculateRoundFrontNeckline } from "./legoBlocks/roundFrontNeckline";
 import { calculateRoundNecklineShaping } from "./legoBlocks/roundNeckline";
 
 export type NeckProfile = "back" | "front";
@@ -16,6 +15,7 @@ export type ShapingTimelineInputs = {
    * Post-center shaping rows = neckDepthRows − 1 (must match piece neck-depth budget).
    */
   neckDepthRows: number;
+  /** Caller hints front vs back piece (same inner-neck math for both; RC span differs via `neckDepthRows` / `firstShapingRow`). */
   neckProfile: NeckProfile;
   /**
    * B — stitch count across the piece after armhole shaping (`stitchesAfterArmhole`).
@@ -88,7 +88,7 @@ export function distributeTotalAcrossRows(total: number, rows: number): number[]
   return out;
 }
 
-/** Inner-neck events for one post-center row index (back — round neckline stair + singles). */
+/** Inner-neck events for one post-center row index (thirds-based stair bind-offs + singles every other row). */
 function backInnerNeckRow(
   i: number,
   neckPlan: ReturnType<typeof calculateRoundNecklineShaping>,
@@ -131,44 +131,6 @@ function backInnerNeckRow(
   return { events, innerNetL, innerNetR };
 }
 
-/** Inner-neck events for one post-center row index (front — alternate round neckline from {@link calculateRoundFrontNeckline}). */
-function frontInnerNeckRow(
-  rc: number,
-  round: ReturnType<typeof calculateRoundFrontNeckline>,
-  startRC: number
-): { events: ShapingEvent[]; innerNetL: number; innerNetR: number } {
-  const events: ShapingEvent[] = [];
-  let innerNetL = 0;
-  let innerNetR = 0;
-
-  if (rc === startRC) {
-    return { events, innerNetL, innerNetR };
-  }
-  if (rc >= round.steepStartRC && rc < round.steepStartRC + round.steepRows) {
-    events.push({ kind: "decrease", side: "left", edge: "inner", amount: 1 });
-    events.push({ kind: "decrease", side: "right", edge: "inner", amount: 1 });
-    innerNetL += 1;
-    innerNetR += 1;
-    return { events, innerNetL, innerNetR };
-  }
-  if (rc >= round.gradualStartRC && rc < round.gradualStartRC + round.gradualRows) {
-    const idx = rc - round.gradualStartRC;
-    const isActionRow = idx % 2 === 0;
-    const actionIndex = Math.floor(idx / 2);
-    const leftDec = isActionRow && actionIndex < round.gradualStitchesLeft ? 1 : 0;
-    const rightDec = isActionRow && actionIndex < round.gradualStitchesRight ? 1 : 0;
-    if (leftDec > 0) {
-      events.push({ kind: "decrease", side: "left", edge: "inner", amount: leftDec });
-      innerNetL += leftDec;
-    }
-    if (rightDec > 0) {
-      events.push({ kind: "decrease", side: "right", edge: "inner", amount: rightDec });
-      innerNetR += rightDec;
-    }
-  }
-  return { events, innerNetL, innerNetR };
-}
-
 /**
  * Unified neckline + shoulder scheduler: one row budget ({@link ShapingTimelineInputs.neckDepthRows}),
  * inner-neck and outer-shoulder actions may occur on the same RC.
@@ -178,7 +140,6 @@ export function buildTimeline(inputs: ShapingTimelineInputs): RowEntry[] {
   const S = Math.round(inputs.shoulderStitchesPerSide);
   const N = Math.round(inputs.centerNeckBindOff);
   const neckDepthRows = Math.floor(inputs.neckDepthRows);
-  const profile = inputs.neckProfile;
   const B = Math.round(inputs.stitchesAfterArmhole);
   const shoulderBindoffRowsRaw = inputs.shoulderBindoffRows;
 
@@ -204,47 +165,16 @@ export function buildTimeline(inputs: ShapingTimelineInputs): RowEntry[] {
     return [];
   }
 
-  let centerBindOffAmount: number;
-  let leftInnerPlanned: number;
-  let rightInnerPlanned: number;
+  /** Thirds-based round neck (stairs + singles) — same inner-neck plan for back and front charts; RC span differs via {@link neckDepthRows}. */
+  const neckPlan = calculateRoundNecklineShaping({ necklineStitches: N });
+  const centerBindOffAmount = neckPlan.centerBindOff;
 
-  let neckPlan: ReturnType<typeof calculateRoundNecklineShaping> | undefined;
-  let stairRowCount = 0;
-  let neckInnerRowSpan = 0;
-
-  let roundFront: ReturnType<typeof calculateRoundFrontNeckline> | undefined;
-
-  if (profile === "back") {
-    neckPlan = calculateRoundNecklineShaping({ necklineStitches: N });
-    centerBindOffAmount = neckPlan.centerBindOff;
-    leftInnerPlanned =
-      neckPlan.left.stairSteps.reduce((a, b) => a + b, 0) + neckPlan.left.singleDecreaseCount;
-    rightInnerPlanned =
-      neckPlan.right.stairSteps.reduce((a, b) => a + b, 0) + neckPlan.right.singleDecreaseCount;
-
-    const leftStair = neckPlan.left.stairSteps;
-    const rightStair = neckPlan.right.stairSteps;
-    stairRowCount = Math.max(leftStair.length, rightStair.length);
-    const maxSingles = Math.max(
-      neckPlan.left.singleDecreaseCount,
-      neckPlan.right.singleDecreaseCount
-    );
-    const singlesPhaseSpanRows = maxSingles > 0 ? 2 * maxSingles - 1 : 0;
-    neckInnerRowSpan = stairRowCount + singlesPhaseSpanRows;
-  } else {
-    roundFront = calculateRoundFrontNeckline({
-      necklineStitches: N,
-      neckDepthRows,
-      startRC: firstRow,
-      shoulderStitchesPerSide: S,
-    });
-    centerBindOffAmount = roundFront.centerBindOff;
-    const remaining = N - centerBindOffAmount;
-    const rightSideTotal = Math.ceil(remaining / 2);
-    const leftSideTotal = Math.floor(remaining / 2);
-    leftInnerPlanned = leftSideTotal;
-    rightInnerPlanned = rightSideTotal;
-  }
+  const leftStair = neckPlan.left.stairSteps;
+  const rightStair = neckPlan.right.stairSteps;
+  const stairRowCount = Math.max(leftStair.length, rightStair.length);
+  const maxSingles = Math.max(neckPlan.left.singleDecreaseCount, neckPlan.right.singleDecreaseCount);
+  const singlesPhaseSpanRows = maxSingles > 0 ? 2 * maxSingles - 1 : 0;
+  const neckInnerRowSpan = stairRowCount + singlesPhaseSpanRows;
 
   const C = centerBindOffAmount;
   const shoulderBandTotal = B - N;
@@ -262,12 +192,16 @@ export function buildTimeline(inputs: ShapingTimelineInputs): RowEntry[] {
   const shoulderLeftPerRow = Array(workRows).fill(0);
   const shoulderRightPerRow = Array(workRows).fill(0);
   if (placementRows > 0 && shoulderBandTotal > 0) {
-    const leftChunks = distributeTotalAcrossRows(leftShoulderTotal, placementRows);
-    const rightChunks = distributeTotalAcrossRows(rightShoulderTotal, placementRows);
+    /** Shoulder bind-offs on alternating rows only (action / return / action …), same rhythm as inner-neck singles. */
+    const shoulderActionSlots = Math.max(1, Math.ceil(placementRows / 2));
+    const leftChunks = distributeTotalAcrossRows(leftShoulderTotal, shoulderActionSlots);
+    const rightChunks = distributeTotalAcrossRows(rightShoulderTotal, shoulderActionSlots);
     const startI = workRows - placementRows;
-    for (let k = 0; k < placementRows; k++) {
-      shoulderLeftPerRow[startI + k] = leftChunks[k] ?? 0;
-      shoulderRightPerRow[startI + k] = rightChunks[k] ?? 0;
+    for (let k = 0; k < shoulderActionSlots; k++) {
+      const rowIdx = startI + 2 * k;
+      if (rowIdx >= workRows) break;
+      shoulderLeftPerRow[rowIdx] = leftChunks[k] ?? 0;
+      shoulderRightPerRow[rowIdx] = rightChunks[k] ?? 0;
     }
   }
 
@@ -320,41 +254,26 @@ export function buildTimeline(inputs: ShapingTimelineInputs): RowEntry[] {
     let innerNetL = 0;
     let innerNetR = 0;
 
-    if (profile === "back" && neckPlan) {
-      const inner = backInnerNeckRow(i, neckPlan, stairRowCount, neckInnerRowSpan);
-      events.push(...inner.events);
-      innerNetL = inner.innerNetL;
-      innerNetR = inner.innerNetR;
-      if (innerNetL > 0) {
-        const lb = neckPlan.left.stairSteps[i] ?? 0;
-        if (i < stairRowCount && lb > 0) {
-          leftInnerEdge -= lb;
-          leftCount -= lb;
-        } else if (i >= stairRowCount) {
-          leftInnerEdge -= innerNetL;
-          leftCount -= innerNetL;
-        }
-      }
-      if (innerNetR > 0) {
-        const rb = neckPlan.right.stairSteps[i] ?? 0;
-        if (i < stairRowCount && rb > 0) {
-          rightInnerEdge += rb;
-          rightCount -= rb;
-        } else if (i >= stairRowCount) {
-          rightInnerEdge += innerNetR;
-          rightCount -= innerNetR;
-        }
-      }
-    } else if (profile === "front" && roundFront) {
-      const inner = frontInnerNeckRow(rc, roundFront, firstRow);
-      events.push(...inner.events);
-      innerNetL = inner.innerNetL;
-      innerNetR = inner.innerNetR;
-      if (innerNetL > 0) {
+    const inner = backInnerNeckRow(i, neckPlan, stairRowCount, neckInnerRowSpan);
+    events.push(...inner.events);
+    innerNetL = inner.innerNetL;
+    innerNetR = inner.innerNetR;
+    if (innerNetL > 0) {
+      const lb = neckPlan.left.stairSteps[i] ?? 0;
+      if (i < stairRowCount && lb > 0) {
+        leftInnerEdge -= lb;
+        leftCount -= lb;
+      } else if (i >= stairRowCount) {
         leftInnerEdge -= innerNetL;
         leftCount -= innerNetL;
       }
-      if (innerNetR > 0) {
+    }
+    if (innerNetR > 0) {
+      const rb = neckPlan.right.stairSteps[i] ?? 0;
+      if (i < stairRowCount && rb > 0) {
+        rightInnerEdge += rb;
+        rightCount -= rb;
+      } else if (i >= stairRowCount) {
         rightInnerEdge += innerNetR;
         rightCount -= innerNetR;
       }

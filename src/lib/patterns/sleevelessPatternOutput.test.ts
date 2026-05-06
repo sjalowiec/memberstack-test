@@ -54,9 +54,7 @@ describe("sleevelessPatternOutput RC progression", () => {
       expect(joined).toContain(
         "Follow the chart row by row for neckline shaping. Stitch counts shown are the stitches remaining after the action on that row.",
       );
-      expect(joined).toContain(
-        "When neckline shaping is complete, bind off the remaining shoulder stitches. Repeat for the second side.",
-      );
+      expect(joined).toContain("Repeat for the second side.");
     }
   });
 

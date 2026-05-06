@@ -16,9 +16,9 @@ function sum(arr: number[]): number {
 describe("calculateRoundNecklineShaping", () => {
   it("53 stitches: ~thirds center/stair/singles and totalCheck 53", () => {
     const p = calculateRoundNecklineShaping({ necklineStitches: 53 });
-    expect(p.centerBindOff).toBe(18);
+    expect(p.centerBindOff).toBe(17);
     expect(sum(p.left.stairSteps) + sum(p.right.stairSteps)).toBe(18);
-    expect(p.left.singleDecreaseCount + p.right.singleDecreaseCount).toBe(17);
+    expect(p.left.singleDecreaseCount + p.right.singleDecreaseCount).toBe(18);
     expect(p.totalCheck).toBe(53);
     expect(p.necklineStitches).toBe(53);
   });
@@ -33,6 +33,11 @@ describe("calculateRoundNecklineShaping", () => {
   it("odd total: 52 stitches partitions sum to 52", () => {
     const p = calculateRoundNecklineShaping({ necklineStitches: 52 });
     expect(p.totalCheck).toBe(52);
+    expect(p.centerBindOff).toBe(16);
+    expect(p.left.stairSteps).toEqual([3, 3, 3]);
+    expect(p.right.stairSteps).toEqual([3, 3, 3]);
+    expect(p.left.singleDecreaseCount).toBe(9);
+    expect(p.right.singleDecreaseCount).toBe(9);
   });
 
   it("small N: 10 stitches totals match", () => {
@@ -116,7 +121,7 @@ describe("calculateRoundNecklinePlan (strategy)", () => {
     expect(plan.strategy).toBe("deep-round");
     expect(plan.rowsRequired).toBe(need);
     expect(plan.warnings).toHaveLength(0);
-    expect(plan.centerBindOff).toBe(18);
+    expect(plan.centerBindOff).toBe(17);
     expect(plan.fitsAvailableRows).toBe(true);
   });
 

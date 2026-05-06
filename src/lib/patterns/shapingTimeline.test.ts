@@ -86,7 +86,7 @@ describe("buildTimeline round neckline (back profile)", () => {
     }
   });
 
-  it("schedules outer shoulder bind-offs only in the final post-center rows (tail overlay)", () => {
+  it("schedules outer shoulder bind-offs only in the final post-center rows, every other row (tail overlay)", () => {
     const N = 53;
     const S = 38;
     const B = stitchesAfterArmholeFixture(N, S);
@@ -94,6 +94,7 @@ describe("buildTimeline round neckline (back profile)", () => {
     const workRows = neckDepthRows - 1;
     const placement = Math.min(SHOULDER_BINDOFF_ROWS, workRows);
     const firstShoulderIndex = workRows - placement;
+    const shoulderActionSlots = Math.max(1, Math.ceil(placement / 2));
     const timeline = buildTimeline({
       firstShapingRow: 300,
       shoulderStitchesPerSide: S,
@@ -109,6 +110,15 @@ describe("buildTimeline round neckline (back profile)", () => {
         (e) => e.edge === "outer" && e.kind === "bindOff" && e.amount > 0
       );
       expect(hasOuter).toBe(false);
+    }
+    for (let i = firstShoulderIndex; i < workRows; i++) {
+      const offset = i - firstShoulderIndex;
+      const hasOuter = afterCenter[i]!.events.some(
+        (e) => e.edge === "outer" && e.kind === "bindOff" && e.amount > 0
+      );
+      const expectOuter =
+        offset >= 0 && offset % 2 === 0 && offset / 2 < shoulderActionSlots;
+      expect(hasOuter).toBe(expectOuter);
     }
     const outerSumL = afterCenter.reduce(
       (s, row) =>
