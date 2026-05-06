@@ -9,6 +9,7 @@ import PrintFooter from "../../../components/common/PrintFooter.astro";
 import SleevelessBuildWorkspace from "../../../components/patterns/sleeveless/SleevelessBuildWorkspace.astro";
 import "../../../styles/ns-shaping-chart.css";
 import "../../../styles/wizard.css";
+import "../../../styles/glossary-tooltip.css";
 
 const pageUrl = Astro.url.href;
 
@@ -695,6 +696,13 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     text-underline-offset: 2px;
   }
 
+  :global(#pattern-content a.pattern-video-modal-link) {
+    color: var(--kbm-green, #52682d);
+    font-weight: 700;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+
   @media (min-width: 768px) {
     :global(#pattern-content .sleeveless-piece-split) {
       display: flex;
@@ -959,6 +967,7 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     renderNeckShoulderShapingChartTableOnlyHtml,
   } from "../../../lib/patterns/neckShoulderShapingChartHtml.ts";
   import { showResults, initializeActionBar } from "../../../components/wizards/utils/wizardBehavior.ts";
+  import { hydrateGlossaryTooltipPlaceholders } from "../../../lib/glossary/glossaryTooltipHydrate.ts";
 
   const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
 
@@ -1095,14 +1104,16 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
   function garmentShapeLengthPhrase(st) {
     const shapeKey = st.bodyShape;
     const lenKey = st.length;
+
+    if (shapeKey === "straight") return "straight body";
+    if (shapeKey === "aline") return "A-line body";
+
     const shapeWord =
-      shapeKey === "aline"
-        ? "shaped"
-        : shapeKey === "straight" || shapeKey === "gathered"
-          ? "straight"
-          : shapeKey
-            ? String(shapeKey)
-            : "";
+      shapeKey === "gathered"
+        ? "gathered"
+        : shapeKey
+          ? String(shapeKey)
+          : "";
     const lenWord =
       lenKey === "top"
         ? "top"
@@ -1730,6 +1741,30 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     if (closeBtn instanceof HTMLElement) closeBtn.focus();
   }
 
+  /** Loads `src/pages/videos/modal/[id].astro` (same-origin) in the shared video modal iframe. */
+  function openPatternContentVideoModal(contentId) {
+    const cleanId = String(contentId || "").trim();
+    if (!/^\d+$/.test(cleanId)) return;
+    const modal = ensureSleevelessVideoModal();
+    const content = modal.querySelector("[data-sleeveless-video-content]");
+    if (!(content instanceof HTMLElement)) return;
+    const src = `/pages/videos/modal/${cleanId}`;
+    content.innerHTML = `<iframe
+      class="pattern-video-modal-iframe"
+      src="${src}"
+      title="Video"
+      loading="eager"
+      allow="autoplay; fullscreen; picture-in-picture"
+      allowfullscreen
+      referrerpolicy="strict-origin-when-cross-origin"
+      style="display:block; width:min(92vw, 1000px); height:min(88vh, 900px); max-width:100%; border:0; border-radius:6px; background:#fff;"
+    ></iframe>`;
+    modal.hidden = false;
+    document.body.classList.add("sleeveless-diagram-modal-open");
+    const closeBtn = modal.querySelector("[data-sleeveless-video-close]");
+    if (closeBtn instanceof HTMLElement) closeBtn.focus();
+  }
+
   function bindSleevelessDiagramZoom(root) {
     if (!root || root.dataset.sleevelessDiagramZoomBound === "true") return;
     root.dataset.sleevelessDiagramZoomBound = "true";
@@ -1756,6 +1791,14 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     root.addEventListener("click", (e) => {
       const target = e.target;
       if (!(target instanceof Element)) return;
+      const patternVideoLink = target.closest("a.pattern-video-modal-link[data-video-id]");
+      if (patternVideoLink instanceof HTMLAnchorElement) {
+        e.preventDefault();
+        const videoId = patternVideoLink.getAttribute("data-video-id");
+        if (!videoId) return;
+        openPatternContentVideoModal(videoId);
+        return;
+      }
       const link = target.closest("[data-sleeveless-video-id]");
       if (!(link instanceof HTMLElement)) return;
       e.preventDefault();
@@ -2099,6 +2142,27 @@ table {
     });
   }
 
+  function escapeGlossaryPlaceholderAttr(s) {
+    return String(s ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function escapeGlossaryPlaceholderText(s) {
+    return String(s ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  /** One-line glossary term in finishing HTML; hydrated after mount to match GlossaryTooltip.astro. */
+  function glossaryTooltip(id, term) {
+    const t = String(term ?? "");
+    return `<span class="glossary-tooltip-placeholder" data-glossary-id="${id}" data-term="${escapeGlossaryPlaceholderAttr(t)}">${escapeGlossaryPlaceholderText(t)}</span>`;
+  }
+
   function buildFinishingHtml() {
     return `
   <ul class="pattern-finishing-toggle-list">
@@ -2106,7 +2170,7 @@ table {
       <details class="pattern-finishing-toggle" open>
         <summary>Block Pieces (Optional)</summary>
         <ul>
-          <li>Lightly steam or wet block pieces to measurements.</li>
+          <li>Lightly steam or <li>Lightly steam or ${glossaryTooltip(659, 'Wet Block')} pieces to measurements.</li> pieces to measurements.</li>
           <li>Allow pieces to dry completely before assembly.</li>
           <li>Pin edges flat if needed.</li>
         </ul>
@@ -2118,10 +2182,8 @@ table {
       <details class="pattern-finishing-toggle">
         <summary>Join Shoulders</summary>
         <ul>
-          
-          <li>Seam shoulders using your preferred method.</li>
-          <li>mattress stitch</li>
-          <li>linker</li>
+               <li>Seam shoulders using your preferred method.</li>
+          <li>a ${glossaryTooltip(745, 'Linker')}.</li>
           <li>crochet slip stitch</li>
           <li>machine bind-off method</li>
         </ul>
@@ -2171,7 +2233,9 @@ table {
           <li>Match armhole edges and hem.</li>
           <li>Match markers (if added).</li>
           <li>Seam from hem to underarm.</li>
-          <li>Leave armhole opening unseamed.</li>
+          <li>
+            <a href="/pages/videos/modal/520" class="pattern-video-modal-link" data-video-id="520">▶ Seaming – Putting It All Together</a>
+          </li>
         </ul>
       </details>
     </li>
@@ -2332,6 +2396,8 @@ table {
       wrapPatternSection("sg-back", "Back", backWrapped, { defaultCollapsed: false }) +
       wrapPatternSection("sg-front", "Front", frontWrapped, { defaultCollapsed: false }) +
       wrapPatternSection("sg-finishing", "Finishing", buildFinishingHtml(), { defaultCollapsed: true });
+
+    hydrateGlossaryTooltipPlaceholders(mount);
 
     const backChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-back");
     if (backChartTableHost) {

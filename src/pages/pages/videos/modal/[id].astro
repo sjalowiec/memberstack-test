@@ -1,0 +1,14 @@
+---
+/**
+ * Alias URL for the modal embed page at /videos/modal/[id].
+ * Used by pattern links (e.g. href="/pages/videos/modal/520") and iframe src.
+ */
+export const prerender = false;
+
+const raw = Astro.params.id;
+const id = raw != null ? String(raw).trim() : "";
+if (!id) {
+  return Astro.redirect("/videos", 302);
+}
+return Astro.redirect(`/videos/modal/${encodeURIComponent(id)}`, 307);
+---
