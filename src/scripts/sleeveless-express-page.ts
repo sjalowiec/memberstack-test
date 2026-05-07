@@ -566,7 +566,7 @@ function initExpressPage() {
   let maxReachable = maxReachableFromChoices(values);
   let openStep =
     typeof persisted?.openStep === "number" && Number.isFinite(persisted.openStep)
-      ? Math.min(maxReachable, Math.max(1, Math.floor(persisted.openStep)))
+      ? Math.min(maxReachable, Math.max(0, Math.floor(persisted.openStep)))
       : 1;
 
   const sections = document.querySelectorAll("[data-express-step]");
@@ -662,11 +662,26 @@ function initExpressPage() {
     });
   }
 
+  function isBuilderComplete(): boolean {
+    return (
+      !!values.who &&
+      nonEmptyTrimmed(values.selectedSize) &&
+      expressStyleStepComplete(values) &&
+      !!values.neckline &&
+      !!values.fit &&
+      gaugeOk()
+    );
+  }
+
   function updateGenerateVisibility() {
     const wrap = document.getElementById("express-generate-wrap");
     if (!wrap) return;
-    if (gaugeOk()) wrap.removeAttribute("hidden");
+    const complete = isBuilderComplete();
+    if (complete) wrap.removeAttribute("hidden");
     else wrap.setAttribute("hidden", "");
+
+    const btn = document.getElementById("express-generate");
+    if (btn instanceof HTMLButtonElement) btn.disabled = !complete;
   }
 
   function updatePills() {
@@ -706,6 +721,15 @@ function initExpressPage() {
     if (!body) return;
     if (hide) body.setAttribute("hidden", "");
     else body.removeAttribute("hidden");
+  }
+
+  function refreshBuilderState(persist = true): void {
+    maxReachable = maxReachableFromChoices(values);
+    if (openStep > maxReachable) openStep = maxReachable;
+    if (openStep < 0) openStep = 0;
+    updatePills();
+    updateSections();
+    if (persist) persistExpressSession();
   }
 
   function updateSections() {
@@ -763,9 +787,7 @@ function initExpressPage() {
     if (step > maxReachable) return;
     clearAllLockedFeedback();
     openStep = step;
-    updatePills();
-    updateSections();
-    persistExpressSession();
+    refreshBuilderState();
   }
 
   function updateExpressShapePreviewImages(): void {
@@ -817,7 +839,9 @@ function initExpressPage() {
     const list = chartRowsByAudience[aud];
     const uiUnit = getExpressUiUnit();
 
-    if (values.selectedSize && !isValidExpressSizeForAudience(aud, values.selectedSize)) {
+    const sizeSet = chartSizeSets[aud];
+    const hasLoadedSizes = sizeSet instanceof Set && sizeSet.size > 0;
+    if (hasLoadedSizes && values.selectedSize && !sizeSet.has(String(values.selectedSize).trim())) {
       delete values.selectedSize;
     }
 
@@ -854,12 +878,8 @@ function initExpressPage() {
   function clearExpressSelectedSize(): void {
     if (!nonEmptyTrimmed(values.selectedSize)) return;
     delete values.selectedSize;
-    maxReachable = maxReachableFromChoices(values);
-    if (openStep > maxReachable) openStep = maxReachable;
     clearAllLockedFeedback();
-    updatePills();
-    updateSections();
-    persistExpressSession();
+    refreshBuilderState();
   }
 
   function onExpressSizeSelectChange(ev: Event): void {
@@ -941,13 +961,8 @@ function initExpressPage() {
       refreshExpressWhoSizePanel();
     }
 
-    maxReachable = maxReachableFromChoices(values);
-    if (openStep > maxReachable) openStep = maxReachable;
-
     clearAllLockedFeedback();
-    updatePills();
-    updateSections();
-    persistExpressSession();
+    refreshBuilderState();
   }
 
   /** Size dropdown — single source of truth: `values.selectedSize`. Unlocks the next step when valid. */
@@ -960,14 +975,9 @@ function initExpressPage() {
 
     values.selectedSize = trimmed;
 
-    maxReachable = maxReachableFromChoices(values);
-    if (openStep > maxReachable) openStep = maxReachable;
-
     refreshExpressWhoSizePanel();
     clearAllLockedFeedback();
-    updatePills();
-    updateSections();
-    persistExpressSession();
+    refreshBuilderState();
   }
 
   function onHeaderActivate(ev: Event) {
@@ -980,7 +990,12 @@ function initExpressPage() {
       showLockedFeedback(sec);
       return;
     }
-    if (openStep === step) return;
+    if (openStep === step) {
+      clearAllLockedFeedback();
+      openStep = 0;
+      refreshBuilderState();
+      return;
+    }
     goToStep(step);
   }
 
@@ -1197,9 +1212,7 @@ function initExpressPage() {
       const st = document.querySelector("[data-express-size-status]");
       if (st instanceof HTMLElement) st.setAttribute("hidden", "");
       refreshExpressWhoSizePanel();
-      updatePills();
-      updateSections();
-      persistExpressSession();
+      refreshBuilderState();
     })
     .catch(() => {
       const st = document.querySelector("[data-express-size-status]");
@@ -1210,9 +1223,7 @@ function initExpressPage() {
       }
     });
 
-  updatePills();
-  updateSections();
-  persistExpressSession();
+  refreshBuilderState();
 }
 
 function initExpressTopTabs(): void {
