@@ -9,20 +9,62 @@ import {
   normalizeSleevelessAudience,
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
 } from "../lib/patterns/patternStorage";
+import {
+  bodyMeasurementInchesToCmRounded,
+  formatBodyMeasurementInchesForLabel,
+  pickBodyBustChestCmFromRow,
+} from "../lib/patterns/sizingDisplay";
+
+/** Mirrors Fit step chart JSON rows (same as SleevelessGarmentFitStep). */
+type ChartRow = {
+  size?: unknown;
+  bust_or_chest?: unknown;
+  waist?: unknown;
+  garment_back_length?: unknown;
+  armhole_depth?: unknown;
+  shoulder_width?: unknown;
+  neck_opening?: unknown;
+  front_neck_depth?: unknown;
+  back_neck_depth?: unknown;
+};
 
 const STEPS = 5;
 const LOCKED_STEP_NAV_TITLE = "Finish the previous step to continue.";
 
+const CHART_AUDIENCES = ["misses", "plus", "men", "kids", "baby"] as const;
+
+/** Populated after {@link loadExpressSweaterCharts}; same JSON as Fit step. */
+const chartRowsByAudience: Record<string, ChartRow[]> = {};
+const chartSizeSets: Record<string, Set<string>> = {};
+let expressChartsLoadPromise: Promise<void> | null = null;
+
 const LABELS: Record<string, Record<string, string>> = {
   who: { women: "Women", men: "Men", kids: "Kids", baby: "Baby" },
-  style: {
-    "straight-pullover": "Straight Pullover",
-    "shaped-pullover": "Shaped Pullover",
-    "straight-cardigan": "Straight Cardigan",
-    "shaped-cardigan": "Shaped Cardigan",
-  },
   neckline: { round: "Round", "v-neck": "V-neck" },
   fit: { close: "Close", standard: "Standard", relaxed: "Relaxed" },
+};
+
+/** Same labels as SleevelessGarmentDesignStep shape + front cards (summary line). */
+const EXPRESS_SUMMARY_SHAPE: Record<string, string> = {
+  straight: "Straight",
+  aline: "A-line",
+  waist: "Waist Shaped",
+};
+const EXPRESS_SUMMARY_FRONT: Record<string, string> = {
+  closed: "Pullover",
+  open: "Cardigan",
+};
+
+/** Shape card previews: pullover row uses silhouette SVGs; cardigan row uses front-opening variants. */
+const EXPRESS_SHAPE_PREVIEW_PULLOVER: Record<string, string> = {
+  straight: "/images/patterns/sleeveless/shape-straight.svg",
+  aline: "/images/patterns/sleeveless/shape-aline.svg",
+  waist: "/images/patterns/sleeveless/shape-fitted.svg",
+};
+const EXPRESS_SHAPE_PREVIEW_CARDIGAN: Record<string, string> = {
+  straight: "/images/patterns/sleeveless/cardigan-straight.svg",
+  aline: "/images/patterns/sleeveless/cardigan-a-line.svg",
+  waist: "/images/patterns/sleeveless/cardigan-fitted.svg",
 };
 
 const GAUGE_STITCH_ID = "express-stitch-gauge";
@@ -57,6 +99,9 @@ function resolveExpressAvailableNeedles(
 }
 
 function getExpressGaugeUnit(): "cm" | "in" {
+  const hidden = document.getElementById("unit");
+  if (hidden instanceof HTMLInputElement && hidden.value === "cm") return "cm";
+  if (hidden instanceof HTMLInputElement && hidden.value === "in") return "in";
   const cmBtn = document.getElementById("sleeveless-btn-cm");
   return cmBtn?.classList.contains("active") ? "cm" : "in";
 }
@@ -86,9 +131,58 @@ function mapExpressStyle(styleKey: string) {
       return { bodyShape: "straight", frontStyle: "open" as const };
     case "shaped-cardigan":
       return { bodyShape: "aline", frontStyle: "open" as const };
+    case "waist-pullover":
+      return { bodyShape: "waist", frontStyle: "closed" as const };
+    case "waist-cardigan":
+      return { bodyShape: "waist", frontStyle: "open" as const };
     default:
       return { bodyShape: "straight", frontStyle: "closed" as const };
   }
+}
+
+/** Canonical Express style key from Custom Builder–aligned shape + front picks. */
+function deriveExpressStyleKey(shape?: string, front?: string): string {
+  if (!shape || !front) return "";
+  if (shape === "straight" && front === "closed") return "straight-pullover";
+  if (shape === "aline" && front === "closed") return "shaped-pullover";
+  if (shape === "straight" && front === "open") return "straight-cardigan";
+  if (shape === "aline" && front === "open") return "shaped-cardigan";
+  if (shape === "waist" && front === "closed") return "waist-pullover";
+  if (shape === "waist" && front === "open") return "waist-cardigan";
+  return "";
+}
+
+/** Hydrate shape/front from legacy persisted `style` single-field sessions. */
+function migrateExpressStyleFields(v: Record<string, string>): void {
+  if (v.shape && v.front) {
+    const derived = deriveExpressStyleKey(v.shape, v.front);
+    if (derived) v.style = derived;
+    return;
+  }
+  const s = v.style;
+  if (!s) return;
+  const legacy: Record<string, [string, string]> = {
+    "straight-pullover": ["straight", "closed"],
+    "shaped-pullover": ["aline", "closed"],
+    "straight-cardigan": ["straight", "open"],
+    "shaped-cardigan": ["aline", "open"],
+    "waist-pullover": ["waist", "closed"],
+    "waist-cardigan": ["waist", "open"],
+  };
+  const pair = legacy[s];
+  if (pair) {
+    v.shape = pair[0];
+    v.front = pair[1];
+  }
+}
+
+/** Free Express: V-neck is Custom Pattern only — normalize persisted sessions that predate the rule. */
+function migrateExpressNecklineExpressFree(v: Record<string, string>): void {
+  if (v.neckline === "v-neck") v.neckline = "round";
+}
+
+function expressStyleStepComplete(v: Record<string, string>): boolean {
+  return v.shape === "straight" && v.front === "closed";
 }
 
 function mapExpressNeckline(n: string) {
@@ -118,19 +212,6 @@ function easeInchesForFit(fitPreference: string): number {
   return typeof e === "number" ? e : EASE_INCHES_BY_FIT.standard;
 }
 
-/** Mirrors Fit step defaults: chart row + circumference ease (same as SleevelessGarmentFitStep). */
-type ChartRow = {
-  size?: unknown;
-  bust_or_chest?: unknown;
-  waist?: unknown;
-  garment_back_length?: unknown;
-  armhole_depth?: unknown;
-  shoulder_width?: unknown;
-  neck_opening?: unknown;
-  front_neck_depth?: unknown;
-  back_neck_depth?: unknown;
-};
-
 function normalizeChartRowSize(row: ChartRow): string {
   if (row.size === undefined || row.size === null) return "";
   return String(row.size);
@@ -154,45 +235,111 @@ function computeDefaultMeasurementsFromChartRow(row: ChartRow, fitPreference: st
   };
 }
 
-/**
- * Express does not collect size — use the middle row of the wearer’s chart so shared validation + generator match Custom defaults.
- */
-async function fetchExpressChartDefaultsForFit(
-  chartAudience: string,
-  fitPreference: string,
-): Promise<{ selectedSize: string; selectedMeasurements: Record<string, number> } | null> {
-  const key =
-    chartAudience === "misses" ||
-    chartAudience === "plus" ||
-    chartAudience === "men" ||
-    chartAudience === "kids" ||
-    chartAudience === "baby"
-      ? chartAudience
-      : "misses";
-  const url = SWEATER_CHART_URLS[key];
-  if (!url) return null;
-  let rows: ChartRow[];
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const parsed = (await res.json()) as unknown;
-    rows = Array.isArray(parsed) ? (parsed as ChartRow[]) : [];
-  } catch {
-    return null;
+function nonEmptyTrimmed(s: unknown): boolean {
+  return typeof s === "string" && s.trim() !== "";
+}
+
+/** Same hidden `#unit` input + `kbm-units` fallback as SleevelessGarmentFitStep. */
+function getExpressUiUnit(): "in" | "cm" {
+  const hidden = document.getElementById("unit");
+  if (hidden instanceof HTMLInputElement && (hidden.value === "in" || hidden.value === "cm")) {
+    return hidden.value;
   }
-  if (rows.length === 0) return null;
-  const row = rows[Math.floor(rows.length / 2)]!;
+  try {
+    const u = localStorage.getItem("kbm-units");
+    if (u === "in" || u === "cm") return u;
+  } catch {
+    /* ignore */
+  }
+  return "in";
+}
+
+function escapeHtml(s: string): string {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function escapeAttr(s: string): string {
+  return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+}
+
+/** Table cell — same inches/cm rules as Fit dropdown labels. */
+function formatBustChestDisplay(row: ChartRow, uiUnit: "in" | "cm"): string {
+  const rowObj = row && typeof row === "object" ? (row as Record<string, unknown>) : {};
+  if (uiUnit === "cm") {
+    let cm = pickBodyBustChestCmFromRow(rowObj);
+    if (cm === null) {
+      const inches = toFiniteNumber(row.bust_or_chest);
+      cm = Number.isFinite(inches) ? bodyMeasurementInchesToCmRounded(inches) : null;
+    }
+    return cm !== null ? `${cm} cm` : "—";
+  }
+  const inches = toFiniteNumber(row.bust_or_chest);
+  if (!Number.isFinite(inches)) return "—";
+  return `${formatBodyMeasurementInchesForLabel(inches)}"`;
+}
+
+function findExpressChartRow(audience: string, sizeStr: string): ChartRow | null {
+  const list = chartRowsByAudience[audience];
+  if (!Array.isArray(list)) return null;
+  const key = String(sizeStr);
+  return list.find((row) => normalizeChartRowSize(row) === key) ?? null;
+}
+
+function isValidExpressSizeForAudience(audience: string, size: unknown): boolean {
+  if (!audience || size === undefined || size === null || size === "") return false;
+  const set = chartSizeSets[audience];
+  return set instanceof Set && set.has(String(size));
+}
+
+/** Loads all sweater charts once (same URLs as Fit step). */
+function loadExpressSweaterCharts(): Promise<void> {
+  if (expressChartsLoadPromise) return expressChartsLoadPromise;
+  expressChartsLoadPromise = (async () => {
+    await Promise.all(
+      CHART_AUDIENCES.map(async (aud) => {
+        const url = SWEATER_CHART_URLS[aud];
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`${aud}: ${res.status}`);
+        const rows = (await res.json()) as unknown;
+        const list = Array.isArray(rows) ? (rows as ChartRow[]) : [];
+        chartSizeSets[aud] = new Set();
+        chartRowsByAudience[aud] = list;
+        list.forEach((row) => {
+          const k = normalizeChartRowSize(row);
+          if (k) chartSizeSets[aud]!.add(k);
+        });
+      }),
+    );
+  })().catch((err) => {
+    expressChartsLoadPromise = null;
+    throw err;
+  });
+  return expressChartsLoadPromise;
+}
+
+function resolveExpressChartFit(
+  chartAudience: string,
+  sizeStr: string,
+  fitPreference: string,
+): { selectedSize: string; selectedMeasurements: Record<string, number> } | null {
+  const row = findExpressChartRow(chartAudience, sizeStr);
+  if (!row) return null;
   const selectedSize = normalizeChartRowSize(row);
   if (!selectedSize) return null;
-  const selectedMeasurements = computeDefaultMeasurementsFromChartRow(row, fitPreference);
-  return { selectedSize, selectedMeasurements };
+  return {
+    selectedSize,
+    selectedMeasurements: computeDefaultMeasurementsFromChartRow(row, fitPreference),
+  };
 }
 
 /**
  * Writes Express UI selections into canonical sleeveless pattern storage (and patternBuilderData mirrors)
  * so the Custom Builder can hydrate fit, gauge, and pattern output.
  */
-function syncExpressSelectionsToBuilderStorage(values: Record<string, string>) {
+function syncExpressSelectionsToBuilderStorage(
+  values: Record<string, string>,
+  chartFit: { selectedSize: string; selectedMeasurements: Record<string, number> } | null = null,
+) {
   const prevMachine =
     (getPatternData().yarnGaugeMachine as Record<string, unknown> | undefined) ?? {};
   const stitchEl = document.getElementById(GAUGE_STITCH_ID);
@@ -209,7 +356,7 @@ function syncExpressSelectionsToBuilderStorage(values: Record<string, string>) {
     : { gaugeStitchesPerInch: "", gaugeRowsPerInch: "" };
 
   const stylePayload: Record<string, string> = {};
-  const fitPayload: Record<string, string> = {};
+  const fitPayload: Record<string, unknown> = {};
 
   if (values.who) {
     const aud = normalizeSleevelessAudience(values.who) || "misses";
@@ -229,6 +376,12 @@ function syncExpressSelectionsToBuilderStorage(values: Record<string, string>) {
   if (values.fit) {
     fitPayload.easeChoice = values.fit;
     fitPayload.fitChoice = values.fit;
+  }
+  if (chartFit) {
+    fitPayload.selectedSize = chartFit.selectedSize;
+    fitPayload.selectedMeasurements = chartFit.selectedMeasurements;
+  } else if (nonEmptyTrimmed(values.selectedSize)) {
+    fitPayload.selectedSize = values.selectedSize!.trim();
   }
 
   const yarnGaugeCanonical: Record<string, unknown> = {};
@@ -391,13 +544,13 @@ function loadExpressPersisted(): ExpressPersistedV1 | null {
   }
 }
 
-/** Furthest step the user can open from accumulated Express choices (steps 1–5). */
+/** Furthest step the user can open from accumulated Express choices (steps 1–5). Size lives inside step 1. */
 function maxReachableFromChoices(v: Record<string, string>): number {
   let m = 1;
-  if (v.who) m = 2;
-  if (v.style) m = 3;
-  if (v.neckline) m = 4;
-  if (v.fit) m = 5;
+  if (v.who && nonEmptyTrimmed(v.selectedSize)) m = 2;
+  if (v.who && nonEmptyTrimmed(v.selectedSize) && expressStyleStepComplete(v)) m = 3;
+  if (v.who && nonEmptyTrimmed(v.selectedSize) && expressStyleStepComplete(v) && v.neckline) m = 4;
+  if (v.who && nonEmptyTrimmed(v.selectedSize) && expressStyleStepComplete(v) && v.neckline && v.fit) m = 5;
   return m;
 }
 
@@ -407,6 +560,9 @@ function initExpressPage() {
     persisted?.values && typeof persisted.values === "object" && !Array.isArray(persisted.values)
       ? { ...persisted.values }
       : {};
+  migrateExpressStyleFields(values);
+  if (!values.front) values.front = "closed";
+  migrateExpressNecklineExpressFree(values);
   let maxReachable = maxReachableFromChoices(values);
   let openStep =
     typeof persisted?.openStep === "number" && Number.isFinite(persisted.openStep)
@@ -452,6 +608,23 @@ function initExpressPage() {
       const g = formatGaugeSummary();
       return g || "";
     }
+    if (field === "who") {
+      const whoKey = values.who;
+      const whoLabel =
+        whoKey && LABELS.who[whoKey] ? LABELS.who[whoKey] : whoKey ? String(whoKey) : "";
+      if (!whoLabel) return "";
+      if (!nonEmptyTrimmed(values.selectedSize)) return whoLabel;
+      return `${whoLabel} • Size ${values.selectedSize!.trim()}`;
+    }
+    if (field === "style") {
+      const sh = values.shape;
+      const fr = values.front;
+      if (!sh || !fr) return "";
+      const a = EXPRESS_SUMMARY_SHAPE[sh];
+      const b = EXPRESS_SUMMARY_FRONT[fr];
+      if (!a || !b) return "";
+      return `${a} • ${b}`;
+    }
     const v = values[field];
     if (!v) return "";
     const map = LABELS[field];
@@ -459,9 +632,13 @@ function initExpressPage() {
   }
 
   function isStepComplete(step: number): boolean {
+    if (step === 1) {
+      return !!(values.who && nonEmptyTrimmed(values.selectedSize));
+    }
     const sec = stepSection(step);
     const f = sec?.getAttribute("data-express-field");
     if (f === "gauge") return gaugeOk();
+    if (f === "style") return expressStyleStepComplete(values);
     return !!(f && values[f]);
   }
 
@@ -559,7 +736,7 @@ function initExpressPage() {
         setBodyHidden(sectionEl, true);
       }
 
-      if (step === 5) {
+      if (step === STEPS) {
         const stIn = document.getElementById(GAUGE_STITCH_ID);
         const rwIn = document.getElementById(GAUGE_ROW_ID);
         [stIn, rwIn].forEach((inp) => {
@@ -572,7 +749,7 @@ function initExpressPage() {
 
     const genBtn = document.getElementById("express-generate");
     if (genBtn) {
-      if (openStep === 5) genBtn.removeAttribute("tabindex");
+      if (openStep === STEPS) genBtn.removeAttribute("tabindex");
       else genBtn.setAttribute("tabindex", "-1");
     }
 
@@ -591,13 +768,31 @@ function initExpressPage() {
     persistExpressSession();
   }
 
-  function markChoiceSelected(container: HTMLElement, selectedEl: HTMLElement) {
-    container
-      .querySelectorAll(".express-option, .express-style-card, .hat-length-picker__option")
-      .forEach((el) => {
-        el.classList.remove("express-option--selected", "express-style-card--selected", "is-selected");
-        if (el.hasAttribute("aria-pressed")) el.setAttribute("aria-pressed", "false");
-      });
+  function updateExpressShapePreviewImages(): void {
+    const sec = stepSection(2);
+    if (!sec) return;
+    const fr = values.front === "open" ? "open" : "closed";
+    const map = fr === "open" ? EXPRESS_SHAPE_PREVIEW_CARDIGAN : EXPRESS_SHAPE_PREVIEW_PULLOVER;
+    sec.querySelectorAll("[data-express-shape-img]").forEach((img) => {
+      if (!(img instanceof HTMLImageElement)) return;
+      const key = img.getAttribute("data-express-shape-img");
+      if (key && map[key]) img.src = map[key];
+    });
+  }
+
+  function markChoiceSelected(sectionEl: HTMLElement, selectedEl: HTMLElement) {
+    const scope =
+      selectedEl.closest(".hat-length-picker__grid") ??
+      selectedEl.closest(".express-options--who") ??
+      selectedEl.closest(".express-options") ??
+      sectionEl;
+    scope.querySelectorAll(".express-option, .express-style-card, .hat-length-picker__option").forEach((el) => {
+      el.classList.remove("express-option--selected", "express-style-card--selected", "is-selected");
+      if (el.hasAttribute("aria-pressed")) el.setAttribute("aria-pressed", "false");
+    });
+    scope.querySelectorAll(".express-option[data-choice]").forEach((el) => {
+      el.setAttribute("aria-pressed", el === selectedEl ? "true" : "false");
+    });
     if (selectedEl.classList.contains("express-style-card")) {
       selectedEl.classList.add("express-style-card--selected");
     } else if (selectedEl.classList.contains("hat-length-picker__option")) {
@@ -608,7 +803,80 @@ function initExpressPage() {
     }
   }
 
+  function refreshExpressWhoSizePanel(): void {
+    const nested = document.querySelector("[data-express-nested-size]");
+    if (!(nested instanceof HTMLElement)) return;
+
+    if (!values.who) {
+      nested.setAttribute("hidden", "");
+      return;
+    }
+    nested.removeAttribute("hidden");
+
+    const aud = normalizeSleevelessAudience(values.who) || "misses";
+    const list = chartRowsByAudience[aud];
+    const uiUnit = getExpressUiUnit();
+
+    if (values.selectedSize && !isValidExpressSizeForAudience(aud, values.selectedSize)) {
+      delete values.selectedSize;
+    }
+
+    const wrap = document.querySelector("[data-express-size-select-wrap]");
+    const selectEl = document.querySelector("[data-express-size-select]");
+    if (wrap instanceof HTMLElement && selectEl instanceof HTMLSelectElement) {
+      if (Array.isArray(list) && list.length > 0) {
+        wrap.removeAttribute("hidden");
+        const placeholder = `<option value="">${escapeHtml("Choose a size…")}</option>`;
+        const opts = list
+          .map((row) => {
+            const sz = normalizeChartRowSize(row);
+            if (!sz) return "";
+            const meas = formatBustChestDisplay(row, uiUnit);
+            const label = `Size ${sz} — ${meas}`;
+            return `<option value="${escapeAttr(sz)}">${escapeHtml(label)}</option>`;
+          })
+          .join("");
+        selectEl.innerHTML = placeholder + opts;
+        const chosen =
+          values.selectedSize && isValidExpressSizeForAudience(aud, values.selectedSize)
+            ? values.selectedSize.trim()
+            : "";
+        selectEl.value = chosen;
+      } else {
+        wrap.setAttribute("hidden", "");
+        selectEl.innerHTML = `<option value="">${escapeHtml("Choose a size…")}</option>`;
+      }
+    }
+
+  }
+
+  /** Clears size only — uses same {@link maxReachableFromChoices} / accordion unlock rules as {@link selectExpressSize}. */
+  function clearExpressSelectedSize(): void {
+    if (!nonEmptyTrimmed(values.selectedSize)) return;
+    delete values.selectedSize;
+    maxReachable = maxReachableFromChoices(values);
+    if (openStep > maxReachable) openStep = maxReachable;
+    clearAllLockedFeedback();
+    updatePills();
+    updateSections();
+    persistExpressSession();
+  }
+
+  function onExpressSizeSelectChange(ev: Event): void {
+    const t = ev.target;
+    if (!(t instanceof HTMLSelectElement)) return;
+    if (!t.hasAttribute("data-express-size-select")) return;
+    if (openStep !== 1) return;
+    const v = t.value.trim();
+    if (!v) {
+      clearExpressSelectedSize();
+      return;
+    }
+    selectExpressSize(v);
+  }
+
   function applySelectionUI() {
+    refreshExpressWhoSizePanel();
     const pairs: { step: number; field: keyof typeof LABELS; sel: string }[] = [
       { step: 1, field: "who", sel: ".express-options--who" },
       { step: 3, field: "neckline", sel: ".express-neck-cards" },
@@ -620,14 +888,23 @@ function initExpressPage() {
       const c = sec.querySelector(sel);
       if (!c || !(c instanceof HTMLElement)) return;
       const hit = c.querySelector(`[data-choice][data-value="${values[field]}"]`);
-      if (hit instanceof HTMLElement) markChoiceSelected(c, hit);
+      if (hit instanceof HTMLElement) markChoiceSelected(sec, hit);
     });
-    if (values.style) {
-      const ssec = stepSection(2);
-      const sc = ssec?.querySelector(".express-style-cards");
-      const h2 = sc?.querySelector(`[data-value="${values.style}"]`);
-      if (sc instanceof HTMLElement && h2 instanceof HTMLElement) markChoiceSelected(sc, h2);
+    const styleSec = stepSection(2);
+    if (styleSec && values.shape) {
+      const shapeGrid = styleSec.querySelector("[data-express-shape-grid]");
+      const hit =
+        shapeGrid?.querySelector(`[data-choice][data-field="shape"][data-value="${values.shape}"]`) ??
+        null;
+      if (hit instanceof HTMLElement) markChoiceSelected(styleSec, hit);
     }
+    if (styleSec && values.front) {
+      const frontToggle = styleSec.querySelector("[data-express-front-toggle]");
+      const hit =
+        frontToggle?.querySelector(`[data-field="front"][data-value="${values.front}"]`) ?? null;
+      if (hit instanceof HTMLElement) markChoiceSelected(styleSec, hit);
+    }
+    updateExpressShapePreviewImages();
   }
 
     function onChoiceClick(ev: Event) {
@@ -644,13 +921,49 @@ function initExpressPage() {
     const value = btn.getAttribute("data-value");
     if (!field || value == null) return;
 
-    values[field] = value;
-    markChoiceSelected(sec, btn as HTMLElement);
-
-    if (stepNum < STEPS) {
-      maxReachable = Math.max(maxReachable, stepNum + 1);
-      openStep = stepNum + 1;
+    if (field === "who") {
+      const prevWho = values.who;
+      if (prevWho !== undefined && prevWho !== value) {
+        delete values.selectedSize;
+      }
     }
+
+    values[field] = value;
+    if (field === "shape" || field === "front") {
+      values.style = deriveExpressStyleKey(values.shape, values.front);
+    }
+    markChoiceSelected(sec, btn as HTMLElement);
+    if (field === "front") {
+      updateExpressShapePreviewImages();
+    }
+
+    if (field === "who") {
+      refreshExpressWhoSizePanel();
+    }
+
+    maxReachable = maxReachableFromChoices(values);
+    if (openStep > maxReachable) openStep = maxReachable;
+
+    clearAllLockedFeedback();
+    updatePills();
+    updateSections();
+    persistExpressSession();
+  }
+
+  /** Size dropdown — single source of truth: `values.selectedSize`. Unlocks the next step when valid. */
+  function selectExpressSize(sizeValue: string): void {
+    const trimmed = String(sizeValue).trim();
+    if (!trimmed) return;
+    if (openStep !== 1) return;
+    const aud = normalizeSleevelessAudience(values.who) || "misses";
+    if (!isValidExpressSizeForAudience(aud, trimmed)) return;
+
+    values.selectedSize = trimmed;
+
+    maxReachable = maxReachableFromChoices(values);
+    if (openStep > maxReachable) openStep = maxReachable;
+
+    refreshExpressWhoSizePanel();
     clearAllLockedFeedback();
     updatePills();
     updateSections();
@@ -702,8 +1015,8 @@ function initExpressPage() {
   function onGaugeInput() {
     updateSummaries();
     updateGenerateVisibility();
-    const sec5 = stepSection(5);
-    if (sec5) sec5.classList.toggle("express-acc--complete", gaugeOk());
+    const secG = stepSection(STEPS);
+    if (secG) secG.classList.toggle("express-acc--complete", gaugeOk());
     updatePills();
     persistExpressSession();
   }
@@ -719,6 +1032,7 @@ function initExpressPage() {
     for (const k of Object.keys(values)) {
       delete values[k];
     }
+    values.front = "closed";
     openStep = 1;
     maxReachable = 1;
 
@@ -770,7 +1084,10 @@ function initExpressPage() {
   }
 
   const root = document.getElementById("express-accordions");
-  if (root) root.addEventListener("click", onChoiceClick);
+  if (root) {
+    root.addEventListener("click", onChoiceClick);
+    root.addEventListener("change", onExpressSizeSelectChange);
+  }
 
   document.querySelectorAll("[data-express-header]").forEach((h) => {
     h.addEventListener("click", onHeaderActivate);
@@ -786,8 +1103,20 @@ function initExpressPage() {
   document.getElementById("express-start-over-btn")?.addEventListener("click", resetExpressBuilder);
 
   document.getElementById("express-customize-pattern")?.addEventListener("click", () => {
-    syncExpressSelectionsToBuilderStorage(values);
-    window.location.assign("/patterns/sleeveless-custom");
+    void (async () => {
+      try {
+        await loadExpressSweaterCharts();
+      } catch {
+        window.alert("Could not load size charts. Check your connection and try again.");
+        return;
+      }
+      const aud = normalizeSleevelessAudience(values.who) || "misses";
+      const chartFit = nonEmptyTrimmed(values.selectedSize)
+        ? resolveExpressChartFit(aud, values.selectedSize!.trim(), values.fit || "standard")
+        : null;
+      syncExpressSelectionsToBuilderStorage(values, chartFit);
+      window.location.assign("/patterns/sleeveless-custom");
+    })();
   });
 
   const stitchesInput = document.getElementById(GAUGE_STITCH_ID);
@@ -801,6 +1130,8 @@ function initExpressPage() {
 
   window.addEventListener("kbm:units-change", () => {
     onGaugeInput();
+    refreshExpressWhoSizePanel();
+    updateSummaries();
   });
 
   gaugeForm?.addEventListener("submit", (e) => {
@@ -810,7 +1141,13 @@ function initExpressPage() {
     if (!(stEl instanceof HTMLInputElement) || !(rwEl instanceof HTMLInputElement)) return;
     if (!isValidPositiveNumber(stEl.value) || !isValidPositiveNumber(rwEl.value)) return;
 
-    if (!values.who || !values.style || !values.neckline || !values.fit) {
+    if (
+      !values.who ||
+      !nonEmptyTrimmed(values.selectedSize) ||
+      !expressStyleStepComplete(values) ||
+      !values.neckline ||
+      !values.fit
+    ) {
       window.alert("Please complete all Express steps before generating your pattern.");
       return;
     }
@@ -824,9 +1161,15 @@ function initExpressPage() {
     const fitPref = values.fit;
 
     void (async () => {
-      const chartFit = await fetchExpressChartDefaultsForFit(aud, fitPref);
+      try {
+        await loadExpressSweaterCharts();
+      } catch {
+        window.alert("Could not load size charts. Check your connection and try again.");
+        return;
+      }
+      const chartFit = resolveExpressChartFit(aud, values.selectedSize!.trim(), fitPref);
       if (!chartFit) {
-        window.alert("Could not load sizing chart defaults. Check your connection and try again.");
+        window.alert("Please choose a valid size for this wearer.");
         return;
       }
       persistExpressBuilderState(values, chartFit);
@@ -838,6 +1181,7 @@ function initExpressPage() {
       if (values.style) q.set("style", values.style);
       if (values.neckline) q.set("neckline", values.neckline);
       if (values.fit) q.set("fit", values.fit);
+      if (values.selectedSize) q.set("selectedSize", values.selectedSize);
       q.set("gaugeStitchRaw", gaugeStitchRaw);
       q.set("gaugeRowRaw", gaugeRowRaw);
       q.set("gaugeRawUnit", unit);
@@ -847,6 +1191,24 @@ function initExpressPage() {
       window.location.href = `/patterns/sleeveless/pattern?${q.toString()}`;
     })();
   });
+
+  void loadExpressSweaterCharts()
+    .then(() => {
+      const st = document.querySelector("[data-express-size-status]");
+      if (st instanceof HTMLElement) st.setAttribute("hidden", "");
+      refreshExpressWhoSizePanel();
+      updatePills();
+      updateSections();
+      persistExpressSession();
+    })
+    .catch(() => {
+      const st = document.querySelector("[data-express-size-status]");
+      if (st instanceof HTMLElement) {
+        st.textContent = "Could not load size charts. Check your connection and refresh.";
+        st.style.color = "#b91c1c";
+        st.removeAttribute("hidden");
+      }
+    });
 
   updatePills();
   updateSections();
