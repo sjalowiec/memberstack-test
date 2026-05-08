@@ -1,0 +1,152 @@
+---
+import UnitToggle from "../wizards/UnitToggle.astro";
+
+export type SleevelessBuilderNavStep = "style" | "fit" | "yarn" | "pattern";
+
+export interface Props {
+  currentStep: SleevelessBuilderNavStep;
+  /** In-tab step switching on the unified pattern page (no full navigation). */
+  embedded?: boolean;
+  /** Inches / cm control on the right side of the step pill row. */
+  showUnitToggle?: boolean;
+}
+
+const { currentStep, embedded = false, showUnitToggle = true } = Astro.props;
+
+const allSteps: { id: SleevelessBuilderNavStep; label: string; href: string }[] = [
+  { id: "style", label: "Design", href: "/patterns/sleeveless/pattern?buildStep=design" },
+  { id: "fit", label: "Fit", href: "/patterns/sleeveless/pattern?buildStep=fit" },
+  { id: "yarn", label: "Yarn & Gauge", href: "/patterns/sleeveless/pattern?buildStep=yarn" },
+  { id: "pattern", label: "Pattern", href: "/patterns/sleeveless/pattern" },
+];
+
+const steps = embedded ? allSteps.filter((s) => s.id !== "pattern") : allSteps;
+---
+
+<div class="sg-builder-nav-row no-print">
+  <nav
+    class="sg-builder-nav"
+    data-sg-builder-nav
+    data-current-step={currentStep}
+    aria-label="Sleeveless pattern builder steps"
+  >
+    <ol class="sg-builder-nav__list" role="list">
+      {
+        steps.map((s, i) => (
+          <li
+            class:list={["sg-builder-nav__item", { active: currentStep === s.id }]}
+            data-step={s.id}
+          >
+            {i > 0 && <span class="sg-builder-nav__rule" aria-hidden="true" />}
+            {embedded ? (
+              <button
+                type="button"
+                class:list={[
+                  "sg-builder-nav__link",
+                  { "is-current": currentStep === s.id },
+                ]}
+                data-sg-build-go={s.id}
+                aria-current={currentStep === s.id ? "page" : undefined}
+              >
+                <span class="sg-builder-nav__pill">{s.label}</span>
+              </button>
+            ) : (
+              <a
+                class:list={[
+                  "sg-builder-nav__link",
+                  { "is-current": currentStep === s.id },
+                ]}
+                href={s.href}
+                aria-current={currentStep === s.id ? "page" : undefined}
+              >
+                <span class="sg-builder-nav__pill">{s.label}</span>
+              </a>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+  </nav>
+  {
+    showUnitToggle && (
+      <div class="sg-builder-nav-row__units">
+        <UnitToggle id="sleeveless" />
+      </div>
+    )
+  }
+</div>
+
+<script>
+  import {
+    isSleevelessBuilderNavFitComplete,
+    isSleevelessBuilderNavStyleComplete,
+    isSleevelessBuilderNavYarnComplete,
+  } from "../../lib/patterns/patternBuilderValidation.ts";
+  import { getPatternData, PATTERN_BUILDER_DATA_KEY } from "../../lib/patterns/patternStorage.ts";
+
+  const ORDER = ["style", "fit", "yarn", "pattern"] as const;
+
+  function stepComplete(id: (typeof ORDER)[number], data: Record<string, unknown>): boolean {
+    if (id === "style") return isSleevelessBuilderNavStyleComplete(data);
+    if (id === "fit") return isSleevelessBuilderNavFitComplete(data);
+    if (id === "yarn") return isSleevelessBuilderNavYarnComplete(data);
+    if (id === "pattern") return isSleevelessBuilderNavYarnComplete(data);
+    return false;
+  }
+
+  function syncNav(root: HTMLElement): void {
+    const current = root.getAttribute("data-current-step") as (typeof ORDER)[number] | null;
+    if (!current || !ORDER.includes(current)) return;
+
+    const curIdx = ORDER.indexOf(current);
+    const data = getPatternData();
+
+    root.querySelectorAll<HTMLElement>("[data-step]").forEach((item) => {
+      const stepId = item.getAttribute("data-step") as (typeof ORDER)[number] | null;
+      if (!stepId || !ORDER.includes(stepId)) return;
+
+      const link = item.querySelector<HTMLAnchorElement | HTMLButtonElement>(".sg-builder-nav__link");
+      if (!link) return;
+
+      const idx = ORDER.indexOf(stepId);
+      item.classList.toggle("active", stepId === current);
+      link.classList.toggle("is-current", stepId === current);
+      link.classList.toggle("is-upcoming", idx > curIdx);
+
+      const showDone = stepComplete(stepId, data);
+      link.classList.toggle("is-complete", showDone);
+      if (stepId === current) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    });
+  }
+
+  function bind(): void {
+    document.querySelectorAll<HTMLElement>("[data-sg-builder-nav]").forEach((root) => {
+      syncNav(root);
+    });
+  }
+
+  function onStorage(ev: StorageEvent): void {
+    if (ev.key !== PATTERN_BUILDER_DATA_KEY) return;
+    bind();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bind);
+  } else {
+    bind();
+  }
+
+  window.addEventListener("storage", onStorage);
+  window.addEventListener("pageshow", bind);
+  window.addEventListener("focus", bind);
+
+  window.addEventListener("kbm:sleeveless-build-step", (ev: Event) => {
+    const step = (ev as CustomEvent<{ step: (typeof ORDER)[number] }>).detail?.step;
+    if (!step || !ORDER.includes(step)) return;
+    document.querySelectorAll<HTMLElement>("[data-sg-builder-nav]").forEach((root) => {
+      root.setAttribute("data-current-step", step);
+      syncNav(root);
+    });
+  });
+</script>

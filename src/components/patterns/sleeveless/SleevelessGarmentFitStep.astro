@@ -1,0 +1,2235 @@
+---
+import PatternModeIndicator from "../PatternModeIndicator.astro";
+import GlossaryTooltip from "../../common/GlossaryTooltip.astro";
+import SleevelessStartOver from "../SleevelessStartOver.astro";
+import "../../../styles/wizard.css";
+
+export interface Props {
+  /** When true, CTAs switch steps inside {@link SleevelessBuildWorkspace}; omit standalone Start Over. */
+  embedded?: boolean;
+}
+
+const { embedded = false } = Astro.props;
+---
+
+<div class="sg-fit-page sg-build-panel" data-sg-build-panel="fit">
+  <p class="kbm-pattern-save-status" data-pattern-save-status aria-live="polite"></p>
+
+  <PatternModeIndicator mode="custom" integratedCard cardId="sleeveless-fit-builder" cardClass="hat-builder-inputs">
+        <h2 class="sg-section-title">Fit &amp; Measurements</h2>
+        <section class="hat-form-section sg-fit-so-far-section" aria-labelledby="sg-fit-so-far-heading">
+          <div class="builder-summary">
+            <h2 id="sg-fit-so-far-heading" class="builder-summary-title hat-form-section__title hat-form-section__heading">
+              <span class="sg-so-far-summary-heading__icon" aria-hidden="true">
+                <svg
+                  class="sg-so-far-summary-heading__svg"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect>
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                  <path d="m9 14 2 2 4-4"></path>
+                </svg>
+              </span>
+              Your Design Choices:
+            </h2>
+            <div class="builder-summary-content">
+              <div class="sg-summary-panel">
+                <p id="garment-config-so-far-sentence" class="sg-summary-sentence">Women's straight sleeveless pullover with a round neckline</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="pattern-builder-size-selection"
+          class="hat-form-section sg-selector-section sg-fit-placeholder-section sg-fit-size-section is-locked"
+          aria-labelledby="sg-fit-size-heading"
+          data-size-section
+          data-selector-key="size"
+        >
+          <div class="sg-section-header" data-section-toggle role="button" tabindex="0" aria-expanded="false">
+            <button type="button" class="sg-section-chevron-btn" data-section-chevron aria-label="Toggle Choose a size section">▾</button>
+            <div class="sg-section-header-main">
+              <h2 id="sg-fit-size-heading" class="hat-form-section__title hat-form-section__heading">7. Choose a size</h2>
+              <span class="sg-section-selected-check" data-selected-check aria-hidden="true">✓</span>
+              <span class="sg-section-selected-value" data-selected-value></span>
+            </div>
+          </div>
+          <div class="sg-section-options">
+          <p class="sg-fit-size-copy" data-size-helper-copy>Go back to the design page to choose Women's, Men's, Kids', or Baby.</p>
+          <p class="sg-fit-size-load-msg" data-size-charts-status>Loading size charts…</p>
+          <div class="sg-fit-size-charts" data-size-charts>
+            <div class="sg-fit-size-chart-panel" data-size-chart="misses" data-size-audience="misses" hidden>
+              <select
+                id="sg-fit-size-select-misses"
+                class="sg-fit-size-select"
+                data-fit-size-select
+                data-size-audience="misses"
+                aria-labelledby="sg-fit-size-heading"
+              ></select>
+            </div>
+            <div class="sg-fit-size-chart-panel" data-size-chart="plus" data-size-audience="plus" hidden data-sg-v1-hidden>
+              <select
+                id="sg-fit-size-select-plus"
+                class="sg-fit-size-select"
+                data-fit-size-select
+                data-size-audience="plus"
+                aria-labelledby="sg-fit-size-heading"
+              ></select>
+            </div>
+            <div class="sg-fit-size-chart-panel" data-size-chart="men" data-size-audience="men" hidden>
+              <select
+                id="sg-fit-size-select-men"
+                class="sg-fit-size-select"
+                data-fit-size-select
+                data-size-audience="men"
+                aria-labelledby="sg-fit-size-heading"
+              ></select>
+            </div>
+            <div class="sg-fit-size-chart-panel" data-size-chart="kids" data-size-audience="kids" hidden>
+              <select
+                id="sg-fit-size-select-kids"
+                class="sg-fit-size-select"
+                data-fit-size-select
+                data-size-audience="kids"
+                aria-labelledby="sg-fit-size-heading"
+              ></select>
+            </div>
+            <div class="sg-fit-size-chart-panel" data-size-chart="baby" data-size-audience="baby" hidden>
+              <select
+                id="sg-fit-size-select-baby"
+                class="sg-fit-size-select"
+                data-fit-size-select
+                data-size-audience="baby"
+                aria-labelledby="sg-fit-size-heading"
+              ></select>
+            </div>
+          </div>
+          </div>
+        </section>
+
+        <section
+          class="hat-form-section sg-selector-section sg-fit-placeholder-section sg-fit-preference-section is-locked"
+          aria-labelledby="sg-fit-choice-heading"
+          data-fit-preference-section
+          data-selector-key="fitPreference"
+        >
+          <div class="sg-section-header" data-section-toggle role="button" tabindex="0" aria-expanded="false">
+            <button type="button" class="sg-section-chevron-btn" data-section-chevron aria-label="Toggle Choose your fit section">▾</button>
+            <div class="sg-section-header-main">
+              <h2 id="sg-fit-choice-heading" class="hat-form-section__title hat-form-section__heading">8. Choose your fit</h2>
+              <span class="sg-section-selected-check" data-selected-check aria-hidden="true">✓</span>
+              <span class="sg-section-selected-value" data-selected-value></span>
+            </div>
+          </div>
+          <div class="sg-section-options">
+          <p class="sg-fit-placeholder-copy" data-fit-preference-locked-copy>Choose a size first.</p>
+          <p class="sg-fit-placeholder-copy" data-fit-preference-unlocked-copy hidden>
+            <GlossaryTooltip id={470}>Ease</GlossaryTooltip> is added automatically. You can adjust it in the next step.
+          </p>
+          <div class="hat-length-picker__grid sg-fit-preference-grid" role="radiogroup" aria-labelledby="sg-fit-choice-heading">
+            <button type="button" class="hat-length-picker__option sg-fit-preference-option" data-fit-preference-option="close" aria-pressed="false">
+              <img class="fit-card-image" src="/images/patterns/sleeveless/close-fit.png" alt="Close fit sleeveless garment" />
+              <span class="hat-length-picker__option-label">Close fit</span>
+              <span class="sg-fit-preference-note">Fits close to the body.</span>
+              <span class="sg-fit-option-check" aria-hidden="true">✓</span>
+            </button>
+            <button type="button" class="hat-length-picker__option sg-fit-preference-option" data-fit-preference-option="standard" aria-pressed="false">
+              <img class="fit-card-image" src="/images/patterns/sleeveless/standard-fit.png" alt="Standard fit sleeveless garment" />
+              <span class="hat-length-picker__option-label">Standard fit</span>
+              <span class="sg-fit-preference-note">Comfortable everyday fit</span>
+              <span class="sg-fit-option-check" aria-hidden="true">✓</span>
+            </button>
+            <button type="button" class="hat-length-picker__option sg-fit-preference-option" data-fit-preference-option="relaxed" aria-pressed="false">
+              <img class="fit-card-image" src="/images/patterns/sleeveless/relaxed-fit.png" alt="Relaxed fit sleeveless garment" />
+              <span class="hat-length-picker__option-label">Relaxed fit</span>
+              <span class="sg-fit-preference-note">More room and drape</span>
+              <span class="sg-fit-option-check" aria-hidden="true">✓</span>
+            </button>
+          </div>
+          </div>
+        </section>
+
+        <section
+          id="fine-tune"
+          class="hat-form-section sg-selector-section sg-fit-placeholder-section sg-fit-detail-section sg-fit-fine-tune-section is-locked"
+          aria-labelledby="sg-fit-fine-tune-heading"
+          data-fit-detail-section
+          data-selector-key="fineTune"
+        >
+          <div class="sg-section-header" data-section-toggle role="button" tabindex="0" aria-expanded="false">
+            <button type="button" class="sg-section-chevron-btn" data-section-chevron aria-label="Toggle Fine-tune the fit section">▾</button>
+            <div class="sg-section-header-main">
+              <h2 id="sg-fit-fine-tune-heading" class="hat-form-section__title hat-form-section__heading">9. Fine-tune the fit</h2>
+              <span class="sg-section-selected-check" data-selected-check aria-hidden="true">✓</span>
+              <span class="sg-section-selected-value" data-selected-value></span>
+            </div>
+          </div>
+          <p
+            class="sg-fit-placeholder-copy sg-fit-detail-prereq-copy"
+            data-fit-detail-helper-copy
+            role="status"
+            aria-live="polite"
+          >
+            Choose a size and fit first.
+          </p>
+          <div class="sg-section-options">
+          <div class="sg-fit-fine-tune-body" data-fit-fine-tune-body>
+            <p class="sg-fit-size-copy sg-fit-fine-tune-lead" data-fit-fine-tune-lead>
+              We've filled these in from the size and fit you selected. You can use them as-is, or adjust any measurement before
+              building your pattern.
+            </p>
+            <p class="sg-fit-placeholder-copy sg-fit-fine-tune-reassurance">
+              <strong> 👉 Not sure? Leave the numbers as they are. You can always come back and change them.</strong>
+            </p>
+            <div class="sg-fit-measurement-panel sg-fit-fine-tune-panel" data-fit-detail-panel>
+              <div class="sg-fit-measurement-row">
+                <div class="sg-fit-measurement-main">
+                  <label class="sg-fit-measurement-name" for="sg-fit-m-finished_bust_chest">Finished bust/chest</label>
+                </div>
+                <div class="sg-fit-measurement-value-cell">
+                  <input
+                    id="sg-fit-m-finished_bust_chest"
+                    class="sg-fit-measurement-input"
+                    type="number"
+                    step="0.25"
+                    min="0"
+                    inputmode="decimal"
+                    data-fit-measurement-input
+                    data-fit-measurement-key="finished_bust_chest"
+                  />
+                  <span class="sg-fit-measurement-unit" data-fit-measurement-unit aria-hidden="true"></span>
+                </div>
+              </div>
+              <div class="sg-fit-measurement-row">
+                <div class="sg-fit-measurement-main">
+                  <label class="sg-fit-measurement-name" for="sg-fit-m-finished_waist">Finished waist</label>
+                </div>
+                <div class="sg-fit-measurement-value-cell">
+                  <input
+                    id="sg-fit-m-finished_waist"
+                    class="sg-fit-measurement-input"
+                    type="number"
+                    step="0.25"
+                    min="0"
+                    inputmode="decimal"
+                    data-fit-measurement-input
+                    data-fit-measurement-key="finished_waist"
+                  />
+                  <span class="sg-fit-measurement-unit" data-fit-measurement-unit aria-hidden="true"></span>
+                </div>
+              </div>
+              <div class="sg-fit-measurement-row">
+                <div class="sg-fit-measurement-main">
+                  <label class="sg-fit-measurement-name" for="sg-fit-m-finished_hip">Finished hip</label>
+                </div>
+                <div class="sg-fit-measurement-value-cell">
+                  <input
+                    id="sg-fit-m-finished_hip"
+                    class="sg-fit-measurement-input"
+                    type="number"
+                    step="0.25"
+                    min="0"
+                    inputmode="decimal"
+                    data-fit-measurement-input
+                    data-fit-measurement-key="finished_hip"
+                  />
+                  <span class="sg-fit-measurement-unit" data-fit-measurement-unit aria-hidden="true"></span>
+                </div>
+              </div>
+              <div class="sg-fit-measurement-row">
+                <div class="sg-fit-measurement-main">
+                  <label class="sg-fit-measurement-name" for="sg-fit-m-back_neck_to_hem">Back neck to hem</label>
+                </div>
+                <div class="sg-fit-measurement-value-cell">
+                  <input
+                    id="sg-fit-m-back_neck_to_hem"
+                    class="sg-fit-measurement-input"
+                    type="number"
+                    step="0.25"
+                    min="0"
+                    inputmode="decimal"
+                    data-fit-measurement-input
+                    data-fit-measurement-key="back_neck_to_hem"
+                  />
+                  <span class="sg-fit-measurement-unit" data-fit-measurement-unit aria-hidden="true"></span>
+                </div>
+              </div>
+              <div class="sg-fit-measurement-row">
+                <div class="sg-fit-measurement-main">
+                  <label class="sg-fit-measurement-name" for="sg-fit-m-armhole_depth">Armhole depth</label>
+                </div>
+                <div class="sg-fit-measurement-value-cell">
+                  <input
+                    id="sg-fit-m-armhole_depth"
+                    class="sg-fit-measurement-input"
+                    type="number"
+                    step="0.25"
+                    min="0"
+                    inputmode="decimal"
+                    data-fit-measurement-input
+                    data-fit-measurement-key="armhole_depth"
+                  />
+                  <span class="sg-fit-measurement-unit" data-fit-measurement-unit aria-hidden="true"></span>
+                </div>
+              </div>
+              <div class="sg-fit-measurement-row">
+                <div class="sg-fit-measurement-main">
+                  <label class="sg-fit-measurement-name" for="sg-fit-m-shoulder_width">Shoulder width</label>
+                </div>
+                <div class="sg-fit-measurement-value-cell">
+                  <input
+                    id="sg-fit-m-shoulder_width"
+                    class="sg-fit-measurement-input"
+                    type="number"
+                    step="0.25"
+                    min="0"
+                    inputmode="decimal"
+                    data-fit-measurement-input
+                    data-fit-measurement-key="shoulder_width"
+                  />
+                  <span class="sg-fit-measurement-unit" data-fit-measurement-unit aria-hidden="true"></span>
+                </div>
+              </div>
+              <div class="sg-fit-measurement-row">
+                <div class="sg-fit-measurement-main">
+                  <label class="sg-fit-measurement-name" for="sg-fit-m-neck_width">Neck width</label>
+                </div>
+                <div class="sg-fit-measurement-value-cell">
+                  <input
+                    id="sg-fit-m-neck_width"
+                    class="sg-fit-measurement-input"
+                    type="number"
+                    step="0.25"
+                    min="0"
+                    inputmode="decimal"
+                    data-fit-measurement-input
+                    data-fit-measurement-key="neck_width"
+                  />
+                  <span class="sg-fit-measurement-unit" data-fit-measurement-unit aria-hidden="true"></span>
+                </div>
+              </div>
+              <div class="sg-fit-measurement-row">
+                <div class="sg-fit-measurement-main">
+                  <label class="sg-fit-measurement-name" for="sg-fit-m-front_neck_depth">Front neck depth</label>
+                </div>
+                <div class="sg-fit-measurement-value-cell">
+                  <input
+                    id="sg-fit-m-front_neck_depth"
+                    class="sg-fit-measurement-input"
+                    type="number"
+                    step="0.25"
+                    min="0"
+                    inputmode="decimal"
+                    data-fit-measurement-input
+                    data-fit-measurement-key="front_neck_depth"
+                  />
+                  <span class="sg-fit-measurement-unit" data-fit-measurement-unit aria-hidden="true"></span>
+                </div>
+              </div>
+              <div class="sg-fit-measurement-row">
+                <div class="sg-fit-measurement-main">
+                  <label class="sg-fit-measurement-name" for="sg-fit-m-back_neck_depth">Back neck depth</label>
+                </div>
+                <div class="sg-fit-measurement-value-cell">
+                  <input
+                    id="sg-fit-m-back_neck_depth"
+                    class="sg-fit-measurement-input"
+                    type="number"
+                    step="0.25"
+                    min="0"
+                    inputmode="decimal"
+                    data-fit-measurement-input
+                    data-fit-measurement-key="back_neck_depth"
+                  />
+                  <span class="sg-fit-measurement-unit" data-fit-measurement-unit aria-hidden="true"></span>
+                </div>
+              </div>
+            </div>
+            <div class="sg-fit-fine-tune-reset">
+              <button type="button" class="kbm-btn kbm-btn-outline sg-fit-reset-btn" data-fit-measurements-reset>
+                Reset to size defaults
+              </button>
+              <p class="sg-fit-reset-note">Resetting will replace your edited measurements with the defaults for the selected size and fit.</p>
+            </div>
+          </div>
+          </div>
+        </section>
+
+        <section class="hat-form-section sg-fit-so-far-section" aria-labelledby="sg-fit-summary-heading">
+          <div class="builder-summary">
+            <h2 id="sg-fit-summary-heading" class="builder-summary-title hat-form-section__title hat-form-section__heading">
+              <span class="sg-so-far-summary-heading__icon" aria-hidden="true">
+                <svg
+                  class="sg-so-far-summary-heading__svg"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <line x1="4" x2="4" y1="21" y2="14"></line>
+                  <line x1="4" x2="4" y1="10" y2="3"></line>
+                  <line x1="12" x2="12" y1="21" y2="12"></line>
+                  <line x1="12" x2="12" y1="8" y2="3"></line>
+                  <line x1="20" x2="20" y1="21" y2="16"></line>
+                  <line x1="20" x2="20" y1="12" y2="3"></line>
+                  <line x1="2" x2="6" y1="14" y2="14"></line>
+                  <line x1="10" x2="14" y1="8" y2="8"></line>
+                  <line x1="18" x2="22" y1="16" y2="16"></line>
+                </svg>
+              </span>
+              Fit Summary
+            </h2>
+            <div class="builder-summary-content">
+              <div class="sg-summary-panel sg-fit-summary">
+                <p class="sg-fit-size-copy" data-fit-summary-line="size">
+                  <strong>Size:</strong>
+                  <span data-fit-summary-size-value>—</span>
+                </p>
+                <p class="sg-fit-size-copy" data-fit-summary-line="ease">
+                  <strong>Ease:</strong>
+                  <span data-fit-summary-ease-value>—</span>
+                </p>
+                <p class="sg-fit-size-copy" data-fit-summary-line="adjustments">
+                  <strong>Your adjustments:</strong>
+                  <span data-fit-summary-adjustments-value>—</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="wizard-next-cta wizard-next-cta--split no-print">
+        {embedded ? (
+          <>
+            <button type="button" class="kbm-btn kbm-btn-outline" data-sg-build-go="style">
+              ← Back to Style &amp; Design
+            </button>
+            <button type="button" class="kbm-btn kbm-btn-accent" data-sg-build-go="yarn">
+              10. Next: Yarn &amp; Gauge →
+            </button>
+          </>
+        ) : (
+          <>
+            <a href="/patterns/sleeveless/pattern?buildStep=design" class="kbm-btn kbm-btn-outline">← Back to Style &amp; Design</a>
+            <a href="/patterns/sleeveless/pattern?buildStep=yarn" class="kbm-btn kbm-btn-accent">10. Next: Yarn &amp; Gauge →</a>
+          </>
+        )}
+      </div>
+      {!embedded && <SleevelessStartOver />}
+  </PatternModeIndicator>
+</div>
+
+<style>
+  .sg-fit-page {
+    --sg-accent: #c2614e;
+  }
+
+  /* Align save hint with former page-header; spacing before main card */
+  .sg-fit-page > .kbm-pattern-save-status {
+    box-sizing: border-box;
+    max-width: 800px;
+    padding: 0 1rem;
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
+
+  .hat-builder-inputs .hat-form-section {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 4.5%, var(--page-bg, #fff));
+    border: 1px solid rgba(82, 104, 45, 0.09);
+    border-radius: 12px;
+    padding: 1.15rem 1.2rem 1.2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 2px rgba(45, 55, 30, 0.04);
+  }
+
+  @supports not (background: color-mix(in srgb, white, black)) {
+    .hat-builder-inputs .hat-form-section {
+      background: rgba(82, 104, 45, 0.045);
+    }
+  }
+
+  .hat-builder-inputs .hat-form-section:last-of-type {
+    margin-bottom: 0;
+  }
+
+  .hat-builder-inputs .hat-form-section__title,
+  .hat-builder-inputs .hat-form-section__heading {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+    letter-spacing: 0.02em;
+    line-height: 1.25;
+    margin: 0 0 0.7rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(82, 104, 45, 0.14);
+  }
+
+  /* Match global wizard “bookend” summary cards (terracotta title, no green section divider). */
+  .hat-builder-inputs .builder-summary .builder-summary-title.hat-form-section__title,
+  .hat-builder-inputs .builder-summary .builder-summary-title.hat-form-section__heading {
+    color: #c2614e;
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+    border-bottom: none;
+  }
+
+  .builder-summary .sg-fit-summary .sg-fit-size-copy:first-of-type {
+    margin-top: 0;
+  }
+
+  .sg-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .sg-section-header-main {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sg-section-selected-check {
+    color: var(--sg-accent);
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .sg-section-selected-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4b5563;
+    line-height: 1.2;
+  }
+
+  .sg-section-chevron-btn {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid color-mix(in srgb, var(--sg-accent) 45%, #ffffff);
+    background: #f7f9f3;
+    color: var(--sg-accent);
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    border-radius: 6px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 1px rgba(45, 55, 30, 0.06);
+  }
+
+  .sg-section-chevron-btn:hover {
+    background: color-mix(in srgb, var(--sg-accent) 8%, #ffffff);
+    border-color: color-mix(in srgb, var(--sg-accent) 62%, #ffffff);
+  }
+
+  @supports not (background: color-mix(in srgb, white, black)) {
+    .sg-section-chevron-btn {
+      border-color: rgba(194, 97, 78, 0.45);
+    }
+
+    .sg-section-chevron-btn:hover {
+      background: rgba(194, 97, 78, 0.08);
+      border-color: rgba(194, 97, 78, 0.62);
+    }
+  }
+
+  .sg-selector-section .sg-section-selected-check {
+    display: inline;
+  }
+
+  .sg-selector-section .sg-section-chevron-btn {
+    transform: rotate(-90deg);
+    transition: transform 0.15s ease;
+  }
+
+  .sg-selector-section.is-open .sg-section-chevron-btn {
+    transform: rotate(0deg);
+  }
+
+  .sg-selector-section .sg-section-options {
+    display: none;
+  }
+
+  .sg-selector-section.is-open .sg-section-options {
+    display: block;
+  }
+
+  .sg-selector-section .hat-form-section__title,
+  .sg-selector-section .hat-form-section__heading {
+    margin: 0;
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .hat-length-picker__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .hat-length-picker__option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 78px;
+    gap: 0.3rem;
+    margin: 0;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #fff;
+    padding: 8px;
+    text-align: center;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    transition:
+      border-color 0.15s,
+      background 0.15s;
+  }
+
+  .hat-length-picker__option:hover {
+    border-color: #aeb79a;
+  }
+
+  .hat-length-picker__option.is-selected {
+    border-color: var(--sg-accent);
+    background: color-mix(in srgb, var(--sg-accent) 7%, #ffffff);
+  }
+
+  @supports not (background: color-mix(in srgb, white, black)) {
+    .hat-length-picker__option.is-selected {
+      background: rgba(194, 97, 78, 0.07);
+    }
+  }
+
+  .hat-length-picker__option-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  .sg-fit-target-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .sg-fit-target-grid--five {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .sg-fit-size-load-msg {
+    margin: 0 0 0.65rem;
+    font-size: 0.88rem;
+    color: #6b7280;
+  }
+
+  .sg-fit-option-check {
+    display: none;
+    color: var(--sg-accent);
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .sg-fit-target-grid .hat-length-picker__option.is-selected .sg-fit-option-check {
+    display: inline;
+  }
+
+  .sg-fit-preference-grid .hat-length-picker__option.is-selected .sg-fit-option-check {
+    display: inline;
+  }
+
+  .sg-summary-panel {
+    font-size: 0.95rem;
+    line-height: 1.35;
+    color: #374151;
+  }
+
+  .sg-summary-sentence {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .sg-fit-placeholder-section {
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 3.5%, #ffffff);
+    border: 1px dashed rgba(82, 104, 45, 0.22);
+  }
+
+  .sg-fit-placeholder-copy {
+    margin: 0.15rem 0 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  .sg-fit-audience-intro {
+    margin: 0.15rem 0 0.75rem;
+    color: #6b7280;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  .sg-fit-size-copy {
+    margin: 0.15rem 0 0.8rem;
+    color: #6b7280;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  /* innerHTML spans lack Astro scope attrs — :global so edited values get accent color */
+  .sg-fit-summary :global(.sg-fit-edited),
+  :global(.sg-fit-edited) {
+    color: var(--sg-accent);
+    font-weight: 600;
+  }
+
+  .sg-fit-size-charts {
+    margin-top: 0;
+  }
+
+  /*
+    Ensure chart panels respect [hidden]; plain divs hide correctly without extra rules.
+  */
+  .sg-fit-size-charts > [data-size-chart][hidden] {
+    display: none !important;
+  }
+
+  .sg-fit-size-chart-panel {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .sg-fit-size-select {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-height: 44px;
+    margin: 0;
+    padding: 0.65rem 2.35rem 0.65rem 0.9rem;
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1.35;
+    font-weight: 600;
+    color: #374151;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 12px;
+    border: 1px solid rgba(82, 104, 45, 0.35);
+    border-radius: 10px;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
+  }
+
+  .sg-fit-size-select:hover:not(:disabled) {
+    border-color: #aeb79a;
+  }
+
+  .sg-fit-size-select:focus {
+    outline: none;
+    border-color: var(--sg-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--sg-accent) 28%, transparent);
+  }
+
+  .sg-fit-size-section.is-locked .sg-fit-size-select,
+  .sg-fit-size-select:disabled {
+    opacity: 0.52;
+    cursor: not-allowed;
+  }
+
+  .sg-fit-size-section.is-locked {
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 2.5%, #ffffff);
+  }
+
+  .sg-fit-size-section:not(.is-locked) .sg-fit-size-copy {
+    color: #4b5563;
+  }
+
+  .sg-fit-detail-section.is-locked {
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 2.5%, #ffffff);
+  }
+
+  .sg-fit-detail-section.is-locked .sg-fit-fine-tune-body {
+    display: none;
+  }
+
+  .sg-fit-detail-prereq-copy {
+    margin: 0 0 0.65rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #b45309;
+  }
+
+  .sg-fit-detail-section:not(.is-locked) .sg-fit-detail-prereq-copy,
+  .sg-fit-detail-section:not(.is-locked) .sg-fit-placeholder-copy[data-fit-detail-helper-copy] {
+    display: none;
+  }
+
+  .sg-fit-fine-tune-section:not(.is-locked) {
+    border-color: rgba(194, 97, 78, 0.22);
+    background: color-mix(in srgb, var(--sg-accent) 5%, #ffffff);
+  }
+
+  @supports not (background: color-mix(in srgb, white, black)) {
+    .sg-fit-fine-tune-section:not(.is-locked) {
+      background: rgba(194, 97, 78, 0.05);
+    }
+  }
+
+  .sg-fit-fine-tune-lead {
+    margin: 0 0 0.5rem;
+  }
+
+  .sg-fit-fine-tune-reassurance {
+    margin: 0 0 0.85rem;
+    font-size: 0.85rem;
+  }
+
+  .sg-fit-fine-tune-panel {
+    border-color: color-mix(in srgb, var(--sg-accent) 42%, rgba(82, 104, 45, 0.14));
+  }
+
+  .sg-fit-measurement-value-cell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    min-width: 0;
+  }
+
+  .sg-fit-measurement-input {
+    box-sizing: border-box;
+    width: 5.25rem;
+    max-width: 100%;
+    margin: 0;
+    padding: 0.45rem 0.5rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #374151;
+    text-align: right;
+    border: 1px solid rgba(82, 104, 45, 0.28);
+    border-radius: 10px;
+    background: #fff;
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
+  }
+
+  .sg-fit-measurement-input:focus {
+    outline: none;
+    border-color: var(--sg-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--sg-accent) 26%, transparent);
+  }
+
+  .sg-fit-measurement-input.sg-fit-edited {
+    border-color: var(--sg-accent);
+    color: var(--sg-accent);
+    font-weight: 600;
+  }
+
+  .sg-fit-measurement-input.sg-fit-edited:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(194, 97, 78, 0.25);
+  }
+
+  .sg-fit-measurement-unit {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #6b7280;
+    white-space: nowrap;
+  }
+
+  .sg-fit-fine-tune-reset {
+    margin-top: 1rem;
+    padding-top: 0.85rem;
+    border-top: 1px dashed rgba(194, 97, 78, 0.28);
+  }
+
+  .sg-fit-reset-btn {
+    margin: 0;
+  }
+
+  .sg-fit-reset-note {
+    margin: 0.45rem 0 0;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: #6b7280;
+    max-width: 42rem;
+  }
+
+  .sg-fit-detail-section:not(.is-locked) .sg-fit-placeholder-copy:not([hidden]) {
+    color: #4b5563;
+  }
+
+  .sg-fit-measurement-panel {
+    display: grid;
+    gap: 0.65rem;
+    margin-top: 0.7rem;
+    padding: 0.8rem 0.85rem;
+    border: 1px solid rgba(82, 104, 45, 0.16);
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .sg-fit-measurement-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px dashed rgba(82, 104, 45, 0.18);
+  }
+
+  .sg-fit-measurement-row:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .sg-fit-measurement-name {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #374151;
+  }
+
+  .sg-fit-measurement-helper {
+    margin: 0.2rem 0 0;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: #6b7280;
+  }
+
+  .sg-fit-measurement-value {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #4b5563;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 6%, #ffffff);
+    border: 1px solid rgba(82, 104, 45, 0.2);
+    border-radius: 999px;
+    padding: 0.3rem 0.55rem;
+    white-space: nowrap;
+  }
+
+  .sg-fit-preference-section.is-locked {
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 2.5%, #ffffff);
+  }
+
+  .sg-fit-preference-section.is-locked .hat-length-picker__option {
+    opacity: 0.52;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .sg-fit-preference-section:not(.is-locked) .sg-fit-placeholder-copy {
+    color: #4b5563;
+  }
+
+  .sg-fit-preference-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 0.7rem;
+  }
+
+  .fit-card-image {
+    width: 100%;
+    max-width: 160px;
+    height: auto;
+    display: block;
+    margin: 0 auto 0.75rem;
+  }
+
+  .sg-fit-preference-option {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .sg-fit-preference-note {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: #6b7280;
+    line-height: 1.35;
+  }
+
+  .sg-fit-preference-option .sg-fit-option-check {
+    margin-top: 0.2rem;
+  }
+
+  .wizard-next-cta {
+    margin-top: 1rem;
+  }
+
+  .wizard-next-cta--split {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1rem 1.5rem;
+  }
+
+  @media (max-width: 520px) {
+    .wizard-next-cta--split {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .wizard-next-cta--split > .kbm-btn-outline {
+      text-align: center;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .sg-fit-target-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sg-fit-target-grid--five {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sg-fit-preference-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hat-length-picker__grid {
+      gap: 8px;
+    }
+
+    .hat-length-picker__option {
+      padding: 6px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .sg-fit-target-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hat-length-picker__grid {
+      gap: 6px;
+    }
+
+    .hat-length-picker__option {
+      padding: 4px;
+    }
+  }
+</style>
+
+<script>
+  // @ts-nocheck
+  import {
+    getCurrentPattern,
+    saveCurrentPattern,
+    updatePatternSection,
+    notifyPatternSaved,
+    getPatternData,
+    savePatternData,
+    getSleevelessChartAudience,
+    getSleevelessChartAudienceLabel,
+    normalizeSleevelessAudience,
+    normalizeSleevelessAudienceV1,
+    SLEEVELESS_CHART_AUDIENCE_LABELS,
+    SLEEVELESS_CHART_INTRO,
+  } from "../../../lib/patterns/patternStorage.ts";
+  import {
+    bodyMeasurementInchesToCmRounded,
+    formatBodyMeasurementInchesForLabel,
+    garmentCmTypedToInches,
+    garmentFinishedInchesToCmDisplay,
+    pickBodyBustChestCmFromRow,
+  } from "../../../lib/patterns/sizingDisplay.ts";
+
+  /** Same sweater chart JSON as /reference/sizing-charts (project root `data/`, served at /data/). */
+  const SWEATER_CHART_URLS = {
+    misses: "/data/sizing_sweaters_misses.json",
+    plus: "/data/sizing_sweaters_plus.json",
+    men: "/data/sizing_sweaters_men.json",
+    kids: "/data/sizing_sweaters_kids.json",
+    baby: "/data/sizing_sweaters_baby.json",
+  };
+
+  const CHART_AUDIENCES = ["misses", "plus", "men", "kids", "baby"];
+
+  const CHART_INTRO = SLEEVELESS_CHART_INTRO;
+
+  const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
+
+  const FIT_PAGE_HEADER_INTRO_FALLBACK =
+    "Pick a size from the sizing chart, then decide how closely the sweater should fit and fine-tune the numbers that matter.";
+
+  function buildFitPageHeaderIntro(chartAudienceKey) {
+    const v1 = normalizeSleevelessAudienceV1(chartAudienceKey);
+    const frag = v1 ? getSleevelessChartAudienceLabel(v1) : "";
+    if (!frag) return FIT_PAGE_HEADER_INTRO_FALLBACK;
+    return `Pick a size from the ${frag} chart, then decide how closely the sweater should fit and fine-tune the numbers that matter.`;
+  }
+
+  function updateFitPageHeaderIntro(root) {
+    const panel = root?.closest(".sg-fit-page");
+    const el = panel?.querySelector("[data-sg-fit-page-intro]");
+    if (!el) return;
+    const p = getCurrentPattern();
+    const patternData = getPatternData();
+    const st = { ...(p.style || {}), ...(patternData.style || {}) };
+    const ft = { ...(p.fit || {}), ...(patternData.fit || {}) };
+    const chartKeyRaw = getSleevelessChartAudience({ ...p, style: st, fit: ft });
+    const chartKey = normalizeSleevelessAudienceV1(chartKeyRaw);
+    el.textContent = buildFitPageHeaderIntro(chartKey);
+  }
+
+  const FIT_EASE_LABELS = {
+    close: "Close fit",
+    standard: "Standard fit",
+    relaxed: "Relaxed fit",
+  };
+
+  /** Filled after fetch: each key is a chart id → Set of `String(row.size)` from JSON. */
+  const chartSizeSets = {};
+
+  /** Full chart rows per audience for default measurements. */
+  const chartRowsByAudience = {};
+
+  const MEASUREMENT_KEYS = [
+    "finished_bust_chest",
+    "finished_waist",
+    "finished_hip",
+    "back_neck_to_hem",
+    "armhole_depth",
+    "shoulder_width",
+    "neck_width",
+    "front_neck_depth",
+    "back_neck_depth",
+  ];
+
+  const MEASUREMENT_LABELS = {
+    finished_bust_chest: "Finished bust/chest",
+    finished_waist: "Finished waist",
+    finished_hip: "Finished hip",
+    back_neck_to_hem: "Back neck to hem",
+    armhole_depth: "Armhole depth",
+    shoulder_width: "Shoulder width",
+    neck_width: "Neck width",
+    front_neck_depth: "Front neck depth",
+    back_neck_depth: "Back neck depth",
+  };
+
+  /** Circumference ease added to body bust and waist for finished garment inches by fit choice. (Hip defaults do not use chart hip — see `computeDefaultMeasurementsFromRow`.) */
+  const EASE_INCHES_BY_FIT = {
+    close: 1,
+    standard: 3,
+    relaxed: 5,
+  };
+
+  const fitConfig = {
+    knitFor: "",
+    size: "",
+    fitPreference: "",
+    shape: "straight",
+    length: "hip",
+    frontStyle: "closed",
+    neckline: "round",
+  };
+
+  /** Snapshot of chart + ease defaults for the current size/fit (fine-tune “edited” styling). */
+  let defaultMeasurements = null;
+
+  /**
+   * Canonical fine-tune measurements in inches only — always derived from chart defaults + saved `selectedMeasurements`
+   * (never from displayed DOM). Inputs reflect this + active unit; toggling units reformats from here only.
+   * @type {Record<string, number | ""> | null}
+   */
+  let fineTuneInchesCanonical = null;
+
+  /** Skip size `<select>` side effects while syncing labels during unit toggle (prevents mis-parsing cm as inches). */
+  let suppressFitSizeChartChange = false;
+
+  function emptyFineTuneCanonical() {
+    /** @type {Record<string, number | "">} */
+    const o = {};
+    MEASUREMENT_KEYS.forEach((k) => {
+      o[k] = "";
+    });
+    return o;
+  }
+
+  function ensureFineTuneCanonical() {
+    if (!fineTuneInchesCanonical) fineTuneInchesCanonical = emptyFineTuneCanonical();
+  }
+
+  /** Replace canonical inch map from a merged/hydrated object (values already in inches). */
+  function hydrateFineTuneCanonicalFromInchObject(obj) {
+    fineTuneInchesCanonical = emptyFineTuneCanonical();
+    MEASUREMENT_KEYS.forEach((k) => {
+      const n = toFiniteNumber(obj[k]);
+      fineTuneInchesCanonical[k] = Number.isFinite(n) && n > 0 ? roundQuarter(n) : "";
+    });
+  }
+
+  /** Persist / summary / edited-state: inch snapshot only (never read from input elements). */
+  function snapshotFineTuneInches() {
+    if (!fineTuneInchesCanonical) {
+      return emptyFineTuneCanonical();
+    }
+    const out = {};
+    MEASUREMENT_KEYS.forEach((k) => {
+      const raw = fineTuneInchesCanonical[k];
+      if (raw === "" || raw === undefined || raw === null) {
+        out[k] = "";
+      } else {
+        const n = toFiniteNumber(raw);
+        out[k] = Number.isFinite(n) ? roundQuarter(n) : "";
+      }
+    });
+    return out;
+  }
+
+  /** Write one field from the current display unit into canonical inches (used on input). */
+  function applyFineTuneCanonicalFromField(key, displayValue, displayUnit) {
+    ensureFineTuneCanonical();
+    const inches = inchesFromFineTuneInputText(displayValue, displayUnit);
+    if (!Number.isFinite(inches) || inches <= 0) {
+      fineTuneInchesCanonical[key] = "";
+    } else {
+      fineTuneInchesCanonical[key] = roundQuarter(inches);
+    }
+  }
+
+  function syncFineTuneInputsFromCanonical(root) {
+    ensureFineTuneCanonical();
+    setMeasurementInputs(root, fineTuneInchesCanonical);
+  }
+
+  function isFitSelectorKey(k) {
+    return k === "size" || k === "fitPreference" || k === "fineTune";
+  }
+
+  function getFitSelectorSections(root) {
+    return Array.from(root.querySelectorAll(".sg-selector-section[data-selector-key]"));
+  }
+
+  function canOpenFineTuneSection() {
+    return hasChosenSize() && Boolean(fitConfig.fitPreference);
+  }
+
+  function getFineTunePrereqMessage() {
+    const hasSize = hasChosenSize();
+    const hasFit = Boolean(fitConfig.fitPreference);
+    if (!hasSize && !hasFit) return "Choose a size and fit first.";
+    if (hasSize && !hasFit) return "Choose a fit first.";
+    if (!hasSize && hasFit) return "Choose a size first.";
+    return "";
+  }
+
+  function getDefaultOpenFitSectionKey(root) {
+    if (!normalizeSleevelessAudienceV1(fitConfig.knitFor)) return "size";
+    if (!hasChosenSize()) return "size";
+    if (!fitConfig.fitPreference) return "fitPreference";
+    return "fineTune";
+  }
+
+  function setOpenFitSection(root, selectorKey) {
+    let key = selectorKey;
+    if (key === "fineTune" && !canOpenFineTuneSection()) {
+      key = getDefaultOpenFitSectionKey(root);
+    }
+    getFitSelectorSections(root).forEach((section) => {
+      const isOpen = key !== null && section.getAttribute("data-selector-key") === key;
+      section.classList.toggle("is-open", isOpen);
+      const headerToggle = section.querySelector("[data-section-toggle]");
+      const chevronBtn = section.querySelector("[data-section-chevron]");
+      if (headerToggle) {
+        headerToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      }
+      if (chevronBtn) {
+        chevronBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      }
+    });
+  }
+
+  function toggleFitSection(root, selectorKey) {
+    if (selectorKey === "fineTune" && !canOpenFineTuneSection()) {
+      updateFitDetailSectionState(root);
+      return;
+    }
+    const currentOpen = getFitSelectorSections(root).find((section) => section.classList.contains("is-open"));
+    const currentOpenKey = currentOpen?.getAttribute("data-selector-key");
+    if (currentOpenKey === selectorKey) {
+      setOpenFitSection(root, null);
+      return;
+    }
+    setOpenFitSection(root, selectorKey);
+  }
+
+  function bindFitAccordion(root) {
+    root.querySelectorAll("[data-section-toggle]").forEach((header) => {
+      const onToggle = () => {
+        const section = header.closest(".sg-selector-section");
+        const rawKey = section?.getAttribute("data-selector-key");
+        const key = isFitSelectorKey(rawKey) ? rawKey : null;
+        if (key) toggleFitSection(root, key);
+      };
+      header.addEventListener("click", (event) => {
+        if (event.target instanceof Element && event.target.closest("[data-section-chevron]")) return;
+        onToggle();
+      });
+      header.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onToggle();
+        }
+      });
+    });
+
+    root.querySelectorAll("[data-section-chevron]").forEach((btn) => {
+      btn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const section = btn.closest(".sg-selector-section");
+        const rawKey = section?.getAttribute("data-selector-key");
+        const key = isFitSelectorKey(rawKey) ? rawKey : null;
+        if (key) toggleFitSection(root, key);
+      });
+    });
+  }
+
+  function syncFitHeaderSummaries(root) {
+    getFitSelectorSections(root).forEach((section) => {
+      const rawKey = section.getAttribute("data-selector-key");
+      const key = isFitSelectorKey(rawKey) ? rawKey : null;
+      if (!key) return;
+      const valueSpan = section.querySelector("[data-selected-value]");
+      const checkmark = section.querySelector("[data-selected-check]");
+      if (!valueSpan) return;
+
+      let resolved = "";
+      let checkmarkVisible = false;
+      if (key === "size") {
+        if (hasChosenSize()) {
+          const audLabel = AUDIENCE_LABELS[fitConfig.knitFor] ?? fitConfig.knitFor;
+          const row = findChartRow(fitConfig.knitFor, fitConfig.size);
+          const uiUnit = getCurrentUiUnit();
+          if (row) {
+            resolved = `${audLabel} — ${buildSizeOptionLabelText(row, fitConfig.knitFor, uiUnit)}`;
+          } else {
+            resolved = `${audLabel} — ${fitConfig.size}`;
+          }
+        }
+        checkmarkVisible = !!resolved;
+      } else if (key === "fitPreference") {
+        resolved =
+          fitConfig.fitPreference && FIT_EASE_LABELS[fitConfig.fitPreference]
+            ? FIT_EASE_LABELS[fitConfig.fitPreference]
+            : "";
+        checkmarkVisible = !!resolved;
+      } else if (key === "fineTune") {
+        resolved = "";
+        const detail = root.querySelector("[data-fit-detail-section]");
+        const unlocked = detail && !detail.classList.contains("is-locked");
+        if (unlocked && hasChosenSize() && fitConfig.fitPreference) {
+          const adj = formatAdjustmentsSummary(root);
+          if (adj && adj !== "—") {
+            checkmarkVisible = true;
+          }
+        }
+      }
+
+      valueSpan.textContent = resolved;
+      if (checkmark) {
+        checkmark.style.display = checkmarkVisible ? "inline" : "none";
+      }
+    });
+  }
+
+  function normalizeRowSize(row) {
+    if (!row || row.size === undefined || row.size === null) return "";
+    return String(row.size);
+  }
+
+  /**
+   * UI unit from UnitToggle (`#unit`) or kbm-units — display only; internal math stays in inches.
+   * @returns {'in' | 'cm'}
+   */
+  function getCurrentUiUnit() {
+    const hidden = document.getElementById("unit");
+    if (hidden instanceof HTMLInputElement && (hidden.value === "in" || hidden.value === "cm")) {
+      return hidden.value;
+    }
+    try {
+      const u = localStorage.getItem("kbm-units");
+      if (u === "in" || u === "cm") return u;
+    } catch {
+      /* ignore */
+    }
+    return "in";
+  }
+
+  /** Pattern math + `selectedMeasurements` stay in inches; convert at UI boundary only (see `sizingDisplay` INCH_TO_CM). */
+
+  /**
+   * Parse a fine-tune field value into stored inches, given how the input text was shown.
+   * @param {'in' | 'cm'} inputUnit Unit the user was typing in (not necessarily `getCurrentUiUnit()` during toggles).
+   */
+  function inchesFromFineTuneInputText(raw, inputUnit) {
+    const n = typeof raw === "number" ? raw : parseFloat(String(raw).trim());
+    if (!Number.isFinite(n) || n <= 0) return NaN;
+    if (inputUnit === "cm") {
+      return roundQuarter(garmentCmTypedToInches(n));
+    }
+    return roundQuarter(n);
+  }
+
+  /** Format stored inches for the measurement inputs for the active display unit. */
+  function formatInchesForFineTuneInput(inches, displayUnit) {
+    if (!Number.isFinite(inches) || inches <= 0) return "";
+    if (displayUnit === "cm") {
+      const cm = garmentFinishedInchesToCmDisplay(inches);
+      return cm % 1 === 0 ? String(Math.round(cm)) : cm.toFixed(1);
+    }
+    return String(roundQuarter(inches));
+  }
+
+  /** Summary / accordion text for one stored inch value in the current UI unit. */
+  function formatFineTuneSummaryFragment(inches, uiUnit) {
+    if (!Number.isFinite(inches) || inches <= 0) return "";
+    if (uiUnit === "cm") {
+      const cm = garmentFinishedInchesToCmDisplay(inches);
+      const s = cm % 1 === 0 ? String(Math.round(cm)) : cm.toFixed(1);
+      return `${s} cm`;
+    }
+    const q = roundQuarter(inches);
+    const s = q % 1 === 0 ? String(q) : String(q);
+    return `${s}"`;
+  }
+
+  function updateFineTuneMetricChrome(root) {
+    const ui = getCurrentUiUnit();
+    root.querySelectorAll("[data-fit-measurement-unit]").forEach((el) => {
+      el.textContent = ui === "cm" ? "cm" : '"';
+    });
+    root.querySelectorAll("[data-fit-measurement-input]").forEach((input) => {
+      if (ui === "cm") {
+        input.setAttribute("step", "0.1");
+      } else {
+        input.setAttribute("step", "0.25");
+      }
+    });
+  }
+
+  /** Dropdown / summary label — Women's/Plus Size charts use Bust; others use Chest. */
+  function buildSizeOptionLabelText(row, audience, uiUnit) {
+    const key = normalizeRowSize(row);
+    const measureWord = audience === "misses" || audience === "plus" ? "Bust" : "Chest";
+    const rowObj = row && typeof row === "object" ? /** @type {Record<string, unknown>} */ (row) : {};
+
+    if (uiUnit === "cm") {
+      let cm = pickBodyBustChestCmFromRow(rowObj);
+      if (cm === null) {
+        const inches = toFiniteNumber(row.bust_or_chest);
+        cm = Number.isFinite(inches) ? bodyMeasurementInchesToCmRounded(inches) : null;
+      }
+      if (cm === null) return `Size ${key}`;
+      return `Size ${key} — ${measureWord}: ${cm} cm (body measurement)`;
+    }
+
+    const inches = toFiniteNumber(row.bust_or_chest);
+    if (!Number.isFinite(inches)) return `Size ${key}`;
+    const inchStr = formatBodyMeasurementInchesForLabel(inches);
+    return `Size ${key} — ${measureWord}: ${inchStr}" (body measurement)`;
+  }
+
+  function populateAudienceSizeSelect(root, aud, uiUnit) {
+    const list = chartRowsByAudience[aud];
+    const chartEl = root.querySelector(`[data-size-chart="${aud}"]`);
+    const selectEl = chartEl?.querySelector("[data-fit-size-select]");
+    if (!selectEl || !Array.isArray(list)) return;
+    const prev = selectEl.value;
+    const optionsHtml =
+      `<option value="">${escapeHtml("Select a size…")}</option>` +
+      list
+        .map((row) => {
+          const key = normalizeRowSize(row);
+          const labelText = buildSizeOptionLabelText(row, aud, uiUnit);
+          return `<option value="${escapeAttr(key)}">${escapeHtml(labelText)}</option>`;
+        })
+        .join("");
+    selectEl.innerHTML = optionsHtml;
+    if (prev && chartSizeSets[aud]?.has(prev)) {
+      selectEl.value = prev;
+    }
+  }
+
+  function rebuildSizeDropdownLabels(root, uiUnit) {
+    CHART_AUDIENCES.forEach((aud) => populateAudienceSizeSelect(root, aud, uiUnit));
+    syncSizeSelection(root);
+  }
+
+  function escapeAttr(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function isValidSizeForAudience(audience, size) {
+    if (!audience || size === undefined || size === null || size === "") return false;
+    const set = chartSizeSets[audience];
+    return set instanceof Set && set.has(String(size));
+  }
+
+  function hasChosenSize() {
+    return isValidSizeForAudience(fitConfig.knitFor, fitConfig.size);
+  }
+
+  async function loadSweaterCharts(root) {
+    const statusEl = root.querySelector("[data-size-charts-status]");
+    try {
+      await Promise.all(
+        CHART_AUDIENCES.map(async (aud) => {
+          const url = SWEATER_CHART_URLS[aud];
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`${aud}: ${res.status}`);
+          const rows = await res.json();
+          const list = Array.isArray(rows) ? rows : [];
+          chartSizeSets[aud] = new Set();
+          chartRowsByAudience[aud] = list;
+          list.forEach((row) => {
+            const k = normalizeRowSize(row);
+            if (k) chartSizeSets[aud].add(k);
+          });
+        }),
+      );
+      const uiUnit = getCurrentUiUnit();
+      CHART_AUDIENCES.forEach((aud) => populateAudienceSizeSelect(root, aud, uiUnit));
+      if (statusEl) statusEl.style.display = "none";
+    } catch (err) {
+      console.error("Sweater chart load failed", err);
+      if (statusEl) {
+        statusEl.textContent = "Could not load size charts. Check your connection and refresh.";
+        statusEl.style.color = "#b91c1c";
+      }
+    }
+  }
+
+  function setSaveStatusMessage(message) {
+    const el = document.querySelector("[data-pattern-save-status]");
+    if (el) el.textContent = message ?? "";
+  }
+
+  function toFiniteNumber(val) {
+    if (val === undefined || val === null || val === "") return NaN;
+    const n = typeof val === "number" ? val : parseFloat(String(val));
+    return Number.isFinite(n) ? n : NaN;
+  }
+
+  function roundQuarter(n) {
+    if (!Number.isFinite(n)) return 0;
+    return Math.round(n * 4) / 4;
+  }
+
+  function easeInchesForFit(fitPreference) {
+    const e = EASE_INCHES_BY_FIT[fitPreference];
+    return typeof e === "number" ? e : EASE_INCHES_BY_FIT.standard;
+  }
+
+  /**
+   * Defaults from the sizing chart row + fit ease.
+   * Finished hip is never taken from sizing JSON `hip`: it matches finished bust/chest so ease is not applied
+   * twice to the body, and straight sweaters stay cylindrical until the user changes fine-tune. For A-line,
+   * widening hip is an explicit edit — chart hip is never applied automatically.
+   */
+  function computeDefaultMeasurementsFromRow(row, fitPreference) {
+    const ease = easeInchesForFit(fitPreference);
+    const bust = toFiniteNumber(row.bust_or_chest);
+    const waist = toFiniteNumber(row.waist);
+    const finishedBustChest = roundQuarter(bust + ease);
+    return {
+      finished_bust_chest: finishedBustChest,
+      finished_waist: roundQuarter(waist + ease),
+      finished_hip: finishedBustChest,
+      back_neck_to_hem: roundQuarter(toFiniteNumber(row.garment_back_length)),
+      armhole_depth: roundQuarter(toFiniteNumber(row.armhole_depth)),
+      shoulder_width: roundQuarter(toFiniteNumber(row.shoulder_width)),
+      neck_width: roundQuarter(toFiniteNumber(row.neck_opening)),
+      front_neck_depth: roundQuarter(toFiniteNumber(row.front_neck_depth)),
+      back_neck_depth: roundQuarter(toFiniteNumber(row.back_neck_depth)),
+    };
+  }
+
+  function findChartRow(audience, sizeStr) {
+    const list = chartRowsByAudience[audience];
+    if (!Array.isArray(list)) return null;
+    const key = String(sizeStr);
+    return list.find((row) => normalizeRowSize(row) === key) ?? null;
+  }
+
+  /** Default inch values for the current chart row + ease (for “edited vs default” in Fit Summary). */
+  function getDefaultMeasurementsForSummary() {
+    const row = findChartRow(fitConfig.knitFor, fitConfig.size);
+    if (!row || !fitConfig.fitPreference) return null;
+    return computeDefaultMeasurementsFromRow(row, fitConfig.fitPreference);
+  }
+
+  /**
+   * Fine-tune measurements for persist/summary — always the canonical inch map (never parsed from DOM).
+   * @deprecated Parameters ignored; kept for call-site compatibility.
+   */
+  function collectMeasurementSnapshot(_root, _inputUnit = null) {
+    void _root;
+    void _inputUnit;
+    return snapshotFineTuneInches();
+  }
+
+  function clearMeasurementInputs(root) {
+    root.querySelectorAll("[data-fit-measurement-input]").forEach((input) => {
+      input.value = "";
+    });
+  }
+
+  function setMeasurementInputs(root, values) {
+    const displayUnit = getCurrentUiUnit();
+    root.querySelectorAll("[data-fit-measurement-input]").forEach((input) => {
+      const key = input.getAttribute("data-fit-measurement-key");
+      if (!key) return;
+      if (!values || values[key] === undefined || values[key] === null) {
+        input.value = "";
+        return;
+      }
+      const n = toFiniteNumber(values[key]);
+      input.value = Number.isFinite(n) ? formatInchesForFineTuneInput(n, displayUnit) : "";
+    });
+  }
+
+  function applyDefaultMeasurements(root) {
+    const row = findChartRow(fitConfig.knitFor, fitConfig.size);
+    if (!row || !fitConfig.fitPreference) return;
+    const defs = computeDefaultMeasurementsFromRow(row, fitConfig.fitPreference);
+    defaultMeasurements = { ...defs };
+    hydrateFineTuneCanonicalFromInchObject(defs);
+    syncFineTuneInputsFromCanonical(root);
+    updateFineTuneEditedClasses(root);
+  }
+
+  /**
+   * Older sessions could save bogus “inch” values after cm/in parsing raced with chart rebuild (~200+).
+   * Heuristic repair only when clearly out of garment scale (whole-inch sizing charts stay under ~90).
+   */
+  function repairLegacyMisstoredFineTuneInches(n) {
+    if (!Number.isFinite(n) || n <= 90) return n;
+    const by254 = n / 25.4;
+    if (n >= 200 && by254 >= 8 && by254 <= 90) return by254;
+    const by10 = n / 10;
+    if (by10 >= 8 && by10 <= 90) return by10;
+    return n;
+  }
+
+  function mergeMeasurements(into, from) {
+    if (!from || typeof from !== "object") return into;
+    MEASUREMENT_KEYS.forEach((k) => {
+      const n = toFiniteNumber(from[k]);
+      if (Number.isFinite(n) && n > 0) into[k] = roundQuarter(repairLegacyMisstoredFineTuneInches(n));
+    });
+    return into;
+  }
+
+  function hydrateFineTuneMeasurements(root) {
+    const patternData = getPatternData();
+    const saved = patternData.fit?.selectedMeasurements;
+    const merged = {};
+    mergeMeasurements(merged, saved);
+
+    const hasAnySaved = MEASUREMENT_KEYS.some((k) => merged[k] !== undefined);
+
+    if (hasChosenSize() && fitConfig.fitPreference) {
+      const row = findChartRow(fitConfig.knitFor, fitConfig.size);
+      if (row) {
+        const defs = computeDefaultMeasurementsFromRow(row, fitConfig.fitPreference);
+        MEASUREMENT_KEYS.forEach((k) => {
+          if (merged[k] === undefined) merged[k] = defs[k];
+        });
+      }
+    }
+
+    if (!hasAnySaved && !(hasChosenSize() && fitConfig.fitPreference)) {
+      fineTuneInchesCanonical = null;
+      clearMeasurementInputs(root);
+      return;
+    }
+
+    syncDefaultMeasurementsSnapshot();
+    hydrateFineTuneCanonicalFromInchObject(merged);
+    syncFineTuneInputsFromCanonical(root);
+    updateFineTuneEditedClasses(root);
+  }
+
+  function hydrateFromPattern() {
+    const patternData = getPatternData();
+    const styleData = patternData.style || {};
+    const fitData = patternData.fit || {};
+    const p = getCurrentPattern();
+    const st = { ...(p.style || {}), ...styleData };
+    const ft = { ...(p.fit || {}), ...fitData };
+
+    fitConfig.shape = "straight";
+    fitConfig.length = "hip";
+    fitConfig.frontStyle = "closed";
+    fitConfig.neckline = "round";
+
+    const chartKeyRaw = getSleevelessChartAudience({ ...p, style: st, fit: ft });
+    const chartKey = normalizeSleevelessAudienceV1(chartKeyRaw);
+    if (chartKey) {
+      fitConfig.knitFor = chartKey;
+    }
+
+    if (normalizeSleevelessAudience(chartKeyRaw) === "plus") {
+      saveCurrentPattern({
+        style: {
+          recipientCategory: "misses",
+          bodyShape: "straight",
+          length: "hip",
+          frontStyle: "closed",
+          neckline: "round",
+          armholeStyle: "standard",
+        },
+        fit: { sizingChart: "misses" },
+      });
+    }
+
+    if (typeof ft.selectedSize === "string" && ft.selectedSize !== "") {
+      fitConfig.size = ft.selectedSize;
+    }
+
+    const ease = ft.easeChoice ?? ft.fitChoice;
+    if (ease === "close" || ease === "standard" || ease === "relaxed") {
+      fitConfig.fitPreference = ease;
+    }
+
+    if (import.meta.env.DEV) {
+      console.info(
+        "[sleeveless-fit] loaded recipientCategory=",
+        st.recipientCategory,
+        "chartKey=",
+        chartKey,
+        "selectedSize=",
+        ft.selectedSize,
+      );
+    }
+  }
+
+  function persistFitConfig(root, { silent } = {}) {
+    const fitPayload = {
+      sizingChart: fitConfig.knitFor,
+      selectedSize: fitConfig.size,
+      easeChoice: fitConfig.fitPreference,
+      fitChoice: fitConfig.fitPreference,
+      fineTuneAdjustments: {
+        summaryLine: formatAdjustmentsSummary(root),
+      },
+      selectedMeasurements: collectMeasurementSnapshot(root),
+    };
+    updatePatternSection("fit", fitPayload);
+    savePatternData("fit", fitPayload);
+    if (!silent) notifyPatternSaved(setSaveStatusMessage);
+    if (import.meta.env.DEV && !silent) {
+      console.info("[sleeveless-fit] saved selectedSize=", fitConfig.size, "sizingChart=", fitConfig.knitFor);
+    }
+  }
+
+  /** Design-only recap — matches sleeveless garment V1 summary. */
+  function buildDesignSummarySentence() {
+    return "straight sleeveless pullover with a round neckline";
+  }
+
+  /** Short chart title from CHART_INTRO (text before " — "), e.g. "Men's sweater chart". */
+  function chartIntroShortLabel(audienceKey) {
+    const intro = audienceKey && CHART_INTRO[audienceKey];
+    if (!intro) return "";
+    return intro.split(" — ")[0]?.trim() ?? "";
+  }
+
+  /** Possessive / group label for "So Far" sentence, from chart title before " sweater chart". */
+  function audienceSummaryPrefix(audienceKey) {
+    const short = chartIntroShortLabel(audienceKey);
+    if (!short) return "";
+    const needle = " sweater chart";
+    const idx = short.toLowerCase().indexOf(needle);
+    if (idx === -1) return short.trim();
+    return short.slice(0, idx).trim();
+  }
+
+  /** Style recap plus sizing group in one sentence when a chart audience is selected. */
+  function buildSoFarSummarySentence() {
+    const design = buildDesignSummarySentence();
+    const aud = normalizeSleevelessAudienceV1(fitConfig.knitFor);
+    if (!aud || !AUDIENCE_LABELS[aud]) return design;
+    return `${AUDIENCE_LABELS[aud]} ${design}`;
+  }
+
+  function isEditedValue(key, selectedMeasurements, defaultMeasurements) {
+    if (!defaultMeasurements) return false;
+    const raw = selectedMeasurements[key];
+    if (raw === "" || raw === undefined || raw === null) return false;
+    const selected = Number(raw);
+    const def = Number(defaultMeasurements[key]);
+    if (!Number.isFinite(selected) || !Number.isFinite(def)) return false;
+    return Math.abs(selected - def) > 0.01;
+  }
+
+  function updateFineTuneEditedClasses(root) {
+    const snap = snapshotFineTuneInches();
+    const defs = defaultMeasurements;
+    root.querySelectorAll("[data-fit-measurement-input]").forEach((input) => {
+      const key = input.getAttribute("data-fit-measurement-key");
+      if (!key) return;
+      const edited = isEditedValue(key, snap, defs);
+      input.classList.toggle("sg-fit-edited", edited);
+    });
+  }
+
+  function syncDefaultMeasurementsSnapshot() {
+    const d = getDefaultMeasurementsForSummary();
+    defaultMeasurements = d ? { ...d } : null;
+  }
+
+  /**
+   * @param {{ asHtml?: boolean }} [options]
+   * Plain text for storage and section headers; HTML only for Fit Summary adjustments line.
+   * Lists only fine-tune fields that differ from calculated defaults; otherwise “No adjustments added.” when defaults exist.
+   */
+  function formatAdjustmentsSummary(root, options = {}) {
+    void root;
+    const asHtml = options.asHtml === true;
+    const snap = snapshotFineTuneInches();
+    const defaultMeasurements = getDefaultMeasurementsForSummary();
+    const uiUnit = getCurrentUiUnit();
+    const parts = [];
+    MEASUREMENT_KEYS.forEach((key) => {
+      const raw = snap[key];
+      const n = typeof raw === "number" ? raw : parseFloat(String(raw));
+      if (!Number.isFinite(n) || n <= 0) return;
+      if (!isEditedValue(key, snap, defaultMeasurements)) return;
+      const label = MEASUREMENT_LABELS[key] ?? key;
+      const fragment = formatFineTuneSummaryFragment(n, uiUnit);
+      if (!fragment) return;
+      if (asHtml) {
+        const valuePart = `<span class="sg-fit-edited">${fragment}</span>`;
+        parts.push(`${label}: ${valuePart}`);
+      } else {
+        parts.push(`${label}: ${fragment}`);
+      }
+    });
+    if (parts.length) {
+      return parts.join(asHtml ? " • " : "; ");
+    }
+    if (defaultMeasurements) {
+      return "No adjustments added.";
+    }
+    return "—";
+  }
+
+  /**
+   * Fine-tune lead copy for straight body only (no waist wording). Ease matches `EASE_INCHES_BY_FIT`.
+   * @param {string} fitChoice
+   * @param {'in' | 'cm'} uiUnit
+   */
+  function getStraightFitHelperText(fitChoice, uiUnit) {
+    const easeIn = easeInchesForFit(fitChoice);
+    const fitPrefix =
+      fitChoice === "close"
+        ? "Close fit"
+        : fitChoice === "standard"
+          ? "Standard fit"
+          : fitChoice === "relaxed"
+            ? "Relaxed fit"
+            : "";
+    if (!fitPrefix) return "";
+    const easePart =
+      uiUnit === "cm"
+        ? `+${garmentFinishedInchesToCmDisplay(easeIn)} cm ease at bust`
+        : `+${easeIn}" ease at bust`;
+    return `${fitPrefix}: ${easePart}. Body is straight, so hip follows bust. Adjust any values below.`;
+  }
+
+  /** Intro copy inside Fine-tune: reflects chart row, ease for current fit, and example bust (respects active unit). */
+  function updateFineTuneLead(root) {
+    const el = root.querySelector("[data-fit-fine-tune-lead]");
+    if (!el) return;
+    const fallback =
+      "We've filled these in from the size and fit you selected. You can use them as-is, or adjust any measurement before building your pattern.";
+    if (!hasChosenSize() || !fitConfig.fitPreference) {
+      el.textContent = fallback;
+      return;
+    }
+    const row = findChartRow(fitConfig.knitFor, fitConfig.size);
+    if (!row) {
+      el.textContent = fallback;
+      return;
+    }
+    const uiUnit = getCurrentUiUnit();
+    const easeIn = easeInchesForFit(fitConfig.fitPreference);
+    const defs = computeDefaultMeasurementsFromRow(row, fitConfig.fitPreference);
+    const bodyBust = toFiniteNumber(row.bust_or_chest);
+    const finishedBust = toFiniteNumber(defs?.finished_bust_chest);
+    const fitLabel = FIT_EASE_LABELS[fitConfig.fitPreference] ?? fitConfig.fitPreference;
+    const measureWord = fitConfig.knitFor === "misses" || fitConfig.knitFor === "plus" ? "Bust" : "Chest";
+    const easeFrag =
+      uiUnit === "cm"
+        ? `${garmentFinishedInchesToCmDisplay(easeIn)} cm`
+        : `${easeIn}"`;
+    const bodyFrag =
+      Number.isFinite(bodyBust) && bodyBust > 0 ? formatFineTuneSummaryFragment(bodyBust, uiUnit) : "—";
+    const finishedFrag =
+      Number.isFinite(finishedBust) && finishedBust > 0 ? formatFineTuneSummaryFragment(finishedBust, uiUnit) : "—";
+    const shape = fitConfig.shape === "aline" ? "aline" : "straight";
+    if (shape === "straight") {
+      const straightLead = getStraightFitHelperText(fitConfig.fitPreference, uiUnit);
+      el.textContent = straightLead || fallback;
+      return;
+    }
+    const hipSentence = ` Finished hip starts the same as finished bust/chest — increase it below if you want more room at the hem (sizing-chart hip is not applied automatically).`;
+    el.textContent = `These defaults use ${fitLabel}: add ${easeFrag} ease to bust and waist from your chart row (${measureWord} ${bodyFrag} → finished bust/chest ${finishedFrag}).${hipSentence} Other lengths and openings follow the chart. Adjust any value below.`;
+  }
+
+  function renderFitSummary(root) {
+    const sizeVal = root.querySelector("[data-fit-summary-size-value]");
+    const easeVal = root.querySelector("[data-fit-summary-ease-value]");
+    const adjVal = root.querySelector("[data-fit-summary-adjustments-value]");
+    if (!sizeVal || !easeVal || !adjVal) return;
+
+    if (hasChosenSize()) {
+      const audLabel = AUDIENCE_LABELS[fitConfig.knitFor] ?? fitConfig.knitFor;
+      const row = findChartRow(fitConfig.knitFor, fitConfig.size);
+      const uiUnit = getCurrentUiUnit();
+      if (row) {
+        sizeVal.textContent = `${audLabel} — ${buildSizeOptionLabelText(row, fitConfig.knitFor, uiUnit)}`;
+      } else {
+        sizeVal.textContent = `${audLabel} — ${fitConfig.size}`;
+      }
+    } else {
+      sizeVal.textContent = "—";
+    }
+
+    easeVal.textContent =
+      fitConfig.fitPreference && FIT_EASE_LABELS[fitConfig.fitPreference]
+        ? FIT_EASE_LABELS[fitConfig.fitPreference]
+        : "—";
+
+    const selectedMeasurements = snapshotFineTuneInches();
+    const defaultMeasurements = getDefaultMeasurementsForSummary();
+    const adjPlain = formatAdjustmentsSummary(root);
+
+    if (import.meta.env.DEV) {
+      console.log("Fit summary selectedMeasurements", selectedMeasurements);
+      console.log("Fit summary defaultMeasurements", defaultMeasurements);
+      console.log("Fit summary plain", adjPlain);
+    }
+
+    if (adjPlain === "—" || adjPlain === "No adjustments added.") {
+      adjVal.textContent = adjPlain;
+    } else {
+      adjVal.innerHTML = formatAdjustmentsSummary(root, { asHtml: true });
+    }
+    updateFineTuneLead(root);
+    syncFitHeaderSummaries(root);
+  }
+
+  function syncSizeSelection(root) {
+    root.querySelectorAll("[data-fit-size-select]").forEach((sel) => {
+      const aud = sel.getAttribute("data-size-audience");
+      if (aud === fitConfig.knitFor) {
+        const ok = fitConfig.size && isValidSizeForAudience(aud, fitConfig.size);
+        sel.value = ok ? fitConfig.size : "";
+      } else {
+        sel.value = "";
+      }
+    });
+  }
+
+  function updateVisibleSizeChart(root) {
+    root.querySelectorAll(".sg-fit-size-charts > [data-size-chart]").forEach((chart) => {
+      if (chart.hasAttribute("data-sg-v1-hidden")) {
+        chart.setAttribute("hidden", "");
+        chart.setAttribute("aria-hidden", "true");
+        return;
+      }
+      const aud = chart.getAttribute("data-size-audience");
+      const show = Boolean(fitConfig.knitFor && aud === fitConfig.knitFor);
+      chart.toggleAttribute("hidden", !show);
+      chart.setAttribute("aria-hidden", show ? "false" : "true");
+    });
+  }
+
+  function updateSizeSectionState(root) {
+    const section = root.querySelector("[data-size-section]");
+    const copy = root.querySelector("[data-size-helper-copy]");
+    if (!section || !copy) return;
+    const hasAudience = Boolean(normalizeSleevelessAudienceV1(fitConfig.knitFor));
+    section.classList.toggle("is-locked", !hasAudience);
+    copy.textContent = hasAudience
+      ? "Choose the size closest to your body measurement."
+      : "Go back to the design page to choose Women's, Men's, Kids', or Baby.";
+    root.querySelectorAll("[data-fit-size-select]").forEach((sel) => {
+      sel.disabled = !hasAudience;
+    });
+    updateVisibleSizeChart(root);
+  }
+
+  function updateFitDetailSectionState(root) {
+    const section = root.querySelector("[data-fit-detail-section]");
+    const copy = root.querySelector("[data-fit-detail-helper-copy]");
+    if (!section || !copy) return;
+    const canFineTune = canOpenFineTuneSection();
+    section.classList.toggle("is-locked", !canFineTune);
+    if (!canFineTune) {
+      copy.textContent = getFineTunePrereqMessage();
+    }
+  }
+
+  function syncFitPreferenceSelection(root) {
+    root.querySelectorAll("[data-fit-preference-option]").forEach((btn) => {
+      const v = btn.getAttribute("data-fit-preference-option");
+      const on = v === fitConfig.fitPreference;
+      btn.classList.toggle("is-selected", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function updateFitPreferenceSectionState(root) {
+    const section = root.querySelector("[data-fit-preference-section]");
+    const lockedCopy = root.querySelector("[data-fit-preference-locked-copy]");
+    const unlockedCopy = root.querySelector("[data-fit-preference-unlocked-copy]");
+    if (!section || !lockedCopy || !unlockedCopy) return;
+    const hasSize = hasChosenSize();
+    section.classList.toggle("is-locked", !hasSize);
+    if (hasSize) {
+      lockedCopy.setAttribute("hidden", "");
+      unlockedCopy.removeAttribute("hidden");
+    } else {
+      lockedCopy.removeAttribute("hidden");
+      unlockedCopy.setAttribute("hidden", "");
+    }
+  }
+
+  function renderSoFarSentence(root) {
+    const sentenceEl = root.querySelector("#garment-config-so-far-sentence");
+    if (sentenceEl) sentenceEl.textContent = buildSoFarSummarySentence();
+  }
+
+  function bind(root) {
+    const chartsRoot = root.querySelector("[data-size-charts]");
+    if (chartsRoot) {
+      chartsRoot.addEventListener("change", (e) => {
+        const sel = e.target.closest("[data-fit-size-select]");
+        if (!sel || !chartsRoot.contains(sel)) return;
+        if (suppressFitSizeChartChange) return;
+        const aud = sel.getAttribute("data-size-audience");
+        const v = sel.value;
+        if (!aud || aud !== fitConfig.knitFor) return;
+        if (!v) {
+          fitConfig.size = "";
+          fineTuneInchesCanonical = null;
+          clearMeasurementInputs(root);
+          defaultMeasurements = null;
+          root.querySelectorAll(".sg-fit-edited").forEach((el) => el.classList.remove("sg-fit-edited"));
+          syncSizeSelection(root);
+          updateFitDetailSectionState(root);
+          updateFitPreferenceSectionState(root);
+          renderFitSummary(root);
+          persistFitConfig(root);
+          setOpenFitSection(root, "size");
+          return;
+        }
+        if (!isValidSizeForAudience(aud, v)) return;
+        fitConfig.size = v;
+        syncSizeSelection(root);
+        if (fitConfig.fitPreference) {
+          applyDefaultMeasurements(root);
+        }
+        updateFitDetailSectionState(root);
+        updateFitPreferenceSectionState(root);
+        renderFitSummary(root);
+        persistFitConfig(root);
+        setOpenFitSection(root, "fitPreference");
+      });
+    }
+
+    root.querySelectorAll("[data-fit-preference-option]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const v = btn.getAttribute("data-fit-preference-option");
+        if (!hasChosenSize()) return;
+        if (v === "close" || v === "standard" || v === "relaxed") {
+          const previousFit = fitConfig.fitPreference;
+          fitConfig.fitPreference = v;
+          syncFitPreferenceSelection(root);
+          if (previousFit !== v) {
+            applyDefaultMeasurements(root);
+          } else {
+            syncDefaultMeasurementsSnapshot();
+            updateFineTuneEditedClasses(root);
+          }
+          updateFitDetailSectionState(root);
+          renderFitSummary(root);
+          persistFitConfig(root);
+          setOpenFitSection(root, "fineTune");
+        }
+      });
+    });
+
+    const resetBtn = root.querySelector("[data-fit-measurements-reset]");
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        if (!hasChosenSize() || !fitConfig.fitPreference) return;
+        applyDefaultMeasurements(root);
+        root.querySelectorAll(".sg-fit-edited").forEach((el) => el.classList.remove("sg-fit-edited"));
+        renderFitSummary(root);
+        persistFitConfig(root);
+      });
+    }
+
+    root.addEventListener("input", (e) => {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement)) return;
+      if (!t.matches("[data-fit-measurement-input]") || !root.contains(t)) return;
+      const key = t.getAttribute("data-fit-measurement-key");
+      if (!key) return;
+      applyFineTuneCanonicalFromField(key, t.value, getCurrentUiUnit());
+      updateFineTuneEditedClasses(root);
+      renderFitSummary(root);
+      persistFitConfig(root);
+    });
+
+    bindFitAccordion(root);
+
+    window.addEventListener("kbm:units-change", (e) => {
+      const u = e.detail?.unit;
+      if (u !== "in" && u !== "cm") return;
+      suppressFitSizeChartChange = true;
+      try {
+        updateFineTuneMetricChrome(root);
+        syncFineTuneInputsFromCanonical(root);
+        rebuildSizeDropdownLabels(root, u);
+        updateFineTuneEditedClasses(root);
+        renderFitSummary(root);
+        syncFitHeaderSummaries(root);
+        persistFitConfig(root, { silent: true });
+      } finally {
+        setTimeout(() => {
+          suppressFitSizeChartChange = false;
+        }, 0);
+      }
+    });
+  }
+
+  /**
+   * Reload fit + design fields from storage and refresh the Fit panel (used when returning via build pills).
+   * Charts load only if not yet populated (e.g. user switched step before init finished).
+   */
+  async function refreshFitFromStorage() {
+    const root = document.getElementById("sleeveless-fit-builder");
+    if (!root) return;
+    hydrateFromPattern();
+    const needCharts = CHART_AUDIENCES.some((a) => {
+      const list = chartRowsByAudience[a];
+      return !Array.isArray(list) || list.length === 0;
+    });
+    if (needCharts) await loadSweaterCharts(root);
+    if (fitConfig.size && !isValidSizeForAudience(fitConfig.knitFor, fitConfig.size)) {
+      if (import.meta.env.DEV) {
+        console.info("[sleeveless-fit] refresh: dropping selectedSize not in chart", fitConfig.size, "for", fitConfig.knitFor);
+      }
+      fitConfig.size = "";
+    }
+    renderSoFarSentence(root);
+    updateFitPageHeaderIntro(root);
+    updateSizeSectionState(root);
+    syncSizeSelection(root);
+    syncFitPreferenceSelection(root);
+    updateFineTuneMetricChrome(root);
+    hydrateFineTuneMeasurements(root);
+    updateFitDetailSectionState(root);
+    updateFitPreferenceSectionState(root);
+    renderFitSummary(root);
+    persistFitConfig(root, { silent: true });
+  }
+
+  window.addEventListener("kbm:sleeveless-before-step-change", (e) => {
+    if (e.detail?.from !== "fit") return;
+    const root = document.getElementById("sleeveless-fit-builder");
+    if (!root) return;
+    persistFitConfig(root, { silent: true });
+  });
+
+  window.addEventListener("kbm:sleeveless-after-step-change", (e) => {
+    if (e.detail?.step !== "fit") return;
+    void refreshFitFromStorage();
+  });
+
+  async function init() {
+    const root = document.getElementById("sleeveless-fit-builder");
+    if (!root) return;
+    hydrateFromPattern();
+    await loadSweaterCharts(root);
+    if (fitConfig.size && !isValidSizeForAudience(fitConfig.knitFor, fitConfig.size)) {
+      if (import.meta.env.DEV) {
+        console.info("[sleeveless-fit] dropping selectedSize not in chart", fitConfig.size, "for", fitConfig.knitFor);
+      }
+      fitConfig.size = "";
+    }
+    renderSoFarSentence(root);
+    updateFitPageHeaderIntro(root);
+    updateSizeSectionState(root);
+    syncSizeSelection(root);
+    syncFitPreferenceSelection(root);
+    updateFineTuneMetricChrome(root);
+    hydrateFineTuneMeasurements(root);
+    updateFitDetailSectionState(root);
+    updateFitPreferenceSectionState(root);
+    renderFitSummary(root);
+    persistFitConfig(root, { silent: true });
+    bind(root);
+    setOpenFitSection(root, getDefaultOpenFitSectionKey(root));
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => void init());
+  } else {
+    void init();
+  }
+</script>

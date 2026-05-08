@@ -1,4 +1,4 @@
-﻿---
+---
 import Layout from "../../../layouts/Layout.astro";
 import WizardBackLink from "../../../components/wizards/WizardBackLink.astro";
 
@@ -8,13 +8,13 @@ const pageUrl = Astro.url.href;
 ---
 
 <Layout
-  title="Print Sleeveless Pattern | Knit it Now"
-  description="Printable sleeveless sweater pattern from your saved builder choices."
+  title="Print Sleeveless Beta Pattern | Knit it Now"
+  description="Printable sleeveless sweater beta reference pattern."
   bodyClass="sleeveless-print-route"
 >
-  <div class="sleeveless-print-shell">
+  <div class="sleeveless-print-shell" data-sleeveless-print-fixed="beta">
     <div class="sleeveless-print-actions no-print">
-      <WizardBackLink className="back-link" fallback="/patterns/sleeveless/pattern?tab=pattern" />
+      <WizardBackLink className="back-link" fallback="/patterns/sleeveless/beta-pattern" />
       <button type="button" class="sleeveless-print-btn" data-sleeveless-print-action>
         Print / Save as PDF
       </button>
@@ -31,4 +31,3 @@ const pageUrl = Astro.url.href;
 <script>
   import "/src/scripts/sleeveless-print-page.ts";
 </script>
-

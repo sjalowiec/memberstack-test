@@ -1,0 +1,338 @@
+/* Shared by NeckShoulderShapingChart.astro and sleeveless pattern tab (client-injected chart). */
+.ns-shaping-chart {
+  margin: 1.25rem 0 1.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: #1f2937;
+}
+
+/* Wraps shape preview when rendered outside the chart table section (e.g. full-width below two-column layout). */
+.ns-shaping-chart--preview-block {
+  margin: 1.25rem 0 1.5rem;
+}
+
+/* Avoid stacking outer section margin with preview-block margin when table + preview are consecutive siblings. */
+.ns-shaping-chart + .ns-shaping-chart--preview-block {
+  margin-top: 0;
+}
+
+.ns-shaping-chart__title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--kbm-green, #52682d);
+  letter-spacing: 0.02em;
+}
+
+.ns-shaping-chart__intro {
+  margin: 0 0 0.65rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #374151;
+}
+
+.ns-shaping-chart__table-wrap {
+  overflow-x: auto;
+  margin: 0 0 0.6rem;
+  border: 1px solid rgba(55, 65, 81, 0.2);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.ns-shaping-chart__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.ns-shaping-chart__table th,
+.ns-shaping-chart__table td {
+  padding: 0.28rem 0.45rem;
+  border-bottom: 1px solid rgba(55, 65, 81, 0.12);
+  vertical-align: middle;
+}
+
+.ns-shaping-chart__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ns-shaping-chart__th-group {
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #374151;
+  background: rgba(82, 104, 45, 0.06);
+  border-bottom: 1px solid rgba(55, 65, 81, 0.15);
+}
+
+.ns-shaping-chart__th-sub {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.75rem;
+  background: rgba(82, 104, 45, 0.04);
+  color: #4b5563;
+}
+
+.ns-shaping-chart__th-row,
+.ns-shaping-chart__th-action {
+  text-align: left;
+  vertical-align: bottom;
+  font-weight: 700;
+  font-size: 0.75rem;
+  background: rgba(82, 104, 45, 0.06);
+  border-bottom: 1px solid rgba(55, 65, 81, 0.15);
+}
+
+.ns-shaping-chart__th-complete {
+  text-align: center;
+  vertical-align: bottom;
+  width: 2.4rem;
+  min-width: 2.4rem;
+  font-weight: 700;
+  font-size: 0.69rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #374151;
+  background: rgba(82, 104, 45, 0.06);
+  border-bottom: 1px solid rgba(55, 65, 81, 0.15);
+}
+
+.ns-shaping-chart__td-num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.ns-shaping-chart__td-center {
+  text-align: center;
+}
+
+.ns-shaping-chart__td-complete {
+  text-align: center;
+  width: 2.4rem;
+  min-width: 2.4rem;
+}
+
+.ns-shaping-chart__row-check-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ns-shaping-chart__row-check {
+  margin: 0;
+  inline-size: 0.92rem;
+  block-size: 0.92rem;
+  accent-color: var(--kbm-green);
+}
+
+.ns-shaping-chart__tr:has(.ns-shaping-chart__row-check:checked) td {
+  opacity: 0.86;
+}
+
+.ns-shaping-chart__tr:has(.ns-shaping-chart__row-check:checked) td:first-child {
+  opacity: 1;
+}
+
+.ns-shaping-chart__tr--neck-both td {
+  background: #f3f4f6;
+}
+
+.ns-shaping-chart__tr--shoulder-neck td {
+  background: #fdf2f8;
+}
+
+.ns-shaping-chart__tr--shoulder-both td {
+  background: #f3f4f6;
+}
+
+.ns-shaping-chart__preview {
+  margin: 1rem 0 0.75rem;
+  padding: 0.75rem 0 0;
+  border-top: 1px solid rgba(55, 65, 81, 0.12);
+}
+
+.ns-shaping-chart__preview-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--kbm-green, #52682d);
+}
+
+.ns-shaping-chart__preview-svg-wrap {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.ns-shaping-chart__preview-svg-wrap svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Timeline geometry diagram (grouped notation helper + SVG). */
+.ns-shaping-chart__diagram .ns-shaping-chart__preview-title {
+  margin: 0 0 0.2rem;
+}
+
+.ns-shaping-chart__diagram-notation-hint {
+  margin: 0 0 0.35rem;
+  max-width: 100%;
+  min-width: 0;
+  font-weight: 400;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.ns-shaping-chart__diagram-notation-hint-main {
+  margin: 0 0 0.12rem;
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: 400;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.ns-shaping-chart__diagram-notation-hint-example {
+  margin: 0;
+  font-size: 0.68rem;
+  font-style: italic;
+  font-weight: 400;
+  color: #64748b;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+}
+
+.ns-shaping-chart__diagram-notation-hint-kernel {
+  color: #64748b;
+}
+
+.ns-shaping-chart__diagram-notation-order {
+  font-style: normal;
+  font-weight: 600;
+  color: #475569;
+}
+
+.ns-shaping-chart__diagram .ns-shaping-chart__diagram-svg-wrap {
+  margin-top: 0;
+}
+
+.ns-notation-overlay {
+  position: relative;
+  width: min(100%, 340px);
+  margin: 0 auto;
+  overflow: visible;
+}
+
+.ns-notation-overlay__image-wrap {
+  position: relative;
+  width: 100%;
+  min-height: 220px;
+}
+
+.ns-notation-overlay__image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ns-notation-overlay__image--mirrored {
+  transform: scaleX(-1);
+  transform-origin: center;
+}
+
+.ns-notation-overlay__stack {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.38rem;
+}
+
+/* Green shoulder notation: above outer shoulder slope, upper area (first row lowest in stack). */
+.ns-notation-overlay__stack--shoulder {
+  top: 18%;
+  left: 6px;
+  right: auto;
+  bottom: auto;
+  max-width: 52%;
+  align-items: flex-start;
+}
+
+/* Terra cotta neckline notation: beside neckline opening, vertically centered. */
+.ns-notation-overlay__stack--neck {
+  top: 50%;
+  right: 6%;
+  left: auto;
+  bottom: auto;
+  transform: translateY(-50%);
+  max-width: 46%;
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* Mirrored / second-shoulder image: flip anchors so labels stay on shoulder vs neckline sides. */
+.ns-notation-overlay--mirrored .ns-notation-overlay__stack--shoulder {
+  left: auto;
+  right: 6px;
+  align-items: flex-end;
+}
+
+.ns-notation-overlay--mirrored .ns-notation-overlay__stack--neck {
+  right: auto;
+  left: 6%;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.ns-notation-overlay__stack--shoulder .ns-notation-overlay__label {
+  color: #52682d;
+}
+
+.ns-notation-overlay__stack--neck .ns-notation-overlay__label {
+  color: #c2614e;
+}
+
+.ns-notation-overlay__label {
+  position: relative;
+  display: inline-block;
+  font-size: 1.08rem;
+  font-weight: 700;
+  line-height: 1.28;
+  letter-spacing: 0.01em;
+  background: rgba(255, 255, 255, 0.86);
+  border-radius: 0.2rem;
+  padding: 0.1rem 0.24rem;
+  white-space: nowrap;
+}
+
+@media print {
+  .ns-shaping-chart {
+    font-size: 9pt;
+    break-inside: avoid;
+  }
+
+  .ns-shaping-chart__table-wrap {
+    border-color: #999;
+  }
+
+  .ns-shaping-chart__tr--neck-both td {
+    background: #eee !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .ns-shaping-chart__tr--shoulder-neck td {
+    background: #fce7f3 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .ns-shaping-chart__tr--shoulder-both td {
+    background: #eee !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

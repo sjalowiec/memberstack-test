@@ -1,0 +1,281 @@
+---
+/**
+ * Mode spine + optional merged build card (`integratedCard`).
+ * Step nav / PatternTabs stay outside; rail shares one calculator-card with build content.
+ */
+export interface Props {
+  mode: "express" | "custom";
+  /** Single shell: .calculator-card + rail + padded content column */
+  integratedCard?: boolean;
+  cardId?: string;
+  /** Extra classes on integrated root (e.g. hat-builder-inputs, express-panel) */
+  cardClass?: string;
+}
+
+const { mode, integratedCard = false, cardId, cardClass = "" } = Astro.props;
+const isExpress = mode === "express";
+const label = isExpress ? "Express pattern" : "Custom pattern";
+const layoutClass = isExpress ? "pattern-mode-layout--express" : "pattern-mode-layout--custom";
+
+const lightningSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.1.15C12.16 17.2 9.45 20.27 11 21z"/></svg>`;
+
+const pencilSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`;
+
+const rootClasses = integratedCard
+  ? ["pattern-mode-layout", layoutClass, "pattern-mode-layout--integrated", "calculator-card", cardClass].filter(Boolean)
+  : ["pattern-mode-layout", layoutClass];
+---
+
+<div
+  class:list={rootClasses}
+  id={integratedCard && cardId ? cardId : undefined}
+  role="group"
+  aria-label={label}
+>
+  <aside class="pattern-mode-rail" aria-hidden="true">
+    <div class="pattern-mode-rail-inner">
+      <span class="pattern-mode-icon" set:html={isExpress ? lightningSvg : pencilSvg} />
+      <span class="pattern-mode-text">{label}</span>
+    </div>
+  </aside>
+
+  <div class="pattern-mode-content">
+    <div class="pattern-mode-banner pattern-mode-banner--mobile" aria-hidden="true">
+      <span class="pattern-mode-banner__icon" set:html={isExpress ? lightningSvg : pencilSvg} />
+      <span class="pattern-mode-banner__text">{label}</span>
+    </div>
+
+    <div class="pattern-mode-main">
+      <slot />
+    </div>
+  </div>
+</div>
+
+<style>
+  .pattern-mode-layout {
+    --pm-express-rail: var(--kbm-green, #52682d);
+    --pm-custom-rail: var(--kbm-accent, #c2614e);
+    --pm-rail-ink: #ffffff;
+
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* ---------- Integrated build card (colored left spine + white content; no shell padding) ---------- */
+  .pattern-mode-layout.pattern-mode-layout--integrated.calculator-card {
+    padding: 0 !important;
+    gap: 0;
+    align-items: stretch;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .pattern-mode-layout.pattern-mode-layout--integrated .pattern-mode-content {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 24px 24px 24px 16px;
+    background: #fff;
+    border-radius: 0 10px 10px 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pattern-mode-layout.pattern-mode-layout--integrated .pattern-mode-main {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* ---------- Rail ---------- */
+  .pattern-mode-rail {
+    display: none;
+    flex: 0 0 56px;
+    width: 56px;
+    box-sizing: border-box;
+    align-self: stretch;
+    border-radius: 10px 0 0 10px;
+    border: none;
+    box-shadow: none;
+  }
+
+  .pattern-mode-rail-inner {
+    position: sticky;
+    top: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 16px;
+    padding: 16px 7px 22px;
+    min-height: min-content;
+  }
+
+  .pattern-mode-icon :global(svg) {
+    width: 24px;
+    height: 24px;
+    display: block;
+    flex-shrink: 0;
+  }
+
+  .pattern-mode-text {
+    display: block;
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+  }
+
+  .pattern-mode-layout--express .pattern-mode-rail {
+    background: var(--pm-express-rail);
+    color: #ffffff;
+  }
+
+  .pattern-mode-layout--express .pattern-mode-rail .pattern-mode-text {
+    color: #ffffff;
+  }
+
+  .pattern-mode-layout--express .pattern-mode-icon :global(svg) {
+    color: #ffffff;
+  }
+
+  .pattern-mode-layout--express .pattern-mode-rail .pattern-mode-icon :global(svg) {
+    transform: scale(1.5);
+    transform-origin: center top;
+  }
+
+  .pattern-mode-layout--custom .pattern-mode-rail {
+    background-color: var(--pm-custom-rail);
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+    background-size: 8px 8px;
+    color: #ffffff;
+  }
+
+  .pattern-mode-layout--custom .pattern-mode-rail .pattern-mode-text {
+    color: #ffffff;
+  }
+
+  .pattern-mode-layout--custom .pattern-mode-icon :global(svg) {
+    color: #ffffff;
+  }
+
+  /* Non-integrated: gutter via content padding-left */
+  .pattern-mode-layout:not(.pattern-mode-layout--integrated) .pattern-mode-content {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pattern-mode-banner {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
+  }
+
+  .pattern-mode-banner__icon :global(svg) {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    display: block;
+  }
+
+  .pattern-mode-layout--express .pattern-mode-banner--mobile {
+    background: var(--pm-express-rail);
+    color: var(--pm-rail-ink);
+  }
+
+  .pattern-mode-layout--express .pattern-mode-banner--mobile .pattern-mode-banner__icon :global(svg) {
+    color: var(--pm-rail-ink);
+  }
+
+  .pattern-mode-layout--custom .pattern-mode-banner--mobile {
+    background: var(--pm-custom-rail);
+    color: var(--pm-rail-ink);
+  }
+
+  .pattern-mode-layout--custom .pattern-mode-banner--mobile .pattern-mode-banner__icon :global(svg) {
+    color: var(--pm-rail-ink);
+  }
+
+  .pattern-mode-main {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  @media (min-width: 769px) {
+    .pattern-mode-rail {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pattern-mode-banner--mobile {
+      display: none !important;
+    }
+
+    .pattern-mode-layout:not(.pattern-mode-layout--integrated) .pattern-mode-content {
+      padding-left: 32px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .pattern-mode-rail {
+      display: none !important;
+    }
+
+    .pattern-mode-banner--mobile {
+      display: flex;
+    }
+
+    /* Integrated: no outer shell padding; spacing lives in .pattern-mode-content */
+    .pattern-mode-layout.pattern-mode-layout--integrated.calculator-card {
+      flex-direction: column;
+      gap: 0;
+      padding: 0 !important;
+    }
+
+    .pattern-mode-layout.pattern-mode-layout--integrated .pattern-mode-content {
+      padding: 24px;
+      border-radius: 10px;
+    }
+
+    .pattern-mode-layout:not(.pattern-mode-layout--integrated) .pattern-mode-content {
+      padding-left: 0;
+    }
+  }
+
+  @media print {
+    .pattern-mode-rail,
+    .pattern-mode-banner--mobile {
+      display: none !important;
+    }
+
+    .pattern-mode-layout:not(.pattern-mode-layout--integrated) .pattern-mode-content {
+      padding-left: 0 !important;
+    }
+
+    .pattern-mode-layout.pattern-mode-layout--integrated.calculator-card {
+      padding: 0 !important;
+    }
+
+    .pattern-mode-layout.pattern-mode-layout--integrated .pattern-mode-content {
+      padding: 24px !important;
+    }
+  }
+</style>
