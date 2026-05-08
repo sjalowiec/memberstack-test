@@ -73,6 +73,94 @@ const SECOND_SIDE_INSTRUCTION_SUFFIX =
   "Repeat the table and shaping diagram logic for the second side, reversing the edge landmarks.";
 const SECOND_SIDE_CHECKLIST_INSTRUCTION_SUFFIX = "Follow the second shoulder checklist below.";
 
+/**
+ * Pre-table prose for the active-shoulder shaping table. The chart and second-shoulder
+ * checklist below operate on ONE shoulder at a time using local section RC counts only;
+ * Garment RC is intentionally not displayed here.
+ */
+export const ACTIVE_SHOULDER_CHART_INTRO_SENTENCE =
+  "Work one shoulder at a time. Follow the chart row by row for the active shoulder, then repeat for the second shoulder, reversing the edge landmarks.";
+
+/** Placed immediately before {@link ACTIVE_SHOULDER_RULE_OF_ONE_SENTENCE} in sleeveless shaping intros. */
+export const ACTIVE_SHOULDER_HOLD_AND_WORK_CARRIAGE_SIDE_STRONG_HTML =
+  "<p><strong>Place the non-working shoulder stitches on hold. Work only the carriage-side shoulder, following the shaping instructions row by row.</strong></p>";
+
+export const ACTIVE_SHOULDER_RULE_OF_ONE_SENTENCE =
+  "The table below follows the Rule of One: one carriage pass, one active-side shaping action, and one running stitch count for this side only.";
+
+/** Hold / divide step immediately after the center neckline bind-off sentence (active-shoulder checklist intros). */
+export const ACTIVE_SHOULDER_PLACE_HOLD_SENTENCE =
+  "Divide for the neckline and place the non-working shoulder stitches on hold.";
+
+/** Explains the Neck vs Armhole columns on the one-shoulder checklist (shared online + print/PDF). */
+export const ACTIVE_SHOULDER_NECK_ARMHOLE_EDGE_SENTENCE =
+  "Use Neck for the center neckline edge and Armhole for the outer shoulder edge.";
+
+export type ActiveShoulderChartIntroLayout = "compact" | "labeled";
+
+export type ActiveShoulderChartIntroOptions = {
+  /** Armhole-local RC label at neckline bind-off, e.g. `RC:117` (shown as `At local RC:117, …`). */
+  localStartRcLabel?: string | undefined;
+  /** Whole-stitch center bind-off count from chart row 0; omit tail when unknown. */
+  centerBindOffStitches?: number | undefined;
+  /** Host-specific wrapper class (`print-chart-intro` vs `pattern-shaping-intro`). */
+  wrapperClass: string;
+  /** Print sheet uses flat paragraphs; pattern tab uses labeled Setup / Divide blocks with the same sentences. */
+  layout: ActiveShoulderChartIntroLayout;
+};
+
+function activeShoulderAnchoredCenterBindOffHtml(
+  localStartRcLabel: string | undefined,
+  centerBindOffStitches: number | undefined
+): string {
+  const localStartLabel = String(localStartRcLabel ?? "").trim();
+  const centerCount = Number(centerBindOffStitches);
+  const centerCountLabel =
+    Number.isFinite(centerCount) && centerCount > 0 ? String(Math.round(centerCount)) : "";
+  const bindOffLine = centerCountLabel
+    ? `Bind off the center ${escapeHtml(centerCountLabel)} neckline stitches.`
+    : "Bind off the center neckline stitches.";
+  return localStartLabel
+    ? `At local ${escapeHtml(localStartLabel)}, ${bindOffLine.charAt(0).toLowerCase()}${bindOffLine.slice(1)}`
+    : bindOffLine;
+}
+
+/**
+ * Shared HTML intro placed above the active-shoulder shaping checklist (online pattern tab + dedicated print page).
+ * Keeps bind-off anchoring, hold step, Rule of One, and edge landmark wording in one module.
+ */
+export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartIntroOptions): string {
+  const wrappedClass = String(options.wrapperClass ?? "").trim() || "active-shoulder-chart-intro";
+  const bindOffHtml = activeShoulderAnchoredCenterBindOffHtml(
+    options.localStartRcLabel,
+    options.centerBindOffStitches
+  );
+  const holdParagraph = `<p>${escapeHtml(ACTIVE_SHOULDER_PLACE_HOLD_SENTENCE)}</p>`;
+  const workOneShoulderParagraph = `<p>${escapeHtml(ACTIVE_SHOULDER_CHART_INTRO_SENTENCE)}</p>`;
+  const edgeLandmarkParagraph = `<p>${escapeHtml(ACTIVE_SHOULDER_NECK_ARMHOLE_EDGE_SENTENCE)}</p>`;
+  const ruleParagraph = `<p>${escapeHtml(ACTIVE_SHOULDER_RULE_OF_ONE_SENTENCE)}</p>`;
+
+  const inner =
+    options.layout === "labeled"
+      ? `<p><strong>Setup</strong></p>
+  <p><strong>Center Neckline:</strong><br>${bindOffHtml}</p>
+  <p><strong>Divide:</strong><br>${escapeHtml(ACTIVE_SHOULDER_PLACE_HOLD_SENTENCE)}</p>
+  ${workOneShoulderParagraph}
+  ${edgeLandmarkParagraph}
+  ${ACTIVE_SHOULDER_HOLD_AND_WORK_CARRIAGE_SIDE_STRONG_HTML}
+  ${ruleParagraph}`
+      : `<p>${bindOffHtml}</p>
+  ${holdParagraph}
+  ${workOneShoulderParagraph}
+  ${edgeLandmarkParagraph}
+  ${ACTIVE_SHOULDER_HOLD_AND_WORK_CARRIAGE_SIDE_STRONG_HTML}
+  ${ruleParagraph}`;
+
+  return `<div class="${escapeHtml(wrappedClass)}">
+  ${inner}
+</div>`;
+}
+
 function isPrintNoActionCell(text: string): boolean {
   const t = String(text ?? "").trim();
   if (!t) return true;
@@ -166,16 +254,29 @@ function renderActiveSideBindoffRemainingHtml(
   return `<p class="${escapeHtml(className)}" data-active-side-bindoff>${escapeHtml(sentence)}</p>`;
 }
 
+/**
+ * Carriage parity rule for the active-shoulder chart (active shoulder is the RIGHT side
+ * of the back/front piece in this renderer):
+ *
+ * - Even local RC ⇒ carriage on the Right ⇒ valid ONLY for the right-side edge of the
+ *   active shoulder, which is the **Armhole / outer** edge.
+ * - Odd local RC ⇒ carriage on the Left ⇒ valid ONLY for the left-side edge of the
+ *   active shoulder, which is the **Neck / inner** edge.
+ *
+ * A shaping action may only occur on the edge where the carriage is currently located;
+ * actions that need a different edge are pushed forward by inserting plain knit rows
+ * until the carriage parity matches the edge.
+ */
 function carriagePositionForActiveSideRc(rc: number): "Right" | "Left" {
   return rc % 2 === 0 ? "Right" : "Left";
 }
 
 function edgeForActiveSideCarriagePosition(position: "Right" | "Left"): ActiveSideEdge {
-  return position === "Right" ? "Neck" : "Armhole";
+  return position === "Right" ? "Armhole" : "Neck";
 }
 
 function requiredParityForActiveSideEdge(edge: ActiveSideEdge): 0 | 1 {
-  return edge === "Neck" ? 0 : 1;
+  return edge === "Armhole" ? 0 : 1;
 }
 
 function formatActiveSideRc(rc: number): string {

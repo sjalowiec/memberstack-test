@@ -1045,8 +1045,12 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
   } from "../../../lib/patterns/patternStorage.ts";
   import { validatePatternBuilderRequired } from "../../../lib/patterns/patternBuilderValidation";
   import { setPatternTabsReadiness } from "../../../lib/patterns/patternTabsClient.ts";
-  import { generateSleevelessBackPattern } from "../../../lib/patterns/sleevelessPatternOutput.ts";
   import {
+    centerBindOffStitchesFromNeckShoulderChart,
+    generateSleevelessBackPattern,
+  } from "../../../lib/patterns/sleevelessPatternOutput.ts";
+  import {
+    renderActiveShoulderChartIntroHtml,
     renderNeckShoulderShapingDiagramOnlyHtml,
     renderNeckShoulderShapingChartTableOnlyHtml,
   } from "../../../lib/patterns/neckShoulderShapingChartHtml.ts";
@@ -1300,67 +1304,19 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
       .replace(/>/g, "&gt;");
   }
 
-  function parseCenterBindOffStitches(cell) {
-    const text = String(cell ?? "").trim();
-    if (!text || text === "-") return 0;
-    const n = Number(text.replace(/[^\d-]/g, ""));
-    return Number.isFinite(n) ? Math.abs(Math.trunc(n)) : 0;
-  }
-
-  function centerBindOffStitchesFromChart(chart) {
-    const firstRow = chart?.rows?.[0];
-    if (!firstRow) return 0;
-    return parseCenterBindOffStitches(firstRow.centerNeck);
-  }
-
-  function formatPositiveWholeLabel(value) {
-    const n = Number(value);
-    return Number.isFinite(n) && n > 0 ? String(Math.round(n)) : "";
-  }
-
-  function necklineSplitStateFromChart(chart) {
-    const firstRow = chart?.rows?.[0];
-    const centerBindOffStitches = centerBindOffStitchesFromChart(chart);
-    const heldShoulderStitches = Math.max(0, Math.floor(Number(firstRow?.leftStitchCount ?? 0)));
-    const activeShoulderStitches = Math.max(0, Math.floor(Number(firstRow?.rightStitchCount ?? 0)));
-    const totalWorkingStitches = heldShoulderStitches + activeShoulderStitches + centerBindOffStitches;
-    return {
-      centerBindOffStitches,
-      heldShoulderStitches,
-      activeShoulderStitches,
-      totalWorkingStitches,
-    };
-  }
-
   /**
-   * Intro + collapsible help shown directly beneath the chart heading.
-   * @param {number | string | undefined} startRow
-   * @param {{
-   *   centerBindOffStitches: number;
-   *   heldShoulderStitches: number;
-   *   activeShoulderStitches: number;
-   *   totalWorkingStitches: number;
-   * }} splitState
+   * Intro + collapsible help shown directly beneath the chart heading (prose matches print/PDF via `renderActiveShoulderChartIntroHtml`).
+   * @param {string | undefined} startRowLabel Armhole-local RC label, e.g. `RC:117`.
+   * @param {import("../../../lib/patterns/neckShoulderShapingChart").NeckShoulderShapingChart | undefined} chart
    */
-  function neckShoulderChartHelpRowHtml(startRowLabel, splitState) {
-    const startRcLabel = String(startRowLabel ?? "").trim();
-    const centerCountLabel = formatPositiveWholeLabel(splitState?.centerBindOffStitches);
-    const heldShoulderLabel = formatPositiveWholeLabel(splitState?.heldShoulderStitches);
-    const activeShoulderLabel = formatPositiveWholeLabel(splitState?.activeShoulderStitches);
-    const centerBindOffLine = centerCountLabel
-      ? `Bind off the center ${escapeHtml(centerCountLabel)} stitches.`
-      : "Bind off the center stitches.";
-    const holdLine = "Place one group of shoulder stitches on hold or scrap yarn.";
-    const otherShoulderLine = "Work the other shoulder following the checklist below.";
-    const activeShoulderLine = activeShoulderLabel
-      ? `Follow the checklist below for the active shoulder (${escapeHtml(activeShoulderLabel)} sts).`
-      : "Follow the checklist below for the active shoulder.";
-    return `<div class="pattern-shaping-intro">
-  <p><strong>Setup</strong></p>
-  <p><strong>Center Neckline:</strong><br>${startRcLabel ? `At ${escapeHtml(startRcLabel)}, ` : ""}${centerBindOffLine.charAt(0).toLowerCase()}${centerBindOffLine.slice(1)}</p>
-  <p><strong>Divide:</strong><br>${holdLine}<br>${otherShoulderLine}</p>
-  <p>${activeShoulderLine} Use the Neck edge for center decreases and the Armhole edge for shoulder shaping.</p>
-</div>
+  function neckShoulderChartHelpRowHtml(startRowLabel, chart) {
+    const intro = renderActiveShoulderChartIntroHtml({
+      localStartRcLabel: String(startRowLabel ?? "").trim(),
+      centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(chart),
+      wrapperClass: "pattern-shaping-intro",
+      layout: "labeled",
+    });
+    return `${intro}
 <details class="pattern-tip sleeveless-shaping-help-toggle no-print">
   <summary>New to shaping necklines on the machine?</summary>
   <p>Neckline shaping can feel intimidating at first, especially when shoulder shaping happens at the same time. The chart is designed to guide you step by step so you can focus on one row at a time.</p>
@@ -2552,16 +2508,13 @@ table {
     const backChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-back");
     if (backChartTableHost) {
       const backArmholeLocalChartStartRc =
-        Number.isFinite(result?.debug?.backNecklineStartRC) && Number.isFinite(result?.debug?.armholeStartRow)
-          ? Math.max(0, Math.floor(result.debug.backNecklineStartRC - result.debug.armholeStartRow))
+        Number.isFinite(result?.debug?.backNecklineStartLocalRC)
+          ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC))
           : 0;
       backChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
-        neckShoulderChartHelpRowHtml(
-          `RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`,
-          necklineSplitStateFromChart(result?.neckShoulderShapingChart)
-        ),
+        neckShoulderChartHelpRowHtml(`RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`, result?.neckShoulderShapingChart),
         { activeSideOnly: true, activeSideRcStart: backArmholeLocalChartStartRc }
       );
     }
@@ -2576,15 +2529,15 @@ table {
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
     if (frontChartTableHost) {
       const frontArmholeLocalChartStartRc =
-        Number.isFinite(result?.debug?.frontNecklineStartRC) && Number.isFinite(result?.debug?.armholeStartRow)
-          ? Math.max(0, Math.floor(result.debug.frontNecklineStartRC - result.debug.armholeStartRow))
+        Number.isFinite(result?.debug?.frontNecklineStartLocalRC)
+          ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC))
           : 0;
       frontChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.frontNeckShoulderShapingChart,
         "ns-shaping-chart-front",
         neckShoulderChartHelpRowHtml(
           `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
-          necklineSplitStateFromChart(result?.frontNeckShoulderShapingChart)
+          result?.frontNeckShoulderShapingChart
         ),
         { activeSideOnly: true, activeSideRcStart: frontArmholeLocalChartStartRc }
       );
