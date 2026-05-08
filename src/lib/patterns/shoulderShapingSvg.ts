@@ -17,17 +17,30 @@ const LINE_WIDTH = 1.75;
 const GRID_STROKE = "rgba(15,23,42,0.07)";
 const GRID_LINE_MINOR = 0.45;
 const GRID_LINE_MAJOR = 0.65;
-const LABEL_FILL = "#334155";
-const FONT_ZONE = 10;
-const FONT_DELTA = 10;
-const FONT_NOTE = 10;
+/** Match {@link renderShapingGeometrySvg} shoulder / neck label hues */
+const SHOULDER_LABEL_FILL = "#52682d";
+const NECK_LABEL_FILL = "#c2614e";
+const FABRIC_FILL = "#f3f0ea";
+const FABRIC_FILL_OPACITY = 0.5;
+const FONT_ZONE = 13;
+const FONT_DELTA = 17;
 
-/** Gap from step to delta label (px) */
-const LABEL_GAP = 16;
+const SHOULDER_LABEL_GAP_Y = 25;
+const NECK_LABEL_GAP_X = 19;
+const NECK_LABEL_GAP_Y = 3;
+const EDGE_LABEL_GAP_X = 7;
+const MIN_LABEL_CLEARANCE = 11;
 /** ~width of one character at FONT_DELTA for bounding estimates */
-const CHAR_W_EST = 6.4;
+const CHAR_W_EST = 8.3;
+const NECK_LABEL_COLLISION_Y = 16;
+const NECK_LABEL_NUDGE_X = 7;
+const NECK_LABEL_NUDGE_Y = 5;
+const NECK_LABEL_MAX_NUDGES = 8;
+const NECK_LABEL_STACK_FALLBACK_Y = 11;
 /** Minimum margin from viewBox edge to any ink */
-const VIEW_MARGIN = 12;
+const VIEW_MARGIN = 18;
+const LABEL_PAD_TOP = 10;
+const LABEL_PAD_BOTTOM = 10;
 /** Zone title length estimates (px) for bbox */
 const ZONE_TITLE_W_SHOULDER = 118;
 const ZONE_TITLE_W_NECK = 108;
@@ -84,8 +97,6 @@ type ShoulderSvgGeometry = {
   maxRow: number;
   shoulderLabels: LabeledDelta[];
   neckLabels: LabeledDelta[];
-  centerNeckLabel: string | null;
-  centerNeckStitches: number | null;
 };
 
 function sortChartRows(rows: NeckShoulderShapingChartRow[]): NeckShoulderShapingChartRow[] {
@@ -120,13 +131,6 @@ function sumTimelineInnerNeck(entry: RowEntry, side: "left" | "right"): number {
     .reduce((s, e) => s + e.amount, 0);
 }
 
-function centerBindOffStitches(first: RowEntry): number | null {
-  const n = first.events
-    .filter((e) => e.kind === "bindOff" && e.side === "center" && e.edge === "center")
-    .reduce((s, e) => s + e.amount, 0);
-  return n > 0 ? n : null;
-}
-
 function computeStatesFromTimeline(sorted: RowEntry[], side: ShoulderShapingSvgSide): ShoulderSvgGeometry {
   const sideLR: "left" | "right" = side === "right" ? "right" : "left";
   const first = sorted[0];
@@ -138,10 +142,6 @@ function computeStatesFromTimeline(sorted: RowEntry[], side: ShoulderShapingSvgS
   const outer: number[] = [];
   const shoulderLabels: LabeledDelta[] = [];
   const neckLabels: LabeledDelta[] = [];
-
-  const centerN = centerBindOffStitches(first);
-  const centerNeckLabel =
-    centerN !== null && centerN > 0 ? `Center neck: ${centerN} sts` : null;
 
   for (const e of sorted) {
     rowNums.push(e.row);
@@ -172,8 +172,6 @@ function computeStatesFromTimeline(sorted: RowEntry[], side: ShoulderShapingSvgS
     maxRow: sorted[sorted.length - 1].row,
     shoulderLabels,
     neckLabels,
-    centerNeckLabel,
-    centerNeckStitches: centerN,
   };
 }
 
@@ -189,9 +187,6 @@ function computeStatesFromChartCells(sorted: NeckShoulderShapingChartRow[], side
   const neckLabels: LabeledDelta[] = [];
 
   const first = sorted[0];
-  const cn = parseCenterNeckStitches(first.centerNeck);
-  const centerNeckLabel = cn !== null && cn > 0 ? `Center neck: ${cn} sts` : null;
-
   for (let k = 0; k < sorted.length; k++) {
     const r = sorted[k];
     const decNeck = parseShapingDecrease(side === "right" ? r.rightNeck : r.leftNeck);
@@ -215,8 +210,6 @@ function computeStatesFromChartCells(sorted: NeckShoulderShapingChartRow[], side
     maxRow: sorted[sorted.length - 1].row,
     shoulderLabels,
     neckLabels,
-    centerNeckLabel,
-    centerNeckStitches: cn !== null && cn > 0 ? cn : null,
     rowNums,
   };
 }
@@ -236,19 +229,6 @@ function toSvgX(
     return padX + (spanStitches - stitchX) * grid;
   }
   return padX + stitchX * grid;
-}
-
-/** X offset from chart origin (shoulder-side edge of cropped chart = 0) to stitch position */
-function chartRelX(
-  stitchX: number,
-  side: ShoulderShapingSvgSide,
-  spanStitches: number,
-  grid: number
-): number {
-  if (side === "right") {
-    return (spanStitches - stitchX) * grid;
-  }
-  return stitchX * grid;
 }
 
 function buildStairPathD(
@@ -300,6 +280,15 @@ function buildStairPathD(
 }
 
 type ShoulderBindoffMarker = { x: number; yTop: number; yBottom: number; yMid: number };
+type StepTransition = {
+  row: number;
+  fromX: number;
+  toX: number;
+  yPrev: number;
+  yCurr: number;
+};
+
+type SvgPoint = { x: number; y: number };
 
 function shoulderBindoffMarkerForRow(
   row: number,
@@ -338,6 +327,154 @@ function shoulderBindoffMarkerForRow(
   return { x, yTop: yMid - tickHalf, yBottom: yMid + tickHalf, yMid };
 }
 
+function buildTransitions(
+  rowNums: readonly number[],
+  stitchVals: readonly number[],
+  side: ShoulderShapingSvgSide,
+  spanStitches: number,
+  grid: number,
+  padX: number,
+  minRow: number,
+  maxRow: number,
+  padY: number
+): StepTransition[] {
+  const transitions: StepTransition[] = [];
+  for (let k = 1; k < rowNums.length; k += 1) {
+    if (stitchVals[k] === stitchVals[k - 1]) continue;
+    transitions.push({
+      row: rowNums[k],
+      fromX: toSvgX(stitchVals[k - 1], side, spanStitches, grid, padX),
+      toX: toSvgX(stitchVals[k], side, spanStitches, grid, padX),
+      yPrev: rowToY(rowNums[k - 1], minRow, maxRow, grid, padY),
+      yCurr: rowToY(rowNums[k], minRow, maxRow, grid, padY),
+    });
+  }
+  return transitions;
+}
+
+function buildStairPolyline(
+  stitchVals: readonly number[],
+  rowNums: readonly number[],
+  indices: readonly number[],
+  side: ShoulderShapingSvgSide,
+  spanStitches: number,
+  grid: number,
+  padX: number,
+  minRow: number,
+  maxRow: number,
+  padY: number
+): SvgPoint[] {
+  if (indices.length === 0) return [];
+  const points: SvgPoint[] = [];
+  const firstIdx = indices[0];
+  points.push({
+    x: toSvgX(stitchVals[firstIdx], side, spanStitches, grid, padX),
+    y: rowToY(rowNums[firstIdx], minRow, maxRow, grid, padY),
+  });
+  for (let i = 1; i < indices.length; i += 1) {
+    const prevIdx = indices[i - 1];
+    const idx = indices[i];
+    const prevX = toSvgX(stitchVals[prevIdx], side, spanStitches, grid, padX);
+    const y = rowToY(rowNums[idx], minRow, maxRow, grid, padY);
+    const x = toSvgX(stitchVals[idx], side, spanStitches, grid, padX);
+    points.push({ x: prevX, y });
+    points.push({ x, y });
+  }
+  return points;
+}
+
+function pointsToPath(points: readonly SvgPoint[]): string {
+  if (points.length === 0) return "";
+  return points
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+    .join(" ");
+}
+
+function buildFabricAreaPath(
+  rowNums: readonly number[],
+  outer: readonly number[],
+  inner: readonly number[],
+  side: ShoulderShapingSvgSide,
+  spanStitches: number,
+  grid: number,
+  padX: number,
+  minRow: number,
+  maxRow: number,
+  padY: number
+): string {
+  if (rowNums.length === 0) return "";
+  const forward = rowNums.map((_, i) => i);
+  const reverse = [...forward].reverse();
+  const outerPoints = buildStairPolyline(
+    outer,
+    rowNums,
+    forward,
+    side,
+    spanStitches,
+    grid,
+    padX,
+    minRow,
+    maxRow,
+    padY
+  );
+  const innerPoints = buildStairPolyline(
+    inner,
+    rowNums,
+    reverse,
+    side,
+    spanStitches,
+    grid,
+    padX,
+    minRow,
+    maxRow,
+    padY
+  );
+  if (outerPoints.length === 0 || innerPoints.length === 0) return "";
+  return `${pointsToPath([...outerPoints, ...innerPoints])} Z`;
+}
+
+function placeHorizontalLabel(
+  segmentStartX: number,
+  segmentEndX: number,
+  segmentY: number,
+  outerDirection: -1 | 1,
+  edgeTickX?: number
+): { x: number; y: number } {
+  const minX = Math.min(segmentStartX, segmentEndX);
+  const maxX = Math.max(segmentStartX, segmentEndX);
+  const span = maxX - minX;
+  const centerX = (segmentStartX + segmentEndX) / 2;
+  let x = centerX;
+  if (span < MIN_LABEL_CLEARANCE * 2) {
+    x += outerDirection * (MIN_LABEL_CLEARANCE - span / 2);
+  }
+  if (Number.isFinite(edgeTickX) && Math.abs(x - (edgeTickX as number)) < EDGE_LABEL_GAP_X) {
+    x += outerDirection * EDGE_LABEL_GAP_X;
+  }
+  return { x, y: segmentY - SHOULDER_LABEL_GAP_Y };
+}
+
+function placeNeckLabel(
+  segmentX: number,
+  segmentTopY: number,
+  segmentBottomY: number,
+  interiorDirection: -1 | 1,
+  segmentRunX: number,
+  amountBoost: number = 0,
+  rowBiasY: number = 0
+): { x: number; y: number; textAnchor: "start" | "end" } {
+  const minY = Math.min(segmentTopY, segmentBottomY);
+  const maxY = Math.max(segmentTopY, segmentBottomY);
+  const run = Math.abs(segmentRunX - segmentX);
+  const outwardBoost = run < MIN_LABEL_CLEARANCE ? MIN_LABEL_CLEARANCE - run : 0;
+  const x = segmentX + interiorDirection * (NECK_LABEL_GAP_X + outwardBoost + amountBoost);
+  return {
+    x,
+    y: (minY + maxY) / 2 + NECK_LABEL_GAP_Y + rowBiasY,
+    textAnchor: interiorDirection > 0 ? "start" : "end",
+  };
+}
+
 /**
  * Returns an HTML string containing one inline <svg> (no image assets).
  * `options.piece` is ignored (API compatibility).
@@ -345,9 +482,8 @@ function shoulderBindoffMarkerForRow(
 export function renderShoulderShapingSvg(
   chart: NeckShoulderShapingChart,
   side: ShoulderShapingSvgSide,
-  _options?: ShoulderShapingSvgOptions
+  options?: ShoulderShapingSvgOptions
 ): string {
-  void _options;
   const GRID = SHOULDER_SHAPING_SVG_GRID;
   const tl = chart.timeline?.length ? sortTimeline(chart.timeline) : null;
   const sortedChart = !tl || tl.length === 0 ? sortChartRows(chart.rows) : [];
@@ -371,8 +507,6 @@ export function renderShoulderShapingSvg(
     maxRow,
     shoulderLabels,
     neckLabels,
-    centerNeckLabel,
-    centerNeckStitches,
   } = source;
 
   const SHOULDER_CROP_PAD_STITCHES = 1;
@@ -397,7 +531,23 @@ export function renderShoulderShapingSvg(
   /* Delta labels */
   const deltaStr = (n: number) => `-${n}`;
 
+  const shoulderTransitionsForBounds = buildTransitions(
+    rowNums,
+    outer,
+    side,
+    chartSpanStitches,
+    GRID,
+    0,
+    minRow,
+    maxRow,
+    0
+  );
+  const shoulderByRowForBounds = new Map<number, StepTransition>(
+    shoulderTransitionsForBounds.map((t) => [t.row, t])
+  );
   for (const sl of shoulderLabels) {
+    const transition = shoulderByRowForBounds.get(sl.row);
+    if (!transition) continue;
     const marker = shoulderBindoffMarkerForRow(
       sl.row,
       rowNums,
@@ -411,45 +561,48 @@ export function renderShoulderShapingSvg(
       0
     );
     if (!marker) continue;
-    const r0 = marker.x;
     const w = approxTextWidthPx(deltaStr(sl.amount));
-    if (side === "right") {
-      const tx = r0 - LABEL_GAP;
-      inkMinX = Math.min(inkMinX, tx - w);
-    } else {
-      const tx = r0 + LABEL_GAP;
-      inkMaxX = Math.max(inkMaxX, tx + w);
-    }
+    const pos = placeHorizontalLabel(transition.fromX, transition.toX, transition.yCurr, -1);
+    inkMinX = Math.min(inkMinX, pos.x - w / 2);
+    inkMaxX = Math.max(inkMaxX, pos.x + w / 2);
   }
 
+  const neckTransitionsForBounds = buildTransitions(
+    rowNums,
+    inner,
+    side,
+    chartSpanStitches,
+    GRID,
+    0,
+    minRow,
+    maxRow,
+    0
+  );
+  const neckByRowForBounds = new Map<number, StepTransition>(neckTransitionsForBounds.map((t) => [t.row, t]));
   for (const nl of neckLabels) {
-    const k = rowNums.findIndex((r) => r === nl.row);
-    if (k <= 0) continue;
-    const r0 = chartRelX(inner[k - 1], side, chartSpanStitches, GRID);
-    const r1 = chartRelX(inner[k], side, chartSpanStitches, GRID);
+    const transition = neckByRowForBounds.get(nl.row);
+    if (!transition) continue;
+    const interiorDirection: -1 | 1 = side === "left" ? 1 : -1;
     const w = approxTextWidthPx(deltaStr(nl.amount));
-    if (side === "right") {
-      const tx = Math.max(r0, r1) + LABEL_GAP;
-      inkMaxX = Math.max(inkMaxX, tx + w);
-    } else {
-      const tx = Math.min(r0, r1) - LABEL_GAP;
-      inkMinX = Math.min(inkMinX, tx - w);
-    }
-  }
-
-  /* Center neck tick + label from neck edge */
-  if (centerNeckLabel && centerNeckStitches != null && centerNeckStitches > 0) {
-    const xe = chartWidthPx;
-    inkMaxX = Math.max(inkMaxX, xe + 10 + approxTextWidthPx(centerNeckLabel));
-    inkMinX = Math.min(inkMinX, xe - 2);
+    const pos = placeNeckLabel(
+      transition.fromX,
+      transition.yPrev,
+      transition.yCurr,
+      interiorDirection,
+      transition.toX,
+      nl.amount === 1 ? 2 : 0
+    );
+    const nudgedX = pos.x + interiorDirection * NECK_LABEL_NUDGE_X;
+    inkMinX = Math.min(inkMinX, Math.min(pos.x, nudgedX) - w);
+    inkMaxX = Math.max(inkMaxX, Math.max(pos.x, nudgedX) + w);
   }
 
   const padX = VIEW_MARGIN - inkMinX;
   const padXRight = inkMaxX + VIEW_MARGIN - chartWidthPx;
 
   const chartHeightPx = (maxRow - minRow) * GRID;
-  const padY = 32;
-  const padYBottom = centerNeckLabel ? 36 : 20;
+  const padY = 32 + LABEL_PAD_TOP;
+  const padYBottom = 20 + LABEL_PAD_BOTTOM;
 
   const gx0 = padX;
   const gx1 = padX + chartWidthPx;
@@ -459,11 +612,22 @@ export function renderShoulderShapingSvg(
   const svgW = padX + chartWidthPx + padXRight;
   const svgH = padY + chartHeightPx + padYBottom;
 
-  const outerD = "";
+  const fabricAreaD = buildFabricAreaPath(
+    rowNums,
+    outer,
+    inner,
+    side,
+    chartSpanStitches,
+    GRID,
+    padX,
+    minRow,
+    maxRow,
+    padY
+  );
   const innerD = buildStairPathD(inner, rowNums, side, chartSpanStitches, GRID, padX, minRow, maxRow, padY);
 
   const gridLines: string[] = [];
-  for (let x = gx0; x <= gx1; x += GRID) {
+  for (let x = gx0 + GRID; x <= gx1 - GRID; x += GRID) {
     const major = (x - gx0) % (GRID * 5) === 0;
     gridLines.push(
       `<line x1="${x}" y1="${gy0}" x2="${x}" y2="${gy1}" stroke="${GRID_STROKE}" stroke-width="${
@@ -471,7 +635,7 @@ export function renderShoulderShapingSvg(
       }" />`
     );
   }
-  for (let y = gy0; y <= gy1; y += GRID) {
+  for (let y = gy0 + GRID; y <= gy1 - GRID; y += GRID) {
     const major = (y - gy0) % (GRID * 5) === 0;
     gridLines.push(
       `<line x1="${gx0}" y1="${y}" x2="${gx1}" y2="${y}" stroke="${GRID_STROKE}" stroke-width="${
@@ -483,11 +647,23 @@ export function renderShoulderShapingSvg(
   const yAt = (row: number) => rowToY(row, minRow, maxRow, GRID, padY);
 
   const deltaLabels: string[] = [];
-  const shoulderOut = (x: number) => (side === "right" ? x - LABEL_GAP : x + LABEL_GAP);
-  const shoulderAnchor = side === "right" ? "end" : "start";
   const shoulderMarks: string[] = [];
+  const shoulderTransitions = buildTransitions(
+    rowNums,
+    outer,
+    side,
+    chartSpanStitches,
+    GRID,
+    padX,
+    minRow,
+    maxRow,
+    padY
+  );
+  const shoulderByRow = new Map<number, StepTransition>(shoulderTransitions.map((t) => [t.row, t]));
 
   for (const sl of shoulderLabels) {
+    const transition = shoulderByRow.get(sl.row);
+    if (!transition) continue;
     const marker = shoulderBindoffMarkerForRow(
       sl.row,
       rowNums,
@@ -504,50 +680,101 @@ export function renderShoulderShapingSvg(
     shoulderMarks.push(
       `<line x1="${marker.x}" y1="${marker.yTop}" x2="${marker.x}" y2="${marker.yBottom}" stroke="${LINE_STROKE}" stroke-width="${LINE_WIDTH}" stroke-linecap="square" />`
     );
-    const tx = shoulderOut(marker.x);
+    const pos = placeHorizontalLabel(
+      transition.fromX,
+      transition.toX,
+      transition.yCurr,
+      -1,
+      marker.x
+    );
     deltaLabels.push(
-      `<text x="${tx}" y="${marker.yMid + 4}" font-size="${FONT_DELTA}" fill="${LABEL_FILL}" text-anchor="${shoulderAnchor}" dominant-baseline="middle" font-family="system-ui,sans-serif">${escapeXml(
+      `<text x="${pos.x}" y="${pos.y}" font-size="${FONT_DELTA}" fill="${SHOULDER_LABEL_FILL}" text-anchor="middle" dominant-baseline="middle" font-family="system-ui,sans-serif" font-weight="600">${escapeXml(
         deltaStr(sl.amount)
       )}</text>`
     );
   }
 
-  const neckOut = (x0: number, x1: number) =>
-    side === "right" ? Math.max(x0, x1) + LABEL_GAP : Math.min(x0, x1) - LABEL_GAP;
-  const neckAnchor = side === "right" ? "start" : "end";
-
+  const neckTransitions = buildTransitions(
+    rowNums,
+    inner,
+    side,
+    chartSpanStitches,
+    GRID,
+    padX,
+    minRow,
+    maxRow,
+    padY
+  );
+  const neckByRow = new Map<number, StepTransition>(neckTransitions.map((t) => [t.row, t]));
+  const placedNeckLabels: Array<{ x: number; y: number }> = [];
   for (const nl of neckLabels) {
-    const k = rowNums.findIndex((r) => r === nl.row);
-    if (k <= 0) continue;
-    const y = yAt(nl.row);
-    const x0 = toSvgX(inner[k - 1], side, chartSpanStitches, GRID, padX);
-    const x1 = toSvgX(inner[k], side, chartSpanStitches, GRID, padX);
-    const tx = neckOut(x0, x1);
+    const transition = neckByRow.get(nl.row);
+    if (!transition) continue;
+    const interiorDirection: -1 | 1 = side === "left" ? 1 : -1;
+    const rowBiasY = side === "left" ? -2 : 2;
+    const pos = placeNeckLabel(
+      transition.fromX,
+      transition.yPrev,
+      transition.yCurr,
+      interiorDirection,
+      transition.toX,
+      nl.amount === 1 ? 2 : 0,
+      rowBiasY
+    );
+    let labelX = pos.x;
+    let labelY = pos.y;
+    for (let nudge = 0; nudge < NECK_LABEL_MAX_NUDGES; nudge += 1) {
+      const collides = placedNeckLabels.some(
+        (p) =>
+          Math.abs(p.y - labelY) < NECK_LABEL_COLLISION_Y &&
+          Math.abs(p.x - labelX) < CHAR_W_EST * 2.5
+      );
+      if (!collides) break;
+      labelX += interiorDirection * NECK_LABEL_NUDGE_X;
+      labelY += nudge % 2 === 0 ? -NECK_LABEL_NUDGE_Y : NECK_LABEL_NUDGE_Y;
+    }
+    let guard = 0;
+    while (
+      guard < 10 &&
+      placedNeckLabels.some(
+        (p) =>
+          Math.abs(p.y - labelY) < NECK_LABEL_COLLISION_Y &&
+          Math.abs(p.x - labelX) < CHAR_W_EST * 2.5
+      )
+    ) {
+      labelY -= NECK_LABEL_STACK_FALLBACK_Y;
+      guard += 1;
+    }
+    guard = 0;
+    while (
+      guard < 10 &&
+      placedNeckLabels.some(
+        (p) =>
+          Math.abs(p.y - labelY) < NECK_LABEL_COLLISION_Y &&
+          Math.abs(p.x - labelX) < CHAR_W_EST * 2.5
+      )
+    ) {
+      labelY += NECK_LABEL_STACK_FALLBACK_Y * 2;
+      guard += 1;
+    }
+    placedNeckLabels.push({ x: labelX, y: labelY });
     deltaLabels.push(
-      `<text x="${tx}" y="${y + 4}" font-size="${FONT_DELTA}" fill="${LABEL_FILL}" text-anchor="${neckAnchor}" dominant-baseline="middle" font-family="system-ui,sans-serif">${escapeXml(
+      `<text x="${labelX}" y="${labelY}" font-size="${FONT_DELTA}" fill="${NECK_LABEL_FILL}" text-anchor="${pos.textAnchor}" dominant-baseline="middle" font-family="system-ui,sans-serif" font-weight="600">${escapeXml(
         deltaStr(nl.amount)
       )}</text>`
     );
   }
 
-  let centerMark = "";
-  if (centerNeckStitches != null && centerNeckStitches > 0 && centerNeckLabel) {
-    const yb = yAt(minRow);
-    const xe = side === "right" ? gx1 : gx0;
-    const centerLabelPad = 10;
-    centerMark = `
-  <g class="ns-shoulder-svg__center">
-    <line x1="${xe}" y1="${yb - 6}" x2="${xe}" y2="${yb + 6}" stroke="${LINE_STROKE}" stroke-width="${LINE_WIDTH}" stroke-linecap="square" />
-    <text x="${xe + centerLabelPad}" y="${yb + 3}" font-size="${FONT_NOTE}" fill="${LABEL_FILL}" font-family="system-ui,sans-serif" text-anchor="start">${escapeXml(centerNeckLabel)}</text>
-  </g>`;
-  }
+  // Center bind-off annotation is intentionally omitted to guarantee
+  // shaping labels always remain fully visible and unobstructed.
+  const centerMark = "";
 
   const zoneLabelY = padY - 6;
   const titles =
-    `<text x="${gx0}" y="${zoneLabelY}" font-size="${FONT_ZONE}" fill="${LABEL_FILL}" font-family="system-ui,sans-serif" font-weight="600">${escapeXml(
+    `<text x="${gx0}" y="${zoneLabelY}" font-size="${FONT_ZONE}" fill="${SHOULDER_LABEL_FILL}" font-family="system-ui,sans-serif" font-weight="600">${escapeXml(
       "Shoulder bind-offs"
     )}</text>` +
-    `<text x="${gx1}" y="${zoneLabelY}" font-size="${FONT_ZONE}" fill="${LABEL_FILL}" font-family="system-ui,sans-serif" font-weight="600" text-anchor="end">${escapeXml(
+    `<text x="${gx1}" y="${zoneLabelY}" font-size="${FONT_ZONE}" fill="${NECK_LABEL_FILL}" font-family="system-ui,sans-serif" font-weight="600" text-anchor="end">${escapeXml(
       "Neckline shaping"
     )}</text>`;
 
@@ -556,13 +783,13 @@ export function renderShoulderShapingSvg(
     svgStyle
   )}" viewBox="0 0 ${svgW} ${svgH}" preserveAspectRatio="xMinYMin meet" role="img" aria-label="Neck and shoulder shaping diagram">
   <title>Neck and shoulder shaping diagram</title>
-  <rect x="0" y="0" width="${svgW}" height="${svgH}" fill="#ffffff"/>
+  <rect class="kbm-shaping-svg__diagram-bg" x="0" y="0" width="${svgW}" height="${svgH}" fill="#ffffff" stroke="none"/>
+  ${fabricAreaD ? `<path class="kbm-shaping-svg__fabric-fill" d="${fabricAreaD}" fill="${FABRIC_FILL}" fill-opacity="${FABRIC_FILL_OPACITY}" stroke="none" />` : ""}
   ${gridLines.join("\n  ")}
-  ${outerD ? `<path d="${outerD}" fill="none" stroke="${LINE_STROKE}" stroke-width="${LINE_WIDTH}" stroke-linecap="square" stroke-linejoin="miter" />` : ""}
   <path d="${innerD}" fill="none" stroke="${LINE_STROKE}" stroke-width="${LINE_WIDTH}" stroke-linecap="square" stroke-linejoin="miter" />
   <g class="ns-shoulder-svg__shoulder-marks">${shoulderMarks.join("\n  ")}</g>
-  <g class="ns-shoulder-svg__delta-labels">${deltaLabels.join("\n  ")}</g>
   ${centerMark}
+  <g class="ns-shoulder-svg__delta-labels">${deltaLabels.join("\n  ")}</g>
   ${titles}
 </svg>`;
 }

@@ -171,6 +171,53 @@
   height: auto;
 }
 
+/* Timeline geometry diagram (grouped notation helper + SVG). */
+.ns-shaping-chart__diagram .ns-shaping-chart__preview-title {
+  margin: 0 0 0.2rem;
+}
+
+.ns-shaping-chart__diagram-notation-hint {
+  margin: 0 0 0.35rem;
+  max-width: 100%;
+  min-width: 0;
+  font-weight: 400;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.ns-shaping-chart__diagram-notation-hint-main {
+  margin: 0 0 0.12rem;
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: 400;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.ns-shaping-chart__diagram-notation-hint-example {
+  margin: 0;
+  font-size: 0.68rem;
+  font-style: italic;
+  font-weight: 400;
+  color: #64748b;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+}
+
+.ns-shaping-chart__diagram-notation-hint-kernel {
+  color: #64748b;
+}
+
+.ns-shaping-chart__diagram-notation-order {
+  font-style: normal;
+  font-weight: 600;
+  color: #475569;
+}
+
+.ns-shaping-chart__diagram .ns-shaping-chart__diagram-svg-wrap {
+  margin-top: 0;
+}
+
 @media print {
   .ns-shaping-chart {
     font-size: 9pt;

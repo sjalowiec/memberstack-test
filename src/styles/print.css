@@ -447,6 +447,16 @@
     stroke: #333333 !important;
   }
 
+  /*
+    Neck/shoulder shaping schematics: pale fabric fills and diagram canvas use stroke="none".
+    The generic rule above would outline every filled path and the white backdrop rect in print.
+  */
+  svg .kbm-shaping-svg__fabric-fill,
+  svg path.kbm-shaping-svg__fabric-fill,
+  svg rect.kbm-shaping-svg__diagram-bg {
+    stroke: none !important;
+  }
+
   /* ========================================
      NOTE & INFO BOXES
      ======================================== */

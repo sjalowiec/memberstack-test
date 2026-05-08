@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildTimeline } from "./shapingTimeline";
+import { buildTimeline, computeShoulderBindoffSchedule } from "./shapingTimeline";
 import { buildNeckShoulderShapingChartRows } from "./neckShoulderShapingChartRows";
 import {
   calculateRoundNecklineShaping,
@@ -138,6 +138,49 @@ describe("buildTimeline round neckline (back profile)", () => {
     );
     expect(outerSumL).toBe(Math.floor((B - N) / 2));
     expect(outerSumR).toBe(Math.ceil((B - N) / 2));
+  });
+
+  it("back timeline reuses front shoulder chunks when shoulderSchedule is passed (row budget fits placement)", () => {
+    const N = 53;
+    const S = 38;
+    const B = stitchesAfterArmholeFixture(N, S);
+    const frontInputs = {
+      firstShapingRow: 100,
+      shoulderStitchesPerSide: S,
+      centerNeckBindOff: N,
+      neckDepthRows: 45,
+      neckProfile: "front" as const,
+      stitchesAfterArmhole: B,
+      shoulderBindoffRows: SHOULDER_BINDOFF_ROWS,
+    };
+    const schedule = computeShoulderBindoffSchedule(frontInputs);
+    expect(schedule).not.toBeNull();
+
+    const frontTl = buildTimeline(frontInputs);
+    const backInputs = {
+      firstShapingRow: 300,
+      shoulderStitchesPerSide: S,
+      centerNeckBindOff: N,
+      neckDepthRows: 30,
+      neckProfile: "back" as const,
+      stitchesAfterArmhole: B,
+      shoulderBindoffRows: SHOULDER_BINDOFF_ROWS,
+    };
+    const backUnified = buildTimeline(backInputs, { shoulderSchedule: schedule! });
+
+    function leftOuterShoulderSequence(tl: ReturnType<typeof buildTimeline>): number[] {
+      const amounts: number[] = [];
+      for (const row of tl.slice(1)) {
+        const lo = row.events
+          .filter((e) => e.kind === "bindOff" && e.side === "left" && e.edge === "outer")
+          .reduce((s, e) => s + e.amount, 0);
+        if (lo > 0) amounts.push(lo);
+      }
+      return amounts;
+    }
+
+    expect(leftOuterShoulderSequence(frontTl)).toEqual(schedule!.leftChunks);
+    expect(leftOuterShoulderSequence(backUnified)).toEqual(schedule!.leftChunks);
   });
 
   it("places stair neck bind-offs before single neck decreases for N=53", () => {

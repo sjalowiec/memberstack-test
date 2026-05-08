@@ -52,6 +52,17 @@ export type RowEntry = {
   rightOuterEdge: number;
 };
 
+/**
+ * Canonical outer-shoulder bind-off chunks (per action row) + placement span from the **front** neck
+ * schedule. Apply to both front and back timelines so armhole columns and SVG shorthand match.
+ */
+export type ShoulderBindoffSchedule = {
+  leftChunks: number[];
+  rightChunks: number[];
+  /** Rows at the end of the post-center window where shoulder actions occur (matches buildTimeline tail overlay). */
+  placementRows: number;
+};
+
 function assertRowInvariants(row: RowEntry, expectedLeft: number, expectedRight: number): void {
   const stitchesL = row.leftInnerEdge - row.leftOuterEdge + 1;
   const stitchesR = row.rightOuterEdge - row.rightInnerEdge + 1;
@@ -132,10 +143,49 @@ function backInnerNeckRow(
 }
 
 /**
+ * Compute outer-shoulder bind-off chunks exactly as {@link buildTimeline} would for these inputs.
+ * Call with **front** pattern numbers so back + front can share one shoulder sequence.
+ */
+export function computeShoulderBindoffSchedule(inputs: ShapingTimelineInputs): ShoulderBindoffSchedule | null {
+  const neckDepthRows = Math.floor(inputs.neckDepthRows);
+  const workRows = neckDepthRows - 1;
+  const B = Math.round(inputs.stitchesAfterArmhole);
+  const N = Math.round(inputs.centerNeckBindOff);
+  const shoulderBindoffRowsRaw = inputs.shoulderBindoffRows;
+
+  if (
+    !Number.isFinite(neckDepthRows) ||
+    !Number.isFinite(workRows) ||
+    workRows < 0 ||
+    !Number.isFinite(B) ||
+    !Number.isFinite(N) ||
+    !Number.isFinite(shoulderBindoffRowsRaw)
+  ) {
+    return null;
+  }
+  const shoulderBandTotal = B - N;
+  if (shoulderBandTotal <= 0) return null;
+
+  const leftShoulderTotal = Math.floor(shoulderBandTotal / 2);
+  const rightShoulderTotal = Math.ceil(shoulderBandTotal / 2);
+  const shoulderBindoffRowsIn = Math.max(1, Math.floor(shoulderBindoffRowsRaw));
+  const placementRows = Math.min(shoulderBindoffRowsIn, workRows);
+  const shoulderActionSlots = Math.max(1, Math.ceil(placementRows / 2));
+  const leftChunks = distributeTotalAcrossRows(leftShoulderTotal, shoulderActionSlots);
+  const rightChunks = distributeTotalAcrossRows(rightShoulderTotal, shoulderActionSlots);
+  return { leftChunks, rightChunks, placementRows };
+}
+
+export type BuildTimelineOptions = {
+  /** When set (typically from {@link computeShoulderBindoffSchedule} on front inputs), outer shoulder amounts match that schedule instead of being recomputed from this piece's row budget. */
+  shoulderSchedule?: ShoulderBindoffSchedule | null;
+};
+
+/**
  * Unified neckline + shoulder scheduler: one row budget ({@link ShapingTimelineInputs.neckDepthRows}),
  * inner-neck and outer-shoulder actions may occur on the same RC.
  */
-export function buildTimeline(inputs: ShapingTimelineInputs): RowEntry[] {
+export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTimelineOptions): RowEntry[] {
   const firstRow = Math.floor(inputs.firstShapingRow);
   const S = Math.round(inputs.shoulderStitchesPerSide);
   const N = Math.round(inputs.centerNeckBindOff);
@@ -187,21 +237,44 @@ export function buildTimeline(inputs: ShapingTimelineInputs): RowEntry[] {
   const shoulderBindoffRowsIn = Math.max(1, Math.floor(shoulderBindoffRowsRaw));
   const leftShoulderTotal = Math.floor(shoulderBandTotal / 2);
   const rightShoulderTotal = Math.ceil(shoulderBandTotal / 2);
-  const placementRows = Math.min(shoulderBindoffRowsIn, workRows);
+  const schedule = options?.shoulderSchedule ?? undefined;
 
   const shoulderLeftPerRow = Array(workRows).fill(0);
   const shoulderRightPerRow = Array(workRows).fill(0);
-  if (placementRows > 0 && shoulderBandTotal > 0) {
-    /** Shoulder bind-offs on alternating rows only (action / return / action …), same rhythm as inner-neck singles. */
-    const shoulderActionSlots = Math.max(1, Math.ceil(placementRows / 2));
-    const leftChunks = distributeTotalAcrossRows(leftShoulderTotal, shoulderActionSlots);
-    const rightChunks = distributeTotalAcrossRows(rightShoulderTotal, shoulderActionSlots);
-    const startI = workRows - placementRows;
-    for (let k = 0; k < shoulderActionSlots; k++) {
-      const rowIdx = startI + 2 * k;
-      if (rowIdx >= workRows) break;
-      shoulderLeftPerRow[rowIdx] = leftChunks[k] ?? 0;
-      shoulderRightPerRow[rowIdx] = rightChunks[k] ?? 0;
+  if (shoulderBandTotal > 0) {
+    let placementRowsEff = Math.min(shoulderBindoffRowsIn, workRows);
+    let leftChunks: number[];
+    let rightChunks: number[];
+
+    if (schedule && schedule.placementRows > 0 && schedule.leftChunks.length > 0) {
+      if (workRows >= schedule.placementRows) {
+        placementRowsEff = schedule.placementRows;
+        leftChunks = [...schedule.leftChunks];
+        rightChunks = [...schedule.rightChunks];
+      } else {
+        /** Short neck budget vs canonical front: preserve stitch totals, allow chunk pattern to compress. */
+        const shoulderActionSlots = Math.max(1, Math.ceil(placementRowsEff / 2));
+        leftChunks = distributeTotalAcrossRows(leftShoulderTotal, shoulderActionSlots);
+        rightChunks = distributeTotalAcrossRows(rightShoulderTotal, shoulderActionSlots);
+      }
+    } else if (placementRowsEff > 0) {
+      /** Shoulder bind-offs on alternating rows only (action / return / action …), same rhythm as inner-neck singles. */
+      const shoulderActionSlots = Math.max(1, Math.ceil(placementRowsEff / 2));
+      leftChunks = distributeTotalAcrossRows(leftShoulderTotal, shoulderActionSlots);
+      rightChunks = distributeTotalAcrossRows(rightShoulderTotal, shoulderActionSlots);
+    } else {
+      leftChunks = [];
+      rightChunks = [];
+    }
+
+    if (placementRowsEff > 0 && leftChunks.length > 0) {
+      const startI = workRows - placementRowsEff;
+      for (let k = 0; k < leftChunks.length; k++) {
+        const rowIdx = startI + 2 * k;
+        if (rowIdx >= workRows || rowIdx < 0) break;
+        shoulderLeftPerRow[rowIdx] = leftChunks[k] ?? 0;
+        shoulderRightPerRow[rowIdx] = rightChunks[k] ?? 0;
+      }
     }
   }
 

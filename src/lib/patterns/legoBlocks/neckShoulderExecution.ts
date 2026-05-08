@@ -19,6 +19,14 @@ export type ShapingAction = {
   text: string;
 };
 
+/** Optional sleeveless-style wording for center bind-off (built from timeline + chart row 0). */
+export type CenterBindOffExecutionText = {
+  /** Replaces the default “Bind off the center neckline stitches…” preamble line. */
+  preambleLine: string;
+  /** Replaces “At center neckline, bind off…” on RC-targeted shaping rows. */
+  shapingAtRcLine: string;
+};
+
 export type NeckShoulderExecutionInput = {
   startRC: number;
   centerNeck: NeedleRange;
@@ -26,6 +34,8 @@ export type NeckShoulderExecutionInput = {
   rightShoulder: NeedleRange;
   neckActions: ShapingAction[];
   shoulderActions: ShapingAction[];
+  /** When set, overrides generated center bind-off prose (see sleeveless pattern output). */
+  centerBindOffExecutionText?: CenterBindOffExecutionText;
 };
 
 export type NeckShoulderExecutionOutput = {
@@ -155,7 +165,13 @@ function emitShapingSchedule(
 /**
  * Row-accurate neck + shoulder {@link ShapingAction}s from a neckline timeline (same source as the printed chart).
  */
-export function shapingActionsFromTimeline(timeline: readonly RowEntry[]): {
+export function shapingActionsFromTimeline(
+  timeline: readonly RowEntry[],
+  options?: {
+    /** When set, used instead of “At center neckline, bind off…” for rows with a center bind-off. */
+    centerBindOffShapingLine?: string;
+  }
+): {
   neckActions: ShapingAction[];
   shoulderActions: ShapingAction[];
 } {
@@ -193,13 +209,15 @@ export function shapingActionsFromTimeline(timeline: readonly RowEntry[]): {
     }
 
     if (centerBindOff > 0) {
+      const centerText =
+        options?.centerBindOffShapingLine?.trim() ||
+        (centerBindOff === 1
+          ? "At center neckline, bind off 1 stitch."
+          : `At center neckline, bind off ${centerBindOff} stitches.`);
       neckActions.push({
         startRC: rc,
         endRC: rc,
-        text:
-          centerBindOff === 1
-            ? "At center neckline, bind off 1 stitch."
-            : `At center neckline, bind off ${centerBindOff} stitches.`,
+        text: centerText,
       });
     }
     const neckSym =
@@ -320,8 +338,15 @@ export function generateNeckShoulderExecution(
   }
 
   const lines: string[] = [];
-  const { startRC, centerNeck, leftShoulder, rightShoulder, neckActions, shoulderActions } =
-    input;
+  const {
+    startRC,
+    centerNeck,
+    leftShoulder,
+    rightShoulder,
+    neckActions,
+    shoulderActions,
+    centerBindOffExecutionText,
+  } = input;
 
   lines.push(`${formatRC(startRC)}. Carriage on the right.`);
   lines.push("Knit in pattern until neckline / shoulder execution.");
@@ -337,7 +362,8 @@ export function generateNeckShoulderExecution(
     `Scrap off the right shoulder first — ${rightShoulder.stitchCount} sts, needles ${formatNeedleRange(rightShoulder.start, rightShoulder.end)}.`
   );
   lines.push(
-    `Bind off the center neckline stitches — ${centerNeck.stitchCount} sts, needles ${formatNeedleRange(centerNeck.start, centerNeck.end)}.`
+    centerBindOffExecutionText?.preambleLine ??
+      `Bind off the center neckline stitches — ${centerNeck.stitchCount} sts, needles ${formatNeedleRange(centerNeck.start, centerNeck.end)}.`
   );
   lines.push("");
   lines.push(

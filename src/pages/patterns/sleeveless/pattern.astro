@@ -553,6 +553,41 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     width: 100%;
   }
 
+  :global(#pattern-content .sleeveless-neck-shoulder-diagram) {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin-top: 1rem;
+  }
+
+  :global(#pattern-content .sg-neck-chart-diagram-block) {
+    margin: 0;
+  }
+
+  :global(#pattern-content .ns-shaping-chart--diagram-block) {
+    margin: 0;
+  }
+
+  :global(#pattern-content .ns-shaping-chart__diagram) {
+    margin: 0;
+    padding: 0.45rem 0.75rem 0.75rem;
+    border: 1px solid rgba(55, 65, 81, 0.16);
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  :global(#pattern-content .ns-shaping-chart__diagram-svg-wrap) {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  :global(#pattern-content .ns-shaping-chart__diagram-svg-wrap svg) {
+    display: block;
+    width: 100%;
+    min-width: 320px;
+    height: auto;
+  }
+
   :global(#pattern-content #neckline-shoulder-chart-print-area),
   :global(#pattern-content #front-neckline-shoulder-chart-print-area) {
     width: 100%;
@@ -941,6 +976,10 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
       position: static !important;
     }
 
+    :global(#pattern-content .sleeveless-neck-shoulder-diagram) {
+      display: none !important;
+    }
+
     :global(.no-print) {
       display: none !important;
     }
@@ -964,6 +1003,7 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
   import { setPatternTabsReadiness } from "../../../lib/patterns/patternTabsClient.ts";
   import { generateSleevelessBackPattern } from "../../../lib/patterns/sleevelessPatternOutput.ts";
   import {
+    renderNeckShoulderShapingDiagramOnlyHtml,
     renderNeckShoulderShapingChartTableOnlyHtml,
   } from "../../../lib/patterns/neckShoulderShapingChartHtml.ts";
   import { showResults, initializeActionBar } from "../../../components/wizards/utils/wizardBehavior.ts";
@@ -1264,11 +1304,12 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
    * Chart table stays in the left column; shape preview mounts below the two-column piece split.
    * @param {unknown[]} rows
    * @param {string} chartTableMountId
-   * @param {string} chartPreviewMountId
+   * @param {string} chartDiagramMountId
    */
   function renderSleevelessDisplayHtml(
     rows,
     chartTableMountId,
+    chartDiagramMountId,
     pieceSectionId,
     patternIntroSentence,
     neckChartStartRow
@@ -1384,11 +1425,23 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
   <div class="sg-pattern-output sg-neck-chart-print-block" id="${escapeHtml(chartTableMountId)}"></div>
   <p class="neckline-chart-print-only-footer">Created by Knit It Now · Printed <span data-neckline-chart-print-date></span></p>
 </div>`;
+        const diagramLabel =
+          pieceSectionId === "front"
+            ? "Front neckline and shoulder diagram"
+            : "Back neckline and shoulder diagram";
+        const diagramChunk = `<aside class="sleeveless-neck-shoulder-diagram" aria-label="${escapeHtml(diagramLabel)}">
+  <div class="sg-pattern-output sg-neck-chart-diagram-block" id="${escapeHtml(chartDiagramMountId)}"></div>
+</aside>`;
         if (openSectionTitle) {
-          openSectionParts.push(chartChunk);
+          openSectionParts.push(chartChunk, diagramChunk);
           continue;
         }
-        postParts.push(`<section class="sleeveless-piece-chart-fullwidth">${chartChunk}</section>`);
+        postParts.push(
+          `<section class="sleeveless-piece-chart-fullwidth">${chartChunk}${diagramChunk}</section>`
+        );
+        continue;
+      }
+      if (row.kind === "neckShoulderChartPreviewMount") {
         continue;
       }
       if (row.kind !== "block") continue;
@@ -2357,6 +2410,7 @@ table {
         ? renderSleevelessDisplayHtml(
             displayRows,
             "sg-neck-shoulder-chart-table-back",
+            "sg-neck-shoulder-diagram-back",
             "back",
             patternIntroSentence,
             result?.neckShoulderShapingChart?.rows?.[0]?.row
@@ -2367,6 +2421,7 @@ table {
         ? renderSleevelessDisplayHtml(
             frontDisplayRows,
             "sg-neck-shoulder-chart-table-front",
+            "sg-neck-shoulder-diagram-front",
             "front",
             patternIntroSentence,
             result?.frontNeckShoulderShapingChart?.rows?.[0]?.row
@@ -2397,14 +2452,21 @@ table {
       wrapPatternSection("sg-front", "Front", frontWrapped, { defaultCollapsed: false }) +
       wrapPatternSection("sg-finishing", "Finishing", buildFinishingHtml(), { defaultCollapsed: true });
 
-    hydrateGlossaryTooltipPlaceholders(mount);
-
     const backChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-back");
     if (backChartTableHost) {
       backChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
-        neckShoulderChartHelpRowHtml(result?.neckShoulderShapingChart?.rows?.[0]?.row)
+        neckShoulderChartHelpRowHtml(result?.neckShoulderShapingChart?.rows?.[0]?.row),
+        { activeSideOnly: true }
+      );
+    }
+    const backDiagramHost = mount.querySelector("#sg-neck-shoulder-diagram-back");
+    if (backDiagramHost) {
+      backDiagramHost.innerHTML = renderNeckShoulderShapingDiagramOnlyHtml(
+        result.neckShoulderShapingChart,
+        "ns-shaping-chart-back",
+        "back"
       );
     }
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
@@ -2415,6 +2477,19 @@ table {
         neckShoulderChartHelpRowHtml(result?.frontNeckShoulderShapingChart?.rows?.[0]?.row)
       );
     }
+    const frontDiagramHost = mount.querySelector("#sg-neck-shoulder-diagram-front");
+    if (frontDiagramHost) {
+      frontDiagramHost.innerHTML = renderNeckShoulderShapingDiagramOnlyHtml(
+        result.frontNeckShoulderShapingChart,
+        "ns-shaping-chart-front",
+        "front"
+      );
+    }
+
+    // Finishing HTML + neckline/shoulder diagram HTML (incl. glossary placeholders) are injected above.
+    // Hydrate after those nodes exist — early hydration skipped diagram placeholders (they were not in the DOM yet).
+    hydrateGlossaryTooltipPlaceholders(mount);
+
     mountNecklineChartPrintInHeader(
       "neckline-shoulder-chart-print-area",
       "neckline-shoulder-chart-print-btn"
