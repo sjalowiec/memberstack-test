@@ -5,9 +5,7 @@ import {
 } from "./neckShoulderShapingChart";
 import {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
-  ACTIVE_SHOULDER_NECK_ARMHOLE_EDGE_SENTENCE,
-  ACTIVE_SHOULDER_PLACE_HOLD_SENTENCE,
-  ACTIVE_SHOULDER_RULE_OF_ONE_SENTENCE,
+  ACTIVE_SHOULDER_DIVIDE_SENTENCE,
   renderActiveShoulderChartIntroHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
   renderNeckShoulderShapingPrintInstructionTableHtml,
@@ -77,6 +75,37 @@ describe("renderNeckShoulderShapingPrintInstructionTableHtml active-side mode", 
     expect(html).toMatch(/000<\/td>\s*<td>Right<\/td>\s*<td>Knit in pattern<\/td>\s*<td>Armhole<\/td>/);
     expect(html).toMatch(/001<\/td>\s*<td>Left<\/td>\s*<td>Decrease 3 sts<\/td>\s*<td>Neck<\/td>/);
     expect(html).toMatch(/002<\/td>\s*<td>Right<\/td>\s*<td>Bind off 8 sts<\/td>\s*<td>Armhole<\/td>/);
+  });
+
+  it("continues armhole-local RC labels when activeSideRcStart is set (no RC:000 reset)", () => {
+    const html = renderNeckShoulderShapingPrintInstructionTableHtml(
+      neckShoulderShapingChartFromRows([
+        {
+          ...plainRow(30, { left: 55, right: 55 }),
+          centerNeck: "-12",
+        },
+        {
+          ...plainRow(31, { left: 52, right: 52 }),
+          action: "Neck",
+          leftNeck: "-3",
+          rightNeck: "-3",
+        },
+        {
+          ...plainRow(31, { left: 44, right: 44 }),
+          action: "Shoulder",
+          leftSide: "-8",
+          rightSide: "-8",
+        },
+      ]),
+      "ns-shaping-chart-print-local-rc",
+      undefined,
+      { activeSideRcStart: 78 },
+    );
+
+    expect(html).not.toMatch(/ns-shaping-mini__rc">000</);
+    expect(html).toContain(">078<");
+    expect(html).toContain(">079<");
+    expect(html).toContain(">080<");
   });
 });
 
@@ -622,10 +651,8 @@ describe("renderActiveShoulderChartIntroHtml", () => {
     });
     const needles = [
       "At local RC:010, bind off the center 12 neckline stitches.",
-      ACTIVE_SHOULDER_PLACE_HOLD_SENTENCE,
+      ACTIVE_SHOULDER_DIVIDE_SENTENCE,
       ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
-      ACTIVE_SHOULDER_NECK_ARMHOLE_EDGE_SENTENCE,
-      ACTIVE_SHOULDER_RULE_OF_ONE_SENTENCE,
     ];
     for (const n of needles) {
       expect(compact).toContain(n);
@@ -633,8 +660,9 @@ describe("renderActiveShoulderChartIntroHtml", () => {
     }
     expect(compact).not.toMatch(/reset.*row counter/i);
     expect(labeled).not.toMatch(/reset.*row counter/i);
-    expect(labeled).toContain("Setup");
     expect(labeled).toContain("Center Neckline:");
+    expect(compact).toContain("Center Neckline:");
     expect(compact).not.toContain("<strong>Setup</strong>");
+    expect(labeled).not.toContain("<strong>Setup</strong>");
   });
 });

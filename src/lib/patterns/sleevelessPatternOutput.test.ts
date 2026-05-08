@@ -195,20 +195,21 @@ describe("sleevelessPatternOutput RC progression", () => {
     const frontNeckBlocks = result.frontDisplayRows.slice(frontNeckSectionIdx + 1).filter(
       (r): r is Extract<(typeof result.frontDisplayRows)[number], { kind: "block" }> => r.kind === "block",
     );
-    const summaryWithCenterBindOff = frontNeckBlocks.find((b) =>
-      b.paragraphs.some((p) => /bind off the center \d+ neckline stitches/i.test(p)),
+    const frontNeckSummaryBlock = frontNeckBlocks.find((b) =>
+      b.paragraphs.some((p) =>
+        p.includes("Use the checklist below to work the neckline and shoulder shaping."),
+      ),
     );
-    expect(summaryWithCenterBindOff).toBeDefined();
+    expect(frontNeckSummaryBlock).toBeDefined();
+    expect(frontNeckSummaryBlock?.paragraphs).toEqual([
+      "Use the checklist below to work the neckline and shoulder shaping.",
+    ]);
     const localStart = result.debug.frontNecklineStartLocalRC;
     const garmentStart = result.debug.frontNecklineStartRC;
     const armholeStart = result.debug.armholeStartRow;
     expect(localStart).toBeDefined();
     expect(armholeStart).toBeDefined();
     expect(localStart).toBe(Math.max(0, (garmentStart ?? 0) - (armholeStart ?? 0)));
-    const localLabel = `RC:${String(localStart ?? 0).padStart(3, "0")}`;
-    const garmentLabel = `RC:${String(garmentStart).padStart(3, "0")}`;
-    expect(summaryWithCenterBindOff?.paragraphs.join(" ")).toContain(`At local ${localLabel}, bind off the center`);
-    expect(summaryWithCenterBindOff?.paragraphs.join(" ")).not.toContain(`At ${garmentLabel}, bind off the center`);
   });
 
   it("clamps front shared plain spans so RCs do not run past the front neckline start", () => {
@@ -1049,10 +1050,14 @@ describe("sleevelessPatternOutput RC progression", () => {
       const backPrintHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
         result.neckShoulderShapingChart,
         "ns-shaping-chart-print-back",
+        undefined,
+        { activeSideRcStart: debug.backNecklineStartLocalRC ?? 0 },
       );
       const frontPrintHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
         result.frontNeckShoulderShapingChart,
         "ns-shaping-chart-print-front",
+        undefined,
+        { activeSideRcStart: debug.frontNecklineStartLocalRC ?? 0 },
       );
       // ns-shaping-mini__rc cells render the row number directly.
       function printRowRcs(html: string): number[] {
@@ -1414,6 +1419,8 @@ describe("sleevelessPatternOutput RC progression", () => {
       const printHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
         result.neckShoulderShapingChart,
         "ns-shaping-chart-print-back",
+        undefined,
+        { activeSideRcStart: result.debug.backNecklineStartLocalRC ?? 0 },
       );
       expect(printHtml).not.toMatch(/Garment\s*RC/i);
     });
@@ -1430,6 +1437,8 @@ describe("sleevelessPatternOutput RC progression", () => {
       const printHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
         result.frontNeckShoulderShapingChart,
         "ns-shaping-chart-print-front",
+        undefined,
+        { activeSideRcStart: result.debug.frontNecklineStartLocalRC ?? 0 },
       );
       expect(printHtml).not.toMatch(/Garment\s*RC/i);
     });

@@ -518,7 +518,7 @@ async function initSleevelessPrintPage(): Promise<void> {
   const backLocalStartLabel = `RC:${String(backLocalStartRc).padStart(3, "0")}`;
   const frontLocalStartLabel = `RC:${String(frontLocalStartRc).padStart(3, "0")}`;
 
-  // Active-shoulder intro: armhole-local RC only (reset once at ARMHOLE); bind-off anchors at `At local RC:…`.
+  // Active-shoulder intro: armhole-local RC only; center bind-off sentence uses `At local RC:…` from shared copy.
   const backChartHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
     result.neckShoulderShapingChart,
     "ns-shaping-chart-print-back",
@@ -528,6 +528,7 @@ async function initSleevelessPrintPage(): Promise<void> {
       wrapperClass: "print-chart-intro",
       layout: "compact",
     }),
+    { activeSideRcStart: backLocalStartRc },
   );
   const frontChartHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
     result.frontNeckShoulderShapingChart,
@@ -538,6 +539,7 @@ async function initSleevelessPrintPage(): Promise<void> {
       wrapperClass: "print-chart-intro",
       layout: "compact",
     }),
+    { activeSideRcStart: frontLocalStartRc },
   );
 
   const { preludeRows, continuationRows } = splitRowsBeforeNeckShoulderChartMount(result.displayRows ?? []);

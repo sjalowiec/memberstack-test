@@ -8,7 +8,14 @@ import { collapsePlainChartRows, getNeckShoulderChartRowHighlightFromRow } from 
 import { renderShoulderShapingSvg, type ShoulderShapingSvgPiece } from "./shoulderShapingSvg";
 import { renderNotationOverlayDiagram } from "./notationOverlaySvg";
 import type { RowEntry, ShapingEvent } from "./shapingTimeline";
+import {
+  ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
+  ACTIVE_SHOULDER_DIVIDE_SENTENCE,
+  formatActiveShoulderCenterNecklinePlainSentence,
+} from "./neckShoulderActiveIntroCopy";
 import { formatShoulderBindoffRemainingInstruction } from "./sleevelessPatternOutput";
+
+export { ACTIVE_SHOULDER_CHART_INTRO_SENTENCE, ACTIVE_SHOULDER_DIVIDE_SENTENCE } from "./neckShoulderActiveIntroCopy";
 
 function escapeHtml(text: string): string {
   return text
@@ -73,39 +80,16 @@ const SECOND_SIDE_INSTRUCTION_SUFFIX =
   "Repeat the table and shaping diagram logic for the second side, reversing the edge landmarks.";
 const SECOND_SIDE_CHECKLIST_INSTRUCTION_SUFFIX = "Follow the second shoulder checklist below.";
 
-/**
- * Pre-table prose for the active-shoulder shaping table. The chart and second-shoulder
- * checklist below operate on ONE shoulder at a time using local section RC counts only;
- * Garment RC is intentionally not displayed here.
- */
-export const ACTIVE_SHOULDER_CHART_INTRO_SENTENCE =
-  "Work one shoulder at a time. Follow the chart row by row for the active shoulder, then repeat for the second shoulder, reversing the edge landmarks.";
-
-/** Placed immediately before {@link ACTIVE_SHOULDER_RULE_OF_ONE_SENTENCE} in sleeveless shaping intros. */
-export const ACTIVE_SHOULDER_HOLD_AND_WORK_CARRIAGE_SIDE_STRONG_HTML =
-  "<p><strong>Place the non-working shoulder stitches on hold. Work only the carriage-side shoulder, following the shaping instructions row by row.</strong></p>";
-
-export const ACTIVE_SHOULDER_RULE_OF_ONE_SENTENCE =
-  "The table below follows the Rule of One: one carriage pass, one active-side shaping action, and one running stitch count for this side only.";
-
-/** Hold / divide step immediately after the center neckline bind-off sentence (active-shoulder checklist intros). */
-export const ACTIVE_SHOULDER_PLACE_HOLD_SENTENCE =
-  "Divide for the neckline and place the non-working shoulder stitches on hold.";
-
-/** Explains the Neck vs Armhole columns on the one-shoulder checklist (shared online + print/PDF). */
-export const ACTIVE_SHOULDER_NECK_ARMHOLE_EDGE_SENTENCE =
-  "Use Neck for the center neckline edge and Armhole for the outer shoulder edge.";
-
 export type ActiveShoulderChartIntroLayout = "compact" | "labeled";
 
 export type ActiveShoulderChartIntroOptions = {
-  /** Armhole-local RC label at neckline bind-off, e.g. `RC:117` (shown as `At local RC:117, …`). */
+  /** RC label at neckline bind-off (armhole-local counter), e.g. `RC:117` → `At local RC:117, bind off …`. */
   localStartRcLabel?: string | undefined;
   /** Whole-stitch center bind-off count from chart row 0; omit tail when unknown. */
   centerBindOffStitches?: number | undefined;
   /** Host-specific wrapper class (`print-chart-intro` vs `pattern-shaping-intro`). */
   wrapperClass: string;
-  /** Print sheet uses flat paragraphs; pattern tab uses labeled Setup / Divide blocks with the same sentences. */
+  /** Reserved for callers (online vs print); intro wording is the same for both layouts. */
   layout: ActiveShoulderChartIntroLayout;
 };
 
@@ -113,21 +97,16 @@ function activeShoulderAnchoredCenterBindOffHtml(
   localStartRcLabel: string | undefined,
   centerBindOffStitches: number | undefined
 ): string {
-  const localStartLabel = String(localStartRcLabel ?? "").trim();
-  const centerCount = Number(centerBindOffStitches);
-  const centerCountLabel =
-    Number.isFinite(centerCount) && centerCount > 0 ? String(Math.round(centerCount)) : "";
-  const bindOffLine = centerCountLabel
-    ? `Bind off the center ${escapeHtml(centerCountLabel)} neckline stitches.`
-    : "Bind off the center neckline stitches.";
-  return localStartLabel
-    ? `At local ${escapeHtml(localStartLabel)}, ${bindOffLine.charAt(0).toLowerCase()}${bindOffLine.slice(1)}`
-    : bindOffLine;
+  return escapeHtml(
+    formatActiveShoulderCenterNecklinePlainSentence({
+      localStartRcLabel,
+      centerBindOffStitches,
+    })
+  );
 }
 
 /**
- * Shared HTML intro placed above the active-shoulder shaping checklist (online pattern tab + dedicated print page).
- * Keeps bind-off anchoring, hold step, Rule of One, and edge landmark wording in one module.
+ * Shared HTML intro placed above the active-shoulder shaping checklist (online pattern tab + print/PDF).
  */
 export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartIntroOptions): string {
   const wrappedClass = String(options.wrapperClass ?? "").trim() || "active-shoulder-chart-intro";
@@ -135,26 +114,9 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
     options.localStartRcLabel,
     options.centerBindOffStitches
   );
-  const holdParagraph = `<p>${escapeHtml(ACTIVE_SHOULDER_PLACE_HOLD_SENTENCE)}</p>`;
-  const workOneShoulderParagraph = `<p>${escapeHtml(ACTIVE_SHOULDER_CHART_INTRO_SENTENCE)}</p>`;
-  const edgeLandmarkParagraph = `<p>${escapeHtml(ACTIVE_SHOULDER_NECK_ARMHOLE_EDGE_SENTENCE)}</p>`;
-  const ruleParagraph = `<p>${escapeHtml(ACTIVE_SHOULDER_RULE_OF_ONE_SENTENCE)}</p>`;
-
-  const inner =
-    options.layout === "labeled"
-      ? `<p><strong>Setup</strong></p>
-  <p><strong>Center Neckline:</strong><br>${bindOffHtml}</p>
-  <p><strong>Divide:</strong><br>${escapeHtml(ACTIVE_SHOULDER_PLACE_HOLD_SENTENCE)}</p>
-  ${workOneShoulderParagraph}
-  ${edgeLandmarkParagraph}
-  ${ACTIVE_SHOULDER_HOLD_AND_WORK_CARRIAGE_SIDE_STRONG_HTML}
-  ${ruleParagraph}`
-      : `<p>${bindOffHtml}</p>
-  ${holdParagraph}
-  ${workOneShoulderParagraph}
-  ${edgeLandmarkParagraph}
-  ${ACTIVE_SHOULDER_HOLD_AND_WORK_CARRIAGE_SIDE_STRONG_HTML}
-  ${ruleParagraph}`;
+  const inner = `<p><strong>Center Neckline:</strong><br>${bindOffHtml}</p>
+  <p><strong>Divide:</strong><br>${escapeHtml(ACTIVE_SHOULDER_DIVIDE_SENTENCE)}</p>
+  <p>${escapeHtml(ACTIVE_SHOULDER_CHART_INTRO_SENTENCE)}</p>`;
 
   return `<div class="${escapeHtml(wrappedClass)}">
   ${inner}
@@ -396,7 +358,9 @@ function buildActiveSideInstructionTableRows(
   if (!source) return [];
 
   const out: ActiveSideInstructionTableRow[] = [];
-  let rc = Math.max(0, Math.floor(rcStart));
+  /** 0-based checklist slot — aligns with {@link ActiveSideScheduledAction.sourceRelativeRow}. */
+  let checklistIdx = 0;
+  const rcBase = Math.max(0, Math.floor(rcStart));
   let stitchesRemaining = source.initialStitches;
   const actions = [...source.actions].sort((a, b) => {
     const dr = a.sourceRelativeRow - b.sourceRelativeRow;
@@ -406,29 +370,31 @@ function buildActiveSideInstructionTableRows(
   });
 
   for (const action of actions) {
-    while (rc < action.sourceRelativeRow) {
-      addActiveSideKnitEvenRow(out, rc, stitchesRemaining);
-      rc += 1;
+    while (checklistIdx < action.sourceRelativeRow) {
+      addActiveSideKnitEvenRow(out, rcBase + checklistIdx, stitchesRemaining);
+      checklistIdx += 1;
     }
-    while (rc % 2 !== requiredParityForActiveSideEdge(action.edge)) {
-      addActiveSideKnitEvenRow(out, rc, stitchesRemaining);
-      rc += 1;
+    let displayRc = rcBase + checklistIdx;
+    while (displayRc % 2 !== requiredParityForActiveSideEdge(action.edge)) {
+      addActiveSideKnitEvenRow(out, displayRc, stitchesRemaining);
+      checklistIdx += 1;
+      displayRc = rcBase + checklistIdx;
     }
-    const carriagePosition = carriagePositionForActiveSideRc(rc);
+    const carriagePosition = carriagePositionForActiveSideRc(displayRc);
     stitchesRemaining = Math.max(0, stitchesRemaining - action.amount);
     out.push({
-      rc,
+      rc: displayRc,
       carriagePosition,
       action: activeSideActionText(action),
       edge: action.edge,
       stitchesRemaining,
     });
-    rc += 1;
+    checklistIdx += 1;
   }
 
-  while (rc <= source.finalSourceRelativeRow) {
-    addActiveSideKnitEvenRow(out, rc, stitchesRemaining);
-    rc += 1;
+  while (checklistIdx <= source.finalSourceRelativeRow) {
+    addActiveSideKnitEvenRow(out, rcBase + checklistIdx, stitchesRemaining);
+    checklistIdx += 1;
   }
 
   return out;
@@ -665,7 +631,12 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
 </section>`;
 }
 
-/** Print-only compact written shaping rows for ink-efficient printouts. */
+/**
+ * Print-only compact written shaping rows for ink-efficient printouts.
+ * Pass `options.activeSideRcStart` as the armhole-local RC where the neckline section begins
+ * (same values as the pattern tab uses from `debug.backNecklineStartLocalRC` /
+ * `debug.frontNecklineStartLocalRC`) so checklist RCs match surrounding instructions.
+ */
 export function renderNeckShoulderShapingPrintInstructionTableHtml(
   chart: NeckShoulderShapingChart,
   idPrefix = "ns-shaping-chart-print",
