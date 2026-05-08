@@ -21,7 +21,9 @@ const pageUrl = Astro.url.href;
       <div class="sleeveless-beta-pattern__top-inner">
         <p class="sleeveless-beta-pattern__label">Sleeveless sweater · Beta · Published pattern</p>
         <div class="sleeveless-beta-pattern__actions">
-          <a class="sleeveless-beta-pattern__print-btn" href="/patterns/sleeveless/beta-print">Print Pattern</a>
+          <button class="sleeveless-beta-pattern__print-btn" type="button" onclick="window.print()">
+            Print Pattern
+          </button>
         </div>
       </div>
     </div>
