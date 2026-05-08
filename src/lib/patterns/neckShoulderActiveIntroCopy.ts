@@ -10,8 +10,13 @@ export const ACTIVE_SHOULDER_CHART_INTRO_SENTENCE =
 export const ACTIVE_SHOULDER_DIVIDE_SENTENCE =
   "Place the group of stitches opposite the carriage in hold position.";
 
+/** Announced once before the shoulder checklist; the table then uses RC:000, RC:001, … */
+export const ACTIVE_SHOULDER_RESET_RC_SENTENCE =
+  "Reset Shoulder RC to RC:000 for the shaping table below.";
+
 /**
- * Armhole-local RC label (e.g. `RC:078`) plus center bind-off count from chart row 0.
+ * Center bind-off milestone uses Armhole RC (post armhole reset). Pass `RC:078`-style labels from
+ * {@link sleevelessPatternOutput} debug locals.
  */
 export function formatActiveShoulderCenterNecklinePlainSentence(args: {
   localStartRcLabel?: string | undefined;
@@ -24,8 +29,13 @@ export function formatActiveShoulderCenterNecklinePlainSentence(args: {
   const bindOffTail = centerCountLabel
     ? `bind off the center ${centerCountLabel} neckline stitches`
     : "bind off the center neckline stitches";
+  const rcColon = localStartLabel.match(/^RC:(\d{1,4})$/i);
+  if (rcColon) {
+    const n = String(Math.max(0, parseInt(rcColon[1], 10))).padStart(3, "0");
+    return `When Armhole RC reaches ${n}, ${bindOffTail}.`;
+  }
   return localStartLabel
-    ? `At local ${localStartLabel}, ${bindOffTail}.`
+    ? `At ${localStartLabel}, ${bindOffTail}.`
     : `${bindOffTail.charAt(0).toUpperCase()}${bindOffTail.slice(1)}.`;
 }
 
@@ -36,6 +46,7 @@ export function activeShoulderIntroPlainParagraphs(args: {
 }): readonly string[] {
   return [
     formatActiveShoulderCenterNecklinePlainSentence(args),
+    ACTIVE_SHOULDER_RESET_RC_SENTENCE,
     ACTIVE_SHOULDER_DIVIDE_SENTENCE,
     ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
   ];

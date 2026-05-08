@@ -571,6 +571,35 @@ const pageUrl = Astro.url.href;
     break-after: avoid;
   }
 
+  /* Print-only shaping notation key (mirrors online .ns-shaping-chart__diagram-notation-hint tones). */
+  .sleeveless-print-root .ns-shaping-mini__diagram-notation-help {
+    display: block;
+    visibility: visible;
+    margin: 0 0 0.42rem;
+    padding: 0;
+    font-size: 0.68rem;
+    font-weight: 400;
+    color: #64748b;
+    line-height: 1.35;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .sleeveless-print-root .ns-shaping-mini__diagram-notation-help > div:first-child {
+    margin-bottom: 0.06rem;
+  }
+
+  .sleeveless-print-root .ns-shaping-mini__diagram-notation-help strong {
+    font-weight: 600;
+    color: #475569;
+  }
+
+  .sleeveless-print-root .ns-shaping-mini__diagram-notation-help em {
+    font-style: italic;
+    font-weight: 400;
+    color: #64748b;
+  }
+
   .sleeveless-print-root .ns-shaping-mini__diagram-block {
     margin: 0 0 0.35rem;
     padding: 0.35rem;

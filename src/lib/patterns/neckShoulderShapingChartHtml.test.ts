@@ -1,11 +1,18 @@
 import { describe, expect, it } from "vitest";
 import {
+  collapsePlainKnitChartRowsForPrint,
   neckShoulderShapingChartFromRows,
+  NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
   type NeckShoulderShapingChartRow,
 } from "./neckShoulderShapingChart";
 import {
+  ACTIVE_SHOULDER_RESET_RC_SENTENCE,
+  formatActiveShoulderCenterNecklinePlainSentence,
+} from "./neckShoulderActiveIntroCopy";
+import {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
   ACTIVE_SHOULDER_DIVIDE_SENTENCE,
+  compactActiveSideInstructionRowsForPrint,
   renderActiveShoulderChartIntroHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
   renderNeckShoulderShapingPrintInstructionTableHtml,
@@ -68,6 +75,9 @@ describe("renderNeckShoulderShapingPrintInstructionTableHtml active-side mode", 
     expect(html).not.toContain("Second Shoulder Checklist");
     expect(html).not.toContain("<th scope=\"col\">Left</th>");
     expect(html).not.toContain("<th scope=\"col\">Right</th>");
+    expect(html).toContain("ns-shaping-mini__diagram-notation-help");
+    expect(html).toContain("<strong>Shaping notation:</strong> stitches, rows, times");
+    expect(html).toContain("1s-2r-3x = decrease 1 stitch every 2 rows, 3 times");
 
     // Carriage parity rule for the active right shoulder:
     //   Carriage Right (even RC) ⇒ Armhole edge; Carriage Left (odd RC) ⇒ Neck edge.
@@ -77,7 +87,7 @@ describe("renderNeckShoulderShapingPrintInstructionTableHtml active-side mode", 
     expect(html).toMatch(/002<\/td>\s*<td>Right<\/td>\s*<td>Bind off 8 sts<\/td>\s*<td>Armhole<\/td>/);
   });
 
-  it("continues armhole-local RC labels when activeSideRcStart is set (no RC:000 reset)", () => {
+  it("offsets printable checklist RC column when activeSideRcStart is non-zero", () => {
     const html = renderNeckShoulderShapingPrintInstructionTableHtml(
       neckShoulderShapingChartFromRows([
         {
@@ -377,8 +387,8 @@ function parseActiveSideTableRows(
  * the active stitches is the Armhole/outer edge, and the left-side edge is the Neck/inner
  * edge. A shaping action is ONLY valid on the edge where the carriage is currently located,
  * so:
- *   - Carriage Right (even local RC) ⇒ action edge must be Armhole.
- *   - Carriage Left  (odd  local RC) ⇒ action edge must be Neck.
+ *   - Carriage Right (even RC) ⇒ action edge must be Armhole.
+ *   - Carriage Left  (odd RC) ⇒ action edge must be Neck.
  * Plain "Knit in pattern" rows may appear at either parity (no shaping).
  */
 function expectActiveSideRowsObeyCarriageRule(
@@ -635,6 +645,108 @@ describe("renderNeckShoulderShapingPrintInstructionTableHtml — final bind-off 
   });
 });
 
+describe("formatActiveShoulderCenterNecklinePlainSentence", () => {
+  it("uses Armhole RC milestone wording (not duplicate RC: labels)", () => {
+    expect(
+      formatActiveShoulderCenterNecklinePlainSentence({
+        localStartRcLabel: "RC:010",
+        centerBindOffStitches: 12,
+      }),
+    ).toBe("When Armhole RC reaches 010, bind off the center 12 neckline stitches.");
+  });
+});
+
+describe("print-only plain knit span compaction", () => {
+  it("merges RC 056–076 into one printable checklist row when action is only Knit in pattern", () => {
+    const rows = [];
+    for (let rc = 56; rc <= 76; rc++) {
+      rows.push({
+        rc,
+        carriagePosition: rc % 2 === 0 ? "Right" : "Left",
+        action: NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
+        edge: rc % 2 === 0 ? "Armhole" : "Neck",
+        stitchesRemaining: 40,
+      });
+    }
+    const compacted = compactActiveSideInstructionRowsForPrint(rows);
+    expect(compacted).toHaveLength(1);
+    expect(compacted[0].rc).toBe(56);
+    expect(compacted[0].rcEnd).toBe(76);
+    expect(compacted[0].action).toBe(NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL);
+  });
+
+  it("does not merge across a shaping row", () => {
+    const rows = [
+      {
+        rc: 56,
+        carriagePosition: "Right",
+        action: NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
+        edge: "Armhole",
+        stitchesRemaining: 40,
+      },
+      {
+        rc: 57,
+        carriagePosition: "Left",
+        action: NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
+        edge: "Neck",
+        stitchesRemaining: 40,
+      },
+      {
+        rc: 58,
+        carriagePosition: "Right",
+        action: "Decrease 2 sts",
+        edge: "Neck",
+        stitchesRemaining: 38,
+      },
+      {
+        rc: 59,
+        carriagePosition: "Left",
+        action: NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
+        edge: "Neck",
+        stitchesRemaining: 38,
+      },
+      {
+        rc: 60,
+        carriagePosition: "Right",
+        action: NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
+        edge: "Armhole",
+        stitchesRemaining: 38,
+      },
+    ];
+    const compacted = compactActiveSideInstructionRowsForPrint(rows);
+    expect(compacted).toHaveLength(3);
+    expect(compacted[0].rcEnd).toBe(57);
+    expect(compacted[1].action).toContain("Decrease");
+    expect(compacted[2].rcEnd).toBe(60);
+  });
+
+  it("renders RC:056–076 with stitch count unchanged on the full chart when compactPlainKnitSpansForPrint is set", () => {
+    const rows: NeckShoulderShapingChartRow[] = [];
+    for (let r = 56; r <= 76; r++) {
+      rows.push(plainRow(r, { left: 22, right: 22 }));
+    }
+    const chart = neckShoulderShapingChartFromRows(rows);
+    const html = renderNeckShoulderShapingChartTableOnlyHtml(chart, "ns-print-compact", undefined, {
+      compactPlainKnitSpansForPrint: true,
+    });
+    expect(html).toContain("RC:056\u2013076");
+    expect(html).toContain(NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL);
+    expect(html).toContain("stitch count unchanged");
+  });
+
+  it("collapses source chart rows via collapsePlainKnitChartRowsForPrint without mutating inputs", () => {
+    const rows: NeckShoulderShapingChartRow[] = [];
+    for (let r = 56; r <= 76; r++) {
+      rows.push(plainRow(r, { left: 22, right: 22 }));
+    }
+    const before = rows.map((r) => r.row);
+    const collapsed = collapsePlainKnitChartRowsForPrint(rows);
+    expect(rows.map((r) => r.row)).toEqual(before);
+    expect(collapsed).toHaveLength(1);
+    expect(collapsed[0].rowLabel).toBe("RC:056\u2013076");
+  });
+});
+
 describe("renderActiveShoulderChartIntroHtml", () => {
   const sharedOpts = { localStartRcLabel: "RC:010", centerBindOffStitches: 12 };
 
@@ -650,7 +762,8 @@ describe("renderActiveShoulderChartIntroHtml", () => {
       layout: "labeled",
     });
     const needles = [
-      "At local RC:010, bind off the center 12 neckline stitches.",
+      "When Armhole RC reaches 010, bind off the center 12 neckline stitches.",
+      ACTIVE_SHOULDER_RESET_RC_SENTENCE,
       ACTIVE_SHOULDER_DIVIDE_SENTENCE,
       ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
     ];
@@ -658,8 +771,8 @@ describe("renderActiveShoulderChartIntroHtml", () => {
       expect(compact).toContain(n);
       expect(labeled).toContain(n);
     }
-    expect(compact).not.toMatch(/reset.*row counter/i);
-    expect(labeled).not.toMatch(/reset.*row counter/i);
+    expect(compact).not.toMatch(/reset\s+(?:the\s+)?row counter/i);
+    expect(labeled).not.toMatch(/reset\s+(?:the\s+)?row counter/i);
     expect(labeled).toContain("Center Neckline:");
     expect(compact).toContain("Center Neckline:");
     expect(compact).not.toContain("<strong>Setup</strong>");

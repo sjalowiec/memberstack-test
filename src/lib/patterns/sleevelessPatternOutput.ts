@@ -55,7 +55,7 @@ export type SleevelessBackPatternDebug = {
   armholeStitchesEachSide: number | undefined;
   hemRows: number;
   bodyRows: number;
-  /** Armhole depth rows from first armhole bind-off RC to first shoulder shaping RC. */
+  /** Armhole depth rows from first armhole bind-off RC to shoulder shaping start RC. */
   armholeRows: number;
   /** Internal armhole-shaping rows consumed before neckline/shoulder scheduling. */
   armholeShapingRows: number;
@@ -83,6 +83,11 @@ export type SleevelessBackPatternDebug = {
   frontNeckDepth: number | undefined;
   /** Front neck depth in rows — shifts neckline start RC earlier; shaping chart matches back (same span). */
   frontNeckDepthRows: number;
+  /**
+   * Row budget passed to {@link buildTimeline} for the front (may be one row longer than
+   * {@link frontNeckDepthRows} so the chart ends on the same shoulder line as the back).
+   */
+  frontNeckTimelineDepthRows: number;
   /** Back neck depth in rows — unified timeline row budget with shoulder shaping. */
   backNeckDepthRows: number;
   /** RC rows for shoulder bind-off placement span (1" at row gauge). */
@@ -90,7 +95,7 @@ export type SleevelessBackPatternDebug = {
   /** RC where back neckline / shoulder block begins (same total stitches as front; front may start earlier). */
   backNecklineStartRC: number;
   frontNecklineStartRC: number;
-  /** Armhole-local neckline start RCs used by intro/setup/chart mount. */
+  /** Neckline bind-off milestone as Armhole RC (intro + chart wiring). */
   backNecklineStartLocalRC?: number;
   frontNecklineStartLocalRC?: number;
   finalRC: number;
@@ -289,7 +294,11 @@ const PLAIN_KNIT_PATTERN_FOR_ROWS_RE = /^Knit in pattern for (\d+) rows?\.?$/i;
 const PLAIN_KNIT_UNTIL_RC_RE = /^Knit in pattern until RC (\d{1,4})\.\s*$/i;
 
 /** Preferred plain-span wording: next instruction row RC (not the last work-even RC). */
-const KNIT_TO_RC_RE = /^Knit to RC (\d{1,4})\.\s*$/i;
+const KNIT_TO_RC_RE = /^Knit to RC:?\s*(\d{1,4})\.\s*$/i;
+
+/** Armhole bridge line: “At RC:…, knit in pattern to RC:…”. */
+const AT_RC_KNIT_IN_PATTERN_TO_RC_RE =
+  /^At RC:?(\d{1,4}),\s*knit in pattern to RC:?(\d{1,4})\.\s*$/i;
 
 /** Legacy front-clamp parsing (older saved display rows). */
 const KNIT_EVEN_ROWS_TO_RC_RE = /^Knit (\d+) rows even \(to RC (\d{1,4})\)\.\s*$/i;
@@ -398,6 +407,20 @@ function extractPlainSpanRowsAndEndRc(
 ): { rows: number; endRc: number } | undefined {
   const even = extractKnitEvenRowsToRc(paragraph);
   if (even !== undefined) return even;
+  const atRcKnitTo = paragraph.trim().match(AT_RC_KNIT_IN_PATTERN_TO_RC_RE);
+  if (atRcKnitTo && blockStartRc !== undefined) {
+    const startFromLine = parseInt(atRcKnitTo[1], 10);
+    const targetRc = parseInt(atRcKnitTo[2], 10);
+    if (
+      Number.isFinite(startFromLine) &&
+      Number.isFinite(targetRc) &&
+      startFromLine === blockStartRc &&
+      targetRc > startFromLine
+    ) {
+      const rows = targetRc - startFromLine;
+      return { rows, endRc: targetRc - 1 };
+    }
+  }
   const knitTo = extractKnitToRcTarget(paragraph);
   if (knitTo !== undefined && blockStartRc !== undefined) {
     const rows = knitTo - blockStartRc;
@@ -428,13 +451,22 @@ function parseRcColonLabel(rcLabel: string | undefined): number | undefined {
  * Front neckline often begins before the back neckline RC. Shared back execution rows can include
  * upper-body plain spans that run past the front neck start — trim or omit those so front
  * RCs never rewind before the FRONT NECKLINE & SHOULDERS section.
+ *
+ * Uses Armhole RC (same labels as post-reset blocks), not garment absolute RC.
  */
 function clampFrontSharedRowsBeforeNeckStart(
   rows: readonly SleevelessPatternDisplayRow[],
-  frontNecklineStartRC: number
+  frontNecklineStartLocalRC: number | undefined
 ): SleevelessPatternDisplayRow[] {
-  const neckFirst = Math.max(0, Math.floor(frontNecklineStartRC));
-  if (neckFirst <= 0) return [...rows];
+  if (
+    frontNecklineStartLocalRC === undefined ||
+    !Number.isFinite(frontNecklineStartLocalRC) ||
+    frontNecklineStartLocalRC <= 0
+  ) {
+    return [...rows];
+  }
+
+  const neckFirst = Math.max(0, Math.floor(frontNecklineStartLocalRC));
 
   const out: SleevelessPatternDisplayRow[] = [];
 
@@ -459,6 +491,14 @@ function clampFrontSharedRowsBeforeNeckStart(
         const clamped =
           maxPlainRows === Number.POSITIVE_INFINITY ? span.rows : Math.min(span.rows, maxPlainRows);
         if (clamped <= 0) continue;
+        const atRcMerged = p.trim().match(AT_RC_KNIT_IN_PATTERN_TO_RC_RE);
+        if (atRcMerged) {
+          const lastPlainRc = startRc + clamped - 1;
+          newParagraphs.push(
+            `At RC:${String(startRc).padStart(3, "0")}, knit in pattern to RC:${String(lastPlainRc).padStart(3, "0")}.`
+          );
+          continue;
+        }
         const spanLine = formatPlainKnitInPatternSpan(clamped, startRc);
         if (spanLine.trim()) newParagraphs.push(spanLine);
         continue;
@@ -476,6 +516,38 @@ function clampFrontSharedRowsBeforeNeckStart(
   }
 
   return out;
+}
+
+/** FRONT-only: replace shared BACK armhole checkpoint with neckline / shoulder milestones (Armhole RC). */
+function replaceFrontArmholeCheckpointParagraphs(
+  rows: readonly SleevelessPatternDisplayRow[],
+  frontNecklineStartLocalRC: number | undefined,
+  shoulderShapingBeginLocalRC: number | undefined
+): SleevelessPatternDisplayRow[] {
+  if (
+    frontNecklineStartLocalRC === undefined ||
+    shoulderShapingBeginLocalRC === undefined ||
+    !Number.isFinite(frontNecklineStartLocalRC) ||
+    !Number.isFinite(shoulderShapingBeginLocalRC)
+  ) {
+    return [...rows];
+  }
+
+  const neckN = String(Math.max(0, Math.floor(frontNecklineStartLocalRC))).padStart(3, "0");
+  const shoulderN = String(Math.max(0, Math.floor(shoulderShapingBeginLocalRC))).padStart(3, "0");
+  const milestone = `Front neckline shaping begins at Armhole RC ${neckN}. Shoulder shaping begins later at Armhole RC ${shoulderN}.`;
+
+  return rows.map((row) => {
+    if (row.kind !== "block") return row;
+    const hasCheckpoint = row.paragraphs.some((p) =>
+      /Armhole depth checkpoint:/i.test(p)
+    );
+    if (!hasCheckpoint) return row;
+    return {
+      ...row,
+      paragraphs: [milestone],
+    };
+  });
 }
 
 function isMergeablePlainKnitBlock(
@@ -910,7 +982,7 @@ export function buildSleevelessBackDisplayRows(args: {
       kind: "block",
       rc: formatArmholeLocalRc(first, first),
       paragraphs: [
-        "Reset row counter to RC:000.",
+        "Reset Armhole RC to RC:000.",
         `At RC:000, bind off ${bo} stitches at the armhole edge (carriage side). Knit across.`,
       ],
       stitchCount: afterBo1 > 0 ? afterBo1 : undefined,
@@ -1001,7 +1073,7 @@ export function buildSleevelessBackDisplayRows(args: {
       rows.push({
         kind: "block",
         paragraphs: [
-          `Armhole depth checkpoint: first shoulder shaping row is RC:${String(armholeDepthLocalRc).padStart(3, "0")}.`,
+          `Armhole depth checkpoint: shoulder shaping begins at RC:${String(armholeDepthLocalRc).padStart(3, "0")}.`,
         ],
       });
     }
@@ -1087,10 +1159,6 @@ export function buildSleevelessBackDisplayRows(args: {
 
   if (args.useNeckChartRows && args.neckChartRows.length > 0) {
     rows.push({ kind: "section", title: "BACK NECKLINE & SHOULDERS" });
-    const neckStartLocalRcLabel =
-      args.firstArmholeRC !== null && backNeckFirstRc !== undefined
-        ? formatArmholeLocalRc(backNeckFirstRc, args.firstArmholeRC)
-        : undefined;
     const summary = backNecklineShoulderSummaryParagraphs({
       neckChartRows: args.neckChartRows,
       necklineStitches: args.necklineStitches,
@@ -1099,7 +1167,6 @@ export function buildSleevelessBackDisplayRows(args: {
     if (summary) {
       rows.push({
         kind: "block",
-        rc: neckStartLocalRcLabel,
         paragraphs: summary,
       });
     } else {
@@ -1117,10 +1184,6 @@ export function buildSleevelessBackDisplayRows(args: {
     args.shoulderStitches > 0
   ) {
     rows.push({ kind: "section", title: "BACK NECKLINE & SHOULDERS" });
-    const neckStartLocalRcLabel =
-      args.firstArmholeRC !== null && backNeckFirstRc !== undefined
-        ? formatArmholeLocalRc(backNeckFirstRc, args.firstArmholeRC)
-        : undefined;
     const summary = backNecklineShoulderSummaryParagraphs({
       neckChartRows: args.neckChartRows,
       necklineStitches: args.necklineStitches,
@@ -1128,7 +1191,6 @@ export function buildSleevelessBackDisplayRows(args: {
     });
     rows.push({
       kind: "block",
-      rc: neckStartLocalRcLabel,
       paragraphs:
         summary ??
         [
@@ -1153,7 +1215,10 @@ export function buildSleevelessBackDisplayRows(args: {
 
 export function buildSleevelessFrontDisplayRows(args: {
   frontNecklineStartRC: number;
+  /** Armhole RC where front neckline shaping begins (post armhole reset). */
   frontNecklineStartLocalRC?: number;
+  /** Armhole RC where shoulder shaping begins (same vertical line as back neckline / shoulders). */
+  shoulderShapingBeginLocalRC?: number;
   sharedExecutionRows: readonly SleevelessPatternDisplayRow[];
   useNeckChartRows: boolean;
   neckChartRows: readonly NeckShoulderShapingChartRow[];
@@ -1184,7 +1249,15 @@ export function buildSleevelessFrontDisplayRows(args: {
     });
   }
 
-  const sharedRowsClamped = clampFrontSharedRowsBeforeNeckStart(sharedRows, args.frontNecklineStartRC);
+  const sharedRowsClamped = clampFrontSharedRowsBeforeNeckStart(
+    sharedRows,
+    args.frontNecklineStartLocalRC
+  );
+  const sharedRowsFrontMilestones = replaceFrontArmholeCheckpointParagraphs(
+    sharedRowsClamped,
+    args.frontNecklineStartLocalRC,
+    args.shoulderShapingBeginLocalRC
+  );
 
   const rows: SleevelessPatternDisplayRow[] = [];
   rows.push({ kind: "piece", title: "FRONT" });
@@ -1194,7 +1267,7 @@ export function buildSleevelessFrontDisplayRows(args: {
       "Front follows the same sequence as the back until neckline shaping begins.",
     ],
   });
-  rows.push(...sharedRowsClamped);
+  rows.push(...sharedRowsFrontMilestones);
 
   rows.push({ kind: "section", title: "FRONT NECKLINE & SHOULDERS" });
   if (args.useNeckChartRows && args.neckChartRows.length > 0) {
@@ -1533,13 +1606,25 @@ export function generateSleevelessBackPattern(
 
   /**
    * Front neckline also starts from the same shoulder endpoint, independently from shoulder shaping.
+   * Begins after (armhole depth − front neck depth) rows from the armhole bind-off so neckline depth
+   * stays inside the armhole depth budget (not stacked as extra garment length).
    */
   const effectiveFrontNeckDepthRows =
     frontNeckDepthRows > 0 ? frontNeckDepthRows : backNeckDepthRows;
   const frontNecklineStartRC =
-    shoulderEndRC !== undefined && effectiveFrontNeckDepthRows > 0
-      ? Math.max(0, shoulderEndRC - effectiveFrontNeckDepthRows)
-      : Math.max(0, rc - Math.max(0, frontNeckDepthRows) + 1);
+    armholeStartRC !== undefined && armholeDepthRows > 0 && effectiveFrontNeckDepthRows > 0
+      ? Math.max(0, armholeStartRC + armholeDepthRows - effectiveFrontNeckDepthRows)
+      : shoulderEndRC !== undefined && effectiveFrontNeckDepthRows > 0
+        ? Math.max(0, shoulderEndRC - effectiveFrontNeckDepthRows)
+        : Math.max(0, rc - Math.max(0, frontNeckDepthRows) + 1);
+  /**
+   * Front scoop starts one row earlier than `shoulderEndRC − F` but must still end at the same
+   * shoulder line; extend the timeline by the extra RC so chart / execution hit `shoulderEndRC − 1`.
+   */
+  const frontNeckTimelineDepthRows =
+    shoulderEndRC !== undefined
+      ? Math.max(effectiveFrontNeckDepthRows, shoulderEndRC - frontNecklineStartRC)
+      : effectiveFrontNeckDepthRows;
   const shoulderStartRC =
     shoulderEndRC !== undefined && shoulderBindoffRows > 0
       ? Math.max(0, shoulderEndRC - shoulderBindoffRows)
@@ -1630,7 +1715,7 @@ export function generateSleevelessBackPattern(
             firstShapingRow: frontNecklineStartRC,
             shoulderStitchesPerSide: shoulderSts,
             centerNeckBindOff: necklineStitches,
-            neckDepthRows: frontNeckDepthRows,
+            neckDepthRows: frontNeckTimelineDepthRows,
             neckProfile: "front",
             stitchesAfterArmhole: stitchesAfterArmhole!,
             shoulderBindoffRows,
@@ -1763,7 +1848,8 @@ export function generateSleevelessBackPattern(
     }
 
     if (frontLiveRows.length === 0) {
-      const frontNeckSectionRows = frontNeckDepthRows > 0 ? frontNeckDepthRows : backNeckDepthRows;
+      const frontNeckSectionRows =
+        frontNeckDepthRows > 0 ? frontNeckTimelineDepthRows : backNeckDepthRows;
       frontExec = generateNeckShoulderExecution({
         startRC: preambleStartRcBeforeFirstShapingRow(frontNecklineStartRC),
         centerNeck: center,
@@ -1823,13 +1909,14 @@ export function generateSleevelessBackPattern(
       : backNeckDepthRows > 0
         ? neckStartRC + backNeckDepthRows - 1
         : undefined);
+  /** Same shoulder-line garment RC as the back — front scoop starts earlier but ends at the same piece length. */
   const frontFinalRow =
-    fb.last ??
-    (shoulderEndRC !== undefined
+    shoulderEndRC !== undefined
       ? shoulderEndRC - 1
-      : effectiveFrontNeckDepthRows > 0
-        ? frontNecklineStartRC + effectiveFrontNeckDepthRows - 1
-        : undefined);
+      : fb.last ??
+        (effectiveFrontNeckDepthRows > 0
+          ? frontNecklineStartRC + frontNeckTimelineDepthRows - 1
+          : undefined);
   const timelineShoulderStartRow = backNeckShoulderTimeline?.find((entry) =>
     entry.events.some(
       (ev) => ev.edge === "outer" && (ev.kind === "bindOff" || ev.kind === "decrease") && ev.amount > 0
@@ -1870,6 +1957,7 @@ export function generateSleevelessBackPattern(
     stitchesAfterNeckline,
     frontNeckDepth: frontNeckDepthIn,
     frontNeckDepthRows,
+    frontNeckTimelineDepthRows,
     backNeckDepthRows,
     shoulderBindoffRows: rowGauge > 0 ? shoulderBindoffRows : undefined,
     backNecklineStartRC: neckStartRC,
@@ -1964,6 +2052,7 @@ export function generateSleevelessBackPattern(
     buildSleevelessFrontDisplayRows({
       frontNecklineStartRC,
       frontNecklineStartLocalRC,
+      shoulderShapingBeginLocalRC: backNecklineStartLocalRC,
       sharedExecutionRows: backDisplayRowsRaw,
       useNeckChartRows: frontNeckShoulderChartUsesLiveRows,
       neckChartRows: frontNeckShoulderShapingChart.rows,

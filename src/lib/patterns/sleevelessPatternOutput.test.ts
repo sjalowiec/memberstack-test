@@ -94,7 +94,7 @@ describe("sleevelessPatternOutput RC progression", () => {
     expect(startRc + n).toBe(debug.backNecklineStartRC);
   });
 
-  it("armhole starts with a local RC reset and no garment RC text", () => {
+  it("armhole starts with an Armhole RC reset and no garment RC text", () => {
     const result = generateSleevelessBackPattern(patternData);
     const rows = result.displayRows.filter((r) => r.kind === "block") as Array<
       Extract<(typeof result.displayRows)[number], { kind: "block" }>
@@ -114,7 +114,7 @@ describe("sleevelessPatternOutput RC progression", () => {
     expect(firstArmhole?.rc).toBe("RC:000");
     expect(firstArmhole?.paragraphs.join(" ")).not.toContain("Garment RC");
     expect(firstArmhole?.paragraphs.join(" ")).toContain(
-      "Reset row counter to RC:000",
+      "Reset Armhole RC to RC:000.",
     );
 
     const neckSectionIdx = result.displayRows.findIndex(
@@ -213,7 +213,9 @@ describe("sleevelessPatternOutput RC progression", () => {
   });
 
   it("clamps front shared plain spans so RCs do not run past the front neckline start", () => {
-    const frontNecklineStartRC = 221;
+    const firstArmholeRC = 51;
+    const frontNecklineStartRCGarment = 221;
+    const frontNecklineStartLocalRC = frontNecklineStartRCGarment - firstArmholeRC;
     const backRaw = buildSleevelessBackDisplayRows({
       castOnSts: 100,
       hemRows: 10,
@@ -226,7 +228,7 @@ describe("sleevelessPatternOutput RC progression", () => {
         decreaseRows: 0,
         evenRows: 0,
       },
-      firstArmholeRC: 51,
+      firstArmholeRC,
       stitchesAfterArmhole: 90,
       upperBackRows: 30,
       upperStartRc: 200,
@@ -250,7 +252,9 @@ describe("sleevelessPatternOutput RC progression", () => {
     expect(padBeforeClamp).toBeDefined();
 
     const frontRows = buildSleevelessFrontDisplayRows({
-      frontNecklineStartRC,
+      frontNecklineStartRC: frontNecklineStartRCGarment,
+      frontNecklineStartLocalRC,
+      shoulderShapingBeginLocalRC: 78,
       sharedExecutionRows: backRaw,
       useNeckChartRows: false,
       neckChartRows: [],
@@ -266,7 +270,7 @@ describe("sleevelessPatternOutput RC progression", () => {
       (r): r is Extract<(typeof preNeck)[number], { kind: "block" }> =>
         r.kind === "block" && r.rc === "RC:149",
     );
-    expect(upperAfter?.paragraphs.some((p) => /^Knit to RC:\d+\.$/i.test(p.trim()))).toBe(true);
+    expect(upperAfter?.paragraphs.some((p) => /^Knit to RC:?\s*\d+\.$/i.test(p.trim()))).toBe(true);
     expect(upperAfter?.paragraphs.some((p) => p.includes("30 rows"))).toBe(false);
 
     const knitToRe = /^Knit to RC:?(\d{1,4})\.\s*$/i;
@@ -283,19 +287,19 @@ describe("sleevelessPatternOutput RC progression", () => {
         const km = p.trim().match(knitPlainRe);
         if (km) {
           const n = parseInt(km[1], 10);
-          expect(startRc + n).toBeLessThanOrEqual(frontNecklineStartRC);
+          expect(startRc + n).toBeLessThanOrEqual(frontNecklineStartLocalRC);
           continue;
         }
         const tm = p.trim().match(knitToRe);
         if (tm) {
           const nextRc = parseInt(tm[1], 10);
-          expect(nextRc).toBeLessThanOrEqual(frontNecklineStartRC);
+          expect(nextRc).toBeLessThanOrEqual(frontNecklineStartLocalRC);
           continue;
         }
         const um = p.trim().match(knitUntilRe);
         if (um) {
           const endRc = parseInt(um[1], 10);
-          expect(endRc + 1).toBeLessThanOrEqual(frontNecklineStartRC);
+          expect(endRc + 1).toBeLessThanOrEqual(frontNecklineStartLocalRC);
         }
       }
     }
@@ -323,8 +327,10 @@ describe("sleevelessPatternOutput RC progression", () => {
       },
     };
     const result = generateSleevelessBackPattern(data);
-    const frontNeckStart = result.debug.frontNecklineStartRC;
-    expect(frontNeckStart).toBeGreaterThan(0);
+    const frontNeckStartGarment = result.debug.frontNecklineStartRC;
+    const frontNeckStartLocal = result.debug.frontNecklineStartLocalRC;
+    expect(frontNeckStartGarment).toBeGreaterThan(0);
+    expect(frontNeckStartLocal).toBeDefined();
 
     const neckIdx = result.frontDisplayRows.findIndex(
       (r) => r.kind === "section" && r.title === "FRONT NECKLINE & SHOULDERS",
@@ -335,6 +341,7 @@ describe("sleevelessPatternOutput RC progression", () => {
     const knitToRe = /^Knit to RC:?(\d{1,4})\.\s*$/i;
     const knitUntilRe = /^Knit in pattern until RC (\d{1,4})\.\s*$/i;
     const knitPlainRe = /^Knit in pattern for (\d+) rows?\.?$/i;
+    const atRcKnitToRe = /^At RC:?(\d{1,4}),\s*knit in pattern to RC:?(\d{1,4})\.\s*$/i;
     const rcRe = /^RC:(\d{1,4})$/;
     for (const r of preNeck) {
       if (r.kind !== "block" || !r.rc) continue;
@@ -346,22 +353,80 @@ describe("sleevelessPatternOutput RC progression", () => {
         const km = p.trim().match(knitPlainRe);
         if (km) {
           const n = parseInt(km[1], 10);
-          expect(startRc + n).toBeLessThanOrEqual(frontNeckStart);
+          expect(startRc + n).toBeLessThanOrEqual(frontNeckStartLocal!);
           continue;
         }
         const tm = p.trim().match(knitToRe);
         if (tm) {
           const nextRc = parseInt(tm[1], 10);
-          expect(nextRc).toBeLessThanOrEqual(frontNeckStart);
+          expect(nextRc).toBeLessThanOrEqual(frontNeckStartLocal!);
+          continue;
+        }
+        const am = p.trim().match(atRcKnitToRe);
+        if (am) {
+          const targetRc = parseInt(am[2], 10);
+          expect(targetRc).toBeLessThan(frontNeckStartLocal!);
           continue;
         }
         const um = p.trim().match(knitUntilRe);
         if (um) {
           const endRc = parseInt(um[1], 10);
-          expect(endRc + 1).toBeLessThanOrEqual(frontNeckStart);
+          expect(endRc + 1).toBeLessThanOrEqual(frontNeckStartLocal!);
         }
       }
     }
+  });
+
+  it("FRONT armhole section: neckline / shoulder milestones (Armhole RC); no plain Knit to RC:078 before neckline; BACK checkpoint wording", () => {
+    const data = {
+      fit: {
+        sizingChart: "misses",
+        selectedMeasurements: {
+          finished_bust_chest: 41.5,
+          back_neck_to_hem: 23.5,
+          armhole_depth: 8,
+          neck_opening: 2,
+          shoulder_width: 4.25,
+          back_neck_depth: 1,
+          front_neck_depth: 5,
+        },
+      },
+      style: { recipientCategory: "misses" },
+      yarnGaugeMachine: {
+        gaugeStitchesPerInch: 7,
+        gaugeRowsPerInch: 11,
+        availableNeedles: 200,
+      },
+    };
+    const result = generateSleevelessBackPattern(data);
+    const d = result.debug;
+    expect(d.frontNecklineStartLocalRC).toBe(33);
+    expect(d.backNecklineStartLocalRC).toBe(78);
+    expect(d.frontNeckTimelineDepthRows).toBe(d.frontNeckDepthRows + 1);
+
+    const milestone =
+      "Front neckline shaping begins at Armhole RC 033. Shoulder shaping begins later at Armhole RC 078.";
+    const frontText = result.frontDisplayRows
+      .flatMap((r) => (r.kind === "block" ? r.paragraphs : []))
+      .join("\n");
+    expect(frontText).toContain(milestone);
+
+    const neckIdx = result.frontDisplayRows.findIndex(
+      (r) => r.kind === "section" && r.title === "FRONT NECKLINE & SHOULDERS",
+    );
+    expect(neckIdx).toBeGreaterThan(0);
+    const preNeck = result.frontDisplayRows
+      .slice(0, neckIdx)
+      .flatMap((r) => (r.kind === "block" ? r.paragraphs : []));
+    expect(preNeck.some((p) => /Knit to RC:?\s*078/i.test(p))).toBe(false);
+
+    expect(d.frontNecklineStartLocalRC!).toBeLessThan(d.backNecklineStartLocalRC!);
+
+    const backText = result.displayRows
+      .flatMap((r) => (r.kind === "block" ? r.paragraphs : []))
+      .join("\n");
+    expect(backText).toMatch(/Armhole depth checkpoint: shoulder shaping begins at RC:078\./);
+    expect(backText).not.toContain(milestone);
   });
 
   it("shows stitch counts after each row action and carries the same total forward", () => {
@@ -713,7 +778,7 @@ describe("sleevelessPatternOutput RC progression", () => {
 
     expect(result.debug.frontNecklineStartRC).toBeLessThan(result.debug.backNecklineStartRC);
 
-    expect(frontRows.length).toBe(result.debug.frontNeckDepthRows);
+    expect(frontRows.length).toBe(result.debug.frontNeckTimelineDepthRows);
     expect(backRows.length).toBe(result.debug.backNeckDepthRows);
   });
 
@@ -759,7 +824,7 @@ describe("sleevelessPatternOutput RC progression", () => {
     expect(parseShapingDecrease(frontRows[0]!.centerNeck)).toBe(roundFrontWide.centerBindOff);
     expect(frontRows[0]!.leftStitchCount).toBe(backRows[0]!.leftStitchCount);
     expect(frontRows[0]!.leftStitchCount).toBeGreaterThan(debug.shoulderStitches!);
-    expect(frontRows.length).toBe(debug.frontNeckDepthRows);
+    expect(frontRows.length).toBe(debug.frontNeckTimelineDepthRows);
     expect(backRows.length).toBe(debug.backNeckDepthRows);
     expect(debug.frontNecklineStartRC).toBeLessThan(debug.backNecklineStartRC);
   });
@@ -820,7 +885,7 @@ describe("sleevelessPatternOutput RC progression", () => {
     expect(d.shoulderStartRow).toBeLessThanOrEqual(d.armholeDepthEndRow ?? Number.MAX_SAFE_INTEGER);
   });
 
-  it("prints armhole depth checkpoint using local RC only", () => {
+  it("prints armhole depth checkpoint using Armhole RC only", () => {
     const patternDataArmholeDepth: Record<string, unknown> = {
       fit: {
         sizingChart: "misses",
@@ -845,7 +910,7 @@ describe("sleevelessPatternOutput RC progression", () => {
     const checkpoint = result.displayRows.find(
       (r) =>
         r.kind === "block" &&
-        r.paragraphs.some((p) => p.includes("Armhole depth checkpoint: first shoulder shaping row")),
+        r.paragraphs.some((p) => p.includes("Armhole depth checkpoint: shoulder shaping begins")),
     );
     expect(checkpoint).toBeDefined();
     expect(checkpoint?.kind === "block" && checkpoint.paragraphs.join(" ")).toMatch(/RC:\d{3}/);
@@ -876,7 +941,7 @@ describe("sleevelessPatternOutput RC progression", () => {
     const d = result.debug;
     const shoulderEndBoundary = (d.armholeStartRow ?? 0) + d.armholeRows + 1;
     expect(d.backNecklineStartRC).toBe(shoulderEndBoundary - d.backNeckDepthRows);
-    expect(d.frontNecklineStartRC).toBe(shoulderEndBoundary - d.frontNeckDepthRows);
+    expect(d.frontNecklineStartRC).toBe((d.armholeStartRow ?? 0) + d.armholeRows - d.frontNeckDepthRows);
     expect(d.frontNeckDepthRows).toBe(35);
     expect(d.backFinalRow).toBe(d.expectedGarmentRows);
     expect(d.frontFinalRow).toBe(d.expectedGarmentRows);
@@ -1051,13 +1116,13 @@ describe("sleevelessPatternOutput RC progression", () => {
         result.neckShoulderShapingChart,
         "ns-shaping-chart-print-back",
         undefined,
-        { activeSideRcStart: debug.backNecklineStartLocalRC ?? 0 },
+        { activeSideRcStart: 0 },
       );
       const frontPrintHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
         result.frontNeckShoulderShapingChart,
         "ns-shaping-chart-print-front",
         undefined,
-        { activeSideRcStart: debug.frontNecklineStartLocalRC ?? 0 },
+        { activeSideRcStart: 0 },
       );
       // ns-shaping-mini__rc cells render the row number directly.
       function printRowRcs(html: string): number[] {
@@ -1311,14 +1376,14 @@ describe("sleevelessPatternOutput RC progression", () => {
   /**
    * Carriage parity invariants for the rendered active-shoulder chart (the table is the source
    * of truth for how the knitter executes the shaping). The active right shoulder maps:
-   *   - Carriage Right (even local RC) ⇒ Armhole / outer edge.
-   *   - Carriage Left  (odd  local RC) ⇒ Neck / inner edge.
+   *   - Carriage Right (even RC) ⇒ Armhole / outer edge.
+   *   - Carriage Left  (odd RC) ⇒ Neck / inner edge.
    *
    * Garment RC must NOT appear inside the BACK or FRONT neckline/shoulder rendered output —
-   * the chart is anchored to local section RC starting at RC:000 in the same armhole-local sequence
+   * the checklist uses Shoulder RC starting at RC:000 after the intro reset line (same shaping sequence as Armhole RC)
    * (single counter reset at ARMHOLE only).
    */
-  describe("BACK / FRONT neckline & shoulder chart obey local-RC + carriage rule", () => {
+  describe("BACK / FRONT neckline & shoulder chart obey carriage rule", () => {
     function parseActiveSideTableRows(html: string): Array<{
       rc: number;
       carriagePosition: "Right" | "Left";
@@ -1420,7 +1485,7 @@ describe("sleevelessPatternOutput RC progression", () => {
         result.neckShoulderShapingChart,
         "ns-shaping-chart-print-back",
         undefined,
-        { activeSideRcStart: result.debug.backNecklineStartLocalRC ?? 0 },
+        { activeSideRcStart: 0 },
       );
       expect(printHtml).not.toMatch(/Garment\s*RC/i);
     });
@@ -1438,7 +1503,7 @@ describe("sleevelessPatternOutput RC progression", () => {
         result.frontNeckShoulderShapingChart,
         "ns-shaping-chart-print-front",
         undefined,
-        { activeSideRcStart: result.debug.frontNecklineStartLocalRC ?? 0 },
+        { activeSideRcStart: 0 },
       );
       expect(printHtml).not.toMatch(/Garment\s*RC/i);
     });
@@ -1481,7 +1546,7 @@ describe("sleevelessPatternOutput RC progression", () => {
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
         undefined,
-        { activeSideOnly: true, activeSideRcStart: result.debug.backNecklineStartLocalRC ?? 0 },
+        { activeSideOnly: true, activeSideRcStart: 0 },
       );
       const rows = parseActiveSideTableRows(html);
       expect(rows.length).toBeGreaterThan(0);
@@ -1494,7 +1559,7 @@ describe("sleevelessPatternOutput RC progression", () => {
         result.frontNeckShoulderShapingChart,
         "ns-shaping-chart-front",
         undefined,
-        { activeSideOnly: true, activeSideRcStart: result.debug.frontNecklineStartLocalRC ?? 0 },
+        { activeSideOnly: true, activeSideRcStart: 0 },
       );
       const rows = parseActiveSideTableRows(html);
       expect(rows.length).toBeGreaterThan(0);
@@ -1524,13 +1589,13 @@ describe("sleevelessPatternOutput RC progression", () => {
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
         undefined,
-        { activeSideOnly: true, activeSideRcStart: result.debug.backNecklineStartLocalRC ?? 0 },
+        { activeSideOnly: true, activeSideRcStart: 0 },
       );
       const frontHtml = renderNeckShoulderShapingChartTableOnlyHtml(
         result.frontNeckShoulderShapingChart,
         "ns-shaping-chart-front",
         undefined,
-        { activeSideOnly: true, activeSideRcStart: result.debug.frontNecklineStartLocalRC ?? 0 },
+        { activeSideOnly: true, activeSideRcStart: 0 },
       );
       const backRows = parseActiveSideTableRows(backHtml);
       const frontRows = parseActiveSideTableRows(frontHtml);
@@ -1542,19 +1607,17 @@ describe("sleevelessPatternOutput RC progression", () => {
       expectCarriageRule(frontRows, "FRONT");
     });
 
-    it("BACK active-side intro uses local section RC (RC:000…), not garment RC, after the armhole reset", () => {
+    it("BACK active-side checklist starts at Shoulder RC 000 (not garment RC)", () => {
       const result = generateSleevelessBackPattern(realPattern);
       const html = renderNeckShoulderShapingChartTableOnlyHtml(
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
         undefined,
-        { activeSideOnly: true, activeSideRcStart: result.debug.backNecklineStartLocalRC ?? 0 },
+        { activeSideOnly: true, activeSideRcStart: 0 },
       );
       const rows = parseActiveSideTableRows(html);
-      // Local RC starts at the armhole-local row where the first active-side action begins
-      // (must be a sane 0..armholeRows range, not a 100s-range garment RC).
       const armholeRows = result.debug.armholeRows ?? 0;
-      expect(rows[0]?.rc).toBeGreaterThanOrEqual(0);
+      expect(rows[0]?.rc).toBe(0);
       expect(rows[0]?.rc).toBeLessThanOrEqual(armholeRows);
     });
   });

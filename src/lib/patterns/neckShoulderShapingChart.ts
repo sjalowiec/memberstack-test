@@ -50,6 +50,9 @@ export type NeckShoulderShapingChartDisplayRow = {
 
 const COLLAPSED_PLAIN_ACTION_TEXT = "Knit plain, no neckline or shoulder shaping";
 
+/** Print/PDF compact rows — matches active-shoulder checklist plain-span wording. */
+export const NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL = "Knit in pattern";
+
 function parseCellNumber(value: unknown): number {
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
   const text = String(value ?? "").trim();
@@ -138,6 +141,116 @@ export function collapsePlainChartRows(
     out.push({
       rowLabel: `${first}\u2013${last}`,
       actionLabel: COLLAPSED_PLAIN_ACTION_TEXT,
+      sourceRow: row,
+    });
+    i = j;
+  }
+  return out;
+}
+
+function parseDecreaseCellChart(text: unknown): number {
+  const t = String(text ?? "").trim();
+  if (!t || t === "-" || t === "—" || t === "–") return 0;
+  const normalized = t.replace(/[^\d-]/g, "");
+  const n = Number(normalized);
+  if (!Number.isFinite(n)) return 0;
+  return Math.abs(Math.trunc(n));
+}
+
+function hasAnyShapingCell(row: NeckShoulderShapingChartRow): boolean {
+  return (
+    parseDecreaseCellChart(row.leftSide) > 0 ||
+    parseDecreaseCellChart(row.leftNeck) > 0 ||
+    parseDecreaseCellChart(row.centerNeck) > 0 ||
+    parseDecreaseCellChart(row.rightNeck) > 0 ||
+    parseDecreaseCellChart(row.rightSide) > 0
+  );
+}
+
+/** Narrative-only rows that must stay visible (divide/hold notes). */
+function actionBlocksPlainKnitMerge(action: string): boolean {
+  const t = String(action ?? "").trim();
+  if (!t) return false;
+  if (/\b(divide|hold)\b/i.test(t)) return true;
+  if (/neck/i.test(t)) return true;
+  if (/shoulder/i.test(t)) return true;
+  return false;
+}
+
+function rcFloorChart(row: NeckShoulderShapingChartRow): number {
+  return Math.max(0, Math.floor(row.row));
+}
+
+function formatPrintRcLabelSingle(rc: number): string {
+  const n = Math.max(0, Math.floor(rc));
+  return `RC:${String(n).padStart(3, "0")}`;
+}
+
+function formatPrintRcLabelRange(start: number, end: number): string {
+  const a = Math.max(0, Math.floor(start));
+  const b = Math.max(0, Math.floor(end));
+  const left = String(a).padStart(3, "0");
+  const right = String(b).padStart(3, "0");
+  if (left === right) return `RC:${left}`;
+  return `RC:${left}\u2013${right}`;
+}
+
+/**
+ * Print-only display compaction for the full neckline/shoulder grid chart.
+ * Collapses consecutive rows with no bind-off/decrease/neck/shoulder shaping into one RC range row.
+ * Source chart rows are not modified.
+ */
+export function collapsePlainKnitChartRowsForPrint(
+  rows: readonly NeckShoulderShapingChartRow[],
+): NeckShoulderShapingChartDisplayRow[] {
+  const out: NeckShoulderShapingChartDisplayRow[] = [];
+  let i = 0;
+  while (i < rows.length) {
+    const row = rows[i]!;
+    const eligible =
+      !hasAnyShapingCell(row) && !actionBlocksPlainKnitMerge(String(row.action ?? ""));
+
+    if (!eligible) {
+      out.push({
+        rowLabel: formatPrintRcLabelSingle(rcFloorChart(row)),
+        actionLabel: String(row.action ?? ""),
+        sourceRow: row,
+      });
+      i += 1;
+      continue;
+    }
+
+    let j = i + 1;
+    while (j < rows.length) {
+      const next = rows[j]!;
+      const nextEligible =
+        !hasAnyShapingCell(next) && !actionBlocksPlainKnitMerge(String(next.action ?? ""));
+      if (!nextEligible) break;
+      if (
+        next.leftStitchCount !== row.leftStitchCount ||
+        next.rightStitchCount !== row.rightStitchCount
+      ) {
+        break;
+      }
+      if (rcFloorChart(next) !== rcFloorChart(rows[j - 1]!) + 1) break;
+      j += 1;
+    }
+
+    if (j === i + 1) {
+      out.push({
+        rowLabel: formatPrintRcLabelSingle(rcFloorChart(row)),
+        actionLabel: NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
+        sourceRow: row,
+      });
+      i += 1;
+      continue;
+    }
+
+    const firstRc = rcFloorChart(row);
+    const lastRc = rcFloorChart(rows[j - 1]!);
+    out.push({
+      rowLabel: formatPrintRcLabelRange(firstRc, lastRc),
+      actionLabel: NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
       sourceRow: row,
     });
     i = j;

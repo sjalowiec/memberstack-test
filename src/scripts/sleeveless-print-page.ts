@@ -506,8 +506,8 @@ async function initSleevelessPrintPage(): Promise<void> {
     (ygm && ygm.gaugeRawUnit === "cm") || (yg && yg.gaugeRawUnit === "cm") ? "cm" : "in";
 
   /**
-   * Use armhole-local RCs (RC:000 = first row of the armhole block) for all knitter-facing labels
-   * inside the BACK / FRONT neckline & shoulder sections — Garment RC is never shown here.
+   * RC:000 = first row of the armhole block (Armhole RC). Neckline intros use the bind-off milestone;
+   * shoulder checklist tables restart verbal RC at RC:000 after “Reset Shoulder RC…”.
    */
   const backLocalStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
     ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC ?? 0))
@@ -518,7 +518,7 @@ async function initSleevelessPrintPage(): Promise<void> {
   const backLocalStartLabel = `RC:${String(backLocalStartRc).padStart(3, "0")}`;
   const frontLocalStartLabel = `RC:${String(frontLocalStartRc).padStart(3, "0")}`;
 
-  // Active-shoulder intro: armhole-local RC only; center bind-off sentence uses `At local RC:…` from shared copy.
+  // Active-shoulder intro: center bind-off uses `formatActiveShoulderCenterNecklinePlainSentence`; checklist RC starts at 000.
   const backChartHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
     result.neckShoulderShapingChart,
     "ns-shaping-chart-print-back",
@@ -528,7 +528,7 @@ async function initSleevelessPrintPage(): Promise<void> {
       wrapperClass: "print-chart-intro",
       layout: "compact",
     }),
-    { activeSideRcStart: backLocalStartRc },
+    { activeSideRcStart: 0 },
   );
   const frontChartHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
     result.frontNeckShoulderShapingChart,
@@ -539,7 +539,7 @@ async function initSleevelessPrintPage(): Promise<void> {
       wrapperClass: "print-chart-intro",
       layout: "compact",
     }),
-    { activeSideRcStart: frontLocalStartRc },
+    { activeSideRcStart: 0 },
   );
 
   const { preludeRows, continuationRows } = splitRowsBeforeNeckShoulderChartMount(result.displayRows ?? []);

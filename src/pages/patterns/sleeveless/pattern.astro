@@ -1306,7 +1306,7 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
 
   /**
    * Intro + collapsible help beneath the chart heading (same HTML intro as print/PDF via `renderActiveShoulderChartIntroHtml`).
-   * @param {string | undefined} startRowLabel Armhole-local RC label, e.g. `RC:117`.
+   * @param {string | undefined} startRowLabel Armhole RC at center bind-off (chart row 0), e.g. `RC:117`.
    * @param {import("../../../lib/patterns/neckShoulderShapingChart").NeckShoulderShapingChart | undefined} chart
    */
   function neckShoulderChartHelpRowHtml(startRowLabel, chart) {
@@ -1965,6 +1965,53 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
         font-size: 1rem;
         font-weight: 700;
       }
+      /* Chart-only print popup does not load ns-shaping-chart.css — keep notation + diagram text readable. */
+      .ns-shaping-chart__diagram {
+        display: block !important;
+        visibility: visible !important;
+        margin: 0.5rem 0 0 !important;
+        padding: 0.45rem 0.55rem 0.55rem !important;
+        border: 1px solid #d1d5db !important;
+        background: #fff !important;
+      }
+      .ns-shaping-chart__diagram .ns-shaping-chart__preview-title {
+        margin: 0 0 0.28rem !important;
+        font-size: 0.95rem !important;
+        font-weight: 700 !important;
+        color: #1f2937 !important;
+      }
+      .ns-shaping-chart__diagram-notation-hint {
+        display: block !important;
+        visibility: visible !important;
+        margin: 0 0 0.35rem !important;
+        font-size: 0.72rem !important;
+        line-height: 1.4 !important;
+        color: #64748b !important;
+      }
+      .ns-shaping-chart__diagram-notation-hint-main {
+        display: block !important;
+        margin: 0 0 0.15rem !important;
+        font-size: inherit !important;
+        color: #64748b !important;
+      }
+      .ns-shaping-chart__diagram-notation-hint-example {
+        display: block !important;
+        margin: 0 !important;
+        font-size: 0.65rem !important;
+        line-height: 1.38 !important;
+        font-style: italic !important;
+        color: #64748b !important;
+      }
+      .ns-shaping-chart__diagram-notation-hint-kernel,
+      .ns-shaping-chart__diagram-notation-order {
+        color: #475569 !important;
+      }
+      .ns-shaping-chart__diagram-svg-wrap {
+        display: block !important;
+        visibility: visible !important;
+        overflow: visible !important;
+        margin-top: 0 !important;
+      }
       .ns-shaping-chart__intro {
         margin: 0 0 0.55rem;
       }
@@ -2042,6 +2089,25 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
 
     const chartClone = chart.cloneNode(true);
     if (!(chartClone instanceof HTMLElement)) return;
+
+    const ctx =
+      chartAreaId === "front-neckline-shoulder-chart-print-area"
+        ? window.kbmNeckShoulderChartPrintContext?.front
+        : window.kbmNeckShoulderChartPrintContext?.back;
+    const hostId =
+      chartAreaId === "front-neckline-shoulder-chart-print-area"
+        ? "sg-neck-shoulder-chart-table-front"
+        : "sg-neck-shoulder-chart-table-back";
+    if (ctx?.chart) {
+      const host = chartClone.querySelector(`#${hostId}`);
+      if (host instanceof HTMLElement) {
+        host.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(ctx.chart, ctx.idPrefix, ctx.introHtml, {
+          ...ctx.options,
+          compactPlainKnitSpansForPrint: true,
+        });
+      }
+    }
+
     console.log("chart clone html length", chartClone.innerHTML.length);
     if (chartClone.innerHTML.length === 0) {
       console.error("Neckline/shoulder chart print area clone is empty");
@@ -2505,17 +2571,20 @@ table {
       wrapPatternSection("sg-front", "Front", frontWrapped, { defaultCollapsed: false }) +
       wrapPatternSection("sg-finishing", "Finishing", buildFinishingHtml(), { defaultCollapsed: true });
 
+    const backArmholeLocalChartStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
+      ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC))
+      : 0;
+    const frontArmholeLocalChartStartRc = Number.isFinite(result?.debug?.frontNecklineStartLocalRC)
+      ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC))
+      : 0;
+
     const backChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-back");
     if (backChartTableHost) {
-      const backArmholeLocalChartStartRc =
-        Number.isFinite(result?.debug?.backNecklineStartLocalRC)
-          ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC))
-          : 0;
       backChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
         neckShoulderChartHelpRowHtml(`RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`, result?.neckShoulderShapingChart),
-        { activeSideOnly: true, activeSideRcStart: backArmholeLocalChartStartRc }
+        { activeSideOnly: true, activeSideRcStart: 0 }
       );
     }
     const backDiagramHost = mount.querySelector("#sg-neck-shoulder-diagram-back");
@@ -2528,10 +2597,6 @@ table {
     }
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
     if (frontChartTableHost) {
-      const frontArmholeLocalChartStartRc =
-        Number.isFinite(result?.debug?.frontNecklineStartLocalRC)
-          ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC))
-          : 0;
       frontChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.frontNeckShoulderShapingChart,
         "ns-shaping-chart-front",
@@ -2539,9 +2604,31 @@ table {
           `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
           result?.frontNeckShoulderShapingChart
         ),
-        { activeSideOnly: true, activeSideRcStart: frontArmholeLocalChartStartRc }
+        { activeSideOnly: true, activeSideRcStart: 0 }
       );
     }
+
+    /** Used by chart-only print (dialog) to re-render compact rows without altering on-screen HTML. */
+    window.kbmNeckShoulderChartPrintContext = {
+      back: {
+        chart: result.neckShoulderShapingChart,
+        idPrefix: "ns-shaping-chart-back",
+        introHtml: neckShoulderChartHelpRowHtml(
+          `RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`,
+          result?.neckShoulderShapingChart
+        ),
+        options: { activeSideOnly: true, activeSideRcStart: 0 },
+      },
+      front: {
+        chart: result.frontNeckShoulderShapingChart,
+        idPrefix: "ns-shaping-chart-front",
+        introHtml: neckShoulderChartHelpRowHtml(
+          `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
+          result?.frontNeckShoulderShapingChart
+        ),
+        options: { activeSideOnly: true, activeSideRcStart: 0 },
+      },
+    };
     const frontDiagramHost = mount.querySelector("#sg-neck-shoulder-diagram-front");
     if (frontDiagramHost) {
       frontDiagramHost.innerHTML = renderNeckShoulderShapingDiagramOnlyHtml(
