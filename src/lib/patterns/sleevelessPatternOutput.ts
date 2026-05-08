@@ -55,7 +55,10 @@ export type SleevelessBackPatternDebug = {
   armholeStitchesEachSide: number | undefined;
   hemRows: number;
   bodyRows: number;
+  /** Armhole depth rows from first armhole bind-off RC to first shoulder shaping RC. */
   armholeRows: number;
+  /** Internal armhole-shaping rows consumed before neckline/shoulder scheduling. */
+  armholeShapingRows: number;
   necklineShoulderRows: number;
   totalCalculatedRows: number;
   expectedGarmentRows: number;
@@ -92,6 +95,8 @@ export type SleevelessBackPatternDebug = {
   armholeStartRow?: number;
   /** Last RC of the armhole block (after decreases + work-even rows). */
   armholeEndRow?: number;
+  /** First shoulder shaping RC by rule: armholeStartRow + armholeRows. */
+  armholeDepthEndRow?: number;
   /** First RC where shoulder bind-offs occur on the back timeline. */
   shoulderStartRow?: number;
   /** Final RC of the back piece (must equal `expectedGarmentRows` when length math is valid). */
@@ -167,6 +172,14 @@ function section(obj: unknown): Record<string, unknown> {
     return obj as Record<string, unknown>;
   }
   return {};
+}
+
+function formatArmholeLocalRc(garmentRc: number, firstArmholeRC: number): string {
+  return formatRcColon(Math.max(0, Math.floor(garmentRc - firstArmholeRC)));
+}
+
+function formatArmholeLocalRcNumber(garmentRc: number, firstArmholeRC: number): string {
+  return String(Math.max(0, Math.floor(garmentRc - firstArmholeRC))).padStart(3, "0");
 }
 
 function pickAudience(patternData: Record<string, unknown>): string | undefined {
@@ -468,7 +481,6 @@ function isMergeablePlainKnitBlock(
   if (row.kind !== "block") return false;
   if (row.tipHtml) return false;
   if (row.collapsibleTipHtml) return false;
-  if (row.stitchCount !== undefined) return false;
   if (row.paragraphs.length !== 1) return false;
   const p = row.paragraphs[0];
   const start = parseRcColonLabel(row.rc);
@@ -486,7 +498,7 @@ function mergeAdjacentPlainKnitBlocks(
 ): SleevelessPatternDisplayRow[] {
   const out: SleevelessPatternDisplayRow[] = [];
   let i = 0;
-    while (i < rows.length) {
+  while (i < rows.length) {
     const row = rows[i];
     if (row.kind === "neckShoulderChartTableMount" || row.kind === "neckShoulderChartPreviewMount") {
       out.push(row);
@@ -501,11 +513,35 @@ function mergeAdjacentPlainKnitBlocks(
 
     let total = plainSpanRowCountFromParagraph(row.paragraphs[0], parseRcColonLabel(row.rc))!;
     const firstRc = row.rc;
+    const firstStartRc = parseRcColonLabel(firstRc);
+    let mergedStitchCount = row.stitchCount;
     let j = i + 1;
     while (j < rows.length) {
       const candidate = rows[j];
       if (!isMergeablePlainKnitBlock(candidate)) break;
-      total += plainSpanRowCountFromParagraph(candidate.paragraphs[0], parseRcColonLabel(candidate.rc))!;
+      const candidateStartRc = parseRcColonLabel(candidate.rc);
+      const expectedCandidateStart =
+        firstStartRc !== undefined ? plainSpanNextActionRc(firstStartRc, total) : undefined;
+      // Only merge truly adjacent plain spans with no hidden RC gap.
+      if (
+        firstStartRc !== undefined &&
+        expectedCandidateStart !== undefined &&
+        candidateStartRc !== expectedCandidateStart
+      ) {
+        break;
+      }
+      // Stitch count is visible in the right column; preserve split if counts differ.
+      if (
+        mergedStitchCount !== undefined &&
+        candidate.stitchCount !== undefined &&
+        candidate.stitchCount !== mergedStitchCount
+      ) {
+        break;
+      }
+      if (mergedStitchCount === undefined && candidate.stitchCount !== undefined) {
+        mergedStitchCount = candidate.stitchCount;
+      }
+      total += plainSpanRowCountFromParagraph(candidate.paragraphs[0], candidateStartRc)!;
       j++;
     }
 
@@ -516,6 +552,7 @@ function mergeAdjacentPlainKnitBlocks(
           kind: "block",
           rc: firstRc,
           paragraphs: [mergedLine],
+          stitchCount: mergedStitchCount,
         });
       }
       i = j;
@@ -655,10 +692,34 @@ function parseRcBoundsFromExecutionLines(lines: readonly string[]): {
   return { min: Math.min(...nums), max: Math.max(...nums) };
 }
 
-/** Published neckline/shoulder prose when chart + SVG carry row-by-row detail. */
+/**
+ * Pre-table neckline/shoulder prose (placed before the one-shoulder shaping table).
+ * The "repeat for the second shoulder" wording is rendered inside the one-shoulder checklist
+ * HTML (see {@link renderNeckShoulderShapingChartTableOnlyHtml}) AFTER the final bind-off
+ * line, so it is intentionally absent here.
+ */
 const NECKLINE_SHOULDER_INSTRUCTION_PARAGRAPHS: readonly string[] = [
-  "After the center bind-off, place one shoulder on hold and work one shoulder at a time. Follow the shaping instructions row by row for the shoulder being worked, then repeat the same shaping for the second shoulder.",
+  "Place one group of shoulder stitches on hold or scrap yarn.",
+  "Work the other shoulder following the checklist below.",
 ];
+
+/**
+ * Final shoulder bind-off instruction sentence. Returns `null` when no stitches remain
+ * (so callers can omit the line entirely instead of emitting "Bind off remaining 0 stitches.").
+ * Uses singular wording for exactly one stitch.
+ *
+ * Consumed by `renderNeckShoulderShapingChartTableOnlyHtml` (and the print equivalent), which
+ * derives the stitch count from the FINAL rendered checklist row's `stitchesRemaining` and
+ * places the line immediately after the table and before any second-shoulder prompt/toggle.
+ */
+export function formatShoulderBindoffRemainingInstruction(
+  remainingStitches: number
+): string | null {
+  const n = Math.max(0, Math.floor(remainingStitches));
+  if (n <= 0) return null;
+  if (n === 1) return "Bind off remaining 1 stitch.";
+  return `Bind off remaining ${n} stitches.`;
+}
 
 /**
  * Short summary for BACK NECKLINE & SHOULDERS — chart row 0 overrides bind-off count when live rows are present.
@@ -667,6 +728,7 @@ function backNecklineShoulderSummaryParagraphs(args: {
   neckChartRows: readonly NeckShoulderShapingChartRow[];
   necklineStitches?: number;
   shoulderStitches?: number;
+  startRcLabel?: string;
   /** Optional note for front display — ignored when chart row 0 supplies center bind-off. */
   scoopFirstCenterBindOff?: number;
 }): string[] | null {
@@ -706,7 +768,10 @@ function backNecklineShoulderSummaryParagraphs(args: {
     return null;
   }
 
-  return [...NECKLINE_SHOULDER_INSTRUCTION_PARAGRAPHS];
+  const centerLine = args.startRcLabel
+    ? `At ${args.startRcLabel}, bind off the center ${bindOffCenter} neckline stitches.`
+    : `Bind off the center ${bindOffCenter} neckline stitches.`;
+  return [centerLine, ...NECKLINE_SHOULDER_INSTRUCTION_PARAGRAPHS];
 }
 
 export function buildSleevelessBackDisplayRows(args: {
@@ -823,7 +888,8 @@ export function buildSleevelessBackDisplayRows(args: {
     const B = afterBo2 - decreasesTotal;
     const decStart = first + 2;
     const lastDecreaseRc = decStart + 2 * (m.decreaseSts - 1);
-    const decreaseRowParityWord = decStart % 2 === 1 ? "odd" : "even";
+    const armholeDepthLocalRc =
+      backNeckFirstRc !== undefined ? Math.max(0, backNeckFirstRc - first) : undefined;
 
     let postArmholeInstructionRc: number | undefined;
     if (m.evenRows > 0) {
@@ -838,31 +904,35 @@ export function buildSleevelessBackDisplayRows(args: {
 
     rows.push({
       kind: "block",
-      rc: formatRcColon(first),
+      rc: formatArmholeLocalRc(first, first),
       paragraphs: [
-        `At RC ${first}, bind off ${bo} stitches at the armhole edge (carriage side). Knit across.`,
-      ],
-      // Display stitches at row start; row action applies after this row.
-      stitchCount: A,
-    });
-    rows.push({
-      kind: "block",
-      rc: formatRcColon(first + 1),
-      paragraphs: [
-        `At RC ${first + 1}, bind off ${bo} stitches at the remaining armhole edge (carriage side). Knit across.`,
+        "Reset row counter to RC:000.",
+        `At RC:000, bind off ${bo} stitches at the armhole edge (carriage side). Knit across.`,
       ],
       stitchCount: afterBo1 > 0 ? afterBo1 : undefined,
     });
+    rows.push({
+      kind: "block",
+      rc: formatArmholeLocalRc(first + 1, first),
+      paragraphs: [
+        `At RC:001, bind off ${bo} stitches at the remaining armhole edge (carriage side). Knit across.`,
+      ],
+      stitchCount: afterBo2 > 0 ? afterBo2 : undefined,
+    });
 
     if (m.decreaseSts > 0) {
+      const decreaseRowsChecklist = Array.from(
+        { length: Math.max(0, m.decreaseSts) },
+        (_, i) => String(Math.max(0, decStart - first + i * 2))
+      ).join(" - ");
       rows.push({
         kind: "block",
-        rc: formatRcColon(decStart),
+        rc: formatArmholeLocalRc(decStart, first),
         paragraphs: [
-          `At RC ${decStart}, at each armhole edge, decrease 1 stitch every other row, ${m.decreaseSts} times total.`,
-          `Work decreases on ${decreaseRowParityWord} rows from RC ${decStart} through RC ${lastDecreaseRc}.`,
+          `At RC:${formatArmholeLocalRcNumber(decStart, first)}, decrease 1 stitch at each armhole edge every other row, ${m.decreaseSts} times — ${decreasesTotal} stitches removed total.`,
+          `Decrease on rows: ${decreaseRowsChecklist}`,
         ],
-        stitchCount: afterBo2 > 0 ? afterBo2 : undefined,
+        stitchCount: B > 0 ? B : undefined,
       });
     }
 
@@ -873,10 +943,30 @@ export function buildSleevelessBackDisplayRows(args: {
         ? postArmholeInstructionRc - 1
         : undefined;
     if (armholeBridgeRc !== undefined) {
+      const evStart = m.evenRows > 0 ? first + 2 + m.decreaseRows : undefined;
+      const localNextRaw =
+        evStart !== undefined ? Math.max(0, evStart - first) + Math.max(0, m.evenRows) : undefined;
+      const necklineLocalRc =
+        backNeckFirstRc !== undefined ? Math.max(0, backNeckFirstRc - first) : undefined;
+      const localNext =
+        localNextRaw !== undefined
+          ? necklineLocalRc !== undefined
+            ? Math.min(localNextRaw, necklineLocalRc)
+            : localNextRaw
+          : undefined;
+      const canMergeBridgeWithEvenSpan =
+        evStart !== undefined &&
+        localNext !== undefined &&
+        localNext > Math.max(0, armholeBridgeRc - first) &&
+        armholeBridgeRc + 1 === evStart;
       rows.push({
         kind: "block",
-        rc: formatRcColon(armholeBridgeRc),
-        paragraphs: [`At RC ${armholeBridgeRc}, knit even. ${B} sts remain.`],
+        rc: formatArmholeLocalRc(armholeBridgeRc, first),
+        paragraphs: [
+          canMergeBridgeWithEvenSpan
+            ? `At RC:${formatArmholeLocalRcNumber(armholeBridgeRc, first)}, knit in pattern to RC:${String(localNext).padStart(3, "0")}.`
+            : `At RC:${formatArmholeLocalRcNumber(armholeBridgeRc, first)}, knit in pattern. ${B} sts remain.`,
+        ],
         stitchCount: B > 0 ? B : undefined,
       });
     }
@@ -885,13 +975,31 @@ export function buildSleevelessBackDisplayRows(args: {
       const evStart = first + 2 + m.decreaseRows;
       const evParas = plainKnitSpanParagraphs(m.evenRows, evStart);
       if (evParas.length > 0) {
-        rows.push({
-          kind: "block",
-          rc: formatRcColon(evStart),
-          paragraphs: evParas,
-          stitchCount: B > 0 ? B : undefined,
-        });
+        const localStart = Math.max(0, evStart - first);
+        const localNextRaw = localStart + Math.max(0, m.evenRows);
+        const necklineLocalRc =
+          backNeckFirstRc !== undefined ? Math.max(0, backNeckFirstRc - first) : undefined;
+        const localNext =
+          necklineLocalRc !== undefined ? Math.min(localNextRaw, necklineLocalRc) : localNextRaw;
+        const bridgeAlreadyMerged =
+          armholeBridgeRc !== undefined && armholeBridgeRc + 1 === evStart && localNext > localStart;
+        if (localNext > localStart && !bridgeAlreadyMerged) {
+          rows.push({
+            kind: "block",
+            rc: formatArmholeLocalRc(evStart, first),
+            paragraphs: [`Knit to RC:${String(localNext).padStart(3, "0")}.`],
+            stitchCount: B > 0 ? B : undefined,
+          });
+        }
       }
+    }
+    if (armholeDepthLocalRc !== undefined) {
+      rows.push({
+        kind: "block",
+        paragraphs: [
+          `Armhole depth checkpoint: first shoulder shaping row is RC:${String(armholeDepthLocalRc).padStart(3, "0")}.`,
+        ],
+      });
     }
     carriedAfterArmholeSts = B > 0 ? B : carriedAfterArmholeSts;
   } else {
@@ -908,10 +1016,18 @@ export function buildSleevelessBackDisplayRows(args: {
     const n = nBridge;
     const bridgeParas = plainKnitSpanParagraphs(n, bridgeStartRc);
     if (bridgeParas.length > 0) {
+      const bridgeTargetGarmentRc = bridgeStartRc + n;
+      const bridgeParagraphs =
+        args.firstArmholeRC !== null
+          ? [`Knit to RC:${formatArmholeLocalRcNumber(bridgeTargetGarmentRc, args.firstArmholeRC)}.`]
+          : bridgeParas;
       rows.push({
         kind: "block",
-        rc: formatRcColon(bridgeStartRc),
-        paragraphs: bridgeParas,
+        rc:
+          args.firstArmholeRC !== null
+            ? formatArmholeLocalRc(bridgeStartRc, args.firstArmholeRC)
+            : formatRcColon(bridgeStartRc),
+        paragraphs: bridgeParagraphs,
         stitchCount:
           carriedAfterArmholeSts !== undefined && carriedAfterArmholeSts > 0
             ? carriedAfterArmholeSts
@@ -922,10 +1038,18 @@ export function buildSleevelessBackDisplayRows(args: {
     if (args.upperBackRows > 0) {
       const upperParas = plainKnitSpanParagraphs(args.upperBackRows, args.upperStartRc);
       if (upperParas.length > 0) {
+        const upperTargetGarmentRc = args.upperStartRc + args.upperBackRows;
+        const upperParagraphs =
+          args.firstArmholeRC !== null
+            ? [`Knit to RC:${formatArmholeLocalRcNumber(upperTargetGarmentRc, args.firstArmholeRC)}.`]
+            : upperParas;
         rows.push({
           kind: "block",
-          rc: formatRcColon(args.upperStartRc),
-          paragraphs: upperParas,
+          rc:
+            args.firstArmholeRC !== null
+              ? formatArmholeLocalRc(args.upperStartRc, args.firstArmholeRC)
+              : formatRcColon(args.upperStartRc),
+          paragraphs: upperParagraphs,
           stitchCount:
             carriedAfterArmholeSts !== undefined && carriedAfterArmholeSts > 0
               ? carriedAfterArmholeSts
@@ -936,10 +1060,18 @@ export function buildSleevelessBackDisplayRows(args: {
     if (args.evenRowPadRows > 0) {
       const padParas = plainKnitSpanParagraphs(args.evenRowPadRows, args.padStartRc);
       if (padParas.length > 0) {
+        const padTargetGarmentRc = args.padStartRc + args.evenRowPadRows;
+        const padParagraphs =
+          args.firstArmholeRC !== null
+            ? [`Knit to RC:${formatArmholeLocalRcNumber(padTargetGarmentRc, args.firstArmholeRC)}.`]
+            : padParas;
         rows.push({
           kind: "block",
-          rc: formatRcColon(args.padStartRc),
-          paragraphs: padParas,
+          rc:
+            args.firstArmholeRC !== null
+              ? formatArmholeLocalRc(args.padStartRc, args.firstArmholeRC)
+              : formatRcColon(args.padStartRc),
+          paragraphs: padParagraphs,
           stitchCount:
             carriedAfterArmholeSts !== undefined && carriedAfterArmholeSts > 0
               ? carriedAfterArmholeSts
@@ -951,13 +1083,22 @@ export function buildSleevelessBackDisplayRows(args: {
 
   if (args.useNeckChartRows && args.neckChartRows.length > 0) {
     rows.push({ kind: "section", title: "BACK NECKLINE & SHOULDERS" });
+    const neckStartLocalRcLabel =
+      args.firstArmholeRC !== null && backNeckFirstRc !== undefined
+        ? formatArmholeLocalRc(backNeckFirstRc, args.firstArmholeRC)
+        : undefined;
     const summary = backNecklineShoulderSummaryParagraphs({
       neckChartRows: args.neckChartRows,
       necklineStitches: args.necklineStitches,
       shoulderStitches: args.shoulderStitches,
+      startRcLabel: neckStartLocalRcLabel,
     });
     if (summary) {
-      rows.push({ kind: "block", paragraphs: summary });
+      rows.push({
+        kind: "block",
+        rc: neckStartLocalRcLabel,
+        paragraphs: summary,
+      });
     } else {
       rows.push({
         kind: "block",
@@ -973,13 +1114,19 @@ export function buildSleevelessBackDisplayRows(args: {
     args.shoulderStitches > 0
   ) {
     rows.push({ kind: "section", title: "BACK NECKLINE & SHOULDERS" });
+    const neckStartLocalRcLabel =
+      args.firstArmholeRC !== null && backNeckFirstRc !== undefined
+        ? formatArmholeLocalRc(backNeckFirstRc, args.firstArmholeRC)
+        : undefined;
     const summary = backNecklineShoulderSummaryParagraphs({
       neckChartRows: args.neckChartRows,
       necklineStitches: args.necklineStitches,
       shoulderStitches: args.shoulderStitches,
+      startRcLabel: neckStartLocalRcLabel,
     });
     rows.push({
       kind: "block",
+      rc: neckStartLocalRcLabel,
       paragraphs:
         summary ??
         [
@@ -1012,24 +1159,29 @@ export function buildSleevelessFrontDisplayRows(args: {
   /** When set and less than {@link necklineStitches}, summary describes partial first bind-off + gradual scoop. */
   scoopFirstCenterBindOff?: number;
 }): SleevelessPatternDisplayRow[] {
-  const sharedRows = args.sharedExecutionRows
-    .filter((row) => {
-      if (row.kind === "piece") return false;
-      if (row.kind === "section" && row.title === "BACK NECKLINE & SHOULDERS") return false;
-      if (row.kind === "neckShoulderChartTableMount" || row.kind === "neckShoulderChartPreviewMount") {
-        return false;
-      }
-      return true;
-    })
-    .map((row): SleevelessPatternDisplayRow => {
-      if (row.kind !== "block") return row;
-      return {
-        ...row,
-        paragraphs: row.paragraphs.map((p) =>
-          p.replace(/\bfor the back\b/gi, (m) => (m[0] === "f" ? "for the front" : "For the front"))
-        ),
-      };
+  const sharedRows: SleevelessPatternDisplayRow[] = [];
+  let inBackNecklineSection = false;
+  for (const row of args.sharedExecutionRows) {
+    if (row.kind === "piece") continue;
+    if (row.kind === "section" && row.title === "BACK NECKLINE & SHOULDERS") {
+      inBackNecklineSection = true;
+      continue;
+    }
+    if (inBackNecklineSection) continue;
+    if (row.kind === "neckShoulderChartTableMount" || row.kind === "neckShoulderChartPreviewMount") {
+      continue;
+    }
+    if (row.kind !== "block") {
+      sharedRows.push(row);
+      continue;
+    }
+    sharedRows.push({
+      ...row,
+      paragraphs: row.paragraphs.map((p) =>
+        p.replace(/\bfor the back\b/gi, (m) => (m[0] === "f" ? "for the front" : "For the front"))
+      ),
     });
+  }
 
   const sharedRowsClamped = clampFrontSharedRowsBeforeNeckStart(sharedRows, args.frontNecklineStartRC);
 
@@ -1038,10 +1190,7 @@ export function buildSleevelessFrontDisplayRows(args: {
   rows.push({
     kind: "block",
     paragraphs: [
-      `Front follows the same sequence as the back until neckline shaping begins at RC ${Math.max(
-        0,
-        Math.floor(args.frontNecklineStartRC)
-      )}.`,
+      "Front follows the same sequence as the back until neckline shaping begins.",
     ],
   });
   rows.push(...sharedRowsClamped);
@@ -1052,6 +1201,7 @@ export function buildSleevelessFrontDisplayRows(args: {
       neckChartRows: args.neckChartRows,
       necklineStitches: args.necklineStitches,
       shoulderStitches: args.shoulderStitches,
+      startRcLabel: formatRcColon(Math.max(0, Math.floor(args.frontNecklineStartRC))),
       scoopFirstCenterBindOff: args.scoopFirstCenterBindOff,
     });
     if (summary) rows.push({ kind: "block", paragraphs: summary });
@@ -1251,15 +1401,16 @@ export function generateSleevelessBackPattern(
    * excluding armhole depth and an allowance for neck + shoulder (so total length is not double-counted).
    */
   let bodyToArmholeRows = 0;
-  if (backNeckToHem && armholeDepthIn && rowGauge > 0) {
-    const bodyFlatInches = backNeckToHem - armholeDepthIn - neckShoulderInches;
-    if (bodyFlatInches <= 0) {
+  if (totalGarmentRows > 0 && armholeDepthRows > 0 && rowGauge > 0) {
+    const backNeckDepthRowsForBodyBudget = Math.max(1, Math.round((backNeckDepthIn ?? 2.5) * rowGauge));
+    const derivedBodyRows =
+      totalGarmentRows - backNeckDepthRowsForBodyBudget - armholeDepthRows - hemRows + 2;
+    if (derivedBodyRows <= 0) {
       warnings.push(
-        "Garment length may be too short for the default neck/shoulder allowance — verify measurements."
+        "Body rows to armhole are non-positive after enforcing armhole depth to first shoulder row. Verify length, armhole depth, and neck depth."
       );
     }
-    const rowsFromHemToUnderarm = Math.max(0, Math.round(Math.max(0, bodyFlatInches) * rowGauge));
-    bodyToArmholeRows = Math.max(0, rowsFromHemToUnderarm - hemRows);
+    bodyToArmholeRows = Math.max(0, derivedBodyRows);
   }
 
   /**
@@ -1329,6 +1480,10 @@ export function generateSleevelessBackPattern(
   const armholeStartRC =
     armholePlan && firstArmholeRCNum !== null ? firstArmholeRCNum : undefined;
   const armholeEndRC = armholePlan ? armholePlan.endRC : undefined;
+  const armholeDepthEndRC =
+    armholeStartRC !== undefined && armholeDepthRows > 0
+      ? armholeStartRC + armholeDepthRows
+      : undefined;
 
   /**
    * Neckline depth rows are computed BEFORE upper-back scheduling so the back neckline
@@ -1369,11 +1524,34 @@ export function generateSleevelessBackPattern(
    * back past totalGarmentRows when the body + armhole budget consumed too many rows.
    */
   if (totalGarmentRows > 0 && backNeckDepthRows > 0) {
-    const desiredNeckStart = Math.max(1, totalGarmentRows - backNeckDepthRows + 1);
+    const desiredNeckStart =
+      armholeDepthEndRC !== undefined
+        ? Math.max(1, armholeDepthEndRC - 1)
+        : Math.max(1, totalGarmentRows - backNeckDepthRows + 1);
     if (desiredNeckStart <= baseThroughArmhole) {
-      warnings.push(
-        "Row budget is tight: hem + body + armhole + back neck depth exceed total garment rows — verify lengths."
-      );
+      const totalUsedRows = hemRows + bodyToArmholeRows + armholeTotalForBudget + backNeckDepthRows;
+      const overBudgetRows = Math.max(0, totalUsedRows - totalGarmentRows);
+      const rowBudgetDiagnostic = [
+        "Pattern length check failed.",
+        "",
+        `Total garment rows available: ${totalGarmentRows}`,
+        "",
+        "Rows being counted:",
+        `- Hem rows: ${hemRows}`,
+        `- Body rows: ${bodyToArmholeRows}`,
+        `- Armhole rows: ${armholeTotalForBudget}`,
+        `- Back neck depth rows: ${backNeckDepthRows}`,
+        "",
+        `Total used rows: ${totalUsedRows}`,
+        `Difference: +${overBudgetRows} rows over budget`,
+        "",
+        "Formula check:",
+        "hemRows + bodyRows + armholeRows + backNeckDepthRows > totalGarmentRows",
+        `${hemRows} + ${bodyToArmholeRows} + ${armholeTotalForBudget} + ${backNeckDepthRows} > ${totalGarmentRows}`,
+      ].join("\n");
+      warnings.push(rowBudgetDiagnostic);
+      // Developer-only trace to make row-budget conflicts visible outside rendered pattern text.
+      console.warn(rowBudgetDiagnostic);
     } else {
       upperBackRows = desiredNeckStart - 1 - baseThroughArmhole;
       if (upperBackRows > 0) {
@@ -1496,15 +1674,14 @@ export function generateSleevelessBackPattern(
     };
     const { timeline, chartRows: liveRows } = buildNeckShoulderTimelineAndChartRows(
       patternNumbers,
-      shoulderTimelineOpts
+      {
+        ...shoulderTimelineOpts,
+        shoulderStartsAtFirstPostCenter: true,
+      }
     );
 
     let frontTimeline: RowEntry[] = [];
     let frontLiveRows: NeckShoulderShapingChartRow[] = [];
-
-    const builtFront = buildNeckShoulderTimelineAndChartRows(frontPatternNumbers, shoulderTimelineOpts);
-    frontTimeline = builtFront.timeline;
-    frontLiveRows = builtFront.chartRows;
 
     if (liveRows.length > 0) {
       backNeckShoulderTimeline = timeline;
@@ -1525,6 +1702,22 @@ export function generateSleevelessBackPattern(
         centerBindOffExecutionText: backCenterExec,
       });
     }
+
+    const backFinalShoulderRemainderPerSide = Math.max(
+      0,
+      Math.min(
+        Math.floor(Number(liveRows[liveRows.length - 1]?.leftStitchCount ?? 0)),
+        Math.floor(Number(liveRows[liveRows.length - 1]?.rightStitchCount ?? 0))
+      )
+    );
+
+    const builtFront = buildNeckShoulderTimelineAndChartRows(frontPatternNumbers, {
+      ...shoulderTimelineOpts,
+      minFinalStitchesPerSide: backFinalShoulderRemainderPerSide,
+      shoulderStartsAtFirstPostCenter: true,
+    });
+    frontTimeline = builtFront.timeline;
+    frontLiveRows = builtFront.chartRows;
 
     if (frontLiveRows.length > 0) {
       frontNeckShoulderTimeline = frontTimeline;
@@ -1624,6 +1817,7 @@ export function generateSleevelessBackPattern(
   warnings.push(...frontExec.warnings);
 
   const armholeRowsTotal = armholePlan ? armholePlan.totalRows : 0;
+  const armholeDepthRowsOut = armholeDepthRows > 0 ? armholeDepthRows : armholeRowsTotal;
   /** Includes neck shaping rows so the audit equals expectedGarmentRows when length math is valid. */
   const totalCalculatedRows =
     hemRows +
@@ -1668,7 +1862,8 @@ export function generateSleevelessBackPattern(
     armholeStitchesEachSide,
     hemRows,
     bodyRows: bodyToArmholeRows,
-    armholeRows: armholeRowsTotal,
+    armholeRows: armholeDepthRowsOut,
+    armholeShapingRows: armholeRowsTotal,
     necklineShoulderRows: neckShoulderRowsEstimate,
     totalCalculatedRows,
     expectedGarmentRows: totalGarmentRows,
@@ -1695,6 +1890,7 @@ export function generateSleevelessBackPattern(
     finalRC: rc,
     armholeStartRow: armholeStartRC,
     armholeEndRow: armholeEndRC,
+    armholeDepthEndRow: armholeDepthEndRC,
     shoulderStartRow,
     backFinalRow,
     frontFinalRow,

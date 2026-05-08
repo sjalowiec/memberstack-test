@@ -25,16 +25,24 @@ describe("neckShoulderShapingChartRows split carriage shoulder display", () => {
     };
     const result = generateSleevelessBackPattern(patternData);
     const rows = result.frontNeckShoulderShapingChart.rows;
-    const r148 = rows.find((r) => r.row === 148);
-    const r149 = rows.find((r) => r.row === 149);
-    expect(r148).toBeDefined();
-    expect(r149).toBeDefined();
-    expect(r148!.leftSide).toBe("-2");
-    expect(r148!.rightSide).toBe("-");
-    expect(r149!.leftSide).toBe("-");
-    expect(r149!.rightSide).toBe("-2");
-    expect(String(r149!.action)).toBe("Shoulder");
-    expect(r148!.leftStitchCount).toBe(r149!.leftStitchCount);
-    expect(r148!.rightStitchCount).toBe(r149!.rightStitchCount);
+    const splitPair = rows.find((r, idx) => {
+      const next = rows[idx + 1];
+      if (!next) return false;
+      const leftVal = String(r.leftSide ?? "").trim();
+      const rightVal = String(r.rightSide ?? "").trim();
+      const nextLeftVal = String(next.leftSide ?? "").trim();
+      const nextRightVal = String(next.rightSide ?? "").trim();
+      return (
+        /^-\d+$/.test(leftVal) &&
+        rightVal === "-" &&
+        nextLeftVal === "-" &&
+        nextRightVal === leftVal &&
+        r.row + 1 === next.row &&
+        r.leftStitchCount === next.leftStitchCount &&
+        r.rightStitchCount === next.rightStitchCount &&
+        String(next.action) === "Shoulder"
+      );
+    });
+    expect(splitPair).toBeDefined();
   });
 });

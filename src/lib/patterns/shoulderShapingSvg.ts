@@ -17,7 +17,7 @@ const LINE_WIDTH = 1.75;
 const GRID_STROKE = "rgba(15,23,42,0.07)";
 const GRID_LINE_MINOR = 0.45;
 const GRID_LINE_MAJOR = 0.65;
-/** Match {@link renderShapingGeometrySvg} shoulder / neck label hues */
+/** Match {@link renderShapingGeometrySvg} armhole / neck label hues */
 const SHOULDER_LABEL_FILL = "#52682d";
 const NECK_LABEL_FILL = "#c2614e";
 const FABRIC_FILL = "#f3f0ea";
@@ -25,25 +25,26 @@ const FABRIC_FILL_OPACITY = 0.5;
 const FONT_ZONE = 13;
 const FONT_DELTA = 17;
 
-const SHOULDER_LABEL_GAP_Y = 25;
+const SHOULDER_LABEL_GAP_Y = 22;
 const NECK_LABEL_GAP_X = 19;
-const NECK_LABEL_GAP_Y = 3;
+const NECK_LABEL_GAP_Y = 2;
 const EDGE_LABEL_GAP_X = 7;
 const MIN_LABEL_CLEARANCE = 11;
+const SHOULDER_LABEL_LEFT_ALIGN_PAD_PX = 6;
 /** ~width of one character at FONT_DELTA for bounding estimates */
 const CHAR_W_EST = 8.3;
-const NECK_LABEL_COLLISION_Y = 16;
+const NECK_LABEL_COLLISION_Y = 12;
 const NECK_LABEL_NUDGE_X = 7;
 const NECK_LABEL_NUDGE_Y = 5;
 const NECK_LABEL_MAX_NUDGES = 8;
-const NECK_LABEL_STACK_FALLBACK_Y = 11;
+const NECK_LABEL_STACK_FALLBACK_Y = 8;
 /** Minimum margin from viewBox edge to any ink */
 const VIEW_MARGIN = 18;
 const LABEL_PAD_TOP = 10;
 const LABEL_PAD_BOTTOM = 10;
 /** Zone title length estimates (px) for bbox */
-const ZONE_TITLE_W_SHOULDER = 118;
-const ZONE_TITLE_W_NECK = 108;
+const ZONE_TITLE_W_SHOULDER = 58;
+const ZONE_TITLE_W_NECK = 40;
 
 export type ShoulderShapingSvgSide = "left" | "right";
 
@@ -438,13 +439,15 @@ function placeHorizontalLabel(
   segmentEndX: number,
   segmentY: number,
   outerDirection: -1 | 1,
-  edgeTickX?: number
+  edgeTickX?: number,
+  leftAlignAnchorX?: number
 ): { x: number; y: number } {
   const minX = Math.min(segmentStartX, segmentEndX);
   const maxX = Math.max(segmentStartX, segmentEndX);
   const span = maxX - minX;
-  const centerX = (segmentStartX + segmentEndX) / 2;
-  let x = centerX;
+  let x = Number.isFinite(leftAlignAnchorX)
+    ? (leftAlignAnchorX as number) + SHOULDER_LABEL_LEFT_ALIGN_PAD_PX
+    : minX + SHOULDER_LABEL_LEFT_ALIGN_PAD_PX;
   if (span < MIN_LABEL_CLEARANCE * 2) {
     x += outerDirection * (MIN_LABEL_CLEARANCE - span / 2);
   }
@@ -562,7 +565,7 @@ export function renderShoulderShapingSvg(
     );
     if (!marker) continue;
     const w = approxTextWidthPx(deltaStr(sl.amount));
-    const pos = placeHorizontalLabel(transition.fromX, transition.toX, transition.yCurr, -1);
+    const pos = placeHorizontalLabel(transition.fromX, transition.toX, transition.yCurr, -1, undefined, 0);
     inkMinX = Math.min(inkMinX, pos.x - w / 2);
     inkMaxX = Math.max(inkMaxX, pos.x + w / 2);
   }
@@ -685,7 +688,8 @@ export function renderShoulderShapingSvg(
       transition.toX,
       transition.yCurr,
       -1,
-      marker.x
+      marker.x,
+      gx0
     );
     deltaLabels.push(
       `<text x="${pos.x}" y="${pos.y}" font-size="${FONT_DELTA}" fill="${SHOULDER_LABEL_FILL}" text-anchor="middle" dominant-baseline="middle" font-family="system-ui,sans-serif" font-weight="600">${escapeXml(
@@ -772,17 +776,17 @@ export function renderShoulderShapingSvg(
   const zoneLabelY = padY - 6;
   const titles =
     `<text x="${gx0}" y="${zoneLabelY}" font-size="${FONT_ZONE}" fill="${SHOULDER_LABEL_FILL}" font-family="system-ui,sans-serif" font-weight="600">${escapeXml(
-      "Shoulder bind-offs"
+      "Armhole"
     )}</text>` +
     `<text x="${gx1}" y="${zoneLabelY}" font-size="${FONT_ZONE}" fill="${NECK_LABEL_FILL}" font-family="system-ui,sans-serif" font-weight="600" text-anchor="end">${escapeXml(
-      "Neckline shaping"
+      "Neck"
     )}</text>`;
 
   const svgStyle = `max-width:1100px;width:100%;height:auto;display:block`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="100%" style="${escapeXml(
     svgStyle
-  )}" viewBox="0 0 ${svgW} ${svgH}" preserveAspectRatio="xMinYMin meet" role="img" aria-label="Neck and shoulder shaping diagram">
-  <title>Neck and shoulder shaping diagram</title>
+  )}" viewBox="0 0 ${svgW} ${svgH}" preserveAspectRatio="xMinYMin meet" role="img" aria-label="One shoulder component: Neck edge and Armhole edge shaping diagram">
+  <title>One shoulder component: Neck edge and Armhole edge shaping diagram</title>
   <rect class="kbm-shaping-svg__diagram-bg" x="0" y="0" width="${svgW}" height="${svgH}" fill="#ffffff" stroke="none"/>
   ${fabricAreaD ? `<path class="kbm-shaping-svg__fabric-fill" d="${fabricAreaD}" fill="${FABRIC_FILL}" fill-opacity="${FABRIC_FILL_OPACITY}" stroke="none" />` : ""}
   ${gridLines.join("\n  ")}

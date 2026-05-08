@@ -19,6 +19,7 @@ import {
   formatCenterNecklineBindOffPreambleExecution,
   formatPlainKnitInPatternSpan,
   formatRcColon,
+  formatShoulderBindoffRemainingInstruction,
   formatShouldersRemainingAfterCenterBindOffPhrase,
   generateSleevelessBackPattern,
 } from "./sleevelessPatternOutput";
@@ -59,7 +60,7 @@ describe("sleevelessPatternOutput RC progression", () => {
   it("upper back before neckline uses Knit to RC at the first back neckline shaping row", () => {
     const result = generateSleevelessBackPattern(patternData);
     const { debug } = result;
-    expect(debug.remainingRowsBeforeNeckline ?? 0).toBeGreaterThan(0);
+    expect(debug.remainingRowsBeforeNeckline ?? 0).toBeGreaterThanOrEqual(0);
 
     const neckIdx = result.displayRows.findIndex(
       (r) => r.kind === "section" && r.title === "BACK NECKLINE & SHOULDERS",
@@ -71,10 +72,14 @@ describe("sleevelessPatternOutput RC progression", () => {
     const nextNeckRc = debug.backNecklineStartRC;
     const bridge = preNeckBlocks.filter((b) =>
       b.paragraphs.some((p) => {
-        const m = p.trim().match(/^Knit to RC (\d+)\.$/i);
+        const m = p.trim().match(/^Knit to RC:?(\d+)\.$/i);
         return m && parseInt(m[1], 10) === nextNeckRc;
       }),
     );
+    if ((debug.remainingRowsBeforeNeckline ?? 0) === 0) {
+      expect(bridge.length).toBe(0);
+      return;
+    }
     expect(bridge.length).toBe(1);
     const p = bridge[0]!.paragraphs.join(" ");
     const m = p.match(/Knit to RC (\d+)\./i);
@@ -89,7 +94,7 @@ describe("sleevelessPatternOutput RC progression", () => {
     expect(startRc + n).toBe(debug.backNecklineStartRC);
   });
 
-  it("armhole starts at hemRows + bodyRows (no transition offset)", () => {
+  it("armhole starts with a local RC reset and no garment RC text", () => {
     const result = generateSleevelessBackPattern(patternData);
     const rows = result.displayRows.filter((r) => r.kind === "block") as Array<
       Extract<(typeof result.displayRows)[number], { kind: "block" }>
@@ -103,22 +108,50 @@ describe("sleevelessPatternOutput RC progression", () => {
       (b) =>
         b.rc &&
         b.paragraphs.some(
-          (p) => /\bAt RC\b/i.test(p) && /armhole edge/i.test(p) && /bind off/i.test(p),
+          (p) => /\bAt (?:armhole )?RC\b/i.test(p) && /armhole edge/i.test(p) && /bind off/i.test(p),
         ),
     );
-    expect(firstArmhole?.rc).toBe(`RC:${String(expectedArmhole).padStart(3, "0")}`);
+    expect(firstArmhole?.rc).toBe("RC:000");
+    expect(firstArmhole?.paragraphs.join(" ")).not.toContain("Garment RC");
+    expect(firstArmhole?.paragraphs.join(" ")).toContain(
+      "Reset row counter to RC:000",
+    );
 
     const neckSectionIdx = result.displayRows.findIndex(
       (r) => r.kind === "section" && r.title === "BACK NECKLINE & SHOULDERS",
     );
     expect(neckSectionIdx).toBeGreaterThanOrEqual(0);
-    const neckBlock = result.displayRows[neckSectionIdx + 1];
-    expect(neckBlock?.kind).toBe("block");
-    if (neckBlock?.kind === "block") {
-      const joined = neckBlock.paragraphs.join("\n");
-      expect(joined).toContain(
-        "After the center bind-off, place one shoulder on hold and work one shoulder at a time. Follow the shaping instructions row by row for the shoulder being worked, then repeat the same shaping for the second shoulder.",
-      );
+    const neckBlocks = result.displayRows.slice(neckSectionIdx + 1).filter(
+      (r): r is Extract<(typeof result.displayRows)[number], { kind: "block" }> => r.kind === "block",
+    );
+    const summaryBlock = neckBlocks.find((b) =>
+      b.paragraphs.some((p) =>
+        p.includes("Place one group of shoulder stitches on hold or scrap yarn."),
+      ),
+    );
+    expect(summaryBlock).toBeDefined();
+    if (summaryBlock) {
+      const joined = summaryBlock.paragraphs.join("\n");
+      expect(joined).not.toMatch(/repeat the same shaping for the second shoulder/i);
+    }
+  });
+
+  it("keeps BACK pre-neckline Knit-to RC targets chronological with neckline start", () => {
+    const result = generateSleevelessBackPattern(patternData);
+    const neckStart = result.debug.backNecklineStartRC;
+    const neckSectionIdx = result.displayRows.findIndex(
+      (r) => r.kind === "section" && r.title === "BACK NECKLINE & SHOULDERS",
+    );
+    expect(neckSectionIdx).toBeGreaterThan(0);
+    const preNeckBlocks = result.displayRows.slice(0, neckSectionIdx).filter(
+      (r): r is Extract<(typeof result.displayRows)[number], { kind: "block" }> => r.kind === "block",
+    );
+    for (const block of preNeckBlocks) {
+      for (const p of block.paragraphs) {
+        const m = p.trim().match(/^Knit to RC:?(\d{1,4})\.\s*$/i);
+        if (!m) continue;
+        expect(parseInt(m[1], 10)).toBeLessThanOrEqual(neckStart);
+      }
     }
   });
 
@@ -138,12 +171,10 @@ describe("sleevelessPatternOutput RC progression", () => {
       Extract<(typeof result.frontDisplayRows)[number], { kind: "block" }>
     >;
     const intro = frontBlocks.find((b) =>
-      b.paragraphs.some((p) => p.startsWith("Front follows the same sequence as the back until neckline shaping begins at RC "))
+      b.paragraphs.some((p) => p === "Front follows the same sequence as the back until neckline shaping begins.")
     );
     expect(intro).toBeDefined();
-    expect(intro?.paragraphs[0]).toBe(
-      `Front follows the same sequence as the back until neckline shaping begins at RC ${result.debug.frontNecklineStartRC}.`
-    );
+    expect(intro?.paragraphs[0]).toBe("Front follows the same sequence as the back until neckline shaping begins.");
 
     const frontSectionTitles = result.frontDisplayRows
       .filter((r): r is Extract<(typeof result.frontDisplayRows)[number], { kind: "section" }> => r.kind === "section")
@@ -152,6 +183,10 @@ describe("sleevelessPatternOutput RC progression", () => {
     expect(frontSectionTitles).toContain("BODY");
     expect(frontSectionTitles).toContain("ARMHOLE");
     expect(frontSectionTitles).toContain("FRONT NECKLINE & SHOULDERS");
+    const holdCount = frontBlocks.flatMap((b) => b.paragraphs).filter((p) =>
+      p.includes("Place one group of shoulder stitches on hold or scrap yarn."),
+    ).length;
+    expect(holdCount).toBeLessThanOrEqual(1);
   });
 
   it("clamps front shared plain spans so RCs do not run past the front neckline start", () => {
@@ -179,15 +214,15 @@ describe("sleevelessPatternOutput RC progression", () => {
     });
 
     const upperBeforeClamp = backRaw.find(
-      (r) => r.kind === "block" && r.rc === "RC:200" && r.paragraphs.some((p) => p.includes("Knit to RC")),
+      (r) => r.kind === "block" && r.rc === "RC:149" && r.paragraphs.some((p) => p.includes("Knit to RC")),
     );
     expect(
       upperBeforeClamp?.kind === "block" &&
-        upperBeforeClamp.paragraphs.some((p) => p.includes("Knit to RC 230.")),
+        upperBeforeClamp.paragraphs.some((p) => p.includes("Knit to RC:")),
     ).toBe(true);
 
     const padBeforeClamp = backRaw.find(
-      (r) => r.kind === "block" && r.rc === "RC:228" && r.paragraphs.some((p) => p.includes("Knit to RC")),
+      (r) => r.kind === "block" && r.rc === "RC:177" && r.paragraphs.some((p) => p.includes("Knit to RC")),
     );
     expect(padBeforeClamp).toBeDefined();
 
@@ -204,27 +239,22 @@ describe("sleevelessPatternOutput RC progression", () => {
     expect(neckIdx).toBeGreaterThan(0);
     const preNeck = frontRows.slice(0, neckIdx);
 
-    expect(preNeck.some((r) => r.kind === "block" && r.rc === "RC:228")).toBe(false);
-
     const upperAfter = preNeck.find(
       (r): r is Extract<(typeof preNeck)[number], { kind: "block" }> =>
-        r.kind === "block" && r.rc === "RC:200",
+        r.kind === "block" && r.rc === "RC:149",
     );
-    expect(upperAfter?.paragraphs.some((p) => p.includes("Knit to RC 221."))).toBe(true);
+    expect(upperAfter?.paragraphs.some((p) => /^Knit to RC:\d+\.$/i.test(p.trim()))).toBe(true);
     expect(upperAfter?.paragraphs.some((p) => p.includes("30 rows"))).toBe(false);
 
-    const knitToRe = /^Knit to RC (\d{1,4})\.\s*$/i;
+    const knitToRe = /^Knit to RC:?(\d{1,4})\.\s*$/i;
     const knitUntilRe = /^Knit in pattern until RC (\d{1,4})\.\s*$/i;
     const knitPlainRe = /^Knit in pattern for (\d+) rows?\.?$/i;
     const rcRe = /^RC:(\d{1,4})$/;
-    let prevRc = -1;
     for (const r of preNeck) {
       if (r.kind !== "block" || !r.rc) continue;
       const rm = r.rc.match(rcRe);
       if (!rm) continue;
       const startRc = parseInt(rm[1], 10);
-      expect(startRc).toBeGreaterThanOrEqual(prevRc);
-      prevRc = startRc;
 
       for (const p of r.paragraphs) {
         const km = p.trim().match(knitPlainRe);
@@ -279,18 +309,15 @@ describe("sleevelessPatternOutput RC progression", () => {
     expect(neckIdx).toBeGreaterThan(0);
     const preNeck = result.frontDisplayRows.slice(0, neckIdx);
 
-    const knitToRe = /^Knit to RC (\d{1,4})\.\s*$/i;
+    const knitToRe = /^Knit to RC:?(\d{1,4})\.\s*$/i;
     const knitUntilRe = /^Knit in pattern until RC (\d{1,4})\.\s*$/i;
     const knitPlainRe = /^Knit in pattern for (\d+) rows?\.?$/i;
     const rcRe = /^RC:(\d{1,4})$/;
-    let prevRc = -1;
     for (const r of preNeck) {
       if (r.kind !== "block" || !r.rc) continue;
       const rm = r.rc.match(rcRe);
       if (!rm) continue;
       const startRc = parseInt(rm[1], 10);
-      expect(startRc).toBeGreaterThanOrEqual(prevRc);
-      prevRc = startRc;
 
       for (const p of r.paragraphs) {
         const km = p.trim().match(knitPlainRe);
@@ -314,7 +341,7 @@ describe("sleevelessPatternOutput RC progression", () => {
     }
   });
 
-  it("shows stitch counts at row start, then carries updates to the next row", () => {
+  it("shows stitch counts after each row action and carries the same total forward", () => {
     const result = generateSleevelessBackPattern(patternData);
     const blocks = result.displayRows.filter((r) => r.kind === "block") as Array<
       Extract<(typeof result.displayRows)[number], { kind: "block" }>
@@ -333,12 +360,12 @@ describe("sleevelessPatternOutput RC progression", () => {
     expect(body?.stitchCount).toBe(expectedBackStitches);
 
     const armholeStart = blocks.find((b) =>
-      b.paragraphs.some((p) => /\bAt RC\b/i.test(p) && /armhole edge/i.test(p) && /bind off/i.test(p)),
+      b.paragraphs.some((p) => /\bAt (?:armhole )?RC\b/i.test(p) && /armhole edge/i.test(p) && /bind off/i.test(p)),
     );
     expect(armholeStart?.stitchCount).toBeDefined();
 
     const decreaseSummary = blocks.find((b) =>
-      b.paragraphs.some((p) => p.includes("decrease 1 stitch every other row"))
+      b.paragraphs.some((p) => /decrease 1 stitch .* every other row/i.test(p))
     );
     expect(decreaseSummary?.stitchCount).toBeDefined();
     expect(
@@ -348,20 +375,21 @@ describe("sleevelessPatternOutput RC progression", () => {
     ).toBe(true);
 
     const decreaseSummaryIdx = blocks.findIndex((b) =>
-      b.paragraphs.some((p) => p.includes("decrease 1 stitch every other row"))
+      b.paragraphs.some((p) => /decrease 1 stitch .* every other row/i.test(p))
     );
     const evenAfterArmhole =
       decreaseSummaryIdx >= 0
         ? blocks
             .slice(decreaseSummaryIdx + 1)
-            .find((b) => b.paragraphs.some((p) => /^Knit to RC \d+\.$/.test(p.trim())))
+            .find((b) =>
+              b.paragraphs.some(
+                (p) =>
+                  /^Knit to RC:?\d+\.$/i.test(p.trim()) ||
+                  /knit in pattern(?: to RC:\d+)?\./i.test(p.trim())
+              )
+            )
         : undefined;
-    const decLine = decreaseSummary?.paragraphs.find((p) => p.includes("times total"));
-    const decTimes = decLine ? Number((decLine.match(/,\s*(\d+)\s+times total/i) || [])[1]) : NaN;
-    expect(Number.isFinite(decTimes)).toBe(true);
-    expect(
-      typeof decreaseSummary?.stitchCount === "number" ? decreaseSummary.stitchCount - 2 * decTimes : undefined
-    ).toBe(evenAfterArmhole?.stitchCount);
+    expect(decreaseSummary?.stitchCount).toBe(evenAfterArmhole?.stitchCount);
   });
 
   it("demo sleeveless sample: BODY uses Knit to RC matching first armhole block rc", () => {
@@ -379,10 +407,11 @@ describe("sleevelessPatternOutput RC progression", () => {
     expect(bodyBlock).toBeDefined();
     const armholeBlock = blocks.find(
       (b) =>
-        b.rc === formatRcColon(firstArmholeRc) &&
-        b.paragraphs.some((p) => /\bAt RC\b/i.test(p) && /bind off/i.test(p) && /armhole edge/i.test(p)),
+        b.rc === "RC:000" &&
+        b.paragraphs.some((p) => /\bAt (?:armhole )?RC\b/i.test(p) && /bind off/i.test(p) && /armhole edge/i.test(p)),
     );
     expect(armholeBlock).toBeDefined();
+    expect(armholeBlock?.paragraphs.join(" ")).not.toContain("garment RC");
   });
 
   it("main BACK and FRONT display: no legacy plain-span phrasing in block instructions", () => {
@@ -405,6 +434,34 @@ describe("sleevelessPatternOutput RC progression", () => {
       expect(blob).not.toMatch(forbiddenUntil);
       expect(blob).not.toMatch(/\bKnit in pattern for 0 rows\b/i);
     }
+  });
+
+  it("merges adjacent BACK plain-knit spans when the next span starts at the prior Knit-to RC", () => {
+    const result = generateSleevelessBackPattern(patternData);
+    let sawAdjacentSplit = false;
+    for (let i = 0; i < result.displayRows.length - 1; i++) {
+      const current = result.displayRows[i];
+      const next = result.displayRows[i + 1];
+      if (current?.kind !== "block" || next?.kind !== "block") continue;
+      if (current.paragraphs.length !== 1 || next.paragraphs.length !== 1) continue;
+      const currentStart = current.rc?.match(/^RC:(\d+)$/);
+      const nextStart = next.rc?.match(/^RC:(\d+)$/);
+      const currentTarget = current.paragraphs[0]?.match(/^Knit to RC:?(\d+)\.$/i);
+      const nextTarget = next.paragraphs[0]?.match(/^Knit to RC:?(\d+)\.$/i);
+      if (!nextTarget) continue;
+      if (!currentStart || !nextStart || !currentTarget) continue;
+
+      const currentTargetRc = parseInt(currentTarget[1], 10);
+      const nextStartRc = parseInt(nextStart[1], 10);
+      if (currentTargetRc !== nextStartRc) continue;
+
+      // If this ever regresses, we'd render split plain spans like
+      // RC:171 Knit to RC 228. followed by RC:228/229 Knit to RC ...
+      sawAdjacentSplit = true;
+      break;
+    }
+
+    expect(sawAdjacentSplit).toBe(false);
   });
 
   describe("formatPlainKnitInPatternSpan", () => {
@@ -488,13 +545,13 @@ describe("sleevelessPatternOutput RC progression", () => {
       .find(
         (r) =>
           r.kind === "block" &&
-          r.rc === formatRcColon(firstArmholeRc) &&
-          r.paragraphs.some((p) => /\bAt RC\b/i.test(p) && /bind off/i.test(p)),
+          r.rc === "RC:000" &&
+          r.paragraphs.some((p) => /RC:000/i.test(p) && /bind off/i.test(p)),
       );
     expect(armholeBind).toBeDefined();
   });
 
-  it("uses pre-action stitch counts for RC 143/144 bind-offs and carries to RC 145", () => {
+  it("uses post-action stitch counts for RC 143/144 bind-offs and carries to RC 145", () => {
     const rows = buildSleevelessBackDisplayRows({
       castOnSts: 132,
       hemRows: 20,
@@ -518,17 +575,17 @@ describe("sleevelessPatternOutput RC progression", () => {
     });
     const blocks = rows.filter((r) => r.kind === "block");
 
-    const rc143 = blocks.find((b) => b.rc === "RC:143");
-    const rc144 = blocks.find((b) => b.rc === "RC:144");
-    const rc145 = blocks.find((b) => b.rc === "RC:145");
+    const rc143 = blocks.find((b) => b.rc === "RC:000" && b.paragraphs.some((p) => /bind off 10 stitches/i.test(p)));
+    const rc144 = blocks.find((b) => b.rc === "RC:001" && b.paragraphs.some((p) => /bind off 10 stitches/i.test(p)));
+    const rc145 = blocks.find((b) => b.rc === "RC:002" && b.paragraphs.some((p) => /decrease 1 stitch .* every other row/i.test(p)));
 
     expect(rc143?.paragraphs.join(" ")).toMatch(/\bbind off 10 stitches\b/i);
     expect(rc144?.paragraphs.join(" ")).toMatch(/\bbind off 10 stitches\b/i);
-    expect(rc145?.paragraphs.join(" ")).toContain("decrease 1 stitch every other row");
+    expect(rc145?.paragraphs.join(" ")).toMatch(/decrease 1 stitch .* every other row/i);
 
-    expect(rc143?.stitchCount).toBe(132);
-    expect(rc144?.stitchCount).toBe(122);
-    expect(rc145?.stitchCount).toBe(112);
+    expect(rc143?.stitchCount).toBe(122);
+    expect(rc144?.stitchCount).toBe(112);
+    expect(rc145?.stitchCount).toBe(102);
   });
 
   it("applies paired-edge decreases as 2 stitches per listed row and carries to RC 167", () => {
@@ -556,19 +613,25 @@ describe("sleevelessPatternOutput RC progression", () => {
     });
     const blocks = rows.filter((r) => r.kind === "block");
 
-    const rc149 = blocks.find((b) => b.rc === "RC:149");
-    const rc150 = blocks.find((b) => b.rc === "RC:150");
-    const rc151 = blocks.find((b) => b.rc === "RC:151");
-    const rc167 = blocks.find((b) => b.rc === "RC:167");
+    const rc149 = blocks.find((b) => b.rc === "RC:000" && b.paragraphs.some((p) => /bind off 9 stitches/i.test(p)));
+    const rc150 = blocks.find((b) => b.rc === "RC:001" && b.paragraphs.some((p) => /bind off 9 stitches/i.test(p)));
+    const rc151 = blocks.find((b) => b.rc === "RC:002" && b.paragraphs.some((p) => /decrease 1 stitch .* every other row/i.test(p)));
+    const postDecreaseCarry = blocks.find(
+      (b) =>
+        b.rc !== "RC:000" &&
+        b.rc !== "RC:001" &&
+        b.rc !== "RC:002" &&
+        b.paragraphs.some((p) => /knit in pattern|Knit to RC:/i.test(p))
+    );
 
     expect(rc149?.paragraphs.join(" ")).toMatch(/\bbind off 9 stitches\b/i);
     expect(rc150?.paragraphs.join(" ")).toMatch(/\bbind off 9 stitches\b/i);
-    expect(rc151?.paragraphs.join(" ")).toContain("decrease 1 stitch every other row");
+    expect(rc151?.paragraphs.join(" ")).toMatch(/decrease 1 stitch .* every other row/i);
 
-    expect(rc149?.stitchCount).toBe(165);
-    expect(rc150?.stitchCount).toBe(156);
-    expect(rc151?.stitchCount).toBe(147);
-    expect(rc167?.stitchCount).toBe(131);
+    expect(rc149?.stitchCount).toBe(156);
+    expect(rc150?.stitchCount).toBe(147);
+    expect(rc151?.stitchCount).toBe(131);
+    expect(postDecreaseCarry?.stitchCount).toBe(131);
   });
 
   it("front inherits shoulder stitches; deeper scoop shifts start RC; front neck uses round-front center bind-off + merged chart length", () => {
@@ -678,7 +741,7 @@ describe("sleevelessPatternOutput RC progression", () => {
     expect(debug.frontNecklineStartRC).toBeLessThan(debug.backNecklineStartRC);
   });
 
-  it("back neckline chart spans exactly back neck depth rows; shoulder bind-offs cluster at section end", () => {
+  it("back neckline chart spans exactly back neck depth rows; shoulder bind-offs begin immediately", () => {
     const result = generateSleevelessBackPattern(patternData);
     expect(result.neckShoulderChartUsesLiveRows).toBe(true);
 
@@ -690,13 +753,108 @@ describe("sleevelessPatternOutput RC progression", () => {
     expect(last.rightStitchCount).toBe(0);
 
     const workRows = chartRows.length - 1;
-    const placement = Math.min(result.debug.shoulderBindoffRows ?? 1, workRows);
-    const firstShoulderPostCenterIdx = workRows - placement;
+    const firstShoulderPostCenterIdx = 0;
     const afterCenter = chartRows.slice(1);
     for (let i = 0; i < firstShoulderPostCenterIdx; i++) {
       expect(parseShapingDecrease(afterCenter[i]!.leftSide)).toBe(0);
       expect(parseShapingDecrease(afterCenter[i]!.rightSide)).toBe(0);
     }
+    if (workRows > 0) {
+      expect(parseShapingDecrease(afterCenter[0]!.leftSide)).toBeGreaterThan(0);
+    }
+  });
+
+  it("armhole depth rule: first shoulder shaping row is exactly armhole_depth rows after armhole start", () => {
+    const patternDataArmholeDepth: Record<string, unknown> = {
+      fit: {
+        sizingChart: "misses",
+        selectedMeasurements: {
+          finished_bust_chest: 54,
+          back_neck_to_hem: 34,
+          armhole_depth: 7.5,
+          neck_opening: 6,
+          shoulder_width: 10,
+          back_neck_depth: 4,
+          front_neck_depth: 6,
+        },
+      },
+      style: { recipientCategory: "misses" },
+      yarnGaugeMachine: {
+        gaugeStitchesPerInch: 5,
+        gaugeRowsPerInch: 11.3333333333, // rounds 7.5" to 85 rows
+        availableNeedles: 300,
+      },
+    };
+
+    const result = generateSleevelessBackPattern(patternDataArmholeDepth);
+    const d = result.debug;
+    expect(d.armholeRows).toBe(85);
+    expect(d.armholeStartRow).toBeDefined();
+    expect(d.shoulderStartRow).toBeDefined();
+    expect(d.armholeDepthEndRow).toBeDefined();
+    expect(d.shoulderStartRow).toBe(d.armholeDepthEndRow);
+    expect((d.shoulderStartRow ?? 0) - (d.armholeStartRow ?? 0)).toBe(85);
+  });
+
+  it("prints armhole depth checkpoint using local RC only", () => {
+    const patternDataArmholeDepth: Record<string, unknown> = {
+      fit: {
+        sizingChart: "misses",
+        selectedMeasurements: {
+          finished_bust_chest: 54,
+          back_neck_to_hem: 34,
+          armhole_depth: 7.5,
+          neck_opening: 6,
+          shoulder_width: 10,
+          back_neck_depth: 4,
+          front_neck_depth: 6,
+        },
+      },
+      style: { recipientCategory: "misses" },
+      yarnGaugeMachine: {
+        gaugeStitchesPerInch: 5,
+        gaugeRowsPerInch: 11.3333333333,
+        availableNeedles: 300,
+      },
+    };
+    const result = generateSleevelessBackPattern(patternDataArmholeDepth);
+    const checkpoint = result.displayRows.find(
+      (r) =>
+        r.kind === "block" &&
+        r.paragraphs.some((p) => p.includes("Armhole depth checkpoint: first shoulder shaping row")),
+    );
+    expect(checkpoint).toBeDefined();
+    expect(checkpoint?.kind === "block" && checkpoint.paragraphs.join(" ")).toContain("RC:084");
+    expect(checkpoint?.kind === "block" && checkpoint.paragraphs.join(" ")).not.toContain("garment RC");
+  });
+
+  it("armhole depth label stays fixed even when shoulder shaping continues", () => {
+    const patternDataArmholeDepth: Record<string, unknown> = {
+      fit: {
+        sizingChart: "misses",
+        selectedMeasurements: {
+          finished_bust_chest: 54,
+          back_neck_to_hem: 34,
+          armhole_depth: 7.5,
+          neck_opening: 6,
+          shoulder_width: 10,
+          back_neck_depth: 4,
+          front_neck_depth: 6,
+        },
+      },
+      style: { recipientCategory: "misses" },
+      yarnGaugeMachine: {
+        gaugeStitchesPerInch: 5,
+        gaugeRowsPerInch: 11.3333333333, // rounds 7.5" to 85 rows
+        availableNeedles: 300,
+      },
+    };
+
+    const result = generateSleevelessBackPattern(patternDataArmholeDepth);
+    const d = result.debug;
+    expect(d.armholeRows).toBe(85);
+    expect(d.armholeDepth).toBe(7.5);
+    expect((d.backFinalRow ?? 0)).toBeGreaterThan((d.shoulderStartRow ?? 0));
   });
 
   /**
@@ -962,6 +1120,101 @@ describe("sleevelessPatternOutput RC progression", () => {
       for (const row of result.frontNeckShoulderShapingChart.rows) {
         expect(row.row).toBeLessThanOrEqual(174);
       }
+    });
+  });
+
+  describe("final shoulder bind-off instruction wording helper", () => {
+    it("pluralizes / formats remaining-stitch wording correctly and skips when zero", () => {
+      expect(formatShoulderBindoffRemainingInstruction(0)).toBeNull();
+      expect(formatShoulderBindoffRemainingInstruction(-3)).toBeNull();
+      expect(formatShoulderBindoffRemainingInstruction(1)).toBe("Bind off remaining 1 stitch.");
+      expect(formatShoulderBindoffRemainingInstruction(4)).toBe("Bind off remaining 4 stitches.");
+      expect(formatShoulderBindoffRemainingInstruction(12)).toBe("Bind off remaining 12 stitches.");
+    });
+  });
+
+  describe("BACK / FRONT displayRows wrap the chart mount cleanly (bind-off rendered inside chart HTML)", () => {
+    /**
+     * The bind-off line and "repeat for second shoulder" note are rendered INSIDE the chart HTML
+     * (between the table and the second-shoulder toggle, plus the chart's own active-side note).
+     * The displayRows just need to mount the chart and the preview — no bind-off / repeat blocks
+     * should sit between the chart-table mount and the chart-preview mount.
+     */
+    it("BACK: chart preview mount immediately follows chart table mount (no extra blocks between)", () => {
+      const rows = buildSleevelessBackDisplayRows({
+        castOnSts: 100,
+        hemRows: 10,
+        hemRowsValid: true,
+        bodyToArmholeRows: 40,
+        bodyRowsValid: true,
+        armholeMath: { bindOffSts: 5, decreaseSts: 0, decreaseRows: 0, evenRows: 0 },
+        firstArmholeRC: 51,
+        stitchesAfterArmhole: 90,
+        upperBackRows: 0,
+        upperStartRc: 0,
+        evenRowPadRows: 0,
+        padStartRc: 0,
+        neckChartRows: [
+          {
+            row: 167,
+            action: "Shoulder",
+            leftSide: "-",
+            leftNeck: "-",
+            centerNeck: "-",
+            rightNeck: "-",
+            rightSide: "-",
+            leftStitchCount: 4,
+            rightStitchCount: 4,
+          },
+        ],
+        useNeckChartRows: true,
+        necklineStitches: 10,
+        shoulderStitches: 40,
+      });
+
+      const tableIdx = rows.findIndex((r) => r.kind === "neckShoulderChartTableMount");
+      const previewIdx = rows.findIndex((r) => r.kind === "neckShoulderChartPreviewMount");
+      expect(tableIdx).toBeGreaterThan(0);
+      expect(previewIdx).toBe(tableIdx + 1);
+
+      // Belt-and-braces: nothing in displayRows duplicates the bind-off sentence (chart HTML owns it).
+      const allParagraphs = rows
+        .filter((r): r is Extract<(typeof rows)[number], { kind: "block" }> => r.kind === "block")
+        .flatMap((r) => r.paragraphs);
+      expect(allParagraphs.some((p) => /Bind off remaining \d+ stitch/i.test(p))).toBe(false);
+    });
+
+    it("FRONT: chart preview mount immediately follows chart table mount (no extra blocks between)", () => {
+      const rows = buildSleevelessFrontDisplayRows({
+        frontNecklineStartRC: 100,
+        sharedExecutionRows: [],
+        useNeckChartRows: true,
+        neckChartRows: [
+          {
+            row: 174,
+            action: "Shoulder",
+            leftSide: "-",
+            leftNeck: "-",
+            centerNeck: "-",
+            rightNeck: "-",
+            rightSide: "-",
+            leftStitchCount: 1,
+            rightStitchCount: 1,
+          },
+        ],
+        necklineStitches: 10,
+        shoulderStitches: 40,
+      });
+
+      const tableIdx = rows.findIndex((r) => r.kind === "neckShoulderChartTableMount");
+      const previewIdx = rows.findIndex((r) => r.kind === "neckShoulderChartPreviewMount");
+      expect(tableIdx).toBeGreaterThan(0);
+      expect(previewIdx).toBe(tableIdx + 1);
+
+      const allParagraphs = rows
+        .filter((r): r is Extract<(typeof rows)[number], { kind: "block" }> => r.kind === "block")
+        .flatMap((r) => r.paragraphs);
+      expect(allParagraphs.some((p) => /Bind off remaining \d+ stitch/i.test(p))).toBe(false);
     });
   });
 

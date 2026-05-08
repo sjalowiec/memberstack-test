@@ -555,6 +555,53 @@ const pageUrl = Astro.url.href;
     print-color-adjust: exact;
   }
 
+  /*
+    Diagram block: visible "Neckline / Shoulder Diagram" sub-heading + bordered wrapper
+    around the notation SVG so the print shaping section reads as "table → diagram"
+    rather than leaving the SVG as a loose floating image. Both BACK and FRONT charts
+    flow through `renderNeckShoulderShapingPrintInstructionTableHtml`, so this single
+    block style applies to both pieces.
+  */
+  .sleeveless-print-root .ns-shaping-mini__diagram-title {
+    margin: 0.45rem 0 0.18rem;
+    font-size: 0.79rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: #1f2937;
+    break-after: avoid;
+  }
+
+  .sleeveless-print-root .ns-shaping-mini__diagram-block {
+    margin: 0 0 0.35rem;
+    padding: 0.35rem;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .sleeveless-print-root .ns-shaping-mini__svg-wrap {
+    margin: 0.2rem auto 0.15rem;
+    max-width: 11.25rem;
+    overflow: visible;
+  }
+
+  .sleeveless-print-root .ns-shaping-mini__svg-wrap .ns-notation-overlay {
+    width: 100%;
+  }
+
+  .sleeveless-print-root .ns-shaping-mini__svg-wrap .ns-notation-overlay__image-wrap {
+    min-height: 170px;
+  }
+
+  .sleeveless-print-root .ns-shaping-mini__svg-wrap .ns-notation-overlay__label {
+    font-size: 10pt;
+    padding: 0.03rem 0.12rem;
+    background: rgba(255, 255, 255, 0.92);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
   .sleeveless-print-root .print-finishing-list {
     margin: 0.5rem 0 0;
     padding-left: 1.25rem;
@@ -715,6 +762,11 @@ const pageUrl = Astro.url.href;
 
     .sleeveless-print-root .ns-shaping-mini__row--mix td {
       background: #f3f4f6 !important;
+    }
+
+    .sleeveless-print-root .ns-shaping-mini__diagram-block {
+      border-color: #d1d5db;
+      padding: 0.25rem;
     }
   }
 </style>

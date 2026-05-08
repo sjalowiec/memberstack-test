@@ -588,6 +588,46 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     height: auto;
   }
 
+  :global(#pattern-content .ns-shaping-chart__diagram-svg-wrap .ns-notation-overlay) {
+    min-width: 320px;
+  }
+
+  :global(#pattern-content .ns-shaping-chart__second-shoulder-toggle) {
+    margin: 0.45rem 0 0.75rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid rgba(55, 65, 81, 0.16);
+    border-radius: 8px;
+    background: rgba(82, 104, 45, 0.04);
+  }
+
+  :global(#pattern-content .ns-shaping-chart__second-shoulder-toggle-copy) {
+    margin: 0 0 0.35rem;
+    font-size: 0.88rem;
+    line-height: 1.4;
+    color: #374151;
+  }
+
+  :global(#pattern-content .ns-shaping-chart__second-shoulder-label) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1f2937;
+    cursor: pointer;
+  }
+
+  :global(#pattern-content .ns-shaping-chart__second-shoulder-input) {
+    margin: 0;
+    inline-size: 1rem;
+    block-size: 1rem;
+    accent-color: var(--kbm-green, #52682d);
+  }
+
+  :global(#pattern-content .ns-shaping-chart__active-side-note--expanded[hidden]) {
+    display: none !important;
+  }
+
   :global(#pattern-content #neckline-shoulder-chart-print-area),
   :global(#pattern-content #front-neckline-shoulder-chart-print-area) {
     width: 100%;
@@ -980,6 +1020,10 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
       display: none !important;
     }
 
+    :global(#pattern-content .ns-shaping-chart__second-shoulder-toggle) {
+      display: none !important;
+    }
+
     :global(.no-print) {
       display: none !important;
     }
@@ -1256,32 +1300,67 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
       .replace(/>/g, "&gt;");
   }
 
+  function parseCenterBindOffStitches(cell) {
+    const text = String(cell ?? "").trim();
+    if (!text || text === "-") return 0;
+    const n = Number(text.replace(/[^\d-]/g, ""));
+    return Number.isFinite(n) ? Math.abs(Math.trunc(n)) : 0;
+  }
+
+  function centerBindOffStitchesFromChart(chart) {
+    const firstRow = chart?.rows?.[0];
+    if (!firstRow) return 0;
+    return parseCenterBindOffStitches(firstRow.centerNeck);
+  }
+
+  function formatPositiveWholeLabel(value) {
+    const n = Number(value);
+    return Number.isFinite(n) && n > 0 ? String(Math.round(n)) : "";
+  }
+
+  function necklineSplitStateFromChart(chart) {
+    const firstRow = chart?.rows?.[0];
+    const centerBindOffStitches = centerBindOffStitchesFromChart(chart);
+    const heldShoulderStitches = Math.max(0, Math.floor(Number(firstRow?.leftStitchCount ?? 0)));
+    const activeShoulderStitches = Math.max(0, Math.floor(Number(firstRow?.rightStitchCount ?? 0)));
+    const totalWorkingStitches = heldShoulderStitches + activeShoulderStitches + centerBindOffStitches;
+    return {
+      centerBindOffStitches,
+      heldShoulderStitches,
+      activeShoulderStitches,
+      totalWorkingStitches,
+    };
+  }
+
   /**
    * Intro + collapsible help shown directly beneath the chart heading.
    * @param {number | string | undefined} startRow
+   * @param {{
+   *   centerBindOffStitches: number;
+   *   heldShoulderStitches: number;
+   *   activeShoulderStitches: number;
+   *   totalWorkingStitches: number;
+   * }} splitState
    */
-  function neckShoulderChartHelpRowHtml(startRow) {
-    const numericStartRow = Number(startRow);
-    const startRowLabel =
-      Number.isFinite(numericStartRow) && numericStartRow > 0 ? String(Math.round(numericStartRow)) : "";
+  function neckShoulderChartHelpRowHtml(startRowLabel, splitState) {
+    const startRcLabel = String(startRowLabel ?? "").trim();
+    const centerCountLabel = formatPositiveWholeLabel(splitState?.centerBindOffStitches);
+    const heldShoulderLabel = formatPositiveWholeLabel(splitState?.heldShoulderStitches);
+    const activeShoulderLabel = formatPositiveWholeLabel(splitState?.activeShoulderStitches);
+    const centerBindOffLine = centerCountLabel
+      ? `Bind off the center ${escapeHtml(centerCountLabel)} stitches.`
+      : "Bind off the center stitches.";
+    const holdLine = "Place one group of shoulder stitches on hold or scrap yarn.";
+    const otherShoulderLine = "Work the other shoulder following the checklist below.";
+    const activeShoulderLine = activeShoulderLabel
+      ? `Follow the checklist below for the active shoulder (${escapeHtml(activeShoulderLabel)} sts).`
+      : "Follow the checklist below for the active shoulder.";
     return `<div class="pattern-shaping-intro">
-  <p class="pattern-rc-line pattern-rc-open"><strong>RC: ${escapeHtml(startRowLabel)}</strong> Start here.</p>
-  <p>Bind off the center neckline stitches as shown in the chart below.</p>
-  <p>Place the opposite shoulder stitches on hold or scrap yarn and work one shoulder at a time, following the chart row by row.</p>
-  <p class="small text-muted">The chart below combines neckline and shoulder shaping into one row-by-row guide, including rows where shaping happens at the same time.</p>
-  <p class="small text-muted sleeveless-ns-chart-rc-note">After the center neck bind-off, work each shoulder separately as needed while keeping both sides aligned to the same RC rows shown in the chart.</p>
+  <p><strong>Setup</strong></p>
+  <p><strong>Center Neckline:</strong><br>${startRcLabel ? `At ${escapeHtml(startRcLabel)}, ` : ""}${centerBindOffLine.charAt(0).toLowerCase()}${centerBindOffLine.slice(1)}</p>
+  <p><strong>Divide:</strong><br>${holdLine}<br>${otherShoulderLine}</p>
+  <p>${activeShoulderLine} Use the Neck edge for center decreases and the Armhole edge for shoulder shaping.</p>
 </div>
-<details class="pattern-tip sleeveless-shaping-help-toggle no-print">
-  <summary>Need help reading the shaping chart?</summary>
-  <p>This section combines neckline shaping and shoulder shaping into one row-by-row chart.</p>
-  <ul>
-    <li>Read the chart one row at a time</li>
-    <li>Stitch counts update after the shaping on that row is completed</li>
-    <li>Some rows include both neckline and shoulder shaping</li>
-    <li>Blank rows mean knit even with no shaping</li>
-    <li>Use the checkboxes to help keep your place as you knit</li>
-  </ul>
-</details>
 <details class="pattern-tip sleeveless-shaping-help-toggle no-print">
   <summary>New to shaping necklines on the machine?</summary>
   <p>Neckline shaping can feel intimidating at first, especially when shoulder shaping happens at the same time. The chart is designed to guide you step by step so you can focus on one row at a time.</p>
@@ -1327,18 +1406,9 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     /** @type {string[]} */
     let openSectionParts = [];
     const NECK_SHOULDER_SECTION_RE = /NECKLINE\s*&\s*SHOULDERS/i;
-    const ARMHOLE_SECTION_RE = /ARMHOLE/i;
-    const numericStartRow = Number(neckChartStartRow);
-    const startRowLabel =
-      Number.isFinite(numericStartRow) && numericStartRow > 0 ? String(Math.round(numericStartRow)) : "";
 
     function flushOpenSection() {
       if (!openSectionTitle) return;
-      if (!openSectionIsPost && ARMHOLE_SECTION_RE.test(openSectionTitle) && startRowLabel) {
-        openSectionParts.push(
-          `<p class="pattern-rc-line pattern-rc-open"><strong>RC: ${escapeHtml(startRowLabel)}</strong> Start neckline and shoulder shaping.</p>`
-        );
-      }
       const sectionSlug = openSectionTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
       const targetParts = openSectionIsPost ? postParts : splitParts;
       targetParts.push(
@@ -1416,15 +1486,7 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
           pieceSectionId === "front"
             ? "front-neckline-shoulder-chart-print-area"
             : "neckline-shoulder-chart-print-area";
-        const chartAreaOpen = `<div id="${chartAreaId}">`;
-        const chartChunk = `${chartAreaOpen}
-  <div class="neckline-chart-print-only-header" aria-hidden="true">
-    <p class="neckline-chart-print-only-header-title">${escapeHtml(printPatternTitle)}</p>
-    <p class="neckline-chart-print-only-header-intro">Custom pattern for ${escapeHtml(printIntro)}</p>
-  </div>
-  <div class="sg-pattern-output sg-neck-chart-print-block" id="${escapeHtml(chartTableMountId)}"></div>
-  <p class="neckline-chart-print-only-footer">Created by Knit It Now · Printed <span data-neckline-chart-print-date></span></p>
-</div>`;
+        const chartAreaOpen = `<div id="${chartAreaId}" data-second-shoulder-scope>`;
         const diagramLabel =
           pieceSectionId === "front"
             ? "Front neckline and shoulder diagram"
@@ -1432,13 +1494,20 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
         const diagramChunk = `<aside class="sleeveless-neck-shoulder-diagram" aria-label="${escapeHtml(diagramLabel)}">
   <div class="sg-pattern-output sg-neck-chart-diagram-block" id="${escapeHtml(chartDiagramMountId)}"></div>
 </aside>`;
+        const chartChunk = `${chartAreaOpen}
+  <div class="neckline-chart-print-only-header" aria-hidden="true">
+    <p class="neckline-chart-print-only-header-title">${escapeHtml(printPatternTitle)}</p>
+    <p class="neckline-chart-print-only-header-intro">Custom pattern for ${escapeHtml(printIntro)}</p>
+  </div>
+  <div class="sg-pattern-output sg-neck-chart-print-block" id="${escapeHtml(chartTableMountId)}"></div>
+  ${diagramChunk}
+  <p class="neckline-chart-print-only-footer">Created by Knit It Now · Printed <span data-neckline-chart-print-date></span></p>
+</div>`;
         if (openSectionTitle) {
-          openSectionParts.push(chartChunk, diagramChunk);
+          openSectionParts.push(chartChunk);
           continue;
         }
-        postParts.push(
-          `<section class="sleeveless-piece-chart-fullwidth">${chartChunk}${diagramChunk}</section>`
-        );
+        postParts.push(`<section class="sleeveless-piece-chart-fullwidth">${chartChunk}</section>`);
         continue;
       }
       if (row.kind === "neckShoulderChartPreviewMount") {
@@ -1992,6 +2061,9 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
       .ns-shaping-chart__preview {
         display: none !important;
       }
+      .ns-shaping-chart__second-shoulder-toggle {
+        display: none !important;
+      }
       [style*="position: sticky"] {
         position: static !important;
       }
@@ -2106,6 +2178,31 @@ table {
       console.log("print clicked");
 
       printNecklineShoulderChart(chartAreaId, chartTitle);
+    });
+  }
+
+  function bindSecondShoulderChecklistToggles(root) {
+    if (!root) return;
+    const scopes = root.querySelectorAll("[data-second-shoulder-scope]");
+    scopes.forEach((scopeEl) => {
+      if (!(scopeEl instanceof HTMLElement)) return;
+      if (scopeEl.dataset.secondShoulderToggleBound === "true") return;
+      scopeEl.dataset.secondShoulderToggleBound = "true";
+      const checkbox = scopeEl.querySelector("[data-second-shoulder-toggle]");
+      if (!(checkbox instanceof HTMLInputElement)) return;
+      const secondShoulderBlocks = scopeEl.querySelectorAll("[data-second-shoulder-content]");
+      const defaultInstruction = scopeEl.querySelector("[data-second-shoulder-default-instruction]");
+      const checkedInstruction = scopeEl.querySelector("[data-second-shoulder-checked-instruction]");
+      const update = () => {
+        const show = checkbox.checked;
+        secondShoulderBlocks.forEach((block) => {
+          if (block instanceof HTMLElement) block.hidden = !show;
+        });
+        if (defaultInstruction instanceof HTMLElement) defaultInstruction.hidden = show;
+        if (checkedInstruction instanceof HTMLElement) checkedInstruction.hidden = !show;
+      };
+      checkbox.addEventListener("change", update);
+      update();
     });
   }
 
@@ -2454,11 +2551,18 @@ table {
 
     const backChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-back");
     if (backChartTableHost) {
+      const backArmholeLocalChartStartRc =
+        Number.isFinite(result?.debug?.backNecklineStartRC) && Number.isFinite(result?.debug?.armholeStartRow)
+          ? Math.max(0, Math.floor(result.debug.backNecklineStartRC - result.debug.armholeStartRow))
+          : 0;
       backChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
-        neckShoulderChartHelpRowHtml(result?.neckShoulderShapingChart?.rows?.[0]?.row),
-        { activeSideOnly: true }
+        neckShoulderChartHelpRowHtml(
+          `RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`,
+          necklineSplitStateFromChart(result?.neckShoulderShapingChart)
+        ),
+        { activeSideOnly: true, activeSideRcStart: backArmholeLocalChartStartRc }
       );
     }
     const backDiagramHost = mount.querySelector("#sg-neck-shoulder-diagram-back");
@@ -2471,10 +2575,18 @@ table {
     }
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
     if (frontChartTableHost) {
+      const frontArmholeLocalChartStartRc =
+        Number.isFinite(result?.debug?.frontNecklineStartRC) && Number.isFinite(result?.debug?.armholeStartRow)
+          ? Math.max(0, Math.floor(result.debug.frontNecklineStartRC - result.debug.armholeStartRow))
+          : 0;
       frontChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.frontNeckShoulderShapingChart,
         "ns-shaping-chart-front",
-        neckShoulderChartHelpRowHtml(result?.frontNeckShoulderShapingChart?.rows?.[0]?.row)
+        neckShoulderChartHelpRowHtml(
+          `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
+          necklineSplitStateFromChart(result?.frontNeckShoulderShapingChart)
+        ),
+        { activeSideOnly: true, activeSideRcStart: frontArmholeLocalChartStartRc }
       );
     }
     const frontDiagramHost = mount.querySelector("#sg-neck-shoulder-diagram-front");
@@ -2516,6 +2628,7 @@ table {
       "front-neckline-shoulder-chart-print-area",
       "Front Neckline / Shoulder Shaping Chart"
     );
+    bindSecondShoulderChecklistToggles(mount);
 
     applyPatternSectionCollapseState(mount);
     bindPatternSectionCollapsePersistence(mount);

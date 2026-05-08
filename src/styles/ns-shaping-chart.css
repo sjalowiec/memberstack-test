@@ -218,6 +218,96 @@
   margin-top: 0;
 }
 
+.ns-notation-overlay {
+  position: relative;
+  width: min(100%, 340px);
+  margin: 0 auto;
+  overflow: visible;
+}
+
+.ns-notation-overlay__image-wrap {
+  position: relative;
+  width: 100%;
+  min-height: 220px;
+}
+
+.ns-notation-overlay__image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ns-notation-overlay__image--mirrored {
+  transform: scaleX(-1);
+  transform-origin: center;
+}
+
+.ns-notation-overlay__stack {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.38rem;
+}
+
+/* Green shoulder notation: above outer shoulder slope, upper area (first row lowest in stack). */
+.ns-notation-overlay__stack--shoulder {
+  top: 18%;
+  left: 6px;
+  right: auto;
+  bottom: auto;
+  max-width: 52%;
+  align-items: flex-start;
+}
+
+/* Terra cotta neckline notation: beside neckline opening, vertically centered. */
+.ns-notation-overlay__stack--neck {
+  top: 50%;
+  right: 6%;
+  left: auto;
+  bottom: auto;
+  transform: translateY(-50%);
+  max-width: 46%;
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* Mirrored / second-shoulder image: flip anchors so labels stay on shoulder vs neckline sides. */
+.ns-notation-overlay--mirrored .ns-notation-overlay__stack--shoulder {
+  left: auto;
+  right: 6px;
+  align-items: flex-end;
+}
+
+.ns-notation-overlay--mirrored .ns-notation-overlay__stack--neck {
+  right: auto;
+  left: 6%;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.ns-notation-overlay__stack--shoulder .ns-notation-overlay__label {
+  color: #52682d;
+}
+
+.ns-notation-overlay__stack--neck .ns-notation-overlay__label {
+  color: #c2614e;
+}
+
+.ns-notation-overlay__label {
+  position: relative;
+  display: inline-block;
+  font-size: 1.08rem;
+  font-weight: 700;
+  line-height: 1.28;
+  letter-spacing: 0.01em;
+  background: rgba(255, 255, 255, 0.86);
+  border-radius: 0.2rem;
+  padding: 0.1rem 0.24rem;
+  white-space: nowrap;
+}
+
 @media print {
   .ns-shaping-chart {
     font-size: 9pt;

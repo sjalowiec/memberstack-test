@@ -179,6 +179,17 @@ export function computeShoulderBindoffSchedule(inputs: ShapingTimelineInputs): S
 export type BuildTimelineOptions = {
   /** When set (typically from {@link computeShoulderBindoffSchedule} on front inputs), outer shoulder amounts match that schedule instead of being recomputed from this piece's row budget. */
   shoulderSchedule?: ShoulderBindoffSchedule | null;
+  /**
+   * Place outer-shoulder shaping from the first post-center row onward (row-by-row cadence still
+   * alternates action/return rows). This is used when armhole depth must end exactly at the first
+   * shoulder shaping row.
+   */
+  shoulderStartsAtFirstPostCenter?: boolean;
+  /**
+   * Preserve this many stitches per side after shoulder scheduling.
+   * Used to keep front/back final shoulder remainder aligned unless intentionally overridden.
+   */
+  minFinalStitchesPerSide?: number;
 };
 
 /**
@@ -192,6 +203,10 @@ export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTime
   const neckDepthRows = Math.floor(inputs.neckDepthRows);
   const B = Math.round(inputs.stitchesAfterArmhole);
   const shoulderBindoffRowsRaw = inputs.shoulderBindoffRows;
+  const minFinalStitchesPerSide = Math.max(
+    0,
+    Math.floor(Number(options?.minFinalStitchesPerSide ?? 0))
+  );
 
   if (
     !Number.isFinite(firstRow) ||
@@ -238,6 +253,7 @@ export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTime
   const leftShoulderTotal = Math.floor(shoulderBandTotal / 2);
   const rightShoulderTotal = Math.ceil(shoulderBandTotal / 2);
   const schedule = options?.shoulderSchedule ?? undefined;
+  const shoulderStartsAtFirstPostCenter = options?.shoulderStartsAtFirstPostCenter === true;
 
   const shoulderLeftPerRow = Array(workRows).fill(0);
   const shoulderRightPerRow = Array(workRows).fill(0);
@@ -268,7 +284,7 @@ export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTime
     }
 
     if (placementRowsEff > 0 && leftChunks.length > 0) {
-      const startI = workRows - placementRowsEff;
+      const startI = shoulderStartsAtFirstPostCenter ? 0 : workRows - placementRowsEff;
       for (let k = 0; k < leftChunks.length; k++) {
         const rowIdx = startI + 2 * k;
         if (rowIdx >= workRows || rowIdx < 0) break;
@@ -292,6 +308,23 @@ export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTime
   let rightCount = rightStart;
 
   const rows: RowEntry[] = [];
+  const plannedInnerLPerRow: number[] = [];
+  const plannedInnerRPerRow: number[] = [];
+  for (let i = 0; i < workRows; i++) {
+    const planned = backInnerNeckRow(i, neckPlan, stairRowCount, neckInnerRowSpan);
+    plannedInnerLPerRow.push(Math.max(0, planned.innerNetL));
+    plannedInnerRPerRow.push(Math.max(0, planned.innerNetR));
+  }
+  const futureInnerLAfterRow = Array(workRows).fill(0);
+  const futureInnerRAfterRow = Array(workRows).fill(0);
+  let suffixL = 0;
+  let suffixR = 0;
+  for (let i = workRows - 1; i >= 0; i--) {
+    futureInnerLAfterRow[i] = suffixL;
+    futureInnerRAfterRow[i] = suffixR;
+    suffixL += plannedInnerLPerRow[i] ?? 0;
+    suffixR += plannedInnerRPerRow[i] ?? 0;
+  }
 
   const centerRow: RowEntry = {
     row: firstRow,
@@ -356,8 +389,12 @@ export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTime
     const wantShoulderR = (shoulderRightPerRow[i] ?? 0) + carryShoulderR;
     const capShoulderL = Math.min(wantShoulderL, shoulderRemL);
     const capShoulderR = Math.min(wantShoulderR, shoulderRemR);
-    shoulderBoL = Math.min(capShoulderL, leftCount);
-    shoulderBoR = Math.min(capShoulderR, rightCount);
+    const protectedLeftStitches = minFinalStitchesPerSide + (futureInnerLAfterRow[i] ?? 0);
+    const protectedRightStitches = minFinalStitchesPerSide + (futureInnerRAfterRow[i] ?? 0);
+    const maxShoulderBoL = Math.max(0, leftCount - protectedLeftStitches);
+    const maxShoulderBoR = Math.max(0, rightCount - protectedRightStitches);
+    shoulderBoL = Math.min(capShoulderL, maxShoulderBoL);
+    shoulderBoR = Math.min(capShoulderR, maxShoulderBoR);
     shoulderRemL -= shoulderBoL;
     shoulderRemR -= shoulderBoR;
     carryShoulderL =
