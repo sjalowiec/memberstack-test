@@ -23,6 +23,10 @@ import {
   loadSleevelessFrontDiagramSvgMarkup,
 } from "../lib/patterns/sleevelessPrintDiagramSvg.ts";
 import {
+  SLEEVELESS_BETA_GENERATOR_INPUT,
+  SLEEVELESS_BETA_PATTERN_MERGED,
+} from "../lib/patterns/sleevelessBetaPatternFixture.ts";
+import {
   renderSleevelessPrintPieceHtml,
   splitRowsBeforeNeckShoulderChartMount,
 } from "../lib/patterns/sleevelessPatternPrintRender.ts";
@@ -477,23 +481,38 @@ function ensureSleevelessPrintStorageListener(): void {
   });
 }
 
+function isBetaFixedPrintRoute(): boolean {
+  return Boolean(document.querySelector('[data-sleeveless-print-fixed="beta"]'));
+}
+
 async function initSleevelessPrintPage(): Promise<void> {
   bindPrintButton();
-  ensureSleevelessPrintStorageListener();
+  const betaFixed = isBetaFixedPrintRoute();
+  if (!betaFixed) {
+    ensureSleevelessPrintStorageListener();
+  }
 
   const root = document.querySelector("[data-sleeveless-print-root]");
   if (!(root instanceof HTMLElement)) return;
 
-  const patternMerged = mergedPatternForDisplay(getCurrentPattern() as unknown as Record<string, unknown>);
-  const patternData = getPatternData();
-  const validation = validatePatternBuilderRequired(patternData);
+  const patternMerged = betaFixed
+    ? (SLEEVELESS_BETA_PATTERN_MERGED as Record<string, unknown>)
+    : mergedPatternForDisplay(getCurrentPattern() as unknown as Record<string, unknown>);
+  const patternData = betaFixed
+    ? (SLEEVELESS_BETA_GENERATOR_INPUT as Record<string, unknown>)
+    : getPatternData();
+  const validation = betaFixed
+    ? { ok: true as const, missingItems: [] as { label: string; href?: string }[] }
+    : validatePatternBuilderRequired(patternData);
 
   if (!validation.ok) {
     root.innerHTML = renderNotReady(validation.missingItems);
     return;
   }
 
-  const genInput = buildGeneratorPatternData(patternMerged);
+  const genInput = betaFixed
+    ? (SLEEVELESS_BETA_GENERATOR_INPUT as Record<string, unknown>)
+    : buildGeneratorPatternData(patternMerged);
   const result = generateSleevelessBackPattern(genInput);
   const intro = buildPatternIntroSentence(patternMerged, patternData);
 
