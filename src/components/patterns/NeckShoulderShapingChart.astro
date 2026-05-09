@@ -79,7 +79,16 @@ const displayRows = collapsePlainChartRows(chart.rows);
                   </label>
                 </td>
                 <td class="ns-shaping-chart__td-num">{displayRow.rowLabel}</td>
-                <td>{displayRow.actionLabel}</td>
+                <td>
+                  {displayRow.actionLabel}
+                  {displayRow.plainKnitCarriageLabel && displayRow.plainKnitEdgeLabel && (
+                    <div class="ns-shaping-chart__plain-knit-meta">
+                      <span class="ns-shaping-chart__plain-knit-side">{displayRow.plainKnitCarriageLabel}</span>
+                      <span class="ns-shaping-chart__plain-knit-meta-sep"> · </span>
+                      <span class="ns-shaping-chart__plain-knit-section">{displayRow.plainKnitEdgeLabel}</span>
+                    </div>
+                  )}
+                </td>
                 <td class="ns-shaping-chart__td-center">{r.leftSide}</td>
                 <td class="ns-shaping-chart__td-center">{r.leftNeck}</td>
                 <td class="ns-shaping-chart__td-center">{r.centerNeck}</td>

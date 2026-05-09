@@ -5,6 +5,47 @@
     margin-right: auto;
   }
 
+  /*
+   * Paged-media @page rules belong at stylesheet top level (not inside @media print).
+   * Nesting inside @media print breaks margin-box `content` in Chromium and can show
+   * only fragments (for example counter(pages)) while hiding the attribution line.
+   */
+  @page {
+    size: letter;
+    margin: 0.65in 0.7in 0.85in 0.7in;
+
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 9pt;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: #6b7280;
+      white-space: nowrap;
+    }
+  }
+
+  /* Beta print route only: footer + numbering in margin boxes on a dedicated page selector. */
+  @page sleeveless_beta {
+    size: letter;
+    margin: 0.65in 0.7in 0.92in 0.7in;
+
+    /*
+     * One horizontal margin box avoids bottom-left/bottom-right competition and keeps
+     * `Page X of Y` from rendering as an isolated digit in some Chromium builds.
+     */
+    @bottom-center {
+      content: "Created at app.knititnow.com/pattern/sleeveless/beta-pattern   •   Page " counter(page)
+        " of " counter(pages);
+      font-size: 8.5pt;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: #6b7280;
+      text-align: center;
+    }
+  }
+
+  body.sleeveless-beta-print {
+    page: sleeveless_beta;
+  }
+
   .sleeveless-print-shell {
     padding: 0 1rem 2.5rem;
   }
@@ -50,10 +91,6 @@
     margin: 0;
     font-size: 1rem;
     color: #4b5563;
-  }
-
-  .sleeveless-print-footer-beta {
-    display: none;
   }
 
   /* Typography inside injected print document */
@@ -586,16 +623,37 @@
 
   .sleeveless-print-root .ns-shaping-mini__svg-wrap .ns-notation-overlay {
     width: 100%;
+    position: relative;
+    overflow: visible;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .sleeveless-print-root .ns-shaping-mini__svg-wrap .ns-notation-overlay__image-wrap {
     min-height: 170px;
   }
 
+  .sleeveless-print-root .ns-shaping-mini__svg-wrap .ns-notation-overlay__stack {
+    display: flex !important;
+    visibility: visible !important;
+    z-index: 2;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .sleeveless-print-root .ns-shaping-mini__svg-wrap .ns-notation-overlay__stack--shoulder .ns-notation-overlay__label {
+    color: #52682d !important;
+  }
+
+  .sleeveless-print-root .ns-shaping-mini__svg-wrap .ns-notation-overlay__stack--neck .ns-notation-overlay__label {
+    color: #c2614e !important;
+  }
+
   .sleeveless-print-root .ns-shaping-mini__svg-wrap .ns-notation-overlay__label {
     font-size: 10pt;
     padding: 0.03rem 0.12rem;
     background: rgba(255, 255, 255, 0.92);
+    white-space: nowrap;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -648,49 +706,6 @@
   }
 
   @media print {
-    .sleeveless-print-shell[data-sleeveless-print-fixed="beta"] .sleeveless-print-footer-beta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      position: fixed;
-      left: 0.7in;
-      right: 0.7in;
-      bottom: 0.25in;
-      font-size: 8.5pt;
-      line-height: 1.2;
-      color: #6b7280;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      letter-spacing: 0.01em;
-      z-index: 5;
-      pointer-events: none;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-
-    .sleeveless-print-shell[data-sleeveless-print-fixed="beta"] .sleeveless-print-footer-beta__attribution {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      min-width: 0;
-      flex: 1 1 auto;
-    }
-
-    /*
-      Page numbers in margin boxes: supported by some print engines; Chromium â€œSave as PDFâ€ often ignores @page margin boxes.
-    */
-    @page {
-      size: letter;
-      margin: 0.65in 0.7in 0.85in 0.7in;
-
-      @bottom-right {
-        content: "Page " counter(page) " of " counter(pages);
-        font-size: 9pt;
-        font-family: system-ui, sans-serif;
-        color: #6b7280;
-      }
-    }
-
     body.sleeveless-print-route .kbm-header-wrap,
     body.sleeveless-print-route footer,
     body.sleeveless-print-route .no-print {
@@ -793,5 +808,7 @@
     .sleeveless-print-root .ns-shaping-mini__diagram-block {
       border-color: #d1d5db;
       padding: 0.25rem;
+      break-inside: auto;
+      page-break-inside: auto;
     }
   }

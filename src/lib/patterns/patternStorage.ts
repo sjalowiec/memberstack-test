@@ -225,7 +225,7 @@ export function getSleevelessChartAudience(pattern: SleevelessPatternRecord): st
  * Coerce a partially-valid or legacy-shaped stored object into a full record without dropping sections.
  * Prevents "invalid shape" from triggering a full legacy re-migration that would wipe `kbm_current_pattern`.
  */
-function coerceSleevelessPatternRecord(parsed: Record<string, unknown>): SleevelessPatternRecord | null {
+export function coerceSleevelessPatternRecord(parsed: Record<string, unknown>): SleevelessPatternRecord | null {
   const pt = parsed.patternType;
   if (pt !== undefined && pt !== null && pt !== "sleeveless") return null;
 
@@ -596,6 +596,44 @@ export function clearSleevelessPatternBuilderData(): void {
 export function exportCurrentPatternJson(): string {
   const p = getCurrentPattern();
   return JSON.stringify(p, null, 2);
+}
+
+/**
+ * Bundle `kbm_current_pattern` + `patternBuilderData` for committing as `sleevelessGoldenBeta.json`.
+ * Intended for dev workflow: build in the UI, run from console, replace repo JSON.
+ */
+export function exportSleevelessGoldenBetaSnapshotJson(): string {
+  const exportedAt = new Date().toISOString();
+  if (typeof localStorage === "undefined") {
+    return JSON.stringify(
+      {
+        exportedAt,
+        canonicalPattern: null,
+        patternBuilderData: null,
+        error: "localStorage_unavailable",
+      },
+      null,
+      2,
+    );
+  }
+
+  let canonicalPattern: unknown = null;
+  let patternBuilderData: unknown = null;
+
+  try {
+    const raw = localStorage.getItem(PATTERN_STORAGE_KEY);
+    canonicalPattern = raw ? (JSON.parse(raw) as unknown) : null;
+  } catch {
+    canonicalPattern = null;
+  }
+  try {
+    const raw = localStorage.getItem(PATTERN_BUILDER_DATA_KEY);
+    patternBuilderData = raw ? (JSON.parse(raw) as unknown) : null;
+  } catch {
+    patternBuilderData = null;
+  }
+
+  return JSON.stringify({ exportedAt, canonicalPattern, patternBuilderData }, null, 2);
 }
 
 export type SaveStatusCallback = (message: string) => void;

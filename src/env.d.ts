@@ -48,6 +48,8 @@ declare global {
       ensureGlobalListeners?: () => void;
     };
     __kbmGlossaryGlobalsBound?: boolean;
+    /** DEV: sleeveless builder — logs JSON for `sleevelessGoldenBeta.json`; see `pattern.astro`. */
+    kbmExportSleevelessGoldenBetaSnapshot?: () => string;
   }
 }
 

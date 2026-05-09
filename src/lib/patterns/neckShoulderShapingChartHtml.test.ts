@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  collapsePlainKnitChartRowsForDisplay,
   collapsePlainKnitChartRowsForPrint,
   neckShoulderShapingChartFromRows,
   NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
@@ -187,6 +188,40 @@ describe("renderNeckShoulderShapingChartTableOnlyHtml active-side mode", () => {
     expect(html).toContain("data-second-shoulder-toggle");
     expect(html).toContain("data-second-shoulder-default-instruction");
     expect(html).toContain("data-second-shoulder-checked-instruction");
+  });
+
+  /**
+   * Visible sleeveless pattern table (`pattern.astro` / beta-pattern): RC + Carriage Position + Action + Edge + Sts.
+   * Must run the same plain-knit compaction as print (not gated on `compactPlainKnitSpansForPrint`).
+   */
+  it("compacts consecutive plain Knit in pattern rows in the active-side table (pattern tab path)", () => {
+    const chartRows: NeckShoulderShapingChartRow[] = [
+      {
+        row: 100,
+        action: "",
+        leftSide: "-",
+        leftNeck: "-",
+        centerNeck: "-12",
+        rightNeck: "-",
+        rightSide: "-",
+        leftStitchCount: 55,
+        rightStitchCount: 55,
+      },
+    ];
+    for (let r = 101; r <= 119; r++) {
+      chartRows.push(plainRow(r, { left: 55, right: 55 }));
+    }
+    const html = renderNeckShoulderShapingChartTableOnlyHtml(
+      neckShoulderShapingChartFromRows(chartRows),
+      "ns-active-plain-compact",
+      undefined,
+      { activeSideOnly: true, activeSideRcStart: 0 },
+    );
+    const firstTbody = html.split("</tbody>")[0] ?? html;
+    expect(firstTbody).toMatch(/000[\u2013-]018/);
+    expect(firstTbody).toContain("Alternating Left/Right");
+    expect(firstTbody).toContain("Alternating Neck/Armhole");
+    expect((firstTbody.match(/Knit in pattern/g) ?? []).length).toBe(1);
   });
 });
 
@@ -673,6 +708,8 @@ describe("print-only plain knit span compaction", () => {
     expect(compacted[0].rc).toBe(56);
     expect(compacted[0].rcEnd).toBe(76);
     expect(compacted[0].action).toBe(NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL);
+    expect(compacted[0].carriagePosition).toBe("Alternating Left/Right");
+    expect(compacted[0].edge).toBe("Alternating Neck/Armhole");
   });
 
   it("does not merge across a shaping row", () => {
@@ -744,6 +781,73 @@ describe("print-only plain knit span compaction", () => {
     expect(rows.map((r) => r.row)).toEqual(before);
     expect(collapsed).toHaveLength(1);
     expect(collapsed[0].rowLabel).toBe("RC:056\u2013076");
+  });
+});
+
+describe("collapsePlainKnitChartRowsForDisplay (shared online + print)", () => {
+  it("collapses consecutive plain knit rows into one range with alternating meta", () => {
+    const rows: NeckShoulderShapingChartRow[] = [];
+    for (let r = 25; r <= 43; r++) {
+      rows.push(plainRow(r, { left: 22, right: 22 }));
+    }
+    const online = collapsePlainKnitChartRowsForDisplay(rows, { rowLabelStyle: "online" });
+    const print = collapsePlainKnitChartRowsForDisplay(rows, { rowLabelStyle: "print" });
+    expect(online).toHaveLength(1);
+    expect(print).toHaveLength(1);
+    expect(online[0].rowLabel).toBe("025\u2013043");
+    expect(print[0].rowLabel).toBe("RC:025\u2013043");
+    expect(online[0].plainKnitCarriageLabel).toBe("Alternating Left/Right");
+    expect(online[0].plainKnitEdgeLabel).toBe("Alternating Neck/Armhole");
+  });
+
+  it("does not collapse when stitch counts change between plain rows", () => {
+    const rows = [plainRow(10, { left: 22, right: 22 }), plainRow(11, { left: 21, right: 21 })];
+    const out = collapsePlainKnitChartRowsForDisplay(rows, { rowLabelStyle: "online" });
+    expect(out).toHaveLength(2);
+  });
+
+  it("does not collapse across bind-off / decrease shaping rows", () => {
+    const rows = [
+      plainRow(10, { left: 22, right: 22 }),
+      {
+        ...plainRow(11, { left: 20, right: 20 }),
+        action: "Shoulder",
+        leftSide: "-1",
+        rightSide: "-1",
+      },
+      plainRow(12, { left: 20, right: 20 }),
+    ];
+    const out = collapsePlainKnitChartRowsForDisplay(rows, { rowLabelStyle: "online" });
+    expect(out).toHaveLength(3);
+  });
+
+  it("produces the same number of display rows for online and print label styles", () => {
+    const rows: NeckShoulderShapingChartRow[] = [];
+    for (let r = 1; r <= 50; r++) {
+      rows.push(plainRow(r, { left: 40, right: 40 }));
+    }
+    rows.push({
+      ...plainRow(51, { left: 38, right: 38 }),
+      action: "Neck",
+      leftNeck: "-1",
+      rightNeck: "-1",
+    });
+    const a = collapsePlainKnitChartRowsForDisplay(rows, { rowLabelStyle: "online" });
+    const b = collapsePlainKnitChartRowsForDisplay(rows, { rowLabelStyle: "print" });
+    expect(a.length).toBe(b.length);
+    expect(a.length).toBe(2);
+  });
+
+  it("embeds plain-knit carriage/edge meta in generated chart table HTML", () => {
+    const rows: NeckShoulderShapingChartRow[] = [];
+    for (let r = 25; r <= 43; r++) {
+      rows.push(plainRow(r, { left: 22, right: 22 }));
+    }
+    const chart = neckShoulderShapingChartFromRows(rows);
+    const html = renderNeckShoulderShapingChartTableOnlyHtml(chart, "ns-online-plain-meta");
+    expect(html).toContain("ns-shaping-chart__plain-knit-meta");
+    expect(html).toContain("Alternating Left/Right");
+    expect(html).toContain("Alternating Neck/Armhole");
   });
 });
 

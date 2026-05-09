@@ -46,106 +46,56 @@ export type NeckShoulderShapingChartDisplayRow = {
   rowLabel: string;
   actionLabel: string;
   sourceRow: NeckShoulderShapingChartRow;
+  /**
+   * Plain “Knit in pattern” rows only: carriage side(s) and working edge(s), matching active-shoulder parity
+   * (even RC → Right / Armhole, odd RC → Left / Neck).
+   */
+  plainKnitCarriageLabel?: string;
+  plainKnitEdgeLabel?: string;
 };
-
-const COLLAPSED_PLAIN_ACTION_TEXT = "Knit plain, no neckline or shoulder shaping";
 
 /** Print/PDF compact rows — matches active-shoulder checklist plain-span wording. */
 export const NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL = "Knit in pattern";
 
-function parseCellNumber(value: unknown): number {
-  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
-  const text = String(value ?? "").trim();
-  if (!text || text === "-") return 0;
-  const normalized = text.replace(/[^\d.-]/g, "");
-  const n = Number(normalized);
-  return Number.isFinite(n) ? n : 0;
-}
+export type NeckShoulderRowLabelStyle = "online" | "print";
 
-function hasMeaningfulActionValue(value: unknown): boolean {
-  const text = String(value ?? "").trim();
-  if (!text) return false;
-  if (text === "-" || text === "0") return false;
-  const numeric = parseCellNumber(text);
-  if (numeric === 0) return false;
-  return true;
-}
-
-function hasMeaningfulActionLabel(action: string): boolean {
-  const text = String(action ?? "").trim();
-  if (!text) return false;
-  if (text === "-" || text === "0") return false;
-  const normalized = text.toLowerCase();
-  if (normalized === "none" || normalized === "no action") return false;
-  return true;
-}
-
-function isNoActionChartRow(row: NeckShoulderShapingChartRow): boolean {
-  if (hasMeaningfulActionLabel(row.action)) return false;
-  return ![
-    row.leftSide,
-    row.leftNeck,
-    row.centerNeck,
-    row.rightNeck,
-    row.rightSide,
-  ].some((cell) => hasMeaningfulActionValue(cell));
-}
-
-/**
- * Display-only compaction for table rendering.
- * Keeps every shaping row, while collapsing consecutive no-action rows into a range.
- */
-export function collapsePlainChartRows(
-  rows: readonly NeckShoulderShapingChartRow[]
-): NeckShoulderShapingChartDisplayRow[] {
-  const out: NeckShoulderShapingChartDisplayRow[] = [];
-  let i = 0;
-  while (i < rows.length) {
-    const row = rows[i];
-    if (!isNoActionChartRow(row)) {
-      out.push({
-        rowLabel: String(row.row),
-        actionLabel: String(row.action ?? ""),
-        sourceRow: row,
-      });
-      i += 1;
-      continue;
-    }
-
-    let j = i + 1;
-    while (j < rows.length) {
-      const next = rows[j];
-      if (!isNoActionChartRow(next)) break;
-      if (
-        next.leftStitchCount !== row.leftStitchCount ||
-        next.rightStitchCount !== row.rightStitchCount
-      ) {
-        break;
-      }
-      if (next.row !== rows[j - 1].row + 1) break;
-      j += 1;
-    }
-
-    if (j === i + 1) {
-      out.push({
-        rowLabel: String(row.row),
-        actionLabel: COLLAPSED_PLAIN_ACTION_TEXT,
-        sourceRow: row,
-      });
-      i += 1;
-      continue;
-    }
-
-    const first = row.row;
-    const last = rows[j - 1].row;
-    out.push({
-      rowLabel: `${first}\u2013${last}`,
-      actionLabel: COLLAPSED_PLAIN_ACTION_TEXT,
-      sourceRow: row,
-    });
-    i = j;
+/** Carriage position and edge labels for one or more consecutive plain RCs (parity matches the active-shoulder checklist). */
+export function plainKnitSpanCarriageEdgeDisplay(firstRc: number, lastRc: number): {
+  carriage: string;
+  edge: string;
+} {
+  const a = Math.max(0, Math.floor(Math.min(firstRc, lastRc)));
+  const b = Math.max(0, Math.floor(Math.max(firstRc, lastRc)));
+  const carriages: string[] = [];
+  const edges: string[] = [];
+  for (let rc = a; rc <= b; rc++) {
+    carriages.push(rc % 2 === 0 ? "Right" : "Left");
+    edges.push(rc % 2 === 0 ? "Armhole" : "Neck");
   }
-  return out;
+  const uniqCar = new Set(carriages);
+  const uniqEdge = new Set(edges);
+  return {
+    carriage:
+      uniqCar.size === 1 ? [...uniqCar][0]! : "Alternating Left/Right",
+    edge:
+      uniqEdge.size === 1 ? [...uniqEdge][0]! : "Alternating Neck/Armhole",
+  };
+}
+
+function isPlainKnitInstructionOnly(action: string): boolean {
+  const t = String(action ?? "").trim();
+  return t === "" || t === NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL;
+}
+
+/** Narrative-only or shaping-related action text that must not merge with plain knit spans. */
+function actionBlocksPlainKnitMerge(action: string): boolean {
+  const t = String(action ?? "").trim();
+  if (!t) return false;
+  if (/\b(divide|hold|setup|checkpoint)\b/i.test(t)) return true;
+  if (/\b(increase|bind\s*off|decrease)\b/i.test(t)) return true;
+  if (/neck/i.test(t)) return true;
+  if (/shoulder/i.test(t)) return true;
+  return false;
 }
 
 function parseDecreaseCellChart(text: unknown): number {
@@ -167,52 +117,49 @@ function hasAnyShapingCell(row: NeckShoulderShapingChartRow): boolean {
   );
 }
 
-/** Narrative-only rows that must stay visible (divide/hold notes). */
-function actionBlocksPlainKnitMerge(action: string): boolean {
-  const t = String(action ?? "").trim();
-  if (!t) return false;
-  if (/\b(divide|hold)\b/i.test(t)) return true;
-  if (/neck/i.test(t)) return true;
-  if (/shoulder/i.test(t)) return true;
-  return false;
-}
-
 function rcFloorChart(row: NeckShoulderShapingChartRow): number {
   return Math.max(0, Math.floor(row.row));
 }
 
-function formatPrintRcLabelSingle(rc: number): string {
-  const n = Math.max(0, Math.floor(rc));
-  return `RC:${String(n).padStart(3, "0")}`;
+function isEligiblePlainKnitMergeRow(row: NeckShoulderShapingChartRow): boolean {
+  const action = String(row.action ?? "");
+  if (!isPlainKnitInstructionOnly(action)) return false;
+  if (actionBlocksPlainKnitMerge(action)) return false;
+  return !hasAnyShapingCell(row);
 }
 
-function formatPrintRcLabelRange(start: number, end: number): string {
+function rowLabelSingle(rc: number, style: NeckShoulderRowLabelStyle): string {
+  const n = Math.max(0, Math.floor(rc));
+  const padded = String(n).padStart(3, "0");
+  return style === "print" ? `RC:${padded}` : padded;
+}
+
+function rowLabelRange(start: number, end: number, style: NeckShoulderRowLabelStyle): string {
   const a = Math.max(0, Math.floor(start));
   const b = Math.max(0, Math.floor(end));
   const left = String(a).padStart(3, "0");
   const right = String(b).padStart(3, "0");
-  if (left === right) return `RC:${left}`;
-  return `RC:${left}\u2013${right}`;
+  if (left === right) return rowLabelSingle(a, style);
+  if (style === "print") return `RC:${left}\u2013${right}`;
+  return `${left}\u2013${right}`;
 }
 
 /**
- * Print-only display compaction for the full neckline/shoulder grid chart.
- * Collapses consecutive rows with no bind-off/decrease/neck/shoulder shaping into one RC range row.
- * Source chart rows are not modified.
+ * Shared display compaction for neckline/shoulder grid charts (online + print).
+ * Collapses consecutive plain “Knit in pattern” rows when stitch counts stay constant and RCs are consecutive.
  */
-export function collapsePlainKnitChartRowsForPrint(
+export function collapsePlainKnitChartRowsForDisplay(
   rows: readonly NeckShoulderShapingChartRow[],
+  options: { rowLabelStyle: NeckShoulderRowLabelStyle },
 ): NeckShoulderShapingChartDisplayRow[] {
+  const style = options.rowLabelStyle;
   const out: NeckShoulderShapingChartDisplayRow[] = [];
   let i = 0;
   while (i < rows.length) {
     const row = rows[i]!;
-    const eligible =
-      !hasAnyShapingCell(row) && !actionBlocksPlainKnitMerge(String(row.action ?? ""));
-
-    if (!eligible) {
+    if (!isEligiblePlainKnitMergeRow(row)) {
       out.push({
-        rowLabel: formatPrintRcLabelSingle(rcFloorChart(row)),
+        rowLabel: rowLabelSingle(rcFloorChart(row), style),
         actionLabel: String(row.action ?? ""),
         sourceRow: row,
       });
@@ -223,9 +170,7 @@ export function collapsePlainKnitChartRowsForPrint(
     let j = i + 1;
     while (j < rows.length) {
       const next = rows[j]!;
-      const nextEligible =
-        !hasAnyShapingCell(next) && !actionBlocksPlainKnitMerge(String(next.action ?? ""));
-      if (!nextEligible) break;
+      if (!isEligiblePlainKnitMergeRow(next)) break;
       if (
         next.leftStitchCount !== row.leftStitchCount ||
         next.rightStitchCount !== row.rightStitchCount
@@ -236,26 +181,46 @@ export function collapsePlainKnitChartRowsForPrint(
       j += 1;
     }
 
+    const firstRc = rcFloorChart(row);
+    const lastRc = rcFloorChart(rows[j - 1]!);
+    const meta = plainKnitSpanCarriageEdgeDisplay(firstRc, lastRc);
+
     if (j === i + 1) {
       out.push({
-        rowLabel: formatPrintRcLabelSingle(rcFloorChart(row)),
+        rowLabel: rowLabelSingle(firstRc, style),
         actionLabel: NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
         sourceRow: row,
+        plainKnitCarriageLabel: meta.carriage,
+        plainKnitEdgeLabel: meta.edge,
       });
       i += 1;
       continue;
     }
 
-    const firstRc = rcFloorChart(row);
-    const lastRc = rcFloorChart(rows[j - 1]!);
     out.push({
-      rowLabel: formatPrintRcLabelRange(firstRc, lastRc),
+      rowLabel: rowLabelRange(firstRc, lastRc, style),
       actionLabel: NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
       sourceRow: row,
+      plainKnitCarriageLabel: meta.carriage,
+      plainKnitEdgeLabel: meta.edge,
     });
     i = j;
   }
   return out;
+}
+
+/** @deprecated Prefer {@link collapsePlainKnitChartRowsForDisplay} with `rowLabelStyle: "online"`. */
+export function collapsePlainChartRows(
+  rows: readonly NeckShoulderShapingChartRow[],
+): NeckShoulderShapingChartDisplayRow[] {
+  return collapsePlainKnitChartRowsForDisplay(rows, { rowLabelStyle: "online" });
+}
+
+/** @deprecated Prefer {@link collapsePlainKnitChartRowsForDisplay} with `rowLabelStyle: "print"`. */
+export function collapsePlainKnitChartRowsForPrint(
+  rows: readonly NeckShoulderShapingChartRow[],
+): NeckShoulderShapingChartDisplayRow[] {
+  return collapsePlainKnitChartRowsForDisplay(rows, { rowLabelStyle: "print" });
 }
 
 /** Why a row is visually emphasized (both sides worked on the same row). */

@@ -3,12 +3,16 @@
  * Class names must stay aligned with NeckShoulderShapingChart.astro.
  */
 
-import type { NeckShoulderShapingChart, NeckShoulderShapingChartRow } from "./neckShoulderShapingChart";
+import type {
+  NeckShoulderShapingChart,
+  NeckShoulderShapingChartDisplayRow,
+  NeckShoulderShapingChartRow,
+} from "./neckShoulderShapingChart";
 import {
-  collapsePlainChartRows,
-  collapsePlainKnitChartRowsForPrint,
+  collapsePlainKnitChartRowsForDisplay,
   getNeckShoulderChartRowHighlightFromRow,
   NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
+  plainKnitSpanCarriageEdgeDisplay,
 } from "./neckShoulderShapingChart";
 import { renderShoulderShapingSvg, type ShoulderShapingSvgPiece } from "./shoulderShapingSvg";
 import { renderNotationOverlayDiagram } from "./notationOverlaySvg";
@@ -376,12 +380,13 @@ function buildOppositeShoulderInstructionTableRows(
 }
 
 /**
- * Print/PDF only: merge consecutive “Knit in pattern” rows when stitch counts stay the same and RCs are consecutive.
+ * Merge consecutive “Knit in pattern” active-shoulder checklist rows when stitch counts stay the same and RCs are consecutive.
+ * Used for both on-screen pattern (`activeSideOnly`) and print mini-table — same rules as full-chart plain-knit compaction.
+ * Uses `plainKnitSpanCarriageEdgeDisplay` for alternating Side / Section labels.
  */
 export function compactActiveSideInstructionRowsForPrint(
   rows: readonly ActiveSideInstructionTableRow[],
 ): ActiveSideInstructionTableRow[] {
-  const dash = "\u2014";
   const out: ActiveSideInstructionTableRow[] = [];
   let i = 0;
   while (i < rows.length) {
@@ -400,20 +405,26 @@ export function compactActiveSideInstructionRowsForPrint(
     ) {
       j += 1;
     }
+    const firstRc = row.rc;
+    const lastRc = rows[j]!.rc;
+    const { carriage, edge } = plainKnitSpanCarriageEdgeDisplay(firstRc, lastRc);
     if (j > i) {
       out.push({
-        rc: row.rc,
-        rcEnd: rows[j]!.rc,
-        carriagePosition: dash,
+        rc: firstRc,
+        rcEnd: lastRc,
+        carriagePosition: carriage,
         action: NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
-        edge: dash,
+        edge,
         stitchesRemaining: row.stitchesRemaining,
       });
-      i = j + 1;
     } else {
-      out.push(row);
-      i += 1;
+      out.push({
+        ...row,
+        carriagePosition: carriage,
+        edge,
+      });
     }
+    i = j + 1;
   }
   return out;
 }
@@ -438,13 +449,32 @@ function renderActiveSideInstructionRowsTrHtml(rows: readonly ActiveSideInstruct
     .join("");
 }
 
+function renderFullChartActionCellHtml(displayRow: NeckShoulderShapingChartDisplayRow): string {
+  const action = escapeHtml(String(displayRow.actionLabel ?? ""));
+  if (!displayRow.plainKnitCarriageLabel || !displayRow.plainKnitEdgeLabel) {
+    return action;
+  }
+  return `${action}<div class="ns-shaping-chart__plain-knit-meta"><span class="ns-shaping-chart__plain-knit-side">${escapeHtml(
+    displayRow.plainKnitCarriageLabel,
+  )}</span><span class="ns-shaping-chart__plain-knit-meta-sep"> · </span><span class="ns-shaping-chart__plain-knit-section">${escapeHtml(
+    displayRow.plainKnitEdgeLabel,
+  )}</span></div>`;
+}
+
 type NeckShoulderChartRenderOptions = {
   includeDoneColumn?: boolean;
   tableClassName?: string;
   activeSideOnly?: boolean;
   activeSideRcStart?: number;
-  /** Collapse long plain-knit spans for print/PDF only (does not alter {@link NeckShoulderShapingChart.rows}). */
+  /**
+   * Full grid chart: plain “Knit in pattern” spans are always condensed when safe (same shared logic as print).
+   * When true, row labels use `RC:` prefixes and merged spans show “stitch count unchanged” in stitch columns.
+   */
   compactPlainKnitSpansForPrint?: boolean;
+  /**
+   * When true (e.g. temporary QA), logs to the browser console if active-side plain-knit compaction merged rows.
+   */
+  debugLogActiveSideCompaction?: boolean;
 };
 
 function chartBodyRowsHtml(chart: NeckShoulderShapingChart, options?: NeckShoulderChartRenderOptions): string {
@@ -454,14 +484,24 @@ function chartBodyRowsHtml(chart: NeckShoulderShapingChart, options?: NeckShould
   const compactPrint = options?.compactPlainKnitSpansForPrint === true;
   if (activeSideOnly) {
     let activeRows = buildActiveSideInstructionTableRows(chart, activeSideRcStart);
-    if (compactPrint) {
-      activeRows = compactActiveSideInstructionRowsForPrint(activeRows);
+    const activeRowsBeforeCompact = activeRows.length;
+    /** Online pattern + print both use the same safe plain-knit merge (not gated on {@link compactPlainKnitSpansForPrint}). */
+    activeRows = compactActiveSideInstructionRowsForPrint(activeRows);
+    if (
+      import.meta.env.DEV &&
+      options?.debugLogActiveSideCompaction === true &&
+      activeRowsBeforeCompact > activeRows.length
+    ) {
+      console.debug("[kbm neck-shoulder] Active-side plain-knit compaction applied", {
+        rowsBefore: activeRowsBeforeCompact,
+        rowsAfter: activeRows.length,
+      });
     }
     return renderActiveSideInstructionRowsTrHtml(activeRows);
   }
-  const displayRows = compactPrint
-    ? collapsePlainKnitChartRowsForPrint(chart.rows)
-    : collapsePlainChartRows(chart.rows);
+  const displayRows = collapsePlainKnitChartRowsForDisplay(chart.rows, {
+    rowLabelStyle: compactPrint ? "print" : "online",
+  });
   return displayRows
     .map((displayRow) => {
       const r = displayRow.sourceRow;
@@ -477,8 +517,8 @@ function chartBodyRowsHtml(chart: NeckShoulderShapingChart, options?: NeckShould
         displayRow.rowLabel.includes("\u2013");
       const stitchLeft = mergedPlainSpan ? "stitch count unchanged" : String(r.leftStitchCount);
       const stitchRight = mergedPlainSpan ? "stitch count unchanged" : String(r.rightStitchCount);
-      return `<tr class="${trClass}">${doneCell}<td class="ns-shaping-chart__td-num">${escapeHtml(displayRow.rowLabel)}</td><td>${escapeHtml(
-        String(displayRow.actionLabel)
+      return `<tr class="${trClass}">${doneCell}<td class="ns-shaping-chart__td-num">${escapeHtml(displayRow.rowLabel)}</td><td>${renderFullChartActionCellHtml(
+        displayRow,
       )}</td><td class="ns-shaping-chart__td-center">${escapeHtml(r.leftSide)}</td><td class="ns-shaping-chart__td-center">${escapeHtml(
         r.leftNeck
       )}</td><td class="ns-shaping-chart__td-center">${escapeHtml(r.centerNeck)}</td><td class="ns-shaping-chart__td-center">${escapeHtml(
@@ -507,9 +547,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
   const activeRowsRaw = activeSideOnly ? buildActiveSideInstructionTableRows(chart, activeSideRcStart) : [];
   const oppositeRowsHtml = activeSideOnly
     ? renderActiveSideInstructionRowsTrHtml(
-        compactPrint
-          ? compactActiveSideInstructionRowsForPrint(buildOppositeShoulderInstructionTableRows(activeRowsRaw))
-          : buildOppositeShoulderInstructionTableRows(activeRowsRaw),
+        compactActiveSideInstructionRowsForPrint(buildOppositeShoulderInstructionTableRows(activeRowsRaw)),
       )
     : "";
   const heldShoulderStitches = Math.max(0, Math.floor(Number(chart.rows[0]?.leftStitchCount ?? 0)));

@@ -103,6 +103,86 @@ const pageUrl = Astro.url.href;
     color: #374151;
   }
 
+  @media print {
+    :global(#pattern-content .pattern-section),
+    :global(#pattern-content .pattern-section--garment-piece),
+    :global(#pattern-content .pattern-layout.pattern-layout--garment-columns),
+    :global(#pattern-content .sleeveless-piece-split) {
+      break-inside: auto !important;
+      page-break-inside: auto !important;
+    }
+
+    :global(#pattern-content .pattern-section) {
+      break-before: auto !important;
+      page-break-before: auto !important;
+    }
+
+    :global(#pattern-content .pattern-section__heading),
+    :global(#pattern-content .pattern-subsection__heading),
+    :global(#pattern-content .sleeveless-piece-split__diagram) {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+
+    :global(#pattern-content .pattern-layout.pattern-layout--garment-columns),
+    :global(#pattern-content .sleeveless-piece-split) {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) minmax(180px, 2.6in) !important;
+      column-gap: 0.35in !important;
+      row-gap: 0 !important;
+      align-items: start !important;
+    }
+
+    :global(#pattern-content .pattern-layout__content),
+    :global(#pattern-content .sleeveless-piece-split__text) {
+      min-width: 0 !important;
+      order: 0 !important;
+    }
+
+    :global(#pattern-content .pattern-layout__sidebar),
+    :global(#pattern-content .sleeveless-piece-split__diagram) {
+      display: block !important;
+      visibility: visible !important;
+      position: static !important;
+      top: auto !important;
+      inset: auto !important;
+      order: 0 !important;
+      align-self: start !important;
+      justify-self: end !important;
+      width: auto !important;
+      max-width: 2.6in !important;
+      overflow: visible !important;
+    }
+
+    :global(#pattern-content .sleeveless-piece-split__diagram-inner),
+    :global(#pattern-content .sleeveless-piece-split__diagram-trigger) {
+      display: block !important;
+      visibility: visible !important;
+      position: static !important;
+      cursor: default !important;
+      width: 100% !important;
+      max-width: 2.6in !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+
+    :global(#pattern-content .sleeveless-piece-split__diagram-svg),
+    :global(#pattern-content .sleeveless-piece-split__diagram-inline),
+    :global(#pattern-content .sleeveless-piece-split__diagram-svg > svg),
+    :global(#pattern-content .sleeveless-piece-split__diagram img),
+    :global(#pattern-content .sleeveless-piece-split__diagram svg) {
+      display: block !important;
+      visibility: visible !important;
+      width: 100% !important;
+      max-width: 2.6in !important;
+      height: auto !important;
+      opacity: 1 !important;
+      overflow: visible !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  }
+
 </style>
 
 <script>

@@ -6,6 +6,14 @@
     getPatternStorageKey,
     SLEEVELESS_CHART_AUDIENCE_LABELS,
   } from "../lib/patterns/patternStorage.ts";
+  import {
+    buildGeneratorPatternDataFromSources,
+    mergedPatternForDisplayFromSources,
+  } from "../lib/patterns/sleevelessPatternBuilderMerge.ts";
+  import {
+    getSleevelessGoldenBetaCanonicalPattern,
+    getSleevelessGoldenBetaPatternBuilderData,
+  } from "../lib/patterns/sleevelessGoldenBeta.ts";
   import { validatePatternBuilderRequired } from "../lib/patterns/patternBuilderValidation";
   import { setPatternTabsReadiness } from "../lib/patterns/patternTabsClient.ts";
   import {
@@ -19,11 +27,6 @@
   } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
   import { showResults, initializeActionBar } from "../components/wizards/utils/wizardBehavior.ts";
   import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
-  import {
-    SLEEVELESS_BETA_GENERATOR_INPUT,
-    SLEEVELESS_BETA_PATTERN_MERGED,
-  } from "../lib/patterns/sleevelessBetaPatternFixture.ts";
-
   const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
 
   const resultsVisibilityConfig = {
@@ -41,78 +44,12 @@
   }
 
   function mergedPatternForDisplay(base) {
-    const patternData = getPatternData();
-    const st = { ...(base.style || {}), ...(patternData.style || {}) };
-    const ft = { ...(base.fit || {}), ...(patternData.fit || {}) };
-    let yarnGauge = { ...(base.yarnGauge || {}) };
-    let machine = { ...(base.machine || {}) };
-    const ygm = patternData.yarnGaugeMachine;
-    if (ygm && typeof ygm === "object" && !Array.isArray(ygm)) {
-      if ("yarnNotes" in ygm) {
-        yarnGauge = {
-          ...yarnGauge,
-          yarnName: typeof ygm.yarnNotes === "string" ? ygm.yarnNotes : String(ygm.yarnNotes ?? ""),
-        };
-      }
-      if ("yarnWeight" in ygm) {
-        yarnGauge = {
-          ...yarnGauge,
-          yarnWeight: typeof ygm.yarnWeight === "string" ? ygm.yarnWeight : String(ygm.yarnWeight ?? ""),
-        };
-      }
-      if ("gaugeStitchesPerInch" in ygm) {
-        const v = ygm.gaugeStitchesPerInch;
-        yarnGauge = { ...yarnGauge, stitchGauge: v !== undefined && v !== null ? String(v) : "" };
-      }
-      if ("gaugeRowsPerInch" in ygm) {
-        const v = ygm.gaugeRowsPerInch;
-        yarnGauge = { ...yarnGauge, rowGauge: v !== undefined && v !== null ? String(v) : "" };
-      }
-      if ("gaugeStitchRaw" in ygm) {
-        const v = ygm.gaugeStitchRaw;
-        yarnGauge = { ...yarnGauge, gaugeStitchRaw: v !== undefined && v !== null ? String(v) : "" };
-      }
-      if ("gaugeRowRaw" in ygm) {
-        const v = ygm.gaugeRowRaw;
-        yarnGauge = { ...yarnGauge, gaugeRowRaw: v !== undefined && v !== null ? String(v) : "" };
-      }
-      if ("gaugeRawUnit" in ygm) {
-        const u = ygm.gaugeRawUnit;
-        yarnGauge = {
-          ...yarnGauge,
-          gaugeRawUnit: u === "cm" || u === "in" ? u : "",
-        };
-      }
-      yarnGauge.gaugeUnits = "per_inch";
-      if ("availableNeedles" in ygm) {
-        const v = ygm.availableNeedles;
-        machine = { ...machine, availableNeedles: v !== undefined && v !== null ? String(v) : "" };
-      }
-    }
-    return { ...base, style: st, fit: ft, yarnGauge, machine };
+    return mergedPatternForDisplayFromSources(base, getPatternData());
   }
 
   /** Shape expected by {@link generateSleevelessBackPattern}. */
   function buildGeneratorPatternData(merged) {
-    const pb = getPatternData();
-    const fitMerged = { ...section(merged.fit), ...section(pb.fit) };
-    const smA = section(fitMerged.selectedMeasurements);
-    const smB = section(section(pb.fit).selectedMeasurements);
-    const fit = {
-      ...fitMerged,
-      selectedMeasurements: { ...smB, ...smA },
-    };
-    const style = { ...section(merged.style), ...section(pb.style) };
-    const ygm = pb.yarnGaugeMachine && typeof pb.yarnGaugeMachine === "object" ? pb.yarnGaugeMachine : {};
-    return {
-      fit,
-      style,
-      yarnGaugeMachine: {
-        gaugeStitchesPerInch: ygm.gaugeStitchesPerInch ?? merged.yarnGauge?.stitchGauge,
-        gaugeRowsPerInch: ygm.gaugeRowsPerInch ?? merged.yarnGauge?.rowGauge,
-        availableNeedles: ygm.availableNeedles ?? merged.machine?.availableNeedles,
-      },
-    };
+    return buildGeneratorPatternDataFromSources(merged, getPatternData());
   }
 
   /**
@@ -1565,6 +1502,7 @@ table {
       ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC))
       : 0;
 
+    // Active-shoulder checklist (RC / Side / Instruction / Section / Stitches). Plain-knit compaction: neckShoulderShapingChartHtml `chartBodyRowsHtml`.
     const backChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-back");
     if (backChartTableHost) {
       backChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
@@ -1711,15 +1649,21 @@ table {
   }
 
   function refreshBetaPatternContent() {
-    const patternMerged = SLEEVELESS_BETA_PATTERN_MERGED;
-    const patternData = SLEEVELESS_BETA_GENERATOR_INPUT;
+    const canon = getSleevelessGoldenBetaCanonicalPattern();
+    const goldenPb = getSleevelessGoldenBetaPatternBuilderData();
+    const patternMerged = mergedPatternForDisplayFromSources(canon, goldenPb);
+    const patternData = goldenPb;
 
     const introEl = document.querySelector("[data-sg-pattern-intro]");
     if (introEl) {
       introEl.textContent = buildPatternIntroSentence(patternMerged, patternData);
     }
 
-    const genInput = SLEEVELESS_BETA_GENERATOR_INPUT;
+    const genInput = buildGeneratorPatternDataFromSources(patternMerged, goldenPb);
+    if (typeof import.meta !== "undefined" && import.meta.env?.DEV) {
+      console.log("[sleeveless beta-pattern] generator input", JSON.parse(JSON.stringify(genInput)));
+    }
+
     const result = generateSleevelessBackPattern(genInput);
 
     const note = document.querySelector("[data-sg-generator-note]");

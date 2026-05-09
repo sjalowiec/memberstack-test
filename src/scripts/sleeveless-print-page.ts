@@ -9,6 +9,14 @@ import {
   getPatternStorageKey,
   SLEEVELESS_CHART_AUDIENCE_LABELS,
 } from "../lib/patterns/patternStorage.ts";
+import {
+  buildGeneratorPatternDataFromSources,
+  mergedPatternForDisplayFromSources,
+} from "../lib/patterns/sleevelessPatternBuilderMerge.ts";
+import {
+  getSleevelessGoldenBetaCanonicalPattern,
+  getSleevelessGoldenBetaPatternBuilderData,
+} from "../lib/patterns/sleevelessGoldenBeta.ts";
 import { validatePatternBuilderRequired } from "../lib/patterns/patternBuilderValidation";
 import {
   centerBindOffStitchesFromNeckShoulderChart,
@@ -22,10 +30,6 @@ import {
   loadSleevelessBackDiagramSvgMarkup,
   loadSleevelessFrontDiagramSvgMarkup,
 } from "../lib/patterns/sleevelessPrintDiagramSvg.ts";
-import {
-  SLEEVELESS_BETA_GENERATOR_INPUT,
-  SLEEVELESS_BETA_PATTERN_MERGED,
-} from "../lib/patterns/sleevelessBetaPatternFixture.ts";
 import {
   renderSleevelessPrintPieceHtml,
   splitRowsBeforeNeckShoulderChartMount,
@@ -57,81 +61,12 @@ function warningsForSleevelessPrintPrintout(resultWarnings: readonly string[]): 
   });
 }
 
-/** Mirrors `mergedPatternForDisplay` on `src/pages/patterns/sleeveless/pattern.astro`. */
 function mergedPatternForDisplay(base: Record<string, unknown>): Record<string, unknown> {
-  const patternData = getPatternData();
-  const st = { ...section(base.style), ...section(patternData.style) };
-  const ft = { ...section(base.fit), ...section(patternData.fit) };
-  let yarnGauge = { ...(section(base.yarnGauge)) };
-  let machine = { ...(section(base.machine)) };
-  const ygm = patternData.yarnGaugeMachine;
-  if (ygm && typeof ygm === "object" && !Array.isArray(ygm)) {
-    const y = ygm as Record<string, unknown>;
-    if ("yarnNotes" in y) {
-      yarnGauge = {
-        ...yarnGauge,
-        yarnName: typeof y.yarnNotes === "string" ? y.yarnNotes : String(y.yarnNotes ?? ""),
-      };
-    }
-    if ("yarnWeight" in y) {
-      yarnGauge = {
-        ...yarnGauge,
-        yarnWeight: typeof y.yarnWeight === "string" ? y.yarnWeight : String(y.yarnWeight ?? ""),
-      };
-    }
-    if ("gaugeStitchesPerInch" in y) {
-      const v = y.gaugeStitchesPerInch;
-      yarnGauge = { ...yarnGauge, stitchGauge: v !== undefined && v !== null ? String(v) : "" };
-    }
-    if ("gaugeRowsPerInch" in y) {
-      const v = y.gaugeRowsPerInch;
-      yarnGauge = { ...yarnGauge, rowGauge: v !== undefined && v !== null ? String(v) : "" };
-    }
-    if ("gaugeStitchRaw" in y) {
-      const v = y.gaugeStitchRaw;
-      yarnGauge = { ...yarnGauge, gaugeStitchRaw: v !== undefined && v !== null ? String(v) : "" };
-    }
-    if ("gaugeRowRaw" in y) {
-      const v = y.gaugeRowRaw;
-      yarnGauge = { ...yarnGauge, gaugeRowRaw: v !== undefined && v !== null ? String(v) : "" };
-    }
-    if ("gaugeRawUnit" in y) {
-      const u = y.gaugeRawUnit;
-      yarnGauge = {
-        ...yarnGauge,
-        gaugeRawUnit: u === "cm" || u === "in" ? u : "",
-      };
-    }
-    yarnGauge.gaugeUnits = "per_inch";
-    if ("availableNeedles" in y) {
-      const v = y.availableNeedles;
-      machine = { ...machine, availableNeedles: v !== undefined && v !== null ? String(v) : "" };
-    }
-  }
-  return { ...base, style: st, fit: ft, yarnGauge, machine };
+  return mergedPatternForDisplayFromSources(base, getPatternData());
 }
 
-/** Mirrors `buildGeneratorPatternData` on the sleeveless pattern page. */
 function buildGeneratorPatternData(merged: Record<string, unknown>): Record<string, unknown> {
-  const pb = getPatternData();
-  const fitMerged = { ...section(merged.fit), ...section(pb.fit) };
-  const smA = section(fitMerged.selectedMeasurements);
-  const smB = section(section(pb.fit).selectedMeasurements);
-  const fit = {
-    ...fitMerged,
-    selectedMeasurements: { ...smB, ...smA },
-  };
-  const style = { ...section(merged.style), ...section(pb.style) };
-  const ygm = pb.yarnGaugeMachine && typeof pb.yarnGaugeMachine === "object" ? section(pb.yarnGaugeMachine) : {};
-  return {
-    fit,
-    style,
-    yarnGaugeMachine: {
-      gaugeStitchesPerInch: ygm.gaugeStitchesPerInch ?? section(merged.yarnGauge).stitchGauge,
-      gaugeRowsPerInch: ygm.gaugeRowsPerInch ?? section(merged.yarnGauge).rowGauge,
-      availableNeedles: ygm.availableNeedles ?? section(merged.machine).availableNeedles,
-    },
-  };
+  return buildGeneratorPatternDataFromSources(merged, getPatternData());
 }
 
 function formatGaugeIntroPhrase(ygm: Record<string, unknown>, yg: Record<string, unknown>): string {
@@ -495,24 +430,34 @@ async function initSleevelessPrintPage(): Promise<void> {
   const root = document.querySelector("[data-sleeveless-print-root]");
   if (!(root instanceof HTMLElement)) return;
 
-  const patternMerged = betaFixed
-    ? (SLEEVELESS_BETA_PATTERN_MERGED as Record<string, unknown>)
-    : mergedPatternForDisplay(getCurrentPattern() as unknown as Record<string, unknown>);
-  const patternData = betaFixed
-    ? (SLEEVELESS_BETA_GENERATOR_INPUT as Record<string, unknown>)
-    : getPatternData();
-  const validation = betaFixed
-    ? { ok: true as const, missingItems: [] as { label: string; href?: string }[] }
-    : validatePatternBuilderRequired(patternData);
+  let patternMerged: Record<string, unknown>;
+  let patternData: Record<string, unknown>;
+  let genInput: Record<string, unknown>;
 
-  if (!validation.ok) {
-    root.innerHTML = renderNotReady(validation.missingItems);
-    return;
+  if (betaFixed) {
+    const canon = getSleevelessGoldenBetaCanonicalPattern();
+    const goldenPb = getSleevelessGoldenBetaPatternBuilderData();
+    patternMerged = mergedPatternForDisplayFromSources(canon as unknown as Record<string, unknown>, goldenPb);
+    patternData = goldenPb;
+    const goldenValidation = validatePatternBuilderRequired(goldenPb);
+    if (!goldenValidation.ok) {
+      root.innerHTML = renderNotReady(goldenValidation.missingItems);
+      return;
+    }
+    genInput = buildGeneratorPatternDataFromSources(patternMerged, goldenPb);
+    if (typeof import.meta !== "undefined" && import.meta.env?.DEV) {
+      console.log("[sleeveless beta-print] generator input", JSON.parse(JSON.stringify(genInput)));
+    }
+  } else {
+    patternMerged = mergedPatternForDisplay(getCurrentPattern() as unknown as Record<string, unknown>);
+    patternData = getPatternData();
+    const validation = validatePatternBuilderRequired(patternData);
+    if (!validation.ok) {
+      root.innerHTML = renderNotReady(validation.missingItems);
+      return;
+    }
+    genInput = buildGeneratorPatternData(patternMerged);
   }
-
-  const genInput = betaFixed
-    ? (SLEEVELESS_BETA_GENERATOR_INPUT as Record<string, unknown>)
-    : buildGeneratorPatternData(patternMerged);
   const result = generateSleevelessBackPattern(genInput);
   const intro = buildPatternIntroSentence(patternMerged, patternData);
 

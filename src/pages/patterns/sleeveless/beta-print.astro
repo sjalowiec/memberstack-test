@@ -11,7 +11,7 @@ const pageUrl = Astro.url.href;
 <Layout
   title="Print Sleeveless Beta Pattern | Knit it Now"
   description="Printable sleeveless sweater beta reference pattern."
-  bodyClass="sleeveless-print-route"
+  bodyClass="sleeveless-print-route sleeveless-beta-print"
 >
   <div class="sleeveless-print-shell" data-sleeveless-print-fixed="beta">
     <div class="sleeveless-print-actions no-print">
@@ -23,10 +23,6 @@ const pageUrl = Astro.url.href;
 
     <div class="sleeveless-print-root" data-sleeveless-print-root>
       <p class="sleeveless-print-loading">Loading pattern…</p>
-    </div>
-
-    <div class="sleeveless-print-footer-beta" aria-hidden="true">
-      <span class="sleeveless-print-footer-beta__attribution">Created by app.knititnow.com/beta-test</span>
     </div>
 
     <p class="print-url-meta no-print" aria-hidden="true">{pageUrl}</p>
