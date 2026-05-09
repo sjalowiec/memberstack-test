@@ -1,5 +1,6 @@
 /**
- * Client-side hydration for `.glossary-tooltip-placeholder` spans (dynamic HTML strings).
+ * Client-side hydration for glossary spans in dynamic HTML (e.g. pattern `tipHtml`):
+ * `.glossary-tooltip-placeholder` and `span.glossary-link[data-glossary-id]`.
  * Mirrors markup + behavior from GlossaryTooltip.astro.
  */
 import glossaryData from "../../data/glossary.json";
@@ -341,10 +342,10 @@ function replacePlaceholderWithTooltip(placeholder: HTMLElement) {
   bindGlossaryTooltipInstance(w, wrap, popup, { autoOnce: false, lsKey: "" });
 }
 
-/** Finds `.glossary-tooltip-placeholder` under `root` and swaps in real glossary tooltip UI. */
+/** Finds glossary placeholder spans under `root` and swaps in real glossary tooltip UI. */
 export function hydrateGlossaryTooltipPlaceholders(root: ParentNode | null | undefined) {
   if (!root) return;
-  root.querySelectorAll(".glossary-tooltip-placeholder").forEach((el) => {
+  root.querySelectorAll(".glossary-tooltip-placeholder, span.glossary-link[data-glossary-id]").forEach((el) => {
     if (el instanceof HTMLElement) replacePlaceholderWithTooltip(el);
   });
 }

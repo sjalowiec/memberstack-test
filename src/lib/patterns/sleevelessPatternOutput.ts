@@ -39,6 +39,13 @@ export const RIBBED_HEM_PATTERN_TIP_HTML =
 export const BODY_MARKER_TIP_DETAILS_HTML =
   '<details class="pattern-tip sleeveless-shaping-help-toggle"><summary>Tip: Use markers to track shaping</summary><p>Many machine knitters place small removable <span class="pattern-term" data-glossary-id="310" data-tooltip="Hang a contrasting loop on the edge needle to locate a specific row or checkpoint later.">markers</span> directly into the edge of the fabric at shaping rows or length checkpoints. This makes it easier to verify your progress while the garment is still on the machine.</p></details>';
 
+/**
+ * Trusted HTML for inline tip after armhole shaping, before neckline and shoulder shaping (`tipHtml` block).
+ * Rendered after `<strong>Tip:</strong>` — opening “Tip:” omitted here to avoid duplication.
+ */
+export const LIFELINE_BEFORE_NECK_SHOULDER_SHAPING_TIP_HTML =
+  'Before starting the neckline and shoulder shaping, consider adding a <span class="glossary-link" data-glossary-id="343">lifeline</span>. It gives you a safe place to rip back to if you make a mistake during shaping.';
+
 /** Row/stitch audit for console — verify math before changing pattern wording. */
 export type SleevelessBackPatternDebug = {
   finishedBustChest: number | undefined;
@@ -507,7 +514,12 @@ function clampFrontSharedRowsBeforeNeckStart(
       newParagraphs.push(p);
     }
 
-    if (newParagraphs.length === 0) continue;
+    if (newParagraphs.length === 0) {
+      if (row.tipHtml || row.collapsibleTipHtml) {
+        out.push({ ...row, paragraphs: [] });
+      }
+      continue;
+    }
 
     out.push({
       ...row,
@@ -1156,6 +1168,12 @@ export function buildSleevelessBackDisplayRows(args: {
       }
     }
   }
+
+  rows.push({
+    kind: "block",
+    paragraphs: [],
+    tipHtml: LIFELINE_BEFORE_NECK_SHOULDER_SHAPING_TIP_HTML,
+  });
 
   if (args.useNeckChartRows && args.neckChartRows.length > 0) {
     rows.push({ kind: "section", title: "BACK NECKLINE & SHOULDERS" });
