@@ -1,0 +1,1397 @@
+﻿  .sleeveless-pattern-page {
+    --sg-accent: #c2614e;
+    padding-bottom: 2rem;
+  }
+
+  .sg-tab-panel-title {
+    margin: 0 0 0.75rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .sg-tab-build__intro,
+  .sg-tab-share__intro {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  .sg-build-steps-list {
+    margin: 0 0 1.25rem;
+    padding-left: 1.25rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #374151;
+  }
+
+  .sg-tab-build__cta {
+    margin: 0;
+  }
+
+  .sg-pattern-intro-line {
+    max-width: 52rem;
+    margin: 0 auto 0.5rem;
+    padding: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #374151;
+    font-weight: 500;
+  }
+
+  .sleeveless-pattern-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(220px, 2fr);
+    align-items: start;
+    gap: 0.9rem 1.15rem;
+    max-width: 52rem;
+    margin: 0 auto 0.9rem;
+    clear: both;
+  }
+
+  .sleeveless-pattern-intro__image {
+    min-width: 0;
+    order: 2;
+    justify-self: end;
+    align-self: start;
+  }
+
+  .sleeveless-pattern-intro__image img {
+    display: block;
+    width: 100%;
+    max-width: min(100%, 360px);
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+  }
+
+  .sleeveless-pattern-intro__content {
+    min-width: 0;
+    order: 1;
+  }
+
+  .sleeveless-pattern-intro__content .sg-pattern-intro-line,
+  .sleeveless-pattern-intro__content .sg-pattern-soft-warning {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .sleeveless-pattern-intro__content .pattern-tips-toggle {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .sg-pattern-soft-warning {
+    max-width: 52rem;
+    margin: 0 auto 0.75rem;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #6b4f2a;
+    background: rgba(251, 243, 219, 0.65);
+    border-radius: 8px;
+    border: 1px solid rgba(234, 179, 8, 0.35);
+  }
+
+  .sleeveless-pattern-boot-msg {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #6b7280;
+  }
+
+  /* Two-column back instructions (no border on stitch column) */
+  .sleeveless-pattern-instructions {
+    max-width: 52rem;
+    margin: 0 auto;
+  }
+
+  .sleeveless-pattern-piece {
+    margin: 0 0 0.75rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: #1f2937;
+  }
+
+  .sleeveless-pattern-section {
+    margin: 1.15rem 0 0.5rem;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .sleeveless-pattern-section:first-of-type {
+    margin-top: 0.35rem;
+  }
+
+  .sleeveless-pattern-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.2rem 1.25rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .sleeveless-pattern-row--full {
+    display: block;
+  }
+
+  .sleeveless-pattern-left {
+    flex: 1 1 14rem;
+    min-width: 0;
+  }
+
+  .sleeveless-pattern-rc {
+    margin: 0 0 0.2rem;
+    font-family: ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #1f2937;
+  }
+
+  .sleeveless-pattern-line {
+    margin: 0.2rem 0 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  /* Pattern term tooltips in dynamically rendered back instructions (same as hat pattern) */
+  .sleeveless-pattern-left .pattern-term {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-decoration-color: #52682d;
+    text-underline-offset: 2px;
+    cursor: help;
+    position: relative;
+  }
+
+  .sleeveless-pattern-left .pattern-term::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-style: normal;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 280px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    z-index: 100;
+    pointer-events: none;
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .sleeveless-pattern-left .pattern-term:hover::after,
+  .sleeveless-pattern-left .pattern-term:focus::after {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .sleeveless-pattern-sts {
+    flex: 0 0 auto;
+    min-width: 3.25rem;
+    margin: 0;
+    padding-top: 0.05rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #4b5563;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 560px) {
+    .sleeveless-pattern-intro {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.7rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .sleeveless-pattern-intro__image img {
+      max-width: 340px;
+    }
+
+    .sleeveless-pattern-row {
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .sleeveless-pattern-sts {
+      text-align: left;
+      align-self: flex-start;
+      padding-top: 0;
+    }
+  }
+
+  .sg-sleeveless-results {
+    padding-top: 0.25rem;
+  }
+
+  #pattern-content .sg-pattern-output.sg-neck-chart-print-block {
+    max-width: 52rem;
+    margin: 1rem auto 0;
+    padding: 0;
+  }
+
+  .pattern-noscript-heading {
+    font-size: 1.1rem;
+    color: var(--kbm-green, #52682d);
+    margin: 0 0 0.5rem;
+  }
+
+  /* Expandable garment sections */
+  #pattern-content .pattern-section {
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    /* overflow visible so sticky piece diagrams work inside section content */
+    overflow: visible;
+    background: #fff;
+  }
+
+  #pattern-content .pattern-section__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 0.85rem;
+    background: rgba(82, 104, 45, 0.07);
+    border-radius: 7px 7px 0 0;
+  }
+
+  #pattern-content .pattern-section__heading h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+    letter-spacing: 0.02em;
+  }
+
+  #pattern-content .pattern-section--garment-piece .pattern-section__heading h2 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: #1f2937;
+  }
+
+  #pattern-content .pattern-section__collapse-label {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  #pattern-content .pattern-section__collapse-label input[type="checkbox"] {
+    accent-color: var(--kbm-green);
+  }
+
+  #pattern-content .pattern-section__content {
+    padding: 0.75rem 0.85rem 1.1rem;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 3%, var(--page-bg, #fff));
+    border-radius: 0 0 7px 7px;
+  }
+
+  /* Sticky sidebar must not be clipped by section padding/stacking context */
+  #pattern-content .pattern-section--garment-piece > .pattern-section__content {
+    overflow: visible;
+  }
+
+  #pattern-content .pattern-subsection {
+    margin: 0.75rem 0 0;
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    border-radius: 7px;
+    background: #fff;
+  }
+
+  #pattern-content .pattern-subsection:first-child {
+    margin-top: 0;
+  }
+
+  #pattern-content .pattern-subsection .pattern-section__header {
+    padding: 0.5rem 0.65rem;
+    background: rgba(82, 104, 45, 0.04);
+  }
+
+  #pattern-content .pattern-subsection .pattern-section__heading h2 {
+    font-size: 0.92rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  #pattern-content .pattern-subsection .pattern-section__content {
+    padding: 0.65rem 0.75rem 0.85rem;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 2.5%, var(--page-bg, #fff));
+  }
+
+  @supports not (background: color-mix(in srgb, white, black)) {
+    #pattern-content .pattern-section__content {
+      background: rgba(82, 104, 45, 0.035);
+    }
+  }
+
+  /*
+   * BACK / FRONT garment rows: `.pattern-layout` = semantic wrapper;
+   * `.sleeveless-piece-split` = legacy hook + diagram modal JS.
+   * Mobile: diagram above instructions (order). Desktop: grid — prose left, sticky diagram right.
+   */
+  #pattern-content .pattern-layout.pattern-layout--garment-columns,
+  #pattern-content .sleeveless-piece-split {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    align-items: stretch;
+  }
+
+  #pattern-content .pattern-layout__content,
+  #pattern-content .sleeveless-piece-split__text {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  #pattern-content .pattern-layout__sidebar,
+  #pattern-content .sleeveless-piece-split__diagram {
+    order: -1;
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
+  #pattern-content .sleeveless-piece-split__diagram-inner {
+    margin: 0;
+  }
+
+  #pattern-content .sleeveless-piece-split__diagram-trigger {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: zoom-in;
+    text-align: inherit;
+  }
+
+  #pattern-content .sleeveless-piece-split__diagram-trigger:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  #pattern-content .sleeveless-piece-split__diagram-hint {
+    margin: 0.4rem 0 0;
+    font-size: 0.82rem;
+    line-height: 1.3;
+    color: #4b5563;
+    text-align: center;
+  }
+
+  #pattern-content .sleeveless-piece-split__diagram-img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  #pattern-content .sleeveless-piece-split__diagram-svg {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  #pattern-content .sleeveless-piece-split__diagram-inline {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Ensure inlined garment SVG paints (same-origin HTML fragment insertion). */
+  #pattern-content .sleeveless-piece-split__diagram-svg > svg {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .sleeveless-diagram-modal[hidden] {
+    display: none !important;
+  }
+
+  .sleeveless-diagram-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1500;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgba(17, 24, 39, 0.72);
+  }
+
+  .sleeveless-diagram-modal__dialog {
+    position: relative;
+    width: auto;
+    height: auto;
+    max-width: 95vw;
+    max-height: 95vh;
+    padding: 0.75rem;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.32);
+  }
+
+  .sleeveless-diagram-modal__close {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(17, 24, 39, 0.9);
+    color: #fff;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .sleeveless-diagram-modal__close:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+
+  .sleeveless-diagram-modal__content {
+    display: grid;
+    place-items: center;
+    width: auto;
+    height: auto;
+    max-width: 95vw;
+    max-height: 95vh;
+    overflow: auto;
+  }
+
+  /* Vimeo pattern-help modal: title, description, jump links beside / above player */
+  [data-sleeveless-video-modal] .sleeveless-diagram-modal__content {
+    display: block;
+    width: min(92vw, 1100px);
+    max-width: 100%;
+    max-height: 92vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 0.25rem 0.35rem 0.5rem;
+    place-items: initial;
+    box-sizing: border-box;
+  }
+
+  [data-sleeveless-video-modal] .sleeveless-diagram-modal__dialog {
+    max-width: min(96vw, 1120px);
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .sleeveless-video-modal__shell {
+    display: grid;
+    grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
+    grid-template-areas: "meta player";
+    gap: 0.85rem 1.1rem;
+    align-items: start;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .sleeveless-video-modal__meta {
+    grid-area: meta;
+    min-width: 0;
+  }
+
+  .sleeveless-video-modal__title {
+    margin: 0 0 0.45rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.25;
+  }
+
+  .sleeveless-video-modal__desc {
+    margin: 0 0 0.65rem;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #4b5563;
+  }
+
+  .sleeveless-video-modal__jump {
+    margin: 0;
+    padding: 0.55rem 0.65rem;
+    border-radius: 8px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    box-sizing: border-box;
+    min-width: 0;
+  }
+
+  .sleeveless-video-modal__jump-heading {
+    margin: 0 0 0.45rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #6b7280;
+  }
+
+  .sleeveless-video-modal__jump-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 0.5rem;
+    font-size: 0.9375rem;
+    line-height: 1.35;
+    color: #374151;
+  }
+
+  .sleeveless-video-modal__jump-list > li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-width: 100%;
+  }
+
+  .sleeveless-video-modal__jump-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: auto;
+    max-width: 100%;
+    min-height: 40px;
+    margin: 0;
+    padding: 0.5rem 0.85rem;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--kbm-green, #52682d);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+    text-decoration: none;
+    white-space: normal;
+    word-break: break-word;
+    cursor: pointer;
+    touch-action: manipulation;
+    box-shadow: 0 1px 0 rgba(17, 24, 39, 0.04);
+  }
+
+  .sleeveless-video-modal__jump-btn:hover {
+    background: #f3f4f6;
+    border-color: #c4c9d1;
+    color: #3d4f22;
+  }
+
+  .sleeveless-video-modal__jump-btn:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+    color: #3d4f22;
+  }
+
+  .sleeveless-video-modal__player {
+    grid-area: player;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .sleeveless-video-modal__player iframe {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    border: 0;
+    border-radius: 6px;
+    background: #000;
+    box-sizing: border-box;
+  }
+
+  @media (max-width: 720px) {
+    [data-sleeveless-video-modal] .sleeveless-diagram-modal__dialog {
+      max-width: min(100%, 96vw);
+    }
+
+    [data-sleeveless-video-modal] .sleeveless-diagram-modal__content {
+      width: 100%;
+      padding: 0.2rem 0.25rem 0.45rem;
+    }
+
+    .sleeveless-video-modal__shell {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        "player"
+        "meta";
+    }
+
+    /* Long jump lists: scroll this block only when needed; keeps page from horizontal scroll */
+    .sleeveless-video-modal__jump {
+      max-height: min(38vh, 320px);
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+
+  #pattern-content .sleeveless-neckline-video-help {
+    margin: 0 0 0.65rem;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #4b5563;
+  }
+
+  #pattern-content .sleeveless-neckline-video-help__line {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem 0.75rem;
+  }
+
+  #pattern-content .sleeveless-neckline-video-help__lead {
+    font-weight: 600;
+    color: #374151;
+  }
+
+  #pattern-content .sleeveless-neckline-video-help__links {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem 0.65rem;
+  }
+
+  #pattern-content .pattern-finishing-video-help {
+    margin: 0.65rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #4b5563;
+  }
+
+  #pattern-content .pattern-finishing-video-help__lead {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  #pattern-content .pattern-finishing-video-help__links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem 0.65rem;
+  }
+
+  .sleeveless-diagram-modal__content .sleeveless-piece-split__diagram-inline,
+    .sleeveless-diagram-modal__content svg,
+    .sleeveless-diagram-modal__content iframe,
+    .sleeveless-diagram-modal__content img,
+    .sleeveless-diagram-modal__content object,
+    .sleeveless-diagram-modal__content figure,
+    .sleeveless-diagram-modal__content figure > svg,
+    .sleeveless-diagram-modal__content figure > iframe,
+    .sleeveless-diagram-modal__content figure > img,
+    .sleeveless-diagram-modal__content figure > object {
+    width: min(90vw, 900px);
+    max-width: 90vw;
+    max-height: 90vh;
+    height: auto;
+  }
+
+  /* Video help modal: iframe lives inside a constrained column; do not inherit diagram min(90vw) width (avoids horizontal overflow). */
+  [data-sleeveless-video-modal] .sleeveless-diagram-modal__content .sleeveless-video-modal__player iframe {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: auto;
+    box-sizing: border-box;
+  }
+
+  #pattern-content .pattern-layout__content .sleeveless-pattern-instructions,
+  #pattern-content .sleeveless-piece-split__text .sleeveless-pattern-instructions {
+    max-width: none;
+    margin: 0;
+  }
+
+  #pattern-content .pattern-layout__content .sg-pattern-output.sg-neck-chart-print-block,
+  #pattern-content .sleeveless-piece-split__text .sg-pattern-output.sg-neck-chart-print-block {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  #pattern-content .sleeveless-piece-chart-fullwidth {
+    width: 100%;
+    max-width: 100%;
+    clear: both;
+  }
+
+  #pattern-content .sleeveless-piece-chart-fullwidth .ns-shaping-chart__table {
+    width: 100%;
+  }
+
+  #pattern-content .sleeveless-neck-shoulder-diagram {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin-top: 1rem;
+  }
+
+  #pattern-content .sg-neck-chart-diagram-block {
+    margin: 0;
+  }
+
+  #pattern-content .ns-shaping-chart--diagram-block {
+    margin: 0;
+  }
+
+  #pattern-content .ns-shaping-chart__diagram {
+    margin: 0;
+    padding: 0.45rem 0.75rem 0.75rem;
+    border: 1px solid rgba(55, 65, 81, 0.16);
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  #pattern-content .ns-shaping-chart__diagram-svg-wrap {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  #pattern-content .ns-shaping-chart__diagram-svg-wrap svg {
+    display: block;
+    width: 100%;
+    min-width: 320px;
+    height: auto;
+  }
+
+  #pattern-content .ns-shaping-chart__diagram-svg-wrap .ns-notation-overlay {
+    min-width: 320px;
+  }
+
+  #pattern-content .ns-shaping-chart__second-shoulder-toggle {
+    margin: 0.45rem 0 0.75rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid rgba(55, 65, 81, 0.16);
+    border-radius: 8px;
+    background: rgba(82, 104, 45, 0.04);
+  }
+
+  #pattern-content .ns-shaping-chart__second-shoulder-toggle-copy {
+    margin: 0 0 0.35rem;
+    font-size: 0.88rem;
+    line-height: 1.4;
+    color: #374151;
+  }
+
+  #pattern-content .ns-shaping-chart__second-shoulder-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1f2937;
+    cursor: pointer;
+  }
+
+  #pattern-content .ns-shaping-chart__second-shoulder-input {
+    margin: 0;
+    inline-size: 1rem;
+    block-size: 1rem;
+    accent-color: var(--kbm-green, #52682d);
+  }
+
+  #pattern-content .ns-shaping-chart__active-side-note--expanded[hidden] {
+    display: none !important;
+  }
+
+  #pattern-content #neckline-shoulder-chart-print-area,
+  #pattern-content #front-neckline-shoulder-chart-print-area {
+    width: 100%;
+  }
+
+  #pattern-content .neckline-chart-print-controls {
+    display: none;
+  }
+
+  #pattern-content .chart-print-btn,
+  #pattern-content .neckline-chart-print-button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: #4b5563;
+    border-radius: 4px;
+    padding: 0.05rem;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  #pattern-content .chart-print-btn:hover,
+  #pattern-content .neckline-chart-print-button:hover {
+    color: #1f2937;
+  }
+
+  #pattern-content .chart-print-btn:focus-visible,
+  #pattern-content .neckline-chart-print-button:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  #pattern-content .neckline-chart-header-row,
+  #pattern-content .neckline-chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  #pattern-content .neckline-chart-print-only-header,
+  #pattern-content .neckline-chart-print-only-footer {
+    display: none;
+  }
+
+  #pattern-content .neckline-chart-print-only-header-title {
+    margin: 0 0 0.25rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  #pattern-content .neckline-chart-print-only-header-intro {
+    margin: 0 0 0.8rem;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: #1f2937;
+  }
+
+  #pattern-content .neckline-chart-print-only-footer {
+    margin-top: 0.7rem;
+    padding-top: 0.45rem;
+    border-top: 1px solid #d1d5db;
+    font-size: 0.82rem;
+    color: #4b5563;
+  }
+
+  #pattern-content .sleeveless-neck-shoulder-help {
+    display: grid;
+    grid-template-columns: 124px minmax(0, 1fr);
+    align-items: start;
+    gap: 0.45rem 0.7rem;
+    margin: 0.15rem 0 0.5rem;
+  }
+
+  #pattern-content .sleeveless-neck-shoulder-help__icon {
+    width: min(100%, 118px);
+    height: auto;
+    display: block;
+    align-self: start;
+    justify-self: start;
+  }
+
+  #pattern-content .sleeveless-neck-shoulder-help__text {
+    margin: 0;
+    font-size: 0.84rem;
+    line-height: 1.4;
+    color: #374151;
+  }
+
+  #pattern-content .pattern-shaping-intro {
+    margin: 0 0 0.65rem;
+  }
+
+  #pattern-content .pattern-shaping-intro p {
+    margin: 0 0 0.45rem;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #374151;
+  }
+
+  #pattern-content .pattern-shaping-intro p:last-child {
+    margin-bottom: 0;
+  }
+
+  #pattern-content .pattern-shaping-intro .small.text-muted {
+    font-size: 0.82rem;
+    color: #6b7280;
+  }
+
+  #pattern-content .sleeveless-shaping-help-toggle {
+    margin: 0 0 0.65rem;
+    padding: 0.6rem 0.8rem;
+  }
+
+  #pattern-content .sleeveless-shaping-help-toggle summary {
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  #pattern-content .sleeveless-shaping-help-toggle p {
+    margin: 0.55rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
+  #pattern-content .sleeveless-shaping-help-toggle ul {
+    margin: 0.45rem 0 0;
+    padding-left: 1.1rem;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #374151;
+  }
+
+  #pattern-content .sleeveless-shaping-help__video-link {
+    color: var(--kbm-green, #52682d);
+    font-weight: 700;
+    text-underline-offset: 2px;
+  }
+
+  #pattern-content a.pattern-video-modal-link {
+    color: var(--kbm-green, #52682d);
+    font-weight: 700;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+
+  #pattern-content .pattern-help-link {
+    margin: 0.5rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #4b5563;
+  }
+
+  #pattern-content .pattern-help-link__button {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--kbm-green, #52682d);
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+
+  #pattern-content .pattern-help-link__button:hover,
+  #pattern-content .pattern-help-link__button:focus-visible {
+    color: #3d4f22;
+  }
+
+  #pattern-content .pattern-help-link--neckband-shaping {
+    margin: 0 0 0.65rem;
+  }
+
+  @media (min-width: 768px) {
+    #pattern-content .pattern-layout.pattern-layout--garment-columns,
+    #pattern-content .sleeveless-piece-split {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) clamp(220px, 28vw, 320px);
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    #pattern-content .pattern-layout__content,
+    #pattern-content .sleeveless-piece-split__text {
+      min-width: 0;
+    }
+
+    #pattern-content .pattern-layout__sidebar,
+    #pattern-content .sleeveless-piece-split__diagram {
+      order: 0;
+      width: auto;
+      max-width: none;
+      min-width: 0;
+      position: sticky;
+      top: var(--fixed-header-offset, 90px);
+      align-self: start;
+      justify-self: stretch;
+    }
+
+    #pattern-content .sleeveless-piece-split__diagram-inner {
+      position: static;
+      max-width: 320px;
+      margin-left: auto;
+    }
+  }
+
+  @media (max-width: 560px) {
+    #pattern-content .sleeveless-neck-shoulder-help {
+      grid-template-columns: 96px minmax(0, 1fr);
+      gap: 0.4rem 0.5rem;
+      margin-bottom: 0.45rem;
+    }
+
+    #pattern-content .sleeveless-neck-shoulder-help__icon {
+      width: min(100%, 90px);
+    }
+
+    #pattern-content .sleeveless-neck-shoulder-help__text {
+      font-size: 0.82rem;
+      line-height: 1.35;
+    }
+  }
+
+  #pattern-content .pattern-section.is-collapsed, #pattern-content .pattern-subsection.is-collapsed {
+    opacity: 0.74;
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  #pattern-content .pattern-section.is-collapsed .pattern-section__header,
+    #pattern-content .pattern-subsection.is-collapsed .pattern-section__header {
+    padding: 0.35rem 0.6rem;
+  }
+
+  #pattern-content .pattern-section.is-collapsed .pattern-section__content,
+    #pattern-content .pattern-subsection.is-collapsed .pattern-section__content {
+    display: none;
+  }
+
+  #pattern-content .pattern-preamble p {
+    margin: 0.35rem 0;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+
+  #pattern-content .pattern-rc-open {
+    font-family: inherit;
+    font-weight: 400;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    margin: 0 0 0.55rem;
+    color: #374151;
+  }
+
+  #pattern-content .pattern-step {
+    margin: 0 0 1rem;
+  }
+
+  #pattern-content .pattern-step:last-child {
+    margin-bottom: 0;
+  }
+
+  #pattern-content .pattern-step-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.35rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  #pattern-content .pattern-step-title .pattern-checkbox {
+    margin-bottom: 0;
+  }
+
+  #pattern-content .pattern-finishing-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    list-style-position: outside;
+  }
+
+  #pattern-content .pattern-step p {
+    margin: 0.25rem 0 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  #pattern-content .pattern-step-intro {
+    margin: 0 0 0.85rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  #pattern-content .pattern-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 0.35rem;
+    cursor: pointer;
+  }
+
+  #pattern-content .pattern-checkbox input {
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+    accent-color: var(--kbm-green);
+  }
+
+  #pattern-content .pattern-stop-rc {
+    font-weight: 700;
+    color: #b45309;
+    margin: 0.5rem 0 0.35rem;
+  }
+
+  #pattern-content .pattern-finishing-list {
+    margin: 0;
+    padding-left: 1.2rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #374151;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  #pattern-content .pattern-finishing-toggle-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  #pattern-content .pattern-finishing-toggle {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 7px;
+    background: #fff;
+    padding: 0.45rem 0.65rem 0.55rem;
+  }
+
+  #pattern-content .pattern-finishing-toggle summary {
+    cursor: pointer;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1.35;
+  }
+
+  #pattern-content .pattern-finishing-toggle ul {
+    margin: 0.45rem 0 0;
+    padding-left: 1.1rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: #374151;
+  }
+
+  #pattern-content .pattern-finishing-toggle p {
+    margin: 0.45rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #4b5563;
+  }
+
+  @media print {
+    .pattern-tab-nav {
+      display: none !important;
+    }
+
+    .sleeveless-pattern-page .pattern-tabs .tab-panel#tab-build,
+    .sleeveless-pattern-page .pattern-tabs .tab-panel#tab-share,
+    .sleeveless-pattern-page .pattern-tabs .tab-panel#tab-inspiration {
+      display: none !important;
+    }
+
+    .sleeveless-pattern-page .pattern-tabs .tab-panel#tab-pattern {
+      display: block !important;
+    }
+
+    #pattern-content .pattern-section.is-collapsed .pattern-section__content,
+      #pattern-content .pattern-subsection.is-collapsed .pattern-section__content {
+      display: block !important;
+    }
+
+    #pattern-content .pattern-section.is-collapsed, #pattern-content .pattern-subsection.is-collapsed {
+      opacity: 1 !important;
+      background: #fff !important;
+    }
+
+    #pattern-content .pattern-section__collapse-label {
+      display: none !important;
+    }
+
+    #pattern-content .pattern-section.is-collapsed .pattern-section__header,
+      #pattern-content .pattern-subsection.is-collapsed .pattern-section__header {
+      padding: 0.65rem 0.85rem !important;
+    }
+
+    #pattern-content .pattern-section,
+    #pattern-content .pattern-section--garment-piece,
+    #pattern-content .pattern-layout.pattern-layout--garment-columns,
+    #pattern-content .sleeveless-piece-split {
+      break-inside: auto !important;
+      page-break-inside: auto !important;
+    }
+
+    #pattern-content .pattern-section {
+      break-before: auto !important;
+      page-break-before: auto !important;
+    }
+
+    #pattern-content #neckline-shoulder-chart-print-area,
+    #pattern-content #front-neckline-shoulder-chart-print-area {
+      break-inside: auto !important;
+      page-break-inside: auto !important;
+    }
+
+    #pattern-content #neckline-shoulder-chart-print-area .ns-shaping-chart,
+    #pattern-content #front-neckline-shoulder-chart-print-area .ns-shaping-chart,
+    #pattern-content .sleeveless-piece-chart-fullwidth .ns-shaping-chart {
+      break-inside: auto !important;
+      page-break-inside: auto !important;
+    }
+
+    #pattern-content #neckline-shoulder-chart-print-area .ns-shaping-chart__tr,
+    #pattern-content #front-neckline-shoulder-chart-print-area .ns-shaping-chart__tr {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+
+    #pattern-content .ns-shaping-chart--diagram-block,
+    #pattern-content .ns-shaping-chart__diagram,
+    #pattern-content .ns-shaping-chart__diagram-svg-wrap,
+    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay,
+    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay__stack {
+      break-inside: auto !important;
+      page-break-inside: auto !important;
+    }
+
+    #pattern-content .pattern-section__heading,
+    #pattern-content .pattern-subsection__heading,
+    #pattern-content .sleeveless-piece-split__diagram {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+
+    #pattern-content .sleeveless-piece-split__diagram-inner {
+      position: static !important;
+      display: block !important;
+      visibility: visible !important;
+      overflow: visible !important;
+    }
+
+    #pattern-content .pattern-layout.pattern-layout--garment-columns,
+    #pattern-content .sleeveless-piece-split {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) minmax(180px, 2.6in) !important;
+      column-gap: 0.35in !important;
+      row-gap: 0 !important;
+      align-items: start !important;
+    }
+
+    #pattern-content .pattern-layout__content,
+    #pattern-content .sleeveless-piece-split__text {
+      min-width: 0 !important;
+      order: 0 !important;
+    }
+
+    #pattern-content .pattern-layout__sidebar,
+    #pattern-content .sleeveless-piece-split__diagram {
+      display: block !important;
+      visibility: visible !important;
+      position: static !important;
+      top: auto !important;
+      inset: auto !important;
+      order: 0 !important;
+      align-self: start !important;
+      justify-self: end !important;
+      width: auto !important;
+      max-width: 2.6in !important;
+      overflow: visible !important;
+    }
+
+    #pattern-content .sleeveless-piece-split__diagram-trigger {
+      display: block !important;
+      visibility: visible !important;
+      position: static !important;
+      cursor: default !important;
+      width: 100% !important;
+      max-width: 2.6in !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+
+    #pattern-content .sleeveless-piece-split__diagram-svg,
+    #pattern-content .sleeveless-piece-split__diagram-inline,
+    #pattern-content .sleeveless-piece-split__diagram-svg > svg,
+    #pattern-content .sleeveless-piece-split__diagram img,
+    #pattern-content .sleeveless-piece-split__diagram svg {
+      display: block !important;
+      visibility: visible !important;
+      width: 100% !important;
+      max-width: 2.6in !important;
+      height: auto !important;
+      opacity: 1 !important;
+      overflow: visible !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    #pattern-content .sleeveless-neck-shoulder-diagram {
+      display: block !important;
+      visibility: visible !important;
+      break-inside: auto !important;
+      page-break-inside: auto !important;
+      overflow: visible !important;
+      margin-top: 0.45rem !important;
+    }
+
+    #pattern-content .sleeveless-neck-shoulder-diagram .ns-shaping-chart__diagram,
+    #pattern-content .sleeveless-neck-shoulder-diagram .ns-shaping-chart__diagram-svg-wrap,
+    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay,
+    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay__image-wrap,
+    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay__image {
+      display: block !important;
+      visibility: visible !important;
+      overflow: visible !important;
+      opacity: 1 !important;
+      height: auto !important;
+      max-height: none !important;
+    }
+
+    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay {
+      position: relative !important;
+      margin: 0 auto !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay__stack {
+      display: flex !important;
+      visibility: visible !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    #pattern-content .ns-shaping-chart__second-shoulder-toggle {
+      display: none !important;
+    }
+
+    .no-print {
+      display: none !important;
+    }
+
+    #pattern-content .pattern-finishing-toggle > *:not(summary) {
+      display: block !important;
+    }
+  }

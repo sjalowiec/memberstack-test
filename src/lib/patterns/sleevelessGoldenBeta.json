@@ -1,0 +1,101 @@
+ {
+  "exportedAt": "2026-05-09T10:33:52.004Z",
+  "canonicalPattern": {
+    "id": "07e6d966-a826-421b-8a26-3ac038bb62d2",
+    "patternType": "sleeveless",
+    "status": "draft",
+    "version": 1,
+    "createdAt": "2026-05-03T12:09:37.452Z",
+    "updatedAt": "2026-05-09T10:32:33.084Z",
+    "style": {
+      "recipientCategory": "misses",
+      "bodyShape": "straight",
+      "frontStyle": "closed",
+      "length": "hip",
+      "neckline": "round",
+      "armholeStyle": "standard",
+      "summarySentence": "Women's straight sleeveless pullover with a round neckline",
+      "patternMode": "express"
+    },
+    "fit": {
+      "sizingChart": "misses",
+      "selectedSize": "5",
+      "easeChoice": "relaxed",
+      "fitChoice": "relaxed",
+      "fineTuneAdjustments": {
+        "summaryLine": "Armhole depth: 8\"; Neck width: 8\"; Front neck depth: 5\""
+      },
+      "selectedMeasurements": {
+        "finished_bust_chest": 41.5,
+        "finished_waist": 32.5,
+        "finished_hip": 41.5,
+        "back_neck_to_hem": 23.5,
+        "armhole_depth": 8,
+        "shoulder_width": 13.25,
+        "neck_width": 8,
+        "front_neck_depth": 5,
+        "back_neck_depth": 1
+      }
+    },
+    "yarnGauge": {
+      "yarnName": "",
+      "yarnWeight": "",
+      "stitchGauge": "7",
+      "rowGauge": "11",
+      "gaugeUnits": "per_inch",
+      "gaugeStitchRaw": "28",
+      "gaugeRowRaw": "44",
+      "gaugeRawUnit": "in"
+    },
+    "measurements": {},
+    "machine": {
+      "availableNeedles": "200"
+    },
+    "calculations": {},
+    "instructions": {}
+  },
+  "patternBuilderData": {
+    "style": {
+      "recipientCategory": "misses",
+      "bodyShape": "straight",
+      "frontStyle": "closed",
+      "length": "hip",
+      "neckline": "round",
+      "armholeStyle": "standard",
+      "summarySentence": "Women's straight sleeveless pullover with a round neckline",
+      "patternMode": "express"
+    },
+    "updatedAt": "2026-05-09T10:32:33.084Z",
+    "createdAt": "2026-05-03T12:09:38.693Z",
+    "fit": {
+      "sizingChart": "misses",
+      "selectedSize": "5",
+      "easeChoice": "relaxed",
+      "fitChoice": "relaxed",
+      "fineTuneAdjustments": {
+        "summaryLine": "Armhole depth: 8\"; Neck width: 8\"; Front neck depth: 5\""
+      },
+      "selectedMeasurements": {
+        "finished_bust_chest": 41.5,
+        "finished_waist": 32.5,
+        "finished_hip": 41.5,
+        "back_neck_to_hem": 23.5,
+        "armhole_depth": 8,
+        "shoulder_width": 13.25,
+        "neck_width": 8,
+        "front_neck_depth": 5,
+        "back_neck_depth": 1
+      }
+    },
+    "yarnGaugeMachine": {
+      "yarnNotes": "",
+      "yarnWeight": "",
+      "gaugeStitchesPerInch": "7",
+      "gaugeRowsPerInch": "11",
+      "gaugeStitchRaw": "28",
+      "gaugeRowRaw": "44",
+      "gaugeRawUnit": "in",
+      "availableNeedles": "200"
+    }
+  }
+}
