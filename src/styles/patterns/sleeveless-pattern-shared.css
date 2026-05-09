@@ -59,12 +59,12 @@
   }
 
   /* Two-column back instructions (no border on stitch column) */
-  :global(.sleeveless-pattern-instructions) {
+  .sleeveless-pattern-instructions {
     max-width: 52rem;
     margin: 0 auto;
   }
 
-  :global(.sleeveless-pattern-piece) {
+  .sleeveless-pattern-piece {
     margin: 0 0 0.75rem;
     font-size: 1.2rem;
     font-weight: 800;
@@ -72,7 +72,7 @@
     color: #1f2937;
   }
 
-  :global(.sleeveless-pattern-section) {
+  .sleeveless-pattern-section {
     margin: 1.15rem 0 0.5rem;
     font-size: 0.82rem;
     font-weight: 800;
@@ -80,11 +80,11 @@
     color: var(--kbm-green, #52682d);
   }
 
-  :global(.sleeveless-pattern-section:first-of-type) {
+  .sleeveless-pattern-section:first-of-type {
     margin-top: 0.35rem;
   }
 
-  :global(.sleeveless-pattern-row) {
+  .sleeveless-pattern-row {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
@@ -92,16 +92,16 @@
     margin-bottom: 0.85rem;
   }
 
-  :global(.sleeveless-pattern-row--full) {
+  .sleeveless-pattern-row--full {
     display: block;
   }
 
-  :global(.sleeveless-pattern-left) {
+  .sleeveless-pattern-left {
     flex: 1 1 14rem;
     min-width: 0;
   }
 
-  :global(.sleeveless-pattern-rc) {
+  .sleeveless-pattern-rc {
     margin: 0 0 0.2rem;
     font-family: ui-monospace, monospace;
     font-weight: 700;
@@ -109,7 +109,7 @@
     color: #1f2937;
   }
 
-  :global(.sleeveless-pattern-line) {
+  .sleeveless-pattern-line {
     margin: 0.2rem 0 0;
     font-size: 0.95rem;
     line-height: 1.55;
@@ -117,7 +117,7 @@
   }
 
   /* Pattern term tooltips in dynamically rendered back instructions (same as hat pattern) */
-  :global(.sleeveless-pattern-left .pattern-term) {
+  .sleeveless-pattern-left .pattern-term {
     text-decoration: underline;
     text-decoration-style: dotted;
     text-decoration-color: #52682d;
@@ -126,7 +126,7 @@
     position: relative;
   }
 
-  :global(.sleeveless-pattern-left .pattern-term)::after {
+  .sleeveless-pattern-left .pattern-term::after {
     content: attr(data-tooltip);
     position: absolute;
     bottom: 100%;
@@ -151,13 +151,13 @@
     line-height: 1.4;
   }
 
-  :global(.sleeveless-pattern-left .pattern-term):hover::after,
-  :global(.sleeveless-pattern-left .pattern-term):focus::after {
+  .sleeveless-pattern-left .pattern-term:hover::after,
+  .sleeveless-pattern-left .pattern-term:focus::after {
     opacity: 1;
     visibility: visible;
   }
 
-  :global(.sleeveless-pattern-sts) {
+  .sleeveless-pattern-sts {
     flex: 0 0 auto;
     min-width: 3.25rem;
     margin: 0;
@@ -170,12 +170,12 @@
   }
 
   @media (max-width: 560px) {
-    :global(.sleeveless-pattern-row) {
+    .sleeveless-pattern-row {
       flex-direction: column;
       gap: 0.35rem;
     }
 
-    :global(.sleeveless-pattern-sts) {
+    .sleeveless-pattern-sts {
       text-align: left;
       align-self: flex-start;
       padding-top: 0;
@@ -186,20 +186,20 @@
     padding-top: 0.25rem;
   }
 
-  :global(#pattern-content .sg-pattern-output.sg-neck-chart-print-block) {
+  #pattern-content .sg-pattern-output.sg-neck-chart-print-block {
     max-width: 52rem;
     margin: 1rem auto 0;
     padding: 0;
   }
 
-  :global(.pattern-noscript-heading) {
+  .pattern-noscript-heading {
     font-size: 1.1rem;
     color: var(--kbm-green, #52682d);
     margin: 0 0 0.5rem;
   }
 
   /* Expandable garment sections */
-  :global(#pattern-content .pattern-section) {
+  #pattern-content .pattern-section {
     margin-bottom: 1rem;
     border-radius: 8px;
     border: 1px solid rgba(0, 0, 0, 0.08);
@@ -208,7 +208,7 @@
     background: #fff;
   }
 
-  :global(#pattern-content .pattern-section__header) {
+  #pattern-content .pattern-section__header {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -217,7 +217,7 @@
     border-radius: 7px 7px 0 0;
   }
 
-  :global(#pattern-content .pattern-section__heading h2) {
+  #pattern-content .pattern-section__heading h2 {
     margin: 0;
     font-size: 1.15rem;
     font-weight: 700;
@@ -225,80 +225,99 @@
     letter-spacing: 0.02em;
   }
 
-  :global(#pattern-content .pattern-section__collapse-label) {
+  #pattern-content .pattern-section--garment-piece .pattern-section__heading h2 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: #1f2937;
+  }
+
+  #pattern-content .pattern-section__collapse-label {
     display: flex;
     align-items: center;
     flex-shrink: 0;
     cursor: pointer;
   }
 
-  :global(#pattern-content .pattern-section__collapse-label input[type="checkbox"]) {
+  #pattern-content .pattern-section__collapse-label input[type="checkbox"] {
     accent-color: var(--kbm-green);
   }
 
-  :global(#pattern-content .pattern-section__content) {
+  #pattern-content .pattern-section__content {
     padding: 0.75rem 0.85rem 1.1rem;
     background: color-mix(in srgb, var(--kbm-green, #52682d) 3%, var(--page-bg, #fff));
     border-radius: 0 0 7px 7px;
   }
 
-  :global(#pattern-content .pattern-subsection) {
+  /* Sticky sidebar must not be clipped by section padding/stacking context */
+  #pattern-content .pattern-section--garment-piece > .pattern-section__content {
+    overflow: visible;
+  }
+
+  #pattern-content .pattern-subsection {
     margin: 0.75rem 0 0;
     border: 1px solid rgba(0, 0, 0, 0.07);
     border-radius: 7px;
     background: #fff;
   }
 
-  :global(#pattern-content .pattern-subsection:first-child) {
+  #pattern-content .pattern-subsection:first-child {
     margin-top: 0;
   }
 
-  :global(#pattern-content .pattern-subsection .pattern-section__header) {
+  #pattern-content .pattern-subsection .pattern-section__header {
     padding: 0.5rem 0.65rem;
     background: rgba(82, 104, 45, 0.04);
   }
 
-  :global(#pattern-content .pattern-subsection .pattern-section__heading h2) {
+  #pattern-content .pattern-subsection .pattern-section__heading h2 {
     font-size: 0.92rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
-  :global(#pattern-content .pattern-subsection .pattern-section__content) {
+  #pattern-content .pattern-subsection .pattern-section__content {
     padding: 0.65rem 0.75rem 0.85rem;
     background: color-mix(in srgb, var(--kbm-green, #52682d) 2.5%, var(--page-bg, #fff));
   }
 
   @supports not (background: color-mix(in srgb, white, black)) {
-    :global(#pattern-content .pattern-section__content) {
+    #pattern-content .pattern-section__content {
       background: rgba(82, 104, 45, 0.035);
     }
   }
 
-  /* Back / Front: instructions + sticky schematic (desktop 60/40) */
-  :global(#pattern-content .sleeveless-piece-split) {
+  /*
+   * BACK / FRONT garment rows: `.pattern-layout` = semantic wrapper;
+   * `.sleeveless-piece-split` = legacy hook + diagram modal JS.
+   * Mobile: diagram above instructions (order). Desktop: grid — prose left, sticky diagram right.
+   */
+  #pattern-content .pattern-layout.pattern-layout--garment-columns,
+  #pattern-content .sleeveless-piece-split {
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
     align-items: stretch;
   }
 
-  :global(#pattern-content .sleeveless-piece-split__text) {
+  #pattern-content .pattern-layout__content,
+  #pattern-content .sleeveless-piece-split__text {
     flex: 1 1 auto;
     min-width: 0;
   }
 
-  :global(#pattern-content .sleeveless-piece-split__diagram) {
+  #pattern-content .pattern-layout__sidebar,
+  #pattern-content .sleeveless-piece-split__diagram {
     order: -1;
     flex: 0 0 auto;
     min-width: 0;
   }
 
-  :global(#pattern-content .sleeveless-piece-split__diagram-inner) {
+  #pattern-content .sleeveless-piece-split__diagram-inner {
     margin: 0;
   }
 
-  :global(#pattern-content .sleeveless-piece-split__diagram-trigger) {
+  #pattern-content .sleeveless-piece-split__diagram-trigger {
     display: block;
     width: 100%;
     margin: 0;
@@ -309,13 +328,13 @@
     text-align: inherit;
   }
 
-  :global(#pattern-content .sleeveless-piece-split__diagram-trigger:focus-visible) {
+  #pattern-content .sleeveless-piece-split__diagram-trigger:focus-visible {
     outline: 2px solid var(--kbm-green, #52682d);
     outline-offset: 2px;
     border-radius: 6px;
   }
 
-  :global(#pattern-content .sleeveless-piece-split__diagram-hint) {
+  #pattern-content .sleeveless-piece-split__diagram-hint {
     margin: 0.4rem 0 0;
     font-size: 0.82rem;
     line-height: 1.3;
@@ -323,31 +342,40 @@
     text-align: center;
   }
 
-  :global(#pattern-content .sleeveless-piece-split__diagram-img) {
+  #pattern-content .sleeveless-piece-split__diagram-img {
     display: block;
     width: 100%;
     max-width: 100%;
     height: auto;
   }
 
-  :global(#pattern-content .sleeveless-piece-split__diagram-svg) {
+  #pattern-content .sleeveless-piece-split__diagram-svg {
     width: 100%;
     max-width: 100%;
     height: auto;
   }
 
-  :global(#pattern-content .sleeveless-piece-split__diagram-inline) {
+  #pattern-content .sleeveless-piece-split__diagram-inline {
     display: block;
     width: 100%;
     max-width: 100%;
     height: auto;
   }
 
-  :global(.sleeveless-diagram-modal[hidden]) {
+  /* Ensure inlined garment SVG paints (same-origin HTML fragment insertion). */
+  #pattern-content .sleeveless-piece-split__diagram-svg > svg {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .sleeveless-diagram-modal[hidden] {
     display: none !important;
   }
 
-  :global(.sleeveless-diagram-modal) {
+  .sleeveless-diagram-modal {
     position: fixed;
     inset: 0;
     z-index: 1500;
@@ -357,7 +385,7 @@
     background: rgba(17, 24, 39, 0.72);
   }
 
-  :global(.sleeveless-diagram-modal__dialog) {
+  .sleeveless-diagram-modal__dialog {
     position: relative;
     width: auto;
     height: auto;
@@ -369,7 +397,7 @@
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.32);
   }
 
-  :global(.sleeveless-diagram-modal__close) {
+  .sleeveless-diagram-modal__close {
     position: absolute;
     top: 0.35rem;
     right: 0.35rem;
@@ -384,12 +412,12 @@
     cursor: pointer;
   }
 
-  :global(.sleeveless-diagram-modal__close:focus-visible) {
+  .sleeveless-diagram-modal__close:focus-visible {
     outline: 2px solid #fff;
     outline-offset: 2px;
   }
 
-  :global(.sleeveless-diagram-modal__content) {
+  .sleeveless-diagram-modal__content {
     display: grid;
     place-items: center;
     width: auto;
@@ -399,8 +427,7 @@
     overflow: auto;
   }
 
-  :global(
-    .sleeveless-diagram-modal__content .sleeveless-piece-split__diagram-inline,
+  .sleeveless-diagram-modal__content .sleeveless-piece-split__diagram-inline,
     .sleeveless-diagram-modal__content svg,
     .sleeveless-diagram-modal__content iframe,
     .sleeveless-diagram-modal__content img,
@@ -409,51 +436,52 @@
     .sleeveless-diagram-modal__content figure > svg,
     .sleeveless-diagram-modal__content figure > iframe,
     .sleeveless-diagram-modal__content figure > img,
-    .sleeveless-diagram-modal__content figure > object
-  ) {
+    .sleeveless-diagram-modal__content figure > object {
     width: min(90vw, 900px);
     max-width: 90vw;
     max-height: 90vh;
     height: auto;
   }
 
-  :global(#pattern-content .sleeveless-piece-split__text .sleeveless-pattern-instructions) {
+  #pattern-content .pattern-layout__content .sleeveless-pattern-instructions,
+  #pattern-content .sleeveless-piece-split__text .sleeveless-pattern-instructions {
     max-width: none;
     margin: 0;
   }
 
-  :global(#pattern-content .sleeveless-piece-split__text .sg-pattern-output.sg-neck-chart-print-block) {
+  #pattern-content .pattern-layout__content .sg-pattern-output.sg-neck-chart-print-block,
+  #pattern-content .sleeveless-piece-split__text .sg-pattern-output.sg-neck-chart-print-block {
     max-width: none;
     margin-left: 0;
     margin-right: 0;
   }
 
-  :global(#pattern-content .sleeveless-piece-chart-fullwidth) {
+  #pattern-content .sleeveless-piece-chart-fullwidth {
     width: 100%;
     max-width: 100%;
     clear: both;
   }
 
-  :global(#pattern-content .sleeveless-piece-chart-fullwidth .ns-shaping-chart__table) {
+  #pattern-content .sleeveless-piece-chart-fullwidth .ns-shaping-chart__table {
     width: 100%;
   }
 
-  :global(#pattern-content .sleeveless-neck-shoulder-diagram) {
+  #pattern-content .sleeveless-neck-shoulder-diagram {
     display: block;
     width: 100%;
     min-width: 0;
     margin-top: 1rem;
   }
 
-  :global(#pattern-content .sg-neck-chart-diagram-block) {
+  #pattern-content .sg-neck-chart-diagram-block {
     margin: 0;
   }
 
-  :global(#pattern-content .ns-shaping-chart--diagram-block) {
+  #pattern-content .ns-shaping-chart--diagram-block {
     margin: 0;
   }
 
-  :global(#pattern-content .ns-shaping-chart__diagram) {
+  #pattern-content .ns-shaping-chart__diagram {
     margin: 0;
     padding: 0.45rem 0.75rem 0.75rem;
     border: 1px solid rgba(55, 65, 81, 0.16);
@@ -461,23 +489,23 @@
     background: #fff;
   }
 
-  :global(#pattern-content .ns-shaping-chart__diagram-svg-wrap) {
+  #pattern-content .ns-shaping-chart__diagram-svg-wrap {
     overflow-x: auto;
     max-width: 100%;
   }
 
-  :global(#pattern-content .ns-shaping-chart__diagram-svg-wrap svg) {
+  #pattern-content .ns-shaping-chart__diagram-svg-wrap svg {
     display: block;
     width: 100%;
     min-width: 320px;
     height: auto;
   }
 
-  :global(#pattern-content .ns-shaping-chart__diagram-svg-wrap .ns-notation-overlay) {
+  #pattern-content .ns-shaping-chart__diagram-svg-wrap .ns-notation-overlay {
     min-width: 320px;
   }
 
-  :global(#pattern-content .ns-shaping-chart__second-shoulder-toggle) {
+  #pattern-content .ns-shaping-chart__second-shoulder-toggle {
     margin: 0.45rem 0 0.75rem;
     padding: 0.55rem 0.7rem;
     border: 1px solid rgba(55, 65, 81, 0.16);
@@ -485,14 +513,14 @@
     background: rgba(82, 104, 45, 0.04);
   }
 
-  :global(#pattern-content .ns-shaping-chart__second-shoulder-toggle-copy) {
+  #pattern-content .ns-shaping-chart__second-shoulder-toggle-copy {
     margin: 0 0 0.35rem;
     font-size: 0.88rem;
     line-height: 1.4;
     color: #374151;
   }
 
-  :global(#pattern-content .ns-shaping-chart__second-shoulder-label) {
+  #pattern-content .ns-shaping-chart__second-shoulder-label {
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
@@ -502,28 +530,28 @@
     cursor: pointer;
   }
 
-  :global(#pattern-content .ns-shaping-chart__second-shoulder-input) {
+  #pattern-content .ns-shaping-chart__second-shoulder-input {
     margin: 0;
     inline-size: 1rem;
     block-size: 1rem;
     accent-color: var(--kbm-green, #52682d);
   }
 
-  :global(#pattern-content .ns-shaping-chart__active-side-note--expanded[hidden]) {
+  #pattern-content .ns-shaping-chart__active-side-note--expanded[hidden] {
     display: none !important;
   }
 
-  :global(#pattern-content #neckline-shoulder-chart-print-area),
-  :global(#pattern-content #front-neckline-shoulder-chart-print-area) {
+  #pattern-content #neckline-shoulder-chart-print-area,
+  #pattern-content #front-neckline-shoulder-chart-print-area {
     width: 100%;
   }
 
-  :global(#pattern-content .neckline-chart-print-controls) {
+  #pattern-content .neckline-chart-print-controls {
     display: none;
   }
 
-  :global(#pattern-content .chart-print-btn),
-  :global(#pattern-content .neckline-chart-print-button) {
+  #pattern-content .chart-print-btn,
+  #pattern-content .neckline-chart-print-button {
     appearance: none;
     border: 0;
     background: transparent;
@@ -535,45 +563,45 @@
     cursor: pointer;
   }
 
-  :global(#pattern-content .chart-print-btn:hover),
-  :global(#pattern-content .neckline-chart-print-button:hover) {
+  #pattern-content .chart-print-btn:hover,
+  #pattern-content .neckline-chart-print-button:hover {
     color: #1f2937;
   }
 
-  :global(#pattern-content .chart-print-btn:focus-visible),
-  :global(#pattern-content .neckline-chart-print-button:focus-visible) {
+  #pattern-content .chart-print-btn:focus-visible,
+  #pattern-content .neckline-chart-print-button:focus-visible {
     outline: 2px solid var(--kbm-green, #52682d);
     outline-offset: 2px;
   }
 
-  :global(#pattern-content .neckline-chart-header-row),
-  :global(#pattern-content .neckline-chart-header) {
+  #pattern-content .neckline-chart-header-row,
+  #pattern-content .neckline-chart-header {
     display: flex;
     align-items: center;
     justify-content: flex-start;
     gap: 12px;
   }
 
-  :global(#pattern-content .neckline-chart-print-only-header),
-  :global(#pattern-content .neckline-chart-print-only-footer) {
+  #pattern-content .neckline-chart-print-only-header,
+  #pattern-content .neckline-chart-print-only-footer {
     display: none;
   }
 
-  :global(#pattern-content .neckline-chart-print-only-header-title) {
+  #pattern-content .neckline-chart-print-only-header-title {
     margin: 0 0 0.25rem;
     font-size: 1.1rem;
     font-weight: 700;
     color: #111827;
   }
 
-  :global(#pattern-content .neckline-chart-print-only-header-intro) {
+  #pattern-content .neckline-chart-print-only-header-intro {
     margin: 0 0 0.8rem;
     font-size: 0.92rem;
     line-height: 1.45;
     color: #1f2937;
   }
 
-  :global(#pattern-content .neckline-chart-print-only-footer) {
+  #pattern-content .neckline-chart-print-only-footer {
     margin-top: 0.7rem;
     padding-top: 0.45rem;
     border-top: 1px solid #d1d5db;
@@ -581,7 +609,7 @@
     color: #4b5563;
   }
 
-  :global(#pattern-content .sleeveless-neck-shoulder-help) {
+  #pattern-content .sleeveless-neck-shoulder-help {
     display: grid;
     grid-template-columns: 124px minmax(0, 1fr);
     align-items: start;
@@ -589,7 +617,7 @@
     margin: 0.15rem 0 0.5rem;
   }
 
-  :global(#pattern-content .sleeveless-neck-shoulder-help__icon) {
+  #pattern-content .sleeveless-neck-shoulder-help__icon {
     width: min(100%, 118px);
     height: auto;
     display: block;
@@ -597,52 +625,52 @@
     justify-self: start;
   }
 
-  :global(#pattern-content .sleeveless-neck-shoulder-help__text) {
+  #pattern-content .sleeveless-neck-shoulder-help__text {
     margin: 0;
     font-size: 0.84rem;
     line-height: 1.4;
     color: #374151;
   }
 
-  :global(#pattern-content .pattern-shaping-intro) {
+  #pattern-content .pattern-shaping-intro {
     margin: 0 0 0.65rem;
   }
 
-  :global(#pattern-content .pattern-shaping-intro p) {
+  #pattern-content .pattern-shaping-intro p {
     margin: 0 0 0.45rem;
     font-size: 0.92rem;
     line-height: 1.5;
     color: #374151;
   }
 
-  :global(#pattern-content .pattern-shaping-intro p:last-child) {
+  #pattern-content .pattern-shaping-intro p:last-child {
     margin-bottom: 0;
   }
 
-  :global(#pattern-content .pattern-shaping-intro .small.text-muted) {
+  #pattern-content .pattern-shaping-intro .small.text-muted {
     font-size: 0.82rem;
     color: #6b7280;
   }
 
-  :global(#pattern-content .sleeveless-shaping-help-toggle) {
+  #pattern-content .sleeveless-shaping-help-toggle {
     margin: 0 0 0.65rem;
     padding: 0.6rem 0.8rem;
   }
 
-  :global(#pattern-content .sleeveless-shaping-help-toggle summary) {
+  #pattern-content .sleeveless-shaping-help-toggle summary {
     cursor: pointer;
     font-size: 0.9rem;
     font-weight: 700;
     color: #1f2937;
   }
 
-  :global(#pattern-content .sleeveless-shaping-help-toggle p) {
+  #pattern-content .sleeveless-shaping-help-toggle p {
     margin: 0.55rem 0 0;
     font-size: 0.88rem;
     line-height: 1.45;
   }
 
-  :global(#pattern-content .sleeveless-shaping-help-toggle ul) {
+  #pattern-content .sleeveless-shaping-help-toggle ul {
     margin: 0.45rem 0 0;
     padding-left: 1.1rem;
     font-size: 0.88rem;
@@ -650,13 +678,13 @@
     color: #374151;
   }
 
-  :global(#pattern-content .sleeveless-shaping-help__video-link) {
+  #pattern-content .sleeveless-shaping-help__video-link {
     color: var(--kbm-green, #52682d);
     font-weight: 700;
     text-underline-offset: 2px;
   }
 
-  :global(#pattern-content a.pattern-video-modal-link) {
+  #pattern-content a.pattern-video-modal-link {
     color: var(--kbm-green, #52682d);
     font-weight: 700;
     text-underline-offset: 2px;
@@ -664,77 +692,78 @@
   }
 
   @media (min-width: 768px) {
-    :global(#pattern-content .sleeveless-piece-split) {
-      display: flex;
-      flex-direction: row;
+    #pattern-content .pattern-layout.pattern-layout--garment-columns,
+    #pattern-content .sleeveless-piece-split {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) clamp(220px, 28vw, 320px);
       gap: 1.5rem;
-      align-items: flex-start;
+      align-items: start;
     }
 
-    :global(#pattern-content .sleeveless-piece-split__text) {
-      flex: 1 1 auto;
+    #pattern-content .pattern-layout__content,
+    #pattern-content .sleeveless-piece-split__text {
       min-width: 0;
     }
 
-    :global(#pattern-content .sleeveless-piece-split__diagram) {
-      order: 1;
-      flex: 0 0 clamp(220px, 28vw, 320px);
-      max-width: 320px;
+    #pattern-content .pattern-layout__sidebar,
+    #pattern-content .sleeveless-piece-split__diagram {
+      order: 0;
+      width: auto;
+      max-width: none;
       min-width: 0;
       position: sticky;
       top: var(--fixed-header-offset, 90px);
-      align-self: flex-start;
+      align-self: start;
+      justify-self: stretch;
     }
 
-    :global(#pattern-content .sleeveless-piece-split__diagram-inner) {
+    #pattern-content .sleeveless-piece-split__diagram-inner {
       position: static;
+      max-width: 320px;
+      margin-left: auto;
     }
   }
 
   @media (max-width: 560px) {
-    :global(#pattern-content .sleeveless-neck-shoulder-help) {
+    #pattern-content .sleeveless-neck-shoulder-help {
       grid-template-columns: 96px minmax(0, 1fr);
       gap: 0.4rem 0.5rem;
       margin-bottom: 0.45rem;
     }
 
-    :global(#pattern-content .sleeveless-neck-shoulder-help__icon) {
+    #pattern-content .sleeveless-neck-shoulder-help__icon {
       width: min(100%, 90px);
     }
 
-    :global(#pattern-content .sleeveless-neck-shoulder-help__text) {
+    #pattern-content .sleeveless-neck-shoulder-help__text {
       font-size: 0.82rem;
       line-height: 1.35;
     }
   }
 
-  :global(#pattern-content .pattern-section.is-collapsed, #pattern-content .pattern-subsection.is-collapsed) {
+  #pattern-content .pattern-section.is-collapsed, #pattern-content .pattern-subsection.is-collapsed {
     opacity: 0.74;
     background: rgba(0, 0, 0, 0.02);
   }
 
-  :global(
-    #pattern-content .pattern-section.is-collapsed .pattern-section__header,
-    #pattern-content .pattern-subsection.is-collapsed .pattern-section__header
-  ) {
+  #pattern-content .pattern-section.is-collapsed .pattern-section__header,
+    #pattern-content .pattern-subsection.is-collapsed .pattern-section__header {
     padding: 0.35rem 0.6rem;
   }
 
-  :global(
-    #pattern-content .pattern-section.is-collapsed .pattern-section__content,
-    #pattern-content .pattern-subsection.is-collapsed .pattern-section__content
-  ) {
+  #pattern-content .pattern-section.is-collapsed .pattern-section__content,
+    #pattern-content .pattern-subsection.is-collapsed .pattern-section__content {
     display: none;
   }
 
-  :global(#pattern-content .pattern-preamble p) {
+  #pattern-content .pattern-preamble p {
     margin: 0.35rem 0;
     font-size: 0.92rem;
     line-height: 1.5;
     color: #4b5563;
   }
 
-  :global(#pattern-content .pattern-rc-open) {
+  #pattern-content .pattern-rc-open {
     font-family: inherit;
     font-weight: 400;
     font-size: 0.95rem;
@@ -743,15 +772,15 @@
     color: #374151;
   }
 
-  :global(#pattern-content .pattern-step) {
+  #pattern-content .pattern-step {
     margin: 0 0 1rem;
   }
 
-  :global(#pattern-content .pattern-step:last-child) {
+  #pattern-content .pattern-step:last-child {
     margin-bottom: 0;
   }
 
-  :global(#pattern-content .pattern-step-title) {
+  #pattern-content .pattern-step-title {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -761,32 +790,32 @@
     color: #1f2937;
   }
 
-  :global(#pattern-content .pattern-step-title .pattern-checkbox) {
+  #pattern-content .pattern-step-title .pattern-checkbox {
     margin-bottom: 0;
   }
 
-  :global(#pattern-content .pattern-finishing-item) {
+  #pattern-content .pattern-finishing-item {
     display: flex;
     align-items: flex-start;
     gap: 0.5rem;
     list-style-position: outside;
   }
 
-  :global(#pattern-content .pattern-step p) {
+  #pattern-content .pattern-step p {
     margin: 0.25rem 0 0;
     font-size: 0.95rem;
     line-height: 1.55;
     color: #374151;
   }
 
-  :global(#pattern-content .pattern-step-intro) {
+  #pattern-content .pattern-step-intro {
     margin: 0 0 0.85rem;
     font-size: 0.95rem;
     line-height: 1.55;
     color: #374151;
   }
 
-  :global(#pattern-content .pattern-checkbox) {
+  #pattern-content .pattern-checkbox {
     display: flex;
     align-items: flex-start;
     gap: 0.45rem;
@@ -797,19 +826,19 @@
     cursor: pointer;
   }
 
-  :global(#pattern-content .pattern-checkbox input) {
+  #pattern-content .pattern-checkbox input {
     margin-top: 0.2rem;
     flex-shrink: 0;
     accent-color: var(--kbm-green);
   }
 
-  :global(#pattern-content .pattern-stop-rc) {
+  #pattern-content .pattern-stop-rc {
     font-weight: 700;
     color: #b45309;
     margin: 0.5rem 0 0.35rem;
   }
 
-  :global(#pattern-content .pattern-finishing-list) {
+  #pattern-content .pattern-finishing-list {
     margin: 0;
     padding-left: 1.2rem;
     font-size: 0.95rem;
@@ -820,7 +849,7 @@
     gap: 0.55rem;
   }
 
-  :global(#pattern-content .pattern-finishing-toggle-list) {
+  #pattern-content .pattern-finishing-toggle-list {
     margin: 0;
     padding: 0;
     list-style: none;
@@ -829,14 +858,14 @@
     gap: 0.45rem;
   }
 
-  :global(#pattern-content .pattern-finishing-toggle) {
+  #pattern-content .pattern-finishing-toggle {
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 7px;
     background: #fff;
     padding: 0.45rem 0.65rem 0.55rem;
   }
 
-  :global(#pattern-content .pattern-finishing-toggle summary) {
+  #pattern-content .pattern-finishing-toggle summary {
     cursor: pointer;
     font-size: 0.92rem;
     font-weight: 700;
@@ -844,7 +873,7 @@
     line-height: 1.35;
   }
 
-  :global(#pattern-content .pattern-finishing-toggle ul) {
+  #pattern-content .pattern-finishing-toggle ul {
     margin: 0.45rem 0 0;
     padding-left: 1.1rem;
     font-size: 0.9rem;
@@ -852,7 +881,7 @@
     color: #374151;
   }
 
-  :global(#pattern-content .pattern-finishing-toggle p) {
+  #pattern-content .pattern-finishing-toggle p {
     margin: 0.45rem 0 0;
     font-size: 0.88rem;
     line-height: 1.45;
@@ -874,46 +903,42 @@
       display: block !important;
     }
 
-    :global(
-      #pattern-content .pattern-section.is-collapsed .pattern-section__content,
-      #pattern-content .pattern-subsection.is-collapsed .pattern-section__content
-    ) {
+    #pattern-content .pattern-section.is-collapsed .pattern-section__content,
+      #pattern-content .pattern-subsection.is-collapsed .pattern-section__content {
       display: block !important;
     }
 
-    :global(#pattern-content .pattern-section.is-collapsed, #pattern-content .pattern-subsection.is-collapsed) {
+    #pattern-content .pattern-section.is-collapsed, #pattern-content .pattern-subsection.is-collapsed {
       opacity: 1 !important;
       background: #fff !important;
     }
 
-    :global(#pattern-content .pattern-section__collapse-label) {
+    #pattern-content .pattern-section__collapse-label {
       display: none !important;
     }
 
-    :global(
-      #pattern-content .pattern-section.is-collapsed .pattern-section__header,
-      #pattern-content .pattern-subsection.is-collapsed .pattern-section__header
-    ) {
+    #pattern-content .pattern-section.is-collapsed .pattern-section__header,
+      #pattern-content .pattern-subsection.is-collapsed .pattern-section__header {
       padding: 0.65rem 0.85rem !important;
     }
 
-    :global(#pattern-content .sleeveless-piece-split__diagram-inner) {
+    #pattern-content .sleeveless-piece-split__diagram-inner {
       position: static !important;
     }
 
-    :global(#pattern-content .sleeveless-neck-shoulder-diagram) {
+    #pattern-content .sleeveless-neck-shoulder-diagram {
       display: none !important;
     }
 
-    :global(#pattern-content .ns-shaping-chart__second-shoulder-toggle) {
+    #pattern-content .ns-shaping-chart__second-shoulder-toggle {
       display: none !important;
     }
 
-    :global(.no-print) {
+    .no-print {
       display: none !important;
     }
 
-    :global(#pattern-content .pattern-finishing-toggle > *:not(summary)) {
+    #pattern-content .pattern-finishing-toggle > *:not(summary) {
       display: block !important;
     }
   }

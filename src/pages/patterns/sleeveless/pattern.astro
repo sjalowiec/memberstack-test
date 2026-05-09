@@ -340,6 +340,13 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     letter-spacing: 0.02em;
   }
 
+  :global(#pattern-content .pattern-section--garment-piece .pattern-section__heading h2) {
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: #1f2937;
+  }
+
   :global(#pattern-content .pattern-section__collapse-label) {
     display: flex;
     align-items: center;
@@ -355,6 +362,10 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     padding: 0.75rem 0.85rem 1.1rem;
     background: color-mix(in srgb, var(--kbm-green, #52682d) 3%, var(--page-bg, #fff));
     border-radius: 0 0 7px 7px;
+  }
+
+  :global(#pattern-content .pattern-section--garment-piece > .pattern-section__content) {
+    overflow: visible;
   }
 
   :global(#pattern-content .pattern-subsection) {
@@ -390,7 +401,8 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     }
   }
 
-  /* Back / Front: instructions + sticky schematic (desktop 60/40) */
+  /* BACK / FRONT: pattern-layout + sleeveless-piece-split (desktop: grid, sticky right sidebar) */
+  :global(#pattern-content .pattern-layout.pattern-layout--garment-columns),
   :global(#pattern-content .sleeveless-piece-split) {
     display: flex;
     flex-direction: column;
@@ -398,11 +410,13 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     align-items: stretch;
   }
 
+  :global(#pattern-content .pattern-layout__content),
   :global(#pattern-content .sleeveless-piece-split__text) {
     flex: 1 1 auto;
     min-width: 0;
   }
 
+  :global(#pattern-content .pattern-layout__sidebar),
   :global(#pattern-content .sleeveless-piece-split__diagram) {
     order: -1;
     flex: 0 0 auto;
@@ -456,6 +470,14 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     width: 100%;
     max-width: 100%;
     height: auto;
+  }
+
+  :global(#pattern-content .sleeveless-piece-split__diagram-svg > svg) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    overflow: visible;
   }
 
   :global(.sleeveless-diagram-modal[hidden]) {
@@ -532,11 +554,13 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     height: auto;
   }
 
+  :global(#pattern-content .pattern-layout__content .sleeveless-pattern-instructions),
   :global(#pattern-content .sleeveless-piece-split__text .sleeveless-pattern-instructions) {
     max-width: none;
     margin: 0;
   }
 
+  :global(#pattern-content .pattern-layout__content .sg-pattern-output.sg-neck-chart-print-block),
   :global(#pattern-content .sleeveless-piece-split__text .sg-pattern-output.sg-neck-chart-print-block) {
     max-width: none;
     margin-left: 0;
@@ -779,30 +803,35 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
   }
 
   @media (min-width: 768px) {
+    :global(#pattern-content .pattern-layout.pattern-layout--garment-columns),
     :global(#pattern-content .sleeveless-piece-split) {
-      display: flex;
-      flex-direction: row;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) clamp(220px, 28vw, 320px);
       gap: 1.5rem;
-      align-items: flex-start;
+      align-items: start;
     }
 
+    :global(#pattern-content .pattern-layout__content),
     :global(#pattern-content .sleeveless-piece-split__text) {
-      flex: 1 1 auto;
       min-width: 0;
     }
 
+    :global(#pattern-content .pattern-layout__sidebar),
     :global(#pattern-content .sleeveless-piece-split__diagram) {
-      order: 1;
-      flex: 0 0 clamp(220px, 28vw, 320px);
-      max-width: 320px;
+      order: 0;
+      width: auto;
+      max-width: none;
       min-width: 0;
       position: sticky;
       top: var(--fixed-header-offset, 90px);
-      align-self: flex-start;
+      align-self: start;
+      justify-self: stretch;
     }
 
     :global(#pattern-content .sleeveless-piece-split__diagram-inner) {
       position: static;
+      max-width: 320px;
+      margin-left: auto;
     }
   }
 
@@ -1347,8 +1376,10 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     chartDiagramMountId,
     pieceSectionId,
     patternIntroSentence,
-    neckChartStartRow
+    neckChartStartRow,
+    displayOpts
   ) {
+    const omitPieceBanner = displayOpts && displayOpts.omitPieceBanner === true;
     const list = Array.isArray(rows) ? rows : [];
     let lastShownStitch;
     let currentPiece = "";
@@ -1422,8 +1453,10 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
       if (row.kind === "piece") {
         flushOpenSection();
         currentPiece = row.title;
-        const chunk = `<h2 class="sleeveless-pattern-piece">${escapeHtml(row.title)}</h2>`;
-        splitParts.push(chunk);
+        if (!omitPieceBanner) {
+          const chunk = `<h2 class="sleeveless-pattern-piece">${escapeHtml(row.title)}</h2>`;
+          splitParts.push(chunk);
+        }
         continue;
       }
       if (row.kind === "section") {
@@ -1491,9 +1524,9 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     const src = escapeHtml(diagramSrc);
     const alt = escapeHtml(diagramAlt);
     const post = postSplitHtml || "";
-    return `<div class="sleeveless-piece-split">
-  <div class="sleeveless-piece-split__text">${innerHtml}</div>
-  <aside class="sleeveless-piece-split__diagram">
+    return `<div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split">
+  <div class="pattern-layout__content sleeveless-piece-split__text">${innerHtml}</div>
+  <aside class="pattern-layout__sidebar sleeveless-piece-split__diagram" aria-label="Garment diagram">
     <div class="sleeveless-piece-split__diagram-inner">
       <button type="button" class="sleeveless-piece-split__diagram-trigger" data-sleeveless-diagram-trigger aria-label="Open larger diagram: ${alt}">
         <div class="sleeveless-piece-split__diagram-svg" data-sleeveless-diagram data-src="${src}" data-alt="${alt}">
@@ -1633,6 +1666,7 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
       const res = await fetch(src, { credentials: "same-origin" });
       if (!res.ok) throw new Error(`Failed to load SVG: ${src} (${res.status})`);
       let svgText = await res.text();
+      svgText = svgText.replace(/^\uFEFF/, "").replace(/^<\?xml[\s\S]*?\?>\s*/, "");
 
       // Replace known placeholders.
       for (const [k, v] of Object.entries(replacements || {})) {
@@ -1647,8 +1681,12 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
       }
 
       const parser = new DOMParser();
-      const doc = parser.parseFromString(svgText, "image/svg+xml");
-      const svg = doc.documentElement;
+      let doc = parser.parseFromString(svgText, "image/svg+xml");
+      let svg = doc.documentElement;
+      if (!svg || svg.nodeName.toLowerCase() !== "svg" || doc.querySelector("parsererror")) {
+        doc = parser.parseFromString(svgText, "text/xml");
+        svg = doc.documentElement;
+      }
       if (!svg || svg.nodeName.toLowerCase() !== "svg") {
         const pe = doc.querySelector("parsererror");
         throw new Error(pe ? pe.textContent || "SVG parse error" : "SVG parse error");
@@ -1658,8 +1696,8 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
       if (alt) svg.setAttribute("aria-label", alt);
       svg.classList.add("sleeveless-piece-split__diagram-inline");
 
-      hostEl.innerHTML = "";
-      hostEl.appendChild(document.importNode(svg, true));
+      // Match print route: inject SVG via markup string. importNode(from DOMParser doc) can fail to paint SVG in some browsers.
+      hostEl.innerHTML = svg.outerHTML;
     } catch (err) {
       console.warn("[sleeveless] Diagram load failed:", err);
       hostEl.innerHTML = `<p class="sleeveless-pattern-boot-msg">Diagram unavailable.</p>`;
@@ -1672,8 +1710,9 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
     const jobs = [];
     hosts.forEach((el) => {
       if (!(el instanceof HTMLElement)) return;
-      const src = el.dataset.src;
-      const alt = el.dataset.alt || "";
+      const src =
+        el.getAttribute("data-src") || (typeof el.dataset.src === "string" ? el.dataset.src : "") || "";
+      const alt = el.getAttribute("data-alt") || el.dataset.alt || "";
       if (!src) return;
       const piece = inferSleevelessDiagramPiece(src, alt);
       const replacements = buildSleevelessDiagramReplacements(result, unit, {
@@ -2303,6 +2342,8 @@ table {
 
   function bindPatternSectionCollapsePersistence(root) {
     if (!root) return;
+    if (root.dataset.patternSectionCollapseBound === "true") return;
+    root.dataset.patternSectionCollapseBound = "true";
     root.addEventListener("change", (e) => {
       const t = e.target;
       if (!(t instanceof HTMLInputElement) || !t.classList.contains("pattern-section__collapse")) return;
@@ -2517,7 +2558,7 @@ table {
     });
   }
 
-  function renderMount(patternMerged, result, unit, patternData) {
+  async function renderMount(patternMerged, result, unit, patternData) {
     const mount = document.querySelector("[data-sleeveless-mount]");
     if (!mount) return;
 
@@ -2532,7 +2573,8 @@ table {
             "sg-neck-shoulder-diagram-back",
             "back",
             patternIntroSentence,
-            result?.neckShoulderShapingChart?.rows?.[0]?.row
+            result?.neckShoulderShapingChart?.rows?.[0]?.row,
+            { omitPieceBanner: true }
           )
         : null;
     const frontRendered =
@@ -2543,7 +2585,8 @@ table {
             "sg-neck-shoulder-diagram-front",
             "front",
             patternIntroSentence,
-            result?.frontNeckShoulderShapingChart?.rows?.[0]?.row
+            result?.frontNeckShoulderShapingChart?.rows?.[0]?.row,
+            { omitPieceBanner: true }
           )
         : null;
 
@@ -2567,8 +2610,14 @@ table {
     );
 
     mount.innerHTML =
-      wrapPatternSection("sg-back", "Back", backWrapped, { defaultCollapsed: false }) +
-      wrapPatternSection("sg-front", "Front", frontWrapped, { defaultCollapsed: false }) +
+      wrapPatternSection("sg-back", "BACK", backWrapped, {
+        defaultCollapsed: false,
+        sectionClassName: "pattern-section--garment-piece",
+      }) +
+      wrapPatternSection("sg-front", "FRONT", frontWrapped, {
+        defaultCollapsed: false,
+        sectionClassName: "pattern-section--garment-piece",
+      }) +
       wrapPatternSection("sg-finishing", "Finishing", buildFinishingHtml(), { defaultCollapsed: true });
 
     const backArmholeLocalChartStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
@@ -2653,7 +2702,7 @@ table {
 
     // Inline SVG diagrams with placeholder replacement (Back + Front).
     // Note: replacements come from the same result/debug used for chart/timeline (no extra shaping math here).
-    void hydrateSleevelessDiagrams(mount, result, unit, patternData);
+    await hydrateSleevelessDiagrams(mount, result, unit, patternData);
     ensureSleevelessDiagramModal();
     bindSleevelessDiagramZoom(mount);
     ensureSleevelessVideoModal();
@@ -2720,7 +2769,7 @@ table {
         : {};
     const unit = (ygm && ygm.gaugeRawUnit === "cm") || (yg && yg.gaugeRawUnit === "cm") ? "cm" : "in";
 
-    renderMount(patternMerged, result, unit, genInput);
+    void renderMount(patternMerged, result, unit, genInput);
   }
 
   function init() {

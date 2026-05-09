@@ -314,8 +314,10 @@
     chartDiagramMountId,
     pieceSectionId,
     patternIntroSentence,
-    neckChartStartRow
+    neckChartStartRow,
+    displayOpts
   ) {
+    const omitPieceBanner = displayOpts && displayOpts.omitPieceBanner === true;
     const list = Array.isArray(rows) ? rows : [];
     let lastShownStitch;
     let currentPiece = "";
@@ -389,8 +391,10 @@
       if (row.kind === "piece") {
         flushOpenSection();
         currentPiece = row.title;
-        const chunk = `<h2 class="sleeveless-pattern-piece">${escapeHtml(row.title)}</h2>`;
-        splitParts.push(chunk);
+        if (!omitPieceBanner) {
+          const chunk = `<h2 class="sleeveless-pattern-piece">${escapeHtml(row.title)}</h2>`;
+          splitParts.push(chunk);
+        }
         continue;
       }
       if (row.kind === "section") {
@@ -458,9 +462,9 @@
     const src = escapeHtml(diagramSrc);
     const alt = escapeHtml(diagramAlt);
     const post = postSplitHtml || "";
-    return `<div class="sleeveless-piece-split">
-  <div class="sleeveless-piece-split__text">${innerHtml}</div>
-  <aside class="sleeveless-piece-split__diagram">
+    return `<div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split">
+  <div class="pattern-layout__content sleeveless-piece-split__text">${innerHtml}</div>
+  <aside class="pattern-layout__sidebar sleeveless-piece-split__diagram" aria-label="Garment diagram">
     <div class="sleeveless-piece-split__diagram-inner">
       <button type="button" class="sleeveless-piece-split__diagram-trigger" data-sleeveless-diagram-trigger aria-label="Open larger diagram: ${alt}">
         <div class="sleeveless-piece-split__diagram-svg" data-sleeveless-diagram data-src="${src}" data-alt="${alt}">
@@ -600,6 +604,7 @@
       const res = await fetch(src, { credentials: "same-origin" });
       if (!res.ok) throw new Error(`Failed to load SVG: ${src} (${res.status})`);
       let svgText = await res.text();
+      svgText = svgText.replace(/^\uFEFF/, "").replace(/^<\?xml[\s\S]*?\?>\s*/, "");
 
       // Replace known placeholders.
       for (const [k, v] of Object.entries(replacements || {})) {
@@ -614,8 +619,12 @@
       }
 
       const parser = new DOMParser();
-      const doc = parser.parseFromString(svgText, "image/svg+xml");
-      const svg = doc.documentElement;
+      let doc = parser.parseFromString(svgText, "image/svg+xml");
+      let svg = doc.documentElement;
+      if (!svg || svg.nodeName.toLowerCase() !== "svg" || doc.querySelector("parsererror")) {
+        doc = parser.parseFromString(svgText, "text/xml");
+        svg = doc.documentElement;
+      }
       if (!svg || svg.nodeName.toLowerCase() !== "svg") {
         const pe = doc.querySelector("parsererror");
         throw new Error(pe ? pe.textContent || "SVG parse error" : "SVG parse error");
@@ -625,8 +634,8 @@
       if (alt) svg.setAttribute("aria-label", alt);
       svg.classList.add("sleeveless-piece-split__diagram-inline");
 
-      hostEl.innerHTML = "";
-      hostEl.appendChild(document.importNode(svg, true));
+      // Match print route: inject SVG via markup string. importNode(from DOMParser doc) can fail to paint SVG in some browsers.
+      hostEl.innerHTML = svg.outerHTML;
     } catch (err) {
       console.warn("[sleeveless] Diagram load failed:", err);
       hostEl.innerHTML = `<p class="sleeveless-pattern-boot-msg">Diagram unavailable.</p>`;
@@ -639,8 +648,9 @@
     const jobs = [];
     hosts.forEach((el) => {
       if (!(el instanceof HTMLElement)) return;
-      const src = el.dataset.src;
-      const alt = el.dataset.alt || "";
+      const src =
+        el.getAttribute("data-src") || (typeof el.dataset.src === "string" ? el.dataset.src : "") || "";
+      const alt = el.getAttribute("data-alt") || el.dataset.alt || "";
       if (!src) return;
       const piece = inferSleevelessDiagramPiece(src, alt);
       const replacements = buildSleevelessDiagramReplacements(result, unit, {
@@ -1270,6 +1280,8 @@ table {
 
   function bindPatternSectionCollapsePersistence(root) {
     if (!root) return;
+    if (root.dataset.patternSectionCollapseBound === "true") return;
+    root.dataset.patternSectionCollapseBound = "true";
     root.addEventListener("change", (e) => {
       const t = e.target;
       if (!(t instanceof HTMLInputElement) || !t.classList.contains("pattern-section__collapse")) return;
@@ -1484,7 +1496,7 @@ table {
     });
   }
 
-  function renderMount(patternMerged, result, unit, patternData) {
+  async function renderMount(patternMerged, result, unit, patternData) {
     const mount = document.querySelector("[data-sleeveless-mount]");
     if (!mount) return;
 
@@ -1499,7 +1511,8 @@ table {
             "sg-neck-shoulder-diagram-back",
             "back",
             patternIntroSentence,
-            result?.neckShoulderShapingChart?.rows?.[0]?.row
+            result?.neckShoulderShapingChart?.rows?.[0]?.row,
+            { omitPieceBanner: true }
           )
         : null;
     const frontRendered =
@@ -1510,7 +1523,8 @@ table {
             "sg-neck-shoulder-diagram-front",
             "front",
             patternIntroSentence,
-            result?.frontNeckShoulderShapingChart?.rows?.[0]?.row
+            result?.frontNeckShoulderShapingChart?.rows?.[0]?.row,
+            { omitPieceBanner: true }
           )
         : null;
 
@@ -1534,8 +1548,14 @@ table {
     );
 
     mount.innerHTML =
-      wrapPatternSection("sg-back", "Back", backWrapped, { defaultCollapsed: false }) +
-      wrapPatternSection("sg-front", "Front", frontWrapped, { defaultCollapsed: false }) +
+      wrapPatternSection("sg-back", "BACK", backWrapped, {
+        defaultCollapsed: false,
+        sectionClassName: "pattern-section--garment-piece",
+      }) +
+      wrapPatternSection("sg-front", "FRONT", frontWrapped, {
+        defaultCollapsed: false,
+        sectionClassName: "pattern-section--garment-piece",
+      }) +
       wrapPatternSection("sg-finishing", "Finishing", buildFinishingHtml(), { defaultCollapsed: true });
 
     const backArmholeLocalChartStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
@@ -1620,7 +1640,7 @@ table {
 
     // Inline SVG diagrams with placeholder replacement (Back + Front).
     // Note: replacements come from the same result/debug used for chart/timeline (no extra shaping math here).
-    void hydrateSleevelessDiagrams(mount, result, unit, patternData);
+    await hydrateSleevelessDiagrams(mount, result, unit, patternData);
     ensureSleevelessDiagramModal();
     bindSleevelessDiagramZoom(mount);
     ensureSleevelessVideoModal();
@@ -1687,23 +1707,10 @@ table {
         : {};
     const unit = (ygm && ygm.gaugeRawUnit === "cm") || (yg && yg.gaugeRawUnit === "cm") ? "cm" : "in";
 
-    renderMount(patternMerged, result, unit, genInput);
+    void renderMount(patternMerged, result, unit, genInput);
   }
 
-  function bindBetaPatternTipsToggle() {
-    const cb = document.querySelector("[data-beta-pattern-show-tips]");
-    const content = document.querySelector("#pattern-content");
-    if (!(cb instanceof HTMLInputElement) || !(content instanceof HTMLElement)) return;
-    const sync = () => {
-      content.dataset.showTips = cb.checked ? "true" : "false";
-    };
-    cb.addEventListener("change", sync);
-    sync();
-  }
-
-  export function initSleevelessBetaPatternPage() {
-    bindBetaPatternTipsToggle();
-
+  function refreshBetaPatternContent() {
     const patternMerged = SLEEVELESS_BETA_PATTERN_MERGED;
     const patternData = SLEEVELESS_BETA_GENERATOR_INPUT;
 
@@ -1728,11 +1735,14 @@ table {
         : {};
     const unit = (ygm && ygm.gaugeRawUnit === "cm") || (yg && yg.gaugeRawUnit === "cm") ? "cm" : "in";
 
-    window.kbmRefreshSleevelessPattern = () => {
-      initSleevelessBetaPatternPage();
-    };
+    void renderMount(patternMerged, result, unit, genInput);
+  }
 
-    renderMount(patternMerged, result, unit, genInput);
+  export function initSleevelessBetaPatternPage() {
+    window.kbmRefreshSleevelessPattern = refreshBetaPatternContent;
+    initializeActionBar(resultsVisibilityConfig);
+    showResults(resultsVisibilityConfig);
+    refreshBetaPatternContent();
   }
 
   export function initSleevelessPatternBuilderPage() {
