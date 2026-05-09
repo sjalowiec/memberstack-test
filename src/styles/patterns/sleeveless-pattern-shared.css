@@ -40,6 +40,49 @@
     font-weight: 500;
   }
 
+  .sleeveless-pattern-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(220px, 2fr);
+    align-items: start;
+    gap: 0.9rem 1.15rem;
+    max-width: 52rem;
+    margin: 0 auto 0.9rem;
+    clear: both;
+  }
+
+  .sleeveless-pattern-intro__image {
+    min-width: 0;
+    order: 2;
+    justify-self: end;
+    align-self: start;
+  }
+
+  .sleeveless-pattern-intro__image img {
+    display: block;
+    width: 100%;
+    max-width: min(100%, 360px);
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+  }
+
+  .sleeveless-pattern-intro__content {
+    min-width: 0;
+    order: 1;
+  }
+
+  .sleeveless-pattern-intro__content .sg-pattern-intro-line,
+  .sleeveless-pattern-intro__content .sg-pattern-soft-warning {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .sleeveless-pattern-intro__content .pattern-tips-toggle {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
   .sg-pattern-soft-warning {
     max-width: 52rem;
     margin: 0 auto 0.75rem;
@@ -170,6 +213,16 @@
   }
 
   @media (max-width: 560px) {
+    .sleeveless-pattern-intro {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.7rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .sleeveless-pattern-intro__image img {
+      max-width: 340px;
+    }
+
     .sleeveless-pattern-row {
       flex-direction: column;
       gap: 0.35rem;

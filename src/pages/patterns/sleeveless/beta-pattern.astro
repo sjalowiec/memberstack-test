@@ -34,22 +34,33 @@ const pageUrl = Astro.url.href;
       <div class="calculator-card hat-builder-inputs">
         <div id="sg-sleeveless-results" class="sg-sleeveless-results">
           <ActionBar formScrollTarget="sleeveless-beta-pattern-top" />
-          <p class="sg-pattern-intro-line" data-sg-pattern-intro></p>
-
           <div id="sleeveless-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
-            <PatternTipsToggle
-              storageKey="sleeveless-show-tips"
-              scopeSelector="#sleeveless-pattern-tips-scope"
-            />
+            <section class="sleeveless-pattern-intro">
+              <div class="sleeveless-pattern-intro__image">
+                <img
+                  src="/images/patterns/sleeveless/sleeveless-sweater-pattern-builder.png"
+                  alt="Sleeveless sweater pattern builder preview"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div class="sleeveless-pattern-intro__content">
+                <p class="sg-pattern-intro-line" data-sg-pattern-intro></p>
+                <PatternTipsToggle
+                  storageKey="sleeveless-show-tips"
+                  scopeSelector="#sleeveless-pattern-tips-scope"
+                />
 
-            <p
-              class="sg-pattern-soft-warning no-print"
-              data-sg-generator-note
-              hidden
-              role="status"
-            >
-              Double-check critical measurements against your sizing chart if anything looks off.
-            </p>
+                <p
+                  class="sg-pattern-soft-warning no-print"
+                  data-sg-generator-note
+                  hidden
+                  role="status"
+                >
+                  Double-check critical measurements against your sizing chart if anything looks off.
+                </p>
+              </div>
+            </section>
 
             <div id="pattern-content" data-pattern-content>
               <div class="sleeveless-pattern-mount" data-sleeveless-mount>
