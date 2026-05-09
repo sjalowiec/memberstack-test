@@ -1,33 +1,91 @@
 // @ts-nocheck
-  import {
-    getCurrentPattern,
-    getPatternData,
-    PATTERN_BUILDER_DATA_KEY,
-    getPatternStorageKey,
-    SLEEVELESS_CHART_AUDIENCE_LABELS,
-  } from "../lib/patterns/patternStorage.ts";
-  import {
-    buildGeneratorPatternDataFromSources,
-    mergedPatternForDisplayFromSources,
-  } from "../lib/patterns/sleevelessPatternBuilderMerge.ts";
-  import {
-    getSleevelessGoldenBetaCanonicalPattern,
-    getSleevelessGoldenBetaPatternBuilderData,
-  } from "../lib/patterns/sleevelessGoldenBeta.ts";
-  import { validatePatternBuilderRequired } from "../lib/patterns/patternBuilderValidation";
-  import { setPatternTabsReadiness } from "../lib/patterns/patternTabsClient.ts";
-  import {
-    centerBindOffStitchesFromNeckShoulderChart,
-    generateSleevelessBackPattern,
-  } from "../lib/patterns/sleevelessPatternOutput.ts";
-  import {
-    renderActiveShoulderChartIntroHtml,
-    renderNeckShoulderShapingDiagramOnlyHtml,
-    renderNeckShoulderShapingChartTableOnlyHtml,
-  } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
-  import { showResults, initializeActionBar } from "../components/wizards/utils/wizardBehavior.ts";
-  import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
-  const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
+import {
+  getCurrentPattern,
+  getPatternData,
+  PATTERN_BUILDER_DATA_KEY,
+  getPatternStorageKey,
+  SLEEVELESS_CHART_AUDIENCE_LABELS,
+} from "../lib/patterns/patternStorage.ts";
+import {
+  buildGeneratorPatternDataFromSources,
+  mergedPatternForDisplayFromSources,
+} from "../lib/patterns/sleevelessPatternBuilderMerge.ts";
+import {
+  getSleevelessGoldenBetaCanonicalPattern,
+  getSleevelessGoldenBetaPatternBuilderData,
+} from "../lib/patterns/sleevelessGoldenBeta.ts";
+import { validatePatternBuilderRequired } from "../lib/patterns/patternBuilderValidation";
+import { setPatternTabsReadiness } from "../lib/patterns/patternTabsClient.ts";
+import {
+  centerBindOffStitchesFromNeckShoulderChart,
+  generateSleevelessBackPattern,
+} from "../lib/patterns/sleevelessPatternOutput.ts";
+import {
+  renderActiveShoulderChartIntroHtml,
+  renderNeckShoulderShapingDiagramOnlyHtml,
+  renderNeckShoulderShapingChartTableOnlyHtml,
+} from "../lib/patterns/neckShoulderShapingChartHtml.ts";
+import { showResults, initializeActionBar } from "../components/wizards/utils/wizardBehavior.ts";
+import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
+
+/** Canonical Vimeo help clips for sleeveless pattern pages (modal + optional jump links). */
+export const SLEEVELESS_HELP_VIDEOS = {
+  roundNeckShaping: {
+    id: "151858551",
+    title: "Round neck shaping",
+    description: "Review the basic steps for shaping a round neckline.",
+    jumpLinks: [
+      { label: "Sample Neckline overview", seconds: 44 },
+      { label: "Knitting Instructions", seconds: 96 },
+      { label: "Scrap off", seconds: 217 },
+      { label: "Rehang one side", seconds: 262 },
+      { label: "Shape the neckline edge (first side)", seconds: 294 },
+      { label: "Bind off the shoulder (1st side)", seconds: 316 },
+      { label: "Center Stitches", seconds: 321 },
+      { label: "Shape the 2nd Neck edge", seconds: 390 },
+      { label: "Bind off shoulders (2nd side)", seconds: 406 },
+    ],
+  },
+  shallowBackNeck: {
+    id: "252565241",
+    title: "Advanced: shallow back neck shaping",
+    description: "Use this when the back neck is shallow or when short-row shaping is involved.",
+    jumpLinks: [
+      { label: "Add a lifeline", seconds: 20 },
+      { label: "Start the shaping", seconds: 42 },
+      { label: "Center and left side in hold", seconds: 71 },
+      { label: "Start shaping the shoulder", seconds: 91 },
+      { label: "Neck edge decrease", seconds: 123 },
+      { label: "Shape the shoulder", seconds: 143 },
+      { label: "Neck edge decrease", seconds: 169 },
+      { label: "Shoulder shaping", seconds: 202 },
+      { label: "Shoulder shaping", seconds: 229 },
+      { label: "Why short row the shoulder?", seconds: 274 },
+      { label: "Finish shoulder, scrap off", seconds: 281 },
+      { label: "Scrap off the center stitches", seconds: 353 },
+      { label: "Shape the other shoulder", seconds: 389 },
+    ],
+  },
+  onePieceBand: {
+    id: "1189760201",
+    title: "One-piece neckband",
+    description: "Review how to finish the neckline with a one-piece band.",
+    jumpLinks: [
+      { label: "One piece band", seconds: 31 },
+      { label: "Mark the curve", seconds: 44 },
+      { label: "Secure the knitting", seconds: 50 },
+      { label: "Measure the neck opening", seconds: 64 },
+      { label: "Estimate the neckband needles", seconds: 78 },
+      { label: "Grading is essential", seconds: 109 },
+      { label: "Single band: fold to the inside", seconds: 193 },
+      { label: "Stitch the band (private side)", seconds: 211 },
+      { label: "Tip", seconds: 253 },
+      { label: "Single band: fold to the public side", seconds: 279 },
+    ],
+  },
+};
+
+const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
 
   const resultsVisibilityConfig = {
     resultsSelector: "#sg-sleeveless-results",
@@ -208,33 +266,53 @@
       .replace(/>/g, "&gt;");
   }
 
+  /** Compact Vimeo modal triggers beside neckline / shoulder charts (Back vs Front). */
+  function necklineShapingVideoCompactHtml(pieceSectionId) {
+    const piece = String(pieceSectionId || "").trim();
+    if (piece === "back") {
+      return `<div class="sleeveless-neckline-video-help no-print">
+  <p class="sleeveless-neckline-video-help__line">
+    <span class="sleeveless-neckline-video-help__lead">Need help with this step?</span>
+    <span class="sleeveless-neckline-video-help__links">
+      <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="roundNeckShaping" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Round neck shaping</button>
+      <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="shallowBackNeck" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Advanced: shallow back neck shaping</button>
+    </span>
+  </p>
+</div>`;
+    }
+    if (piece === "front") {
+      return `<div class="sleeveless-neckline-video-help no-print">
+  <p class="sleeveless-neckline-video-help__line">
+    <span class="sleeveless-neckline-video-help__lead">Need help with this step?</span>
+    <span class="sleeveless-neckline-video-help__links">
+      <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="roundNeckShaping" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Round neck shaping</button>
+    </span>
+  </p>
+</div>`;
+    }
+    return "";
+  }
+
   /**
    * Intro + collapsible help beneath the chart heading (same HTML intro as print/PDF via `renderActiveShoulderChartIntroHtml`).
    * @param {string | undefined} startRowLabel Armhole RC at center bind-off (chart row 0), e.g. `RC:117`.
    * @param {import("../lib/patterns/neckShoulderShapingChart").NeckShoulderShapingChart | undefined} chart
+   * @param {'back' | 'front'} piece
    */
-  function neckShoulderChartHelpRowHtml(startRowLabel, chart) {
+  function neckShoulderChartHelpRowHtml(startRowLabel, chart, piece) {
     const intro = renderActiveShoulderChartIntroHtml({
       localStartRcLabel: String(startRowLabel ?? "").trim(),
       centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(chart),
       wrapperClass: "pattern-shaping-intro",
       layout: "labeled",
     });
+    const videos = necklineShapingVideoCompactHtml(piece);
     return `${intro}
+${videos}
 <details class="pattern-tip sleeveless-shaping-help-toggle no-print">
   <summary>New to shaping necklines on the machine?</summary>
   <p>Neckline shaping can feel intimidating at first, especially when shoulder shaping happens at the same time. The chart is designed to guide you step by step so you can focus on one row at a time.</p>
-  <p>
-    Need a walkthrough?
-    <a
-      href="/videos/535"
-      class="sleeveless-shaping-help__video-link"
-      data-video-id="535"
-      data-video-slug="easy-round-neck-shaping"
-    >
-      Watch easy-round-neck-shaping
-    </a>
-  </p>
+  <p>For a narrated walkthrough of basic round neckline shaping, open <strong>Round neck shaping</strong> above.</p>
 </details>`;
   }
 
@@ -309,9 +387,7 @@
         if (t) leftBits.push(`<p class="sleeveless-pattern-line">${escapeHtml(t)}</p>`);
       }
       if (row.tipHtml) {
-        leftBits.push(
-          `<div class="pattern-tip" data-tip><strong>Tip:</strong> ${row.tipHtml}</div>`
-        );
+        leftBits.push(`<div class="pattern-tip" data-tip><strong>Tip:</strong> ${row.tipHtml}</div>`);
       }
       if (row.collapsibleTipHtml) {
         leftBits.push(row.collapsibleTipHtml);
@@ -666,6 +742,98 @@
     }
   }
 
+  /** Focus element to restore when the sleeveless Vimeo/content video modal closes. */
+  let sleevelessVideoModalReturnFocus = null;
+
+  function buildSleevelessVimeoPlayerSrc(videoId, startSeconds) {
+    const id = String(videoId || "").trim();
+    if (!/^\d+$/.test(id)) return "";
+    let url = `https://player.vimeo.com/video/${id}?autoplay=1`;
+    if (typeof startSeconds === "number" && Number.isFinite(startSeconds) && startSeconds > 0) {
+      url += `#t=${Math.floor(startSeconds)}s`;
+    }
+    return url;
+  }
+
+  function resolveSleevelessHelpVideoMeta(triggerEl) {
+    if (!(triggerEl instanceof HTMLElement)) return null;
+    const key = triggerEl.getAttribute("data-sleeveless-help-video")?.trim();
+    if (key && SLEEVELESS_HELP_VIDEOS[key]) {
+      return SLEEVELESS_HELP_VIDEOS[key];
+    }
+    const rawId =
+      triggerEl.getAttribute("data-sleeveless-video-id") ||
+      triggerEl.getAttribute("data-video-vimeo-id");
+    const cleanId = String(rawId || "").trim();
+    if (!/^\d+$/.test(cleanId)) return null;
+    const fromMap = Object.values(SLEEVELESS_HELP_VIDEOS).find((m) => m.id === cleanId);
+    if (fromMap) return fromMap;
+    const fallbackTitle = triggerEl.getAttribute("data-video-title")?.trim() || "Video tutorial";
+    return {
+      id: cleanId,
+      title: fallbackTitle,
+      description: "",
+      jumpLinks: [],
+    };
+  }
+
+  function renderSleevelessVideoModalMarkup(meta, triggerEl) {
+    const triggerTitle =
+      triggerEl instanceof HTMLElement ? triggerEl.getAttribute("data-video-title")?.trim() : "";
+    const titleText = (meta.title && String(meta.title).trim()) || triggerTitle || "Video tutorial";
+    const descText = meta.description && String(meta.description).trim();
+    const descHtml = descText
+      ? `<p class="sleeveless-video-modal__desc">${escapeHtml(descText)}</p>`
+      : "";
+
+    const jumps = Array.isArray(meta.jumpLinks)
+      ? meta.jumpLinks.filter(
+          (j) =>
+            j &&
+            String(j.label || "").trim() &&
+            typeof j.seconds === "number" &&
+            Number.isFinite(j.seconds) &&
+            j.seconds >= 0
+        )
+      : [];
+    let jumpRegion = "";
+    if (jumps.length > 0) {
+      const items = jumps
+        .map((j) => {
+          const lab = escapeHtml(String(j.label).trim());
+          const sec = Math.floor(j.seconds);
+          const vid = escapeHtml(String(meta.id));
+          return `<li><button type="button" class="sleeveless-video-modal__jump-btn" data-sleeveless-vimeo-jump="${sec}" data-sleeveless-vimeo-id="${vid}">${lab}</button></li>`;
+        })
+        .join("");
+      jumpRegion = `<div class="sleeveless-video-modal__jump" role="region" aria-label="Jump to a timestamp">
+  <p class="sleeveless-video-modal__jump-heading">Jump to</p>
+  <ul class="sleeveless-video-modal__jump-list">${items}</ul>
+</div>`;
+    }
+
+    const iframeSrc = buildSleevelessVimeoPlayerSrc(meta.id, 0);
+    const iframeTitle = escapeGlossaryPlaceholderAttr(titleText);
+    return `<div class="sleeveless-video-modal__shell">
+  <div class="sleeveless-video-modal__meta">
+    <h2 class="sleeveless-video-modal__title">${escapeHtml(titleText)}</h2>
+    ${descHtml}
+    ${jumpRegion}
+  </div>
+  <div class="sleeveless-video-modal__player">
+    <iframe
+      data-sleeveless-vimeo-iframe
+      src="${escapeGlossaryPlaceholderAttr(iframeSrc)}"
+      title="${iframeTitle}"
+      loading="lazy"
+      allow="autoplay; fullscreen; picture-in-picture"
+      allowfullscreen
+      referrerpolicy="strict-origin-when-cross-origin"
+    ></iframe>
+  </div>
+</div>`;
+  }
+
   function ensureSleevelessVideoModal() {
     let modal = document.querySelector("[data-sleeveless-video-modal]");
     if (modal instanceof HTMLElement) return modal;
@@ -697,6 +865,20 @@
       }
     });
 
+    modal.addEventListener("click", (e) => {
+      const btn = e.target?.closest?.("[data-sleeveless-vimeo-jump]");
+      if (!(btn instanceof HTMLElement)) return;
+      if (!modal.contains(btn)) return;
+      e.preventDefault();
+      const iframe = modal.querySelector("[data-sleeveless-vimeo-iframe]");
+      if (!(iframe instanceof HTMLIFrameElement)) return;
+      const vid = btn.getAttribute("data-sleeveless-vimeo-id")?.trim();
+      const secRaw = btn.getAttribute("data-sleeveless-vimeo-jump");
+      const sec = parseInt(secRaw || "0", 10);
+      if (!vid || !/^\d+$/.test(vid)) return;
+      iframe.src = buildSleevelessVimeoPlayerSrc(vid, Number.isFinite(sec) && sec > 0 ? sec : 0);
+    });
+
     return modal;
   }
 
@@ -709,24 +891,26 @@
     }
     modal.hidden = true;
     document.body.classList.remove("sleeveless-diagram-modal-open");
+    const ref = sleevelessVideoModalReturnFocus;
+    sleevelessVideoModalReturnFocus = null;
+    if (ref && typeof ref.focus === "function") {
+      try {
+        ref.focus();
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
-  function openSleevelessVideoModal(vimeoId) {
-    const cleanId = String(vimeoId || "").trim();
-    if (!/^\d+$/.test(cleanId)) return;
+  function openSleevelessVideoModal(triggerEl) {
+    if (!(triggerEl instanceof HTMLElement)) return;
+    const meta = resolveSleevelessHelpVideoMeta(triggerEl);
+    if (!meta || !meta.id) return;
+    sleevelessVideoModalReturnFocus = triggerEl;
     const modal = ensureSleevelessVideoModal();
     const content = modal.querySelector("[data-sleeveless-video-content]");
     if (!(content instanceof HTMLElement)) return;
-    const src = `https://player.vimeo.com/video/${cleanId}?autoplay=1`;
-    content.innerHTML = `<iframe
-      src="${src}"
-      title="Neckband video tutorial"
-      loading="lazy"
-      allow="autoplay; fullscreen; picture-in-picture"
-      allowfullscreen
-      referrerpolicy="strict-origin-when-cross-origin"
-      style="aspect-ratio:16/9; width:min(90vw, 960px); height:auto; border:0; border-radius:6px; background:#000;"
-    ></iframe>`;
+    content.innerHTML = renderSleevelessVideoModalMarkup(meta, triggerEl);
     modal.hidden = false;
     document.body.classList.add("sleeveless-diagram-modal-open");
     const closeBtn = modal.querySelector("[data-sleeveless-video-close]");
@@ -734,9 +918,11 @@
   }
 
   /** Loads `src/pages/videos/modal/[id].astro` (same-origin) in the shared video modal iframe. */
-  function openPatternContentVideoModal(contentId) {
+  function openPatternContentVideoModal(contentId, triggerEl) {
     const cleanId = String(contentId || "").trim();
     if (!/^\d+$/.test(cleanId)) return;
+    sleevelessVideoModalReturnFocus =
+      triggerEl instanceof HTMLElement ? triggerEl : document.activeElement;
     const modal = ensureSleevelessVideoModal();
     const content = modal.querySelector("[data-sleeveless-video-content]");
     if (!(content instanceof HTMLElement)) return;
@@ -788,15 +974,16 @@
         e.preventDefault();
         const videoId = patternVideoLink.getAttribute("data-video-id");
         if (!videoId) return;
-        openPatternContentVideoModal(videoId);
+        openPatternContentVideoModal(videoId, patternVideoLink);
         return;
       }
-      const link = target.closest("[data-sleeveless-video-id]");
-      if (!(link instanceof HTMLElement)) return;
+      const vimeoTrigger =
+        target.closest("[data-sleeveless-help-video]") ||
+        target.closest("[data-sleeveless-video-id]") ||
+        target.closest("[data-video-vimeo-id]");
+      if (!(vimeoTrigger instanceof HTMLElement)) return;
       e.preventDefault();
-      const videoId = link.getAttribute("data-sleeveless-video-id");
-      if (!videoId) return;
-      openSleevelessVideoModal(videoId);
+      openSleevelessVideoModal(vimeoTrigger);
     });
 
     document.addEventListener("keydown", (e) => {
@@ -1258,7 +1445,7 @@ table {
       <details class="pattern-finishing-toggle" open>
         <summary>Block Pieces (Optional)</summary>
         <ul>
-          <li>Lightly steam or <li>Lightly steam or ${glossaryTooltip(659, 'Wet Block')} pieces to measurements.</li> pieces to measurements.</li>
+          <li>Lightly steam or ${glossaryTooltip(659, 'Wet Block')} pieces to measurements.</li>
           <li>Allow pieces to dry completely before assembly.</li>
           <li>Pin edges flat if needed.</li>
         </ul>
@@ -1287,20 +1474,12 @@ table {
           <li>Finish the neckband as desired.</li>
           <li>Join the remaining shoulder seam and neckband seam.</li>
         </ul>
-        <details class="pattern-tip sleeveless-shaping-help-toggle">
-          <summary>Need help?</summary>
-          <ul>
-            <li>
-              <a
-                href="https://player.vimeo.com/video/1189760201"
-                class="sleeveless-shaping-help__video-link"
-                data-sleeveless-video-id="1189760201"
-              >
-                Neckband video tutorial
-              </a>
-            </li>
-          </ul>
-        </details>
+        <p class="pattern-finishing-video-help pattern-help-link no-print">
+          <span class="pattern-finishing-video-help__lead"><i class="fa-solid fa-play"></i> Helpful video for finishing:</span>
+          <span class="pattern-finishing-video-help__links">
+            <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="onePieceBand" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> One-piece neckband</button>
+          </span>
+        </p>
       </details>
     </li>
 
@@ -1308,8 +1487,9 @@ table {
       <details class="pattern-finishing-toggle">
         <summary>Finish Armholes</summary>
         <ul>
-          <li>Work both armhole trims the same way.</li>
-          <li>Be careful not to stretch the armhole edge while finishing.</li>
+          <li>Work both armhole trims the same way as the neckband.</li>
+          <li>Use the neckband video above as a guide for finishing the armholes.</li>
+          <li>Be sure to grade the tension as you knit the band.</li>
         </ul>
       </details>
     </li>
@@ -1322,7 +1502,7 @@ table {
           <li>Match markers (if added).</li>
           <li>Seam from hem to underarm.</li>
           <li>
-            <a href="/pages/videos/modal/520" class="pattern-video-modal-link" data-video-id="520">▶ Seaming – Putting It All Together</a>
+            <a href="/pages/videos/modal/520" class="pattern-video-modal-link" data-video-id="520"><i class="fa-solid fa-play"></i> Seaming – Putting It All Together</a>
           </li>
         </ul>
       </details>
@@ -1508,7 +1688,7 @@ table {
       backChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
-        neckShoulderChartHelpRowHtml(`RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`, result?.neckShoulderShapingChart),
+        neckShoulderChartHelpRowHtml(`RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`, result?.neckShoulderShapingChart, "back"),
         { activeSideOnly: true, activeSideRcStart: 0 }
       );
     }
@@ -1527,7 +1707,8 @@ table {
         "ns-shaping-chart-front",
         neckShoulderChartHelpRowHtml(
           `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
-          result?.frontNeckShoulderShapingChart
+          result?.frontNeckShoulderShapingChart,
+          "front"
         ),
         { activeSideOnly: true, activeSideRcStart: 0 }
       );
@@ -1540,7 +1721,8 @@ table {
         idPrefix: "ns-shaping-chart-back",
         introHtml: neckShoulderChartHelpRowHtml(
           `RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`,
-          result?.neckShoulderShapingChart
+          result?.neckShoulderShapingChart,
+          "back"
         ),
         options: { activeSideOnly: true, activeSideRcStart: 0 },
       },
@@ -1549,7 +1731,8 @@ table {
         idPrefix: "ns-shaping-chart-front",
         introHtml: neckShoulderChartHelpRowHtml(
           `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
-          result?.frontNeckShoulderShapingChart
+          result?.frontNeckShoulderShapingChart,
+          "front"
         ),
         options: { activeSideOnly: true, activeSideRcStart: 0 },
       },

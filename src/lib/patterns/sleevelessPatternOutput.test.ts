@@ -593,6 +593,9 @@ describe("sleevelessPatternOutput RC progression", () => {
     if (ribBlock?.kind === "block") {
       expect(ribBlock.paragraphs).toEqual([]);
       expect(ribBlock.tipHtml).toBeDefined();
+      expect(ribBlock.tipHtml).toContain('data-glossary-id="291"');
+      expect(ribBlock.tipHtml).toContain('data-glossary-id="284"');
+      expect(ribBlock.tipHtml).toMatch(/Fold-up and hung hems typically require double the hem depth/i);
     }
     const blob = collectBlockInstructionText(rows).join("\n");
     expect(blob).not.toMatch(/\bKnit in pattern for 0 rows\b/i);

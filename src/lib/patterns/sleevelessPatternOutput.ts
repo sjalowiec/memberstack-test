@@ -29,11 +29,11 @@ import {
 } from "./legoBlocks/roundNeckline";
 
 /**
- * Trusted HTML for ribbed-hem helper (mock ribbing / hung hem tooltips).
- * Same wording as hat brim tip — render only via innerHTML from pattern output, never user input.
+ * Trusted HTML for ribbed-hem helper — glossary placeholders hydrated client-side (mock rib 291, hung hem 284).
+ * Render only via innerHTML from pattern output, never user input.
  */
 export const RIBBED_HEM_PATTERN_TIP_HTML =
-  'Work even in your chosen hem treatment — for example 1x1 or 2x2 ribbing or <span class="pattern-term" data-tooltip="Stitch pattern that copies knit and purl ribbing by having needles out of work. A favorite for knitters without a ribber.">mock ribbing</span>, a rolled stockinette edge, a fold-up band, or a <span class="pattern-term" data-tooltip="A folded, double-layer hem formed by hanging the cast-on stitches back onto the needles.">hung hem</span> — for the depth shown.';
+  'Work even in your chosen hem treatment — for example 1x1 or 2x2 ribbing or <span class="glossary-tooltip-placeholder" data-glossary-id="291">mock ribbing</span>, a rolled stockinette edge, a fold-up band, or a <span class="glossary-tooltip-placeholder" data-glossary-id="284">hung hem</span> — for the depth shown.<br><br>Fold-up and hung hems typically require double the hem depth before rehanging.';
 
 /** Trusted HTML for collapsible body-shaping marker tip (glossary id 310). */
 export const BODY_MARKER_TIP_DETAILS_HTML =
@@ -905,7 +905,7 @@ export function buildSleevelessBackDisplayRows(args: {
       : [
           "Hem rows could not be calculated — check row gauge and sizing chart. Knit your hem to the depth you prefer, then continue.",
         ],
-    tipHtml: args.hemRowsValid ? RIBBED_HEM_PATTERN_TIP_HTML : undefined,
+    tipHtml: RIBBED_HEM_PATTERN_TIP_HTML,
     stitchCount: A > 0 ? A : undefined,
   });
 

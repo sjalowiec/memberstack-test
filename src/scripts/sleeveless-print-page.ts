@@ -34,6 +34,7 @@ import {
   renderSleevelessPrintPieceHtml,
   splitRowsBeforeNeckShoulderChartMount,
 } from "../lib/patterns/sleevelessPatternPrintRender.ts";
+import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
 
 const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
 
@@ -617,6 +618,8 @@ async function initSleevelessPrintPage(): Promise<void> {
 
   ${printFinishingPlaceholderHtml()}
 </div>`;
+
+  hydrateGlossaryTooltipPlaceholders(root);
 }
 
 if (document.readyState === "loading") {

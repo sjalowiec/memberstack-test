@@ -25,7 +25,7 @@ function stripTrustedPatternHtmlToPlain(html: string): string {
     .trim();
 }
 
-/** Printable route omits “Tip:” / “Tips:” callouts and structured tip fields; core steps stay. */
+/** Skips legacy tip-prefixed instruction paragraphs; structured `tipHtml` on blocks is rendered in {@link renderPrintBlockRow}. */
 function isOmittedTipParagraph(text: string): boolean {
   const plain = stripTrustedPatternHtmlToPlain(String(text));
   return /^tips?\s*:/i.test(plain);
@@ -49,6 +49,9 @@ function renderPrintBlockRow(
     if (isOmittedTipParagraph(raw)) continue;
     const t = String(p).trim();
     if (t) leftBits.push(`<p class="print-line">${escapeHtml(t)}</p>`);
+  }
+  if (row.tipHtml) {
+    leftBits.push(`<div class="pattern-tip"><strong>Tip:</strong> ${row.tipHtml}</div>`);
   }
 
   const leftHtml =
