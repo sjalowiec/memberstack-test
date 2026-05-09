@@ -52,6 +52,10 @@
     color: #4b5563;
   }
 
+  .sleeveless-print-footer-beta {
+    display: none;
+  }
+
   /* Typography inside injected print document */
   .sleeveless-print-root .print-doc-inner {
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -644,6 +648,34 @@
   }
 
   @media print {
+    .sleeveless-print-shell[data-sleeveless-print-fixed="beta"] .sleeveless-print-footer-beta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      position: fixed;
+      left: 0.7in;
+      right: 0.7in;
+      bottom: 0.25in;
+      font-size: 8.5pt;
+      line-height: 1.2;
+      color: #6b7280;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      letter-spacing: 0.01em;
+      z-index: 5;
+      pointer-events: none;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .sleeveless-print-shell[data-sleeveless-print-fixed="beta"] .sleeveless-print-footer-beta__attribution {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
     /*
       Page numbers in margin boxes: supported by some print engines; Chromium â€œSave as PDFâ€ often ignores @page margin boxes.
     */
@@ -652,7 +684,7 @@
       margin: 0.65in 0.7in 0.85in 0.7in;
 
       @bottom-right {
-        content: "Page " counter(page);
+        content: "Page " counter(page) " of " counter(pages);
         font-size: 9pt;
         font-family: system-ui, sans-serif;
         color: #6b7280;

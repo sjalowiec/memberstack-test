@@ -10,12 +10,15 @@ export interface Props {
    * so pages that open a drawer or switch wizard state keep working.
    */
   formScrollTarget?: string;
+  /** Hide edit/rebuild controls, leaving print only. */
+  showEditButton?: boolean;
 }
 
-const { formScrollTarget = '' } = Astro.props;
+const { formScrollTarget = '', showEditButton = true } = Astro.props;
 ---
 
 <!-- Mobile: one helper control (hidden on desktop; visibility via .is-active on this node) -->
+{showEditButton && (
 <div
   id="action-bar-topbar"
   class="pattern-actions pattern-actions--mobile no-print"
@@ -31,13 +34,16 @@ const { formScrollTarget = '' } = Astro.props;
     ↑ Edit Choices
   </button>
 </div>
+)}
 
 <!-- Desktop/Tablet Floating Stack (hidden on mobile) -->
 <div id="action-bar" class="wizard-action-bar pattern-actions--floating no-print">
+  {showEditButton && (
   <button class="wizard-action-btn" id="edit-btn" data-testid="button-edit-rebuild" aria-label="Edit or rebuild pattern">
     <i class="fas fa-edit" aria-hidden="true"></i>
     <span class="btn-label">Edit / Rebuild</span>
   </button>
+  )}
   <button class="wizard-action-btn" id="print-btn" data-testid="button-print" aria-label="Print pattern">
     <i class="fas fa-print" aria-hidden="true"></i>
     <span class="btn-label">Print</span>

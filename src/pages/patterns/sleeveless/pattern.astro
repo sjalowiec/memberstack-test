@@ -41,7 +41,7 @@ const initialPatternSubTab = Astro.url.searchParams.get("tab") === "pattern" ? "
 
           <div slot="pattern" class="sg-tab-pattern">
             <div id="sg-sleeveless-results" class="sg-sleeveless-results" style="display: none">
-              <ActionBar formScrollTarget="sleeveless-pattern-top" />
+              <ActionBar formScrollTarget="sleeveless-pattern-top" showEditButton={false} />
 
               <div id="sleeveless-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
                 <section class="sleeveless-pattern-intro">

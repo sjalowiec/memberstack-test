@@ -22,18 +22,13 @@ const pageUrl = Astro.url.href;
     <div class="sleeveless-beta-pattern__top no-print">
       <div class="sleeveless-beta-pattern__top-inner">
         <p class="sleeveless-beta-pattern__label">Sleeveless sweater · Beta · Published pattern</p>
-        <div class="sleeveless-beta-pattern__actions">
-          <a class="sleeveless-beta-pattern__print-btn" href="/patterns/sleeveless/beta-print">
-            Print Pattern
-          </a>
-        </div>
       </div>
     </div>
 
     <div id="sleeveless-beta-pattern-top" class="wizard-container scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
         <div id="sg-sleeveless-results" class="sg-sleeveless-results">
-          <ActionBar formScrollTarget="sleeveless-beta-pattern-top" />
+          <ActionBar formScrollTarget="sleeveless-beta-pattern-top" showEditButton={false} />
           <div id="sleeveless-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
             <section class="sleeveless-pattern-intro">
               <div class="sleeveless-pattern-intro__image">
@@ -106,32 +101,6 @@ const pageUrl = Astro.url.href;
     font-size: 0.95rem;
     font-weight: 600;
     color: #374151;
-  }
-
-  .sleeveless-beta-pattern__actions {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-  }
-
-  .sleeveless-beta-pattern__print-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.45rem 1rem;
-    border-radius: 6px;
-    border: 1px solid #52682d;
-    background: #52682d;
-    color: #fff;
-    font-size: 0.95rem;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    box-sizing: border-box;
-  }
-
-  .sleeveless-beta-pattern__print-btn:hover {
-    filter: brightness(1.05);
   }
 
 </style>
