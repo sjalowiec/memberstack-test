@@ -1,0 +1,35 @@
+﻿---
+import Layout from "../../../layouts/Layout.astro";
+import WizardBackLink from "../../../components/wizards/WizardBackLink.astro";
+import "../../../styles/ns-shaping-chart.css";
+import "../../../styles/pattern-tips.css";
+import "../../../styles/glossary-tooltip.css";
+import "../../../styles/patterns/sleeveless-print-route.css";
+
+const pageUrl = Astro.url.href;
+---
+
+<Layout
+  title="Print Sleeveless Pattern | Knit it Now"
+  description="Printable sleeveless sweater pattern from your saved builder choices."
+  bodyClass="sleeveless-print-route"
+>
+  <div class="sleeveless-print-shell">
+    <div class="sleeveless-print-actions no-print">
+      <WizardBackLink className="back-link" fallback="/patterns/sleeveless/pattern?tab=pattern" />
+      <button type="button" class="sleeveless-print-btn" data-sleeveless-print-action>
+        Print / Save as PDF
+      </button>
+    </div>
+
+    <div class="sleeveless-print-root" data-sleeveless-print-root>
+      <p class="sleeveless-print-loading">Loading pattern…</p>
+    </div>
+
+    <p class="print-url-meta no-print" aria-hidden="true">{pageUrl}</p>
+  </div>
+</Layout>
+
+<script>
+  import "/src/scripts/sleeveless-print-page.ts";
+</script>

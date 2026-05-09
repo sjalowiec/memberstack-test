@@ -55,6 +55,11 @@ interface Props {
   flatRow?: boolean;
   /** When true, adds no-print on the wrapper so the Sts/Rows UI is hidden when printing (pattern copy can still show gauge in prose). */
   noPrint?: boolean;
+  /** Optional floating-label overrides (inches vs cm) — used by pages that need longer copy than Sts (4") / Rows (4"). */
+  stitchLabelInches?: string;
+  stitchLabelCm?: string;
+  rowLabelInches?: string;
+  rowLabelCm?: string;
 }
 
 const { 
@@ -66,7 +71,14 @@ const {
   toggleId,
   flatRow = false,
   noPrint = false,
+  stitchLabelInches,
+  stitchLabelCm,
+  rowLabelInches,
+  rowLabelCm,
 } = Astro.props;
+
+const floatingStitchIn = stitchLabelInches ?? 'Sts (4")';
+const floatingRowIn = rowLabelInches ?? 'Rows (4")';
 
 const effectiveToggleId = toggleId || "kbm-unit-toggle";
 
@@ -84,6 +96,10 @@ const hasGaugePrefix =
     noPrint && 'no-print',
   ]}
   data-toggle-id={effectiveToggleId}
+  data-label-stitch-in={stitchLabelInches ?? ""}
+  data-label-stitch-cm={stitchLabelCm ?? ""}
+  data-label-row-in={rowLabelInches ?? ""}
+  data-label-row-cm={rowLabelCm ?? ""}
 >
   {showTitle && showToggle && (
     <div class="kbm-header-layout">
@@ -111,7 +127,7 @@ const hasGaugePrefix =
         id={`${id}-stitch-gauge`}
         labelId={`${id}-stitch-label`}
         labelClass="floating-label"
-        label='Sts (4")'
+        label={floatingStitchIn}
         type="number"
         step="0.5"
         min="1"
@@ -122,7 +138,7 @@ const hasGaugePrefix =
         id={`${id}-row-gauge`}
         labelId={`${id}-row-label`}
         labelClass="floating-label"
-        label='Rows (4")'
+        label={floatingRowIn}
         type="number"
         step="0.5"
         min="1"
@@ -136,7 +152,7 @@ const hasGaugePrefix =
         id={`${id}-stitch-gauge`}
         labelId={`${id}-stitch-label`}
         labelClass="floating-label"
-        label='Sts (4")'
+        label={floatingStitchIn}
         type="number"
         step="0.5"
         min="1"
@@ -147,7 +163,7 @@ const hasGaugePrefix =
         id={`${id}-row-gauge`}
         labelId={`${id}-row-label`}
         labelClass="floating-label"
-        label='Rows (4")'
+        label={floatingRowIn}
         type="number"
         step="0.5"
         min="1"
@@ -161,7 +177,7 @@ const hasGaugePrefix =
         id={`${id}-stitch-gauge`}
         labelId={`${id}-stitch-label`}
         labelClass="floating-label"
-        label='Sts (4")'
+        label={floatingStitchIn}
         type="number"
         step="0.5"
         min="1"
@@ -172,7 +188,7 @@ const hasGaugePrefix =
         id={`${id}-row-gauge`}
         labelId={`${id}-row-label`}
         labelClass="floating-label"
-        label='Rows (4")'
+        label={floatingRowIn}
         type="number"
         step="0.5"
         min="1"
@@ -362,16 +378,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const stitchLabel = document.getElementById(`${id}-stitch-label`);
     const rowLabel = document.getElementById(`${id}-row-label`);
 
+    const ds = (wrapper as HTMLElement).dataset;
+    const customStitchIn = (ds.labelStitchIn || "").trim();
+    const customStitchCm = (ds.labelStitchCm || "").trim();
+    const customRowIn = (ds.labelRowIn || "").trim();
+    const customRowCm = (ds.labelRowCm || "").trim();
+
     function updateLabels(unit: string) {
 
       if (!stitchLabel || !rowLabel) return;
 
       if (unit === 'cm') {
-        stitchLabel.textContent = 'Sts (10 cm)';
-        rowLabel.textContent = 'Rows (10 cm)';
+        stitchLabel.textContent = customStitchCm || "Sts (10 cm)";
+        rowLabel.textContent = customRowCm || "Rows (10 cm)";
       } else {
-        stitchLabel.textContent = 'Sts (4")';
-        rowLabel.textContent = 'Rows (4")';
+        stitchLabel.textContent = customStitchIn || 'Sts (4")';
+        rowLabel.textContent = customRowIn || 'Rows (4")';
       }
 
     }

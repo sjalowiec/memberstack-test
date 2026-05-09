@@ -1,0 +1,10 @@
+---
+/** Friendly URL for the full sleeveless Custom Builder (same entry as sleeveless-garment). */
+import { SLEEVELESS_BUILDER_RESET_PARAM } from "../../lib/patterns/patternStorage.ts";
+
+const target = new URL("/patterns/sleeveless/pattern", Astro.url);
+target.searchParams.set("buildStep", "design");
+const reset = Astro.url.searchParams.get(SLEEVELESS_BUILDER_RESET_PARAM);
+if (reset) target.searchParams.set(SLEEVELESS_BUILDER_RESET_PARAM, reset);
+return Astro.redirect(`${target.pathname}${target.search}${Astro.url.hash}`, 301);
+---

@@ -10,6 +10,8 @@ import NeedleCheckDrawer from "../../components/patterns/NeedleCheckDrawer.astro
 import PatternHeaderImage from "../../components/patterns/PatternHeaderImage.astro";
 import WarningBox from "../../components/ui/WarningBox.astro";
 import GlossaryTooltip from "../../components/common/GlossaryTooltip.astro";
+import PatternTabs from "../../components/patterns/PatternTabs.astro";
+import PatternModeIndicator from "../../components/patterns/PatternModeIndicator.astro";
 import "../../styles/wizard.css";
 import "../../styles/tools/yarn-drawer-presentation.css";
 
@@ -721,24 +723,7 @@ const patternPersistWarning =
   text-decoration: underline;
 }
 
-/* Match hat builder: Pattern tab disabled until required inputs are complete */
-.diy-blanket-builder-inputs .pattern-tab-nav .tab-btn.is-disabled {
-  color: #9ca3af;
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.diy-blanket-builder-inputs .pattern-tab-nav .tab-btn.is-disabled:hover,
-.diy-blanket-builder-inputs .pattern-tab-nav .tab-btn.is-disabled:focus-visible {
-  color: #9ca3af;
-  border-bottom-color: transparent;
-  opacity: 0.55;
-}
-
-.diy-blanket-builder-inputs .pattern-tab-nav .tab-btn.is-disabled.active {
-  color: #9ca3af;
-  border-bottom-color: transparent;
-}
+/* Tab chrome: PatternTabs + pattern-tabs-scope.css */
 
 #create-pattern-btn.button-disabled {
   opacity: 0.5;
@@ -1099,6 +1084,7 @@ const patternPersistWarning =
       <PatternHeaderImage
         src="/images/hybrid-blanket.webp"
         alt="Example finished blanket"
+        showZoomHint={false}
       />
     </div>
     <div class="hat-builder-page-header__main">
@@ -1122,25 +1108,19 @@ const patternPersistWarning =
   <div id="diy-blanket-form-top" class="wizard-container scroll-mt-[96px]">
 
     <div class="calculator-card diy-blanket-builder-inputs">
-      <div class="pattern-tabs">
-        <div class="pattern-tab-nav">
-          <button type="button" class="tab-btn active" data-tab="build">Build</button>
-          <button
-            type="button"
-            id="diy-tab-pattern"
-            class="tab-btn is-disabled"
-            data-tab="pattern"
-            aria-disabled="true"
-          >Pattern</button>
-          <button type="button" class="tab-btn" data-tab="share">Ask / Share</button>
-          <button type="button" class="tab-btn" data-tab="inspiration">Inspiration</button>
-        </div>
+      <PatternTabs
+        rootClass="pattern-tabs-scope"
+        patternTabDisabled={true}
+        patternTabButtonId="diy-tab-pattern"
+        managePatternReadiness={true}
+        patternInitiallyReady={false}
+      >
+        <div slot="build">
+      <div class="pattern-builder-unit-row no-print" style="margin-bottom: 12px;">
+        <UnitToggle id="diy" />
+      </div>
 
-        <div class="pattern-tab-content">
-          <div class="tab-panel active" id="tab-build">
-      <!-- Unit Toggle - left-aligned, above first input -->
-      <UnitToggle id="diy" />
-
+          <PatternModeIndicator mode="custom">
       <!-- Size Selection (first: choose dimensions) -->
       <h3 id="diy-blanket-size-section" class="section-title scroll-mt-[96px]">Choose blanket size</h3>
       
@@ -1220,9 +1200,10 @@ const patternPersistWarning =
               </button>
               <p id="create-pattern-feedback" class="create-pattern-feedback" role="status" aria-live="polite" hidden></p>
             </div>
-          </div>
+          </PatternModeIndicator>
+        </div>
 
-          <div class="tab-panel" id="tab-pattern">
+        <div slot="pattern">
             <div id="results" class="results-container scroll-mt-[96px]" style="display: none;">
               <WarningBox message={patternPersistWarning} />
               <ActionBar formScrollTarget="diy-blanket-form-top" />
@@ -1323,14 +1304,14 @@ const patternPersistWarning =
                 </div>
               </div>
             </div>
-          </div>
+        </div>
 
-          <div class="tab-panel" id="tab-share">
+        <div slot="share">
             <p>Ask questions or share your results here.</p>
             <PatternComments />
-          </div>
+        </div>
 
-          <div class="tab-panel" id="tab-inspiration">
+        <div slot="inspiration">
             <div class="inspiration-section">
               <h3 class="inspiration-heading">Get Inspired</h3>
 
@@ -1344,9 +1325,8 @@ const patternPersistWarning =
                 ></a>
               </div>
             </div>
-          </div>
         </div>
-      </div>
+      </PatternTabs>
     </div>
   </div>
 
@@ -1624,7 +1604,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   tabButtons.forEach((button) => {
     button.addEventListener('click', () => {
-      if (button.classList.contains('is-disabled')) return;
+      if (button.classList.contains('is-disabled') && button.dataset.tab !== 'pattern') return;
       const target = button.dataset.tab;
       if (!target) return;
       activateWizardTab(target);
@@ -2341,40 +2321,31 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 4000);
   }
 
+  /** Shared Pattern tab: show generated output only when #results is visible (after a successful calculate). */
+  function diyPatternTabOutputVisible() {
+    const el = document.getElementById('results');
+    return !!(el && el.style.display === 'block');
+  }
+
   function updatePatternReadinessUi() {
-    const patternTabBtn =
-      document.getElementById('diy-tab-pattern') ||
-      document.querySelector('.pattern-tabs .tab-btn[data-tab="pattern"]');
     const createPatternBtn = document.getElementById('create-pattern-btn');
-    const ready = requiredBlanketInputsComplete();
+    const inputsComplete = requiredBlanketInputsComplete();
 
     updateYarnCalculatorVisibility();
     syncWidthDrawerNeedleBlock();
 
     if (createPatternBtn) {
-      createPatternBtn.classList.toggle('button-disabled', !ready);
-      if (ready) {
+      createPatternBtn.classList.toggle('button-disabled', !inputsComplete);
+      if (inputsComplete) {
         createPatternBtn.removeAttribute('aria-disabled');
       } else {
         createPatternBtn.setAttribute('aria-disabled', 'true');
       }
     }
-    if (patternTabBtn) {
-      patternTabBtn.classList.toggle('is-disabled', !ready);
-      if (ready) {
-        patternTabBtn.removeAttribute('aria-disabled');
-      } else {
-        patternTabBtn.setAttribute('aria-disabled', 'true');
-      }
-    }
 
-    if (!ready) {
-      const patternNavBtn =
-        document.getElementById('diy-tab-pattern') ||
-        document.querySelector('.pattern-tabs .tab-btn[data-tab="pattern"]');
-      if (patternNavBtn?.classList.contains('active')) {
-        activateWizardTab('build');
-      }
+    const diyTabsRoot = document.querySelector('.diy-blanket-builder-inputs .pattern-tabs');
+    if (diyTabsRoot) {
+      diyTabsRoot.classList.toggle('pattern-tabs--pattern-ready', diyPatternTabOutputVisible());
     }
   }
 
@@ -2615,9 +2586,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       calculate();
-      const patternNav = document.getElementById('diy-tab-pattern');
-      patternNav?.classList.remove('is-disabled');
-      patternNav?.removeAttribute('aria-disabled');
       activateWizardTab('pattern');
     });
   }

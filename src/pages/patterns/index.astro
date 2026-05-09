@@ -15,38 +15,71 @@ import Layout from '../../layouts/Layout.astro';
           </p>
       
           <div class="patterns-featured-clean">
+            <a href="/patterns/sleeveless-choice" class="pattern-card patterns-featured-card">
+              <img
+                class="patterns-featured-card-img"
+                src="/images/patterns/sleeveless/sleeveless-sweater-pattern-builder.png"
+                alt="Sleeveless Sweater Builder"
+              />
+              <div class="pattern-card-body">
+                <h2>Sleeveless Sweater Builder</h2>
+                <p class="promise">
+                  Design a sleeveless sweater that fits your body, your gauge, and your machine.
+                </p>
+                <div class="supporting">
+                  <ul>
+                    <li><strong>Design</strong> your silhouette and neckline</li>
+                    <li><strong>Fit</strong> to your chart and ease preferences</li>
+                    <li><strong>Generate</strong> machine-knitting instructions</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="pattern-card-footer">
+                <span class="price-note">Free</span>
+                <span class="kbm-btn kbm-btn-accent">Build your sweater</span>
+              </div>
+            </a>
+
             <a href="/patterns/hat" class="pattern-card patterns-featured-card">
               <img class="patterns-featured-card-img" src="/images/basic-hat.webp" alt="Basic hat pattern" />
-              <h2>Hat Pattern Builder</h2>
-              <p class="promise">
-                Knit a hat that actually fits - your head, your gauge, your machine.
-              </p>
-              <div class="supporting">
-                <ul>
-                  <li><strong>Choose</strong> your brim style</li>
-                  <li><strong>Adjust</strong> sizing for the perfect fit</li>
-                  <li><strong>Generate</strong> instructions instantly</li>
-                </ul>
+              <div class="pattern-card-body">
+                <h2>Hat Pattern Builder</h2>
+                <p class="promise">
+                  Knit a hat that actually fits - your head, your gauge, your machine.
+                </p>
+                <div class="supporting">
+                  <ul>
+                    <li><strong>Choose</strong> your brim style</li>
+                    <li><strong>Adjust</strong> sizing for the perfect fit</li>
+                    <li><strong>Generate</strong> instructions instantly</li>
+                  </ul>
+                </div>
               </div>
-              <span class="price-note">Free</span>
-              <span class="kbm-btn kbm-btn-accent">Build your hat</span>
+              <div class="pattern-card-footer">
+                <span class="price-note">Free</span>
+                <span class="kbm-btn kbm-btn-accent">Build your hat</span>
+              </div>
             </a>
       
             <a href="/patterns/diy-blanket" class="pattern-card patterns-featured-card">
               <img class="patterns-featured-card-img" src="/images/hybrid-blanket1.webp" alt="Custom blanket builder" />
-              <h2>Blanket Pattern Builder</h2>
-              <p class="promise">
-                Create a custom blanket pattern for your yarn, your gauge, and your machine.
-              </p>
-              <div class="supporting">
-                <ul>
-                  <li><strong>Choose</strong> a standard size — or create your own</li>
-                  <li><strong>Plan</strong> panels for blankets wider than your machine</li>
-                  <li><strong>Estimate</strong> yarn from a swatch</li>
-                </ul>
+              <div class="pattern-card-body">
+                <h2>Blanket Pattern Builder</h2>
+                <p class="promise">
+                  Create a custom blanket pattern for your yarn, your gauge, and your machine.
+                </p>
+                <div class="supporting">
+                  <ul>
+                    <li><strong>Choose</strong> a standard size — or create your own</li>
+                    <li><strong>Plan</strong> panels for blankets wider than your machine</li>
+                    <li><strong>Estimate</strong> yarn from a swatch</li>
+                  </ul>
+                </div>
               </div>
-              <span class="price-note">Free</span>
-              <span class="kbm-btn kbm-btn-accent">Build your blanket</span>
+              <div class="pattern-card-footer">
+                <span class="price-note">Free</span>
+                <span class="kbm-btn kbm-btn-accent">Build your blanket</span>
+              </div>
             </a>
           </div>
         </section>
@@ -101,10 +134,15 @@ import Layout from '../../layouts/Layout.astro';
 /* Featured */
 .patterns-featured-clean {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 24px;
   margin-top: 20px;
   margin-bottom: 28px;
+  align-items: stretch;
+}
+
+.patterns-featured-clean > .patterns-featured-card {
+  height: 100%;
 }
 
 .pattern-card {
@@ -117,6 +155,21 @@ import Layout from '../../layouts/Layout.astro';
   text-decoration: none;
   color: inherit;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.pattern-card-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-bottom: 0;
+}
+
+.pattern-card-footer {
+  margin-top: auto;
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
 .patterns-featured-card-img {
@@ -165,6 +218,10 @@ import Layout from '../../layouts/Layout.astro';
   font-weight: 400;
 }
 
+.supporting li:last-child {
+  margin-bottom: 0;
+}
+
 .supporting li::before {
   content: "✓";
   position: absolute;
@@ -174,13 +231,13 @@ import Layout from '../../layouts/Layout.astro';
 }
 
 /* CTA: global .kbm-btn .kbm-btn-accent */
-.price-note {
+.pattern-card-footer .price-note {
   display: block;
   font-size: 0.85rem;
   color: #52682d; /* kin-green */
   font-weight: 600;
   text-align: center;
-  margin: 14px 0 6px;
+  margin: 0 0 6px;
 }
 
 .pattern-card .kbm-btn {

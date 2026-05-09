@@ -44,6 +44,7 @@ const showInspiration = tabsEnabled.inspiration ?? true;
       --muted: #5b6472;
       --border: #e5e7eb;
       --shadow: 0 10px 30px rgba(0,0,0,.08);
+      --pattern-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
       --radius: 18px;
       --max: 980px;
       --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
@@ -61,13 +62,13 @@ const showInspiration = tabsEnabled.inspiration ?? true;
       color: var(--text);
     }
 
+    /* Outer shell: tabs sit above the white content card (layered, no single heavy card around both) */
     .tabs-shell {
       margin-top: 16px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      overflow: visible;
     }
 
     /* Constrain hero and other non-pattern content */
@@ -76,8 +77,7 @@ const showInspiration = tabsEnabled.inspiration ?? true;
       margin: 0 auto;
     }
 
-    /* Tab header wrapper - full width background */
-    .kbm-tabs-wrapper {
+    .pattern-top-nav {
       background: var(--tab-bg);
       border-bottom: 1px solid var(--border);
       position: sticky;
@@ -85,10 +85,10 @@ const showInspiration = tabsEnabled.inspiration ?? true;
       z-index: 10;
     }
 
-    /* Modern Tabs - buttons stay constrained */
     .kbm-tabs {
       display: flex;
-      gap: 4px;
+      flex-wrap: wrap;
+      gap: 2px;
       padding: 12px 12px 0;
       max-width: var(--max, 980px);
       margin: 0 auto;
@@ -96,62 +96,66 @@ const showInspiration = tabsEnabled.inspiration ?? true;
 
     .kbm-tab {
       appearance: none;
-      border: 1px solid transparent;
-      border-bottom: none;
+      border: none;
       background: transparent;
       color: var(--muted);
-      border-radius: 10px 10px 0 0;
-      padding: 12px 18px;
-      font-weight: 700;
+      border-radius: 0;
+      padding: 10px 18px;
+      font-weight: 500;
       font-size: 14px;
+      line-height: 1.25;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 8px;
-      transition: background .15s ease, color .15s ease, border-color .15s ease;
+      transition: background 0.15s ease, color 0.15s ease, font-weight 0.15s ease;
       position: relative;
-      margin-bottom: -1px;
+      margin-bottom: 0;
     }
-    
+
     .kbm-tab:hover {
       color: var(--text);
-      background: rgba(82,104,45,.05);
+      background: rgba(82, 104, 45, 0.06);
     }
-    
+
     .kbm-tab[aria-selected="true"] {
       background: var(--surface);
-      color: var(--text);
-      border-color: var(--border);
-      border-bottom-color: var(--surface);
+      color: #111827;
+      font-weight: 700;
+      margin-bottom: -1px;
+      z-index: 1;
+      border-bottom: 1px solid var(--surface);
     }
-    
-    .kbm-tab[aria-selected="true"]::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 8px;
-      right: 8px;
-      height: 2px;
-      background: var(--kbm-green);
-      border-radius: 2px 2px 0 0;
+
+    .kbm-tab[aria-selected="true"]:hover {
+      background: var(--surface);
+      color: #111827;
     }
-    
+
     .kbm-tab:focus-visible {
       outline: 3px solid rgba(82,104,45,.35);
       outline-offset: 2px;
     }
-    
+
     .tab-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
       background: currentColor;
-      opacity: 0.4;
+      opacity: 0.35;
     }
-    
+
     .kbm-tab[aria-selected="true"] .tab-dot {
       background: var(--kbm-green);
       opacity: 1;
+    }
+
+    .pattern-content-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+      box-shadow: var(--pattern-card-shadow);
     }
 
     .panels { padding: 16px; }
@@ -197,22 +201,21 @@ const showInspiration = tabsEnabled.inspiration ?? true;
         overflow: visible;
       }
 
-      .kbm-tabs-wrapper {
+      .pattern-top-nav {
         overflow: visible;
       }
 
       .kbm-tabs {
         flex-wrap: wrap;
         gap: 4px;
-        padding: 8px 8px 4px;
+        padding: 8px 8px 0;
       }
 
       .kbm-tab {
-        padding: 10px 14px;
+        padding: 10px 16px;
         font-size: 13px;
         white-space: nowrap;
         flex: 0 0 auto;
-        border-radius: 8px 8px 0 0;
         margin-bottom: 0;
       }
 
@@ -228,7 +231,7 @@ const showInspiration = tabsEnabled.inspiration ?? true;
       @page { margin: 0.5in; }
 
       .kbm-tabs,
-      .kbm-tabs-wrapper,
+      .pattern-top-nav,
       .mobile-controls,
       .drawer,
       .drawer-backdrop,
@@ -298,6 +301,13 @@ const showInspiration = tabsEnabled.inspiration ?? true;
         border-radius: 0 !important;
       }
 
+      .pattern-content-card {
+        box-shadow: none !important;
+        border: none !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+      }
+
       .panels { 
         padding: 0 !important;
         margin: 0 !important;
@@ -361,7 +371,7 @@ const showInspiration = tabsEnabled.inspiration ?? true;
 
     {!hideTabs && (
     <section class="tabs-shell" aria-label="Pattern tabs">
-      <div class="kbm-tabs-wrapper">
+      <div class="pattern-top-nav">
         <div class="kbm-tabs" role="tablist" aria-label="Pattern sections">
         <button 
           class="kbm-tab" 
@@ -442,6 +452,7 @@ const showInspiration = tabsEnabled.inspiration ?? true;
         </div>
       </div>
 
+      <div class="pattern-content-card">
       <div class="panels">
         <section 
           class="panel" 
@@ -529,6 +540,7 @@ const showInspiration = tabsEnabled.inspiration ?? true;
             </div>
           </section>
         )}
+      </div>
       </div>
     </section>
     )}

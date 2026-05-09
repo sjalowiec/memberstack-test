@@ -63,6 +63,63 @@
   text-align: center;
 }
 
+/* Sleeveless builder panels: compact header, no stacked paragraph margins */
+.sg-build-panel .page-header {
+  margin-bottom: 10px;
+  padding-bottom: 0; /* prevent extra internal spacing */
+}
+
+.sg-build-panel .page-header p {
+  margin: 0;
+  line-height: 1.4; /* tighten text block slightly */
+}
+
+.sg-build-panel .page-header p + p {
+  margin-top: 4px;
+}
+
+/* Unavailable builder options — ribbon via ::after, no extra markup */
+.sg-option.is-coming-next {
+  position: relative;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.sg-option.is-coming-next::after {
+  content: "Custom pattern";
+  position: absolute;
+  top: 10px;
+  right: -40px;
+  background: #c2614e;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 50px;
+  transform: rotate(35deg);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  z-index: 2;
+}
+
+.sg-build-panel .page-header + * {
+  margin-top: 10px;
+}
+
+.sg-helper-text {
+  font-size: 13px;
+  color: #888;
+  margin-top: 4px;
+  margin-bottom: 12px;
+}
+
+/* Sleeveless builder: title above main form sections */
+.sg-section-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--sg-heading, #3f5f24);
+}
+
 /* Pattern builder auto-save hint (sleeveless wizard) */
 .kbm-pattern-save-status {
   margin: 0.35rem auto 0;
@@ -884,4 +941,173 @@
 
 .builder-summary .sg-summary-sentence {
   color: #374151;
+}
+
+/* Sleeveless builder step nav — shared by SleevelessBuilderNav + Express Pattern */
+.sg-builder-nav-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  /* Keep step nav + unit toggle on one row; let the pill list wrap inside the nav column */
+  flex-wrap: nowrap;
+  max-width: 800px;
+  margin: 0 auto 1.25rem;
+  padding: 0 1rem;
+}
+
+.sg-builder-nav-row .sg-builder-nav {
+  --sg-rule-h: 3px;
+  --sg-connector-w: 48px;
+  margin: 0;
+  padding: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: none;
+}
+
+.sg-builder-nav-row__units {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+}
+
+.sg-builder-nav__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  row-gap: 0.45rem;
+  width: 100%;
+  max-width: 100%;
+  margin-inline: 0;
+  margin-block: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sg-builder-nav__item {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.sg-builder-nav__rule {
+  flex: 0 0 auto;
+  width: var(--sg-connector-w);
+  height: var(--sg-rule-h);
+  margin: 0;
+  background: rgba(55, 65, 81, 0.2);
+  border-radius: 2px;
+  align-self: center;
+}
+
+.sg-builder-nav__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 999px;
+  transition:
+    opacity 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+button.sg-builder-nav__link {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+  appearance: none;
+}
+
+.sg-builder-nav__link:hover .sg-builder-nav__pill {
+  border-color: #9ca3af;
+}
+
+.sg-builder-nav__link.is-current:hover .sg-builder-nav__pill,
+.sg-builder-nav__item.active .sg-builder-nav__link:hover .sg-builder-nav__pill {
+  border-color: var(--sg-accent, #c2614e);
+}
+
+.sg-builder-nav__link:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 3px;
+  border-radius: 999px;
+}
+
+.sg-builder-nav__link.is-upcoming {
+  opacity: 0.72;
+}
+
+.sg-builder-nav__pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #374151;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+/* Active step: secondary to PatternTabs — tinted fill + accent border/text (not solid accent like top tab emphasis) */
+.sg-builder-nav__item.active .sg-builder-nav__pill,
+.sg-builder-nav__link[aria-current="page"] .sg-builder-nav__pill {
+  background: color-mix(in srgb, var(--sg-accent, #c2614e) 16%, #ffffff);
+  color: var(--sg-accent, #c2614e);
+  border-color: var(--sg-accent, #c2614e);
+  font-weight: 600;
+}
+
+@supports not (background: color-mix(in srgb, white, black)) {
+  .sg-builder-nav__item.active .sg-builder-nav__pill,
+  .sg-builder-nav__link[aria-current="page"] .sg-builder-nav__pill {
+    background: rgba(194, 97, 78, 0.14);
+    color: var(--sg-accent, #c2614e);
+    border-color: var(--sg-accent, #c2614e);
+  }
+}
+
+.sg-builder-nav__link.is-complete:not(.is-current) .sg-builder-nav__pill {
+  border-color: var(--kbm-green, #52682d);
+  color: var(--kbm-green, #52682d);
+  background: rgba(82, 104, 45, 0.08);
+}
+
+@media (max-width: 576px) {
+  .sg-builder-nav-row .sg-builder-nav {
+    --sg-connector-w: 20px;
+  }
+
+  .sg-builder-nav-row__units {
+    margin-left: auto;
+  }
+
+  .sg-builder-nav__pill {
+    padding: 6px 10px;
+    font-size: clamp(0.7rem, 2.8vw, 0.85rem);
+  }
+
+  .sg-builder-nav__list {
+    max-width: 100%;
+    width: 100%;
+    padding-bottom: 0;
+  }
 }

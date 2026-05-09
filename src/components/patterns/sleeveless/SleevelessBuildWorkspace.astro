@@ -1,0 +1,149 @@
+---
+import SleevelessBuilderNav from "../SleevelessBuilderNav.astro";
+import SleevelessStartOver from "../SleevelessStartOver.astro";
+import SleevelessGarmentDesignStep from "./SleevelessGarmentDesignStep.astro";
+import SleevelessGarmentFitStep from "./SleevelessGarmentFitStep.astro";
+import SleevelessGarmentYarnGaugeStep from "./SleevelessGarmentYarnGaugeStep.astro";
+---
+
+<div class="sg-build-workspace" data-sg-build-workspace>
+  <SleevelessBuilderNav currentStep="style" embedded />
+  <div class="sg-build-panels">
+    <SleevelessGarmentDesignStep embedded />
+    <SleevelessGarmentFitStep embedded />
+    <SleevelessGarmentYarnGaugeStep embedded />
+  </div>
+  <SleevelessStartOver />
+</div>
+
+<style>
+  .sg-build-panels > :global([data-sg-build-panel][hidden]) {
+    display: none !important;
+  }
+</style>
+
+<script>
+  // @ts-nocheck
+  const STEP_IDS = ["style", "fit", "yarn"];
+
+  function panelAttr(step) {
+    if (step === "style") return "style";
+    return step;
+  }
+
+  /** Which build panel is currently visible (single source for step transitions). */
+  function getVisibleBuildStep() {
+    const visible = document.querySelector("[data-sg-build-panel]:not([hidden])");
+    const id = visible?.getAttribute("data-sg-build-panel");
+    if (id === "style" || id === "fit" || id === "yarn") return id;
+    return "style";
+  }
+
+  /** After switching Design / Fit / Yarn, start the visible step at the top of the scrollable area. */
+  function scrollBuilderWorkspaceToTop() {
+    const container = document.querySelector(".sg-builder-container");
+    if (container instanceof HTMLElement) {
+      container.scrollTop = 0;
+      return;
+    }
+    try {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    } catch {
+      window.scrollTo(0, 0);
+    }
+  }
+
+  function applyBuildStep(step) {
+    if (step !== "style" && step !== "fit" && step !== "yarn") return;
+
+    const from = getVisibleBuildStep();
+    const to = step;
+
+    if (from !== to) {
+      window.dispatchEvent(
+        new CustomEvent("kbm:sleeveless-before-step-change", { detail: { from, to } }),
+      );
+      if (import.meta.env.DEV) {
+        console.info("[sleeveless-build] flush then step", from, "→", to);
+      }
+    }
+
+    const attr = panelAttr(step);
+    document.querySelectorAll("[data-sg-build-panel]").forEach((panel) => {
+      const id = panel.getAttribute("data-sg-build-panel");
+      const show = id === attr;
+      panel.toggleAttribute("hidden", !show);
+      panel.setAttribute("aria-hidden", show ? "false" : "true");
+    });
+
+    if (from !== to) {
+      scrollBuilderWorkspaceToTop();
+    }
+
+    window.dispatchEvent(new CustomEvent("kbm:sleeveless-build-step", { detail: { step } }));
+
+    if (from !== to) {
+      window.dispatchEvent(
+        new CustomEvent("kbm:sleeveless-after-step-change", { detail: { step: to } }),
+      );
+    }
+  }
+
+  function parseStepFromLocation() {
+    try {
+      const u = new URL(window.location.href);
+      const q = u.searchParams.get("buildStep");
+      /** Legacy standalone URLs used design / gauge; unified page uses style / yarn internally. */
+      if (q === "design" || q === "style") return "style";
+      if (q === "fit") return "fit";
+      if (q === "gauge" || q === "yarn") return "yarn";
+    } catch {
+      /* ignore */
+    }
+    return null;
+  }
+
+  function initBuildWorkspace() {
+    const wrap = document.querySelector("[data-sg-build-workspace]");
+    if (!wrap) return;
+
+    wrap.addEventListener("click", (e) => {
+      const t = e.target;
+      if (!(t instanceof Element)) return;
+
+      const openPattern = t.closest("[data-sg-open-pattern-tab]");
+      if (openPattern) {
+        e.preventDefault();
+        window.dispatchEvent(
+          new CustomEvent("kbm:sleeveless-before-step-change", { detail: { from: "yarn", to: "pattern" } }),
+        );
+        window.dispatchEvent(new CustomEvent("kbm:sleeveless-open-pattern-tab"));
+        return;
+      }
+
+      const go = t.closest("[data-sg-build-go]");
+      if (!go || !wrap.contains(go)) return;
+      const raw = go.getAttribute("data-sg-build-go");
+      if (raw === "style" || raw === "fit" || raw === "yarn") {
+        e.preventDefault();
+        applyBuildStep(raw);
+        try {
+          const u = new URL(window.location.href);
+          u.searchParams.set("buildStep", raw);
+          window.history.replaceState({}, "", `${u.pathname}${u.search}${u.hash}`);
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+
+    const fromUrl = parseStepFromLocation();
+    applyBuildStep(fromUrl && STEP_IDS.includes(fromUrl) ? fromUrl : "style");
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => initBuildWorkspace());
+  } else {
+    initBuildWorkspace();
+  }
+</script>

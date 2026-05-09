@@ -10,6 +10,16 @@ interface Props {
   hideInspiration?: boolean;
   /** Extra classes on the outer `.pattern-tabs` wrapper (e.g. `pattern-tabs-scope`). */
   rootClass?: string;
+  /** Which tab is visible on first paint (`pattern` for dedicated pattern pages like sleeveless). */
+  defaultTab?: "build" | "pattern";
+  /**
+   * When true, the Pattern panel uses a shared empty state until `setPatternTabsReadiness(root, true)` in JS.
+   * Pattern tab remains clickable; use per-page readiness checks to toggle the ready class.
+   */
+  managePatternReadiness?: boolean;
+  /** When `managePatternReadiness`, whether generated pattern content is shown on first paint. */
+  patternInitiallyReady?: boolean;
+  id?: string;
 }
 
 const {
@@ -19,12 +29,30 @@ const {
   hideShare = false,
   hideInspiration = false,
   rootClass = "",
+  defaultTab = "build",
+  managePatternReadiness = false,
+  patternInitiallyReady = false,
+  id: rootId,
 } = Astro.props;
+
+const buildTabActive = defaultTab === "build";
+const patternTabActive = defaultTab === "pattern";
+
+const patternAriaDisabled =
+  !managePatternReadiness && patternTabDisabled ? true : undefined;
 ---
 
-<div class:list={["pattern-tabs", rootClass]}>
+<div
+  class:list={[
+    "pattern-tabs",
+    rootClass,
+    managePatternReadiness && "pattern-tabs--pattern-managed",
+    managePatternReadiness && patternInitiallyReady && "pattern-tabs--pattern-ready",
+  ]}
+  id={rootId}
+>
   <div class="pattern-tab-nav">
-    <button type="button" class="tab-btn active" data-tab="build">
+    <button type="button" class:list={["tab-btn", buildTabActive && "active"]} data-tab="build">
       <span class="tab-icon" aria-hidden="true">⚙️</span>
       <span class="tab-label">Build</span>
     </button>
@@ -33,9 +61,9 @@ const {
         <button
           type="button"
           id={patternTabButtonId}
-          class:list={["tab-btn", patternTabDisabled && "is-disabled"]}
+          class:list={["tab-btn", patternTabActive && "active", patternTabDisabled && "is-disabled"]}
           data-tab="pattern"
-          aria-disabled={patternTabDisabled ? "true" : undefined}
+          aria-disabled={patternAriaDisabled}
         >
           <span class="tab-icon" aria-hidden="true">📝</span>
           <span class="tab-label">Pattern</span>
@@ -60,14 +88,36 @@ const {
     }
   </div>
 
+  <slot name="patternTabHint" />
+
   <div class="pattern-tab-content">
-    <div class="tab-panel active" id="tab-build">
+    <div class:list={["tab-panel", buildTabActive && "active"]} id="tab-build">
       <slot name="build" />
     </div>
     {
       !hidePattern && (
-        <div class="tab-panel" id="tab-pattern">
-          <slot name="pattern" />
+        <div class:list={["tab-panel", patternTabActive && "active"]} id="tab-pattern">
+          {
+            managePatternReadiness && (
+              <div class="pattern-tab-pattern-managed">
+                <div
+                  class="pattern-tab-empty-state no-print"
+                  aria-live="polite"
+                  data-pattern-tab-empty
+                >
+                  <p class="pattern-tab-empty-state__title">Your pattern isn’t ready yet.</p>
+                  <p class="pattern-tab-empty-state__body">Complete your choices to build your pattern.</p>
+                  <button type="button" class="pattern-tab-empty-state__cta" data-pattern-tabs-go-build>
+                    Go to Build
+                  </button>
+                </div>
+                <div class="pattern-tab-pattern-body">
+                  <slot name="pattern" />
+                </div>
+              </div>
+            )
+          }
+          {!managePatternReadiness && <slot name="pattern" />}
         </div>
       )
     }
@@ -87,3 +137,8 @@ const {
     }
   </div>
 </div>
+
+<script>
+  import { initPatternTabsGlobalBehaviors } from "../../lib/patterns/patternTabsClient.ts";
+  initPatternTabsGlobalBehaviors();
+</script>

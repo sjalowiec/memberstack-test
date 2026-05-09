@@ -1,0 +1,111 @@
+---
+import "../../styles/ns-shaping-chart.css";
+import type { NeckShoulderShapingChart } from "../../lib/patterns/neckShoulderShapingChart";
+import {
+  collapsePlainChartRows,
+  getNeckShoulderChartRowHighlightFromRow,
+} from "../../lib/patterns/neckShoulderShapingChart";
+import {
+  renderShoulderShapingSvg,
+  type ShoulderShapingSvgPiece,
+} from "../../lib/patterns/shoulderShapingSvg";
+
+interface Props {
+  chart: NeckShoulderShapingChart;
+  class?: string;
+  /** Display-only tint for front vs back previews */
+  piece?: ShoulderShapingSvgPiece;
+}
+
+const { chart, class: className = "", piece } = Astro.props;
+
+const shoulderPreviewSvg = renderShoulderShapingSvg(chart, "right", piece ? { piece } : undefined);
+const displayRows = collapsePlainChartRows(chart.rows);
+---
+
+<section class:list={["ns-shaping-chart", className]} aria-labelledby="ns-shaping-chart-heading">
+  <h2 id="ns-shaping-chart-heading" class="ns-shaping-chart__title">Neckline / Shoulder Shaping Chart</h2>
+  <p class="ns-shaping-chart__intro">
+    Work each shoulder separately.<br />
+    Right and Left refer to each side on the needlebed.<br />
+    Highlighted rows indicate action happening on both sides.
+  </p>
+  <div class="ns-shaping-chart__table-wrap">
+    <table class="ns-shaping-chart__table">
+      <thead>
+        <tr>
+          <th scope="col" rowspan="2" class="ns-shaping-chart__th-complete" aria-label="Completion status">
+            Done
+          </th>
+          <th scope="col" rowspan="2" class="ns-shaping-chart__th-row">Row</th>
+          <th scope="col" rowspan="2" class="ns-shaping-chart__th-action">Action</th>
+          <th scope="colgroup" colspan="2" class="ns-shaping-chart__th-group">Left</th>
+          <th scope="colgroup" colspan="1" class="ns-shaping-chart__th-group">Center</th>
+          <th scope="colgroup" colspan="2" class="ns-shaping-chart__th-group">Right</th>
+          <th scope="colgroup" colspan="2" class="ns-shaping-chart__th-group">Stitch count</th>
+        </tr>
+        <tr>
+          <th scope="col" class="ns-shaping-chart__th-sub">Armhole</th>
+          <th scope="col" class="ns-shaping-chart__th-sub">Neck</th>
+          <th scope="col" class="ns-shaping-chart__th-sub">Neck center</th>
+          <th scope="col" class="ns-shaping-chart__th-sub">Neck</th>
+          <th scope="col" class="ns-shaping-chart__th-sub">Armhole</th>
+          <th scope="col" class="ns-shaping-chart__th-sub">Left</th>
+          <th scope="col" class="ns-shaping-chart__th-sub">Right</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          displayRows.map((displayRow) => {
+            const r = displayRow.sourceRow;
+            const hi = getNeckShoulderChartRowHighlightFromRow(r);
+            const rowClass =
+              hi === "neckBothSides"
+                ? "ns-shaping-chart__tr ns-shaping-chart__tr--neck-both"
+                : hi === "shoulderAndNeck"
+                  ? "ns-shaping-chart__tr ns-shaping-chart__tr--shoulder-neck"
+                  : hi === "shoulderBothSides"
+                    ? "ns-shaping-chart__tr ns-shaping-chart__tr--shoulder-both"
+                    : "ns-shaping-chart__tr";
+            return (
+              <tr class={rowClass}>
+                <td class="ns-shaping-chart__td-complete">
+                  <label class="ns-shaping-chart__row-check-label">
+                    <input
+                      type="checkbox"
+                      class="ns-shaping-chart__row-check"
+                      aria-label={`Mark chart row ${Math.max(0, Math.floor(r.row))} complete`}
+                    />
+                  </label>
+                </td>
+                <td class="ns-shaping-chart__td-num">{displayRow.rowLabel}</td>
+                <td>
+                  {displayRow.actionLabel}
+                  {displayRow.plainKnitCarriageLabel && displayRow.plainKnitEdgeLabel && (
+                    <div class="ns-shaping-chart__plain-knit-meta">
+                      <span class="ns-shaping-chart__plain-knit-side">{displayRow.plainKnitCarriageLabel}</span>
+                      <span class="ns-shaping-chart__plain-knit-meta-sep"> · </span>
+                      <span class="ns-shaping-chart__plain-knit-section">{displayRow.plainKnitEdgeLabel}</span>
+                    </div>
+                  )}
+                </td>
+                <td class="ns-shaping-chart__td-center">{r.leftSide}</td>
+                <td class="ns-shaping-chart__td-center">{r.leftNeck}</td>
+                <td class="ns-shaping-chart__td-center">{r.centerNeck}</td>
+                <td class="ns-shaping-chart__td-center">{r.rightNeck}</td>
+                <td class="ns-shaping-chart__td-center">{r.rightSide}</td>
+                <td class="ns-shaping-chart__td-num">{r.leftStitchCount}</td>
+                <td class="ns-shaping-chart__td-num">{r.rightStitchCount}</td>
+              </tr>
+            );
+          })
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ns-shaping-chart__preview" aria-labelledby="ns-shaping-preview-heading">
+    <h3 id="ns-shaping-preview-heading" class="ns-shaping-chart__preview-title">Neckline / Shoulder Shape Preview</h3>
+    <div class="ns-shaping-chart__preview-svg-wrap" set:html={shoulderPreviewSvg} />
+  </div>
+</section>
