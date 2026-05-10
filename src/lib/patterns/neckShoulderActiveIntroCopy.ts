@@ -10,10 +10,6 @@ export const ACTIVE_SHOULDER_CHART_INTRO_SENTENCE =
 export const ACTIVE_SHOULDER_DIVIDE_SENTENCE =
   "Place the group of stitches opposite the carriage in hold position.";
 
-/** Announced once before the shoulder checklist; the table then uses RC:000, RC:001, … */
-export const ACTIVE_SHOULDER_RESET_RC_SENTENCE =
-  "Reset Shoulder RC to RC:000 for the shaping table below.";
-
 /**
  * Center bind-off milestone uses Armhole RC (post armhole reset). Pass `RC:078`-style labels from
  * {@link sleevelessPatternOutput} debug locals.
@@ -46,7 +42,6 @@ export function activeShoulderIntroPlainParagraphs(args: {
 }): readonly string[] {
   return [
     formatActiveShoulderCenterNecklinePlainSentence(args),
-    ACTIVE_SHOULDER_RESET_RC_SENTENCE,
     ACTIVE_SHOULDER_DIVIDE_SENTENCE,
     ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
   ];

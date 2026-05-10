@@ -21,6 +21,7 @@ import {
   generateSleevelessBackPattern,
 } from "../lib/patterns/sleevelessPatternOutput.ts";
 import {
+  armholeLocalRcActiveShoulderChecklistStart,
   renderActiveShoulderChartIntroHtml,
   renderNeckShoulderShapingDiagramOnlyHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
@@ -1682,6 +1683,16 @@ table {
       ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC))
       : 0;
 
+    const armholeGarmentStartRc = result?.debug?.armholeStartRow;
+    const backActiveSideRcStart = armholeLocalRcActiveShoulderChecklistStart(
+      result.neckShoulderShapingChart,
+      armholeGarmentStartRc,
+    );
+    const frontActiveSideRcStart = armholeLocalRcActiveShoulderChecklistStart(
+      result.frontNeckShoulderShapingChart,
+      armholeGarmentStartRc,
+    );
+
     // Active-shoulder checklist (RC / Side / Instruction / Section / Stitches). Plain-knit compaction: neckShoulderShapingChartHtml `chartBodyRowsHtml`.
     const backChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-back");
     if (backChartTableHost) {
@@ -1689,7 +1700,7 @@ table {
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
         neckShoulderChartHelpRowHtml(`RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`, result?.neckShoulderShapingChart, "back"),
-        { activeSideOnly: true, activeSideRcStart: 0 }
+        { activeSideOnly: true, activeSideRcStart: backActiveSideRcStart }
       );
     }
     const backDiagramHost = mount.querySelector("#sg-neck-shoulder-diagram-back");
@@ -1710,7 +1721,7 @@ table {
           result?.frontNeckShoulderShapingChart,
           "front"
         ),
-        { activeSideOnly: true, activeSideRcStart: 0 }
+        { activeSideOnly: true, activeSideRcStart: frontActiveSideRcStart }
       );
     }
 
@@ -1724,7 +1735,7 @@ table {
           result?.neckShoulderShapingChart,
           "back"
         ),
-        options: { activeSideOnly: true, activeSideRcStart: 0 },
+        options: { activeSideOnly: true, activeSideRcStart: backActiveSideRcStart },
       },
       front: {
         chart: result.frontNeckShoulderShapingChart,
@@ -1734,7 +1745,7 @@ table {
           result?.frontNeckShoulderShapingChart,
           "front"
         ),
-        options: { activeSideOnly: true, activeSideRcStart: 0 },
+        options: { activeSideOnly: true, activeSideRcStart: frontActiveSideRcStart },
       },
     };
     const frontDiagramHost = mount.querySelector("#sg-neck-shoulder-diagram-front");
@@ -1765,7 +1776,9 @@ table {
     ensureSleevelessDiagramModal();
     bindSleevelessDiagramZoom(mount);
     ensureSleevelessVideoModal();
-    bindSleevelessVideoHelp(mount);
+    const videoHelpRoot =
+      document.getElementById("sleeveless-pattern-tips-scope") || mount;
+    bindSleevelessVideoHelp(videoHelpRoot);
     setupNecklineChartPrint(
       "neckline-shoulder-chart-print-btn",
       "neckline-shoulder-chart-print-area",

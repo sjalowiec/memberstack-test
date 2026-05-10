@@ -23,6 +23,7 @@ import {
   generateSleevelessBackPattern,
 } from "../lib/patterns/sleevelessPatternOutput.ts";
 import {
+  armholeLocalRcActiveShoulderChecklistStart,
   renderActiveShoulderChartIntroHtml,
   renderNeckShoulderShapingPrintInstructionTableHtml,
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
@@ -470,10 +471,7 @@ async function initSleevelessPrintPage(): Promise<void> {
   const unit: "cm" | "in" =
     (ygm && ygm.gaugeRawUnit === "cm") || (yg && yg.gaugeRawUnit === "cm") ? "cm" : "in";
 
-  /**
-   * RC:000 = first row of the armhole block (Armhole RC). Neckline intros use the bind-off milestone;
-   * shoulder checklist tables restart verbal RC at RC:000 after “Reset Shoulder RC…”.
-   */
+  /** RC at center bind-off milestone (Armhole RC). Checklist rows continue from the same counter as the armhole section. */
   const backLocalStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
     ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC ?? 0))
     : 0;
@@ -483,7 +481,16 @@ async function initSleevelessPrintPage(): Promise<void> {
   const backLocalStartLabel = `RC:${String(backLocalStartRc).padStart(3, "0")}`;
   const frontLocalStartLabel = `RC:${String(frontLocalStartRc).padStart(3, "0")}`;
 
-  // Active-shoulder intro: center bind-off uses `formatActiveShoulderCenterNecklinePlainSentence`; checklist RC starts at 000.
+  const armholeGarmentStart = result?.debug?.armholeStartRow;
+  const backChecklistArmholeStart = armholeLocalRcActiveShoulderChecklistStart(
+    result.neckShoulderShapingChart,
+    armholeGarmentStart,
+  );
+  const frontChecklistArmholeStart = armholeLocalRcActiveShoulderChecklistStart(
+    result.frontNeckShoulderShapingChart,
+    armholeGarmentStart,
+  );
+
   const backChartHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
     result.neckShoulderShapingChart,
     "ns-shaping-chart-print-back",
@@ -493,7 +500,7 @@ async function initSleevelessPrintPage(): Promise<void> {
       wrapperClass: "print-chart-intro",
       layout: "compact",
     }),
-    { activeSideRcStart: 0 },
+    { activeSideRcStart: backChecklistArmholeStart },
   );
   const frontChartHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
     result.frontNeckShoulderShapingChart,
@@ -504,7 +511,7 @@ async function initSleevelessPrintPage(): Promise<void> {
       wrapperClass: "print-chart-intro",
       layout: "compact",
     }),
-    { activeSideRcStart: 0 },
+    { activeSideRcStart: frontChecklistArmholeStart },
   );
 
   const { preludeRows, continuationRows } = splitRowsBeforeNeckShoulderChartMount(result.displayRows ?? []);

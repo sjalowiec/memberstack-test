@@ -34,13 +34,25 @@ const pageUrl = Astro.url.href;
               <div class="sleeveless-pattern-intro__image">
                 <div class="beta-pattern-video">
                   <div class="beta-pattern-video__wrap">
-                    <iframe
-                      src="https://player.vimeo.com/video/1190804765"
-                      title="Beta Pattern Introduction"
-                      frameborder="0"
-                      allow="autoplay; fullscreen; picture-in-picture"
-                      allowfullscreen
-                    ></iframe>
+                    <button
+                      type="button"
+                      class="beta-pattern-video-trigger no-print"
+                      aria-label="Play video: Beta Pattern Introduction"
+                      data-sleeveless-video-id="1190804765"
+                      data-video-title="Beta Pattern Introduction"
+                    >
+                      <img
+                        src="/images/patterns/sleeveless/beta-pattern-intro-video-thumbnail.jpg"
+                        alt="Watch the beta pattern introduction"
+                        width="360"
+                        height="203"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <span class="beta-pattern-video-trigger__play">
+                        <i class="fa-solid fa-play" aria-hidden="true"></i>
+                      </span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -131,13 +143,47 @@ const pageUrl = Astro.url.href;
     background: #111;
   }
 
-  .beta-pattern-video__wrap :global(iframe) {
+  .beta-pattern-video-trigger {
     position: absolute;
     inset: 0;
     display: block;
     width: 100%;
     height: 100%;
+    margin: 0;
+    padding: 0;
     border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    background: transparent;
+  }
+
+  .beta-pattern-video-trigger:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .beta-pattern-video-trigger :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .beta-pattern-video-trigger__play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: rgba(17, 24, 39, 0.72);
+    color: #fff;
+    font-size: 1.1rem;
+    pointer-events: none;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
   }
 
   @media (max-width: 560px) {

@@ -20,7 +20,6 @@ import type { RowEntry, ShapingEvent } from "./shapingTimeline";
 import {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
   ACTIVE_SHOULDER_DIVIDE_SENTENCE,
-  ACTIVE_SHOULDER_RESET_RC_SENTENCE,
   formatActiveShoulderCenterNecklinePlainSentence,
 } from "./neckShoulderActiveIntroCopy";
 import { formatShoulderBindoffRemainingInstruction } from "./sleevelessPatternOutput";
@@ -28,7 +27,6 @@ import { formatShoulderBindoffRemainingInstruction } from "./sleevelessPatternOu
 export {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
   ACTIVE_SHOULDER_DIVIDE_SENTENCE,
-  ACTIVE_SHOULDER_RESET_RC_SENTENCE,
 } from "./neckShoulderActiveIntroCopy";
 
 function escapeHtml(text: string): string {
@@ -53,6 +51,35 @@ function parseDecreaseCell(cell: string): number {
   const n = Number(normalized);
   if (!Number.isFinite(n)) return 0;
   return Math.abs(Math.trunc(n));
+}
+
+/**
+ * Armhole-local RC for the first row of the active-shoulder checklist (continuous with the armhole
+ * counter — same base as {@link buildActiveSideInstructionTableRows} `rcStart`).
+ */
+export function armholeLocalRcActiveShoulderChecklistStart(
+  chart: NeckShoulderShapingChart,
+  firstArmholeGarmentRc: number | null | undefined
+): number {
+  const fhRaw = Number(firstArmholeGarmentRc);
+  if (!Number.isFinite(fhRaw)) return 0;
+  const fh = Math.max(0, Math.floor(fhRaw));
+
+  if (chart.timeline && chart.timeline.length > 0) {
+    const sorted = [...chart.timeline].sort((a, b) => a.row - b.row);
+    const center = sorted[0];
+    if (!center) return 0;
+    const second = sorted[1];
+    const startGarment = second !== undefined ? second.row : center.row + 1;
+    return Math.max(0, Math.floor(startGarment) - fh);
+  }
+
+  const rows = [...chart.rows].sort((a, b) => a.row - b.row);
+  const first = rows[0];
+  if (!first) return 0;
+  const centerBo = parseDecreaseCell(String(first.centerNeck ?? "")) > 0;
+  const sourceBaseRow = centerBo ? first.row + 1 : first.row;
+  return Math.max(0, Math.floor(sourceBaseRow) - fh);
 }
 
 function sideColumnLabelFromAction(actionLabel: string): "Armhole" | "Shoulder" {
@@ -128,7 +155,6 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
     options.centerBindOffStitches
   );
   const inner = `<p><strong>Center Neckline:</strong><br>${bindOffHtml}</p>
-  <p>${escapeHtml(ACTIVE_SHOULDER_RESET_RC_SENTENCE)}</p>
   <p><strong>Divide:</strong><br>${escapeHtml(ACTIVE_SHOULDER_DIVIDE_SENTENCE)}</p>
   <p>${escapeHtml(ACTIVE_SHOULDER_CHART_INTRO_SENTENCE)}</p>`;
 
@@ -640,9 +666,8 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
 
 /**
  * Print-only compact written shaping rows for ink-efficient printouts.
- * Pass `options.activeSideRcStart` as the base RC for the shoulder checklist (use `0` after the
- * “Reset Shoulder RC…” line so the table reads RC:000, RC:001, …). Optional non-zero offsets keep
- * carriage parity math consistent when aligning to Armhole RC milestones.
+ * Pass `options.activeSideRcStart` as the Armhole RC at the first checklist row (continuous with
+ * the armhole counter after the sole armhole RC reset). Defaults to 0 when unknown.
  */
 export function renderNeckShoulderShapingPrintInstructionTableHtml(
   chart: NeckShoulderShapingChart,
