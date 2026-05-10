@@ -1,0 +1,146 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import WizardBackLink from "../../../components/wizards/WizardBackLink.astro";
+import PatternWorkspaceTabs from "../../../components/patterns/PatternWorkspaceTabs.astro";
+import "../../../styles/wizard.css";
+---
+
+<Layout
+  title="Sleeveless Sweater Builder | Knit it Now"
+  description="Build a custom sleeveless sweater pattern with interactive guidance, built-in help, and printable instructions."
+>
+  <main class="wizard-page sleeveless-sweater-workspace">
+    <div class="wizard-container">
+      <WizardBackLink className="back-link no-print" fallback="/patterns" />
+
+      <PatternWorkspaceTabs
+        activeTab="quick-build"
+        showQuickCustomBuildTabs={true}
+        quickBuildHref="/patterns/sleeveless/"
+        customBuildHref="/patterns/sleeveless/custom/"
+        patternHref="/patterns/sleeveless/pattern/"
+        askShareHref="/patterns/sleeveless/ask-share/"
+        inspirationHref="/patterns/sleeveless/inspiration/"
+      />
+
+      <header class="page-header sleeveless-workspace-header">
+        <h1>Sleeveless Sweater Builder</h1>
+        <p class="sleeveless-workspace-intro">
+          Create a custom sleeveless sweater pattern with interactive guidance, built-in help, and printable
+          instructions.
+        </p>
+      </header>
+
+      <section class="sleeveless-workspace-build" aria-labelledby="sleeveless-build-heading">
+        <h2 id="sleeveless-build-heading">Custom Build</h2>
+        <div class="sleeveless-workspace-steps">
+          <a href="/patterns/sleeveless-garment" class="sleeveless-workspace-card">
+            <h3 class="sleeveless-workspace-card__title">Design</h3>
+            <p class="sleeveless-workspace-card__desc">Choose the sweater style and basic design options.</p>
+            <span class="sleeveless-workspace-card__cta">Open Design →</span>
+          </a>
+          <a href="/patterns/sleeveless-fit" class="sleeveless-workspace-card">
+            <h3 class="sleeveless-workspace-card__title">Fit &amp; Measurements</h3>
+            <p class="sleeveless-workspace-card__desc">Set sizing and fit preferences.</p>
+            <span class="sleeveless-workspace-card__cta">Open Fit &amp; Measurements →</span>
+          </a>
+          <a href="/patterns/sleeveless-yarn-gauge" class="sleeveless-workspace-card">
+            <h3 class="sleeveless-workspace-card__title">Yarn &amp; Gauge</h3>
+            <p class="sleeveless-workspace-card__desc">Enter gauge and yarn information.</p>
+            <span class="sleeveless-workspace-card__cta">Open Yarn &amp; Gauge →</span>
+          </a>
+        </div>
+      </section>
+
+      <section class="sleeveless-workspace-pattern-preview" aria-labelledby="sleeveless-preview-heading">
+        <h2 id="sleeveless-preview-heading">Preview the Interactive Pattern</h2>
+        <a href="/patterns/sleeveless/beta-pattern" class="kbm-btn kbm-btn-accent sleeveless-workspace-preview-btn">
+          Open beta pattern
+        </a>
+      </section>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .sleeveless-sweater-workspace .sleeveless-workspace-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .sleeveless-workspace-intro {
+    max-width: 52rem;
+    margin-top: 0.5rem;
+    line-height: 1.55;
+  }
+
+  .sleeveless-workspace-build h2,
+  .sleeveless-workspace-pattern-preview h2 {
+    font-size: 1.35rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .sleeveless-workspace-steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  @media (max-width: 900px) {
+    .sleeveless-workspace-steps {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .sleeveless-workspace-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem 1.25rem 1rem;
+    border-radius: 12px;
+    background: #fff;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+
+  .sleeveless-workspace-card:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    border-color: rgba(194, 97, 78, 0.35);
+  }
+
+  .sleeveless-workspace-card__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.15rem;
+  }
+
+  .sleeveless-workspace-card__desc {
+    margin: 0;
+    flex: 1;
+    line-height: 1.5;
+    font-size: 0.95rem;
+    color: #444;
+  }
+
+  .sleeveless-workspace-card__cta {
+    margin-top: 1rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #c2614e;
+  }
+
+  .sleeveless-workspace-pattern-preview {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .sleeveless-workspace-pattern-preview h2 {
+    margin-bottom: 1rem;
+  }
+
+  .sleeveless-workspace-preview-btn {
+    display: inline-block;
+  }
+</style>

@@ -1,0 +1,132 @@
+﻿---
+/**
+ * Top-level pattern workspace navigation.
+ * Default: Quick Build / Pattern / Ask/Share / Inspiration.
+ * Optional sweater mode: Quick Build / Custom Build / Pattern / Ask/Share / Inspiration.
+ * Styling matches existing wizard tabs (global `.pattern-tab-nav` / `.tab-btn` + `pattern-tabs-scope.css`).
+ */
+import "../../styles/patterns/pattern-tabs-scope.css";
+
+export type PatternWorkspaceTabId = "quick-build" | "custom-build" | "pattern" | "ask-share" | "inspiration";
+
+interface Props {
+  activeTab: PatternWorkspaceTabId;
+  patternHref: string;
+  inspirationHref: string;
+  askShareHref?: string;
+  showQuickCustomBuildTabs?: boolean;
+  quickBuildHref?: string;
+  customBuildHref?: string;
+}
+
+const {
+  activeTab,
+  patternHref,
+  inspirationHref,
+  askShareHref = "#",
+  showQuickCustomBuildTabs = false,
+  quickBuildHref = "#",
+  customBuildHref = "#",
+} = Astro.props;
+---
+
+<div class="pattern-tabs pattern-tabs-scope pattern-workspace-tabs">
+  <nav class="pattern-tab-nav" aria-label="Pattern workspace">
+    {
+      showQuickCustomBuildTabs ? (
+        <span class="pattern-workspace-tabs__branch" style="display: contents">
+          <a
+            href={quickBuildHref}
+            class:list={["tab-btn", activeTab === "quick-build" && "active"]}
+            aria-current={activeTab === "quick-build" ? "page" : undefined}
+          >
+            <span class="tab-icon" aria-hidden="true">⚡</span>
+            <span class="tab-label">Quick Build</span>
+          </a>
+          <a
+            href={customBuildHref}
+            class:list={["tab-btn", activeTab === "custom-build" && "active"]}
+            aria-current={activeTab === "custom-build" ? "page" : undefined}
+          >
+            <span class="tab-icon" aria-hidden="true">⚙️</span>
+            <span class="tab-label">Custom Build</span>
+          </a>
+          <a
+            href={patternHref}
+            class:list={["tab-btn", activeTab === "pattern" && "active"]}
+            aria-current={activeTab === "pattern" ? "page" : undefined}
+          >
+            <span class="tab-icon" aria-hidden="true">📝</span>
+            <span class="tab-label">Pattern</span>
+          </a>
+          <a
+            href={askShareHref}
+            class:list={["tab-btn", activeTab === "ask-share" && "active"]}
+            aria-current={activeTab === "ask-share" ? "page" : undefined}
+          >
+            <span class="tab-icon" aria-hidden="true">💬</span>
+            <span class="tab-label">Ask/Share</span>
+          </a>
+          <a
+            href={inspirationHref}
+            class:list={["tab-btn", activeTab === "inspiration" && "active"]}
+            aria-current={activeTab === "inspiration" ? "page" : undefined}
+          >
+            <span class="tab-icon" aria-hidden="true">💡</span>
+            <span class="tab-label">Inspiration</span>
+          </a>
+        </span>
+      ) : (
+        <span class="pattern-workspace-tabs__branch" style="display: contents">
+          <a
+            href={quickBuildHref}
+            class:list={["tab-btn", activeTab === "quick-build" && "active"]}
+            aria-current={activeTab === "quick-build" ? "page" : undefined}
+          >
+            <span class="tab-icon" aria-hidden="true">⚡</span>
+            <span class="tab-label">Quick Build</span>
+          </a>
+          <a
+            href={patternHref}
+            class:list={["tab-btn", activeTab === "pattern" && "active"]}
+            aria-current={activeTab === "pattern" ? "page" : undefined}
+          >
+            <span class="tab-icon" aria-hidden="true">📝</span>
+            <span class="tab-label">Pattern</span>
+          </a>
+          <a
+            href={askShareHref}
+            class:list={["tab-btn", activeTab === "ask-share" && "active"]}
+            aria-current={activeTab === "ask-share" ? "page" : undefined}
+          >
+            <span class="tab-icon" aria-hidden="true">💬</span>
+            <span class="tab-label">Ask/Share</span>
+          </a>
+          <a
+            href={inspirationHref}
+            class:list={["tab-btn", activeTab === "inspiration" && "active"]}
+            aria-current={activeTab === "inspiration" ? "page" : undefined}
+          >
+            <span class="tab-icon" aria-hidden="true">💡</span>
+            <span class="tab-label">Inspiration</span>
+          </a>
+        </span>
+      )
+    }
+  </nav>
+</div>
+
+<style>
+  /* Links use the same `.tab-btn` classes as buttons; normalize anchor defaults only. */
+  .pattern-workspace-tabs :global(a.tab-btn) {
+    text-decoration: none;
+  }
+
+  .pattern-workspace-tabs :global(a.tab-btn:visited:not(.active)) {
+    color: #666;
+  }
+
+  .pattern-workspace-tabs :global(a.tab-btn:visited.active) {
+    color: #c2614e;
+  }
+</style>
