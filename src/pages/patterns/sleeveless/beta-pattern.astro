@@ -32,12 +32,17 @@ const pageUrl = Astro.url.href;
           <div id="sleeveless-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
             <section class="sleeveless-pattern-intro">
               <div class="sleeveless-pattern-intro__image">
-                <img
-                  src="/images/patterns/sleeveless/sleeveless-sweater-pattern-builder.png"
-                  alt="Sleeveless sweater pattern builder preview"
-                  loading="lazy"
-                  decoding="async"
-                />
+                <div class="beta-pattern-video">
+                  <div class="beta-pattern-video__wrap">
+                    <iframe
+                      src="https://player.vimeo.com/video/1190804765"
+                      title="Beta Pattern Introduction"
+                      frameborder="0"
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                </div>
               </div>
               <div class="sleeveless-pattern-intro__content">
                 <p class="sg-pattern-intro-line" data-sg-pattern-intro></p>
@@ -101,6 +106,49 @@ const pageUrl = Astro.url.href;
     font-size: 0.95rem;
     font-weight: 600;
     color: #374151;
+  }
+
+  /* Prevent grid shrink-collapse on the intro media column (override shared justify-self sizing). */
+  .sleeveless-pattern-intro__image {
+    width: 100%;
+    min-width: 280px;
+    justify-self: end;
+  }
+
+  .beta-pattern-video {
+    display: block;
+    width: 360px;
+    max-width: 100%;
+  }
+
+  .beta-pattern-video__wrap {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #111;
+  }
+
+  .beta-pattern-video__wrap :global(iframe) {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  @media (max-width: 560px) {
+    .sleeveless-pattern-intro__image {
+      min-width: 0;
+      justify-self: stretch;
+    }
+
+    .beta-pattern-video {
+      width: 100%;
+    }
   }
 
   @media print {
