@@ -1,0 +1,636 @@
+/**
+ * Legacy: interactive measurement blueprint styles (Custom Build experiment).
+ * Custom Build `/patterns/sleeveless/custom-build/fit/` no longer imports this file.
+ * Kept for reference or future reuse; do not add to global bundles.
+ * All selectors scoped under `.cb-measure-blueprint-page`.
+ */
+
+.cb-measure-blueprint-page {
+  --cb-bp-accent: #c2614e;
+}
+
+/* --- Wide workspace (desktop): blueprint uses most horizontal space, centered --- */
+.cb-measure-blueprint-page .wizard-container.express-wizard {
+  max-width: min(1540px, 100%);
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cb-measure-blueprint-page .express-wizard {
+  max-width: min(1540px, 100%);
+}
+
+.cb-measure-blueprint-page .express-builder-nav-row--custom-flow {
+  max-width: min(100%, 1200px);
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 1.35rem;
+}
+
+.cb-measure-blueprint-page .express-builder-nav-row--custom-flow .express-step-nav__label {
+  font-size: clamp(0.68rem, 2.1vw, 0.8125rem);
+  line-height: 1.15;
+  hyphens: auto;
+}
+
+.cb-measure-blueprint-page.express-page a.express-step-nav__btn--link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.cb-measure-blueprint-page.express-page a.express-step-nav__btn--link:focus-visible {
+  outline: 2px solid var(--sg-accent, #c2614e);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+.cb-measure-blueprint-page.express-page .express-step-nav__btn.is-upcoming {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.cb-measure-blueprint-page .cb-measure-panel .express-builder-toolbar.cb-measure-toolbar {
+  margin-bottom: 0.75rem;
+}
+
+.cb-measure-blueprint-page .cb-measure-unit-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+}
+
+.cb-measure-blueprint-page .cb-measure-missing {
+  margin-bottom: 1rem;
+}
+
+/* Blueprint breaks out of the narrow “form card” feel: extra horizontal room */
+.cb-measure-blueprint-page .cb-measure-blueprint-workspace {
+  margin-top: 0.5rem;
+  margin-inline: clamp(-0.75rem, -1.5vw, -0.35rem);
+  padding-inline: clamp(0.35rem, 1.2vw, 0.75rem);
+  max-width: min(100%, 1520px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cb-measure-blueprint-page .cb-blueprint-card {
+  margin-top: 0.75rem;
+  padding: clamp(1rem, 2vw, 1.35rem) clamp(1rem, 2.5vw, 1.75rem) clamp(1.15rem, 2vw, 1.5rem);
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 18%, #d4d4d4);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 3.5%, var(--page-bg, #fff));
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.05);
+}
+
+.cb-measure-blueprint-page .cb-blueprint-intro {
+  margin: 0 0 clamp(0.85rem, 2vw, 1.15rem);
+  max-width: min(48rem, 100%);
+}
+
+/* Tablet: controlled horizontal scroll when stage is wider than viewport */
+.cb-measure-blueprint-page .cb-blueprint-scroll {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  padding: clamp(0.35rem, 1.2vw, 0.85rem) clamp(0.25rem, 1vw, 0.5rem) clamp(0.5rem, 1.5vw, 0.85rem);
+  scrollbar-gutter: stable;
+}
+
+@media (min-width: 600px) and (max-width: 1023.98px) {
+  .cb-measure-blueprint-page .cb-blueprint-scroll {
+    overscroll-behavior-x: contain;
+    touch-action: pan-x pan-y;
+  }
+}
+
+/* Stage: large on desktop, minimum width on tablet triggers horizontal scroll */
+.cb-measure-blueprint-page .cb-blueprint-stage {
+  position: relative;
+  width: min(100%, 900px);
+  min-width: min(100%, 300px);
+  margin: 0 auto;
+  /* Matches public/images/patterns/measurement-blueprint.svg viewBox (141.5 × 194.61) */
+  aspect-ratio: 141.5 / 194.61;
+  border-radius: 12px;
+  background: var(--page-bg, #fff);
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 12%, #e2e2e2);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.4);
+}
+
+/* Safe inset so percentage-anchored cards and hotspot pins stay inside the stage */
+.cb-measure-blueprint-page .cb-blueprint-stage__inner {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  padding: 4.25% 6.25% 5.5% 7.25%;
+}
+
+@media (min-width: 1024px) {
+  .cb-measure-blueprint-page .cb-blueprint-stage {
+    width: min(100%, 960px);
+  }
+}
+
+@media (min-width: 1280px) {
+  .cb-measure-blueprint-page .cb-blueprint-stage {
+    width: min(100%, 1040px);
+  }
+}
+
+/* Tablet portrait / narrow: keep diagram legible with horizontal scroll */
+@media (min-width: 480px) and (max-width: 1023.98px) {
+  .cb-measure-blueprint-page .cb-blueprint-stage {
+    min-width: 480px;
+  }
+}
+
+.cb-measure-blueprint-page .cb-bp-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.cb-measure-blueprint-page .cb-bp-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+/* Interaction overlay: Sue’s SVG supplies visible guide art; strokes are transparent until active/focus */
+.cb-measure-blueprint-page .cb-bp-svg.cb-bp-svg--interaction {
+  z-index: 1;
+}
+
+.cb-measure-blueprint-page .cb-bp-line {
+  stroke: transparent;
+  stroke-width: 12;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  pointer-events: stroke;
+  cursor: pointer;
+  fill: none;
+}
+
+.cb-measure-blueprint-page .cb-bp-line:focus-visible {
+  outline: none;
+  stroke: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #888);
+  stroke-opacity: 0.45;
+  stroke-width: 10;
+}
+
+.cb-measure-blueprint-page .cb-bp-line.cb-bp-line--active {
+  stroke: var(--cb-bp-accent, #c2614e);
+  stroke-opacity: 1;
+  stroke-dasharray: 5 4;
+  stroke-width: 3.5;
+}
+
+/* Measurement anchors: percentage positions only (see .cb-bp-anchor--* rules below) */
+.cb-measure-blueprint-page .cb-blueprint-point {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  max-width: min(38vw, 10rem);
+  pointer-events: none;
+  transition:
+    opacity 0.18s ease,
+    filter 0.18s ease;
+}
+
+@media (min-width: 1024px) {
+  .cb-measure-blueprint-page .cb-blueprint-point {
+    max-width: min(26vw, 10.5rem);
+  }
+}
+
+.cb-measure-blueprint-page .cb-blueprint-point__pin,
+.cb-measure-blueprint-page .cb-blueprint-point__body {
+  pointer-events: auto;
+}
+
+.cb-measure-blueprint-page .cb-blueprint-point__pin {
+  position: absolute;
+  left: -0.35rem;
+  top: 0.55rem;
+  width: 0.65rem;
+  height: 0.65rem;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--kbm-green, #52682d);
+  background: var(--page-bg, #fff);
+  cursor: pointer;
+}
+
+.cb-measure-blueprint-page .cb-blueprint-point__pin:hover,
+.cb-measure-blueprint-page .cb-blueprint-point__pin:focus-visible {
+  border-color: var(--cb-bp-accent, #c2614e);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cb-bp-accent, #c2614e) 35%, transparent);
+}
+
+.cb-measure-blueprint-page .cb-blueprint-point__body {
+  margin-left: 0.55rem;
+  padding: 0.35rem 0.4rem 0.4rem;
+  border-radius: 9px;
+  border: 1px solid #e4e4e4;
+  background: rgb(255 255 255 / 0.93);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
+/* Inactive cards slightly lighter when any point is active */
+.cb-measure-blueprint-page
+  .cb-blueprint-stage:has(.cb-blueprint-point--active)
+  .cb-blueprint-point:not(.cb-blueprint-point--active)
+  .cb-blueprint-point__body {
+  opacity: 0.88;
+  border-color: #e8e8e8;
+  box-shadow: 0 1px 1px rgb(0 0 0 / 0.03);
+}
+
+.cb-measure-blueprint-page
+  .cb-blueprint-stage:has(.cb-blueprint-point--active)
+  .cb-blueprint-point:not(.cb-blueprint-point--active)
+  .cb-bp-measure-floating
+  label.floating-label {
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 75%, #666);
+}
+
+.cb-measure-blueprint-page .cb-blueprint-point--active {
+  z-index: 5;
+}
+
+.cb-measure-blueprint-page .cb-blueprint-point--active .cb-blueprint-point__pin {
+  border-color: var(--cb-bp-accent, #c2614e);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cb-bp-accent, #c2614e) 28%, transparent);
+}
+
+.cb-measure-blueprint-page .cb-blueprint-point--active .cb-blueprint-point__body {
+  opacity: 1;
+  border-color: var(--cb-bp-accent, #c2614e);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--cb-bp-accent, #c2614e) 45%, transparent);
+}
+
+.cb-measure-blueprint-page .cb-blueprint-point--invalid .cb-blueprint-point__body {
+  border-color: #b91c1c;
+  box-shadow: 0 0 0 1px color-mix(in srgb, #b91c1c 35%, transparent);
+}
+
+.cb-measure-blueprint-page .cb-blueprint-point--invalid .cb-bp-measure-floating input {
+  border-color: #dc3545;
+}
+
+.cb-measure-blueprint-page .cb-blueprint-point--invalid .cb-bp-measure-floating input ~ label.floating-label {
+  color: #b91c1c;
+}
+
+.cb-measure-blueprint-page .cb-blueprint-point__row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.cb-measure-blueprint-page .cb-blueprint-point__row--floating {
+  align-items: flex-end;
+  gap: 0.3rem;
+}
+
+.cb-measure-blueprint-page .cb-blueprint-point__row--floating .cb-bp-measure-floating {
+  flex: 1;
+  min-width: 0;
+  max-width: 7.75rem;
+}
+
+.cb-measure-blueprint-page .cb-bp-measure-floating input {
+  padding: 0.95rem 0.6rem 0.35rem;
+  font-size: 0.875rem;
+  border-radius: 6px;
+}
+
+.cb-measure-blueprint-page .cb-bp-measure-floating label.floating-label {
+  left: 0.6rem;
+  font-size: 0.82rem;
+}
+
+.cb-measure-blueprint-page .cb-bp-measure-floating input:focus ~ label.floating-label,
+.cb-measure-blueprint-page .cb-bp-measure-floating input:not(:placeholder-shown) ~ label.floating-label {
+  top: 0.42rem;
+  font-size: 0.68rem;
+}
+
+.cb-measure-blueprint-page .cb-bp-measure-floating input:focus-visible {
+  outline: 2px solid var(--sg-accent, #c2614e);
+  outline-offset: 1px;
+}
+
+.cb-measure-blueprint-page .cb-blueprint-point__unit {
+  font-size: 0.72rem;
+  color: #555;
+  flex-shrink: 0;
+  min-width: 1.2rem;
+  line-height: 1.2;
+  padding-bottom: 0.35rem;
+}
+
+.cb-measure-blueprint-page .cb-blueprint-point__calc-badge-row {
+  margin: 0 0 0.15rem;
+}
+
+.cb-measure-blueprint-page .cb-blueprint-point__calc-badge {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cb-bp-accent, #c2614e);
+}
+
+.cb-measure-blueprint-page .cb-bp-measure-floating--calculated input {
+  background: #f0f0f2;
+  color: #3a3a3a;
+  cursor: default;
+}
+
+.cb-measure-blueprint-page .cb-bp-measure-floating--calculated input:focus {
+  border-color: #d0d5cc;
+  box-shadow: none;
+}
+
+.cb-measure-blueprint-page .cb-bp-measure-floating--calculated label.floating-label {
+  top: 0.42rem;
+  transform: translateY(0);
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 65%, #555);
+  cursor: default;
+}
+
+/* --- Percentage anchors (overlay only; tuned to measurement-blueprint.svg) --- */
+.cb-measure-blueprint-page .cb-bp-anchor--crossBack {
+  left: 74%;
+  top: 22%;
+}
+
+.cb-measure-blueprint-page .cb-bp-anchor--finishedNeckOpeningWidth {
+  left: 52%;
+  top: 5%;
+}
+
+.cb-measure-blueprint-page .cb-bp-anchor--sweaterNeckOpeningWidth {
+  left: 28%;
+  top: 11%;
+}
+
+.cb-measure-blueprint-page .cb-bp-anchor--neckbandWidth {
+  left: 14%;
+  top: 8%;
+}
+
+.cb-measure-blueprint-page .cb-bp-anchor--armholeDepth {
+  left: 12%;
+  top: 28%;
+}
+
+.cb-measure-blueprint-page .cb-bp-anchor--hemToArmhole {
+  left: 12%;
+  top: 62%;
+}
+
+.cb-measure-blueprint-page .cb-bp-anchor--chestBust {
+  left: 50%;
+  top: 41%;
+}
+
+.cb-measure-blueprint-page .cb-bp-anchor--widthAtHem {
+  left: 52%;
+  top: 86%;
+}
+
+.cb-measure-blueprint-page .cb-bp-anchor--hemDepth {
+  left: 20%;
+  top: 92%;
+}
+
+.cb-measure-blueprint-page .cb-bp-anchor--finishedLength {
+  left: 78%;
+  top: 42%;
+}
+
+/* --- Phone: hotspot pins + bottom sheet (layout breakpoint matches script) --- */
+@media (max-width: 899.98px) {
+  .cb-measure-blueprint-page .cb-blueprint-scroll {
+    padding-bottom: min(38vh, 15rem);
+  }
+
+  .cb-measure-blueprint-page .cb-blueprint-point__body {
+    display: none;
+  }
+
+  .cb-measure-blueprint-page .cb-blueprint-point {
+    max-width: none;
+    pointer-events: auto;
+  }
+
+  .cb-measure-blueprint-page .cb-blueprint-point__pin {
+    position: static;
+    left: auto;
+    top: auto;
+    transform: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: min(12vw, 3rem);
+    height: min(12vw, 3rem);
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    margin: 0;
+    border-radius: 999px;
+    border-width: 2px;
+    font-size: clamp(0.8rem, 3.8vw, 0.95rem);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--kbm-green, #52682d);
+    background: rgb(255 255 255 / 0.96);
+  }
+
+  .cb-measure-blueprint-page .cb-blueprint-point__pin::after {
+    content: attr(data-cb-bp-hotspot-order);
+  }
+
+  .cb-measure-blueprint-page .cb-blueprint-point--active .cb-blueprint-point__pin {
+    color: #fff;
+    background: var(--cb-bp-accent, #c2614e);
+    border-color: color-mix(in srgb, var(--cb-bp-accent, #c2614e) 82%, #1a1a1a);
+  }
+}
+
+/* Phone editor: fixed layer, scoped to blueprint page */
+.cb-measure-blueprint-page .cb-measure-phone-editor {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor:not([hidden]) {
+  pointer-events: auto;
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: rgb(0 0 0 / 0.22);
+  cursor: pointer;
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor__sheet {
+  position: relative;
+  width: 100%;
+  max-width: min(100%, 520px);
+  margin: 0 auto;
+  max-height: min(52vh, 22rem);
+  box-sizing: border-box;
+  padding: clamp(0.85rem, 3.5vw, 1.1rem) clamp(1rem, 4vw, 1.25rem) calc(0.95rem + env(safe-area-inset-bottom, 0px));
+  border-radius: 16px 16px 0 0;
+  background: var(--page-bg, #fff);
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #e0e0e0);
+  border-bottom: 0;
+  box-shadow:
+    0 -10px 28px rgb(0 0 0 / 0.12),
+    0 -2px 8px rgb(0 0 0 / 0.06);
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.55rem;
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor__title {
+  margin: 0;
+  font-size: clamp(1rem, 4.2vw, 1.15rem);
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--kbm-green, #52682d);
+  padding-left: 0.55rem;
+  border-left: 4px solid transparent;
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor--open-key .cb-measure-phone-editor__title {
+  border-left-color: var(--cb-bp-accent, #c2614e);
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #1a1a1a);
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor__close {
+  flex-shrink: 0;
+  appearance: none;
+  border: 1px solid #d0d0d0;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor__close:focus-visible {
+  outline: 2px solid var(--cb-bp-accent, #c2614e);
+  outline-offset: 2px;
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor__calculated {
+  margin: 0 0 0.35rem;
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor__calculated-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cb-bp-accent, #c2614e);
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor__help {
+  margin: 0 0 0.65rem;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: #555;
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor__field {
+  margin-top: 0.15rem;
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor__label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: #333;
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor__input {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0.55rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid #c9c9c9;
+  font: inherit;
+  font-size: 1rem;
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor__input:focus-visible {
+  outline: 2px solid var(--cb-bp-accent, #c2614e);
+  outline-offset: 1px;
+  border-color: color-mix(in srgb, var(--cb-bp-accent, #c2614e) 55%, #c9c9c9);
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor__input:read-only {
+  background: #f4f4f5;
+  color: #444;
+}
+
+.cb-measure-blueprint-page .cb-measure-phone-editor__unit {
+  font-size: 0.9rem;
+  color: #555;
+  flex-shrink: 0;
+  min-width: 1.5rem;
+}
+
+@media (min-width: 900px) {
+  .cb-measure-blueprint-page .cb-measure-phone-editor {
+    display: none;
+  }
+}

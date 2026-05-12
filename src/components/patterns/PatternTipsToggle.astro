@@ -35,7 +35,7 @@ const { storageKey, scopeSelector = "#pattern-content" } = Astro.props;
       if (!slot) return;
       if (tipsOn) {
         slot.innerHTML =
-          '<div class="pattern-tip pattern-tip-intro" data-tip><strong>Tip:</strong> Pattern Tips are on to give you quick help and helpful reminders as you knit. <a href="#" class="tips-inline-toggle" data-testid="link-tips-toggle">Hide tips</a></div>';
+          '<div class="pattern-tip pattern-tip-intro pattern-print-personalization-never-print" data-tip data-pattern-print-personalization-tip><strong>Tip:</strong> Pattern Tips are on to give you quick help and helpful reminders as you knit. <a href="#" class="tips-inline-toggle" data-testid="link-tips-toggle">Hide tips</a></div>';
       } else {
         slot.innerHTML =
           '<p class="pattern-tips-off-row"><i class="fa-regular fa-lightbulb tips-icon" style="color: #c2614e;"></i><a href="#" class="tips-inline-toggle" data-testid="link-tips-toggle">Show pattern tips</a></p>';

@@ -91,12 +91,26 @@ function notationStackHtml(lines: readonly string[], stackKindClass: "shoulder" 
     .join("")}</div>`;
 }
 
-export function renderNotationOverlayDiagram(chart: NeckShoulderShapingChart, side: DiagramSide): string {
+export type NotationOverlayDiagramOptions = {
+  /** Underlay silhouette (round vs V front); defaults to round shoulder reference icon. */
+  outlineImageSrc?: string;
+};
+
+const DEFAULT_NOTATION_OUTLINE_SRC = "/images/patterns/shoulder-front-icon.svg";
+
+const MACHINE_ORIENTATION_CAPTION = "As viewed on the machine";
+
+export function renderNotationOverlayDiagram(
+  chart: NeckShoulderShapingChart,
+  side: DiagramSide,
+  options?: NotationOverlayDiagramOptions,
+): string {
   const shoulderLines = notationLinesForEdge(chart, side, "shoulder");
   const neckLines = notationLinesForEdge(chart, side, "neck");
   const mirrored = side === "left";
   const imageClass = mirrored ? "ns-notation-overlay__image ns-notation-overlay__image--mirrored" : "ns-notation-overlay__image";
   const rootClass = mirrored ? "ns-notation-overlay ns-notation-overlay--mirrored" : "ns-notation-overlay";
+  const outlineSrc = options?.outlineImageSrc ?? DEFAULT_NOTATION_OUTLINE_SRC;
 
   /**
    * Eager image load: the same overlay is rendered for back AND front in the sleeveless
@@ -108,9 +122,10 @@ export function renderNotationOverlayDiagram(chart: NeckShoulderShapingChart, si
    */
   return `<div class="${rootClass}">
   <div class="ns-notation-overlay__image-wrap">
-    <img class="${imageClass}" src="/images/patterns/shoulder-front-icon.svg" alt="Neckline and shoulder shaping reference" loading="eager" decoding="async" />
+    <img class="${imageClass}" src="${escapeHtml(outlineSrc)}" alt="Neckline and shoulder shaping reference" loading="eager" decoding="async" />
   </div>
   ${shoulderLines.length ? notationStackHtml(shoulderLines, "shoulder") : ""}
   ${neckLines.length ? notationStackHtml(neckLines, "neck") : ""}
+  <p class="ns-notation-overlay__machine-orientation">${escapeHtml(MACHINE_ORIENTATION_CAPTION)}</p>
 </div>`;
 }

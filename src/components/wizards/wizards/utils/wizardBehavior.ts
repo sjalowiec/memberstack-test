@@ -3,6 +3,8 @@
  * Common interactive patterns for pattern wizards
  */
 
+import { triggerPatternPrint } from "../../../../scripts/patternPrintPersonalization.ts";
+
 /**
  * Configuration for wizard behavior initialization
  */
@@ -80,10 +82,9 @@ export function initializeActionBar(config: WizardConfig): void {
     const printBtn = document.querySelector(config.printButtonSelector);
     if (printBtn) {
       printBtn.addEventListener('click', () => {
-        if (config.onBeforePrint) {
-          config.onBeforePrint();
-        }
-        window.print();
+        triggerPatternPrint(printBtn as HTMLElement, {
+          onBeforePrint: config.onBeforePrint,
+        });
       });
     }
   }

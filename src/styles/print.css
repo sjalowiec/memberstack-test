@@ -4,12 +4,31 @@
    all Knit by Machine tools and wizards
    ======================================== */
 
+@import "./patterns/pattern-print-footer.css";
+@import "./patterns/pattern-print-personalization.css";
+
 /* Screen: tool attribution line (shown only when printing) */
 .tool-print-footer {
   display: none;
 }
 
 @media print {
+  /* Pattern builder attribution — margin footer only (pattern-print-footer.css). */
+  .pattern-print-origin {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    width: 0 !important;
+    clip: rect(0, 0, 0, 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+  }
+
   /* ========================================
      HIDE: Global Chrome & Navigation
      CRITICAL: Remove from flow completely to prevent blank first page

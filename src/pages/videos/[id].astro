@@ -4,6 +4,7 @@ import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
 import LoginNudge from "../../components/auth/LoginNudge.astro";
 import GatedVimeoEmbed from "../../components/videos/GatedVimeoEmbed.astro";
+import { catalogChaptersFromVideoRow, type CatalogChapterRow } from "../../lib/catalogVideoChapters";
 export const prerender = true;
 
 export function getStaticPaths() {
@@ -53,36 +54,10 @@ const posterSrc =
       ? `/images/${rawPosterUrl}`
       : "";
 
-/** Catalog `chapters` from `videos-public.json` — wired on the detail page for content_id 535 only (per product request). */
-type VideoChapterRow = { label: string; time: number };
-
-function chaptersForVideoDetail535(v: (typeof videos)[number] | undefined): VideoChapterRow[] {
-  if (!v) return [];
-  const cid = (v as { content_id?: unknown }).content_id;
-  const idNum = typeof cid === "number" && Number.isFinite(cid) ? cid : typeof cid === "string" ? Number(cid.trim()) : NaN;
-  if (idNum !== 535) return [];
-  const raw = (v as { chapters?: unknown }).chapters;
-  if (!Array.isArray(raw)) return [];
-  const out: VideoChapterRow[] = [];
-  for (const row of raw) {
-    if (!row || typeof row !== "object") continue;
-    const r = row as Record<string, unknown>;
-    const label = typeof r.label === "string" ? r.label.trim() : "";
-    const t = r.time;
-    let sec: number | null = null;
-    if (typeof t === "number" && Number.isFinite(t)) sec = t;
-    else if (typeof t === "string") {
-      const s = t.trim();
-      if (/^\d+(\.\d+)?$/.test(s)) sec = parseFloat(s);
-    }
-    if (!label || sec === null || sec < 0) continue;
-    out.push({ label, time: sec });
-  }
-  return out;
-}
-
-const video535Chapters = video ? chaptersForVideoDetail535(video) : [];
-const enableVideoChapterControls = video535Chapters.length > 0;
+/** Catalog `chapters` from `videos-public.json` for Vimeo Player.js seek on the detail page. */
+const catalogChapters: CatalogChapterRow[] = video ? catalogChaptersFromVideoRow(video) : [];
+const hasCatalogChapters = catalogChapters.length > 0;
+const enableVideoChapterControls = hasCatalogChapters;
 
 ---
 
@@ -141,13 +116,13 @@ const enableVideoChapterControls = video535Chapters.length > 0;
             />
           </section>
 
-          {/* JUMP LINKS — content_id 535 with chapters: always show buttons (not gated). Other videos: member-gated placeholder. */}
+          {/* JUMP LINKS — catalog chapters from JSON (open: always visible; member: gated until access). */}
           <nav class="video-jumplinks" aria-label="Jump links" data-content-id={contentIdAttr}>
             <div class="jumplinks-head"><h2>Jump to</h2></div>
 
-            {enableVideoChapterControls ? (
+            {hasCatalogChapters && effectiveAccessLevel === "open" ? (
               <div class="jumplinks" id="jumplinks">
-                {video535Chapters.map((chapter) => (
+                {catalogChapters.map((chapter) => (
                   <button
                     type="button"
                     class="jumplink btn btn-secondary btn-small"
@@ -159,6 +134,30 @@ const enableVideoChapterControls = video535Chapters.length > 0;
                   </button>
                 ))}
               </div>
+            ) : hasCatalogChapters && effectiveAccessLevel === "member" ? (
+              <>
+                <div class="gated-locked" data-gated="locked">
+                  <div class="jumplinks-disabled" aria-disabled="true">
+                    <p class="locked-inline">Jump links are available with access.</p>
+                  </div>
+                </div>
+
+                <div class="gated-content" data-gated="content" hidden>
+                  <div class="jumplinks" id="jumplinks">
+                    {catalogChapters.map((chapter) => (
+                      <button
+                        type="button"
+                        class="jumplink btn btn-secondary btn-small"
+                        data-video-jump={String(chapter.time)}
+                        data-video-start={String(chapter.time)}
+                      >
+                        <i class="fa fa-fast-forward" aria-hidden="true"></i>
+                        {chapter.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
             ) : (
               <>
                 <div class="gated-locked" data-gated="locked">

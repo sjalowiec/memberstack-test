@@ -17,6 +17,29 @@ export {
 } from "./roundNeckline";
 
 /**
+ * V-neck Lego-block API, re-exported alongside round-neck for a single neckline-shaping import
+ * surface. Round-neck behavior is unchanged; consumers selecting V-neck call `buildVNecklinePlan`.
+ *
+ * To adjust V-neck math after Sue confirms numbers, edit `./vNeckline` (per-side stitch budget +
+ * row distribution) — this re-export shape stays stable for chart/SVG/instruction builders.
+ */
+export {
+  buildVNecklinePlan,
+  calculateVNeckNeckEdgePlan,
+  neckDecreaseStitchesPerSideFromOpening,
+  vNeckPlanToInnerEdgeEventsByRow,
+  type BuildVNecklinePlanInputs,
+  type VNecklinePlan,
+  type VNeckNeckEdgeInputs,
+  type VNeckNeckEdgePlan,
+} from "./vNeckline";
+
+export {
+  buildVNeckShoulderEventsByRow,
+  type BuildVNeckShoulderEventsByRowOptions,
+} from "./vNeckShoulderBridge";
+
+/**
  * Distribute a known neck-edge decrease total evenly across `steps` (remainder spaced first).
  * Legacy helper for even spacing; round-neck source of truth is {@link calculateRoundNecklineShaping}.
  */

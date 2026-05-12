@@ -40,6 +40,18 @@ export const BODY_MARKER_TIP_DETAILS_HTML =
   '<details class="pattern-tip sleeveless-shaping-help-toggle"><summary>Tip: Use markers to track shaping</summary><p>Many machine knitters place small removable <span class="pattern-term" data-glossary-id="310" data-tooltip="Hang a contrasting loop on the edge needle to locate a specific row or checkpoint later.">markers</span> directly into the edge of the fabric at shaping rows or length checkpoints. This makes it easier to verify your progress while the garment is still on the machine.</p></details>';
 
 /**
+ * Trusted HTML: carriage left/right vs diagram orientation (BACK and FRONT neckline blocks, before chart mount).
+ * {@link sleevelessPatternPrintRender} forces `<details open>` so printouts show the body text.
+ */
+export const NECKLINE_SHOULDER_ORIENTATION_HELP_DETAILS_HTML =
+  '<details class="pattern-tip sleeveless-shaping-help-toggle"><summary>Understanding Left, Right &amp; Diagram Orientation</summary>' +
+  "<p>The diagrams and shaping instructions are shown as you work at the machine.</p>" +
+  '<p>&ldquo;Left&rdquo; and &ldquo;Right&rdquo; in the chart refer to carriage position, not the finished sweater as worn.</p>' +
+  "<p>Shaping edges are labeled &ldquo;Neck&rdquo; and &ldquo;Armhole&rdquo; so you can follow the shaping without needing to rotate or reinterpret the garment.</p>" +
+  "<p>When working the second shoulder, repeat the shaping on the opposite side.</p>" +
+  "</details>";
+
+/**
  * Trusted HTML for inline tip after armhole shaping, before neckline and shoulder shaping (`tipHtml` block).
  * Rendered after `<strong>Tip:</strong>` — opening “Tip:” omitted here to avoid duplication.
  */
@@ -1186,6 +1198,7 @@ export function buildSleevelessBackDisplayRows(args: {
       rows.push({
         kind: "block",
         paragraphs: summary,
+        collapsibleTipHtml: NECKLINE_SHOULDER_ORIENTATION_HELP_DETAILS_HTML,
       });
     } else {
       rows.push({
@@ -1214,6 +1227,7 @@ export function buildSleevelessBackDisplayRows(args: {
         [
           "Neckline summary could not be generated. Confirm neck opening and shoulder width in Fit, then open this tab again.",
         ],
+      ...(summary ? { collapsibleTipHtml: NECKLINE_SHOULDER_ORIENTATION_HELP_DETAILS_HTML } : {}),
     });
   } else {
     rows.push({ kind: "section", title: "BACK NECKLINE & SHOULDERS" });
@@ -1294,7 +1308,13 @@ export function buildSleevelessFrontDisplayRows(args: {
       necklineStitches: args.necklineStitches,
       shoulderStitches: args.shoulderStitches,
     });
-    if (summary) rows.push({ kind: "block", paragraphs: summary });
+    if (summary) {
+      rows.push({
+        kind: "block",
+        paragraphs: summary,
+        collapsibleTipHtml: NECKLINE_SHOULDER_ORIENTATION_HELP_DETAILS_HTML,
+      });
+    }
   } else {
     rows.push({
       kind: "block",
@@ -1702,6 +1722,15 @@ export function generateSleevelessBackPattern(
   let backNeckShoulderTimeline: RowEntry[] | undefined;
   let frontNeckShoulderTimeline: RowEntry[] | undefined;
 
+  /**
+   * TODO (V-neck foundation): The builder / stored pattern will eventually pass:
+   * - `necklineType: "round" | "v-neck"` (keep `"round"` as default; current output unchanged).
+   * - For V-neck: `vNeckDepth` or `vNeckStartRow` (RC after armhole / lifeline plain rows) and
+   *   `neckOpeningWidth` / neckline stitches (same as round neck gauge path).
+   * - Front split: after armhole shaping, lifeline + knit to V start; then work each half with
+   *   `calculateVNeckNeckEdgePlan` (`./legoBlocks/vNeckline`) merged onto the shoulder RC span.
+   * Row gauge links inch depth ↔ RC alongside existing shoulder shaping timeline.
+   */
   /** Timeline drives chart + row-accurate execution (front RC-shift only). */
   if (
     castOnSts > 0 &&

@@ -28,6 +28,12 @@ import {
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
 import { showResults, initializeActionBar } from "../components/wizards/utils/wizardBehavior.ts";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
+import { getSleevelessFrontDiagramSrc } from "../lib/patterns/sleevelessFrontDiagramSrc.ts";
+import {
+  buildSleevelessPrintBasicsSummaryDlHtml,
+  buildSleevelessScreenBasicsSummaryDlHtml,
+  formatGaugeIntroPhrase,
+} from "../lib/patterns/sleevelessPrintBasicsSummaryHtml.ts";
 
 /** Canonical Vimeo help clips for sleeveless pattern pages (modal + optional jump links). */
 export const SLEEVELESS_HELP_VIDEOS = {
@@ -111,36 +117,6 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     return buildGeneratorPatternDataFromSources(merged, getPatternData());
   }
 
-  /**
-   * Pattern intro: same rules as yarn step — whole-number display, user swatch basis (4" vs 10 cm), no per-inch decimals.
-   */
-  function formatGaugeIntroPhrase(ygm, yg) {
-    const rawS =
-      (ygm && ygm.gaugeStitchRaw != null ? String(ygm.gaugeStitchRaw) : "") ||
-      (yg && yg.gaugeStitchRaw != null ? String(yg.gaugeStitchRaw) : "");
-    const rawR =
-      (ygm && ygm.gaugeRowRaw != null ? String(ygm.gaugeRowRaw) : "") ||
-      (yg && yg.gaugeRowRaw != null ? String(yg.gaugeRowRaw) : "");
-    const ts = rawS.trim();
-    const tr = rawR.trim();
-    const unit =
-      (ygm && ygm.gaugeRawUnit === "cm") || (yg && yg.gaugeRawUnit === "cm") ? "cm" : "in";
-    if (ts && tr) {
-      const s = parseFloat(ts);
-      const r = parseFloat(tr);
-      if (Number.isFinite(s) && s > 0 && Number.isFinite(r) && r > 0) {
-        const over = unit === "cm" ? "10 cm" : '4"';
-        return `${Math.round(s)} sts / ${Math.round(r)} rows over ${over}`;
-      }
-    }
-    const spi = parseFloat(String(ygm?.gaugeStitchesPerInch ?? yg?.stitchGauge ?? "").trim());
-    const rpi = parseFloat(String(ygm?.gaugeRowsPerInch ?? yg?.rowGauge ?? "").trim());
-    if (Number.isFinite(spi) && spi > 0 && Number.isFinite(rpi) && rpi > 0) {
-      return `${Math.round(spi * 4)} sts / ${Math.round(rpi * 4)} rows over 4"`;
-    }
-    return "";
-  }
-
   function audienceLabelFromPattern(st, ft) {
     const raw =
       (typeof st.recipientCategory === "string" && st.recipientCategory.trim()) ||
@@ -150,6 +126,40 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     if (key && AUDIENCE_LABELS[key]) return AUDIENCE_LABELS[key];
     if (raw) return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
     return "";
+  }
+
+  function getSleevelessAudienceHeroImage(audience) {
+    switch (String(audience || "").trim().toLowerCase()) {
+      case "baby":
+        return "/images/patterns/sleeveless/sleeveless_baby.png";
+      case "man":
+      case "men":
+      case "male":
+        return "/images/patterns/sleeveless/sleeveless_man.png";
+      case "kids":
+      case "kid":
+      case "children":
+        return "/images/patterns/sleeveless/sleeveless_kids.png";
+      case "woman":
+      case "women":
+      case "misses":
+      case "plus":
+      default:
+        return "/images/patterns/sleeveless/sleeveless_woman.png";
+    }
+  }
+
+  function updateSleevelessAudienceHero(patternMerged) {
+    const st = section(patternMerged.style);
+    const ft = section(patternMerged.fit);
+    const audience =
+      (typeof st.recipientCategory === "string" && st.recipientCategory.trim()) ||
+      (typeof ft.sizingChart === "string" && ft.sizingChart.trim()) ||
+      "";
+    const hero = document.querySelector("[data-sleeveless-audience-hero]");
+    if (hero instanceof HTMLImageElement) {
+      hero.src = getSleevelessAudienceHeroImage(audience);
+    }
   }
 
   function garmentShapeLengthPhrase(st) {
@@ -183,7 +193,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   function necklineIntroPhrase(st) {
     const k = st.neckline;
     if (k === "round") return "a round neck";
-    if (k === "v") return "a v-neck";
+    if (k === "v" || k === "v-neck") return "a v-neck";
     return "";
   }
 
@@ -222,9 +232,6 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
             ? ygm.yarnNotes.trim()
             : "";
 
-    const needlesRaw = ygm.availableNeedles ?? merged.machine?.availableNeedles;
-    const needles = needlesRaw != null && String(needlesRaw).trim() ? String(needlesRaw).trim() : "";
-
     const audienceSize =
       aud && size ? `${aud} size ${size}` : aud ? aud : size ? `size ${size}` : "";
 
@@ -249,11 +256,6 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     if (yarnName) {
       if (s) s += " ";
       s += `using ${yarnName}`;
-    }
-
-    if (needles) {
-      if (s) s += " ";
-      s += `on a ${needles}-needle machine`;
     }
 
     if (s && !s.endsWith(".")) s += ".";
@@ -1439,6 +1441,14 @@ table {
     return `<span class="glossary-tooltip-placeholder" data-glossary-id="${id}" data-term="${escapeGlossaryPlaceholderAttr(t)}">${escapeGlossaryPlaceholderText(t)}</span>`;
   }
 
+  /** Inline help on “one shoulder” in finishing (not glossary); uses global `.kbm-tooltip` styles. */
+  function oneShoulderFinishingHelpHtml() {
+    const tip =
+      "One shoulder is joined first so the neckband can be worked in one continuous piece around the neckline. The second shoulder is joined after the neckband is finished.";
+    const escapedTip = escapeGlossaryPlaceholderAttr(tip);
+    return `<span class="kbm-tooltip" tabindex="0" title="${escapedTip}" aria-label="${escapedTip}" data-tooltip="${escapedTip}">one shoulder</span>`;
+  }
+
   function buildFinishingHtml() {
     return `
   <ul class="pattern-finishing-toggle-list">
@@ -1457,9 +1467,9 @@ table {
     <li>
       <details class="pattern-finishing-toggle">
         <summary>Join Shoulders</summary>
+        <p class="pattern-finishing-lead">Join ${oneShoulderFinishingHelpHtml()} using your preferred method.</p>
         <ul>
-               <li>Seam shoulders using your preferred method.</li>
-          <li>a ${glossaryTooltip(745, 'Linker')}.</li>
+          <li>${glossaryTooltip(745, "Linker")}</li>
           <li>crochet slip stitch</li>
           <li>machine bind-off method</li>
         </ul>
@@ -1470,7 +1480,6 @@ table {
       <details class="pattern-finishing-toggle">
         <summary>Finish Neckline</summary>
         <ul>
-          <li>Join one shoulder seam.</li>
           <li>Work the neckline trim or neckband.</li>
           <li>Finish the neckband as desired.</li>
           <li>Join the remaining shoulder seam and neckband seam.</li>
@@ -1614,13 +1623,16 @@ table {
     });
   }
 
-  async function renderMount(patternMerged, result, unit, patternData) {
+  async function renderMount(patternMerged, result, unit, generatorPatternData) {
     const mount = document.querySelector("[data-sleeveless-mount]");
     if (!mount) return;
 
+    /** Canonical merged pattern (canonical + builder); neckline lives on `style.neckline` even when generator input omits nested sections. */
+    const necklineAssetPatternData = patternMerged;
+
     const displayRows = result.displayRows ?? [];
     const frontDisplayRows = result.frontDisplayRows ?? [];
-    const patternIntroSentence = buildPatternIntroSentence(patternMerged, patternData);
+    const patternIntroSentence = buildPatternIntroSentence(patternMerged, generatorPatternData);
     const backRendered =
       displayRows.length > 0
         ? renderSleevelessDisplayHtml(
@@ -1660,7 +1672,7 @@ table {
     );
     const frontWrapped = wrapSleevelessPieceSplit(
       frontInner,
-      "/images/patterns/sleeveless/diagram-front.svg",
+      getSleevelessFrontDiagramSrc(necklineAssetPatternData),
       "Sleeveless front piece diagram",
       frontPost
     );
@@ -1708,7 +1720,8 @@ table {
       backDiagramHost.innerHTML = renderNeckShoulderShapingDiagramOnlyHtml(
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
-        "back"
+        "back",
+        necklineAssetPatternData,
       );
     }
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
@@ -1753,7 +1766,8 @@ table {
       frontDiagramHost.innerHTML = renderNeckShoulderShapingDiagramOnlyHtml(
         result.frontNeckShoulderShapingChart,
         "ns-shaping-chart-front",
-        "front"
+        "front",
+        necklineAssetPatternData,
       );
     }
 
@@ -1772,7 +1786,7 @@ table {
 
     // Inline SVG diagrams with placeholder replacement (Back + Front).
     // Note: replacements come from the same result/debug used for chart/timeline (no extra shaping math here).
-    await hydrateSleevelessDiagrams(mount, result, unit, patternData);
+    await hydrateSleevelessDiagrams(mount, result, unit, necklineAssetPatternData);
     ensureSleevelessDiagramModal();
     bindSleevelessDiagramZoom(mount);
     ensureSleevelessVideoModal();
@@ -1799,20 +1813,32 @@ table {
     return document.querySelector(".sleeveless-pattern-page .pattern-tabs");
   }
 
+  function updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, validationOk) {
+    const body = document.querySelector("[data-sg-pattern-print-basics-body]");
+    if (!(body instanceof HTMLElement)) return;
+    if (!validationOk) {
+      body.innerHTML = "";
+      return;
+    }
+    body.innerHTML = buildSleevelessPrintBasicsSummaryDlHtml(patternMerged, patternData);
+  }
+
   function refreshPatternTabContent() {
     const patternMerged = mergedPatternForDisplay(getCurrentPattern());
     const patternData = getPatternData();
     const validation = validatePatternBuilderRequired(patternData);
+    updateSleevelessAudienceHero(patternMerged);
 
     const resultsEl = document.getElementById("sg-sleeveless-results");
     const tabsRoot = patternTabsRoot();
 
     const introEl = document.querySelector("[data-sg-pattern-intro]");
-    if (introEl) {
-      introEl.textContent = validation.ok ? buildPatternIntroSentence(patternMerged, patternData) : "";
+    if (introEl instanceof HTMLElement) {
+      introEl.innerHTML = validation.ok ? buildSleevelessScreenBasicsSummaryDlHtml(patternMerged, patternData) : "";
     }
 
     if (!validation.ok) {
+      updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, false);
       if (resultsEl) resultsEl.style.display = "none";
       const mount = document.querySelector("[data-sleeveless-mount]");
       if (mount) mount.innerHTML = "";
@@ -1841,6 +1867,8 @@ table {
         : {};
     const unit = (ygm && ygm.gaugeRawUnit === "cm") || (yg && yg.gaugeRawUnit === "cm") ? "cm" : "in";
 
+    updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, true);
+
     void renderMount(patternMerged, result, unit, genInput);
   }
 
@@ -1849,10 +1877,11 @@ table {
     const goldenPb = getSleevelessGoldenBetaPatternBuilderData();
     const patternMerged = mergedPatternForDisplayFromSources(canon, goldenPb);
     const patternData = goldenPb;
+    updateSleevelessAudienceHero(patternMerged);
 
     const introEl = document.querySelector("[data-sg-pattern-intro]");
-    if (introEl) {
-      introEl.textContent = buildPatternIntroSentence(patternMerged, patternData);
+    if (introEl instanceof HTMLElement) {
+      introEl.innerHTML = buildSleevelessScreenBasicsSummaryDlHtml(patternMerged, patternData);
     }
 
     const genInput = buildGeneratorPatternDataFromSources(patternMerged, goldenPb);
@@ -1874,6 +1903,8 @@ table {
         ? section(patternData.yarnGaugeMachine)
         : {};
     const unit = (ygm && ygm.gaugeRawUnit === "cm") || (yg && yg.gaugeRawUnit === "cm") ? "cm" : "in";
+
+    updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, true);
 
     void renderMount(patternMerged, result, unit, genInput);
   }

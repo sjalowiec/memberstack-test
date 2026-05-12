@@ -31,6 +31,11 @@ function isOmittedTipParagraph(text: string): boolean {
   return /^tips?\s*:/i.test(plain);
 }
 
+/** Print: show `<details>` body without requiring an extra click in the PDF/print dialog. */
+function detailsOpenForPrint(html: string): string {
+  return String(html).replace(/<details\b/i, "<details open ");
+}
+
 function renderPrintBlockRow(
   row: Extract<SleevelessPatternDisplayRow, { kind: "block" }>,
   lastStitchRef: { value: number | undefined },
@@ -52,6 +57,9 @@ function renderPrintBlockRow(
   }
   if (row.tipHtml) {
     leftBits.push(`<div class="pattern-tip"><strong>Tip:</strong> ${row.tipHtml}</div>`);
+  }
+  if (row.collapsibleTipHtml) {
+    leftBits.push(detailsOpenForPrint(row.collapsibleTipHtml));
   }
 
   const leftHtml =

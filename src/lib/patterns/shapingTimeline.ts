@@ -99,6 +99,48 @@ export function distributeTotalAcrossRows(total: number, rows: number): number[]
   return out;
 }
 
+/**
+ * RC numbers for one 1-stitch inner-neck decrease each, spread across `[startRow, endRow]` inclusive.
+ * Used by V-neck (and similar) to align with {@link ShapingEvent} rows without a new renderer.
+ *
+ * - When `count` fits within the row span, RCs are spaced as evenly as possible (endpoints included
+ *   when `count >= 2`; a single decrease uses `startRow`).
+ * - When `count` exceeds the span, {@link distributeTotalAcrossRows} allocates multiple decreases per
+ *   row; the returned list may repeat RCs (one entry per 1-st decrease).
+ */
+export function distributeEvenly(count: number, startRow: number, endRow: number): number[] {
+  const start = Math.floor(startRow);
+  const end = Math.floor(endRow);
+  if (count <= 0 || !Number.isFinite(start) || !Number.isFinite(end) || start > end) {
+    return [];
+  }
+  const span = end - start + 1;
+  if (span <= 0) return [];
+
+  if (count <= span) {
+    if (count === 1) {
+      return [start];
+    }
+    const out: number[] = [];
+    for (let i = 0; i < count; i++) {
+      const idx = Math.round((i * (span - 1)) / (count - 1));
+      out.push(start + idx);
+    }
+    return out;
+  }
+
+  const perRow = distributeTotalAcrossRows(count, span);
+  const out: number[] = [];
+  for (let j = 0; j < span; j++) {
+    const n = perRow[j] ?? 0;
+    const rc = start + j;
+    for (let k = 0; k < n; k++) {
+      out.push(rc);
+    }
+  }
+  return out;
+}
+
 /** Inner-neck events for one post-center row index (thirds-based stair bind-offs + singles every other row). */
 function backInnerNeckRow(
   i: number,
@@ -195,6 +237,11 @@ export type BuildTimelineOptions = {
 /**
  * Unified neckline + shoulder scheduler: one row budget ({@link ShapingTimelineInputs.neckDepthRows}),
  * inner-neck and outer-shoulder actions may occur on the same RC.
+ *
+ * TODO (V-neck): Today this path always uses {@link calculateRoundNecklineShaping}. When the builder
+ * passes `necklineType: "v-neck"`, schedule inner-neck work via `calculateVNeckNeckEdgePlan` /
+ * `vNeckPlanToInnerEdgeEventsByRow` from `./legoBlocks/vNeckline` per split front half (no center
+ * bind-off row); keep shoulder overlay logic compatible so neck and shoulder shaping share the same RCs.
  */
 export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTimelineOptions): RowEntry[] {
   const firstRow = Math.floor(inputs.firstShapingRow);

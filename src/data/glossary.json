@@ -937,7 +937,7 @@
     "image_description": "Illustration of Short Row Technique in Machine Knitting",
     "metaTitle": "Short Row – Machine Knitting Technique",
     "metaDescription": "Short row, or partial knitting, involves knitting only part of a row to create curves, angles, or shaping in machine-knitted fabrics.",
-    "active": true,
+    "active": false,
     "vimeoIds": [
       "251895484"
     ]
@@ -2019,21 +2019,18 @@
     ]
   },
   {
-    "glossaryId": 343,
-    "english": "Lifeline",
-    "example": "A row where you've secured your stitches. You can rip back to this row, easily pick up the stitches and start knitting again without starting from the beginning of your piece.",
-    "helpinfo": "Lifelines: A Knitters Best Friend  Lifelines: Scrap off Method Lifelines: Ravel Cord Method Lifelines: The best advice EVER!",
-    "image": "/images/glossary/lifeline.JPG",
-    "image_alt": "NULL",
-    "image_description": "NULL",
-    "metaTitle": "NULL",
-    "metaDescription": "NULL",
+    "glossaryId": 811,
+    "english": "Short Row | Partial Knitting",
+    "example": "Short rows (also called partial knitting) let you knit only part of a row instead of the full width of the piece. This creates shaping and curves in your knitting.",
+    "helpinfo": "Used for neckline shaping, shoulder shaping, bust darts, sock heels, and other curved areas. When you see short row instructions in a pattern, you are simply turning before the end of the row and working back in the other direction.",
+    "image": "/images/glossary/short-row-shaping.jpg",
+    "image_alt": "Machine knitting short row shaping example",
+    "image_description": "Example of short row shaping used to create curves in machine knitting.",
+    "metaTitle": "Short Row Shaping | Partial Knitting",
+    "metaDescription": "Learn how short row shaping (partial knitting) creates curves and shaping in machine knitting.",
     "active": true,
     "vimeoIds": [
-      "151859753",
-      "254877048",
-      "404738562",
-      "252368462"
+      "811"
     ]
   },
   {
@@ -3149,7 +3146,7 @@
     "glossaryId": 616,
     "english": "Gauge",
     "example": "Gauge is a measure of the number of stitches and rows in a specific area. Gauge is commonly measured:  Stitches and rows PER INCH ~or~ stitches and rows PER 4\" (10cm)",
-    "helpinfo": " NOTE: The term \"gauge\" can also refer to the pitch of a knitting machine. For example a machine with needles that are 4.5mm apart is referred to as a STANDARD GAUGE machine ",
+    "helpinfo": " NOTE: The term \"gauge\" can also refer to the pitch of a knitting machine. For example a machine with needles that are 4.5mm apart is referred to as a STANDARD GAUGE machine <p class=\"glossary-popup-extra-help\"><button type=\"button\" class=\"kbm-kin-catalog-video\" data-vimeo-id=\"1046394794\" data-video-title=\"How to Knit a Proper Swatch: The Secret to Machine Knitting Success\">Watch: How to knit a proper swatch</button></p>",
     "image": "/images/glossary/gauge.jpg",
     "image_alt": "Illustration showing how to measure a knitting machine swatch for accurate gauge calculation",
     "image_description": "Measure Gauge with a proper swatch Knit it Now",

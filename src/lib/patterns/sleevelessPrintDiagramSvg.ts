@@ -4,6 +4,7 @@
  */
 
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
+import { getSleevelessFrontDiagramSrc } from "./sleevelessFrontDiagramSrc";
 
 function section(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
@@ -163,7 +164,7 @@ async function loadSleevelessPieceDiagramSvgMarkup(
   }
   const src =
     piece === "front"
-      ? "/images/patterns/sleeveless/diagram-front.svg"
+      ? getSleevelessFrontDiagramSrc(patternData)
       : "/images/patterns/sleeveless/diagram-back.svg";
   const raw = await fetchSvgWithReplacements(src, replacements);
   const parser = new DOMParser();

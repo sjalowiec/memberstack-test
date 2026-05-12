@@ -13,6 +13,7 @@ const toBool = (v: unknown): boolean =>
 
 const filteredGlossary = glossaryList
   .filter((t: any) => (t.english ?? t.English ?? "").toString().trim().length > 0)
+  .filter((t: any) => t.active === true)
   .filter((t: any) => {
     if (toBool(t.dak)) return false;
     if (toBool(t.dak9)) return false;
@@ -912,6 +913,96 @@ const glossaryJson = JSON.stringify(
     .glossaryModal .glossaryModal__body .glossary-related-tools__name {
       display: inline-block;
       line-height: 1.2;
+    }
+
+    .glossaryModal .glossaryModal__body .glossary-related-videos {
+      margin: 0.85rem auto 0;
+      padding: 0.55rem 0.65rem;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.03);
+      border: 1px solid rgba(17, 24, 39, 0.08);
+      max-width: 100%;
+    }
+
+    .glossaryModal .glossaryModal__body .glossary-related-videos__title {
+      margin: 0 0 0.4rem;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #52682d;
+    }
+
+    .glossaryModal .glossaryModal__body .glossary-related-videos__list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .glossaryModal .glossaryModal__body .glossary-related-videos__item {
+      margin: 0;
+      padding: 0;
+    }
+
+    .glossaryModal .glossaryModal__body .glossary-related-videos__btn {
+      display: inline-flex;
+      width: 100%;
+      text-align: left;
+      align-items: center;
+      padding: 0.45rem 0.55rem;
+      border-radius: 8px;
+      border: 1px solid rgba(82, 104, 45, 0.35);
+      background: rgba(82, 104, 45, 0.08);
+      color: #3d4f22;
+      font: inherit;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+
+    .glossaryModal .glossaryModal__body .glossary-related-videos__btn:hover,
+    .glossaryModal .glossaryModal__body .glossary-related-videos__btn:focus-visible {
+      background: rgba(82, 104, 45, 0.14);
+      outline: none;
+    }
+
+    .glossaryModal .glossaryModal__body .glossary-related-videos__link {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.3rem 0.45rem;
+      width: 100%;
+      padding: 0.45rem 0.55rem;
+      border-radius: 8px;
+      border: 1px solid rgba(17, 24, 39, 0.1);
+      background: rgba(255, 255, 255, 0.95);
+      color: #1f2937;
+      font-weight: 600;
+      font-size: 0.92rem;
+      text-decoration: none;
+      box-sizing: border-box;
+    }
+
+    .glossaryModal .glossaryModal__body .glossary-related-videos__link--member {
+      border-style: dashed;
+    }
+
+    .glossaryModal .glossaryModal__body .glossary-related-videos__link:hover,
+    .glossaryModal .glossaryModal__body .glossary-related-videos__link:focus-visible {
+      background: rgba(82, 104, 45, 0.08);
+      outline: none;
+    }
+
+    .glossaryModal .glossaryModal__body .glossary-related-videos__badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #6b7280;
     }
 
     .glossaryModal .glossaryModal__body img:not(.glossary-related-tools__icon) {

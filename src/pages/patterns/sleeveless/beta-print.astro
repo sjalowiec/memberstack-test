@@ -1,6 +1,8 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import WizardBackLink from "../../../components/wizards/WizardBackLink.astro";
+import PatternPrintFooter from "../../../components/common/PatternPrintFooter.astro";
+import PatternPrintPersonalization from "../../../components/common/PatternPrintPersonalization.astro";
 
 import "../../../styles/ns-shaping-chart.css";
 import "../../../styles/pattern-tips.css";
@@ -13,8 +15,10 @@ const pageUrl = Astro.url.href;
 <Layout
   title="Print Sleeveless Beta Pattern | Knit it Now"
   description="Printable sleeveless sweater beta reference pattern."
-  bodyClass="sleeveless-print-route sleeveless-beta-print"
+  bodyClass="sleeveless-print-route sleeveless-beta-print pattern-print-global-footer"
 >
+  <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/sleeveless" />
+  <PatternPrintPersonalization includePrintSection={false} />
   <div class="sleeveless-print-shell" data-sleeveless-print-fixed="beta">
     <div class="sleeveless-print-actions no-print">
       <WizardBackLink className="back-link" fallback="/patterns/sleeveless/beta-pattern" />

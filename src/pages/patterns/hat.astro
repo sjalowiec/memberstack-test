@@ -6,7 +6,8 @@ import GaugeInput from "../../components/wizards/GaugeInput.astro";
 import PatternDiagram from "../../components/wizards/PatternDiagram.astro";
 import Tooltip from "../../components/Tooltip.astro";
 import WhyUseThisToolTooltip from "../../components/common/WhyUseThisToolTooltip.astro";
-import PrintFooter from "../../components/common/PrintFooter.astro";
+import PatternPrintFooter from "../../components/common/PatternPrintFooter.astro";
+import PatternPrintPersonalization from "../../components/common/PatternPrintPersonalization.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import FloatingInput from "../../components/tools/FloatingInput.astro";
 import YarnRequirement from "../../components/tools/YarnRequirement.astro";
@@ -129,8 +130,6 @@ const hatSizingBuilderRows = hatSizingRows.map((row) => {
 // Import shared wizard styles
 import '../../styles/wizard.css';
 
-const pageUrl = "https://knitbymachine.com/wizards/hat-builder";
-
 const whyUseThisTool = '';
 const wizardTitle = 'Machine Knit Hat Pattern Builder';
 const wizardDescription = 'Design the perfect custom hat with precise sizing, brim options, and crown shaping.';
@@ -145,7 +144,10 @@ const hatZeroBodyRowsWarningMessage =
 <Layout
   title="Machine Knit Hat Pattern Builder | Knit it Now"
   description="Create a custom machine knit hat pattern with your gauge, size, brim, and crown shaping. Get clear knitting instructions instantly."
+  bodyClass="pattern-print-global-footer"
 >
+
+<PatternPrintFooter />
 
 <style>
 /* Hat-specific styles only */
@@ -1397,13 +1399,6 @@ select.disabled {
 
 /* Print-specific overrides for hat patterns */
 @media print {
-  @page {
-    margin: 0.75in;
-    @bottom-center {
-      content: "Page " counter(page) " of " counter(pages);
-    }
-  }
-  
   * {
     background: white !important;
     background-color: white !important;
@@ -1569,10 +1564,6 @@ select.disabled {
     display: none !important;
   }
 
-  /* Diagram is the last pattern content; hide trailing site footer so it is not an extra final page. */
-  .wizard-page:has(.hat-builder-inputs) > footer.kbm-print-footer {
-    display: none !important;
-  }
 }
 </style>
 
@@ -2031,6 +2022,7 @@ select.disabled {
                 <div class="pattern-print-results">
                   <div class="pattern-print-section pattern-print-section--instructions">
                     <div class="pattern-card">
+                      <PatternPrintPersonalization />
                       <div id="pattern-content" data-show-tips="false">
                         <!-- Will be populated by JavaScript -->
                       </div>
@@ -2086,7 +2078,6 @@ select.disabled {
       </div>
     </div>
   </div>
-  <PrintFooter url={pageUrl} />
 </div>
 
 <div id="crown-help-overlay" class="crown-help-overlay" hidden aria-hidden="true">
@@ -2152,6 +2143,10 @@ select.disabled {
     aria-hidden="true"
   ></div>
 </div>
+
+<script>
+  import "../../scripts/patternPrintPersonalizationBridge.ts";
+</script>
 
 <!-- Load shared wizard utilities -->
 <script is:inline src="/js/wizard-utils.js"></script>
@@ -2416,7 +2411,6 @@ async function initHatBuilder() {
     resultsSelector: '#results',
     actionBarSelector: '#action-bar',
     printButtonSelector: '#print-btn',
-    printFooterSelector: '#print-footer'
   };
 
   const tabButtons = document.querySelectorAll('.pattern-tabs .tab-btn');
@@ -4073,7 +4067,11 @@ async function initHatBuilder() {
   
   // Action Bar
   printBtn.addEventListener('click', () => {
-    window.print();
+    if (typeof window.kbmTriggerPatternPrint === 'function') {
+      window.kbmTriggerPatternPrint(printBtn);
+    } else {
+      window.print();
+    }
   });
   
   // Tips Toggle Functionality - called after pattern content is rendered

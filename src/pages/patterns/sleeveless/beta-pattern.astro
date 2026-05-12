@@ -1,6 +1,7 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
-import PrintFooter from "../../../components/common/PrintFooter.astro";
+import PatternPrintFooter from "../../../components/common/PatternPrintFooter.astro";
+import PatternPrintPersonalization from "../../../components/common/PatternPrintPersonalization.astro";
 import PatternTipsToggle from "../../../components/patterns/PatternTipsToggle.astro";
 import ActionBar from "../../../components/wizards/ActionBar.astro";
 
@@ -11,13 +12,14 @@ import "../../../styles/pattern-tips.css";
 
 import "../../../styles/patterns/sleeveless-pattern-shared.css";
 
-const pageUrl = Astro.url.href;
 ---
 
 <Layout
   title="Sleeveless Sweater (Beta) — Published Pattern | Knit it Now"
   description="Read-only sleeveless sweater beta pattern: instructions, diagrams, glossary help, and videos."
+  bodyClass="pattern-print-global-footer"
 >
+  <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/sleeveless" />
   <main class="wizard-page sleeveless-pattern-page sleeveless-beta-readonly-pattern">
     <div class="sleeveless-beta-pattern__top no-print">
       <div class="sleeveless-beta-pattern__top-inner">
@@ -28,36 +30,42 @@ const pageUrl = Astro.url.href;
     <div id="sleeveless-beta-pattern-top" class="wizard-container scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
         <div id="sg-sleeveless-results" class="sg-sleeveless-results">
-          <ActionBar formScrollTarget="sleeveless-beta-pattern-top" showEditButton={false} />
+          <ActionBar formScrollTarget="sleeveless-beta-pattern-top" />
           <div id="sleeveless-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
             <section class="sleeveless-pattern-intro">
               <div class="sleeveless-pattern-intro__image">
                 <div class="beta-pattern-video">
                   <div class="beta-pattern-video__wrap">
-                    <button
-                      type="button"
-                      class="beta-pattern-video-trigger no-print"
-                      aria-label="Play video: Beta Pattern Introduction"
-                      data-sleeveless-video-id="1190804765"
-                      data-video-title="Beta Pattern Introduction"
-                    >
-                      <img
-                        src="/images/patterns/sleeveless/beta-pattern-intro-video-thumbnail.jpg"
-                        alt="Watch the beta pattern introduction"
-                        width="360"
-                        height="203"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                      <span class="beta-pattern-video-trigger__play">
-                        <i class="fa-solid fa-play" aria-hidden="true"></i>
-                      </span>
-                    </button>
+                    <img
+                      src="/images/patterns/sleeveless/sleeveless_woman.png"
+                      alt="Sleeveless sweater pattern preview"
+                      width="593"
+                      height="664"
+                      loading="lazy"
+                      decoding="async"
+                      class="sg-pattern-hero-image"
+                      data-sleeveless-audience-hero
+                    />
                   </div>
+                </div>
+                <div class="pattern-print-origin" aria-hidden="true">
+                  <div class="pattern-print-origin__label">Created with the Knit It Now Sleeveless Pattern Builder</div>
+                  <div class="pattern-print-origin__url">KnitItNow.com/sleeveless</div>
                 </div>
               </div>
               <div class="sleeveless-pattern-intro__content">
-                <p class="sg-pattern-intro-line" data-sg-pattern-intro></p>
+                <PatternPrintPersonalization>
+                  <div slot="print-summary" class="sg-pattern-print-at-a-glance" data-sg-pattern-print-at-a-glance>
+                    <h2 class="print-heading-major print-heading-major--hero">At a glance</h2>
+                    <div data-sg-pattern-print-basics-body></div>
+                  </div>
+                </PatternPrintPersonalization>
+                <div
+                  class="sg-pattern-intro-metadata pattern-generated-description"
+                  data-sg-pattern-intro
+                  data-pattern-generated-description
+                  aria-label="Pattern summary"
+                ></div>
                 <PatternTipsToggle
                   storageKey="sleeveless-show-tips"
                   scopeSelector="#sleeveless-pattern-tips-scope"
@@ -91,9 +99,6 @@ const pageUrl = Astro.url.href;
       </div>
     </div>
 
-    <div id="print-footer" style="display: none">
-      <PrintFooter url={pageUrl} />
-    </div>
   </main>
 </Layout>
 
@@ -135,55 +140,21 @@ const pageUrl = Astro.url.href;
 
   .beta-pattern-video__wrap {
     position: relative;
-    display: block;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
     width: 100%;
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
     border-radius: 8px;
-    background: #111;
-  }
-
-  .beta-pattern-video-trigger {
-    position: absolute;
-    inset: 0;
-    display: block;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    border-radius: 8px;
-    cursor: pointer;
     background: transparent;
   }
 
-  .beta-pattern-video-trigger:focus-visible {
-    outline: 2px solid var(--kbm-green, #52682d);
-    outline-offset: 2px;
-  }
-
-  .beta-pattern-video-trigger :global(img) {
+  .sg-pattern-hero-image {
     display: block;
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .beta-pattern-video-trigger__play {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    translate: -50% -50%;
-    width: 3rem;
-    height: 3rem;
-    border-radius: 999px;
-    display: grid;
-    place-items: center;
-    background: rgba(17, 24, 39, 0.72);
-    color: #fff;
-    font-size: 1.1rem;
-    pointer-events: none;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+    max-height: 320px;
+    height: auto;
+    object-fit: contain;
+    border-radius: inherit;
   }
 
   @media (max-width: 560px) {

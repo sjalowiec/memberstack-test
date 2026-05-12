@@ -4,7 +4,9 @@
  *   <button type="button" class="kbm-kin-catalog-video" data-vimeo-id="{numericVimeoId}" data-video-title="…">
  * Optional start time on the trigger (first non-empty): `data-video-start`, `data-start-time`, `data-time`
  * (seconds or `mm:ss` / `hh:mm:ss`). Jump controls inside the modal may use `data-video-jump`,
- * `data-jump-time`, or `data-time` (same time formats); active jump gets `kbm-kin-catalog-video-modal__jump--active`.
+ * `data-jump-time`, `data-jumptime` (legacy), or `data-time` (same time formats); active jump gets
+ * `kbm-kin-catalog-video-modal__jump--active`. Optional `data-video-chapters` on the trigger is a JSON array of
+ * `{ label, time }` used to render chapter buttons inside the modal when it opens.
  * `data-vimeo-id` must be the numeric Vimeo player id (for example from `videos-public.json` after
  * resolving a catalog `content_id`). Do not pass internal catalog ids here.
  * Uses the same Vimeo player URL pattern as /videos/[id] (GatedVimeoEmbed open videos), plus `api=1` for Player.js.
@@ -45,6 +47,7 @@
         allowfullscreen
       ></iframe>
     </div>
+    <div id="kbmKinCatalogVideoModalChapters" class="kbm-kin-catalog-video-modal__chapters" hidden></div>
   </div>
 </div>
 
@@ -79,7 +82,8 @@
     max-height: calc(100vh - 2rem);
     background: #0f172a;
     border-radius: 12px;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
     display: flex;
     flex-direction: column;
@@ -143,6 +147,55 @@
     outline: 2px solid #94a3b8;
     outline-offset: 2px;
   }
+
+  .kbm-kin-catalog-video-modal__chapters {
+    padding: 0.65rem 0.85rem 0.85rem;
+    background: rgba(15, 23, 42, 0.98);
+    border-top: 1px solid rgba(148, 163, 184, 0.28);
+    max-height: min(38vh, 280px);
+    overflow: auto;
+    flex-shrink: 0;
+  }
+
+  .kbm-kin-catalog-video-modal__chapters[hidden] {
+    display: none !important;
+  }
+
+  .kbm-kin-catalog-video-modal__chapters-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    align-items: center;
+  }
+
+  .kbm-kin-catalog-video-modal__chapter {
+    display: inline-flex;
+    align-items: center;
+    text-align: left;
+    padding: 0.45rem 0.6rem;
+    border-radius: 8px;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    background: rgba(30, 41, 59, 0.85);
+    color: #e2e8f0;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+    max-width: 100%;
+  }
+
+  .kbm-kin-catalog-video-modal__chapter:hover,
+  .kbm-kin-catalog-video-modal__chapter:focus-visible {
+    background: rgba(51, 65, 85, 0.95);
+    border-color: rgba(203, 213, 225, 0.55);
+    outline: none;
+  }
+
+  .kbm-kin-catalog-video-modal__chapter:focus-visible {
+    outline: 2px solid #cbd5e1;
+    outline-offset: 2px;
+  }
 </style>
 
 <script is:inline>
@@ -165,6 +218,7 @@
     var iframe = document.getElementById("kbmKinCatalogVideoIframe");
     var closeBtn = document.getElementById("kbmKinCatalogVideoModalClose");
     var titleEl = document.getElementById("kbmKinCatalogVideoModalTitle");
+    var chaptersWrap = document.getElementById("kbmKinCatalogVideoModalChapters");
     if (!modal || !iframe || !(iframe instanceof HTMLIFrameElement)) return;
 
     var lastFocus = null;
@@ -278,6 +332,7 @@
     function closeModal() {
       openGeneration++;
       clearActiveJumpState();
+      clearModalChapters();
       var p = vimeoPlayer;
       vimeoPlayer = null;
       modal.hidden = true;
@@ -310,18 +365,70 @@
       if (!el) return null;
       if (el.hasAttribute("data-video-jump")) return el.getAttribute("data-video-jump");
       if (el.hasAttribute("data-jump-time")) return el.getAttribute("data-jump-time");
+      if (el.hasAttribute("data-jumptime")) return el.getAttribute("data-jumptime");
       if (el.hasAttribute("data-time")) return el.getAttribute("data-time");
       return null;
     }
 
+    function jumpIframeMatches(el) {
+      if (!(el instanceof Element)) return true;
+      var idAttr = el.getAttribute("data-jumpiframe");
+      if (idAttr == null || !String(idAttr).trim()) return true;
+      return String(idAttr).trim() === IFRAME_PLAYER_ID;
+    }
+
     function findJumpTarget(fromEl) {
       if (!(fromEl instanceof Element)) return null;
-      var el = fromEl.closest("[data-video-jump], [data-jump-time], [data-time]");
+      var el = fromEl.closest(
+        "[data-video-jump], [data-jump-time], [data-jumptime], [data-time], button.jumplink",
+      );
       if (!el || !modal.contains(el)) return null;
+      if (!jumpIframeMatches(el)) return null;
       var raw = getJumpTimeAttributeValue(el);
       if (raw == null || !String(raw).trim()) return null;
       if (parseVideoTime(raw) == null) return null;
       return el;
+    }
+
+    function clearModalChapters() {
+      if (!chaptersWrap) return;
+      chaptersWrap.innerHTML = "";
+      chaptersWrap.hidden = true;
+    }
+
+    function renderModalChaptersFromTrigger(trigger) {
+      clearModalChapters();
+      if (!chaptersWrap || !trigger) return;
+      var raw = trigger.getAttribute("data-video-chapters");
+      if (!raw || !String(raw).trim()) return;
+      var rows;
+      try {
+        rows = JSON.parse(raw);
+      } catch (e) {
+        return;
+      }
+      if (!Array.isArray(rows) || rows.length === 0) return;
+      var inner = document.createElement("div");
+      inner.className = "kbm-kin-catalog-video-modal__chapters-inner";
+      for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        if (!row || typeof row !== "object") continue;
+        var label = String(row.label != null ? row.label : "").trim();
+        var t = row.time;
+        var sec = null;
+        if (typeof t === "number" && isFinite(t)) sec = t;
+        else if (typeof t === "string" && /^\d+(\.\d+)?$/.test(t.trim())) sec = parseFloat(t.trim());
+        if (!label || sec == null || sec < 0) continue;
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "kbm-kin-catalog-video-modal__chapter";
+        b.setAttribute("data-video-jump", String(sec));
+        b.textContent = label;
+        inner.appendChild(b);
+      }
+      if (!inner.childNodes.length) return;
+      chaptersWrap.appendChild(inner);
+      chaptersWrap.hidden = false;
     }
 
     function openModal(trigger) {
@@ -335,6 +442,7 @@
       iframe.title = label;
       if (titleEl) titleEl.textContent = label;
       clearActiveJumpState();
+      renderModalChaptersFromTrigger(trigger);
 
       destroyVimeoPlayer().then(function () {
         if (myGen !== openGeneration) return;

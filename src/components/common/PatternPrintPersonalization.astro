@@ -1,0 +1,73 @@
+---
+/**
+ * Print personalization modal + optional print-only title/notes slots (not the generated summary).
+ * Pair with src/scripts/patternPrintPersonalization.ts and pattern-print-personalization.css (via print.css).
+ *
+ * Optional named slot `print-summary` renders between title and notes (e.g. sleeveless “At a glance” on the pattern tab).
+ */
+interface Props {
+  /** When false, only the dialog is rendered (e.g. beta-print injects slots inside generated HTML). */
+  includePrintSection?: boolean;
+}
+
+const { includePrintSection = true } = Astro.props;
+---
+
+{
+  includePrintSection ? (
+    <>
+      <div class="pattern-print-personalization-title" data-pattern-print-personalization-title hidden></div>
+      <slot name="print-summary" />
+      <div class="pattern-print-personalization-notes" data-pattern-print-personalization-notes hidden></div>
+    </>
+  ) : null
+}
+
+<dialog
+  id="pattern-print-personalization-modal"
+  class="pattern-print-personalization-modal pattern-print-personalization-dialog"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="pattern-print-personalization-modal-title"
+>
+  <div class="pattern-print-personalization-modal__panel">
+    <h2 id="pattern-print-personalization-modal-title" class="pattern-print-personalization-modal__heading">
+      Customize your printed pattern?
+    </h2>
+
+    <div class="pattern-print-personalization-modal__fields">
+      <label class="pattern-print-personalization-modal__label" for="pattern-print-personalization-title">
+        Printed pattern title
+      </label>
+      <input
+        id="pattern-print-personalization-title"
+        class="pattern-print-personalization-modal__input"
+        type="text"
+        name="pattern-print-title"
+        autocomplete="off"
+      />
+
+      <label class="pattern-print-personalization-modal__label" for="pattern-print-personalization-notes">
+        Project notes
+      </label>
+      <textarea
+        id="pattern-print-personalization-notes"
+        class="pattern-print-personalization-modal__textarea"
+        name="pattern-print-notes"
+        rows={5}
+        maxlength={300}
+        autocomplete="off"
+      />
+      <span class="pattern-print-personalization-char-count" aria-live="polite">0 / 300</span>
+    </div>
+
+    <div class="pattern-print-personalization-modal__actions">
+      <button type="button" class="pattern-print-personalization-modal__btn" data-pattern-print-personalization-skip>
+        Skip & Print
+      </button>
+      <button type="button" class="pattern-print-personalization-modal__btn pattern-print-personalization-modal__btn--primary" data-pattern-print-personalization-add>
+        Add Notes & Print
+      </button>
+    </div>
+  </div>
+</dialog>

@@ -1,0 +1,51 @@
+/*
+ * Global pattern print footer (Paged Media margin boxes).
+ *
+ * Activate with body.pattern-print-global-footer — see PatternPrintFooter.astro.
+ * Requires --pattern-print-generated-date (CSS string token), e.g. "May 11, 2026".
+ * Optional full bottom-left line via --pattern-print-footer-bottom-left (set by PatternPrintFooter.astro).
+ *
+ * Top-level @page rules (not nested inside @media print) for reliable Chromium margin boxes.
+ */
+
+@page pattern_print_footer {
+  size: letter;
+  margin: 0.75in 0.7in 0.88in 0.7in;
+
+  @bottom-left {
+    content: var(--pattern-print-footer-bottom-left, "Created by Knit It Now LLC");
+    font-size: 9pt;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #4b5563;
+    white-space: nowrap;
+  }
+
+  @bottom-center {
+    content: "Page " counter(page) " of " counter(pages);
+    font-size: 9pt;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #4b5563;
+    white-space: nowrap;
+  }
+
+  @bottom-right {
+    content: "Generated " var(--pattern-print-generated-date, "");
+    font-size: 9pt;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #4b5563;
+    white-space: nowrap;
+  }
+}
+
+@media print {
+  body.pattern-print-global-footer {
+    page: pattern_print_footer;
+  }
+
+  /*
+   * Triangle scarf (and similar) may also render ToolPrintFooter; margin footer replaces it.
+   */
+  body.pattern-print-global-footer .tool-print-footer {
+    display: none !important;
+  }
+}

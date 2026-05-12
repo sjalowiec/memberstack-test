@@ -1,0 +1,165 @@
+/* Modal + print-only title/notes slots (see PatternPrintPersonalization.astro) */
+
+.pattern-print-personalization-modal {
+  max-width: min(32rem, calc(100vw - 2rem));
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+}
+
+.pattern-print-personalization-dialog {
+  padding-right: 1.25rem;
+}
+
+.pattern-print-personalization-dialog input,
+.pattern-print-personalization-dialog textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding-right: 0.85rem;
+}
+
+.pattern-print-personalization-dialog textarea {
+  max-width: 100%;
+  resize: vertical;
+}
+
+.pattern-print-personalization-char-count {
+  display: block;
+  margin-top: 0.25rem;
+  margin-bottom: 0.65rem;
+  font-size: 0.85rem;
+  color: #555;
+  text-align: right;
+}
+
+.pattern-print-personalization-modal::backdrop {
+  background: rgba(17, 24, 39, 0.45);
+}
+
+.pattern-print-personalization-modal__panel {
+  padding: 1.25rem 1.35rem 1.35rem;
+}
+
+.pattern-print-personalization-modal__heading {
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--kbm-green, #52682d);
+  line-height: 1.25;
+}
+
+.pattern-print-personalization-modal__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pattern-print-personalization-modal__label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.pattern-print-personalization-modal__input,
+.pattern-print-personalization-modal__textarea {
+  box-sizing: border-box;
+  margin-bottom: 0.65rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-left: 0.65rem;
+  padding-right: 0.85rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.95rem;
+}
+
+.pattern-print-personalization-modal__textarea {
+  margin-bottom: 0;
+  min-height: 6.5rem;
+  overflow-y: auto;
+}
+
+.pattern-print-personalization-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: flex-end;
+  margin-top: 1.15rem;
+}
+
+.pattern-print-personalization-modal__btn {
+  cursor: pointer;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #9ca3af;
+  background: #fff;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.pattern-print-personalization-modal__btn:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+.pattern-print-personalization-modal__btn--primary {
+  border-color: var(--kbm-green, #52682d);
+  background: var(--kbm-green, #52682d);
+  color: #fff;
+}
+
+/* Screen: hide print-only title/notes slots (modal stays usable) */
+.pattern-print-personalization-title,
+.pattern-print-personalization-notes {
+  display: none !important;
+}
+
+@media print {
+  .pattern-print-personalization-modal {
+    display: none !important;
+  }
+
+  .pattern-print-personalization-title:not([hidden]) {
+    display: block !important;
+    position: static !important;
+    float: none !important;
+    margin: 0 0 0.08in;
+    padding: 0;
+    font-size: 24pt;
+    line-height: 1.1;
+    font-weight: 700;
+    color: #111827;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .pattern-print-personalization-title[hidden] {
+    display: none !important;
+  }
+
+  .pattern-print-personalization-notes:not([hidden]) {
+    display: block !important;
+    position: static !important;
+    float: none !important;
+    margin: 0.08in 0 0;
+    padding: 0.08in 0 0;
+    border-top: 1px solid #cfcfcf;
+    font-size: 11.5pt;
+    line-height: 1.35;
+    color: #1f2937;
+    white-space: pre-wrap;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .pattern-print-personalization-notes[hidden] {
+    display: none !important;
+  }
+
+  .pattern-print-personalization-never-print,
+  [data-pattern-print-personalization-tip] {
+    display: none !important;
+  }
+}

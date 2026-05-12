@@ -1,0 +1,518 @@
+/**
+ * Quick Build — measurement confirmation (read-only) after Generate Pattern.
+ * Scoped under `.express-measurements-confirm-page`.
+ */
+
+.express-measurements-confirm-page .express-wizard {
+  max-width: min(1200px, 100%);
+}
+
+.express-measurements-confirm-page .express-measurements-page-nav {
+  margin: 0 0 0.35rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.express-measurements-confirm-page .express-mbp-page-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.express-measurements-confirm-page .express-mbp-page-grid__rail {
+  min-width: 0;
+}
+
+.express-measurements-confirm-page .express-mbp-page-grid__diagram {
+  min-width: 0;
+}
+
+.express-measurements-confirm-page .express-mbp-page-grid__header.pattern-header {
+  text-align: left;
+  margin-bottom: 1.1rem;
+  padding-inline: 0;
+}
+
+.express-measurements-confirm-page .express-mbp-page-grid__header .pattern-subtext {
+  margin-inline: 0;
+  max-width: none;
+}
+
+.express-measurements-confirm-page .express-mbp-page-grid__header .pattern-title {
+  font-size: clamp(1.45rem, 2.5vw, 1.85rem);
+}
+
+.express-measurements-confirm-page .express-mbp-page-grid__header .express-measurements-intro-units {
+  margin-top: 0.65rem;
+}
+
+.express-measurements-confirm-page .express-measurements-rail-fill {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 900px) {
+  .express-measurements-confirm-page .express-mbp-page-grid {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
+  .express-measurements-confirm-page .express-mbp-page-grid__rail {
+    flex: 0 0 clamp(260px, 28%, 320px);
+    max-width: 320px;
+  }
+
+  .express-measurements-confirm-page .express-mbp-page-grid__diagram {
+    flex: 1 1 72%;
+    min-width: 0;
+  }
+}
+
+.express-measurements-confirm-page .express-measurements-summary {
+  width: 100%;
+  max-width: none;
+  margin: 0 auto 0.5rem;
+}
+
+.express-measurements-confirm-page .express-measurements-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #e8e8e8;
+}
+
+.express-measurements-confirm-page .express-measurements-status {
+  margin: 0.75rem 0 0;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.express-measurements-confirm-page .express-measurements-status--error {
+  color: #b91c1c;
+}
+
+.express-measurements-confirm-page .express-measurements-summary-error {
+  max-width: min(40rem, 100%);
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, #b91c1c 35%, #e5e5e5);
+  background: color-mix(in srgb, #b91c1c 6%, #fff);
+}
+
+.express-measurements-confirm-page .express-measurements-summary-error__title {
+  margin: 0 0 0.35rem;
+}
+
+/* --- Blueprint layout (viewBox 141.5 × 194.61) --- */
+.express-measurements-confirm-page .express-mbp {
+  box-sizing: border-box;
+}
+
+.express-measurements-confirm-page .express-mbp-meta {
+  margin: 0 auto 1rem;
+  max-width: min(52rem, 100%);
+}
+
+.express-measurements-confirm-page .express-mbp-page-grid__rail .express-mbp-meta {
+  margin: 0;
+  max-width: none;
+}
+
+.express-measurements-confirm-page .express-mbp-meta__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .express-measurements-confirm-page .express-mbp-meta__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Selection summary in the left rail: two columns for readability */
+.express-measurements-confirm-page .express-mbp-page-grid__rail .express-mbp-meta__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  .express-measurements-confirm-page .express-mbp-page-grid__rail .express-mbp-meta__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.express-measurements-confirm-page .express-mbp-meta__item {
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 18%, #d8d8d8);
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 5%, var(--page-bg, #fff));
+  cursor: default;
+}
+
+.express-measurements-confirm-page .express-mbp-meta__k {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 65%, #555);
+  margin-bottom: 0.2rem;
+  line-height: 1.35;
+}
+
+.express-measurements-confirm-page .express-mbp-meta__v {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #2a2a2a;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.express-measurements-confirm-page .express-mbp-meta__item--size .express-mbp-meta__v {
+  display: block;
+}
+
+.express-measurements-confirm-page .express-mbp-meta__sub {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 35%, #444);
+}
+
+/* Quiet link back to Quick Build — reuses `.express-custom-build-callout__link` (terra cotta) from wizard layout */
+.express-measurements-confirm-page .express-mbp-edit-build-choices {
+  margin: 0 0 0.5rem;
+  padding: 0;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.express-measurements-confirm-page .express-mbp-edit-build-choices__link {
+  font-size: inherit;
+}
+
+/* Gauge summary (left rail): plain text, not input-like */
+.express-measurements-confirm-page .express-mbp-gauge-card {
+  padding: 0.75rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 16%, #d8d8d8);
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 5%, var(--page-bg, #fff));
+  cursor: default;
+}
+
+.express-measurements-confirm-page .express-mbp-gauge-card__title {
+  margin: 0 0 0.45rem;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 72%, #444);
+}
+
+.express-measurements-confirm-page .express-mbp-gauge-card__value {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #222;
+}
+
+.express-measurements-confirm-page .express-mbp-scroll {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.25rem 0 0.5rem;
+}
+
+.express-measurements-confirm-page .express-mbp-stage {
+  position: relative;
+  width: min(100%, 720px);
+  min-width: min(100%, 280px);
+  margin: 0 auto;
+  aspect-ratio: 141.5 / 194.61;
+  border-radius: 12px;
+  background: var(--page-bg, #fff);
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 12%, #e2e2e2);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.4);
+}
+
+@media (min-width: 900px) {
+  .express-measurements-confirm-page .express-mbp-page-grid__diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .express-measurements-confirm-page .express-mbp-page-grid__diagram .express-measurements-summary {
+    align-self: stretch;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .express-measurements-confirm-page .express-mbp-page-grid__diagram .express-mbp {
+    align-self: center;
+    width: min(100%, 550px);
+    max-width: 550px;
+  }
+
+  .express-measurements-confirm-page .express-mbp-page-grid__diagram .express-mbp-scroll {
+    width: 100%;
+    overflow-x: visible;
+    padding-top: 0;
+    padding-bottom: 0.35rem;
+  }
+
+  .express-measurements-confirm-page .express-mbp-page-grid__diagram .express-mbp-stage {
+    width: min(100%, 550px);
+    max-width: 550px;
+    margin-inline: auto;
+  }
+
+  .express-measurements-confirm-page .express-mbp-page-grid__diagram .express-mbp-stage__inner {
+    padding: 2.4% 3.2% 2.8% 3.4%;
+  }
+}
+
+.express-measurements-confirm-page .express-mbp-stage__inner {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  padding: 4% 5.5% 5% 6%;
+}
+
+.express-measurements-confirm-page .express-mbp-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Straight-fit Quick Build: hide waist + hem guide lines (requires SVG inlined in DOM). */
+.express-measurements-confirm-page svg.express-mbp-art #line-waist-width,
+.express-measurements-confirm-page svg.express-mbp-art #line-hem-width {
+  visibility: hidden !important;
+}
+
+.express-measurements-confirm-page svg.express-mbp-art #line-chest-width {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.express-measurements-confirm-page .express-mbp-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Read-only overlay chips: label above, compact value box (not interactive form styling) */
+.express-measurements-confirm-page .express-mbp-box {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: min(38%, 7rem);
+  min-width: 0;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.express-measurements-confirm-page .express-mbp-box__lab {
+  display: inline-flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 0.18rem;
+  padding: 0 0.15rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  text-wrap: balance;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 78%, #3d4a26);
+}
+
+.express-measurements-confirm-page .measure-icon {
+  display: inline-block;
+  font-size: 2em;
+  line-height: 1;
+  opacity: 1;
+  margin-right: 0.06rem;
+  margin-top: -0.03em;
+  flex: 0 0 auto;
+}
+
+.express-measurements-confirm-page .express-mbp-box__lab-text {
+  display: inline-block;
+  min-width: 0;
+  text-align: center;
+  text-wrap: balance;
+  line-height: inherit;
+}
+
+.express-measurements-confirm-page .express-mbp-box__lab-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.06em;
+  min-width: 0;
+}
+
+.express-measurements-confirm-page .express-mbp-box__lab-line {
+  display: block;
+  line-height: 1.12;
+}
+
+.express-measurements-confirm-page .express-mbp-box__inp {
+  display: block;
+  box-sizing: border-box;
+  width: fit-content;
+  min-width: 3.8rem;
+  max-width: 5.5rem;
+  margin: 0;
+  padding: 0.22rem 0.38rem;
+  min-height: 30px;
+  border: 1px solid #d0d5cc;
+  border-radius: 5px;
+  font-family: var(--font);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--text-dark, #1f2937);
+  background: #fff;
+  cursor: default;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow: none;
+}
+
+.express-measurements-confirm-page .express-mbp-box__inp:focus {
+  outline: none;
+  border-color: #d0d5cc;
+  box-shadow: none;
+}
+
+/* Percent positions tuned to measurement-blueprint.svg */
+.express-measurements-confirm-page .express-mbp-box--neck-opening {
+  left: 50%;
+  top: 5.5%;
+}
+
+/* Lower than neck opening so “BACK NECK” / neck depth label row do not overlap */
+.express-measurements-confirm-page .express-mbp-box--neckline-depth {
+  left: 50%;
+  top: 19%;
+}
+
+.express-measurements-confirm-page .express-mbp-box--shoulder {
+  left: 78%;
+  top: 20%;
+}
+
+/* Finished bust (ease-inclusive): center torso position (former body bust/chest chip). */
+.express-measurements-confirm-page .express-mbp-box--finished-bust {
+  left: 50%;
+  top: 41%;
+}
+
+.express-measurements-confirm-page .express-mbp-box--armhole {
+  left: 11%;
+  top: 22%;
+}
+
+/* Below finished bust chip; centered on vertical body-length guide */
+.express-measurements-confirm-page .express-mbp-box--back-length {
+  left: 50%;
+  top: 58%;
+}
+
+/* --- Mobile: stack measurement chips under diagram --- */
+@media (max-width: 699.98px) {
+  .express-measurements-confirm-page .express-mbp-scroll {
+    overflow-x: visible;
+    padding-bottom: 0.25rem;
+  }
+
+  .express-measurements-confirm-page .express-mbp-stage {
+    width: 100%;
+    max-width: 420px;
+    aspect-ratio: 141.5 / 194.61;
+  }
+
+  .express-measurements-confirm-page .express-mbp-box__lab {
+    font-size: 0.65rem;
+    text-align: center;
+    gap: 0;
+  }
+
+  .express-measurements-confirm-page .express-mbp-box__inp {
+    align-self: center;
+    width: 100%;
+    max-width: 5.5rem;
+    min-height: 28px;
+    padding: 0.2rem 0.35rem;
+    font-size: 0.95rem;
+  }
+
+  .express-measurements-confirm-page .express-mbp-overlay {
+    position: static;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem 0.45rem;
+    padding: 0.85rem 0 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .express-measurements-confirm-page .express-mbp-stage__inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 3.5% 4% 4%;
+    min-height: 0;
+  }
+
+  .express-measurements-confirm-page .express-mbp-art {
+    position: relative;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 141.5 / 194.61;
+    flex-shrink: 0;
+  }
+
+  .express-measurements-confirm-page .express-mbp-box {
+    position: static;
+    transform: none;
+    align-self: stretch;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+}

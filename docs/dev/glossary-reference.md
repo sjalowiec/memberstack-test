@@ -339,7 +339,7 @@
 | 364 | Sew-As-You-Go |
 | 680 | Shadow lace |
 | 389 | Shadow Lace Transfer Tool  \|  Jaws |
-| 250 | Short Row  \|  Partial Knitting |
+| 811 | Short Row  \|  Partial Knitting |
 | 649 | Side Lever |
 | 679 | SilverKnit USB |
 | 828 | SilverLINK 5 |

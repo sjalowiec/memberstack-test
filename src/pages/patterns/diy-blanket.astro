@@ -1,7 +1,8 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import ActionBar from "../../components/wizards/ActionBar.astro";
-import PrintFooter from "../../components/common/PrintFooter.astro";
+import PatternPrintFooter from "../../components/common/PatternPrintFooter.astro";
+import PatternPrintPersonalization from "../../components/common/PatternPrintPersonalization.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import GaugeInput from "../../components/wizards/GaugeInput.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
@@ -13,15 +14,16 @@ import GlossaryTooltip from "../../components/common/GlossaryTooltip.astro";
 import "../../styles/wizard.css";
 import "../../styles/tools/yarn-drawer-presentation.css";
 
-const pageUrl = "https://knitbymachine.com/wizards/diy-blanket";
-
 const patternPersistWarning =
   "Your pattern will not be saved on this site. Please be sure to download and save your PDF — once you leave this page, your pattern will be gone.";
 ---
 
 <Layout 
   title="Custom Blanket Builder | Knit it Now" 
-  description="Design any blanket for your machine. Check your width, adjust your gauge, and plan panels — all before you knit.">
+  description="Design any blanket for your machine. Check your width, adjust your gauge, and plan panels — all before you knit."
+  bodyClass="pattern-print-global-footer">
+
+<PatternPrintFooter />
 
 <style>
 .wizard-page {
@@ -571,13 +573,6 @@ const patternPersistWarning =
 }
 
 @media print {
-  @page {
-    margin: 0.75in;
-    @bottom-center {
-      content: "Page " counter(page) " of " counter(pages);
-    }
-  }
-
   * {
     background: white !important;
     background-color: white !important;
@@ -656,11 +651,6 @@ const patternPersistWarning =
     display: none !important;
   }
 
-  /* Diagram is the last pattern content; hide trailing site footer so it is not an extra final page. */
-  .wizard-page:has(.diy-blanket-builder-inputs) > footer.kbm-print-footer {
-    display: none !important;
-  }
-  
   /* Optimize pattern display for printing */
   .calculator-card,
   .pattern-card,
@@ -1231,6 +1221,7 @@ const patternPersistWarning =
                 <div class="pattern-print-results">
                   <div class="pattern-print-section pattern-print-section--instructions">
                     <div class="pattern-card">
+                      <PatternPrintPersonalization />
                       <div id="pattern-content">
                         <div class="highlight-box">
                           <strong style="color: #52682d;"><span id="pattern-size-name"></span></strong><br />
@@ -1531,8 +1522,11 @@ const patternPersistWarning =
     ></div>
   </div>
 
-  <PrintFooter url={pageUrl} />
 </div>
+
+<script>
+  import "../../scripts/patternPrintPersonalizationBridge.ts";
+</script>
 
 <script is:inline src="/js/wizard-utils.js"></script>
 
@@ -1663,10 +1657,11 @@ document.addEventListener('DOMContentLoaded', function() {
     );
   }
 
-  /** Matches UnitToggle `kbm-units` storage (`in` | `cm`) → values used like hat builder (`inches` | `cm`). */
+  /** Matches UnitToggle scoped `kbm-units-diy` (fallback: legacy `kbm-units`). */
   const unitStore = {
     get() {
-      const raw = localStorage.getItem('kbm-units');
+      const scoped = localStorage.getItem('kbm-units-diy');
+      const raw = scoped === 'in' || scoped === 'cm' ? scoped : localStorage.getItem('kbm-units');
       if (raw === 'cm') return 'cm';
       return 'inches';
     }
@@ -1685,7 +1680,7 @@ document.addEventListener('DOMContentLoaded', function() {
     "toddler": { name: "Toddler or Lapghan", length: 48, width: 36, category: "Child" }
   };
 
-  // State (aligned with UnitToggle + `kbm-units` on load; kept in sync via `kbm:units-change`)
+  // State (aligned with UnitToggle + `kbm-units-diy` on load; kept in sync via `kbm:units-change`)
   let units = unitStore.get() === 'cm' ? 'cm' : 'inches';
   let stitchesGauge = '';
   let rowsGauge = '';
@@ -2508,7 +2503,9 @@ document.addEventListener('DOMContentLoaded', function() {
   /** UnitToggle owns button UI; keep `units` + size grid + needle line in sync on toggle. */
   window.addEventListener('kbm:units-change', (e) => {
     if (!(e instanceof CustomEvent)) return;
-    const u = e.detail?.unit;
+    const d = e.detail as { unit?: string; toggleId?: string } | undefined;
+    if (d?.toggleId != null && d.toggleId !== 'diy') return;
+    const u = d?.unit;
     if (u !== 'in' && u !== 'cm') return;
     units = u === 'cm' ? 'cm' : 'inches';
     updatePlaceholders();
@@ -2626,34 +2623,33 @@ document.addEventListener('DOMContentLoaded', function() {
     printBtn.addEventListener('click', () => {
       const sizeSelection = getCurrentSize();
       const originalTitle = document.title;
-      
-      // Set pattern name in title
-      if (sizeSelection) {
-        document.title = `${sizeSelection.size} · Custom Blanket Builder`;
+
+      const runPrint = () => {
+        if (sizeSelection) {
+          document.title = `${sizeSelection.size} · Custom Blanket Builder`;
+        }
+        window.print();
+        setTimeout(() => {
+          document.title = originalTitle;
+        }, 100);
+      };
+
+      if (typeof window.kbmTriggerPatternPrint === 'function') {
+        window.kbmTriggerPatternPrint(printBtn, {
+          onBeforePrint: () => {
+            if (sizeSelection) {
+              document.title = `${sizeSelection.size} · Custom Blanket Builder`;
+            }
+          },
+          onAfterPrint: () => {
+            setTimeout(() => {
+              document.title = originalTitle;
+            }, 100);
+          },
+        });
+      } else {
+        runPrint();
       }
-      
-      // Set print date
-      const today = new Date();
-      const formattedDate = today.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      });
-      document.body.setAttribute('data-print-date', formattedDate);
-      
-      // Update print footer
-      const printFooter = document.getElementById('print-footer');
-      if (printFooter) {
-        printFooter.textContent = `Knit by Machine • Created on ${formattedDate}`;
-      }
-      
-      // Open print dialog
-      window.print();
-      
-      // Restore original title after print
-      setTimeout(() => {
-        document.title = originalTitle;
-      }, 100);
     });
   }
 

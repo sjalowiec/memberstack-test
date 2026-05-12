@@ -1,0 +1,64 @@
+---
+/**
+ * Global pattern print: sets CSS variables for @page margin boxes
+ * (see src/styles/patterns/pattern-print-footer.css).
+ *
+ * Add Layout bodyClass including `pattern-print-global-footer`, and place this once per page.
+ */
+export interface Props {
+  /** Defaults to current date/time at SSR; client refreshes at load + beforeprint. */
+  generatedDate?: Date | string;
+  /** When set, appended to “Created by Knit It Now LLC” for the print margin left line (one CSS string). */
+  footerBottomLeftExtra?: string;
+}
+
+function formatPatternPrintGeneratedDate(d: Date): string {
+  return d.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+const raw = Astro.props.generatedDate;
+const parsed =
+  raw instanceof Date ? raw : typeof raw === "string" ? new Date(raw) : new Date();
+const initialDate = Number.isFinite(parsed.getTime())
+  ? formatPatternPrintGeneratedDate(parsed)
+  : formatPatternPrintGeneratedDate(new Date());
+
+const footerBottomLeftExtra =
+  typeof Astro.props.footerBottomLeftExtra === "string" ? Astro.props.footerBottomLeftExtra.trim() : "";
+
+/** Single token for @bottom-left — concatenation via var() is unreliable in some @page UAs. */
+const patternPrintFooterBottomLeftFull =
+  footerBottomLeftExtra !== ""
+    ? `Created by Knit It Now LLC${footerBottomLeftExtra}`
+    : "Created by Knit It Now LLC";
+
+const cssDateToken = JSON.stringify(initialDate);
+const cssFooterBottomLeftToken = JSON.stringify(patternPrintFooterBottomLeftFull);
+const patternPrintFooterCss = `:root {\n  --pattern-print-generated-date: ${cssDateToken};\n  --pattern-print-footer-bottom-left: ${cssFooterBottomLeftToken};\n}`;
+---
+
+<style is:global>{patternPrintFooterCss}</style>
+
+<script is:inline>
+(function () {
+  function patternPrintFormatDate(d) {
+    return d.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  }
+  function patternPrintRefreshGeneratedDate() {
+    document.documentElement.style.setProperty(
+      "--pattern-print-generated-date",
+      JSON.stringify(patternPrintFormatDate(new Date())),
+    );
+  }
+  patternPrintRefreshGeneratedDate();
+  window.addEventListener("beforeprint", patternPrintRefreshGeneratedDate);
+})();
+</script>

@@ -25,6 +25,11 @@ interface Props {
 const { id, term, autoOpenOnce = false } = Astro.props;
 
 import glossaryData from "../../data/glossary.json";
+import videosPublic from "../../data/videos-public.json";
+import { buildGlossaryRelatedVideosHtml } from "../../lib/glossary/glossaryCatalogVideos";
+import type { PublicVideoRow } from "../../lib/lessonVideo";
+
+type RelatedTool = { name: string; url: string; icon?: string };
 
 type GlossaryRow = {
   glossaryId: number;
@@ -33,9 +38,16 @@ type GlossaryRow = {
   helpinfo?: string;
   image?: string;
   image_alt?: string;
+  relatedTools?: RelatedTool[];
+  active?: boolean;
+  vimeoIds?: unknown;
+  videoIds?: unknown;
 };
 
 const glossary: GlossaryRow[] = Array.isArray(glossaryData) ? (glossaryData as GlossaryRow[]) : [];
+const glossaryCatalogVideos: PublicVideoRow[] = Array.isArray(videosPublic)
+  ? (videosPublic as PublicVideoRow[])
+  : [];
 
 /** Remove embeds / executable markup; keep images (e.g. GIFs) and normal HTML. */
 function sanitizeGlossaryPopupHtml(html: string): string {
@@ -71,6 +83,26 @@ function normalizeGlossaryImageSrc(path: string): string {
   return `/images/glossary/${p.replace(/^\.?\//, "")}`;
 }
 
+function buildRelatedToolsPopupHtml(tools: RelatedTool[]): string {
+  if (!Array.isArray(tools) || tools.length === 0) return "";
+  const items = tools
+    .map((t) => {
+      const name = escapeHtmlText((t?.name ?? "").trim());
+      const url = escapeHtmlAttr((t?.url ?? "").trim());
+      if (!name || !url) return "";
+      const iconRaw = (t?.icon ?? "").trim();
+      const icon =
+        iconRaw !== ""
+          ? `<img src="${escapeHtmlAttr(iconRaw)}" alt="" class="glossary-related-tools__icon" width="26" height="26" loading="lazy" decoding="async" />`
+          : "";
+      return `<li class="glossary-related-tools__item"><a href="${url}" class="glossary-related-tools__link">${icon}<span class="glossary-related-tools__name">${name}</span></a></li>`;
+    })
+    .filter(Boolean)
+    .join("");
+  if (!items) return "";
+  return `<div class="glossary-related-tools"><p class="glossary-related-tools__heading">Use this tool</p><ul class="glossary-related-tools__list">${items}</ul></div>`;
+}
+
 /** Sanitized example HTML plus illustration + help; no iframe/video/script. */
 function buildGlossaryContentHtml(entry: GlossaryRow): string {
   const parts: string[] = [];
@@ -93,6 +125,10 @@ function buildGlossaryContentHtml(entry: GlossaryRow): string {
   if (help) {
     parts.push(`<div class="glossary-popup-help">${sanitizeGlossaryPopupHtml(help)}</div>`);
   }
+  const relatedVideosHtml = buildGlossaryRelatedVideosHtml(entry, glossaryCatalogVideos);
+  if (relatedVideosHtml) parts.push(relatedVideosHtml);
+  const toolsHtml = buildRelatedToolsPopupHtml(entry.relatedTools ?? []);
+  if (toolsHtml) parts.push(toolsHtml);
   return parts.join("");
 }
 
@@ -136,12 +172,12 @@ const matchesTerm = (entryEnglish: string, t: string) => {
 let entry: GlossaryRow | undefined;
 
 if (id != null) {
-  entry = glossary.find((e) => e.glossaryId === id);
+  entry = glossary.find((e) => e.glossaryId === id && e.active === true);
   if (!entry && typeof console !== "undefined" && import.meta.env?.DEV) {
     console.warn(`[GlossaryTooltip] No glossary entry found for id=${id}`);
   }
 } else if (term != null && term !== "") {
-  entry = glossary.find((e) => matchesTerm(e?.english ?? "", term));
+  entry = glossary.find((e) => e.active === true && matchesTerm(e?.english ?? "", term));
   if (!entry && typeof console !== "undefined" && import.meta.env?.DEV) {
     console.warn(`[GlossaryTooltip] No glossary entry found for term="${term}"`);
   }
@@ -489,6 +525,184 @@ const titleId = `gt-title-${randomUUID()}`;
 
   .glossary-content .glossary-popup-help :global(p:first-child) {
     margin-top: 0;
+  }
+
+  .glossary-content :global(.glossary-popup-extra-help) {
+    margin: 1rem 0 0;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(17, 24, 39, 0.1);
+  }
+
+  .glossary-content :global(.glossary-popup-extra-help .kbm-kin-catalog-video) {
+    display: inline;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: #52682d;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-align: left;
+  }
+
+  .glossary-content :global(.glossary-popup-extra-help .kbm-kin-catalog-video:hover),
+  .glossary-content :global(.glossary-popup-extra-help .kbm-kin-catalog-video:focus-visible) {
+    color: #3d4f22;
+    outline: none;
+  }
+
+  .glossary-content :global(.glossary-popup-extra-help .kbm-kin-catalog-video:focus-visible) {
+    outline: 2px solid #52682d;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  .glossary-content :global(.glossary-related-videos) {
+    margin: 0.85rem 0 0;
+    padding: 0.65rem 0.7rem;
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.03);
+    border: 1px solid rgba(17, 24, 39, 0.08);
+  }
+
+  .glossary-content :global(.glossary-related-videos__title) {
+    margin: 0 0 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #52682d;
+  }
+
+  .glossary-content :global(.glossary-related-videos__list) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .glossary-content :global(.glossary-related-videos__item) {
+    margin: 0;
+    padding: 0;
+  }
+
+  .glossary-content :global(.glossary-related-videos__btn) {
+    display: inline-flex;
+    width: 100%;
+    text-align: left;
+    align-items: center;
+    padding: 0.45rem 0.55rem;
+    border-radius: 8px;
+    border: 1px solid rgba(82, 104, 45, 0.35);
+    background: rgba(82, 104, 45, 0.08);
+    color: #3d4f22;
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .glossary-content :global(.glossary-related-videos__btn:hover),
+  .glossary-content :global(.glossary-related-videos__btn:focus-visible) {
+    background: rgba(82, 104, 45, 0.14);
+    outline: none;
+  }
+
+  .glossary-content :global(.glossary-related-videos__btn:focus-visible) {
+    outline: 2px solid rgba(82, 104, 45, 0.45);
+    outline-offset: 2px;
+  }
+
+  .glossary-content :global(.glossary-related-videos__link) {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem 0.45rem;
+    width: 100%;
+    padding: 0.45rem 0.55rem;
+    border-radius: 8px;
+    border: 1px solid rgba(17, 24, 39, 0.1);
+    background: rgba(255, 255, 255, 0.9);
+    color: #1f2937;
+    font-weight: 600;
+    font-size: 0.92rem;
+    text-decoration: none;
+    box-sizing: border-box;
+  }
+
+  .glossary-content :global(.glossary-related-videos__link--member) {
+    border-style: dashed;
+  }
+
+  .glossary-content :global(.glossary-related-videos__link:hover),
+  .glossary-content :global(.glossary-related-videos__link:focus-visible) {
+    background: rgba(82, 104, 45, 0.08);
+    outline: none;
+  }
+
+  .glossary-content :global(.glossary-related-videos__badge) {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #6b7280;
+  }
+
+  .glossary-content :global(.glossary-related-tools) {
+    margin-top: 1rem;
+    padding: 0.85rem 0.95rem;
+    border-radius: 10px;
+    background: rgba(82, 104, 45, 0.06);
+    border: 1px solid rgba(82, 104, 45, 0.15);
+  }
+
+  .glossary-content :global(.glossary-related-tools__heading) {
+    margin: 0 0 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #52682d;
+  }
+
+  .glossary-content :global(.glossary-related-tools__list) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .glossary-content :global(.glossary-related-tools__link) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.35rem 0.45rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #1f2937;
+    font-weight: 600;
+    font-size: 0.92rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .glossary-content :global(.glossary-related-tools__link:hover),
+  .glossary-content :global(.glossary-related-tools__link:focus-visible) {
+    background: rgba(82, 104, 45, 0.12);
+    color: #52682d;
+    outline: none;
+  }
+
+  .glossary-content :global(.glossary-related-tools__icon) {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    object-fit: contain;
   }
 
   .glossary-mobile-scrim {

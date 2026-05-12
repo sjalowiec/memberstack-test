@@ -53,6 +53,10 @@ interface Props {
   helpModalAriaLabel?: string;
   /** Additional data-* attributes to spread on the input. */
   dataAttrs?: Record<string, string>;
+  /** When true, value cannot be edited (e.g. calculated fields). */
+  readonly?: boolean;
+  /** Tab order for the input (e.g. wizard step fields). */
+  tabindex?: string | number;
 }
 
 const {
@@ -81,6 +85,8 @@ const {
   helpModalId,
   helpModalAriaLabel,
   dataAttrs = {},
+  readonly = false,
+  tabindex,
 } = Astro.props;
 
 const errorId = errorMessage ? `${id}-error` : undefined;
@@ -111,6 +117,8 @@ const describedBy = [ariaDescribedby, errorId].filter(Boolean).join(" ") || unde
     role={role}
     data-testid={dataTestid}
     class:list={[{ error }]}
+    readonly={readonly ? true : undefined}
+    tabindex={tabindex}
     {...dataAttrs}
   />
   <label

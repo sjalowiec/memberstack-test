@@ -247,7 +247,7 @@ const cupOptions = [
       }
 
       function getUnitFromForm() {
-        const el = document.getElementById("unit");
+        const el = document.getElementById("dart-units-unit");
         const v =
           el && "value" in el ? String(/** @type {HTMLInputElement} */ (el).value).trim() : "";
         return v === "cm" ? "cm" : "in";

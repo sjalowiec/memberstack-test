@@ -1,0 +1,357 @@
+/**
+ * Shared Express / Custom Build wizard shell: page tokens, header, panel padding,
+ * builder toolbar, and accordion cards. Imported by `/patterns/sleeveless-express`
+ * and Custom Build design step.
+ */
+
+.express-page {
+  --express-terracotta: #c2614e;
+  --sg-accent: #c2614e;
+  --accent-color: var(--sg-accent);
+  --express-muted: rgba(0, 0, 0, 0.45);
+  --express-nav-green: var(--kbm-green, #52682d);
+  padding-top: 0;
+  padding-bottom: 2rem;
+}
+
+.express-wizard {
+  max-width: 1000px;
+}
+
+.pattern-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.pattern-header.page-header {
+  margin-bottom: 1.5rem;
+  padding: 0 0.5rem;
+}
+
+.pattern-mode-label {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.pattern-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--kbm-green, #52682d);
+  margin: 0 0 8px;
+}
+
+.pattern-subtext {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--express-muted);
+  max-width: 36rem;
+  margin-inline: auto;
+}
+
+.express-panel.calculator-card:not(.pattern-mode-layout--integrated) {
+  margin-bottom: 0;
+  padding: 1.35rem 1.25rem 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .express-panel.calculator-card:not(.pattern-mode-layout--integrated) {
+    padding: 1.5rem 1.75rem 1.75rem;
+  }
+}
+
+.express-builder-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 0.65rem;
+}
+
+.express-builder-units {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 0.65rem;
+}
+
+.express-builder-root {
+  min-width: 0;
+}
+
+/* Accordion sections — lighter builder-style cards */
+/* Offset for sticky site header / workspace tabs when scrolling to a step section */
+.express-page .express-acc[data-express-step] {
+  scroll-margin-top: 120px;
+}
+
+.express-accordions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.express-acc {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: color-mix(in srgb, var(--express-nav-green) 4.5%, var(--page-bg, #fff));
+  border: 1px solid rgba(82, 104, 45, 0.09);
+  border-radius: 12px;
+  padding: 0.85rem 1rem 1rem;
+  box-shadow: 0 1px 2px rgba(45, 55, 30, 0.04);
+  transition:
+    opacity 0.2s ease,
+    filter 0.2s ease;
+}
+
+@supports not (background: color-mix(in srgb, white, black)) {
+  .express-acc {
+    background: rgba(82, 104, 45, 0.045);
+  }
+}
+
+.express-acc--locked {
+  opacity: 0.62;
+  filter: saturate(0.92);
+}
+
+.express-acc--locked.express-acc--open {
+  opacity: 1;
+  filter: none;
+}
+
+.express-acc__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+}
+
+.express-page .express-acc:has(.glossary-tooltip-wrap--open) .express-acc__header {
+  position: relative;
+  z-index: 6;
+}
+
+.express-page .express-acc:has(.glossary-tooltip-wrap--open) .express-acc__body {
+  position: relative;
+  z-index: 0;
+}
+
+/* Align title with steps that show the chevron column (chevron hidden while locked) */
+.express-acc--locked:not(.express-acc--open) .express-acc__header {
+  padding-left: 42px;
+  box-sizing: border-box;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.express-acc:not(.express-acc--locked) .express-acc__header,
+.express-acc.express-acc--open .express-acc__header {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.express-acc__chevron {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(194, 97, 78, 0.45);
+  background: #f7f9f3;
+  color: #c2614e;
+  font-size: 1.15rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  border-radius: 6px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 1px rgba(45, 55, 30, 0.06);
+  transform: rotate(-90deg);
+  transition: transform 0.15s ease;
+  margin-top: 2px;
+}
+
+.express-acc__chevron:hover {
+  background: rgba(194, 97, 78, 0.08);
+  border-color: rgba(194, 97, 78, 0.62);
+}
+
+.express-acc--open .express-acc__chevron {
+  transform: rotate(0deg);
+}
+
+/* Locked upcoming steps: no chevron (avoids a “blocked expand” affordance) */
+.express-acc--locked:not(.express-acc--open) .express-acc__chevron {
+  display: none;
+}
+
+.express-acc__locked-feedback {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.5rem 0 0;
+  padding: 0 0 0 42px;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: rgba(75, 85, 99, 0.92);
+  font-weight: 400;
+}
+
+.express-acc__locked-feedback[hidden] {
+  display: none !important;
+}
+
+.express-acc__locked-arrow {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  line-height: 1;
+  color: rgba(107, 114, 128, 0.95);
+}
+
+.express-acc__locked-msg {
+  flex: 1;
+  min-width: 0;
+}
+
+.express-acc__header-main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.express-acc__check {
+  display: none;
+  color: #c2614e;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.express-acc--complete .express-acc__check {
+  display: inline;
+}
+
+.express-acc__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--express-nav-green);
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.express-acc__title-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.65rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.express-acc__title-row .express-acc__title {
+  flex: 0 1 auto;
+}
+
+.express-acc__title-glossary {
+  flex: 0 0 auto;
+  font-size: 0.88rem;
+  opacity: 0.9;
+}
+
+.express-acc__title-glossary :global(.glossary-tooltip-wrap) {
+  vertical-align: baseline;
+}
+
+.express-acc__value {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #4b5563;
+  line-height: 1.25;
+  flex: 0 1 100%;
+  margin-left: 0;
+}
+
+@media (min-width: 520px) {
+  .express-acc__value {
+    flex: 0 1 auto;
+    margin-left: 0.25rem;
+  }
+
+  .express-acc__value:empty {
+    display: none;
+  }
+}
+
+.express-acc__body {
+  padding-top: 1rem;
+  margin-top: 0.35rem;
+  border-top: 1px solid rgba(82, 104, 45, 0.1);
+}
+
+.express-acc:not(.express-acc--open) .express-acc__body {
+  display: none;
+}
+
+.express-acc.express-acc--open .express-acc__body[hidden] {
+  display: none;
+}
+
+.express-acc.express-acc--open .express-acc__body:not([hidden]) {
+  display: block;
+}
+
+/* Custom Build wizard: bottom nav matches legacy sleeveless fit/yarn split CTAs */
+.express-page .cb-design-wizard-nav {
+  margin-top: 1.25rem;
+}
+
+.express-page .cb-design-wizard-nav.wizard-next-cta--split {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1rem 1.5rem;
+}
+
+@media (max-width: 520px) {
+  .express-page .cb-design-wizard-nav.wizard-next-cta--split {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .express-page .cb-design-wizard-nav.wizard-next-cta--split > .kbm-btn-outline {
+    text-align: center;
+  }
+}
+
+.express-page .cb-design-wizard-nav .kbm-btn[aria-disabled="true"] {
+  opacity: 0.55;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* Inline “Quick Build” / classic step links reuse Express callout link styling */
+.express-page .express-custom-build-callout__link {
+  color: var(--sg-accent, #c2614e);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.express-page .express-custom-build-callout__link:hover {
+  color: color-mix(in srgb, var(--sg-accent, #c2614e) 85%, #000);
+}

@@ -4,7 +4,8 @@ import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import FloatingInput from "../../components/tools/FloatingInput.astro";
 import YarnRequirement from "../../components/tools/YarnRequirement.astro";
-import PrintFooter from "../../components/common/PrintFooter.astro";
+import PatternPrintFooter from "../../components/common/PatternPrintFooter.astro";
+import PatternPrintPersonalization from "../../components/common/PatternPrintPersonalization.astro";
 import PatternTabs from "../../components/patterns/PatternTabs.astro";
 import PatternComments from "../../components/patterns/PatternComments.astro";
 import PinterestEmbed from "../../components/PinterestEmbed.astro";
@@ -16,7 +17,6 @@ import {
   parseTriangleScarfSearchParams,
 } from "../../lib/patterns/triangleScarfMath";
 
-const pageUrl = Astro.url.href;
 const inspirationBoardUrl =
   "https://www.pinterest.com/knititnow/machine-knit-asymmetric-scarf-inspiration/";
 const parsed = parseTriangleScarfSearchParams(Astro.url.searchParams);
@@ -40,7 +40,9 @@ const toolHref = "/tools/triangle-v2";
   title="Weekend Triangle Scarf | Knit it Now"
   description="Adaptive triangle scarf pattern: enter gauge and size, then follow Wide → Point or Point → Wide → Point instructions with shaping notation."
   toolPrintTitle="Triangle Scarf Pattern"
+  bodyClass="pattern-print-global-footer"
 >
+  <PatternPrintFooter />
   <main class="wizard-page ts-pattern-page">
     <div style="max-width: 1100px; margin: 0 auto; padding: 0 1rem;">
       <WizardBackLink className="back-link no-print" fallback="/patterns" />
@@ -214,6 +216,7 @@ const toolHref = "/tools/triangle-v2";
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                     </button>
                   </div>
+                  <PatternPrintPersonalization />
                   <div class="ts-pattern-results-inner" id="ts-pattern-results" set:html={initialPatternHtml} />
                 </div>
               </div>
@@ -242,7 +245,6 @@ const toolHref = "/tools/triangle-v2";
       </div>
     </div>
 
-    <PrintFooter url={pageUrl} />
   </main>
 
   <style>
@@ -737,6 +739,7 @@ const toolHref = "/tools/triangle-v2";
       buildTriangleScarfPatternHtml,
     } from "../../lib/patterns/triangleScarfMath.ts";
     import { initPatternTabs } from "../../lib/patterns/patternTabsClient.ts";
+    import { triggerPatternPrint } from "../../scripts/patternPrintPersonalization.ts";
 
     const tabsControl = initPatternTabs(document.querySelector(".ts-pattern-shell"));
 
@@ -970,7 +973,10 @@ const toolHref = "/tools/triangle-v2";
     updateDimLabels();
     updateGaugePlaceholders();
 
-    document.getElementById("tsPatternPrintBtn")?.addEventListener("click", () => window.print());
+    document.getElementById("tsPatternPrintBtn")?.addEventListener("click", (e) => {
+      const el = e.currentTarget;
+      triggerPatternPrint(el instanceof HTMLElement ? el : null);
+    });
 
     if (resultsWrap && !resultsWrap.hidden && resultsEl?.innerHTML?.trim()) {
       tabsControl?.activateTab("pattern");

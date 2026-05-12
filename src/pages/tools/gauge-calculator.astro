@@ -569,7 +569,7 @@ const toolPrintTitle = tool?.title ?? "Gauge Calculator";
     const rowGaugeResultEl = rowGaugeResult;
 
     function getUnit(): "in" | "cm" {
-      const el = document.getElementById("unit") as HTMLInputElement | null;
+      const el = document.getElementById("gauge-units-unit") as HTMLInputElement | null;
       const v = el?.value?.trim();
       return v === "cm" ? "cm" : "in";
     }

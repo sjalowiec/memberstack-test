@@ -7,14 +7,16 @@ const { slug } = Astro.params;
 
 export async function getStaticPaths() {
   return glossary
-    .filter((t: any) => (t.english ?? "").toString().trim().length > 0)
+    .filter((t: any) => t.active === true && (t.english ?? "").toString().trim().length > 0)
     .map((t: any) => ({
       params: { slug: slugify((t.english ?? "").toString().replace(/<[^>]*>/g, "").trim()) },
     }));
 }
 
 const entry = glossary.find(
-  (t: any) => slugify((t.english ?? "").toString().replace(/<[^>]*>/g, "").trim()) === slug
+  (t: any) =>
+    t.active === true &&
+    slugify((t.english ?? "").toString().replace(/<[^>]*>/g, "").trim()) === slug
 );
 
 if (!entry) {

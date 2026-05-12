@@ -55,6 +55,11 @@ interface Props {
   flatRow?: boolean;
   /** When true, adds no-print on the wrapper so the Sts/Rows UI is hidden when printing (pattern copy can still show gauge in prose). */
   noPrint?: boolean;
+  /** Optional floating-label copy when inches / cm (defaults to Sts/Rows 4″ / 10 cm). */
+  stitchLabelInches?: string;
+  stitchLabelCm?: string;
+  rowLabelInches?: string;
+  rowLabelCm?: string;
 }
 
 const { 
@@ -66,9 +71,18 @@ const {
   toggleId,
   flatRow = false,
   noPrint = false,
+  stitchLabelInches,
+  stitchLabelCm,
+  rowLabelInches,
+  rowLabelCm,
 } = Astro.props;
 
 const effectiveToggleId = toggleId || "kbm-unit-toggle";
+
+const stitchLabelInchesResolved = stitchLabelInches ?? 'Sts (4")';
+const stitchLabelCmResolved = stitchLabelCm ?? 'Sts (10 cm)';
+const rowLabelInchesResolved = rowLabelInches ?? 'Rows (4")';
+const rowLabelCmResolved = rowLabelCm ?? 'Rows (10 cm)';
 
 /** When flatRow, omit inner row wrapper if there is nothing above the stitch/row fields (hat builder). */
 const hasGaugePrefix =
@@ -84,6 +98,10 @@ const hasGaugePrefix =
     noPrint && 'no-print',
   ]}
   data-toggle-id={effectiveToggleId}
+  data-gauge-stitch-in={stitchLabelInchesResolved}
+  data-gauge-stitch-cm={stitchLabelCmResolved}
+  data-gauge-row-in={rowLabelInchesResolved}
+  data-gauge-row-cm={rowLabelCmResolved}
 >
   {showTitle && showToggle && (
     <div class="kbm-header-layout">
@@ -111,7 +129,7 @@ const hasGaugePrefix =
         id={`${id}-stitch-gauge`}
         labelId={`${id}-stitch-label`}
         labelClass="floating-label"
-        label='Sts (4")'
+        label={stitchLabelInchesResolved}
         type="number"
         step="0.5"
         min="1"
@@ -122,7 +140,7 @@ const hasGaugePrefix =
         id={`${id}-row-gauge`}
         labelId={`${id}-row-label`}
         labelClass="floating-label"
-        label='Rows (4")'
+        label={rowLabelInchesResolved}
         type="number"
         step="0.5"
         min="1"
@@ -136,7 +154,7 @@ const hasGaugePrefix =
         id={`${id}-stitch-gauge`}
         labelId={`${id}-stitch-label`}
         labelClass="floating-label"
-        label='Sts (4")'
+        label={stitchLabelInchesResolved}
         type="number"
         step="0.5"
         min="1"
@@ -147,7 +165,7 @@ const hasGaugePrefix =
         id={`${id}-row-gauge`}
         labelId={`${id}-row-label`}
         labelClass="floating-label"
-        label='Rows (4")'
+        label={rowLabelInchesResolved}
         type="number"
         step="0.5"
         min="1"
@@ -161,7 +179,7 @@ const hasGaugePrefix =
         id={`${id}-stitch-gauge`}
         labelId={`${id}-stitch-label`}
         labelClass="floating-label"
-        label='Sts (4")'
+        label={stitchLabelInchesResolved}
         type="number"
         step="0.5"
         min="1"
@@ -172,7 +190,7 @@ const hasGaugePrefix =
         id={`${id}-row-gauge`}
         labelId={`${id}-row-label`}
         labelClass="floating-label"
-        label='Rows (4")'
+        label={rowLabelInchesResolved}
         type="number"
         step="0.5"
         min="1"
@@ -362,38 +380,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const stitchLabel = document.getElementById(`${id}-stitch-label`);
     const rowLabel = document.getElementById(`${id}-row-label`);
 
+    const w = wrapper as HTMLElement;
     function updateLabels(unit: string) {
-
       if (!stitchLabel || !rowLabel) return;
 
       if (unit === 'cm') {
-        stitchLabel.textContent = 'Sts (10 cm)';
-        rowLabel.textContent = 'Rows (10 cm)';
+        stitchLabel.textContent = w.dataset.gaugeStitchCm ?? 'Sts (10 cm)';
+        rowLabel.textContent = w.dataset.gaugeRowCm ?? 'Rows (10 cm)';
       } else {
-        stitchLabel.textContent = 'Sts (4")';
-        rowLabel.textContent = 'Rows (4")';
+        stitchLabel.textContent = w.dataset.gaugeStitchIn ?? 'Sts (4")';
+        rowLabel.textContent = w.dataset.gaugeRowIn ?? 'Rows (4")';
       }
+    }
 
+    function getToggleRoot(): HTMLElement | null {
+      const scoped = document.querySelector(`[data-unit-toggle="${toggleId}"]`);
+      return scoped instanceof HTMLElement ? scoped : null;
     }
 
     function getCurrentUnit() {
+      const root = getToggleRoot();
+      const btnCm = root?.querySelector('button[data-unit="cm"]');
+      const btnInches = root?.querySelector('button[data-unit="in"]');
 
-      const btnCm = document.getElementById(`${toggleId}-btn-cm`);
-      const btnInches = document.getElementById(`${toggleId}-btn-inches`);
+      if (btnCm instanceof HTMLButtonElement && btnCm.classList.contains('active')) return 'cm';
+      if (btnInches instanceof HTMLButtonElement && btnInches.classList.contains('active')) return 'in';
 
-      if (btnCm && btnCm.classList.contains('active')) return 'cm';
-      if (btnInches && btnInches.classList.contains('active')) return 'in';
+      const hidden = root?.querySelector<HTMLInputElement>('[data-kbm-unit-value]');
+      if (hidden && (hidden.value === 'cm' || hidden.value === 'in')) {
+        return hidden.value;
+      }
 
       const saved =
+        localStorage.getItem(`kbm-units-${toggleId}`) ||
+        localStorage.getItem('kbm-units') ||
         localStorage.getItem(`${toggleId}.unit`) ||
         localStorage.getItem(`${toggleId}-unit`);
 
       return saved === 'cm' ? 'cm' : 'in';
-
     }
 
     window.addEventListener('kbm:units-change', (e: Event) => {
-      const detail = (e as CustomEvent<{ unit?: string }>).detail;
+      const detail = (e as CustomEvent<{ unit?: string; toggleId?: string }>).detail;
+      if (detail?.toggleId != null && detail.toggleId !== toggleId) return;
       const newUnit = detail?.unit ? detail.unit : 'in';
       updateLabels(newUnit);
     });

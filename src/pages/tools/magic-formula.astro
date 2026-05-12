@@ -315,7 +315,7 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
       }
 
       function getUnit() {
-        const unitInput = document.getElementById('unit');
+        const unitInput = document.getElementById('mf-units-unit');
         if (unitInput) return unitInput.value === 'cm' ? 'cm' : 'in';
         const cmBtn = document.getElementById('mf-units-btn-cm');
         return cmBtn && cmBtn.classList.contains('active') ? 'cm' : 'in';

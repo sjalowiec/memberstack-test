@@ -1,10 +1,17 @@
 ---
+import videosPublic from "../data/videos-public.json";
+import { buildGlossaryRelatedVideosHtml } from "../lib/glossary/glossaryCatalogVideos";
+import type { PublicVideoRow } from "../lib/lessonVideo";
+
 interface Props {
   entry: any;
   relatedTermsData?: Array<{ slug: string; term: string }>;
 }
 
 const { entry, relatedTermsData = [] } = Astro.props;
+
+const catalogVideos = videosPublic as PublicVideoRow[];
+const relatedVideosHtml = buildGlossaryRelatedVideosHtml(entry, catalogVideos);
 
 const imageSrc = entry?.image
   ? (entry.image.startsWith("http") || entry.image.startsWith("/")
@@ -170,6 +177,127 @@ const showRelatedTools = relatedTools.length > 0;
 
   .glossary-related-tools__name {
     display: inline-block;
+  }
+
+  .glossary-related-videos-mount {
+    display: contents;
+  }
+
+  .glossary-related-videos {
+    margin: 1.1rem auto 0;
+    max-width: 680px;
+    padding: 0.85rem 0.95rem;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.03);
+    border: 1px solid rgba(17, 24, 39, 0.08);
+  }
+
+  .glossary-related-videos__title {
+    margin: 0 0 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #52682d;
+  }
+
+  .glossary-related-videos__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .glossary-related-videos__item {
+    margin: 0;
+    padding: 0;
+  }
+
+  .glossary-related-videos__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.35rem;
+    width: 100%;
+    text-align: left;
+    padding: 0.55rem 0.65rem;
+    border-radius: 10px;
+    border: 1px solid rgba(82, 104, 45, 0.35);
+    background: rgba(82, 104, 45, 0.08);
+    color: #3d4f22;
+    font: inherit;
+    font-size: 0.98rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .glossary-related-videos__btn:hover,
+  .glossary-related-videos__btn:focus-visible {
+    background: rgba(82, 104, 45, 0.14);
+    border-color: rgba(82, 104, 45, 0.55);
+    outline: none;
+  }
+
+  .glossary-related-videos__btn:focus-visible {
+    outline: 2px solid rgba(82, 104, 45, 0.45);
+    outline-offset: 2px;
+  }
+
+  .glossary-related-videos__link {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.5rem;
+    width: 100%;
+    padding: 0.55rem 0.65rem;
+    border-radius: 10px;
+    border: 1px solid rgba(17, 24, 39, 0.1);
+    background: rgba(255, 255, 255, 0.85);
+    color: #1f2937;
+    font-weight: 600;
+    font-size: 0.98rem;
+    text-decoration: none;
+    box-sizing: border-box;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .glossary-related-videos__link:hover,
+  .glossary-related-videos__link:focus-visible {
+    background: rgba(82, 104, 45, 0.08);
+    border-color: rgba(82, 104, 45, 0.28);
+    outline: none;
+  }
+
+  .glossary-related-videos__link:focus-visible {
+    outline: 2px solid rgba(82, 104, 45, 0.45);
+    outline-offset: 2px;
+  }
+
+  .glossary-related-videos__link--member {
+    border-style: dashed;
+  }
+
+  .glossary-related-videos__lock {
+    flex-shrink: 0;
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .glossary-related-videos__label {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .glossary-related-videos__badge {
+    flex: 0 0 auto;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #6b7280;
   }
 
   .glossary-entry-tail {
@@ -428,6 +556,9 @@ const showRelatedTools = relatedTools.length > 0;
     {showHelpinfo && (
       <div class="glossary-entry-helpinfo" set:html={helpinfoRaw} />
     )}
+    {relatedVideosHtml ? (
+      <div class="glossary-related-videos-mount" style="display: contents" set:html={relatedVideosHtml} />
+    ) : null}
     {showRelatedTools && (
       <div class="glossary-related-tools">
         <p class="glossary-related-tools__heading">Use this tool</p>

@@ -1,0 +1,228 @@
+---
+import Layout from "../../../../../layouts/Layout.astro";
+import WizardBackLink from "../../../../../components/wizards/WizardBackLink.astro";
+import PatternWorkspaceTabs from "../../../../../components/patterns/PatternWorkspaceTabs.astro";
+import "../../../../../styles/sleeveless-express-wizard-layout.css";
+
+const customBuildHref = "/patterns/sleeveless/custom-build/";
+const foundationHref = "/patterns/sleeveless/custom-build/design";
+const styleHref = "/patterns/sleeveless/custom-style";
+const fitHref = "/patterns/sleeveless/custom-build/fit/";
+const patternHref = "/patterns/sleeveless/pattern/";
+
+type WizardStep = {
+  step: number;
+  label: string;
+  href?: string;
+  state: "link-back" | "current" | "upcoming";
+};
+
+const customWizardSteps: WizardStep[] = [
+  { step: 1, label: "Foundation", href: foundationHref, state: "link-back" },
+  { step: 2, label: "Style & Shaping", href: styleHref, state: "link-back" },
+  { step: 3, label: "Measurements", href: fitHref, state: "link-back" },
+  { step: 4, label: "Yarn & Gauge", state: "current" },
+  { step: 5, label: "Pattern", state: "upcoming" },
+];
+---
+
+<Layout
+  title="Custom Build — Yarn &amp; Gauge | Sleeveless Sweater"
+  description="Yarn, swatch, gauge, and needle or machine details for your custom sleeveless sweater."
+>
+  <main class="express-page wizard-page sleeveless-express-page">
+    <div class="wizard-container express-wizard scroll-mt-[96px]">
+      <div class="calculator-card hat-builder-inputs">
+        <PatternWorkspaceTabs
+          activeTab="custom-build"
+          showQuickCustomBuildTabs={true}
+          quickBuildHref="/patterns/sleeveless-express"
+          customBuildHref={customBuildHref}
+          patternHref={patternHref}
+          askShareHref="/patterns/sleeveless/ask-share/"
+          inspirationHref="/patterns/sleeveless/inspiration/"
+        />
+        <WizardBackLink className="back-link no-print" fallback="/patterns" />
+
+        <div class="sg-tab-build">
+          <div class="express-builder-nav-row express-builder-nav-row--custom-flow no-print">
+            <nav class="express-step-nav sg-builder-nav" aria-label="Custom build steps">
+              <ol class="express-step-nav__list sg-builder-nav__list" role="list">
+                {
+                  customWizardSteps.map((s, i) => (
+                    <li
+                      class:list={[
+                        "express-step-nav__item",
+                        "sg-builder-nav__item",
+                        { active: s.step === 4 },
+                      ]}
+                    >
+                      {s.state === "current" ? (
+                        <span
+                          class:list={["express-step-nav__btn", "sg-builder-nav__link", "is-current"]}
+                          aria-current="page"
+                          aria-label={`${s.label}, current step`}
+                        >
+                          <span class="express-step-nav__track">
+                            <span
+                              class:list={[
+                                "express-step-nav__seg",
+                                "express-step-nav__seg--before",
+                                { "express-step-nav__seg--empty": i === 0 },
+                              ]}
+                              aria-hidden="true"
+                            />
+                            <span class="express-step-nav__circle">
+                              <span class="express-step-nav__num">{s.step}</span>
+                              <span class="express-pill__check" aria-hidden="true">
+                                ✓
+                              </span>
+                            </span>
+                            <span
+                              class:list={[
+                                "express-step-nav__seg",
+                                "express-step-nav__seg--after",
+                                { "express-step-nav__seg--empty": i === customWizardSteps.length - 1 },
+                              ]}
+                              aria-hidden="true"
+                            />
+                          </span>
+                          <span class="express-step-nav__label">{s.label}</span>
+                        </span>
+                      ) : s.state === "link-back" && s.href ? (
+                        <a
+                          href={s.href}
+                          class:list={[
+                            "express-step-nav__btn",
+                            "sg-builder-nav__link",
+                            "is-complete",
+                            "express-step-nav__btn--link",
+                          ]}
+                          aria-label={`${s.label}, completed. Go back.`}
+                        >
+                          <span class="express-step-nav__track">
+                            <span
+                              class:list={[
+                                "express-step-nav__seg",
+                                "express-step-nav__seg--before",
+                                { "express-step-nav__seg--empty": i === 0 },
+                              ]}
+                              aria-hidden="true"
+                            />
+                            <span class="express-step-nav__circle">
+                              <span class="express-step-nav__num">{s.step}</span>
+                              <span class="express-pill__check" aria-hidden="true">
+                                ✓
+                              </span>
+                            </span>
+                            <span
+                              class:list={[
+                                "express-step-nav__seg",
+                                "express-step-nav__seg--after",
+                                { "express-step-nav__seg--empty": i === customWizardSteps.length - 1 },
+                              ]}
+                              aria-hidden="true"
+                            />
+                          </span>
+                          <span class="express-step-nav__label">{s.label}</span>
+                        </a>
+                      ) : (
+                        <span
+                          class:list={["express-step-nav__btn", "sg-builder-nav__link", "is-upcoming"]}
+                          aria-disabled="true"
+                          title="Use Continue to move through the Custom Build steps."
+                        >
+                          <span class="express-step-nav__track">
+                            <span
+                              class:list={[
+                                "express-step-nav__seg",
+                                "express-step-nav__seg--before",
+                                { "express-step-nav__seg--empty": i === 0 },
+                              ]}
+                              aria-hidden="true"
+                            />
+                            <span class="express-step-nav__circle">
+                              <span class="express-step-nav__num">{s.step}</span>
+                              <span class="express-pill__check" aria-hidden="true">
+                                ✓
+                              </span>
+                            </span>
+                            <span
+                              class:list={[
+                                "express-step-nav__seg",
+                                "express-step-nav__seg--after",
+                                { "express-step-nav__seg--empty": i === customWizardSteps.length - 1 },
+                              ]}
+                              aria-hidden="true"
+                            />
+                          </span>
+                          <span class="express-step-nav__label">{s.label}</span>
+                        </span>
+                      )}
+                    </li>
+                  ))
+                }
+              </ol>
+            </nav>
+          </div>
+
+          <header class="pattern-header page-header">
+            <p class="pattern-mode-label">Custom Build</p>
+            <h1 class="pattern-title">Yarn &amp; gauge</h1>
+            <p class="pattern-subtext">
+              Yarn &amp; Gauge covers yarn choice, swatch, stitch and row gauge, and needle or machine details. This
+              step will be wired into the guided flow next.
+            </p>
+          </header>
+          <div class="express-panel calculator-card">
+            <p class="pattern-subtext">
+              <a href="/patterns/sleeveless-yarn-gauge" class="express-custom-build-callout__link"
+                >Open classic Yarn &amp; Gauge</a
+              >
+            </p>
+            <div class="wizard-next-cta wizard-next-cta--split cb-design-wizard-nav no-print">
+              <a href={fitHref} class="kbm-btn kbm-btn-outline">← Back: Measurements</a>
+              <span class="kbm-btn kbm-btn-accent" aria-disabled="true" title="Pattern step opens when it is ready.">
+                Continue: Pattern →
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .express-builder-nav-row--custom-flow {
+    max-width: 920px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1.35rem;
+  }
+
+  .express-builder-nav-row--custom-flow .express-step-nav__label {
+    font-size: clamp(0.68rem, 2.1vw, 0.8125rem);
+    line-height: 1.15;
+    hyphens: auto;
+  }
+
+  .express-page a.express-step-nav__btn--link {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .express-page a.express-step-nav__btn--link:focus-visible {
+    outline: 2px solid var(--sg-accent, #c2614e);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+
+  .express-page .express-step-nav__btn.is-upcoming {
+    opacity: 0.55;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+</style>

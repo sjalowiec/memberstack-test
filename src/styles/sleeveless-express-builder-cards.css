@@ -1,0 +1,625 @@
+/**
+ * Express Pattern page: neckline + fit image cards — same class names and visuals
+ * as SleevelessGarmentDesignStep / SleevelessGarmentFitStep (scoped under .express-page).
+ *
+ * IMPORTANT: Import wizard.css HERE first. Bundlers often order standalone imports
+ * alphabetically ("sleeveless-..." before "wizard.css"), which previously caused
+ * wizard.css to load AFTER this file and undo ribbon overrides / picker tokens.
+ */
+@import "./wizard.css";
+
+.express-page {
+  --sg-accent: #c2614e;
+}
+
+.express-page .hat-length-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+/* Step 1 — Who: audience image cards (2×2 mobile, four-across desktop) */
+.express-page .express-options--who.hat-length-picker__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+@media (min-width: 480px) {
+  .express-page .express-options--who.hat-length-picker__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+.express-page .express-options--who .hat-length-picker__option {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 10px 8px 12px;
+}
+
+.express-page .express-options--who .hat-length-picker__img.sg-picker-img.express-who-card__img {
+  width: 100%;
+  max-width: 168px;
+  height: auto;
+  max-height: clamp(118px, 34vw, 172px);
+  margin-bottom: 4px;
+  object-fit: contain;
+}
+
+.express-page .express-options--who .hat-length-picker__option-label {
+  color: var(--kbm-green, #52682d);
+  font-size: 0.9375rem;
+}
+
+.express-page .express-options--who .hat-length-picker__option:focus-visible {
+  outline: 2px solid var(--sg-accent, #c2614e);
+  outline-offset: 2px;
+}
+
+.express-page .express-options--who .hat-length-picker__option.is-selected .hat-length-picker__option-label {
+  color: #1a1a1a;
+}
+
+/* Shape row — matches SleevelessGarmentDesignStep .sg-shape-grid behavior */
+.express-page .sg-shape-grid {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.express-page .sg-shape-grid .hat-length-picker__option {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.express-page .express-style-block + .express-style-block {
+  margin-top: 1.35rem;
+}
+
+.express-page .express-options--front-toggle {
+  margin-bottom: 0.85rem;
+}
+
+.express-page .express-style-block__title--after-toggle {
+  margin-top: 0;
+}
+
+.express-page .express-style-block__title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--kbm-green, #52682d);
+  letter-spacing: 0.02em;
+  margin: 0 0 12px;
+  line-height: 1.3;
+}
+
+.express-page .hat-brim-picker__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.express-page .hat-length-picker__option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  padding: 8px;
+  text-align: center;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.express-page .hat-length-picker__option:hover {
+  border-color: #aeb79a;
+}
+
+/* Selected AVAILABLE cards: white surface + terracotta outline (never pink/disabled fill) */
+.express-page .hat-length-picker__option.is-selected {
+  border-color: var(--sg-accent);
+  background: #fff;
+  box-shadow:
+    0 2px 8px rgba(194, 97, 78, 0.14),
+    0 0 0 1px rgba(194, 97, 78, 0.18);
+}
+
+.express-page .hat-length-picker__option.is-selected:hover {
+  border-color: var(--sg-accent);
+  box-shadow:
+    0 2px 10px rgba(194, 97, 78, 0.18),
+    0 0 0 1px rgba(194, 97, 78, 0.22);
+}
+
+/* Express only: hide wizard diagonal “Custom pattern” ribbon (replaced by SVG stripe) */
+.express-page .sg-option.is-coming-next::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Wizard uses opacity:0.6 on .sg-option.is-coming-next — fades descendants; restore for ribbon + body split */
+.express-page .sg-option.is-coming-next {
+  opacity: 1 !important;
+}
+
+/* Locked / premium — soft warm shell (aspirational, not “disabled UI”) */
+.express-page .hat-length-picker__option.sg-option.is-coming-next.sg-express-kin-locked,
+.express-page .express-option.sg-option.is-coming-next.sg-express-kin-locked {
+  opacity: 1 !important;
+  background: #f5f3f0;
+  border-color: #e5e0da;
+  box-shadow: none;
+}
+
+.express-page .hat-length-picker__option.sg-express-kin-locked,
+.express-page .express-option.sg-express-kin-locked {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  padding: 0;
+  overflow: visible;
+  text-align: center;
+  border-radius: 10px;
+  isolation: isolate;
+}
+
+/* SVG stripe ribbon — large sweater cards only; stripe.svg drawn as-is (no CSS rounding/clipping) */
+.express-page .hat-length-picker__option.sg-express-kin-locked > .locked-card-ribbon {
+  box-sizing: border-box;
+  width: 48px;
+  flex: 0 0 48px;
+  align-self: stretch;
+  overflow: visible;
+  line-height: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  display: block;
+  position: relative;
+  z-index: auto;
+  isolation: auto;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+.express-page .hat-length-picker__option.sg-express-kin-locked > .locked-card-ribbon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+}
+
+.express-page .express-neck-cards .hat-length-picker__option .hat-length-picker__img.sg-picker-img {
+  width: 120px;
+  max-width: min(120px, 100%);
+}
+
+/* Front-toggle pill (Cardigan): narrow terracotta swatch only — no stripe.svg text */
+.express-page .express-option.sg-express-kin-locked .locked-card-ribbon.locked-card-ribbon--pill-swatch {
+  width: clamp(18px, 5vw, 24px);
+  flex: 0 0 clamp(18px, 5vw, 24px);
+  align-self: stretch;
+  border-radius: 999px 0 0 999px;
+  background: var(--sg-accent);
+  border-right: 1px solid color-mix(in srgb, var(--sg-accent) 72%, #000);
+}
+
+@supports not (background: color-mix(in srgb, white, black)) {
+  .express-page .express-option.sg-express-kin-locked .locked-card-ribbon.locked-card-ribbon--pill-swatch {
+    border-right: 1px solid #9a4336;
+  }
+}
+
+/* Muted preview area only — opacity here does not affect sibling .locked-card-ribbon */
+.express-page .sg-express-kin-locked__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 8px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 0 9px 9px 0;
+  position: relative;
+  z-index: 0;
+  background: inherit;
+  opacity: 0.96;
+}
+
+.express-page .express-option.sg-express-kin-locked .sg-express-kin-locked__body--pill {
+  justify-content: center;
+  padding: 0.65rem 1rem 0.65rem 0.45rem;
+  border-radius: 0 999px 999px 0;
+}
+
+/* Pill-shaped Cardigan: ribbon + body radii */
+.express-page .express-option.sg-express-kin-locked {
+  border-radius: 999px;
+}
+
+/* Keep locked pills visually quiet (don’t pick up available-card hover border) */
+.express-page .express-option.sg-option.is-coming-next:hover {
+  border-color: #e2e5ea;
+}
+
+/* Locked shape + neckline — readable labels; artwork stays crisp */
+.express-page .sg-shape-grid .hat-length-picker__option.sg-option.is-coming-next .hat-length-picker__option-label,
+.express-page .express-neck-cards .hat-length-picker__option.sg-option.is-coming-next .hat-length-picker__option-label {
+  color: #6f6a66;
+  font-weight: 600;
+}
+
+.express-page .sg-shape-grid .hat-length-picker__option.sg-option.is-coming-next .hat-length-picker__img,
+.express-page .express-neck-cards .hat-length-picker__option.sg-option.is-coming-next .hat-length-picker__img {
+  opacity: 1;
+}
+
+.express-page .sg-shape-card-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  margin-top: 6px;
+  width: 100%;
+}
+
+.express-page .sg-shape-card-title-row .hat-length-picker__option-label {
+  margin-top: 0;
+}
+
+.express-page .sg-shape-option-check {
+  display: none;
+  flex-shrink: 0;
+  color: var(--sg-accent);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.express-page .sg-shape-grid .hat-length-picker__option.is-selected .sg-shape-option-check {
+  display: inline;
+}
+
+.express-page .hat-length-picker__img.sg-picker-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  width: 120px;
+  margin: 0 auto;
+}
+
+.express-page .hat-length-picker__option-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* Fit preference cards (matches SleevelessGarmentFitStep) */
+.express-page .sg-fit-preference-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 0;
+}
+
+.express-page .fit-card-image {
+  width: 100%;
+  max-width: 160px;
+  height: auto;
+  display: block;
+  margin: 0 auto 0.75rem;
+}
+
+.express-page .sg-fit-preference-option {
+  align-items: flex-start;
+  text-align: left;
+  justify-content: flex-start;
+  min-height: 78px;
+  gap: 0.3rem;
+}
+
+.express-page .sg-fit-preference-title-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  margin-top: 6px;
+  width: 100%;
+}
+
+.express-page .sg-fit-preference-title-row .hat-length-picker__option-label {
+  margin-top: 0;
+}
+
+.express-page .sg-fit-preference-note {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+  line-height: 1.35;
+}
+
+.express-page .sg-fit-preference-ease {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #9ca3af;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
+.express-page .sg-fit-option-check {
+  display: none;
+  flex-shrink: 0;
+  color: var(--sg-accent);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.express-page .sg-fit-preference-grid .hat-length-picker__option.is-selected .sg-fit-option-check {
+  display: inline;
+}
+
+@media (max-width: 640px) {
+  .express-page .hat-length-picker__grid {
+    gap: 8px;
+  }
+
+  /* Locked KIN-row cards use padding on inner body only */
+  .express-page .hat-length-picker__option:not(.sg-express-kin-locked) {
+    padding: 6px;
+  }
+
+  .express-page .sg-fit-preference-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 380px) {
+  .express-page .hat-length-picker__grid {
+    gap: 6px;
+  }
+
+  .express-page .hat-length-picker__option:not(.sg-express-kin-locked) {
+    padding: 4px;
+  }
+}
+
+/* Integrated PatternModeIndicator shell: avoid clipping lock-strip content */
+.express-page .pattern-mode-layout.pattern-mode-layout--integrated.calculator-card.express-panel {
+  overflow: visible;
+}
+
+/* --------------------------------------------------------------------------
+   Cascade finals — Express FREE builder only (stable anchor from page markup)
+   -------------------------------------------------------------------------- */
+main[data-express-page="sleeveless-express"].express-page .hat-length-picker__option.is-selected:not(.sg-express-kin-locked),
+main[data-express-page="sleeveless-custom-build-design"].express-page .hat-length-picker__option.is-selected:not(.sg-express-kin-locked) {
+  background-color: #fff !important;
+  background-image: none !important;
+  border-color: var(--sg-accent, #c2614e) !important;
+  box-shadow:
+    0 2px 8px rgba(194, 97, 78, 0.14),
+    0 0 0 1px rgba(194, 97, 78, 0.18) !important;
+}
+
+main[data-express-page="sleeveless-express"].express-page .hat-length-picker__option.is-selected:not(.sg-express-kin-locked):hover,
+main[data-express-page="sleeveless-custom-build-design"].express-page .hat-length-picker__option.is-selected:not(.sg-express-kin-locked):hover {
+  border-color: var(--sg-accent, #c2614e) !important;
+  box-shadow:
+    0 2px 10px rgba(194, 97, 78, 0.18),
+    0 0 0 1px rgba(194, 97, 78, 0.22) !important;
+}
+
+main[data-express-page="sleeveless-express"].express-page .sg-option.is-coming-next::after,
+main[data-express-page="sleeveless-custom-build-design"].express-page .sg-option.is-coming-next::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Defeat wizard.css .sg-option.is-coming-next { opacity: 0.6 } — must not compound into strip/label */
+main[data-express-page="sleeveless-express"].express-page .sg-option.is-coming-next,
+main[data-express-page="sleeveless-custom-build-design"].express-page .sg-option.is-coming-next {
+  opacity: 1 !important;
+}
+
+main[data-express-page="sleeveless-express"].express-page .express-option.express-option--selected,
+main[data-express-page="sleeveless-custom-build-design"].express-page .express-option.express-option--selected {
+  background-color: #fff !important;
+  background-image: none !important;
+  border-color: var(--sg-accent, #c2614e) !important;
+  box-shadow:
+    0 2px 8px rgba(194, 97, 78, 0.14),
+    0 0 0 1px rgba(194, 97, 78, 0.18) !important;
+}
+
+/* Express builder — horizontal numbered-step navigation (pill nav replaced) */
+.express-page .express-builder-nav-row.sg-builder-nav-row {
+  max-width: 920px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 1.35rem;
+}
+
+.express-page .express-step-nav__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.35rem 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.express-page .express-step-nav__item {
+  flex: 1 1 8.5rem;
+  min-width: 5.5rem;
+  max-width: 100%;
+}
+
+.express-page .express-step-nav__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: center;
+}
+
+.express-page .express-step-nav__btn:focus-visible {
+  outline: 2px solid var(--sg-accent, #c2614e);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+.express-page .express-step-nav__track {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  min-height: 2rem;
+}
+
+.express-page .express-step-nav__seg {
+  flex: 1 1 0;
+  min-width: 0.35rem;
+  height: 2px;
+  align-self: center;
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 28%, #ccc);
+  border-radius: 1px;
+}
+
+.express-page .express-step-nav__seg--empty {
+  background: transparent;
+}
+
+.express-page .express-step-nav__circle {
+  box-sizing: border-box;
+  position: relative;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #c5c9bd;
+  border-radius: 50%;
+  background: var(--page-bg, #fff);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--kbm-green, #52682d);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.express-page .express-step-nav__num {
+  display: block;
+}
+
+.express-page .express-step-nav__btn .express-pill__check {
+  display: none;
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 1em;
+  height: 1em;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--kbm-green, #52682d);
+}
+
+.express-page .express-step-nav__btn.sg-builder-nav__link.is-complete:not(.is-current) .express-step-nav__num {
+  display: none;
+}
+
+.express-page .express-step-nav__btn.sg-builder-nav__link.is-complete:not(.is-current) .express-pill__check {
+  display: flex;
+}
+
+.express-page .express-step-nav__btn.is-current .express-step-nav__circle {
+  border-color: var(--sg-accent, #c2614e);
+  background: #fff;
+  color: var(--sg-accent, #c2614e);
+  box-shadow:
+    0 0 0 1px rgba(194, 97, 78, 0.12),
+    0 2px 8px rgba(194, 97, 78, 0.12);
+}
+
+.express-page .express-step-nav__item.active .express-step-nav__label {
+  font-weight: 700;
+  color: var(--kbm-green, #52682d);
+}
+
+.express-page .express-step-nav__label {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 78%, #333);
+}
+
+.express-page .express-step-nav__btn.is-upcoming {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.express-page .express-step-nav__btn.is-upcoming .express-step-nav__circle {
+  border-color: #d8ddd0;
+  color: #8a917c;
+  background: color-mix(in srgb, var(--page-bg, #fff) 92%, #e8ebe3);
+}
+
+.express-page .express-step-nav__btn.is-upcoming .express-step-nav__label {
+  color: var(--text-muted, #6b7280);
+}
+
+@media (max-width: 576px) {
+  .express-page .express-step-nav__item {
+    flex: 1 1 45%;
+    min-width: 6rem;
+  }
+
+  .express-page .express-step-nav__label {
+    font-size: 0.78rem;
+  }
+
+  .express-page .express-step-nav__circle {
+    width: 1.85rem;
+    height: 1.85rem;
+    font-size: 0.75rem;
+  }
+}

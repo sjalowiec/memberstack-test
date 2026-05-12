@@ -4,6 +4,11 @@
  * Mirrors markup + behavior from GlossaryTooltip.astro.
  */
 import glossaryData from "../../data/glossary.json";
+import videosPublic from "../../data/videos-public.json";
+import { buildGlossaryRelatedVideosHtml } from "./glossaryCatalogVideos";
+import type { PublicVideoRow } from "../lessonVideo";
+
+type RelatedTool = { name: string; url: string; icon?: string };
 
 type GlossaryRow = {
   glossaryId: number;
@@ -12,9 +17,16 @@ type GlossaryRow = {
   helpinfo?: string;
   image?: string;
   image_alt?: string;
+  relatedTools?: RelatedTool[];
+  active?: boolean;
+  vimeoIds?: unknown;
+  videoIds?: unknown;
 };
 
 const glossary: GlossaryRow[] = Array.isArray(glossaryData) ? (glossaryData as GlossaryRow[]) : [];
+const glossaryCatalogVideos: PublicVideoRow[] = Array.isArray(videosPublic)
+  ? (videosPublic as PublicVideoRow[])
+  : [];
 
 function sanitizeGlossaryPopupHtml(html: string): string {
   if (!html) return "";
@@ -49,6 +61,26 @@ function normalizeGlossaryImageSrc(path: string): string {
   return `/images/glossary/${p.replace(/^\.?\//, "")}`;
 }
 
+function buildRelatedToolsPopupHtml(tools: RelatedTool[]): string {
+  if (!Array.isArray(tools) || tools.length === 0) return "";
+  const items = tools
+    .map((t) => {
+      const name = escapeHtmlText((t?.name ?? "").trim());
+      const url = escapeHtmlAttr((t?.url ?? "").trim());
+      if (!name || !url) return "";
+      const iconRaw = (t?.icon ?? "").trim();
+      const icon =
+        iconRaw !== ""
+          ? `<img src="${escapeHtmlAttr(iconRaw)}" alt="" class="glossary-related-tools__icon" width="26" height="26" loading="lazy" decoding="async" />`
+          : "";
+      return `<li class="glossary-related-tools__item"><a href="${url}" class="glossary-related-tools__link">${icon}<span class="glossary-related-tools__name">${name}</span></a></li>`;
+    })
+    .filter(Boolean)
+    .join("");
+  if (!items) return "";
+  return `<div class="glossary-related-tools"><p class="glossary-related-tools__heading">Use this tool</p><ul class="glossary-related-tools__list">${items}</ul></div>`;
+}
+
 function buildGlossaryContentHtml(entry: GlossaryRow): string {
   const parts: string[] = [];
   const ex = (entry.example ?? "").trim();
@@ -70,6 +102,10 @@ function buildGlossaryContentHtml(entry: GlossaryRow): string {
   if (help) {
     parts.push(`<div class="glossary-popup-help">${sanitizeGlossaryPopupHtml(help)}</div>`);
   }
+  const relatedVideosHtml = buildGlossaryRelatedVideosHtml(entry, glossaryCatalogVideos);
+  if (relatedVideosHtml) parts.push(relatedVideosHtml);
+  const toolsHtml = buildRelatedToolsPopupHtml(entry.relatedTools ?? []);
+  if (toolsHtml) parts.push(toolsHtml);
   return parts.join("");
 }
 
@@ -80,7 +116,7 @@ export function getGlossaryTooltipPayload(glossaryId: number): {
   titlePlain: string;
 } | null {
   const entry = glossary.find((e) => e.glossaryId === glossaryId);
-  if (!entry) return null;
+  if (!entry || entry.active !== true) return null;
   return {
     cleanHtml: buildGlossaryContentHtml(entry),
     titlePlain: stripHtml(entry.english ?? ""),
@@ -133,8 +169,9 @@ function bindGlossaryTooltipInstance(
   popup: HTMLElement,
   opts: { autoOnce: boolean; lsKey: string }
 ) {
-  const btn = root.querySelector(".glossary-tooltip-trigger");
-  if (!btn || !popup || !(btn instanceof HTMLButtonElement) || !(popup instanceof HTMLElement)) return;
+  const el = root.querySelector(".glossary-tooltip-trigger");
+  if (!(el instanceof HTMLButtonElement)) return;
+  const triggerButton: HTMLButtonElement = el;
 
   const lsKey = opts.lsKey || "";
   const autoOnce = opts.autoOnce;
@@ -199,7 +236,7 @@ function bindGlossaryTooltipInstance(
   }
 
   function setExpanded(open: boolean) {
-    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    triggerButton.setAttribute("aria-expanded", open ? "true" : "false");
     root.classList.toggle("glossary-tooltip-wrap--open", open);
   }
 
@@ -219,7 +256,7 @@ function bindGlossaryTooltipInstance(
   function closePopup() {
     popup.setAttribute("hidden", "");
     setExpanded(false);
-    btn.focus();
+    triggerButton.focus();
   }
 
   function togglePopup() {
@@ -227,7 +264,7 @@ function bindGlossaryTooltipInstance(
     else openPopup();
   }
 
-  btn.addEventListener("click", function (e) {
+  triggerButton.addEventListener("click", function (e) {
     e.stopPropagation();
     togglePopup();
   });
@@ -264,7 +301,7 @@ function replacePlaceholderWithTooltip(placeholder: HTMLElement) {
 
   const entry = Number.isFinite(glossaryId) ? glossary.find((e) => e.glossaryId === glossaryId) : undefined;
 
-  if (!entry) {
+  if (!entry || entry.active !== true) {
     const fb = document.createElement("span");
     fb.className = "glossary-tooltip-fallback glossary-tooltip";
     fb.textContent = visibleLabel;
@@ -272,7 +309,14 @@ function replacePlaceholderWithTooltip(placeholder: HTMLElement) {
     return;
   }
 
-  const payload = getGlossaryTooltipPayload(entry.glossaryId)!;
+  const payload = getGlossaryTooltipPayload(entry.glossaryId);
+  if (!payload) {
+    const fb = document.createElement("span");
+    fb.className = "glossary-tooltip-fallback glossary-tooltip";
+    fb.textContent = visibleLabel;
+    placeholder.replaceWith(fb);
+    return;
+  }
 
   const rootId = `gt-${crypto.randomUUID()}`;
   const titleId = `gt-title-${crypto.randomUUID()}`;
@@ -339,7 +383,12 @@ function replacePlaceholderWithTooltip(placeholder: HTMLElement) {
 
   placeholder.replaceWith(wrap);
 
-  bindGlossaryTooltipInstance(w, wrap, popup, { autoOnce: false, lsKey: "" });
+  bindGlossaryTooltipInstance(
+    w as Window & { __kbmGlossaryApi?: { closeAll: () => void; ensureGlobalListeners: () => void } },
+    wrap,
+    popup,
+    { autoOnce: false, lsKey: "" },
+  );
 }
 
 /** Finds glossary placeholder spans under `root` and swaps in real glossary tooltip UI. */

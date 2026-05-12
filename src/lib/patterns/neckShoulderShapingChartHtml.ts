@@ -16,6 +16,7 @@ import {
 } from "./neckShoulderShapingChart";
 import { renderShoulderShapingSvg, type ShoulderShapingSvgPiece } from "./shoulderShapingSvg";
 import { renderNotationOverlayDiagram } from "./notationOverlaySvg";
+import { getSleevelessShoulderNotationIconSrc } from "./sleevelessFrontDiagramSrc";
 import type { RowEntry, ShapingEvent } from "./shapingTimeline";
 import {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
@@ -673,7 +674,12 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
   chart: NeckShoulderShapingChart,
   idPrefix = "ns-shaping-chart-print",
   introHtml?: string,
-  options?: { showSecondShoulderChecklist?: boolean; activeSideRcStart?: number }
+  options?: {
+    showSecondShoulderChecklist?: boolean;
+    activeSideRcStart?: number;
+    piece?: ShoulderShapingSvgPiece;
+    patternData?: Record<string, unknown>;
+  },
 ): string {
   const headingId = `${idPrefix}-heading`;
   const intro = typeof introHtml === "string" && introHtml.trim() ? introHtml : "";
@@ -715,16 +721,24 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
   <div><strong>Shaping notation:</strong> stitches, rows, times</div>
   <div><em>Example:</em> 1s-2r-3x = decrease 1 stitch every 2 rows, 3 times</div>
 </div>`;
+  const notationOutlineOpts = (() => {
+    const p = options?.piece;
+    const pd = options?.patternData;
+    if (p === "front" || p === "back") {
+      return { outlineImageSrc: getSleevelessShoulderNotationIconSrc(p, pd) };
+    }
+    return undefined;
+  })();
   /* Notation sits inside the diagram border, directly above the SVG — matches knitter scan pattern (title → helper → art). */
   const geometrySvgHtml = `<h3 class="ns-shaping-mini__diagram-title">Neckline / Shoulder Diagram</h3>
 <div class="ns-shaping-mini__diagram-block">
   ${printDiagramNotationHelpHtml}
-  <div class="ns-shaping-mini__svg-wrap">${renderNotationOverlayDiagram(chart, "right")}</div>
+  <div class="ns-shaping-mini__svg-wrap">${renderNotationOverlayDiagram(chart, "right", notationOutlineOpts)}</div>
 </div>`;
   const oppositeGeometrySvgHtml = `<h3 class="ns-shaping-mini__diagram-title">Neckline / Shoulder Diagram</h3>
 <div class="ns-shaping-mini__diagram-block">
   ${printDiagramNotationHelpHtml}
-  <div class="ns-shaping-mini__svg-wrap">${renderNotationOverlayDiagram(chart, "left")}</div>
+  <div class="ns-shaping-mini__svg-wrap">${renderNotationOverlayDiagram(chart, "left", notationOutlineOpts)}</div>
 </div>`;
 
   return `<section class="ns-shaping-mini" aria-labelledby="${escapeHtml(headingId)}">
@@ -798,12 +812,16 @@ export function renderNeckShoulderShapingPreviewOnlyHtml(
 export function renderNeckShoulderShapingDiagramOnlyHtml(
   chart: NeckShoulderShapingChart,
   idPrefix = "ns-shaping-chart",
-  piece?: ShoulderShapingSvgPiece
+  piece?: ShoulderShapingSvgPiece,
+  patternData?: Record<string, unknown>,
 ): string {
-  void piece;
+  const notationOutlineOpts =
+    piece === "front" || piece === "back"
+      ? { outlineImageSrc: getSleevelessShoulderNotationIconSrc(piece, patternData) }
+      : undefined;
   const diagramHeadingId = `${idPrefix}-diagram-heading`;
-  const svgHtml = renderNotationOverlayDiagram(chart, "right");
-  const secondSvgHtml = renderNotationOverlayDiagram(chart, "left");
+  const svgHtml = renderNotationOverlayDiagram(chart, "right", notationOutlineOpts);
+  const secondSvgHtml = renderNotationOverlayDiagram(chart, "left", notationOutlineOpts);
 
   const notationHintHtml = `<div class="ns-shaping-chart__diagram-notation-hint">
   <p class="ns-shaping-chart__diagram-notation-hint-main"><span class="glossary-tooltip-placeholder" data-glossary-id="354">Shaping notation</span>: <span class="ns-shaping-chart__diagram-notation-hint-kernel"><span class="ns-shaping-chart__diagram-notation-order">stitches</span>, <span class="ns-shaping-chart__diagram-notation-order">rows</span>, <span class="ns-shaping-chart__diagram-notation-order">times</span></span></p>

@@ -162,6 +162,101 @@
   margin-top: 0;
 }
 
+.glossary-popup .glossary-content .glossary-related-videos,
+.glossary-tooltip-popup .glossary-content .glossary-related-videos {
+  margin: 0.85rem 0 0;
+  padding: 0.65rem 0.7rem;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.03);
+  border: 1px solid rgba(17, 24, 39, 0.08);
+}
+
+.glossary-popup .glossary-content .glossary-related-videos__title,
+.glossary-tooltip-popup .glossary-content .glossary-related-videos__title {
+  margin: 0 0 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #52682d;
+}
+
+.glossary-popup .glossary-content .glossary-related-videos__list,
+.glossary-tooltip-popup .glossary-content .glossary-related-videos__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.glossary-popup .glossary-content .glossary-related-videos__btn,
+.glossary-tooltip-popup .glossary-content .glossary-related-videos__btn {
+  display: inline-flex;
+  width: 100%;
+  text-align: left;
+  align-items: center;
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid rgba(82, 104, 45, 0.35);
+  background: rgba(82, 104, 45, 0.08);
+  color: #3d4f22;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.glossary-popup .glossary-content .glossary-related-videos__btn:hover,
+.glossary-popup .glossary-content .glossary-related-videos__btn:focus-visible,
+.glossary-tooltip-popup .glossary-content .glossary-related-videos__btn:hover,
+.glossary-tooltip-popup .glossary-content .glossary-related-videos__btn:focus-visible {
+  background: rgba(82, 104, 45, 0.14);
+  outline: none;
+}
+
+.glossary-popup .glossary-content .glossary-related-videos__link,
+.glossary-tooltip-popup .glossary-content .glossary-related-videos__link {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.45rem;
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid rgba(17, 24, 39, 0.1);
+  background: rgba(255, 255, 255, 0.9);
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.glossary-popup .glossary-content .glossary-related-videos__link--member,
+.glossary-tooltip-popup .glossary-content .glossary-related-videos__link--member {
+  border-style: dashed;
+}
+
+.glossary-popup .glossary-content .glossary-related-videos__link:hover,
+.glossary-popup .glossary-content .glossary-related-videos__link:focus-visible,
+.glossary-tooltip-popup .glossary-content .glossary-related-videos__link:hover,
+.glossary-tooltip-popup .glossary-content .glossary-related-videos__link:focus-visible {
+  background: rgba(82, 104, 45, 0.08);
+  outline: none;
+}
+
+.glossary-popup .glossary-content .glossary-related-videos__badge,
+.glossary-tooltip-popup .glossary-content .glossary-related-videos__badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
 .glossary-mobile-scrim {
   display: none;
 }

@@ -21,12 +21,12 @@
  * - Do NOT right-align or tie to section titles
  * 
  * EVENTS:
- * - Dispatches: window.dispatchEvent(new CustomEvent("kbm:units-change", { detail: { unit: "in" | "cm" } }))
+ * - Dispatches: window.dispatchEvent(new CustomEvent("kbm:units-change", { detail: { unit: "in" | "cm", toggleId: string } }))
  * - Listen with: window.addEventListener("kbm:units-change", (e) => { ... })
  * 
  * HIDDEN INPUT:
- * - Creates <input type="hidden" name="unit" id="unit" value="in|cm" />
- * - Inserted into nearest parent <form> or #wizard-form
+ * - Renders <input type="hidden" id="{id}-unit" data-kbm-unit-value /> inside this toggle’s wrapper
+ * - If this is the only unit field inside a parent form, name="unit" is set at runtime for submit parity
  */
 
 interface Props {
@@ -40,6 +40,7 @@ interface Props {
 
 const { id = 'unit', defaultUnit = 'in', class: className = '' } = Astro.props;
 const isInchesActive = defaultUnit === 'in';
+const hiddenFieldId = `${id}-unit`;
 ---
 
 <div 
@@ -48,6 +49,12 @@ const isInchesActive = defaultUnit === 'in';
   aria-label="Units"
   data-unit-toggle={id}
 >
+  <input
+    type="hidden"
+    id={hiddenFieldId}
+    data-kbm-unit-value
+    value={defaultUnit}
+  />
   <button 
     type="button"
     class={`unit-btn ${isInchesActive ? 'active' : ''}`}
@@ -70,19 +77,19 @@ const isInchesActive = defaultUnit === 'in';
   </button>
 </div>
 
-<script define:vars={{ id, defaultUnit }}>
+<script define:vars={{ id, defaultUnit, hiddenFieldId }}>
   document.addEventListener('DOMContentLoaded', () => {
     const toggleWrapper = document.querySelector(`[data-unit-toggle="${id}"]`);
     if (!toggleWrapper) return;
 
-    const inchesBtn = document.getElementById(`${id}-btn-inches`);
-    const cmBtn = document.getElementById(`${id}-btn-cm`);
-    
-    if (!inchesBtn || !cmBtn) return;
+    const inchesBtn = toggleWrapper.querySelector('button[data-unit="in"]');
+    const cmBtn = toggleWrapper.querySelector('button[data-unit="cm"]');
+    if (!(inchesBtn instanceof HTMLButtonElement) || !(cmBtn instanceof HTMLButtonElement)) return;
 
-    /** Hat wizard uses same key/values as WizardUtils.createUnitStore('hat-unit'); other pages use global kbm-units. */
+    /** Hat: hat-unit. Default id `unit`: legacy global kbm-units. Any other id: scoped kbm-units-{id} for multi-toggle pages. */
     const useHatUnitKey = id === 'hat';
-    const STORAGE_KEY = useHatUnitKey ? 'hat-unit' : 'kbm-units';
+    const useGlobalKbmUnits = id === 'unit';
+    const STORAGE_KEY = useHatUnitKey ? 'hat-unit' : useGlobalKbmUnits ? 'kbm-units' : `kbm-units-${id}`;
 
     function persistUiUnit(unit) {
       if (useHatUnitKey) {
@@ -105,22 +112,28 @@ const isInchesActive = defaultUnit === 'in';
         return null;
       }
       if (raw === 'in' || raw === 'cm') return raw;
+      if (!useGlobalKbmUnits) {
+        const legacyGlobal = localStorage.getItem('kbm-units');
+        if (legacyGlobal === 'in' || legacyGlobal === 'cm') return legacyGlobal;
+      }
       return null;
     }
 
-    // Find or create hidden input for unit value
-    let hiddenInput = document.getElementById('unit');
-    if (!hiddenInput) {
+    let hiddenInput = toggleWrapper.querySelector('[data-kbm-unit-value]');
+    if (!(hiddenInput instanceof HTMLInputElement)) {
       hiddenInput = document.createElement('input');
       hiddenInput.type = 'hidden';
-      hiddenInput.name = 'unit';
-      hiddenInput.id = 'unit';
+      hiddenInput.id = hiddenFieldId;
+      hiddenInput.setAttribute('data-kbm-unit-value', '');
       hiddenInput.value = defaultUnit;
-      
-      // Insert into wizard-form if exists, otherwise nearest form
-      const form = document.getElementById('wizard-form') || toggleWrapper.closest('form');
-      if (form) {
-        form.appendChild(hiddenInput);
+      toggleWrapper.insertBefore(hiddenInput, toggleWrapper.firstChild);
+    }
+
+    const hostForm = toggleWrapper.closest('form');
+    if (hostForm) {
+      const unitFields = hostForm.querySelectorAll('[data-kbm-unit-value]');
+      if (unitFields.length === 1) {
+        hiddenInput.name = 'unit';
       }
     }
 
@@ -141,10 +154,11 @@ const isInchesActive = defaultUnit === 'in';
       // Save preference (hat-unit: inches/cm for WizardUtils.createUnitStore parity)
       persistUiUnit(unit);
       
-      // Dispatch event for page-level coordination
-      window.dispatchEvent(new CustomEvent('kbm:units-change', { 
-        detail: { unit } 
-      }));
+      window.dispatchEvent(
+        new CustomEvent('kbm:units-change', {
+          detail: { unit, toggleId: id },
+        }),
+      );
     }
 
     // Load saved preference, otherwise use default

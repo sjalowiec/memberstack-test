@@ -66,6 +66,12 @@
     border-left: 1px solid #333 !important;
   }
 
+  /* Tips-toggle intro (near personalization); must never appear on the printed sheet */
+  .pattern-tips-scope[data-show-tips="true"] .pattern-tip.pattern-print-personalization-never-print,
+  .pattern-tips-scope[data-show-tips="true"] .pattern-tip[data-pattern-print-personalization-tip] {
+    display: none !important;
+  }
+
   .pattern-tips-off-row {
     display: none !important;
   }

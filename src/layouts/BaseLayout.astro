@@ -3,6 +3,7 @@ import "../styles/global.css";
 
 import "../styles/print.css";
 import ContactModal from "../components/ContactModal.astro";
+import KinCatalogVideoModal from "../components/common/KinCatalogVideoModal.astro";
 import ToolPrintFooter from "../components/tools/ToolPrintFooter.astro";
 
 interface Props {
@@ -88,6 +89,7 @@ const isProduction =
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
+    <script src="https://kit.fontawesome.com/2eb052bf9e.js" crossorigin="anonymous"></script>
 
     {!skipGlobalPinterest && (
       <>
@@ -220,6 +222,7 @@ const isProduction =
     {toolPrintTitle && <ToolPrintFooter toolTitle={toolPrintTitle} />}
 
     <ContactModal />
+    <KinCatalogVideoModal />
 
     {!skipGlobalHyvor && (
       <script

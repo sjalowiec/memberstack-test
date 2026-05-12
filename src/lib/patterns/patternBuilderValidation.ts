@@ -106,6 +106,37 @@ function isFitEaseChoiceComplete(fit: Record<string, unknown>): boolean {
   return ease === "close" || ease === "standard" || ease === "relaxed";
 }
 
+/**
+ * Quick Build (`/patterns/sleeveless-express`) sets `style.patternMode` to `"express"` and chart-derived
+ * measurements. Used to recognize a complete generator session without requiring every unified
+ * Custom Build design field in {@link isSleevelessBuilderNavStyleComplete}.
+ */
+export function isSleevelessExpressQuickBuildComplete(
+  patternData: Record<string, unknown> = typeof localStorage !== "undefined" ? getPatternData() : {},
+): boolean {
+  const style = styleSection(patternData);
+  if (style.patternMode !== "express") return false;
+
+  const fit = fitSection(patternData);
+  const sm = selectedMeasurements(fit);
+  const audience =
+    normalizeSleevelessAudience(style.recipientCategory) ||
+    normalizeSleevelessAudience(fit.sizingChart);
+  if (!audience) return false;
+  if (!nonEmptyTrimmed(fit.selectedSize)) return false;
+  if (!isFitEaseChoiceComplete(fit)) return false;
+  if (!isPositiveNumericMeasurement(sm.finished_bust_chest)) return false;
+
+  const stitchRaw = patternBuilderStitchGaugeRaw(patternData);
+  const rowRaw = patternBuilderRowGaugeRaw(patternData);
+  if (!isPositiveNumericMeasurement(stitchRaw) || !isPositiveNumericMeasurement(rowRaw)) return false;
+
+  const ygm = yarnGaugeMachineSection(patternData);
+  if (!isPositiveNumericMeasurement(ygm.availableNeedles)) return false;
+
+  return true;
+}
+
 function fitSection(data: Record<string, unknown>): Record<string, unknown> {
   const fit = data.fit;
   if (fit && typeof fit === "object" && !Array.isArray(fit)) {
@@ -145,7 +176,9 @@ export function validatePatternBuilderRequired(
       id: "design_choices",
       label: "Complete required design choices",
       href: PATTERN_BUILDER_DESIGN_HREF,
-      complete: isSleevelessBuilderNavStyleComplete(patternData),
+      complete:
+        isSleevelessBuilderNavStyleComplete(patternData) ||
+        isSleevelessExpressQuickBuildComplete(patternData),
     },
     {
       id: "selected_size",

@@ -195,6 +195,7 @@ export function normalizeSleevelessAudience(raw: unknown): string {
   if (raw === undefined || raw === null) return "";
   const s = String(raw).trim().toLowerCase();
   if (s === "women" || s === "woman") return "misses";
+  if (s === "man" || s === "male") return "men";
   if ((SLEEVELESS_CHART_AUDIENCES as readonly string[]).includes(s)) return s;
   return "";
 }
