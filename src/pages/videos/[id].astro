@@ -53,6 +53,37 @@ const posterSrc =
       ? `/images/${rawPosterUrl}`
       : "";
 
+/** Catalog `chapters` from `videos-public.json` — wired on the detail page for content_id 535 only (per product request). */
+type VideoChapterRow = { label: string; time: number };
+
+function chaptersForVideoDetail535(v: (typeof videos)[number] | undefined): VideoChapterRow[] {
+  if (!v) return [];
+  const cid = (v as { content_id?: unknown }).content_id;
+  const idNum = typeof cid === "number" && Number.isFinite(cid) ? cid : typeof cid === "string" ? Number(cid.trim()) : NaN;
+  if (idNum !== 535) return [];
+  const raw = (v as { chapters?: unknown }).chapters;
+  if (!Array.isArray(raw)) return [];
+  const out: VideoChapterRow[] = [];
+  for (const row of raw) {
+    if (!row || typeof row !== "object") continue;
+    const r = row as Record<string, unknown>;
+    const label = typeof r.label === "string" ? r.label.trim() : "";
+    const t = r.time;
+    let sec: number | null = null;
+    if (typeof t === "number" && Number.isFinite(t)) sec = t;
+    else if (typeof t === "string") {
+      const s = t.trim();
+      if (/^\d+(\.\d+)?$/.test(s)) sec = parseFloat(s);
+    }
+    if (!label || sec === null || sec < 0) continue;
+    out.push({ label, time: sec });
+  }
+  return out;
+}
+
+const video535Chapters = video ? chaptersForVideoDetail535(video) : [];
+const enableVideoChapterControls = video535Chapters.length > 0;
+
 ---
 
 <Layout title={video ? title : "Video not found"} description={video ? description : "Video not found."}>
@@ -106,26 +137,41 @@ const posterSrc =
               videoId={vimeoId}
               title={title}
               access_level={effectiveAccessLevel}
+              enableVimeoPlayerApi={enableVideoChapterControls}
             />
           </section>
 
-          {/* JUMP LINKS */}
+          {/* JUMP LINKS — content_id 535 with chapters: always show buttons (not gated). Other videos: member-gated placeholder. */}
           <nav class="video-jumplinks" aria-label="Jump links" data-content-id={contentIdAttr}>
             <div class="jumplinks-head"><h2>Jump to</h2></div>
 
-            {/* Locked view: show disabled UI */}
-            <div class="gated-locked" data-gated="locked">
-              <div class="jumplinks-disabled" aria-disabled="true">
-                <p class="locked-inline">
-                  Jump links are available with access.
-                </p>
+            {enableVideoChapterControls ? (
+              <div class="jumplinks" id="jumplinks">
+                {video535Chapters.map((chapter) => (
+                  <button
+                    type="button"
+                    class="jumplink btn btn-secondary btn-small"
+                    data-video-jump={String(chapter.time)}
+                    data-video-start={String(chapter.time)}
+                  >
+                    <i class="fa fa-fast-forward" aria-hidden="true"></i>
+                    {chapter.label}
+                  </button>
+                ))}
               </div>
-            </div>
+            ) : (
+              <>
+                <div class="gated-locked" data-gated="locked">
+                  <div class="jumplinks-disabled" aria-disabled="true">
+                    <p class="locked-inline">Jump links are available with access.</p>
+                  </div>
+                </div>
 
-            {/* Member view: your existing jumplink container */}
-            <div class="gated-content" data-gated="content" hidden>
-              <div class="jumplinks" id="jumplinks"></div>
-            </div>
+                <div class="gated-content" data-gated="content" hidden>
+                  <div class="jumplinks" id="jumplinks"></div>
+                </div>
+              </>
+            )}
           </nav>
 
           {/* DESCRIPTION (always visible); plain text only — optional worksheet link via downloadUrl */}
@@ -230,6 +276,149 @@ const posterSrc =
           })();
         </script>
 
+        {enableVideoChapterControls ? (
+          <script
+            is:inline
+            define:vars={{
+              kbmChapterSeekIframeId: `kbm-gated-vimeo-${vimeoId}`,
+              kbmChapterSeekSlotId: `kbm-vimeo-slot-${vimeoId}`,
+            }}
+          >
+            (function () {
+              var iframeId = kbmChapterSeekIframeId;
+              var slotId = kbmChapterSeekSlotId;
+              var VIMEO_API_SRC = "https://player.vimeo.com/api/player.js";
+              var vimeoApiPromise = null;
+              var player = null;
+              var bindInFlight = false;
+
+              function ensureVimeoApi() {
+                if (typeof window !== "undefined" && window.Vimeo && window.Vimeo.Player) {
+                  return Promise.resolve();
+                }
+                if (vimeoApiPromise) return vimeoApiPromise;
+                var existing = document.querySelector('script[src="' + VIMEO_API_SRC + '"]');
+                if (existing) {
+                  vimeoApiPromise = new Promise(function (resolve, reject) {
+                    if (window.Vimeo && window.Vimeo.Player) {
+                      resolve();
+                      return;
+                    }
+                    function onLoad() {
+                      existing.removeEventListener("load", onLoad);
+                      if (window.Vimeo && window.Vimeo.Player) resolve();
+                      else reject(new Error("Vimeo API unavailable"));
+                    }
+                    function onErr() {
+                      existing.removeEventListener("error", onErr);
+                      vimeoApiPromise = null;
+                      reject(new Error("Vimeo Player API script failed"));
+                    }
+                    existing.addEventListener("load", onLoad);
+                    existing.addEventListener("error", onErr);
+                    Promise.resolve().then(function () {
+                      if (window.Vimeo && window.Vimeo.Player) {
+                        existing.removeEventListener("load", onLoad);
+                        existing.removeEventListener("error", onErr);
+                        resolve();
+                      }
+                    });
+                  });
+                  return vimeoApiPromise;
+                }
+                vimeoApiPromise = new Promise(function (resolve, reject) {
+                  var s = document.createElement("script");
+                  s.src = VIMEO_API_SRC;
+                  s.async = true;
+                  s.onload = function () {
+                    resolve();
+                  };
+                  s.onerror = function () {
+                    vimeoApiPromise = null;
+                    reject(new Error("Vimeo Player API script failed"));
+                  };
+                  document.head.appendChild(s);
+                });
+                return vimeoApiPromise;
+              }
+
+              function parseTime(attr) {
+                if (attr == null || !String(attr).trim()) return null;
+                var n = parseFloat(String(attr).trim());
+                return Number.isFinite(n) && n >= 0 ? n : null;
+              }
+
+              function tryBindPlayer() {
+                var iframe = document.getElementById(iframeId);
+                if (!(iframe instanceof HTMLIFrameElement)) return;
+                var src = iframe.getAttribute("src") || "";
+                if (!src.trim()) return;
+                if (player || bindInFlight) return;
+                bindInFlight = true;
+                ensureVimeoApi()
+                  .then(function () {
+                    try {
+                      player = new window.Vimeo.Player(iframe);
+                    } catch (e) {}
+                    return player ? player.ready() : Promise.resolve();
+                  })
+                  .catch(function () {})
+                  .then(function () {
+                    bindInFlight = false;
+                  });
+              }
+
+              function watchSlot() {
+                var slot = document.getElementById(slotId);
+                if (!slot) return;
+                var obs = new MutationObserver(function () {
+                  tryBindPlayer();
+                });
+                obs.observe(slot, { childList: true, subtree: true });
+                tryBindPlayer();
+              }
+
+              if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", watchSlot);
+              } else {
+                watchSlot();
+              }
+
+              document.addEventListener(
+                "click",
+                function (e) {
+                  var t = e.target;
+                  if (!(t instanceof Element)) return;
+                  var btn = t.closest(".video-jumplinks button.jumplink[data-video-jump]");
+                  if (!(btn instanceof HTMLButtonElement)) return;
+                  var sec = parseTime(btn.getAttribute("data-video-jump"));
+                  if (sec === null) return;
+                  var iframe = document.getElementById(iframeId);
+                  if (!(iframe instanceof HTMLIFrameElement)) return;
+                  e.preventDefault();
+                  ensureVimeoApi()
+                    .then(function () {
+                      if (!player) {
+                        try {
+                          player = new window.Vimeo.Player(iframe);
+                        } catch (err) {}
+                      }
+                      return player ? player.ready() : Promise.reject();
+                    })
+                    .then(function () {
+                      return player.setCurrentTime(sec);
+                    })
+                    .then(function () {
+                      return player.play();
+                    })
+                    .catch(function () {});
+                },
+                true
+              );
+            })();
+          </script>
+        ) : null}
+
         <style>
           /* minimal safety styles; keep or delete if you already have equivalents */
           .teaser-player { position: relative; border-radius: 16px; overflow: hidden; background: #111; }
@@ -245,6 +434,67 @@ const posterSrc =
           .btn-primary { background: rgba(255,255,255,.15); }
           .video-desc-download { margin: 1rem 0 0; }
           .video-desc-download__link { text-decoration: none; }
+
+          /* Chapter jump buttons — scoped; overrides generic .btn above (white text) */
+          .video-jumplinks .jumplinks {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+            margin-top: 0.35rem;
+          }
+
+          .video-jumplinks .jumplink.btn,
+          .video-jumplinks button.jumplink {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 0.78rem;
+            margin: 0;
+            font-size: 0.875rem;
+            font-weight: 600;
+            line-height: 1.3;
+            color: #111827;
+            background: #ffffff;
+            border: 1px solid #94a3b8;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.07);
+            transition:
+              background-color 0.15s ease,
+              border-color 0.15s ease,
+              box-shadow 0.15s ease,
+              color 0.15s ease;
+          }
+
+          .video-jumplinks .jumplink.btn:hover,
+          .video-jumplinks button.jumplink:hover {
+            color: #0f172a;
+            background: #f1f5f9;
+            border-color: #64748b;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+          }
+
+          .video-jumplinks .jumplink.btn:focus-visible,
+          .video-jumplinks button.jumplink:focus-visible {
+            outline: 2px solid #52682d;
+            outline-offset: 2px;
+            border-color: #52682d;
+          }
+
+          .video-jumplinks .jumplink.btn:active,
+          .video-jumplinks button.jumplink:active {
+            color: #0f172a;
+            background: #e2e8f0;
+            border-color: #475569;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.1);
+          }
+
+          .video-jumplinks .jumplink .fa {
+            color: #3f4b35;
+            opacity: 0.95;
+          }
         </style>
       </>
     )}

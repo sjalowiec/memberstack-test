@@ -1069,7 +1069,25 @@
     "posterUrl": "https://i.vimeocdn.com/video/551702394-7cdb1452823085a304bc6ab9941a661f6902d0585b6785a5328615bd1d714829-d_1280x720?r=pad",
     "category": "Finishing",
     "subcategory": "Seams",
-    "vimeo_id": 151858422
+    "vimeo_id": 151858422,
+    "chapters": [
+      {
+        "label": "Seaming on the machine",
+        "time": 13
+      },
+      {
+        "label": "Mattress stitch basics",
+        "time": 176
+      },
+      {
+        "label": "Optional mattress stitch method",
+        "time": 229
+      },
+      {
+        "label": "Tips for perfect seams",
+        "time": 252
+      }
+    ]
   },
   {
     "content_id": 521,
@@ -1208,11 +1226,49 @@
     "slug": "easy-round-neck-shaping",
     "title": "Easy Round Neck Shaping",
     "description": "Does the thought of shaping a round neckline make you cringe? For Newbie knitters and experienced machine knitter alike, Shaping a round neckline for a pullover sweater is one of the more intimidating techniques for machine knitters. Knitting each side separately sounds easy, but reversing the shaping instructions, keeping track of stitch patterns and adding shoulder shaping can really get get confusing. This tutorial offers tips for making this easier. Practice shaping necklines and gain confidence before you start your next pullover project.",
-    "access_level": "member",
+    "access_level": "open",
     "posterUrl": "https://i.vimeocdn.com/video/551702402-41b7c0f8eadcf4ae079a06f8dd617f779d94253f2b5caf9118dda6e435160483-d_1280x720?r=pad",
     "category": "Shaping",
     "subcategory": "Garment Pieces",
-    "vimeo_id": 151858551
+    "vimeo_id": 151858551,
+    "chapters": [
+      {
+        "label": "Sample Neckline overview",
+        "time": 44
+      },
+      {
+        "label": "Knitting Instructions",
+        "time": 96
+      },
+      {
+        "label": "Scrap off",
+        "time": 217
+      },
+      {
+        "label": "Rehang one side",
+        "time": 262
+      },
+      {
+        "label": "Shape the neckline edge (first side)",
+        "time": 294
+      },
+      {
+        "label": "Bind off the shoulder (1st side)",
+        "time": 316
+      },
+      {
+        "label": "Center Stitches",
+        "time": 321
+      },
+      {
+        "label": "Shape the 2nd Neck edge",
+        "time": 390
+      },
+      {
+        "label": "Bind off shoulders (2nd side)",
+        "time": 406
+      }
+    ]
   },
   {
     "content_id": 537,
@@ -2960,7 +3016,49 @@
     "posterUrl": "https://i.vimeocdn.com/video/551704047-3c8045a1d2ece5bdc4b231a9c5f418bef92320c083600830415d87ea950c4791-d_1280x720?r=pad",
     "category": "Bands",
     "subcategory": "Sewn",
-    "vimeo_id": 151860086
+    "vimeo_id": 151860086,
+    "chapters": [
+      {
+        "label": "One-piece neckband overview",
+        "time": 31
+      },
+      {
+        "label": "Mark the neckline curve",
+        "time": 44
+      },
+      {
+        "label": "Secure the knitting",
+        "time": 50
+      },
+      {
+        "label": "Measure the neck opening",
+        "time": 64
+      },
+      {
+        "label": "Calculate neckband needles",
+        "time": 78
+      },
+      {
+        "label": "Why grading matters",
+        "time": 109
+      },
+      {
+        "label": "Fold band to the inside",
+        "time": 193
+      },
+      {
+        "label": "Stitch the band in place",
+        "time": 211
+      },
+      {
+        "label": "Helpful finishing tip",
+        "time": 253
+      },
+      {
+        "label": "Fold band to the outside",
+        "time": 279
+      }
+    ]
   },
   {
     "content_id": 713,
@@ -3890,7 +3988,45 @@
     "posterUrl": "https://i.vimeocdn.com/video/1023893561-0776c6c17d6d34fc63ba149b2f6d42e1d9b7b4b43b6a659ea2e268fd14acf76b-d_1280x720?r=pad",
     "category": "Shaping",
     "subcategory": "Garment Pieces",
-    "vimeo_id": 252565241
+    "vimeo_id": 252565241,
+    "chapters": [
+      {
+        "label": "Add a lifeline",
+        "time": 20
+      },
+      {
+        "label": "Start the shaping",
+        "time": 42
+      },
+      {
+        "label": "Put center and left side in hold",
+        "time": 71
+      },
+      {
+        "label": "Shape the first shoulder",
+        "time": 91
+      },
+      {
+        "label": "Decrease at the neck edge",
+        "time": 123
+      },
+      {
+        "label": "Continue shoulder shaping",
+        "time": 202
+      },
+      {
+        "label": "Scrap off the shoulder",
+        "time": 281
+      },
+      {
+        "label": "Scrap off center stitches",
+        "time": 353
+      },
+      {
+        "label": "Shape the other shoulder",
+        "time": 389
+      }
+    ]
   },
   {
     "content_id": 814,

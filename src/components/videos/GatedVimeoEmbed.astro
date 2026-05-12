@@ -15,6 +15,8 @@ const {
   thumbUrl = "", // optional: show a thumbnail for locked state
   ctaHref = "/membership",
   ctaText = "Join to watch",
+  /** When true, iframe uses Vimeo Player.js (`api=1`) and a stable `id` for programmatic seek. */
+  enableVimeoPlayerApi = false,
 } = Astro.props;
 
 function paddingPercent(aspectStr: string) {
@@ -25,7 +27,11 @@ function paddingPercent(aspectStr: string) {
 }
 
 const pad = paddingPercent(aspect);
-const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
+const iframePlayerId = `kbm-gated-vimeo-${videoId}`;
+const iframeBase = `https://player.vimeo.com/video/${videoId}`;
+const iframeSrc = enableVimeoPlayerApi
+  ? `${iframeBase}?api=1&player_id=${encodeURIComponent(iframePlayerId)}`
+  : iframeBase;
 ---
 
 <div
@@ -43,6 +49,7 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
       {access_level === "open" ? (
         <iframe
           class="kbm-video__iframe"
+          id={enableVimeoPlayerApi ? iframePlayerId : undefined}
           src={iframeSrc}
           title={title}
           loading="lazy"
@@ -57,12 +64,15 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
   </div>
 </div>
 
-<script is:inline define:vars={{ videoId, access_level, iframeSrc, title, devBypass }}>
+<script is:inline define:vars={{ videoId, access_level, iframeSrc, title, devBypass, enableVimeoPlayerApi, iframePlayerId }}>
   document.addEventListener("DOMContentLoaded", async () => {
     if (access_level !== "member") return;
 
     const slot = document.getElementById(`kbm-vimeo-slot-${videoId}`);
     if (!slot) return;
+
+    const iframeIdAttr =
+      enableVimeoPlayerApi && iframePlayerId ? ` id="${iframePlayerId}"` : "";
 
     const lockedMarkup = `
   <div class="kbm-video__locked">
@@ -85,7 +95,7 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
         reason: devBypass ? "devBypass(PUBLIC_DEV_BYPASS_GATING)" : "__KBM_DEV_MEMBER__(localhost?member=true)",
       });
       slot.innerHTML = `
-        <iframe
+        <iframe${iframeIdAttr}
           src="${iframeSrc}"
           title="${title}"
           loading="lazy"
@@ -132,7 +142,7 @@ const iframeSrc = `https://player.vimeo.com/video/${videoId}`;
       }
 
       slot.innerHTML = `
-        <iframe
+        <iframe${iframeIdAttr}
           src="${iframeSrc}"
           title="${title}"
           loading="lazy"

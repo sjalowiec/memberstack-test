@@ -13,6 +13,8 @@ export type VideoPublicRecord = {
   category?: string;
   subcategory?: string;
   vimeo_id?: number;
+  /** Optional catalog chapters (seconds + label) for jump controls on video detail, etc. */
+  chapters?: Array<{ label: string; time: number }>;
   isTipOfWeek?: boolean;
   tipOfWeek?: boolean;
   tipHeadline?: string;
