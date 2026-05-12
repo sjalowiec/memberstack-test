@@ -15,6 +15,8 @@ export type VideoPublicRecord = {
   vimeo_id?: number;
   /** Optional catalog chapters (seconds + label) for jump controls on video detail, etc. */
   chapters?: Array<{ label: string; time: number }>;
+  /** Same shape as `chapters`; used when the catalog stores markers as jumpLinks. */
+  jumpLinks?: Array<{ label: string; time: number }>;
   isTipOfWeek?: boolean;
   tipOfWeek?: boolean;
   tipHeadline?: string;

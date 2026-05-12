@@ -94,6 +94,22 @@ describe("buildGlossaryRelatedVideosHtml", () => {
     expect(html).toContain("44");
   });
 
+  it("embeds data-video-chapters from jumpLinks when chapters are absent", () => {
+    const catalog: PublicVideoRow[] = [
+      {
+        content_id: 2148,
+        title: "Short Row Neckline",
+        vimeo_id: 921331565,
+        access_level: "open",
+        jumpLinks: [{ label: "Overview Steps", time: 15 }],
+      },
+    ];
+    const html = buildGlossaryRelatedVideosHtml({ vimeoIds: ["2148"] }, catalog);
+    expect(html).toContain("data-video-chapters=");
+    expect(html).toContain("Overview Steps");
+    expect(html).toContain("15");
+  });
+
   it("links member catalog rows to /videos/{id}", () => {
     const catalog: PublicVideoRow[] = [
       { content_id: 812, title: "Member clip", vimeo_id: 252258022, access_level: "member" },

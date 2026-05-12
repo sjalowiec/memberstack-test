@@ -6,7 +6,7 @@
  * (seconds or `mm:ss` / `hh:mm:ss`). Jump controls inside the modal may use `data-video-jump`,
  * `data-jump-time`, `data-jumptime` (legacy), or `data-time` (same time formats); active jump gets
  * `kbm-kin-catalog-video-modal__jump--active`. Optional `data-video-chapters` on the trigger is a JSON array of
- * `{ label, time }` used to render chapter buttons inside the modal when it opens.
+ * `{ label, time }` (from the catalog row's `chapters` or `jumpLinks`) used to render chapter buttons inside the modal when it opens.
  * `data-vimeo-id` must be the numeric Vimeo player id (for example from `videos-public.json` after
  * resolving a catalog `content_id`). Do not pass internal catalog ids here.
  * Uses the same Vimeo player URL pattern as /videos/[id] (GatedVimeoEmbed open videos), plus `api=1` for Player.js.

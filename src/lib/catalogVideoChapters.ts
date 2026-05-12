@@ -1,9 +1,7 @@
-/** Parsed `chapters` entries from `videos-public.json` (and matching API shapes). */
+/** Parsed `chapters` / `jumpLinks` entries from `videos-public.json` (and matching API shapes). */
 export type CatalogChapterRow = { label: string; time: number };
 
-export function catalogChaptersFromVideoRow(v: unknown): CatalogChapterRow[] {
-  if (!v || typeof v !== "object") return [];
-  const raw = (v as { chapters?: unknown }).chapters;
+function catalogChapterRowsFromLabelTimeArray(raw: unknown): CatalogChapterRow[] {
   if (!Array.isArray(raw)) return [];
   const out: CatalogChapterRow[] = [];
   for (const row of raw) {
@@ -21,4 +19,16 @@ export function catalogChaptersFromVideoRow(v: unknown): CatalogChapterRow[] {
     out.push({ label, time: sec });
   }
   return out;
+}
+
+/**
+ * Jump / chapter controls for the video detail page and catalog modal.
+ * Uses `chapters` when present; otherwise `jumpLinks` (same `{ label, time }` shape).
+ */
+export function catalogChaptersFromVideoRow(v: unknown): CatalogChapterRow[] {
+  if (!v || typeof v !== "object") return [];
+  const o = v as { chapters?: unknown; jumpLinks?: unknown };
+  const fromChapters = catalogChapterRowsFromLabelTimeArray(o.chapters);
+  if (fromChapters.length > 0) return fromChapters;
+  return catalogChapterRowsFromLabelTimeArray(o.jumpLinks);
 }

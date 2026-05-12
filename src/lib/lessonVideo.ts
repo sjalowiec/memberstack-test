@@ -20,6 +20,10 @@ export type PublicVideoRow = {
   transcript_json?: unknown;
   vtt_url?: string;
   search_ready?: boolean;
+  /** Optional catalog chapters for modal jump controls (same shape as `jumpLinks`). */
+  chapters?: Array<{ label: string; time: number }>;
+  /** Optional jump markers when `chapters` is not used (detail page + modal use the merged parser). */
+  jumpLinks?: Array<{ label: string; time: number }>;
 };
 
 /** Stable key: `slug` when non-empty, else `String(content_id)`. */

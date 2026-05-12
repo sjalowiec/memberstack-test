@@ -7152,7 +7152,57 @@
     "posterUrl": "https://i.vimeocdn.com/video/1811700611-e5e8ead12e52cf700914c6e490f3f113b5e4c6ecef55ffa6ccd676299cd2e7d9-d_1280x720?r=pad",
     "category": "Shaping",
     "subcategory": "Shortrow",
-    "vimeo_id": 921331565
+    "vimeo_id": 921331565,
+    "jumpLinks": [
+      {
+        "label": "Overview Steps",
+        "time": 15
+      },
+      {
+        "label": "Tip!",
+        "time": 78
+      },
+      {
+        "label": "Cast on and knit the \"body\"",
+        "time": 93
+      },
+      {
+        "label": "First Decrease (center front)",
+        "time": 112
+      },
+      {
+        "label": "Continue Decreases",
+        "time": 145
+      },
+      {
+        "label": "Shape the Shoulder",
+        "time": 240
+      },
+      {
+        "label": "Shape the neck opening at the same time",
+        "time": 265
+      },
+      {
+        "label": "Continue shoulder shaping",
+        "time": 314
+      },
+      {
+        "label": "Shoulder: Knit 1 row (secure the wraps)",
+        "time": 339
+      },
+      {
+        "label": "Shoulder: Scrap off",
+        "time": 362
+      },
+      {
+        "label": "Neck Opening: Knit 1 row (secure the wraps)",
+        "time": 397
+      },
+      {
+        "label": "Neck Opening: Scrap off",
+        "time": 418
+      }
+    ]
   },
   {
     "content_id": 2149,

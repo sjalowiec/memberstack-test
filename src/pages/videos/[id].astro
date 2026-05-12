@@ -54,7 +54,7 @@ const posterSrc =
       ? `/images/${rawPosterUrl}`
       : "";
 
-/** Catalog `chapters` from `videos-public.json` for Vimeo Player.js seek on the detail page. */
+/** Catalog `chapters` or `jumpLinks` from the video record for Vimeo Player.js seek on the detail page. */
 const catalogChapters: CatalogChapterRow[] = video ? catalogChaptersFromVideoRow(video) : [];
 const hasCatalogChapters = catalogChapters.length > 0;
 const enableVideoChapterControls = hasCatalogChapters;
@@ -116,7 +116,7 @@ const enableVideoChapterControls = hasCatalogChapters;
             />
           </section>
 
-          {/* JUMP LINKS — catalog chapters from JSON (open: always visible; member: gated until access). */}
+          {/* JUMP LINKS — from `chapters` or `jumpLinks` on the record (open: always visible; member: gated until access). */}
           <nav class="video-jumplinks" aria-label="Jump links" data-content-id={contentIdAttr}>
             <div class="jumplinks-head"><h2>Jump to</h2></div>
 
