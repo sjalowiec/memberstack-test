@@ -1648,84 +1648,81 @@ table {
 
   function buildFinishingHtml() {
     return `
-  <ul class="pattern-finishing-toggle-list">
-    <li>
-      <details class="pattern-finishing-toggle" open>
-        <summary>Block Pieces (Optional)</summary>
-        <ul>
-          <li>Lightly steam or ${glossaryTooltip(659, 'Wet Block')} pieces to measurements.</li>
-          <li>Allow pieces to dry completely before assembly.</li>
-          <li>Pin edges flat if needed.</li>
-        </ul>
-        <p>Blocking before seaming helps neckline and armhole edges relax and makes finishing easier.</p>
-      </details>
-    </li>
+<div class="pattern-finishing-steps">
+  <section class="pattern-finishing-step" aria-labelledby="finishing-step-block-pieces">
+    <h3 class="pattern-finishing-step__title" id="finishing-step-block-pieces">1. Block Pieces (Optional)</h3>
+    <ul>
+      <li>Lightly steam or ${glossaryTooltip(659, "Wet Block")} pieces to measurements.</li>
+      <li>Allow pieces to dry completely before assembly.</li>
+      <li>Pin edges flat if needed.</li>
+    </ul>
+    <p>Blocking before seaming helps neckline and armhole edges relax and makes finishing easier.</p>
+  </section>
 
-    <li>
-      <details class="pattern-finishing-toggle">
-        <summary>Join Shoulders</summary>
-        <p class="pattern-finishing-lead">Join ${oneShoulderFinishingHelpHtml()} using your preferred method.</p>
-        <ul>
-          <li>${glossaryTooltip(745, "Linker")}</li>
-          <li>crochet slip stitch</li>
-          <li>machine bind-off method</li>
-        </ul>
-      </details>
-    </li>
+  <section class="pattern-finishing-step" aria-labelledby="finishing-step-join-shoulders">
+    <h3 class="pattern-finishing-step__title" id="finishing-step-join-shoulders">2. Join Shoulders</h3>
+    <p class="pattern-finishing-lead">Join ${oneShoulderFinishingHelpHtml()} using your preferred method.</p>
+    <ul>
+      <li>${glossaryTooltip(745, "Linker")}</li>
+      <li>crochet slip stitch</li>
+      <li>machine bind-off method</li>
+    </ul>
+  </section>
 
-    <li>
-      <details class="pattern-finishing-toggle">
-        <summary>Finish Neckline</summary>
-        <ul>
-          <li>Work the neckline trim or neckband.</li>
-          <li>Finish the neckband as desired.</li>
-          <li>Join the remaining shoulder seam and neckband seam.</li>
-        </ul>
-        <p class="pattern-finishing-video-help pattern-help-link no-print">
-          <span class="pattern-finishing-video-help__lead"><i class="fa-solid fa-play"></i> Helpful video for finishing:</span>
-          <span class="pattern-finishing-video-help__links">
-            <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="onePieceBand" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> One-piece neckband</button>
-          </span>
-        </p>
-      </details>
-    </li>
+  <section class="pattern-finishing-step" aria-labelledby="finishing-step-finish-neckline">
+    <h3 class="pattern-finishing-step__title" id="finishing-step-finish-neckline">3. Finish Neckline</h3>
+    <ul>
+      <li>Work the neckline trim or neckband.</li>
+      <li>Finish the neckband as desired.</li>
+      <li>Join the remaining shoulder seam and neckband seam.</li>
+    </ul>
+    <p class="pattern-finishing-video-help pattern-help-link no-print">
+      <span class="pattern-finishing-video-help__lead"><i class="fa-solid fa-play"></i> Helpful video for finishing:</span>
+      <span class="pattern-finishing-video-help__links">
+        <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="onePieceBand" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> One-piece neckband</button>
+      </span>
+    </p>
+  </section>
 
-    <li>
-      <details class="pattern-finishing-toggle">
-        <summary>Finish Armholes</summary>
-        <ul>
-          <li>Work both armhole trims the same way as the neckband.</li>
-          <li>Use the neckband video above as a guide for finishing the armholes.</li>
-          <li>Be sure to grade the tension as you knit the band.</li>
-        </ul>
-      </details>
-    </li>
+  <section class="pattern-finishing-step" aria-labelledby="finishing-step-finish-armholes">
+    <h3 class="pattern-finishing-step__title" id="finishing-step-finish-armholes">4. Finish Armholes</h3>
+    <ul>
+      <li>Work both armhole trims the same way as the neckband.</li>
+      <li>Use the neckband video above as a guide for finishing the armholes.</li>
+      <li>Be sure to grade the tension as you knit the band.</li>
+    </ul>
+    <p class="pattern-finishing-video-help pattern-help-link no-print">
+      <span class="pattern-finishing-video-help__lead"><i class="fa-solid fa-play"></i> Same technique as the neckband:</span>
+      <span class="pattern-finishing-video-help__links">
+        <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="onePieceBand" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> One-piece neckband</button>
+      </span>
+    </p>
+  </section>
 
-    <li>
-      <details class="pattern-finishing-toggle">
-        <summary>Join Side Seams</summary>
-        <ul>
-          <li>Match armhole edges and hem.</li>
-          <li>Match markers (if added).</li>
-          <li>Seam from hem to underarm.</li>
-          <li>
-            <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="seamingPuttingItAllTogether" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Seaming – Putting It All Together</button>
-          </li>
-        </ul>
-      </details>
-    </li>
+  <section class="pattern-finishing-step" aria-labelledby="finishing-step-join-side-seams">
+    <h3 class="pattern-finishing-step__title" id="finishing-step-join-side-seams">5. Join Side Seams</h3>
+    <ul>
+      <li>Match armhole edges and hem.</li>
+      <li>Match markers (if added).</li>
+      <li>Seam from hem to underarm.</li>
+    </ul>
+    <p class="pattern-finishing-video-help pattern-help-link no-print">
+      <span class="pattern-finishing-video-help__lead"><i class="fa-solid fa-play"></i> Helpful video for seaming:</span>
+      <span class="pattern-finishing-video-help__links">
+        <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="seamingPuttingItAllTogether" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Seaming – Putting It All Together</button>
+      </span>
+    </p>
+  </section>
 
-    <li>
-      <details class="pattern-finishing-toggle">
-        <summary>Final Pressing</summary>
-        <ul>
-          <li>Lightly steam seams if needed.</li>
-          <li>Weave in ends.</li>
-          <li>Allow garment to rest before wearing.</li>
-        </ul>
-      </details>
-    </li>
-  </ul>
+  <section class="pattern-finishing-step" aria-labelledby="finishing-step-final-pressing">
+    <h3 class="pattern-finishing-step__title" id="finishing-step-final-pressing">6. Final Pressing</h3>
+    <ul>
+      <li>Lightly steam seams if needed.</li>
+      <li>Weave in ends.</li>
+      <li>Allow garment to rest before wearing.</li>
+    </ul>
+  </section>
+</div>
 `;
   }
 

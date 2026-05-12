@@ -1257,55 +1257,64 @@
     gap: 0.55rem;
   }
 
-  #pattern-content .pattern-finishing-toggle-list {
+  /* Finishing: open step cards (outer “Finishing” section remains collapsible via `.pattern-section`) */
+  #pattern-content .pattern-finishing-steps {
     margin: 0;
     padding: 0;
-    list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 0.45rem;
+    gap: 0.65rem;
+    max-width: 52rem;
   }
 
-  #pattern-content .pattern-finishing-toggle {
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 7px;
+  #pattern-content .pattern-finishing-step {
+    margin: 0;
+    padding: 0.65rem 0.8rem 0.75rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
     background: #fff;
-    padding: 0.45rem 0.65rem 0.55rem;
+    box-shadow: 0 1px 0 rgba(17, 24, 39, 0.04);
   }
 
-  #pattern-content .pattern-finishing-toggle summary {
-    cursor: pointer;
-    font-size: 0.92rem;
-    font-weight: 700;
-    color: #1f2937;
-    line-height: 1.35;
+  #pattern-content .pattern-finishing-step__title {
+    margin: 0 0 0.45rem;
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--kbm-green, #52682d);
+    line-height: 1.3;
   }
 
-  #pattern-content .pattern-finishing-toggle ul {
-    margin: 0.45rem 0 0;
+  #pattern-content .pattern-finishing-step ul {
+    margin: 0.35rem 0 0;
     padding-left: 1.1rem;
     font-size: 0.9rem;
     line-height: 1.45;
     color: #374151;
   }
 
-  #pattern-content .pattern-finishing-toggle p {
+  #pattern-content .pattern-finishing-step p {
     margin: 0.45rem 0 0;
     font-size: 0.88rem;
     line-height: 1.45;
     color: #4b5563;
   }
 
+  #pattern-content .pattern-finishing-step .pattern-finishing-video-help {
+    margin-top: 0.55rem;
+  }
+
   /* First line under Join Shoulders (not a list item); “one shoulder” uses global `.kbm-tooltip` */
   #pattern-content .pattern-finishing-lead {
-    margin: 0.45rem 0 0;
+    margin: 0.35rem 0 0;
     font-size: 0.9rem;
     line-height: 1.45;
     color: #374151;
   }
 
-  #pattern-content .pattern-finishing-toggle .kbm-tooltip::after,
-  #pattern-content .pattern-finishing-toggle .kbm-tooltip::before {
+  #pattern-content .pattern-finishing-step .kbm-tooltip::after,
+  #pattern-content .pattern-finishing-step .kbm-tooltip::before {
     z-index: 35;
   }
 
@@ -1615,7 +1624,4 @@
       display: none !important;
     }
 
-    #pattern-content .pattern-finishing-toggle > *:not(summary) {
-      display: block !important;
-    }
   }
