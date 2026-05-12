@@ -239,9 +239,23 @@ function formatActiveSideRc(rc: number): string {
   return String(Math.max(0, Math.floor(rc))).padStart(3, "0");
 }
 
+/**
+ * Action verb rules for the active-shoulder checklist `Action` column:
+ * - Shoulder shaping bind-offs (Armhole edge, `kind === "bindOff"`) render as
+ *   `Bind off / hold` so the knitter remembers to hold the bound-off stitches
+ *   on waste yarn / a holder rather than removing them.
+ * - Neckline bind-offs (Neck edge) keep the plain `Bind off` verb — only
+ *   shoulder-edge bind-offs are held for later seaming/joining.
+ * - Decreases (either edge) keep the `Decrease` verb.
+ */
 function activeSideActionText(action: ActiveSideScheduledAction): string {
   const noun = action.amount === 1 ? "st" : "sts";
-  const verb = action.kind === "bindOff" ? "Bind off" : "Decrease";
+  let verb: string;
+  if (action.kind === "bindOff") {
+    verb = action.edge === "Armhole" ? "Bind off / hold" : "Bind off";
+  } else {
+    verb = "Decrease";
+  }
   return `${verb} ${action.amount} ${noun}`;
 }
 

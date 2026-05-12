@@ -937,7 +937,7 @@
     "image_description": "Illustration of Short Row Technique in Machine Knitting",
     "metaTitle": "Short Row – Machine Knitting Technique",
     "metaDescription": "Short row, or partial knitting, involves knitting only part of a row to create curves, angles, or shaping in machine-knitted fabrics.",
-    "active": true,
+    "active": false,
     "vimeoIds": [
       "251895484"
     ]

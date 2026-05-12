@@ -39,6 +39,8 @@ import {
 export const SLEEVELESS_HELP_VIDEOS = {
   roundNeckShaping: {
     id: "151858551",
+    embedUrl:
+      "https://player.vimeo.com/video/151858551?badge=0&autopause=0&autoplay=1&player_id=0&app_id=58479",
     title: "Round neck shaping",
     description: "Review the basic steps for shaping a round neckline.",
     jumpLinks: [
@@ -57,7 +59,7 @@ export const SLEEVELESS_HELP_VIDEOS = {
     id: "252565241",
     embedUrl:
       "https://player.vimeo.com/video/252565241?badge=0&autopause=0&autoplay=1&player_id=0&app_id=58479",
-    title: "Advanced: shallow back neck shaping",
+    title: "Short row shoulder shaping",
     description: "Use this when the back neck is shallow or when short-row shaping is involved.",
     jumpLinks: [
       { label: "Add a lifeline", seconds: 20 },
@@ -90,6 +92,20 @@ export const SLEEVELESS_HELP_VIDEOS = {
       { label: "Stitch the band (private side)", seconds: 211 },
       { label: "Tip", seconds: 253 },
       { label: "Single band: fold to the public side", seconds: 279 },
+    ],
+  },
+  /** Catalog content_id 520 / slug seaming-putting-it-all-together — same Vimeo id site-wide. */
+  seamingPuttingItAllTogether: {
+    id: "151858422",
+    embedUrl:
+      "https://player.vimeo.com/video/151858422?badge=0&autopause=0&autoplay=1&player_id=0&app_id=58479",
+    title: "Seaming – Putting It All Together",
+    description: "",
+    jumpLinks: [
+      { label: "Seaming on the machine", seconds: 13 },
+      { label: "Mattress stitch basics", seconds: 176 },
+      { label: "Optional mattress stitch method", seconds: 229 },
+      { label: "Tips for perfect seams", seconds: 252 },
     ],
   },
 };
@@ -271,53 +287,30 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       .replace(/>/g, "&gt;");
   }
 
-  /** Compact Vimeo modal triggers beside neckline / shoulder charts (Back vs Front). */
-  function necklineShapingVideoCompactHtml(pieceSectionId) {
-    const piece = String(pieceSectionId || "").trim();
-    if (piece === "back") {
-      return `<div class="sleeveless-neckline-video-help no-print">
-  <p class="sleeveless-neckline-video-help__line">
-    <span class="sleeveless-neckline-video-help__lead">Need help with this step?</span>
-    <span class="sleeveless-neckline-video-help__links">
-      <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="roundNeckShaping" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Round neck shaping</button>
-      <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="shallowBackNeck" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Advanced: shallow back neck shaping</button>
-    </span>
-  </p>
-</div>`;
-    }
-    if (piece === "front") {
-      return `<div class="sleeveless-neckline-video-help no-print">
-  <p class="sleeveless-neckline-video-help__line">
-    <span class="sleeveless-neckline-video-help__lead">Need help with this step?</span>
-    <span class="sleeveless-neckline-video-help__links">
-      <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="roundNeckShaping" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Round neck shaping</button>
-    </span>
-  </p>
-</div>`;
-    }
-    return "";
-  }
-
   /**
    * Intro + collapsible help beneath the chart heading (same HTML intro as print/PDF via `renderActiveShoulderChartIntroHtml`).
    * @param {string | undefined} startRowLabel Armhole RC at center bind-off (chart row 0), e.g. `RC:117`.
    * @param {import("../lib/patterns/neckShoulderShapingChart").NeckShoulderShapingChart | undefined} chart
-   * @param {'back' | 'front'} piece
+   * @param {'back' | 'front'} _piece Reserved for callers (back vs front); shared tip markup for both.
    */
-  function neckShoulderChartHelpRowHtml(startRowLabel, chart, piece) {
+  function neckShoulderChartHelpRowHtml(startRowLabel, chart, _piece) {
     const intro = renderActiveShoulderChartIntroHtml({
       localStartRcLabel: String(startRowLabel ?? "").trim(),
       centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(chart),
       wrapperClass: "pattern-shaping-intro",
       layout: "labeled",
     });
-    const videos = necklineShapingVideoCompactHtml(piece);
+    const necklineTipVideoButtons = `<div class="pattern-finishing-video-help__links sleeveless-neckline-tip__video-links">
+  <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="roundNeckShaping" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Round neck shaping</button>
+  <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="shallowBackNeck" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Short row shoulder shaping</button>
+</div>`;
+    const necklineTipLead = `<p>Many knitters prefer to use ${glossaryTooltip(250, "Short Rows")} to shape shoulders because they create a smoother edge and help prevent ${glossaryTooltip(902, "stair steps")} caused by bind-offs.</p>`;
     return `${intro}
-${videos}
 <details class="pattern-tip sleeveless-shaping-help-toggle no-print">
   <summary>New to shaping necklines on the machine?</summary>
-  <p>Neckline shaping can feel intimidating at first, especially when shoulder shaping happens at the same time. The chart is designed to guide you step by step so you can focus on one row at a time.</p>
-  <p>For a narrated walkthrough of basic round neckline shaping, open <strong>Round neck shaping</strong> above.</p>
+  ${necklineTipLead}
+  <p class="sleeveless-neckline-tip__short-rows-prompt">New to ${glossaryTooltip(250, "Short Rows")}?</p>
+  ${necklineTipVideoButtons}
 </details>`;
   }
 
@@ -1633,7 +1626,7 @@ table {
           <li>Match markers (if added).</li>
           <li>Seam from hem to underarm.</li>
           <li>
-            <a href="/pages/videos/modal/520" class="pattern-video-modal-link" data-video-id="520"><i class="fa-solid fa-play"></i> Seaming – Putting It All Together</a>
+            <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="seamingPuttingItAllTogether" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Seaming – Putting It All Together</button>
           </li>
         </ul>
       </details>

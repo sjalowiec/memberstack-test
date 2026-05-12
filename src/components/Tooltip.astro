@@ -69,7 +69,7 @@ if (manualText) {
 } else if (term) {
   try {
     const entries: any[] = Array.isArray(glossary) ? glossary : ((glossary as { entries?: any[] })?.entries || []);
-    const found = entries.find((e) => matchesTerm(e?.english || "", term));
+    const found = entries.find((e) => e.active === true && matchesTerm(e?.english || "", term));
 
     if (found?.example) {
       tooltipText = truncate(htmlToText(found.example));

@@ -2021,13 +2021,13 @@
   {
     "glossaryId": 811,
     "english": "Short Row | Partial Knitting",
-    "example": "Short rows (also called partial knitting) let you knit only part of a row instead of the full width of the piece. This creates shaping and curves in your knitting.",
-    "helpinfo": "Used for neckline shaping, shoulder shaping, bust darts, sock heels, and other curved areas. When you see short row instructions in a pattern, you are simply turning before the end of the row and working back in the other direction.",
+    "example": "Short rows, also called partial knitting, let you knit only part of a row instead of the full width of the piece. This creates shaping and curves in your knitting.",
+    "helpinfo": "Short rows are used for neckline shaping, shoulder shaping, bust darts, sock heels, and other curved areas. When you see short row instructions in a pattern, you are simply turning before the end of the row and working back in the other direction.",
     "image": "/images/glossary/short-row-shaping.jpg",
     "image_alt": "Machine knitting short row shaping example",
     "image_description": "Example of short row shaping used to create curves in machine knitting.",
     "metaTitle": "Short Row Shaping | Partial Knitting",
-    "metaDescription": "Learn how short row shaping (partial knitting) creates curves and shaping in machine knitting.",
+    "metaDescription": "Learn how short row shaping, also called partial knitting, creates curves and shaping in machine knitting.",
     "active": true,
     "vimeoIds": [
       "811"
@@ -5991,6 +5991,19 @@
     "image_description": "Needlebed zero point demonstration",
     "metaTitle": "Zero Needle in Machine Knitting | Center Reference Point",
     "metaDescription": "The zero needle is the center reference point on a knitting machine’s needle bed. Learn why marking true zero is essential for aligning patterns, centering projects, and using a ribber",
+    "active": true,
+    "vimeoIds": []
+  },
+  {
+    "glossaryId": 902,
+    "english": "Stair steps",
+    "example": "A stepped look along a shaped edge when stitches are removed in separate rows, instead of a smooth short-row slope.",
+    "helpinfo": "",
+    "image": "/images/glossary/stairsteps.jpg",
+    "image_alt": "Stair steps in machine knitting",
+    "image_description": "Stair steps in machine knitting",
+    "metaTitle": "Stair steps in machine knitting",
+    "metaDescription": "Stair steps in machine knitting",
     "active": true,
     "vimeoIds": []
   }
