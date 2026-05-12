@@ -55,6 +55,8 @@ export const SLEEVELESS_HELP_VIDEOS = {
   },
   shallowBackNeck: {
     id: "252565241",
+    embedUrl:
+      "https://player.vimeo.com/video/252565241?badge=0&autopause=0&autoplay=1&player_id=0&app_id=58479",
     title: "Advanced: shallow back neck shaping",
     description: "Use this when the back neck is shallow or when short-row shaping is involved.",
     jumpLinks: [
@@ -748,14 +750,108 @@ ${videos}
   /** Focus element to restore when the sleeveless Vimeo/content video modal closes. */
   let sleevelessVideoModalReturnFocus = null;
 
+  /** One Vimeo.Player per modal iframe; cleared when the iframe node is replaced. */
+  const sleevelessVimeoPlayerByIframe = new WeakMap();
+
+  const VIMEO_PLAYER_JS = "https://player.vimeo.com/api/player.js";
+
+  /** Resolves when `window.Vimeo.Player` is available (reuses an existing script tag when present). */
+  let sleevelessVimeoPlayerJsPromise = null;
+  function ensureSleevelessVimeoPlayerApiScript() {
+    if (window.Vimeo?.Player) return Promise.resolve();
+    if (!sleevelessVimeoPlayerJsPromise) {
+      sleevelessVimeoPlayerJsPromise = new Promise((resolve, reject) => {
+        const existing = Array.from(document.getElementsByTagName("script")).find(
+          (s) => s.src && s.src.includes("player.vimeo.com/api/player.js")
+        );
+        const onReady = () => {
+          if (window.Vimeo?.Player) resolve();
+          else reject(new Error("Vimeo Player API unavailable"));
+        };
+        if (existing) {
+          if (window.Vimeo?.Player) {
+            onReady();
+            return;
+          }
+          existing.addEventListener("load", onReady, { once: true });
+          existing.addEventListener("error", () => reject(new Error("Vimeo Player API script error")), {
+            once: true,
+          });
+          return;
+        }
+        const script = document.createElement("script");
+        script.src = VIMEO_PLAYER_JS;
+        script.async = true;
+        script.onload = onReady;
+        script.onerror = () => reject(new Error("Vimeo Player API script failed"));
+        document.head.appendChild(script);
+      }).catch((err) => {
+        sleevelessVimeoPlayerJsPromise = null;
+        throw err;
+      });
+    }
+    return sleevelessVimeoPlayerJsPromise;
+  }
+
+  /**
+   * Seek the open modal Vimeo iframe via Player API when available.
+   * @returns {Promise<boolean>} true if `setCurrentTime` and `play` succeeded
+   */
+  async function seekSleevelessVimeoModalWithPlayerApi(iframe, startSeconds) {
+    const Player = window.Vimeo?.Player;
+    if (!Player || !(iframe instanceof HTMLIFrameElement)) return false;
+    let player = sleevelessVimeoPlayerByIframe.get(iframe);
+    if (!player) {
+      player = new Player(iframe);
+      sleevelessVimeoPlayerByIframe.set(iframe, player);
+    }
+    const sec =
+      typeof startSeconds === "number" && Number.isFinite(startSeconds) && startSeconds >= 0
+        ? startSeconds
+        : 0;
+    try {
+      await player.setCurrentTime(sec);
+      await player.play();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   function buildSleevelessVimeoPlayerSrc(videoId, startSeconds) {
     const id = String(videoId || "").trim();
     if (!/^\d+$/.test(id)) return "";
-    let url = `https://player.vimeo.com/video/${id}?autoplay=1`;
+    let url = `https://player.vimeo.com/video/${id}?autoplay=1&api=1`;
     if (typeof startSeconds === "number" && Number.isFinite(startSeconds) && startSeconds > 0) {
       url += `#t=${Math.floor(startSeconds)}s`;
     }
     return url;
+  }
+
+  /** Preserve Vimeo copy-paste player URL (query + optional hash); append `#t=` only when seeking. */
+  function buildSleevelessVimeoPlayerSrcFromEmbedUrl(embedUrl, startSeconds) {
+    const raw = String(embedUrl || "").trim();
+    if (!raw) return "";
+    try {
+      const u = new URL(raw);
+      if (u.hostname.includes("player.vimeo.com") && u.pathname.includes("/video/")) {
+        u.searchParams.set("api", "1");
+      }
+      if (typeof startSeconds === "number" && Number.isFinite(startSeconds) && startSeconds > 0) {
+        u.hash = `t=${Math.floor(startSeconds)}s`;
+      } else {
+        u.hash = "";
+      }
+      return u.toString();
+    } catch {
+      return raw;
+    }
+  }
+
+  function resolveSleevelessHelpVideoIframeSrc(meta, startSeconds) {
+    const embed = meta && String(meta.embedUrl || "").trim();
+    if (embed) return buildSleevelessVimeoPlayerSrcFromEmbedUrl(embed, startSeconds);
+    return buildSleevelessVimeoPlayerSrc(meta?.id, startSeconds);
   }
 
   function resolveSleevelessHelpVideoMeta(triggerEl) {
@@ -801,12 +897,16 @@ ${videos}
       : [];
     let jumpRegion = "";
     if (jumps.length > 0) {
+      const embedBase = String(meta.embedUrl || "").trim();
+      const embedBaseAttr = embedBase
+        ? ` data-sleeveless-vimeo-src-base="${escapeGlossaryPlaceholderAttr(embedBase)}"`
+        : "";
       const items = jumps
         .map((j) => {
           const lab = escapeHtml(String(j.label).trim());
           const sec = Math.floor(j.seconds);
-          const vid = escapeHtml(String(meta.id));
-          return `<li><button type="button" class="sleeveless-video-modal__jump-btn" data-sleeveless-vimeo-jump="${sec}" data-sleeveless-vimeo-id="${vid}">${lab}</button></li>`;
+          const vid = escapeHtml(String(meta.id ?? ""));
+          return `<li><button type="button" class="sleeveless-video-modal__jump-btn" data-sleeveless-vimeo-jump="${sec}" data-sleeveless-vimeo-id="${vid}"${embedBaseAttr}>${lab}</button></li>`;
         })
         .join("");
       jumpRegion = `<div class="sleeveless-video-modal__jump" role="region" aria-label="Jump to a timestamp">
@@ -815,7 +915,7 @@ ${videos}
 </div>`;
     }
 
-    const iframeSrc = buildSleevelessVimeoPlayerSrc(meta.id, 0);
+    const iframeSrc = resolveSleevelessHelpVideoIframeSrc(meta, 0);
     const iframeTitle = escapeGlossaryPlaceholderAttr(titleText);
     return `<div class="sleeveless-video-modal__shell">
   <div class="sleeveless-video-modal__meta">
@@ -875,11 +975,29 @@ ${videos}
       e.preventDefault();
       const iframe = modal.querySelector("[data-sleeveless-vimeo-iframe]");
       if (!(iframe instanceof HTMLIFrameElement)) return;
+      const srcBase = btn.getAttribute("data-sleeveless-vimeo-src-base")?.trim();
       const vid = btn.getAttribute("data-sleeveless-vimeo-id")?.trim();
       const secRaw = btn.getAttribute("data-sleeveless-vimeo-jump");
-      const sec = parseInt(secRaw || "0", 10);
-      if (!vid || !/^\d+$/.test(vid)) return;
-      iframe.src = buildSleevelessVimeoPlayerSrc(vid, Number.isFinite(sec) && sec > 0 ? sec : 0);
+      const secParsed = parseInt(secRaw || "", 10);
+      const startSec = Number.isFinite(secParsed) && secParsed >= 0 ? secParsed : 0;
+
+      void (async () => {
+        try {
+          await ensureSleevelessVimeoPlayerApiScript();
+        } catch {
+          /* fall through to iframe src fallback */
+        }
+        if (window.Vimeo?.Player) {
+          const ok = await seekSleevelessVimeoModalWithPlayerApi(iframe, startSec);
+          if (ok) return;
+        }
+        if (srcBase) {
+          iframe.src = buildSleevelessVimeoPlayerSrcFromEmbedUrl(srcBase, startSec);
+          return;
+        }
+        if (!vid || !/^\d+$/.test(vid)) return;
+        iframe.src = buildSleevelessVimeoPlayerSrc(vid, startSec);
+      })();
     });
 
     return modal;
@@ -908,7 +1026,9 @@ ${videos}
   function openSleevelessVideoModal(triggerEl) {
     if (!(triggerEl instanceof HTMLElement)) return;
     const meta = resolveSleevelessHelpVideoMeta(triggerEl);
-    if (!meta || !meta.id) return;
+    const hasId = meta && String(meta.id || "").trim() && /^\d+$/.test(String(meta.id).trim());
+    const hasEmbed = meta && String(meta.embedUrl || "").trim();
+    if (!meta || (!hasId && !hasEmbed)) return;
     sleevelessVideoModalReturnFocus = triggerEl;
     const modal = ensureSleevelessVideoModal();
     const content = modal.querySelector("[data-sleeveless-video-content]");
@@ -918,6 +1038,7 @@ ${videos}
     document.body.classList.add("sleeveless-diagram-modal-open");
     const closeBtn = modal.querySelector("[data-sleeveless-video-close]");
     if (closeBtn instanceof HTMLElement) closeBtn.focus();
+    void ensureSleevelessVimeoPlayerApiScript().catch(() => {});
   }
 
   /** Loads `src/pages/videos/modal/[id].astro` (same-origin) in the shared video modal iframe. */
