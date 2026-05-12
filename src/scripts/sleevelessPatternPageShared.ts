@@ -339,20 +339,26 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     /** @type {string[]} */
     const postParts = [];
     /** @type {string | null} */
-    let openSectionTitle = null;
+    let openSectionSlugSource = null;
+    /** @type {string | null} */
+    let openSectionDisplayHeading = null;
     let openSectionIsPost = false;
     /** @type {string[]} */
     let openSectionParts = [];
     const NECK_SHOULDER_SECTION_RE = /NECKLINE\s*&\s*SHOULDERS/i;
 
     function flushOpenSection() {
-      if (!openSectionTitle) return;
-      const sectionSlug = openSectionTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      if (!openSectionSlugSource) return;
+      const sectionSlug = openSectionSlugSource
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+      const headingHtml = openSectionDisplayHeading ?? openSectionSlugSource;
       const targetParts = openSectionIsPost ? postParts : splitParts;
       targetParts.push(
         wrapPatternSection(
           `sg-${pieceSectionId}-${sectionSlug || "section"}`,
-          openSectionTitle,
+          headingHtml,
           openSectionParts.join(""),
           {
             defaultCollapsed: false,
@@ -362,7 +368,8 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
           }
         )
       );
-      openSectionTitle = null;
+      openSectionSlugSource = null;
+      openSectionDisplayHeading = null;
       openSectionIsPost = false;
       openSectionParts = [];
     }
@@ -410,8 +417,15 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       }
       if (row.kind === "section") {
         flushOpenSection();
-        openSectionTitle = escapeHtml(row.title);
-        openSectionIsPost = NECK_SHOULDER_SECTION_RE.test(String(row.title || ""));
+        const rawTitle = String(row.title || "");
+        openSectionSlugSource = escapeHtml(rawTitle);
+        openSectionDisplayHeading =
+          /^\s*armhole\s*$/i.test(rawTitle) && pieceSectionId === "front"
+            ? escapeHtml("FRONT ARMHOLE")
+            : /^\s*armhole\s*$/i.test(rawTitle)
+              ? escapeHtml("BACK ARMHOLE")
+              : openSectionSlugSource;
+        openSectionIsPost = NECK_SHOULDER_SECTION_RE.test(rawTitle);
         continue;
       }
       if (row.kind === "neckShoulderChartTableMount") {
@@ -441,7 +455,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   ${diagramChunk}
   <p class="neckline-chart-print-only-footer">Created by Knit It Now · Printed <span data-neckline-chart-print-date></span></p>
 </div>`;
-        if (openSectionTitle) {
+        if (openSectionSlugSource) {
           openSectionParts.push(chartChunk);
           continue;
         }
@@ -453,7 +467,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       }
       if (row.kind !== "block") continue;
       const chunk = instructionRowHtml(row);
-      if (openSectionTitle) openSectionParts.push(chunk);
+      if (openSectionSlugSource) openSectionParts.push(chunk);
       else splitParts.push(chunk);
     }
     flushOpenSection();
@@ -1485,6 +1499,75 @@ table {
     headerRow.appendChild(btn);
   }
 
+  /**
+   * Section slugs in {@link renderSleevelessDisplayHtml} `flushOpenSection` are derived from
+   * `escapeHtml(row.title)`, so titles containing `&` (e.g. `NECKLINE & SHOULDERS`) produce ids
+   * with `amp` in the slug (`…-neckline-amp-shoulders`), not a bare `…-neckline-shoulders`.
+   */
+  function findNavTargetInScope(scope, ids, discoverNecklinePiece) {
+    if (!scope) return null;
+    for (const id of ids) {
+      let el = scope.querySelector(`#${CSS.escape(id)}`);
+      if (!(el instanceof HTMLElement)) {
+        el = scope.querySelector(`[data-section-id="${id}"]`);
+      }
+      if (el instanceof HTMLElement) return { el, id };
+    }
+    if (discoverNecklinePiece === "back" || discoverNecklinePiece === "front") {
+      const prefix = discoverNecklinePiece === "front" ? "sg-front-" : "sg-back-";
+      const sections = scope.querySelectorAll(`section[data-section-id^="${prefix}"]`);
+      for (const sec of sections) {
+        if (!(sec instanceof HTMLElement)) continue;
+        const sid = sec.getAttribute("data-section-id");
+        if (!sid) continue;
+        const lower = sid.toLowerCase();
+        if (lower.includes("neckline") && lower.includes("shoulder")) {
+          return { el: sec, id: sid };
+        }
+      }
+    }
+    return null;
+  }
+
+  const SLEEVELESS_PATTERN_INPAGE_NAV_ITEMS = [
+    { label: "Back", ids: ["sg-back"] },
+    { label: "Back Armhole", ids: ["sg-back-armhole"] },
+    {
+      label: "Back Neckline",
+      ids: ["sg-back-back-neckline-amp-shoulders", "sg-back-back-neckline-shoulders"],
+      discoverNecklinePiece: "back",
+    },
+    { label: "Front", ids: ["sg-front"] },
+    { label: "Front Armhole", ids: ["sg-front-armhole"] },
+    {
+      label: "Front Neckline",
+      ids: ["sg-front-front-neckline-amp-shoulders", "sg-front-front-neckline-shoulders"],
+      discoverNecklinePiece: "front",
+    },
+    { label: "Finishing", ids: ["sg-finishing"] },
+  ];
+
+  function syncSleevelessPatternInpageNav() {
+    const nav = document.querySelector("[data-sleeveless-pattern-inpage-nav]");
+    if (!(nav instanceof HTMLElement)) return;
+    const scope = document.getElementById("pattern-content");
+    const track = document.createElement("div");
+    track.className = "sleeveless-pattern-inpage-nav__track";
+    let count = 0;
+    for (const item of SLEEVELESS_PATTERN_INPAGE_NAV_ITEMS) {
+      const found = findNavTargetInScope(scope, item.ids, item.discoverNecklinePiece);
+      if (!found) continue;
+      const a = document.createElement("a");
+      a.href = `#${found.id}`;
+      a.className = "sleeveless-pattern-inpage-nav__pill";
+      a.textContent = item.label;
+      track.appendChild(a);
+      count += 1;
+    }
+    nav.replaceChildren(track);
+    nav.hidden = count === 0;
+  }
+
   function wrapPatternSection(sectionId, title, innerHtml, opts) {
     const sid = String(sectionId).replace(/[^a-zA-Z0-9_-]/g, "");
     const defaultCollapsed = opts?.defaultCollapsed === true;
@@ -1494,7 +1577,7 @@ table {
         : "";
     const collapsedClass = defaultCollapsed ? " is-collapsed" : "";
     const checkedAttr = defaultCollapsed ? " checked" : "";
-    return `<section class="pattern-section${sectionClassName}${collapsedClass}" data-section-id="${sid}">
+    return `<section id="${sid}" class="pattern-section${sectionClassName}${collapsedClass}" data-section-id="${sid}">
   <div class="pattern-section__header">
     <label class="pattern-section__collapse-label">
       <input type="checkbox" class="pattern-section__collapse" data-section-id="${sid}" aria-label="Collapse this section"${checkedAttr} />
@@ -1921,6 +2004,7 @@ table {
 
     applyPatternSectionCollapseState(mount);
     bindPatternSectionCollapsePersistence(mount);
+    syncSleevelessPatternInpageNav();
   }
 
   function patternTabsRoot() {
@@ -1956,6 +2040,7 @@ table {
       if (resultsEl) resultsEl.style.display = "none";
       const mount = document.querySelector("[data-sleeveless-mount]");
       if (mount) mount.innerHTML = "";
+      syncSleevelessPatternInpageNav();
       const note = document.querySelector("[data-sg-generator-note]");
       if (note) note.setAttribute("hidden", "");
       setPatternTabsReadiness(tabsRoot, false);

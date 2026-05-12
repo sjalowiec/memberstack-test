@@ -302,6 +302,66 @@
     margin: 0 0 0.5rem;
   }
 
+  /* In-page section jumps: offset fixed site header + sticky nav */
+  .sleeveless-pattern-page #pattern-content {
+    scroll-padding-top: calc(var(--site-header-offset, 7rem) + 3rem);
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav {
+    position: sticky;
+    top: calc(var(--site-header-offset, 7rem) + 4px);
+    z-index: 8;
+    margin: 0 0 0.65rem;
+    padding: 0.45rem 0;
+    background: color-mix(in srgb, var(--page-bg, #f7f8f7) 92%, white);
+    border-bottom: 1px solid rgba(82, 104, 45, 0.12);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__track {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.45rem;
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 0 0.15rem;
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill {
+    display: inline-block;
+    padding: 0.22rem 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+    color: #4b5563;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(82, 104, 45, 0.18);
+    border-radius: 999px;
+    transition:
+      background-color 0.12s ease,
+      border-color 0.12s ease,
+      color 0.12s ease;
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill:hover {
+    color: var(--kbm-green, #52682d);
+    border-color: rgba(82, 104, 45, 0.35);
+    background: #fff;
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  #pattern-content .pattern-section,
+  #pattern-content .pattern-subsection {
+    scroll-margin-top: calc(var(--site-header-offset, 7rem) + 3rem);
+  }
+
   /* Expandable garment sections */
   #pattern-content .pattern-section {
     margin-bottom: 1rem;
