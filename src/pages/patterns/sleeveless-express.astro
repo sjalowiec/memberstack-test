@@ -11,10 +11,16 @@ import "../../styles/sleeveless-express-wizard-layout.css";
 const expressNavSteps = [
   { step: 1, label: "Who" },
   { step: 2, label: "Size" },
-  { step: 3, label: "Neckline" },
-  { step: 4, label: "Fit" },
-  { step: 5, label: "Gauge" },
+  { step: 3, label: "Front" },
+  { step: 4, label: "Neckline" },
+  { step: 5, label: "Fit" },
+  { step: 6, label: "Gauge" },
 ] as const;
+
+const imgSleeveless = "/images/patterns/sleeveless";
+/** Front style (Pullover / Cardigan) — shared flat garment art */
+const imgGarmentPullover = "/images/patterns/pullover.png";
+const imgGarmentCardigan = "/images/patterns/cardigan.png";
 
 /** Same destination as the workspace Custom Build tab (`PatternWorkspaceTabs`). */
 const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
@@ -322,8 +328,8 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
             </div>
           </section>
 
-          <!-- Step 3 -->
-          <section class="express-acc express-acc--locked" data-express-step="3" data-express-field="neckline">
+          <!-- Step 3 — front style (matches sleeveless-garment Quick Build card layout) -->
+          <section class="express-acc express-acc--locked" data-express-step="3" data-express-field="front">
             <div
               class="express-acc__header"
               data-express-header
@@ -338,8 +344,8 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
               </button>
               <div class="express-acc__header-main">
                 <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
-                <h2 class="express-acc__title" id="express-step-3-title">Choose your neckline</h2>
-                <span class="express-acc__value" data-express-summary="neckline"></span>
+                <h2 class="express-acc__title" id="express-step-3-title">3. Choose your front style</h2>
+                <span class="express-acc__value" data-express-summary="front"></span>
               </div>
             </div>
             <p class="express-acc__locked-feedback" data-express-locked-feedback hidden role="status">
@@ -354,9 +360,88 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
               hidden
             >
               <div
+                class="express-front-cards hat-length-picker__grid hat-brim-picker__grid"
+                role="radiogroup"
+                aria-labelledby="express-step-3-title"
+              >
+                <button
+                  type="button"
+                  class="hat-length-picker__option is-selected"
+                  data-choice
+                  data-field="front"
+                  data-value="closed"
+                  aria-pressed="true"
+                >
+                  <span class="express-front-card__img-wrap">
+                    <img
+                      src={imgGarmentPullover}
+                      alt=""
+                      class="hat-length-picker__img sg-picker-img express-front-card__img"
+                      width="433"
+                      height="469"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </span>
+                  <span class="hat-length-picker__option-label">Pullover</span>
+                </button>
+                <div
+                  class="hat-length-picker__option express-front-card express-front-card--disabled"
+                  aria-disabled="true"
+                >
+                  <span class="express-front-card__badge">Coming soon</span>
+                  <span class="express-front-card__img-wrap">
+                    <img
+                      src={imgGarmentCardigan}
+                      alt=""
+                      class="hat-length-picker__img sg-picker-img express-front-card__img"
+                      width="433"
+                      height="469"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </span>
+                  <span class="hat-length-picker__option-label">Cardigan</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Step 4 -->
+          <section class="express-acc express-acc--locked" data-express-step="4" data-express-field="neckline">
+            <div
+              class="express-acc__header"
+              data-express-header
+              role="button"
+              tabindex="-1"
+              aria-expanded="false"
+              aria-controls="express-acc-panel-4"
+              id="express-acc-label-4"
+            >
+              <button type="button" class="express-acc__chevron" data-express-chevron aria-hidden="true" tabindex="-1">
+                ▾
+              </button>
+              <div class="express-acc__header-main">
+                <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
+                <h2 class="express-acc__title" id="express-step-4-title">Choose your neckline</h2>
+                <span class="express-acc__value" data-express-summary="neckline"></span>
+              </div>
+            </div>
+            <p class="express-acc__locked-feedback" data-express-locked-feedback hidden role="status">
+              <span class="express-acc__locked-arrow" aria-hidden="true">↑</span>
+              <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
+            </p>
+            <div
+              class="express-acc__body"
+              id="express-acc-panel-4"
+              role="region"
+              aria-labelledby="express-step-4-title"
+              hidden
+            >
+              <div
                 class="express-neck-cards hat-length-picker__grid hat-brim-picker__grid"
                 role="group"
-                aria-labelledby="express-step-3-title"
+                aria-labelledby="express-step-4-title"
               >
                 <button
                   type="button"
@@ -400,23 +485,23 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
             </div>
           </section>
 
-          <!-- Step 4 -->
-          <section class="express-acc express-acc--locked" data-express-step="4" data-express-field="fit">
+          <!-- Step 5 -->
+          <section class="express-acc express-acc--locked" data-express-step="5" data-express-field="fit">
             <div
               class="express-acc__header"
               data-express-header
               role="button"
               tabindex="-1"
               aria-expanded="false"
-              aria-controls="express-acc-panel-4"
-              id="express-acc-label-4"
+              aria-controls="express-acc-panel-5"
+              id="express-acc-label-5"
             >
               <button type="button" class="express-acc__chevron" data-express-chevron aria-hidden="true" tabindex="-1">
                 ▾
               </button>
               <div class="express-acc__header-main">
                 <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
-                <h2 class="express-acc__title" id="express-step-4-title">Choose your fit</h2>
+                <h2 class="express-acc__title" id="express-step-5-title">Choose your fit</h2>
                 <span class="express-acc__value" data-express-summary="fit"></span>
               </div>
             </div>
@@ -426,15 +511,15 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
             </p>
             <div
               class="express-acc__body"
-              id="express-acc-panel-4"
+              id="express-acc-panel-5"
               role="region"
-              aria-labelledby="express-step-4-title"
+              aria-labelledby="express-step-5-title"
               hidden
             >
               <div
                 class="express-fit-cards hat-length-picker__grid sg-fit-preference-grid"
                 role="group"
-                aria-labelledby="express-step-4-title"
+                aria-labelledby="express-step-5-title"
               >
                 <button
                   type="button"
@@ -500,11 +585,11 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
             </div>
           </section>
 
-          <!-- Step 5 -->
+          <!-- Step 6 -->
           <section
             class="express-acc express-acc--locked scroll-mt-[96px]"
             id="express-gauge-section"
-            data-express-step="5"
+            data-express-step="6"
             data-express-field="gauge"
           >
             <div
@@ -513,8 +598,8 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
               role="button"
               tabindex="-1"
               aria-expanded="false"
-              aria-controls="express-acc-panel-5"
-              id="express-acc-label-5"
+              aria-controls="express-acc-panel-6"
+              id="express-acc-label-6"
             >
               <button type="button" class="express-acc__chevron" data-express-chevron aria-hidden="true" tabindex="-1">
                 ▾
@@ -522,7 +607,7 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
               <div class="express-acc__header-main">
                 <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
                 <div class="express-acc__title-row express-acc__title-row--gauge">
-                  <h2 class="express-acc__title" id="express-step-5-title">Enter your gauge</h2>
+                  <h2 class="express-acc__title" id="express-step-6-title">Enter your gauge</h2>
                   <span class="express-acc__title-glossary">
                     <GlossaryTooltip id={616}>Gauge</GlossaryTooltip>
                   </span>
@@ -536,9 +621,9 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
             </p>
             <div
               class="express-acc__body"
-              id="express-acc-panel-5"
+              id="express-acc-panel-6"
               role="region"
-              aria-labelledby="express-step-5-title"
+              aria-labelledby="express-step-6-title"
               hidden
             >
               <form class="express-gauge" id="express-gauge-form" novalidate>

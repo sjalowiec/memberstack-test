@@ -593,6 +593,29 @@ export function clearSleevelessPatternBuilderData(): void {
   }
 }
 
+/** Legacy standalone custom measurements (see `sleevelessCustomMeasurementStorage.ts`). */
+const SLEEVELESS_LEGACY_CUSTOM_MEASUREMENTS_KEY = "kbm_sleeveless_custom_measurements";
+
+/**
+ * Clears everything used by Quick Build (express) plus the shared canonical pattern / builder blobs
+ * that hold the generated express pattern. Safe to call only when the session is known to be express;
+ * Custom Build sessions use the same canonical keys but must not call this.
+ */
+export function clearSleevelessQuickBuildSession(): void {
+  clearSleevelessPatternBuilderData();
+  if (typeof localStorage === "undefined") return;
+  try {
+    localStorage.removeItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+  try {
+    localStorage.removeItem(SLEEVELESS_LEGACY_CUSTOM_MEASUREMENTS_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 /** Formatted JSON string for export / future dashboard sync. */
 export function exportCurrentPatternJson(): string {
   const p = getCurrentPattern();

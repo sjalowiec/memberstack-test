@@ -23,11 +23,12 @@ import {
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
 import { scrollToBuilderSection } from "../lib/patterns/scrollToBuilderSection";
 
-const STEPS = 5;
+const STEPS = 6;
 const LOCKED_STEP_NAV_TITLE = "Finish the previous step to continue.";
 
 const LABELS: Record<string, Record<string, string>> = {
   who: { women: "Women", men: "Men", kids: "Kids", baby: "Baby" },
+  front: { closed: "Pullover", open: "Cardigan" },
   neckline: { round: "Round", "v-neck": "V-neck" },
   fit: { close: "Close", standard: "Standard", relaxed: "Relaxed" },
 };
@@ -341,7 +342,7 @@ interface ExpressPersistedV1 {
   maxReachable?: number;
   gaugeStitchRaw?: string;
   gaugeRowRaw?: string;
-  /** `5` = current Express flow (Who → Size → Neckline → Fit → Gauge). `4` = legacy combined Who+size step — migrated on load. */
+  /** `6` = Express flow with Front step (Who → Size → Front → Neckline → Fit → Gauge). `5` / `4` = legacy — migrated on load. */
   flowSteps?: number;
 }
 
@@ -358,13 +359,14 @@ function loadExpressPersisted(): ExpressPersistedV1 | null {
   }
 }
 
-/** Furthest step the user can open from accumulated Express choices (steps 1–5). */
+/** Furthest step the user can open from accumulated Express choices (steps 1–6). */
 function maxReachableFromChoices(v: Record<string, string>): number {
   let m = 1;
   if (v.who) m = 2;
   if (v.who && nonEmptyTrimmed(v.selectedSize)) m = 3;
-  if (v.who && nonEmptyTrimmed(v.selectedSize) && v.neckline) m = 4;
-  if (v.who && nonEmptyTrimmed(v.selectedSize) && v.neckline && v.fit) m = 5;
+  if (v.who && nonEmptyTrimmed(v.selectedSize) && nonEmptyTrimmed(v.front)) m = 4;
+  if (v.who && nonEmptyTrimmed(v.selectedSize) && nonEmptyTrimmed(v.front) && v.neckline) m = 5;
+  if (v.who && nonEmptyTrimmed(v.selectedSize) && nonEmptyTrimmed(v.front) && v.neckline && v.fit) m = 6;
   return m;
 }
 
@@ -381,12 +383,23 @@ function initExpressPage() {
     typeof persisted?.openStep === "number" && Number.isFinite(persisted.openStep)
       ? Math.floor(persisted.openStep)
       : 1;
-  if (persisted && persisted.flowSteps !== 4 && persisted.flowSteps !== 5 && openStepCandidate > 1) {
+  if (
+    persisted &&
+    persisted.flowSteps !== 4 &&
+    persisted.flowSteps !== 5 &&
+    persisted.flowSteps !== 6 &&
+    openStepCandidate > 1
+  ) {
     openStepCandidate = openStepCandidate === 2 ? 2 : openStepCandidate - 1;
   }
 
   /** Legacy 4-step sessions: neckline was step 2, fit step 3, gauge step 4 — shift up after inserting Size at step 2. */
   if (persisted && persisted.flowSteps === 4 && openStepCandidate >= 2) {
+    openStepCandidate += 1;
+  }
+
+  /** flowSteps 5 → 6: Front step inserted after Size (old steps 3–5 → 4–6). */
+  if (persisted && persisted.flowSteps === 5 && openStepCandidate >= 3) {
     openStepCandidate += 1;
   }
 
@@ -408,7 +421,7 @@ function initExpressPage() {
           values: { ...values },
           openStep,
           maxReachable,
-          flowSteps: 5,
+          flowSteps: 6,
           gaugeStitchRaw: stEl instanceof HTMLInputElement ? stEl.value : "",
           gaugeRowRaw: rwEl instanceof HTMLInputElement ? rwEl.value : "",
         }),
@@ -452,6 +465,9 @@ function initExpressPage() {
   function isStepComplete(step: number): boolean {
     if (step === 1) return !!values.who;
     if (step === 2) return nonEmptyTrimmed(values.selectedSize);
+    if (step === 3) return nonEmptyTrimmed(values.front);
+    if (step === 4) return !!values.neckline;
+    if (step === 5) return !!values.fit;
     const sec = stepSection(step);
     const f = sec?.getAttribute("data-express-field");
     if (f === "gauge") return gaugeOk();
@@ -488,6 +504,7 @@ function initExpressPage() {
     return (
       !!values.who &&
       nonEmptyTrimmed(values.selectedSize) &&
+      nonEmptyTrimmed(values.front) &&
       !!values.neckline &&
       !!values.fit &&
       gaugeOk()
@@ -699,8 +716,9 @@ function initExpressPage() {
     refreshExpressWhoSizePanel();
     const pairs: { step: number; field: keyof typeof LABELS; sel: string }[] = [
       { step: 1, field: "who", sel: ".express-options--who" },
-      { step: 3, field: "neckline", sel: ".express-neck-cards" },
-      { step: 4, field: "fit", sel: ".express-fit-cards" },
+      { step: 3, field: "front", sel: ".express-front-cards" },
+      { step: 4, field: "neckline", sel: ".express-neck-cards" },
+      { step: 5, field: "fit", sel: ".express-fit-cards" },
     ];
     pairs.forEach(({ step, field, sel }) => {
       const sec = stepSection(step);
@@ -732,6 +750,8 @@ function initExpressPage() {
         delete values.selectedSize;
       }
     }
+
+    if (field === "front" && value !== "closed") return;
 
     values[field] = value;
     if (field === "shape" || field === "front") {
@@ -970,6 +990,7 @@ function initExpressPage() {
     if (
       !values.who ||
       !nonEmptyTrimmed(values.selectedSize) ||
+      !nonEmptyTrimmed(values.front) ||
       !values.neckline ||
       !values.fit
     ) {

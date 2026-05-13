@@ -1,6 +1,6 @@
 /**
- * Express Pattern page: neckline + fit image cards — same class names and visuals
- * as SleevelessGarmentDesignStep / SleevelessGarmentFitStep (scoped under .express-page).
+ * Express Pattern page: front style, neckline + fit image cards — same class names and visuals
+ * as sleeveless-garment / SleevelessGarmentDesignStep (scoped under .express-page).
  *
  * IMPORTANT: Import wizard.css HERE first. Bundlers often order standalone imports
  * alphabetically ("sleeveless-..." before "wizard.css"), which previously caused
@@ -204,6 +204,109 @@
 .express-page .express-neck-cards .hat-length-picker__option .hat-length-picker__img.sg-picker-img {
   width: 120px;
   max-width: min(120px, 100%);
+}
+
+/* Quick Build front style — label above image (order), compact column, gap-driven rhythm */
+.express-page .express-front-cards > .hat-length-picker__option {
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 5px 7px 6px;
+  box-sizing: border-box;
+}
+
+.express-page .express-front-cards > .hat-length-picker__option .hat-length-picker__option-label {
+  order: -1;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.express-page .express-front-cards .express-front-card__img-wrap {
+  order: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: min(clamp(150px, 36vw, 165px), 100%);
+  height: clamp(115px, 28vw, 145px);
+  margin: 0 auto;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.express-page .express-front-cards .express-front-card__img-wrap .express-front-card__img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  margin: 0;
+}
+
+/* Containing block for absolutely positioned “Coming soon” badge */
+.express-page .express-front-cards .express-front-card.express-front-card--disabled {
+  position: relative;
+}
+
+.express-page .express-front-cards .express-front-card--disabled .hat-length-picker__option-label {
+  padding-right: clamp(4.5rem, 26vw, 5.75rem);
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* Custom Build — garment type row (Pullover / Cardigan), same artwork as Quick Build */
+.express-page [data-cb-style-group="garmentType"] .express-garment-type-card__img-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 120px;
+  height: clamp(100px, 32vw, 120px);
+  margin: 0 auto 0.35rem;
+  box-sizing: border-box;
+}
+
+.express-page [data-cb-style-group="garmentType"] .express-garment-type-card__img-wrap .express-garment-type-card__img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  margin: 0;
+}
+
+.express-page .express-front-card.express-front-card--disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.72;
+  background: #f8f8f6;
+  border-color: #e5e0da;
+  box-shadow: none;
+}
+
+.express-page .express-front-card--disabled .hat-length-picker__option-label {
+  color: #6b6b6b;
+}
+
+.express-page .express-front-cards .express-front-card__badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 1;
+  margin: 0;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #555;
+  background: rgba(82, 104, 45, 0.12);
+  border-radius: 4px;
 }
 
 /* Front-toggle pill (Cardigan): narrow terracotta swatch only — no stripe.svg text */

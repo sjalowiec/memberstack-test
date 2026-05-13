@@ -4,6 +4,8 @@ import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import "../../styles/wizard.css";
 
 const imgBase = "/images/patterns/sleeveless";
+const imgGarmentPullover = "/images/patterns/pullover.png";
+const imgGarmentCardigan = "/images/patterns/cardigan.png";
 ---
 
 <Layout
@@ -129,7 +131,7 @@ const imgBase = "/images/patterns/sleeveless";
           </div>
           <div class="sg-section-options">
             <div
-              class="hat-length-picker__grid hat-brim-picker__grid"
+              class="hat-length-picker__grid hat-brim-picker__grid sg-front-style-cards"
               role="radiogroup"
               aria-labelledby="sg-section-front-heading"
               id="sg-front-group"
@@ -140,27 +142,31 @@ const imgBase = "/images/patterns/sleeveless";
               data-front-option="closed"
               aria-pressed="true"
             >
-              <img
-                src={`${imgBase}/straight-top-closed.svg`}
-                alt=""
-                class="hat-length-picker__img sg-picker-img"
-                width="120"
-                height="120"
-                loading="lazy"
-                data-front-img
-              />
+              <span class="sg-front-style-card__img-wrap">
+                <img
+                  src={imgGarmentPullover}
+                  alt=""
+                  class="hat-length-picker__img sg-picker-img sg-front-style-card__img"
+                  width="433"
+                  height="469"
+                  loading="lazy"
+                  data-front-img
+                />
+              </span>
               <span class="hat-length-picker__option-label">Pullover</span>
             </button>
             <button type="button" class="hat-length-picker__option" data-front-option="open" aria-pressed="false">
-              <img
-                src={`${imgBase}/straight-top-open.svg`}
-                alt=""
-                class="hat-length-picker__img sg-picker-img"
-                width="120"
-                height="120"
-                loading="lazy"
-                data-front-img
-              />
+              <span class="sg-front-style-card__img-wrap">
+                <img
+                  src={imgGarmentCardigan}
+                  alt=""
+                  class="hat-length-picker__img sg-picker-img sg-front-style-card__img"
+                  width="433"
+                  height="469"
+                  loading="lazy"
+                  data-front-img
+                />
+              </span>
               <span class="hat-length-picker__option-label">Cardigan</span>
             </button>
             </div>
@@ -526,6 +532,28 @@ const imgBase = "/images/patterns/sleeveless";
     margin: 0 auto;
   }
 
+  #sg-front-group.sg-front-style-cards .sg-front-style-card__img-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 120px;
+    height: clamp(100px, 32vw, 120px);
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+
+  #sg-front-group.sg-front-style-cards .sg-front-style-card__img-wrap .sg-front-style-card__img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center;
+    margin: 0;
+  }
+
   .hat-length-picker__option-label {
     display: block;
     margin-top: 6px;
@@ -774,9 +802,11 @@ const imgBase = "/images/patterns/sleeveless";
   }
 
   function frontSrc(shape, front) {
-    const door = front === "open" ? "open" : "closed";
-    if (shape === "aline") return `${IMG}/a-line-top-${door}.svg`;
-    return `${IMG}/straight-top-${door}.svg`;
+    if (shape === "aline") {
+      const door = front === "open" ? "open" : "closed";
+      return `${IMG}/a-line-top-${door}.svg`;
+    }
+    return front === "open" ? "/images/patterns/cardigan.png" : "/images/patterns/pullover.png";
   }
 
   function syncLengthImages() {

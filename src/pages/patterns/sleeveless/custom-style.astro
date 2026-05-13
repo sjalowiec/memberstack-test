@@ -19,6 +19,8 @@ const customWizardSteps = [
 ] as const;
 
 const imgBase = "/images/patterns/sleeveless";
+const imgGarmentPullover = "/images/patterns/pullover.png";
+const imgGarmentCardigan = "/images/patterns/cardigan.png";
 ---
 
 <Layout
@@ -507,14 +509,16 @@ const imgBase = "/images/patterns/sleeveless";
                         data-cb-style-value="pullover"
                         aria-pressed="false"
                       >
-                        <img
-                          src={`${imgBase}/straight-top-closed.svg`}
-                          alt=""
-                          class="hat-length-picker__img sg-picker-img"
-                          width="120"
-                          height="120"
-                          loading="lazy"
-                        />
+                        <span class="express-garment-type-card__img-wrap">
+                          <img
+                            src={imgGarmentPullover}
+                            alt=""
+                            class="hat-length-picker__img sg-picker-img express-garment-type-card__img"
+                            width="433"
+                            height="469"
+                            loading="lazy"
+                          />
+                        </span>
                         <span class="sg-fit-preference-title-row">
                           <span class="hat-length-picker__option-label">Pullover</span>
                           <span class="sg-fit-option-check" aria-hidden="true">✓</span>
@@ -530,14 +534,16 @@ const imgBase = "/images/patterns/sleeveless";
                         aria-disabled="true"
                       >
                         <span class="cb-style-coming-pill">Coming next</span>
-                        <img
-                          src={`${imgBase}/straight-top-open.svg`}
-                          alt=""
-                          class="hat-length-picker__img sg-picker-img"
-                          width="120"
-                          height="120"
-                          loading="lazy"
-                        />
+                        <span class="express-garment-type-card__img-wrap">
+                          <img
+                            src={imgGarmentCardigan}
+                            alt=""
+                            class="hat-length-picker__img sg-picker-img express-garment-type-card__img"
+                            width="433"
+                            height="469"
+                            loading="lazy"
+                          />
+                        </span>
                         <span class="sg-fit-preference-title-row">
                           <span class="hat-length-picker__option-label">Cardigan</span>
                         </span>

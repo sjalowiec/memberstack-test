@@ -5,6 +5,7 @@ import {
   PATTERN_BUILDER_DATA_KEY,
   getPatternStorageKey,
   SLEEVELESS_CHART_AUDIENCE_LABELS,
+  clearSleevelessQuickBuildSession,
 } from "../lib/patterns/patternStorage.ts";
 import {
   buildGeneratorPatternDataFromSources,
@@ -1791,18 +1792,39 @@ table {
 
   function bindTabs() {
     const root = document.querySelector(".sleeveless-pattern-page .pattern-tabs");
-    if (!root) return;
-    root.querySelectorAll(".tab-btn").forEach((button) => {
-      button.addEventListener("click", () => {
-        const target = button.dataset.tab;
-        if (!target) return;
-        activateWizardTab(target);
+    if (root) {
+      root.querySelectorAll(".tab-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+          const target = button.dataset.tab;
+          if (!target) return;
+          activateWizardTab(target);
+        });
       });
-    });
+    }
 
     const editBtn = document.getElementById("edit-btn");
     if (editBtn) {
       editBtn.addEventListener("click", () => {
+        const patternData = getPatternData();
+        const pdStyle = patternData.style;
+        const pdExpress =
+          pdStyle &&
+          typeof pdStyle === "object" &&
+          !Array.isArray(pdStyle) &&
+          /** @type {Record<string, unknown>} */ (pdStyle).patternMode === "express";
+        const canonStyle = getCurrentPattern().style;
+        const canonExpress =
+          canonStyle &&
+          typeof canonStyle === "object" &&
+          !Array.isArray(canonStyle) &&
+          /** @type {Record<string, unknown>} */ (canonStyle).patternMode === "express";
+
+        if (pdExpress || canonExpress) {
+          clearSleevelessQuickBuildSession();
+          window.location.replace("/patterns/sleeveless-express");
+          return;
+        }
+
         activateWizardTab("build");
         const topEl = document.getElementById("sleeveless-pattern-top");
         if (topEl) {
