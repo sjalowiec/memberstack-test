@@ -179,6 +179,10 @@ const description =
         </div>
         <button type="submit" class="contact-form__submit">Update Password</button>
       </form>
+      <p class="account-page__password-reset-hint">
+        Don't remember your current password?
+        <a href="#" data-ms-modal="forgot-password" class="account-page__forgot-link">Reset it by email instead</a>.
+      </p>
     </section>
     </div>
   </div>
@@ -327,6 +331,13 @@ const description =
     outline: 2px solid var(--kbm-green, #52682d);
     outline-offset: 2px;
     border-radius: 2px;
+  }
+
+  .account-page__password-reset-hint {
+    margin: 0.85rem 0 0;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    color: #4b5563;
   }
 
   .account-page__muted-copy {
