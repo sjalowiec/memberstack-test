@@ -301,6 +301,13 @@
   flex-shrink: 0;
 }
 
+.kbm-nav-bar .kbm-header-auth > [data-ms-content] {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
 .kbm-nav-bar .kbm-header-auth .kbm-btn-outline {
   font-size: 0.9rem;
   padding: 8px 14px;
@@ -1457,18 +1464,16 @@ div[data-ms-modal-overlay] {
         </div>
         <div class="kbm-header-auth">
           <div data-ms-content="!members">
-            <a href="#" data-ms-modal="login" class="kbm-btn kbm-btn-outline">
+            <a href="#" data-ms-modal="login" data-ms-redirect="current-url" class="kbm-btn kbm-btn-outline">
               Log In
+            </a>
+            <a href="#" data-ms-modal="signup" data-ms-redirect="current-url" class="kbm-btn kbm-btn-outline">
+              Sign Up
             </a>
           </div>
 
           <div data-ms-content="members">
-            <button data-ms-modal="login" class="kbm-btn kbm-btn-outline">
-              Reset Password
-            </button>
-          </div>
-
-          <div data-ms-content="members">
+            <a href="/account" class="kbm-btn kbm-btn-outline">My Account</a>
             <a
               href="#"
               data-ms-action="logout"
