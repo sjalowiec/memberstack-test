@@ -4,7 +4,7 @@ import PageHead from "../components/PageHead.astro";
 export const prerender = true;
 
 const description =
-  "See what’s new on Knit it Now — recent additions and what’s coming next.";
+  "What’s new this week on Knit it Now — beta updates, featured tools, and what’s next.";
 const hyvorWebsiteId = import.meta.env.PUBLIC_HYVOR_TALK_WEBSITE_ID ?? "14706";
 
 /** Sue headshot for Note from Sue card + Message Sue modal (swap file here only). */
@@ -22,23 +22,24 @@ const sueHeadshot = "/images/sue.gif";
         <div class="whats-new-top__lead">
           <div class="whats-new-header" role="banner">
             <PageHead title="What's New" />
+            <p class="whats-new-updated" role="status">Updated May 13</p>
             <p class="whats-new-intro">
-              Here’s what’s new this week - and ready for you to explore.            </p>
-            
+              Here’s what’s new this week and what’s ready for you to explore.
+            </p>
           </div>
 
-          <section class="whats-new-box" aria-labelledby="whats-new-new">
-          <h2 class="whats-new-box__title" id="whats-new-new">Take a Look...</h2>
+          <section class="whats-new-box" aria-labelledby="whats-new-featured">
+          <h2 class="whats-new-box__title" id="whats-new-featured">Featured This Week</h2>
 
           <ul class="whats-new-items">
             <li class="whats-new-item">
               <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
               <div class="whats-new-item__body">
                 <h3 class="whats-new-item__title whats-new-item__title--pattern">
-                  <span class="nav-pill-new">NEW</span> <a href="/videos">Videos</a>
+                  <a href="/patterns/sleeveless/beta-pattern">Beta Sleeveless Sweater Pattern</a>
                 </h3>
                 <p class="whats-new-item__desc">
-                  Browse and search the entire Knit it Now video library by title and description.
+                  Explore the updated online pattern with embedded help, glossary support, shaping guidance, and improved finishing instructions.
                 </p>
               </div>
             </li>
@@ -46,10 +47,10 @@ const sueHeadshot = "/images/sue.gif";
               <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
               <div class="whats-new-item__body">
                 <h3 class="whats-new-item__title whats-new-item__title--pattern">
-                  <a href="/reference">References</a>
+                  <a href="/videos">Videos</a>
                 </h3>
                 <p class="whats-new-item__desc">
-                  Quick guides for common questions and go-to information.
+                  Browse and search the Knit it Now video library by title and description.
                 </p>
               </div>
             </li>
@@ -60,7 +61,18 @@ const sueHeadshot = "/images/sue.gif";
                   <a href="/help-hub">Help Hubs</a>
                 </h3>
                 <p class="whats-new-item__desc">
-                  Two new Lk150-focused tips to help you master slip and tuck stitches.
+                  Find focused tips and quick answers for common machine knitting questions.
+                </p>
+              </div>
+            </li>
+            <li class="whats-new-item">
+              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
+              <div class="whats-new-item__body">
+                <h3 class="whats-new-item__title whats-new-item__title--pattern">
+                  <a href="/reference">References</a>
+                </h3>
+                <p class="whats-new-item__desc">
+                  Use quick guides for common terms, techniques, and go-to information.
                 </p>
               </div>
             </li>
@@ -80,23 +92,26 @@ const sueHeadshot = "/images/sue.gif";
             <div class="whats-new-footer__content">
               <h3>A Note from Sue</h3>
               <p>
-                This has been a big week.<br>
-
-<p>Getting the videos onto the site has been something I’ve been working toward for a long time, and I’m really looking forward to seeing how you use them here.</p>
-
-<p>There’s still more to come, and not everything is perfect yet, but it’s finally at a point where you can start exploring and using it.</p>
-
-Thank you for being here and being part of this process.<br> 
+                Every week, more of the new Knit it Now experience is coming online.
+              </p>
+              <p>
+                This week includes updates to the video library, Help Hubs, and pattern support tools, along with improvements based directly on beta feedback.
+              </p>
+              <p>
+                The feedback you’ve shared is already shaping what comes next, and I’m excited to keep building this with you.
+              </p>
+              <p>
+                Thank you for being here and helping make the new Knit it Now clearer, easier to use, and more helpful for machine knitters.
               </p>
 
               <div class="whats-new-footer__cta">
                 <a
                   class="kbm-btn kbm-btn-primary whats-new-footer__message-btn"
                   href="#comments"
-                  >Join the Conversation</a>
+                  >Share Your Feedback</a>
               </div>
               <p class="whats-new-footer__private-hint">
-                Prefer to reach out privately?<br>
+                Prefer to reach out privately?
                 <a
                   href="#"
                   class="whats-new-footer__private-link"
@@ -105,13 +120,6 @@ Thank you for being here and being part of this process.<br>
                   aria-controls="whats-new-sue-modal"
                   >Message Sue directly</a>
               </p>
-
-              <div class="whats-new-footer__feedback">
-                <p>
-                  I’m building this step by step — and your feedback is already shaping what comes
-                  next.
-                </p>
-              </div>
             </div>
           </div>
         </footer>
@@ -123,7 +131,7 @@ Thank you for being here and being part of this process.<br>
             <li class="whats-new-item">
               <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
               <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title">More Help Hub entries</h3>
+                <h3 class="whats-new-item__title">Quick Build beta access</h3>
               </div>
             </li>
             <li class="whats-new-item">
@@ -135,22 +143,35 @@ Thank you for being here and being part of this process.<br>
             <li class="whats-new-item">
               <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
               <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title">Knitting Machine Reference (machine database)</h3>
+                <h3 class="whats-new-item__title">More Help Hub entries</h3>
               </div>
             </li>
             <li class="whats-new-item">
               <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
               <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title">Shop</h3>
+                <h3 class="whats-new-item__title">Expanded video chapters and jump links</h3>
+              </div>
+            </li>
+            <li class="whats-new-item">
+              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
+              <div class="whats-new-item__body">
+                <h3 class="whats-new-item__title">Knitting Machine Reference</h3>
+              </div>
+            </li>
+            <li class="whats-new-item">
+              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
+              <div class="whats-new-item__body">
+                <h3 class="whats-new-item__title">Site bookmarks</h3>
               </div>
             </li>
           </ul>
       </section>
 <hr class="whats-new-divider" aria-label="Divider" >
       <section id="comments" class="whats-new-conversation" aria-labelledby="whats-new-conversation-title">
-        <h2 id="whats-new-conversation-title">Join the Conversation</h2>
+        <h2 id="whats-new-conversation-title">Help Shape What’s Next</h2>
         <p>
-          Have thoughts as you explore? I’d love to hear what’s working, what’s confusing, or what you expected to see.        </p>
+          Have thoughts as you explore? I’d love to hear what’s working, what’s confusing, or what you expected to see.
+        </p>
                <div id="hyvor-talk-view" class="whats-new-conversation__comments"></div>
       </section>
     </div>
@@ -317,7 +338,16 @@ Thank you for being here and being part of this process.<br>
     }
 
     .whats-new-header :global(.page-head) {
-      margin-bottom: 1rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .whats-new-updated {
+      margin: 0 0 0.65rem 0;
+      font-size: 0.875rem;
+      font-weight: 600;
+      line-height: 1.35;
+      letter-spacing: 0.01em;
+      color: rgba(36, 48, 21, 0.58);
     }
 
     .whats-new-intro {
@@ -545,6 +575,12 @@ Thank you for being here and being part of this process.<br>
       font-size: var(--text-base);
       line-height: 1.45;
       color: #243015;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .whats-new-footer__private-hint .whats-new-footer__private-link {
+      margin-left: 0.25rem;
     }
 
     .whats-new-footer__private-link {
@@ -562,16 +598,6 @@ Thank you for being here and being part of this process.<br>
       outline: 2px solid var(--kbm-green);
       outline-offset: 2px;
       border-radius: 2px;
-    }
-
-    .whats-new-footer__feedback {
-      margin-top: 0;
-    }
-
-    .whats-new-footer__content .whats-new-footer__feedback p {
-      margin-bottom: 0.35rem;
-      font-size: 0.95rem;
-      line-height: 1.45;
     }
 
     .whats-new-conversation {
