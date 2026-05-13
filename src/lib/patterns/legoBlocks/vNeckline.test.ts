@@ -1,26 +1,19 @@
 import { describe, expect, it } from "vitest";
 import type { ShapingEvent } from "../shapingTimeline";
 import { distributeEvenly } from "../shapingTimeline";
+import { compressStitchDecreasePointsToNotationLines } from "../shapingNotationCompress";
 import {
   buildVNecklinePlan,
   calculateVNeckNeckEdgePlan,
+  distributeVNeckInnerDecreaseRows,
   neckDecreaseStitchesPerSideFromOpening,
   vNeckPlanToInnerEdgeEventsByRow,
 } from "./vNeckline";
 
-describe("distributeEvenly", () => {
+describe("distributeEvenly (generic)", () => {
   it("returns [] for invalid args", () => {
     expect(distributeEvenly(0, 10, 20)).toEqual([]);
     expect(distributeEvenly(3, 20, 10)).toEqual([]);
-  });
-
-  it("places a single decrease at startRow", () => {
-    expect(distributeEvenly(1, 100, 110)).toEqual([100]);
-  });
-
-  it("spaces decreases across inclusive span", () => {
-    expect(distributeEvenly(3, 10, 14)).toEqual([10, 12, 14]);
-    expect(distributeEvenly(5, 0, 8)).toEqual([0, 2, 4, 6, 8]);
   });
 
   it("when count exceeds span, repeats RCs using row packing", () => {
@@ -29,6 +22,26 @@ describe("distributeEvenly", () => {
     expect(rows.filter((r) => r === 10).length).toBe(2);
     expect(rows.filter((r) => r === 11).length).toBe(2);
     expect(rows.filter((r) => r === 12).length).toBe(1);
+  });
+});
+
+describe("distributeVNeckInnerDecreaseRows", () => {
+  it("uses one decrease per row when count equals span (every row)", () => {
+    expect(distributeVNeckInnerDecreaseRows(5, 50, 54)).toEqual([50, 51, 52, 53, 54]);
+  });
+
+  it("anchors first at start and last at end with gap lengths differing by at most 1 when count < span", () => {
+    expect(distributeVNeckInnerDecreaseRows(3, 50, 59)).toEqual([50, 55, 59]);
+  });
+
+  it("delegates to distributeEvenly when count > span", () => {
+    const a = distributeVNeckInnerDecreaseRows(5, 10, 12);
+    const b = distributeEvenly(5, 10, 12);
+    expect(a).toEqual(b);
+  });
+
+  it("places a single decrease at startRow", () => {
+    expect(distributeVNeckInnerDecreaseRows(1, 100, 200)).toEqual([100]);
   });
 });
 
@@ -60,6 +73,19 @@ describe("calculateVNeckNeckEdgePlan", () => {
       side: "left",
       edge: "inner",
     });
+  });
+
+  it("every-row plan when decreases equal row span", () => {
+    const plan = calculateVNeckNeckEdgePlan({
+      stitchesAfterArmhole: 100,
+      neckOpeningStitches: 24,
+      vNeckStartRow: 80,
+      shoulderEndRow: 91,
+      side: "left",
+    });
+    expect(plan.neckDecreaseStitchesPerSide).toBe(12);
+    expect(plan.shapingRowsAvailable).toBe(12);
+    expect(plan.decreaseRows).toEqual([80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91]);
   });
 
   it("neckDecreaseStitchesPerSide matches floor(N/2)", () => {
@@ -129,5 +155,23 @@ describe("buildVNecklinePlan (Lego API for sleeveless + future sweater builders)
 
     expect(plan.shapingRowsAvailable).toBe(10);
     expect(plan.warnings.some((w) => w.includes("row budget mismatch"))).toBe(true);
+  });
+});
+
+describe("V-neck plan vs Japanese notation grouping", () => {
+  it("every-row plan (stitches === rows) compresses to a single 1s-1r-Nx segment", () => {
+    const rows = distributeVNeckInnerDecreaseRows(26, 100, 125);
+    expect(rows).toHaveLength(26);
+    const pts = rows.map((row) => ({ row, amount: 1 }));
+    expect(compressStitchDecreasePointsToNotationLines(pts)).toEqual(["1s-1r-26x"]);
+  });
+
+  it("spaced plan (stitches < rows) yields at most two distinct row intervals between decreases", () => {
+    const rows = distributeVNeckInnerDecreaseRows(7, 50, 69);
+    const gaps: number[] = [];
+    for (let k = 1; k < rows.length; k++) {
+      gaps.push(rows[k]! - rows[k - 1]!);
+    }
+    expect(Math.max(...gaps) - Math.min(...gaps)).toBeLessThanOrEqual(1);
   });
 });

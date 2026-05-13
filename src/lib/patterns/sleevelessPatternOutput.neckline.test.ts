@@ -1,8 +1,18 @@
 import { describe, expect, it } from "vitest";
+import { innerNeckDecreaseNotationLinesFromTimeline } from "./notationOverlaySvg";
+import { compressStitchDecreasePointsToNotationLines, type StitchDecreasePoint } from "./shapingNotationCompress";
 import {
   centerBindOffStitchesFromNeckShoulderChart,
   generateSleevelessBackPattern,
 } from "./sleevelessPatternOutput";
+import {
+  chartDisplayRowsOnePerRc,
+  collapsePlainKnitChartRowsForDisplay,
+  isFullWidthVNeckFrontStyleChart,
+} from "./neckShoulderShapingChart";
+import { renderNeckShoulderShapingChartTableOnlyHtml, renderNeckShoulderShapingPrintInstructionTableHtml } from "./neckShoulderShapingChartHtml";
+import { neckShoulderChartRowsFromTimeline } from "./neckShoulderShapingChartRows";
+import type { NeckShoulderShapingChartRow } from "./neckShoulderShapingChart";
 import type { RowEntry } from "./shapingTimeline";
 
 function basePattern(styleNeckline: string): Record<string, unknown> {
@@ -36,6 +46,22 @@ function parseCenterCell(cell: unknown): number {
   if (!s || s === "-") return 0;
   const m = s.match(/^-(\d+)$/);
   return m ? parseInt(m[1], 10) : 0;
+}
+
+function parseNeckDecreaseCell(cell: unknown): number {
+  const text = String(cell ?? "").trim();
+  if (!text || text === "-") return 0;
+  const normalized = text.replace(/[^\d-]/g, "");
+  const n = Number(normalized);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.abs(Math.trunc(n)));
+}
+
+function rightInnerNeckPointsFromChartRows(rows: readonly NeckShoulderShapingChartRow[]): StitchDecreasePoint[] {
+  return [...rows]
+    .sort((a, b) => a.row - b.row)
+    .map((row) => ({ row: row.row, amount: parseNeckDecreaseCell(row.rightNeck) }))
+    .filter((p) => p.amount > 0);
 }
 
 function sumLeftInnerDecreases(timeline: RowEntry[] | undefined): number {
@@ -89,8 +115,58 @@ describe("generateSleevelessBackPattern neckline routing", () => {
     expect(sumLeftInnerDecreases(tl)).toBe(7);
   });
 
-  it("print-facing chart data matches online: shared generateSleevelessBackPattern result", () => {
+  it("v-neck front chart data is full row-by-row (no V-neck display compaction or synthetic Neck edge spans)", () => {
     const r = generateSleevelessBackPattern(basePattern("v-neck"));
-    expect(r.frontNeckShoulderShapingChart.rows.length).toBe(r.frontNeckShoulderTimeline?.length ?? 0);
+    const chart = r.frontNeckShoulderShapingChart;
+    const tl = r.frontNeckShoulderTimeline!;
+    expect(chart.rows.length).toBe(tl.length);
+    expect(chart.rows.some((row) => String(row.action).startsWith("Neck edge:"))).toBe(false);
+    expect(chart.rows.every((row) => row.chartRowSpanLast === undefined)).toBe(true);
+    expect(isFullWidthVNeckFrontStyleChart(chart)).toBe(true);
+    const perRc = chartDisplayRowsOnePerRc(chart.rows, { rowLabelStyle: "online" });
+    expect(perRc.length).toBe(chart.rows.length);
+    expect(perRc.every((d) => !d.rowLabel.includes("\u2013"))).toBe(true);
+    expect(perRc.every((d) => !String(d.actionLabel).startsWith("Neck edge:"))).toBe(true);
+    const collapsed = collapsePlainKnitChartRowsForDisplay(chart.rows, { rowLabelStyle: "online" });
+    expect(collapsed.every((d) => !String(d.actionLabel).startsWith("Neck edge:"))).toBe(true);
+    expect(collapsed.length).toBeLessThan(chart.rows.length);
+    const htmlFull = renderNeckShoulderShapingChartTableOnlyHtml(chart, "test-ns", undefined, {
+      activeSideOnly: false,
+      includeDoneColumn: false,
+    });
+    expect(htmlFull).not.toContain("\u2013");
+    const tbody = htmlFull.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/)?.[1] ?? "";
+    expect((tbody.match(/<tr/g) ?? []).length).toBe(chart.rows.length);
+    const htmlPrintStyle = renderNeckShoulderShapingChartTableOnlyHtml(chart, "test-ns-p", undefined, {
+      activeSideOnly: false,
+      includeDoneColumn: false,
+      compactPlainKnitSpansForPrint: true,
+    });
+    expect(htmlPrintStyle).not.toContain("\u2013");
+    const htmlActive = renderNeckShoulderShapingChartTableOnlyHtml(chart, "test-ns-a", undefined, {
+      activeSideOnly: true,
+      activeSideRcStart: 0,
+    });
+    expect(htmlActive).not.toContain("\u2013");
+    const printMini = renderNeckShoulderShapingPrintInstructionTableHtml(chart, "test-print-mini", "", {});
+    expect(printMini).not.toContain("\u2013");
+  });
+
+  it("v-neck inner-neck diagram notation from timeline matches un-compacted chart rows from the same timeline", () => {
+    const r = generateSleevelessBackPattern(basePattern("v-neck"));
+    const tl = r.frontNeckShoulderTimeline;
+    expect(tl?.length).toBeGreaterThan(0);
+    const fromTimeline = innerNeckDecreaseNotationLinesFromTimeline(tl!, "right");
+    const fullRows = neckShoulderChartRowsFromTimeline(tl!);
+    const fromFullChart = compressStitchDecreasePointsToNotationLines(
+      rightInnerNeckPointsFromChartRows(fullRows),
+    );
+    expect(fromTimeline).toEqual(fromFullChart);
+  });
+
+  it("v-neck inner-neck notation is compact (no four-way 1s-1r phasing)", () => {
+    const r = generateSleevelessBackPattern(basePattern("v-neck"));
+    const lines = innerNeckDecreaseNotationLinesFromTimeline(r.frontNeckShoulderTimeline!, "right");
+    expect(lines.length).toBeLessThanOrEqual(2);
   });
 });

@@ -26,6 +26,7 @@ export {
 export {
   buildVNecklinePlan,
   calculateVNeckNeckEdgePlan,
+  distributeVNeckInnerDecreaseRows,
   neckDecreaseStitchesPerSideFromOpening,
   vNeckPlanToInnerEdgeEventsByRow,
   type BuildVNecklinePlanInputs,

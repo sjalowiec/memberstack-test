@@ -100,11 +100,11 @@ export function distributeTotalAcrossRows(total: number, rows: number): number[]
 }
 
 /**
- * RC numbers for one 1-stitch inner-neck decrease each, spread across `[startRow, endRow]` inclusive.
- * Used by V-neck (and similar) to align with {@link ShapingEvent} rows without a new renderer.
+ * RC numbers for one 1-stitch decrease each, spread across `[startRow, endRow]` inclusive.
+ * Sleeveless V-neck inner-neck RCs use {@link distributeVNeckInnerDecreaseRows} in `vNeckline.ts`
+ * instead; this helper remains for overflow packing and other callers.
  *
- * - When `count` fits within the row span, RCs are spaced as evenly as possible (endpoints included
- *   when `count >= 2`; a single decrease uses `startRow`).
+ * - When `count` fits within the row span, RCs use endpoint interpolation (legacy even spacing).
  * - When `count` exceeds the span, {@link distributeTotalAcrossRows} allocates multiple decreases per
  *   row; the returned list may repeat RCs (one entry per 1-st decrease).
  */

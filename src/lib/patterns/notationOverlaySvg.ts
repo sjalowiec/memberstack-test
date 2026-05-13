@@ -1,18 +1,12 @@
 import type { NeckShoulderShapingChart, NeckShoulderShapingChartRow } from "./neckShoulderShapingChart";
+import type { RowEntry } from "./shapingTimeline";
+import {
+  compressStitchDecreasePointsToNotationLines,
+  type StitchDecreasePoint,
+} from "./shapingNotationCompress";
 
 type DiagramSide = "left" | "right";
 type EdgeKind = "neck" | "shoulder";
-
-type EdgePoint = {
-  row: number;
-  amount: number;
-};
-
-type NotationRun = {
-  stitches: number;
-  rows: number;
-  times: number;
-};
 
 function escapeHtml(text: string): string {
   return text
@@ -38,7 +32,7 @@ function edgeDecreaseForRow(row: NeckShoulderShapingChartRow, side: DiagramSide,
   return edge === "neck" ? parseDecreaseCell(row.leftNeck) : parseDecreaseCell(row.leftSide);
 }
 
-function collectEdgePoints(rows: readonly NeckShoulderShapingChartRow[], side: DiagramSide, edge: EdgeKind): EdgePoint[] {
+function collectEdgePoints(rows: readonly NeckShoulderShapingChartRow[], side: DiagramSide, edge: EdgeKind): StitchDecreasePoint[] {
   return [...rows]
     .sort((a, b) => a.row - b.row)
     .map((row) => ({
@@ -48,41 +42,59 @@ function collectEdgePoints(rows: readonly NeckShoulderShapingChartRow[], side: D
     .filter((item) => item.amount > 0);
 }
 
-function compressPointsToRuns(points: readonly EdgePoint[]): NotationRun[] {
-  const out: NotationRun[] = [];
-  let i = 0;
-  while (i < points.length) {
-    const first = points[i]!;
-    const stitches = first.amount;
-    let j = i + 1;
-    let gap: number | null = null;
-    while (j < points.length) {
-      const next = points[j]!;
-      if (next.amount !== stitches) break;
-      const candidateGap = next.row - points[j - 1]!.row;
-      if (candidateGap <= 0) break;
-      if (gap === null) gap = candidateGap;
-      if (candidateGap !== gap) break;
-      j += 1;
-    }
-    const times = j - i;
-    let rows = 1;
-    if (times > 1) {
-      rows = Math.max(1, gap ?? 1);
-    } else {
-      const prevGap = i > 0 ? first.row - points[i - 1]!.row : 0;
-      const nextGap = j < points.length ? points[j]!.row - first.row : 0;
-      rows = Math.max(1, prevGap || nextGap || 1);
-    }
-    out.push({ stitches, rows, times });
-    i = j;
-  }
-  return out;
+function sortTimelineByRow(timeline: readonly RowEntry[]): RowEntry[] {
+  return [...timeline].sort((a, b) => a.row - b.row);
 }
 
-function notationLinesForEdge(chart: NeckShoulderShapingChart, side: DiagramSide, edge: EdgeKind): string[] {
+/** Inner-neck machine decreases only (excludes bind-off / other inner events) for V-neck diagram copy. */
+function innerNeckDecreaseAmountForSide(entry: RowEntry, side: DiagramSide): number {
+  const lr: "left" | "right" = side === "left" ? "left" : "right";
+  let n = 0;
+  for (const e of entry.events) {
+    if (e.side !== lr || e.edge !== "inner") continue;
+    if (e.kind !== "decrease" || e.amount <= 0) continue;
+    n += e.amount;
+  }
+  return n;
+}
+
+export function collectInnerNeckDecreasePointsFromTimeline(
+  timeline: readonly RowEntry[],
+  side: DiagramSide,
+): StitchDecreasePoint[] {
+  return sortTimelineByRow(timeline)
+    .map((entry) => ({
+      row: entry.row,
+      amount: innerNeckDecreaseAmountForSide(entry, side),
+    }))
+    .filter((p) => p.amount > 0);
+}
+
+/** V-neck (and tests): inner-edge decrease plan from live timeline rows. */
+export function innerNeckDecreaseNotationLinesFromTimeline(
+  timeline: readonly RowEntry[],
+  side: DiagramSide,
+): string[] {
+  return compressStitchDecreasePointsToNotationLines(collectInnerNeckDecreasePointsFromTimeline(timeline, side));
+}
+
+function notationLinesForEdge(
+  chart: NeckShoulderShapingChart,
+  side: DiagramSide,
+  edge: EdgeKind,
+  overlayOpts?: NotationOverlayDiagramOptions,
+): string[] {
+  if (
+    edge === "neck" &&
+    overlayOpts?.innerNeckNotationFromTimeline === true &&
+    chart.timeline &&
+    chart.timeline.length > 0
+  ) {
+    const pts = collectInnerNeckDecreasePointsFromTimeline(chart.timeline, side);
+    return compressStitchDecreasePointsToNotationLines(pts);
+  }
   const points = collectEdgePoints(chart.rows, side, edge);
-  return compressPointsToRuns(points).map((r) => `${r.stitches}s-${r.rows}r-${r.times}x`);
+  return compressStitchDecreasePointsToNotationLines(points);
 }
 
 function notationStackHtml(lines: readonly string[], stackKindClass: "shoulder" | "neck"): string {
@@ -94,6 +106,11 @@ function notationStackHtml(lines: readonly string[], stackKindClass: "shoulder" 
 export type NotationOverlayDiagramOptions = {
   /** Underlay silhouette (round vs V front); defaults to round shoulder reference icon. */
   outlineImageSrc?: string;
+  /**
+   * When true with a populated `chart.timeline`, inner-neck notation is derived from timeline
+   * inner-edge **decrease** events only (V-neck front). Round-neck charts keep the default chart-cell path.
+   */
+  innerNeckNotationFromTimeline?: boolean;
 };
 
 const DEFAULT_NOTATION_OUTLINE_SRC = "/images/patterns/shoulder-front-icon.svg";
@@ -105,8 +122,8 @@ export function renderNotationOverlayDiagram(
   side: DiagramSide,
   options?: NotationOverlayDiagramOptions,
 ): string {
-  const shoulderLines = notationLinesForEdge(chart, side, "shoulder");
-  const neckLines = notationLinesForEdge(chart, side, "neck");
+  const shoulderLines = notationLinesForEdge(chart, side, "shoulder", options);
+  const neckLines = notationLinesForEdge(chart, side, "neck", options);
   const mirrored = side === "left";
   const imageClass = mirrored ? "ns-notation-overlay__image ns-notation-overlay__image--mirrored" : "ns-notation-overlay__image";
   const rootClass = mirrored ? "ns-notation-overlay ns-notation-overlay--mirrored" : "ns-notation-overlay";

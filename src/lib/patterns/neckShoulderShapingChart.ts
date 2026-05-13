@@ -10,6 +10,11 @@ export type NeckShoulderChartAction = "Neck" | "Shoulder / Neck" | "Shoulder" | 
 /** One printed row of the shaping chart (machine row numbers are intentional here). */
 export type NeckShoulderShapingChartRow = {
   row: number;
+  /**
+   * When set, the row label spans `row`..`chartRowSpanLast` (inclusive) for display (e.g. legacy
+   * {@link compactSymmetricalVNeckNeckEdgeRepeats} data rows).
+   */
+  chartRowSpanLast?: number;
   action: NeckShoulderChartAction;
   /** Display cell: "-" when no change on that edge */
   leftSide: string;
@@ -98,7 +103,7 @@ function actionBlocksPlainKnitMerge(action: string): boolean {
   return false;
 }
 
-function parseDecreaseCellChart(text: unknown): number {
+export function parseDecreaseCellChart(text: unknown): number {
   const t = String(text ?? "").trim();
   if (!t || t === "-" || t === "—" || t === "–") return 0;
   const normalized = t.replace(/[^\d-]/g, "");
@@ -158,8 +163,14 @@ export function collapsePlainKnitChartRowsForDisplay(
   while (i < rows.length) {
     const row = rows[i]!;
     if (!isEligiblePlainKnitMergeRow(row)) {
+      const spanEnd = row.chartRowSpanLast;
+      const firstRc = rcFloorChart(row);
+      const rowLabel =
+        spanEnd !== undefined && spanEnd > firstRc
+          ? rowLabelRange(firstRc, spanEnd, style)
+          : rowLabelSingle(firstRc, style);
       out.push({
-        rowLabel: rowLabelSingle(rcFloorChart(row), style),
+        rowLabel,
         actionLabel: String(row.action ?? ""),
         sourceRow: row,
       });
@@ -209,6 +220,75 @@ export function collapsePlainKnitChartRowsForDisplay(
   return out;
 }
 
+function rowCenterBindOffStitches(row: NeckShoulderShapingChartRow): number {
+  const t = String(row.centerNeck ?? "").trim();
+  if (!t || t === "-" || t === "—" || t === "–") return 0;
+  const m = t.match(/^-(\d+)$/);
+  return m ? parseInt(m[1], 10) : 0;
+}
+
+function chartHasAnyCenterBindOff(rows: readonly NeckShoulderShapingChartRow[]): boolean {
+  return rows.some((r) => rowCenterBindOffStitches(r) > 0);
+}
+
+function timelineRowsChartRowsAligned(
+  rows: readonly NeckShoulderShapingChartRow[],
+  timeline: readonly RowEntry[],
+): boolean {
+  if (rows.length !== timeline.length || timeline.length === 0) return false;
+  const sortedRows = [...rows].sort((a, b) => a.row - b.row);
+  const sortedTl = [...timeline].sort((a, b) => a.row - b.row);
+  for (let i = 0; i < sortedRows.length; i++) {
+    if (sortedRows[i]!.row !== sortedTl[i]!.row) return false;
+  }
+  return true;
+}
+
+/**
+ * Sleeveless-style full-width V-neck chart: timeline present, one chart row per timeline row, and no
+ * center bind-off column (round-neck charts always bind off the center on row 0).
+ */
+export function isFullWidthVNeckFrontStyleChart(chart: NeckShoulderShapingChart): boolean {
+  const tl = chart.timeline;
+  if (!tl?.length) return false;
+  if (!timelineRowsChartRowsAligned(chart.rows, tl)) return false;
+  if (chartHasAnyCenterBindOff(chart.rows)) return false;
+  return true;
+}
+
+/**
+ * One display row per chart data row — no consecutive plain-knit RC span merging (no en-dash row labels).
+ * Plain “Knit in pattern” rows still get single-RC carriage / edge meta.
+ */
+export function chartDisplayRowsOnePerRc(
+  rows: readonly NeckShoulderShapingChartRow[],
+  options: { rowLabelStyle: NeckShoulderRowLabelStyle },
+): NeckShoulderShapingChartDisplayRow[] {
+  const style = options.rowLabelStyle;
+  const out: NeckShoulderShapingChartDisplayRow[] = [];
+  for (const row of rows) {
+    const firstRc = rcFloorChart(row);
+    const rowLabel = rowLabelSingle(firstRc, style);
+    if (isEligiblePlainKnitMergeRow(row)) {
+      const meta = plainKnitSpanCarriageEdgeDisplay(firstRc, firstRc);
+      out.push({
+        rowLabel,
+        actionLabel: NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
+        sourceRow: row,
+        plainKnitCarriageLabel: meta.carriage,
+        plainKnitEdgeLabel: meta.edge,
+      });
+    } else {
+      out.push({
+        rowLabel,
+        actionLabel: String(row.action ?? ""),
+        sourceRow: row,
+      });
+    }
+  }
+  return out;
+}
+
 /** @deprecated Prefer {@link collapsePlainKnitChartRowsForDisplay} with `rowLabelStyle: "online"`. */
 export function collapsePlainChartRows(
   rows: readonly NeckShoulderShapingChartRow[],
@@ -221,6 +301,66 @@ export function collapsePlainKnitChartRowsForPrint(
   rows: readonly NeckShoulderShapingChartRow[],
 ): NeckShoulderShapingChartDisplayRow[] {
   return collapsePlainKnitChartRowsForDisplay(rows, { rowLabelStyle: "print" });
+}
+
+function centerNeckClearForVNeckCompact(row: NeckShoulderShapingChartRow): boolean {
+  const c = String(row.centerNeck ?? "").trim();
+  return !c || c === "-" || c === "—" || c === "–";
+}
+
+function isSymmetricalNeckOnlyRow(row: NeckShoulderShapingChartRow): boolean {
+  if (!centerNeckClearForVNeckCompact(row)) return false;
+  const ln = parseDecreaseCellChart(row.leftNeck);
+  const rn = parseDecreaseCellChart(row.rightNeck);
+  if (ln <= 0 || rn <= 0 || ln !== rn) return false;
+  if (parseDecreaseCellChart(row.leftSide) > 0 || parseDecreaseCellChart(row.rightSide) > 0) return false;
+  return true;
+}
+
+/**
+ * Collapse consecutive full-width V-neck chart rows that only mirror inner-neck decreases (no shoulder
+ * / center), same left/right neck cells, consecutive RC — one row with {@link NeckShoulderShapingChartRow.chartRowSpanLast}.
+ */
+export function compactSymmetricalVNeckNeckEdgeRepeats(
+  rows: readonly NeckShoulderShapingChartRow[],
+): NeckShoulderShapingChartRow[] {
+  const sorted = [...rows].sort((a, b) => a.row - b.row);
+  const out: NeckShoulderShapingChartRow[] = [];
+  let i = 0;
+  while (i < sorted.length) {
+    const row = sorted[i]!;
+    if (!isSymmetricalNeckOnlyRow(row)) {
+      out.push({ ...row });
+      i += 1;
+      continue;
+    }
+    let j = i + 1;
+    const leftKey = String(row.leftNeck);
+    const rightKey = String(row.rightNeck);
+    while (j < sorted.length) {
+      const next = sorted[j]!;
+      if (!isSymmetricalNeckOnlyRow(next)) break;
+      if (String(next.leftNeck) !== leftKey || String(next.rightNeck) !== rightKey) break;
+      if (rcFloorChart(next) !== rcFloorChart(sorted[j - 1]!) + 1) break;
+      j += 1;
+    }
+    if (j === i + 1) {
+      out.push({ ...row });
+      i += 1;
+      continue;
+    }
+    const last = sorted[j - 1]!;
+    out.push({
+      ...row,
+      row: rcFloorChart(row),
+      chartRowSpanLast: rcFloorChart(last),
+      leftStitchCount: last.leftStitchCount,
+      rightStitchCount: last.rightStitchCount,
+      action: "Neck edge (repeat)",
+    });
+    i = j;
+  }
+  return out;
 }
 
 /** Why a row is visually emphasized (both sides worked on the same row). */

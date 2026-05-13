@@ -9,14 +9,16 @@ import type {
   NeckShoulderShapingChartRow,
 } from "./neckShoulderShapingChart";
 import {
+  chartDisplayRowsOnePerRc,
   collapsePlainKnitChartRowsForDisplay,
   getNeckShoulderChartRowHighlightFromRow,
+  isFullWidthVNeckFrontStyleChart,
   NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
   plainKnitSpanCarriageEdgeDisplay,
 } from "./neckShoulderShapingChart";
 import { renderShoulderShapingSvg, type ShoulderShapingSvgPiece } from "./shoulderShapingSvg";
-import { renderNotationOverlayDiagram } from "./notationOverlaySvg";
-import { getSleevelessShoulderNotationIconSrc } from "./sleevelessFrontDiagramSrc";
+import { renderNotationOverlayDiagram, type NotationOverlayDiagramOptions } from "./notationOverlaySvg";
+import { getSleevelessShoulderNotationIconSrc, isSleevelessVNeckChoice } from "./sleevelessFrontDiagramSrc";
 import type { RowEntry, ShapingEvent } from "./shapingTimeline";
 import {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
@@ -24,6 +26,18 @@ import {
   formatActiveShoulderCenterNecklinePlainSentence,
 } from "./neckShoulderActiveIntroCopy";
 import { formatShoulderBindoffRemainingInstruction } from "./sleevelessPatternOutput";
+
+function sleevelessNotationOverlayOpts(
+  piece: ShoulderShapingSvgPiece | undefined,
+  patternData: Record<string, unknown> | undefined,
+): NotationOverlayDiagramOptions | undefined {
+  if (piece !== "front" && piece !== "back") return undefined;
+  const outlineImageSrc = getSleevelessShoulderNotationIconSrc(piece, patternData);
+  if (piece === "front" && patternData && isSleevelessVNeckChoice(patternData)) {
+    return { outlineImageSrc, innerNeckNotationFromTimeline: true };
+  }
+  return { outlineImageSrc };
+}
 
 export {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
@@ -422,7 +436,7 @@ function buildOppositeShoulderInstructionTableRows(
 
 /**
  * Merge consecutive “Knit in pattern” active-shoulder checklist rows when stitch counts stay the same and RCs are consecutive.
- * Used for both on-screen pattern (`activeSideOnly`) and print mini-table — same rules as full-chart plain-knit compaction.
+ * Used for on-screen pattern (`activeSideOnly`) and print mini-table except sleeveless-style V-neck charts (see {@link isFullWidthVNeckFrontStyleChart}).
  * Uses `plainKnitSpanCarriageEdgeDisplay` for alternating Side / Section labels.
  */
 export function compactActiveSideInstructionRowsForPrint(
@@ -516,6 +530,11 @@ type NeckShoulderChartRenderOptions = {
    * When true (e.g. temporary QA), logs to the browser console if active-side plain-knit compaction merged rows.
    */
   debugLogActiveSideCompaction?: boolean;
+  /**
+   * When false, sleeveless-style V-neck charts keep plain-knit RC span merging (full grid + active checklist).
+   * Default: one row per RC for those charts (no en-dash RC labels).
+   */
+  fullWidthChartOneRowPerRc?: boolean;
 };
 
 function chartBodyRowsHtml(chart: NeckShoulderShapingChart, options?: NeckShoulderChartRenderOptions): string {
@@ -523,11 +542,16 @@ function chartBodyRowsHtml(chart: NeckShoulderShapingChart, options?: NeckShould
   const activeSideRcStart = Math.max(0, Math.floor(Number(options?.activeSideRcStart ?? 0)));
   const includeDoneColumn = activeSideOnly ? false : options?.includeDoneColumn !== false;
   const compactPrint = options?.compactPlainKnitSpansForPrint === true;
+  const rowLabelStyle = compactPrint ? "print" : "online";
+  const vNeckStyleOneRowPerRc =
+    isFullWidthVNeckFrontStyleChart(chart) && options?.fullWidthChartOneRowPerRc !== false;
   if (activeSideOnly) {
     let activeRows = buildActiveSideInstructionTableRows(chart, activeSideRcStart);
     const activeRowsBeforeCompact = activeRows.length;
-    /** Online pattern + print both use the same safe plain-knit merge (not gated on {@link compactPlainKnitSpansForPrint}). */
-    activeRows = compactActiveSideInstructionRowsForPrint(activeRows);
+    /** Plain-knit merge matches full-chart rules except sleeveless V-neck (one RC per row). */
+    if (!vNeckStyleOneRowPerRc) {
+      activeRows = compactActiveSideInstructionRowsForPrint(activeRows);
+    }
     if (
       import.meta.env.DEV &&
       options?.debugLogActiveSideCompaction === true &&
@@ -540,9 +564,9 @@ function chartBodyRowsHtml(chart: NeckShoulderShapingChart, options?: NeckShould
     }
     return renderActiveSideInstructionRowsTrHtml(activeRows);
   }
-  const displayRows = collapsePlainKnitChartRowsForDisplay(chart.rows, {
-    rowLabelStyle: compactPrint ? "print" : "online",
-  });
+  const displayRows = vNeckStyleOneRowPerRc
+    ? chartDisplayRowsOnePerRc(chart.rows, { rowLabelStyle })
+    : collapsePlainKnitChartRowsForDisplay(chart.rows, { rowLabelStyle });
   return displayRows
     .map((displayRow) => {
       const r = displayRow.sourceRow;
@@ -585,10 +609,13 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
   const activeSideOnly = options?.activeSideOnly === true;
   const activeSideRcStart = Math.max(0, Math.floor(Number(options?.activeSideRcStart ?? 0)));
   const compactPrint = options?.compactPlainKnitSpansForPrint === true;
+  const vNeckStyleOneRowPerRc =
+    isFullWidthVNeckFrontStyleChart(chart) && options?.fullWidthChartOneRowPerRc !== false;
   const activeRowsRaw = activeSideOnly ? buildActiveSideInstructionTableRows(chart, activeSideRcStart) : [];
+  const oppositeRowsPrep = buildOppositeShoulderInstructionTableRows(activeRowsRaw);
   const oppositeRowsHtml = activeSideOnly
     ? renderActiveSideInstructionRowsTrHtml(
-        compactActiveSideInstructionRowsForPrint(buildOppositeShoulderInstructionTableRows(activeRowsRaw)),
+        vNeckStyleOneRowPerRc ? oppositeRowsPrep : compactActiveSideInstructionRowsForPrint(oppositeRowsPrep),
       )
     : "";
   const heldShoulderStitches = Math.max(0, Math.floor(Number(chart.rows[0]?.leftStitchCount ?? 0)));
@@ -693,16 +720,23 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
     activeSideRcStart?: number;
     piece?: ShoulderShapingSvgPiece;
     patternData?: Record<string, unknown>;
+    fullWidthChartOneRowPerRc?: boolean;
   },
 ): string {
   const headingId = `${idPrefix}-heading`;
   const intro = typeof introHtml === "string" && introHtml.trim() ? introHtml : "";
   const activeSideRcStart = Math.max(0, Math.floor(Number(options?.activeSideRcStart ?? 0)));
   const printRowsRaw = buildActiveSideInstructionTableRows(chart, activeSideRcStart);
-  const printRows = compactActiveSideInstructionRowsForPrint(printRowsRaw);
+  const vNeckStyleOneRowPerRc =
+    isFullWidthVNeckFrontStyleChart(chart) && options?.fullWidthChartOneRowPerRc !== false;
+  const printRows = vNeckStyleOneRowPerRc
+    ? printRowsRaw
+    : compactActiveSideInstructionRowsForPrint(printRowsRaw);
   const showSecondShoulderChecklist = options?.showSecondShoulderChecklist === true;
   const oppositePrintRowsRaw = buildOppositeShoulderInstructionTableRows(printRowsRaw);
-  const oppositePrintRows = compactActiveSideInstructionRowsForPrint(oppositePrintRowsRaw);
+  const oppositePrintRows = vNeckStyleOneRowPerRc
+    ? oppositePrintRowsRaw
+    : compactActiveSideInstructionRowsForPrint(oppositePrintRowsRaw);
   const heldShoulderStitches = Math.max(0, Math.floor(Number(chart.rows[0]?.leftStitchCount ?? 0)));
   const rowsHtml = printRows
     .map((r) => {
@@ -735,14 +769,7 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
   <div><strong>Shaping notation:</strong> stitches, rows, times</div>
   <div><em>Example:</em> 1s-2r-3x = decrease 1 stitch every 2 rows, 3 times</div>
 </div>`;
-  const notationOutlineOpts = (() => {
-    const p = options?.piece;
-    const pd = options?.patternData;
-    if (p === "front" || p === "back") {
-      return { outlineImageSrc: getSleevelessShoulderNotationIconSrc(p, pd) };
-    }
-    return undefined;
-  })();
+  const notationOutlineOpts = sleevelessNotationOverlayOpts(options?.piece, options?.patternData);
   /* Notation sits inside the diagram border, directly above the SVG — matches knitter scan pattern (title → helper → art). */
   const geometrySvgHtml = `<h3 class="ns-shaping-mini__diagram-title">Neckline / Shoulder Diagram</h3>
 <div class="ns-shaping-mini__diagram-block">
@@ -829,10 +856,7 @@ export function renderNeckShoulderShapingDiagramOnlyHtml(
   piece?: ShoulderShapingSvgPiece,
   patternData?: Record<string, unknown>,
 ): string {
-  const notationOutlineOpts =
-    piece === "front" || piece === "back"
-      ? { outlineImageSrc: getSleevelessShoulderNotationIconSrc(piece, patternData) }
-      : undefined;
+  const notationOutlineOpts = sleevelessNotationOverlayOpts(piece, patternData);
   const diagramHeadingId = `${idPrefix}-diagram-heading`;
   const svgHtml = renderNotationOverlayDiagram(chart, "right", notationOutlineOpts);
   const secondSvgHtml = renderNotationOverlayDiagram(chart, "left", notationOutlineOpts);

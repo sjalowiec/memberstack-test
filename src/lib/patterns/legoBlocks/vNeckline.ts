@@ -1,7 +1,6 @@
 /**
- * V-neck (LEGO foundation): straight shaping — evenly spaced inner-neck decreases from V start RC to
- * shoulder end RC on one split half (`side`). Shoulder shaping overlays use the same {@link RowEntry} /
- * {@link ShapingEvent} conventions as round neck; full timeline merge is TODO at the builder.
+ * V-neck (LEGO foundation): inner-neck decreases from V start RC to shoulder end RC on one split half (`side`).
+ * Shoulder shaping overlays use the same {@link RowEntry} / {@link ShapingEvent} conventions as round neck.
  */
 
 import type { ShapingEvent } from "../shapingTimeline";
@@ -45,7 +44,51 @@ export function neckDecreaseStitchesPerSideFromOpening(neckOpeningStitches: numb
 }
 
 /**
- * Computes evenly spaced inner-neck decrease RCs for one half of a split front (or mirrored logic on back).
+ * RC list for `count` single inner-neck decreases on inclusive `[startRow, endRow]`:
+ * - `count === span`: every carriage row (contiguous).
+ * - `1 < count < span`: first decrease at `startRow`, last at `endRow`, with (count−1) gaps that differ by at most 1
+ *   (classic knitting spacing — avoids unnecessary “5/8/8/5” phasing from endpoint-only rounding).
+ * - `count > span`: {@link distributeEvenly} packs multiple decreases on some rows.
+ */
+export function distributeVNeckInnerDecreaseRows(count: number, startRow: number, endRow: number): number[] {
+  const start = Math.floor(startRow);
+  const end = Math.floor(endRow);
+  if (count <= 0 || !Number.isFinite(start) || !Number.isFinite(end) || start > end) {
+    return [];
+  }
+  const span = end - start + 1;
+  if (span <= 0) return [];
+
+  if (count > span) {
+    return distributeEvenly(count, start, end);
+  }
+  if (count === 1) {
+    return [start];
+  }
+  if (count === span) {
+    return Array.from({ length: span }, (_, i) => start + i);
+  }
+
+  const totalSteps = span - 1;
+  const numGaps = count - 1;
+  const base = Math.floor(totalSteps / numGaps);
+  const rem = totalSteps % numGaps;
+  const gaps: number[] = [];
+  for (let g = 0; g < numGaps; g++) {
+    gaps.push(base + (g < rem ? 1 : 0));
+  }
+  const out: number[] = [];
+  let cur = start;
+  out.push(cur);
+  for (let g = 0; g < numGaps; g++) {
+    cur += gaps[g]!;
+    out.push(cur);
+  }
+  return out;
+}
+
+/**
+ * Computes inner-neck decrease RCs for one half of a split front (or mirrored logic on back).
  * Does not build a full {@link RowEntry} timeline — use {@link vNeckPlanToInnerEdgeEventsByRow} for events.
  */
 export function calculateVNeckNeckEdgePlan(inputs: VNeckNeckEdgeInputs): VNeckNeckEdgePlan {
@@ -71,7 +114,7 @@ export function calculateVNeckNeckEdgePlan(inputs: VNeckNeckEdgeInputs): VNeckNe
 
   let decreaseRows: number[] = [];
   if (neckDecreaseStitchesPerSide > 0 && shapingRowsAvailable > 0 && vEnd >= vStart) {
-    decreaseRows = distributeEvenly(neckDecreaseStitchesPerSide, vStart, vEnd);
+    decreaseRows = distributeVNeckInnerDecreaseRows(neckDecreaseStitchesPerSide, vStart, vEnd);
   } else if (neckDecreaseStitchesPerSide > 0) {
     warnings.push("No valid row span for V-neck decreases; decreaseRows left empty.");
   }
@@ -82,7 +125,7 @@ export function calculateVNeckNeckEdgePlan(inputs: VNeckNeckEdgeInputs): VNeckNe
     neckDecreaseStitchesPerSide > 0
   ) {
     warnings.push(
-      `V-neck: ${neckDecreaseStitchesPerSide} neck-edge decreases exceed ${shapingRowsAvailable} shaping rows; distributeEvenly repeats RCs (multiple decreases on some rows).`
+      `V-neck: ${neckDecreaseStitchesPerSide} neck-edge decreases exceed ${shapingRowsAvailable} shaping rows; multiple decreases on some rows.`
     );
   }
 
@@ -192,7 +235,7 @@ export type VNecklinePlan = {
  *
  * Math note: numbers (per-side decrease count, even spacing) are derived from
  * {@link calculateVNeckNeckEdgePlan}. To adjust V-neck math after Sue confirms numbers, edit
- * {@link neckDecreaseStitchesPerSideFromOpening} and / or the distribution call in
+ * {@link neckDecreaseStitchesPerSideFromOpening} and / or {@link distributeVNeckInnerDecreaseRows} in
  * {@link calculateVNeckNeckEdgePlan} — the public {@link BuildVNecklinePlanInputs} shape stays stable.
  */
 export function buildVNecklinePlan(inputs: BuildVNecklinePlanInputs): VNecklinePlan {
