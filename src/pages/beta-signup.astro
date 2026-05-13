@@ -87,7 +87,11 @@ const description =
                 data-ms-member="password"
                 autocomplete="new-password"
                 required
+                aria-describedby="beta-password-hint"
               />
+              <p class="beta-signup-page__field-hint" id="beta-password-hint">
+                Password must be at least 8 characters.
+              </p>
             </div>
 
             <!-- TODO: Replace PLAN_OR_PRICE_ID with the actual Memberstack ID for KIN Beta Access if needed -->
@@ -329,6 +333,14 @@ const description =
   .beta-signup-page .beta-signup-form input:focus {
     outline: 2px solid var(--kbm-green, #52682d);
     outline-offset: 2px;
+  }
+
+  .beta-signup-page__field-hint {
+    margin: 0.35rem 0 0;
+    font-size: 0.9em;
+    line-height: 1.45;
+    color: #4a5638;
+    font-family: inherit;
   }
 
   .beta-signup-page__submit {
