@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildVNeckFrontFullWidthTimeline,
   buildVNecklinePlan,
   calculateNecklineShaping,
   calculateRoundNecklineShaping,
@@ -28,6 +29,7 @@ describe("necklineShaping re-exports", () => {
     expect(typeof calculateVNeckNeckEdgePlan).toBe("function");
     expect(typeof vNeckPlanToInnerEdgeEventsByRow).toBe("function");
     expect(typeof neckDecreaseStitchesPerSideFromOpening).toBe("function");
+    expect(typeof buildVNeckFrontFullWidthTimeline).toBe("function");
 
     const v = buildVNecklinePlan({
       stitchesAfterArmhole: 110,

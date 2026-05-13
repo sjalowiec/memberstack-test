@@ -34,6 +34,12 @@ export {
   type VNeckNeckEdgePlan,
 } from "./vNeckline";
 
+/** Full-width front chart timeline (V-neck + shoulder overlay); used by {@link generateSleevelessBackPattern}. */
+export {
+  buildVNeckFrontFullWidthTimeline,
+  type VNeckFrontFullWidthTimelineResult,
+} from "../vNeckFrontFullWidthTimeline";
+
 export {
   buildVNeckShoulderEventsByRow,
   type BuildVNeckShoulderEventsByRowOptions,

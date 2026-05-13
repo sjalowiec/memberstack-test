@@ -20,8 +20,11 @@ import {
 } from "./neckShoulderShapingChart";
 import {
   buildNeckShoulderTimelineAndChartRows,
+  neckShoulderChartRowsFromTimeline,
   type NeckShoulderShapingPatternNumbers,
 } from "./neckShoulderShapingChartRows";
+import { isSleevelessVNeckChoice } from "./sleevelessFrontDiagramSrc";
+import { buildVNeckFrontFullWidthTimeline } from "./vNeckFrontFullWidthTimeline";
 import { computeShoulderBindoffSchedule, type RowEntry } from "./shapingTimeline";
 import {
   initialCenterNeckStitches,
@@ -1722,15 +1725,6 @@ export function generateSleevelessBackPattern(
   let backNeckShoulderTimeline: RowEntry[] | undefined;
   let frontNeckShoulderTimeline: RowEntry[] | undefined;
 
-  /**
-   * TODO (V-neck foundation): The builder / stored pattern will eventually pass:
-   * - `necklineType: "round" | "v-neck"` (keep `"round"` as default; current output unchanged).
-   * - For V-neck: `vNeckDepth` or `vNeckStartRow` (RC after armhole / lifeline plain rows) and
-   *   `neckOpeningWidth` / neckline stitches (same as round neck gauge path).
-   * - Front split: after armhole shaping, lifeline + knit to V start; then work each half with
-   *   `calculateVNeckNeckEdgePlan` (`./legoBlocks/vNeckline`) merged onto the shoulder RC span.
-   * Row gauge links inch depth ↔ RC alongside existing shoulder shaping timeline.
-   */
   /** Timeline drives chart + row-accurate execution (front RC-shift only). */
   if (
     castOnSts > 0 &&
@@ -1779,6 +1773,7 @@ export function generateSleevelessBackPattern(
 
     const shoulderSchedule = computeShoulderBindoffSchedule(frontPatternNumbers);
     const shoulderTimelineOpts = shoulderSchedule !== null ? { shoulderSchedule } : undefined;
+    const isFrontVNeck = isSleevelessVNeckChoice(patternData);
 
     const patternNumbers: NeckShoulderShapingPatternNumbers = {
       firstShapingRow: neckStartRC,
@@ -1827,10 +1822,22 @@ export function generateSleevelessBackPattern(
       )
     );
 
-    const builtFront = buildNeckShoulderTimelineAndChartRows(frontPatternNumbers, {
-      ...shoulderTimelineOpts,
-      minFinalStitchesPerSide: backFinalShoulderRemainderPerSide,
-    });
+    const builtFront = isFrontVNeck
+      ? (() => {
+          const vFront = buildVNeckFrontFullWidthTimeline(frontPatternNumbers, {
+            ...shoulderTimelineOpts,
+            minFinalStitchesPerSide: backFinalShoulderRemainderPerSide,
+          });
+          warnings.push(...vFront.vNeckPlanWarnings);
+          return {
+            timeline: vFront.timeline,
+            chartRows: neckShoulderChartRowsFromTimeline(vFront.timeline),
+          };
+        })()
+      : buildNeckShoulderTimelineAndChartRows(frontPatternNumbers, {
+          ...shoulderTimelineOpts,
+          minFinalStitchesPerSide: backFinalShoulderRemainderPerSide,
+        });
     frontTimeline = builtFront.timeline;
     frontLiveRows = builtFront.chartRows;
 
@@ -1842,12 +1849,27 @@ export function generateSleevelessBackPattern(
       frontNeckShoulderChartUsesLiveRows = true;
 
       const firstRowCenterBo = centerBindOffAmountFirstTimelineRow(frontTimeline);
-      const centerFrontBindOff: NeedleRange = {
-        ...center,
-        stitchCount: firstRowCenterBo > 0 ? firstRowCenterBo : initialCenterSts,
+      const frontVNeckCenterPreamble: CenterBindOffExecutionText = {
+        preambleLine:
+          "V-neck: there is no center neckline bind-off. Work inner-neck decreases toward center per chart from the V point (first neckline RC) through the shoulder shaping rows.",
+        shapingAtRcLine: "",
       };
 
-      const frontCenterExec = centerBindOffExecutionTextFromChartRow(frontTimeline, frontLiveRows[0]);
+      const centerFrontBindOff: NeedleRange = isFrontVNeck
+        ? {
+            label: "center neckline (V-neck — no bind-off)",
+            start: "—",
+            end: "—",
+            stitchCount: 0,
+          }
+        : {
+            ...center,
+            stitchCount: firstRowCenterBo > 0 ? firstRowCenterBo : initialCenterSts,
+          };
+
+      const frontCenterExec = isFrontVNeck
+        ? undefined
+        : centerBindOffExecutionTextFromChartRow(frontTimeline, frontLiveRows[0]);
       const frontDerived = shapingActionsFromTimeline(frontTimeline, {
         centerBindOffShapingLine: frontCenterExec?.shapingAtRcLine,
       });
@@ -1858,7 +1880,7 @@ export function generateSleevelessBackPattern(
         rightShoulder: todoNeedle("right shoulder stitches"),
         neckActions: frontDerived.neckActions,
         shoulderActions: frontDerived.shoulderActions,
-        centerBindOffExecutionText: frontCenterExec,
+        centerBindOffExecutionText: isFrontVNeck ? frontVNeckCenterPreamble : frontCenterExec,
       });
     }
 

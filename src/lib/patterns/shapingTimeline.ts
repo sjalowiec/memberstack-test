@@ -238,10 +238,9 @@ export type BuildTimelineOptions = {
  * Unified neckline + shoulder scheduler: one row budget ({@link ShapingTimelineInputs.neckDepthRows}),
  * inner-neck and outer-shoulder actions may occur on the same RC.
  *
- * TODO (V-neck): Today this path always uses {@link calculateRoundNecklineShaping}. When the builder
- * passes `necklineType: "v-neck"`, schedule inner-neck work via `calculateVNeckNeckEdgePlan` /
- * `vNeckPlanToInnerEdgeEventsByRow` from `./legoBlocks/vNeckline` per split front half (no center
- * bind-off row); keep shoulder overlay logic compatible so neck and shoulder shaping share the same RCs.
+ * Round neck: {@link calculateRoundNecklineShaping} (center bind-off + inner stairs/singles).
+ * Sleeveless V-neck **front** uses `buildVNeckFrontFullWidthTimeline` (`vNeckFrontFullWidthTimeline.ts`)
+ * instead (no center row); back pieces continue to use this function unchanged.
  */
 export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTimelineOptions): RowEntry[] {
   const firstRow = Math.floor(inputs.firstShapingRow);
