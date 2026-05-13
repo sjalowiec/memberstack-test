@@ -9,6 +9,48 @@ const description =
 
 <Layout {title} {description} bodyClass="page--tight-header">
   <div class="account-page container">
+    <div class="account-page__guest" data-ms-content="!members">
+      <div class="account-page__intro">
+        <h1>My Account</h1>
+        <p class="account-page__lead">
+          Log in to view and edit your profile, email, and password.
+        </p>
+      </div>
+
+      <section class="account-page__card" aria-labelledby="account-login-heading">
+        <h2 id="account-login-heading" class="account-page__card-title">Log in</h2>
+        <form data-ms-form="login" class="contact-form account-page__form">
+          <div class="contact-form__field">
+            <label for="account-login-email">Email</label>
+            <input
+              type="email"
+              id="account-login-email"
+              data-ms-member="email"
+              name="email"
+              autocomplete="email"
+              required
+            />
+          </div>
+          <div class="contact-form__field">
+            <label for="account-login-password">Password</label>
+            <input
+              type="password"
+              id="account-login-password"
+              data-ms-member="password"
+              name="password"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+          <p class="account-page__forgot-wrap">
+            <a href="#" data-ms-modal="forgot-password" class="account-page__forgot-link">Forgot your password?</a>
+          </p>
+          <button type="submit" class="contact-form__submit">Log in</button>
+        </form>
+      </section>
+    </div>
+
+    <div data-ms-content="members">
     <div class="account-page__intro">
       <h1>My Account</h1>
       <p class="account-page__lead">
@@ -117,6 +159,7 @@ const description =
         <button type="submit" class="contact-form__submit">Update Password</button>
       </form>
     </section>
+    </div>
   </div>
 </Layout>
 
@@ -223,6 +266,31 @@ const description =
     width: auto;
     min-width: 10rem;
     margin-top: 0.25rem;
+  }
+
+  .account-page__forgot-wrap {
+    margin: 0.35rem 0 0.85rem;
+    text-align: right;
+  }
+
+  .account-page__forgot-link {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2c3a57;
+    text-decoration: underline;
+    text-decoration-color: rgba(44, 58, 87, 0.35);
+    text-underline-offset: 0.15em;
+  }
+
+  .account-page__forgot-link:hover {
+    color: var(--kbm-green, #52682d);
+    text-decoration-color: rgba(82, 104, 45, 0.45);
+  }
+
+  .account-page__forgot-link:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+    border-radius: 2px;
   }
 
   .account-page__muted-copy {
