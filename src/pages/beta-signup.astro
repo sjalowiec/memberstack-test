@@ -1,0 +1,362 @@
+---
+export const prerender = true;
+import Layout from "../layouts/Layout.astro";
+
+const pageTitle = "Join the Knit It Now Beta";
+const description =
+  "Confirm your next step: create your Knit It Now beta login with the same membership email when possible.";
+---
+
+<Layout
+  title={`${pageTitle} | Knit it Now`}
+  description={description}
+  bodyClass="page--tight-header"
+  skipGlobalHyvor={true}
+>
+  <section class="container py-5 beta-signup-page">
+    <h1 class="beta-signup-page__page-heading">{pageTitle}</h1>
+
+    <div class="beta-signup-page__grid">
+      <div class="beta-signup-page__col beta-signup-page__col--notepad">
+        <div class="beta-signup-page__notebook-wrapper">
+          <div class="beta-signup-page__notebook">
+            <div class="beta-signup-page__sheet">
+              <h2 class="beta-signup-page__greeting">Hi there,</h2>
+
+              <p class="beta-signup-page__text">Welcome to the Knit It Now beta.</p>
+
+              <p class="beta-signup-page__text">Create your beta login using the form on this page.</p>
+
+              <p class="beta-signup-page__text">
+                <strong>Please use the same email address you currently use for your Knit It Now membership</strong> This helps avoid duplicate accounts and preserves access to your existing member benefits
+              </p>
+
+                           <p class="beta-signup-page__text">Once you’re in, take a look around and explore when you can.</p>
+
+              <p class="beta-signup-page__text">Thank you for helping shape what comes next.😊</p>
+
+             
+              <img
+                class="beta-signup-page__signature"
+                src="/images/sue-signature.svg"
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="beta-signup-page__col beta-signup-page__col--form">
+        <article class="kbm-card beta-signup-page__signup-card" aria-labelledby="beta-signup-form-heading">
+          <h2 id="beta-signup-form-heading" class="kbm-card__title beta-signup-page__signup-card-title">
+            Create Your Beta Login
+          </h2>
+          <p class="kbm-card__desc beta-signup-page__signup-card-intro">
+            Use the form below to create your new beta login and get access to the preview area.
+          </p>
+
+          <form data-ms-form="signup" class="beta-signup-form">
+            <div class="form-group">
+              <label for="beta-first-name">First Name</label>
+              <input
+                id="beta-first-name"
+                type="text"
+                data-ms-member="first-name"
+                autocomplete="given-name"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="beta-email">Email Address</label>
+              <input
+                id="beta-email"
+                type="email"
+                data-ms-member="email"
+                autocomplete="email"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="beta-password">Create Password</label>
+              <input
+                id="beta-password"
+                type="password"
+                data-ms-member="password"
+                autocomplete="new-password"
+                required
+              />
+            </div>
+
+            <!-- TODO: Replace PLAN_OR_PRICE_ID with the actual Memberstack ID for KIN Beta Access if needed -->
+            <input type="hidden" data-ms-price:add="PLAN_OR_PRICE_ID" />
+
+            <button type="submit" class="kbm-btn kbm-btn-primary beta-signup-page__submit">
+              Create My Beta Login
+            </button>
+          </form>
+
+          <p class="beta-signup-page__signin">
+            Already created your beta login?<br>
+            <a
+              href="#"
+              data-ms-modal="login"
+              data-ms-redirect="current-url"
+              class="beta-signup-page__signin-link">Sign in instead</a
+            >.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .beta-signup-page {
+    --beta-signup-paper-bg: #fff;
+    --beta-signup-line-color: #cfe3ff;
+    --beta-signup-margin-line: #e15252;
+    --beta-signup-text: #1f2d3d;
+    --beta-signup-shadow: rgba(16, 24, 40, 0.12);
+    /* Ruled notebook lines (unchanged visually) */
+    --beta-signup-line-spacing: 32px;
+    /* Tighter vertical rhythm for body copy */
+    --beta-signup-body-gap: 18px;
+    --beta-signup-pad: 24px;
+    --beta-signup-notepad-maxw: 720px;
+    --beta-signup-radius: 10px;
+
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-bottom: 2.5rem;
+  }
+
+  .beta-signup-page__page-heading {
+    font-size: var(--text-xxl, 1.75rem);
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+    text-align: center;
+    margin: 0 0 1.5rem;
+    line-height: 1.2;
+  }
+
+  .beta-signup-page__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+    align-items: start;
+  }
+
+  @media (min-width: 960px) {
+    .beta-signup-page__grid {
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
+      gap: 2rem;
+    }
+  }
+
+  .beta-signup-page__notebook-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0;
+  }
+
+  .beta-signup-page__notebook {
+    position: relative;
+    max-width: var(--beta-signup-notepad-maxw);
+    width: 100%;
+    border-radius: var(--beta-signup-radius);
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        var(--beta-signup-paper-bg) 0,
+        var(--beta-signup-paper-bg) calc(var(--beta-signup-line-spacing) - 1px),
+        var(--beta-signup-line-color) calc(var(--beta-signup-line-spacing) - 1px),
+        var(--beta-signup-line-color) var(--beta-signup-line-spacing)
+      );
+    box-shadow: 0 12px 30px var(--beta-signup-shadow);
+    overflow: hidden;
+  }
+
+  @media (min-width: 960px) {
+    .beta-signup-page__col--notepad .beta-signup-page__notebook {
+      max-width: none;
+    }
+  }
+
+  .beta-signup-page__notebook::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 64px;
+    width: 2px;
+    background: linear-gradient(var(--beta-signup-margin-line), var(--beta-signup-margin-line));
+    opacity: 0.9;
+    pointer-events: none;
+  }
+
+  .beta-signup-page__sheet {
+    padding: var(--beta-signup-pad) calc(var(--beta-signup-pad) + 6px);
+    padding-left: calc(64px + var(--beta-signup-pad));
+    background: transparent;
+    color: var(--beta-signup-text);
+    font-family: inherit;
+  }
+
+  .beta-signup-page__greeting {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 var(--beta-signup-body-gap);
+    line-height: 1.25;
+    color: var(--beta-signup-text);
+    font-family: inherit;
+  }
+
+  .beta-signup-page__text {
+    margin: 0 0 var(--beta-signup-body-gap);
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: var(--beta-signup-text);
+    font-family: inherit;
+  }
+
+  .beta-signup-page__signoff {
+    margin: 0 0 0.35rem;
+    font-size: 1.1rem;
+    line-height: 1.4;
+    font-style: italic;
+    color: var(--beta-signup-text);
+    font-family: inherit;
+  }
+
+  /* +25% from min(56px, 21%); scales with sheet so it stays inside notepad */
+  .beta-signup-page__signature {
+    display: block;
+    max-width: min(70px, 26.25%);
+    width: auto;
+    height: auto;
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+  }
+
+  .beta-signup-page__signup-card {
+    padding: 1.5rem 1.25rem 1.75rem;
+    font-family: inherit;
+  }
+
+  @media (min-width: 480px) {
+    .beta-signup-page__signup-card {
+      padding: 1.75rem 1.75rem 2rem;
+    }
+  }
+
+  .beta-signup-page__signup-card :where(.kbm-card__title, .kbm-card__desc) {
+    font-family: inherit;
+  }
+
+  .beta-signup-page__signup-card .beta-signup-form {
+    font: inherit;
+    font-family: inherit;
+  }
+
+  .beta-signup-page__signup-card
+    .beta-signup-form
+    :where(label, input, button, textarea, select, small, div, span, p, a) {
+    font-family: inherit;
+  }
+
+  .beta-signup-page__signup-card .beta-signup-form :where(label, input, button, textarea, select, small) {
+    font-size: inherit;
+  }
+
+  .beta-signup-page__signup-card .beta-signup-form input::placeholder {
+    font: inherit;
+    font-family: inherit;
+  }
+
+  .beta-signup-page__signup-card .beta-signup-form input::-webkit-input-placeholder {
+    font: inherit;
+    font-family: inherit;
+  }
+
+  .beta-signup-page__signup-card :where([data-ms-message], .ms-error-message) {
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  .beta-signup-page__signup-card-title {
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+
+  .beta-signup-page__signup-card-intro {
+    margin-bottom: 1.25rem;
+    text-align: center;
+  }
+
+  .beta-signup-page .beta-signup-form .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .beta-signup-page .beta-signup-form label {
+    display: block;
+    font-weight: 600;
+    font-size: inherit;
+    color: #243015;
+    margin-bottom: 0.35rem;
+    font-family: inherit;
+  }
+
+  .beta-signup-page .beta-signup-form input[type="text"],
+  .beta-signup-page .beta-signup-form input[type="email"],
+  .beta-signup-page .beta-signup-form input[type="password"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.65rem 0.85rem;
+    font-size: inherit;
+    border: 1px solid #c5ceb8;
+    border-radius: 10px;
+    background: #fff;
+    color: #1a1f12;
+    font-family: inherit;
+  }
+
+  .beta-signup-page .beta-signup-form input:focus {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .beta-signup-page__submit {
+    width: 100%;
+    margin-top: 0.5rem;
+    justify-content: center;
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  .beta-signup-page__signin {
+    margin: 1.25rem 0 0;
+    font-size: inherit;
+    text-align: center;
+    color: #4a5638;
+    line-height: 1.5;
+    font-family: inherit;
+  }
+
+  .beta-signup-page__signin-link {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: none;
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  .beta-signup-page__signin-link:hover {
+    text-decoration: underline;
+  }
+</style>
