@@ -63,9 +63,15 @@ const description =
         </div>
         <div class="contact-form__field">
           <label for="birthday">Birthday</label>
-          <input type="date" id="birthday" name="birthday" data-ms-member="birthday" autocomplete="bday" />
+          <input
+            type="text"
+            id="birthday"
+            name="birthday"
+            data-ms-member="birthday"
+            placeholder="MM/DD"
+          />
           <p class="account-page__field-hint">
-            Optional — used for Knit It Now birthday wishes and surprises.
+            Optional — enter month/day only. Used for Knit It Now birthday wishes and surprises.
           </p>
         </div>
         <button type="submit" class="contact-form__submit">Save Changes</button>
