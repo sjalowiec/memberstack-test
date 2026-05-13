@@ -1,0 +1,190 @@
+---
+export const prerender = true;
+import Layout from "../layouts/Layout.astro";
+
+const title = "My Account | Knit it Now";
+const description =
+  "Manage your Knit It Now account details, profile, email, and password in one place.";
+---
+
+<Layout {title} {description} bodyClass="page--tight-header">
+  <div class="account-page container">
+    <header class="account-page__intro">
+      <h1>My Account</h1>
+      <p class="account-page__lead">
+        Manage your Knit It Now account details and profile information here.
+      </p>
+      <p class="account-page__welcome">
+        Welcome back, <span data-ms-member="first-name">Member</span>!
+      </p>
+    </header>
+
+    <section class="account-page__card" aria-labelledby="account-summary-heading">
+      <h2 id="account-summary-heading" class="account-page__card-title">Account summary</h2>
+      <p class="account-page__email-line">
+        <span class="account-page__label-inline">Email:</span>
+        <span data-ms-member="email"></span>
+      </p>
+    </section>
+
+    <section class="account-page__card" aria-labelledby="profile-heading">
+      <h2 id="profile-heading" class="account-page__card-title">Profile</h2>
+      <form data-ms-form="profile" class="contact-form account-page__form">
+        <div class="contact-form__field">
+          <label for="first-name">First Name</label>
+          <input type="text" id="first-name" data-ms-member="first-name" required />
+        </div>
+        <div class="contact-form__field">
+          <label for="last-name">Last Name</label>
+          <input type="text" id="last-name" data-ms-member="last-name" required />
+        </div>
+        <button type="submit" class="contact-form__submit">Save Changes</button>
+      </form>
+    </section>
+
+    <section class="account-page__card" aria-labelledby="email-heading">
+      <h2 id="email-heading" class="account-page__card-title">Email</h2>
+      <form data-ms-form="email" class="contact-form account-page__form">
+        <div class="contact-form__field">
+          <label for="email">New Email Address</label>
+          <input type="email" id="email" data-ms-member="email" required />
+        </div>
+        <button type="submit" class="contact-form__submit">Update Email</button>
+      </form>
+    </section>
+
+    <section class="account-page__card" aria-labelledby="password-heading">
+      <h2 id="password-heading" class="account-page__card-title">Password</h2>
+      <form data-ms-form="password" class="contact-form account-page__form">
+        <div class="contact-form__field">
+          <label for="current-password">Current Password</label>
+          <input type="password" id="current-password" data-ms-member="current-password" required />
+        </div>
+        <div class="contact-form__field">
+          <label for="new-password">New Password</label>
+          <input type="password" id="new-password" data-ms-member="new-password" required />
+        </div>
+        <button type="submit" class="contact-form__submit">Update Password</button>
+      </form>
+    </section>
+
+    <section class="account-page__card account-page__card--muted" aria-labelledby="resources-heading">
+      <h2 id="resources-heading" class="account-page__card-title">Member Resources</h2>
+      <p class="account-page__muted-copy">
+        This area will grow as we add saved patterns, member links, downloads, and other Knit It Now
+        resources.
+      </p>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .account-page {
+    max-width: 720px;
+    margin: 0 auto 4rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .account-page__intro {
+    margin-bottom: 2rem;
+  }
+
+  .account-page__intro h1 {
+    margin: 0 0 0.75rem;
+    color: #2c3a57;
+    font-weight: 700;
+  }
+
+  .account-page__lead {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: #374151;
+  }
+
+  .account-page__welcome {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3a57;
+  }
+
+  .account-page__card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.35rem 1.5rem 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  .account-page__card--muted {
+    background: #f9fafb;
+  }
+
+  .account-page__card-title {
+    margin: 0 0 1rem;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #2c3a57;
+  }
+
+  .account-page__email-line {
+    margin: 0 0 1.25rem;
+    word-break: break-word;
+    color: #374151;
+  }
+
+  .account-page__label-inline {
+    font-weight: 600;
+    color: #2c3a57;
+    margin-right: 0.35rem;
+  }
+
+  /* contact-form__field global styles target span; here label + input are siblings */
+  .account-page__form .contact-form__field label {
+    display: block;
+    font-weight: 600;
+    color: #2c3a57;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+  }
+
+  .account-page__form .contact-form__field input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #fafafa;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: var(--font);
+  }
+
+  .account-page__form .contact-form__field input:focus {
+    outline: none;
+    border-color: var(--kbm-green);
+    box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.15);
+    background: #fff;
+  }
+
+  .account-page__form .contact-form__submit {
+    width: auto;
+    min-width: 10rem;
+    margin-top: 0.25rem;
+  }
+
+  .account-page__muted-copy {
+    margin: 0;
+    line-height: 1.55;
+    color: #4b5563;
+  }
+
+  @media (max-width: 480px) {
+    .account-page__form .contact-form__submit {
+      width: 100%;
+    }
+  }
+</style>
