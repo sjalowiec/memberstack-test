@@ -1771,8 +1771,6 @@ export function generateSleevelessBackPattern(
             shoulderBindoffRows,
           };
 
-    const shoulderSchedule = computeShoulderBindoffSchedule(frontPatternNumbers);
-    const shoulderTimelineOpts = shoulderSchedule !== null ? { shoulderSchedule } : undefined;
     const isFrontVNeck = isSleevelessVNeckChoice(patternData);
 
     const patternNumbers: NeckShoulderShapingPatternNumbers = {
@@ -1784,6 +1782,9 @@ export function generateSleevelessBackPattern(
       stitchesAfterArmhole: stitchesAfterArmhole!,
       shoulderBindoffRows,
     };
+    /** Shoulder bind-off chunks from **back** neck depth / opening math only — never from the front neckline choice. */
+    const shoulderSchedule = computeShoulderBindoffSchedule(patternNumbers);
+    const shoulderTimelineOpts = shoulderSchedule !== null ? { shoulderSchedule } : undefined;
     const { timeline, chartRows: liveRows } = buildNeckShoulderTimelineAndChartRows(
       patternNumbers,
       {
@@ -1796,7 +1797,10 @@ export function generateSleevelessBackPattern(
 
     if (liveRows.length > 0) {
       backNeckShoulderTimeline = timeline;
-      neckShoulderShapingChart = neckShoulderShapingChartFromRows(liveRows, { timeline });
+      neckShoulderShapingChart = neckShoulderShapingChartFromRows(liveRows, {
+        timeline,
+        sleevelessFullWidthVNeckFront: false,
+      });
       neckShoulderChartUsesLiveRows = true;
 
       const backCenterExec = centerBindOffExecutionTextFromChartRow(timeline, liveRows[0]);
@@ -1845,6 +1849,7 @@ export function generateSleevelessBackPattern(
       frontNeckShoulderTimeline = frontTimeline;
       frontNeckShoulderShapingChart = neckShoulderShapingChartFromRows(frontLiveRows, {
         timeline: frontTimeline,
+        sleevelessFullWidthVNeckFront: isFrontVNeck,
       });
       frontNeckShoulderChartUsesLiveRows = true;
 

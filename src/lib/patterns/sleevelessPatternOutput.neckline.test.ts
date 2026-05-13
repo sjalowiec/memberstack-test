@@ -76,10 +76,35 @@ function sumLeftInnerDecreases(timeline: RowEntry[] | undefined): number {
 }
 
 describe("generateSleevelessBackPattern neckline routing", () => {
-  it("round neck front chart still includes center bind-off on the first row", () => {
+  it("v-neck Quick Build: only the front chart uses V-neck full-width display mode; back never does", () => {
+    const r = generateSleevelessBackPattern(basePattern("v-neck"));
+    expect(r.neckShoulderShapingChart.sleevelessFullWidthVNeckFront).toBe(false);
+    expect(isFullWidthVNeckFrontStyleChart(r.neckShoulderShapingChart)).toBe(false);
+    expect(r.frontNeckShoulderShapingChart.sleevelessFullWidthVNeckFront).toBe(true);
+    expect(isFullWidthVNeckFrontStyleChart(r.frontNeckShoulderShapingChart)).toBe(true);
+  });
+
+  it("v-neck back timeline still uses round-neck center bind-off (not V-neck center row)", () => {
+    const r = generateSleevelessBackPattern(basePattern("v-neck"));
+    const tl = r.backNeckShoulderTimeline;
+    expect(tl?.length).toBeGreaterThan(0);
+    let centerBindEvents = 0;
+    for (const entry of tl!) {
+      for (const ev of entry.events) {
+        if (ev.side === "center" && ev.kind === "bindOff") centerBindEvents += ev.amount;
+      }
+    }
+    expect(centerBindEvents).toBeGreaterThan(0);
+  });
+
+  it("round neck: front chart is not in V-neck full-width display mode", () => {
     const r = generateSleevelessBackPattern(basePattern("round"));
     expect(r.frontNeckShoulderChartUsesLiveRows).toBe(true);
     expect(r.neckShoulderChartUsesLiveRows).toBe(true);
+    expect(r.frontNeckShoulderShapingChart.sleevelessFullWidthVNeckFront).toBe(false);
+    expect(isFullWidthVNeckFrontStyleChart(r.frontNeckShoulderShapingChart)).toBe(false);
+    expect(r.neckShoulderShapingChart.sleevelessFullWidthVNeckFront).toBe(false);
+    expect(isFullWidthVNeckFrontStyleChart(r.neckShoulderShapingChart)).toBe(false);
     const frontCenter = centerBindOffStitchesFromNeckShoulderChart(r.frontNeckShoulderShapingChart);
     expect(frontCenter).toBeGreaterThan(0);
     const backCenter = centerBindOffStitchesFromNeckShoulderChart(r.neckShoulderShapingChart);

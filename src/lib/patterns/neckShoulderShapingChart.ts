@@ -45,6 +45,12 @@ export type NeckShoulderShapingChart = {
    * so the diagram does not re-derive geometry from chart cells.
    */
   timeline?: RowEntry[];
+  /**
+   * When true, HTML/print use the sleeveless **front** V-neck full-width display rules (one RC per
+   * row, etc.). Back neckline charts must always omit this or set it false — back shaping stays
+   * round/shallow regardless of the front neckline choice.
+   */
+  sleevelessFullWidthVNeckFront?: boolean;
 };
 
 export type NeckShoulderShapingChartDisplayRow = {
@@ -220,40 +226,13 @@ export function collapsePlainKnitChartRowsForDisplay(
   return out;
 }
 
-function rowCenterBindOffStitches(row: NeckShoulderShapingChartRow): number {
-  const t = String(row.centerNeck ?? "").trim();
-  if (!t || t === "-" || t === "—" || t === "–") return 0;
-  const m = t.match(/^-(\d+)$/);
-  return m ? parseInt(m[1], 10) : 0;
-}
-
-function chartHasAnyCenterBindOff(rows: readonly NeckShoulderShapingChartRow[]): boolean {
-  return rows.some((r) => rowCenterBindOffStitches(r) > 0);
-}
-
-function timelineRowsChartRowsAligned(
-  rows: readonly NeckShoulderShapingChartRow[],
-  timeline: readonly RowEntry[],
-): boolean {
-  if (rows.length !== timeline.length || timeline.length === 0) return false;
-  const sortedRows = [...rows].sort((a, b) => a.row - b.row);
-  const sortedTl = [...timeline].sort((a, b) => a.row - b.row);
-  for (let i = 0; i < sortedRows.length; i++) {
-    if (sortedRows[i]!.row !== sortedTl[i]!.row) return false;
-  }
-  return true;
-}
-
 /**
- * Sleeveless-style full-width V-neck chart: timeline present, one chart row per timeline row, and no
- * center bind-off column (round-neck charts always bind off the center on row 0).
+ * Sleeveless V-neck **front** full-width chart display (explicit flag only). Geometry-only
+ * inference was removed so a back round-neck chart can never pick up V-neck table/print styling
+ * when the builder neckline is V-neck.
  */
 export function isFullWidthVNeckFrontStyleChart(chart: NeckShoulderShapingChart): boolean {
-  const tl = chart.timeline;
-  if (!tl?.length) return false;
-  if (!timelineRowsChartRowsAligned(chart.rows, tl)) return false;
-  if (chartHasAnyCenterBindOff(chart.rows)) return false;
-  return true;
+  return chart.sleevelessFullWidthVNeckFront === true;
 }
 
 /**
@@ -375,7 +354,7 @@ export type NeckShoulderChartRowHighlight =
 /** Build a chart object from computed rows (same columnKeys as demo). */
 export function neckShoulderShapingChartFromRows(
   rows: NeckShoulderShapingChartRow[],
-  options?: { timeline?: RowEntry[] }
+  options?: { timeline?: RowEntry[]; sleevelessFullWidthVNeckFront?: boolean }
 ): NeckShoulderShapingChart {
   return {
     columnKeys: [
@@ -391,6 +370,11 @@ export function neckShoulderShapingChartFromRows(
     ],
     rows,
     ...(options?.timeline?.length ? { timeline: options.timeline } : {}),
+    ...(options?.sleevelessFullWidthVNeckFront === true
+      ? { sleevelessFullWidthVNeckFront: true }
+      : options?.sleevelessFullWidthVNeckFront === false
+        ? { sleevelessFullWidthVNeckFront: false }
+        : {}),
   };
 }
 

@@ -60,7 +60,7 @@ describe("renderNotationOverlayDiagram V-neck inner-neck path", () => {
     const chart = neckShoulderShapingChartFromRows(rows, { timeline: tl });
     const html = renderNotationOverlayDiagram(chart, "right", {
       innerNeckNotationFromTimeline: true,
-      outlineImageSrc: "/images/patterns/shoulder-front-icon-V.svg",
+      outlineImageSrc: "/images/patterns/shoulder-front-icon-v.svg",
     });
     expect(neckLabelsFromOverlayHtml(html)).toEqual(["1s-1r-26x"]);
   });

@@ -1,9 +1,11 @@
 import { sectionPattern } from "./sleevelessPatternBuilderMerge";
 
-/** Round neckline / back notation outline (shared baseline asset name). */
-export const SLEEVELESS_SHOULDER_NOTATION_ICON_ROUND = "/images/patterns/shoulder-front-icon.svg";
-/** V-neck front notation outline — `public/images/patterns/shoulder-front-icon-V.svg` → served as this URL (not `shoulder-front-ion-V`). */
-export const SLEEVELESS_SHOULDER_NOTATION_ICON_V = "/images/patterns/shoulder-front-icon-V.svg";
+/** Back neckline / shoulder shaping underlay — round/shallow back neck only (never V-neck). */
+export const SLEEVELESS_SHOULDER_NOTATION_ICON_BACK = "/images/patterns/shoulder-round-icon.svg";
+/** Front round neckline / standard shoulder-neck notation underlay. */
+export const SLEEVELESS_SHOULDER_NOTATION_ICON_FRONT_ROUND = "/images/patterns/shoulder-front-icon.svg";
+/** Front V-neck notation underlay (`public/images/patterns/shoulder-front-icon-v.svg`). */
+export const SLEEVELESS_SHOULDER_NOTATION_ICON_FRONT_V = "/images/patterns/shoulder-front-icon-v.svg";
 
 function necklineRawString(patternData: unknown): string {
   const pd =
@@ -73,15 +75,16 @@ export function getSleevelessFrontDiagramSrc(patternData: unknown): string {
 }
 
 /**
- * Underlay art for neckline/shoulder notation overlay. Back always uses the round outline; front swaps for V-neck.
+ * Underlay art for neckline/shoulder notation overlay.
+ * Back always uses {@link SLEEVELESS_SHOULDER_NOTATION_ICON_BACK}; front uses V or round front assets only.
  */
 export function getSleevelessShoulderNotationIconSrc(piece: "back" | "front", patternData: unknown): string {
   if (piece === "back") {
-    return SLEEVELESS_SHOULDER_NOTATION_ICON_ROUND;
+    return SLEEVELESS_SHOULDER_NOTATION_ICON_BACK;
   }
   return isSleevelessVNeckChoice(patternData)
-    ? SLEEVELESS_SHOULDER_NOTATION_ICON_V
-    : SLEEVELESS_SHOULDER_NOTATION_ICON_ROUND;
+    ? SLEEVELESS_SHOULDER_NOTATION_ICON_FRONT_V
+    : SLEEVELESS_SHOULDER_NOTATION_ICON_FRONT_ROUND;
 }
 
 /**

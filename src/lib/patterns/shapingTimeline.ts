@@ -53,8 +53,8 @@ export type RowEntry = {
 };
 
 /**
- * Canonical outer-shoulder bind-off chunks (per action row) + placement span from the **front** neck
- * schedule. Apply to both front and back timelines so armhole columns and SVG shorthand match.
+ * Canonical outer-shoulder bind-off chunks (per action row) + placement span. For sleeveless,
+ * computed from the **back** neck/shoulder inputs and applied to both back and front timelines.
  */
 export type ShoulderBindoffSchedule = {
   leftChunks: number[];
@@ -186,7 +186,9 @@ function backInnerNeckRow(
 
 /**
  * Compute outer-shoulder bind-off chunks exactly as {@link buildTimeline} would for these inputs.
- * Call with **front** pattern numbers so back + front can share one shoulder sequence.
+ * For sleeveless patterns, pass **back** {@link ShapingTimelineInputs} so shoulder placement follows
+ * the round back neck budget; the same schedule is then reused on the front timeline for matching
+ * shoulder shaping.
  */
 export function computeShoulderBindoffSchedule(inputs: ShapingTimelineInputs): ShoulderBindoffSchedule | null {
   const neckDepthRows = Math.floor(inputs.neckDepthRows);
@@ -219,7 +221,7 @@ export function computeShoulderBindoffSchedule(inputs: ShapingTimelineInputs): S
 }
 
 export type BuildTimelineOptions = {
-  /** When set (typically from {@link computeShoulderBindoffSchedule} on front inputs), outer shoulder amounts match that schedule instead of being recomputed from this piece's row budget. */
+  /** When set (typically from {@link computeShoulderBindoffSchedule} on **back** sleeveless inputs), outer shoulder amounts match that schedule instead of being recomputed from this piece's row budget. */
   shoulderSchedule?: ShoulderBindoffSchedule | null;
   /**
    * Place outer-shoulder shaping from the first post-center row onward (row-by-row cadence still
