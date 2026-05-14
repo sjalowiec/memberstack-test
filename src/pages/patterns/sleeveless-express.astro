@@ -21,7 +21,7 @@ const imgSleeveless = "/images/patterns/sleeveless";
 const imgGarmentPullover = "/images/patterns/pullover.png";
 const imgGarmentCardigan = "/images/patterns/cardigan.png";
 
-/** Same destination as the workspace Custom Build tab (`PatternWorkspaceTabs`). */
+/** Custom Build base URL (same as `customBuildHref` passed to workspace tabs). */
 const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
 ---
 
@@ -35,7 +35,6 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
         <PatternWorkspaceTabs
           rootClass="pattern-tabs-scope"
           activeTab="quick-build"
-          showQuickCustomBuildTabs={true}
           quickBuildHref="/patterns/sleeveless-express"
           customBuildHref={sleevelessCustomBuildHref}
           patternHref="/patterns/sleeveless/pattern/"
