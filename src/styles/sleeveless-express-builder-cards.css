@@ -206,7 +206,7 @@
   max-width: min(120px, 100%);
 }
 
-/* Quick Build front style — label above image (order), compact column, gap-driven rhythm */
+/* Express front style — label above image (order), compact column, gap-driven rhythm */
 .express-page .express-front-cards > .hat-length-picker__option {
   flex-direction: column;
   justify-content: flex-start;
@@ -257,7 +257,7 @@
   max-width: 100%;
 }
 
-/* Custom Build — garment type row (Pullover / Cardigan), same artwork as Quick Build */
+/* Custom Build — garment type row (Pullover / Cardigan), same artwork as Express */
 .express-page [data-cb-style-group="garmentType"] .express-garment-type-card__img-wrap {
   display: flex;
   align-items: center;

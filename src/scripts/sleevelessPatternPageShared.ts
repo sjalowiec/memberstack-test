@@ -5,7 +5,7 @@ import {
   PATTERN_BUILDER_DATA_KEY,
   getPatternStorageKey,
   SLEEVELESS_CHART_AUDIENCE_LABELS,
-  clearSleevelessQuickBuildSession,
+  clearSleevelessExpressSession,
 } from "../lib/patterns/patternStorage.ts";
 import {
   buildGeneratorPatternDataFromSources,
@@ -29,7 +29,10 @@ import {
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
 import { showResults, initializeActionBar } from "../components/wizards/utils/wizardBehavior.ts";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
-import { getSleevelessFrontDiagramSrc } from "../lib/patterns/sleevelessFrontDiagramSrc.ts";
+import {
+  getSleevelessFrontDiagramSrc,
+  isSleevelessVNeckChoice,
+} from "../lib/patterns/sleevelessFrontDiagramSrc.ts";
 import {
   buildSleevelessPrintBasicsSummaryDlHtml,
   buildSleevelessScreenBasicsSummaryDlHtml,
@@ -94,6 +97,14 @@ export const SLEEVELESS_HELP_VIDEOS = {
       { label: "Tip", seconds: 253 },
       { label: "Single band: fold to the public side", seconds: 279 },
     ],
+  },
+  /** Finishing-section Vimeo for V-neck; round/crew patterns use `onePieceBand` above. */
+  vNeckBandFinishing: {
+    id: "1192304635",
+    title: "Optional V-Neck Band Tutorial",
+    description:
+      "This walkthrough demonstrates one professional method for knitting and finishing a folded V-neck band, including pickup ratios, center decreases, tension grading, and joining techniques.",
+    jumpLinks: [],
   },
   /** Catalog content_id 520 / slug seaming-putting-it-all-together — same Vimeo id site-wide. */
   seamingPuttingItAllTogether: {
@@ -1647,7 +1658,21 @@ table {
     return `<span class="kbm-tooltip" tabindex="0" title="${escapedTip}" aria-label="${escapedTip}" data-tooltip="${escapedTip}">one shoulder</span>`;
   }
 
-  function buildFinishingHtml() {
+  function buildFinishingHtml(patternMergedForNeckline) {
+    const isVNeckFinishing = isSleevelessVNeckChoice(patternMergedForNeckline);
+    const neckFinishingVideoKey = isVNeckFinishing ? "vNeckBandFinishing" : "onePieceBand";
+    const neckFinishingVideoMeta = SLEEVELESS_HELP_VIDEOS[neckFinishingVideoKey];
+    const neckFinishingButtonLabel =
+      neckFinishingVideoMeta && neckFinishingVideoMeta.title
+        ? String(neckFinishingVideoMeta.title).trim()
+        : isVNeckFinishing
+          ? "Optional V-Neck Band Tutorial"
+          : "One-piece neckband";
+    const neckFinishingLeadHtml =
+      isVNeckFinishing && neckFinishingVideoMeta && String(neckFinishingVideoMeta.description || "").trim()
+        ? `<p class="pattern-finishing-lead">${escapeHtml(String(neckFinishingVideoMeta.description).trim())}</p>`
+        : "";
+
     return `
 <div class="pattern-finishing-steps">
   <section class="pattern-finishing-step" aria-labelledby="finishing-step-block-pieces">
@@ -1677,10 +1702,13 @@ table {
       <li>Finish the neckband as desired.</li>
       <li>Join the remaining shoulder seam and neckband seam.</li>
     </ul>
+    ${neckFinishingLeadHtml}
     <p class="pattern-finishing-video-help pattern-help-link no-print">
       <span class="pattern-finishing-video-help__lead"><i class="fa-solid fa-play"></i> Helpful video for finishing:</span>
       <span class="pattern-finishing-video-help__links">
-        <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="onePieceBand" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> One-piece neckband</button>
+        <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="${neckFinishingVideoKey}" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> ${escapeHtml(
+          neckFinishingButtonLabel
+        )}</button>
       </span>
     </p>
   </section>
@@ -1695,7 +1723,9 @@ table {
     <p class="pattern-finishing-video-help pattern-help-link no-print">
       <span class="pattern-finishing-video-help__lead"><i class="fa-solid fa-play"></i> Same technique as the neckband:</span>
       <span class="pattern-finishing-video-help__links">
-        <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="onePieceBand" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> One-piece neckband</button>
+        <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="${neckFinishingVideoKey}" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> ${escapeHtml(
+          neckFinishingButtonLabel
+        )}</button>
       </span>
     </p>
   </section>
@@ -1821,7 +1851,7 @@ table {
           /** @type {Record<string, unknown>} */ (canonStyle).patternMode === "express";
 
         if (pdExpress || canonExpress) {
-          clearSleevelessQuickBuildSession();
+          clearSleevelessExpressSession();
           window.location.replace("/patterns/sleeveless-express");
           return;
         }
@@ -1903,7 +1933,7 @@ table {
         defaultCollapsed: false,
         sectionClassName: "pattern-section--garment-piece",
       }) +
-      wrapPatternSection("sg-finishing", "Finishing", buildFinishingHtml(), { defaultCollapsed: true });
+      wrapPatternSection("sg-finishing", "Finishing", buildFinishingHtml(patternMerged), { defaultCollapsed: true });
 
     const backArmholeLocalChartStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
       ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC))

@@ -76,7 +76,7 @@ function sumLeftInnerDecreases(timeline: RowEntry[] | undefined): number {
 }
 
 describe("generateSleevelessBackPattern neckline routing", () => {
-  it("v-neck Quick Build: only the front chart uses V-neck full-width display mode; back never does", () => {
+  it("v-neck Express: only the front chart uses V-neck full-width display mode; back never does", () => {
     const r = generateSleevelessBackPattern(basePattern("v-neck"));
     expect(r.neckShoulderShapingChart.sleevelessFullWidthVNeckFront).toBe(false);
     expect(isFullWidthVNeckFrontStyleChart(r.neckShoulderShapingChart)).toBe(false);

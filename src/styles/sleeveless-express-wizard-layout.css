@@ -344,7 +344,7 @@
   cursor: not-allowed;
 }
 
-/* Inline “Quick Build” / classic step links reuse Express callout link styling */
+/* Inline Express / classic step links reuse Express callout link styling */
 .express-page .express-custom-build-callout__link {
   color: var(--sg-accent, #c2614e);
   font-weight: 600;

@@ -10,11 +10,14 @@ interface Props {
   hideInspiration?: boolean;
   /** Extra classes on the outer `.pattern-tabs` wrapper (e.g. `pattern-tabs-scope`). */
   rootClass?: string;
-  /** Sleeveless workspace: which high-level area is active (drives tab highlights; express vs custom affects Build href + active state). */
-  activeTab?: "quick-build" | "custom-build" | "pattern" | "build" | "share" | "inspiration";
-  /** First workspace tab label (default "Build"). Use e.g. "Express Build" / "Custom Build" during beta so the tab matches the linked flow. */
-  workspaceBuildTabLabel?: string;
-  quickBuildHref?: string;
+  /**
+   * Sleeveless workspace: which high-level area is active (drives tab highlights).
+   * Non-workspace pages (e.g. triangle scarf) use `build` / `pattern` / `share` / `inspiration` for in-page tabs only.
+   */
+  activeTab?: "express" | "custom" | "pattern" | "build" | "share" | "inspiration";
+  /** Express builder entry (trailing slash recommended). */
+  expressHref?: string;
+  /** Custom Build hub or upsell (trailing slash recommended). */
   customBuildHref?: string;
   patternHref?: string;
   askShareHref?: string;
@@ -29,8 +32,7 @@ const {
   hideInspiration = false,
   rootClass = "",
   activeTab = "build",
-  workspaceBuildTabLabel = "",
-  quickBuildHref = "",
+  expressHref = "",
   customBuildHref = "",
   patternHref = "",
   askShareHref = "",
@@ -54,33 +56,30 @@ function pathMatchesHref(pathNow: string, href: string | undefined): boolean {
 
 const pathNow = normPath(Astro.url.pathname);
 
-const workspaceBuildTabText = String(workspaceBuildTabLabel ?? "").trim() || "Build";
-
-const hasBuildSlot = Astro.slots.has("build");
-
-const qb = String(quickBuildHref ?? "").trim();
+const ex = String(expressHref ?? "").trim();
 const cb = String(customBuildHref ?? "").trim();
 
-const buildNavHref =
-  activeTab === "custom-build" ? cb || qb || "#" : qb || cb || "#";
+/** Custom style wizard lives outside `custom-build/` but belongs on the Custom workspace tab. */
+const customStyleRoot = normPath("/patterns/sleeveless/custom-style");
+const pathIsCustomStyleFlow =
+  pathNow === customStyleRoot || (customStyleRoot && pathNow.startsWith(`${customStyleRoot}/`));
 
-const buildTabActive =
-  activeTab !== "share" &&
-  activeTab !== "inspiration" &&
-  (hasBuildSlot ||
-    activeTab === "quick-build" ||
-    activeTab === "custom-build" ||
-    (Boolean(buildNavHref && buildNavHref !== "#") &&
-      pathMatchesHref(pathNow, buildNavHref) &&
-      activeTab !== "pattern"));
+const expressTabActive =
+  activeTab === "express" || (Boolean(ex) && pathMatchesHref(pathNow, ex));
+
+const customTabActive =
+  activeTab === "custom" ||
+  (Boolean(cb) && pathMatchesHref(pathNow, cb)) ||
+  pathIsCustomStyleFlow;
 
 const patternTabActive =
-  activeTab !== "share" &&
-  activeTab !== "inspiration" &&
-  (activeTab === "pattern" || (!patternTabDisabled && pathMatchesHref(pathNow, patternHref)));
+  activeTab === "pattern" || (!patternTabDisabled && pathMatchesHref(pathNow, patternHref));
 
 const shareTabActive = activeTab === "share" || pathMatchesHref(pathNow, askShareHref);
 const inspirationTabActive = activeTab === "inspiration" || pathMatchesHref(pathNow, inspirationHref);
+
+const expressNavHref = ex || "#";
+const customNavHref = cb || "#";
 ---
 
 <div
@@ -94,15 +93,40 @@ const inspirationTabActive = activeTab === "inspiration" || pathMatchesHref(path
     {
       workspaceNav ? (
         <>
-          {hasBuildSlot ? (
-            <button type="button" class:list={["tab-btn", { active: buildTabActive }]} data-tab="build">
-              <span class="tab-label">{workspaceBuildTabText}</span>
-            </button>
-          ) : (
-            <a class:list={["tab-btn", { active: buildTabActive }]} href={buildNavHref} data-tab="build">
-              <span class="tab-label">{workspaceBuildTabText}</span>
-            </a>
-          )}
+          <a
+            class:list={["tab-btn", "tab-btn--express", "tab-btn--workspace-brand", { active: expressTabActive }]}
+            href={expressNavHref}
+            data-tab="express"
+            aria-current={expressTabActive ? "page" : undefined}
+            aria-label="Express"
+          >
+            <img
+              class="tab-workspace-brand-icon"
+              src="/images/quick-icon.svg"
+              alt=""
+              width="18"
+              height="18"
+              decoding="async"
+            />
+            <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Express</span>
+          </a>
+          <a
+            class:list={["tab-btn", "tab-btn--custom", "tab-btn--workspace-brand", { active: customTabActive }]}
+            href={customNavHref}
+            data-tab="custom"
+            aria-current={customTabActive ? "page" : undefined}
+            aria-label="Custom"
+          >
+            <img
+              class="tab-workspace-brand-icon"
+              src="/images/KINlogo.svg"
+              alt=""
+              width="18"
+              height="18"
+              decoding="async"
+            />
+            <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Custom</span>
+          </a>
           {!hidePattern &&
             (patternTabDisabled ? (
               <span
@@ -111,8 +135,10 @@ const inspirationTabActive = activeTab === "inspiration" || pathMatchesHref(path
                 data-tab="pattern"
                 role="button"
                 aria-disabled="true"
+                aria-label="Pattern"
               >
-                <span class="tab-label">Pattern</span>
+                <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Pattern</span>
+                <i class="fa-solid fa-file-lines tab-workspace-mobile-icon" aria-hidden="true"></i>
               </span>
             ) : (
               <a
@@ -121,18 +147,22 @@ const inspirationTabActive = activeTab === "inspiration" || pathMatchesHref(path
                 href={String(patternHref).trim()}
                 data-tab="pattern"
                 aria-current={patternTabActive ? "page" : undefined}
+                aria-label="Pattern"
               >
-                <span class="tab-label">Pattern</span>
+                <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Pattern</span>
+                <i class="fa-solid fa-file-lines tab-workspace-mobile-icon" aria-hidden="true"></i>
               </a>
             ))}
           {!hideShare && (
             <a
-              class:list={["tab-btn", { active: shareTabActive }]}
+              class:list={["tab-btn", "tab-btn--ask-share", { active: shareTabActive }]}
               href={String(askShareHref).trim()}
               data-tab="share"
               aria-current={shareTabActive ? "page" : undefined}
+              aria-label="Ask / Share"
             >
-              <span class="tab-label">Ask / Share</span>
+              <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Ask / Share</span>
+              <i class="fa-solid fa-comments tab-workspace-mobile-icon" aria-hidden="true"></i>
             </a>
           )}
           {!hideInspiration && (
@@ -141,8 +171,10 @@ const inspirationTabActive = activeTab === "inspiration" || pathMatchesHref(path
               href={String(inspirationHref).trim()}
               data-tab="inspiration"
               aria-current={inspirationTabActive ? "page" : undefined}
+              aria-label="Inspiration"
             >
-              <span class="tab-label">Inspiration</span>
+              <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Inspiration</span>
+              <i class="fa-solid fa-lightbulb tab-workspace-mobile-icon" aria-hidden="true"></i>
             </a>
           )}
         </>
@@ -188,15 +220,7 @@ const inspirationTabActive = activeTab === "inspiration" || pathMatchesHref(path
   </div>
 
   {
-    workspaceNav ? (
-      hasBuildSlot ? (
-        <div class="pattern-tab-content">
-          <div class:list={["tab-panel", "active"]} id="tab-build">
-            <slot name="build" />
-          </div>
-        </div>
-      ) : null
-    ) : (
+    workspaceNav ? null : (
       <div class="pattern-tab-content">
         <div class="tab-panel active" id="tab-build">
           <slot name="build" />
@@ -233,7 +257,7 @@ const inspirationTabActive = activeTab === "inspiration" || pathMatchesHref(path
     display: flex;
     flex-wrap: nowrap;
     align-items: flex-end;
-    gap: 0.2rem;
+    gap: 0.15rem;
     margin: 0 0 1.125rem;
     padding: 0.25rem 0 0.2rem;
     overflow-x: auto;
@@ -261,8 +285,8 @@ const inspirationTabActive = activeTab === "inspiration" || pathMatchesHref(path
     align-items: center;
     justify-content: center;
     margin: 0;
-    padding: 0.45rem 0.7rem;
-    font-size: 0.9rem;
+    padding: 0.45rem 0.55rem;
+    font-size: 0.88rem;
     font-weight: 600;
     line-height: 1.25;
     color: #4a5c32;
@@ -322,40 +346,87 @@ const inspirationTabActive = activeTab === "inspiration" || pathMatchesHref(path
     border-color: rgba(82, 104, 45, 0.08);
   }
 
-  .pattern-workspace-tabs .pattern-tab-nav .tab-label {
-    position: static;
-    width: auto;
-    height: auto;
-    padding: 0;
-    margin: 0;
-    overflow: visible;
-    clip: auto;
+  .pattern-workspace-tabs .pattern-workspace-tabs__visible-label {
+    display: inline;
     white-space: nowrap;
-    border: 0;
+  }
+
+  .pattern-workspace-tabs .pattern-tab-nav .tab-btn--workspace-brand {
+    gap: 0.35rem;
+  }
+
+  .pattern-workspace-tabs .pattern-tab-nav .tab-workspace-brand-icon {
+    flex-shrink: 0;
+    width: 1.0625rem;
+    height: 1.0625rem;
+    object-fit: contain;
+  }
+
+  .pattern-workspace-tabs .pattern-tab-nav .tab-workspace-mobile-icon {
+    display: none;
+    color: currentColor;
   }
 
   @media (max-width: 767px) {
     .pattern-workspace-tabs .pattern-tab-nav {
-      gap: 0.15rem;
+      gap: 0.06rem;
       margin: 0 0 1rem;
-      padding: 0.2rem 0 0.15rem;
+      padding: 0.18rem 0 0.12rem;
     }
 
     .pattern-workspace-tabs .pattern-tab-nav .tab-btn {
-      padding: 0.4rem 0.55rem;
-      font-size: 0.82rem;
+      flex: 1 1 0;
+      min-width: 0;
+      min-height: 2.75rem;
+      padding: 0.35rem 0.28rem;
+      font-size: 0.76rem;
+      box-sizing: border-box;
+      justify-content: center;
     }
 
-    .pattern-workspace-tabs.pattern-tabs-scope .pattern-tab-nav .tab-label {
-      position: static;
-      width: auto;
-      height: auto;
-      padding: 0;
-      margin: 0;
-      overflow: visible;
-      clip: auto;
-      white-space: nowrap;
-      border: 0;
+    .pattern-workspace-tabs .pattern-tab-nav .tab-btn.active {
+      padding-bottom: calc(0.35rem + 1px);
+    }
+
+    .pattern-workspace-tabs .pattern-workspace-tabs__visible-label {
+      display: none;
+    }
+
+    .pattern-workspace-tabs .pattern-tab-nav .tab-workspace-brand-icon {
+      width: 1.2rem;
+      height: 1.2rem;
+    }
+
+    .pattern-workspace-tabs .pattern-tab-nav .tab-btn--workspace-brand {
+      gap: 0;
+    }
+
+    .pattern-workspace-tabs .pattern-tab-nav .tab-workspace-mobile-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .pattern-workspace-tabs .pattern-tab-nav .tab-btn {
+      padding: 0.32rem 0.18rem;
+      font-size: 0.7rem;
+    }
+
+    .pattern-workspace-tabs .pattern-tab-nav .tab-btn.active {
+      padding-bottom: calc(0.32rem + 1px);
+    }
+
+    .pattern-workspace-tabs .pattern-tab-nav .tab-workspace-brand-icon {
+      width: 1.1rem;
+      height: 1.1rem;
+    }
+
+    .pattern-workspace-tabs .pattern-tab-nav .tab-workspace-mobile-icon {
+      font-size: 1.02rem;
     }
   }
 </style>

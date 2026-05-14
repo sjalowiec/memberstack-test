@@ -3,7 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import GlossaryTooltip from "../../components/common/GlossaryTooltip.astro";
 import GaugeInput from "../../components/wizards/GaugeInput.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
-import PatternWorkspaceTabs from "../../components/patterns/PatternTabs.astro";
+import PatternWorkspaceTabs from "../../components/patterns/PatternWorkspaceTabs.astro";
 /* Wizard is @import'd first inside sleeveless-express-builder-cards.css so Express overrides always win cascade */
 import "../../styles/sleeveless-express-builder-cards.css";
 import "../../styles/sleeveless-express-wizard-layout.css";
@@ -26,23 +26,22 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
 ---
 
 <Layout
-  title="Express Build | Sleeveless Sweater"
-  description="Create a ready-to-knit sleeveless sweater pattern in quick steps."
+  title="Express | Sleeveless Sweater"
+  description="Create a ready-to-knit sleeveless sweater pattern in guided steps."
 >
   <main class="express-page wizard-page sleeveless-express-page" data-express-page="sleeveless-express">
     <div id="express-pattern-top" class="wizard-container express-wizard scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
         <PatternWorkspaceTabs
           rootClass="pattern-tabs-scope"
-          activeTab="quick-build"
-          workspaceBuildTabLabel="Express Build"
-          quickBuildHref="/patterns/sleeveless-express"
+          activeTab="express"
+          expressHref="/patterns/sleeveless-express/"
           customBuildHref={sleevelessCustomBuildHref}
           patternHref="/patterns/sleeveless/pattern/"
           askShareHref="/patterns/sleeveless/ask-share/"
           inspirationHref="/patterns/sleeveless/inspiration/"
-        >
-          <div class="sg-tab-build" slot="build">
+        />
+        <div class="sg-tab-build">
             <div class="sg-builder-nav-row express-builder-nav-row no-print">
               <nav class="express-step-nav sg-builder-nav" aria-label="Express pattern steps">
                 <ol class="express-step-nav__list sg-builder-nav__list" role="list">
@@ -99,20 +98,11 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
             </div>
 
             <header class="pattern-header page-header">
-              <p class="pattern-mode-label">Express Build</p>
+              
               <h1 class="pattern-title">Sleeveless Sweater</h1>
               <p class="pattern-subtext">
-                Create a ready-to-knit sweater pattern in just a few quick steps.
+                Create a ready-to-knit sweater pattern in a few guided steps.
               </p>
-              <div class="express-custom-build-callout no-print" role="note">
-                <p class="express-custom-build-callout__title">More options later</p>
-                <p class="express-custom-build-callout__body">
-                  <a href={sleevelessCustomBuildHref} class="express-custom-build-callout__link">Custom Build preview</a>
-                  describes features in development (measurements, shaping, and more). Express Build on this page is the
-                  supported beta way to create and print your pattern today.
-                </p>
-                <p class="express-custom-build-callout__footnote">Your Express Build choices can carry over.</p>
-              </div>
             </header>
 
             <div class="express-panel">
@@ -281,7 +271,7 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
             </div>
           </section>
 
-          <!-- Step 2 — front style (matches sleeveless-garment Express Build card layout) -->
+          <!-- Step 2 — front style (matches sleeveless-garment Express card layout) -->
           <section class="express-acc express-acc--locked" data-express-step="2" data-express-field="front">
             <div
               class="express-acc__header"
@@ -621,54 +611,12 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
         </div>
             </div>
           </div>
-        </PatternWorkspaceTabs>
       </div>
     </div>
   </main>
 </Layout>
 
 <style>
-  .express-custom-build-callout {
-    box-sizing: border-box;
-    max-width: 36rem;
-    margin: 1rem auto 1.25rem;
-    padding: 0.75rem 1rem;
-    text-align: left;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    color: #555;
-    background: color-mix(in srgb, var(--kbm-green, #52682d) 6%, #fff);
-    border-radius: 10px;
-    border-left: 3px solid var(--sg-accent, #c2614e);
-  }
-
-  .express-custom-build-callout__title {
-    margin: 0 0 0.35rem;
-    font-weight: 600;
-    color: #444;
-  }
-
-  .express-custom-build-callout__body {
-    margin: 0 0 0.5rem;
-  }
-
-  .express-custom-build-callout__footnote {
-    margin: 0;
-    font-size: 0.9rem;
-    color: var(--text-muted, #6b7280);
-  }
-
-  .express-custom-build-callout__link {
-    color: var(--sg-accent, #c2614e);
-    font-weight: 600;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
-
-  .express-custom-build-callout__link:hover {
-    color: color-mix(in srgb, var(--sg-accent, #c2614e) 85%, #000);
-  }
-
   .express-gauge-intro-group {
     margin: 0 0 1rem;
   }
@@ -986,18 +934,8 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
       display: none !important;
     }
 
-    .sleeveless-express-page .pattern-tabs .tab-panel#tab-pattern,
-    .sleeveless-express-page .pattern-tabs .tab-panel#tab-share,
-    .sleeveless-express-page .pattern-tabs .tab-panel#tab-inspiration {
-      display: none !important;
-    }
-
-    .sleeveless-express-page .pattern-tabs .tab-panel#tab-build {
+    .sleeveless-express-page .sg-tab-build {
       display: block !important;
-    }
-
-    .sleeveless-express-page .pattern-tab-content {
-      padding-top: 0;
     }
   }
 </style>

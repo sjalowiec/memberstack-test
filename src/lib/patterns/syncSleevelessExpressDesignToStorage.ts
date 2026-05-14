@@ -1,5 +1,5 @@
 /**
- * Maps Quick Build / Custom Build design basics (who, selectedSize, neckline, fit, optional chart measurements)
+ * Maps Express / Custom Build design basics (who, selectedSize, neckline, fit, optional chart measurements)
  * into canonical sleeveless pattern storage. Shared by Express and Custom Build design step.
  */
 import { normalizeSleevelessAudience, saveCurrentPattern, savePatternData } from "./patternStorage";

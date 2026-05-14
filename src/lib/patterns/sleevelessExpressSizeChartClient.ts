@@ -1,5 +1,5 @@
 /**
- * Quick Build size chart fetch + table UI (shared by `/patterns/sleeveless-express` and Custom Build design).
+ * Express size chart fetch + table UI (shared by `/patterns/sleeveless-express` and Custom Build design).
  * Same JSON URLs and bust/chest formatting as the Fit step.
  */
 import { formatSwatchCountForGaugeInput } from "./gaugeDisplayFormat";
@@ -205,7 +205,7 @@ export function formatExpressSelectedSizeSummary(values: Record<string, string>)
 }
 
 /**
- * Inline “selected size” line under the chart (Quick Build parity).
+ * Inline “selected size” line under the chart (Express parity).
  */
 export function patchExpressSizeBodyConfirmation(scope: ParentNode, values: Record<string, string>): void {
   const nested = scope.querySelector("[data-express-nested-size]");

@@ -1,10 +1,11 @@
 ---
 import Layout from "../../../../layouts/Layout.astro";
-import PatternWorkspaceTabs from "../../../../components/patterns/PatternTabs.astro";
+import PatternWorkspaceTabs from "../../../../components/patterns/PatternWorkspaceTabs.astro";
 import "../../../../styles/wizard.css";
 import "../../../../styles/sleeveless-express-wizard-layout.css";
 
-const quickBuildHref = "/patterns/sleeveless-express/";
+const expressHref = "/patterns/sleeveless-express/";
+const expressMeasurementsSummaryHref = "/patterns/sleeveless-express-measurements/";
 const customBuildHref = "/patterns/sleeveless/custom-build/";
 const patternHref = "/patterns/sleeveless/pattern/";
 const askShareHref = "/patterns/sleeveless/ask-share/";
@@ -12,17 +13,16 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
 ---
 
 <Layout
-  title="Custom Build Preview | Sleeveless Sweater"
-  description="Preview of upcoming Custom Build options for the sleeveless sweater pattern workspace. Use Express Build to create your pattern during the Knit by Machine beta."
+  title="Custom Build | Knit by Machine"
+  description="Custom Build is in development during the Knit by Machine beta. Use Express to create your pattern for now; more Custom Build options are coming soon."
 >
   <main class="express-page wizard-page sleeveless-express-page custom-build-preview-page">
     <div class="wizard-container express-wizard scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
         <PatternWorkspaceTabs
           rootClass="pattern-tabs-scope"
-          activeTab="custom-build"
-          workspaceBuildTabLabel="Custom Build"
-          quickBuildHref={quickBuildHref}
+          activeTab="custom"
+          expressHref={expressHref}
           customBuildHref={customBuildHref}
           patternHref={patternHref}
           askShareHref={askShareHref}
@@ -30,20 +30,45 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
         />
 
         <div class="custom-build-preview-body">
-          <header class="pattern-header page-header">
-            <p class="pattern-mode-label">Custom Build</p>
-            <h1 class="pattern-title">Custom Build Preview</h1>
-            <p class="pattern-subtext">
-              Express Build helps you create a pattern quickly with guided choices and a printable PDF.
+          <header class="pattern-header page-header custom-build-preview-header">
+            <h1 class="pattern-title">Custom Build</h1>
+            <p class="pattern-subtext custom-build-preview-intro">
+              <strong>Love your Express pattern but want even more control?</strong><br> Custom Build is coming next.
             </p>
-            <p class="pattern-subtext custom-build-preview-intro-follow">
-              Custom Build is being designed for knitters who want more control over fit, measurements, shaping, and
-              pattern personalization.
-            </p>
+            <div class="custom-build-preview-blurbs">
+              <div class="custom-build-preview-row">
+                <img
+                  class="custom-build-preview-row__icon"
+                  src="/images/express-icon.svg"
+                  alt="Express"
+                  width="48"
+                  height="48"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <p class="pattern-subtext custom-build-preview-row__text">
+                  Express creates a standard-fit pattern based on your 5 style choices instantly.
+                </p>
+              </div>
+              <div class="custom-build-preview-row">
+                <img
+                  class="custom-build-preview-row__icon custom-build-preview-row__icon--kin"
+                  src="/images/KINlogo.svg"
+                  alt="Custom Build"
+                  width="48"
+                  height="48"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <p class="pattern-subtext custom-build-preview-row__text">
+                  Custom Build gives knitters more control over fit, measurements, shaping, and personalization.
+                </p>
+              </div>
+            </div>
           </header>
 
-          <section class="pattern-card custom-build-preview-features" aria-labelledby="custom-build-preview-heading">
-            <h3 id="custom-build-preview-heading">What Custom Build will include</h3>
+          <section class="pattern-card custom-build-preview-features" aria-labelledby="custom-build-features-heading">
+            <h3 id="custom-build-features-heading">What Custom Build will include</h3>
             <ul>
               <li>Save your pattern and return to it later</li>
               <li>Reopen and edit saved patterns anytime</li>
@@ -51,19 +76,28 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
               <li>Adjust neckline depth and width</li>
               <li>Customize shaping choices</li>
               <li>Choose more garment style options</li>
-              <li>Work with more yarn and gauge flexibility</li>
-              <li>Access more advanced finishing and pattern details</li>
             </ul>
           </section>
 
           <p class="info-box custom-build-preview-note" role="note">
-            Custom Build is currently in development as part of the Knit by Machine beta. For now, use Express Build to
+            Custom Build is currently in development as part of the Knit by Machine beta. For now, use Express to
             create your pattern, and watch for more Custom Build options soon.
           </p>
 
           <div class="custom-build-preview-actions no-print">
-            <a href={quickBuildHref} class="kbm-btn kbm-btn-accent">Return to Express Build</a>
-            <a href={patternHref} class="kbm-btn kbm-btn-outline">View Generated Pattern</a>
+            <a href={expressMeasurementsSummaryHref} class="kbm-btn kbm-btn-accent custom-build-preview-btn-express">
+              <img
+                class="custom-build-preview-btn-express__icon"
+                src="/images/express-icon.svg"
+                alt=""
+                width="22"
+                height="22"
+                loading="lazy"
+                decoding="async"
+                aria-hidden="true"
+              />
+              <span>Return to the summary</span>
+            </a>
           </div>
         </div>
       </div>
@@ -77,8 +111,52 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
     padding: 0 0.35rem 0.25rem;
   }
 
-  .custom-build-preview-page .pattern-header .pattern-subtext + .pattern-subtext {
-    margin-top: 0.75rem;
+  .custom-build-preview-page .custom-build-preview-header .pattern-title {
+    margin-bottom: 0.35rem;
+  }
+
+  .custom-build-preview-page .custom-build-preview-intro {
+    margin: 0 auto 1rem;
+    max-width: 40rem;
+    text-align: center;
+  }
+
+  .custom-build-preview-page .custom-build-preview-blurbs {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 40rem;
+    margin: 0 auto;
+    text-align: left;
+  }
+
+  .custom-build-preview-page .custom-build-preview-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+  }
+
+  .custom-build-preview-page .custom-build-preview-row__icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+  }
+
+  .custom-build-preview-page .custom-build-preview-row__icon--kin {
+    width: auto;
+    max-width: 56px;
+    max-height: 48px;
+    height: auto;
+    object-fit: contain;
+    object-position: left center;
+  }
+
+  .custom-build-preview-page .custom-build-preview-row__text {
+    margin: 0;
+    max-width: none;
+    margin-inline: 0;
+    text-align: left;
   }
 
   .custom-build-preview-page .custom-build-preview-features ul {
@@ -110,5 +188,22 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
     margin-top: 1.75rem;
     padding-top: 1.25rem;
     border-top: 1px solid #e8e8e8;
+  }
+
+  .custom-build-preview-page .custom-build-preview-btn-express {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+  }
+
+  .custom-build-preview-page .custom-build-preview-btn-express__icon {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    /* Orange/green SVG on terracotta accent: render as light for contrast with white label text */
+    filter: brightness(0) invert(1);
+    opacity: 0.95;
   }
 </style>

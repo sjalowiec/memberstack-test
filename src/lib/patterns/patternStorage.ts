@@ -597,11 +597,11 @@ export function clearSleevelessPatternBuilderData(): void {
 const SLEEVELESS_LEGACY_CUSTOM_MEASUREMENTS_KEY = "kbm_sleeveless_custom_measurements";
 
 /**
- * Clears everything used by Quick Build (express) plus the shared canonical pattern / builder blobs
+ * Clears everything used by Express plus the shared canonical pattern / builder blobs
  * that hold the generated express pattern. Safe to call only when the session is known to be express;
  * Custom Build sessions use the same canonical keys but must not call this.
  */
-export function clearSleevelessQuickBuildSession(): void {
+export function clearSleevelessExpressSession(): void {
   clearSleevelessPatternBuilderData();
   if (typeof localStorage === "undefined") return;
   try {

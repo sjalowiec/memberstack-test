@@ -1,5 +1,5 @@
 /**
- * Quick Build — measurement confirmation (read-only) after Generate Pattern.
+ * Express — measurement confirmation (read-only) after Generate Pattern.
  * Scoped under `.express-measurements-confirm-page`.
  */
 
@@ -16,8 +16,16 @@
 .express-measurements-confirm-page .express-mbp-page-grid {
   display: flex;
   flex-direction: column;
+  gap: 0;
+  align-items: stretch;
+}
+
+.express-measurements-confirm-page .express-mbp-page-grid__main {
+  display: flex;
+  flex-direction: column;
   gap: 1.25rem;
   align-items: stretch;
+  min-width: 0;
 }
 
 .express-measurements-confirm-page .express-mbp-page-grid__rail {
@@ -28,38 +36,16 @@
   min-width: 0;
 }
 
-.express-measurements-confirm-page .express-mbp-page-grid__header.pattern-header {
-  text-align: left;
-  margin-bottom: 1.1rem;
+/* Full-width title above both columns */
+.express-measurements-confirm-page .express-mbp-page-grid__title.pattern-header {
+  text-align: center;
+  margin: 0 0 1.1rem;
   padding-inline: 0;
+  width: 100%;
 }
 
-.express-measurements-confirm-page .express-mbp-page-grid__header .pattern-subtext {
-  margin-inline: 0;
-  max-width: none;
-}
-
-.express-measurements-confirm-page .express-mbp-page-grid__header .pattern-title {
+.express-measurements-confirm-page .express-mbp-page-grid__title .pattern-title {
   font-size: clamp(1.45rem, 2.5vw, 1.85rem);
-}
-
-.express-measurements-confirm-page .express-mbp-page-grid__header .express-measurements-intro-units {
-  margin-top: 0.65rem;
-}
-
-.express-measurements-confirm-page .express-mbp-page-grid__header .express-measurements-intro-follow {
-  margin-top: 0.4rem;
-}
-
-.express-measurements-confirm-page .express-measurements-diagram-hint {
-  margin: 0 0 0.55rem;
-  padding: 0;
-  max-width: min(40rem, 100%);
-  font-size: 0.8125rem;
-  line-height: 1.45;
-  color: color-mix(in srgb, var(--kbm-green, #52682d) 28%, #5c5c5c);
-  font-weight: 500;
-  letter-spacing: 0.01em;
 }
 
 .express-measurements-confirm-page .express-measurements-rail-fill {
@@ -69,7 +55,7 @@
 }
 
 @media (min-width: 900px) {
-  .express-measurements-confirm-page .express-mbp-page-grid {
+  .express-measurements-confirm-page .express-mbp-page-grid__main {
     flex-direction: row;
     align-items: flex-start;
     gap: 1.5rem;
@@ -205,7 +191,7 @@
   color: color-mix(in srgb, var(--kbm-green, #52682d) 35%, #444);
 }
 
-/* Quiet link back to Quick Build — reuses `.express-custom-build-callout__link` (terra cotta) from wizard layout */
+/* Quiet link back to Express — reuses `.express-custom-build-callout__link` (terra cotta) from wizard layout */
 .express-measurements-confirm-page .express-mbp-edit-build-choices {
   margin: 0 0 0.5rem;
   padding: 0;
@@ -217,12 +203,45 @@
   font-size: inherit;
 }
 
-.express-measurements-confirm-page .express-mbp-edit-build-choices-sub {
-  margin: 0.35rem 0 0.65rem;
+.express-measurements-confirm-page .express-mbp-edit-build-choices__lead {
+  font-weight: 600;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 32%, #444);
+}
+
+.express-measurements-confirm-page .express-mbp-meta .express-measurements-intro-units {
+  margin: 0.25rem 0 0.65rem;
+}
+
+/* Inline workspace tab icons beside Express / Custom copy */
+.express-measurements-confirm-page .express-mbp-edit-build-choices-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin: 0;
   max-width: none;
   font-size: 0.9rem;
   line-height: 1.45;
   color: color-mix(in srgb, var(--kbm-green, #52682d) 22%, #4a4a4a);
+}
+
+.express-measurements-confirm-page .express-mbp-edit-build-choices + .express-mbp-edit-build-choices-line {
+  margin-top: 0.35rem;
+}
+
+.express-measurements-confirm-page .express-mbp-edit-build-choices-line + .express-mbp-edit-build-choices-line {
+  margin-top: 0.25rem;
+}
+
+.express-measurements-confirm-page .express-mbp-edit-build-choices-line:last-of-type {
+  margin-bottom: 0.65rem;
+}
+
+.express-measurements-confirm-page .express-mbp-edit-build-choices__workspace-icon {
+  flex-shrink: 0;
+  width: 1.0625rem;
+  height: 1.0625rem;
+  margin-top: 0.12em;
+  object-fit: contain;
 }
 
 .express-measurements-confirm-page .express-mbp-rail-reassurance {
@@ -357,7 +376,7 @@
   user-select: none;
 }
 
-/* Straight-fit Quick Build: hide waist + hem guide lines (requires SVG inlined in DOM). */
+/* Straight-fit Express: hide waist + hem guide lines (requires SVG inlined in DOM). */
 .express-measurements-confirm-page svg.express-mbp-art #line-waist-width,
 .express-measurements-confirm-page svg.express-mbp-art #line-hem-width {
   visibility: hidden !important;

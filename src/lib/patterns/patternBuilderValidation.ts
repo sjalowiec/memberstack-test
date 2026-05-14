@@ -107,11 +107,11 @@ function isFitEaseChoiceComplete(fit: Record<string, unknown>): boolean {
 }
 
 /**
- * Quick Build (`/patterns/sleeveless-express`) sets `style.patternMode` to `"express"` and chart-derived
+ * Express (`/patterns/sleeveless-express`) sets `style.patternMode` to `"express"` and chart-derived
  * measurements. Used to recognize a complete generator session without requiring every unified
  * Custom Build design field in {@link isSleevelessBuilderNavStyleComplete}.
  */
-export function isSleevelessExpressQuickBuildComplete(
+export function isSleevelessExpressFlowComplete(
   patternData: Record<string, unknown> = typeof localStorage !== "undefined" ? getPatternData() : {},
 ): boolean {
   const style = styleSection(patternData);
@@ -178,7 +178,7 @@ export function validatePatternBuilderRequired(
       href: PATTERN_BUILDER_DESIGN_HREF,
       complete:
         isSleevelessBuilderNavStyleComplete(patternData) ||
-        isSleevelessExpressQuickBuildComplete(patternData),
+        isSleevelessExpressFlowComplete(patternData),
     },
     {
       id: "selected_size",

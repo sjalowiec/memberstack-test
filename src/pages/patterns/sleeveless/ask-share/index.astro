@@ -1,12 +1,12 @@
 ---
 import Layout from "../../../../layouts/Layout.astro";
-import PatternWorkspaceTabs from "../../../../components/patterns/PatternTabs.astro";
+import PatternWorkspaceTabs from "../../../../components/patterns/PatternWorkspaceTabs.astro";
 import PatternComments from "../../../../components/patterns/PatternComments.astro";
 import "../../../../styles/wizard.css";
 import "../../../../styles/patterns/sleeveless-pattern-shared.css";
 
 const customBuildHref = "/patterns/sleeveless/custom-build/";
-const quickBuildHref = "/patterns/sleeveless-express/";
+const expressHref = "/patterns/sleeveless-express/";
 const patternHref = "/patterns/sleeveless/pattern/";
 const askShareHref = "/patterns/sleeveless/ask-share/";
 const inspirationHref = "/patterns/sleeveless/inspiration/";
@@ -22,8 +22,7 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
         <PatternWorkspaceTabs
           rootClass="pattern-tabs-scope"
           activeTab="share"
-          workspaceBuildTabLabel="Express Build"
-          quickBuildHref={quickBuildHref}
+          expressHref={expressHref}
           customBuildHref={customBuildHref}
           patternHref={patternHref}
           askShareHref={askShareHref}
