@@ -1114,7 +1114,7 @@ const patternPersistWarning =
     <div class="calculator-card diy-blanket-builder-inputs">
       <div class="pattern-tabs">
         <div class="pattern-tab-nav">
-          <button type="button" class="tab-btn active" data-tab="build">Build</button>
+          <button type="button" class="tab-btn active" data-tab="build">Create</button>
           <button
             type="button"
             id="diy-tab-pattern"
@@ -2328,7 +2328,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const el = document.getElementById('create-pattern-feedback');
     if (!el) return;
     window.clearTimeout(createPatternFeedbackTimer);
-    el.textContent = 'Finish blanket size and gauge to build your pattern.';
+    el.textContent = 'Finish blanket size and gauge to generate your pattern.';
     el.hidden = false;
     createPatternFeedbackTimer = window.setTimeout(() => {
       el.textContent = '';

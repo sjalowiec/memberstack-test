@@ -19,7 +19,7 @@ const customWizardSteps = [
 ---
 
 <Layout
-  title="Custom Build — Foundation | Sleeveless Sweater"
+  title="Custom Pattern — Foundation | Sleeveless Sweater"
   description="Choose who you are knitting for and a starting size for your custom sleeveless sweater pattern."
 >
   <main
@@ -61,7 +61,7 @@ const customWizardSteps = [
                         data-cb-flow-label={s.label}
                         aria-current={s.step === 1 ? "page" : undefined}
                         aria-disabled={s.step > 1 ? "true" : undefined}
-                        title={s.step > 1 ? "Use Continue to move through the Custom Build steps." : undefined}
+                        title={s.step > 1 ? "Use Continue to move through the Custom Pattern steps." : undefined}
                       >
                         <span class="express-step-nav__track">
                           <span
@@ -97,7 +97,7 @@ const customWizardSteps = [
           </div>
 
           <header class="pattern-header page-header">
-            <p class="pattern-mode-label">Custom Build</p>
+            <p class="pattern-mode-label">Custom Pattern</p>
             <h1 class="pattern-title">Foundation</h1>
             <p class="pattern-subtext">
               Start with who you are knitting for and the size you want to use. These choices create the base sizing

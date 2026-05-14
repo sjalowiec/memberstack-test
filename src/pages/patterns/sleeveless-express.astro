@@ -26,7 +26,7 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
 ---
 
 <Layout
-  title="Express | Sleeveless Sweater"
+  title="Express Pattern | Sleeveless Sweater"
   description="Create a ready-to-knit sleeveless sweater pattern in guided steps."
 >
   <main class="express-page wizard-page sleeveless-express-page" data-express-page="sleeveless-express">
@@ -601,10 +601,13 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
                     rowLabelCm="Row gauge — rows over 10 cm"
                   />
                 </div>
-                <div class="express-generate-wrap" id="express-generate-wrap" hidden>
-                  <button type="submit" class="express-generate" id="express-generate">Generate Pattern</button>
-                </div>
               </form>
+            </div>
+            <!-- Submit lives outside collapsible .express-acc__body so it stays visible when Gauge is closed (see updateGeneratePatternAvailability). -->
+            <div class="express-generate-wrap express-generate-wrap--footer" id="express-generate-wrap" hidden>
+              <button type="submit" form="express-gauge-form" class="express-generate" id="express-generate">
+                Generate Pattern
+              </button>
             </div>
           </section>
                 </div>
@@ -690,6 +693,16 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
 
   .express-generate-wrap {
     margin-top: 1.5rem;
+  }
+
+  .express-generate-wrap--footer {
+    margin-top: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(82, 104, 45, 0.1);
+  }
+
+  .express-acc.express-acc--open .express-generate-wrap--footer {
+    margin-top: 1.25rem;
   }
 
   .express-generate {

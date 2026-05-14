@@ -105,7 +105,7 @@ export function setPatternTabsReadiness(tabsRoot: Element | null | undefined, re
 
 let goBuildDelegationBound = false;
 
-/** "Go to Build" buttons inside managed Pattern panels. */
+/** Buttons that switch to the Create (inputs) tab inside managed Pattern panels. */
 export function bindPatternTabsGoBuildDelegation(): void {
   if (goBuildDelegationBound) return;
   goBuildDelegationBound = true;
@@ -123,7 +123,7 @@ export function bindPatternTabsGoBuildDelegation(): void {
 
 let patternTabsSharedInit = false;
 
-/** Run once on pages that use PatternTabs: go-build delegation. */
+/** Run once on pages that use PatternTabs: go-to-create-tab delegation. */
 export function initPatternTabsGlobalBehaviors(): void {
   if (patternTabsSharedInit) return;
   patternTabsSharedInit = true;

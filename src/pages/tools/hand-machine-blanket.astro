@@ -1738,7 +1738,7 @@ const price = wizardData.price || "$9.99";
       <ul>
         <li><strong>Enter</strong> border gauge + body gauge</li>
         <li><strong>Choose</strong> a standard size or custom measurements</li>
-        <li><strong>Click</strong> Build My Pattern</li>
+        <li><strong>Click</strong> Create My Pattern</li>
       </ul>
     </div>
     <div class="sales-features">
@@ -1746,12 +1746,12 @@ const price = wizardData.price || "$9.99";
         <li><strong>Mix gauges with confidence:</strong> Borders and body can use different gauges—counts adjust automatically.</li>
         <li><strong>Math-free transitions:</strong> Stitch counts update where hand meets machine (or one tension meets another).</li>
         <li><strong>Standard + custom sizes:</strong> Pick a preset or enter your exact width × length.</li>
-        <li><strong>Reuse anytime:</strong> Build new versions for different yarns and sizes whenever you want.</li>
+        <li><strong>Reuse anytime:</strong> Create new versions for different yarns and sizes whenever you want.</li>
       </ul>
     </div>
     <div class="sales-price" id="sales-price"></div>
 
-    <a href="#" class="sales-cta" id="purchase-btn" data-testid="button-purchase">Build My Pattern</a>
+    <a href="#" class="sales-cta" id="purchase-btn" data-testid="button-purchase">Create My Pattern</a>
     <p class="sales-microcopy">Use it again for future blankets.</p>
   </section>
 
@@ -1765,7 +1765,7 @@ const price = wizardData.price || "$9.99";
           <p class="glass-message-prompt">You're viewing a sample size pattern.</p>
           <p class="glass-message-subprompt">Ready to create your own custom pattern?</p>
           <button class="customize-btn" id="customize-btn" data-testid="button-customize">
-            Build My Pattern
+            Create My Pattern
           </button>
         </div>
       </div>
@@ -2034,7 +2034,7 @@ const price = wizardData.price || "$9.99";
     
     <div class="drawer-footer">
       <button class="apply-btn" id="apply-btn" data-testid="button-build-pattern">
-        Build My Pattern
+        Create My Pattern
       </button>
     </div>
   </dialog>
@@ -3077,7 +3077,7 @@ const price = wizardData.price || "$9.99";
     
     if (type === 'missing') {
       // Case A: Needle count not entered
-      if (needleWarningTitle) needleWarningTitle.textContent = 'Before you build';
+      if (needleWarningTitle) needleWarningTitle.textContent = 'Before you create your pattern';
       needleWarningBody.innerHTML = `
         <p>Enter your machine's needle count to confirm this size will fit.</p>
         <a class="go-to-size-link" id="go-to-needles-link">Go to Needle Count</a>

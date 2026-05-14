@@ -1596,7 +1596,7 @@ select.disabled {
         <div class="pattern-tab-nav">
           <button type="button" class="tab-btn active" data-tab="build">
             <span class="tab-icon" aria-hidden="true">⚙️</span>
-            <span class="tab-label">Build</span>
+            <span class="tab-label">Create</span>
           </button>
           <button
             type="button"
@@ -3540,7 +3540,7 @@ async function initHatBuilder() {
     const el = document.getElementById('create-pattern-feedback');
     if (!el) return;
     window.clearTimeout(createPatternFeedbackTimer);
-    el.textContent = 'Finish the required sections to build your pattern.';
+    el.textContent = 'Finish the required sections to generate your pattern.';
     el.hidden = false;
     createPatternFeedbackTimer = window.setTimeout(() => {
       el.textContent = '';

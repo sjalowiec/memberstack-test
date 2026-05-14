@@ -1,11 +1,11 @@
 ---
 // Reusable Action Bar component for wizards
-// Desktop/tablet: fixed floating vertical stack (Edit / Rebuild, Print)
+// Desktop/tablet: fixed floating vertical stack (Edit / Regenerate, Print)
 // Mobile: single bottom-right helper — scroll to form (or programmatic #edit-btn click as fallback)
 
 export interface Props {
   /**
-   * Element id to scroll into view when the mobile "↑ Edit Choices" control is used.
+   * Element id to scroll into view when the mobile "↑ Edit pattern choices" control is used.
    * If omitted or the element is missing, the component falls back to clicking `#edit-btn`
    * so pages that open a drawer or switch wizard state keep working.
    */
@@ -26,17 +26,17 @@ const { formScrollTarget = '' } = Astro.props;
     id="action-bar-mobile-scroll-btn"
     class="pattern-actions__mobile-edit"
     data-testid="action-bar-mobile-edit-choices"
-    aria-label="Scroll to form to edit your choices"
+    aria-label="Scroll to form to edit your pattern choices"
   >
-    ↑ Edit Choices
+    ↑ Edit pattern choices
   </button>
 </div>
 
 <!-- Desktop/Tablet Floating Stack (hidden on mobile) -->
 <div id="action-bar" class="wizard-action-bar pattern-actions--floating no-print">
-  <button class="wizard-action-btn" id="edit-btn" data-testid="button-edit-rebuild" aria-label="Edit or rebuild pattern">
+  <button class="wizard-action-btn" id="edit-btn" data-testid="button-edit-rebuild" aria-label="Edit or regenerate pattern">
     <i class="fas fa-edit" aria-hidden="true"></i>
-    <span class="btn-label">Edit / Rebuild</span>
+    <span class="btn-label">Edit / Regenerate</span>
   </button>
   <button class="wizard-action-btn" id="print-btn" data-testid="button-print" aria-label="Print pattern">
     <i class="fas fa-print" aria-hidden="true"></i>

@@ -512,25 +512,25 @@ function initExpressPage() {
     updateExpressSizeBodyConfirmation();
   }
 
-  function isBuilderComplete(): boolean {
-    return (
+  /**
+   * Single place for Generate Pattern visibility: uses in-memory `values` plus live gauge inputs.
+   * Does not depend on which accordion is open (submit control lives outside the collapsible body).
+   */
+  function updateGeneratePatternAvailability(): void {
+    const wrap = document.getElementById("express-generate-wrap");
+    const btn = document.getElementById("express-generate");
+    const complete =
       !!values.who &&
       nonEmptyTrimmed(values.selectedSize) &&
       nonEmptyTrimmed(values.front) &&
       !!values.neckline &&
       !!values.fit &&
-      gaugeOk()
-    );
-  }
+      gaugeOk();
 
-  function updateGenerateVisibility() {
-    const wrap = document.getElementById("express-generate-wrap");
-    if (!wrap) return;
-    const complete = isBuilderComplete();
-    if (complete) wrap.removeAttribute("hidden");
-    else wrap.setAttribute("hidden", "");
-
-    const btn = document.getElementById("express-generate");
+    if (wrap) {
+      if (complete) wrap.removeAttribute("hidden");
+      else wrap.setAttribute("hidden", "");
+    }
     if (btn instanceof HTMLButtonElement) btn.disabled = !complete;
   }
 
@@ -621,14 +621,8 @@ function initExpressPage() {
       }
     });
 
-    const genBtn = document.getElementById("express-generate");
-    if (genBtn) {
-      if (openStep === STEPS) genBtn.removeAttribute("tabindex");
-      else genBtn.setAttribute("tabindex", "-1");
-    }
-
     updateSummaries();
-    updateGenerateVisibility();
+    updateGeneratePatternAvailability();
     applySelectionUI();
   }
 
@@ -865,7 +859,7 @@ function initExpressPage() {
 
   function onGaugeInput() {
     updateSummaries();
-    updateGenerateVisibility();
+    updateGeneratePatternAvailability();
     const secG = stepSection(STEPS);
     if (secG) secG.classList.toggle("express-acc--complete", gaugeOk());
     updatePills();
