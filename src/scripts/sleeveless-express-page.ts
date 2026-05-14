@@ -23,7 +23,7 @@ import {
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
 import { scrollToBuilderSection } from "../lib/patterns/scrollToBuilderSection";
 
-const STEPS = 6;
+const STEPS = 5;
 const LOCKED_STEP_NAV_TITLE = "Finish the previous step to continue.";
 
 const LABELS: Record<string, Record<string, string>> = {
@@ -342,8 +342,10 @@ interface ExpressPersistedV1 {
   maxReachable?: number;
   gaugeStitchRaw?: string;
   gaugeRowRaw?: string;
-  /** `6` = Express flow with Front step (Who → Size → Front → Neckline → Fit → Gauge). `5` / `4` = legacy — migrated on load. */
+  /** `5` with {@link whoSizeCombined}: current Quick Build (Who & Size → Front → …). `6` / `5` / `4` without flag = legacy — migrated on load. */
   flowSteps?: number;
+  /** True when Who + Size share one accordion (post–May 2026 layout). */
+  whoSizeCombined?: boolean;
 }
 
 function loadExpressPersisted(): ExpressPersistedV1 | null {
@@ -359,14 +361,13 @@ function loadExpressPersisted(): ExpressPersistedV1 | null {
   }
 }
 
-/** Furthest step the user can open from accumulated Express choices (steps 1–6). */
+/** Furthest step the user can open from accumulated Express choices (steps 1–5). */
 function maxReachableFromChoices(v: Record<string, string>): number {
   let m = 1;
-  if (v.who) m = 2;
-  if (v.who && nonEmptyTrimmed(v.selectedSize)) m = 3;
-  if (v.who && nonEmptyTrimmed(v.selectedSize) && nonEmptyTrimmed(v.front)) m = 4;
-  if (v.who && nonEmptyTrimmed(v.selectedSize) && nonEmptyTrimmed(v.front) && v.neckline) m = 5;
-  if (v.who && nonEmptyTrimmed(v.selectedSize) && nonEmptyTrimmed(v.front) && v.neckline && v.fit) m = 6;
+  if (v.who && nonEmptyTrimmed(v.selectedSize)) m = 2;
+  if (v.who && nonEmptyTrimmed(v.selectedSize) && nonEmptyTrimmed(v.front)) m = 3;
+  if (v.who && nonEmptyTrimmed(v.selectedSize) && nonEmptyTrimmed(v.front) && v.neckline) m = 4;
+  if (v.who && nonEmptyTrimmed(v.selectedSize) && nonEmptyTrimmed(v.front) && v.neckline && v.fit) m = 5;
   return m;
 }
 
@@ -398,9 +399,20 @@ function initExpressPage() {
     openStepCandidate += 1;
   }
 
-  /** flowSteps 5 → 6: Front step inserted after Size (old steps 3–5 → 4–6). */
-  if (persisted && persisted.flowSteps === 5 && openStepCandidate >= 3) {
+  /** flowSteps 5 → 6: Front step inserted after Size (old steps 3–5 → 4–6). Skip when already on combined Who & Size layout. */
+  if (
+    persisted &&
+    persisted.flowSteps === 5 &&
+    !persisted.whoSizeCombined &&
+    openStepCandidate >= 3
+  ) {
     openStepCandidate += 1;
+  }
+
+  /** flowSteps 6 → 5: Who + Size merged into one accordion (old steps 2–6 → new 1–5). */
+  if (persisted && persisted.flowSteps === 6) {
+    if (openStepCandidate <= 2) openStepCandidate = 1;
+    else openStepCandidate -= 1;
   }
 
   let maxReachable = maxReachableFromChoices(values);
@@ -421,7 +433,8 @@ function initExpressPage() {
           values: { ...values },
           openStep,
           maxReachable,
-          flowSteps: 6,
+          flowSteps: 5,
+          whoSizeCombined: true,
           gaugeStitchRaw: stEl instanceof HTMLInputElement ? stEl.value : "",
           gaugeRowRaw: rwEl instanceof HTMLInputElement ? rwEl.value : "",
         }),
@@ -463,11 +476,10 @@ function initExpressPage() {
   }
 
   function isStepComplete(step: number): boolean {
-    if (step === 1) return !!values.who;
-    if (step === 2) return nonEmptyTrimmed(values.selectedSize);
-    if (step === 3) return nonEmptyTrimmed(values.front);
-    if (step === 4) return !!values.neckline;
-    if (step === 5) return !!values.fit;
+    if (step === 1) return !!values.who && nonEmptyTrimmed(values.selectedSize);
+    if (step === 2) return nonEmptyTrimmed(values.front);
+    if (step === 3) return !!values.neckline;
+    if (step === 4) return !!values.fit;
     const sec = stepSection(step);
     const f = sec?.getAttribute("data-express-field");
     if (f === "gauge") return gaugeOk();
@@ -666,23 +678,23 @@ function initExpressPage() {
   }
 
   /**
-   * Who + Size accordion cluster: keep both sections expanded while the user is still on step 1 or 2
-   * (including after a size is chosen). Collapse when `openStep` moves to 3+ or the user collapses all (`openStep === 0`).
+   * Who & Size single accordion: keep the size chart visible and interactive while this step is active
+   * (`openStep === 1`). Collapse/disable chart interaction when navigating to Front (`openStep >= 2`) or all (`openStep === 0`).
    */
   function keepWhoSizeClusterExpanded(): boolean {
     if (!values.who) return false;
-    if (openStep === 0 || openStep >= 3) return false;
+    if (openStep === 0 || openStep >= 2) return false;
     return true;
   }
 
-  /** Size list/select is interactive whenever the who+size cluster is expanded. */
+  /** Size list/select is interactive on step 1 after a Who choice. */
   function canInteractWithSizeStep(): boolean {
     return keepWhoSizeClusterExpanded();
   }
 
   function isExpressSectionBodyOpen(step: number): boolean {
     if (step === openStep) return true;
-    if (keepWhoSizeClusterExpanded() && (step === 1 || step === 2)) return true;
+    if (keepWhoSizeClusterExpanded() && step === 1) return true;
     return false;
   }
 
@@ -716,9 +728,9 @@ function initExpressPage() {
     refreshExpressWhoSizePanel();
     const pairs: { step: number; field: keyof typeof LABELS; sel: string }[] = [
       { step: 1, field: "who", sel: ".express-options--who" },
-      { step: 3, field: "front", sel: ".express-front-cards" },
-      { step: 4, field: "neckline", sel: ".express-neck-cards" },
-      { step: 5, field: "fit", sel: ".express-fit-cards" },
+      { step: 2, field: "front", sel: ".express-front-cards" },
+      { step: 3, field: "neckline", sel: ".express-neck-cards" },
+      { step: 4, field: "fit", sel: ".express-fit-cards" },
     ];
     pairs.forEach(({ step, field, sel }) => {
       const sec = stepSection(step);
@@ -765,13 +777,9 @@ function initExpressPage() {
 
     clearAllLockedFeedback();
     refreshBuilderState();
-
-    if (field === "who") {
-      goToStep(2);
-    }
   }
 
-  /** Size picker — single source of truth: `values.selectedSize`. Unlocks step 3+; does not auto-open neckline. */
+  /** Size picker — single source of truth: `values.selectedSize`. Unlocks Front (step 2)+ when set; does not auto-open neckline. */
   function selectExpressSize(sizeValue: string): void {
     const trimmed = String(sizeValue).trim();
     if (!trimmed) return;
@@ -1061,9 +1069,7 @@ function initExpressPage() {
 }
 
 function initExpressTopTabs(): void {
-  const root = document.querySelector(
-    ".sleeveless-express-page .pattern-tabs:not(.pattern-workspace-tabs)",
-  );
+  const root = document.querySelector(".sleeveless-express-page .pattern-tabs");
   if (!root) return;
   initPatternTabs(root);
 

@@ -4,7 +4,8 @@ export interface PatternTabsControl {
   activateTab: (name: PatternTabName) => void;
 }
 
-function loadPatternComments(): void {
+/** Load Hyvor Talk for `[data-pattern-comments]` (used by tab switchers and standalone Ask/Share pages). */
+export function loadPatternComments(): void {
   const el = document.querySelector("[data-pattern-comments]");
   if (!el || !(el instanceof HTMLElement)) return;
 
@@ -63,12 +64,13 @@ export function applyPatternTabsActivation(tabsRoot: Element, target: PatternTab
   const panel = tabsRoot.querySelector<HTMLElement>(`#tab-${target}`);
   if (!panel) return;
 
-  const tabButtons = tabsRoot.querySelectorAll<HTMLButtonElement>(".pattern-tab-nav .tab-btn");
-  const tabPanels = tabsRoot.querySelectorAll<HTMLElement>(".pattern-tab-content .tab-panel");
-
-  tabButtons.forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.tab === target);
+  const tabControls = tabsRoot.querySelectorAll<HTMLElement>(".pattern-tab-nav .tab-btn");
+  tabControls.forEach((btn) => {
+    const tab = btn.dataset.tab as PatternTabName | undefined;
+    if (!tab) return;
+    btn.classList.toggle("active", tab === target);
   });
+  const tabPanels = tabsRoot.querySelectorAll<HTMLElement>(".pattern-tab-content .tab-panel");
   tabPanels.forEach((p) => {
     p.classList.toggle("active", p.id === `tab-${target}`);
   });
@@ -149,12 +151,13 @@ export function initPatternTabs(root: ParentNode | null | undefined): PatternTab
   }
   tabsRoot.setAttribute("data-pattern-tabs-bound", "1");
 
-  const tabButtons = tabsRoot.querySelectorAll<HTMLButtonElement>(".pattern-tab-nav .tab-btn");
+  const tabButtons = tabsRoot.querySelectorAll(".pattern-tab-nav .tab-btn");
 
-  tabButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const isDisabled = button.classList.contains("is-disabled");
-      const tab = button.dataset.tab as PatternTabName | undefined;
+  tabButtons.forEach((el) => {
+    if (!(el instanceof HTMLButtonElement)) return;
+    el.addEventListener("click", () => {
+      const isDisabled = el.classList.contains("is-disabled");
+      const tab = el.dataset.tab as PatternTabName | undefined;
       if (isDisabled && tab !== "pattern") return;
       if (!tab) return;
       applyPatternTabsActivation(tabsRoot, tab);

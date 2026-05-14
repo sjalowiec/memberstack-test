@@ -1,0 +1,84 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+import PatternWorkspaceTabs from "../../../../components/patterns/PatternTabs.astro";
+import PinterestEmbed from "../../../../components/PinterestEmbed.astro";
+import "../../../../styles/wizard.css";
+import "../../../../styles/patterns/sleeveless-pattern-shared.css";
+
+/** Board URL (corrected spelling: sleeveless sweater). */
+const pinterestBoardUrl = "https://www.pinterest.com/knititnow/sleeveless-sweater/";
+const pinterestShortUrl = "https://pin.it/6e1rQ1g5P";
+
+const customBuildHref = "/patterns/sleeveless/custom-build/";
+const quickBuildHref = "/patterns/sleeveless-express/";
+const patternHref = "/patterns/sleeveless/pattern/";
+const askShareHref = "/patterns/sleeveless/ask-share/";
+const inspirationHref = "/patterns/sleeveless/inspiration/";
+---
+
+<Layout
+  title="Inspiration | Sleeveless Sweater"
+  description="Explore sleeveless sweater ideas and finishing inspiration from Knit It Now."
+>
+  <main class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage">
+    <div class="wizard-container scroll-mt-[96px]">
+      <div class="calculator-card hat-builder-inputs">
+        <PatternWorkspaceTabs
+          rootClass="pattern-tabs-scope"
+          activeTab="inspiration"
+          showQuickCustomBuildTabs={true}
+          quickBuildHref={quickBuildHref}
+          customBuildHref={customBuildHref}
+          patternHref={patternHref}
+          askShareHref={askShareHref}
+          inspirationHref={inspirationHref}
+        />
+
+        <section class="sleeveless-workspace-subpage__content" aria-labelledby="sleeveless-inspiration-heading">
+          <h1 id="sleeveless-inspiration-heading" class="pattern-title">Inspiration</h1>
+          <p class="pattern-subtext">
+            Explore sleeveless sweater ideas and finishing inspiration.
+          </p>
+          <div class="sleeveless-inspiration-embed">
+            <PinterestEmbed pinterestUrl={pinterestBoardUrl} />
+          </div>
+          <p class="pattern-subtext sleeveless-inspiration-fallback">
+            <a href={pinterestShortUrl} target="_blank" rel="noopener noreferrer">Short Pinterest link</a>
+            <span class="sleeveless-inspiration-fallback__sep" aria-hidden="true"> · </span>
+            <a href={pinterestBoardUrl} target="_blank" rel="noopener noreferrer">Open board on Pinterest</a>
+          </p>
+        </section>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .sleeveless-workspace-subpage__content {
+    padding: 0.25rem 0 1.5rem;
+  }
+
+  .sleeveless-workspace-subpage__content .pattern-title {
+    margin: 0.75rem 0 0.5rem;
+    font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+  }
+
+  .sleeveless-workspace-subpage__content .pattern-subtext {
+    margin: 0 0 1rem;
+    max-width: 40rem;
+  }
+
+  .sleeveless-inspiration-embed {
+    margin: 0 0 0.75rem;
+    max-width: 100%;
+  }
+
+  .sleeveless-inspiration-fallback {
+    font-size: 0.9rem;
+  }
+
+  .sleeveless-inspiration-fallback a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+  }
+</style>

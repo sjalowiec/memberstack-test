@@ -1,0 +1,63 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+import PatternWorkspaceTabs from "../../../../components/patterns/PatternTabs.astro";
+import PatternComments from "../../../../components/patterns/PatternComments.astro";
+import "../../../../styles/wizard.css";
+import "../../../../styles/patterns/sleeveless-pattern-shared.css";
+
+const customBuildHref = "/patterns/sleeveless/custom-build/";
+const quickBuildHref = "/patterns/sleeveless-express/";
+const patternHref = "/patterns/sleeveless/pattern/";
+const askShareHref = "/patterns/sleeveless/ask-share/";
+const inspirationHref = "/patterns/sleeveless/inspiration/";
+---
+
+<Layout
+  title="Ask / Share | Sleeveless Sweater"
+  description="Ask questions, share your results, or leave feedback about the Knit It Now sleeveless sweater pattern."
+>
+  <main class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage">
+    <div class="wizard-container scroll-mt-[96px]">
+      <div class="calculator-card hat-builder-inputs">
+        <PatternWorkspaceTabs
+          rootClass="pattern-tabs-scope"
+          activeTab="share"
+          showQuickCustomBuildTabs={true}
+          quickBuildHref={quickBuildHref}
+          customBuildHref={customBuildHref}
+          patternHref={patternHref}
+          askShareHref={askShareHref}
+          inspirationHref={inspirationHref}
+        />
+
+        <section class="sleeveless-workspace-subpage__content" aria-labelledby="sleeveless-ask-share-heading">
+          <h1 id="sleeveless-ask-share-heading" class="pattern-title">Ask / Share</h1>
+          <p class="pattern-subtext">
+            Ask questions, share your results, or leave feedback about this sleeveless sweater pattern.
+          </p>
+          <PatternComments title="Ask or Share" />
+        </section>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .sleeveless-workspace-subpage__content {
+    padding: 0.25rem 0 1.5rem;
+  }
+
+  .sleeveless-workspace-subpage__content .pattern-title {
+    margin: 0.75rem 0 0.5rem;
+    font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+  }
+
+  .sleeveless-workspace-subpage__content .pattern-subtext {
+    margin: 0 0 1.25rem;
+    max-width: 40rem;
+  }
+</style>
+
+<script>
+  import "../../../../scripts/sleeveless-workspace-ask-share-page.ts";
+</script>

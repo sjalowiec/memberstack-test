@@ -10,6 +10,14 @@ interface Props {
   hideInspiration?: boolean;
   /** Extra classes on the outer `.pattern-tabs` wrapper (e.g. `pattern-tabs-scope`). */
   rootClass?: string;
+  /** Sleeveless workspace: which high-level area is active (drives tab highlights + Quick/Custom row). */
+  activeTab?: "quick-build" | "custom-build" | "pattern" | "build" | "share" | "inspiration";
+  showQuickCustomBuildTabs?: boolean;
+  quickBuildHref?: string;
+  customBuildHref?: string;
+  patternHref?: string;
+  askShareHref?: string;
+  inspirationHref?: string;
 }
 
 const {
@@ -19,71 +27,270 @@ const {
   hideShare = false,
   hideInspiration = false,
   rootClass = "",
+  activeTab = "build",
+  showQuickCustomBuildTabs = false,
+  quickBuildHref = "",
+  customBuildHref = "",
+  patternHref = "",
+  askShareHref = "",
+  inspirationHref = "",
 } = Astro.props;
+
+const workspaceNav = Boolean(String(patternHref ?? "").trim());
+
+function normPath(p: string): string {
+  const t = String(p ?? "").trim();
+  if (!t) return "";
+  const noTrail = t.replace(/\/+$/, "");
+  return noTrail || "/";
+}
+
+function pathMatchesHref(pathNow: string, href: string | undefined): boolean {
+  const h = normPath(String(href ?? ""));
+  if (!h || !pathNow) return false;
+  return pathNow === h || pathNow.startsWith(`${h}/`);
+}
+
+const pathNow = normPath(Astro.url.pathname);
+
+const hasBuildSlot = Astro.slots.has("build");
+
+const qb = String(quickBuildHref ?? "").trim();
+const cb = String(customBuildHref ?? "").trim();
+
+const buildNavHref =
+  activeTab === "custom-build" ? cb || qb || "#" : qb || cb || "#";
+
+const quickSubActive =
+  (activeTab === "quick-build" || pathMatchesHref(pathNow, qb)) &&
+  activeTab !== "share" &&
+  activeTab !== "inspiration";
+const customSubActive =
+  (activeTab === "custom-build" || (cb && pathMatchesHref(pathNow, cb))) &&
+  activeTab !== "share" &&
+  activeTab !== "inspiration";
+
+const buildTabActive =
+  activeTab !== "share" &&
+  activeTab !== "inspiration" &&
+  (hasBuildSlot ||
+    activeTab === "quick-build" ||
+    activeTab === "custom-build" ||
+    (Boolean(buildNavHref && buildNavHref !== "#") &&
+      pathMatchesHref(pathNow, buildNavHref) &&
+      activeTab !== "pattern"));
+
+const patternTabActive =
+  activeTab !== "share" &&
+  activeTab !== "inspiration" &&
+  (activeTab === "pattern" || (!patternTabDisabled && pathMatchesHref(pathNow, patternHref)));
+
+const shareTabActive = activeTab === "share" || pathMatchesHref(pathNow, askShareHref);
+const inspirationTabActive = activeTab === "inspiration" || pathMatchesHref(pathNow, inspirationHref);
+
+const showWorkspaceTier2 = showQuickCustomBuildTabs && (qb || cb);
 ---
 
-<div class:list={["pattern-tabs", rootClass]}>
+<div
+  class:list={[
+    "pattern-tabs",
+    rootClass,
+    { "pattern-workspace-tabs": workspaceNav },
+  ]}
+>
+  {
+    workspaceNav && showWorkspaceTier2 && (
+      <nav class="pattern-workspace-build-switch no-print" aria-label="Quick Build or Custom Build">
+        {qb && (
+          <a
+            class:list={["pattern-workspace-build-switch__link", { active: quickSubActive }]}
+            href={qb}
+            aria-current={quickSubActive ? "page" : undefined}
+          >
+            Quick Build
+          </a>
+        )}
+        {cb && (
+          <a
+            class:list={["pattern-workspace-build-switch__link", { active: customSubActive }]}
+            href={cb}
+            aria-current={customSubActive ? "page" : undefined}
+          >
+            Custom Build
+          </a>
+        )}
+      </nav>
+    )
+  }
   <div class="pattern-tab-nav">
-    <button type="button" class="tab-btn active" data-tab="build">
-      <span class="tab-icon" aria-hidden="true">⚙️</span>
-      <span class="tab-label">Build</span>
-    </button>
     {
-      !hidePattern && (
-        <button
-          type="button"
-          id={patternTabButtonId}
-          class:list={["tab-btn", patternTabDisabled && "is-disabled"]}
-          data-tab="pattern"
-          aria-disabled={patternTabDisabled ? "true" : undefined}
-        >
-          <span class="tab-icon" aria-hidden="true">📝</span>
-          <span class="tab-label">Pattern</span>
-        </button>
-      )
-    }
-    {
-      !hideShare && (
-        <button type="button" class="tab-btn" data-tab="share">
-          <span class="tab-icon" aria-hidden="true">💬</span>
-          <span class="tab-label">Ask / Share</span>
-        </button>
-      )
-    }
-    {
-      !hideInspiration && (
-        <button type="button" class="tab-btn" data-tab="inspiration">
-          <span class="tab-icon" aria-hidden="true">💡</span>
-          <span class="tab-label">Inspiration</span>
-        </button>
+      workspaceNav ? (
+        <>
+          {hasBuildSlot ? (
+            <button type="button" class:list={["tab-btn", { active: buildTabActive }]} data-tab="build">
+              <span class="tab-icon" aria-hidden="true">⚙️</span>
+              <span class="tab-label">Build</span>
+            </button>
+          ) : (
+            <a class:list={["tab-btn", { active: buildTabActive }]} href={buildNavHref} data-tab="build">
+              <span class="tab-icon" aria-hidden="true">⚙️</span>
+              <span class="tab-label">Build</span>
+            </a>
+          )}
+          {!hidePattern &&
+            (patternTabDisabled ? (
+              <span
+                id={patternTabButtonId}
+                class:list={["tab-btn", "is-disabled"]}
+                data-tab="pattern"
+                role="button"
+                aria-disabled="true"
+              >
+                <span class="tab-icon" aria-hidden="true">📝</span>
+                <span class="tab-label">Pattern</span>
+              </span>
+            ) : (
+              <a
+                id={patternTabButtonId}
+                class:list={["tab-btn", { active: patternTabActive }]}
+                href={String(patternHref).trim()}
+                data-tab="pattern"
+                aria-current={patternTabActive ? "page" : undefined}
+              >
+                <span class="tab-icon" aria-hidden="true">📝</span>
+                <span class="tab-label">Pattern</span>
+              </a>
+            ))}
+          {!hideShare && (
+            <a
+              class:list={["tab-btn", { active: shareTabActive }]}
+              href={String(askShareHref).trim()}
+              data-tab="share"
+              aria-current={shareTabActive ? "page" : undefined}
+            >
+              <span class="tab-icon" aria-hidden="true">💬</span>
+              <span class="tab-label">Ask / Share</span>
+            </a>
+          )}
+          {!hideInspiration && (
+            <a
+              class:list={["tab-btn", { active: inspirationTabActive }]}
+              href={String(inspirationHref).trim()}
+              data-tab="inspiration"
+              aria-current={inspirationTabActive ? "page" : undefined}
+            >
+              <span class="tab-icon" aria-hidden="true">💡</span>
+              <span class="tab-label">Inspiration</span>
+            </a>
+          )}
+        </>
+      ) : (
+        <>
+          <button type="button" class="tab-btn active" data-tab="build">
+            <span class="tab-icon" aria-hidden="true">⚙️</span>
+            <span class="tab-label">Build</span>
+          </button>
+          {
+            !hidePattern && (
+              <button
+                type="button"
+                id={patternTabButtonId}
+                class:list={["tab-btn", patternTabDisabled && "is-disabled"]}
+                data-tab="pattern"
+                aria-disabled={patternTabDisabled ? "true" : undefined}
+              >
+                <span class="tab-icon" aria-hidden="true">📝</span>
+                <span class="tab-label">Pattern</span>
+              </button>
+            )
+          }
+          {
+            !hideShare && (
+              <button type="button" class="tab-btn" data-tab="share">
+                <span class="tab-icon" aria-hidden="true">💬</span>
+                <span class="tab-label">Ask / Share</span>
+              </button>
+            )
+          }
+          {
+            !hideInspiration && (
+              <button type="button" class="tab-btn" data-tab="inspiration">
+                <span class="tab-icon" aria-hidden="true">💡</span>
+                <span class="tab-label">Inspiration</span>
+              </button>
+            )
+          }
+        </>
       )
     }
   </div>
 
-  <div class="pattern-tab-content">
-    <div class="tab-panel active" id="tab-build">
-      <slot name="build" />
-    </div>
-    {
-      !hidePattern && (
-        <div class="tab-panel" id="tab-pattern">
-          <slot name="pattern" />
+  {
+    workspaceNav ? (
+      hasBuildSlot ? (
+        <div class="pattern-tab-content">
+          <div class:list={["tab-panel", "active"]} id="tab-build">
+            <slot name="build" />
+          </div>
         </div>
-      )
-    }
-    {
-      !hideShare && (
-        <div class="tab-panel" id="tab-share">
-          <slot name="share" />
+      ) : null
+    ) : (
+      <div class="pattern-tab-content">
+        <div class="tab-panel active" id="tab-build">
+          <slot name="build" />
         </div>
-      )
-    }
-    {
-      !hideInspiration && (
-        <div class="tab-panel" id="tab-inspiration">
-          <slot name="inspiration" />
-        </div>
-      )
-    }
-  </div>
+        {
+          !hidePattern && (
+            <div class="tab-panel" id="tab-pattern">
+              <slot name="pattern" />
+            </div>
+          )
+        }
+        {
+          !hideShare && (
+            <div class="tab-panel" id="tab-share">
+              <slot name="share" />
+            </div>
+          )
+        }
+        {
+          !hideInspiration && (
+            <div class="tab-panel" id="tab-inspiration">
+              <slot name="inspiration" />
+            </div>
+          )
+        }
+      </div>
+    )
+  }
 </div>
+
+<style>
+  .pattern-workspace-build-switch {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 1.1rem;
+    margin: 0 0 0.65rem;
+    padding: 0 0 0.5rem;
+    border-bottom: 1px solid #e8e8e8;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .pattern-workspace-build-switch__link {
+    color: #666;
+    text-decoration: none;
+    padding: 0.15rem 0;
+    border-bottom: 2px solid transparent;
+  }
+
+  .pattern-workspace-build-switch__link:hover {
+    color: #4d4d4d;
+  }
+
+  .pattern-workspace-build-switch__link.active {
+    color: #c2614e;
+    border-bottom-color: #c2614e;
+  }
+</style>

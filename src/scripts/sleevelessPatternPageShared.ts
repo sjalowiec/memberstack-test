@@ -1793,9 +1793,10 @@ table {
   function bindTabs() {
     const root = document.querySelector(".sleeveless-pattern-page .pattern-tabs");
     if (root) {
-      root.querySelectorAll(".tab-btn").forEach((button) => {
-        button.addEventListener("click", () => {
-          const target = button.dataset.tab;
+      root.querySelectorAll(".tab-btn").forEach((el) => {
+        if (!(el instanceof HTMLButtonElement)) return;
+        el.addEventListener("click", () => {
+          const target = el.dataset.tab;
           if (!target) return;
           activateWizardTab(target);
         });
