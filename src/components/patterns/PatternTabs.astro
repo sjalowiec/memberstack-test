@@ -12,6 +12,8 @@ interface Props {
   rootClass?: string;
   /** Sleeveless workspace: which high-level area is active (drives tab highlights; express vs custom affects Build href + active state). */
   activeTab?: "quick-build" | "custom-build" | "pattern" | "build" | "share" | "inspiration";
+  /** First workspace tab label (default "Build"). Use e.g. "Express Build" / "Custom Build" during beta so the tab matches the linked flow. */
+  workspaceBuildTabLabel?: string;
   quickBuildHref?: string;
   customBuildHref?: string;
   patternHref?: string;
@@ -27,6 +29,7 @@ const {
   hideInspiration = false,
   rootClass = "",
   activeTab = "build",
+  workspaceBuildTabLabel = "",
   quickBuildHref = "",
   customBuildHref = "",
   patternHref = "",
@@ -50,6 +53,8 @@ function pathMatchesHref(pathNow: string, href: string | undefined): boolean {
 }
 
 const pathNow = normPath(Astro.url.pathname);
+
+const workspaceBuildTabText = String(workspaceBuildTabLabel ?? "").trim() || "Build";
 
 const hasBuildSlot = Astro.slots.has("build");
 
@@ -91,11 +96,11 @@ const inspirationTabActive = activeTab === "inspiration" || pathMatchesHref(path
         <>
           {hasBuildSlot ? (
             <button type="button" class:list={["tab-btn", { active: buildTabActive }]} data-tab="build">
-              <span class="tab-label">Build</span>
+              <span class="tab-label">{workspaceBuildTabText}</span>
             </button>
           ) : (
             <a class:list={["tab-btn", { active: buildTabActive }]} href={buildNavHref} data-tab="build">
-              <span class="tab-label">Build</span>
+              <span class="tab-label">{workspaceBuildTabText}</span>
             </a>
           )}
           {!hidePattern &&

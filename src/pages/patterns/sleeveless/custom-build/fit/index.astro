@@ -34,7 +34,9 @@ const customWizardSteps: WizardStep[] = [
     <div class="wizard-container express-wizard scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
         <PatternWorkspaceTabs
+          rootClass="pattern-tabs-scope"
           activeTab="custom-build"
+          workspaceBuildTabLabel="Custom Build"
           quickBuildHref="/patterns/sleeveless-express"
           customBuildHref={customBuildHref}
           patternHref={patternHref}
@@ -173,7 +175,7 @@ const customWizardSteps: WizardStep[] = [
               In Custom Build, your sizing chart row comes from <a href={foundationHref} class="express-custom-build-callout__link">Foundation</a> (who and size) and your fit choice on <a href={styleHref} class="express-custom-build-callout__link">Style &amp; Shaping</a>. Those values feed the pattern after you enter yarn and gauge.
             </p>
             <p class="pattern-subtext">
-              For a visual measurement confirmation before the pattern, use <a href="/patterns/sleeveless-express" class="express-custom-build-callout__link">Quick Build</a> and generate from there.
+              For a visual measurement confirmation before the pattern, use <a href="/patterns/sleeveless-express/" class="express-custom-build-callout__link">Express Build</a> and generate from there.
             </p>
           </header>
 

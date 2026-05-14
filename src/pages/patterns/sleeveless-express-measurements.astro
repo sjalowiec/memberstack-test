@@ -2,33 +2,38 @@
 import Layout from "../../layouts/Layout.astro";
 import PatternWorkspaceTabs from "../../components/patterns/PatternTabs.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
+import "../../styles/wizard.css";
 import "../../styles/sleeveless-express-wizard-layout.css";
 import "../../styles/sleeveless-express-measurements-confirm.css";
 
-const expressHref = "/patterns/sleeveless-express";
+const quickBuildHref = "/patterns/sleeveless-express/";
 const customBuildHref = "/patterns/sleeveless/custom-build/";
 const patternHref = "/patterns/sleeveless/pattern/";
+const askShareHref = "/patterns/sleeveless/ask-share/";
+const inspirationHref = "/patterns/sleeveless/inspiration/";
 ---
 
 <Layout
-  title="Quick Build — Review Measurements | Sleeveless Sweater"
-  description="Confirm sizing chart measurements from your Quick Build choices before opening the generated pattern."
+  title="Express Build — Review Measurements | Sleeveless Sweater"
+  description="Confirm sizing chart measurements from your Express Build choices before opening the generated pattern."
 >
   <main class="express-page wizard-page sleeveless-express-page express-measurements-confirm-page">
     <div class="wizard-container express-wizard scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
         <PatternWorkspaceTabs
+          rootClass="pattern-tabs-scope"
           activeTab="quick-build"
-          quickBuildHref={expressHref}
+          workspaceBuildTabLabel="Express Build"
+          quickBuildHref={quickBuildHref}
           customBuildHref={customBuildHref}
           patternHref={patternHref}
-          askShareHref="/patterns/sleeveless/ask-share/"
-          inspirationHref="/patterns/sleeveless/inspiration/"
+          askShareHref={askShareHref}
+          inspirationHref={inspirationHref}
         />
 
-        <div class="express-panel calculator-card" data-express-measurements-root>
+        <div class="express-measurements-review" data-express-measurements-root>
           <nav class="page-nav express-measurements-page-nav no-print" aria-label="Section">
-            <a href={expressHref} class="page-nav__back">← Back to Quick Build</a>
+            <a href={quickBuildHref} class="page-nav__back">← Back to Express Build</a>
           </nav>
 
           <p class="express-measurements-status pattern-subtext" data-express-measurements-status hidden aria-live="polite"></p>
@@ -36,11 +41,14 @@ const patternHref = "/patterns/sleeveless/pattern/";
           <div class="express-mbp-page-grid">
             <aside class="express-mbp-page-grid__rail">
               <header class="pattern-header page-header express-mbp-page-grid__header">
-                <p class="pattern-mode-label">Quick Build</p>
+                <p class="pattern-mode-label">Express Build</p>
                 <h1 class="pattern-title">Review measurements</h1>
                 <p class="pattern-subtext">
-                  These values come from your selected size and the sizing chart. When they look right, continue to your
-                  pattern instructions.
+                  Express Build automatically creates your garment measurements using your selected size and gauge.
+                </p>
+                <p class="pattern-subtext express-measurements-intro-follow">
+                  Want to explore finer measurement and shaping control later? See the
+                  <a href={customBuildHref} class="express-custom-build-callout__link">Custom Build preview</a>.
                 </p>
                 <div class="express-builder-units no-print express-measurements-intro-units">
                   <UnitToggle id="sleeveless-fit" />
@@ -51,6 +59,9 @@ const patternHref = "/patterns/sleeveless/pattern/";
             </aside>
 
             <div class="express-mbp-page-grid__diagram">
+              <p class="express-measurements-diagram-hint" aria-live="off">
+                Express Build uses standard garment measurements based on your selected size.
+              </p>
               <div class="express-measurements-summary" data-express-measurements-summary>
                 <p class="pattern-subtext">Loading measurements…</p>
               </div>
@@ -58,7 +69,7 @@ const patternHref = "/patterns/sleeveless/pattern/";
           </div>
 
           <div class="express-measurements-actions no-print">
-            <a href={expressHref} class="kbm-btn kbm-btn-outline">← Back to Quick Build</a>
+            <a href={quickBuildHref} class="kbm-btn kbm-btn-outline">← Back to Express Build</a>
             <a class="kbm-btn kbm-btn-accent" data-express-measurements-continue hidden>Continue to Your Pattern</a>
           </div>
         </div>

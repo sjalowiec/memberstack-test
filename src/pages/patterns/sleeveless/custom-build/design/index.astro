@@ -29,7 +29,9 @@ const customWizardSteps = [
     <div id="cb-design-top" class="wizard-container express-wizard scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
         <PatternWorkspaceTabs
+          rootClass="pattern-tabs-scope"
           activeTab="custom-build"
+          workspaceBuildTabLabel="Custom Build"
           quickBuildHref="/patterns/sleeveless-express"
           customBuildHref={customBuildHref}
           patternHref="/patterns/sleeveless/pattern/"
@@ -107,10 +109,10 @@ const customWizardSteps = [
               come next in Style &amp; Shaping.
             </p>
             <p class="pattern-subtext">
-              <a href="/patterns/sleeveless-express" class="express-custom-build-callout__link"
+              <a href="/patterns/sleeveless-express/" class="express-custom-build-callout__link"
                 >Prefer fewer steps?</a
               >
-              &nbsp;Use Quick Build and your choices can carry over here.
+              &nbsp;Use Express Build and your choices can carry over here.
             </p>
           </header>
 

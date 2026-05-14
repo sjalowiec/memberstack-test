@@ -26,7 +26,7 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
 ---
 
 <Layout
-  title="Express Pattern | Sleeveless Sweater"
+  title="Express Build | Sleeveless Sweater"
   description="Create a ready-to-knit sleeveless sweater pattern in quick steps."
 >
   <main class="express-page wizard-page sleeveless-express-page" data-express-page="sleeveless-express">
@@ -35,6 +35,7 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
         <PatternWorkspaceTabs
           rootClass="pattern-tabs-scope"
           activeTab="quick-build"
+          workspaceBuildTabLabel="Express Build"
           quickBuildHref="/patterns/sleeveless-express"
           customBuildHref={sleevelessCustomBuildHref}
           patternHref="/patterns/sleeveless/pattern/"
@@ -98,18 +99,19 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
             </div>
 
             <header class="pattern-header page-header">
-              <p class="pattern-mode-label">Express Pattern</p>
+              <p class="pattern-mode-label">Express Build</p>
               <h1 class="pattern-title">Sleeveless Sweater</h1>
               <p class="pattern-subtext">
                 Create a ready-to-knit sweater pattern in just a few quick steps.
               </p>
               <div class="express-custom-build-callout no-print" role="note">
-                <p class="express-custom-build-callout__title">Need more control?</p>
+                <p class="express-custom-build-callout__title">More options later</p>
                 <p class="express-custom-build-callout__body">
-                  <a href={sleevelessCustomBuildHref} class="express-custom-build-callout__link">Use Custom Build</a>
-                  when you want to enter exact measurements, fine-tune fit, or make more detailed shaping choices.
+                  <a href={sleevelessCustomBuildHref} class="express-custom-build-callout__link">Custom Build preview</a>
+                  describes features in development (measurements, shaping, and more). Express Build on this page is the
+                  supported beta way to create and print your pattern today.
                 </p>
-                <p class="express-custom-build-callout__footnote">Your Quick Build choices can carry over.</p>
+                <p class="express-custom-build-callout__footnote">Your Express Build choices can carry over.</p>
               </div>
             </header>
 
@@ -279,7 +281,7 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
             </div>
           </section>
 
-          <!-- Step 2 — front style (matches sleeveless-garment Quick Build card layout) -->
+          <!-- Step 2 — front style (matches sleeveless-garment Express Build card layout) -->
           <section class="express-acc express-acc--locked" data-express-step="2" data-express-field="front">
             <div
               class="express-acc__header"
