@@ -14,7 +14,7 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
 
 <Layout
   title="Custom Pattern | Knit by Machine"
-  description="Custom Pattern is in development during the Knit by Machine beta. Use Express to create your pattern for now; more Custom Pattern options are coming soon."
+  description="Custom Pattern is in development and not yet available in beta. Use Express to build your sweater pattern today; more Custom Pattern options are coming soon."
 >
   <main class="express-page wizard-page sleeveless-express-page custom-build-preview-page">
     <div class="wizard-container express-wizard scroll-mt-[96px]">
@@ -31,9 +31,15 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
 
         <div class="custom-build-preview-body">
           <header class="pattern-header page-header custom-build-preview-header">
-            <h1 class="pattern-title">Custom Pattern</h1>
+            <div class="custom-build-preview-header__title-row">
+              <h1 class="pattern-title">Custom Pattern</h1>
+              <span class="custom-build-preview-badge">COMING SOON</span>
+            </div>
             <p class="pattern-subtext custom-build-preview-intro">
-              <strong>Love your Express pattern but want even more control?</strong><br> Custom Pattern is coming next.
+              Custom Pattern is currently in development and not yet available in beta.
+            </p>
+            <p class="pattern-subtext custom-build-preview-followup">
+              Express is the supported way to build your sweater pattern today.
             </p>
             <div class="custom-build-preview-blurbs">
               <div class="custom-build-preview-row">
@@ -47,7 +53,7 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
                   decoding="async"
                 />
                 <p class="pattern-subtext custom-build-preview-row__text">
-                  Express creates a standard-fit pattern based on your 5 style choices instantly.
+                  <a href={expressHref} class="custom-build-preview-inline-link"><strong>Express Pattern</strong></a> is available now and creates a standard-fit pattern from your guided choices.
                 </p>
               </div>
               <div class="custom-build-preview-row">
@@ -61,27 +67,27 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
                   decoding="async"
                 />
                 <p class="pattern-subtext custom-build-preview-row__text">
-                  Custom Pattern gives knitters more control over fit, measurements, shaping, and personalization.
+                  <strong>Custom Pattern</strong> is coming next and will give knitters more control over fit, measurements, shaping, and personalization.
                 </p>
               </div>
             </div>
           </header>
 
           <section class="pattern-card custom-build-preview-features" aria-labelledby="custom-build-features-heading">
-            <h3 id="custom-build-features-heading">What Custom Pattern will include</h3>
+            <h3 id="custom-build-features-heading">What’s planned for Custom Pattern</h3>
             <ul>
-              <li>Save your pattern and return to it later</li>
+              <li>Save and return to your pattern later</li>
               <li>Reopen and edit saved patterns anytime</li>
-              <li>Enter your own body and garment measurements</li>
-              <li>Adjust neckline depth and width</li>
-              <li>Customize shaping choices</li>
-              <li>Choose more garment style options</li>
+              <li>Your own body and garment measurements</li>
+              <li>Adjustable neckline depth and width</li>
+              <li>Customizable shaping choices</li>
+              <li>More garment style options</li>
             </ul>
           </section>
 
           <p class="info-box custom-build-preview-note" role="note">
-            Custom Pattern is currently in development as part of the Knit by Machine beta. For now, use Express to
-            create your pattern, and watch for more Custom Pattern options soon.
+            Custom Pattern is part of the Knit by Machine beta roadmap. For now, use <a href={expressHref} class="custom-build-preview-note__link">Express</a> to create your pattern. More
+            Custom Pattern options are coming soon.
           </p>
 
           <div class="custom-build-preview-actions no-print">
@@ -96,7 +102,7 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
                 decoding="async"
                 aria-hidden="true"
               />
-              <span>Return to the summary</span>
+              <span>Back to Express Builder</span>
             </a>
           </div>
         </div>
@@ -111,11 +117,40 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
     padding: 0 0.35rem 0.25rem;
   }
 
-  .custom-build-preview-page .custom-build-preview-header .pattern-title {
-    margin-bottom: 0.35rem;
+  .custom-build-preview-page .custom-build-preview-header__title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem 0.85rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .custom-build-preview-page .custom-build-preview-header__title-row .pattern-title {
+    margin-bottom: 0;
+  }
+
+  .custom-build-preview-page .custom-build-preview-badge {
+    display: inline-block;
+    margin: 0;
+    padding: 0.25rem 0.55rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #555;
+    background: rgba(82, 104, 45, 0.12);
+    border-radius: 4px;
+    white-space: nowrap;
   }
 
   .custom-build-preview-page .custom-build-preview-intro {
+    margin: 0 auto 0.4rem;
+    max-width: 40rem;
+    text-align: center;
+  }
+
+  .custom-build-preview-page .custom-build-preview-followup {
     margin: 0 auto 1rem;
     max-width: 40rem;
     text-align: center;
@@ -157,6 +192,23 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
     max-width: none;
     margin-inline: 0;
     text-align: left;
+  }
+
+  .custom-build-preview-page .custom-build-preview-row__text .custom-build-preview-inline-link,
+  .custom-build-preview-page .custom-build-preview-row__text .custom-build-preview-inline-link:visited,
+  .custom-build-preview-page .custom-build-preview-row__text .custom-build-preview-inline-link:hover,
+  .custom-build-preview-page .custom-build-preview-row__text .custom-build-preview-inline-link:focus {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .custom-build-preview-page .custom-build-preview-note .custom-build-preview-note__link,
+  .custom-build-preview-page .custom-build-preview-note .custom-build-preview-note__link:visited,
+  .custom-build-preview-page .custom-build-preview-note .custom-build-preview-note__link:hover,
+  .custom-build-preview-page .custom-build-preview-note .custom-build-preview-note__link:focus {
+    color: inherit;
+    font-weight: inherit;
+    text-decoration: none;
   }
 
   .custom-build-preview-page .custom-build-preview-features ul {

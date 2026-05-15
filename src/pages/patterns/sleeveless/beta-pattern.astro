@@ -21,6 +21,12 @@ import "../../../styles/patterns/sleeveless-pattern-shared.css";
 >
   <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/sleeveless" />
   <main class="wizard-page sleeveless-pattern-page sleeveless-beta-readonly-pattern">
+    <p class="beta-pattern-express-notice no-print" role="status">
+      You’ve already previewed the pattern results. Now take a look at the
+      <a href="/patterns/sleeveless-express">Express Builder</a>
+      and create your own sweater pattern.
+    </p>
+
     <div class="sleeveless-beta-pattern__top no-print">
       <div class="sleeveless-beta-pattern__top-inner">
         <p class="sleeveless-beta-pattern__label">Sleeveless sweater · Beta · Published pattern</p>
@@ -110,6 +116,30 @@ import "../../../styles/patterns/sleeveless-pattern-shared.css";
 
 
 <style>
+  .beta-pattern-express-notice {
+    max-width: 52rem;
+    margin: 0.75rem auto 0.5rem;
+    padding: 0.45rem 1rem;
+    text-align: center;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: #374151;
+    background: #f3f6ef;
+    border: 1px solid #d8e3c8;
+    border-radius: 6px;
+  }
+
+  .beta-pattern-express-notice a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+  }
+
+  .beta-pattern-express-notice a:hover {
+    text-decoration-thickness: 2px;
+  }
+
   .sleeveless-beta-pattern__top {
     max-width: 52rem;
     margin: 0 auto;

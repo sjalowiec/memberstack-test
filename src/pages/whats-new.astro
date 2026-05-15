@@ -36,10 +36,29 @@ const sueHeadshot = "/images/sue.gif";
               <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
               <div class="whats-new-item__body">
                 <h3 class="whats-new-item__title whats-new-item__title--pattern">
-                  <a href="/patterns/sleeveless/beta-pattern">Beta Sleeveless Sweater Pattern</a>
+                  <a href="/patterns/sleeveless-express/">NEW: Express Sweater Pattern System</a>
                 </h3>
                 <p class="whats-new-item__desc">
-                  Explore the updated online pattern with embedded help, glossary support, shaping guidance, and improved finishing instructions.
+                  Create your own sleeveless sweater pattern using your size, gauge, and neckline choices. Generate a printable machine knitting pattern with interactive help built in.
+                </p>
+                <p class="whats-new-item__links">
+                  <a class="whats-new-item__link" href="/patterns/sleeveless-express/">
+                    <img
+                      class="whats-new-item__link-icon"
+                      src="/images/express-icon.svg"
+                      alt=""
+                      width="18"
+                      height="18"
+                      decoding="async"
+                      aria-hidden="true"
+                    />
+                    Build Your Pattern
+                  </a>
+                  <span class="whats-new-item__links-sep" aria-hidden="true"> · </span>
+                  <a class="whats-new-item__link" href="/patterns/sleeveless/beta-pattern">
+                    <i class="fa-regular fa-file whats-new-item__link-icon whats-new-item__link-icon--fa" aria-hidden="true"></i>
+                    View Sample Pattern
+                  </a>
                 </p>
               </div>
             </li>
@@ -78,7 +97,7 @@ const sueHeadshot = "/images/sue.gif";
             </li>
           </ul>
           <p class="whats-new-login-note">
-            Note: This is a new platform, so you’ll need to set your password the first time you log in. Just use the "reset password" option to get started.
+            <em>Note: This is a new platform, so to see the videos, you’ll need to set your password the first time you log in. Just use the "reset password" option to get started.</em>
           </p>
           </section>
         </div>
@@ -95,7 +114,7 @@ const sueHeadshot = "/images/sue.gif";
                 Every week, more of the new Knit it Now experience is coming online.
               </p>
               <p>
-                This week includes updates to the video library, Help Hubs, and pattern support tools, along with improvements based directly on beta feedback.
+                This week’s biggest update is the new Express Pattern Builder along with pattern updates based directly on beta feedback.
               </p>
               <p>
                 The feedback you’ve shared is already shaping what comes next, and I’m excited to keep building this with you.
@@ -128,12 +147,6 @@ const sueHeadshot = "/images/sue.gif";
       <section class="whats-new-box whats-new-box--coming whats-new-coming-block" aria-labelledby="whats-new-coming-soon">
           <h2 class="whats-new-box__title" id="whats-new-coming-soon">Coming Soon</h2>
           <ul class="whats-new-items">
-            <li class="whats-new-item">
-              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
-              <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title">Express Pattern beta access</h3>
-              </div>
-            </li>
             <li class="whats-new-item">
               <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
               <div class="whats-new-item__body">
@@ -497,6 +510,61 @@ const sueHeadshot = "/images/sue.gif";
       font-size: var(--text-base);
       line-height: 1.55;
       color: #3d4a2e;
+    }
+
+    .whats-new-item__links {
+      margin: 0.5rem 0 0;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
+    .whats-new-item__links a {
+      color: var(--kbm-green);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .whats-new-item__links a:hover,
+    .whats-new-item__links a:focus-visible {
+      color: #3d5a24;
+    }
+
+    .whats-new-item__links a:focus-visible {
+      outline: 2px solid var(--kbm-green);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+
+    .whats-new-item__link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      vertical-align: middle;
+    }
+
+    .whats-new-item__link-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .whats-new-item__link-icon--fa {
+      font-size: 1.125rem;
+      line-height: 1;
+    }
+
+    @media (max-width: 480px) {
+      .whats-new-item__links-sep {
+        display: none;
+      }
+
+      .whats-new-item__links a {
+        display: block;
+      }
+
+      .whats-new-item__links a + a {
+        margin-top: 0.25rem;
+      }
     }
 
     .whats-new-footer {
