@@ -241,6 +241,8 @@ function initExpressMeasurementsConfirmPage(): void {
   }
 
   const root = rootMaybe;
+  const expressHref =
+    root.dataset.expressHref?.trim() || "/patterns/sleeveless-express/";
 
   const statusEl = root.querySelector("[data-express-measurements-status]");
   const summaryEl = root.querySelector("[data-express-measurements-summary]");
@@ -603,7 +605,15 @@ function initExpressMeasurementsConfirmPage(): void {
           reassurance.setAttribute("role", "note");
           const reassuranceTitle = document.createElement("p");
           reassuranceTitle.className = "express-mbp-rail-reassurance__lead";
-          reassuranceTitle.textContent = "You can still go back and change:";
+          const goBackLink = document.createElement("a");
+          goBackLink.href = expressHref;
+          goBackLink.className = "express-custom-build-callout__link";
+          goBackLink.textContent = "go back";
+          reassuranceTitle.append(
+            document.createTextNode("You can still "),
+            goBackLink,
+            document.createTextNode(" and change:"),
+          );
           const reassuranceList = document.createElement("ul");
           reassuranceList.className = "express-mbp-rail-reassurance__list";
           for (const item of ["size", "neckline", "fit ease", "gauge"]) {

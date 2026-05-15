@@ -104,7 +104,18 @@ export const SLEEVELESS_HELP_VIDEOS = {
     title: "Optional V-Neck Band Tutorial",
     description:
       "This walkthrough demonstrates one professional method for knitting and finishing a folded V-neck band, including pickup ratios, center decreases, tension grading, and joining techniques.",
-    jumpLinks: [],
+      jumpLinks: [
+        { label: "stitches to rows pickup", seconds: 24 },
+        { label: "ratio", seconds: 47 },
+        { label: "hang the neckline", seconds: 67 },
+        { label: "Finishing Tip", seconds: 108 },
+        { label: "grade the tension", seconds: 116 },
+        { label: "transfer stitches", seconds: 135 },
+        { label: "Public side", seconds: 250 },
+        { label: "turning row", seconds: 268 },
+        { label: "Private side", seconds: 274 },
+        { label: "close the band", seconds: 325 },
+      ],
   },
   /** Catalog content_id 520 / slug seaming-putting-it-all-together — same Vimeo id site-wide. */
   seamingPuttingItAllTogether: {
