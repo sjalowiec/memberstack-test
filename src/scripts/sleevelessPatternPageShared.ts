@@ -31,14 +31,18 @@ import { initChartProgressTracking } from "./chartProgressTracker.ts";
 import { showResults, initializeActionBar } from "../components/wizards/utils/wizardBehavior.ts";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
 import {
-  getSleevelessFrontDiagramSrc,
+  resolveSleevelessFrontDiagram,
   isSleevelessVNeckChoice,
+  isSleevelessDevCardiganExpressPreview,
 } from "../lib/patterns/sleevelessFrontDiagramSrc.ts";
+import { buildSleevelessGarmentDiagramReplacements } from "../lib/patterns/sleevelessGarmentDiagramReplacements.ts";
 import {
   buildSleevelessPrintBasicsSummaryDlHtml,
   buildSleevelessScreenBasicsSummaryDlHtml,
   formatGaugeIntroPhrase,
 } from "../lib/patterns/sleevelessPrintBasicsSummaryHtml.ts";
+
+// DEV-only cardigan half-front schematic: sessionStorage or localStorage key `kbmDevCardiganHalfFrontLeft` = "1" (vite dev).
 
 /** Canonical Vimeo help clips for sleeveless pattern pages (modal + optional jump links). */
 export const SLEEVELESS_HELP_VIDEOS = {
@@ -506,17 +510,21 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
    * @param {string} innerHtml
    * @param {string} diagramSrc
    * @param {string} diagramAlt
+   * @param {{ cardiganHalfSide?: "left" | "right" }} [diagramOpts]
    */
-  function wrapSleevelessPieceSplit(innerHtml, diagramSrc, diagramAlt, postSplitHtml) {
+  function wrapSleevelessPieceSplit(innerHtml, diagramSrc, diagramAlt, postSplitHtml, diagramOpts) {
     const src = escapeHtml(diagramSrc);
     const alt = escapeHtml(diagramAlt);
     const post = postSplitHtml || "";
+    const half = diagramOpts?.cardiganHalfSide;
+    const halfAttr =
+      half === "left" || half === "right" ? ` data-sleeveless-cardigan-half="${half}"` : "";
     return `<div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split">
   <div class="pattern-layout__content sleeveless-piece-split__text">${innerHtml}</div>
   <aside class="pattern-layout__sidebar sleeveless-piece-split__diagram" aria-label="Garment diagram">
     <div class="sleeveless-piece-split__diagram-inner">
       <button type="button" class="sleeveless-piece-split__diagram-trigger" data-sleeveless-diagram-trigger aria-label="Open larger diagram: ${alt}">
-        <div class="sleeveless-piece-split__diagram-svg" data-sleeveless-diagram data-src="${src}" data-alt="${alt}">
+        <div class="sleeveless-piece-split__diagram-svg" data-sleeveless-diagram data-src="${src}" data-alt="${alt}"${halfAttr}>
           <p class="sleeveless-pattern-boot-msg">Loading diagram…</p>
         </div>
       </button>
@@ -545,52 +553,13 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     return inches;
   }
 
-  function toPositiveNumber(value) {
-    const n =
-      typeof value === "number"
-        ? value
-        : typeof value === "string"
-          ? Number(value.replace(/[^\d.-]/g, ""))
-          : NaN;
-    return Number.isFinite(n) && n > 0 ? n : undefined;
-  }
-
-  function selectedMeasurementsFromPatternData(patternData) {
-    const fit = section(patternData?.fit);
-    return section(fit.selectedMeasurements);
-  }
-
   function inferSleevelessDiagramPiece(src, alt) {
     const s = String(src || "").toLowerCase();
     const a = String(alt || "").toLowerCase();
     if (s.includes("diagram-back") || a.includes(" back ")) return "back";
+    if (s.includes("cardigan-half-front") || s.includes("cardigan-v.svg")) return "front";
     if (s.includes("diagram-front") || a.includes(" front ")) return "front";
     return "shared";
-  }
-
-  function resolveNeckDepthFields(result, patternData, piece, unit) {
-    const d = result?.debug ?? {};
-    const sm = selectedMeasurementsFromPatternData(patternData);
-    const rpi = d.rowsPerInch;
-
-    const backDepthIn = toPositiveNumber(sm.back_neck_depth);
-    const frontDepthIn = toPositiveNumber(sm.front_neck_depth);
-
-    let pieceDepthIn;
-    if (piece === "back") pieceDepthIn = backDepthIn;
-    else if (piece === "front") pieceDepthIn = frontDepthIn;
-
-    // Piece-specific neckline depth wins for SVGs; fallback keeps prior behavior if missing.
-    const depthInches = isFiniteNumber(pieceDepthIn) ? pieceDepthIn : d.reservedNecklineShoulderInches;
-    const depthRows =
-      isFiniteNumber(pieceDepthIn) && isFiniteNumber(rpi) && rpi > 0
-        ? Math.max(0, Math.round(pieceDepthIn * rpi))
-        : d.reservedNecklineShoulderRows;
-
-    return {
-      NECK_DEPTH_ROWS: isFiniteNumber(depthRows) ? String(Math.round(depthRows)) : "",
-      NECK_DEPTH: fmtNumber(inchesToUnit(depthInches, unit)),
-    };
   }
 
   /**
@@ -598,53 +567,15 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
    * Values are sourced from {@link SleevelessBackPatternResult.debug} where possible to avoid duplicate math.
    */
   function buildSleevelessDiagramReplacements(result, unit, opts) {
-    const d = result?.debug ?? {};
     const piece = opts?.piece || "shared";
     const patternData = opts?.patternData;
-    const unitLabel = unit === "cm" ? "cm" : "in";
-    const neckDepth = resolveNeckDepthFields(result, patternData, piece, unit);
-
-    const finishedBust = isFiniteNumber(d.finishedBustChest) ? d.finishedBustChest : undefined;
-    const bustWidthIn = finishedBust !== undefined ? finishedBust / 2 : undefined;
-
-    const repl = {
-      UNIT: unitLabel,
-
-      // Overall length (neck-to-hem) for the back piece.
-      HEIGHT: fmtNumber(inchesToUnit(d.backNeckToHem, unit)),
-
-      ARMHOLE_DEPTH: fmtNumber(inchesToUnit(d.armholeDepth, unit)),
-      ARMHOLE_ROWS: isFiniteNumber(d.armholeRows) ? String(Math.round(d.armholeRows)) : "",
-
-      // Width across the piece (half of finished bust/chest circumference).
-      BUST_STS: isFiniteNumber(d.backStitches) ? String(Math.round(d.backStitches)) : "",
-      BUST_WIDTH: fmtNumber(inchesToUnit(bustWidthIn, unit)),
-
-      // After armhole shaping (chart uses these stitch counts).
-      SHOULDER_STS: isFiniteNumber(d.stitchesAfterArmhole) ? String(Math.round(d.stitchesAfterArmhole)) : "",
-      SHOULDER_WIDTH: fmtNumber(inchesToUnit(d.shoulderWidthInches, unit)),
-
-      NECK_STS: isFiniteNumber(d.necklineStitches) ? String(Math.round(d.necklineStitches)) : "",
-      NECK_WIDTH: fmtNumber(inchesToUnit(d.necklineWidthInches, unit)),
-
-      NECK_DEPTH_ROWS: neckDepth.NECK_DEPTH_ROWS,
-      NECK_DEPTH: neckDepth.NECK_DEPTH,
-
-      // Side seam hem → underarm: hem rows + body rows (see sleevelessPatternOutput debug.bodyRows / hemRows).
-      SIDE_LENGTH_ROWS:
-        isFiniteNumber(d.hemRows) && isFiniteNumber(d.bodyRows)
-          ? String(Math.max(0, Math.round(d.hemRows + d.bodyRows)))
-          : "",
-      SIDE_LENGTH: (() => {
-        const rpi = d.rowsPerInch;
-        if (!isFiniteNumber(rpi) || rpi <= 0) return "";
-        if (!isFiniteNumber(d.hemRows) || !isFiniteNumber(d.bodyRows)) return "";
-        const sideRows = Math.max(0, Math.round(d.hemRows + d.bodyRows));
-        return fmtNumber(inchesToUnit(sideRows / rpi, unit));
-      })(),
-    };
-
-    return repl;
+    const rawHalf = opts?.cardiganHalfSide;
+    const cardiganHalfSide = rawHalf === "left" || rawHalf === "right" ? rawHalf : undefined;
+    return buildSleevelessGarmentDiagramReplacements(result, unit, {
+      patternData,
+      measurementPiece: piece,
+      cardiganHalfSide,
+    });
   }
 
   async function inlineSvgWithReplacements(hostEl, src, alt, replacements) {
@@ -702,9 +633,12 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       const alt = el.getAttribute("data-alt") || el.dataset.alt || "";
       if (!src) return;
       const piece = inferSleevelessDiagramPiece(src, alt);
+      const dsHalf = el.dataset.sleevelessCardiganHalf || "";
+      const cardiganHalfSide = dsHalf === "left" || dsHalf === "right" ? dsHalf : undefined;
       const replacements = buildSleevelessDiagramReplacements(result, unit, {
         piece,
         patternData,
+        cardiganHalfSide,
       });
       jobs.push(inlineSvgWithReplacements(el, src, alt, replacements));
     });
@@ -1938,11 +1872,26 @@ table {
       "Sleeveless back piece diagram",
       backPost
     );
+    const frontDiagramResolution = resolveSleevelessFrontDiagram(necklineAssetPatternData);
+    const frontCardiganHalfSide =
+      frontDiagramResolution.diagramType === "cardiganHalfFrontV"
+        ? undefined
+        : frontDiagramResolution.frontPieceType === "leftFront"
+          ? "left"
+          : frontDiagramResolution.frontPieceType === "rightFront"
+            ? "right"
+            : undefined;
+    const frontDiagramAlt =
+      frontDiagramResolution.diagramType === "cardiganHalfFrontRound" ||
+      frontDiagramResolution.diagramType === "cardiganHalfFrontV"
+        ? "Sleeveless cardigan left front diagram (development)"
+        : "Sleeveless front piece diagram";
     const frontWrapped = wrapSleevelessPieceSplit(
       frontInner,
-      getSleevelessFrontDiagramSrc(necklineAssetPatternData),
-      "Sleeveless front piece diagram",
-      frontPost
+      frontDiagramResolution.src,
+      frontDiagramAlt,
+      frontPost,
+      frontCardiganHalfSide ? { cardiganHalfSide: frontCardiganHalfSide } : undefined,
     );
 
     mount.innerHTML =
@@ -1955,6 +1904,20 @@ table {
         sectionClassName: "pattern-section--garment-piece",
       }) +
       wrapPatternSection("sg-finishing", "Finishing", buildFinishingHtml(patternMerged), { defaultCollapsed: true });
+
+    const patternContentEl = document.getElementById("pattern-content");
+    const existingDevCardiganBanner = patternContentEl?.querySelector("[data-sleeveless-dev-cardigan-banner]");
+    if (existingDevCardiganBanner) existingDevCardiganBanner.remove();
+    if (import.meta.env.DEV && isSleevelessDevCardiganExpressPreview(necklineAssetPatternData) && patternContentEl) {
+      const devBanner = document.createElement("p");
+      devBanner.className = "sleeveless-dev-cardigan-banner no-print pattern-subtext";
+      devBanner.dataset.sleevelessDevCardiganBanner = "";
+      devBanner.setAttribute("role", "status");
+      devBanner.textContent = "Development Cardigan Preview";
+      const inpageNav = patternContentEl.querySelector("[data-sleeveless-pattern-inpage-nav]");
+      if (inpageNav) patternContentEl.insertBefore(devBanner, inpageNav);
+      else patternContentEl.insertBefore(devBanner, patternContentEl.firstChild);
+    }
 
     const backArmholeLocalChartStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
       ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC))

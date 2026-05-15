@@ -1,4 +1,16 @@
+import {
+  type SleevelessFrontDiagramType,
+  type SleevelessFrontPieceType,
+  type SleevelessGarmentStyle,
+} from "./cardiganFrontBlock";
 import { sectionPattern } from "./sleevelessPatternBuilderMerge";
+
+/** Half-front round-neck cardigan schematic (`cardiganHalfFrontRound`). */
+export const SLEEVELESS_CARDIGAN_HALF_FRONT_ROUND_DIAGRAM_SRC =
+  "/images/patterns/sleeveless/cardigan-half-front-round.svg";
+
+/** Dev cardigan V-neck front garment schematic (Illustrator export `public/images/patterns/cardigan-v.svg`). */
+export const SLEEVELESS_CARDIGAN_V_FRONT_DIAGRAM_SRC = "/images/patterns/cardigan-v.svg";
 
 /** Back neckline / shoulder shaping underlay — round/shallow back neck only (never V-neck). */
 export const SLEEVELESS_SHOULDER_NOTATION_ICON_BACK = "/images/patterns/shoulder-round-icon.svg";
@@ -65,13 +77,124 @@ export function isSleevelessVNeckChoice(patternData: unknown): boolean {
 }
 
 /**
- * Front garment schematic asset — V-neck vs round silhouette only; placeholders are the same on both SVGs.
+ * True when merged pattern style requests a cardigan (open front / explicit garmentStyle).
+ * Used with `import.meta.env.DEV` so production builds never pick the half-front schematic from stored data alone.
+ */
+export function isSleevelessCardiganGarmentStyle(patternData: unknown): boolean {
+  const pd =
+    patternData && typeof patternData === "object" && !Array.isArray(patternData)
+      ? (patternData as Record<string, unknown>)
+      : {};
+  const st = sectionPattern(pd.style);
+  const gs = String(st.garmentStyle ?? "").trim().toLowerCase();
+  if (gs === "cardigan") return true;
+  const fs = String(st.frontStyle ?? "").trim().toLowerCase();
+  if (fs === "open") return true;
+  return false;
+}
+
+/** DEV + cardigan preview from Express / stored style (for UI banner). */
+export function isSleevelessDevCardiganExpressPreview(patternData: unknown): boolean {
+  return import.meta.env.DEV && isSleevelessCardiganGarmentStyle(patternData);
+}
+
+export type SleevelessFrontDiagramResolution = {
+  garmentStyle: SleevelessGarmentStyle;
+  diagramType: SleevelessFrontDiagramType;
+  frontPieceType: SleevelessFrontPieceType;
+  src: string;
+};
+
+export type ResolveSleevelessFrontDiagramOptions = {
+  /**
+   * When `true`, force the cardigan half-front asset (tests).
+   * When `false`, skip the session/localStorage dev toggle only; persisted `garmentStyle` / `frontStyle`
+   * still select the half-front schematic when `import.meta.env.DEV` is true.
+   */
+  devForceCardiganHalfLeft?: boolean;
+};
+
+/**
+ * Whether DEV-only half-front cardigan diagram preview is enabled.
+ * Set `sessionStorage` or `localStorage` key `kbmDevCardiganHalfFrontLeft` to `"1"` while running `vite dev`.
+ */
+export function isSleevelessDevCardiganHalfFrontLeftEnabled(): boolean {
+  if (!import.meta.env.DEV) return false;
+  try {
+    const g = globalThis as typeof globalThis & {
+      sessionStorage?: Storage;
+      localStorage?: Storage;
+    };
+    return (
+      g.sessionStorage?.getItem("kbmDevCardiganHalfFrontLeft") === "1" ||
+      g.localStorage?.getItem("kbmDevCardiganHalfFrontLeft") === "1"
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Front-opening schematic URL plus discriminators for future routing (`diagramType`, `garmentStyle`, `frontPieceType`).
+ */
+export function resolveSleevelessFrontDiagram(
+  patternData: unknown,
+  options?: ResolveSleevelessFrontDiagramOptions,
+): SleevelessFrontDiagramResolution {
+  let useCardiganHalf = false;
+  if (options?.devForceCardiganHalfLeft === true) {
+    useCardiganHalf = true;
+  } else {
+    if (import.meta.env.DEV && isSleevelessCardiganGarmentStyle(patternData)) {
+      useCardiganHalf = true;
+    } else if (
+      options?.devForceCardiganHalfLeft !== false &&
+      import.meta.env.DEV &&
+      isSleevelessDevCardiganHalfFrontLeftEnabled()
+    ) {
+      useCardiganHalf = true;
+    }
+  }
+
+  if (useCardiganHalf) {
+    if (isSleevelessVNeckChoice(patternData)) {
+      return {
+        garmentStyle: "cardigan",
+        diagramType: "cardiganHalfFrontV",
+        frontPieceType: "leftFront",
+        src: SLEEVELESS_CARDIGAN_V_FRONT_DIAGRAM_SRC,
+      };
+    }
+    return {
+      garmentStyle: "cardigan",
+      diagramType: "cardiganHalfFrontRound",
+      frontPieceType: "leftFront",
+      src: SLEEVELESS_CARDIGAN_HALF_FRONT_ROUND_DIAGRAM_SRC,
+    };
+  }
+
+  if (isSleevelessVNeckChoice(patternData)) {
+    return {
+      garmentStyle: "pullover",
+      diagramType: "pulloverFullFrontV",
+      frontPieceType: "fullFront",
+      src: "/images/patterns/sleeveless/diagram-front-V.svg",
+    };
+  }
+
+  return {
+    garmentStyle: "pullover",
+    diagramType: "pulloverFullFrontRound",
+    frontPieceType: "fullFront",
+    src: "/images/patterns/sleeveless/diagram-front.svg",
+  };
+}
+
+/**
+ * Front garment schematic asset — V-neck vs round silhouette; delegates to {@link resolveSleevelessFrontDiagram}.
  */
 export function getSleevelessFrontDiagramSrc(patternData: unknown): string {
-  if (isSleevelessVNeckChoice(patternData)) {
-    return "/images/patterns/sleeveless/diagram-front-V.svg";
-  }
-  return "/images/patterns/sleeveless/diagram-front.svg";
+  return resolveSleevelessFrontDiagram(patternData, { devForceCardiganHalfLeft: false }).src;
 }
 
 /**
