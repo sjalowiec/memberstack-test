@@ -52,6 +52,56 @@ function escapeHtml(text: string): string {
     .replace(/"/g, "&quot;");
 }
 
+function chartProgressRcAttrFromActiveRow(r: ActiveSideInstructionTableRow): string {
+  const start = Math.max(0, Math.floor(Number(r.rc)));
+  const endRaw = r.rcEnd !== undefined ? Math.max(0, Math.floor(Number(r.rcEnd))) : start;
+  return endRaw !== start ? `${start}-${endRaw}` : String(start);
+}
+
+function chartProgressRcAttrFromGarmentRow(r: NeckShoulderShapingChartRow): string {
+  const lo = Math.max(0, Math.floor(Number(r.row)));
+  const hi =
+    r.chartRowSpanLast !== undefined && Number.isFinite(r.chartRowSpanLast)
+      ? Math.max(0, Math.floor(Number(r.chartRowSpanLast)))
+      : lo;
+  return hi !== lo ? `${lo}-${hi}` : String(lo);
+}
+
+/** Stable checklist row identity for persistence (paired with [`data-chart-id`](/)). */
+function buildActiveSideStableRowId(chartProgressId: string, r: ActiveSideInstructionTableRow): string {
+  const start = Math.max(0, Math.floor(Number(r.rc)));
+  const endRaw =
+    r.rcEnd !== undefined && Number.isFinite(Number(r.rcEnd))
+      ? Math.max(0, Math.floor(Number(r.rcEnd)))
+      : start;
+  return `${chartProgressId}|arc|${start}|${endRaw}|${Number(r.stitchesRemaining)}|${
+    r.carriagePosition
+  }|${r.action}|${r.edge}`;
+}
+
+function buildFullChartStableRowId(
+  chartProgressId: string,
+  displayRow: NeckShoulderShapingChartDisplayRow,
+): string {
+  const r = displayRow.sourceRow;
+  const lo = Math.max(0, Math.floor(Number(r.row)));
+  const hi =
+    r.chartRowSpanLast !== undefined && Number.isFinite(r.chartRowSpanLast)
+      ? Math.max(0, Math.floor(Number(r.chartRowSpanLast)))
+      : lo;
+  const center = String(r.centerNeck ?? "").trim();
+  return `${chartProgressId}|full|${lo}|${hi}|${displayRow.rowLabel}|${displayRow.actionLabel}|${center}|${
+    r.leftStitchCount
+  }|${r.rightStitchCount}`;
+}
+
+function renderNsChartProgressToolbarHtml(): string {
+  return `<div class="ns-shaping-chart__progress-toolbar no-print" role="toolbar" aria-label="Chart checklist tracking">
+    <button type="button" class="ns-shaping-chart__progress-btn ns-shaping-chart__progress-toggle-hide" data-chart-progress-toggle-hide aria-pressed="false">Hide completed rows</button>
+    <button type="button" class="ns-shaping-chart__progress-btn ns-shaping-chart__progress-reset" data-chart-progress-reset>Reset checklist</button>
+  </div>`;
+}
+
 function rowClassFromHighlight(hi: ReturnType<typeof getNeckShoulderChartRowHighlightFromRow>): string {
   if (hi === "neckBothSides") return "ns-shaping-chart__tr ns-shaping-chart__tr--neck-both";
   if (hi === "shoulderAndNeck") return "ns-shaping-chart__tr ns-shaping-chart__tr--shoulder-neck";
@@ -491,11 +541,19 @@ function formatActiveSideRcDisplay(r: ActiveSideInstructionTableRow): string {
   return formatActiveSideRc(r.rc);
 }
 
-function renderActiveSideInstructionRowsTrHtml(rows: readonly ActiveSideInstructionTableRow[]): string {
+function renderActiveSideInstructionRowsTrHtml(
+  rows: readonly ActiveSideInstructionTableRow[],
+  chartProgressId: string,
+): string {
   return rows
     .map((r) => {
       const rcDisp = formatActiveSideRcDisplay(r);
-      return `<tr class="ns-shaping-chart__tr"><td class="ns-shaping-chart__td-num">${escapeHtml(
+      const rowId = buildActiveSideStableRowId(chartProgressId, r);
+      const rcAttr = chartProgressRcAttrFromActiveRow(r);
+      const doneCell = `<td class="ns-shaping-chart__td-complete"><label class="ns-shaping-chart__row-check-label"><input type="checkbox" class="ns-shaping-chart__row-check" aria-label="Mark chart row RC ${escapeHtml(
+        rcDisp
+      )} complete" /></label></td>`;
+      return `<tr class="ns-shaping-chart__tr" data-row-id="${escapeHtml(rowId)}" data-rc="${escapeHtml(rcAttr)}">${doneCell}<td class="ns-shaping-chart__td-num">${escapeHtml(
         rcDisp
       )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${escapeHtml(r.action)}</td><td>${escapeHtml(
         r.edge
@@ -537,10 +595,14 @@ type NeckShoulderChartRenderOptions = {
   fullWidthChartOneRowPerRc?: boolean;
 };
 
-function chartBodyRowsHtml(chart: NeckShoulderShapingChart, options?: NeckShoulderChartRenderOptions): string {
+function chartBodyRowsHtml(
+  chart: NeckShoulderShapingChart,
+  chartProgressId: string,
+  options?: NeckShoulderChartRenderOptions,
+): string {
   const activeSideOnly = options?.activeSideOnly === true;
   const activeSideRcStart = Math.max(0, Math.floor(Number(options?.activeSideRcStart ?? 0)));
-  const includeDoneColumn = activeSideOnly ? false : options?.includeDoneColumn !== false;
+  const includeDoneColumn = activeSideOnly ? true : options?.includeDoneColumn !== false;
   const compactPrint = options?.compactPlainKnitSpansForPrint === true;
   const rowLabelStyle = compactPrint ? "print" : "online";
   const vNeckStyleOneRowPerRc =
@@ -562,7 +624,7 @@ function chartBodyRowsHtml(chart: NeckShoulderShapingChart, options?: NeckShould
         rowsAfter: activeRows.length,
       });
     }
-    return renderActiveSideInstructionRowsTrHtml(activeRows);
+    return renderActiveSideInstructionRowsTrHtml(activeRows, chartProgressId);
   }
   const displayRows = vNeckStyleOneRowPerRc
     ? chartDisplayRowsOnePerRc(chart.rows, { rowLabelStyle })
@@ -573,6 +635,8 @@ function chartBodyRowsHtml(chart: NeckShoulderShapingChart, options?: NeckShould
       const hi = getNeckShoulderChartRowHighlightFromRow(r);
       const trClass = rowClassFromHighlight(hi);
       const rowNum = Math.max(0, Math.floor(r.row));
+      const rowStableId = buildFullChartStableRowId(chartProgressId, displayRow);
+      const rcAttr = chartProgressRcAttrFromGarmentRow(r);
       const doneCell = includeDoneColumn
         ? `<td class="ns-shaping-chart__td-complete"><label class="ns-shaping-chart__row-check-label"><input type="checkbox" class="ns-shaping-chart__row-check" aria-label="Mark chart row ${rowNum} complete" /></label></td>`
         : "";
@@ -582,7 +646,8 @@ function chartBodyRowsHtml(chart: NeckShoulderShapingChart, options?: NeckShould
         displayRow.rowLabel.includes("\u2013");
       const stitchLeft = mergedPlainSpan ? "stitch count unchanged" : String(r.leftStitchCount);
       const stitchRight = mergedPlainSpan ? "stitch count unchanged" : String(r.rightStitchCount);
-      return `<tr class="${trClass}">${doneCell}<td class="ns-shaping-chart__td-num">${escapeHtml(displayRow.rowLabel)}</td><td>${renderFullChartActionCellHtml(
+      const dataAttrs = ` data-row-id="${escapeHtml(rowStableId)}" data-rc="${escapeHtml(rcAttr)}"`;
+      return `<tr class="${trClass}"${dataAttrs}>${doneCell}<td class="ns-shaping-chart__td-num">${escapeHtml(displayRow.rowLabel)}</td><td>${renderFullChartActionCellHtml(
         displayRow,
       )}</td><td class="ns-shaping-chart__td-center">${escapeHtml(r.leftSide)}</td><td class="ns-shaping-chart__td-center">${escapeHtml(
         r.leftNeck
@@ -603,12 +668,14 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
   options?: NeckShoulderChartRenderOptions
 ): string {
   const headingId = `${idPrefix}-heading`;
-  const rowsHtml = chartBodyRowsHtml(chart, options);
   const intro = typeof introHtml === "string" && introHtml.trim() ? introHtml : "";
-  const includeDoneColumn = options?.includeDoneColumn !== false;
+  const includeDoneColumnOption = options?.includeDoneColumn !== false;
   const activeSideOnly = options?.activeSideOnly === true;
+  const progressChartIdPrimary = activeSideOnly ? `${idPrefix}-primary` : idPrefix;
+  const progressChartIdSecondary = `${idPrefix}-secondary`;
+  const rowsHtml = chartBodyRowsHtml(chart, progressChartIdPrimary, options);
+
   const activeSideRcStart = Math.max(0, Math.floor(Number(options?.activeSideRcStart ?? 0)));
-  const compactPrint = options?.compactPlainKnitSpansForPrint === true;
   const vNeckStyleOneRowPerRc =
     isFullWidthVNeckFrontStyleChart(chart) && options?.fullWidthChartOneRowPerRc !== false;
   const activeRowsRaw = activeSideOnly ? buildActiveSideInstructionTableRows(chart, activeSideRcStart) : [];
@@ -616,26 +683,37 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
   const oppositeRowsHtml = activeSideOnly
     ? renderActiveSideInstructionRowsTrHtml(
         vNeckStyleOneRowPerRc ? oppositeRowsPrep : compactActiveSideInstructionRowsForPrint(oppositeRowsPrep),
+        progressChartIdSecondary,
       )
     : "";
   const heldShoulderStitches = Math.max(0, Math.floor(Number(chart.rows[0]?.leftStitchCount ?? 0)));
-  const showDoneColumn = activeSideOnly ? false : includeDoneColumn;
+  const showDoneColumn = activeSideOnly ? true : includeDoneColumnOption;
   const tableClassName = String(options?.tableClassName ?? "").trim();
   const sectionClass = tableClassName ? `ns-shaping-chart ${tableClassName}` : "ns-shaping-chart";
-  const doneHeader = showDoneColumn
-    ? `<th scope="col" rowspan="2" class="ns-shaping-chart__th-complete" aria-label="Completion status">
+  const doneHeaderFullGrid = `<th scope="col" rowspan="2" class="ns-shaping-chart__th-complete" aria-label="Completion status">
             Done
-          </th>`
-    : "";
+          </th>`;
+  const doneHeaderActiveSide = `<th scope="col" rowspan="1" class="ns-shaping-chart__th-complete" aria-label="Completion status">Done</th>`;
+  const doneLeadingCell = activeSideOnly
+    ? showDoneColumn
+      ? doneHeaderActiveSide
+      : ""
+    : showDoneColumn
+      ? doneHeaderFullGrid
+      : "";
+
+  const progressToolbarHtml = renderNsChartProgressToolbarHtml();
 
   return `<section class="${escapeHtml(sectionClass)}" aria-labelledby="${escapeHtml(headingId)}">
   <h2 id="${escapeHtml(headingId)}" class="ns-shaping-chart__title">Neckline / Shoulder Shaping Chart</h2>
   ${intro}
-  <div class="ns-shaping-chart__table-wrap">
+  <div class="ns-shaping-chart__progress-section" data-chart-id="${escapeHtml(progressChartIdPrimary)}">
+    ${progressToolbarHtml}
+    <div class="ns-shaping-chart__table-wrap">
     <table class="ns-shaping-chart__table">
       <thead>
         <tr>
-          ${doneHeader}
+          ${doneLeadingCell}
           ${
             activeSideOnly
               ? `<th scope="col" rowspan="1" class="ns-shaping-chart__th-row">RC</th>
@@ -667,6 +745,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
       </thead>
       <tbody>${rowsHtml}</tbody>
     </table>
+    </div>
   </div>
   ${activeSideOnly ? renderActiveSideBindoffRemainingHtml(activeRowsRaw) : ""}
   ${
@@ -686,10 +765,13 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
 </div>
 <div class="ns-shaping-chart__second-shoulder-block" data-second-shoulder-content hidden>
   <h3 class="ns-shaping-chart__preview-title">Second Shoulder Checklist</h3>
-  <div class="ns-shaping-chart__table-wrap">
+  <div class="ns-shaping-chart__progress-section" data-chart-id="${escapeHtml(progressChartIdSecondary)}">
+    ${progressToolbarHtml}
+    <div class="ns-shaping-chart__table-wrap">
     <table class="ns-shaping-chart__table">
       <thead>
         <tr>
+          ${doneHeaderActiveSide}
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-row">RC</th>
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-action">Carriage Position</th>
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-action">Action</th>
@@ -699,6 +781,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
       </thead>
       <tbody>${oppositeRowsHtml}</tbody>
     </table>
+    </div>
   </div>
 </div>`
       : ""

@@ -140,12 +140,59 @@
   accent-color: var(--kbm-green);
 }
 
+.ns-shaping-chart__progress-section {
+  margin-bottom: 0;
+}
+
+.ns-shaping-chart__progress-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.45rem;
+}
+
+.ns-shaping-chart__progress-btn {
+  margin: 0;
+  padding: 0.22rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  background: #fff;
+  border: 1px solid rgba(55, 65, 81, 0.35);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.ns-shaping-chart__progress-btn:hover {
+  border-color: rgba(82, 104, 45, 0.55);
+  color: var(--kbm-green, #52682d);
+}
+
+.ns-shaping-chart__progress-btn:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+.ns-shaping-chart__tr--progress-complete td {
+  opacity: 0.86;
+}
+
+.ns-shaping-chart__tr--progress-complete td:first-child {
+  opacity: 1;
+}
+
 .ns-shaping-chart__tr:has(.ns-shaping-chart__row-check:checked) td {
   opacity: 0.86;
 }
 
 .ns-shaping-chart__tr:has(.ns-shaping-chart__row-check:checked) td:first-child {
   opacity: 1;
+}
+
+/* Hide-mode: keyed to actual checkbox state (:has mirrors existing completed-row visuals). !important avoids losing cascade conflicts on tr display. */
+.ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__table tbody tr:has(.ns-shaping-chart__row-check:checked) {
+  display: none !important;
 }
 
 .ns-shaping-chart__tr--neck-both td {
@@ -340,6 +387,11 @@
   .ns-shaping-chart {
     font-size: 9pt;
     break-inside: avoid;
+  }
+
+  /* Print: always show full checklist even when hide-completed is active on-screen */
+  .ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__table tbody tr:has(.ns-shaping-chart__row-check:checked) {
+    display: table-row !important;
   }
 
   .ns-shaping-chart__table-wrap {

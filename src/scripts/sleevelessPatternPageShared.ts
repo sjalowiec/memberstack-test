@@ -27,6 +27,7 @@ import {
   renderNeckShoulderShapingDiagramOnlyHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
+import { initChartProgressTracking } from "./chartProgressTracker.ts";
 import { showResults, initializeActionBar } from "../components/wizards/utils/wizardBehavior.ts";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
 import {
@@ -2062,6 +2063,8 @@ table {
       "Front Neckline / Shoulder Shaping Chart"
     );
     bindSecondShoulderChecklistToggles(mount);
+
+    initChartProgressTracking({ patternId: getCurrentPattern().id, root: mount });
 
     applyPatternSectionCollapseState(mount);
     bindPatternSectionCollapsePersistence(mount);
