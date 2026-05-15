@@ -1882,9 +1882,18 @@ table {
     });
   }
 
+  /**
+   * Suppresses stale post-await wiring when a new `renderMount` run replaces the DOM while a prior one
+   * is still awaiting (e.g. rapid tab/builder refreshes). Otherwise chart controls can get duplicate
+   * listeners — the hide-completed toggle fires twice and appears to do nothing.
+   */
+  let sleevelessRenderMountSeq = 0;
+
   async function renderMount(patternMerged, result, unit, generatorPatternData) {
     const mount = document.querySelector("[data-sleeveless-mount]");
     if (!mount) return;
+
+    const renderSeq = ++sleevelessRenderMountSeq;
 
     /** Canonical merged pattern (canonical + builder); neckline lives on `style.neckline` even when generator input omits nested sections. */
     const necklineAssetPatternData = patternMerged;
@@ -2046,6 +2055,8 @@ table {
     // Inline SVG diagrams with placeholder replacement (Back + Front).
     // Note: replacements come from the same result/debug used for chart/timeline (no extra shaping math here).
     await hydrateSleevelessDiagrams(mount, result, unit, necklineAssetPatternData);
+    if (renderSeq !== sleevelessRenderMountSeq) return;
+
     ensureSleevelessDiagramModal();
     bindSleevelessDiagramZoom(mount);
     ensureSleevelessVideoModal();

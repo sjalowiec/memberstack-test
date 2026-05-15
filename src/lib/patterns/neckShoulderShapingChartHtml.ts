@@ -96,9 +96,12 @@ function buildFullChartStableRowId(
 }
 
 function renderNsChartProgressToolbarHtml(): string {
-  return `<div class="ns-shaping-chart__progress-toolbar no-print" role="toolbar" aria-label="Chart checklist tracking">
-    <button type="button" class="ns-shaping-chart__progress-btn ns-shaping-chart__progress-toggle-hide" data-chart-progress-toggle-hide aria-pressed="false">Hide completed rows</button>
-    <button type="button" class="ns-shaping-chart__progress-btn ns-shaping-chart__progress-reset" data-chart-progress-reset>Reset checklist</button>
+  return `<div class="ns-shaping-chart__progress-toolbar no-print">
+    <div class="ns-shaping-chart__progress-toolbar-main" role="toolbar" aria-label="Chart checklist tracking">
+      <button type="button" class="ns-shaping-chart__progress-btn ns-shaping-chart__progress-toggle-hide" data-chart-progress-toggle-hide aria-pressed="false">Hide completed rows</button>
+      <button type="button" class="ns-shaping-chart__progress-btn ns-shaping-chart__progress-reset" data-chart-progress-reset>Reset checklist</button>
+    </div>
+    <p class="ns-shaping-chart__progress-hide-status" data-chart-progress-hide-status role="status" aria-live="polite">All rows are showing.</p>
   </div>`;
 }
 

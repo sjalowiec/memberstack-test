@@ -146,10 +146,33 @@
 
 .ns-shaping-chart__progress-toolbar {
   display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  align-items: flex-start;
+  align-self: stretch;
+  margin-bottom: 0.45rem;
+}
+
+.ns-shaping-chart__progress-toolbar-main {
+  display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
-  margin-bottom: 0.45rem;
+}
+
+.ns-shaping-chart__progress-hide-status {
+  margin: 0;
+  max-width: 100%;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__progress-hide-status {
+  color: #334155;
+  font-weight: 600;
 }
 
 .ns-shaping-chart__progress-btn {
@@ -162,6 +185,22 @@
   border: 1px solid rgba(55, 65, 81, 0.35);
   border-radius: 6px;
   cursor: pointer;
+}
+
+.ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__progress-toggle-hide {
+  background: rgba(82, 104, 45, 0.16);
+  border-color: rgba(82, 104, 45, 0.75);
+  color: var(--kbm-green, #52682d);
+  box-shadow: inset 0 1px 2px rgba(82, 104, 45, 0.12);
+}
+
+.ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__progress-toggle-hide:hover {
+  border-color: var(--kbm-green, #52682d);
+  color: var(--kbm-green, #52682d);
+}
+
+.ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__progress-toggle-hide:focus-visible {
+  outline-color: var(--kbm-green, #52682d);
 }
 
 .ns-shaping-chart__progress-btn:hover {
@@ -190,7 +229,11 @@
   opacity: 1;
 }
 
-/* Hide-mode: keyed to actual checkbox state (:has mirrors existing completed-row visuals). !important avoids losing cascade conflicts on tr display. */
+/*
+ * Hide-mode: use progress-complete class (synced from checkboxes in JS) and :checked for redundancy.
+ * !important avoids losing cascade conflicts on tr display.
+ */
+.ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__table tbody tr.ns-shaping-chart__tr--progress-complete,
 .ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__table tbody tr:has(.ns-shaping-chart__row-check:checked) {
   display: none !important;
 }
@@ -390,6 +433,7 @@
   }
 
   /* Print: always show full checklist even when hide-completed is active on-screen */
+  .ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__table tbody tr.ns-shaping-chart__tr--progress-complete,
   .ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__table tbody tr:has(.ns-shaping-chart__row-check:checked) {
     display: table-row !important;
   }

@@ -11,6 +11,11 @@ export type ChartProgressTrackerOptions = {
 
 const STORAGE_NS = "kbm:chart-rows";
 
+const CHART_PROGRESS_LABEL_FILTER_OFF = "Hide completed rows";
+const CHART_PROGRESS_LABEL_FILTER_ON = "Showing unfinished rows only";
+const CHART_PROGRESS_STATUS_FILTER_OFF = "All rows are showing.";
+const CHART_PROGRESS_STATUS_FILTER_ON = "Completed rows are hidden.";
+
 function sanitizeKeyPart(raw: string): string {
   return String(raw ?? "")
     .trim()
@@ -65,11 +70,28 @@ function bindChartSection(
   const tbody = chartRoot.querySelector("tbody");
   if (!(tbody instanceof HTMLTableSectionElement)) return;
 
+  /** Avoid duplicate listeners when init runs twice on the same DOM (should be rare). */
+  if (chartRoot.dataset.chartProgressBound === "true") return;
+  chartRoot.dataset.chartProgressBound = "true";
+
   const key = chartProgressStorageKey(patternId, chartId);
 
   const hideBtn =
     chartRoot.querySelector<HTMLButtonElement>("[data-chart-progress-toggle-hide]");
   const resetBtn = chartRoot.querySelector<HTMLButtonElement>("[data-chart-progress-reset]");
+  const hideStatusEl = chartRoot.querySelector<HTMLElement>("[data-chart-progress-hide-status]");
+
+  const setCompletedHiddenUi = (active: boolean): void => {
+    chartRoot.dataset.chartProgressHideCompleted = active ? "true" : "false";
+    chartRoot.classList.toggle("ns-shaping-chart--completed-hidden", active);
+    if (hideBtn) {
+      hideBtn.setAttribute("aria-pressed", active ? "true" : "false");
+      hideBtn.textContent = active ? CHART_PROGRESS_LABEL_FILTER_ON : CHART_PROGRESS_LABEL_FILTER_OFF;
+    }
+    if (hideStatusEl) {
+      hideStatusEl.textContent = active ? CHART_PROGRESS_STATUS_FILTER_ON : CHART_PROGRESS_STATUS_FILTER_OFF;
+    }
+  };
 
   const rowById = (): Map<string, HTMLTableRowElement> => {
     const m = new Map<string, HTMLTableRowElement>();
@@ -131,11 +153,8 @@ function bindChartSection(
   });
 
   hideBtn?.addEventListener("click", () => {
-    const hiding = chartRoot.dataset.chartProgressHideCompleted !== "true";
-    chartRoot.dataset.chartProgressHideCompleted = hiding ? "true" : "false";
-    chartRoot.classList.toggle("ns-shaping-chart--completed-hidden", hiding);
-    hideBtn.setAttribute("aria-pressed", hiding ? "true" : "false");
-    hideBtn.textContent = hiding ? "Show completed rows" : "Hide completed rows";
+    const nextActive = chartRoot.dataset.chartProgressHideCompleted !== "true";
+    setCompletedHiddenUi(nextActive);
   });
 
   resetBtn?.addEventListener("click", () => {
@@ -151,12 +170,7 @@ function bindChartSection(
         syncRowCompletedClass(row);
       }
     });
-    chartRoot.dataset.chartProgressHideCompleted = "false";
-    chartRoot.classList.remove("ns-shaping-chart--completed-hidden");
-    if (hideBtn) {
-      hideBtn.setAttribute("aria-pressed", "false");
-      hideBtn.textContent = "Hide completed rows";
-    }
+    setCompletedHiddenUi(false);
   });
 }
 
