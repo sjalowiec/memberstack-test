@@ -314,6 +314,15 @@
   white-space: nowrap;
 }
 
+/* Sign Up — temporarily inactive until sign-up flow is finished (see header markup) */
+.kbm-nav-bar .kbm-header-signup--inactive,
+.kbm-nav-bar .kbm-header-auth .kbm-header-signup--inactive,
+.kbm-nav-row .kbm-drawer-account .kbm-header-signup--inactive {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .kbm-nav-bar .kbm-logo-section {
   padding: 0.25rem 0;
 }
@@ -1467,7 +1476,13 @@ div[data-ms-modal-overlay] {
             <a href="#" data-ms-modal="login" data-ms-redirect="current-url" class="kbm-btn kbm-btn-outline">
               Log In
             </a>
-            <a href="#" data-ms-modal="signup" data-ms-redirect="current-url" class="kbm-btn kbm-btn-outline">
+            <!-- Temporarily disabled until sign-up flow is finished — no MemberStack signup modal -->
+            <a
+              href="#"
+              class="kbm-btn kbm-btn-outline kbm-header-signup--inactive"
+              aria-disabled="true"
+              tabindex="-1"
+            >
               Sign Up
             </a>
           </div>

@@ -160,6 +160,15 @@ const LEARN_SUBMENU = [
   }
 }
 
+/* Sign Up / Join Free — temporarily inactive until sign-up flow is finished (see header markup) */
+.kbm-nav-bar .kbm-header-signup--inactive,
+.kbm-nav-bar .kbm-account-wrap .kbm-header-signup--inactive,
+.kbm-nav-row .kbm-drawer-account .kbm-header-signup--inactive {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .kbm-billboard-text {
   font-family: var(--font);
   font-size: var(--text-base);
@@ -1165,7 +1174,15 @@ div[data-ms-modal-overlay] {
             <div class="kbm-drawer-account">
               <div data-ms-content="!members">
                 <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="login">Log in</a>
-                <a href="#" class="kbm-btn kbm-btn--primary" data-ms-modal="signup" data-ms-plan:add="pln_free-plan-8n34u0qnx" data-ms-redirect="true">Join Free</a>
+                <!-- Temporarily disabled for Express release. Restore MemberStack signup attributes when sign-up is ready. -->
+                <a
+                  href="#"
+                  class="kbm-btn kbm-btn--primary kbm-header-signup--inactive"
+                  aria-disabled="true"
+                  tabindex="-1"
+                >
+                  Join Free
+                </a>
               </div>
               <div data-ms-content="members">
                 <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="profile">Account</a>
@@ -1187,11 +1204,12 @@ div[data-ms-modal-overlay] {
     <!-- Logged OUT -->
     <div data-ms-content="!members">
       <a href="#" class="kbm-btn kbm-btn--ghost" data-ms-modal="login">Log in</a>
+      <!-- Temporarily disabled for Express release. Restore MemberStack signup attributes when sign-up is ready. -->
       <a
         href="#"
-        class="kbm-btn kbm-btn--primary"
-        data-ms-modal="signup"
-        data-ms-plan:add="pln_free-plan-8n34u0qnx"
+        class="kbm-btn kbm-btn--primary kbm-header-signup--inactive"
+        aria-disabled="true"
+        tabindex="-1"
       >
         Join Free
       </a>
