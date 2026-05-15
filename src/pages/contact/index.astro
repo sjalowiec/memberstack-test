@@ -8,19 +8,22 @@ import Layout from "../../layouts/Layout.astro";
     <h1>Contact</h1>
     <p>Send me a message and I’ll reply within 1–2 business days.</p>
 
-    <!-- This static form is here so Netlify can detect and process submissions -->
     <form
+      id="contact-page-form"
       name="contact"
       method="POST"
-      data-netlify="true"
+      action="/.netlify/functions/contact"
+      enctype="multipart/form-data"
       netlify-honeypot="bot-field"
-      action="/contact/thanks/"
       class="contact-form"
     >
       <input type="hidden" name="form-name" value="contact" />
       <p style="display:none;">
         <label>Don't fill this out: <input name="bot-field" /></label>
       </p>
+      <input type="hidden" name="form_source" value="contact_page" />
+      <input type="hidden" name="page_url" id="contactPageURL" />
+      <input type="hidden" name="submitted_at" id="contactSubmittedAt" />
 
       <label class="contact-form__field">
         <span>Name *</span>
@@ -37,7 +40,193 @@ import Layout from "../../layouts/Layout.astro";
         <textarea name="message" rows="6" required></textarea>
       </label>
 
-      <button type="submit" class="contact-form__submit">Send message</button>
+      <div class="contact-form__field">
+        <span>Add a photo of your knitting or machine (optional)</span>
+        <p class="contact-form__hint">A photo can help us see what’s happening.</p>
+        <input
+          type="file"
+          name="images"
+          id="contactImages"
+          accept="image/jpeg,image/png,image/webp"
+          class="contact-form__file"
+        />
+        <p class="contact-form__note">JPG, PNG, or WEBP • max 5MB</p>
+        <p id="contact-image-error" class="contact-form__error" hidden role="alert"></p>
+        <p id="contact-submit-error" class="contact-form__error" hidden role="alert"></p>
+      </div>
+
+      <button type="submit" class="contact-form__submit" id="contact-page-submit">Send message</button>
     </form>
   </main>
+
+  <style>
+    .contact-form__hint {
+      margin: 0 0 0.5rem;
+      font-size: 0.95rem;
+      color: #4b5563;
+      line-height: 1.45;
+    }
+
+    .contact-form__note {
+      margin: 0.35rem 0 0;
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+
+    .contact-form__file {
+      padding: 0.5rem 0;
+      font-size: 0.95rem;
+      font-family: var(--font);
+    }
+
+    .contact-form__error {
+      margin: 0.5rem 0 0;
+      font-size: 0.9rem;
+      color: #b91c1c;
+    }
+
+    .contact-form__error[hidden] {
+      display: none;
+    }
+  </style>
+
+  <script is:inline>
+    const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+    const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+    /** @param {File | undefined} file */
+    function validateContactImage(file) {
+      if (!file || file.size === 0) {
+        return { ok: true };
+      }
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        return {
+          ok: false,
+          message: "Please choose a JPG, PNG, or WEBP image.",
+        };
+      }
+      if (file.size > MAX_IMAGE_BYTES) {
+        return {
+          ok: false,
+          message: "Please choose an image smaller than 5MB.",
+        };
+      }
+      return { ok: true };
+    }
+
+    const form = document.getElementById("contact-page-form");
+    const fileInput = document.getElementById("contactImages");
+    const imageErrorEl = document.getElementById("contact-image-error");
+    const submitErrorEl = document.getElementById("contact-submit-error");
+    const submitBtn = document.getElementById("contact-page-submit");
+
+    function showImageError(message) {
+      if (!imageErrorEl) return;
+      imageErrorEl.textContent = message;
+      imageErrorEl.hidden = false;
+      if (submitErrorEl) submitErrorEl.hidden = true;
+    }
+
+    function clearImageError() {
+      if (!imageErrorEl) return;
+      imageErrorEl.textContent = "";
+      imageErrorEl.hidden = true;
+    }
+
+    function showSubmitError(message) {
+      if (!submitErrorEl) return;
+      submitErrorEl.textContent = message;
+      submitErrorEl.hidden = false;
+    }
+
+    function clearSubmitError() {
+      if (!submitErrorEl) return;
+      submitErrorEl.textContent = "";
+      submitErrorEl.hidden = true;
+    }
+
+    if (fileInput instanceof HTMLInputElement) {
+      fileInput.addEventListener("change", () => {
+        const file = fileInput.files?.[0];
+        if (!file) {
+          clearImageError();
+          return;
+        }
+        const result = validateContactImage(file);
+        if (!result.ok) {
+          showImageError(result.message);
+        } else {
+          clearImageError();
+        }
+      });
+    }
+
+    if (form instanceof HTMLFormElement) {
+      form.addEventListener(
+        "submit",
+        async (e) => {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          clearSubmitError();
+
+          const file =
+            fileInput instanceof HTMLInputElement
+              ? fileInput.files?.[0]
+              : undefined;
+          const result = validateContactImage(file);
+          if (!result.ok) {
+            showImageError(result.message);
+            fileInput?.focus();
+            return;
+          }
+          clearImageError();
+
+          const pageUrl = document.getElementById("contactPageURL");
+          const submittedAt = document.getElementById("contactSubmittedAt");
+          if (pageUrl instanceof HTMLInputElement) {
+            pageUrl.value = window.location.href;
+          }
+          if (submittedAt instanceof HTMLInputElement) {
+            submittedAt.value = new Date().toISOString();
+          }
+
+          if (submitBtn instanceof HTMLButtonElement) {
+            submitBtn.disabled = true;
+          }
+
+          try {
+            const res = await fetch(form.action, {
+              method: "POST",
+              body: new FormData(form),
+            });
+
+            if (res.status >= 200 && res.status < 300) {
+              window.location.href = "/contact/thanks/";
+              return;
+            }
+
+            const serverMessage = (await res.text()).trim();
+            const fallback =
+              "Something went wrong sending your message. Please try again in a moment.";
+
+            if (res.status === 400) {
+              showSubmitError(serverMessage || fallback);
+              return;
+            }
+
+            showSubmitError(serverMessage || fallback);
+          } catch {
+            showSubmitError(
+              "Something went wrong sending your message. Please try again in a moment.",
+            );
+          } finally {
+            if (submitBtn instanceof HTMLButtonElement) {
+              submitBtn.disabled = false;
+            }
+          }
+        },
+        true,
+      );
+    }
+  </script>
 </Layout>
