@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildSleevelessGarmentDiagramReplacements } from "./sleevelessGarmentDiagramReplacements";
+import { calculateHemRows, getDefaultHemLengthInches } from "./hemDefaults";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
 const baseDebug = {
@@ -20,6 +21,62 @@ const baseDebug = {
 };
 
 describe("buildSleevelessGarmentDiagramReplacements", () => {
+  it("includes HEM_ROWS and HEM_INCHES from debug hemRows and default band depth", () => {
+    const patternData = { fit: { sizingChart: "woman" } };
+    const audience = "woman";
+    const result = { debug: { ...baseDebug } } as unknown as SleevelessBackPatternResult;
+
+    const repl = buildSleevelessGarmentDiagramReplacements(result, "in", {
+      patternData,
+      measurementPiece: "front",
+    });
+
+    expect(repl.HEM_ROWS).toBe(String(baseDebug.hemRows));
+    expect(repl.HEM_INCHES).toBe(String(getDefaultHemLengthInches(audience)));
+    expect(repl.HEM_INCHES).toBe("2");
+  });
+
+  it("derives HEM_ROWS from calculateHemRows when debug.hemRows is missing", () => {
+    const patternData = { fit: { sizingChart: "woman" } };
+    const { hemRows: _omit, ...debugWithoutHemRows } = baseDebug;
+    const result = { debug: debugWithoutHemRows } as unknown as SleevelessBackPatternResult;
+
+    const repl = buildSleevelessGarmentDiagramReplacements(result, "in", {
+      patternData,
+      measurementPiece: "back",
+    });
+
+    expect(repl.HEM_ROWS).toBe(String(calculateHemRows(baseDebug.rowsPerInch, "woman")));
+    expect(repl.HEM_ROWS).toBe("20");
+  });
+
+  it("uses baby default hem depth for HEM_INCHES when audience is baby", () => {
+    const patternData = { style: { recipientCategory: "baby" } };
+    const result = { debug: { ...baseDebug } } as unknown as SleevelessBackPatternResult;
+
+    const repl = buildSleevelessGarmentDiagramReplacements(result, "in", {
+      patternData,
+      measurementPiece: "front",
+      cardiganHalfSide: "left",
+    });
+
+    expect(repl.HEM_INCHES).toBe("1");
+    expect(repl.HEM_ROWS).toBe(String(baseDebug.hemRows));
+  });
+
+  it("converts HEM_INCHES to cm when unit is cm", () => {
+    const patternData = { fit: { sizingChart: "woman" } };
+    const result = { debug: { ...baseDebug } } as unknown as SleevelessBackPatternResult;
+
+    const repl = buildSleevelessGarmentDiagramReplacements(result, "cm", {
+      patternData,
+      measurementPiece: "front",
+    });
+
+    expect(repl.UNIT).toBe("cm");
+    expect(repl.HEM_INCHES).toBe("5.1");
+  });
+
   it("uses half body cast-on for cardigan left half BUST_STS (from backStitches)", () => {
     const result = { debug: { ...baseDebug } } as unknown as SleevelessBackPatternResult;
 
@@ -86,6 +143,8 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
     expect(replCardigan.ARMHOLE_DEPTH).toBe(replPullover.ARMHOLE_DEPTH);
     expect(replCardigan.SIDE_LENGTH_ROWS).toBe(replPullover.SIDE_LENGTH_ROWS);
     expect(replCardigan.HEIGHT).toBe(replPullover.HEIGHT);
+    expect(replCardigan.HEM_ROWS).toBe(replPullover.HEM_ROWS);
+    expect(replCardigan.HEM_INCHES).toBe(replPullover.HEM_INCHES);
   });
 
   it("uses right half cast-on from same body/back geometry", () => {

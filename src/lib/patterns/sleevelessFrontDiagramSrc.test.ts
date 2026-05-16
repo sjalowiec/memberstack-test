@@ -128,7 +128,7 @@ describe("resolveSleevelessFrontDiagram", () => {
     );
     expect(r.garmentStyle).toBe("cardigan");
     expect(r.diagramType).toBe("cardiganHalfFrontRound");
-    expect(r.src.endsWith("/cardigan-half-front-round.svg")).toBe(true);
+    expect(r.src.endsWith("/cardigan-round.svg")).toBe(true);
   });
 
   it("routes v-neck cardigan style to half-front V schematic", () => {
@@ -146,7 +146,7 @@ describe("resolveSleevelessFrontDiagram", () => {
     expect(r.garmentStyle).toBe("cardigan");
     expect(r.diagramType).toBe("cardiganHalfFrontRound");
     expect(r.frontPieceType).toBe("leftFront");
-    expect(r.src.endsWith("/cardigan-half-front-round.svg")).toBe(true);
+    expect(r.src.endsWith("/cardigan-round.svg")).toBe(true);
   });
 
   it("forces V cardigan half-front when dev flag is true and neckline is V", () => {

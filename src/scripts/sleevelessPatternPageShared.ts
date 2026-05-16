@@ -537,7 +537,13 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     const s = String(src || "").toLowerCase();
     const a = String(alt || "").toLowerCase();
     if (s.includes("diagram-back") || a.includes(" back ")) return "back";
-    if (s.includes("cardigan-half-front") || s.includes("cardigan-v.svg")) return "front";
+    if (
+      s.includes("cardigan-round") ||
+      s.includes("cardigan-v.svg") ||
+      s.includes("cardigan-half-front")
+    ) {
+      return "front";
+    }
     if (s.includes("diagram-front") || a.includes(" front ")) return "front";
     return "shared";
   }

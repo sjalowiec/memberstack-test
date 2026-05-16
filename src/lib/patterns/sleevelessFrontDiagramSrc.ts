@@ -5,11 +5,11 @@ import {
 } from "./cardiganFrontBlock";
 import { sectionPattern } from "./sleevelessPatternBuilderMerge";
 
-/** Half-front round-neck cardigan schematic (`cardiganHalfFrontRound`). */
+/** Round-neck cardigan front schematic (`cardiganHalfFrontRound` — `public/images/patterns/cardigan-round.svg`). */
 export const SLEEVELESS_CARDIGAN_HALF_FRONT_ROUND_DIAGRAM_SRC =
-  "/images/patterns/sleeveless/cardigan-half-front-round.svg";
+  "/images/patterns/cardigan-round.svg";
 
-/** Dev cardigan V-neck front garment schematic (Illustrator export `public/images/patterns/cardigan-v.svg`). */
+/** V-neck cardigan front schematic (`cardiganHalfFrontV` — `public/images/patterns/cardigan-v.svg`). */
 export const SLEEVELESS_CARDIGAN_V_FRONT_DIAGRAM_SRC = "/images/patterns/cardigan-v.svg";
 
 /** Round neckline / shoulder shaping underlay (back and front round neck — never V-neck). */

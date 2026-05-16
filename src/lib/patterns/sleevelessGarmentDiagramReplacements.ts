@@ -7,6 +7,7 @@ import {
   cardiganHalfFrontBodySts,
   splitBodyBackCastOnToSymmetricCardiganHalves,
 } from "./cardiganFrontBlock";
+import { calculateHemRows, getDefaultHemLengthInches } from "./hemDefaults";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
 function section(obj: unknown): Record<string, unknown> {
@@ -47,6 +48,34 @@ function toPositiveNumber(value: unknown): number | undefined {
 function selectedMeasurementsFromPatternData(patternData: Record<string, unknown>): Record<string, unknown> {
   const fit = section(patternData?.fit);
   return section(fit.selectedMeasurements);
+}
+
+/** Same audience resolution as {@link generateSleevelessBackPattern} / `pickAudience`. */
+function pickAudienceFromPatternData(patternData: Record<string, unknown>): string | undefined {
+  const fit = section(patternData.fit);
+  const style = section(patternData.style);
+  const chart = fit.sizingChart ?? fit.knitFor;
+  if (typeof chart === "string" && chart.trim()) return chart.trim();
+  const cat = style.recipientCategory;
+  if (typeof cat === "string" && cat.trim()) return cat.trim();
+  return undefined;
+}
+
+/** Hem band rows + depth for `{{HEM_ROWS}}` / `{{HEM_INCHES}}` diagram labels. */
+function resolveHemFieldsForSleevelessDiagram(
+  d: SleevelessBackPatternResult["debug"],
+  patternData: Record<string, unknown>,
+  unit: "cm" | "in",
+): { HEM_ROWS: string; HEM_INCHES: string } {
+  const audience = pickAudienceFromPatternData(patternData);
+  const hemRows = isFiniteNumber(d.hemRows)
+    ? Math.round(d.hemRows)
+    : calculateHemRows(d.rowsPerInch ?? NaN, audience);
+  const hemDepthIn = getDefaultHemLengthInches(audience);
+  return {
+    HEM_ROWS: isFiniteNumber(hemRows) ? String(Math.max(0, hemRows)) : "",
+    HEM_INCHES: fmtNumber(inchesToUnit(hemDepthIn, unit) ?? Number.NaN),
+  };
 }
 
 /** Neck depth labels for diagram overlays — matches legacy sleeveless behavior for back/front/shared. */
@@ -144,6 +173,7 @@ export function buildSleevelessGarmentDiagramReplacements(
     options.measurementPiece,
     unit,
   );
+  const hemFields = resolveHemFieldsForSleevelessDiagram(d, options.patternData, unit);
 
   const finishedBust = isFiniteNumber(d.finishedBustChest) ? d.finishedBustChest : undefined;
   const bustWidthIn = finishedBust !== undefined ? finishedBust / 2 : undefined;
@@ -177,6 +207,8 @@ export function buildSleevelessGarmentDiagramReplacements(
         ? String(Math.max(0, Math.round(d.hemRows + d.bodyRows)))
         : "",
     SIDE_LENGTH,
+    HEM_ROWS: hemFields.HEM_ROWS,
+    HEM_INCHES: hemFields.HEM_INCHES,
     OPENING_STS: "",
     PIECE_TITLE: "",
     CF_EDGE_NOTE: "",
