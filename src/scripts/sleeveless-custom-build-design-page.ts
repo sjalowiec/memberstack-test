@@ -2,7 +2,7 @@
  * Custom Build — Design step (/patterns/sleeveless/custom-build/design).
  * Accordion + persistence aligned with Quick Build; merges into {@link SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY}.
  */
-import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "../lib/patterns/patternStorage";
+import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY, getPatternData } from "../lib/patterns/patternStorage";
 import { syncSleevelessDesignBasicsToPatternStorage } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
 import {
   loadExpressSweaterCharts,
@@ -16,6 +16,7 @@ import {
   SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID,
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
 import { scrollToBuilderSection } from "../lib/patterns/scrollToBuilderSection";
+import { resolveSleevelessAudienceHeroImageSrc } from "../lib/patterns/sleevelessAudienceHeroImage";
 
 const STEPS = 2;
 const LOCKED_STEP_NAV_TITLE = "Finish the previous step to continue.";
@@ -246,6 +247,18 @@ function initCustomBuildDesignPage(): void {
     refreshExpressSizePanel(root, values, canInteractWithSizeStep());
   }
 
+  function refreshCbDesignWhoCardImages(): void {
+    const patternData = getPatternData();
+    root.querySelectorAll('[data-choice][data-field="who"]').forEach((btn) => {
+      if (!(btn instanceof HTMLElement)) return;
+      const whoPick = btn.getAttribute("data-value");
+      const img = btn.querySelector("img");
+      if (!(img instanceof HTMLImageElement) || !whoPick) return;
+      const aud = expressWhoToChartAudience(whoPick);
+      img.src = resolveSleevelessAudienceHeroImageSrc(patternData, aud);
+    });
+  }
+
   function updateSections() {
     sections.forEach((el) => {
       const sectionEl = el as HTMLElement;
@@ -280,6 +293,7 @@ function initCustomBuildDesignPage(): void {
     updateContinueLink();
     applySelectionUI();
     refreshSizePanel();
+    refreshCbDesignWhoCardImages();
   }
 
   function updateContinueLink() {

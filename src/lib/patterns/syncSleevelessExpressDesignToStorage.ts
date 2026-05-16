@@ -30,6 +30,10 @@ export function syncSleevelessDesignBasicsToPatternStorage(
     fit: string;
     selectedSize: string;
     selectedMeasurements: Record<string, number>;
+    /** When set (e.g. Express dev cardigan), preserves open front instead of forcing pullover. */
+    frontStyle?: "open" | "closed";
+    garmentStyle?: "pullover" | "cardigan";
+    patternMode?: string;
   }>,
 ): void {
   const stylePayload: Record<string, unknown> = {};
@@ -59,11 +63,33 @@ export function syncSleevelessDesignBasicsToPatternStorage(
     fitPayload.selectedMeasurements = params.selectedMeasurements;
   }
 
-  if (params.who || params.neckline) {
+  const explicitFront = params.frontStyle === "open" || params.frontStyle === "closed";
+  const explicitGarment = params.garmentStyle === "cardigan" || params.garmentStyle === "pullover";
+
+  if (params.who || params.neckline || explicitFront || explicitGarment || params.patternMode) {
     stylePayload.bodyShape = "straight";
-    stylePayload.frontStyle = "closed";
     stylePayload.length = "top";
     stylePayload.armholeStyle = "standard";
+
+    let front: "open" | "closed" = "closed";
+    if (params.frontStyle === "open" || params.frontStyle === "closed") {
+      front = params.frontStyle;
+    } else if (params.garmentStyle === "cardigan") {
+      front = "open";
+    } else if (params.garmentStyle === "pullover") {
+      front = "closed";
+    }
+    stylePayload.frontStyle = front;
+
+    let garment: "pullover" | "cardigan" = front === "open" ? "cardigan" : "pullover";
+    if (params.garmentStyle === "cardigan" || params.garmentStyle === "pullover") {
+      garment = params.garmentStyle;
+    }
+    stylePayload.garmentStyle = garment;
+
+    if (typeof params.patternMode === "string" && params.patternMode.trim() !== "") {
+      stylePayload.patternMode = params.patternMode.trim();
+    }
   }
 
   const hasStyle = Object.keys(stylePayload).length > 0;

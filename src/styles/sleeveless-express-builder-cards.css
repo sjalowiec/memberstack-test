@@ -309,6 +309,11 @@
   border-radius: 4px;
 }
 
+.express-page .express-front-cards .express-front-card__badge--dev {
+  color: #7c2d12;
+  background: rgba(251, 146, 60, 0.22);
+}
+
 /* Front-toggle pill (Cardigan): narrow terracotta swatch only — no stripe.svg text */
 .express-page .express-option.sg-express-kin-locked .locked-card-ribbon.locked-card-ribbon--pill-swatch {
   width: clamp(18px, 5vw, 24px);

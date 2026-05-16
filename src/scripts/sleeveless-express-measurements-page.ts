@@ -84,11 +84,19 @@ interface MergedMeasureContext {
   fit: string;
   neckline: string;
   style: string;
+  /** Pullover vs cardigan — dev Express only in practice; prod merge coerces to pullover. */
+  garmentStyle: "pullover" | "cardigan";
   gaugeStitchRaw: string;
   gaugeRowRaw: string;
   gaugeRawUnit: "in" | "cm";
   stitchesPerInch: string;
   rowsPerInch: string;
+}
+
+function expressStyleKeyIndicatesCardigan(styleKey: string): boolean {
+  return String(styleKey ?? "")
+    .toLowerCase()
+    .includes("cardigan");
 }
 
 function mergeContextFromUrlStorageAndPattern(pageUrl: URL): MergedMeasureContext | null {
@@ -123,6 +131,24 @@ function mergeContextFromUrlStorageAndPattern(pageUrl: URL): MergedMeasureContex
   }
 
   const styleKey = sp.get("style")?.trim() ?? ls.values.style?.trim() ?? "straight-pullover";
+  const lsFront = String(ls.values.front ?? "").trim().toLowerCase();
+  const urlGarmentParam = sp.get("garmentStyle")?.trim().toLowerCase() === "cardigan";
+  const pbGarment = String(style?.garmentStyle ?? "").trim().toLowerCase() === "cardigan";
+  const pbOpen = String(style?.frontStyle ?? "").trim().toLowerCase() === "open";
+
+  let garmentStyle: "pullover" | "cardigan" = "pullover";
+  if (
+    urlGarmentParam ||
+    pbGarment ||
+    pbOpen ||
+    lsFront === "open" ||
+    expressStyleKeyIndicatesCardigan(styleKey)
+  ) {
+    garmentStyle = "cardigan";
+  }
+  if (!import.meta.env.DEV && garmentStyle === "cardigan") {
+    garmentStyle = "pullover";
+  }
 
   let gaugeStitchRaw = sp.get("gaugeStitchRaw")?.trim() ?? ls.gaugeStitchRaw.trim();
   let gaugeRowRaw = sp.get("gaugeRowRaw")?.trim() ?? ls.gaugeRowRaw.trim();
@@ -146,6 +172,7 @@ function mergeContextFromUrlStorageAndPattern(pageUrl: URL): MergedMeasureContex
     fit: fitEase || "standard",
     neckline,
     style: styleKey,
+    garmentStyle,
     gaugeStitchRaw,
     gaugeRowRaw,
     gaugeRawUnit,
@@ -415,6 +442,9 @@ function initExpressMeasurementsConfirmPage(): void {
         fit: merged.fit,
         selectedSize: chartFit.selectedSize,
         selectedMeasurements: chartFit.selectedMeasurements,
+        frontStyle: merged.garmentStyle === "cardigan" ? "open" : "closed",
+        garmentStyle: merged.garmentStyle,
+        patternMode: "express",
       });
       window.location.assign(PATTERN_WORKSPACE_TAB_PATTERN_HREF);
     });
@@ -537,6 +567,7 @@ function initExpressMeasurementsConfirmPage(): void {
           const necklineLabel =
             merged.neckline === "v-neck" ? "V-neck" : merged.neckline ? "Round" : "—";
           const fitLabel = merged.fit ? merged.fit.charAt(0).toUpperCase() + merged.fit.slice(1) : "—";
+          const garmentLabel = merged.garmentStyle === "cardigan" ? "Cardigan (dev preview)" : "Pullover";
 
           const neck = toFiniteNumber(row.neck_opening);
           const neckVal = Number.isFinite(neck) ? formatLengthDisplay(neck, unit) : "—";
@@ -590,12 +621,15 @@ function initExpressMeasurementsConfirmPage(): void {
           );
           const metaGrid = document.createElement("div");
           metaGrid.className = "express-mbp-meta__grid";
-          metaGrid.append(
+          const metaChips: HTMLElement[] = [
             metaChip("Who", whoLabel),
             metaChipSize(chartFit.selectedSize, chartBustChestDisplay),
-            metaChip("Neckline", necklineLabel),
-            metaChip("Fit ease", fitLabel),
-          );
+          ];
+          if (import.meta.env.DEV) {
+            metaChips.push(metaChip("Garment", garmentLabel));
+          }
+          metaChips.push(metaChip("Neckline", necklineLabel), metaChip("Fit ease", fitLabel));
+          metaGrid.append(...metaChips);
           meta.append(editWrap, expressLine, customLine);
           if (unitsHostEl) meta.appendChild(unitsHostEl);
           meta.appendChild(metaGrid);

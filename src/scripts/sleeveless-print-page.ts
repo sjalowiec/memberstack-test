@@ -30,6 +30,7 @@ import {
   loadSleevelessBackDiagramSvgMarkup,
   loadSleevelessFrontDiagramSvgMarkup,
 } from "../lib/patterns/sleevelessPrintDiagramSvg.ts";
+import { resolveSleevelessFrontDiagram } from "../lib/patterns/sleevelessFrontDiagramSrc.ts";
 import {
   renderSleevelessPrintPieceHtml,
   splitRowsBeforeNeckShoulderChartMount,
@@ -248,6 +249,12 @@ async function initSleevelessPrintPage(): Promise<void> {
     frontDiagramMarkup = `<p class="print-muted print-diagram-fallback">Front schematic could not be loaded.</p>`;
   }
 
+  const frontDiagramRouting = resolveSleevelessFrontDiagram(genInput);
+  const frontPrintDiagramCaption =
+    frontDiagramRouting.diagramType === "cardiganHalfFrontRound"
+      ? "Left front schematic (development)"
+      : "Front schematic";
+
   const {
     preludeRows: frontPreludeRows,
     continuationRows: frontContinuationRows,
@@ -336,7 +343,7 @@ async function initSleevelessPrintPage(): Promise<void> {
       </div>
       <aside class="print-opening-diagram" aria-label="Front schematic">
         <div class="print-opening-diagram-inner">${frontDiagramMarkup}</div>
-        <p class="print-diagram-caption">Front schematic</p>
+        <p class="print-diagram-caption">${escapeHtml(frontPrintDiagramCaption)}</p>
       </aside>
     </div>
     ${frontContinuationHtml}

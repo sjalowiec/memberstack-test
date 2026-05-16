@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="132" height="268" viewBox="0 0 132 268">
+  <!-- Measurement guides -->
+  <line x1="18.5" y1="248.5" x2="18.5" y2="52" fill="none" stroke="#52682d" stroke-miterlimit="10" stroke-width="2"/>
+  <rect x="13.63" y="247.75" width="9.75" height="1.5" fill="#52682d"/>
+  <rect x="13.63" y="51.25" width="9.75" height="1.5" fill="#52682d"/>
+  <line x1="38" y1="246.25" x2="117.5" y2="246.25" fill="none" stroke="#52682d" stroke-miterlimit="10" stroke-width="2"/>
+  <rect x="37.25" y="241.38" width="1.5" height="9.75" fill="#52682d"/>
+  <rect x="116.75" y="241.38" width="1.5" height="9.75" fill="#52682d"/>
+  <line x1="39.25" y1="121.5" x2="118.75" y2="121.5" fill="none" stroke="#52682d" stroke-miterlimit="10" stroke-width="2"/>
+  <rect x="38.5" y="116.62" width="1.5" height="9.75" fill="#52682d"/>
+  <rect x="118" y="116.62" width="1.5" height="9.75" fill="#52682d"/>
+  <line x1="46.5" y1="79.5" x2="114.5" y2="79.5" fill="none" stroke="#52682d" stroke-miterlimit="10" stroke-width="2"/>
+  <rect x="45.75" y="74.62" width="1.5" height="9.75" fill="#52682d"/>
+  <rect x="113.75" y="74.62" width="1.5" height="9.75" fill="#52682d"/>
+  <line x1="72" y1="55.5" x2="109" y2="55.5" fill="none" stroke="#52682d" stroke-miterlimit="10" stroke-width="2"/>
+  <rect x="71.25" y="50.62" width="1.5" height="9.75" fill="#52682d"/>
+  <rect x="108.25" y="50.62" width="1.5" height="9.75" fill="#52682d"/>
+  <line x1="62.5" y1="41.25" x2="62.5" y2="54.25" fill="none" stroke="#52682d" stroke-miterlimit="10" stroke-width="2"/>
+  <rect x="57.62" y="40.5" width="9.75" height="1.5" fill="#52682d"/>
+  <rect x="57.62" y="53.5" width="9.75" height="1.5" fill="#52682d"/>
+  <!-- Right CF edge guide -->
+  <line x1="118.25" y1="92.5" x2="118.25" y2="246.25" fill="none" stroke="#52682d" stroke-miterlimit="10" stroke-width="2"/>
+  <rect x="113.38" y="91.75" width="9.75" height="1.5" fill="#52682d"/>
+  <rect x="113.38" y="245.5" width="9.75" height="1.5" fill="#52682d"/>
+  <!-- Piece outline: armhole left, CF straight right -->
+  <g id="cardigan-half-front-outline">
+    <polyline points="34 246 34 259 116 259 116 246" fill="none" stroke="#010101" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M32.25,118.25c.55,8.2,3.25,32.5,2.52,46.15-.74,13.65-1.55,70.15-.99,75.35" fill="none" stroke="#010101"/>
+    <path d="M118.85,118.25c-.38,6.15-2.18,24.25-1.68,34.45.49,10.2.96,52.35.62,56.6" fill="none" stroke="#010101"/>
+    <path d="M39.25,74.25c.48,14.4-.58,31.95-7.22,41.75" fill="none" stroke="#010101" stroke-linejoin="round"/>
+    <path d="M114.25,49.25s-7.6,46.45,5.15,65.15" fill="none" stroke="#010101" stroke-linejoin="round"/>
+    <path d="M63.25,38.75c0,17.35,4.65,31.45,23.55,31.45,18.15,0,23.35-14.4,23.35-31.15" fill="none" stroke="#010101" stroke-linejoin="round"/>
+    <path d="M63.35,38.85s4.65,5.65,23.75,5.65c17.45,0,23.75-5.65,23.75-5.65l22.25,8.25" fill="none" stroke="#010101" stroke-linejoin="round"/>
+    <line x1="118.35" y1="118.25" x2="118.35" y2="259.35" fill="none" stroke="#010101" stroke-linecap="round"/>
+  </g>
+  <!-- Labels -->
+  <text transform="translate(12 174) rotate(-90)" font-family="ArialMT, Arial" font-size="11" isolation="isolate"><tspan x="0" y="0">{{HEIGHT}} {{UNIT}}</tspan></text>
+  <g isolation="isolate"><text transform="translate(52 139)" font-family="ArialMT, Arial" font-size="11" isolation="isolate"><tspan x="0" y="0">{{BUST_STS}}sts</tspan></text></g>
+  <g isolation="isolate"><text transform="translate(46 151)" font-family="ArialMT, Arial" font-size="11" isolation="isolate"><tspan x="0" y="0">({{BUST_WIDTH}} {{UNIT}})</tspan></text></g>
+  <g isolation="isolate"><text transform="translate(52 97)" font-family="ArialMT, Arial" font-size="11" isolation="isolate"><tspan x="0" y="0">{{SHOULDER_STS}}sts</tspan></text></g>
+  <g isolation="isolate"><text transform="translate(46 109)" font-family="ArialMT, Arial" font-size="11" isolation="isolate"><tspan x="0" y="0">({{SHOULDER_WIDTH}} {{UNIT}})</tspan></text></g>
+  <g isolation="isolate"><text transform="translate(54 18)" font-family="ArialMT, Arial" font-size="11" isolation="isolate"><tspan x="0" y="0">{{NECK_STS}}sts</tspan></text></g>
+  <g isolation="isolate"><text transform="translate(52 29)" font-family="ArialMT, Arial" font-size="11" isolation="isolate"><tspan x="0" y="0">({{NECK_WIDTH}} {{UNIT}})</tspan></text></g>
+  <g isolation="isolate"><text transform="translate(26 52)" font-family="ArialMT, Arial" font-size="11" isolation="isolate"><tspan x="0" y="0">{{NECK_DEPTH_ROWS}} rows</tspan></text></g>
+  <g isolation="isolate"><text transform="translate(24 63)" font-family="ArialMT, Arial" font-size="11" isolation="isolate"><tspan x="0" y="0">({{NECK_DEPTH}} {{UNIT}})</tspan></text></g>
+  <g isolation="isolate"><text transform="translate(122 98) rotate(-90)" font-family="ArialMT, Arial" font-size="11" isolation="isolate"><tspan x="0" y="0">{{ARMHOLE_ROWS}} rows</tspan><tspan x="0" y="13">({{ARMHOLE_DEPTH}} {{UNIT}})</tspan></text></g>
+  <g isolation="isolate"><text transform="translate(122 214) rotate(-90)" font-family="ArialMT, Arial" font-size="11" isolation="isolate"><tspan x="0" y="0">{{SIDE_LENGTH_ROWS}} rows</tspan><tspan x="0" y="13">({{SIDE_LENGTH}} {{UNIT}})</tspan></text></g>
+  <text transform="translate(42 202)" font-family="ArialMT, Arial" font-size="11"><tspan x="0" y="0">{{PIECE_TITLE}}</tspan></text>
+  <g isolation="isolate"><text transform="translate(62 228)" font-family="ArialMT, Arial" font-size="9" fill="#4b5563" isolation="isolate"><tspan x="0" y="0">CF reserve {{OPENING_STS}} sts</tspan></text></g>
+</svg>

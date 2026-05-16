@@ -35,6 +35,7 @@ import {
   isSleevelessVNeckChoice,
   isSleevelessDevCardiganExpressPreview,
 } from "../lib/patterns/sleevelessFrontDiagramSrc.ts";
+import { resolveSleevelessAudienceHeroImageSrc } from "../lib/patterns/sleevelessAudienceHeroImage.ts";
 import { buildSleevelessGarmentDiagramReplacements } from "../lib/patterns/sleevelessGarmentDiagramReplacements.ts";
 import {
   buildSleevelessPrintBasicsSummaryDlHtml,
@@ -174,27 +175,6 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     return "";
   }
 
-  function getSleevelessAudienceHeroImage(audience) {
-    switch (String(audience || "").trim().toLowerCase()) {
-      case "baby":
-        return "/images/patterns/sleeveless/sleeveless_baby.png";
-      case "man":
-      case "men":
-      case "male":
-        return "/images/patterns/sleeveless/sleeveless_man.png";
-      case "kids":
-      case "kid":
-      case "children":
-        return "/images/patterns/sleeveless/sleeveless_kids.png";
-      case "woman":
-      case "women":
-      case "misses":
-      case "plus":
-      default:
-        return "/images/patterns/sleeveless/sleeveless_woman.png";
-    }
-  }
-
   function updateSleevelessAudienceHero(patternMerged) {
     const st = section(patternMerged.style);
     const ft = section(patternMerged.fit);
@@ -204,7 +184,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       "";
     const hero = document.querySelector("[data-sleeveless-audience-hero]");
     if (hero instanceof HTMLImageElement) {
-      hero.src = getSleevelessAudienceHeroImage(audience);
+      hero.src = resolveSleevelessAudienceHeroImageSrc(patternMerged, audience);
     }
   }
 
