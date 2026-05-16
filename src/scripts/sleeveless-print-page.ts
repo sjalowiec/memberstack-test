@@ -37,6 +37,8 @@ import {
 } from "../lib/patterns/sleevelessPatternPrintRender.ts";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
 import { buildSleevelessPrintBasicsSummaryDlHtml } from "../lib/patterns/sleevelessPrintBasicsSummaryHtml.ts";
+import { isSleevelessCardiganPattern } from "../lib/patterns/sleevelessPatternFinishing.ts";
+import { buildSleevelessFinishingPrintListHtml } from "../lib/patterns/sleevelessPatternFinishingHtml.ts";
 import {
   hydratePatternPrintPersonalizationSlotsFromSession,
   triggerPatternPrint,
@@ -74,15 +76,19 @@ function buildGeneratorPatternData(merged: Record<string, unknown>): Record<stri
   return buildGeneratorPatternDataFromSources(merged, getPatternData());
 }
 
-function printFinishingPlaceholderHtml(): string {
+function printFinishingSectionHtml(
+  patternMerged: Record<string, unknown>,
+  debug: { cardiganFrontEdgePickupSts?: number },
+): string {
+  const isCardigan = isSleevelessCardiganPattern(patternMerged);
+  const listItems = buildSleevelessFinishingPrintListHtml({
+    isCardigan,
+    frontEdgePickupSts: debug.cardiganFrontEdgePickupSts,
+  });
   return `<section class="print-major print-finishing" aria-labelledby="print-finishing-heading">
   <h2 id="print-finishing-heading" class="print-heading-major print-heading-with-checkbox"><span class="print-heading-checkbox" aria-hidden="true"></span><span class="print-heading-label">Finishing</span></h2>
   <ol class="print-finishing-list">
-    <li>Optional: block pieces to measurements; allow to dry.</li>
-    <li>Join shoulders with your preferred method.</li>
-    <li>Work neckline and armhole trims to match your yarn and tension.</li>
-    <li>Join side seams from hem toward underarm, matching edges.</li>
-    <li>Weave in ends; lightly steam if needed.</li>
+    ${listItems}
   </ol>
   <p class="print-muted">The online version of this pattern includes videos and glossary help.</p>
 </section>`;
@@ -349,7 +355,7 @@ async function initSleevelessPrintPage(): Promise<void> {
     ${frontContinuationHtml}
   </section>
 
-  ${printFinishingPlaceholderHtml()}
+  ${printFinishingSectionHtml(patternMerged, result.debug)}
 </div>`;
 
   hydrateGlossaryTooltipPlaceholders(root);

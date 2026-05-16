@@ -28,6 +28,10 @@ import {
   isSleevelessVNeckChoice,
 } from "./sleevelessFrontDiagramSrc";
 import { cardiganHalfFrontBodySts, splitBodyBackCastOnToSymmetricCardiganHalves } from "./cardiganFrontBlock";
+import {
+  cardiganFrontEdgePickupStitchesFromDebug,
+  cardiganFrontEdgeRowsFromDebug,
+} from "./sleevelessPatternFinishing";
 import { buildVNeckFrontFullWidthTimeline } from "./vNeckFrontFullWidthTimeline";
 import { computeShoulderBindoffSchedule, type RowEntry } from "./shapingTimeline";
 import {
@@ -162,6 +166,10 @@ export type SleevelessBackPatternDebug = {
   cardiganHalfLeftCastOnSts?: number;
   /** Stitches on the needle after armhole on that half piece (matches written left front). */
   cardiganHalfLeftStitchesAfterArmhole?: number;
+  /** Cardigan: rows along one CF edge from hem to front neckline bind-off (for front-band pickup). */
+  cardiganFrontEdgeRows?: number;
+  /** Cardigan: approximate pickup stitches for one front edge ({@link approximatePickupStitchesFromRows}). */
+  cardiganFrontEdgePickupSts?: number;
 };
 
 /** Two-column pattern UI: piece banner, section title, or instruction block with optional stitch count. */
@@ -2174,6 +2182,14 @@ export function generateSleevelessBackPattern(
       ? {
           cardiganHalfLeftCastOnSts: cardiganHalfLeftCastOnSts,
           cardiganHalfLeftStitchesAfterArmhole: cardiganHalfLeftStitchesAfterArmhole,
+        }
+      : {}),
+    ...(isSleevelessCardiganGarmentStyle(patternData)
+      ? {
+          cardiganFrontEdgeRows: cardiganFrontEdgeRowsFromDebug({ frontNecklineStartRC }),
+          cardiganFrontEdgePickupSts: cardiganFrontEdgePickupStitchesFromDebug({
+            frontNecklineStartRC,
+          }),
         }
       : {}),
   };

@@ -1,0 +1,691 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
+import UnitToggle from "../../components/wizards/UnitToggle.astro";
+import GaugeInput from "../../components/wizards/GaugeInput.astro";
+import FloatingInput from "../../components/tools/FloatingInput.astro";
+import ToolResultCard from "../../components/tools/ToolResultCard.astro";
+import PrintButton from "../../components/common/PrintButton.astro";
+import toolsData from "../../../data/tools.json";
+import "../../styles/wizard.css";
+
+const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
+const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+const toolPrintTitle = tool?.title ?? "Button Band Buttonhole Calculator";
+---
+
+<Layout
+  title="Button Band Buttonhole Calculator | Knit by Machine"
+  description="Place buttonholes evenly on a sideways-knit vertical button band. Enter gauge, band size, offsets, and button count for cast-on stitches, row placement, and step-by-step instructions."
+  toolPrintTitle={toolPrintTitle}
+>
+  <main class="wizard-page">
+    <div class="wizard-shell">
+      <WizardBackLink className="back-link" />
+
+      <section class="wizard-hero">
+        <ToolPageHeader tool={tool} fallbackTitle="Button Band Buttonhole Calculator" />
+        <p class="wizard-intro">
+          For a doubled <strong>sideways-knit vertical button band</strong>: you pick up stitches along the cardigan edge and knit rows for the band width. Buttonholes are spaced across the cardigan-edge rows and worked on one row at the midpoint of the band width. A turning row and a repeated band section (with corresponding buttonholes) finish the band.
+        </p>
+      </section>
+
+      <div class="bb-calculator-panel kbm-tool-calculator-area">
+        <div class="section-header-with-toggle">
+          <h2>Enter Your Measurements</h2>
+          <UnitToggle id="buttonband-units" />
+        </div>
+
+        <form id="buttonBandForm" novalidate>
+          <div class="bb-measure-layout">
+            <div class="bb-measure-input-column">
+              <GaugeInput id="buttonband" showTitle={false} showToggle={false} toggleId="buttonband-units" />
+
+              <div class="bb-first-measures">
+                <div class="bb-field-with-hint">
+                  <div class="bb-input-with-unit">
+                    <FloatingInput
+                      id="cardiganEdge"
+                      name="cardiganEdge"
+                      label="Cardigan edge"
+                      labelClass="bb-diagram-field-label bb-diagram-field-label--a"
+                      type="number"
+                      min={0.01}
+                      step={0.01}
+                      inputmode="decimal"
+                      placeholder=" "
+                    />
+                    <span class="bb-unit-suffix" data-bb-unit-suffix aria-hidden="true">in</span>
+                  </div>
+                  <p class="bb-field-hint">Pickup edge of the garment. (stitches)</p>
+                </div>
+                <div class="bb-field-with-hint">
+                  <div class="bb-input-with-unit">
+                    <FloatingInput
+                      id="bandWidth"
+                      name="bandWidth"
+                      label="Band width"
+                      labelClass="bb-diagram-field-label bb-diagram-field-label--b"
+                      type="number"
+                      min={0.01}
+                      step={0.01}
+                      inputmode="decimal"
+                      placeholder=" "
+                    />
+                    <span class="bb-unit-suffix" data-bb-unit-suffix aria-hidden="true">in</span>
+                  </div>
+                  <p class="bb-field-hint">Finished width of the button band. (rows)</p>
+                </div>
+                <div class="bb-field-with-hint">
+                  <div class="bb-input-with-unit">
+                    <FloatingInput
+                      id="startOffset"
+                      name="startOffset"
+                      label="Start offset"
+                      labelClass="bb-diagram-field-label bb-diagram-field-label--c"
+                      type="number"
+                      min={0.01}
+                      step={0.01}
+                      inputmode="decimal"
+                      placeholder=" "
+                    />
+                    <span class="bb-unit-suffix" data-bb-unit-suffix aria-hidden="true">in</span>
+                  </div>
+                  <p class="bb-field-hint">Space before the first buttonhole.</p>
+                </div>
+                <div class="bb-field-with-hint">
+                  <div class="bb-input-with-unit">
+                    <FloatingInput
+                      id="endOffset"
+                      name="endOffset"
+                      label="End offset"
+                      labelClass="bb-diagram-field-label bb-diagram-field-label--d"
+                      type="number"
+                      min={0.01}
+                      step={0.01}
+                      inputmode="decimal"
+                      placeholder=" "
+                    />
+                    <span class="bb-unit-suffix" data-bb-unit-suffix aria-hidden="true">in</span>
+                  </div>
+                  <p class="bb-field-hint">Space after the last buttonhole.</p>
+                </div>
+              </div>
+
+              <hr class="bb-section-divider" />
+
+              <div class="bb-buttonhole-fields">
+                <div class="bb-stepper-field bb-buttonhole-count">
+                  <input
+                    type="number"
+                    id="numberOfButtonholes"
+                    name="numberOfButtonholes"
+                    class="bb-stepper-field__input"
+                    min="1"
+                    step="1"
+                    inputmode="numeric"
+                    placeholder=" "
+                  />
+                  <label for="numberOfButtonholes" class="bb-stepper-field__label">Number of buttonholes</label>
+                </div>
+
+                <div class="bb-input-with-unit">
+                  <FloatingInput
+                    id="buttonholeSize"
+                    name="buttonholeSize"
+                    label="Buttonhole size"
+                    type="number"
+                    min={0.01}
+                    step={0.01}
+                    inputmode="decimal"
+                    placeholder=" "
+                  />
+                  <span class="bb-unit-suffix" data-bb-unit-suffix aria-hidden="true">in</span>
+                </div>
+              </div>
+
+              <div class="bb-actions">
+                <button type="submit" class="wizard-button" id="buttonBandCalculateBtn">
+                  Create Buttonhole Placement Instructions
+                </button>
+              </div>
+            </div>
+
+            <aside class="bb-diagram-panel" aria-label="Button band measurement reference">
+              <div class="bb-diagram-panel__card">
+                <img
+                  src="/icons/tools/button_band_detail.svg"
+                  alt=""
+                  class="bb-diagram-image"
+                  width="280"
+                  height="280"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            </aside>
+          </div>
+
+          <div id="buttonBandValidation" class="bb-validation" role="alert" hidden></div>
+        </form>
+      </div>
+
+      <ToolResultCard
+        id="buttonBandResults"
+        hidden
+        title="Buttonhole Placement"
+        resultsContentId="buttonBandResultsContent"
+        singleColumn={true}
+      >
+        <PrintButton slot="actions" label="" ariaLabel="Print instructions" />
+      </ToolResultCard>
+    </div>
+  </main>
+
+  <style>
+    .bb-calculator-panel {
+      background: #fff;
+      padding: 1.75rem;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 640px) {
+      .bb-calculator-panel {
+        padding: 1.25rem;
+      }
+    }
+
+    .bb-measure-layout {
+      display: grid;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    @media (min-width: 768px) {
+      .bb-measure-layout {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        align-items: start;
+      }
+    }
+
+    .bb-measure-input-column {
+      min-width: 0;
+    }
+
+    .bb-field-with-hint {
+      min-width: 0;
+    }
+
+    .bb-input-with-unit {
+      position: relative;
+    }
+
+    .bb-input-with-unit :global(.floating-input input) {
+      padding-right: 2.75rem;
+    }
+
+    .bb-unit-suffix {
+      position: absolute;
+      right: 0.875rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #6b7280;
+      pointer-events: none;
+      line-height: 1;
+      z-index: 2;
+    }
+
+    :global(#buttonBandForm label.bb-diagram-field-label)::before {
+      display: inline-block;
+      font-weight: 700;
+      font-size: 1.15em;
+      line-height: 1;
+      color: #52682d;
+      margin-right: 0.4em;
+      vertical-align: baseline;
+      letter-spacing: 0.02em;
+    }
+
+    :global(#buttonBandForm label.bb-diagram-field-label--a)::before {
+      content: "A";
+    }
+
+    :global(#buttonBandForm label.bb-diagram-field-label--b)::before {
+      content: "B";
+    }
+
+    :global(#buttonBandForm label.bb-diagram-field-label--c)::before {
+      content: "C";
+    }
+
+    :global(#buttonBandForm label.bb-diagram-field-label--d)::before {
+      content: "D";
+    }
+
+    :global(#buttonBandForm .floating-input input:focus ~ label.bb-diagram-field-label)::before,
+    :global(#buttonBandForm .floating-input input:not(:placeholder-shown) ~ label.bb-diagram-field-label)::before {
+      font-size: 1.2em;
+    }
+
+    .bb-first-measures {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 20px;
+      margin-top: 16px;
+    }
+
+    .bb-diagram-panel {
+      min-width: 0;
+    }
+
+    .bb-diagram-panel__card {
+      background: #fafaf8;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .bb-diagram-image {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 767px) {
+      .bb-diagram-panel {
+        width: 100%;
+        max-width: 280px;
+        margin-inline: auto;
+      }
+
+      .bb-first-measures {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .bb-section-divider {
+      border: 0;
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+      margin: 20px 0 16px;
+    }
+
+    .bb-buttonhole-fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 20px;
+    }
+
+    .bb-buttonhole-fields > .bb-buttonhole-count {
+      justify-self: center;
+      width: 100%;
+      max-width: 11rem;
+    }
+
+    @media (max-width: 640px) {
+      .bb-buttonhole-fields {
+        grid-template-columns: 1fr;
+      }
+
+      .bb-buttonhole-fields > .bb-buttonhole-count {
+        justify-self: stretch;
+        max-width: none;
+      }
+    }
+
+    .bb-stepper-field {
+      position: relative;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+
+    .bb-stepper-field__input {
+      width: 100%;
+      padding: 1.25rem 2rem 0.5rem 0.875rem;
+      border: 1px solid #d0d5cc;
+      border-radius: 6px;
+      font-family: var(--font);
+      font-size: 1rem;
+      color: var(--text-dark);
+      background: white;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-sizing: border-box;
+      -moz-appearance: auto;
+    }
+
+    .bb-stepper-field__input:focus {
+      outline: none;
+      border-color: var(--kbm-green);
+      box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.1);
+    }
+
+    .bb-stepper-field__input::placeholder {
+      color: transparent;
+    }
+
+    .bb-stepper-field__input:focus::placeholder {
+      color: #9ca3af;
+    }
+
+    .bb-stepper-field__label {
+      position: absolute;
+      left: 0.875rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.95rem;
+      color: #6b7280;
+      pointer-events: none;
+      transition: all 0.2s ease;
+      background: transparent;
+      padding: 0 2px;
+      max-width: calc(100% - 2.75rem);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bb-stepper-field__input:focus ~ .bb-stepper-field__label,
+    .bb-stepper-field__input:not(:placeholder-shown) ~ .bb-stepper-field__label {
+      top: 0.5rem;
+      transform: translateY(0);
+      font-size: 0.75rem;
+      color: var(--kbm-green);
+      font-weight: 500;
+    }
+
+    .bb-stepper-field__input[type="number"]::-webkit-outer-spin-button,
+    .bb-stepper-field__input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: auto;
+      opacity: 1;
+      margin: 0;
+    }
+
+    .bb-field-hint {
+      margin: 6px 0 0;
+      font-size: 0.85rem;
+      color: #6b7280;
+      line-height: 1.45;
+    }
+
+    .bb-actions {
+      margin-top: 20px;
+    }
+
+    .bb-actions .wizard-button {
+      padding: 12px 22px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      background: #52682d;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .bb-actions .wizard-button:hover {
+      background: #445925;
+    }
+
+    .bb-validation {
+      margin-top: 20px;
+      padding: 14px 18px;
+      border-left: 6px solid #d9534f;
+      background: #fff4f4;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      color: #333;
+    }
+
+    .bb-validation:not([hidden]) {
+      display: block;
+    }
+
+    :global(.bb-summary-card) {
+      background: #f8faf6;
+      border: 1px solid #e5e7eb;
+      border-left: 4px solid #52682d;
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin-bottom: 1.25rem;
+    }
+
+    :global(.bb-summary-card .result-row) {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 8px;
+    }
+
+    :global(.bb-summary-card .result-row:last-child) {
+      margin-bottom: 0;
+    }
+
+    :global(.bb-summary-card .result-label) {
+      color: #374151;
+      font-size: 0.95rem;
+    }
+
+    :global(.bb-summary-card .result-value) {
+      font-weight: 700;
+      color: #52682d;
+    }
+
+    :global(.bb-instructions-block) {
+      border-left: 4px solid #52682d;
+      padding-left: 16px;
+    }
+
+    :global(.bb-instructions-block h3) {
+      margin: 0 0 0.75rem;
+      font-size: 1.05rem;
+      color: #2f3a2f;
+    }
+
+    :global(.bb-instructions-list) {
+      margin: 0;
+      padding-left: 1.35rem;
+      line-height: 1.6;
+    }
+
+    :global(.bb-instructions-list > li) {
+      margin-bottom: 0.5rem;
+    }
+
+    :global(.bb-band-note) {
+      margin: 0 0 1.25rem;
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
+
+    :global(.bb-result-note) {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #6b7280;
+    }
+
+    :global(.bb-summary-card .tooltip-term .tooltip-trigger) {
+      text-decoration: underline dotted;
+      text-underline-offset: 3px;
+      cursor: help;
+    }
+  </style>
+
+  <script>
+    import {
+      calculateButtonBandMath,
+      gaugeBasisForUnit,
+    } from "../../lib/tools/buttonBands/buttonBandMath.ts";
+    import {
+      formatButtonBandInstructionsHtml,
+      turningRowTooltipMarkup,
+    } from "../../lib/tools/buttonBands/buttonBandInstructions.ts";
+    import type { ButtonBandUnit } from "../../lib/tools/buttonBands/buttonBandTypes.ts";
+
+    const form = document.getElementById("buttonBandForm") as HTMLFormElement | null;
+    const resultsCard = document.getElementById("buttonBandResults");
+    const resultsContent = document.getElementById("buttonBandResultsContent");
+    const validationEl = document.getElementById("buttonBandValidation");
+
+    if (!form || !resultsCard || !resultsContent || !validationEl) {
+      throw new Error("Button band tool: required elements not found");
+    }
+
+    const validation = validationEl;
+
+    function getUnit(): ButtonBandUnit {
+      return localStorage.getItem("kbm-units") === "cm" ? "cm" : "in";
+    }
+
+    function unitLabel(unit: ButtonBandUnit): string {
+      return unit === "cm" ? "cm" : "in";
+    }
+
+    function parseNumber(raw: FormDataEntryValue | null): number {
+      if (raw === null || String(raw).trim() === "") return NaN;
+      return parseFloat(String(raw));
+    }
+
+    function parseIntField(raw: FormDataEntryValue | null): number {
+      if (raw === null || String(raw).trim() === "") return NaN;
+      return parseInt(String(raw), 10);
+    }
+
+    function showValidation(messages: string[]): void {
+      validation.textContent = messages.join(" ");
+      validation.hidden = messages.length === 0;
+    }
+
+    function updateUnitSuffixes(unit: ButtonBandUnit): void {
+      const suffix = unitLabel(unit);
+      form.querySelectorAll("[data-bb-unit-suffix]").forEach((el) => {
+        el.textContent = suffix;
+      });
+    }
+
+    function updateGaugePlaceholders(unit: ButtonBandUnit): void {
+      const stitchInput = document.getElementById("buttonband-stitch-gauge") as HTMLInputElement | null;
+      const rowInput = document.getElementById("buttonband-row-gauge") as HTMLInputElement | null;
+      if (!stitchInput || !rowInput) return;
+      if (unit === "cm") {
+        stitchInput.placeholder = "in 10 cm";
+        rowInput.placeholder = "in 10 cm";
+      } else {
+        stitchInput.placeholder = "in 4 inches";
+        rowInput.placeholder = "in 4 inches";
+      }
+    }
+
+    window.addEventListener("kbm:units-change", (e: Event) => {
+      const ev = e as CustomEvent<{ unit?: string }>;
+      const unit: ButtonBandUnit = ev.detail?.unit === "cm" ? "cm" : "in";
+      updateUnitSuffixes(unit);
+      updateGaugePlaceholders(unit);
+    });
+
+    const initialUnit = getUnit();
+    updateUnitSuffixes(initialUnit);
+    updateGaugePlaceholders(initialUnit);
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      showValidation([]);
+
+      const formData = new FormData(form);
+      const unit = getUnit();
+      const stitchGauge = parseFloat(
+        (document.getElementById("buttonband-stitch-gauge") as HTMLInputElement | null)?.value ?? "",
+      );
+      const rowGauge = parseFloat(
+        (document.getElementById("buttonband-row-gauge") as HTMLInputElement | null)?.value ?? "",
+      );
+
+      const input = {
+        stitchGauge,
+        rowGauge,
+        gaugeBasis: gaugeBasisForUnit(unit),
+        numberOfButtonholes: parseIntField(formData.get("numberOfButtonholes")),
+        cardiganEdge: parseNumber(formData.get("cardiganEdge")),
+        bandWidth: parseNumber(formData.get("bandWidth")),
+        buttonholeSize: parseNumber(formData.get("buttonholeSize")),
+        startOffset: parseNumber(formData.get("startOffset")),
+        endOffset: parseNumber(formData.get("endOffset")),
+        currentRowCount: parseIntField(formData.get("currentRowCount")) || 0,
+        unit,
+      };
+
+      const result = calculateButtonBandMath(input);
+
+      if (!result.ok) {
+        showValidation(result.errors);
+        resultsCard.hidden = true;
+        resultsContent.innerHTML = "";
+        return;
+      }
+
+      const u = unitLabel(unit);
+      const summaryHtml = `
+        <div class="bb-summary-card tool-results">
+          <div class="result-row">
+            <span class="result-label">Cardigan edge (stitches)</span>
+            <span class="result-value">${result.cardiganEdgeStitches}</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">Band width, one side (rows)</span>
+            <span class="result-value">${result.finishedBandRows}</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">First buttonhole row (RC)</span>
+            <span class="result-value">${result.firstButtonholeRow}</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">${turningRowTooltipMarkup("Turning row")} (RC)</span>
+            <span class="result-value">${result.turningRow}</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">Second buttonhole row (RC)</span>
+            <span class="result-value">${result.secondButtonholeRow}</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">Total band rows</span>
+            <span class="result-value">${result.totalBandRows} <span class="bb-result-note">(final RC ${result.finalRow})</span></span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">Buttonhole width</span>
+            <span class="result-value">${result.buttonholeWidthStitches} stitch${result.buttonholeWidthStitches === 1 ? "" : "es"}</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">Start / end offset</span>
+            <span class="result-value">${result.startOffsetStitches} / ${result.endOffsetStitches} stitches</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">Spacing between buttonholes</span>
+            <span class="result-value">${result.spacingBetweenButtonholes} stitch${result.spacingBetweenButtonholes === 1 ? "" : "es"}</span>
+          </div>
+        </div>
+        <p class="bb-band-note">A Cardigan edge: ${input.cardiganEdge} ${u} · B Band width: ${input.bandWidth} ${u}</p>
+      `;
+
+      const instructionsHtml = `
+        <div class="bb-instructions-block">
+          <h3>Instructions</h3>
+          ${formatButtonBandInstructionsHtml(result)}
+        </div>
+      `;
+
+      resultsContent.innerHTML = summaryHtml + instructionsHtml;
+      resultsCard.hidden = false;
+      resultsCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  </script>
+</Layout>
+
