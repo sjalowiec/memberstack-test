@@ -1,0 +1,116 @@
+---
+export const prerender = true;
+import Layout from "../layouts/Layout.astro";
+
+const pageTitle = "Removed from Beta Updates | Knit It Now";
+const description =
+  "You have been removed from Knit It Now beta testing emails and feedback requests.";
+---
+
+<Layout
+  title={pageTitle}
+  description={description}
+  bodyClass="page--tight-header"
+  skipGlobalHyvor={true}
+>
+  <section class="beta-optout-page">
+    <div class="beta-optout-card">
+      <h1>You’ve Been Removed from Beta Updates</h1>
+
+      <div class="beta-optout-body">
+        <p>No problem at all.</p>
+
+        <p>
+          You’ll no longer receive beta testing emails or requests for feedback.
+        </p>
+
+        <p>
+          Thank you for being part of the process and taking a look at what we’ve
+          been building.
+        </p>
+        <p>We’re looking forward to sharing the new Knit It Now experience with everyone very soon.</p>
+      </div>
+
+      <p class="beta-optout-note">
+        You will still receive regular Knit It Now emails.
+      </p>
+
+      <a class="btn-primary" href="https://knititnow.com">Return to Knit It Now</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .beta-optout-page {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 4rem;
+  }
+
+  .beta-optout-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    padding: 2.25rem 2rem;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05);
+    text-align: center;
+  }
+
+  h1 {
+    margin: 0 0 1.5rem;
+    font-size: clamp(1.65rem, 4vw, 2.1rem);
+    line-height: 1.25;
+    color: #1f2937;
+  }
+
+  .beta-optout-body {
+    margin-bottom: 1.5rem;
+    text-align: left;
+  }
+
+  .beta-optout-body p {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #374151;
+  }
+
+  .beta-optout-body p:last-child {
+    margin-bottom: 0;
+  }
+
+  .beta-optout-note {
+    margin: 0 0 1.75rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #6b7280;
+    text-align: left;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    background: #52682d;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.85rem 1.5rem;
+    border-radius: 999px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 640px) {
+    .beta-optout-page {
+      padding: 2rem 1rem 3rem;
+    }
+
+    .beta-optout-card {
+      padding: 1.75rem 1.5rem;
+    }
+  }
+</style>
