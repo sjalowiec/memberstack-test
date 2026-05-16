@@ -3,9 +3,18 @@ export interface Props {
   isEmbedMode: boolean;
   /** Richer section layout for hat builder drawer only */
   drawerLayout?: boolean;
+  /** Embed copy for drawer results subline */
+  embedVariant?: 'default' | 'hat' | 'garment';
 }
 
-const { isEmbedMode, drawerLayout = false } = Astro.props;
+const { isEmbedMode, drawerLayout = false, embedVariant = 'default' } = Astro.props;
+
+const drawerResultsSubline =
+  embedVariant === 'garment'
+    ? 'From your swatch density and this sweater’s finished size. This is an estimate (includes 10% buffer); actual use may vary with stitch pattern, ribbing, bands, shaping, and finishing.'
+    : embedVariant === 'hat'
+      ? 'From your swatch density and this hat’s finished size.'
+      : '';
 ---
 
 {!isEmbedMode && (
@@ -138,7 +147,7 @@ const { isEmbedMode, drawerLayout = false } = Astro.props;
   {drawerLayout ? (
     <div class="yarn-results-section-head">
       <h4 class="yarn-results-heading yarn-results-heading--drawer">Estimated yarn needed</h4>
-      <p class="yarn-results-subline">From your swatch density and this hat’s finished size.</p>
+      <p class="yarn-results-subline">{drawerResultsSubline}</p>
     </div>
   ) : (
     <h4 class="yarn-results-heading">Estimated yarn needed</h4>

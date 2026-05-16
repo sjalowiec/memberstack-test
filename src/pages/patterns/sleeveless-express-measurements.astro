@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import PatternWorkspaceTabs from "../../components/patterns/PatternWorkspaceTabs.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
+import YarnRequirement from "../../components/tools/YarnRequirement.astro";
 import "../../styles/wizard.css";
 import "../../styles/sleeveless-express-wizard-layout.css";
 import "../../styles/sleeveless-express-measurements-confirm.css";
@@ -35,10 +36,6 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
           data-express-measurements-root
           data-express-href={expressHref}
         >
-          <nav class="page-nav express-measurements-page-nav no-print" aria-label="Section">
-            <a href={expressHref} class="page-nav__back">← Back to Express</a>
-          </nav>
-
           <p class="express-measurements-status pattern-subtext" data-express-measurements-status hidden aria-live="polite"></p>
 
           <div class="express-mbp-page-grid">
@@ -67,11 +64,66 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
           </div>
 
           <div class="express-measurements-actions no-print">
-            <a href={expressHref} class="kbm-btn kbm-btn-outline">← Back to Express</a>
+            <button type="button" id="express-yarn-drawer-open" class="kbm-btn kbm-btn-outline">
+              Check Yarn Needed
+            </button>
             <a class="kbm-btn kbm-btn-accent" data-express-measurements-continue hidden>Continue to Your Pattern</a>
           </div>
         </div>
       </div>
+    </div>
+
+    <div
+      id="express-yarn-drawer"
+      class="hat-yarn-drawer no-print"
+      aria-hidden="true"
+    >
+    <div
+      id="express-yarn-drawer-panel"
+      class="hat-yarn-drawer-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="express-yarn-drawer-title"
+      aria-describedby="express-yarn-drawer-desc express-yarn-drawer-note"
+    >
+      <header class="hat-yarn-drawer-header">
+        <div class="hat-yarn-drawer-header-text">
+          <h2 id="express-yarn-drawer-title" class="hat-yarn-drawer-title">Check your yarn</h2>
+          <p id="express-yarn-drawer-desc" class="hat-yarn-drawer-lede">
+            Quick estimate from a weighed swatch using this sweater’s finished size.
+          </p>
+          <p id="express-yarn-drawer-note" class="hat-yarn-drawer-note">
+            This is an estimate and includes a 10% buffer. Actual yarn use may vary with stitch pattern, ribbing, bands, shaping, and finishing.
+          </p>
+        </div>
+        <button type="button" class="hat-yarn-drawer-close" id="express-yarn-drawer-close" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M18 6L6 18M6 6l12 12"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+        </button>
+      </header>
+      <div class="hat-yarn-drawer-body">
+        <YarnRequirement
+          variant="garment"
+          layout="panel"
+          presentation="drawer"
+          projectWidth={0}
+          projectLength={0}
+          lengthUnit="in"
+          source="custom"
+        />
+      </div>
+    </div>
+    <div
+      id="express-yarn-drawer-backdrop"
+      class="hat-yarn-drawer-backdrop"
+      aria-hidden="true"
+    ></div>
     </div>
   </main>
 </Layout>

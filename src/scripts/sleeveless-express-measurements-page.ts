@@ -258,7 +258,86 @@ function showSummaryError(diagramEl: HTMLElement, title: string, body: string): 
   diagramEl.replaceChildren(wrap);
 }
 
+const INCH_TO_CM = 2.54;
+
+function dispatchExpressYarnDimensions(
+  finishedBustInches: number,
+  garmentLengthInches: number,
+  uiUnit: "in" | "cm",
+): void {
+  const lengthUnit = uiUnit === "cm" ? "cm" : "in";
+  const emptyDetail = { projectWidth: 0, projectLength: 0, lengthUnit, source: "custom" as const };
+  if (!Number.isFinite(finishedBustInches) || !Number.isFinite(garmentLengthInches)) {
+    window.dispatchEvent(new CustomEvent("kbm:yarnDimensions", { detail: emptyDetail }));
+    return;
+  }
+  if (finishedBustInches <= 0 || garmentLengthInches <= 0) {
+    window.dispatchEvent(new CustomEvent("kbm:yarnDimensions", { detail: emptyDetail }));
+    return;
+  }
+  let projectWidth: number;
+  let projectLength: number;
+  if (lengthUnit === "in") {
+    projectWidth = finishedBustInches;
+    projectLength = garmentLengthInches;
+  } else {
+    projectWidth = Math.round(finishedBustInches * INCH_TO_CM * 10) / 10;
+    projectLength = Math.round(garmentLengthInches * INCH_TO_CM * 10) / 10;
+  }
+  window.dispatchEvent(
+    new CustomEvent("kbm:yarnDimensions", {
+      detail: { projectWidth, projectLength, lengthUnit, source: "custom" },
+    }),
+  );
+}
+
+function initExpressYarnDrawer(): void {
+  const drawerRoot = document.getElementById("express-yarn-drawer");
+  const openBtn = document.getElementById("express-yarn-drawer-open");
+  const closeBtn = document.getElementById("express-yarn-drawer-close");
+  const backdrop = document.getElementById("express-yarn-drawer-backdrop");
+  let lastFocus: HTMLElement | null = null;
+
+  function openDrawer(): void {
+    if (!drawerRoot) return;
+    lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    drawerRoot.classList.add("is-open");
+    drawerRoot.setAttribute("aria-hidden", "false");
+    document.body.classList.add("hat-yarn-drawer-open");
+    // Do not focus the close button on open — it can steal the first click and, combined
+    // with swatch blur validation, block editing earlier fields while later ones are empty.
+  }
+
+  function closeDrawer(): void {
+    if (!drawerRoot?.classList.contains("is-open")) return;
+    drawerRoot.classList.remove("is-open");
+    drawerRoot.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("hat-yarn-drawer-open");
+    const restore = lastFocus;
+    if (restore instanceof HTMLElement) {
+      restore.focus();
+    } else if (openBtn instanceof HTMLElement) {
+      openBtn.focus();
+    }
+    lastFocus = null;
+  }
+
+  openBtn?.addEventListener("click", () => openDrawer());
+  closeBtn?.addEventListener("click", () => closeDrawer());
+  backdrop?.addEventListener("click", () => closeDrawer());
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (drawerRoot?.classList.contains("is-open")) {
+      closeDrawer();
+      e.preventDefault();
+    }
+  });
+}
+
 function initExpressMeasurementsConfirmPage(): void {
+  initExpressYarnDrawer();
+
   const rootMaybe = document.querySelector("[data-express-measurements-root]");
   if (!(rootMaybe instanceof HTMLElement)) {
     warn("script did not find target DOM node: [data-express-measurements-root]");
@@ -450,6 +529,7 @@ function initExpressMeasurementsConfirmPage(): void {
 
   function renderFromUrl(): void {
     hideContinue();
+    dispatchExpressYarnDimensions(NaN, NaN, getExpressUiUnit());
     const unitsHostEl =
       railHost.querySelector<HTMLElement>("[data-express-measurements-units-host]") ??
       document.querySelector<HTMLElement>("[data-express-measurements-units-host]");
@@ -693,6 +773,11 @@ function initExpressMeasurementsConfirmPage(): void {
           rootMbp.appendChild(scroll);
 
           summaryEl.replaceChildren(rootMbp);
+
+          const finishedBustIn = toFiniteNumber(m.finished_bust_chest);
+          const garmentLengthIn =
+            toFiniteNumber(m.back_neck_to_hem) || toFiniteNumber(row.garment_back_length);
+          dispatchExpressYarnDimensions(finishedBustIn, garmentLengthIn, unit);
 
           wireContinueToPattern(merged, chartFit);
         } catch (err) {

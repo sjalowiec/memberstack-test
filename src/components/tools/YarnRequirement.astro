@@ -11,8 +11,8 @@ export interface Props {
   projectLength?: number; // Project length (in lengthUnit)
   lengthUnit?: 'in' | 'cm'; // Unit of projectWidth/projectLength (default: 'in')
   source?: 'sample' | 'custom'; // Whether dimensions are from sample or custom pattern
-  /** When "hat", uses compact collapsible UI and hat-oriented copy; embeds even if dimensions start at 0 */
-  variant?: 'default' | 'hat';
+  /** When "hat" or "garment", embeds even if dimensions start at 0; copy differs by variant */
+  variant?: 'default' | 'hat' | 'garment';
   /** 'accordion': details/summary (default). 'panel': flat block (e.g. hat builder drawer). */
   layout?: 'accordion' | 'panel';
   /** 'drawer': hat-builder helper panel styling and section layout (use with layout panel + hat). */
@@ -30,11 +30,12 @@ const {
 } = Astro.props;
 
 const isHat = variant === 'hat';
+const isGarment = variant === 'garment';
 const usePanelLayout = layout === 'panel';
 const isDrawerPresentation = presentation === 'drawer';
 const drawerLayout = isDrawerPresentation;
-// Embed: explicit hat variant, or any caller passing positive pattern dimensions (e.g. blanket pattern tab)
-const isEmbedMode = isHat || (projectWidth > 0 && projectLength > 0);
+// Embed: hat/garment drawers, or any caller passing positive pattern dimensions (e.g. blanket pattern tab)
+const isEmbedMode = isHat || isGarment || (projectWidth > 0 && projectLength > 0);
 
 // Convert to inches if needed (internal calculations always use inches)
 const widthInches = lengthUnit === 'cm' ? projectWidth / 2.54 : projectWidth;
@@ -56,7 +57,7 @@ const defaultTitle =
   id="yarn-requirement"
   class:list={[
     'yarn-requirement-tool',
-    isHat && 'yarn--variant-hat',
+    (isHat || isGarment) && 'yarn--variant-hat',
     isDrawerPresentation && 'yarn--presentation-drawer',
     isDrawerPresentation && 'yarn-drawer-presentation',
   ]}
@@ -72,17 +73,26 @@ const defaultTitle =
   data-presentation={presentation}
 >
   {usePanelLayout ? (
-    <div class:list={['yarn-outer-panel', isHat && 'yarn-outer-panel--hat']}>
+    <div class:list={['yarn-outer-panel', (isHat || isGarment) && 'yarn-outer-panel--hat']}>
       {isHat && !isDrawerPresentation && (
         <p class="yarn-helper-hat">
           Enter your swatch measurements and weight to estimate yarn needed for this hat.
         </p>
       )}
-      {!isHat && (
+      {isGarment && !isDrawerPresentation && (
+        <p class="yarn-helper-hat">
+          Enter your swatch measurements and weight to estimate yarn needed for this sweater.
+        </p>
+      )}
+      {!isHat && !isGarment && (
         <h2 class="yarn-heading" id="yarn-heading">{defaultTitle}</h2>
       )}
       <div class="yarn-calculator" id="yarn-calculator">
-        <YarnRequirementCalculatorCore isEmbedMode={isEmbedMode} drawerLayout={drawerLayout} />
+        <YarnRequirementCalculatorCore
+          isEmbedMode={isEmbedMode}
+          drawerLayout={drawerLayout}
+          embedVariant={variant}
+        />
       </div>
     </div>
   ) : (
@@ -99,7 +109,11 @@ const defaultTitle =
         </p>
       )}
       <div class="yarn-calculator" id="yarn-calculator">
-        <YarnRequirementCalculatorCore isEmbedMode={isEmbedMode} drawerLayout={drawerLayout} />
+        <YarnRequirementCalculatorCore
+          isEmbedMode={isEmbedMode}
+          drawerLayout={drawerLayout}
+          embedVariant={variant}
+        />
       </div>
     </details>
   )}
@@ -556,6 +570,7 @@ const defaultTitle =
     const isEmbedMode = wrapper.getAttribute('data-embed-mode') === 'true';
     const variant = wrapper.dataset.variant || 'default';
     const isHatVariant = variant === 'hat';
+    const isGarmentVariant = variant === 'garment';
 
     const propsLengthUnit = wrapper.dataset.lengthUnit === 'cm' ? 'cm' : 'in';
     let currentLengthUnit = isEmbedMode
@@ -615,6 +630,29 @@ const defaultTitle =
       }
     }
     
+    /** True when focus is moving to another control inside this calculator (not leaving it). */
+    function focusMovedWithinCalculator(nextFocus: EventTarget | null): boolean {
+      return nextFocus instanceof Node && wrapper.contains(nextFocus);
+    }
+
+    /**
+     * Recalculate on blur; only jump to the first empty field when focus leaves the calculator.
+     * Avoids trapping users who click back to an earlier swatch field while a later one is still empty.
+     */
+    function handleCalculatorFieldBlur(ev: FocusEvent) {
+      if (!hasInteracted) return;
+      calculateYarn(false);
+      if (focusMovedWithinCalculator(ev.relatedTarget)) {
+        return;
+      }
+      window.setTimeout(() => {
+        if (focusMovedWithinCalculator(document.activeElement)) {
+          return;
+        }
+        calculateYarn(true);
+      }, 0);
+    }
+
     // Focus first missing required field
     function focusFirstMissing() {
       const requiredFields = [];
@@ -708,7 +746,9 @@ const defaultTitle =
       if (blanketWidthIn <= 0 || blanketLengthIn <= 0) {
         el.textContent = isHatVariant
           ? 'Choose hat size and length above to use this pattern’s measurements (finished width × total height).'
-          : 'Project size used: —';
+          : isGarmentVariant
+            ? 'Measurements are loading — finished bust/chest × garment length will appear here.'
+            : 'Project size used: —';
         return;
       }
 
@@ -728,7 +768,9 @@ const defaultTitle =
       const unitLabel = displayUnit === 'in' ? 'in' : 'cm';
       el.textContent = isHatVariant
         ? `Finished hat width × total height (same as your pattern): ${displayW} × ${displayL} ${unitLabel}. Rectangle area; yarn total includes 10% buffer.`
-        : `Project size used: ${displayW} × ${displayL} ${unitLabel}.`;
+        : isGarmentVariant
+          ? `Finished bust/chest × garment length (this sweater): ${displayW} × ${displayL} ${unitLabel}. Rectangle area; estimate includes 10% buffer.`
+          : `Project size used: ${displayW} × ${displayL} ${unitLabel}.`;
     }
     
     // Calculate yarn estimate
@@ -972,12 +1014,7 @@ const defaultTitle =
         calculateYarn();
       });
       
-      // Focus first missing field on blur if form is incomplete
-      input.addEventListener('blur', () => {
-        if (hasInteracted) {
-          calculateYarn(true);
-        }
-      });
+      input.addEventListener('blur', handleCalculatorFieldBlur);
     });
     
     if (!isEmbedMode && blanketWidth && blanketLength) {
@@ -990,16 +1027,8 @@ const defaultTitle =
         calculateYarn();
       });
       
-      blanketWidth.addEventListener('blur', () => {
-        if (hasInteracted) {
-          calculateYarn(true);
-        }
-      });
-      blanketLength.addEventListener('blur', () => {
-        if (hasInteracted) {
-          calculateYarn(true);
-        }
-      });
+      blanketWidth.addEventListener('blur', handleCalculatorFieldBlur);
+      blanketLength.addEventListener('blur', handleCalculatorFieldBlur);
     }
     
     // Initialize
