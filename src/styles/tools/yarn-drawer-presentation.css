@@ -3,6 +3,15 @@
  * Dual selectors: hat keeps #yarn specificity; blanket uses .yarn-drawer-presentation only.
  */
 
+/* Drawer calculator: center compact result badge; swatch card stays full width */
+#yarn-requirement.yarn--presentation-drawer .yarn-calculator,
+.yarn-drawer-presentation #yarn-requirement .yarn-calculator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
 #yarn-requirement.yarn--presentation-drawer .yarn-field-stack,
 .yarn-drawer-presentation .yarn-field-stack {
   display: flex;
@@ -22,14 +31,18 @@
   margin-bottom: 0;
 }
 
-#yarn-requirement.yarn--presentation-drawer .yarn-results-cards,
-.yarn-drawer-presentation .yarn-results-cards {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+#yarn-requirement.yarn--presentation-drawer .yarn-results-display,
+.yarn-drawer-presentation .yarn-results-display {
+  text-align: center;
+  padding: 0.25rem 0 0.15rem;
 }
 
 #yarn-requirement.yarn--presentation-drawer .yarn-section--drawer-swatch,
 .yarn-drawer-presentation .yarn-section--drawer-swatch {
+  align-self: stretch;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   margin: 0 0 1.5rem;
   padding: 1.125rem 1.25rem 1.35rem;
   background: rgba(255, 255, 255, 0.72);
@@ -38,14 +51,30 @@
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
 }
 
+#yarn-requirement.yarn--presentation-drawer .yarn-drawer-swatch-head,
+.yarn-drawer-presentation .yarn-drawer-swatch-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.35rem;
+}
+
 #yarn-requirement.yarn--presentation-drawer .yarn-drawer-section-title,
 .yarn-drawer-presentation .yarn-drawer-section-title {
-  margin: 0 0 0.35rem;
+  margin: 0;
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #6b7280;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-length-toggle-wrap--compact,
+.yarn-drawer-presentation .yarn-length-toggle-wrap--compact {
+  margin: 0;
+  flex-shrink: 0;
 }
 
 #yarn-requirement.yarn--presentation-drawer .yarn-drawer-section-hint,
@@ -57,24 +86,20 @@
   color: #6b7280;
 }
 
-#yarn-requirement.yarn--presentation-drawer .yarn-field label,
-.yarn-drawer-presentation .yarn-field label {
-  display: block;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #4b5563;
-  margin-bottom: 0.4rem;
-  letter-spacing: 0.01em;
+#yarn-requirement.yarn--presentation-drawer .yarn-field .floating-input,
+.yarn-drawer-presentation .yarn-field .floating-input {
+  width: 100%;
+  min-width: 0;
 }
 
-#yarn-requirement.yarn--presentation-drawer .yarn-field input,
-.yarn-drawer-presentation .yarn-field input {
+#yarn-requirement.yarn--presentation-drawer .yarn-field .floating-input input,
+.yarn-drawer-presentation .yarn-field .floating-input input {
   display: block;
   width: 100%;
   max-width: none;
   min-width: 0;
   min-height: 44px;
-  padding: 10px 12px;
+  padding: 1.25rem 0.875rem 0.5rem;
   font-size: 16px;
   box-sizing: border-box;
   font-family: inherit;
@@ -87,16 +112,34 @@
     box-shadow 0.15s ease;
 }
 
-#yarn-requirement.yarn--presentation-drawer .yarn-field input:hover,
-.yarn-drawer-presentation .yarn-field input:hover {
+#yarn-requirement.yarn--presentation-drawer .yarn-field .floating-input input:hover,
+.yarn-drawer-presentation .yarn-field .floating-input input:hover {
   border-color: rgba(82, 104, 45, 0.25);
 }
 
-#yarn-requirement.yarn--presentation-drawer .yarn-field input:focus,
-.yarn-drawer-presentation .yarn-field input:focus {
+#yarn-requirement.yarn--presentation-drawer .yarn-field .floating-input input:focus,
+.yarn-drawer-presentation .yarn-field .floating-input input:focus {
   outline: none;
   border-color: var(--kbm-green, #52682d);
   box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.15);
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-field .floating-input label,
+.yarn-drawer-presentation .yarn-field .floating-input label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  max-width: calc(100% - 1.75rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-field .floating-input input:focus ~ label,
+#yarn-requirement.yarn--presentation-drawer .yarn-field .floating-input input:not(:placeholder-shown) ~ label,
+.yarn-drawer-presentation .yarn-field .floating-input input:focus ~ label,
+.yarn-drawer-presentation .yarn-field .floating-input input:not(:placeholder-shown) ~ label {
+  font-size: 0.6875rem;
+  color: var(--kbm-green, #52682d);
 }
 
 #yarn-requirement.yarn--presentation-drawer .yarn-weight-row,
@@ -107,12 +150,14 @@
   justify-content: flex-start;
 }
 
-#yarn-requirement.yarn--presentation-drawer .yarn-weight-row input,
-.yarn-drawer-presentation .yarn-weight-row input {
-  flex: 0 0 110px;
-  max-width: 110px;
-  width: auto;
+#yarn-requirement.yarn--presentation-drawer .yarn-weight-row .floating-input,
+#yarn-requirement.yarn--presentation-drawer .yarn-weight-row .yarn-floating-weight,
+.yarn-drawer-presentation .yarn-weight-row .floating-input,
+.yarn-drawer-presentation .yarn-weight-row .yarn-floating-weight {
+  flex: 1 1 auto;
   min-width: 0;
+  max-width: none;
+  width: auto;
 }
 
 #yarn-requirement.yarn--presentation-drawer .yarn-weight-row .unit-toggle,
@@ -178,73 +223,83 @@
 
 #yarn-requirement.yarn--presentation-drawer .yarn-results-section--drawer,
 .yarn-drawer-presentation .yarn-results-section--drawer {
+  box-sizing: border-box;
+  align-self: center;
+  width: fit-content;
+  max-width: min(100%, 21.25rem);
   margin-top: 0.25rem;
-  padding: 1.35rem 1.25rem 1.5rem;
-  border-radius: 14px;
-  background: linear-gradient(165deg, rgba(82, 104, 45, 0.09) 0%, rgba(82, 104, 45, 0.04) 100%);
-  border: 1px solid rgba(82, 104, 45, 0.14);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0.85rem 0.9rem 0.95rem;
+  border-radius: 12px;
+  background: linear-gradient(
+    165deg,
+    rgba(82, 104, 45, 0.05) 0%,
+    rgba(82, 104, 45, 0.015) 100%
+  );
+  border: 1px solid rgba(82, 104, 45, 0.09);
+  box-shadow: none;
 }
 
 #yarn-requirement.yarn--presentation-drawer .yarn-results-section-head,
 .yarn-drawer-presentation .yarn-results-section-head {
-  margin-bottom: 1.1rem;
+  margin-bottom: 0.75rem;
   text-align: center;
 }
 
 #yarn-requirement.yarn--presentation-drawer .yarn-results-heading--drawer,
 .yarn-drawer-presentation .yarn-results-heading--drawer {
-  margin: 0 0 0.35rem;
-  font-size: 0.9375rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  margin: 0 0 0.3rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #4b5d3a;
+  color: #5a6b4a;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-results-display--drawer,
+.yarn-drawer-presentation .yarn-results-display--drawer {
+  width: 100%;
+  max-width: none;
 }
 
 #yarn-requirement.yarn--presentation-drawer .yarn-results-subline,
 .yarn-drawer-presentation .yarn-results-subline {
-  margin: 0;
+  margin: 0 auto;
+  max-width: none;
+  padding: 0 0.1rem;
   font-size: 0.8125rem;
-  line-height: 1.45;
+  line-height: 1.5;
   font-weight: 450;
   color: #6b7280;
+  text-wrap: pretty;
 }
 
-#yarn-requirement.yarn--presentation-drawer .yarn-results-cards--drawer,
-.yarn-drawer-presentation .yarn-results-cards--drawer {
-  gap: 0.75rem;
-}
-
-#yarn-requirement.yarn--presentation-drawer .yarn-results-cards--drawer .yarn-result-card,
-.yarn-drawer-presentation .yarn-results-cards--drawer .yarn-result-card {
-  padding: 1rem 0.9rem 1.15rem;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(82, 104, 45, 0.12);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(55, 65, 81, 0.06);
-}
-
-#yarn-requirement.yarn--presentation-drawer .yarn-results-cards--drawer .yarn-result-card-title,
-.yarn-drawer-presentation .yarn-results-cards--drawer .yarn-result-card-title {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #7c8a6e;
-  margin-bottom: 0.5rem;
-}
-
-#yarn-requirement.yarn--presentation-drawer .yarn-results-cards--drawer .yarn-result-card-value,
-.yarn-drawer-presentation .yarn-results-cards--drawer .yarn-result-card-value {
+#yarn-requirement.yarn--presentation-drawer .yarn-results-display--drawer .yarn-result-primary,
+.yarn-drawer-presentation .yarn-results-display--drawer .yarn-result-primary {
+  margin: 0 0 0.35rem;
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--kbm-green, #52682d);
   letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+#yarn-requirement.yarn--presentation-drawer .yarn-results-display--drawer .yarn-result-secondary,
+.yarn-drawer-presentation .yarn-results-display--drawer .yarn-result-secondary {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #5b6472;
+  line-height: 1.45;
 }
 
 #yarn-requirement.yarn--presentation-drawer .yarn-message,
 .yarn-drawer-presentation .yarn-message {
+  align-self: center;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: min(100%, 21.25rem);
   margin-top: 1.25rem;
   padding: 0.75rem 1rem;
   border-radius: 10px;
@@ -260,22 +315,16 @@
 }
 
 @media (max-width: 640px) {
-  #yarn-requirement.yarn--presentation-drawer .yarn-results-cards,
-  .yarn-drawer-presentation .yarn-results-cards {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-
   #yarn-requirement.yarn--presentation-drawer .yarn-section--drawer-swatch,
   .yarn-drawer-presentation .yarn-section--drawer-swatch {
     padding: 1rem 1rem 1.2rem;
     margin-bottom: 1.25rem;
   }
 
-  #yarn-requirement.yarn--presentation-drawer .yarn-field input,
-  .yarn-drawer-presentation .yarn-field input {
+  #yarn-requirement.yarn--presentation-drawer .yarn-field .floating-input input,
+  .yarn-drawer-presentation .yarn-field .floating-input input {
     min-height: 48px;
-    padding: 0.75rem 0.9rem;
+    padding: 1.35rem 0.9rem 0.55rem;
     font-size: 16px;
   }
 
@@ -286,8 +335,24 @@
     font-size: 16px;
   }
 
-  #yarn-requirement.yarn--presentation-drawer .yarn-results-cards--drawer .yarn-result-card-value,
-  .yarn-drawer-presentation .yarn-results-cards--drawer .yarn-result-card-value {
+  #yarn-requirement.yarn--presentation-drawer .yarn-results-section--drawer,
+  .yarn-drawer-presentation .yarn-results-section--drawer {
+    max-width: min(100%, 20rem);
+    padding: 0.8rem 0.85rem 0.9rem;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-message,
+  .yarn-drawer-presentation .yarn-message {
+    max-width: min(100%, 20rem);
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-results-display--drawer .yarn-result-primary,
+  .yarn-drawer-presentation .yarn-results-display--drawer .yarn-result-primary {
     font-size: 1.625rem;
+  }
+
+  #yarn-requirement.yarn--presentation-drawer .yarn-results-display--drawer .yarn-result-secondary,
+  .yarn-drawer-presentation .yarn-results-display--drawer .yarn-result-secondary {
+    font-size: 1.05rem;
   }
 }

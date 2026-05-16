@@ -1,92 +1,146 @@
 ---
+import FloatingInput from './FloatingInput.astro';
+import {
+  yarnResultSublineForVariant,
+  type YarnRequirementEmbedVariant,
+} from './yarnRequirementCopy';
+
 export interface Props {
   isEmbedMode: boolean;
   /** Richer section layout for hat builder drawer only */
   drawerLayout?: boolean;
   /** Embed copy for drawer results subline */
-  embedVariant?: 'default' | 'hat' | 'garment';
+  embedVariant?: YarnRequirementEmbedVariant;
 }
 
 const { isEmbedMode, drawerLayout = false, embedVariant = 'default' } = Astro.props;
 
-const drawerResultsSubline =
-  embedVariant === 'garment'
-    ? 'From your swatch density and this sweater’s finished size. This is an estimate (includes 10% buffer); actual use may vary with stitch pattern, ribbing, bands, shaping, and finishing.'
-    : embedVariant === 'hat'
-      ? 'From your swatch density and this hat’s finished size.'
-      : '';
+const drawerResultsSubline = yarnResultSublineForVariant(embedVariant);
 ---
-
-{!isEmbedMode && (
-  <div class="yarn-length-toggle-wrap">
-    <div class="yarn-units-toggle" id="yarn-length-units-toggle">
-      <button type="button" class="yarn-unit-btn active" data-unit="in" data-testid="button-yarn-length-unit-in">
-        Inches
-      </button>
-      <button type="button" class="yarn-unit-btn" data-unit="cm" data-testid="button-yarn-length-unit-cm">
-        Centimeters
-      </button>
-    </div>
-  </div>
-)}
 
 <div class:list={['yarn-section', drawerLayout && 'yarn-section--drawer-swatch']}>
   {drawerLayout ? (
     <>
-      <h3 class="yarn-drawer-section-title">Swatch</h3>
+      <div class="yarn-drawer-swatch-head">
+        <h3 class="yarn-drawer-section-title">Swatch</h3>
+        <div
+          class="yarn-length-toggle-wrap yarn-length-toggle-wrap--compact"
+          role="group"
+          aria-label="Length units"
+        >
+          <div class="unit-toggle" id="yarn-length-units-toggle">
+            <button
+              type="button"
+              class="active"
+              data-unit="in"
+              data-testid="button-yarn-length-unit-in"
+              aria-pressed="true"
+            >
+              in
+            </button>
+            <button
+              type="button"
+              data-unit="cm"
+              data-testid="button-yarn-length-unit-cm"
+              aria-pressed="false"
+            >
+              cm
+            </button>
+          </div>
+        </div>
+      </div>
       <p class="yarn-drawer-section-hint">
         Measure edge to edge, then weigh on a kitchen or postal scale.
       </p>
     </>
   ) : (
-    <span class="yarn-section-label">
-      Measure your entire swatch (edge to edge), then weigh it.<br />
-      Use a food or postal scale.
-    </span>
+    <div class="yarn-swatch-section-head">
+      <span class="yarn-section-label">
+        Measure your entire swatch (edge to edge), then weigh it.<br />
+        Use a food or postal scale.
+      </span>
+      <div
+        class:list={[
+          'yarn-length-toggle-wrap',
+          isEmbedMode && 'yarn-length-toggle-wrap--compact',
+        ]}
+        role="group"
+        aria-label="Length units"
+      >
+        {isEmbedMode ? (
+          <div class="unit-toggle" id="yarn-length-units-toggle">
+            <button
+              type="button"
+              class="active"
+              data-unit="in"
+              data-testid="button-yarn-length-unit-in"
+              aria-pressed="true"
+            >
+              in
+            </button>
+            <button
+              type="button"
+              data-unit="cm"
+              data-testid="button-yarn-length-unit-cm"
+              aria-pressed="false"
+            >
+              cm
+            </button>
+          </div>
+        ) : (
+          <div class="yarn-units-toggle" id="yarn-length-units-toggle">
+            <button type="button" class="yarn-unit-btn active" data-unit="in" data-testid="button-yarn-length-unit-in">
+              Inches
+            </button>
+            <button type="button" class="yarn-unit-btn" data-testid="button-yarn-length-unit-cm" data-unit="cm">
+              Centimeters
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   )}
   <div class="yarn-field-stack">
     <div class="yarn-field">
-      <label for="yarn-swatch-width">
-        Swatch Width (<span class="yarn-length-unit-label">in</span>)
-      </label>
-      <input
-        type="number"
+      <FloatingInput
         id="yarn-swatch-width"
-        step="0.1"
-        min="0"
-        placeholder="e.g., 4"
-        inputmode="decimal"
-        autocomplete="off"
-        data-testid="input-yarn-swatch-width"
-      />
-    </div>
-    <div class="yarn-field">
-      <label for="yarn-swatch-length">
-        Swatch Length (<span class="yarn-length-unit-label">in</span>)
-      </label>
-      <input
+        labelId="yarn-swatch-width-label"
+        label="Swatch Width (in)"
         type="number"
-        id="yarn-swatch-length"
-        step="0.1"
-        min="0"
-        placeholder="e.g., 4"
+        step={0.1}
+        min={0}
         inputmode="decimal"
         autocomplete="off"
-        data-testid="input-yarn-swatch-length"
+        dataTestid="input-yarn-swatch-width"
+        dataAttrs={{ 'data-yarn-dimension-field': 'swatch-width' }}
       />
     </div>
     <div class="yarn-field">
-      <label for="yarn-swatch-weight">Swatch Weight</label>
+      <FloatingInput
+        id="yarn-swatch-length"
+        labelId="yarn-swatch-length-label"
+        label="Swatch Length (in)"
+        type="number"
+        step={0.1}
+        min={0}
+        inputmode="decimal"
+        autocomplete="off"
+        dataTestid="input-yarn-swatch-length"
+        dataAttrs={{ 'data-yarn-dimension-field': 'swatch-length' }}
+      />
+    </div>
+    <div class="yarn-field yarn-field--weight">
       <div class="yarn-weight-row">
-        <input
-          type="number"
+        <FloatingInput
           id="yarn-swatch-weight"
-          step="0.1"
-          min="0"
-          placeholder="e.g., 12"
+          label="Swatch Weight"
+          type="number"
+          step={0.1}
+          min={0}
           inputmode="decimal"
           autocomplete="off"
-          data-testid="input-yarn-swatch-weight"
+          dataTestid="input-yarn-swatch-weight"
+          class="yarn-floating-weight"
         />
         <div class="unit-toggle" id="yarn-weight-units-toggle">
           <button type="button" class="active" data-unit="g" data-testid="button-yarn-weight-unit-g">g</button>
@@ -102,43 +156,41 @@ const drawerResultsSubline =
     <span class="yarn-section-label">Your project</span>
     <div class="yarn-field-stack">
       <div class="yarn-field">
-        <label for="yarn-blanket-width">
-          Project width (<span class="yarn-length-unit-label">in</span>)
-        </label>
-        <input
-          type="number"
+        <FloatingInput
           id="yarn-blanket-width"
-          step="0.1"
-          min="0"
-          placeholder="e.g., 48"
+          labelId="yarn-blanket-width-label"
+          label="Project width (in)"
+          type="number"
+          step={0.1}
+          min={0}
           inputmode="decimal"
           autocomplete="off"
-          data-testid="input-yarn-blanket-width"
+          dataTestid="input-yarn-blanket-width"
+          dataAttrs={{ 'data-yarn-dimension-field': 'project-width' }}
         />
       </div>
       <div class="yarn-field">
-        <label for="yarn-blanket-length">
-          Project length (<span class="yarn-length-unit-label">in</span>)
-        </label>
-        <input
-          type="number"
+        <FloatingInput
           id="yarn-blanket-length"
-          step="0.1"
-          min="0"
-          placeholder="e.g., 60"
+          labelId="yarn-blanket-length-label"
+          label="Project length (in)"
+          type="number"
+          step={0.1}
+          min={0}
           inputmode="decimal"
           autocomplete="off"
-          data-testid="input-yarn-blanket-length"
+          dataTestid="input-yarn-blanket-length"
+          dataAttrs={{ 'data-yarn-dimension-field': 'project-length' }}
         />
       </div>
     </div>
   </div>
 )}
 
-{isEmbedMode && (
+{isEmbedMode && !drawerLayout && (
   <p
     id="yarn-project-context"
-    class:list={['yarn-project-context', drawerLayout && 'yarn-project-context--drawer']}
+    class="yarn-project-context"
     aria-live="polite"
   ></p>
 )}
@@ -152,15 +204,9 @@ const drawerResultsSubline =
   ) : (
     <h4 class="yarn-results-heading">Estimated yarn needed</h4>
   )}
-  <div class:list={['yarn-results-cards', drawerLayout && 'yarn-results-cards--drawer']}>
-    <div class="yarn-result-card">
-      <div class="yarn-result-card-title">Estimated Grams</div>
-      <div class="yarn-result-card-value" id="yarn-result-grams">---</div>
-    </div>
-    <div class="yarn-result-card">
-      <div class="yarn-result-card-title">Estimated Ounces</div>
-      <div class="yarn-result-card-value" id="yarn-result-ounces">---</div>
-    </div>
+  <div class:list={['yarn-results-display', drawerLayout && 'yarn-results-display--drawer']}>
+    <p class="yarn-result-primary" id="yarn-result-primary" aria-live="polite">---</p>
+    <p class="yarn-result-secondary" id="yarn-result-secondary" hidden></p>
   </div>
 </div>
 

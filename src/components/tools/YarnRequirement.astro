@@ -11,8 +11,8 @@ export interface Props {
   projectLength?: number; // Project length (in lengthUnit)
   lengthUnit?: 'in' | 'cm'; // Unit of projectWidth/projectLength (default: 'in')
   source?: 'sample' | 'custom'; // Whether dimensions are from sample or custom pattern
-  /** When "hat" or "garment", embeds even if dimensions start at 0; copy differs by variant */
-  variant?: 'default' | 'hat' | 'garment';
+  /** When hat/garment/blanket, embeds even if dimensions start at 0; copy differs by variant */
+  variant?: 'default' | 'hat' | 'garment' | 'blanket';
   /** 'accordion': details/summary (default). 'panel': flat block (e.g. hat builder drawer). */
   layout?: 'accordion' | 'panel';
   /** 'drawer': hat-builder helper panel styling and section layout (use with layout panel + hat). */
@@ -31,11 +31,13 @@ const {
 
 const isHat = variant === 'hat';
 const isGarment = variant === 'garment';
+const isBlanket = variant === 'blanket';
+const isDrawerEmbed = isHat || isGarment || isBlanket;
 const usePanelLayout = layout === 'panel';
 const isDrawerPresentation = presentation === 'drawer';
 const drawerLayout = isDrawerPresentation;
-// Embed: hat/garment drawers, or any caller passing positive pattern dimensions (e.g. blanket pattern tab)
-const isEmbedMode = isHat || isGarment || (projectWidth > 0 && projectLength > 0);
+// Embed: pattern drawers, or any caller passing positive pattern dimensions (e.g. triangle scarf tab)
+const isEmbedMode = isDrawerEmbed || (projectWidth > 0 && projectLength > 0);
 
 // Convert to inches if needed (internal calculations always use inches)
 const widthInches = lengthUnit === 'cm' ? projectWidth / 2.54 : projectWidth;
@@ -57,7 +59,7 @@ const defaultTitle =
   id="yarn-requirement"
   class:list={[
     'yarn-requirement-tool',
-    (isHat || isGarment) && 'yarn--variant-hat',
+    isDrawerEmbed && 'yarn--variant-hat',
     isDrawerPresentation && 'yarn--presentation-drawer',
     isDrawerPresentation && 'yarn-drawer-presentation',
   ]}
@@ -73,7 +75,7 @@ const defaultTitle =
   data-presentation={presentation}
 >
   {usePanelLayout ? (
-    <div class:list={['yarn-outer-panel', (isHat || isGarment) && 'yarn-outer-panel--hat']}>
+    <div class:list={['yarn-outer-panel', isDrawerEmbed && 'yarn-outer-panel--hat']}>
       {isHat && !isDrawerPresentation && (
         <p class="yarn-helper-hat">
           Enter your swatch measurements and weight to estimate yarn needed for this hat.
@@ -84,7 +86,7 @@ const defaultTitle =
           Enter your swatch measurements and weight to estimate yarn needed for this sweater.
         </p>
       )}
-      {!isHat && !isGarment && (
+      {!isDrawerEmbed && (
         <h2 class="yarn-heading" id="yarn-heading">{defaultTitle}</h2>
       )}
       <div class="yarn-calculator" id="yarn-calculator">
@@ -133,6 +135,7 @@ const defaultTitle =
 
   .yarn--presentation-drawer.yarn-requirement-tool {
     max-width: none;
+    width: 100%;
   }
 
   .yarn-outer-details {
@@ -223,10 +226,16 @@ const defaultTitle =
   .yarn--presentation-drawer .yarn-outer-panel--hat {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 0;
+    width: 100%;
   }
 
   .yarn--presentation-drawer .yarn-calculator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
     background: transparent;
     border: none;
     border-radius: 0;
@@ -249,6 +258,29 @@ const defaultTitle =
   /* All selectors scoped to #yarn-requirement so styles don’t leak site-wide. */
   #yarn-requirement .yarn-length-toggle-wrap {
     margin-bottom: 16px;
+  }
+
+  #yarn-requirement .yarn-length-toggle-wrap--compact {
+    margin-bottom: 0;
+  }
+
+  #yarn-requirement .yarn-swatch-section-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  #yarn-requirement .yarn-swatch-section-head .yarn-section-label {
+    margin-bottom: 0;
+    flex: 1 1 12rem;
+  }
+
+  #yarn-requirement .yarn-swatch-section-head .yarn-length-toggle-wrap {
+    margin-bottom: 0;
+    flex-shrink: 0;
   }
 
   #yarn-requirement .yarn-units-toggle {
@@ -298,54 +330,46 @@ const defaultTitle =
     margin-bottom: 0;
   }
 
-  #yarn-requirement .yarn-field label {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin-bottom: 6px;
-    color: var(--text-muted, #6b7280);
-  }
-
-  #yarn-requirement .yarn-field input {
-    display: block;
+  #yarn-requirement .yarn-field .floating-input {
     width: 100%;
-    max-width: none;
     min-width: 0;
-    min-height: 44px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border, #ddd);
-    font-size: 16px;
-    box-sizing: border-box;
-    font-family: var(--font, ui-sans-serif, system-ui);
-    background: var(--surface, #fff);
-    transition:
-      border-color 0.15s ease,
-      box-shadow 0.15s ease;
   }
 
-  #yarn-requirement .yarn-field input:hover {
+  #yarn-requirement .yarn-field .floating-input input {
+    min-height: 48px;
+    font-size: 16px;
+    border-radius: 8px;
+    border-color: var(--border, #ddd);
+    background: var(--surface, #fff);
+  }
+
+  #yarn-requirement .yarn-field .floating-input input:hover {
     border-color: rgba(82, 104, 45, 0.28);
   }
 
-  #yarn-requirement .yarn-field input:focus {
-    outline: none;
+  #yarn-requirement .yarn-field .floating-input input:focus {
     border-color: var(--kbm-green, #52682d);
     box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.18);
+  }
+
+  #yarn-requirement .yarn-field .floating-input label {
+    max-width: calc(100% - 1.75rem);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   #yarn-requirement .yarn-weight-row {
     display: flex;
     gap: 10px;
-    align-items: center;
+    align-items: stretch;
     width: 100%;
   }
 
-  #yarn-requirement .yarn-weight-row input {
+  #yarn-requirement .yarn-weight-row .floating-input,
+  #yarn-requirement .yarn-weight-row .yarn-floating-weight {
     flex: 1 1 auto;
     min-width: 0;
-    width: 100%;
-    max-width: none;
   }
 
   #yarn-requirement .unit-toggle {
@@ -425,34 +449,29 @@ const defaultTitle =
     margin-bottom: 20px;
   }
 
-  #yarn-requirement .yarn-results-cards {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-  }
-
-  #yarn-requirement .yarn-result-card {
-    background: var(--tab-bg, #fbfbf9);
-    border: 2px solid var(--kbm-green, #52682d);
-    border-radius: 12px;
-    padding: 24px;
+  #yarn-requirement .yarn-results-display {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: min(100%, 392px);
     text-align: center;
+    padding: 8px 0 4px;
   }
 
-  #yarn-requirement .yarn-result-card-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--muted, #5b6472);
-    margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  #yarn-requirement .yarn-result-card-value {
+  #yarn-requirement .yarn-result-primary {
+    margin: 0 0 6px;
     font-size: 36px;
     font-weight: 700;
     color: var(--kbm-green, #52682d);
     line-height: 1.2;
+  }
+
+  #yarn-requirement .yarn-result-secondary {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--muted, #5b6472);
+    line-height: 1.45;
   }
 
   #yarn-requirement .yarn-message {
@@ -479,23 +498,27 @@ const defaultTitle =
     padding-top: 16px;
   }
 
-  #yarn-requirement.yarn--variant-hat .yarn-result-card {
-    padding: 16px;
-  }
-
-  #yarn-requirement.yarn--variant-hat .yarn-result-card-value {
+  #yarn-requirement.yarn--variant-hat .yarn-result-primary {
     font-size: 28px;
   }
 
+  #yarn-requirement.yarn--variant-hat .yarn-result-secondary {
+    font-size: 1.05rem;
+  }
+
   @media (max-width: 640px) {
-    #yarn-requirement .yarn-field input {
+    #yarn-requirement .yarn-field .floating-input input {
       min-height: 48px;
-      padding: 12px 14px;
+      padding: 1.35rem 0.875rem 0.55rem;
     }
 
-    #yarn-requirement .yarn-field label {
-      font-size: 0.9375rem;
-      margin-bottom: 8px;
+    #yarn-requirement .yarn-field .floating-input label {
+      font-size: 0.95rem;
+    }
+
+    #yarn-requirement .yarn-field .floating-input input:focus ~ label,
+    #yarn-requirement .yarn-field .floating-input input:not(:placeholder-shown) ~ label {
+      font-size: 0.75rem;
     }
 
     #yarn-requirement .yarn-section-label {
@@ -521,17 +544,16 @@ const defaultTitle =
       line-height: 1.45;
     }
 
-    #yarn-requirement .yarn-results-cards {
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
-
-    #yarn-requirement .yarn-result-card {
-      padding: 18px 16px;
-    }
-
-    #yarn-requirement .yarn-result-card-value {
+    #yarn-requirement .yarn-result-primary {
       font-size: 28px;
+    }
+
+    #yarn-requirement .yarn-results-display {
+      max-width: min(100%, 360px);
+    }
+
+    #yarn-requirement .yarn-result-secondary {
+      font-size: 1.05rem;
     }
 
     #yarn-requirement .yarn-results-heading {
@@ -550,12 +572,15 @@ const defaultTitle =
     const swatchWeight = document.getElementById('yarn-swatch-weight');
     const blanketWidth = document.getElementById('yarn-blanket-width');
     const blanketLength = document.getElementById('yarn-blanket-length');
-    const lengthUnitBtns = document.querySelectorAll('#yarn-length-units-toggle .yarn-unit-btn');
-    const lengthUnitLabels = document.querySelectorAll('#yarn-requirement .yarn-length-unit-label');
+    const lengthUnitBtns = document.querySelectorAll('#yarn-length-units-toggle button[type="button"]');
+    const swatchWidthLabel = document.getElementById('yarn-swatch-width-label');
+    const swatchLengthLabel = document.getElementById('yarn-swatch-length-label');
+    const blanketWidthLabel = document.getElementById('yarn-blanket-width-label');
+    const blanketLengthLabel = document.getElementById('yarn-blanket-length-label');
     const weightUnitBtns = document.querySelectorAll('#yarn-weight-units-toggle button[type="button"]');
     const resultsSection = document.getElementById('yarn-results-section');
-    const resultGrams = document.getElementById('yarn-result-grams');
-    const resultOunces = document.getElementById('yarn-result-ounces');
+    const resultPrimary = document.getElementById('yarn-result-primary');
+    const resultSecondary = document.getElementById('yarn-result-secondary');
     const messageIncomplete = document.getElementById('yarn-message-incomplete');
     const messageError = document.getElementById('yarn-message-error');
 
@@ -566,16 +591,69 @@ const defaultTitle =
 
     const LENGTH_STORAGE_KEY = 'kbm:yarnRequirement:lengthUnit';
     const WEIGHT_STORAGE_KEY = 'kbm:yarnRequirement:weightUnit';
+    const INCH_TO_CM = 2.54;
 
     const isEmbedMode = wrapper.getAttribute('data-embed-mode') === 'true';
     const variant = wrapper.dataset.variant || 'default';
     const isHatVariant = variant === 'hat';
     const isGarmentVariant = variant === 'garment';
+    const isBlanketVariant = variant === 'blanket';
+
+    /** Read page-level in/cm preference (UnitToggle, hat builder, etc.). */
+    function readAppLengthUnit(): 'in' | 'cm' {
+      try {
+        if (isHatVariant) {
+          const hat = localStorage.getItem('hat-unit');
+          if (hat === 'cm') return 'cm';
+          if (hat === 'inches') return 'in';
+        }
+        if (isGarmentVariant) {
+          const scoped = localStorage.getItem('kbm-units-sleeveless-fit');
+          if (scoped === 'in' || scoped === 'cm') return scoped;
+        }
+        if (isBlanketVariant) {
+          const scoped = localStorage.getItem('kbm-units-diy');
+          if (scoped === 'in' || scoped === 'cm') return scoped;
+        }
+        const global = localStorage.getItem('kbm-units');
+        if (global === 'in' || global === 'cm') return global;
+      } catch {
+        /* ignore */
+      }
+      return 'in';
+    }
+
+    function convertDimensionValue(value: number, fromUnit: 'in' | 'cm', toUnit: 'in' | 'cm'): number {
+      if (fromUnit === toUnit) return value;
+      if (fromUnit === 'cm' && toUnit === 'in') return value / INCH_TO_CM;
+      return value * INCH_TO_CM;
+    }
+
+    function formatDimensionInputValue(value: number, unit: 'in' | 'cm'): string {
+      if (unit === 'cm') {
+        const rounded = Math.round(value * 10) / 10;
+        return String(rounded);
+      }
+      const rounded = Math.round(value * 100) / 100;
+      return rounded % 1 === 0 ? String(Math.round(rounded)) : String(rounded);
+    }
+
+    function convertLengthInputField(input: HTMLInputElement | null, fromUnit: 'in' | 'cm', toUnit: 'in' | 'cm') {
+      if (!input) return;
+      const raw = input.value.trim();
+      if (!raw) return;
+      const n = parseFloat(raw);
+      if (isNaN(n) || n <= 0) return;
+      input.value = formatDimensionInputValue(convertDimensionValue(n, fromUnit, toUnit), toUnit);
+    }
 
     const propsLengthUnit = wrapper.dataset.lengthUnit === 'cm' ? 'cm' : 'in';
-    let currentLengthUnit = isEmbedMode
-      ? propsLengthUnit
-      : localStorage.getItem(LENGTH_STORAGE_KEY) || 'in';
+    const storedLengthUnit = localStorage.getItem(LENGTH_STORAGE_KEY);
+    const resolvedStoredLength =
+      storedLengthUnit === 'cm' || storedLengthUnit === 'in' ? storedLengthUnit : null;
+    let currentLengthUnit: 'in' | 'cm' = isEmbedMode
+      ? readAppLengthUnit()
+      : (resolvedStoredLength || readAppLengthUnit());
     let currentWeightUnit = localStorage.getItem(WEIGHT_STORAGE_KEY) || 'g';
     let blanketWidthIn = 0;
     let blanketLengthIn = 0;
@@ -681,14 +759,42 @@ const defaultTitle =
       return false;
     }
     
+    function setLengthUnit(nextUnit: 'in' | 'cm', options?: { convertFields?: boolean; persist?: boolean }) {
+      const convertFields = options?.convertFields !== false;
+      const persist = options?.persist !== false;
+      const prevUnit = currentLengthUnit;
+      if (nextUnit === prevUnit) {
+        updateLengthUnitUI();
+        return;
+      }
+      if (convertFields) {
+        convertLengthInputField(swatchWidth, prevUnit, nextUnit);
+        convertLengthInputField(swatchLength, prevUnit, nextUnit);
+        if (!isEmbedMode) {
+          convertLengthInputField(blanketWidth, prevUnit, nextUnit);
+          convertLengthInputField(blanketLength, prevUnit, nextUnit);
+        }
+      }
+      currentLengthUnit = nextUnit;
+      if (persist) {
+        localStorage.setItem(LENGTH_STORAGE_KEY, currentLengthUnit);
+      }
+      updateLengthUnitUI();
+      calculateYarn();
+    }
+
     // Update length unit UI
     function updateLengthUnitUI() {
       lengthUnitBtns.forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.unit === currentLengthUnit);
+        const isActive = btn.dataset.unit === currentLengthUnit;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
       });
-      lengthUnitLabels.forEach(label => {
-        label.textContent = currentLengthUnit;
-      });
+      const unit = currentLengthUnit;
+      if (swatchWidthLabel) swatchWidthLabel.textContent = `Swatch Width (${unit})`;
+      if (swatchLengthLabel) swatchLengthLabel.textContent = `Swatch Length (${unit})`;
+      if (blanketWidthLabel) blanketWidthLabel.textContent = `Project width (${unit})`;
+      if (blanketLengthLabel) blanketLengthLabel.textContent = `Project length (${unit})`;
       // Update context line when unit changes
       if (resultsSection) {
         updateProjectContext();
@@ -704,13 +810,41 @@ const defaultTitle =
     
     // Set placeholder values for results section
     // NOTE: Does NOT reset blanket context - that should always show current dimensions
+    function formatGrams(grams: number) {
+      return Math.round(grams) + ' g';
+    }
+
+    function formatOunces(ounces: number) {
+      return ounces.toFixed(1) + ' oz';
+    }
+
+    function displayResults(estimatedGrams: number, estimatedOunces: number) {
+      if (!resultPrimary) return;
+      const gramsText = formatGrams(estimatedGrams);
+      const ouncesText = formatOunces(estimatedOunces);
+      if (currentLengthUnit === 'in') {
+        resultPrimary.textContent = ouncesText;
+        if (resultSecondary) {
+          resultSecondary.textContent = '≈ ' + gramsText;
+          resultSecondary.hidden = false;
+        }
+      } else {
+        resultPrimary.textContent = gramsText;
+        if (resultSecondary) {
+          resultSecondary.textContent = '≈ ' + ouncesText;
+          resultSecondary.hidden = false;
+        }
+      }
+    }
+
     function setResultsPlaceholders() {
       // Don't reset blanket context - it should always show the current dimensions
-      if (resultGrams) {
-        resultGrams.textContent = '---';
+      if (resultPrimary) {
+        resultPrimary.textContent = '---';
       }
-      if (resultOunces) {
-        resultOunces.textContent = '---';
+      if (resultSecondary) {
+        resultSecondary.textContent = '';
+        resultSecondary.hidden = true;
       }
     }
     
@@ -745,10 +879,12 @@ const defaultTitle =
 
       if (blanketWidthIn <= 0 || blanketLengthIn <= 0) {
         el.textContent = isHatVariant
-          ? 'Choose hat size and length above to use this pattern’s measurements (finished width × total height).'
+          ? 'Choose hat size and length above to see your estimate.'
           : isGarmentVariant
-            ? 'Measurements are loading — finished bust/chest × garment length will appear here.'
-            : 'Project size used: —';
+            ? 'Measurements are loading…'
+            : isBlanketVariant
+              ? 'Choose a blanket size above to see your estimate.'
+              : 'Project size used: —';
         return;
       }
 
@@ -767,10 +903,12 @@ const defaultTitle =
 
       const unitLabel = displayUnit === 'in' ? 'in' : 'cm';
       el.textContent = isHatVariant
-        ? `Finished hat width × total height (same as your pattern): ${displayW} × ${displayL} ${unitLabel}. Rectangle area; yarn total includes 10% buffer.`
+        ? `Uses hat size and length from your pattern: ${displayW} × ${displayL} ${unitLabel}.`
         : isGarmentVariant
-          ? `Finished bust/chest × garment length (this sweater): ${displayW} × ${displayL} ${unitLabel}. Rectangle area; estimate includes 10% buffer.`
-          : `Project size used: ${displayW} × ${displayL} ${unitLabel}.`;
+          ? `Uses this sweater’s finished size: ${displayW} × ${displayL} ${unitLabel}.`
+          : isBlanketVariant
+            ? `Uses this blanket’s finished size: ${displayW} × ${displayL} ${unitLabel}.`
+            : `Project size used: ${displayW} × ${displayL} ${unitLabel}.`;
     }
     
     // Calculate yarn estimate
@@ -892,9 +1030,7 @@ const defaultTitle =
         return;
       }
       
-      // Display results
-      if (resultGrams) resultGrams.textContent = Math.round(estimatedGrams) + ' g';
-      if (resultOunces) resultOunces.textContent = estimatedOunces.toFixed(1) + ' oz';
+      displayResults(estimatedGrams, estimatedOunces);
       
       // Update blanket context line
       updateProjectContext();
@@ -943,8 +1079,7 @@ const defaultTitle =
           
           updateHeading();
 
-          currentLengthUnit = eventUnit === 'cm' ? 'cm' : 'in';
-          updateLengthUnitUI();
+          setLengthUnit(eventUnit === 'cm' ? 'cm' : 'in', { convertFields: false, persist: false });
 
           updateProjectContext();
           
@@ -984,17 +1119,29 @@ const defaultTitle =
       hasInteracted = true;
     }
     
-    if (!isEmbedMode) {
-      lengthUnitBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          markInteracted();
-          currentLengthUnit = btn.dataset.unit || 'in';
-          localStorage.setItem(LENGTH_STORAGE_KEY, currentLengthUnit);
-          updateLengthUnitUI();
-          calculateYarn();
-        });
+    lengthUnitBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        markInteracted();
+        const next = btn.dataset.unit === 'cm' ? 'cm' : 'in';
+        setLengthUnit(next);
       });
-    }
+    });
+
+    window.addEventListener('kbm:units-change', (ev: Event) => {
+      const detail = (ev as CustomEvent<{ unit?: string; toggleId?: string }>).detail;
+      const unit = detail?.unit;
+      if (unit !== 'in' && unit !== 'cm') return;
+      if (isGarmentVariant && detail?.toggleId != null && detail.toggleId !== 'sleeveless-fit') {
+        return;
+      }
+      if (isHatVariant && detail?.toggleId != null && detail.toggleId !== 'hat') {
+        return;
+      }
+      if (isBlanketVariant && detail?.toggleId != null && detail.toggleId !== 'diy') {
+        return;
+      }
+      setLengthUnit(unit, { convertFields: true, persist: false });
+    });
     
     // Weight unit toggle handlers
     weightUnitBtns.forEach(btn => {
