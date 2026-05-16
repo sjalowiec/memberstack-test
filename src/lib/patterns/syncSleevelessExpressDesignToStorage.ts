@@ -30,7 +30,7 @@ export function syncSleevelessDesignBasicsToPatternStorage(
     fit: string;
     selectedSize: string;
     selectedMeasurements: Record<string, number>;
-    /** When set (e.g. Express dev cardigan), preserves open front instead of forcing pullover. */
+    /** When set (e.g. Express cardigan), preserves open front instead of forcing pullover. */
     frontStyle?: "open" | "closed";
     garmentStyle?: "pullover" | "cardigan";
     patternMode?: string;

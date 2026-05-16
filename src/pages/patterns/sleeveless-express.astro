@@ -328,49 +328,27 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
                   </span>
                   <span class="hat-length-picker__option-label">Pullover</span>
                 </button>
-                {import.meta.env.DEV ? (
-                  <button
-                    type="button"
-                    class="hat-length-picker__option"
-                    data-choice
-                    data-field="front"
-                    data-value="open"
-                    aria-pressed="false"
-                  >
-                    <span class="express-front-card__badge express-front-card__badge--dev">Dev only</span>
-                    <span class="express-front-card__img-wrap">
-                      <img
-                        src={imgGarmentCardigan}
-                        alt=""
-                        class="hat-length-picker__img sg-picker-img express-front-card__img"
-                        width="433"
-                        height="469"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </span>
-                    <span class="hat-length-picker__option-label">Cardigan</span>
-                  </button>
-                ) : (
-                  <div
-                    class="hat-length-picker__option express-front-card express-front-card--disabled"
-                    aria-disabled="true"
-                  >
-                    <span class="express-front-card__badge">Coming soon</span>
-                    <span class="express-front-card__img-wrap">
-                      <img
-                        src={imgGarmentCardigan}
-                        alt=""
-                        class="hat-length-picker__img sg-picker-img express-front-card__img"
-                        width="433"
-                        height="469"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </span>
-                    <span class="hat-length-picker__option-label">Cardigan</span>
-                  </div>
-                )}
+                <button
+                  type="button"
+                  class="hat-length-picker__option"
+                  data-choice
+                  data-field="front"
+                  data-value="open"
+                  aria-pressed="false"
+                >
+                  <span class="express-front-card__img-wrap">
+                    <img
+                      src={imgGarmentCardigan}
+                      alt=""
+                      class="hat-length-picker__img sg-picker-img express-front-card__img"
+                      width="433"
+                      height="469"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </span>
+                  <span class="hat-length-picker__option-label">Cardigan</span>
+                </button>
               </div>
             </div>
           </section>

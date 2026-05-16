@@ -78,7 +78,6 @@ export function isSleevelessVNeckChoice(patternData: unknown): boolean {
 
 /**
  * True when merged pattern style requests a cardigan (open front / explicit garmentStyle).
- * Used with `import.meta.env.DEV` so production builds never pick the half-front schematic from stored data alone.
  */
 export function isSleevelessCardiganGarmentStyle(patternData: unknown): boolean {
   const pd =
@@ -109,7 +108,7 @@ export type ResolveSleevelessFrontDiagramOptions = {
   /**
    * When `true`, force the cardigan half-front asset (tests).
    * When `false`, skip the session/localStorage dev toggle only; persisted `garmentStyle` / `frontStyle`
-   * still select the half-front schematic when `import.meta.env.DEV` is true.
+   * still select the half-front schematic from pattern data.
    */
   devForceCardiganHalfLeft?: boolean;
 };
@@ -144,16 +143,14 @@ export function resolveSleevelessFrontDiagram(
   let useCardiganHalf = false;
   if (options?.devForceCardiganHalfLeft === true) {
     useCardiganHalf = true;
-  } else {
-    if (import.meta.env.DEV && isSleevelessCardiganGarmentStyle(patternData)) {
-      useCardiganHalf = true;
-    } else if (
-      options?.devForceCardiganHalfLeft !== false &&
-      import.meta.env.DEV &&
-      isSleevelessDevCardiganHalfFrontLeftEnabled()
-    ) {
-      useCardiganHalf = true;
-    }
+  } else if (isSleevelessCardiganGarmentStyle(patternData)) {
+    useCardiganHalf = true;
+  } else if (
+    options?.devForceCardiganHalfLeft !== false &&
+    import.meta.env.DEV &&
+    isSleevelessDevCardiganHalfFrontLeftEnabled()
+  ) {
+    useCardiganHalf = true;
   }
 
   if (useCardiganHalf) {

@@ -121,22 +121,22 @@ describe("resolveSleevelessFrontDiagram", () => {
     expect(r.src.endsWith("/diagram-front-V.svg")).toBe(true);
   });
 
-  it("routes round-neck cardigan style to half-front schematic in dev", () => {
-    if (!import.meta.env.DEV) return;
+  it("routes round-neck cardigan style to half-front schematic", () => {
     const r = resolveSleevelessFrontDiagram(
       { style: { neckline: "round", frontStyle: "open" } },
       { devForceCardiganHalfLeft: false },
     );
+    expect(r.garmentStyle).toBe("cardigan");
     expect(r.diagramType).toBe("cardiganHalfFrontRound");
     expect(r.src.endsWith("/cardigan-half-front-round.svg")).toBe(true);
   });
 
-  it("routes v-neck cardigan style to half-front V schematic in dev", () => {
-    if (!import.meta.env.DEV) return;
+  it("routes v-neck cardigan style to half-front V schematic", () => {
     const r = resolveSleevelessFrontDiagram(
       { style: { neckline: "v-neck", garmentStyle: "cardigan" } },
       { devForceCardiganHalfLeft: false },
     );
+    expect(r.garmentStyle).toBe("cardigan");
     expect(r.diagramType).toBe("cardiganHalfFrontV");
     expect(r.src.endsWith("/cardigan-v.svg")).toBe(true);
   });

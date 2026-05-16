@@ -85,7 +85,7 @@ interface MergedMeasureContext {
   fit: string;
   neckline: string;
   style: string;
-  /** Pullover vs cardigan — dev Express only in practice; prod merge coerces to pullover. */
+  /** Pullover vs cardigan from Express front style / stored pattern. */
   garmentStyle: "pullover" | "cardigan";
   gaugeStitchRaw: string;
   gaugeRowRaw: string;
@@ -146,9 +146,6 @@ function mergeContextFromUrlStorageAndPattern(pageUrl: URL): MergedMeasureContex
     expressStyleKeyIndicatesCardigan(styleKey)
   ) {
     garmentStyle = "cardigan";
-  }
-  if (!import.meta.env.DEV && garmentStyle === "cardigan") {
-    garmentStyle = "pullover";
   }
 
   let gaugeStitchRaw = sp.get("gaugeStitchRaw")?.trim() ?? ls.gaugeStitchRaw.trim();
@@ -568,7 +565,7 @@ function initExpressMeasurementsConfirmPage(): void {
           const necklineLabel =
             merged.neckline === "v-neck" ? "V-neck" : merged.neckline ? "Round" : "—";
           const fitLabel = merged.fit ? merged.fit.charAt(0).toUpperCase() + merged.fit.slice(1) : "—";
-          const garmentLabel = merged.garmentStyle === "cardigan" ? "Cardigan (dev preview)" : "Pullover";
+          const garmentLabel = merged.garmentStyle === "cardigan" ? "Cardigan" : "Pullover";
 
           const neck = toFiniteNumber(row.neck_opening);
           const neckVal = Number.isFinite(neck) ? formatLengthDisplay(neck, unit) : "—";
@@ -629,9 +626,7 @@ function initExpressMeasurementsConfirmPage(): void {
             metaChip("Who", whoLabel),
             metaChipSize(chartFit.selectedSize, chartBustChestDisplay),
           ];
-          if (import.meta.env.DEV) {
-            metaChips.push(metaChip("Garment", garmentLabel));
-          }
+          metaChips.push(metaChip("Garment", garmentLabel));
           metaChips.push(metaChip("Neckline", necklineLabel), metaChip("Fit ease", fitLabel));
           metaGrid.append(...metaChips);
           meta.append(editWrap, expressLine, customLine);

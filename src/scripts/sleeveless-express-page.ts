@@ -149,12 +149,9 @@ function migrateExpressStyleFields(v: Record<string, string>): void {
   }
 }
 
-/** Express only offers straight body; front pullover vs cardigan (cardigan selectable in dev only). */
+/** Express only offers straight body; front pullover vs cardigan. */
 function ensureExpressStyleDefaults(v: Record<string, string>): void {
   v.shape = "straight";
-  if (!import.meta.env.DEV && v.front === "open") {
-    v.front = "closed";
-  }
   if (!v.front) v.front = "closed";
   v.style = deriveExpressStyleKey(v.shape, v.front) || "straight-pullover";
 }
@@ -792,7 +789,6 @@ function initExpressPage() {
 
     if (field === "front") {
       if (value !== "closed" && value !== "open") return;
-      if (value === "open" && !import.meta.env.DEV) return;
     }
 
     values[field] = value;
@@ -1068,7 +1064,7 @@ function initExpressPage() {
       if (values.neckline) q.set("neckline", values.neckline);
       if (values.fit) q.set("fit", values.fit);
       if (values.selectedSize) q.set("selectedSize", values.selectedSize);
-      if (import.meta.env.DEV && values.front === "open") q.set("garmentStyle", "cardigan");
+      if (values.front === "open") q.set("garmentStyle", "cardigan");
       q.set("gaugeStitchRaw", gaugeStitchRaw);
       q.set("gaugeRowRaw", gaugeRowRaw);
       q.set("gaugeRawUnit", unit);
