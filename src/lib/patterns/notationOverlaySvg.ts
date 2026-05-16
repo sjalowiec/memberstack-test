@@ -113,7 +113,7 @@ export type NotationOverlayDiagramOptions = {
   innerNeckNotationFromTimeline?: boolean;
 };
 
-const DEFAULT_NOTATION_OUTLINE_SRC = "/images/patterns/shoulder-front-icon.svg";
+const DEFAULT_NOTATION_OUTLINE_SRC = "/images/patterns/shoulder-round-icon.svg";
 
 const MACHINE_ORIENTATION_CAPTION = "As viewed on the machine";
 

@@ -12,12 +12,12 @@ export const SLEEVELESS_CARDIGAN_HALF_FRONT_ROUND_DIAGRAM_SRC =
 /** Dev cardigan V-neck front garment schematic (Illustrator export `public/images/patterns/cardigan-v.svg`). */
 export const SLEEVELESS_CARDIGAN_V_FRONT_DIAGRAM_SRC = "/images/patterns/cardigan-v.svg";
 
-/** Back neckline / shoulder shaping underlay — round/shallow back neck only (never V-neck). */
+/** Round neckline / shoulder shaping underlay (back and front round neck — never V-neck). */
 export const SLEEVELESS_SHOULDER_NOTATION_ICON_BACK = "/images/patterns/shoulder-round-icon.svg";
-/** Front round neckline / standard shoulder-neck notation underlay. */
-export const SLEEVELESS_SHOULDER_NOTATION_ICON_FRONT_ROUND = "/images/patterns/shoulder-front-icon.svg";
-/** Front V-neck notation underlay (`public/images/patterns/shoulder-front-icon-v.svg`). */
-export const SLEEVELESS_SHOULDER_NOTATION_ICON_FRONT_V = "/images/patterns/shoulder-front-icon-v.svg";
+/** Front round neckline — same asset as back; garment style (pullover vs cardigan) does not change this. */
+export const SLEEVELESS_SHOULDER_NOTATION_ICON_FRONT_ROUND = SLEEVELESS_SHOULDER_NOTATION_ICON_BACK;
+/** Front V-neck notation underlay (`public/images/patterns/shoulder-front-icon-V.svg`). */
+export const SLEEVELESS_SHOULDER_NOTATION_ICON_FRONT_V = "/images/patterns/shoulder-front-icon-V.svg";
 
 function necklineRawString(patternData: unknown): string {
   const pd =

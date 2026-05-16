@@ -20,14 +20,32 @@ describe("getSleevelessShoulderNotationIconSrc", () => {
     expect(getSleevelessShoulderNotationIconSrc("back", roundPattern)).toBe(SLEEVELESS_SHOULDER_NOTATION_ICON_BACK);
   });
 
-  it("front v-neck uses shoulder-front-icon-v.svg", () => {
+  it("front v-neck uses shoulder-front-icon-V.svg", () => {
     expect(getSleevelessShoulderNotationIconSrc("front", vNeckPattern)).toBe(SLEEVELESS_SHOULDER_NOTATION_ICON_FRONT_V);
-    expect(getSleevelessShoulderNotationIconSrc("front", vNeckPattern)).toBe("/images/patterns/shoulder-front-icon-v.svg");
+    expect(getSleevelessShoulderNotationIconSrc("front", vNeckPattern)).toBe("/images/patterns/shoulder-front-icon-V.svg");
   });
 
-  it("front round uses standard shoulder-front-icon.svg", () => {
+  it("front round uses shoulder-round-icon.svg", () => {
     expect(getSleevelessShoulderNotationIconSrc("front", roundPattern)).toBe(SLEEVELESS_SHOULDER_NOTATION_ICON_FRONT_ROUND);
-    expect(getSleevelessShoulderNotationIconSrc("front", roundPattern)).toBe("/images/patterns/shoulder-front-icon.svg");
+    expect(getSleevelessShoulderNotationIconSrc("front", roundPattern)).toBe("/images/patterns/shoulder-round-icon.svg");
+  });
+
+  it("front round cardigan uses same icon as pullover (neckline only, not garment style)", () => {
+    const cardiganRound = { style: { neckline: "round", garmentStyle: "cardigan", frontStyle: "open" } };
+    expect(getSleevelessShoulderNotationIconSrc("front", cardiganRound)).toBe(
+      "/images/patterns/shoulder-round-icon.svg",
+    );
+    expect(getSleevelessShoulderNotationIconSrc("front", roundPattern)).toBe(
+      getSleevelessShoulderNotationIconSrc("front", cardiganRound),
+    );
+  });
+
+  it("front v-neck cardigan uses same icon as pullover (neckline only, not garment style)", () => {
+    const cardiganV = { style: { neckline: "v-neck", garmentStyle: "cardigan" } };
+    expect(getSleevelessShoulderNotationIconSrc("front", cardiganV)).toBe("/images/patterns/shoulder-front-icon-V.svg");
+    expect(getSleevelessShoulderNotationIconSrc("front", vNeckPattern)).toBe(
+      getSleevelessShoulderNotationIconSrc("front", cardiganV),
+    );
   });
 });
 

@@ -112,7 +112,7 @@
   margin: 0 0 0.35rem;
 }
 
-/* --- Blueprint layout (viewBox 141.5 × 194.61) --- */
+/* --- Blueprint layout (viewBox 141.8 × 194.4) --- */
 .express-measurements-confirm-page .express-mbp {
   box-sizing: border-box;
 }
@@ -311,7 +311,7 @@
   width: min(100%, 720px);
   min-width: min(100%, 280px);
   margin: 0 auto;
-  aspect-ratio: 141.5 / 194.61;
+  aspect-ratio: 141.8 / 194.4;
   border-radius: 12px;
   background: var(--page-bg, #fff);
   border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 12%, #e2e2e2);
@@ -480,7 +480,7 @@
   user-select: none;
 }
 
-/* Percent positions tuned to measurement-blueprint.svg */
+/* Percent positions tuned to pattern_summary.svg */
 .express-measurements-confirm-page .express-mbp-box--neck-opening {
   left: 50%;
   top: 5.5%;
@@ -514,6 +514,12 @@
   top: 58%;
 }
 
+/* Ribbed hem depth: lower-left vertical guide (#measurement-lines hem depth line ~x 2.4%) */
+.express-measurements-confirm-page .express-mbp-box--ribbed-hem-depth {
+  left: 12%;
+  top: 91.5%;
+}
+
 /* --- Mobile: stack measurement chips under diagram --- */
 @media (max-width: 699.98px) {
   .express-measurements-confirm-page .express-mbp-scroll {
@@ -524,7 +530,7 @@
   .express-measurements-confirm-page .express-mbp-stage {
     width: 100%;
     max-width: 420px;
-    aspect-ratio: 141.5 / 194.61;
+    aspect-ratio: 141.8 / 194.4;
   }
 
   .express-measurements-confirm-page .express-mbp-box__lab {
@@ -563,7 +569,7 @@
     position: relative;
     width: 100%;
     height: auto;
-    aspect-ratio: 141.5 / 194.61;
+    aspect-ratio: 141.8 / 194.4;
     flex-shrink: 0;
   }
 

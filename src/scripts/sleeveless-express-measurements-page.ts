@@ -13,6 +13,7 @@ import {
   SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID,
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
 import { formatSwatchCountForGaugeInput } from "../lib/patterns/gaugeDisplayFormat";
+import { getDefaultHemLengthInches } from "../lib/patterns/hemDefaults";
 import type { ChartRow } from "../lib/patterns/sleevelessExpressSizeChartTypes";
 import { getPatternData, SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "../lib/patterns/patternStorage";
 import { syncSleevelessDesignBasicsToPatternStorage } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
@@ -189,7 +190,7 @@ const CUSTOM_BUILD_HREF = "/patterns/sleeveless/custom-build/";
 const WORKSPACE_EXPRESS_TAB_ICON_SRC = "/images/quick-icon.svg";
 const WORKSPACE_CUSTOM_TAB_ICON_SRC = "/images/KINlogo.svg";
 
-const MEASUREMENT_BLUEPRINT_SVG_URL = "/images/patterns/measurement-blueprint.svg";
+const MEASUREMENT_BLUEPRINT_SVG_URL = "/images/patterns/pattern_summary.svg";
 
 function workspaceTabIconImg(src: string): HTMLImageElement {
   const img = document.createElement("img");
@@ -588,6 +589,9 @@ function initExpressMeasurementsConfirmPage(): void {
           const shoulder = toFiniteNumber(row.shoulder_width);
           const shoulderVal = Number.isFinite(shoulder) ? formatLengthDisplay(shoulder, unit) : "—";
 
+          const ribbedHemDepthIn = getDefaultHemLengthInches(aud);
+          const ribbedHemDepthVal = formatLengthDisplay(ribbedHemDepthIn, unit);
+
           const over = merged.gaugeRawUnit === "cm" ? "10 cm" : '4"';
           const gaugeVal =
             merged.gaugeStitchRaw && merged.gaugeRowRaw
@@ -683,6 +687,9 @@ function initExpressMeasurementsConfirmPage(): void {
             }),
             blueprintReadonlyBox("armhole", "Armhole depth", armVal, { axis: "vertical" }),
             blueprintReadonlyBox("back-length", "Garment length", backLenVal, { axis: "vertical" }),
+            blueprintReadonlyBox("ribbed-hem-depth", "Ribbed hem depth", ribbedHemDepthVal, {
+              axis: "vertical",
+            }),
           );
 
           inner.append(art, overlay);
