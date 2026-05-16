@@ -8,6 +8,7 @@ import FloatingInput from "../../components/tools/FloatingInput.astro";
 import ToolResultCard from "../../components/tools/ToolResultCard.astro";
 import PrintButton from "../../components/common/PrintButton.astro";
 import toolsData from "../../../data/tools.json";
+import buttonBandDiagram from "../../../public/icons/tools/button_band_detail.svg?raw";
 import "../../styles/wizard.css";
 
 const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
@@ -127,7 +128,7 @@ const toolPrintTitle = tool?.title ?? "Button Band Buttonhole Calculator";
                     inputmode="numeric"
                     placeholder=" "
                   />
-                  <label for="numberOfButtonholes" class="bb-stepper-field__label">Number of buttonholes</label>
+                  <label for="numberOfButtonholes" class="bb-stepper-field__label"># of buttons</label>
                 </div>
 
                 <div class="bb-input-with-unit">
@@ -145,26 +146,25 @@ const toolPrintTitle = tool?.title ?? "Button Band Buttonhole Calculator";
                 </div>
               </div>
 
-              <div class="bb-actions">
-                <button type="submit" class="wizard-button" id="buttonBandCalculateBtn">
-                  Create Buttonhole Placement Instructions
-                </button>
-              </div>
             </div>
 
             <aside class="bb-diagram-panel" aria-label="Button band measurement reference">
               <div class="bb-diagram-panel__card">
-                <img
-                  src="/icons/tools/button_band_detail.svg"
-                  alt=""
-                  class="bb-diagram-image"
-                  width="280"
-                  height="280"
-                  loading="lazy"
-                  decoding="async"
+                <div
+                  id="bbDiagram"
+                  class="bb-diagram"
+                  role="img"
+                  aria-label="Button band measurement reference diagram"
+                  set:html={buttonBandDiagram}
                 />
               </div>
             </aside>
+          </div>
+
+          <div class="bb-actions">
+            <button type="submit" class="wizard-button" id="buttonBandCalculateBtn">
+              Create Buttonhole Placement Instructions
+            </button>
           </div>
 
           <div id="buttonBandValidation" class="bb-validation" role="alert" hidden></div>
@@ -292,12 +292,29 @@ const toolPrintTitle = tool?.title ?? "Button Band Buttonhole Calculator";
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
     }
 
-    .bb-diagram-image {
+    .bb-diagram :global(svg) {
       width: 100%;
       max-width: 100%;
       height: auto;
       display: block;
       margin: 0 auto;
+    }
+
+    .bb-diagram :global(.bb-marker circle) {
+      transition: fill 0.2s ease;
+    }
+
+    .bb-diagram :global(.bb-marker.bb-marker--active circle) {
+      fill: var(--kbm-accent, #c2614e);
+    }
+
+    .bb-diagram :global(.bb-label path) {
+      fill: #231f20;
+      transition: fill 0.2s ease;
+    }
+
+    .bb-diagram :global(.bb-label.bb-label--active path) {
+      fill: var(--kbm-accent, #c2614e);
     }
 
     @media (max-width: 767px) {
@@ -417,10 +434,13 @@ const toolPrintTitle = tool?.title ?? "Button Band Buttonhole Calculator";
     }
 
     .bb-actions {
-      margin-top: 20px;
+      margin-top: 1.75rem;
     }
 
     .bb-actions .wizard-button {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
       padding: 12px 22px;
       font-size: 1rem;
       font-weight: 600;
@@ -541,6 +561,41 @@ const toolPrintTitle = tool?.title ?? "Button Band Buttonhole Calculator";
     }
 
     const validation = validationEl;
+
+    const DIAGRAM_FIELD_HIGHLIGHTS = [
+      { inputId: "cardiganEdge", markerId: "bb-marker-a", labelId: "bb-label-a" },
+      { inputId: "bandWidth", markerId: "bb-marker-b", labelId: "bb-label-b" },
+      { inputId: "startOffset", markerId: "bb-marker-c", labelId: "bb-label-c" },
+      { inputId: "endOffset", markerId: "bb-marker-d", labelId: "bb-label-d" },
+    ] as const;
+
+    function initDiagramMarkerFocus(diagramRoot: HTMLElement): void {
+      let activeField: (typeof DIAGRAM_FIELD_HIGHLIGHTS)[number] | null = null;
+
+      function setActiveField(field: (typeof DIAGRAM_FIELD_HIGHLIGHTS)[number] | null): void {
+        if (activeField) {
+          diagramRoot.querySelector(`#${activeField.markerId}`)?.classList.remove("bb-marker--active");
+          diagramRoot.querySelector(`#${activeField.labelId}`)?.classList.remove("bb-label--active");
+        }
+        activeField = field;
+        if (field) {
+          diagramRoot.querySelector(`#${field.markerId}`)?.classList.add("bb-marker--active");
+          diagramRoot.querySelector(`#${field.labelId}`)?.classList.add("bb-label--active");
+        }
+      }
+
+      for (const field of DIAGRAM_FIELD_HIGHLIGHTS) {
+        const input = document.getElementById(field.inputId);
+        if (!input) continue;
+        input.addEventListener("focus", () => setActiveField(field));
+        input.addEventListener("blur", () => {
+          if (activeField === field) setActiveField(null);
+        });
+      }
+    }
+
+    const diagramRoot = document.getElementById("bbDiagram");
+    if (diagramRoot) initDiagramMarkerFocus(diagramRoot);
 
     function getUnit(): ButtonBandUnit {
       return localStorage.getItem("kbm-units") === "cm" ? "cm" : "in";
