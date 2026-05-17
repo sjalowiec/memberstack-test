@@ -13,6 +13,7 @@ import {
   loadExpressSweaterCharts,
   expressWhoToChartAudience,
   resolveExpressChartFit,
+  findExpressChartRow,
   formatExpressSelectedSizeSummary,
   getExpressUiUnit,
   nonEmptyTrimmed,
@@ -21,6 +22,7 @@ import {
   isValidExpressSizeForAudience,
   SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID,
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
+import { seedCustomBuildBodyFinishedFromChartRow } from "../lib/patterns/sleevelessCustomBuildBodyMeasurements";
 import { scrollToBuilderSection } from "../lib/patterns/scrollToBuilderSection";
 import { resolveSleevelessAudienceHeroImageSrc } from "../lib/patterns/sleevelessAudienceHeroImage";
 
@@ -264,6 +266,14 @@ function syncExpressSelectionsToBuilderStorage(
 
   if (hasYarn || gaugeStitchRaw || gaugeRowRaw) {
     savePatternData("yarnGaugeMachine", { ...prevMachine, ...yarnMachinePayload });
+  }
+
+  if (chartFit && values.fit) {
+    const aud = expressWhoToChartAudience(values.who);
+    const row = findExpressChartRow(aud, chartFit.selectedSize);
+    if (row) {
+      seedCustomBuildBodyFinishedFromChartRow(row, values.fit, { preserveFinished: true });
+    }
   }
 }
 

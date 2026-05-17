@@ -1,6 +1,9 @@
 /**
  * Client-side persistence for the sleeveless pattern builder.
- * Canonical store: localStorage key `kbm_current_pattern`.
+ * Canonical **working draft** store: localStorage key `kbm_current_pattern` (current browser session).
+ *
+ * Named **saved projects** (Custom Pattern) live in Netlify Blobs via
+ * `customPatternProjectClient` — load copies a saved project into this draft; Express behavior is unchanged.
  */
 
 import { swatchCountFromPerInchForDisplay } from "./gaugeDisplayFormat";

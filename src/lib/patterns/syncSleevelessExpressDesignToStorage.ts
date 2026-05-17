@@ -3,6 +3,8 @@
  * into canonical sleeveless pattern storage. Shared by Express and Custom Build design step.
  */
 import { normalizeSleevelessAudience, saveCurrentPattern, savePatternData } from "./patternStorage";
+import { seedCustomBuildBodyFinishedFromChartRow } from "./sleevelessCustomBuildBodyMeasurements";
+import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 
 export function expressWhoToChartAudience(whoRaw: unknown): string {
   const s = String(whoRaw ?? "").trim().toLowerCase();
@@ -34,6 +36,10 @@ export function syncSleevelessDesignBasicsToPatternStorage(
     frontStyle?: "open" | "closed";
     garmentStyle?: "pullover" | "cardigan";
     patternMode?: string;
+    /** Sweater chart row for Custom Build body/finished measurement layer (optional). */
+    chartRow?: ChartRow;
+    /** When false, re-seed finished bust/waist/hip from chart on each sync. Default true. */
+    preserveCustomBuildFinished?: boolean;
   }>,
 ): void {
   const stylePayload: Record<string, unknown> = {};
@@ -104,4 +110,14 @@ export function syncSleevelessDesignBasicsToPatternStorage(
 
   if (hasStyle) savePatternData("style", stylePayload);
   if (hasFit) savePatternData("fit", fitPayload);
+
+  const fitPref =
+    params.fit === "close" || params.fit === "standard" || params.fit === "relaxed"
+      ? params.fit
+      : "standard";
+  if (params.chartRow && params.fit) {
+    seedCustomBuildBodyFinishedFromChartRow(params.chartRow, fitPref, {
+      preserveFinished: params.preserveCustomBuildFinished !== false,
+    });
+  }
 }

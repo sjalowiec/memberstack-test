@@ -44,6 +44,7 @@ import {
 } from "../lib/patterns/sleevelessPrintBasicsSummaryHtml.ts";
 import { sleevelessFinishingFromPattern } from "../lib/patterns/sleevelessPatternFinishing.ts";
 import { buildSleevelessFinishingStepsHtml } from "../lib/patterns/sleevelessPatternFinishingHtml.ts";
+import { scrollToBuilderSection } from "../lib/patterns/scrollToBuilderSection.ts";
 import type { SleevelessBackPatternDebug } from "../lib/patterns/sleevelessPatternOutput.ts";
 
 // DEV-only cardigan half-front schematic: sessionStorage or localStorage key `kbmDevCardiganHalfFrontLeft` = "1" (vite dev).
@@ -1535,17 +1536,36 @@ table {
 </section>`;
   }
 
+  function setPatternSectionCollapsed(section, collapsed) {
+    if (!(section instanceof HTMLElement)) return;
+    const id = section.dataset.sectionId;
+    if (!id) return;
+    const header = section.querySelector(":scope > .pattern-section__header");
+    const checkbox = header?.querySelector("input.pattern-section__collapse");
+    if (!(checkbox instanceof HTMLInputElement)) return;
+    checkbox.checked = collapsed;
+    section.classList.toggle("is-collapsed", collapsed);
+    try {
+      localStorage.setItem(`sleevelessPattern_section_${id}`, collapsed ? "true" : "false");
+    } catch {
+      /* quota */
+    }
+  }
+
+  function scrollPatternSectionHeader(section) {
+    if (!(section instanceof HTMLElement)) return;
+    const header = section.querySelector(":scope > .pattern-section__header");
+    scrollToBuilderSection(header instanceof HTMLElement ? header : section);
+  }
+
   function applyPatternSectionCollapseState(root) {
     if (!root) return;
-    root.querySelectorAll(".pattern-section").forEach((section) => {
+    root.querySelectorAll(".pattern-section, .pattern-subsection").forEach((section) => {
+      if (!(section instanceof HTMLElement)) return;
       const id = section.dataset.sectionId;
       if (!id) return;
-      const header = section.querySelector(":scope > .pattern-section__header");
-      const checkbox = header?.querySelector("input.pattern-section__collapse");
-      if (!(checkbox instanceof HTMLInputElement)) return;
       const collapsed = localStorage.getItem(`sleevelessPattern_section_${id}`) === "true";
-      checkbox.checked = collapsed;
-      section.classList.toggle("is-collapsed", collapsed);
+      setPatternSectionCollapsed(section, collapsed);
     });
   }
 
@@ -1556,11 +1576,16 @@ table {
     root.addEventListener("change", (e) => {
       const t = e.target;
       if (!(t instanceof HTMLInputElement) || !t.classList.contains("pattern-section__collapse")) return;
-      const section = t.closest(".pattern-section");
+      const section = t.closest(".pattern-section, .pattern-subsection");
       const id = t.dataset.sectionId || section?.dataset.sectionId;
-      if (!section || !id) return;
-      localStorage.setItem(`sleevelessPattern_section_${id}`, t.checked ? "true" : "false");
-      section.classList.toggle("is-collapsed", t.checked);
+      if (!(section instanceof HTMLElement) || !id) return;
+
+      const collapsed = t.checked;
+      setPatternSectionCollapsed(section, collapsed);
+
+      if (!collapsed) {
+        scrollPatternSectionHeader(section);
+      }
     });
   }
 

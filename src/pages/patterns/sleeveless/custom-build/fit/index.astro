@@ -2,6 +2,7 @@
 import Layout from "../../../../../layouts/Layout.astro";
 import WizardBackLink from "../../../../../components/wizards/WizardBackLink.astro";
 import PatternWorkspaceTabs from "../../../../../components/patterns/PatternWorkspaceTabs.astro";
+import UnitToggle from "../../../../../components/wizards/UnitToggle.astro";
 import "../../../../../styles/sleeveless-express-wizard-layout.css";
 
 const customBuildHref = "/patterns/sleeveless/custom-build/";
@@ -178,6 +179,88 @@ const customWizardSteps: WizardStep[] = [
             </p>
           </header>
 
+          <div class="express-panel calculator-card" data-cb-measure-root>
+            <div class="express-builder-units no-print">
+              <UnitToggle id="sleeveless-fit" />
+            </div>
+            <p class="pattern-subtext cb-measure-unit-hint" data-cb-measure-unit-hint>
+              Measurements are shown in inches.
+            </p>
+            <p class="info-box cb-measure-missing" data-cb-measure-missing hidden role="status">
+              Complete <a href={foundationHref} class="express-custom-build-callout__link">Foundation</a> (who and size) and
+              <a href={styleHref} class="express-custom-build-callout__link">Style &amp; Shaping</a> (fit) to load body and finished measurements.
+            </p>
+            <div data-cb-measure-panel hidden>
+              <section class="cb-measure-section" aria-labelledby="cb-body-measurements-heading">
+                <h2 id="cb-body-measurements-heading" class="cb-measure-section__title">Body measurements (from chart)</h2>
+                <p class="pattern-subtext cb-measure-section__intro">
+                  These come from your sizing chart row. They are not used in pattern calculations yet.
+                </p>
+                <dl class="cb-measure-body-grid">
+                  <div class="cb-measure-body-row">
+                    <dt>Body bust/chest</dt>
+                    <dd data-cb-body-display="bodyBustOrChest">—</dd>
+                  </div>
+                  <div class="cb-measure-body-row">
+                    <dt>Body waist</dt>
+                    <dd data-cb-body-display="bodyWaist">—</dd>
+                  </div>
+                  <div class="cb-measure-body-row">
+                    <dt>Body hip</dt>
+                    <dd data-cb-body-display="bodyHip">—</dd>
+                  </div>
+                </dl>
+              </section>
+
+              <section class="cb-measure-section" aria-labelledby="cb-finished-measurements-heading">
+                <h2 id="cb-finished-measurements-heading" class="cb-measure-section__title">Finished measurements</h2>
+                <p class="pattern-subtext cb-measure-section__intro">
+                  Starting values use your fit choice (ease on bust/chest). Adjust if needed — saved for Custom Build only; pattern output is unchanged in this step.
+                </p>
+                <div class="cb-measure-finished-grid">
+                  <label class="cb-measure-finished-field">
+                    <span class="cb-measure-finished-field__label">Finished bust/chest</span>
+                    <input
+                      type="text"
+                      inputmode="decimal"
+                      class="form-control cb-measure-finished-field__input"
+                      data-cb-finished-input="finishedBustOrChest"
+                      autocomplete="off"
+                    />
+                  </label>
+                  <label class="cb-measure-finished-field">
+                    <span class="cb-measure-finished-field__label">Finished waist</span>
+                    <input
+                      type="text"
+                      inputmode="decimal"
+                      class="form-control cb-measure-finished-field__input"
+                      data-cb-finished-input="finishedWaist"
+                      autocomplete="off"
+                    />
+                  </label>
+                  <label class="cb-measure-finished-field">
+                    <span class="cb-measure-finished-field__label">Finished hip</span>
+                    <input
+                      type="text"
+                      inputmode="decimal"
+                      class="form-control cb-measure-finished-field__input"
+                      data-cb-finished-input="finishedHip"
+                      autocomplete="off"
+                    />
+                  </label>
+                </div>
+              </section>
+
+              <section class="cb-measure-section cb-measure-summary-section" aria-labelledby="cb-measure-summary-heading">
+                <h2 id="cb-measure-summary-heading" class="cb-measure-section__title">Saved values (review)</h2>
+                <p class="pattern-subtext cb-measure-section__intro">
+                  Confirms what is stored in your pattern — refresh the page to verify restore.
+                </p>
+                <dl class="cb-measure-summary-grid" data-cb-measure-summary></dl>
+              </section>
+            </div>
+          </div>
+
           <div class="wizard-next-cta wizard-next-cta--split cb-design-wizard-nav no-print">
             <a href={styleHref} class="kbm-btn kbm-btn-outline">← Back: Style &amp; Shaping</a>
             <a href={yarnGaugeHref} class="kbm-btn kbm-btn-accent">Continue: Yarn &amp; Gauge →</a>
@@ -195,4 +278,76 @@ const customWizardSteps: WizardStep[] = [
     text-decoration: underline;
     text-underline-offset: 2px;
   }
+
+  .cb-measure-section {
+    margin-top: 1.5rem;
+  }
+
+  .cb-measure-section__title {
+    font-size: 1.125rem;
+    margin: 0 0 0.35rem;
+  }
+
+  .cb-measure-section__intro {
+    margin-bottom: 0.75rem;
+  }
+
+  .cb-measure-body-grid,
+  .cb-measure-summary-grid {
+    display: grid;
+    gap: 0.5rem 1rem;
+    margin: 0;
+  }
+
+  .cb-measure-body-row,
+  .cb-measure-summary-grid {
+    grid-template-columns: minmax(8rem, 1fr) auto;
+    align-items: baseline;
+  }
+
+  .cb-measure-body-row {
+    display: contents;
+  }
+
+  .cb-measure-body-grid dt,
+  .cb-measure-summary-grid dt {
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .cb-measure-body-grid dd,
+  .cb-measure-summary-grid dd {
+    margin: 0;
+    text-align: right;
+  }
+
+  .cb-measure-finished-grid {
+    display: grid;
+    gap: 0.75rem;
+    max-width: 22rem;
+  }
+
+  .cb-measure-finished-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .cb-measure-finished-field__label {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .cb-measure-summary-section {
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .cb-measure-missing {
+    margin-top: 0.75rem;
+  }
 </style>
+
+<script>
+  import "/src/scripts/sleeveless-custom-build-measurements-page.ts";
+</script>

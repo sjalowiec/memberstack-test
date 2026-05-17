@@ -122,6 +122,45 @@ const customWizardSteps = [
                   Start over
                 </button>
               </div>
+
+              <section
+                class="cb-saved-projects no-print"
+                data-cb-saved-projects
+                aria-labelledby="cb-saved-projects-heading"
+              >
+                <h2 id="cb-saved-projects-heading" class="cb-saved-projects__title">Saved project</h2>
+                <p class="pattern-subtext cb-saved-projects__draft-note">
+                  Your browser keeps a <strong>working draft</strong> in localStorage (<code>kbm_current_pattern</code>).
+                  Saved projects below are stored separately (Netlify Blobs) and can be loaded back into the draft.
+                </p>
+                <p class="pattern-subtext cb-saved-projects__auth" data-cb-project-auth-hint></p>
+                <label class="cb-saved-projects__field">
+                  <span class="cb-saved-projects__label">Project name</span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    data-cb-project-name
+                    maxlength="120"
+                    placeholder="e.g. Mom’s relaxed cardigan"
+                    autocomplete="off"
+                  />
+                </label>
+                <div class="cb-saved-projects__actions">
+                  <button type="button" class="btn btn-sm btn-primary" data-cb-project-save>Save as new</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-cb-project-update>
+                    Update saved
+                  </button>
+                </div>
+                <label class="cb-saved-projects__field">
+                  <span class="cb-saved-projects__label">Load saved project</span>
+                  <select class="form-select" data-cb-project-select></select>
+                </label>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-cb-project-load>
+                  Load into draft
+                </button>
+                <p class="cb-project-status" data-cb-project-status role="status" aria-live="polite"></p>
+              </section>
+
               <div class="express-builder-units no-print">
                 <UnitToggle id="sleeveless-fit" />
               </div>
@@ -383,8 +422,63 @@ const customWizardSteps = [
     pointer-events: none;
     cursor: not-allowed;
   }
+
+  .cb-saved-projects {
+    margin: 1.25rem 0 1.5rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.6);
+  }
+
+  .cb-saved-projects__title {
+    font-size: 1.05rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .cb-saved-projects__draft-note {
+    margin-bottom: 0.35rem;
+    font-size: 0.92rem;
+  }
+
+  .cb-saved-projects__auth {
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+    color: var(--text-muted, #555);
+  }
+
+  .cb-saved-projects__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0.65rem;
+    max-width: 24rem;
+  }
+
+  .cb-saved-projects__label {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .cb-saved-projects__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .cb-project-status {
+    margin: 0.5rem 0 0;
+    font-size: 0.9rem;
+    min-height: 1.25em;
+  }
+
+  .cb-project-status--error {
+    color: #b91c1c;
+  }
 </style>
 
 <script>
   import "/src/scripts/sleeveless-custom-build-design-page.ts";
+  import "/src/scripts/sleeveless-custom-build-saved-projects.ts";
 </script>

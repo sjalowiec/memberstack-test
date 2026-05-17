@@ -11,6 +11,7 @@ import {
   loadExpressSweaterCharts,
   expressWhoToChartAudience,
   resolveExpressChartFit,
+  findExpressChartRow,
   nonEmptyTrimmed,
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
 
@@ -95,12 +96,15 @@ function syncBasicsFromExpressValues(ev: Record<string, string>): void {
       ev.who && nonEmptyTrimmed(ev.selectedSize) && ev.fit
         ? resolveExpressChartFit(aud, ev.selectedSize!.trim(), ev.fit)
         : null;
+    const chartRow =
+      chartFit && ev.who ? findExpressChartRow(aud, chartFit.selectedSize) : null;
     syncSleevelessDesignBasicsToPatternStorage({
       ...(ev.who ? { who: ev.who } : {}),
       ...(ev.neckline ? { neckline: ev.neckline } : {}),
       ...(ev.fit ? { fit: ev.fit } : {}),
       ...(nonEmptyTrimmed(ev.selectedSize) ? { selectedSize: ev.selectedSize!.trim() } : {}),
       ...(chartFit?.selectedMeasurements ? { selectedMeasurements: chartFit.selectedMeasurements } : {}),
+      ...(chartRow ? { chartRow } : {}),
     });
   });
 }

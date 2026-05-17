@@ -8,6 +8,7 @@ import {
   loadExpressSweaterCharts,
   expressWhoToChartAudience,
   resolveExpressChartFit,
+  findExpressChartRow,
   formatExpressSelectedSizeSummary,
   nonEmptyTrimmed,
   refreshExpressSizePanel,
@@ -181,12 +182,17 @@ function initCustomBuildDesignPage(): void {
         values.who && nonEmptyTrimmed(values.selectedSize) && values.fit
           ? resolveExpressChartFit(aud, values.selectedSize!.trim(), values.fit)
           : null;
+      const chartRow =
+        chartFit && values.who
+          ? findExpressChartRow(aud, chartFit.selectedSize)
+          : null;
       syncSleevelessDesignBasicsToPatternStorage({
         ...(values.who ? { who: values.who } : {}),
         ...(values.neckline ? { neckline: values.neckline } : {}),
         ...(values.fit ? { fit: values.fit } : {}),
         ...(nonEmptyTrimmed(values.selectedSize) ? { selectedSize: values.selectedSize!.trim() } : {}),
         ...(chartFit?.selectedMeasurements ? { selectedMeasurements: chartFit.selectedMeasurements } : {}),
+        ...(chartRow ? { chartRow } : {}),
       });
     });
   }
