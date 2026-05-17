@@ -8,6 +8,10 @@ import {
   splitBodyBackCastOnToSymmetricCardiganHalves,
 } from "./cardiganFrontBlock";
 import { calculateHemRows, getDefaultHemLengthInches } from "./hemDefaults";
+import {
+  resolveEffectiveBackNeckDepthInches,
+  resolveEffectiveFrontNeckDepthInches,
+} from "./customBuildEffectiveNeckDepth";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
 function section(obj: unknown): Record<string, unknown> {
@@ -86,21 +90,31 @@ export function resolveNeckDepthFieldsForSleevelessDiagram(
   unit: "cm" | "in",
 ): { NECK_DEPTH_ROWS: string; NECK_DEPTH: string } {
   const d = result?.debug ?? {};
-  const sm = selectedMeasurementsFromPatternData(patternData);
   const rpi = d.rowsPerInch;
 
-  const backDepthIn = toPositiveNumber(sm.back_neck_depth);
-  const frontDepthIn = toPositiveNumber(sm.front_neck_depth);
+  const backDepthIn = resolveEffectiveBackNeckDepthInches(patternData);
+  const frontDepthIn = resolveEffectiveFrontNeckDepthInches(patternData);
 
   let pieceDepthIn: number | undefined;
   if (piece === "back") pieceDepthIn = backDepthIn;
   else if (piece === "front") pieceDepthIn = frontDepthIn;
 
-  const depthInches = isFiniteNumber(pieceDepthIn) ? pieceDepthIn : d.reservedNecklineShoulderInches;
-  const depthRows =
-    isFiniteNumber(pieceDepthIn) && isFiniteNumber(rpi) && rpi > 0
-      ? Math.max(0, Math.round(pieceDepthIn * rpi))
-      : d.reservedNecklineShoulderRows;
+  const depthInches = isFiniteNumber(pieceDepthIn)
+    ? pieceDepthIn
+    : piece === "front" && isFiniteNumber(d.frontNeckDepth)
+      ? d.frontNeckDepth
+      : d.reservedNecklineShoulderInches;
+
+  let depthRows: number | undefined;
+  if (piece === "front" && isFiniteNumber(d.frontNeckDepthRows) && d.frontNeckDepthRows > 0) {
+    depthRows = d.frontNeckDepthRows;
+  } else if (piece === "back" && isFiniteNumber(d.backNeckDepthRows) && d.backNeckDepthRows > 0) {
+    depthRows = d.backNeckDepthRows;
+  } else if (isFiniteNumber(pieceDepthIn) && isFiniteNumber(rpi) && rpi > 0) {
+    depthRows = Math.max(0, Math.round(pieceDepthIn * rpi));
+  } else {
+    depthRows = d.reservedNecklineShoulderRows;
+  }
 
   return {
     NECK_DEPTH_ROWS: isFiniteNumber(depthRows) ? String(Math.round(depthRows)) : "",

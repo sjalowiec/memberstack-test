@@ -14,6 +14,10 @@ import {
 import { resolveEffectiveArmholeDepthInches } from "./customBuildEffectiveArmholeDepth";
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 import { resolveEffectiveFinishedLengthInches } from "./customBuildEffectiveFinishedLength";
+import {
+  resolveEffectiveBackNeckDepthInches,
+  resolveEffectiveFrontNeckDepthInches,
+} from "./customBuildEffectiveNeckDepth";
 import { resolveEffectiveNeckOpeningWidthInches } from "./customBuildEffectiveNeckOpeningWidth";
 import { resolveEffectiveShoulderWidthInches } from "./customBuildEffectiveShoulderWidth";
 import { calculateBasicPatternNumbers } from "./patternCalculator";
@@ -1508,8 +1512,8 @@ export function generateSleevelessBackPattern(
   // Custom Build may override chart measurements via fit.cbMeasurementOverrides.
   const backNeckToHem = resolveEffectiveFinishedLengthInches(patternData);
   const armholeDepthIn = resolveEffectiveArmholeDepthInches(patternData);
-  const backNeckDepthIn = measurementInches(sm, "back_neck_depth");
-  const frontNeckDepthIn = measurementInches(sm, "front_neck_depth");
+  const backNeckDepthIn = resolveEffectiveBackNeckDepthInches(patternData);
+  const frontNeckDepthIn = resolveEffectiveFrontNeckDepthInches(patternData);
   const neckWidthIn = resolveEffectiveNeckOpeningWidthInches(patternData);
 
   const castOnSts =
