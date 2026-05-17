@@ -6,14 +6,7 @@
  */
 
 import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "../lib/patterns/patternStorage";
-import { syncSleevelessDesignBasicsToPatternStorage } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
-import {
-  loadExpressSweaterCharts,
-  expressWhoToChartAudience,
-  resolveExpressChartFit,
-  findExpressChartRow,
-  nonEmptyTrimmed,
-} from "../lib/patterns/sleevelessExpressSizeChartClient";
+import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
 
 const STORAGE = {
   neckline: "necklineStyle",
@@ -89,24 +82,8 @@ function patchExpressBuilderValues(partial: Record<string, string>): void {
   }
 }
 
-function syncBasicsFromExpressValues(ev: Record<string, string>): void {
-  void loadExpressSweaterCharts().then(() => {
-    const aud = expressWhoToChartAudience(ev.who);
-    const chartFit =
-      ev.who && nonEmptyTrimmed(ev.selectedSize) && ev.fit
-        ? resolveExpressChartFit(aud, ev.selectedSize!.trim(), ev.fit)
-        : null;
-    const chartRow =
-      chartFit && ev.who ? findExpressChartRow(aud, chartFit.selectedSize) : null;
-    syncSleevelessDesignBasicsToPatternStorage({
-      ...(ev.who ? { who: ev.who } : {}),
-      ...(ev.neckline ? { neckline: ev.neckline } : {}),
-      ...(ev.fit ? { fit: ev.fit } : {}),
-      ...(nonEmptyTrimmed(ev.selectedSize) ? { selectedSize: ev.selectedSize!.trim() } : {}),
-      ...(chartFit?.selectedMeasurements ? { selectedMeasurements: chartFit.selectedMeasurements } : {}),
-      ...(chartRow ? { chartRow } : {}),
-    });
-  });
+function syncBasicsFromExpressValues(_ev: Record<string, string>): void {
+  syncCustomBuildToPatternStorage();
 }
 
 function readStored(key: string, allowed: Set<string>, fallback: string): string {

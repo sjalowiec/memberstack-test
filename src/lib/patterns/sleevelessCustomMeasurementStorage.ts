@@ -2,6 +2,8 @@
  * Custom Build — Step 3 measurement overrides.
  * Stored inside {@link SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY} as `cbMeasurementOverrides`
  * (values in inches as decimal strings). Falls back to legacy standalone key when present.
+ *
+ * Custom measurement overrides are intentionally stored but not yet applied to pattern math.
  */
 import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "./patternStorage";
 
@@ -16,6 +18,7 @@ export type MeasurementOverrideKey =
   | "hemToArmhole"
   | "widthAtHem"
   | "finishedNeckOpeningWidth"
+  | "neckDepth"
   | "neckbandWidth"
   | "sweaterNeckOpeningWidth"
   | "armholeDepth"

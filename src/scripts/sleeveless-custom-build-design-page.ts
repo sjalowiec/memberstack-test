@@ -3,12 +3,9 @@
  * Accordion + persistence aligned with Quick Build; merges into {@link SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY}.
  */
 import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY, getPatternData } from "../lib/patterns/patternStorage";
-import { syncSleevelessDesignBasicsToPatternStorage } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
 import {
   loadExpressSweaterCharts,
   expressWhoToChartAudience,
-  resolveExpressChartFit,
-  findExpressChartRow,
   formatExpressSelectedSizeSummary,
   nonEmptyTrimmed,
   refreshExpressSizePanel,
@@ -18,6 +15,7 @@ import {
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
 import { scrollToBuilderSection } from "../lib/patterns/scrollToBuilderSection";
 import { resolveSleevelessAudienceHeroImageSrc } from "../lib/patterns/sleevelessAudienceHeroImage";
+import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
 
 const STEPS = 2;
 const LOCKED_STEP_NAV_TITLE = "Finish the previous step to continue.";
@@ -176,25 +174,7 @@ function initCustomBuildDesignPage(): void {
   }
 
   function syncPatternIfPossible(): void {
-    void loadExpressSweaterCharts().then(() => {
-      const aud = expressWhoToChartAudience(values.who);
-      const chartFit =
-        values.who && nonEmptyTrimmed(values.selectedSize) && values.fit
-          ? resolveExpressChartFit(aud, values.selectedSize!.trim(), values.fit)
-          : null;
-      const chartRow =
-        chartFit && values.who
-          ? findExpressChartRow(aud, chartFit.selectedSize)
-          : null;
-      syncSleevelessDesignBasicsToPatternStorage({
-        ...(values.who ? { who: values.who } : {}),
-        ...(values.neckline ? { neckline: values.neckline } : {}),
-        ...(values.fit ? { fit: values.fit } : {}),
-        ...(nonEmptyTrimmed(values.selectedSize) ? { selectedSize: values.selectedSize!.trim() } : {}),
-        ...(chartFit?.selectedMeasurements ? { selectedMeasurements: chartFit.selectedMeasurements } : {}),
-        ...(chartRow ? { chartRow } : {}),
-      });
-    });
+    syncCustomBuildToPatternStorage();
   }
 
   function updateFlowPills() {

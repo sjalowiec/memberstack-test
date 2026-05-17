@@ -1,40 +1,137 @@
 /**
  * Custom Build — Measurements step (`/patterns/sleeveless/custom-build/fit/`).
- * Body/finished layer in `kbm_current_pattern.measurements` only; does not alter pattern math.
+ * Sleeveless body diagram with editable inches; values in `cbMeasurementOverrides` only.
  */
-import {
-  getCurrentPattern,
-  SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
-} from "../lib/patterns/patternStorage";
 import { formatSwatchCountForGaugeInput } from "../lib/patterns/gaugeDisplayFormat";
+import { getDefaultHemLengthInches } from "../lib/patterns/hemDefaults";
+import { getCurrentPattern, SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "../lib/patterns/patternStorage";
 import {
-  CUSTOM_BUILD_BODY_FINISHED_KEYS,
-  persistCustomBuildBodyFinishedMeasurements,
-  readCustomBuildBodyFinishedMeasurements,
-  seedCustomBuildBodyFinishedFromChartRow,
-  type CustomBuildBodyFinishedKey,
-} from "../lib/patterns/sleevelessCustomBuildBodyMeasurements";
+  loadMeasurementOverrides,
+  persistMeasurementOverrides,
+} from "../lib/patterns/sleevelessCustomMeasurementStorage";
+import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
 import {
+  computeDefaultMeasurementsFromChartRow,
   expressWhoToChartAudience,
   findExpressChartRow,
-  getExpressUiUnit,
   loadExpressSweaterCharts,
-  SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID,
+  resolveExpressChartFit,
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
-const FINISHED_FIELD_KEYS: CustomBuildBodyFinishedKey[] = [
-  "finishedBustOrChest",
-  "finishedWaist",
-  "finishedHip",
+import type { ChartRow } from "../lib/patterns/sleevelessExpressSizeChartTypes";
+
+const MEASUREMENT_BLUEPRINT_SVG_URL = "/images/patterns/pattern_summary.svg";
+const YARN_GAUGE_HREF = "/patterns/sleeveless/custom-build/yarn-gauge";
+
+/** Sleeveless body fields shown on the diagram (inches, stored as decimal strings). */
+const DIAGRAM_FIELD_KEYS = [
+  "finishedNeckOpeningWidth",
+  "neckDepth",
+  "shoulderWidth",
+  "armholeDepth",
+  "chestBust",
+  "finishedLength",
+  "hemDepth",
+] as const;
+
+type DiagramFieldKey = (typeof DIAGRAM_FIELD_KEYS)[number];
+
+type DiagramFieldDef = {
+  key: DiagramFieldKey;
+  positionMod: string;
+  label: string;
+  labelLines?: string[];
+  axis?: "horizontal" | "vertical";
+  defaultInches: (row: ChartRow, computed: Record<string, number>, audience: string) => number | undefined;
+};
+
+const DIAGRAM_FIELDS: DiagramFieldDef[] = [
+  {
+    key: "finishedNeckOpeningWidth",
+    positionMod: "neck-opening",
+    label: "Neck opening",
+    axis: "horizontal",
+    defaultInches: (row, computed) =>
+      pickPositive(computed.neck_width, toFinite(row.neck_opening)),
+  },
+  {
+    key: "neckDepth",
+    positionMod: "neckline-depth",
+    label: "Neck depth",
+    axis: "vertical",
+    defaultInches: (row, computed) =>
+      pickPositive(computed.front_neck_depth, toFinite(row.front_neck_depth)),
+  },
+  {
+    key: "shoulderWidth",
+    positionMod: "shoulder",
+    label: "Shoulder width",
+    axis: "horizontal",
+    defaultInches: (row, computed) =>
+      pickPositive(computed.shoulder_width, toFinite(row.shoulder_width)),
+  },
+  {
+    key: "armholeDepth",
+    positionMod: "armhole",
+    label: "Armhole depth",
+    axis: "vertical",
+    defaultInches: (row, computed) =>
+      pickPositive(computed.armhole_depth, toFinite(row.armhole_depth)),
+  },
+  {
+    key: "chestBust",
+    positionMod: "finished-bust",
+    label: "Finished bust (ease)",
+    labelLines: ["Finished", "bust (ease)"],
+    axis: "horizontal",
+    defaultInches: (row, computed) =>
+      pickPositive(computed.finished_bust_chest, toFinite(row.bust_or_chest)),
+  },
+  {
+    key: "finishedLength",
+    positionMod: "back-length",
+    label: "Garment length",
+    axis: "vertical",
+    defaultInches: (row, computed) =>
+      pickPositive(computed.back_neck_to_hem, toFinite(row.garment_back_length)),
+  },
+  {
+    key: "hemDepth",
+    positionMod: "ribbed-hem-depth",
+    label: "Ribbed hem depth",
+    axis: "vertical",
+    defaultInches: (_row, _computed, audience) => getDefaultHemLengthInches(audience),
+  },
 ];
 
-const LABELS: Record<CustomBuildBodyFinishedKey, string> = {
-  bodyBustOrChest: "Body bust/chest",
-  bodyWaist: "Body waist",
-  bodyHip: "Body hip",
-  finishedBustOrChest: "Finished bust/chest",
-  finishedWaist: "Finished waist",
-  finishedHip: "Finished hip",
-};
+function toFinite(v: unknown): number | undefined {
+  if (v === undefined || v === null) return undefined;
+  const n = typeof v === "number" ? v : parseFloat(String(v).replace(/[^\d.-]/g, ""));
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+function pickPositive(...candidates: (number | undefined)[]): number | undefined {
+  for (const c of candidates) {
+    if (c !== undefined && Number.isFinite(c) && c > 0) return c;
+  }
+  return undefined;
+}
+
+function roundQuarter(n: number): number {
+  return Math.round(n * 4) / 4;
+}
+
+function formatInchesInput(n: number | undefined): string {
+  if (n === undefined || !Number.isFinite(n)) return "";
+  return formatSwatchCountForGaugeInput(roundQuarter(n));
+}
+
+function parseInchesInput(raw: string): number | undefined {
+  const s = raw.trim();
+  if (!s) return undefined;
+  const n = parseFloat(s.replace(/[^\d.-]/g, ""));
+  if (!Number.isFinite(n) || n <= 0) return undefined;
+  return roundQuarter(n);
+}
 
 function readExpressValues(): Record<string, string> {
   if (typeof localStorage === "undefined") return {};
@@ -51,21 +148,6 @@ function readExpressValues(): Record<string, string> {
   return {};
 }
 
-function formatInches(n: number | undefined, uiUnit: "in" | "cm"): string {
-  if (n === undefined || !Number.isFinite(n)) return "—";
-  if (uiUnit === "cm") return `${Math.round(n * 2.54)} cm`;
-  return `${formatSwatchCountForGaugeInput(n)}"`;
-}
-
-function parseInputInches(raw: string, uiUnit: "in" | "cm"): number | undefined {
-  const s = raw.trim();
-  if (!s) return undefined;
-  const n = parseFloat(s.replace(/[^\d.-]/g, ""));
-  if (!Number.isFinite(n) || n <= 0) return undefined;
-  if (uiUnit === "cm") return Math.round((n / 2.54) * 4) / 4;
-  return Math.round(n * 4) / 4;
-}
-
 function resolveFitPreference(
   expressValues: Record<string, string>,
   patternFit: Record<string, unknown>,
@@ -73,161 +155,425 @@ function resolveFitPreference(
   const ev = expressValues.fit;
   if (ev === "close" || ev === "standard" || ev === "relaxed") return ev;
   const ease = patternFit.easeChoice ?? patternFit.fitChoice;
-  if (ease === "close" || ease === "standard" || ease === "relaxed") return ease;
+  if (ease === "close" || ease === "standard" || ease === "relaxed") return String(ease);
   return "standard";
 }
 
-function hydrateFromChartIfNeeded(): void {
-  const pattern = getCurrentPattern();
-  const stored = readCustomBuildBodyFinishedMeasurements(pattern);
-  const hasFinished = FINISHED_FIELD_KEYS.every((k) => stored[k] !== undefined);
-  if (hasFinished) return;
-
-  const expressValues = readExpressValues();
-  const fit = pattern.fit ?? {};
-  const audience =
-    expressWhoToChartAudience(expressValues.who) ||
-    expressWhoToChartAudience(fit.sizingChart) ||
-    expressWhoToChartAudience(pattern.style?.recipientCategory);
-  const size =
-    (typeof expressValues.selectedSize === "string" && expressValues.selectedSize.trim()) ||
-    (typeof fit.selectedSize === "string" && fit.selectedSize.trim()) ||
-    "";
-  if (!audience || !size) return;
-
-  const row = findExpressChartRow(audience, size);
-  if (!row) return;
-  const fitPref = resolveFitPreference(expressValues, fit);
-  seedCustomBuildBodyFinishedFromChartRow(row, fitPref, { preserveFinished: true });
+function computeDefaultsFromChart(
+  row: ChartRow,
+  fitPreference: string,
+  audience: string,
+): Record<DiagramFieldKey, string> {
+  const computed = computeDefaultMeasurementsFromChartRow(row, fitPreference);
+  const out: Partial<Record<DiagramFieldKey, string>> = {};
+  for (const field of DIAGRAM_FIELDS) {
+    const inches = field.defaultInches(row, computed, audience);
+    if (inches !== undefined) out[field.key] = formatInchesInput(inches);
+  }
+  return out as Record<DiagramFieldKey, string>;
 }
 
-function renderSummary(root: HTMLElement, uiUnit: "in" | "cm"): void {
-  const stored = readCustomBuildBodyFinishedMeasurements();
-  const dl = root.querySelector("[data-cb-measure-summary]");
-  if (!(dl instanceof HTMLElement)) return;
-  dl.replaceChildren();
-  for (const key of CUSTOM_BUILD_BODY_FINISHED_KEYS) {
-    const dt = document.createElement("dt");
-    dt.textContent = LABELS[key];
-    const dd = document.createElement("dd");
-    dd.textContent = formatInches(stored[key], uiUnit);
-    dl.append(dt, dd);
+function mergeOverridesWithDefaults(
+  saved: Record<string, string>,
+  defaults: Record<DiagramFieldKey, string>,
+): Record<DiagramFieldKey, string> {
+  const merged = { ...defaults };
+  for (const key of DIAGRAM_FIELD_KEYS) {
+    const s = saved[key]?.trim();
+    if (s) merged[key] = s;
+  }
+  return merged;
+}
+
+function applyExpressMeasurementBlueprintSvgDisplay(svg: SVGElement): void {
+  svg.querySelector("#line-waist-width")?.setAttribute("visibility", "hidden");
+  svg.querySelector("#line-hem-width")?.setAttribute("visibility", "hidden");
+  const shoulderLine = svg.querySelector("#line-chest-width");
+  if (shoulderLine instanceof SVGGraphicsElement) {
+    shoulderLine.removeAttribute("visibility");
+    shoulderLine.style.visibility = "visible";
+    shoulderLine.style.opacity = "1";
   }
 }
 
-function fillBodyDisplays(root: HTMLElement, uiUnit: "in" | "cm"): void {
-  const stored = readCustomBuildBodyFinishedMeasurements();
-  root.querySelectorAll("[data-cb-body-display]").forEach((el) => {
-    if (!(el instanceof HTMLElement)) return;
-    const key = el.getAttribute("data-cb-body-display") as CustomBuildBodyFinishedKey | null;
-    if (!key || !key.startsWith("body")) return;
-    el.textContent = formatInches(stored[key], uiUnit);
-  });
+async function createMeasurementBlueprintArt(): Promise<SVGElement | HTMLImageElement> {
+  try {
+    const res = await fetch(MEASUREMENT_BLUEPRINT_SVG_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const svgText = await res.text();
+    const parsed = new DOMParser().parseFromString(svgText, "image/svg+xml");
+    const root = parsed.documentElement;
+    if (!(root instanceof SVGSVGElement)) throw new Error("not an SVG root");
+    applyExpressMeasurementBlueprintSvgDisplay(root);
+    const svg = document.importNode(root, true);
+    if (!(svg instanceof SVGSVGElement)) throw new Error("import failed");
+    svg.classList.add("express-mbp-art");
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", "Sleeveless sweater body measurement diagram");
+    svg.setAttribute("focusable", "false");
+    return svg;
+  } catch {
+    const img = document.createElement("img");
+    img.className = "express-mbp-art";
+    img.src = MEASUREMENT_BLUEPRINT_SVG_URL;
+    img.width = 142;
+    img.height = 195;
+    img.alt = "Sleeveless sweater body measurement diagram";
+    img.decoding = "async";
+    return img;
+  }
 }
 
-function fillFinishedInputs(root: HTMLElement, uiUnit: "in" | "cm"): void {
-  const stored = readCustomBuildBodyFinishedMeasurements();
-  FINISHED_FIELD_KEYS.forEach((key) => {
-    const input = root.querySelector<HTMLInputElement>(`[data-cb-finished-input="${key}"]`);
-    if (!input) return;
-    const n = stored[key];
-    if (n === undefined) {
-      input.value = "";
-      return;
+function whoLabel(who: string): string {
+  if (who === "women") return "Women";
+  if (who === "men") return "Men";
+  if (who === "kids") return "Kids";
+  if (who === "baby") return "Baby";
+  return who || "—";
+}
+
+function fitLabel(fit: string): string {
+  if (!fit) return "—";
+  return fit.charAt(0).toUpperCase() + fit.slice(1);
+}
+
+function necklineLabel(neckline: string): string {
+  if (neckline === "v-neck") return "V-neck";
+  if (neckline === "round") return "Round";
+  return neckline || "—";
+}
+
+function garmentStyleLabel(expressValues: Record<string, string>, pattern: ReturnType<typeof getCurrentPattern>): string {
+  const style = pattern.style ?? {};
+  const pbGarment = String(style.garmentStyle ?? "").trim().toLowerCase();
+  const pbOpen = String(style.frontStyle ?? "").trim().toLowerCase() === "open";
+  const lsFront = String(expressValues.front ?? "").trim().toLowerCase();
+  const styleKey = String(expressValues.style ?? "").trim().toLowerCase();
+  const isCardigan =
+    pbGarment === "cardigan" ||
+    pbOpen ||
+    lsFront === "open" ||
+    styleKey.includes("cardigan");
+  const base = isCardigan ? "Cardigan" : "Pullover";
+  const shape = String(expressValues.shape ?? style.shape ?? "").trim();
+  if (shape && shape !== "straight") {
+    const shapeLabel = shape.charAt(0).toUpperCase() + shape.slice(1);
+    return `${base}, ${shapeLabel}`;
+  }
+  return base;
+}
+
+function gaugeSummary(pattern: ReturnType<typeof getCurrentPattern>): string | null {
+  const yarnG = pattern.yarnGauge as Record<string, unknown> | undefined;
+  const yarnM = pattern.yarnGaugeMachine as Record<string, unknown> | undefined;
+  const stitchRaw = String(yarnM?.gaugeStitchRaw ?? yarnG?.gaugeStitchRaw ?? "").trim();
+  const rowRaw = String(yarnM?.gaugeRowRaw ?? yarnG?.gaugeRowRaw ?? "").trim();
+  const unit = String(yarnM?.gaugeRawUnit ?? yarnG?.gaugeRawUnit ?? "in").trim() === "cm" ? "cm" : "in";
+  const over = unit === "cm" ? "10 cm" : '4"';
+  if (stitchRaw && rowRaw) return `${stitchRaw} sts × ${rowRaw} rows / ${over}`;
+  const spi = yarnG?.stitchGauge ?? yarnM?.gaugeStitchesPerInch;
+  const rpi = yarnG?.rowGauge ?? yarnM?.gaugeRowsPerInch;
+  if (spi != null && rpi != null && String(spi).trim() && String(rpi).trim()) {
+    return `${spi} sts × ${rpi} rows / inch`;
+  }
+  return null;
+}
+
+function renderBuildSummary(
+  el: HTMLElement,
+  ctx: {
+    who: string;
+    size: string;
+    garment: string;
+    neckline: string;
+    fit: string;
+    gauge: string | null;
+  },
+): void {
+  el.replaceChildren();
+  const items: Array<[string, string]> = [
+    ["Recipient", whoLabel(ctx.who)],
+    ["Size", ctx.size || "—"],
+    ["Garment", ctx.garment],
+    ["Neckline", ctx.neckline],
+    ["Fit", fitLabel(ctx.fit)],
+  ];
+  if (ctx.gauge) items.push(["Gauge", ctx.gauge]);
+  for (const [k, v] of items) {
+    const item = document.createElement("p");
+    item.className = "cb-measure-summary__item";
+    const key = document.createElement("span");
+    key.className = "cb-measure-summary__k";
+    key.textContent = `${k}: `;
+    const val = document.createElement("span");
+    val.className = "cb-measure-summary__v";
+    val.textContent = v;
+    item.append(key, val);
+    el.appendChild(item);
+  }
+}
+
+type BlueprintBoxOpts = {
+  axis?: "horizontal" | "vertical";
+  labelLines?: string[];
+};
+
+function createDiagramFieldBox(
+  field: DiagramFieldDef,
+  value: string,
+  opts?: BlueprintBoxOpts,
+): HTMLElement {
+  const box = document.createElement("div");
+  box.className = `express-mbp-box express-mbp-box--${field.positionMod}`;
+
+  const lab = document.createElement("span");
+  lab.className = "express-mbp-box__lab";
+  const lines = opts?.labelLines?.filter((s) => s.trim());
+  if (opts?.axis === "vertical" || opts?.axis === "horizontal") {
+    const icon = document.createElement("span");
+    icon.className = "measure-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = opts.axis === "vertical" ? "↕" : "↔";
+    lab.appendChild(icon);
+    if (lines?.length) {
+      const stack = document.createElement("span");
+      stack.className = "express-mbp-box__lab-stack";
+      for (const line of lines) {
+        const text = document.createElement("span");
+        text.className = "express-mbp-box__lab-text express-mbp-box__lab-line";
+        text.textContent = line;
+        stack.appendChild(text);
+      }
+      lab.appendChild(stack);
+    } else {
+      const text = document.createElement("span");
+      text.className = "express-mbp-box__lab-text";
+      text.textContent = field.label;
+      lab.appendChild(text);
     }
-    input.value = uiUnit === "cm" ? String(Math.round(n * 2.54)) : formatSwatchCountForGaugeInput(n);
-  });
-}
-
-function persistFinishedFromInputs(root: HTMLElement, uiUnit: "in" | "cm"): void {
-  const partial: Partial<Record<CustomBuildBodyFinishedKey, number>> = {};
-  FINISHED_FIELD_KEYS.forEach((key) => {
-    const input = root.querySelector<HTMLInputElement>(`[data-cb-finished-input="${key}"]`);
-    if (!input) return;
-    const n = parseInputInches(input.value, uiUnit);
-    if (n !== undefined) partial[key] = n;
-  });
-  persistCustomBuildBodyFinishedMeasurements(partial, {
-    preserveFinished: false,
-    refreshBody: false,
-  });
-}
-
-function refreshUi(root: HTMLElement): void {
-  const uiUnit = getExpressUiUnit();
-  const unitHint = root.querySelector("[data-cb-measure-unit-hint]");
-  if (unitHint instanceof HTMLElement) {
-    unitHint.textContent =
-      uiUnit === "cm"
-        ? "Measurements are shown in centimeters."
-        : "Measurements are shown in inches.";
+  } else if (lines?.length) {
+    const stack = document.createElement("span");
+    stack.className = "express-mbp-box__lab-stack";
+    for (const line of lines) {
+      const text = document.createElement("span");
+      text.className = "express-mbp-box__lab-text express-mbp-box__lab-line";
+      text.textContent = line;
+      stack.appendChild(text);
+    }
+    lab.appendChild(stack);
+  } else {
+    lab.textContent = field.label;
   }
-  fillBodyDisplays(root, uiUnit);
-  fillFinishedInputs(root, uiUnit);
-  renderSummary(root, uiUnit);
+
+  const fieldRow = document.createElement("div");
+  fieldRow.className = "express-mbp-box__field";
+  const input = document.createElement("input");
+  input.type = "text";
+  input.inputMode = "decimal";
+  input.autocomplete = "off";
+  input.className = "express-mbp-box__input";
+  input.setAttribute("data-cb-measure-input", field.key);
+  input.setAttribute("aria-label", `${field.label} in inches`);
+  input.value = value;
+  const unit = document.createElement("span");
+  unit.className = "express-mbp-box__unit";
+  unit.textContent = "in";
+  fieldRow.append(input, unit);
+
+  const err = document.createElement("span");
+  err.className = "express-mbp-box__error";
+  err.setAttribute("data-cb-measure-error", field.key);
+  err.hidden = true;
+
+  box.append(lab, fieldRow, err);
+  return box;
+}
+
+function collectValues(root: HTMLElement): Record<DiagramFieldKey, string> {
+  const out = {} as Record<DiagramFieldKey, string>;
+  for (const key of DIAGRAM_FIELD_KEYS) {
+    const input = root.querySelector<HTMLInputElement>(`[data-cb-measure-input="${key}"]`);
+    out[key] = input?.value.trim() ?? "";
+  }
+  return out;
+}
+
+function setFieldError(root: HTMLElement, key: DiagramFieldKey, message: string | null): void {
+  const box = root.querySelector(`[data-cb-measure-input="${key}"]`)?.closest(".express-mbp-box");
+  const err = root.querySelector(`[data-cb-measure-error="${key}"]`);
+  if (box instanceof HTMLElement) {
+    box.classList.toggle("express-mbp-box--invalid", !!message);
+  }
+  if (err instanceof HTMLElement) {
+    if (message) {
+      err.textContent = message;
+      err.hidden = false;
+    } else {
+      err.textContent = "";
+      err.hidden = true;
+    }
+  }
+}
+
+function clearAllFieldErrors(root: HTMLElement): void {
+  for (const key of DIAGRAM_FIELD_KEYS) setFieldError(root, key, null);
+}
+
+function validateFields(root: HTMLElement): boolean {
+  clearAllFieldErrors(root);
+  let ok = true;
+  const values = collectValues(root);
+  for (const key of DIAGRAM_FIELD_KEYS) {
+    const raw = values[key];
+    if (!raw) {
+      setFieldError(root, key, "Required");
+      ok = false;
+      continue;
+    }
+    if (parseInchesInput(raw) === undefined) {
+      setFieldError(root, key, "Enter a positive number");
+      ok = false;
+    }
+  }
+  return ok;
+}
+
+function persistFromRoot(root: HTMLElement): void {
+  const values = collectValues(root);
+  const toStore: Record<string, string> = {};
+  for (const key of DIAGRAM_FIELD_KEYS) {
+    const n = parseInchesInput(values[key]);
+    if (n !== undefined) toStore[key] = formatInchesInput(n);
+  }
+  persistMeasurementOverrides(toStore);
+}
+
+function wireFieldPersistence(root: HTMLElement): void {
+  root.querySelectorAll("[data-cb-measure-input]").forEach((el) => {
+    if (!(el instanceof HTMLInputElement)) return;
+    const save = (): void => {
+      const key = el.getAttribute("data-cb-measure-input") as DiagramFieldKey | null;
+      if (!key) return;
+      const n = parseInchesInput(el.value);
+      if (el.value.trim() && n === undefined) {
+        setFieldError(root, key, "Enter a positive number");
+        return;
+      }
+      setFieldError(root, key, null);
+      el.closest(".express-mbp-box")?.classList.remove("express-mbp-box--invalid");
+      persistFromRoot(root);
+    };
+    el.addEventListener("change", save);
+    el.addEventListener("blur", save);
+  });
+}
+
+async function renderDiagram(
+  host: HTMLElement,
+  merged: Record<DiagramFieldKey, string>,
+): Promise<void> {
+  host.replaceChildren();
+  const rootMbp = document.createElement("div");
+  rootMbp.className = "express-mbp express-mbp--diagram";
+  const scroll = document.createElement("div");
+  scroll.className = "express-mbp-scroll";
+  const stage = document.createElement("div");
+  stage.className = "express-mbp-stage";
+  const inner = document.createElement("div");
+  inner.className = "express-mbp-stage__inner";
+
+  const art = await createMeasurementBlueprintArt();
+  const overlay = document.createElement("div");
+  overlay.className = "express-mbp-overlay";
+
+  for (const field of DIAGRAM_FIELDS) {
+    overlay.appendChild(
+      createDiagramFieldBox(field, merged[field.key] ?? "", {
+        axis: field.axis,
+        labelLines: field.labelLines,
+      }),
+    );
+  }
+
+  inner.append(art, overlay);
+  stage.appendChild(inner);
+  scroll.appendChild(stage);
+  rootMbp.appendChild(scroll);
+  host.appendChild(rootMbp);
+  wireFieldPersistence(host);
 }
 
 function initCustomBuildMeasurementsPage(): void {
   const root = document.querySelector("[data-cb-measure-root]");
   if (!(root instanceof HTMLElement)) return;
 
-  const missing = root.querySelector("[data-cb-measure-missing]");
-  const panel = root.querySelector("[data-cb-measure-panel]");
+  const summaryEl = root.querySelector("[data-cb-build-summary]");
+  const missingEl = root.querySelector("[data-cb-measure-missing]");
+  const diagramHost = root.querySelector("[data-cb-measure-diagram]");
+  const continueBtn = root.querySelector("[data-cb-measure-continue]");
 
-  void loadExpressSweaterCharts()
-    .then(() => {
-      hydrateFromChartIfNeeded();
-      const pattern = getCurrentPattern();
-      const fit = pattern.fit ?? {};
-      const expressValues = readExpressValues();
-      const audience =
-        expressWhoToChartAudience(expressValues.who) ||
-        expressWhoToChartAudience(fit.sizingChart);
-      const size =
-        (typeof expressValues.selectedSize === "string" && expressValues.selectedSize.trim()) ||
-        (typeof fit.selectedSize === "string" && fit.selectedSize.trim()) ||
-        "";
-      const hasChart = audience && size && findExpressChartRow(audience, size);
-
-      if (!hasChart) {
-        if (missing instanceof HTMLElement) missing.removeAttribute("hidden");
-        if (panel instanceof HTMLElement) panel.setAttribute("hidden", "");
-      } else {
-        if (missing instanceof HTMLElement) missing.setAttribute("hidden", "");
-        if (panel instanceof HTMLElement) panel.removeAttribute("hidden");
-        refreshUi(root);
-      }
-    })
-    .catch(() => {
-      if (missing instanceof HTMLElement) {
-        missing.textContent =
-          "Could not load size charts. Check your connection and refresh, or complete Foundation and Style first.";
-        missing.removeAttribute("hidden");
-      }
-    });
-
-  root.querySelectorAll("[data-cb-finished-input]").forEach((input) => {
-    if (!(input instanceof HTMLInputElement)) return;
-    const save = (): void => {
-      persistFinishedFromInputs(root, getExpressUiUnit());
-      renderSummary(root, getExpressUiUnit());
-    };
-    input.addEventListener("change", save);
-    input.addEventListener("blur", save);
+  continueBtn?.addEventListener("click", () => {
+    if (!validateFields(root)) return;
+    persistFromRoot(root);
+    syncCustomBuildToPatternStorage({ awaitCharts: false });
+    window.location.assign(YARN_GAUGE_HREF);
   });
 
-  window.addEventListener("kbm:units-change", (ev: Event) => {
-    const tid = (ev as CustomEvent<{ toggleId?: string }>).detail?.toggleId;
-    if (tid != null && tid !== SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID) return;
-    refreshUi(root);
+  void loadExpressSweaterCharts().then(async () => {
+    const pattern = getCurrentPattern();
+    const expressValues = readExpressValues();
+    const fit = pattern.fit ?? {};
+    const audience =
+      expressWhoToChartAudience(expressValues.who) ||
+      expressWhoToChartAudience(fit.sizingChart) ||
+      expressWhoToChartAudience(pattern.style?.recipientCategory);
+    const size =
+      (typeof expressValues.selectedSize === "string" && expressValues.selectedSize.trim()) ||
+      (typeof fit.selectedSize === "string" && fit.selectedSize.trim()) ||
+      "";
+    const fitPref = resolveFitPreference(expressValues, fit);
+    const row = audience && size ? findExpressChartRow(audience, size) : null;
+
+    let neckline = expressValues.neckline?.trim() ?? "";
+    if (!neckline) {
+      const canon = String(pattern.style?.neckline ?? "").trim().toLowerCase();
+      if (canon === "v") neckline = "v-neck";
+      else if (canon === "round") neckline = "round";
+    }
+
+    if (summaryEl instanceof HTMLElement) {
+      renderBuildSummary(summaryEl, {
+        who: expressValues.who ?? "",
+        size,
+        garment: garmentStyleLabel(expressValues, pattern),
+        neckline: necklineLabel(neckline),
+        fit: fitPref,
+        gauge: gaugeSummary(pattern),
+      });
+    }
+
+    if (!row || !audience) {
+      if (missingEl instanceof HTMLElement) missingEl.removeAttribute("hidden");
+      if (diagramHost instanceof HTMLElement) diagramHost.replaceChildren();
+      if (continueBtn instanceof HTMLButtonElement) continueBtn.disabled = true;
+      return;
+    }
+
+    if (missingEl instanceof HTMLElement) missingEl.setAttribute("hidden", "");
+    if (continueBtn instanceof HTMLButtonElement) continueBtn.disabled = false;
+
+    const defaults = computeDefaultsFromChart(row, fitPref, audience);
+    const saved = loadMeasurementOverrides();
+    const merged = mergeOverridesWithDefaults(saved, defaults);
+
+    if (diagramHost instanceof HTMLElement) {
+      await renderDiagram(diagramHost, merged);
+    }
   });
 }
 
 if (typeof document !== "undefined") {
   const boot = (): void => initCustomBuildMeasurementsPage();
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot);
-  } else {
-    boot();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
 }

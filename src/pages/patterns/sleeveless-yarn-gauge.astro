@@ -160,11 +160,15 @@ import "../../styles/wizard.css";
       </div>
 
       <div class="wizard-next-cta wizard-next-cta--split no-print">
-        <a href="/patterns/sleeveless-fit" class="kbm-btn kbm-btn-outline">← Back: Fit & Measurements</a>
-        <div class="wizard-next-cta__next-col">
-          <span class="kbm-btn kbm-btn-accent" aria-disabled="true">14. Next: Pattern math →</span>
-          <p class="sg-next-placeholder-note">Coming soon</p>
-        </div>
+        <a href="/patterns/sleeveless/custom-build/fit/" class="kbm-btn kbm-btn-outline">← Back</a>
+        <a
+          href="/patterns/sleeveless/pattern/?tab=pattern"
+          class="kbm-btn kbm-btn-accent"
+          id="sg-yarn-continue-pattern"
+          data-sg-yarn-continue-pattern
+        >
+          View pattern →
+        </a>
       </div>
     </div>
   </main>
@@ -839,4 +843,8 @@ import "../../styles/wizard.css";
   } else {
     void init();
   }
+</script>
+
+<script>
+  import "/src/scripts/sleeveless-yarn-gauge-continue.ts";
 </script>

@@ -1,0 +1,160 @@
+/**
+ * Custom Build — Measurements step (diagram + compact summary).
+ * Diagram layout mirrors Express measurement confirmation; scoped under `.cb-measure-page`.
+ */
+
+.cb-measure-page .cb-measure-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+  margin: 0 0 1.25rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #ddd);
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 4%, var(--page-bg, #fff));
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.cb-measure-page .cb-measure-summary__item {
+  margin: 0;
+}
+
+.cb-measure-page .cb-measure-summary__k {
+  font-weight: 600;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #333);
+}
+
+.cb-measure-page .cb-measure-summary__v {
+  color: #222;
+}
+
+.cb-measure-page .cb-measure-missing {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: #b45309;
+}
+
+.cb-measure-page .cb-measure-diagram-host {
+  min-width: 0;
+}
+
+.cb-measure-page .express-mbp {
+  margin: 0 auto;
+  max-width: min(100%, 560px);
+}
+
+/* Editable measurement chips on the diagram */
+.cb-measure-page .express-mbp-box {
+  pointer-events: auto;
+  max-width: min(42%, 8.5rem);
+}
+
+.cb-measure-page .express-mbp-box__field {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  width: 100%;
+}
+
+.cb-measure-page .express-mbp-box__input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 4.75rem;
+  margin: 0;
+  padding: 0.26rem 0.35rem;
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 18%, #ccc);
+  border-radius: 6px;
+  font-family: var(--font);
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: #2a2a2a;
+  background: #fff;
+}
+
+.cb-measure-page .express-mbp-box__input:focus-visible {
+  outline: 2px solid var(--sg-accent, #c2614e);
+  outline-offset: 1px;
+  border-color: color-mix(in srgb, var(--sg-accent, #c2614e) 45%, #ccc);
+}
+
+.cb-measure-page .express-mbp-box--invalid .express-mbp-box__input {
+  border-color: #b91c1c;
+}
+
+.cb-measure-page .express-mbp-box__unit {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #555;
+  line-height: 1.2;
+}
+
+.cb-measure-page .express-mbp-box__error {
+  display: block;
+  margin-top: 0.12rem;
+  max-width: 7.5rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #b91c1c;
+}
+
+.cb-measure-page .express-mbp-box__error[hidden] {
+  display: none;
+}
+
+.cb-measure-page .cb-measure-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e8e8e8;
+}
+
+.cb-measure-page .cb-measure-actions .kbm-btn {
+  flex: 1 1 auto;
+  min-width: min(100%, 10rem);
+  max-width: 16rem;
+  justify-content: center;
+  text-align: center;
+}
+
+@media (min-width: 520px) {
+  .cb-measure-page .cb-measure-actions .kbm-btn {
+    flex: 0 1 auto;
+  }
+}
+
+/* Mobile: keep inputs on diagram (no separate form column) */
+@media (max-width: 699.98px) {
+  .cb-measure-page .express-mbp-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .cb-measure-page .express-mbp-box {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    max-width: min(44vw, 7.25rem);
+  }
+
+  .cb-measure-page .express-mbp-box__lab {
+    font-size: 0.58rem;
+  }
+
+  .cb-measure-page .express-mbp-box__input {
+    font-size: 0.85rem;
+    max-width: 4.25rem;
+  }
+}
