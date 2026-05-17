@@ -12,7 +12,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-scripts/
+/scripts/
 src/data/glossary.backup.before-strip-html.json
 # environment variables
 .env
