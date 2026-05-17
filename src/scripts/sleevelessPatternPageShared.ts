@@ -15,6 +15,7 @@ import {
   getSleevelessGoldenBetaCanonicalPattern,
   getSleevelessGoldenBetaPatternBuilderData,
 } from "../lib/patterns/sleevelessGoldenBeta.ts";
+import { loadMeasurementOverrides } from "../lib/patterns/sleevelessCustomMeasurementStorage.ts";
 import { validatePatternBuilderRequired } from "../lib/patterns/patternBuilderValidation";
 import { setPatternTabsReadiness } from "../lib/patterns/patternTabsClient.ts";
 import {
@@ -165,7 +166,17 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
 
   /** Shape expected by {@link generateSleevelessBackPattern}. */
   function buildGeneratorPatternData(merged) {
-    return buildGeneratorPatternDataFromSources(merged, getPatternData());
+    const gen = buildGeneratorPatternDataFromSources(merged, getPatternData());
+    const st = section(merged.style);
+    const pbSt = section(getPatternData().style);
+    const patternMode = st.patternMode ?? pbSt.patternMode;
+    if (patternMode !== "custom-build") return gen;
+    const overrides = loadMeasurementOverrides();
+    if (Object.keys(overrides).length === 0) return gen;
+    return {
+      ...gen,
+      fit: { ...section(gen.fit), cbMeasurementOverrides: overrides },
+    };
   }
 
   function audienceLabelFromPattern(st, ft) {

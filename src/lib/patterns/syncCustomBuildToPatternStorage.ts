@@ -2,9 +2,9 @@
  * Maps Custom Build wizard state (Foundation, Style, measurements step) into canonical
  * `kbm_current_pattern` / `patternBuilderData` for {@link generateSleevelessBackPattern}.
  *
- * Custom measurement overrides (`cbMeasurementOverrides` in Express builder storage) are
- * intentionally stored but not yet applied to pattern math — chart-derived
- * `fit.selectedMeasurements` is used for generation, same as Express.
+ * Custom measurement overrides (`cbMeasurementOverrides` in Express builder storage) are merged
+ * into generator input on the pattern page; armhole depth is applied in pattern math when valid
+ * (see {@link resolveEffectiveArmholeDepthInches}). Other overrides remain stored only.
  */
 import {
   getPatternData,

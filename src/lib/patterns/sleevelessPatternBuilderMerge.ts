@@ -75,9 +75,11 @@ export function buildGeneratorPatternDataFromSources(
   const fitMerged = { ...sectionPattern(merged.fit), ...sectionPattern(pb.fit) };
   const smA = sectionPattern(fitMerged.selectedMeasurements);
   const smB = sectionPattern(sectionPattern(pb.fit).selectedMeasurements);
+  const cbOverrides = sectionPattern(sectionPattern(pb.fit).cbMeasurementOverrides);
   const fit = {
     ...fitMerged,
     selectedMeasurements: { ...smB, ...smA },
+    ...(Object.keys(cbOverrides).length > 0 ? { cbMeasurementOverrides: cbOverrides } : {}),
   };
   const style = { ...sectionPattern(merged.style), ...sectionPattern(pb.style) };
   const ygm =

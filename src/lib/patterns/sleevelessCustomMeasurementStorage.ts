@@ -3,7 +3,8 @@
  * Stored inside {@link SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY} as `cbMeasurementOverrides`
  * (values in inches as decimal strings). Falls back to legacy standalone key when present.
  *
- * Custom measurement overrides are intentionally stored but not yet applied to pattern math.
+ * Armhole depth override is applied in pattern generation when `style.patternMode` is `custom-build`
+ * (see {@link resolveEffectiveArmholeDepthInches}); other fields are stored for future use.
  */
 import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "./patternStorage";
 
