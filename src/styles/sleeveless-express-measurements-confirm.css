@@ -7,77 +7,106 @@
   min-width: 0;
 }
 
-.express-measurements-confirm-page .express-measurements-page-nav {
-  margin: 0 0 0.35rem;
-  padding-bottom: 0.65rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.express-measurements-confirm-page .express-mbp-page-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  align-items: stretch;
-}
-
-.express-measurements-confirm-page .express-mbp-page-grid__main {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  align-items: stretch;
-  min-width: 0;
-}
-
-.express-measurements-confirm-page .express-mbp-page-grid__rail {
-  min-width: 0;
-}
-
-.express-measurements-confirm-page .express-mbp-page-grid__diagram {
-  min-width: 0;
-}
-
-/* Full-width title above both columns */
-.express-measurements-confirm-page .express-mbp-page-grid__title.pattern-header {
+/* Centered measurement review column (Express + Custom) */
+.express-measurements-confirm-page .sleeveless-measure-review__title.pattern-header {
   text-align: center;
   margin: 0 0 1.1rem;
   padding-inline: 0;
   width: 100%;
 }
 
-.express-measurements-confirm-page .express-mbp-page-grid__title .pattern-title {
+.express-measurements-confirm-page .sleeveless-measure-review__title .pattern-title {
   font-size: clamp(1.45rem, 2.5vw, 1.85rem);
 }
 
-.express-measurements-confirm-page .express-measurements-rail-fill {
+.express-measurements-confirm-page .sleeveless-measure-review-body {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  align-items: stretch;
+  max-width: min(52rem, 100%);
+  margin: 0 auto;
+  min-width: 0;
 }
 
-@media (min-width: 900px) {
-  .express-measurements-confirm-page .express-mbp-page-grid__main {
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 1.5rem;
-  }
-
-  .express-measurements-confirm-page .express-mbp-page-grid__rail {
-    flex: 0 0 clamp(260px, 28%, 320px);
-    max-width: 320px;
-  }
-
-  .express-measurements-confirm-page .express-mbp-page-grid__diagram {
-    flex: 1 1 72%;
-    min-width: 0;
-  }
+.express-measurements-confirm-page .sleeveless-measure-project-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #ddd);
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 4%, var(--page-bg, #fff));
 }
 
+.express-measurements-confirm-page .sleeveless-measure-project-summary .express-mbp-meta {
+  margin: 0;
+  max-width: none;
+}
+
+.express-measurements-confirm-page .sleeveless-measure-project-summary .express-measurements-intro-units {
+  margin: 0;
+  align-self: flex-end;
+}
+
+.express-measurements-confirm-page .sleeveless-measure-custom-promo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.85rem;
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--sg-accent, #c2614e) 22%, #e8e4df);
+  background: color-mix(in srgb, var(--sg-accent, #c2614e) 6%, var(--page-bg, #fff));
+}
+
+.express-measurements-confirm-page .sleeveless-measure-custom-promo__text {
+  flex: 1 1 16rem;
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 18%, #444);
+}
+
+.express-measurements-confirm-page .sleeveless-measure-custom-promo__link {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--sg-accent, #c2614e) 45%, #ccc);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  color: var(--sg-accent, #c2614e);
+  background: #fff;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.express-measurements-confirm-page .sleeveless-measure-custom-promo__link:hover {
+  border-color: color-mix(in srgb, var(--sg-accent, #c2614e) 65%, #aaa);
+  background: color-mix(in srgb, var(--sg-accent, #c2614e) 8%, #fff);
+}
+
+.express-measurements-confirm-page .sleeveless-measure-custom-promo__link:focus-visible {
+  outline: 2px solid var(--sg-accent, #c2614e);
+  outline-offset: 2px;
+}
+
+.express-measurements-confirm-page .sleeveless-measure-diagram-host,
 .express-measurements-confirm-page .express-measurements-summary {
   width: 100%;
   max-width: none;
-  margin: 0 auto 0.5rem;
+  margin: 0 auto;
+  min-width: 0;
 }
 
+.express-measurements-confirm-page .sleeveless-measure-actions,
 .express-measurements-confirm-page .express-measurements-actions {
   display: flex;
   flex-wrap: wrap;
@@ -292,14 +321,20 @@
     padding: 0.25rem 1.1rem max(1.5rem, env(safe-area-inset-bottom, 0px));
   }
 
+  .express-measurements-confirm-page .sleeveless-measure-actions,
   .express-measurements-confirm-page .express-measurements-actions {
     flex-direction: column;
     align-items: stretch;
   }
 
+  .express-measurements-confirm-page .sleeveless-measure-actions .kbm-btn,
   .express-measurements-confirm-page .express-measurements-actions .kbm-btn {
     max-width: none;
     width: 100%;
+  }
+
+  .express-measurements-confirm-page .express-mbp-meta__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -331,36 +366,21 @@
   box-sizing: border-box;
 }
 
-.express-measurements-confirm-page .express-mbp-meta {
-  margin: 0 auto 1rem;
-  max-width: min(52rem, 100%);
-}
-
-.express-measurements-confirm-page .express-mbp-page-grid__rail .express-mbp-meta {
-  margin: 0;
-  max-width: none;
-}
-
 .express-measurements-confirm-page .express-mbp-meta__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem 0.75rem;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 520px) {
   .express-measurements-confirm-page .express-mbp-meta__grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-/* Selection summary in the left rail: two columns for readability */
-.express-measurements-confirm-page .express-mbp-page-grid__rail .express-mbp-meta__grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-@media (min-width: 640px) {
-  .express-measurements-confirm-page .express-mbp-page-grid__rail .express-mbp-meta__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@media (min-width: 768px) {
+  .express-measurements-confirm-page .express-mbp-meta__grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
 
@@ -405,114 +425,6 @@
   color: color-mix(in srgb, var(--kbm-green, #52682d) 35%, #444);
 }
 
-/* Quiet link back to Express — reuses `.express-custom-build-callout__link` (terra cotta) from wizard layout */
-.express-measurements-confirm-page .express-mbp-edit-build-choices {
-  margin: 0 0 0.5rem;
-  padding: 0;
-  font-size: 0.82rem;
-  line-height: 1.35;
-}
-
-.express-measurements-confirm-page .express-mbp-edit-build-choices__link {
-  font-size: inherit;
-}
-
-.express-measurements-confirm-page .express-mbp-edit-build-choices__lead {
-  font-weight: 600;
-  color: color-mix(in srgb, var(--kbm-green, #52682d) 32%, #444);
-}
-
-.express-measurements-confirm-page .express-mbp-meta .express-measurements-intro-units {
-  margin: 0.25rem 0 0.65rem;
-}
-
-/* Inline workspace tab icons beside Express / Custom copy */
-.express-measurements-confirm-page .express-mbp-edit-build-choices-line {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.4rem;
-  margin: 0;
-  max-width: none;
-  font-size: 0.9rem;
-  line-height: 1.45;
-  color: color-mix(in srgb, var(--kbm-green, #52682d) 22%, #4a4a4a);
-}
-
-.express-measurements-confirm-page .express-mbp-edit-build-choices + .express-mbp-edit-build-choices-line {
-  margin-top: 0.35rem;
-}
-
-.express-measurements-confirm-page .express-mbp-edit-build-choices-line + .express-mbp-edit-build-choices-line {
-  margin-top: 0.25rem;
-}
-
-.express-measurements-confirm-page .express-mbp-edit-build-choices-line:last-of-type {
-  margin-bottom: 0.65rem;
-}
-
-.express-measurements-confirm-page .express-mbp-edit-build-choices__workspace-icon {
-  flex-shrink: 0;
-  width: 1.0625rem;
-  height: 1.0625rem;
-  margin-top: 0.12em;
-  object-fit: contain;
-}
-
-.express-measurements-confirm-page .express-mbp-rail-reassurance {
-  margin: 0.25rem 0 0;
-  padding: 0.65rem 0 0;
-  border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 8%, #ebebeb);
-  font-size: 0.88rem;
-  line-height: 1.45;
-  color: color-mix(in srgb, var(--kbm-green, #52682d) 20%, #555);
-}
-
-.express-measurements-confirm-page .express-mbp-rail-reassurance__lead {
-  margin: 0 0 0.35rem;
-  font-weight: 600;
-  color: color-mix(in srgb, var(--kbm-green, #52682d) 32%, #444);
-}
-
-.express-measurements-confirm-page .express-mbp-rail-reassurance__list {
-  margin: 0;
-  padding: 0 0 0 1.1rem;
-  list-style: disc;
-}
-
-.express-measurements-confirm-page .express-mbp-rail-reassurance__list li {
-  margin: 0.12rem 0;
-  padding: 0;
-}
-
-/* Gauge summary (left rail): plain text, not input-like */
-.express-measurements-confirm-page .express-mbp-gauge-card {
-  padding: 0.75rem 0.85rem;
-  border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 16%, #d8d8d8);
-  background: color-mix(in srgb, var(--kbm-green, #52682d) 5%, var(--page-bg, #fff));
-  cursor: default;
-}
-
-.express-measurements-confirm-page .express-mbp-gauge-card__title {
-  margin: 0 0 0.45rem;
-  padding: 0;
-  border: 0;
-  font: inherit;
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  line-height: 1.35;
-  color: color-mix(in srgb, var(--kbm-green, #52682d) 72%, #444);
-}
-
-.express-measurements-confirm-page .express-mbp-gauge-card__value {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 600;
-  line-height: 1.45;
-  color: #222;
-}
-
 .express-measurements-confirm-page .express-mbp-scroll {
   overflow-x: auto;
   overflow-y: visible;
@@ -533,42 +445,40 @@
 }
 
 @media (min-width: 900px) {
-  .express-measurements-confirm-page .express-mbp-page-grid__diagram {
+  .express-measurements-confirm-page .sleeveless-measure-diagram-host {
     display: flex;
     flex-direction: column;
     align-items: center;
   }
 
-  .express-measurements-confirm-page .express-mbp-page-grid__diagram .express-measurements-summary {
-    align-self: stretch;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .express-measurements-confirm-page .express-mbp-page-grid__diagram .express-mbp {
+  .express-measurements-confirm-page .sleeveless-measure-diagram-host .express-mbp {
     align-self: center;
     width: min(100%, 550px);
     max-width: 550px;
   }
 
-  .express-measurements-confirm-page .express-mbp-page-grid__diagram .express-mbp-scroll {
+  .express-measurements-confirm-page .sleeveless-measure-diagram-host .express-mbp-scroll {
     width: 100%;
     overflow-x: visible;
     padding-top: 0;
     padding-bottom: 0.35rem;
   }
 
-  .express-measurements-confirm-page .express-mbp-page-grid__diagram .express-mbp-stage {
+  .express-measurements-confirm-page .sleeveless-measure-diagram-host .express-mbp-stage {
     width: min(100%, 550px);
     max-width: 550px;
     margin-inline: auto;
   }
 
-  .express-measurements-confirm-page .express-mbp-page-grid__diagram .express-mbp-stage__inner {
+  .express-measurements-confirm-page .sleeveless-measure-diagram-host .express-mbp-stage__inner {
     padding: 2.4% 3.2% 2.8% 3.4%;
   }
+}
+
+.express-measurements-confirm-page .sleeveless-measure-actions {
+  max-width: min(52rem, 100%);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .express-measurements-confirm-page .express-mbp-stage__inner {

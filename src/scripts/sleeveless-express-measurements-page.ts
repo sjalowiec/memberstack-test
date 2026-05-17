@@ -181,25 +181,7 @@ function mergeContextFromUrlStorageAndPattern(pageUrl: URL): MergedMeasureContex
 
 const PATTERN_WORKSPACE_TAB_PATTERN_HREF = "/patterns/sleeveless/pattern/?tab=pattern";
 
-const CUSTOM_BUILD_HREF = "/patterns/sleeveless/custom-build/";
-
-/** Same assets as `PatternTabs.astro` workspace Express / Custom tab icons */
-const WORKSPACE_EXPRESS_TAB_ICON_SRC = "/images/quick-icon.svg";
-const WORKSPACE_CUSTOM_TAB_ICON_SRC = "/images/KINlogo.svg";
-
 const MEASUREMENT_BLUEPRINT_SVG_URL = "/images/patterns/pattern_summary.svg";
-
-function workspaceTabIconImg(src: string): HTMLImageElement {
-  const img = document.createElement("img");
-  img.className = "express-mbp-edit-build-choices__workspace-icon";
-  img.src = src;
-  img.alt = "";
-  img.setAttribute("aria-hidden", "true");
-  img.width = 18;
-  img.height = 18;
-  img.decoding = "async";
-  return img;
-}
 
 /** Inline SVG is required to toggle measurement-line groups by id (external raster/img cannot be styled). */
 function applyExpressMeasurementBlueprintSvgDisplay(svg: SVGElement): void {
@@ -345,24 +327,22 @@ function initExpressMeasurementsConfirmPage(): void {
   }
 
   const root = rootMaybe;
-  const expressHref =
-    root.dataset.expressHref?.trim() || "/patterns/sleeveless-express/";
 
   const statusEl = root.querySelector("[data-express-measurements-status]");
   const summaryEl = root.querySelector("[data-express-measurements-summary]");
-  const railFillMaybe = root.querySelector("[data-express-measurements-rail-fill]");
+  const projectSummaryMaybe = root.querySelector("[data-express-measurements-project-summary]");
 
   if (!(summaryEl instanceof HTMLElement)) {
     warn("script did not find target DOM node: [data-express-measurements-summary]");
     return;
   }
 
-  if (!(railFillMaybe instanceof HTMLElement)) {
-    warn("script did not find target DOM node: [data-express-measurements-rail-fill]");
+  if (!(projectSummaryMaybe instanceof HTMLElement)) {
+    warn("script did not find target DOM node: [data-express-measurements-project-summary]");
     return;
   }
 
-  const railHost: HTMLElement = railFillMaybe;
+  const projectSummaryHost: HTMLElement = projectSummaryMaybe;
 
   function setStatus(msg: string, isError: boolean): void {
     if (!(statusEl instanceof HTMLElement)) return;
@@ -408,17 +388,27 @@ function initExpressMeasurementsConfirmPage(): void {
     return el;
   }
 
-  function gaugeSummaryCard(gaugeDisplay: string): HTMLElement {
-    const card = document.createElement("div");
-    card.className = "express-mbp-gauge-card";
-    const title = document.createElement("h2");
-    title.className = "express-mbp-gauge-card__title";
-    title.textContent = "GAUGE (FROM YOUR SWATCH)";
-    const value = document.createElement("p");
-    value.className = "express-mbp-gauge-card__value";
-    value.textContent = gaugeDisplay;
-    card.append(title, value);
-    return card;
+  function renderProjectSummary(chips: HTMLElement[]): void {
+    const unitsHostEl = projectSummaryHost.querySelector<HTMLElement>(
+      "[data-express-measurements-units-host]",
+    );
+    projectSummaryHost.replaceChildren();
+    const meta = document.createElement("div");
+    meta.className = "express-mbp-meta";
+    const metaGrid = document.createElement("div");
+    metaGrid.className = "express-mbp-meta__grid";
+    metaGrid.append(...chips);
+    meta.appendChild(metaGrid);
+    projectSummaryHost.appendChild(meta);
+    if (unitsHostEl) projectSummaryHost.appendChild(unitsHostEl);
+  }
+
+  function clearProjectSummary(): void {
+    const unitsHostEl = projectSummaryHost.querySelector<HTMLElement>(
+      "[data-express-measurements-units-host]",
+    );
+    projectSummaryHost.replaceChildren();
+    if (unitsHostEl) projectSummaryHost.appendChild(unitsHostEl);
   }
 
   type BlueprintReadonlyBoxOpts = {
@@ -530,22 +520,12 @@ function initExpressMeasurementsConfirmPage(): void {
   function renderFromUrl(): void {
     hideContinue();
     dispatchExpressYarnDimensions(NaN, NaN, getExpressUiUnit());
-    const unitsHostEl =
-      railHost.querySelector<HTMLElement>("[data-express-measurements-units-host]") ??
-      document.querySelector<HTMLElement>("[data-express-measurements-units-host]");
-    unitsHostEl?.remove();
-
-    const parkUnitsHostInRail = (): void => {
-      if (unitsHostEl && !unitsHostEl.isConnected) railHost.appendChild(unitsHostEl);
-    };
-
-    railHost.replaceChildren();
+    clearProjectSummary();
     summaryEl.replaceChildren();
     const loading = document.createElement("p");
     loading.className = "pattern-subtext";
     loading.textContent = "Loading measurements…";
     summaryEl.appendChild(loading);
-    parkUnitsHostInRail();
 
     let pageUrl: URL;
     try {
@@ -553,8 +533,7 @@ function initExpressMeasurementsConfirmPage(): void {
     } catch {
       warn("invalid page URL");
       clearStatus();
-      railHost.replaceChildren();
-      parkUnitsHostInRail();
+      clearProjectSummary();
       showSummaryError(
         summaryEl,
         "Something went wrong",
@@ -570,8 +549,7 @@ function initExpressMeasurementsConfirmPage(): void {
         if (!merged) {
           warn("merge failed: missing audience/who and/or size after URL + localStorage + pattern fallbacks");
           setStatus("Missing who or size. Return to Express Build and use Generate Pattern again.", true);
-          railHost.replaceChildren();
-          parkUnitsHostInRail();
+          clearProjectSummary();
           showSummaryError(
             summaryEl,
             "Could not load measurements",
@@ -589,8 +567,7 @@ function initExpressMeasurementsConfirmPage(): void {
             fit: merged.fit,
           });
           setStatus("That size is not on the chart for this wearer.", true);
-          railHost.replaceChildren();
-          parkUnitsHostInRail();
+          clearProjectSummary();
           showSummaryError(
             summaryEl,
             "Chart row not found",
@@ -606,8 +583,7 @@ function initExpressMeasurementsConfirmPage(): void {
             size: merged.selectedSize,
           });
           setStatus("Chart data is incomplete. Try refreshing the page.", true);
-          railHost.replaceChildren();
-          parkUnitsHostInRail();
+          clearProjectSummary();
           showSummaryError(
             summaryEl,
             "Chart row missing",
@@ -622,8 +598,7 @@ function initExpressMeasurementsConfirmPage(): void {
           if (!m || typeof m !== "object") {
             warn("selectedMeasurements missing or invalid on chartFit", chartFit);
             setStatus("Measurement defaults are missing from the chart row.", true);
-            railHost.replaceChildren();
-            parkUnitsHostInRail();
+            clearProjectSummary();
             showSummaryError(
               summaryEl,
               "Measurements unavailable",
@@ -675,68 +650,15 @@ function initExpressMeasurementsConfirmPage(): void {
               ? `${merged.gaugeStitchRaw} sts × ${merged.gaugeRowRaw} rows / ${over}`
               : "—";
 
-          const meta = document.createElement("div");
-          meta.className = "express-mbp-meta";
-          const editWrap = document.createElement("p");
-          editWrap.className = "express-mbp-edit-build-choices";
-          const editLead = document.createElement("strong");
-          editLead.className = "express-mbp-edit-build-choices__lead";
-          editLead.textContent = "Need different measurements?";
-          editWrap.appendChild(editLead);
-          const expressLine = document.createElement("p");
-          expressLine.className = "express-mbp-edit-build-choices-line pattern-subtext";
-          expressLine.append(
-            workspaceTabIconImg(WORKSPACE_EXPRESS_TAB_ICON_SRC),
-            document.createTextNode("Express Build gets you knitting quickly"),
-          );
-          const customLine = document.createElement("p");
-          customLine.className = "express-mbp-edit-build-choices-line pattern-subtext";
-          const customBuildLink = document.createElement("a");
-          customBuildLink.href = CUSTOM_BUILD_HREF;
-          customBuildLink.className = "express-custom-build-callout__link";
-          customBuildLink.textContent = "Custom Build";
-          customLine.append(
-            workspaceTabIconImg(WORKSPACE_CUSTOM_TAB_ICON_SRC),
-            customBuildLink,
-            document.createTextNode(" allows for more styling options and detailed fit"),
-          );
-          const metaGrid = document.createElement("div");
-          metaGrid.className = "express-mbp-meta__grid";
           const metaChips: HTMLElement[] = [
-            metaChip("Who", whoLabel),
+            metaChip("Recipient", whoLabel),
             metaChipSize(chartFit.selectedSize, chartBustChestDisplay),
+            metaChip("Garment", garmentLabel),
+            metaChip("Neckline", necklineLabel),
+            metaChip("Fit", fitLabel),
+            metaChip("Gauge", gaugeVal),
           ];
-          metaChips.push(metaChip("Garment", garmentLabel));
-          metaChips.push(metaChip("Neckline", necklineLabel), metaChip("Fit ease", fitLabel));
-          metaGrid.append(...metaChips);
-          meta.append(editWrap, expressLine, customLine);
-          if (unitsHostEl) meta.appendChild(unitsHostEl);
-          meta.appendChild(metaGrid);
-
-          const reassurance = document.createElement("div");
-          reassurance.className = "express-mbp-rail-reassurance pattern-subtext";
-          reassurance.setAttribute("role", "note");
-          const reassuranceTitle = document.createElement("p");
-          reassuranceTitle.className = "express-mbp-rail-reassurance__lead";
-          const goBackLink = document.createElement("a");
-          goBackLink.href = expressHref;
-          goBackLink.className = "express-custom-build-callout__link";
-          goBackLink.textContent = "go back";
-          reassuranceTitle.append(
-            document.createTextNode("You can still "),
-            goBackLink,
-            document.createTextNode(" and change:"),
-          );
-          const reassuranceList = document.createElement("ul");
-          reassuranceList.className = "express-mbp-rail-reassurance__list";
-          for (const item of ["size", "neckline", "fit ease", "gauge"]) {
-            const li = document.createElement("li");
-            li.textContent = item;
-            reassuranceList.appendChild(li);
-          }
-          reassurance.append(reassuranceTitle, reassuranceList);
-
-          railHost.replaceChildren(meta, gaugeSummaryCard(gaugeVal), reassurance);
+          renderProjectSummary(metaChips);
 
           const rootMbp = document.createElement("div");
           rootMbp.className = "express-mbp express-mbp--diagram";
@@ -783,8 +705,7 @@ function initExpressMeasurementsConfirmPage(): void {
         } catch (err) {
           console.error(`${LOG_PREFIX} render error`, err);
           setStatus("Could not render the measurement summary.", true);
-          railHost.replaceChildren();
-          parkUnitsHostInRail();
+          clearProjectSummary();
           showSummaryError(
             summaryEl,
             "Unexpected error",
@@ -795,8 +716,7 @@ function initExpressMeasurementsConfirmPage(): void {
       .catch((err) => {
         console.error(`${LOG_PREFIX} chart load failed`, err);
         setStatus("Could not load size charts. Check your connection and refresh.", true);
-        railHost.replaceChildren();
-        parkUnitsHostInRail();
+        clearProjectSummary();
         showSummaryError(
           summaryEl,
           "Charts unavailable",

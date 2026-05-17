@@ -286,6 +286,19 @@ function gaugeSummary(pattern: ReturnType<typeof getCurrentPattern>): string | n
   return null;
 }
 
+function summaryChip(keyLabel: string, value: string): HTMLElement {
+  const el = document.createElement("div");
+  el.className = "express-mbp-meta__item";
+  const k = document.createElement("span");
+  k.className = "express-mbp-meta__k";
+  k.textContent = keyLabel;
+  const v = document.createElement("span");
+  v.className = "express-mbp-meta__v";
+  v.textContent = value;
+  el.append(k, v);
+  return el;
+}
+
 function renderBuildSummary(
   el: HTMLElement,
   ctx: {
@@ -298,26 +311,21 @@ function renderBuildSummary(
   },
 ): void {
   el.replaceChildren();
-  const items: Array<[string, string]> = [
-    ["Recipient", whoLabel(ctx.who)],
-    ["Size", ctx.size || "—"],
-    ["Garment", ctx.garment],
-    ["Neckline", ctx.neckline],
-    ["Fit", fitLabel(ctx.fit)],
+  const meta = document.createElement("div");
+  meta.className = "express-mbp-meta";
+  const metaGrid = document.createElement("div");
+  metaGrid.className = "express-mbp-meta__grid";
+  const chips: HTMLElement[] = [
+    summaryChip("Recipient", whoLabel(ctx.who)),
+    summaryChip("Size", ctx.size || "—"),
+    summaryChip("Garment", ctx.garment),
+    summaryChip("Neckline", ctx.neckline),
+    summaryChip("Fit", fitLabel(ctx.fit)),
   ];
-  if (ctx.gauge) items.push(["Gauge", ctx.gauge]);
-  for (const [k, v] of items) {
-    const item = document.createElement("p");
-    item.className = "cb-measure-summary__item";
-    const key = document.createElement("span");
-    key.className = "cb-measure-summary__k";
-    key.textContent = `${k}: `;
-    const val = document.createElement("span");
-    val.className = "cb-measure-summary__v";
-    val.textContent = v;
-    item.append(key, val);
-    el.appendChild(item);
-  }
+  if (ctx.gauge) chips.push(summaryChip("Gauge", ctx.gauge));
+  metaGrid.append(...chips);
+  meta.appendChild(metaGrid);
+  el.appendChild(meta);
 }
 
 type BlueprintBoxOpts = {

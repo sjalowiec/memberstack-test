@@ -176,19 +176,25 @@ const customWizardSteps: WizardStep[] = [
           </div>
 
           <div data-cb-measure-root>
-            <header class="pattern-header page-header">
+            <header class="pattern-header page-header sleeveless-measure-review__title">
               <h1 class="pattern-title">Custom Measurements</h1>
             </header>
 
-            <div class="cb-measure-summary" data-cb-build-summary aria-label="Current build summary"></div>
+            <div class="sleeveless-measure-review-body">
+              <div
+                class="sleeveless-measure-project-summary"
+                data-cb-build-summary
+                aria-label="Current build summary"
+              ></div>
 
-            <p class="cb-measure-missing" data-cb-measure-missing hidden>
-              Complete Foundation and Style &amp; Shaping to load measurements.
-            </p>
+              <p class="cb-measure-missing" data-cb-measure-missing hidden>
+                Complete Foundation and Style &amp; Shaping to load measurements.
+              </p>
 
-            <div class="cb-measure-diagram-host" data-cb-measure-diagram></div>
+              <div class="sleeveless-measure-diagram-host cb-measure-diagram-host" data-cb-measure-diagram></div>
+            </div>
 
-            <div class="cb-measure-actions no-print">
+            <div class="sleeveless-measure-actions cb-measure-actions no-print">
               <a href={styleHref} class="kbm-btn kbm-btn-outline">← Back</a>
               <button
                 type="button"
