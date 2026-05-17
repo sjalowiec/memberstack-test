@@ -21,7 +21,8 @@ import {
 import { resolveEffectiveNeckOpeningWidthInches } from "./customBuildEffectiveNeckOpeningWidth";
 import { resolveEffectiveShoulderWidthInches } from "./customBuildEffectiveShoulderWidth";
 import { calculateBasicPatternNumbers } from "./patternCalculator";
-import { calculateHemRows } from "./hemDefaults";
+import { resolveEffectiveHemDepthInches } from "./customBuildEffectiveHemDepth";
+import { calculateHemRowsFromInches } from "./hemDefaults";
 import {
   neckShoulderShapingChartFromRows,
   type NeckShoulderShapingChart,
@@ -1545,7 +1546,8 @@ export function generateSleevelessBackPattern(
     );
   }
 
-  const hemRows = calculateHemRows(rowsPerInch, audience);
+  const hemDepthIn = resolveEffectiveHemDepthInches(patternData, audience);
+  const hemRows = calculateHemRowsFromInches(rowsPerInch, hemDepthIn);
   const rowGauge = rowsPerInch;
 
   if (castOnSts <= 0) {

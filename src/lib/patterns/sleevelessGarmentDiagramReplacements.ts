@@ -7,7 +7,8 @@ import {
   cardiganHalfFrontBodySts,
   splitBodyBackCastOnToSymmetricCardiganHalves,
 } from "./cardiganFrontBlock";
-import { calculateHemRows, getDefaultHemLengthInches } from "./hemDefaults";
+import { resolveEffectiveHemDepthInches } from "./customBuildEffectiveHemDepth";
+import { calculateHemRowsFromInches } from "./hemDefaults";
 import {
   resolveEffectiveBackNeckDepthInches,
   resolveEffectiveFrontNeckDepthInches,
@@ -72,10 +73,10 @@ function resolveHemFieldsForSleevelessDiagram(
   unit: "cm" | "in",
 ): { HEM_ROWS: string; HEM_INCHES: string } {
   const audience = pickAudienceFromPatternData(patternData);
+  const hemDepthIn = resolveEffectiveHemDepthInches(patternData, audience);
   const hemRows = isFiniteNumber(d.hemRows)
     ? Math.round(d.hemRows)
-    : calculateHemRows(d.rowsPerInch ?? NaN, audience);
-  const hemDepthIn = getDefaultHemLengthInches(audience);
+    : calculateHemRowsFromInches(d.rowsPerInch ?? NaN, hemDepthIn);
   return {
     HEM_ROWS: isFiniteNumber(hemRows) ? String(Math.max(0, hemRows)) : "",
     HEM_INCHES: fmtNumber(inchesToUnit(hemDepthIn, unit) ?? Number.NaN),

@@ -7,8 +7,8 @@
  * apply in pattern generation when `style.patternMode` is `custom-build` (see
  * {@link resolveEffectiveArmholeDepthInches}, {@link resolveEffectiveFinishedLengthInches},
  * {@link resolveEffectiveFinishedBustInches}, {@link resolveEffectiveShoulderWidthInches},
- * {@link resolveEffectiveNeckOpeningWidthInches}, {@link resolveEffectiveFrontNeckDepthInches});
- * other fields are stored for future use.
+ * {@link resolveEffectiveNeckOpeningWidthInches}, {@link resolveEffectiveFrontNeckDepthInches},
+ * {@link resolveEffectiveHemDepthInches}); other fields are stored for future use.
  */
 import {
   getPatternData,

@@ -6,8 +6,8 @@
  * into generator input on the pattern page; armhole depth is applied in pattern math when valid
  * (see {@link resolveEffectiveArmholeDepthInches}, {@link resolveEffectiveFinishedLengthInches},
  * {@link resolveEffectiveFinishedBustInches}, {@link resolveEffectiveShoulderWidthInches},
- * {@link resolveEffectiveNeckOpeningWidthInches}, {@link resolveEffectiveFrontNeckDepthInches}).
- * Other overrides remain stored only.
+ * {@link resolveEffectiveNeckOpeningWidthInches}, {@link resolveEffectiveFrontNeckDepthInches},
+ * {@link resolveEffectiveHemDepthInches}). Other overrides remain stored only.
  */
 import {
   getPatternData,
