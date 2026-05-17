@@ -14,6 +14,7 @@ import {
 import { resolveEffectiveArmholeDepthInches } from "./customBuildEffectiveArmholeDepth";
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 import { resolveEffectiveFinishedLengthInches } from "./customBuildEffectiveFinishedLength";
+import { resolveEffectiveShoulderWidthInches } from "./customBuildEffectiveShoulderWidth";
 import { calculateBasicPatternNumbers } from "./patternCalculator";
 import { calculateHemRows } from "./hemDefaults";
 import {
@@ -1468,8 +1469,13 @@ export function generateSleevelessBackPattern(
     stitchesPerInch,
     rowsPerInch,
     bustChestStitches,
-    stitchesAfterArmhole: rawStitchesAfterArmhole,
+    stitchesAfterArmhole: rawStitchesAfterArmholeFromChart,
   } = basic;
+  const shoulderWidthIn = resolveEffectiveShoulderWidthInches(patternData);
+  const rawStitchesAfterArmhole =
+    shoulderWidthIn !== undefined && shoulderWidthIn > 0 && stitchesPerInch > 0
+      ? Math.round(shoulderWidthIn * stitchesPerInch)
+      : rawStitchesAfterArmholeFromChart;
   // Keep left/right shaping balanced by normalizing the post-armhole total to an even count.
   const stitchesAfterArmhole =
     rawStitchesAfterArmhole !== undefined && rawStitchesAfterArmhole > 0
@@ -1501,7 +1507,6 @@ export function generateSleevelessBackPattern(
   // Custom Build may override chart measurements via fit.cbMeasurementOverrides.
   const backNeckToHem = resolveEffectiveFinishedLengthInches(patternData);
   const armholeDepthIn = resolveEffectiveArmholeDepthInches(patternData);
-  const shoulderWidthIn = measurementInches(sm, "shoulder_width");
   const backNeckDepthIn = measurementInches(sm, "back_neck_depth");
   const frontNeckDepthIn = measurementInches(sm, "front_neck_depth");
   const neckWidthIn =
