@@ -1,0 +1,486 @@
+/**
+ * Unified review (`/patterns/sleeveless/review/`) — diagram + editable measurements.
+ * Document-flow layout only. Import only on the review page (no `.cb-measure-page`).
+ */
+
+/* Cancel percent-based chip positions from express-measurements-confirm.css */
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box--neck-opening,
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box--neckline-depth,
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box--shoulder,
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box--finished-bust,
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box--armhole,
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box--back-length,
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box--ribbed-hem-depth {
+  left: auto !important;
+  top: auto !important;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-measurements-review {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .cb-measure-missing {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  color: #b45309;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-diagram-section {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-diagram-host,
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-diagram-host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .cb-measure-diagram-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp {
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: visible;
+  padding: 0 0 0.35rem;
+  box-sizing: border-box;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-stage {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 141.8 / 194.4;
+  border-radius: 12px;
+  background: var(--page-bg, #fff);
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 12%, #e2e2e2);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.4);
+  box-sizing: border-box;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-stage__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  inset: auto;
+  height: auto;
+  min-height: 0;
+  padding: 3.5% 4% 4%;
+  box-sizing: border-box;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-art {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 141.8 / 194.4;
+  flex-shrink: 0;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+  max-width: 100%;
+}
+
+/* Measurement area: document flow (overlay is a vertical list / grid, never absolute) */
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-overlay {
+  position: static;
+  inset: auto;
+  display: grid;
+  width: 100%;
+  max-width: 100%;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  box-sizing: border-box;
+  pointer-events: auto;
+  transform: none;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box {
+  position: static;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  z-index: auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+/* Editable fields */
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box__field {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box__input {
+  box-sizing: border-box;
+  flex: 1 1 5rem;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 18%, #ccc);
+  border-radius: 6px;
+  font-family: var(--font);
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: #2a2a2a;
+  background: #fff;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box__input:focus-visible {
+  outline: 2px solid var(--sg-accent, #c2614e);
+  outline-offset: 1px;
+  border-color: color-mix(in srgb, var(--sg-accent, #c2614e) 45%, #ccc);
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box--invalid .express-mbp-box__input {
+  border-color: #b91c1c;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box__unit {
+  flex: 0 0 auto;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #555;
+  line-height: 1.2;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box__error {
+  display: block;
+  width: 100%;
+  max-width: none;
+  margin: 0.2rem 0 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #b91c1c;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box__error[hidden] {
+  display: none;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box__value {
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
+}
+
+/* Pattern validation callout */
+.express-measurements-confirm-page.sleeveless-unified-review-page .cb-validation-overlay {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 0.75rem;
+  padding: 0.4rem 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  box-shadow: 0 2px 8px rgba(30, 35, 20, 0.1);
+  pointer-events: none;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .cb-validation-overlay[hidden] {
+  display: none !important;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .cb-validation-overlay--error {
+  border-color: #e8a0a8;
+  background: rgba(255, 244, 244, 0.96);
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .cb-validation-overlay--warning {
+  border-color: #e8cf7a;
+  background: rgba(255, 251, 235, 0.96);
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .cb-validation-overlay__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.35rem;
+  margin-bottom: 0.28rem;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .cb-validation-overlay__title {
+  margin: 0 0 0.28rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .cb-validation-overlay__dismiss {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  width: 1.35rem;
+  height: 1.35rem;
+  border: none;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .cb-validation-overlay__list {
+  margin: 0;
+  padding-left: 0.95rem;
+  font-size: 0.68rem;
+  line-height: 1.28;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .kbm-btn.is-disabled,
+.express-measurements-confirm-page.sleeveless-unified-review-page .kbm-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* --- Mobile: single-column measurement form (iPhone / narrow viewports) --- */
+@media (max-width: 699.98px) {
+  .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-project-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    gap: 0.5rem;
+    box-sizing: border-box;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-summary-line {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    font-size: 0.86rem;
+    line-height: 1.5;
+    text-align: left;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-summary-line__segment {
+    display: inline;
+    white-space: normal;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-summary-line__sep {
+    display: inline;
+    margin: 0 0.28em;
+    white-space: nowrap;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-measurements-intro-units {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-overlay {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    grid-template-columns: none;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 1rem;
+    padding: 0;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    align-self: stretch;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #e5e7eb);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 4%, #fff);
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box__lab {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 0.2rem;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .measure-icon {
+    font-size: 1em;
+    line-height: 1;
+    margin: 0 0.15rem 0 0;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box__lab-text,
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box__lab-stack,
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box__lab-line {
+    text-align: left;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box__field {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box__input {
+    flex: 1 1 6rem;
+    min-width: 4.5rem;
+    max-width: 12rem;
+    font-size: 1rem;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box__value {
+    align-self: flex-start;
+    width: auto;
+    max-width: 100%;
+    text-align: left;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-diagram-section {
+    margin-bottom: 0.25rem;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-actions,
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-measurements-actions {
+    margin-top: 1.75rem;
+    padding-top: 1.35rem;
+    gap: 0.75rem;
+    clear: both;
+  }
+}
+
+/* --- Tablet/desktop: compact grid below diagram --- */
+@media (min-width: 700px) {
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-stage {
+    max-width: 480px;
+    margin-inline: auto;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .cb-measure-diagram-wrap {
+    max-width: min(100%, 480px);
+    margin-inline: auto;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-overlay {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem 0.5rem;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: stretch;
+    gap: 0.35rem;
+    padding: 0.5rem 0.4rem;
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 12%, #e8e8e8);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 5%, #fff);
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box__lab {
+    justify-content: center;
+    font-size: 0.68rem;
+    text-align: center;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box__field {
+    justify-content: center;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-box__input {
+    flex: 0 1 auto;
+    max-width: 4.75rem;
+    font-size: 0.95rem;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-summary-line {
+    text-align: center;
+  }
+}
+
+@media (min-width: 900px) {
+  .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-diagram-section {
+    max-width: min(52rem, 100%);
+    margin-inline: auto;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .cb-measure-diagram-wrap {
+    max-width: min(100%, 550px);
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-stage {
+    max-width: 550px;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page .express-mbp-overlay {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 550px;
+  }
+}

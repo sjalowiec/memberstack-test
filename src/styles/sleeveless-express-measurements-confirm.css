@@ -7,16 +7,121 @@
   min-width: 0;
 }
 
-/* Centered measurement review column (Express + Custom) */
-.express-measurements-confirm-page .sleeveless-measure-review__title.pattern-header {
+/* Compact editable project header (unified review) */
+.express-measurements-confirm-page .sleeveless-review-project-header {
+  max-width: min(52rem, 100%);
+  margin: 0 auto 0.65rem;
+  padding: 0;
   text-align: center;
-  margin: 0 0 0.75rem;
-  padding-inline: 0;
-  width: 100%;
 }
 
-.express-measurements-confirm-page .sleeveless-measure-review__title .pattern-title {
-  font-size: clamp(1.45rem, 2.5vw, 1.85rem);
+.express-measurements-confirm-page .sleeveless-review-project-header__lede {
+  margin: 0 0 0.5rem;
+  font-size: 0.92rem;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__name {
+  margin: 0 0 0.35rem;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__label {
+  display: block;
+  margin: 0 0 0.2rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #6b7280);
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__title-input {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 28rem;
+  margin: 0 auto;
+  display: block;
+  padding: 0.2rem 0.1rem;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 22%, #d1d5db);
+  border-radius: 0;
+  background: transparent;
+  font-family: var(--font);
+  font-size: clamp(1.2rem, 2.2vw, 1.55rem);
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  color: #26351f;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__title-input:focus-visible {
+  outline: none;
+  border-bottom-color: var(--kbm-green, #52682d);
+  box-shadow: 0 1px 0 0 var(--kbm-green, #52682d);
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__title-display {
+  margin: 0 auto;
+  max-width: 28rem;
+  font-family: var(--font);
+  font-size: clamp(1.2rem, 2.2vw, 1.55rem);
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  color: #26351f;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header--read-only .sleeveless-review-project-header__notes {
+  display: none;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__notes {
+  margin-top: 0.15rem;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__notes-toggle {
+  margin: 0;
+  padding: 0.15rem 0.35rem;
+  border: none;
+  background: none;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--kbm-green, #52682d);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__notes-toggle:hover {
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 75%, #1f2937);
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__notes-panel {
+  max-width: 28rem;
+  margin: 0.35rem auto 0;
+  text-align: left;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__notes-input {
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 0.2rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-family: var(--font);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  resize: vertical;
+  min-height: 4.5rem;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__notes-count {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.78rem;
+  text-align: right;
+  color: #6b7280;
 }
 
 .express-measurements-confirm-page .sleeveless-measure-review-body {
@@ -82,8 +187,44 @@
   user-select: none;
 }
 
-.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-project-summary--above-title {
-  margin-bottom: 0.15rem;
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-project-summary--above-title,
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-project-summary--below-header {
+  margin-bottom: 0.5rem;
+}
+
+/* Unified review — stack header, units, then diagram (no overlap with measurement chips) */
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-measurements-review {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-top,
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header,
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-project-summary {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header {
+  margin-bottom: 0.75rem;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header__notes-panel:not([hidden]) {
+  max-height: 9rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-diagram-section {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-actions {
+  flex-shrink: 0;
 }
 
 .express-measurements-confirm-page .sleeveless-measure-custom-promo {
@@ -619,26 +760,26 @@
   top: 91.5%;
 }
 
-/* --- Mobile: stack measurement chips under diagram --- */
+/* --- Mobile: stack measurement chips under diagram (not unified review; see sleeveless-review-measurements.css) --- */
 @media (max-width: 699.98px) {
-  .express-measurements-confirm-page .express-mbp-scroll {
+  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-scroll {
     overflow-x: visible;
     padding-bottom: 0.25rem;
   }
 
-  .express-measurements-confirm-page .express-mbp-stage {
+  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-stage {
     width: 100%;
     max-width: 420px;
     aspect-ratio: 141.8 / 194.4;
   }
 
-  .express-measurements-confirm-page .express-mbp-box__lab {
+  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-box__lab {
     font-size: 0.65rem;
     text-align: center;
     gap: 0;
   }
 
-  .express-measurements-confirm-page .express-mbp-box__value {
+  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-box__value {
     align-self: center;
     width: 100%;
     max-width: 5.5rem;
@@ -646,7 +787,7 @@
     font-size: 0.92rem;
   }
 
-  .express-measurements-confirm-page .express-mbp-overlay {
+  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-overlay {
     position: static;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -656,7 +797,7 @@
     box-sizing: border-box;
   }
 
-  .express-measurements-confirm-page .express-mbp-stage__inner {
+  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-stage__inner {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -664,7 +805,7 @@
     min-height: 0;
   }
 
-  .express-measurements-confirm-page .express-mbp-art {
+  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-art {
     position: relative;
     width: 100%;
     height: auto;
@@ -672,7 +813,7 @@
     flex-shrink: 0;
   }
 
-  .express-measurements-confirm-page .express-mbp-box {
+  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-box {
     position: static;
     transform: none;
     align-self: stretch;
