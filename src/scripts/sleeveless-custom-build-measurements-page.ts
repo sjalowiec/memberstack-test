@@ -18,6 +18,13 @@ import {
   resolveExpressChartFit,
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
 import type { ChartRow } from "../lib/patterns/sleevelessExpressSizeChartTypes";
+import { buildSleevelessCustomBuildValidationInput } from "../lib/patterns/sleevelessCustomBuildValidationInput";
+import { validateSleevelessPatternInputs } from "../lib/patterns/sleevelessPatternValidation";
+import {
+  CB_MEASURE_CONTINUE_LABEL_DEFAULT,
+  renderCbMeasureValidationOverlay,
+  setCbMeasureContinueButton,
+} from "../lib/patterns/sleevelessPatternValidationUi";
 
 const MEASUREMENT_BLUEPRINT_SVG_URL = "/images/patterns/pattern_summary.svg";
 const YARN_GAUGE_HREF = "/patterns/sleeveless/custom-build/yarn-gauge";
@@ -448,31 +455,92 @@ function persistFromRoot(root: HTMLElement): void {
   persistMeasurementOverrides(toStore);
 }
 
+function buildValidationInputFromRoot(root: HTMLElement): ReturnType<typeof buildSleevelessCustomBuildValidationInput> {
+  const values = collectValues(root);
+  const overrides: Record<string, string> = {};
+  for (const key of DIAGRAM_FIELD_KEYS) {
+    if (values[key]) overrides[key] = values[key];
+  }
+  return buildSleevelessCustomBuildValidationInput(overrides);
+}
+
+function continueButtonDefaultLabel(root: HTMLElement): string {
+  const btn = root.querySelector("[data-cb-measure-continue]");
+  const fromData = btn?.getAttribute("data-cb-measure-continue-default")?.trim();
+  return fromData || CB_MEASURE_CONTINUE_LABEL_DEFAULT;
+}
+
+let cbMeasureWarningsDismissed = false;
+
+function refreshPatternValidationUi(root: HTMLElement): boolean {
+  const validationHost = root.querySelector("[data-cb-pattern-validation]");
+  const continueBtn = root.querySelector("[data-cb-measure-continue]");
+  if (!(validationHost instanceof HTMLElement)) return true;
+
+  const messages = validateSleevelessPatternInputs(buildValidationInputFromRoot(root));
+  const { errors } = renderCbMeasureValidationOverlay(validationHost, messages, {
+    warningsDismissed: cbMeasureWarningsDismissed,
+    onDismissWarnings: () => {
+      cbMeasureWarningsDismissed = true;
+      refreshPatternValidationUi(root);
+    },
+  });
+  const hasErrors = errors.length > 0;
+  if (hasErrors) cbMeasureWarningsDismissed = false;
+  setCbMeasureContinueButton(
+    continueBtn instanceof HTMLButtonElement ? continueBtn : null,
+    hasErrors,
+    continueButtonDefaultLabel(root),
+  );
+  return !hasErrors;
+}
+
+function resetCbMeasureWarningDismissal(): void {
+  cbMeasureWarningsDismissed = false;
+}
+
 function wireFieldPersistence(root: HTMLElement): void {
   root.querySelectorAll("[data-cb-measure-input]").forEach((el) => {
     if (!(el instanceof HTMLInputElement)) return;
     const save = (): void => {
+      resetCbMeasureWarningDismissal();
       const key = el.getAttribute("data-cb-measure-input") as DiagramFieldKey | null;
       if (!key) return;
       const n = parseInchesInput(el.value);
       if (el.value.trim() && n === undefined) {
         setFieldError(root, key, "Enter a positive number");
+        refreshPatternValidationUi(root);
         return;
       }
       setFieldError(root, key, null);
       el.closest(".express-mbp-box")?.classList.remove("express-mbp-box--invalid");
       persistFromRoot(root);
+      refreshPatternValidationUi(root);
     };
     el.addEventListener("change", save);
     el.addEventListener("blur", save);
+    el.addEventListener("input", () => {
+      resetCbMeasureWarningDismissal();
+      refreshPatternValidationUi(root);
+    });
   });
 }
 
 async function renderDiagram(
-  host: HTMLElement,
+  diagramHost: HTMLElement,
+  pageRoot: HTMLElement,
   merged: Record<DiagramFieldKey, string>,
 ): Promise<void> {
-  host.replaceChildren();
+  diagramHost.replaceChildren();
+
+  const wrap = document.createElement("div");
+  wrap.className = "cb-measure-diagram-wrap";
+
+  const validationOverlay = document.createElement("div");
+  validationOverlay.className = "cb-validation-overlay";
+  validationOverlay.setAttribute("data-cb-pattern-validation", "");
+  validationOverlay.hidden = true;
+
   const rootMbp = document.createElement("div");
   rootMbp.className = "express-mbp express-mbp--diagram";
   const scroll = document.createElement("div");
@@ -499,8 +567,9 @@ async function renderDiagram(
   stage.appendChild(inner);
   scroll.appendChild(stage);
   rootMbp.appendChild(scroll);
-  host.appendChild(rootMbp);
-  wireFieldPersistence(host);
+  wrap.append(validationOverlay, rootMbp);
+  diagramHost.appendChild(wrap);
+  wireFieldPersistence(pageRoot);
 }
 
 function initCustomBuildMeasurementsPage(): void {
@@ -514,6 +583,7 @@ function initCustomBuildMeasurementsPage(): void {
 
   continueBtn?.addEventListener("click", () => {
     if (!validateFields(root)) return;
+    if (!refreshPatternValidationUi(root)) return;
     persistFromRoot(root);
     syncCustomBuildToPatternStorage({ awaitCharts: false });
     window.location.assign(YARN_GAUGE_HREF);
@@ -567,7 +637,8 @@ function initCustomBuildMeasurementsPage(): void {
     const merged = mergeOverridesWithDefaults(saved, defaults);
 
     if (diagramHost instanceof HTMLElement) {
-      await renderDiagram(diagramHost, merged);
+      await renderDiagram(diagramHost, root, merged);
+      refreshPatternValidationUi(root);
     }
   });
 }
