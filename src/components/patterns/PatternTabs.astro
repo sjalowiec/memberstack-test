@@ -59,18 +59,20 @@ const pathNow = normPath(Astro.url.pathname);
 const ex = String(expressHref ?? "").trim();
 const cb = String(customBuildHref ?? "").trim();
 
-/** Custom style wizard lives outside `custom-build/` but belongs on the Custom workspace tab. */
+/** Custom style wizard lives outside `custom-build/` but belongs on the Summary workspace tab. */
 const customStyleRoot = normPath("/patterns/sleeveless/custom-style");
 const pathIsCustomStyleFlow =
   pathNow === customStyleRoot || (customStyleRoot && pathNow.startsWith(`${customStyleRoot}/`));
 
+const summaryRoot = normPath("/patterns/sleeveless/review");
+const pathIsSummaryFlow =
+  (summaryRoot && (pathNow === summaryRoot || pathNow.startsWith(`${summaryRoot}/`))) ||
+  pathIsCustomStyleFlow;
+
 const expressTabActive =
   activeTab === "express" || (Boolean(ex) && pathMatchesHref(pathNow, ex));
 
-const customTabActive =
-  activeTab === "custom" ||
-  (Boolean(cb) && pathMatchesHref(pathNow, cb)) ||
-  pathIsCustomStyleFlow;
+const customTabActive = activeTab === "custom" || pathIsSummaryFlow;
 
 const patternTabActive =
   activeTab === "pattern" || (!patternTabDisabled && pathMatchesHref(pathNow, patternHref));
@@ -79,7 +81,7 @@ const shareTabActive = activeTab === "share" || pathMatchesHref(pathNow, askShar
 const inspirationTabActive = activeTab === "inspiration" || pathMatchesHref(pathNow, inspirationHref);
 
 const expressNavHref = ex || "#";
-const customNavHref = cb || "#";
+const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
 ---
 
 <div
@@ -98,7 +100,8 @@ const customNavHref = cb || "#";
             href={expressNavHref}
             data-tab="express"
             aria-current={expressTabActive ? "page" : undefined}
-            aria-label="Express"
+            aria-label="Build"
+            title="Build"
           >
             <img
               class="tab-workspace-brand-icon"
@@ -108,14 +111,15 @@ const customNavHref = cb || "#";
               height="18"
               decoding="async"
             />
-            <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Express</span>
+            <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Build</span>
           </a>
           <a
             class:list={["tab-btn", "tab-btn--custom", "tab-btn--workspace-brand", { active: customTabActive }]}
-            href={customNavHref}
+            href={summaryNavHref}
             data-tab="custom"
             aria-current={customTabActive ? "page" : undefined}
-            aria-label="Custom"
+            aria-label="Summary"
+            title="Summary"
           >
             <img
               class="tab-workspace-brand-icon"
@@ -125,7 +129,7 @@ const customNavHref = cb || "#";
               height="18"
               decoding="async"
             />
-            <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Custom</span>
+            <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Summary</span>
           </a>
           {!hidePattern &&
             (patternTabDisabled ? (

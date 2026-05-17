@@ -26,7 +26,7 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
   bodyClass="pattern-print-global-footer"
 >
   <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/sleeveless" />
-  <main class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage">
+  <main class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage" data-pattern-print-skip-modal>
     <div id="sleeveless-pattern-top" class="wizard-container scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
         <PatternWorkspaceTabs
@@ -41,7 +41,9 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
 
         <div class="sleeveless-beta-pattern__top no-print">
           <div class="sleeveless-beta-pattern__top-inner">
-            <p class="sleeveless-beta-pattern__label">Sleeveless sweater · Pattern instructions</p>
+            <p class="sleeveless-beta-pattern__label" data-sleeveless-pattern-online-heading>
+              Sleeveless sweater · Pattern instructions
+            </p>
           </div>
         </div>
         <div id="sg-sleeveless-results" class="sg-sleeveless-results">
@@ -69,6 +71,17 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
                 </div>
               </div>
               <div class="sleeveless-pattern-intro__content">
+                <div
+                  class="sleeveless-pattern-project-notes no-print"
+                  data-sleeveless-pattern-online-notes
+                  hidden
+                >
+                  <p class="sleeveless-pattern-project-notes__label">Project notes</p>
+                  <div
+                    class="sleeveless-pattern-project-notes__text"
+                    data-sleeveless-pattern-online-notes-text
+                  ></div>
+                </div>
                 <PatternPrintPersonalization>
                   <div slot="print-summary" class="sg-pattern-print-at-a-glance" data-sg-pattern-print-at-a-glance>
                     <h2 class="print-heading-major print-heading-major--hero">At a glance</h2>
@@ -142,7 +155,37 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
     margin: 0;
     font-size: 0.95rem;
     font-weight: 600;
+    line-height: 1.35;
     color: #374151;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .sleeveless-pattern-project-notes {
+    margin: 0 0 0.65rem;
+    padding: 0.45rem 0.6rem;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #e5e7eb);
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 4%, #fff);
+  }
+
+  .sleeveless-pattern-project-notes__label {
+    margin: 0 0 0.2rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #6b7280);
+  }
+
+  .sleeveless-pattern-project-notes__text {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #4b5563;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .sleeveless-pattern-intro__image {
@@ -269,5 +312,6 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
 </style>
 
 <script>
+  import "/src/scripts/sleevelessPatternOnlineProjectHeader.ts";
   import "/src/scripts/sleevelessPatternBuilderPage.ts";
 </script>

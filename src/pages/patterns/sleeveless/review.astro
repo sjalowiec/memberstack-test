@@ -6,7 +6,7 @@ import YarnRequirement from "../../../components/tools/YarnRequirement.astro";
 import "../../../styles/wizard.css";
 import "../../../styles/sleeveless-express-wizard-layout.css";
 import "../../../styles/sleeveless-express-measurements-confirm.css";
-import "../../../styles/sleeveless-custom-build-measurements.css";
+import "../../../styles/sleeveless-review-measurements.css";
 
 const builderHref = "/patterns/sleeveless/builder";
 const expressHref = "/patterns/sleeveless-express/";
@@ -20,12 +20,12 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
   title="Review Measurements | Sleeveless Sweater"
   description="Review sizing and measurements, then generate your sleeveless sweater pattern."
 >
-  <main class="express-page wizard-page sleeveless-express-page express-measurements-confirm-page cb-measure-page sleeveless-unified-review-page">
+  <main class="express-page wizard-page sleeveless-express-page express-measurements-confirm-page sleeveless-unified-review-page">
     <div class="wizard-container express-wizard scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
         <PatternWorkspaceTabs
           rootClass="pattern-tabs-scope"
-          activeTab="express"
+          activeTab="custom"
           expressHref={expressHref}
           customBuildHref={customBuildHref}
           patternHref={patternHref}
@@ -56,8 +56,134 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
             aria-live="polite"
           ></p>
 
+          <header
+            class="sleeveless-review-project-header"
+            data-sleeveless-review-project-header
+            aria-label="Pattern project"
+          >
+            <div class="sleeveless-review-project-header__name">
+              <label
+                class="sleeveless-review-project-header__label sleeveless-review-project-header__label--name"
+                for="sleeveless-pattern-name"
+              >
+                <span>Pattern name</span>
+                <svg
+                  class="sleeveless-review-project-header__edit-icon"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"></path>
+                </svg>
+              </label>
+              <div class="sleeveless-review-project-header__title-field">
+                <input
+                  id="sleeveless-pattern-name"
+                  class="sleeveless-review-project-header__title-input"
+                  type="text"
+                  data-sleeveless-pattern-project-title
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+              </div>
+            </div>
+            <div class="sleeveless-review-project-header__notes">
+              <div
+                class="sleeveless-review-project-header__notes-readonly"
+                data-sleeveless-pattern-project-notes-readonly
+                hidden
+              >
+                <p class="sleeveless-review-project-header__label">Project notes</p>
+                <p
+                  class="sleeveless-review-project-header__notes-display"
+                  data-sleeveless-pattern-project-notes-display
+                ></p>
+              </div>
+              <button
+                type="button"
+                class="sleeveless-review-project-header__notes-add"
+                data-sleeveless-pattern-project-notes-add
+              >
+                + Add project notes
+              </button>
+              <div
+                class="sleeveless-review-project-header__notes-collapsed"
+                data-sleeveless-pattern-project-notes-collapsed
+                hidden
+              >
+                <p
+                  class="sleeveless-review-project-header__notes-preview"
+                  data-sleeveless-pattern-project-notes-preview
+                ></p>
+                <button
+                  type="button"
+                  class="sleeveless-review-project-header__notes-action"
+                  data-sleeveless-pattern-project-notes-edit
+                >
+                  Edit notes
+                </button>
+              </div>
+              <div
+                class="sleeveless-review-project-header__notes-panel"
+                data-sleeveless-pattern-project-notes-panel
+                hidden
+              >
+                <label class="sleeveless-review-project-header__label" for="sleeveless-pattern-notes">
+                  Project notes
+                </label>
+                <textarea
+                  id="sleeveless-pattern-notes"
+                  class="sleeveless-review-project-header__notes-input"
+                  data-sleeveless-pattern-project-notes
+                  rows={3}
+                  maxlength={300}
+                  autocomplete="off"
+                ></textarea>
+                <div class="sleeveless-review-project-header__notes-footer">
+                  <span
+                    class="sleeveless-review-project-header__notes-count pattern-subtext"
+                    data-sleeveless-pattern-project-notes-count
+                  >
+                    0 / 300
+                  </span>
+                  <span
+                    class="sleeveless-review-project-header__notes-saved pattern-subtext"
+                    data-sleeveless-pattern-project-notes-saved
+                    hidden
+                    aria-live="polite"
+                  >
+                    Notes saved
+                  </span>
+                  <div class="sleeveless-review-project-header__notes-actions">
+                    <button
+                      type="button"
+                      class="sleeveless-review-project-header__notes-btn sleeveless-review-project-header__notes-btn--ghost"
+                      data-sleeveless-pattern-project-notes-cancel
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      class="sleeveless-review-project-header__notes-btn sleeveless-review-project-header__notes-btn--primary"
+                      data-sleeveless-pattern-project-notes-save
+                    >
+                      Save notes
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </header>
+
           <div
-            class="sleeveless-measure-project-summary sleeveless-measure-project-summary--above-title"
+            class="sleeveless-measure-project-summary sleeveless-measure-project-summary--below-header"
             data-express-measurements-project-summary
             data-cb-build-summary
             aria-label="Project summary"
@@ -70,23 +196,19 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
             </div>
           </div>
 
-          <header class="pattern-header page-header sleeveless-measure-review__title">
-            <h1 class="pattern-title">Review your measurements</h1>
-          </header>
-
-          <div class="sleeveless-measure-review-body">
+          <section class="sleeveless-review-diagram-section" aria-label="Body measurements diagram">
             <p class="cb-measure-missing" data-cb-measure-missing hidden>
               Complete the pattern builder steps to load measurements.
             </p>
 
             <div
-              class="sleeveless-measure-diagram-host express-measurements-summary"
+              class="sleeveless-measure-diagram-host express-measurements-summary sleeveless-review-diagram-host"
               data-express-measurements-summary
               data-cb-measure-diagram
             >
               <p class="pattern-subtext">Loading measurements…</p>
             </div>
-          </div>
+          </section>
 
           <div class="sleeveless-measure-actions express-measurements-actions no-print">
             <button type="button" id="express-yarn-drawer-open" class="kbm-btn kbm-btn-outline">
@@ -191,5 +313,6 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
 </style>
 
 <script>
+  import "/src/scripts/sleevelessReviewProjectHeader.ts";
   import "/src/scripts/sleeveless-builder-review-page.ts";
 </script>

@@ -250,25 +250,25 @@
   }
 }
 
-/* Mobile: keep inputs on diagram (no separate form column) */
+/* Mobile: keep inputs on diagram (no separate form column). Not used on unified review. */
 @media (max-width: 699.98px) {
-  .cb-measure-page .express-mbp-overlay {
+  .cb-measure-page:not(.sleeveless-unified-review-page) .express-mbp-overlay {
     position: absolute;
     inset: 0;
     pointer-events: none;
   }
 
-  .cb-measure-page .express-mbp-box {
+  .cb-measure-page:not(.sleeveless-unified-review-page) .express-mbp-box {
     position: absolute;
     transform: translate(-50%, -50%);
     max-width: min(44vw, 7.25rem);
   }
 
-  .cb-measure-page .express-mbp-box__lab {
+  .cb-measure-page:not(.sleeveless-unified-review-page) .express-mbp-box__lab {
     font-size: 0.58rem;
   }
 
-  .cb-measure-page .express-mbp-box__input {
+  .cb-measure-page:not(.sleeveless-unified-review-page) .express-mbp-box__input {
     font-size: 0.85rem;
     max-width: 4.25rem;
   }

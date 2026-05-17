@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { resolveHasAdvancedPatternAccess } from "./sleevelessPatternAccessGate";
+import { canCustomizePattern, resolveHasAdvancedPatternAccess } from "./sleevelessPatternAccessGate";
 
 describe("resolveHasAdvancedPatternAccess", () => {
+  it("defaults to true when no override is present", () => {
+    expect(resolveHasAdvancedPatternAccess(new URL("https://example.test/review"))).toBe(true);
+  });
+
   it("returns true when advanced=1 query param is set", () => {
     expect(resolveHasAdvancedPatternAccess(new URL("https://example.test/review?advanced=1"))).toBe(true);
   });
@@ -10,7 +14,18 @@ describe("resolveHasAdvancedPatternAccess", () => {
     expect(resolveHasAdvancedPatternAccess(new URL("https://example.test/review?advanced=0"))).toBe(false);
   });
 
-  it("defaults to false when no override is present", () => {
-    expect(resolveHasAdvancedPatternAccess(new URL("https://example.test/review"))).toBe(false);
+  it("returns false when customize=0 query param is set", () => {
+    expect(resolveHasAdvancedPatternAccess(new URL("https://example.test/review?customize=0"))).toBe(false);
+  });
+
+  it("returns true when customize=1 query param is set", () => {
+    expect(resolveHasAdvancedPatternAccess(new URL("https://example.test/review?customize=1"))).toBe(true);
+  });
+});
+
+describe("canCustomizePattern", () => {
+  it("matches resolveHasAdvancedPatternAccess", () => {
+    const url = new URL("https://example.test/review?advanced=0");
+    expect(canCustomizePattern(url)).toBe(resolveHasAdvancedPatternAccess(url));
   });
 });

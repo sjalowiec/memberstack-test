@@ -29,6 +29,7 @@ import {
   renderMeasureReviewSummaryLine,
   type MeasureReviewSummarySegment,
 } from "../lib/patterns/sleevelessMeasureReviewSummaryUi";
+import { SLEEVELESS_REVIEW_CONTEXT_READY_EVENT } from "../lib/patterns/sleevelessPatternProjectMeta";
 
 const MEASUREMENT_BLUEPRINT_SVG_URL = "/images/patterns/pattern_summary.svg";
 const YARN_GAUGE_HREF = "/patterns/sleeveless/custom-build/yarn-gauge";
@@ -39,6 +40,10 @@ export type CustomBuildMeasurementsInitOptions = {
   continueHref?: string;
   /** When set, runs after validation + persist instead of default navigation. */
   onContinue?: () => void;
+  /** When true, diagram fields are read-only (unified review for free users). */
+  readOnly?: boolean;
+  /** Keep unit toggle in summary host when rendering build summary (unified review). */
+  preserveUnitsHost?: boolean;
 };
 
 /** Sleeveless body fields shown on the diagram (inches, stored as decimal strings). */
@@ -308,6 +313,7 @@ function renderBuildSummary(
     fit: string;
     gauge: string | null;
   },
+  options?: { preserveUnitsHost?: boolean },
 ): void {
   const segments: MeasureReviewSummarySegment[] = [
     { label: "Recipient", value: whoLabel(ctx.who) },
@@ -317,7 +323,9 @@ function renderBuildSummary(
     { label: "Fit", value: fitLabel(ctx.fit) },
   ];
   if (ctx.gauge) segments.push({ label: "Gauge", value: ctx.gauge });
-  renderMeasureReviewSummaryLine(el, segments, { preserveUnitsHost: false });
+  renderMeasureReviewSummaryLine(el, segments, {
+    preserveUnitsHost: options?.preserveUnitsHost === true,
+  });
 }
 
 type BlueprintBoxOpts = {
@@ -393,6 +401,69 @@ function createDiagramFieldBox(
   err.hidden = true;
 
   box.append(lab, fieldRow, err);
+  return box;
+}
+
+function formatReadonlyInchesDisplay(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "—";
+  const n = parseInchesInput(trimmed);
+  if (n === undefined) return trimmed;
+  return `${formatSwatchCountForGaugeInput(n)} in`;
+}
+
+function createDiagramReadonlyFieldBox(
+  field: DiagramFieldDef,
+  value: string,
+  opts?: BlueprintBoxOpts,
+): HTMLElement {
+  const box = document.createElement("div");
+  box.className = `express-mbp-box express-mbp-box--${field.positionMod}`;
+
+  const lab = document.createElement("span");
+  lab.className = "express-mbp-box__lab";
+  const lines = opts?.labelLines?.filter((s) => s.trim());
+  if (opts?.axis === "vertical" || opts?.axis === "horizontal") {
+    const icon = document.createElement("span");
+    icon.className = "measure-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = opts.axis === "vertical" ? "↕" : "↔";
+    lab.appendChild(icon);
+    if (lines?.length) {
+      const stack = document.createElement("span");
+      stack.className = "express-mbp-box__lab-stack";
+      for (const line of lines) {
+        const text = document.createElement("span");
+        text.className = "express-mbp-box__lab-text express-mbp-box__lab-line";
+        text.textContent = line;
+        stack.appendChild(text);
+      }
+      lab.appendChild(stack);
+    } else {
+      const text = document.createElement("span");
+      text.className = "express-mbp-box__lab-text";
+      text.textContent = field.label;
+      lab.appendChild(text);
+    }
+  } else if (lines?.length) {
+    const stack = document.createElement("span");
+    stack.className = "express-mbp-box__lab-stack";
+    for (const line of lines) {
+      const text = document.createElement("span");
+      text.className = "express-mbp-box__lab-text express-mbp-box__lab-line";
+      text.textContent = line;
+      stack.appendChild(text);
+    }
+    lab.appendChild(stack);
+  } else {
+    lab.textContent = field.label;
+  }
+
+  const valEl = document.createElement("span");
+  valEl.className = "express-mbp-box__value";
+  valEl.textContent = formatReadonlyInchesDisplay(value);
+
+  box.append(lab, valEl);
   return box;
 }
 
@@ -526,10 +597,24 @@ function wireFieldPersistence(root: HTMLElement): void {
   });
 }
 
+function wireReadOnlyContinueToPattern(root: HTMLElement, onContinue: () => void): void {
+  const existing = root.querySelector("[data-express-measurements-continue]");
+  if (!(existing instanceof HTMLAnchorElement)) return;
+  const anchor = existing.cloneNode(true) as HTMLAnchorElement;
+  existing.replaceWith(anchor);
+  anchor.href = PATTERN_WORKSPACE_TAB_PATTERN_HREF;
+  anchor.removeAttribute("hidden");
+  anchor.addEventListener("click", (ev: MouseEvent) => {
+    ev.preventDefault();
+    onContinue();
+  });
+}
+
 async function renderDiagram(
   diagramHost: HTMLElement,
   pageRoot: HTMLElement,
   merged: Record<DiagramFieldKey, string>,
+  readOnly: boolean,
 ): Promise<void> {
   diagramHost.replaceChildren();
 
@@ -555,11 +640,11 @@ async function renderDiagram(
   overlay.className = "express-mbp-overlay";
 
   for (const field of DIAGRAM_FIELDS) {
+    const boxOpts = { axis: field.axis, labelLines: field.labelLines };
     overlay.appendChild(
-      createDiagramFieldBox(field, merged[field.key] ?? "", {
-        axis: field.axis,
-        labelLines: field.labelLines,
-      }),
+      readOnly
+        ? createDiagramReadonlyFieldBox(field, merged[field.key] ?? "", boxOpts)
+        : createDiagramFieldBox(field, merged[field.key] ?? "", boxOpts),
     );
   }
 
@@ -567,31 +652,38 @@ async function renderDiagram(
   stage.appendChild(inner);
   scroll.appendChild(stage);
   rootMbp.appendChild(scroll);
-  wrap.append(validationOverlay, rootMbp);
+  if (readOnly) {
+    wrap.appendChild(rootMbp);
+  } else {
+    wrap.append(validationOverlay, rootMbp);
+  }
   diagramHost.appendChild(wrap);
-  wireFieldPersistence(pageRoot);
+  if (!readOnly) wireFieldPersistence(pageRoot);
 }
 
 export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurementsInitOptions): void {
   const root = document.querySelector("[data-cb-measure-root]");
   if (!(root instanceof HTMLElement)) return;
 
+  const readOnly = options?.readOnly === true;
   const summaryEl = root.querySelector("[data-cb-build-summary]");
   const missingEl = root.querySelector("[data-cb-measure-missing]");
   const diagramHost = root.querySelector("[data-cb-measure-diagram]");
   const continueBtn = root.querySelector("[data-cb-measure-continue]");
 
-  continueBtn?.addEventListener("click", () => {
-    if (!validateFields(root)) return;
-    if (!refreshPatternValidationUi(root)) return;
-    persistFromRoot(root);
-    syncCustomBuildToPatternStorage({ awaitCharts: false });
-    if (options?.onContinue) {
-      options.onContinue();
-      return;
-    }
-    window.location.assign(options?.continueHref ?? YARN_GAUGE_HREF);
-  });
+  if (!readOnly) {
+    continueBtn?.addEventListener("click", () => {
+      if (!validateFields(root)) return;
+      if (!refreshPatternValidationUi(root)) return;
+      persistFromRoot(root);
+      syncCustomBuildToPatternStorage({ awaitCharts: false });
+      if (options?.onContinue) {
+        options.onContinue();
+        return;
+      }
+      window.location.assign(options?.continueHref ?? YARN_GAUGE_HREF);
+    });
+  }
 
   void loadExpressSweaterCharts().then(async () => {
     const pattern = getCurrentPattern();
@@ -615,16 +707,43 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
       else if (canon === "round") neckline = "round";
     }
 
+    const garmentSummary = garmentStyleLabel(expressValues, pattern);
     if (summaryEl instanceof HTMLElement) {
-      renderBuildSummary(summaryEl, {
-        who: expressValues.who ?? "",
-        size,
-        garment: garmentStyleLabel(expressValues, pattern),
-        neckline: necklineLabel(neckline),
-        fit: fitPref,
-        gauge: gaugeSummary(pattern),
-      });
+      renderBuildSummary(
+        summaryEl,
+        {
+          who: expressValues.who ?? "",
+          size,
+          garment: garmentSummary,
+          neckline: necklineLabel(neckline),
+          fit: fitPref,
+          gauge: gaugeSummary(pattern),
+        },
+        { preserveUnitsHost: options?.preserveUnitsHost === true },
+      );
     }
+
+    const style = pattern.style ?? {};
+    const lsFront = String(expressValues.front ?? "").trim().toLowerCase();
+    const styleKey = String(expressValues.style ?? "").trim().toLowerCase();
+    const pbGarment = String(style.garmentStyle ?? "").trim().toLowerCase() === "cardigan";
+    const pbOpen = String(style.frontStyle ?? "").trim().toLowerCase() === "open";
+    const garmentStyle: "pullover" | "cardigan" =
+      pbGarment || pbOpen || lsFront === "open" || styleKey.includes("cardigan")
+        ? "cardigan"
+        : "pullover";
+
+    document.dispatchEvent(
+      new CustomEvent(SLEEVELESS_REVIEW_CONTEXT_READY_EVENT, {
+        detail: {
+          who: expressValues.who ?? "",
+          neckline: neckline === "v-neck" ? "v-neck" : "round",
+          garmentStyle,
+          chartAudience: audience,
+          ...(size ? { selectedSize: size } : {}),
+        },
+      }),
+    );
 
     if (!row || !audience) {
       if (missingEl instanceof HTMLElement) missingEl.removeAttribute("hidden");
@@ -641,8 +760,12 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
     const merged = mergeOverridesWithDefaults(saved, defaults);
 
     if (diagramHost instanceof HTMLElement) {
-      await renderDiagram(diagramHost, root, merged);
-      refreshPatternValidationUi(root);
+      await renderDiagram(diagramHost, root, merged, readOnly);
+      if (!readOnly) refreshPatternValidationUi(root);
+    }
+
+    if (readOnly && options?.onContinue) {
+      wireReadOnlyContinueToPattern(root, options.onContinue);
     }
   });
 }

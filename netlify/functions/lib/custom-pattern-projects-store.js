@@ -156,6 +156,8 @@ export function buildProjectRecord(data, userId, existingId) {
     typeof data.name === "string" && data.name.trim()
       ? data.name.trim().slice(0, 120)
       : "Untitled pattern";
+  const notes =
+    typeof data.notes === "string" ? data.notes.trim().slice(0, 300) : "";
   const source =
     data.source === "express" || data.source === "custom-build" ? data.source : "custom-build";
   const pattern = data.pattern;
@@ -186,6 +188,7 @@ export function buildProjectRecord(data, userId, existingId) {
     project: {
       id,
       name,
+      ...(notes ? { notes } : {}),
       family,
       source,
       createdAt: existingId && typeof data.createdAt === "string" ? data.createdAt : createdAt,

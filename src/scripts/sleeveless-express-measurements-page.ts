@@ -22,6 +22,7 @@ import {
   renderMeasureReviewSummaryLine,
   type MeasureReviewSummarySegment,
 } from "../lib/patterns/sleevelessMeasureReviewSummaryUi";
+import { SLEEVELESS_REVIEW_CONTEXT_READY_EVENT } from "../lib/patterns/sleevelessPatternProjectMeta";
 
 const LOG_PREFIX = "[express-measurements]";
 
@@ -631,6 +632,17 @@ export function initExpressMeasurementsConfirmPage(options?: ExpressMeasurements
             { label: "Fit", value: fitLabel },
             { label: "Gauge", value: gaugeVal },
           ]);
+
+          document.dispatchEvent(
+            new CustomEvent(SLEEVELESS_REVIEW_CONTEXT_READY_EVENT, {
+              detail: {
+                who: merged.who,
+                neckline: merged.neckline === "v-neck" ? "v-neck" : "round",
+                garmentStyle: merged.garmentStyle,
+                chartAudience: aud,
+              },
+            }),
+          );
 
           const rootMbp = document.createElement("div");
           rootMbp.className = "express-mbp express-mbp--diagram";

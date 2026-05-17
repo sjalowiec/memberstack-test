@@ -1,12 +1,17 @@
 /**
- * Optional print personalization (modal → sessionStorage → print-only title/notes slots).
- * Not part of builder/pattern data — session scope only.
+ * Print personalization: sleeveless uses `kbm_current_pattern.patternProject`;
+ * other patterns may still use session keys + optional modal.
  */
+
+import {
+  getPatternProjectPrintFields,
+  migrateLegacyPrintSessionToPatternProject,
+  PROJECT_NOTES_MAX_LENGTH,
+  syncPatternProjectToPrintSession,
+} from "../lib/patterns/sleevelessPatternProjectMeta";
 
 const STORAGE_TITLE_KEY = "kbm-pattern-print-personalization-title";
 const STORAGE_NOTES_KEY = "kbm-pattern-print-personalization-notes";
-
-const PROJECT_NOTES_MAX_LENGTH = 300;
 
 function truncateProjectNotes(notes: string): string {
   return notes.length <= PROJECT_NOTES_MAX_LENGTH
@@ -50,22 +55,31 @@ function updateProjectNotesCharCount(dialog: HTMLDialogElement): void {
   counter.textContent = `${len} / ${PROJECT_NOTES_MAX_LENGTH}`;
 }
 
+function readStoredPrintPersonalization(): { title: string; notes: string } {
+  migrateLegacyPrintSessionToPatternProject();
+  if (document.querySelector("[data-pattern-print-skip-modal]")) {
+    const fromProject = getPatternProjectPrintFields();
+    syncPatternProjectToPrintSession({
+      title: fromProject.title,
+      notes: fromProject.notes,
+    });
+    return fromProject;
+  }
+  try {
+    const t = sessionStorage.getItem(STORAGE_TITLE_KEY) ?? "";
+    const rawNotes = sessionStorage.getItem(STORAGE_NOTES_KEY) ?? "";
+    return { title: t.trim(), notes: truncateProjectNotes(rawNotes) };
+  } catch {
+    return { title: "", notes: "" };
+  }
+}
+
 function loadFieldsFromSession(dialog: HTMLDialogElement): void {
   const { titleInput, notesInput } = getFields(dialog);
   try {
-    const t = sessionStorage.getItem(STORAGE_TITLE_KEY) ?? "";
-    let n = sessionStorage.getItem(STORAGE_NOTES_KEY) ?? "";
-    const truncated = truncateProjectNotes(n);
-    if (truncated !== n) {
-      try {
-        sessionStorage.setItem(STORAGE_NOTES_KEY, truncated);
-      } catch {
-        /* ignore */
-      }
-      n = truncated;
-    }
+    const { title: t, notes: n } = readStoredPrintPersonalization();
     if (titleInput) titleInput.value = t;
-    if (notesInput) notesInput.value = truncated;
+    if (notesInput) notesInput.value = n;
     updateProjectNotesCharCount(dialog);
   } catch {
     /* ignore */
@@ -95,20 +109,11 @@ export function applyPatternPrintPersonalizationToDom(title: string, notes: stri
   });
 }
 
-/** Restores title/notes slots from sessionStorage (e.g. after navigation or dynamic print HTML inject). */
+/** Restores title/notes slots from pattern project or session (e.g. after navigation or dynamic print HTML inject). */
 export function hydratePatternPrintPersonalizationSlotsFromSession(): void {
   try {
-    const t = sessionStorage.getItem(STORAGE_TITLE_KEY) ?? "";
-    const rawNotes = sessionStorage.getItem(STORAGE_NOTES_KEY) ?? "";
-    const n = truncateProjectNotes(rawNotes);
-    if (n !== rawNotes) {
-      try {
-        sessionStorage.setItem(STORAGE_NOTES_KEY, n);
-      } catch {
-        /* ignore */
-      }
-    }
-    applyPatternPrintPersonalizationToDom(t, n);
+    const { title, notes } = readStoredPrintPersonalization();
+    applyPatternPrintPersonalizationToDom(title, notes);
   } catch {
     /* ignore */
   }
@@ -181,11 +186,28 @@ function bindModalListenersOnce(): void {
 /**
  * Opens the optional modal when present; otherwise prints immediately.
  */
+function shouldSkipPersonalizationModal(): boolean {
+  return Boolean(document.querySelector("[data-pattern-print-skip-modal]"));
+}
+
 export function triggerPatternPrint(
   triggerEl: HTMLElement | null,
   opts?: PatternPrintTriggerOptions,
 ): void {
   bindModalListenersOnce();
+  const { title, notes } = readStoredPrintPersonalization();
+  applyPatternPrintPersonalizationToDom(title, notes);
+
+  if (shouldSkipPersonalizationModal()) {
+    opts?.onBeforePrint?.();
+    try {
+      window.print();
+    } finally {
+      opts?.onAfterPrint?.();
+    }
+    return;
+  }
+
   const dialog = getDialog();
 
   if (!dialog || typeof dialog.showModal !== "function") {

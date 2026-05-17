@@ -3,18 +3,28 @@
  * TODO: replace temporary gate with real Memberstack entitlement check.
  */
 
-/** localStorage key for dev/testing override (`"1"` = advanced, `"0"` = free). */
+/** localStorage key for dev/testing override (`"1"` = editable, `"0"` = read-only). */
 export const SLEEVELESS_PATTERN_ACCESS_LS_KEY = "kbm_sleeveless_advanced_pattern_access";
 
-const QUERY_PARAM = "advanced";
+const ADVANCED_QUERY_PARAM = "advanced";
+const CUSTOMIZE_QUERY_PARAM = "customize";
+
+function parseAccessOverride(raw: string | null | undefined): boolean | null {
+  const v = raw?.trim().toLowerCase();
+  if (v === "1" || v === "true" || v === "yes") return true;
+  if (v === "0" || v === "false" || v === "no") return false;
+  return null;
+}
 
 /**
  * When true, review-page measurement fields are editable and full validation runs.
  * When false, measurements are read-only; knitters can still generate/print the pattern.
  *
- * Testing (any one enables advanced):
- * - `?advanced=1` on the review URL
- * - `localStorage.setItem('kbm_sleeveless_advanced_pattern_access', '1')`
+ * Default: editable (beta / current testing).
+ *
+ * Force read-only for future free-state testing:
+ * - `?advanced=0` or `?customize=0` on the review URL
+ * - `localStorage.setItem('kbm_sleeveless_advanced_pattern_access', '0')`
  */
 export function resolveHasAdvancedPatternAccess(pageUrl?: URL): boolean {
   let url: URL | null = pageUrl ?? null;
@@ -27,23 +37,26 @@ export function resolveHasAdvancedPatternAccess(pageUrl?: URL): boolean {
   }
 
   if (url) {
-    const qp = url.searchParams.get(QUERY_PARAM)?.trim().toLowerCase();
-    if (qp === "1" || qp === "true" || qp === "yes") return true;
-    if (qp === "0" || qp === "false" || qp === "no") return false;
+    const fromAdvanced = parseAccessOverride(url.searchParams.get(ADVANCED_QUERY_PARAM));
+    if (fromAdvanced !== null) return fromAdvanced;
+    const fromCustomize = parseAccessOverride(url.searchParams.get(CUSTOMIZE_QUERY_PARAM));
+    if (fromCustomize !== null) return fromCustomize;
   }
 
   if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
     try {
-      const stored = localStorage.getItem(SLEEVELESS_PATTERN_ACCESS_LS_KEY)?.trim().toLowerCase();
-      if (stored === "1" || stored === "true" || stored === "yes") return true;
-      if (stored === "0" || stored === "false" || stored === "no") return false;
+      const stored = parseAccessOverride(localStorage.getItem(SLEEVELESS_PATTERN_ACCESS_LS_KEY));
+      if (stored !== null) return stored;
     } catch {
       /* ignore */
     }
   }
 
-  /** Default for migration testing: free / read-only until Memberstack is wired. */
-  // TODO: replace temporary gate with real Memberstack entitlement check.
-  const hasAdvancedPatternAccess = false;
-  return hasAdvancedPatternAccess;
+  // TODO: replace temporary default with real Memberstack entitlement check.
+  return true;
+}
+
+/** When true, review-page title, notes, measurements, and save controls are editable. */
+export function canCustomizePattern(pageUrl?: URL): boolean {
+  return resolveHasAdvancedPatternAccess(pageUrl);
 }

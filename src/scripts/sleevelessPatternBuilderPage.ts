@@ -1,5 +1,6 @@
 import { getPatternData } from "../lib/patterns/patternStorage.ts";
 import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage.ts";
+import { applySleevelessPatternOnlineProjectHeader } from "./sleevelessPatternOnlineProjectHeader.ts";
 import { initSleevelessPatternBuilderPage } from "./sleevelessPatternPageShared.ts";
 
 function boot(): void {
@@ -8,6 +9,7 @@ function boot(): void {
   if (style?.patternMode === "custom-build") {
     syncCustomBuildToPatternStorage({ awaitCharts: false });
   }
+  applySleevelessPatternOnlineProjectHeader();
   void initSleevelessPatternBuilderPage();
 }
 

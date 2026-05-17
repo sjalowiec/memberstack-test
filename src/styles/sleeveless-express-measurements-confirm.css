@@ -70,8 +70,10 @@
   color: #26351f;
 }
 
-.express-measurements-confirm-page .sleeveless-review-project-header--read-only .sleeveless-review-project-header__notes {
-  display: none;
+.express-measurements-confirm-page .sleeveless-review-project-header--read-only [data-sleeveless-pattern-project-notes-add],
+.express-measurements-confirm-page .sleeveless-review-project-header--read-only [data-sleeveless-pattern-project-notes-collapsed],
+.express-measurements-confirm-page .sleeveless-review-project-header--read-only [data-sleeveless-pattern-project-notes-panel] {
+  display: none !important;
 }
 
 .express-measurements-confirm-page .sleeveless-review-project-header__notes {
@@ -112,6 +114,9 @@
   font-family: var(--font);
   font-size: 0.88rem;
   line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   resize: vertical;
   min-height: 4.5rem;
 }

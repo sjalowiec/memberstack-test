@@ -1,12 +1,9 @@
 /**
  * Unified Sleeveless review (`/patterns/sleeveless/review`).
- * Gates read-only (Express summary) vs editable (Custom Build measurements + validation).
+ * Gates read-only vs editable summary (measurements, title, notes) via `canCustomizePattern`.
  */
-import { resolveHasAdvancedPatternAccess } from "../lib/patterns/sleevelessPatternAccessGate";
-import {
-  initExpressMeasurementsConfirmPage,
-  initExpressYarnDrawer,
-} from "./sleeveless-express-measurements-page";
+import { canCustomizePattern } from "../lib/patterns/sleevelessPatternAccessGate";
+import { initExpressYarnDrawer } from "./sleeveless-express-measurements-page";
 import { initCustomBuildMeasurementsPage } from "./sleeveless-custom-build-measurements-page";
 import { syncSleevelessDesignBasicsToPatternStorage } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
 import {
@@ -16,11 +13,10 @@ import {
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
 import { getPatternData, SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "../lib/patterns/patternStorage";
 
-const BUILDER_HREF = "/patterns/sleeveless/builder";
 const PATTERN_WORKSPACE_TAB_PATTERN_HREF = "/patterns/sleeveless/pattern/?tab=pattern";
 
 const FREE_ACCESS_MESSAGE =
-  "Your pattern is ready to generate and print. Measurement editing is available with the advanced member version.";
+  "This summary is ready to use. Members can also rename projects, add notes, save patterns, and adjust measurements before generating the pattern.";
 
 const ADVANCED_ACCESS_MESSAGE =
   "Advanced pattern access: edit measurements below, then generate or update your pattern.";
@@ -114,8 +110,16 @@ function configureReviewActions(advanced: boolean): void {
   }
 }
 
+function continueToPatternFromReview(): void {
+  void loadExpressSweaterCharts()
+    .then(() => syncExpressBasicsFromBuilderAndContinue())
+    .catch(() => {
+      window.alert("Could not load size charts. Check your connection and try again.");
+    });
+}
+
 function initUnifiedSleevelessReviewPage(): void {
-  const advanced = resolveHasAdvancedPatternAccess();
+  const advanced = canCustomizePattern();
   setAccessBanner(advanced);
   configureReviewActions(advanced);
   initExpressYarnDrawer();
@@ -123,18 +127,16 @@ function initUnifiedSleevelessReviewPage(): void {
   if (advanced) {
     initCustomBuildMeasurementsPage({
       continueHref: PATTERN_WORKSPACE_TAB_PATTERN_HREF,
-      onContinue: () => {
-        void loadExpressSweaterCharts()
-          .then(() => syncExpressBasicsFromBuilderAndContinue())
-          .catch(() => {
-            window.alert("Could not load size charts. Check your connection and try again.");
-          });
-      },
+      onContinue: continueToPatternFromReview,
     });
     return;
   }
 
-  initExpressMeasurementsConfirmPage({ builderHref: BUILDER_HREF, skipYarnDrawer: true });
+  initCustomBuildMeasurementsPage({
+    readOnly: true,
+    preserveUnitsHost: true,
+    onContinue: continueToPatternFromReview,
+  });
 }
 
 if (typeof document !== "undefined") {

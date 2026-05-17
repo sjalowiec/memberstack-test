@@ -12,6 +12,7 @@ import {
 } from "../lib/patterns/customPatternProjectClient";
 import { resolveCustomPatternProjectAuth } from "../lib/patterns/customPatternProjectAuth";
 import type { CustomPatternProjectSummary } from "../lib/patterns/customPatternProjectTypes";
+import { getPatternProjectMeta } from "../lib/patterns/sleevelessPatternProjectMeta";
 
 const ACTIVE_PROJECT_ID_KEY = "kbm_custom_pattern_active_project_id";
 
@@ -98,6 +99,11 @@ function initCustomBuildSavedProjects(): void {
 
   void refreshAuthHint(root);
   void refreshProjectList(root);
+
+  const meta = getPatternProjectMeta();
+  if (nameInput && meta.title.trim() && !nameInput.value.trim()) {
+    nameInput.value = meta.title;
+  }
 
   saveBtn?.addEventListener("click", async () => {
     const name = nameInput?.value?.trim() ?? "";

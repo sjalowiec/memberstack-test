@@ -13,6 +13,8 @@ export type CustomPatternProjectSource = "express" | "custom-build";
 export interface CustomPatternProject {
   id: string;
   name: string;
+  /** Optional project notes (mirrors `pattern.patternProject.notes`). */
+  notes?: string;
   family: CustomPatternFamily;
   source: CustomPatternProjectSource;
   createdAt: string;
@@ -30,6 +32,7 @@ export type CustomPatternProjectSummary = Pick<
 
 export type SaveCustomPatternProjectRequest = {
   name: string;
+  notes?: string;
   family?: CustomPatternFamily;
   source?: CustomPatternProjectSource;
   pattern: SleevelessPatternRecord;

@@ -7,6 +7,7 @@
  */
 
 import { swatchCountFromPerInchForDisplay } from "./gaugeDisplayFormat";
+import type { SleevelessPatternProjectMeta } from "./sleevelessPatternProjectMeta";
 
 export const PATTERN_STORAGE_KEY = "kbm_current_pattern";
 
@@ -48,6 +49,8 @@ export interface SleevelessPatternRecord {
   version: number;
   createdAt: string;
   updatedAt: string;
+  /** Editable pattern name + notes (print + saved Custom Pattern projects). */
+  patternProject?: SleevelessPatternProjectMeta;
   style: Record<string, unknown>;
   fit: Record<string, unknown>;
   yarnGauge: Record<string, unknown>;
@@ -130,6 +133,7 @@ function emptyPattern(id: string): SleevelessPatternRecord {
     machine: {},
     calculations: {},
     instructions: {},
+    patternProject: { title: "", notes: "" },
   };
 }
 
@@ -238,6 +242,11 @@ export function coerceSleevelessPatternRecord(parsed: Record<string, unknown>): 
   const version = typeof parsed.version === "number" && Number.isFinite(parsed.version) ? parsed.version : 1;
   const createdAt = typeof parsed.createdAt === "string" ? parsed.createdAt : nowIso();
 
+  const patternProject =
+    parsed.patternProject && isRecord(parsed.patternProject)
+      ? (parsed.patternProject as SleevelessPatternProjectMeta)
+      : undefined;
+
   return {
     id,
     patternType: "sleeveless",
@@ -245,6 +254,7 @@ export function coerceSleevelessPatternRecord(parsed: Record<string, unknown>): 
     version,
     createdAt,
     updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : nowIso(),
+    ...(patternProject ? { patternProject } : {}),
     style: isRecord(parsed.style) ? parsed.style : {},
     fit: isRecord(parsed.fit) ? parsed.fit : {},
     yarnGauge: isRecord(parsed.yarnGauge) ? parsed.yarnGauge : {},
@@ -512,8 +522,19 @@ export function getCurrentPattern(): SleevelessPatternRecord {
 }
 
 export type PatternPartial = Partial<
-  Omit<SleevelessPatternRecord, "style" | "fit" | "yarnGauge" | "measurements" | "machine" | "calculations" | "instructions">
+  Omit<
+    SleevelessPatternRecord,
+    | "style"
+    | "fit"
+    | "yarnGauge"
+    | "measurements"
+    | "machine"
+    | "calculations"
+    | "instructions"
+    | "patternProject"
+  >
 > & {
+  patternProject?: SleevelessPatternProjectMeta;
   style?: Record<string, unknown>;
   fit?: Record<string, unknown>;
   yarnGauge?: Record<string, unknown>;
@@ -543,6 +564,12 @@ export function saveCurrentPattern(partialData: PatternPartial): SleevelessPatte
     instructions: partialData.instructions
       ? mergeSection(current.instructions, partialData.instructions)
       : current.instructions,
+    patternProject: partialData.patternProject
+      ? {
+          ...(current.patternProject ?? { title: "", notes: "" }),
+          ...partialData.patternProject,
+        }
+      : current.patternProject,
   };
 
   if (partialData.status !== undefined) next.status = partialData.status;

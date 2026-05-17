@@ -10,6 +10,7 @@ import {
   savePatternData,
   type SleevelessPatternRecord,
 } from "./patternStorage";
+import { getPatternProjectMeta } from "./sleevelessPatternProjectMeta";
 import type {
   CustomPatternFamily,
   CustomPatternProject,
@@ -74,7 +75,7 @@ export function inferCustomPatternProjectSource(
 
 /** Build save payload from the current localStorage draft (`kbm_current_pattern`). */
 export function buildSavePayloadFromWorkingDraft(
-  name: string,
+  name?: string,
   options: Partial<{
     family: CustomPatternFamily;
     source: CustomPatternProjectSource;
@@ -82,11 +83,20 @@ export function buildSavePayloadFromWorkingDraft(
   }> = {},
 ): SaveCustomPatternProjectRequest {
   const pattern = getCurrentPattern();
+  const meta = getPatternProjectMeta(pattern);
+  const resolvedName = (name ?? meta.title).trim() || "Untitled pattern";
   return {
-    name: name.trim() || "Untitled pattern",
+    name: resolvedName,
+    notes: meta.notes,
     family: options.family ?? "sleeveless",
     source: options.source ?? inferCustomPatternProjectSource(pattern),
-    pattern,
+    pattern: {
+      ...pattern,
+      patternProject: {
+        ...meta,
+        title: resolvedName,
+      },
+    },
     customOverrides: options.customOverrides ?? {},
   };
 }
@@ -156,6 +166,12 @@ export async function listCustomPatternProjects(
  */
 export function loadProjectIntoWorkingDraft(project: CustomPatternProject): SleevelessPatternRecord {
   const pattern = project.pattern;
+  const notes =
+    typeof project.notes === "string"
+      ? project.notes
+      : typeof pattern.patternProject?.notes === "string"
+        ? pattern.patternProject.notes
+        : "";
   saveCurrentPattern({
     style: pattern.style,
     fit: pattern.fit,
@@ -165,6 +181,11 @@ export function loadProjectIntoWorkingDraft(project: CustomPatternProject): Slee
     calculations: pattern.calculations,
     instructions: pattern.instructions,
     version: pattern.version,
+    patternProject: {
+      title: project.name,
+      notes,
+      titleCustomized: true,
+    },
   });
   savePatternData("style", pattern.style);
   savePatternData("fit", pattern.fit);
