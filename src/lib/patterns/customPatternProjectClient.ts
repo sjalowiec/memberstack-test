@@ -43,7 +43,7 @@ async function projectFetch<T>(
   if (auth.mode === "none") {
     return {
       ok: false,
-      error: "Sign in to save Custom Pattern projects (or use local dev with ALLOW_DEV_PATTERN_USER).",
+      error: "Sign in to save Custom Pattern projects.",
     };
   }
 

@@ -4,6 +4,9 @@
  */
 export const CUSTOM_PATTERN_PROJECTS_BLOB_STORE = "custom-pattern-projects";
 
+/** Keep in sync with `netlify/functions/lib/custom-pattern-projects-store.js`. */
+export const DEFAULT_DEV_PATTERN_USER_ID = "dev_local_pattern_user";
+
 export function customPatternProjectBlobKey(
   family: string,
   userId: string,

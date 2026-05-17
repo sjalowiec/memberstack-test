@@ -3,13 +3,26 @@
  *
  * Auth wiring status:
  * - **Member id (preferred):** `X-KBM-Member-Id` from Memberstack `getCurrentMember()` when logged in.
- * - **Dev fallback:** `X-KBM-Dev-User-Id` (stable id in localStorage) — server accepts only when
- *   `ALLOW_DEV_PATTERN_USER=true` on Netlify. Do not promise account saving in UI when only dev mode applies.
+ * - **Dev fallback:** stable id in localStorage (sent as `X-KBM-Dev-User-Id` when available) — server uses
+ *   the same id or a built-in fallback when `ALLOW_DEV_PATTERN_USER=true`. Not account-backed.
  *
  * TODO: Verify Memberstack session/JWT server-side (`MEMBERSTACK_SECRET_KEY`) instead of trusting client-sent id.
  */
 
+import { DEFAULT_DEV_PATTERN_USER_ID } from "./customPatternProjectStoreKeys";
+
 const DEV_USER_STORAGE_KEY = "kbm_dev_pattern_user_id";
+
+export { DEFAULT_DEV_PATTERN_USER_ID };
+
+/** Local save/list/load when Astro dev is running and dev pattern saves are enabled in `.env`. */
+export function isDevCustomPatternProjectsEnabled(): boolean {
+  return (
+    typeof import.meta !== "undefined" &&
+    !!import.meta.env?.DEV &&
+    import.meta.env.PUBLIC_ALLOW_DEV_PATTERN_USER !== "false"
+  );
+}
 
 export type CustomPatternProjectAuthMode = "member" | "dev" | "none";
 
@@ -36,20 +49,16 @@ function memberIdFromMemberstackPayload(payload: unknown): string | undefined {
   return undefined;
 }
 
-/** Stable dev user id for local Netlify dev when Memberstack is unavailable. */
+/** Stable dev user id for local dev when Memberstack is unavailable. */
 export function getOrCreateDevPatternUserId(): string {
-  if (typeof localStorage === "undefined") return "dev_anonymous";
+  if (typeof localStorage === "undefined") return DEFAULT_DEV_PATTERN_USER_ID;
   try {
     const existing = localStorage.getItem(DEV_USER_STORAGE_KEY)?.trim();
     if (existing) return existing;
-    const id =
-      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-        ? `dev_${crypto.randomUUID()}`
-        : `dev_${Date.now().toString(36)}`;
-    localStorage.setItem(DEV_USER_STORAGE_KEY, id);
-    return id;
+    localStorage.setItem(DEV_USER_STORAGE_KEY, DEFAULT_DEV_PATTERN_USER_ID);
+    return DEFAULT_DEV_PATTERN_USER_ID;
   } catch {
-    return "dev_anonymous";
+    return DEFAULT_DEV_PATTERN_USER_ID;
   }
 }
 
@@ -67,7 +76,7 @@ export async function resolveCustomPatternProjectAuth(): Promise<CustomPatternPr
     }
   }
 
-  if (import.meta.env.DEV) {
+  if (isDevCustomPatternProjectsEnabled()) {
     return { mode: "dev", devUserId: getOrCreateDevPatternUserId() };
   }
 

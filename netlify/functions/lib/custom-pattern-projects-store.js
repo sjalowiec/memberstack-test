@@ -2,9 +2,14 @@
  * Netlify Blobs access for saved Custom Pattern projects.
  * Key layout: `{family}/{userId}/{projectId}.json` in store `custom-pattern-projects`.
  */
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { getStore } from "@netlify/blobs";
 
 export const CUSTOM_PATTERN_PROJECTS_BLOB_STORE = "custom-pattern-projects";
+
+/** Stable fallback when ALLOW_DEV_PATTERN_USER is on and no member / header id. */
+export const DEFAULT_DEV_PATTERN_USER_ID = "dev_local_pattern_user";
 
 const DEFAULT_FAMILY = "sleeveless";
 
@@ -59,10 +64,51 @@ export function withCors(response) {
   return new Response(response.body, { status: response.status, headers });
 }
 
+/** @type {boolean | null} */
+let dotEnvAllowDevCached = null;
+
+/**
+ * Astro `npm run dev` may not inject `.env` into Netlify function `process.env`.
+ * Read ALLOW_DEV_PATTERN_USER from the project root `.env` only outside production.
+ */
+export function readAllowDevPatternUserFromDotEnv() {
+  if (dotEnvAllowDevCached !== null) return dotEnvAllowDevCached;
+  dotEnvAllowDevCached = false;
+  if (process.env.NODE_ENV === "production") return false;
+  try {
+    const envPath = resolve(process.cwd(), ".env");
+    if (!existsSync(envPath)) return false;
+    const text = readFileSync(envPath, "utf8");
+    dotEnvAllowDevCached = /\bALLOW_DEV_PATTERN_USER\s*=\s*["']?true["']?\s*$/m.test(text);
+  } catch {
+    dotEnvAllowDevCached = false;
+  }
+  return dotEnvAllowDevCached;
+}
+
+/** True when local dev pattern saves are allowed (never on by default in production). */
+export function isAllowDevPatternUser() {
+  const fromEnv = process.env.ALLOW_DEV_PATTERN_USER;
+  if (fromEnv === "true") return true;
+  if (fromEnv === "false") return false;
+  return readAllowDevPatternUserFromDotEnv();
+}
+
+/**
+ * Dev user id: optional `X-KBM-Dev-User-Id` header, else stable local fallback.
+ * @param {Request} req
+ */
+export function resolveDevPatternUserId(req) {
+  const fromHeader = req.headers.get("x-kbm-dev-user-id")?.trim();
+  const fromEnv = process.env.DEV_PATTERN_USER_FALLBACK?.trim();
+  const raw = fromHeader || fromEnv || DEFAULT_DEV_PATTERN_USER_ID;
+  return sanitizeKeySegment(raw);
+}
+
 /**
  * Resolves storage user id.
  * Production: `X-KBM-Member-Id` from Memberstack (client must be logged in).
- * Dev only: `X-KBM-Dev-User-Id` when ALLOW_DEV_PATTERN_USER=true.
+ * Dev only: stable dev user when ALLOW_DEV_PATTERN_USER=true (header optional).
  * TODO: Verify Memberstack JWT via MEMBERSTACK_SECRET_KEY before trusting member id.
  *
  * @param {Request} req
@@ -74,15 +120,12 @@ export function resolveProjectUserId(req) {
     return { userId: sanitizeKeySegment(memberId), mode: "member" };
   }
 
-  const allowDev = process.env.ALLOW_DEV_PATTERN_USER === "true";
-  const devId = req.headers.get("x-kbm-dev-user-id")?.trim();
-  if (allowDev && devId) {
-    return { userId: sanitizeKeySegment(devId), mode: "dev" };
+  if (isAllowDevPatternUser()) {
+    return { userId: resolveDevPatternUserId(req), mode: "dev" };
   }
 
   return {
-    error:
-      "Sign in required to save Custom Pattern projects (or enable ALLOW_DEV_PATTERN_USER with X-KBM-Dev-User-Id for local development).",
+    error: "Sign in required to save Custom Pattern projects.",
     status: 401,
   };
 }
