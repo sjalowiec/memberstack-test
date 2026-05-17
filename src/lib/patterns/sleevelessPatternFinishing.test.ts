@@ -4,9 +4,13 @@ import {
   buildSleevelessFinishingStepIds,
   cardiganFrontEdgeRowsFromDebug,
   coreAssemblyFinishingStepIds,
+  sleevelessCardiganFrontEdgeFinishingMode,
   sleevelessFinishingFromPattern,
 } from "./sleevelessPatternFinishing";
-import { buildSleevelessFinishingStepsHtml } from "./sleevelessPatternFinishingHtml";
+import {
+  buildSleevelessFinishingPrintListHtml,
+  buildSleevelessFinishingStepsHtml,
+} from "./sleevelessPatternFinishingHtml";
 
 function baseMeasurements() {
   return {
@@ -40,6 +44,14 @@ function cardiganPattern(): Record<string, unknown> {
   return {
     fit: { selectedMeasurements: baseMeasurements() },
     style: { neckline: "round", frontStyle: "open" },
+    yarnGaugeMachine: gauge(),
+  };
+}
+
+function vNeckCardiganPattern(): Record<string, unknown> {
+  return {
+    fit: { selectedMeasurements: baseMeasurements() },
+    style: { neckline: "v-neck", frontStyle: "open" },
     yarnGaugeMachine: gauge(),
   };
 }
@@ -83,7 +95,13 @@ describe("generateSleevelessBackPattern finishing integration", () => {
     expect(finishing.steps.some((s) => s.id === "finishFrontEdges")).toBe(false);
   });
 
-  it("cardigan: front-edge row count and pickup stitches from neckline start RC", () => {
+  it("cardigan front-edge finishing mode follows neckline", () => {
+    expect(sleevelessCardiganFrontEdgeFinishingMode(cardiganPattern())).toBe("pickup");
+    expect(sleevelessCardiganFrontEdgeFinishingMode(vNeckCardiganPattern())).toBe("verticalBand");
+    expect(sleevelessCardiganFrontEdgeFinishingMode(pulloverPattern())).toBeUndefined();
+  });
+
+  it("round-neck cardigan: front-edge row count and pickup stitches from neckline start RC", () => {
     const pattern = cardiganPattern();
     const r = generateSleevelessBackPattern(pattern);
     expect(r.debug.frontNecklineStartRC).toBeGreaterThan(1);
@@ -94,6 +112,7 @@ describe("generateSleevelessBackPattern finishing integration", () => {
     expect(r.debug.cardiganFrontEdgePickupSts).toBeGreaterThan(0);
     const finishing = sleevelessFinishingFromPattern(pattern, r.debug);
     expect(finishing.isCardigan).toBe(true);
+    expect(finishing.cardiganFrontEdgeFinishingMode).toBe("pickup");
     expect(finishing.frontEdgePickupSts).toBe(r.debug.cardiganFrontEdgePickupSts);
     const titles = finishing.steps.map((s) => s.title);
     expect(titles).toContain("Finish Front Edges");
@@ -112,6 +131,17 @@ describe("generateSleevelessBackPattern finishing integration", () => {
       "Join Side Seams",
     ]);
   });
+
+  it("v-neck cardigan: debug pickup math unchanged; finishing uses vertical bands", () => {
+    const pattern = vNeckCardiganPattern();
+    const r = generateSleevelessBackPattern(pattern);
+    expect(r.debug.cardiganFrontEdgePickupSts).toBeGreaterThan(0);
+    const finishing = sleevelessFinishingFromPattern(pattern, r.debug);
+    expect(finishing.isCardigan).toBe(true);
+    expect(finishing.cardiganFrontEdgeFinishingMode).toBe("verticalBand");
+    expect(finishing.frontEdgePickupSts).toBeUndefined();
+    expect(finishing.steps.map((s) => s.id)).toContain("finishFrontEdges");
+  });
 });
 
 describe("buildSleevelessFinishingStepsHtml", () => {
@@ -124,9 +154,10 @@ describe("buildSleevelessFinishingStepsHtml", () => {
     neckFinishingLeadHtml: "",
   };
 
-  it("cardigan finish front edges wraps turning row with glossary id 324", () => {
+  it("round-neck cardigan finish front edges wraps turning row with glossary id 324", () => {
     const html = buildSleevelessFinishingStepsHtml({
       isCardigan: true,
+      cardiganFrontEdgeFinishingMode: "pickup",
       frontEdgePickupSts: 99,
       deps: {
         ...deps,
@@ -140,9 +171,10 @@ describe("buildSleevelessFinishingStepsHtml", () => {
     expect(html).toContain("Fold the band on the <span data-glossary-id=\"324\"");
   });
 
-  it("renders numbered steps without duplicate numbers for cardigan", () => {
+  it("renders numbered steps without duplicate numbers for round-neck cardigan", () => {
     const html = buildSleevelessFinishingStepsHtml({
       isCardigan: true,
+      cardiganFrontEdgeFinishingMode: "pickup",
       frontEdgePickupSts: 99,
       deps,
     });
@@ -157,6 +189,19 @@ describe("buildSleevelessFinishingStepsHtml", () => {
     expect(Number(finishFrontMatch![1])).toBeLessThan(Number(finishNeckMatch![1]));
   });
 
+  it("v-neck cardigan finish front edges uses vertical band instructions", () => {
+    const html = buildSleevelessFinishingStepsHtml({
+      isCardigan: true,
+      cardiganFrontEdgeFinishingMode: "verticalBand",
+      deps,
+    });
+    expect(html).toContain("Finish Front Edges");
+    expect(html).toContain("vertical front band");
+    expect(html).toContain("Knit the band vertically to match the front edge length");
+    expect(html).not.toContain("Pick up approximately");
+    expect(html).not.toContain("turning row");
+  });
+
   it("pullover html omits Finish Front Edges", () => {
     const html = buildSleevelessFinishingStepsHtml({
       isCardigan: false,
@@ -166,5 +211,26 @@ describe("buildSleevelessFinishingStepsHtml", () => {
     expect(html).toMatch(/3\. Finish Armholes/);
     expect(html).toMatch(/4\. Finish Neckline/);
     expect(html).toMatch(/5\. Join Side Seams/);
+  });
+});
+
+describe("buildSleevelessFinishingPrintListHtml", () => {
+  it("round-neck cardigan print line includes pickup stitch count", () => {
+    const html = buildSleevelessFinishingPrintListHtml({
+      isCardigan: true,
+      cardiganFrontEdgeFinishingMode: "pickup",
+      frontEdgePickupSts: 99,
+    });
+    expect(html).toContain("pick up 99 stitches");
+    expect(html).not.toContain("knit each front band vertically");
+  });
+
+  it("v-neck cardigan print line describes vertical bands", () => {
+    const html = buildSleevelessFinishingPrintListHtml({
+      isCardigan: true,
+      cardiganFrontEdgeFinishingMode: "verticalBand",
+    });
+    expect(html).toContain("knit each front band vertically");
+    expect(html).not.toContain("pick up");
   });
 });

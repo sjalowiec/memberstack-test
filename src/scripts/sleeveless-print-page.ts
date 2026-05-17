@@ -37,7 +37,7 @@ import {
 } from "../lib/patterns/sleevelessPatternPrintRender.ts";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
 import { buildSleevelessPrintBasicsSummaryDlHtml } from "../lib/patterns/sleevelessPrintBasicsSummaryHtml.ts";
-import { isSleevelessCardiganPattern } from "../lib/patterns/sleevelessPatternFinishing.ts";
+import { sleevelessFinishingFromPattern } from "../lib/patterns/sleevelessPatternFinishing.ts";
 import { buildSleevelessFinishingPrintListHtml } from "../lib/patterns/sleevelessPatternFinishingHtml.ts";
 import {
   hydratePatternPrintPersonalizationSlotsFromSession,
@@ -78,12 +78,13 @@ function buildGeneratorPatternData(merged: Record<string, unknown>): Record<stri
 
 function printFinishingSectionHtml(
   patternMerged: Record<string, unknown>,
-  debug: { cardiganFrontEdgePickupSts?: number },
+  debug: { frontNecklineStartRC?: number; cardiganFrontEdgePickupSts?: number },
 ): string {
-  const isCardigan = isSleevelessCardiganPattern(patternMerged);
+  const finishing = sleevelessFinishingFromPattern(patternMerged, debug);
   const listItems = buildSleevelessFinishingPrintListHtml({
-    isCardigan,
-    frontEdgePickupSts: debug.cardiganFrontEdgePickupSts,
+    isCardigan: finishing.isCardigan,
+    cardiganFrontEdgeFinishingMode: finishing.cardiganFrontEdgeFinishingMode,
+    frontEdgePickupSts: finishing.frontEdgePickupSts,
   });
   return `<section class="print-major print-finishing" aria-labelledby="print-finishing-heading">
   <h2 id="print-finishing-heading" class="print-heading-major print-heading-with-checkbox"><span class="print-heading-checkbox" aria-hidden="true"></span><span class="print-heading-label">Finishing</span></h2>

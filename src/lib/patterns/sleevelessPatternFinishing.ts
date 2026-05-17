@@ -1,5 +1,11 @@
 import { approximatePickupStitchesFromRows } from "./machineKnittingPickupRatio";
-import { isSleevelessCardiganGarmentStyle } from "./sleevelessFrontDiagramSrc";
+import {
+  isSleevelessCardiganGarmentStyle,
+  isSleevelessVNeckChoice,
+} from "./sleevelessFrontDiagramSrc";
+
+/** Cardigan center-front edge finishing: horizontal pickup band vs vertical bands (V-neck). */
+export type SleevelessCardiganFrontEdgeFinishingMode = "pickup" | "verticalBand";
 
 export type SleevelessFinishingStepId =
   | "blockPieces"
@@ -70,20 +76,32 @@ export function isSleevelessCardiganPattern(patternData: unknown): boolean {
   return isSleevelessCardiganGarmentStyle(patternData);
 }
 
+/** V-neck cardigans use vertical front bands; round-neck cardigans use horizontal edge pickup. */
+export function sleevelessCardiganFrontEdgeFinishingMode(
+  patternData: unknown,
+): SleevelessCardiganFrontEdgeFinishingMode | undefined {
+  if (!isSleevelessCardiganPattern(patternData)) return undefined;
+  return isSleevelessVNeckChoice(patternData) ? "verticalBand" : "pickup";
+}
+
 export function sleevelessFinishingFromPattern(
   patternData: unknown,
   debug: { frontNecklineStartRC?: number; cardiganFrontEdgePickupSts?: number },
 ): {
   isCardigan: boolean;
+  cardiganFrontEdgeFinishingMode: SleevelessCardiganFrontEdgeFinishingMode | undefined;
   frontEdgePickupSts: number | undefined;
   steps: ReturnType<typeof numberedSleevelessFinishingSteps>;
 } {
   const isCardigan = isSleevelessCardiganPattern(patternData);
-  const frontEdgePickupSts = isCardigan
-    ? debug.cardiganFrontEdgePickupSts ?? cardiganFrontEdgePickupStitchesFromDebug(debug)
-    : undefined;
+  const cardiganFrontEdgeFinishingMode = sleevelessCardiganFrontEdgeFinishingMode(patternData);
+  const frontEdgePickupSts =
+    isCardigan && cardiganFrontEdgeFinishingMode === "pickup"
+      ? debug.cardiganFrontEdgePickupSts ?? cardiganFrontEdgePickupStitchesFromDebug(debug)
+      : undefined;
   return {
     isCardigan,
+    cardiganFrontEdgeFinishingMode,
     frontEdgePickupSts,
     steps: numberedSleevelessFinishingSteps({ isCardigan }),
   };

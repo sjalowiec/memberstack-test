@@ -42,7 +42,7 @@ import {
   buildSleevelessScreenBasicsSummaryDlHtml,
   formatGaugeIntroPhrase,
 } from "../lib/patterns/sleevelessPrintBasicsSummaryHtml.ts";
-import { isSleevelessCardiganPattern } from "../lib/patterns/sleevelessPatternFinishing.ts";
+import { sleevelessFinishingFromPattern } from "../lib/patterns/sleevelessPatternFinishing.ts";
 import { buildSleevelessFinishingStepsHtml } from "../lib/patterns/sleevelessPatternFinishingHtml.ts";
 import type { SleevelessBackPatternDebug } from "../lib/patterns/sleevelessPatternOutput.ts";
 
@@ -1613,9 +1613,12 @@ table {
         ? /** @type {SleevelessBackPatternDebug} */ (patternDebug)
         : /** @type {SleevelessBackPatternDebug} */ ({});
 
+    const finishing = sleevelessFinishingFromPattern(patternMergedForNeckline, debug);
+
     return buildSleevelessFinishingStepsHtml({
-      isCardigan: isSleevelessCardiganPattern(patternMergedForNeckline),
-      frontEdgePickupSts: debug.cardiganFrontEdgePickupSts,
+      isCardigan: finishing.isCardigan,
+      cardiganFrontEdgeFinishingMode: finishing.cardiganFrontEdgeFinishingMode,
+      frontEdgePickupSts: finishing.frontEdgePickupSts,
       deps: {
         escapeHtml,
         glossaryTooltip,

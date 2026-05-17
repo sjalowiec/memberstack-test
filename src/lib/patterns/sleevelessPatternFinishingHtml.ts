@@ -1,6 +1,7 @@
 import {
   buildSleevelessFinishingStepIds,
   SLEEVELESS_FINISHING_STEP_TITLES,
+  type SleevelessCardiganFrontEdgeFinishingMode,
   type SleevelessFinishingStepId,
 } from "./sleevelessPatternFinishing";
 
@@ -64,7 +65,7 @@ function finishArmholesBody(deps: SleevelessFinishingHtmlDeps): string {
     </p>`;
 }
 
-function finishFrontEdgesBody(
+function finishFrontEdgesPickupBody(
   pickupSts: number | undefined,
   deps: SleevelessFinishingHtmlDeps,
 ): string {
@@ -82,6 +83,30 @@ function finishFrontEdgesBody(
       <li>Fold the band on the ${turningRow} and stitch it down.</li>
       <li>Repeat for the opposite front edge, adding buttonholes if desired.</li>
     </ul>`;
+}
+
+function finishFrontEdgesVerticalBandBody(): string {
+  return `<p class="pattern-finishing-lead">For a V-neck cardigan, a vertical front band is often the most practical machine-knitting method. Instead of picking up the entire front edge and V-neck opening across the needle bed, knit each front band separately and attach it to the cardigan front.</p>
+    <ol>
+      <li>Decide the finished band width.</li>
+      <li>Cast on the number of stitches needed for the band width.</li>
+      <li>Knit the band vertically to match the front edge length.</li>
+      <li>Work buttonholes on the buttonhole band as needed.</li>
+      <li>Attach the band to the cardigan front as you knit, or sew it on after knitting.</li>
+      <li>Repeat for the second front band.</li>
+    </ol>
+    <p>For many adult V-neck cardigans, there may not be enough needles available to pick up the entire front edge, V opening, and back neck in one piece. Vertical bands avoid that problem and give a clean, stable finish.</p>`;
+}
+
+function finishFrontEdgesBody(
+  mode: SleevelessCardiganFrontEdgeFinishingMode,
+  pickupSts: number | undefined,
+  deps: SleevelessFinishingHtmlDeps,
+): string {
+  if (mode === "verticalBand") {
+    return finishFrontEdgesVerticalBandBody();
+  }
+  return finishFrontEdgesPickupBody(pickupSts, deps);
 }
 
 function finishNecklineBody(deps: SleevelessFinishingHtmlDeps): string {
@@ -126,6 +151,7 @@ function finalPressingBody(): string {
 function stepBodyHtml(
   id: SleevelessFinishingStepId,
   deps: SleevelessFinishingHtmlDeps,
+  cardiganFrontEdgeFinishingMode: SleevelessCardiganFrontEdgeFinishingMode | undefined,
   frontEdgePickupSts: number | undefined,
 ): string {
   switch (id) {
@@ -136,7 +162,11 @@ function stepBodyHtml(
     case "finishArmholes":
       return finishArmholesBody(deps);
     case "finishFrontEdges":
-      return finishFrontEdgesBody(frontEdgePickupSts, deps);
+      return finishFrontEdgesBody(
+        cardiganFrontEdgeFinishingMode ?? "pickup",
+        frontEdgePickupSts,
+        deps,
+      );
     case "finishNeckline":
       return finishNecklineBody(deps);
     case "joinSideSeams":
@@ -150,24 +180,45 @@ function stepBodyHtml(
 
 export function buildSleevelessFinishingStepsHtml(options: {
   isCardigan: boolean;
+  cardiganFrontEdgeFinishingMode?: SleevelessCardiganFrontEdgeFinishingMode;
   frontEdgePickupSts?: number;
   deps: SleevelessFinishingHtmlDeps;
 }): string {
   const ids = buildSleevelessFinishingStepIds({ isCardigan: options.isCardigan });
+  const frontEdgeMode =
+    options.isCardigan ? (options.cardiganFrontEdgeFinishingMode ?? "pickup") : undefined;
   const sections = ids.map((id, index) =>
     stepSection(
       index + 1,
       id,
       SLEEVELESS_FINISHING_STEP_TITLES[id],
-      stepBodyHtml(id, options.deps, options.frontEdgePickupSts),
+      stepBodyHtml(id, options.deps, frontEdgeMode, options.frontEdgePickupSts),
     ),
   );
   const inner = sections.join("\n\n");
   return '<div class="pattern-finishing-steps">\n' + inner + "\n</div>";
 }
 
+function finishFrontEdgesPrintLine(
+  stepNumber: number,
+  mode: SleevelessCardiganFrontEdgeFinishingMode,
+  frontEdgePickupSts: number | undefined,
+): string {
+  if (mode === "verticalBand") {
+    return `${stepNumber}. Finish front edges: knit each front band vertically to match the front edge length; work buttonholes on the buttonhole band as needed; attach each band as you knit or sew on after knitting; repeat for the second front band.`;
+  }
+  const xx =
+    frontEdgePickupSts !== undefined &&
+    Number.isFinite(frontEdgePickupSts) &&
+    frontEdgePickupSts > 0
+      ? String(Math.round(frontEdgePickupSts))
+      : "approximately the calculated number of";
+  return `${stepNumber}. Finish front edges: pick up ${xx} stitches evenly along each front edge from hem to neckline; work the band, bind off loosely, and repeat on the opposite edge (add buttonholes if desired).`;
+}
+
 export function buildSleevelessFinishingPrintListHtml(options: {
   isCardigan: boolean;
+  cardiganFrontEdgeFinishingMode?: SleevelessCardiganFrontEdgeFinishingMode;
   frontEdgePickupSts?: number;
 }): string {
   const ids = buildSleevelessFinishingStepIds({ isCardigan: options.isCardigan });
@@ -188,18 +239,15 @@ export function buildSleevelessFinishingPrintListHtml(options: {
           `${n}. Finish both armholes (work trims to match your yarn and tension; use the neckband technique as a guide).`,
         );
         break;
-      case "finishFrontEdges": {
-        const xx =
-          options.frontEdgePickupSts !== undefined &&
-          Number.isFinite(options.frontEdgePickupSts) &&
-          options.frontEdgePickupSts > 0
-            ? String(Math.round(options.frontEdgePickupSts))
-            : "approximately the calculated number of";
+      case "finishFrontEdges":
         items.push(
-          `${n}. Finish front edges: pick up ${xx} stitches evenly along each front edge from hem to neckline; work the band, bind off loosely, and repeat on the opposite edge (add buttonholes if desired).`,
+          finishFrontEdgesPrintLine(
+            n,
+            options.cardiganFrontEdgeFinishingMode ?? "pickup",
+            options.frontEdgePickupSts,
+          ),
         );
         break;
-      }
       case "finishNeckline":
         items.push(
           `${n}. Finish the neckline (work trim or neckband, finish as desired, join the remaining shoulder and neckband seams).`,
