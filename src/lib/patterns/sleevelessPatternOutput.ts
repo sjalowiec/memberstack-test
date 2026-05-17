@@ -12,6 +12,7 @@ import {
   type ShapingAction,
 } from "./legoBlocks/neckShoulderExecution";
 import { resolveEffectiveArmholeDepthInches } from "./customBuildEffectiveArmholeDepth";
+import { resolveEffectiveFinishedLengthInches } from "./customBuildEffectiveFinishedLength";
 import { calculateBasicPatternNumbers } from "./patternCalculator";
 import { calculateHemRows } from "./hemDefaults";
 import {
@@ -1492,8 +1493,8 @@ export function generateSleevelessBackPattern(
   const sm = selectedMeasurements(patternData);
 
   const finishedBust = measurementInches(sm, "finished_bust_chest") ?? basic.finishedBustChest;
-  const backNeckToHem = measurementInches(sm, "back_neck_to_hem");
-  // Custom Build may override chart armhole depth via fit.cbMeasurementOverrides.armholeDepth.
+  // Custom Build may override chart finished length and armhole depth via fit.cbMeasurementOverrides.
+  const backNeckToHem = resolveEffectiveFinishedLengthInches(patternData);
   const armholeDepthIn = resolveEffectiveArmholeDepthInches(patternData);
   const shoulderWidthIn = measurementInches(sm, "shoulder_width");
   const backNeckDepthIn = measurementInches(sm, "back_neck_depth");

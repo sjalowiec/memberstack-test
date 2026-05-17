@@ -4,7 +4,8 @@
  *
  * Custom measurement overrides (`cbMeasurementOverrides` in Express builder storage) are merged
  * into generator input on the pattern page; armhole depth is applied in pattern math when valid
- * (see {@link resolveEffectiveArmholeDepthInches}). Other overrides remain stored only.
+ * (see {@link resolveEffectiveArmholeDepthInches}, {@link resolveEffectiveFinishedLengthInches}).
+ * Other overrides remain stored only.
  */
 import {
   getPatternData,
