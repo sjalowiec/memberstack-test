@@ -14,6 +14,7 @@ import {
 import { resolveEffectiveArmholeDepthInches } from "./customBuildEffectiveArmholeDepth";
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 import { resolveEffectiveFinishedLengthInches } from "./customBuildEffectiveFinishedLength";
+import { resolveEffectiveNeckOpeningWidthInches } from "./customBuildEffectiveNeckOpeningWidth";
 import { resolveEffectiveShoulderWidthInches } from "./customBuildEffectiveShoulderWidth";
 import { calculateBasicPatternNumbers } from "./patternCalculator";
 import { calculateHemRows } from "./hemDefaults";
@@ -1509,10 +1510,7 @@ export function generateSleevelessBackPattern(
   const armholeDepthIn = resolveEffectiveArmholeDepthInches(patternData);
   const backNeckDepthIn = measurementInches(sm, "back_neck_depth");
   const frontNeckDepthIn = measurementInches(sm, "front_neck_depth");
-  const neckWidthIn =
-    measurementInches(sm, "neck_width") ??
-    measurementInches(sm, "neck_opening") ??
-    measurementInches(sm, "neckOpening");
+  const neckWidthIn = resolveEffectiveNeckOpeningWidthInches(patternData);
 
   const castOnSts =
     (() => {
