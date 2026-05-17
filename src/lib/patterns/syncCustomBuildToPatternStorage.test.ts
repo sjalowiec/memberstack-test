@@ -82,4 +82,25 @@ describe("syncCustomBuildToPatternStorage", () => {
     expect(pb.style?.patternMode).toBe("custom-build");
     expect(readCustomBuildExpressValues().who).toBe("women");
   });
+
+  it("writes v neckline to pattern storage when express values have v-neck", () => {
+    localStorage.setItem(
+      SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+      JSON.stringify({
+        values: {
+          who: "women",
+          selectedSize: "M",
+          fit: "standard",
+          neckline: "v-neck",
+        },
+      }),
+    );
+    localStorage.setItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.bodyShape, "straight");
+    localStorage.setItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.garmentType, "pullover");
+
+    syncCustomBuildToPatternStorage({ awaitCharts: false });
+
+    expect(getCurrentPattern().style?.neckline).toBe("v");
+    expect(getPatternData().style?.neckline).toBe("v");
+  });
 });

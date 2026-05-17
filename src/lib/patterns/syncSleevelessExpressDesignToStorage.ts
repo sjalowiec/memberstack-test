@@ -16,9 +16,16 @@ export function expressWhoToChartAudience(whoRaw: unknown): string {
   return n || "misses";
 }
 
-/** Express UI uses `round` | `v-neck`; canonical pattern uses `round` | `v`. */
+/** Express UI uses `round` | `v-neck` (any casing); canonical pattern uses `round` | `v`. */
 export function mapExpressNecklineToStorage(n: string): "round" | "v" {
-  return n === "v-neck" ? "v" : "round";
+  const s = String(n ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+  if (!s) return "round";
+  if (s === "v" || s === "v-neck" || s === "vneck" || s === "v_neck" || s === "v neck") return "v";
+  if (/\bv[\s_-]?neck\b/.test(s)) return "v";
+  return "round";
 }
 
 /**

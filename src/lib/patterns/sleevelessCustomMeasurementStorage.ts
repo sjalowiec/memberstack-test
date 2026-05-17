@@ -6,7 +6,17 @@
  * Armhole depth override is applied in pattern generation when `style.patternMode` is `custom-build`
  * (see {@link resolveEffectiveArmholeDepthInches}); other fields are stored for future use.
  */
-import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "./patternStorage";
+import {
+  getPatternData,
+  saveCurrentPattern,
+  savePatternData,
+  SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+} from "./patternStorage";
+
+function section(obj: unknown): Record<string, unknown> {
+  if (obj && typeof obj === "object" && !Array.isArray(obj)) return obj as Record<string, unknown>;
+  return {};
+}
 
 export const LEGACY_STANDALONE_MEASUREMENTS_KEY = "kbm_sleeveless_custom_measurements";
 
@@ -100,6 +110,18 @@ export function persistMeasurementOverrides(overrides: Record<string, string>): 
         cbMeasurementOverrides: { ...overrides },
       }),
     );
+  } catch {
+    /* quota */
+  }
+  try {
+    const pbFit = section(getPatternData().fit);
+    savePatternData("fit", { ...pbFit, cbMeasurementOverrides: { ...overrides } });
+    const pbStyle = section(getPatternData().style);
+    savePatternData("style", { ...pbStyle, patternMode: "custom-build" });
+    saveCurrentPattern({
+      fit: { cbMeasurementOverrides: { ...overrides } },
+      style: { patternMode: "custom-build" },
+    });
   } catch {
     /* quota */
   }

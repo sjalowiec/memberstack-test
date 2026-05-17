@@ -9,13 +9,13 @@ import {
 } from "../lib/patterns/patternStorage.ts";
 import {
   buildGeneratorPatternDataFromSources,
+  buildSleevelessGarmentDiagramPatternData,
   mergedPatternForDisplayFromSources,
 } from "../lib/patterns/sleevelessPatternBuilderMerge.ts";
 import {
   getSleevelessGoldenBetaCanonicalPattern,
   getSleevelessGoldenBetaPatternBuilderData,
 } from "../lib/patterns/sleevelessGoldenBeta.ts";
-import { loadMeasurementOverrides } from "../lib/patterns/sleevelessCustomMeasurementStorage.ts";
 import { validatePatternBuilderRequired } from "../lib/patterns/patternBuilderValidation";
 import { setPatternTabsReadiness } from "../lib/patterns/patternTabsClient.ts";
 import {
@@ -166,17 +166,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
 
   /** Shape expected by {@link generateSleevelessBackPattern}. */
   function buildGeneratorPatternData(merged) {
-    const gen = buildGeneratorPatternDataFromSources(merged, getPatternData());
-    const st = section(merged.style);
-    const pbSt = section(getPatternData().style);
-    const patternMode = st.patternMode ?? pbSt.patternMode;
-    if (patternMode !== "custom-build") return gen;
-    const overrides = loadMeasurementOverrides();
-    if (Object.keys(overrides).length === 0) return gen;
-    return {
-      ...gen,
-      fit: { ...section(gen.fit), cbMeasurementOverrides: overrides },
-    };
+    return buildGeneratorPatternDataFromSources(merged, getPatternData());
   }
 
   function audienceLabelFromPattern(st, ft) {
@@ -579,8 +569,13 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     });
   }
 
-  async function inlineSvgWithReplacements(hostEl, src, alt, replacements) {
+  async function inlineSvgWithReplacements(hostEl, src, alt, replacements, hydrateGeneration) {
     if (!(hostEl instanceof HTMLElement)) return;
+    const hydrateGen =
+      hydrateGeneration === undefined || hydrateGeneration === null
+        ? null
+        : String(hydrateGeneration);
+    if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
     try {
       const res = await fetch(src, { credentials: "same-origin" });
       if (!res.ok) throw new Error(`Failed to load SVG: ${src} (${res.status})`);
@@ -616,15 +611,26 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       svg.classList.add("sleeveless-piece-split__diagram-inline");
 
       // Match print route: inject SVG via markup string. importNode(from DOMParser doc) can fail to paint SVG in some browsers.
+      if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
       hostEl.innerHTML = svg.outerHTML;
     } catch (err) {
       console.warn("[sleeveless] Diagram load failed:", err);
+      if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
       hostEl.innerHTML = `<p class="sleeveless-pattern-boot-msg">Diagram unavailable.</p>`;
     }
   }
 
-  async function hydrateSleevelessDiagrams(root, result, unit, patternData) {
+  async function hydrateSleevelessDiagrams(root, result, unit, patternData, hydrateOpts) {
     if (!root) return;
+    const frontResolution = hydrateOpts?.frontResolution;
+    const frontCardiganHalfSide =
+      frontResolution?.diagramType === "cardiganHalfFrontV"
+        ? undefined
+        : frontResolution?.frontPieceType === "leftFront"
+          ? "left"
+          : frontResolution?.frontPieceType === "rightFront"
+            ? "right"
+            : undefined;
     const hosts = root.querySelectorAll("[data-sleeveless-diagram]");
     const jobs = [];
     hosts.forEach((el) => {
@@ -634,14 +640,22 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       const alt = el.getAttribute("data-alt") || el.dataset.alt || "";
       if (!src) return;
       const piece = inferSleevelessDiagramPiece(src, alt);
+      const isFrontSchematic =
+        frontResolution !== undefined && src === frontResolution.src;
       const dsHalf = el.dataset.sleevelessCardiganHalf || "";
-      const cardiganHalfSide = dsHalf === "left" || dsHalf === "right" ? dsHalf : undefined;
+      const cardiganHalfSide = isFrontSchematic
+        ? frontCardiganHalfSide
+        : dsHalf === "left" || dsHalf === "right"
+          ? dsHalf
+          : undefined;
       const replacements = buildSleevelessDiagramReplacements(result, unit, {
         piece,
         patternData,
         cardiganHalfSide,
       });
-      jobs.push(inlineSvgWithReplacements(el, src, alt, replacements));
+      jobs.push(
+        inlineSvgWithReplacements(el, src, alt, replacements, hydrateOpts?.hydrateGeneration),
+      );
     });
     await Promise.all(jobs);
   }
@@ -1666,7 +1680,7 @@ table {
     });
   }
 
-  function activateWizardTab(target) {
+  function activateWizardTab(target, opts) {
     const root = document.querySelector(".sleeveless-pattern-page .pattern-tabs");
     if (!root) return;
     root.querySelectorAll(".tab-btn").forEach((btn) => {
@@ -1724,7 +1738,11 @@ table {
       window.kbmSchedulePinterestEmbedsRefresh?.();
     }
 
-    if (target === "pattern" && typeof window.kbmRefreshSleevelessPattern === "function") {
+    if (
+      target === "pattern" &&
+      !opts?.skipRefresh &&
+      typeof window.kbmRefreshSleevelessPattern === "function"
+    ) {
       window.kbmRefreshSleevelessPattern();
     }
   }
@@ -1785,6 +1803,8 @@ table {
    * listeners — the hide-completed toggle fires twice and appears to do nothing.
    */
   let sleevelessRenderMountSeq = 0;
+  let sleevelessPatternRefreshInFlight = false;
+  let sleevelessPatternRefreshQueued = false;
 
   async function renderMount(patternMerged, result, unit, generatorPatternData) {
     const mount = document.querySelector("[data-sleeveless-mount]");
@@ -1792,8 +1812,11 @@ table {
 
     const renderSeq = ++sleevelessRenderMountSeq;
 
-    /** Canonical merged pattern (canonical + builder); neckline lives on `style.neckline` even when generator input omits nested sections. */
-    const necklineAssetPatternData = patternMerged;
+    /** Same style/fit shape as {@link generateSleevelessBackPattern} input — keeps front schematic routing aligned with math. */
+    const diagramPatternData = buildSleevelessGarmentDiagramPatternData(
+      patternMerged,
+      generatorPatternData,
+    );
 
     const displayRows = result.displayRows ?? [];
     const frontDisplayRows = result.frontDisplayRows ?? [];
@@ -1835,7 +1858,9 @@ table {
       "Sleeveless back piece diagram",
       backPost
     );
-    const frontDiagramResolution = resolveSleevelessFrontDiagram(necklineAssetPatternData);
+    const frontDiagramResolution = resolveSleevelessFrontDiagram(diagramPatternData, {
+      devForceCardiganHalfLeft: false,
+    });
     const frontCardiganHalfSide =
       frontDiagramResolution.diagramType === "cardiganHalfFrontV"
         ? undefined
@@ -1873,7 +1898,7 @@ table {
     const patternContentEl = document.getElementById("pattern-content");
     const existingDevCardiganBanner = patternContentEl?.querySelector("[data-sleeveless-dev-cardigan-banner]");
     if (existingDevCardiganBanner) existingDevCardiganBanner.remove();
-    if (import.meta.env.DEV && isSleevelessDevCardiganExpressPreview(necklineAssetPatternData) && patternContentEl) {
+    if (import.meta.env.DEV && isSleevelessDevCardiganExpressPreview(diagramPatternData) && patternContentEl) {
       const devBanner = document.createElement("p");
       devBanner.className = "sleeveless-dev-cardigan-banner no-print pattern-subtext";
       devBanner.dataset.sleevelessDevCardiganBanner = "";
@@ -1917,7 +1942,7 @@ table {
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
         "back",
-        necklineAssetPatternData,
+        diagramPatternData,
       );
     }
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
@@ -1963,7 +1988,7 @@ table {
         result.frontNeckShoulderShapingChart,
         "ns-shaping-chart-front",
         "front",
-        necklineAssetPatternData,
+        diagramPatternData,
       );
     }
 
@@ -1982,7 +2007,10 @@ table {
 
     // Inline SVG diagrams with placeholder replacement (Back + Front).
     // Note: replacements come from the same result/debug used for chart/timeline (no extra shaping math here).
-    await hydrateSleevelessDiagrams(mount, result, unit, necklineAssetPatternData);
+    await hydrateSleevelessDiagrams(mount, result, unit, diagramPatternData, {
+      frontResolution: frontDiagramResolution,
+      hydrateGeneration: renderSeq,
+    });
     if (renderSeq !== sleevelessRenderMountSeq) return;
 
     ensureSleevelessDiagramModal();
@@ -2024,7 +2052,13 @@ table {
     body.innerHTML = buildSleevelessPrintBasicsSummaryDlHtml(patternMerged, patternData);
   }
 
-  function refreshPatternTabContent() {
+  async function refreshPatternTabContent() {
+    if (sleevelessPatternRefreshInFlight) {
+      sleevelessPatternRefreshQueued = true;
+      return;
+    }
+    sleevelessPatternRefreshInFlight = true;
+    try {
     const patternMerged = mergedPatternForDisplay(getCurrentPattern());
     const patternData = getPatternData();
     const validation = validatePatternBuilderRequired(patternData);
@@ -2071,7 +2105,16 @@ table {
 
     updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, true);
 
-    void renderMount(patternMerged, result, unit, genInput);
+    await renderMount(patternMerged, result, unit, genInput);
+    } catch (err) {
+      console.error("[sleeveless] Pattern tab refresh failed:", err);
+    } finally {
+      sleevelessPatternRefreshInFlight = false;
+      if (sleevelessPatternRefreshQueued) {
+        sleevelessPatternRefreshQueued = false;
+        void refreshPatternTabContent();
+      }
+    }
   }
 
   function refreshBetaPatternContent() {
@@ -2135,12 +2178,14 @@ table {
     window.kbmRefreshSleevelessPattern = refreshPatternTabContent;
     bindTabs();
     initializeActionBar(resultsVisibilityConfig);
-    refreshPatternTabContent();
-    if (hadTabPatternQuery) activateWizardTab("pattern");
+    void (async () => {
+      await refreshPatternTabContent();
+      if (hadTabPatternQuery) activateWizardTab("pattern", { skipRefresh: true });
+    })();
 
     const canonKey = getPatternStorageKey();
     window.addEventListener("storage", (e) => {
       if (!e.key || (e.key !== PATTERN_BUILDER_DATA_KEY && e.key !== canonKey)) return;
-      refreshPatternTabContent();
+      void refreshPatternTabContent();
     });
   }

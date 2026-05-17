@@ -25,12 +25,22 @@ import {
   syncSleevelessDesignBasicsToPatternStorage,
 } from "./syncSleevelessExpressDesignToStorage";
 import { seedCustomBuildBodyFinishedFromChartRow } from "./sleevelessCustomBuildBodyMeasurements";
+import { loadMeasurementOverrides } from "./sleevelessCustomMeasurementStorage";
+import {
+  CUSTOM_BUILD_NECKLINE_STYLE_KEY,
+  readCustomBuildWizardNeckline,
+} from "./sleevelessCustomBuildWizardNeckline";
 
 /** Keys written by `/patterns/sleeveless/custom-style` (see `sleeveless-custom-style-page.ts`). */
 export const CUSTOM_BUILD_STYLE_STORAGE_KEYS = {
   bodyShape: "bodyShape",
   garmentType: "garmentType",
 } as const;
+
+/** Neckline choices on Style & Shaping (`sleeveless-custom-style-page.ts`). */
+const CUSTOM_BUILD_NECKLINE_VALUES = new Set(["round", "v-neck"]);
+
+export { CUSTOM_BUILD_NECKLINE_STYLE_KEY, readCustomBuildWizardNeckline };
 
 const DEFAULT_AVAILABLE_NEEDLES = "200";
 
@@ -120,6 +130,9 @@ export type SyncCustomBuildOptions = {
 export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions = {}): void {
   const run = (): void => {
     const ev = readCustomBuildExpressValues();
+    const wizardNeckline = readCustomBuildWizardNeckline();
+    const neckline =
+      ev.neckline && CUSTOM_BUILD_NECKLINE_VALUES.has(ev.neckline) ? ev.neckline : wizardNeckline;
     const bodyShapeRaw = readStyleStepValue(
       CUSTOM_BUILD_STYLE_STORAGE_KEYS.bodyShape,
       new Set(["straight", "aline", "shaped"]),
@@ -146,7 +159,7 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
 
     syncSleevelessDesignBasicsToPatternStorage({
       ...(ev.who ? { who: ev.who } : {}),
-      ...(ev.neckline ? { neckline: ev.neckline } : {}),
+      ...(neckline ? { neckline } : {}),
       fit,
       ...(size ? { selectedSize: size } : {}),
       ...(selectedMeasurements ? { selectedMeasurements } : {}),
@@ -157,7 +170,7 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
     });
 
     const bodyShape = resolveBodyShape(bodyShapeRaw);
-    const neckCanon = ev.neckline ? mapExpressNecklineToStorage(ev.neckline) : undefined;
+    const neckCanon = neckline ? mapExpressNecklineToStorage(neckline) : undefined;
     const stylePatch: Record<string, unknown> = {
       bodyShape,
       length: "top",
@@ -174,6 +187,13 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
 
     if (chartRow && fit) {
       seedCustomBuildBodyFinishedFromChartRow(chartRow, fit, { preserveFinished: true });
+    }
+
+    const overrides = loadMeasurementOverrides();
+    if (Object.keys(overrides).length > 0) {
+      const pbFit = section(getPatternData().fit);
+      savePatternData("fit", { ...pbFit, cbMeasurementOverrides: overrides });
+      saveCurrentPattern({ fit: { cbMeasurementOverrides: overrides } });
     }
 
     ensureYarnGaugeMachineDefaults();

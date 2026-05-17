@@ -5,6 +5,7 @@
 
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import { buildSleevelessGarmentDiagramReplacements } from "./sleevelessGarmentDiagramReplacements";
+import { buildSleevelessGarmentDiagramPatternData } from "./sleevelessPatternBuilderMerge";
 import { resolveSleevelessFrontDiagram } from "./sleevelessFrontDiagramSrc";
 
 async function fetchSvgWithReplacements(src: string, replacements: Record<string, string>): Promise<string> {
@@ -32,6 +33,8 @@ export async function loadSleevelessBackDiagramSvgMarkup(
 
 export type LoadSleevelessFrontDiagramSvgMarkupOptions = {
   devForceCardiganHalfLeft?: boolean;
+  /** When set, diagram variant selection matches {@link generateSleevelessBackPattern} input. */
+  generatorPatternData?: Record<string, unknown>;
 };
 
 /** Returns FRONT schematic SVG markup with generated front measurement values. */
@@ -51,19 +54,23 @@ async function loadSleevelessPieceDiagramSvgMarkup(
   piece: "back" | "front",
   frontOpts?: LoadSleevelessFrontDiagramSvgMarkupOptions,
 ): Promise<string> {
+  const diagramPatternData = buildSleevelessGarmentDiagramPatternData(
+    patternData,
+    frontOpts?.generatorPatternData,
+  );
   let replacements: Record<string, string>;
   let src: string;
   let ariaLabel: string;
 
   if (piece === "back") {
     replacements = buildSleevelessGarmentDiagramReplacements(result, unit, {
-      patternData,
+      patternData: diagramPatternData,
       measurementPiece: "back",
     });
     src = "/images/patterns/sleeveless/diagram-back.svg";
     ariaLabel = "Back piece schematic with key measurements";
   } else {
-    const frontRes = resolveSleevelessFrontDiagram(patternData, {
+    const frontRes = resolveSleevelessFrontDiagram(diagramPatternData, {
       devForceCardiganHalfLeft: frontOpts?.devForceCardiganHalfLeft,
     });
     const cardiganHalfSide =
@@ -75,7 +82,7 @@ async function loadSleevelessPieceDiagramSvgMarkup(
             ? "right"
             : undefined;
     replacements = buildSleevelessGarmentDiagramReplacements(result, unit, {
-      patternData,
+      patternData: diagramPatternData,
       measurementPiece: "front",
       cardiganHalfSide,
     });
