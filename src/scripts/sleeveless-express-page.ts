@@ -1081,7 +1081,11 @@ function initExpressPage() {
       q.set("stitches", gaugeStitchesPerInch);
       q.set("rows", gaugeRowsPerInch);
 
-      window.location.href = `/patterns/sleeveless-express-measurements?${q.toString()}`;
+      const reviewBase =
+        document.querySelector<HTMLElement>("[data-express-review-href]")?.getAttribute("data-express-review-href")?.trim() ||
+        "/patterns/sleeveless-express-measurements";
+      const reviewPath = reviewBase.replace(/\?.*$/, "");
+      window.location.href = `${reviewPath}?${q.toString()}`;
     })();
   });
 

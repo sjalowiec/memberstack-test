@@ -25,9 +25,21 @@ import {
   renderCbMeasureValidationOverlay,
   setCbMeasureContinueButton,
 } from "../lib/patterns/sleevelessPatternValidationUi";
+import {
+  renderMeasureReviewSummaryLine,
+  type MeasureReviewSummarySegment,
+} from "../lib/patterns/sleevelessMeasureReviewSummaryUi";
 
 const MEASUREMENT_BLUEPRINT_SVG_URL = "/images/patterns/pattern_summary.svg";
 const YARN_GAUGE_HREF = "/patterns/sleeveless/custom-build/yarn-gauge";
+const PATTERN_WORKSPACE_TAB_PATTERN_HREF = "/patterns/sleeveless/pattern/?tab=pattern";
+
+export type CustomBuildMeasurementsInitOptions = {
+  /** When set, Continue navigates here instead of Custom Build yarn & gauge. */
+  continueHref?: string;
+  /** When set, runs after validation + persist instead of default navigation. */
+  onContinue?: () => void;
+};
 
 /** Sleeveless body fields shown on the diagram (inches, stored as decimal strings). */
 const DIAGRAM_FIELD_KEYS = [
@@ -286,19 +298,6 @@ function gaugeSummary(pattern: ReturnType<typeof getCurrentPattern>): string | n
   return null;
 }
 
-function summaryChip(keyLabel: string, value: string): HTMLElement {
-  const el = document.createElement("div");
-  el.className = "express-mbp-meta__item";
-  const k = document.createElement("span");
-  k.className = "express-mbp-meta__k";
-  k.textContent = keyLabel;
-  const v = document.createElement("span");
-  v.className = "express-mbp-meta__v";
-  v.textContent = value;
-  el.append(k, v);
-  return el;
-}
-
 function renderBuildSummary(
   el: HTMLElement,
   ctx: {
@@ -310,22 +309,15 @@ function renderBuildSummary(
     gauge: string | null;
   },
 ): void {
-  el.replaceChildren();
-  const meta = document.createElement("div");
-  meta.className = "express-mbp-meta";
-  const metaGrid = document.createElement("div");
-  metaGrid.className = "express-mbp-meta__grid";
-  const chips: HTMLElement[] = [
-    summaryChip("Recipient", whoLabel(ctx.who)),
-    summaryChip("Size", ctx.size || "—"),
-    summaryChip("Garment", ctx.garment),
-    summaryChip("Neckline", ctx.neckline),
-    summaryChip("Fit", fitLabel(ctx.fit)),
+  const segments: MeasureReviewSummarySegment[] = [
+    { label: "Recipient", value: whoLabel(ctx.who) },
+    { label: "Size", value: ctx.size || "—" },
+    { label: "Garment", value: ctx.garment },
+    { label: "Neckline", value: ctx.neckline },
+    { label: "Fit", value: fitLabel(ctx.fit) },
   ];
-  if (ctx.gauge) chips.push(summaryChip("Gauge", ctx.gauge));
-  metaGrid.append(...chips);
-  meta.appendChild(metaGrid);
-  el.appendChild(meta);
+  if (ctx.gauge) segments.push({ label: "Gauge", value: ctx.gauge });
+  renderMeasureReviewSummaryLine(el, segments, { preserveUnitsHost: false });
 }
 
 type BlueprintBoxOpts = {
@@ -580,7 +572,7 @@ async function renderDiagram(
   wireFieldPersistence(pageRoot);
 }
 
-function initCustomBuildMeasurementsPage(): void {
+export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurementsInitOptions): void {
   const root = document.querySelector("[data-cb-measure-root]");
   if (!(root instanceof HTMLElement)) return;
 
@@ -594,7 +586,11 @@ function initCustomBuildMeasurementsPage(): void {
     if (!refreshPatternValidationUi(root)) return;
     persistFromRoot(root);
     syncCustomBuildToPatternStorage({ awaitCharts: false });
-    window.location.assign(YARN_GAUGE_HREF);
+    if (options?.onContinue) {
+      options.onContinue();
+      return;
+    }
+    window.location.assign(options?.continueHref ?? YARN_GAUGE_HREF);
   });
 
   void loadExpressSweaterCharts().then(async () => {
@@ -651,8 +647,17 @@ function initCustomBuildMeasurementsPage(): void {
   });
 }
 
+function shouldAutoInitCustomBuildMeasurementsPage(): boolean {
+  const root = document.querySelector("[data-cb-measure-root]");
+  if (!(root instanceof HTMLElement)) return false;
+  return !root.hasAttribute("data-sleeveless-review-managed");
+}
+
 if (typeof document !== "undefined") {
-  const boot = (): void => initCustomBuildMeasurementsPage();
+  const boot = (): void => {
+    if (!shouldAutoInitCustomBuildMeasurementsPage()) return;
+    initCustomBuildMeasurementsPage();
+  };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
 }

@@ -17,6 +17,11 @@ import { getDefaultHemLengthInches } from "../lib/patterns/hemDefaults";
 import type { ChartRow } from "../lib/patterns/sleevelessExpressSizeChartTypes";
 import { getPatternData, SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "../lib/patterns/patternStorage";
 import { syncSleevelessDesignBasicsToPatternStorage } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
+import {
+  clearMeasureReviewSummaryLine,
+  renderMeasureReviewSummaryLine,
+  type MeasureReviewSummarySegment,
+} from "../lib/patterns/sleevelessMeasureReviewSummaryUi";
 
 const LOG_PREFIX = "[express-measurements]";
 
@@ -273,7 +278,7 @@ function dispatchExpressYarnDimensions(
   );
 }
 
-function initExpressYarnDrawer(): void {
+export function initExpressYarnDrawer(): void {
   const drawerRoot = document.getElementById("express-yarn-drawer");
   const openBtn = document.getElementById("express-yarn-drawer-open");
   const closeBtn = document.getElementById("express-yarn-drawer-close");
@@ -317,8 +322,16 @@ function initExpressYarnDrawer(): void {
   });
 }
 
-function initExpressMeasurementsConfirmPage(): void {
-  initExpressYarnDrawer();
+export type ExpressMeasurementsInitOptions = {
+  /** Back link for error copy (unified builder review). */
+  builderHref?: string;
+  /** When true, caller already initialized the yarn drawer (unified review). */
+  skipYarnDrawer?: boolean;
+};
+
+export function initExpressMeasurementsConfirmPage(options?: ExpressMeasurementsInitOptions): void {
+  const builderHref = options?.builderHref?.trim() || "/patterns/sleeveless-express/";
+  if (!options?.skipYarnDrawer) initExpressYarnDrawer();
 
   const rootMaybe = document.querySelector("[data-express-measurements-root]");
   if (!(rootMaybe instanceof HTMLElement)) {
@@ -327,6 +340,7 @@ function initExpressMeasurementsConfirmPage(): void {
   }
 
   const root = rootMaybe;
+  root.setAttribute("data-express-href", builderHref);
 
   const statusEl = root.querySelector("[data-express-measurements-status]");
   const summaryEl = root.querySelector("[data-express-measurements-summary]");
@@ -358,57 +372,12 @@ function initExpressMeasurementsConfirmPage(): void {
     statusEl.classList.remove("express-measurements-status--error");
   }
 
-  function metaChip(keyLabel: string, value: string): HTMLElement {
-    const el = document.createElement("div");
-    el.className = "express-mbp-meta__item";
-    const k = document.createElement("span");
-    k.className = "express-mbp-meta__k";
-    k.textContent = keyLabel;
-    const v = document.createElement("span");
-    v.className = "express-mbp-meta__v";
-    v.textContent = value;
-    el.append(k, v);
-    return el;
-  }
-
-  /** Size name plus chart body bust/chest (not finished/ease measurement). */
-  function metaChipSize(sizeLabel: string, chartBustChestDisplay: string): HTMLElement {
-    const el = document.createElement("div");
-    el.className = "express-mbp-meta__item express-mbp-meta__item--size";
-    const k = document.createElement("span");
-    k.className = "express-mbp-meta__k";
-    k.textContent = "Size";
-    const v = document.createElement("span");
-    v.className = "express-mbp-meta__v";
-    v.textContent = sizeLabel;
-    const sub = document.createElement("span");
-    sub.className = "express-mbp-meta__sub";
-    sub.textContent = `${chartBustChestDisplay} bust/chest`;
-    el.append(k, v, sub);
-    return el;
-  }
-
-  function renderProjectSummary(chips: HTMLElement[]): void {
-    const unitsHostEl = projectSummaryHost.querySelector<HTMLElement>(
-      "[data-express-measurements-units-host]",
-    );
-    projectSummaryHost.replaceChildren();
-    const meta = document.createElement("div");
-    meta.className = "express-mbp-meta";
-    const metaGrid = document.createElement("div");
-    metaGrid.className = "express-mbp-meta__grid";
-    metaGrid.append(...chips);
-    meta.appendChild(metaGrid);
-    projectSummaryHost.appendChild(meta);
-    if (unitsHostEl) projectSummaryHost.appendChild(unitsHostEl);
+  function renderProjectSummary(segments: MeasureReviewSummarySegment[]): void {
+    renderMeasureReviewSummaryLine(projectSummaryHost, segments);
   }
 
   function clearProjectSummary(): void {
-    const unitsHostEl = projectSummaryHost.querySelector<HTMLElement>(
-      "[data-express-measurements-units-host]",
-    );
-    projectSummaryHost.replaceChildren();
-    if (unitsHostEl) projectSummaryHost.appendChild(unitsHostEl);
+    clearMeasureReviewSummaryLine(projectSummaryHost);
   }
 
   type BlueprintReadonlyBoxOpts = {
@@ -553,7 +522,7 @@ function initExpressMeasurementsConfirmPage(): void {
           showSummaryError(
             summaryEl,
             "Could not load measurements",
-            "We need your wearer (who) and pattern size. They were not in the link and not found in saved Express Build or pattern data. Go back to Express Build, complete the steps, and tap Generate Pattern.",
+            `We need your wearer (who) and pattern size. They were not in the link and not found in saved builder or pattern data. Go back to the builder, complete the steps, and tap Generate Pattern.`,
           );
           return;
         }
@@ -650,15 +619,18 @@ function initExpressMeasurementsConfirmPage(): void {
               ? `${merged.gaugeStitchRaw} sts × ${merged.gaugeRowRaw} rows / ${over}`
               : "—";
 
-          const metaChips: HTMLElement[] = [
-            metaChip("Recipient", whoLabel),
-            metaChipSize(chartFit.selectedSize, chartBustChestDisplay),
-            metaChip("Garment", garmentLabel),
-            metaChip("Neckline", necklineLabel),
-            metaChip("Fit", fitLabel),
-            metaChip("Gauge", gaugeVal),
-          ];
-          renderProjectSummary(metaChips);
+          const sizeValue = chartBustChestDisplay
+            ? `${chartFit.selectedSize} (${chartBustChestDisplay} bust/chest)`
+            : chartFit.selectedSize;
+
+          renderProjectSummary([
+            { label: "Recipient", value: whoLabel },
+            { label: "Size", value: sizeValue },
+            { label: "Garment", value: garmentLabel },
+            { label: "Neckline", value: necklineLabel },
+            { label: "Fit", value: fitLabel },
+            { label: "Gauge", value: gaugeVal },
+          ]);
 
           const rootMbp = document.createElement("div");
           rootMbp.className = "express-mbp express-mbp--diagram";
@@ -734,8 +706,17 @@ function initExpressMeasurementsConfirmPage(): void {
   });
 }
 
+function shouldAutoInitExpressMeasurementsPage(): boolean {
+  const root = document.querySelector("[data-express-measurements-root]");
+  if (!(root instanceof HTMLElement)) return false;
+  return !root.hasAttribute("data-sleeveless-review-managed");
+}
+
 if (typeof document !== "undefined") {
-  const run = (): void => initExpressMeasurementsConfirmPage();
+  const run = (): void => {
+    if (!shouldAutoInitExpressMeasurementsPage()) return;
+    initExpressMeasurementsConfirmPage();
+  };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
   else run();
 }

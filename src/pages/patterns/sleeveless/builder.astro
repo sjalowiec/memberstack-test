@@ -1,0 +1,965 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import GlossaryTooltip from "../../../components/common/GlossaryTooltip.astro";
+import GaugeInput from "../../../components/wizards/GaugeInput.astro";
+import UnitToggle from "../../../components/wizards/UnitToggle.astro";
+import PatternWorkspaceTabs from "../../../components/patterns/PatternWorkspaceTabs.astro";
+/* Wizard is @import'd first inside sleeveless-express-builder-cards.css so Express overrides always win cascade */
+import "../../../styles/sleeveless-express-builder-cards.css";
+import "../../../styles/sleeveless-express-wizard-layout.css";
+
+const expressNavSteps = [
+  { step: 1, label: "Who & Size" },
+  { step: 2, label: "Front" },
+  { step: 3, label: "Neckline" },
+  { step: 4, label: "Fit" },
+  { step: 5, label: "Gauge" },
+] as const;
+
+const imgSleeveless = "/images/patterns/sleeveless";
+/** Front style (Pullover / Cardigan) — shared flat garment art */
+const imgGarmentPullover = "/images/patterns/pullover.png";
+const imgGarmentCardigan = "/images/patterns/cardigan.png";
+
+/** Custom Build base URL (same as `customBuildHref` passed to workspace tabs). */
+const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
+---
+
+<Layout
+  title="Sleeveless Pattern Builder"
+  description="Create a ready-to-knit sleeveless sweater pattern in guided steps."
+>
+  <main
+    class="express-page wizard-page sleeveless-express-page sleeveless-unified-builder-page"
+    data-express-page="sleeveless-builder"
+    data-express-review-href="/patterns/sleeveless/review"
+  >
+    <div id="express-pattern-top" class="wizard-container express-wizard scroll-mt-[96px]">
+      <div class="calculator-card hat-builder-inputs">
+        <PatternWorkspaceTabs
+          rootClass="pattern-tabs-scope"
+          activeTab="express"
+          expressHref="/patterns/sleeveless-express/"
+          customBuildHref={sleevelessCustomBuildHref}
+          patternHref="/patterns/sleeveless/pattern/"
+          askShareHref="/patterns/sleeveless/ask-share/"
+          inspirationHref="/patterns/sleeveless/inspiration/"
+        />
+        <div class="sg-tab-build">
+            <div class="sg-builder-nav-row express-builder-nav-row no-print">
+              <nav class="express-step-nav sg-builder-nav" aria-label="Express pattern steps">
+                <ol class="express-step-nav__list sg-builder-nav__list" role="list">
+                  {
+                    expressNavSteps.map((s, i) => (
+                      <li class:list={["express-step-nav__item", "sg-builder-nav__item", { active: s.step === 1 }]}>
+                        <button
+                          type="button"
+                          class:list={[
+                            "express-step-nav__btn",
+                            "sg-builder-nav__link",
+                            {
+                              "is-current": s.step === 1,
+                              "is-upcoming": s.step > 1,
+                            },
+                          ]}
+                          data-pill-step={s.step}
+                          data-pill-label={s.label}
+                          aria-current={s.step === 1 ? "page" : undefined}
+                          aria-disabled={s.step > 1 ? "true" : undefined}
+                          title={s.step > 1 ? "Finish the previous step to continue." : undefined}
+                        >
+                          <span class="express-step-nav__track">
+                            <span
+                              class:list={[
+                                "express-step-nav__seg",
+                                "express-step-nav__seg--before",
+                                { "express-step-nav__seg--empty": i === 0 },
+                              ]}
+                              aria-hidden="true"
+                            />
+                            <span class="express-step-nav__circle">
+                              <span class="express-step-nav__num">{s.step}</span>
+                              <span class="express-pill__check" aria-hidden="true">
+                                ✓
+                              </span>
+                            </span>
+                            <span
+                              class:list={[
+                                "express-step-nav__seg",
+                                "express-step-nav__seg--after",
+                                { "express-step-nav__seg--empty": i === expressNavSteps.length - 1 },
+                              ]}
+                              aria-hidden="true"
+                            />
+                          </span>
+                          <span class="express-step-nav__label">{s.label}</span>
+                        </button>
+                      </li>
+                    ))
+                  }
+                </ol>
+              </nav>
+            </div>
+
+            <header class="pattern-header page-header">
+              
+              <h1 class="pattern-title">Sleeveless Sweater</h1>
+              <p class="pattern-subtext">
+                Create a ready-to-knit sweater pattern in a few guided steps.
+              </p>
+            </header>
+
+            <div class="express-panel">
+              <div class="express-builder-root" data-express-builder>
+                <div class="express-builder-toolbar no-print">
+                  <button type="button" id="express-start-over-btn" class="btn btn-outline-secondary btn-sm">
+                    Start over
+                  </button>
+                </div>
+                <div class="express-builder-units no-print">
+                  <UnitToggle id="sleeveless-fit" />
+                </div>
+                <div class="express-accordions" id="express-accordions">
+          <!-- Step 1 — Who + Size (single accordion) -->
+          <section
+            class="express-acc express-acc--open"
+            data-express-step="1"
+            data-express-field="who"
+          >
+            <div
+              class="express-acc__header"
+              data-express-header
+              role="button"
+              tabindex="0"
+              aria-expanded="true"
+              aria-controls="express-acc-panel-1"
+              id="express-acc-label-1"
+            >
+              <button
+                type="button"
+                class="express-acc__chevron"
+                data-express-chevron
+                aria-label="Toggle who and size choices"
+                tabindex="-1"
+              >
+                ▾
+              </button>
+              <div class="express-acc__header-main">
+                <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
+                <h2 class="express-acc__title" id="express-step-1-title">Who & Size</h2>
+                <span class="express-acc__value" data-express-summary="who"></span>
+                <span class="express-acc__value" data-express-summary="selectedSize"></span>
+              </div>
+            </div>
+            <div
+              class="express-acc__body"
+              id="express-acc-panel-1"
+              role="region"
+              aria-labelledby="express-step-1-title"
+            >
+              <div
+                class="express-options--who hat-length-picker__grid"
+                role="group"
+                aria-labelledby="express-step-1-title"
+              >
+                <button
+                  type="button"
+                  class="hat-length-picker__option express-who-card"
+                  data-choice
+                  data-field="who"
+                  data-value="women"
+                  aria-pressed="false"
+                >
+                  <img
+                    src="/images/patterns/sleeveless/sleeveless_woman.png"
+                    alt=""
+                    class="hat-length-picker__img sg-picker-img express-who-card__img"
+                    width="168"
+                    height="210"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span class="hat-length-picker__option-label">Women</span>
+                </button>
+                <button
+                  type="button"
+                  class="hat-length-picker__option express-who-card"
+                  data-choice
+                  data-field="who"
+                  data-value="men"
+                  aria-pressed="false"
+                >
+                  <img
+                    src="/images/patterns/sleeveless/sleeveless_man.png"
+                    alt=""
+                    class="hat-length-picker__img sg-picker-img express-who-card__img"
+                    width="168"
+                    height="210"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span class="hat-length-picker__option-label">Men</span>
+                </button>
+                <button
+                  type="button"
+                  class="hat-length-picker__option express-who-card"
+                  data-choice
+                  data-field="who"
+                  data-value="kids"
+                  aria-pressed="false"
+                >
+                  <img
+                    src="/images/patterns/sleeveless/sleeveless_kids.png"
+                    alt=""
+                    class="hat-length-picker__img sg-picker-img express-who-card__img"
+                    width="168"
+                    height="210"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span class="hat-length-picker__option-label">Kids</span>
+                </button>
+                <button
+                  type="button"
+                  class="hat-length-picker__option express-who-card"
+                  data-choice
+                  data-field="who"
+                  data-value="baby"
+                  aria-pressed="false"
+                >
+                  <img
+                    src="/images/patterns/sleeveless/sleeveless_baby.png"
+                    alt=""
+                    class="hat-length-picker__img sg-picker-img express-who-card__img"
+                    width="168"
+                    height="210"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span class="hat-length-picker__option-label">Baby</span>
+                </button>
+              </div>
+              <div class="express-who-size-nested" data-express-nested-size hidden>
+                <p class="express-size-helper sg-fit-size-copy" id="express-size-helper-text">
+                  Choose the size whose Bust/Chest measurement is closest to yours.
+                </p>
+                <p class="express-size-load-msg sg-fit-size-copy" data-express-size-status>
+                  Loading size charts…
+                </p>
+                <div class="express-size-select-wrap" data-express-size-select-wrap hidden>
+                  <div class="express-size-table-wrap">
+                    <table class="express-size-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Size</th>
+                          <th scope="col">Bust/Chest</th>
+                        </tr>
+                      </thead>
+                      <tbody
+                        role="radiogroup"
+                        aria-labelledby="express-size-helper-text"
+                        data-express-size-table-body
+                      ></tbody>
+                    </table>
+                  </div>
+                  <select
+                    id="express-body-size-select"
+                    class="express-size-select express-size-select--visually-hidden"
+                    data-express-size-select
+                    tabindex="-1"
+                    aria-hidden="true"
+                    autocomplete="off"
+                  ></select>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Step 2 — front style (matches sleeveless-garment Express card layout) -->
+          <section class="express-acc express-acc--locked" data-express-step="2" data-express-field="front">
+            <div
+              class="express-acc__header"
+              data-express-header
+              role="button"
+              tabindex="-1"
+              aria-expanded="false"
+              aria-controls="express-acc-panel-2"
+              id="express-acc-label-2"
+            >
+              <button type="button" class="express-acc__chevron" data-express-chevron aria-hidden="true" tabindex="-1">
+                ▾
+              </button>
+              <div class="express-acc__header-main">
+                <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
+                <h2 class="express-acc__title" id="express-step-2-title">Choose your front style</h2>
+                <span class="express-acc__value" data-express-summary="front"></span>
+              </div>
+            </div>
+            <p class="express-acc__locked-feedback" data-express-locked-feedback hidden role="status">
+              <span class="express-acc__locked-arrow" aria-hidden="true">↑</span>
+              <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
+            </p>
+            <div
+              class="express-acc__body"
+              id="express-acc-panel-2"
+              role="region"
+              aria-labelledby="express-step-2-title"
+              hidden
+            >
+              <div
+                class="express-front-cards hat-length-picker__grid hat-brim-picker__grid"
+                role="radiogroup"
+                aria-labelledby="express-step-2-title"
+              >
+                <button
+                  type="button"
+                  class="hat-length-picker__option is-selected"
+                  data-choice
+                  data-field="front"
+                  data-value="closed"
+                  aria-pressed="true"
+                >
+                  <span class="express-front-card__img-wrap">
+                    <img
+                      src={imgGarmentPullover}
+                      alt=""
+                      class="hat-length-picker__img sg-picker-img express-front-card__img"
+                      width="433"
+                      height="469"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </span>
+                  <span class="hat-length-picker__option-label">Pullover</span>
+                </button>
+                <button
+                  type="button"
+                  class="hat-length-picker__option"
+                  data-choice
+                  data-field="front"
+                  data-value="open"
+                  aria-pressed="false"
+                >
+                  <span class="express-front-card__img-wrap">
+                    <img
+                      src={imgGarmentCardigan}
+                      alt=""
+                      class="hat-length-picker__img sg-picker-img express-front-card__img"
+                      width="433"
+                      height="469"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </span>
+                  <span class="hat-length-picker__option-label">Cardigan</span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Step 3 -->
+          <section class="express-acc express-acc--locked" data-express-step="3" data-express-field="neckline">
+            <div
+              class="express-acc__header"
+              data-express-header
+              role="button"
+              tabindex="-1"
+              aria-expanded="false"
+              aria-controls="express-acc-panel-3"
+              id="express-acc-label-3"
+            >
+              <button type="button" class="express-acc__chevron" data-express-chevron aria-hidden="true" tabindex="-1">
+                ▾
+              </button>
+              <div class="express-acc__header-main">
+                <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
+                <h2 class="express-acc__title" id="express-step-3-title">Choose your neckline</h2>
+                <span class="express-acc__value" data-express-summary="neckline"></span>
+              </div>
+            </div>
+            <p class="express-acc__locked-feedback" data-express-locked-feedback hidden role="status">
+              <span class="express-acc__locked-arrow" aria-hidden="true">↑</span>
+              <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
+            </p>
+            <div
+              class="express-acc__body"
+              id="express-acc-panel-3"
+              role="region"
+              aria-labelledby="express-step-3-title"
+              hidden
+            >
+              <div
+                class="express-neck-cards hat-length-picker__grid hat-brim-picker__grid"
+                role="group"
+                aria-labelledby="express-step-3-title"
+              >
+                <button
+                  type="button"
+                  class="hat-length-picker__option"
+                  data-choice
+                  data-field="neckline"
+                  data-value="round"
+                  aria-pressed="false"
+                >
+                  <img
+                    src="/images/patterns/choice-round.png"
+                    alt=""
+                    class="hat-length-picker__img sg-picker-img"
+                    width="120"
+                    height="120"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span class="hat-length-picker__option-label">Round</span>
+                </button>
+                <button
+                  type="button"
+                  class="hat-length-picker__option"
+                  data-choice
+                  data-field="neckline"
+                  data-value="v-neck"
+                  aria-pressed="false"
+                >
+                  <img
+                    src="/images/patterns/choice-v.png"
+                    alt=""
+                    class="hat-length-picker__img sg-picker-img"
+                    width="120"
+                    height="120"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span class="hat-length-picker__option-label">V-neck</span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Step 4 -->
+          <section class="express-acc express-acc--locked" data-express-step="4" data-express-field="fit">
+            <div
+              class="express-acc__header"
+              data-express-header
+              role="button"
+              tabindex="-1"
+              aria-expanded="false"
+              aria-controls="express-acc-panel-4"
+              id="express-acc-label-4"
+            >
+              <button type="button" class="express-acc__chevron" data-express-chevron aria-hidden="true" tabindex="-1">
+                ▾
+              </button>
+              <div class="express-acc__header-main">
+                <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
+                <h2 class="express-acc__title" id="express-step-4-title">Choose your fit</h2>
+                <span class="express-acc__value" data-express-summary="fit"></span>
+              </div>
+            </div>
+            <p class="express-acc__locked-feedback" data-express-locked-feedback hidden role="status">
+              <span class="express-acc__locked-arrow" aria-hidden="true">↑</span>
+              <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
+            </p>
+            <div
+              class="express-acc__body"
+              id="express-acc-panel-4"
+              role="region"
+              aria-labelledby="express-step-4-title"
+              hidden
+            >
+              <div
+                class="express-fit-cards hat-length-picker__grid sg-fit-preference-grid"
+                role="group"
+                aria-labelledby="express-step-4-title"
+              >
+                <button
+                  type="button"
+                  class="hat-length-picker__option sg-fit-preference-option"
+                  data-choice
+                  data-field="fit"
+                  data-value="close"
+                  aria-pressed="false"
+                >
+                  <img
+                    class="fit-card-image"
+                    src="/images/patterns/fit-close.jpg"
+                    alt="Close fit sleeveless garment"
+                  />
+                  <span class="sg-fit-preference-title-row">
+                    <span class="hat-length-picker__option-label">Close fit</span>
+                    <span class="sg-fit-option-check" aria-hidden="true">✓</span>
+                  </span>
+                  <span class="sg-fit-preference-note">Fits close to the body.</span>
+                  <span class="sg-fit-preference-ease">Approx. +1&quot; ease</span>
+                </button>
+                <button
+                  type="button"
+                  class="hat-length-picker__option sg-fit-preference-option"
+                  data-choice
+                  data-field="fit"
+                  data-value="standard"
+                  aria-pressed="false"
+                >
+                  <img
+                    class="fit-card-image"
+                    src="/images/pattern/fit-standard.jpg"
+                    alt="Standard fit sleeveless garment"
+                  />
+                  <span class="sg-fit-preference-title-row">
+                    <span class="hat-length-picker__option-label">Standard fit</span>
+                    <span class="sg-fit-option-check" aria-hidden="true">✓</span>
+                  </span>
+                  <span class="sg-fit-preference-note">Comfortable everyday fit.</span>
+                  <span class="sg-fit-preference-ease">Approx. +3&quot; ease</span>
+                </button>
+                <button
+                  type="button"
+                  class="hat-length-picker__option sg-fit-preference-option"
+                  data-choice
+                  data-field="fit"
+                  data-value="relaxed"
+                  aria-pressed="false"
+                >
+                  <img
+                    class="fit-card-image"
+                    src="/images/patterns/fit-relaxed.jpg"
+                    alt="Relaxed fit sleeveless garment"
+                  />
+                  <span class="sg-fit-preference-title-row">
+                    <span class="hat-length-picker__option-label">Relaxed fit</span>
+                    <span class="sg-fit-option-check" aria-hidden="true">✓</span>
+                  </span>
+                  <span class="sg-fit-preference-note">More room and drape.</span>
+                  <span class="sg-fit-preference-ease">Approx. +6&quot; ease</span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Step 5 -->
+          <section
+            class="express-acc express-acc--locked scroll-mt-[96px]"
+            id="express-gauge-section"
+            data-express-step="5"
+            data-express-field="gauge"
+          >
+            <div
+              class="express-acc__header"
+              data-express-header
+              role="button"
+              tabindex="-1"
+              aria-expanded="false"
+              aria-controls="express-acc-panel-5"
+              id="express-acc-label-5"
+            >
+              <button type="button" class="express-acc__chevron" data-express-chevron aria-hidden="true" tabindex="-1">
+                ▾
+              </button>
+              <div class="express-acc__header-main">
+                <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
+                <div class="express-acc__title-row express-acc__title-row--gauge">
+                  <h2 class="express-acc__title" id="express-step-5-title">Enter your gauge</h2>
+                  <span class="express-acc__title-glossary">
+                    <GlossaryTooltip id={616}>Gauge</GlossaryTooltip>
+                  </span>
+                </div>
+                <span class="express-acc__value" data-express-summary="gauge"></span>
+              </div>
+            </div>
+            <p class="express-acc__locked-feedback" data-express-locked-feedback hidden role="status">
+              <span class="express-acc__locked-arrow" aria-hidden="true">↑</span>
+              <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
+            </p>
+            <div
+              class="express-acc__body"
+              id="express-acc-panel-5"
+              role="region"
+              aria-labelledby="express-step-5-title"
+              hidden
+            >
+              <form class="express-gauge" id="express-gauge-form" novalidate>
+                <div class="express-gauge-intro-group">
+                  <p class="express-gauge-intro">
+                    Enter the gauge from your swatch over 4 inches / 10 cm.
+                  </p>
+                  <div class="express-gauge-help">
+                    <button
+                      type="button"
+                      class="kbm-kin-catalog-video express-gauge-help-link"
+                      data-vimeo-id="1046394794"
+                      data-video-title="How to Knit a Proper Swatch: The Secret to Machine Knitting Success"
+                    >
+                      <span class="express-gauge-help-icon" aria-hidden="true">
+                        <i class="fa-solid fa-circle-play"></i>
+                      </span>
+                      <span class="express-gauge-help-label">Watch how to knit a proper swatch.</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="express-gauge-block">
+                  <GaugeInput
+                    id="express"
+                    showTitle={false}
+                    showGaugeSubLabel={false}
+                    showToggle={false}
+                    toggleId="sleeveless-fit"
+                    stitchLabelInches='Stitch gauge — stitches over 4"'
+                    stitchLabelCm="Stitch gauge — stitches over 10 cm"
+                    rowLabelInches='Row gauge — rows over 4"'
+                    rowLabelCm="Row gauge — rows over 10 cm"
+                  />
+                </div>
+              </form>
+            </div>
+            <!-- Submit lives outside collapsible .express-acc__body so it stays visible when Gauge is closed (see updateGeneratePatternAvailability). -->
+            <div class="express-generate-wrap express-generate-wrap--footer" id="express-generate-wrap" hidden>
+              <button type="submit" form="express-gauge-form" class="express-generate" id="express-generate">
+                Generate Pattern
+              </button>
+            </div>
+          </section>
+                </div>
+        </div>
+            </div>
+          </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .express-gauge-intro-group {
+    margin: 0 0 1rem;
+  }
+
+  .express-gauge-intro {
+    margin: 0 0 0.4rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--express-muted);
+  }
+
+  .express-gauge-help {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: rgba(0, 0, 0, 0.42);
+  }
+
+  .express-gauge-help-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    max-width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    font-size: inherit;
+    color: var(--express-nav-green, #52682d);
+    cursor: pointer;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .express-gauge-help-icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05em;
+    line-height: 1;
+    opacity: 0.92;
+  }
+
+  .express-gauge-help-label {
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .express-gauge-help-link:hover,
+  .express-gauge-help-link:focus-visible {
+    color: #3d4f22;
+    outline: none;
+  }
+
+  .express-gauge-help-link:hover .express-gauge-help-icon,
+  .express-gauge-help-link:focus-visible .express-gauge-help-icon {
+    opacity: 1;
+  }
+
+  .express-gauge-help-link:focus-visible {
+    outline: 2px solid var(--express-nav-green, #52682d);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  .express-gauge-block {
+    margin-bottom: 0.25rem;
+  }
+
+  .express-generate-wrap {
+    margin-top: 1.5rem;
+  }
+
+  .express-generate-wrap--footer {
+    margin-top: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(82, 104, 45, 0.1);
+  }
+
+  .express-acc.express-acc--open .express-generate-wrap--footer {
+    margin-top: 1.25rem;
+  }
+
+  .express-generate {
+    appearance: none;
+    font: inherit;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 999px;
+    border: none;
+    background: var(--express-terracotta);
+    color: #fff;
+    cursor: pointer;
+    transition:
+      opacity 0.15s ease,
+      transform 0.1s ease;
+  }
+
+  .express-generate:hover {
+    opacity: 0.92;
+  }
+
+  .express-generate:focus-visible {
+    outline: 2px solid var(--express-terracotta);
+    outline-offset: 3px;
+  }
+
+  .sg-tab-share__intro {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  .inspiration-heading {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .pinterest-embed {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  @media (max-width: 768px) {
+    .pinterest-embed a {
+      transform: scale(0.9);
+      transform-origin: top center;
+    }
+  }
+
+  .hat-pinterest-fallback-link {
+    margin: 12px 0 0;
+    font-size: 0.95rem;
+  }
+
+  .hat-pinterest-fallback-link a {
+    color: var(--kbm-green, #52682d);
+  }
+
+  /* Embedded “Who” sizing: chart JSON + shared unit toggle — size table + hidden sync select (Express only). */
+  .sleeveless-express-page .express-who-size-nested {
+    margin-top: 1.15rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(82, 104, 45, 0.12);
+  }
+
+  .sleeveless-express-page .express-who-size-heading {
+    margin: 0 0 0.35rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #374151;
+    letter-spacing: 0.01em;
+  }
+
+  .sleeveless-express-page .express-size-select-wrap {
+    margin: 0 0 0.85rem;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .sleeveless-express-page .express-size-table-wrap {
+    margin: 0 0 0.75rem;
+    max-height: min(52vh, 22rem);
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid rgba(82, 104, 45, 0.16);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    box-sizing: border-box;
+  }
+
+  .sleeveless-express-page .express-size-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font: inherit;
+  }
+
+  .sleeveless-express-page .express-size-table th,
+  .sleeveless-express-page .express-size-table td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+  }
+
+  .sleeveless-express-page .express-size-table th {
+    width: 50%;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #667085;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(82, 104, 45, 0.18);
+  }
+
+  .sleeveless-express-page .express-size-row {
+    min-height: 48px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(82, 104, 45, 0.12);
+    touch-action: manipulation;
+    transition:
+      background-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .sleeveless-express-page tbody tr.express-size-row:last-child {
+    border-bottom: none;
+  }
+
+  .sleeveless-express-page tbody tr.express-size-row:hover:not([aria-disabled="true"]) {
+    background: rgba(82, 104, 45, 0.05);
+  }
+
+  .sleeveless-express-page tbody tr.express-size-row:focus {
+    outline: none;
+  }
+
+  .sleeveless-express-page tbody tr.express-size-row:focus-visible:not([aria-disabled="true"]) {
+    outline: 2px solid rgba(194, 97, 78, 0.55);
+    outline-offset: -2px;
+  }
+
+  .sleeveless-express-page tbody tr.express-size-row[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .sleeveless-express-page .express-size-row__size {
+    color: #26351f;
+  }
+
+  .sleeveless-express-page .express-size-row__check {
+    display: inline-block;
+    width: 1rem;
+    margin-right: 0.45rem;
+    color: var(--kbm-green);
+    vertical-align: middle;
+  }
+
+  .sleeveless-express-page .express-size-row__size-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #26351f;
+    vertical-align: middle;
+  }
+
+  .sleeveless-express-page .express-size-row__measure {
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: #26351f;
+  }
+
+  .sleeveless-express-page tbody tr.express-size-row.is-selected {
+    background: rgba(82, 104, 45, 0.08);
+    box-shadow: inset 4px 0 0 var(--kbm-green, #52682d);
+  }
+
+  .sleeveless-express-page tbody tr.express-size-row.is-selected .express-size-row__size-label {
+    font-weight: 700;
+    color: #26351f;
+  }
+
+  .sleeveless-express-page tbody tr.express-size-row.is-selected .express-size-row__measure {
+    font-weight: 600;
+    color: #3f4a42;
+  }
+
+  @media (max-width: 480px) {
+    .sleeveless-express-page .express-size-table-wrap {
+      padding: 0.6rem 0.75rem;
+    }
+
+    .sleeveless-express-page .express-size-table th,
+    .sleeveless-express-page .express-size-table td {
+      padding: 0.9rem 0.75rem;
+    }
+
+    .sleeveless-express-page tbody tr.express-size-row {
+      min-height: 52px;
+    }
+  }
+
+  .sleeveless-express-page select.express-size-select--visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .sleeveless-express-page .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .sleeveless-express-page .sg-fit-size-copy {
+    margin: 0.15rem 0 0.8rem;
+    color: #6b7280;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  @media print {
+    .sleeveless-express-page .pattern-tab-nav {
+      display: none !important;
+    }
+
+    .sleeveless-express-page .sg-tab-build {
+      display: block !important;
+    }
+  }
+</style>
+
+<script>
+  import "/src/scripts/sleeveless-builder-page.ts";
+</script>
