@@ -12,6 +12,7 @@ import {
   type ShapingAction,
 } from "./legoBlocks/neckShoulderExecution";
 import { resolveEffectiveArmholeDepthInches } from "./customBuildEffectiveArmholeDepth";
+import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 import { resolveEffectiveFinishedLengthInches } from "./customBuildEffectiveFinishedLength";
 import { calculateBasicPatternNumbers } from "./patternCalculator";
 import { calculateHemRows } from "./hemDefaults";
@@ -1492,8 +1493,12 @@ export function generateSleevelessBackPattern(
   const audience = pickAudience(patternData);
   const sm = selectedMeasurements(patternData);
 
-  const finishedBust = measurementInches(sm, "finished_bust_chest") ?? basic.finishedBustChest;
-  // Custom Build may override chart finished length and armhole depth via fit.cbMeasurementOverrides.
+  const finishedBust = resolveEffectiveFinishedBustInches(patternData) ?? basic.finishedBustChest;
+  const bustChestStitchesForCastOn =
+    finishedBust > 0 && stitchesPerInch > 0
+      ? Math.round(finishedBust * stitchesPerInch)
+      : bustChestStitches;
+  // Custom Build may override chart measurements via fit.cbMeasurementOverrides.
   const backNeckToHem = resolveEffectiveFinishedLengthInches(patternData);
   const armholeDepthIn = resolveEffectiveArmholeDepthInches(patternData);
   const shoulderWidthIn = measurementInches(sm, "shoulder_width");
@@ -1507,7 +1512,7 @@ export function generateSleevelessBackPattern(
   const castOnSts =
     (() => {
       const baseCastOn =
-        backStitchesFromPattern(bustChestStitches) ||
+        backStitchesFromPattern(bustChestStitchesForCastOn) ||
         (finishedBust > 0 && stitchesPerInch > 0
           ? Math.round((finishedBust * stitchesPerInch) / 2)
           : 0);

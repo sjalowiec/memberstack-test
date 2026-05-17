@@ -3,9 +3,10 @@
  * Stored inside {@link SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY} as `cbMeasurementOverrides`
  * (values in inches as decimal strings). Falls back to legacy standalone key when present.
  *
- * Armhole depth and finished length overrides apply in pattern generation when `style.patternMode`
- * is `custom-build` (see {@link resolveEffectiveArmholeDepthInches},
- * {@link resolveEffectiveFinishedLengthInches}); other fields are stored for future use.
+ * Armhole depth, finished length, and finished bust overrides apply in pattern generation when
+ * `style.patternMode` is `custom-build` (see {@link resolveEffectiveArmholeDepthInches},
+ * {@link resolveEffectiveFinishedLengthInches}, {@link resolveEffectiveFinishedBustInches});
+ * other fields are stored for future use.
  */
 import {
   getPatternData,
