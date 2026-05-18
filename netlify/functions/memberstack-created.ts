@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-const BETA_TAG_NAME = "beta";
+const BETA_TAG_NAME = "Beta";
 
 interface MemberstackWebhookBody {
   payload?: {
