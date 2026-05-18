@@ -23,9 +23,16 @@ import type { RowEntry, ShapingEvent } from "./shapingTimeline";
 import {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
   ACTIVE_SHOULDER_DIVIDE_SENTENCE,
-  formatActiveShoulderCenterNecklinePlainSentence,
+  activeShoulderCenterDivideIntroApplies,
+  SCRAP_OFF_GLOSSARY_ID,
 } from "./neckShoulderActiveIntroCopy";
-import { formatShoulderBindoffRemainingInstruction } from "./sleevelessPatternOutput";
+import {
+  centerBindOffStitchesFromNeckShoulderChart,
+  formatShoulderBindoffRemainingInstruction,
+} from "./sleevelessPatternOutput";
+
+/** Registry key in `SLEEVELESS_HELP_VIDEOS` (Vimeo 252565241 — shallow round neck shaping). */
+export const NECKLINE_SHAPING_HELP_VIDEO_KEY = "shallowBackNeck";
 
 function sleevelessNotationOverlayOpts(
   piece: ShoulderShapingSvgPiece | undefined,
@@ -42,6 +49,7 @@ function sleevelessNotationOverlayOpts(
 export {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
   ACTIVE_SHOULDER_DIVIDE_SENTENCE,
+  SCRAP_OFF_GLOSSARY_ID,
 } from "./neckShoulderActiveIntroCopy";
 
 function escapeHtml(text: string): string {
@@ -201,34 +209,106 @@ export type ActiveShoulderChartIntroOptions = {
   layout: ActiveShoulderChartIntroLayout;
 };
 
-function activeShoulderAnchoredCenterBindOffHtml(
-  localStartRcLabel: string | undefined,
-  centerBindOffStitches: number | undefined
-): string {
-  return escapeHtml(
-    formatActiveShoulderCenterNecklinePlainSentence({
-      localStartRcLabel,
-      centerBindOffStitches,
-    })
-  );
+function scrapOffGlossaryPlaceholderHtml(): string {
+  return `<span class="glossary-tooltip-placeholder" data-glossary-id="${SCRAP_OFF_GLOSSARY_ID}">Scrap off</span>`;
+}
+
+/** HTML center-neckline divide line with glossary on “Scrap off” (plain-text twin in intro copy module). */
+function formatActiveShoulderCenterNecklineHtml(args: {
+  localStartRcLabel?: string | undefined;
+  centerBindOffStitches?: number | undefined;
+}): string {
+  const localStartLabel = String(args.localStartRcLabel ?? "").trim();
+  const centerCount = Number(args.centerBindOffStitches);
+  const centerCountLabel =
+    Number.isFinite(centerCount) && centerCount > 0 ? String(Math.round(centerCount)) : "";
+  const scrapOff = scrapOffGlossaryPlaceholderHtml();
+  const scrapOffTail = centerCountLabel
+    ? `${scrapOff} the center ${escapeHtml(centerCountLabel)} neckline stitches to divide the neckline`
+    : `${scrapOff} the center neckline stitches to divide the neckline`;
+  const rcColon = localStartLabel.match(/^RC:(\d{1,4})$/i);
+  if (rcColon) {
+    const n = String(Math.max(0, parseInt(rcColon[1], 10))).padStart(3, "0");
+    return `When Armhole RC reaches ${escapeHtml(n)}, ${scrapOffTail}.`;
+  }
+  if (localStartLabel) {
+    return `At ${escapeHtml(localStartLabel)}, ${scrapOffTail}.`;
+  }
+  return `${scrapOffTail.charAt(0).toUpperCase()}${scrapOffTail.slice(1)}.`;
 }
 
 /**
  * Shared HTML intro placed above the active-shoulder shaping checklist (online pattern tab + print/PDF).
+ * Center divide/setup copy is omitted when {@link centerBindOffStitches} is 0 (e.g. V-neck front).
  */
 export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartIntroOptions): string {
   const wrappedClass = String(options.wrapperClass ?? "").trim() || "active-shoulder-chart-intro";
-  const bindOffHtml = activeShoulderAnchoredCenterBindOffHtml(
-    options.localStartRcLabel,
-    options.centerBindOffStitches
-  );
-  const inner = `<p><strong>Center Neckline:</strong><br>${bindOffHtml}</p>
-  <p><strong>Divide:</strong><br>${escapeHtml(ACTIVE_SHOULDER_DIVIDE_SENTENCE)}</p>
-  <p>${escapeHtml(ACTIVE_SHOULDER_CHART_INTRO_SENTENCE)}</p>`;
+  const showCenterDivide = activeShoulderCenterDivideIntroApplies(options.centerBindOffStitches);
+  const centerHtml = showCenterDivide
+    ? formatActiveShoulderCenterNecklineHtml({
+        localStartRcLabel: options.localStartRcLabel,
+        centerBindOffStitches: options.centerBindOffStitches,
+      })
+    : "";
+  const innerParts: string[] = [];
+  if (showCenterDivide && centerHtml) {
+    innerParts.push(`<p><strong>Center Neckline:</strong><br>${centerHtml}</p>`);
+    innerParts.push(
+      `<p><strong>Divide:</strong><br>${escapeHtml(ACTIVE_SHOULDER_DIVIDE_SENTENCE)}</p>`,
+    );
+  }
+  innerParts.push(`<p>${escapeHtml(ACTIVE_SHOULDER_CHART_INTRO_SENTENCE)}</p>`);
+  const inner = innerParts.join("\n  ");
 
   return `<div class="${escapeHtml(wrappedClass)}">
   ${inner}
 </div>`;
+}
+
+/**
+ * True when the optional neckline shaping video helper should appear (division and/or shaping chart).
+ * Omits empty charts and plain sections with no shaping rows.
+ */
+export function activeShoulderNecklineShapingHelpApplies(
+  chart: NeckShoulderShapingChart | undefined,
+  centerBindOffStitches?: number | undefined,
+): boolean {
+  if (!chart?.rows?.length) return false;
+  const center =
+    centerBindOffStitches !== undefined
+      ? centerBindOffStitches
+      : centerBindOffStitchesFromNeckShoulderChart(chart);
+  if (activeShoulderCenterDivideIntroApplies(center)) return true;
+  if (isFullWidthVNeckFrontStyleChart(chart)) return true;
+  return chart.rows.length > 1;
+}
+
+/** Compact “New to shaping necklines?” helper — online only; uses existing sleeveless video modal. */
+export function renderActiveShoulderNecklineShapingHelpHtml(): string {
+  return `<aside class="sleeveless-neck-shoulder-help sleeveless-neck-shoulder-help--compact no-print" aria-label="Neckline shaping video help">
+  <p class="sleeveless-neck-shoulder-help__text"><strong>New to shaping necklines?</strong> This video walks through the process of dividing and shaping a neckline on the knitting machine. <span class="pattern-help-link"><button type="button" class="pattern-help-link__button" data-sleeveless-help-video="${NECKLINE_SHAPING_HELP_VIDEO_KEY}" aria-haspopup="dialog"><i class="fa-solid fa-play" aria-hidden="true"></i> Shallow round neck shaping</button></span></p>
+</aside>`;
+}
+
+/**
+ * Optional shaping help (when applicable) + chart intro copy. Help renders immediately before intro.
+ */
+export function renderNeckShoulderChartIntroBlockHtml(
+  options: ActiveShoulderChartIntroOptions & { chart?: NeckShoulderShapingChart | undefined },
+): string {
+  const center =
+    options.centerBindOffStitches !== undefined
+      ? options.centerBindOffStitches
+      : centerBindOffStitchesFromNeckShoulderChart(options.chart);
+  const introOpts: ActiveShoulderChartIntroOptions = {
+    ...options,
+    centerBindOffStitches: center,
+  };
+  const help =
+    options.chart && activeShoulderNecklineShapingHelpApplies(options.chart, center)
+      ? renderActiveShoulderNecklineShapingHelpHtml()
+      : "";
+  return `${help}${renderActiveShoulderChartIntroHtml(introOpts)}`;
 }
 
 type ActiveSideEdge = "Neck" | "Armhole";
@@ -292,6 +372,11 @@ function renderActiveSideBindoffRemainingHtml(
  */
 function carriagePositionForActiveSideRc(rc: number): "Right" | "Left" {
   return rc % 2 === 0 ? "Right" : "Left";
+}
+
+/** Physical carriage at RC start for the second-shoulder checklist (inverted RC parity vs active). */
+function carriagePositionForSecondShoulderRc(rc: number): "Right" | "Left" {
+  return oppositeCarriagePosition(carriagePositionForActiveSideRc(rc));
 }
 
 function edgeForActiveSideCarriagePosition(position: "Right" | "Left"): ActiveSideEdge {
@@ -420,7 +505,7 @@ function buildActiveSideActionsFromChartRows(rows: readonly NeckShoulderShapingC
   return { initialStitches, finalSourceRelativeRow, actions };
 }
 
-function buildActiveSideInstructionTableRows(
+export function buildActiveSideInstructionTableRows(
   chart: NeckShoulderShapingChart,
   rcStart = 0
 ): ActiveSideInstructionTableRow[] {
@@ -475,15 +560,12 @@ function buildActiveSideInstructionTableRows(
   return out;
 }
 
-function buildOppositeShoulderInstructionTableRows(
-  rows: readonly ActiveSideInstructionTableRow[]
+export function buildSecondShoulderInstructionTableRows(
+  rows: readonly ActiveSideInstructionTableRow[],
 ): ActiveSideInstructionTableRow[] {
   return rows.map((r) => ({
     ...r,
-    carriagePosition:
-      r.carriagePosition === "Right" || r.carriagePosition === "Left"
-        ? oppositeCarriagePosition(r.carriagePosition)
-        : r.carriagePosition,
+    carriagePosition: carriagePositionForSecondShoulderRc(r.rc),
   }));
 }
 
@@ -494,6 +576,7 @@ function buildOppositeShoulderInstructionTableRows(
  */
 export function compactActiveSideInstructionRowsForPrint(
   rows: readonly ActiveSideInstructionTableRow[],
+  options?: { invertCarriageParity?: boolean },
 ): ActiveSideInstructionTableRow[] {
   const out: ActiveSideInstructionTableRow[] = [];
   let i = 0;
@@ -515,7 +598,9 @@ export function compactActiveSideInstructionRowsForPrint(
     }
     const firstRc = row.rc;
     const lastRc = rows[j]!.rc;
-    const { carriage, edge } = plainKnitSpanCarriageEdgeDisplay(firstRc, lastRc);
+    const { carriage, edge } = plainKnitSpanCarriageEdgeDisplay(firstRc, lastRc, {
+      invertCarriageParity: options?.invertCarriageParity === true,
+    });
     if (j > i) {
       out.push({
         rc: firstRc,
@@ -682,10 +767,12 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
   const vNeckStyleOneRowPerRc =
     isFullWidthVNeckFrontStyleChart(chart) && options?.fullWidthChartOneRowPerRc !== false;
   const activeRowsRaw = activeSideOnly ? buildActiveSideInstructionTableRows(chart, activeSideRcStart) : [];
-  const oppositeRowsPrep = buildOppositeShoulderInstructionTableRows(activeRowsRaw);
+  const oppositeRowsPrep = buildSecondShoulderInstructionTableRows(activeRowsRaw);
   const oppositeRowsHtml = activeSideOnly
     ? renderActiveSideInstructionRowsTrHtml(
-        vNeckStyleOneRowPerRc ? oppositeRowsPrep : compactActiveSideInstructionRowsForPrint(oppositeRowsPrep),
+        vNeckStyleOneRowPerRc
+          ? oppositeRowsPrep
+          : compactActiveSideInstructionRowsForPrint(oppositeRowsPrep, { invertCarriageParity: true }),
         progressChartIdSecondary,
       )
     : "";
@@ -819,10 +906,10 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
     ? printRowsRaw
     : compactActiveSideInstructionRowsForPrint(printRowsRaw);
   const showSecondShoulderChecklist = options?.showSecondShoulderChecklist === true;
-  const oppositePrintRowsRaw = buildOppositeShoulderInstructionTableRows(printRowsRaw);
+  const oppositePrintRowsRaw = buildSecondShoulderInstructionTableRows(printRowsRaw);
   const oppositePrintRows = vNeckStyleOneRowPerRc
     ? oppositePrintRowsRaw
-    : compactActiveSideInstructionRowsForPrint(oppositePrintRowsRaw);
+    : compactActiveSideInstructionRowsForPrint(oppositePrintRowsRaw, { invertCarriageParity: true });
   const heldShoulderStitches = Math.max(0, Math.floor(Number(chart.rows[0]?.leftStitchCount ?? 0)));
   const rowsHtml = printRows
     .map((r) => {
