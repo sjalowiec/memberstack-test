@@ -63,6 +63,22 @@ async function activeCampaignRequest(
 }
 
 export default async (req: Request): Promise<Response> => {
+  console.log("memberstack-created: function started");
+
+  const hasActiveCampaignApiKey = Boolean(
+    (process.env.ACTIVECAMPAIGN_API_KEY || "").trim(),
+  );
+  const activeCampaignBaseUrl = (process.env.ACTIVECAMPAIGN_BASE_URL || "")
+    .trim()
+    .replace(/\/$/, "");
+  const hasActiveCampaignBaseUrl = Boolean(activeCampaignBaseUrl);
+
+  console.log("memberstack-created: ActiveCampaign env", {
+    hasActiveCampaignApiKey,
+    hasActiveCampaignBaseUrl,
+    activeCampaignBaseUrl,
+  });
+
   if (req.method !== "POST") {
     return jsonResponse({ error: "Method not allowed" }, 405);
   }
@@ -85,7 +101,15 @@ export default async (req: Request): Promise<Response> => {
     return jsonResponse({ error: "Invalid request body" }, 400);
   }
 
+  console.log("memberstack-created: webhook body keys", {
+    topLevelKeys: Object.keys(body),
+    payloadKeys: body.payload ? Object.keys(body.payload) : undefined,
+  });
+
   const email = body.payload?.auth?.email?.trim();
+
+  console.log("memberstack-created: extracted email", { email });
+
   if (!email) {
     console.warn("memberstack-created: missing payload.auth.email");
     return jsonResponse({ error: "Missing member email" }, 400);
@@ -204,6 +228,10 @@ export default async (req: Request): Promise<Response> => {
     );
   } catch (error) {
     console.error("memberstack-created: unexpected error", error);
+    console.error(
+      "memberstack-created: error message",
+      error instanceof Error ? error.message : String(error),
+    );
     return jsonResponse({ error: "Internal server error" }, 500);
   }
 };
