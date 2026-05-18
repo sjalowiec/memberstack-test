@@ -325,10 +325,10 @@
     top: calc(var(--site-header-offset, 7rem) + 4px);
     z-index: 8;
     margin: 0 0 0.65rem;
-    padding: 0.45rem 0;
-    background: color-mix(in srgb, var(--page-bg, #f7f8f7) 92%, white);
-    border-bottom: 1px solid rgba(82, 104, 45, 0.12);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+    padding: 0.5rem 0 0.55rem;
+    background: color-mix(in srgb, var(--page-bg, #f7f8f7) 78%, white);
+    border-bottom: 1px solid rgba(82, 104, 45, 0.16);
+    box-shadow: 0 2px 8px rgba(82, 104, 45, 0.07);
   }
 
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__track {
@@ -341,33 +341,80 @@
     padding: 0 0.15rem;
   }
 
+  @media (max-width: 640px) {
+    .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__track {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      padding-bottom: 0.15rem;
+    }
+  }
+
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill {
-    display: inline-block;
-    padding: 0.22rem 0.55rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.28rem 0.65rem;
     font-size: 0.78rem;
     font-weight: 600;
     line-height: 1.35;
     letter-spacing: 0.01em;
-    color: #4b5563;
+    color: #fff;
     text-decoration: none;
-    background: rgba(255, 255, 255, 0.85);
-    border: 1px solid rgba(82, 104, 45, 0.18);
+    background: var(--kbm-green, #52682d);
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 88%, #000);
     border-radius: 999px;
+    white-space: nowrap;
+    cursor: pointer;
     transition:
       background-color 0.12s ease,
       border-color 0.12s ease,
-      color 0.12s ease;
+      box-shadow 0.12s ease,
+      filter 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill:hover {
-    color: var(--kbm-green, #52682d);
-    border-color: rgba(82, 104, 45, 0.35);
-    background: #fff;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 82%, #000);
+    border-color: color-mix(in srgb, var(--kbm-green, #52682d) 72%, #000);
+    filter: brightness(0.97);
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill.is-active {
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 72%, #000);
+    border-color: color-mix(in srgb, var(--kbm-green, #52682d) 60%, #000);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--kbm-green, #52682d) 55%, #fff),
+      0 0 0 2px color-mix(in srgb, var(--kbm-green, #52682d) 35%, transparent);
   }
 
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill:focus-visible {
-    outline: 2px solid var(--kbm-green, #52682d);
+    outline: 2px solid #fff;
     outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--kbm-green, #52682d);
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill--print {
+    background: var(--sg-accent, #c2614e);
+    border-color: color-mix(in srgb, var(--sg-accent, #c2614e) 88%, #000);
+    font-family: inherit;
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill--print:hover {
+    background: color-mix(in srgb, var(--sg-accent, #c2614e) 82%, #000);
+    border-color: color-mix(in srgb, var(--sg-accent, #c2614e) 72%, #000);
+    filter: brightness(0.97);
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill--print:focus-visible {
+    box-shadow: 0 0 0 2px var(--sg-accent, #c2614e);
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill--print .fa-print {
+    font-size: 0.72rem;
+    opacity: 0.95;
   }
 
   #pattern-content .pattern-section,
@@ -1638,3 +1685,4 @@
     }
 
   }
+

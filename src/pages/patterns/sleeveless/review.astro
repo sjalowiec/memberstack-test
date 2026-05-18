@@ -7,6 +7,7 @@ import "../../../styles/wizard.css";
 import "../../../styles/sleeveless-express-wizard-layout.css";
 import "../../../styles/sleeveless-express-measurements-confirm.css";
 import "../../../styles/sleeveless-review-measurements.css";
+import { SLEEVELESS_PATTERN_FAMILY_NAME } from "../../../lib/patterns/sleevelessPatternProjectMeta";
 
 const builderHref = "/patterns/sleeveless/builder";
 const expressHref = "/patterns/sleeveless-express/";
@@ -14,6 +15,11 @@ const customBuildHref = "/patterns/sleeveless/custom-build/";
 const patternHref = "/patterns/sleeveless/pattern/";
 const askShareHref = "/patterns/sleeveless/ask-share/";
 const inspirationHref = "/patterns/sleeveless/inspiration/";
+/** Placeholder until Sleeveless pattern-family checkout is wired. */
+const patternFamilyUnlockHref = "#";
+const membershipHref = "/join";
+const lockedBannerStripCopy = `Want more customization? Unlock the full ${SLEEVELESS_PATTERN_FAMILY_NAME} System`;
+const lockedBannerStripAriaLabel = `Unlock the full ${SLEEVELESS_PATTERN_FAMILY_NAME} System for more customization`;
 ---
 
 <Layout
@@ -40,13 +46,117 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
           data-sleeveless-review-managed
           data-express-href={builderHref}
         >
+          {/*
+            TODO(access): Render only the matching banner once Memberstack / canCustomizePattern()
+            gating is wired. Both blocks are visible temporarily for visual comparison.
+          */}
           <div
-            class="sleeveless-review-access-banner"
-            data-sleeveless-review-access-banner
-            hidden
-            role="status"
+            class="sleeveless-review-access-messages"
+            data-sleeveless-review-access-messages
           >
-            <p class="sleeveless-review-access-banner__text" data-sleeveless-review-access-message></p>
+            <p class="sleeveless-review-access-preview-note" aria-hidden="true">
+              Dev preview: both access messages shown until gating is wired.
+            </p>
+
+            <div
+              class="sleeveless-review-access-banner sleeveless-review-access-banner--paid"
+              data-sleeveless-review-access-paid
+              role="status"
+            >
+              <div class="sleeveless-review-access-banner__layout">
+                <img
+                  class="sleeveless-review-access-banner__logo"
+                  src="/images/KINlogo.svg"
+                  alt="Knit It Now"
+                  width="48"
+                  height="48"
+                  decoding="async"
+                />
+                <div class="sleeveless-review-access-banner__content">
+                  <h2 class="sleeveless-review-access-banner__title">
+                    You have full customization access
+                  </h2>
+                  <p class="sleeveless-review-access-banner__body">
+                    Customize your measurements below, then update your pattern anytime.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="sleeveless-review-access-banner sleeveless-review-access-banner--locked"
+              data-sleeveless-review-access-locked
+              role="status"
+            >
+              <button
+                type="button"
+                class="sleeveless-review-access-banner__dismiss"
+                data-sleeveless-locked-banner-dismiss
+                aria-label="Dismiss unlock banner"
+                title="Dismiss"
+              >
+                <span aria-hidden="true">×</span>
+              </button>
+              <div class="sleeveless-review-access-banner__layout">
+                <img
+                  class="sleeveless-review-access-banner__logo"
+                  src="/images/KINlogo.svg"
+                  alt="Knit It Now"
+                  width="48"
+                  height="48"
+                  decoding="async"
+                />
+                <div class="sleeveless-review-access-banner__content">
+                  <h2 class="sleeveless-review-access-banner__title">
+                    Unlock the Sleeveless System
+                  </h2>
+                  <p class="sleeveless-review-access-banner__body">
+                    You’re viewing the measurements from your choices. Unlock the Sleeveless System to
+                    fully customize your fit, fine-tune shaping inputs, and update your pattern anytime.
+                  </p>
+                  <div class="sleeveless-review-access-locked-actions">
+              <div class="sleeveless-review-access-cta sleeveless-review-access-cta--primary">
+                <a
+                  href={patternFamilyUnlockHref}
+                  class="kbm-btn kbm-btn-accent sleeveless-review-access-cta__btn"
+                >
+                  Unlock Sleeveless System · $24.95
+                </a>
+                <p class="sleeveless-review-access-cta__hint">
+                        Lifetime access to the Sleeveless System for Women, Men, Kids, &amp; Babies.
+                </p>
+              </div>
+                    <p class="sleeveless-review-access-member-line">
+                      <span class="sleeveless-review-access-member-line__or">or</span>
+                    </p>
+                    <p class="sleeveless-review-access-member-cta">
+                      <a
+                        href={membershipHref}
+                        class="sleeveless-review-access-member-cta__link"
+                      >
+                        Become a Member
+                      </a>
+                    </p>
+                    <p class="sleeveless-review-access-member-hint">
+                      Unlimited access to every pattern system for all sizes and recipients.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="sleeveless-review-access-locked-strip"
+              data-sleeveless-locked-banner-expand
+              hidden
+              aria-label={lockedBannerStripAriaLabel}
+            >
+              {lockedBannerStripCopy}
+              <span class="sleeveless-review-access-locked-strip__arrow" aria-hidden="true">
+                →
+              </span>
+            </button>
           </div>
 
           <p
@@ -397,28 +507,267 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
 </Layout>
 
 <style>
+  .sleeveless-unified-review-page .sleeveless-review-access-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 0 0 0.85rem;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-preview-note {
+    margin: 0;
+    padding: 0.35rem 0.55rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    line-height: 1.35;
+    color: #6b7280;
+    background: #f3f4f6;
+    border: 1px dashed #d1d5db;
+  }
+
   .sleeveless-unified-review-page .sleeveless-review-access-banner {
-    margin: 0 0 0.65rem;
-    padding: 0.75rem 1rem;
+    padding: 0.85rem 1rem;
     border-radius: 10px;
+    color: #374151;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--paid {
+    padding: 0.65rem 0.85rem;
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 18%, #e5e7eb);
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 5%, var(--page-bg, #fff));
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--paid .sleeveless-review-access-banner__layout {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem 0.75rem;
+    min-width: 0;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner__logo {
+    flex: 0 0 auto;
+    width: 3rem;
+    height: 3rem;
+    object-fit: contain;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner__content {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked {
+    position: relative;
+    padding: 0.65rem 2rem 0.65rem 0.85rem;
+    border: 1px solid color-mix(in srgb, var(--kbm-accent, #c2614e) 20%, #e8e4df);
+    background: color-mix(in srgb, var(--kbm-accent, #c2614e) 5%, var(--page-bg, #fff));
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-banner__dismiss {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.3rem;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1;
+    color: #9ca3af;
+    background: transparent;
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-banner__dismiss:hover {
+    color: #6b7280;
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-banner__dismiss:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--kbm-accent, #c2614e) 55%, #6b7280);
+    outline-offset: 1px;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-banner__layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem 0.75rem;
+    min-width: 0;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-banner__logo {
+    margin-top: 0.1rem;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-banner__title {
+    margin-bottom: 0.2rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-banner__body {
+    margin-bottom: 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-locked-actions {
+    margin-top: 0.75rem;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner__title {
+    margin: 0 0 0.35rem;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #1f2937;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--paid .sleeveless-review-access-banner__title {
+    margin-bottom: 0.2rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--kbm-green, #52682d) 72%, #1f2937);
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--paid .sleeveless-review-access-banner__body {
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner__body {
+    margin: 0;
     font-size: 0.92rem;
     line-height: 1.5;
   }
 
-  .sleeveless-unified-review-page .sleeveless-review-access-banner--free {
-    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 20%, #ddd);
-    background: color-mix(in srgb, var(--kbm-green, #52682d) 6%, var(--page-bg, #fff));
-    color: #374151;
+  .sleeveless-unified-review-page .sleeveless-review-access-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+    min-width: 0;
   }
 
-  .sleeveless-unified-review-page .sleeveless-review-access-banner--advanced {
-    border: 1px solid color-mix(in srgb, var(--sg-accent, #c2614e) 22%, #e8e4df);
-    background: color-mix(in srgb, var(--sg-accent, #c2614e) 6%, var(--page-bg, #fff));
-    color: #374151;
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-cta--primary {
+    margin-bottom: 0;
   }
 
-  .sleeveless-unified-review-page .sleeveless-review-access-banner__text {
+  .sleeveless-unified-review-page .sleeveless-review-access-cta__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    text-align: center;
+    white-space: normal;
+    line-height: 1.3;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-cta__hint {
     margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: #6b7280;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-member-line {
+    margin: 0.5rem 0 0.35rem;
+    font-size: 0.88rem;
+    line-height: 1.4;
+    text-align: center;
+    color: #6b7280;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-member-cta {
+    margin: 0 0 0.25rem;
+    text-align: center;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-member-cta__link {
+    font-size: 0.88rem;
+    line-height: 1.4;
+    font-weight: 500;
+    color: #6b7280;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-member-cta__link:hover {
+    color: #4b5563;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-member-hint {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    text-align: center;
+    color: #6b7280;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked[hidden],
+  .sleeveless-unified-review-page .sleeveless-review-access-locked-strip[hidden] {
+    display: none !important;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-locked-strip {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--kbm-accent, #c2614e) 22%, #e8e4df);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--kbm-accent, #c2614e) 7%, var(--page-bg, #fff));
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    font-family: inherit;
+    font-size: 0.84rem;
+    line-height: 1.35;
+    font-weight: 500;
+    text-align: center;
+    color: color-mix(in srgb, var(--kbm-accent, #c2614e) 72%, #374151);
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-locked-strip:hover {
+    border-color: color-mix(in srgb, var(--kbm-accent, #c2614e) 32%, #d1d5db);
+    background: color-mix(in srgb, var(--kbm-accent, #c2614e) 11%, var(--page-bg, #fff));
+    color: color-mix(in srgb, var(--kbm-accent, #c2614e) 82%, #1f2937);
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-locked-strip:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--kbm-accent, #c2614e) 55%, #6b7280);
+    outline-offset: 2px;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-locked-strip__arrow {
+    margin-left: 0.15em;
+    font-size: 1.7em;
+    line-height: 1;
+    font-weight: 400;
+    vertical-align: -0.08em;
+    opacity: 0.72;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-locked-strip:hover .sleeveless-review-access-locked-strip__arrow {
+    opacity: 0.9;
+  }
+
+  @media (max-width: 480px) {
+    .sleeveless-unified-review-page .sleeveless-review-access-locked-strip {
+      padding: 0.5rem 0.65rem;
+      font-size: 0.82rem;
+    }
   }
 </style>
 

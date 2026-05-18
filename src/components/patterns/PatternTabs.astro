@@ -118,18 +118,25 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
             href={summaryNavHref}
             data-tab="custom"
             aria-current={customTabActive ? "page" : undefined}
-            aria-label="Summary"
-            title="Summary"
+            aria-label="Customize"
+            title="Customize"
           >
-            <img
-              class="tab-workspace-brand-icon"
-              src="/images/KINlogo.svg"
-              alt=""
+            <svg
+              class="tab-workspace-brand-icon tab-workspace-summary-pencil-icon"
               width="18"
               height="18"
-              decoding="async"
-            />
-            <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Summary</span>
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+            </svg>
+            <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Customize</span>
           </a>
           {!hidePattern &&
             (patternTabDisabled ? (
@@ -139,9 +146,9 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
                 data-tab="pattern"
                 role="button"
                 aria-disabled="true"
-                aria-label="Pattern"
+                aria-label="My Pattern"
               >
-                <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Pattern</span>
+                <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">My Pattern</span>
                 <i class="fa-solid fa-file-lines tab-workspace-mobile-icon" aria-hidden="true"></i>
               </span>
             ) : (
@@ -151,9 +158,9 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
                 href={String(patternHref).trim()}
                 data-tab="pattern"
                 aria-current={patternTabActive ? "page" : undefined}
-                aria-label="Pattern"
+                aria-label="My Pattern"
               >
-                <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Pattern</span>
+                <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">My Pattern</span>
                 <i class="fa-solid fa-file-lines tab-workspace-mobile-icon" aria-hidden="true"></i>
               </a>
             ))}
@@ -163,9 +170,9 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
               href={String(askShareHref).trim()}
               data-tab="share"
               aria-current={shareTabActive ? "page" : undefined}
-              aria-label="Ask / Share"
+              aria-label="Connect"
             >
-              <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Ask / Share</span>
+              <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Connect</span>
               <i class="fa-solid fa-comments tab-workspace-mobile-icon" aria-hidden="true"></i>
             </a>
           )}
@@ -175,9 +182,9 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
               href={String(inspirationHref).trim()}
               data-tab="inspiration"
               aria-current={inspirationTabActive ? "page" : undefined}
-              aria-label="Inspiration"
+              aria-label="Inspire"
             >
-              <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Inspiration</span>
+              <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Inspire</span>
               <i class="fa-solid fa-lightbulb tab-workspace-mobile-icon" aria-hidden="true"></i>
             </a>
           )}
@@ -364,6 +371,11 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
     width: 1.0625rem;
     height: 1.0625rem;
     object-fit: contain;
+  }
+
+  .pattern-workspace-tabs .pattern-tab-nav .tab-workspace-summary-pencil-icon {
+    display: block;
+    color: currentColor;
   }
 
   .pattern-workspace-tabs .pattern-tab-nav .tab-workspace-mobile-icon {

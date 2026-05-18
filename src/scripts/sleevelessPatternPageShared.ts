@@ -30,6 +30,7 @@ import {
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
 import { initChartProgressTracking } from "./chartProgressTracker.ts";
 import { showResults, initializeActionBar } from "../components/wizards/utils/wizardBehavior.ts";
+import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
 import {
   resolveSleevelessFrontDiagram,
@@ -152,6 +153,88 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     printButtonSelector: "#print-btn",
     printFooterSelector: "#print-footer",
   };
+
+  const isSleevelessWorkspacePatternPage = () =>
+    Boolean(document.querySelector(".sleeveless-pattern-page.sleeveless-workspace-subpage"));
+
+  let sleevelessInpageNavScrollSpyBound = false;
+
+  function sleevelessInpageNavScrollOffsetPx() {
+    const headerOffset =
+      parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--site-header-offset")
+      ) || 112;
+    const nav = document.querySelector("[data-sleeveless-pattern-inpage-nav]");
+    const navHeight = nav instanceof HTMLElement ? nav.offsetHeight : 40;
+    return headerOffset + navHeight + 6;
+  }
+
+  function updateSleevelessInpageNavActivePill() {
+    const nav = document.querySelector("[data-sleeveless-pattern-inpage-nav]");
+    if (!(nav instanceof HTMLElement) || nav.hidden) return;
+    const pills = nav.querySelectorAll(
+      "a.sleeveless-pattern-inpage-nav__pill[data-nav-section-id]"
+    );
+    if (!pills.length) return;
+
+    const offset = sleevelessInpageNavScrollOffsetPx();
+    let activeId = pills[0].getAttribute("data-nav-section-id");
+    for (const pill of pills) {
+      if (!(pill instanceof HTMLAnchorElement)) continue;
+      const id = pill.getAttribute("data-nav-section-id");
+      if (!id) continue;
+      const section = document.getElementById(id);
+      if (!(section instanceof HTMLElement)) continue;
+      if (section.getBoundingClientRect().top <= offset) {
+        activeId = id;
+      }
+    }
+
+    pills.forEach((pill) => {
+      if (!(pill instanceof HTMLAnchorElement)) return;
+      const id = pill.getAttribute("data-nav-section-id");
+      const isActive = Boolean(id && id === activeId);
+      pill.classList.toggle("is-active", isActive);
+      if (isActive) pill.setAttribute("aria-current", "location");
+      else pill.removeAttribute("aria-current");
+    });
+  }
+
+  function bindSleevelessInpageNavScrollSpy() {
+    if (sleevelessInpageNavScrollSpyBound) return;
+    sleevelessInpageNavScrollSpyBound = true;
+    let ticking = false;
+    const schedule = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        updateSleevelessInpageNavActivePill();
+      });
+    };
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("hashchange", schedule);
+  }
+
+  function appendSleevelessInpageNavPrintPill(track) {
+    if (!isSleevelessWorkspacePatternPage()) return;
+    const printBtn = document.createElement("button");
+    printBtn.type = "button";
+    printBtn.id = "print-btn";
+    printBtn.className =
+      "sleeveless-pattern-inpage-nav__pill sleeveless-pattern-inpage-nav__pill--print no-print";
+    printBtn.setAttribute("data-testid", "button-print");
+    printBtn.setAttribute("aria-label", "Print pattern");
+    printBtn.innerHTML = `<i class="fas fa-print" aria-hidden="true"></i> Print`;
+    if (printBtn.dataset.sleevelessPrintBound !== "true") {
+      printBtn.dataset.sleevelessPrintBound = "true";
+      printBtn.addEventListener("click", () => {
+        triggerPatternPrint(printBtn, {});
+      });
+    }
+    track.appendChild(printBtn);
+    printBtn.style.display = "inline-flex";
+  }
 
   function section(obj) {
     if (obj && typeof obj === "object" && !Array.isArray(obj)) {
@@ -1534,12 +1617,20 @@ table {
       const a = document.createElement("a");
       a.href = `#${found.id}`;
       a.className = "sleeveless-pattern-inpage-nav__pill";
+      a.dataset.navSectionId = found.id;
       a.textContent = item.label;
       track.appendChild(a);
       count += 1;
     }
+    if (count > 0) {
+      appendSleevelessInpageNavPrintPill(track);
+    }
     nav.replaceChildren(track);
     nav.hidden = count === 0;
+    if (count > 0) {
+      bindSleevelessInpageNavScrollSpy();
+      updateSleevelessInpageNavActivePill();
+    }
   }
 
   function wrapPatternSection(sectionId, title, innerHtml, opts) {
@@ -2178,7 +2269,6 @@ table {
 
     window.kbmRefreshSleevelessPattern = refreshPatternTabContent;
     bindTabs();
-    initializeActionBar(resultsVisibilityConfig);
     void (async () => {
       await refreshPatternTabContent();
       if (hadTabPatternQuery) activateWizardTab("pattern", { skipRefresh: true });

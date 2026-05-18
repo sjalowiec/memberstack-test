@@ -3,6 +3,7 @@
  * Gates read-only vs editable summary (measurements, title, notes) via `canCustomizePattern`.
  */
 import { canCustomizePattern } from "../lib/patterns/sleevelessPatternAccessGate";
+import { initSleevelessLockedBannerDismiss } from "./sleevelessLockedBannerDismiss";
 import { initExpressYarnDrawer } from "./sleeveless-express-measurements-page";
 import { initCustomBuildMeasurementsPage } from "./sleeveless-custom-build-measurements-page";
 import { syncSleevelessDesignBasicsToPatternStorage } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
@@ -14,12 +15,6 @@ import {
 import { getPatternData, SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "../lib/patterns/patternStorage";
 
 const PATTERN_WORKSPACE_TAB_PATTERN_HREF = "/patterns/sleeveless/pattern/?tab=pattern";
-
-const FREE_ACCESS_MESSAGE =
-  "This summary is ready to use. Members can also rename projects, add notes, save patterns, and adjust measurements before generating the pattern.";
-
-const ADVANCED_ACCESS_MESSAGE =
-  "Advanced pattern access: edit measurements below, then generate or update your pattern.";
 
 function readExpressValues(): Record<string, string> {
   if (typeof localStorage === "undefined") return {};
@@ -84,16 +79,6 @@ function syncExpressBasicsFromBuilderAndContinue(): void {
   window.location.assign(PATTERN_WORKSPACE_TAB_PATTERN_HREF);
 }
 
-function setAccessBanner(advanced: boolean): void {
-  const banner = document.querySelector("[data-sleeveless-review-access-banner]");
-  const message = document.querySelector("[data-sleeveless-review-access-message]");
-  if (!(banner instanceof HTMLElement) || !(message instanceof HTMLElement)) return;
-  message.textContent = advanced ? ADVANCED_ACCESS_MESSAGE : FREE_ACCESS_MESSAGE;
-  banner.classList.toggle("sleeveless-review-access-banner--advanced", advanced);
-  banner.classList.toggle("sleeveless-review-access-banner--free", !advanced);
-  banner.removeAttribute("hidden");
-}
-
 function configureReviewActions(advanced: boolean): void {
   const cbContinue = document.querySelector("[data-cb-measure-continue]");
   const unitsHost = document.querySelector("[data-express-measurements-units-host]");
@@ -115,8 +100,8 @@ function continueToPatternFromReview(): void {
 }
 
 function initUnifiedSleevelessReviewPage(): void {
+  initSleevelessLockedBannerDismiss();
   const advanced = canCustomizePattern();
-  setAccessBanner(advanced);
   configureReviewActions(advanced);
   initExpressYarnDrawer();
 
