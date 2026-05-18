@@ -164,10 +164,37 @@
 .ns-shaping-chart__progress-hide-status {
   margin: 0;
   max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   font-size: 0.6875rem;
   line-height: 1.4;
   font-weight: 500;
   color: #94a3b8;
+}
+
+.ns-shaping-chart__progress-hide-status-mark {
+  flex-shrink: 0;
+  position: relative;
+  display: inline-block;
+  inline-size: 0.65rem;
+  block-size: 0.65rem;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.9;
+}
+
+.ns-shaping-chart__progress-hide-status-mark::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0.14rem;
+  inset-block-start: 0.02rem;
+  inline-size: 0.2rem;
+  block-size: 0.34rem;
+  border: solid #fff;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
 }
 
 .ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__progress-hide-status {

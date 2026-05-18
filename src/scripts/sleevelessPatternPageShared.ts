@@ -310,6 +310,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     const intro = renderActiveShoulderChartIntroHtml({
       localStartRcLabel: String(startRowLabel ?? "").trim(),
       centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(chart),
+      chart,
       wrapperClass: "pattern-shaping-intro",
       layout: "labeled",
     });

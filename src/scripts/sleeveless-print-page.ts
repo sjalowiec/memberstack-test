@@ -211,6 +211,7 @@ async function initSleevelessPrintPage(): Promise<void> {
     renderActiveShoulderChartIntroHtml({
       localStartRcLabel: backLocalStartLabel,
       centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(result.neckShoulderShapingChart),
+      chart: result.neckShoulderShapingChart,
       wrapperClass: "print-chart-intro",
       layout: "compact",
     }),
@@ -226,6 +227,7 @@ async function initSleevelessPrintPage(): Promise<void> {
     renderActiveShoulderChartIntroHtml({
       localStartRcLabel: frontLocalStartLabel,
       centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(result.frontNeckShoulderShapingChart),
+      chart: result.frontNeckShoulderShapingChart,
       wrapperClass: "print-chart-intro",
       layout: "compact",
     }),

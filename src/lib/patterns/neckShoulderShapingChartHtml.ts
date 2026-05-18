@@ -23,7 +23,9 @@ import type { RowEntry, ShapingEvent } from "./shapingTimeline";
 import {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
   ACTIVE_SHOULDER_DIVIDE_SENTENCE,
+  ACTIVE_VNECK_CENTER_DIVIDE_TAIL,
   activeShoulderCenterDivideIntroApplies,
+  activeShoulderIntroUsesVNeckDivideCopy,
   SCRAP_OFF_GLOSSARY_ID,
 } from "./neckShoulderActiveIntroCopy";
 import {
@@ -109,7 +111,7 @@ function renderNsChartProgressToolbarHtml(): string {
       <button type="button" class="ns-shaping-chart__progress-btn ns-shaping-chart__progress-toggle-hide" data-chart-progress-toggle-hide aria-pressed="false">Hide completed rows</button>
       <button type="button" class="ns-shaping-chart__progress-btn ns-shaping-chart__progress-reset" data-chart-progress-reset>Reset checklist</button>
     </div>
-    <p class="ns-shaping-chart__progress-hide-status" data-chart-progress-hide-status role="status" aria-live="polite">All rows are showing.</p>
+    <p class="ns-shaping-chart__progress-hide-status" data-chart-progress-hide-status role="status" aria-live="polite"><span class="ns-shaping-chart__progress-hide-status-mark" aria-hidden="true"></span><span data-chart-progress-hide-status-text>Completed rows are visible.</span></p>
   </div>`;
 }
 
@@ -203,6 +205,8 @@ export type ActiveShoulderChartIntroOptions = {
   localStartRcLabel?: string | undefined;
   /** Whole-stitch center bind-off count from chart row 0; omit tail when unknown. */
   centerBindOffStitches?: number | undefined;
+  /** When set, V-neck front charts use divide-at-center copy instead of round-neck center scrap-off. */
+  chart?: NeckShoulderShapingChart | undefined;
   /** Host-specific wrapper class (`print-chart-intro` vs `pattern-shaping-intro`). */
   wrapperClass: string;
   /** Reserved for callers (online vs print); intro wording is the same for both layouts. */
@@ -237,19 +241,43 @@ function formatActiveShoulderCenterNecklineHtml(args: {
   return `${scrapOffTail.charAt(0).toUpperCase()}${scrapOffTail.slice(1)}.`;
 }
 
+/** HTML V-neck center divide line (no scrap-off / bind-off wording). */
+function formatActiveShoulderVNeckCenterNecklineHtml(args: {
+  localStartRcLabel?: string | undefined;
+}): string {
+  const localStartLabel = String(args.localStartRcLabel ?? "").trim();
+  const tail = escapeHtml(ACTIVE_VNECK_CENTER_DIVIDE_TAIL);
+  const rcColon = localStartLabel.match(/^RC:(\d{1,4})$/i);
+  if (rcColon) {
+    const n = String(Math.max(0, parseInt(rcColon[1], 10))).padStart(3, "0");
+    return `When Armhole RC reaches ${escapeHtml(n)}, ${tail}.`;
+  }
+  if (localStartLabel) {
+    return `At ${escapeHtml(localStartLabel)}, ${tail}.`;
+  }
+  return `${tail.charAt(0).toUpperCase()}${tail.slice(1)}.`;
+}
+
 /**
  * Shared HTML intro placed above the active-shoulder shaping checklist (online pattern tab + print/PDF).
- * Center divide/setup copy is omitted when {@link centerBindOffStitches} is 0 (e.g. V-neck front).
+ * Round-neck center scrap-off copy is omitted when {@link centerBindOffStitches} is 0; V-neck front
+ * charts use divide-at-center copy via {@link activeShoulderIntroUsesVNeckDivideCopy}.
  */
 export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartIntroOptions): string {
   const wrappedClass = String(options.wrapperClass ?? "").trim() || "active-shoulder-chart-intro";
-  const showCenterDivide = activeShoulderCenterDivideIntroApplies(options.centerBindOffStitches);
-  const centerHtml = showCenterDivide
-    ? formatActiveShoulderCenterNecklineHtml({
-        localStartRcLabel: options.localStartRcLabel,
-        centerBindOffStitches: options.centerBindOffStitches,
-      })
-    : "";
+  const vNeckDivide = activeShoulderIntroUsesVNeckDivideCopy(options.chart);
+  const roundCenterDivide =
+    !vNeckDivide &&
+    activeShoulderCenterDivideIntroApplies(options.centerBindOffStitches, options.chart);
+  const showCenterDivide = vNeckDivide || roundCenterDivide;
+  const centerHtml = vNeckDivide
+    ? formatActiveShoulderVNeckCenterNecklineHtml({ localStartRcLabel: options.localStartRcLabel })
+    : roundCenterDivide
+      ? formatActiveShoulderCenterNecklineHtml({
+          localStartRcLabel: options.localStartRcLabel,
+          centerBindOffStitches: options.centerBindOffStitches,
+        })
+      : "";
   const innerParts: string[] = [];
   if (showCenterDivide && centerHtml) {
     innerParts.push(`<p><strong>Center Neckline:</strong><br>${centerHtml}</p>`);
@@ -278,7 +306,7 @@ export function activeShoulderNecklineShapingHelpApplies(
     centerBindOffStitches !== undefined
       ? centerBindOffStitches
       : centerBindOffStitchesFromNeckShoulderChart(chart);
-  if (activeShoulderCenterDivideIntroApplies(center)) return true;
+  if (activeShoulderCenterDivideIntroApplies(center, chart)) return true;
   if (isFullWidthVNeckFrontStyleChart(chart)) return true;
   return chart.rows.length > 1;
 }
@@ -302,6 +330,7 @@ export function renderNeckShoulderChartIntroBlockHtml(
       : centerBindOffStitchesFromNeckShoulderChart(options.chart);
   const introOpts: ActiveShoulderChartIntroOptions = {
     ...options,
+    chart: options.chart,
     centerBindOffStitches: center,
   };
   const help =

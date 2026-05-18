@@ -13,7 +13,7 @@ const STORAGE_NS = "kbm:chart-rows";
 
 const CHART_PROGRESS_LABEL_FILTER_OFF = "Hide completed rows";
 const CHART_PROGRESS_LABEL_FILTER_ON = "Showing unfinished rows only";
-const CHART_PROGRESS_STATUS_FILTER_OFF = "All rows are showing.";
+const CHART_PROGRESS_STATUS_FILTER_OFF = "Completed rows are visible.";
 const CHART_PROGRESS_STATUS_FILTER_ON = "Completed rows are hidden.";
 
 function sanitizeKeyPart(raw: string): string {
@@ -79,7 +79,7 @@ function bindChartSection(
   const hideBtn =
     chartRoot.querySelector<HTMLButtonElement>("[data-chart-progress-toggle-hide]");
   const resetBtn = chartRoot.querySelector<HTMLButtonElement>("[data-chart-progress-reset]");
-  const hideStatusEl = chartRoot.querySelector<HTMLElement>("[data-chart-progress-hide-status]");
+  const hideStatusTextEl = chartRoot.querySelector<HTMLElement>("[data-chart-progress-hide-status-text]");
 
   const setCompletedHiddenUi = (active: boolean): void => {
     chartRoot.dataset.chartProgressHideCompleted = active ? "true" : "false";
@@ -88,8 +88,8 @@ function bindChartSection(
       hideBtn.setAttribute("aria-pressed", active ? "true" : "false");
       hideBtn.textContent = active ? CHART_PROGRESS_LABEL_FILTER_ON : CHART_PROGRESS_LABEL_FILTER_OFF;
     }
-    if (hideStatusEl) {
-      hideStatusEl.textContent = active ? CHART_PROGRESS_STATUS_FILTER_ON : CHART_PROGRESS_STATUS_FILTER_OFF;
+    if (hideStatusTextEl) {
+      hideStatusTextEl.textContent = active ? CHART_PROGRESS_STATUS_FILTER_ON : CHART_PROGRESS_STATUS_FILTER_OFF;
     }
   };
 
