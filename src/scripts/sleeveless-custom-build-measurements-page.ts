@@ -599,15 +599,24 @@ function wireFieldPersistence(root: HTMLElement): void {
 
 function wireReadOnlyContinueToPattern(root: HTMLElement, onContinue: () => void): void {
   const existing = root.querySelector("[data-express-measurements-continue]");
-  if (!(existing instanceof HTMLAnchorElement)) return;
-  const anchor = existing.cloneNode(true) as HTMLAnchorElement;
-  existing.replaceWith(anchor);
-  anchor.href = PATTERN_WORKSPACE_TAB_PATTERN_HREF;
-  anchor.removeAttribute("hidden");
-  anchor.addEventListener("click", (ev: MouseEvent) => {
-    ev.preventDefault();
-    onContinue();
-  });
+  if (existing instanceof HTMLAnchorElement) {
+    const anchor = existing.cloneNode(true) as HTMLAnchorElement;
+    existing.replaceWith(anchor);
+    anchor.href = PATTERN_WORKSPACE_TAB_PATTERN_HREF;
+    anchor.removeAttribute("hidden");
+    anchor.addEventListener("click", (ev: MouseEvent) => {
+      ev.preventDefault();
+      onContinue();
+    });
+    return;
+  }
+
+  const continueBtn = root.querySelector("[data-cb-measure-continue]");
+  if (!(continueBtn instanceof HTMLButtonElement)) return;
+  const button = continueBtn.cloneNode(true) as HTMLButtonElement;
+  continueBtn.replaceWith(button);
+  button.removeAttribute("hidden");
+  button.addEventListener("click", () => onContinue());
 }
 
 async function renderDiagram(

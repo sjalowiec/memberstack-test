@@ -612,8 +612,9 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
             </div>
             <!-- Submit lives outside collapsible .express-acc__body so it stays visible when Gauge is closed (see updateGeneratePatternAvailability). -->
             <div class="express-generate-wrap express-generate-wrap--footer" id="express-generate-wrap" hidden>
+              <p class="express-generate-cta__helper">Your selections are ready to review.</p>
               <button type="submit" form="express-gauge-form" class="express-generate" id="express-generate">
-                Generate Pattern
+                Review My Pattern
               </button>
             </div>
           </section>
@@ -696,45 +697,6 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
 
   .express-gauge-block {
     margin-bottom: 0.25rem;
-  }
-
-  .express-generate-wrap {
-    margin-top: 1.5rem;
-  }
-
-  .express-generate-wrap--footer {
-    margin-top: 0.75rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(82, 104, 45, 0.1);
-  }
-
-  .express-acc.express-acc--open .express-generate-wrap--footer {
-    margin-top: 1.25rem;
-  }
-
-  .express-generate {
-    appearance: none;
-    font: inherit;
-    font-weight: 600;
-    font-size: 1rem;
-    padding: 0.75rem 1.5rem;
-    border-radius: 999px;
-    border: none;
-    background: var(--express-terracotta);
-    color: #fff;
-    cursor: pointer;
-    transition:
-      opacity 0.15s ease,
-      transform 0.1s ease;
-  }
-
-  .express-generate:hover {
-    opacity: 0.92;
-  }
-
-  .express-generate:focus-visible {
-    outline: 2px solid var(--express-terracotta);
-    outline-offset: 3px;
   }
 
   .sg-tab-share__intro {

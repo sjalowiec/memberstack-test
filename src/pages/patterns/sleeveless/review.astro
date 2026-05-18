@@ -62,36 +62,86 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
             aria-label="Pattern project"
           >
             <div class="sleeveless-review-project-header__name">
-              <label
-                class="sleeveless-review-project-header__label sleeveless-review-project-header__label--name"
-                for="sleeveless-pattern-name"
+              <div
+                class="sleeveless-review-project-header__title-view"
+                data-sleeveless-pattern-project-title-view
               >
-                <span>Pattern name</span>
-                <svg
-                  class="sleeveless-review-project-header__edit-icon"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
+                <div
+                  class="sleeveless-review-project-header__section-head"
+                  data-sleeveless-pattern-project-title-edit
+                  role="button"
+                  tabindex="0"
+                  title="Edit pattern name"
+                  aria-label="Edit pattern name"
                 >
-                  <path
-                    d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"></path>
-                </svg>
-              </label>
-              <div class="sleeveless-review-project-header__title-field">
-                <input
-                  id="sleeveless-pattern-name"
-                  class="sleeveless-review-project-header__title-input"
-                  type="text"
-                  data-sleeveless-pattern-project-title
-                  autocomplete="off"
-                  spellcheck="false"
-                />
+                  <span class="sleeveless-review-project-header__section-pencil" aria-hidden="true">
+                    <svg
+                      class="sleeveless-review-project-header__pencil-icon"
+                      width="21"
+                      height="21"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"></path>
+                    </svg>
+                  </span>
+                  <span class="sleeveless-review-project-header__label">Pattern name</span>
+                </div>
+                <p
+                  class="sleeveless-review-project-header__title-display"
+                  data-sleeveless-pattern-project-title-display
+                ></p>
+              </div>
+              <div
+                class="sleeveless-review-project-header__title-panel"
+                data-sleeveless-pattern-project-title-panel
+                hidden
+              >
+                <label class="sleeveless-review-project-header__label" for="sleeveless-pattern-name">
+                  Pattern name
+                </label>
+                <div class="sleeveless-review-project-header__title-field">
+                  <input
+                    id="sleeveless-pattern-name"
+                    class="sleeveless-review-project-header__title-input"
+                    type="text"
+                    data-sleeveless-pattern-project-title
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                </div>
+                <div class="sleeveless-review-project-header__title-footer">
+                  <div
+                    class="sleeveless-review-project-header__title-toolbar"
+                    role="group"
+                    aria-label="Pattern name actions"
+                  >
+                    <button
+                      type="button"
+                      class="sleeveless-review-project-header__notes-icon-btn sleeveless-review-project-header__notes-icon-btn--save"
+                      data-sleeveless-pattern-project-title-save
+                      title="Save pattern name"
+                      aria-label="Save pattern name"
+                    >
+                      <i class="fa-solid fa-check" aria-hidden="true"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="sleeveless-review-project-header__notes-icon-btn sleeveless-review-project-header__notes-icon-btn--close"
+                      data-sleeveless-pattern-project-title-cancel
+                      title="Cancel"
+                      aria-label="Cancel"
+                    >
+                      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="sleeveless-review-project-header__notes">
@@ -106,29 +156,43 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
                   data-sleeveless-pattern-project-notes-display
                 ></p>
               </div>
-              <button
-                type="button"
-                class="sleeveless-review-project-header__notes-add"
-                data-sleeveless-pattern-project-notes-add
-              >
-                + Add project notes
-              </button>
               <div
-                class="sleeveless-review-project-header__notes-collapsed"
-                data-sleeveless-pattern-project-notes-collapsed
+                class="sleeveless-review-project-header__section-head"
+                data-sleeveless-pattern-project-notes-header
+                data-sleeveless-pattern-project-notes-edit
+                role="button"
+                tabindex="0"
+                title="Edit project notes"
+                aria-label="Edit project notes"
+              >
+                <span class="sleeveless-review-project-header__section-pencil" aria-hidden="true">
+                  <svg
+                    class="sleeveless-review-project-header__pencil-icon"
+                    width="21"
+                    height="21"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"></path>
+                  </svg>
+                </span>
+                <span class="sleeveless-review-project-header__label">Project notes</span>
+              </div>
+              <div
+                class="sleeveless-review-project-header__notes-view"
+                data-sleeveless-pattern-project-notes-view
                 hidden
               >
                 <p
-                  class="sleeveless-review-project-header__notes-preview"
-                  data-sleeveless-pattern-project-notes-preview
+                  class="sleeveless-review-project-header__notes-display"
+                  data-sleeveless-pattern-project-notes-static
                 ></p>
-                <button
-                  type="button"
-                  class="sleeveless-review-project-header__notes-action"
-                  data-sleeveless-pattern-project-notes-edit
-                >
-                  Edit notes
-                </button>
               </div>
               <div
                 class="sleeveless-review-project-header__notes-panel"
@@ -147,35 +211,54 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
                   autocomplete="off"
                 ></textarea>
                 <div class="sleeveless-review-project-header__notes-footer">
-                  <span
-                    class="sleeveless-review-project-header__notes-count pattern-subtext"
-                    data-sleeveless-pattern-project-notes-count
+                  <div
+                    class="sleeveless-review-project-header__notes-toolbar"
+                    role="group"
+                    aria-label="Project notes actions"
                   >
-                    0 / 300
-                  </span>
-                  <span
-                    class="sleeveless-review-project-header__notes-saved pattern-subtext"
-                    data-sleeveless-pattern-project-notes-saved
-                    hidden
-                    aria-live="polite"
-                  >
-                    Notes saved
-                  </span>
-                  <div class="sleeveless-review-project-header__notes-actions">
                     <button
                       type="button"
-                      class="sleeveless-review-project-header__notes-btn sleeveless-review-project-header__notes-btn--ghost"
-                      data-sleeveless-pattern-project-notes-cancel
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      class="sleeveless-review-project-header__notes-btn sleeveless-review-project-header__notes-btn--primary"
+                      class="sleeveless-review-project-header__notes-icon-btn sleeveless-review-project-header__notes-icon-btn--save"
                       data-sleeveless-pattern-project-notes-save
+                      title="Save notes"
+                      aria-label="Save notes"
                     >
-                      Save notes
+                      <i class="fa-solid fa-check" aria-hidden="true"></i>
                     </button>
+                    <button
+                      type="button"
+                      class="sleeveless-review-project-header__notes-icon-btn sleeveless-review-project-header__notes-icon-btn--close"
+                      data-sleeveless-pattern-project-notes-cancel
+                      title="Close"
+                      aria-label="Close"
+                    >
+                      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="sleeveless-review-project-header__notes-icon-btn sleeveless-review-project-header__notes-icon-btn--delete"
+                      data-sleeveless-pattern-project-notes-delete
+                      title="Delete notes"
+                      aria-label="Delete notes"
+                    >
+                      <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                  <div class="sleeveless-review-project-header__notes-footer-end">
+                    <span
+                      class="sleeveless-review-project-header__notes-saved pattern-subtext"
+                      data-sleeveless-pattern-project-notes-saved
+                      hidden
+                      aria-live="polite"
+                    >
+                      Notes saved
+                    </span>
+                    <span
+                      class="sleeveless-review-project-header__notes-count pattern-subtext"
+                      data-sleeveless-pattern-project-notes-count
+                    >
+                      0 / 300
+                    </span>
                   </div>
                 </div>
               </div>
@@ -188,6 +271,37 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
             data-cb-build-summary
             aria-label="Project summary"
           >
+            <div
+              class="sleeveless-measure-summary-edit-row"
+              data-sleeveless-review-summary-edit
+              data-href={expressHref}
+              role="button"
+              tabindex="0"
+              title="Edit pattern"
+              aria-label="Edit pattern"
+            >
+              <span class="sleeveless-review-project-header__section-pencil" aria-hidden="true">
+                <svg
+                  class="sleeveless-review-project-header__pencil-icon"
+                  width="21"
+                  height="21"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"></path>
+                </svg>
+              </span>
+              <div
+                class="sleeveless-measure-summary-edit-row__content"
+                data-sleeveless-review-summary-line-slot
+              ></div>
+            </div>
             <div
               class="express-builder-units no-print express-measurements-intro-units"
               data-express-measurements-units-host
@@ -214,17 +328,13 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
             <button type="button" id="express-yarn-drawer-open" class="kbm-btn kbm-btn-outline">
               Check Yarn Needed
             </button>
-            <a class="kbm-btn kbm-btn-accent" data-express-measurements-continue hidden>
-              Continue to Your Pattern
-            </a>
             <button
               type="button"
               class="kbm-btn kbm-btn-accent"
               data-cb-measure-continue
-              data-cb-measure-continue-default="Generate Pattern"
-              hidden
+              data-cb-measure-continue-default="Build My Pattern"
             >
-              Generate Pattern
+              Build My Pattern
             </button>
           </div>
         </div>

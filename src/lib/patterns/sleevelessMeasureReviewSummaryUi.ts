@@ -51,24 +51,34 @@ export function renderMeasureReviewSummaryLine(
       ? null
       : host.querySelector<HTMLElement>(unitsSelector);
 
-  host.replaceChildren();
+  const lineSlot = host.querySelector<HTMLElement>("[data-sleeveless-review-summary-line-slot]");
+  const lineHost = lineSlot ?? host;
+
+  if (lineSlot) {
+    lineSlot.replaceChildren();
+  } else {
+    host.replaceChildren();
+  }
 
   const filtered = segments.filter((s) => s.label.trim() && s.value.trim());
   if (filtered.length === 0) {
-    if (unitsHostEl) host.appendChild(unitsHostEl);
+    if (unitsHostEl && !lineSlot) host.appendChild(unitsHostEl);
     return;
   }
 
-  const line = document.createElement("p");
+  const line = document.createElement(lineSlot ? "span" : "p");
   line.className = "sleeveless-measure-summary-line";
+  if (lineSlot) {
+    line.classList.add("sleeveless-measure-summary-line--inline");
+  }
 
   filtered.forEach((segment, index) => {
     if (index > 0) appendSeparator(line);
     appendSegment(line, segment);
   });
 
-  host.appendChild(line);
-  if (unitsHostEl) host.appendChild(unitsHostEl);
+  lineHost.appendChild(line);
+  if (unitsHostEl && !lineSlot) host.appendChild(unitsHostEl);
 }
 
 /** Clears rendered summary text while keeping the unit-toggle host (Express / unified review). */
@@ -78,6 +88,11 @@ export function clearMeasureReviewSummaryLine(
 ): void {
   const unitsSelector = options?.unitsHostSelector ?? DEFAULT_UNITS_HOST_SELECTOR;
   const unitsHostEl = host.querySelector<HTMLElement>(unitsSelector);
-  host.replaceChildren();
-  if (unitsHostEl) host.appendChild(unitsHostEl);
+  const lineSlot = host.querySelector<HTMLElement>("[data-sleeveless-review-summary-line-slot]");
+  if (lineSlot) {
+    lineSlot.replaceChildren();
+  } else {
+    host.replaceChildren();
+    if (unitsHostEl) host.appendChild(unitsHostEl);
+  }
 }

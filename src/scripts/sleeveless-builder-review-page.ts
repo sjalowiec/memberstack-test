@@ -95,17 +95,13 @@ function setAccessBanner(advanced: boolean): void {
 }
 
 function configureReviewActions(advanced: boolean): void {
-  const expressContinue = document.querySelector("[data-express-measurements-continue]");
   const cbContinue = document.querySelector("[data-cb-measure-continue]");
   const unitsHost = document.querySelector("[data-express-measurements-units-host]");
 
+  cbContinue?.removeAttribute("hidden");
   if (advanced) {
-    expressContinue?.setAttribute("hidden", "");
-    cbContinue?.removeAttribute("hidden");
     unitsHost?.setAttribute("hidden", "");
   } else {
-    cbContinue?.setAttribute("hidden", "");
-    expressContinue?.removeAttribute("hidden");
     unitsHost?.removeAttribute("hidden");
   }
 }

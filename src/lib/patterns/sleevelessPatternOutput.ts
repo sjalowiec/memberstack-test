@@ -60,6 +60,10 @@ export const RIBBED_HEM_PATTERN_TIP_HTML =
 export const BODY_MARKER_TIP_DETAILS_HTML =
   '<details class="pattern-tip sleeveless-shaping-help-toggle"><summary>Tip: Use markers to track shaping</summary><p>Many machine knitters place small removable <span class="pattern-term" data-glossary-id="310" data-tooltip="Hang a contrasting loop on the edge needle to locate a specific row or checkpoint later.">markers</span> directly into the edge of the fabric at shaping rows or length checkpoints. This makes it easier to verify your progress while the garment is still on the machine.</p></details>';
 
+/** Shown once at the armhole reset — RC targets below are from this counter, not the body cast-on RC. */
+export const ARMHOLE_RC_FROM_RESET_NOTE =
+  "Row counter numbers in this section are counted from the armhole reset.";
+
 /**
  * Trusted HTML: carriage left/right vs diagram orientation (BACK and FRONT neckline blocks, before chart mount).
  * {@link sleevelessPatternPrintRender} forces `<details open>` so printouts show the body text.
@@ -70,6 +74,16 @@ export const NECKLINE_SHOULDER_ORIENTATION_HELP_DETAILS_HTML =
   '<p>&ldquo;Left&rdquo; and &ldquo;Right&rdquo; in the chart refer to carriage position, not the finished sweater as worn.</p>' +
   "<p>Shaping edges are labeled &ldquo;Neck&rdquo; and &ldquo;Armhole&rdquo; so you can follow the shaping without needing to rotate or reinterpret the garment.</p>" +
   "<p>When working the second shoulder, repeat the shaping on the opposite side.</p>" +
+  "</details>";
+
+/**
+ * Trusted HTML: active-shoulder checklist Carriage Position column (online pattern only — `no-print`).
+ * Rendered immediately before the shaping chart table when that column is present.
+ */
+export const CARRIAGE_POSITION_PATTERN_TIP_DETAILS_HTML =
+  '<details class="pattern-tip sleeveless-shaping-help-toggle no-print"><summary>Carriage Position</summary>' +
+  "<p>Carriage Position shows where your carriage should be before knitting that row.</p>" +
+  '<p><em>Example:</em> If the chart says &ldquo;Right,&rdquo; your carriage should be on the right side before you begin knitting the row.</p>' +
   "</details>";
 
 /**
@@ -344,11 +358,11 @@ const PLAIN_KNIT_PATTERN_FOR_ROWS_RE = /^Knit in pattern for (\d+) rows?\.?$/i;
 const PLAIN_KNIT_UNTIL_RC_RE = /^Knit in pattern until RC (\d{1,4})\.\s*$/i;
 
 /** Preferred plain-span wording: next instruction row RC (not the last work-even RC). */
-const KNIT_TO_RC_RE = /^Knit to RC:?\s*(\d{1,4})\.\s*$/i;
+const KNIT_TO_RC_RE = /^Knit to (?:Armhole )?RC:?s*(\d{1,4})\.\s*$/i;
 
-/** Armhole bridge line: “At RC:…, knit in pattern to RC:…”. */
+/** Armhole bridge line: “At RC:…, knit in pattern to [Armhole ]RC:…”. */
 const AT_RC_KNIT_IN_PATTERN_TO_RC_RE =
-  /^At RC:?(\d{1,4}),\s*knit in pattern to RC:?(\d{1,4})\.\s*$/i;
+  /^At RC:?(\d{1,4}),\s*knit in pattern to (?:Armhole )?RC:?(\d{1,4})\.\s*$/i;
 
 /** Legacy front-clamp parsing (older saved display rows). */
 const KNIT_EVEN_ROWS_TO_RC_RE = /^Knit (\d+) rows even \(to RC (\d{1,4})\)\.\s*$/i;
@@ -397,7 +411,19 @@ function plainSpanNextActionRc(startRc: number, rowCount: number): number {
  * When `startRc` is omitted, falls back to row-count-only wording (no RC anchor).
  * Returns an empty string when `rowCount` is zero so callers can omit the line/block.
  */
-export function formatPlainKnitInPatternSpan(rowCount: number, startRc?: number): string {
+function formatKnitToRcTargetLine(targetRc: number, armholeLocal: boolean): string {
+  const n = Math.max(0, Math.floor(targetRc));
+  if (armholeLocal) {
+    return `Knit to Armhole RC:${String(n).padStart(3, "0")}.`;
+  }
+  return `Knit to RC ${n}.`;
+}
+
+export function formatPlainKnitInPatternSpan(
+  rowCount: number,
+  startRc?: number,
+  options?: { armholeLocal?: boolean }
+): string {
   const n = Math.max(0, Math.floor(rowCount));
   if (n <= 0) return "";
   const start =
@@ -406,12 +432,16 @@ export function formatPlainKnitInPatternSpan(rowCount: number, startRc?: number)
     return n === 1 ? "Knit in pattern for 1 row." : `Knit in pattern for ${n} rows.`;
   }
   const nextAction = plainSpanNextActionRc(start, n);
-  return `Knit to RC ${nextAction}.`;
+  return formatKnitToRcTargetLine(nextAction, options?.armholeLocal === true);
 }
 
 /** Non-empty paragraph list for a plain span, or `[]` when the span has zero rows. */
-function plainKnitSpanParagraphs(rowCount: number, startRc?: number): string[] {
-  const line = formatPlainKnitInPatternSpan(rowCount, startRc).trim();
+function plainKnitSpanParagraphs(
+  rowCount: number,
+  startRc?: number,
+  options?: { armholeLocal?: boolean }
+): string[] {
+  const line = formatPlainKnitInPatternSpan(rowCount, startRc, options).trim();
   return line ? [line] : [];
 }
 
@@ -523,8 +553,12 @@ function clampFrontSharedRowsBeforeNeckStart(
   const neckFirst = Math.max(0, Math.floor(frontNecklineStartLocalRC));
 
   const out: SleevelessPatternDisplayRow[] = [];
+  let inArmholeSection = false;
 
   for (const row of rows) {
+    if (row.kind === "section" && row.title === "ARMHOLE") {
+      inArmholeSection = true;
+    }
     if (row.kind !== "block") {
       out.push(row);
       continue;
@@ -566,12 +600,17 @@ function clampFrontSharedRowsBeforeNeckStart(
         const atRcMerged = p.trim().match(AT_RC_KNIT_IN_PATTERN_TO_RC_RE);
         if (atRcMerged) {
           const lastPlainRc = startRc + clamped - 1;
+          const toRcLabel = inArmholeSection
+            ? `Armhole RC:${String(lastPlainRc).padStart(3, "0")}`
+            : `RC:${String(lastPlainRc).padStart(3, "0")}`;
           newParagraphs.push(
-            `At RC:${String(startRc).padStart(3, "0")}, knit in pattern to RC:${String(lastPlainRc).padStart(3, "0")}.`
+            `At RC:${String(startRc).padStart(3, "0")}, knit in pattern to ${toRcLabel}.`
           );
           continue;
         }
-        const spanLine = formatPlainKnitInPatternSpan(clamped, startRc);
+        const spanLine = formatPlainKnitInPatternSpan(clamped, startRc, {
+          armholeLocal: inArmholeSection,
+        });
         if (spanLine.trim()) newParagraphs.push(spanLine);
         continue;
       }
@@ -599,7 +638,8 @@ function clampFrontSharedRowsBeforeNeckStart(
 function replaceFrontArmholeCheckpointParagraphs(
   rows: readonly SleevelessPatternDisplayRow[],
   frontNecklineStartLocalRC: number | undefined,
-  shoulderShapingBeginLocalRC: number | undefined
+  shoulderShapingBeginLocalRC: number | undefined,
+  isVNeck?: boolean
 ): SleevelessPatternDisplayRow[] {
   if (
     frontNecklineStartLocalRC === undefined ||
@@ -612,7 +652,9 @@ function replaceFrontArmholeCheckpointParagraphs(
 
   const neckN = String(Math.max(0, Math.floor(frontNecklineStartLocalRC))).padStart(3, "0");
   const shoulderN = String(Math.max(0, Math.floor(shoulderShapingBeginLocalRC))).padStart(3, "0");
-  const milestone = `Front neckline shaping begins at Armhole RC ${neckN}. Shoulder shaping begins later at Armhole RC ${shoulderN}.`;
+  const milestone = isVNeck
+    ? `The row counter was reset at the beginning of armhole shaping. Front neckline (V-neck) shaping begins at Armhole RC ${neckN}; shoulder shaping at Armhole RC ${shoulderN}.`
+    : `Front neckline shaping begins at Armhole RC ${neckN}. Shoulder shaping begins later at Armhole RC ${shoulderN}.`;
 
   return rows.map((row) => {
     if (row.kind !== "block") return row;
@@ -649,9 +691,19 @@ function mergeAdjacentPlainKnitBlocks(
   rows: readonly SleevelessPatternDisplayRow[]
 ): SleevelessPatternDisplayRow[] {
   const out: SleevelessPatternDisplayRow[] = [];
+  let inArmholeSection = false;
   let i = 0;
   while (i < rows.length) {
     const row = rows[i];
+    if (row.kind === "section") {
+      if (row.title === "ARMHOLE") inArmholeSection = true;
+      if (
+        row.title === "BACK NECKLINE & SHOULDERS" ||
+        row.title === "FRONT NECKLINE & SHOULDERS"
+      ) {
+        inArmholeSection = false;
+      }
+    }
     if (row.kind === "neckShoulderChartTableMount" || row.kind === "neckShoulderChartPreviewMount") {
       out.push(row);
       i++;
@@ -698,7 +750,9 @@ function mergeAdjacentPlainKnitBlocks(
     }
 
     if (j > i + 1) {
-      const mergedLine = formatPlainKnitInPatternSpan(total, parseRcColonLabel(firstRc));
+      const mergedLine = formatPlainKnitInPatternSpan(total, parseRcColonLabel(firstRc), {
+        armholeLocal: inArmholeSection,
+      });
       if (mergedLine.trim()) {
         out.push({
           kind: "block",
@@ -1073,6 +1127,7 @@ export function buildSleevelessBackDisplayRows(args: {
       rc: formatArmholeLocalRc(first, first),
       paragraphs: [
         "Reset Armhole RC to RC:000.",
+        ARMHOLE_RC_FROM_RESET_NOTE,
         `At RC:000, bind off ${bo} stitches at the armhole edge (carriage side). Knit across.`,
       ],
       stitchCount: afterBo1 > 0 ? afterBo1 : undefined,
@@ -1142,7 +1197,7 @@ export function buildSleevelessBackDisplayRows(args: {
         rc: formatArmholeLocalRc(armholeBridgeRc, first),
         paragraphs: [
           canMergeBridgeWithEvenSpan
-            ? `At RC:${formatArmholeLocalRcNumber(armholeBridgeRc, first)}, knit in pattern to RC:${String(localNext).padStart(3, "0")}.`
+            ? `At RC:${formatArmholeLocalRcNumber(armholeBridgeRc, first)}, knit in pattern to Armhole RC:${String(localNext).padStart(3, "0")}.`
             : `At RC:${formatArmholeLocalRcNumber(armholeBridgeRc, first)}, knit in pattern. ${B} sts remain.`,
         ],
         stitchCount: B > 0 ? B : undefined,
@@ -1165,7 +1220,7 @@ export function buildSleevelessBackDisplayRows(args: {
           rows.push({
             kind: "block",
             rc: formatArmholeLocalRc(evStart, first),
-            paragraphs: [`Knit to RC:${String(localNext).padStart(3, "0")}.`],
+            paragraphs: [formatKnitToRcTargetLine(localNext, true)],
             stitchCount: B > 0 ? B : undefined,
           });
         }
@@ -1197,7 +1252,12 @@ export function buildSleevelessBackDisplayRows(args: {
       const bridgeTargetGarmentRc = bridgeStartRc + n;
       const bridgeParagraphs =
         args.firstArmholeRC !== null
-          ? [`Knit to RC:${formatArmholeLocalRcNumber(bridgeTargetGarmentRc, args.firstArmholeRC)}.`]
+          ? [
+              formatKnitToRcTargetLine(
+                parseInt(formatArmholeLocalRcNumber(bridgeTargetGarmentRc, args.firstArmholeRC), 10),
+                true
+              ),
+            ]
           : bridgeParas;
       rows.push({
         kind: "block",
@@ -1219,7 +1279,12 @@ export function buildSleevelessBackDisplayRows(args: {
         const upperTargetGarmentRc = args.upperStartRc + args.upperBackRows;
         const upperParagraphs =
           args.firstArmholeRC !== null
-            ? [`Knit to RC:${formatArmholeLocalRcNumber(upperTargetGarmentRc, args.firstArmholeRC)}.`]
+            ? [
+                formatKnitToRcTargetLine(
+                  parseInt(formatArmholeLocalRcNumber(upperTargetGarmentRc, args.firstArmholeRC), 10),
+                  true
+                ),
+              ]
             : upperParas;
         rows.push({
           kind: "block",
@@ -1241,7 +1306,12 @@ export function buildSleevelessBackDisplayRows(args: {
         const padTargetGarmentRc = args.padStartRc + args.evenRowPadRows;
         const padParagraphs =
           args.firstArmholeRC !== null
-            ? [`Knit to RC:${formatArmholeLocalRcNumber(padTargetGarmentRc, args.firstArmholeRC)}.`]
+            ? [
+                formatKnitToRcTargetLine(
+                  parseInt(formatArmholeLocalRcNumber(padTargetGarmentRc, args.firstArmholeRC), 10),
+                  true
+                ),
+              ]
             : padParas;
         rows.push({
           kind: "block",
@@ -1340,6 +1410,8 @@ export function buildSleevelessFrontDisplayRows(args: {
   introIsCardiganHalf?: boolean;
   /** Garment RC where armhole shaping begins — required to clamp post-armhole rows without touching BODY. */
   garmentArmholeStartRC?: number;
+  /** When true, armhole checkpoint copy names V-neck and the armhole reset explicitly. */
+  isVNeck?: boolean;
 }): SleevelessPatternDisplayRow[] {
   const sharedRows: SleevelessPatternDisplayRow[] = [];
   let inBackNecklineSection = false;
@@ -1373,7 +1445,8 @@ export function buildSleevelessFrontDisplayRows(args: {
   const sharedRowsFrontMilestones = replaceFrontArmholeCheckpointParagraphs(
     sharedRowsClamped,
     args.frontNecklineStartLocalRC,
-    args.shoulderShapingBeginLocalRC
+    args.shoulderShapingBeginLocalRC,
+    args.isVNeck
   );
 
   const rows: SleevelessPatternDisplayRow[] = [];
@@ -1385,7 +1458,10 @@ export function buildSleevelessFrontDisplayRows(args: {
       ? [
           "This piece is half the body width (one center-front edge). Cast-on and armhole counts below are for the left front only; total rows, armhole depth, and shoulder stitch counts follow the same schedule as the back.",
         ]
-      : ["Front follows the same sequence as the back until neckline shaping begins."],
+      : [
+          "Front follows the same sequence as the back until neckline shaping begins.",
+          "After the armhole reset, use Armhole RC — not the body row counter.",
+        ],
   });
   rows.push(...sharedRowsFrontMilestones);
 
@@ -2326,6 +2402,7 @@ export function generateSleevelessBackPattern(
       pieceTitle: isCardiganRoundHalfFront ? "LEFT FRONT" : undefined,
       introIsCardiganHalf: isCardiganRoundHalfFront,
       garmentArmholeStartRC: armholeStartRC,
+      isVNeck: isSleevelessVNeckChoice(patternData),
     })
   );
 

@@ -29,6 +29,7 @@ import {
   SCRAP_OFF_GLOSSARY_ID,
 } from "./neckShoulderActiveIntroCopy";
 import {
+  CARRIAGE_POSITION_PATTERN_TIP_DETAILS_HTML,
   centerBindOffStitchesFromNeckShoulderChart,
   formatShoulderBindoffRemainingInstruction,
 } from "./sleevelessPatternOutput";
@@ -691,7 +692,7 @@ function renderFullChartActionCellHtml(displayRow: NeckShoulderShapingChartDispl
   )}</span></div>`;
 }
 
-type NeckShoulderChartRenderOptions = {
+export type NeckShoulderChartRenderOptions = {
   includeDoneColumn?: boolean;
   tableClassName?: string;
   activeSideOnly?: boolean;
@@ -777,6 +778,20 @@ function chartBodyRowsHtml(
     .join("");
 }
 
+/** True when the rendered chart table includes a dedicated Carriage Position column. */
+export function neckShoulderChartHasCarriagePositionColumn(
+  options?: NeckShoulderChartRenderOptions,
+): boolean {
+  return options?.activeSideOnly === true;
+}
+
+/** Collapsible Pattern Tip for the Carriage Position column; empty when the column is absent. */
+export function renderCarriagePositionPatternTipHtml(options?: NeckShoulderChartRenderOptions): string {
+  return neckShoulderChartHasCarriagePositionColumn(options)
+    ? CARRIAGE_POSITION_PATTERN_TIP_DETAILS_HTML
+    : "";
+}
+
 /** Chart title and table only — pairs with {@link renderNeckShoulderShapingPreviewOnlyHtml}. */
 export function renderNeckShoulderShapingChartTableOnlyHtml(
   chart: NeckShoulderShapingChart,
@@ -785,7 +800,11 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
   options?: NeckShoulderChartRenderOptions
 ): string {
   const headingId = `${idPrefix}-heading`;
-  const intro = typeof introHtml === "string" && introHtml.trim() ? introHtml : "";
+  const introParts = [
+    typeof introHtml === "string" && introHtml.trim() ? introHtml : "",
+    renderCarriagePositionPatternTipHtml(options),
+  ].filter((part) => part.trim());
+  const intro = introParts.join("\n");
   const includeDoneColumnOption = options?.includeDoneColumn !== false;
   const activeSideOnly = options?.activeSideOnly === true;
   const progressChartIdPrimary = activeSideOnly ? `${idPrefix}-primary` : idPrefix;

@@ -4,7 +4,6 @@
 
 import { canCustomizePattern } from "../lib/patterns/sleevelessPatternAccessGate";
 import {
-  formatPatternProjectNotesPreview,
   getPatternProjectMeta,
   PROJECT_NOTES_MAX_LENGTH,
   refreshAutoPatternProjectTitle,
@@ -31,40 +30,79 @@ export function shouldShowReadOnlyProjectNotes(notes: string): boolean {
 
 const NOTES_SAVED_FLASH_MS = 2200;
 
+function bindSectionHeadTrigger(el: HTMLElement | null, onActivate: () => void): void {
+  if (!el) return;
+  el.addEventListener("click", onActivate);
+  el.addEventListener("keydown", (ev) => {
+    if (ev.key !== "Enter" && ev.key !== " ") return;
+    ev.preventDefault();
+    onActivate();
+  });
+}
+
+function stripSectionHeadTrigger(el: HTMLElement | null): void {
+  if (!el) return;
+  el.removeAttribute("role");
+  el.removeAttribute("tabindex");
+  el.removeAttribute("title");
+  el.removeAttribute("aria-label");
+  el.removeAttribute("aria-expanded");
+}
+
 function getHeaderRoot(): HTMLElement | null {
   const el = document.querySelector("[data-sleeveless-review-project-header]");
   return el instanceof HTMLElement ? el : null;
 }
 
-type NotesUiMode = "empty" | "collapsed" | "expanded";
+type NotesUiMode = "empty" | "view" | "edit";
+type TitleUiMode = "view" | "edit";
 
-function setNotesUiMode(root: HTMLElement, mode: NotesUiMode, notes = ""): void {
-  const addBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-notes-add]");
-  const collapsed = root.querySelector("[data-sleeveless-pattern-project-notes-collapsed]");
-  const panel = root.querySelector("[data-sleeveless-pattern-project-notes-panel]");
-  const preview = root.querySelector("[data-sleeveless-pattern-project-notes-preview]");
-  const editBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-notes-edit]");
+function setTitleUiMode(root: HTMLElement, mode: TitleUiMode, title = ""): void {
+  const viewBlock = root.querySelector("[data-sleeveless-pattern-project-title-view]");
+  const panel = root.querySelector("[data-sleeveless-pattern-project-title-panel]");
+  const display = root.querySelector("[data-sleeveless-pattern-project-title-display]");
+  const editTrigger = root.querySelector<HTMLElement>("[data-sleeveless-pattern-project-title-edit]");
 
-  const hasNotes = notes.trim().length > 0;
-  const resolved: NotesUiMode = mode === "empty" && hasNotes ? "collapsed" : mode;
-
-  if (addBtn) {
-    addBtn.hidden = resolved !== "empty";
-    addBtn.setAttribute("aria-expanded", resolved === "expanded" ? "true" : "false");
-  }
-  if (collapsed instanceof HTMLElement) {
-    collapsed.hidden = resolved !== "collapsed";
+  if (viewBlock instanceof HTMLElement) {
+    viewBlock.hidden = mode === "edit";
   }
   if (panel instanceof HTMLElement) {
-    panel.hidden = resolved !== "expanded";
+    panel.hidden = mode !== "edit";
   }
-  if (preview instanceof HTMLElement) {
-    const line = formatPatternProjectNotesPreview(notes);
-    preview.textContent = line;
-    if (line) preview.setAttribute("title", line);
-    else preview.removeAttribute("title");
+  if (display instanceof HTMLElement && title) {
+    display.textContent = title;
   }
-  if (editBtn) editBtn.setAttribute("aria-expanded", resolved === "expanded" ? "true" : "false");
+  if (editTrigger) {
+    editTrigger.setAttribute("aria-expanded", mode === "edit" ? "true" : "false");
+  }
+}
+
+function setNotesUiMode(root: HTMLElement, mode: NotesUiMode, notes = ""): void {
+  const notesHeader = root.querySelector<HTMLElement>("[data-sleeveless-pattern-project-notes-header]");
+  const viewBlock = root.querySelector("[data-sleeveless-pattern-project-notes-view]");
+  const panel = root.querySelector("[data-sleeveless-pattern-project-notes-panel]");
+  const staticText = root.querySelector("[data-sleeveless-pattern-project-notes-static]");
+
+  const hasNotes = notes.trim().length > 0;
+  let resolved: NotesUiMode = mode;
+  if (mode === "empty" && hasNotes) resolved = "view";
+  if (mode === "view" && !hasNotes) resolved = "empty";
+
+  if (notesHeader instanceof HTMLElement) {
+    notesHeader.hidden = resolved === "edit";
+  }
+  if (viewBlock instanceof HTMLElement) {
+    viewBlock.hidden = resolved !== "view";
+  }
+  if (panel instanceof HTMLElement) {
+    panel.hidden = resolved !== "edit";
+  }
+  if (staticText instanceof HTMLElement) {
+    staticText.textContent = notes;
+  }
+  if (notesHeader) {
+    notesHeader.setAttribute("aria-expanded", resolved === "edit" ? "true" : "false");
+  }
 }
 
 function updateNotesCharCount(root: HTMLElement, len: number): void {
@@ -94,38 +132,23 @@ function normalizeNotesInput(notesInput: HTMLTextAreaElement): string {
   return notes;
 }
 
-function replaceTitleLabelWithHeading(nameBlock: Element): void {
-  const label = nameBlock.querySelector("label");
-  if (!(label instanceof HTMLElement)) return;
-
-  label.querySelector(".sleeveless-review-project-header__edit-icon")?.remove();
-
-  const heading = document.createElement("p");
-  heading.className = "sleeveless-review-project-header__label";
-  heading.textContent = label.querySelector("span")?.textContent?.trim() || "Pattern name";
-  label.replaceWith(heading);
-}
-
 function applyReadOnlyProjectHeader(root: HTMLElement): void {
   root.classList.add("sleeveless-review-project-header--read-only");
 
-  const nameBlock = root.querySelector(".sleeveless-review-project-header__name");
-  const titleInput = root.querySelector<HTMLInputElement>("[data-sleeveless-pattern-project-title]");
   const notesBlock = root.querySelector(".sleeveless-review-project-header__notes");
 
   refreshAutoPatternProjectTitle();
   const meta = getPatternProjectMeta();
   const title = readOnlyPatternTitleFromMeta(meta);
 
-  if (nameBlock) replaceTitleLabelWithHeading(nameBlock);
-
-  if (titleInput && nameBlock) {
-    const display = document.createElement("p");
-    display.className = "sleeveless-review-project-header__title-display";
-    display.setAttribute("data-sleeveless-pattern-project-title-display", "");
+  const display = root.querySelector("[data-sleeveless-pattern-project-title-display]");
+  if (display instanceof HTMLElement) {
     display.textContent = title;
-    titleInput.replaceWith(display);
   }
+  setTitleUiMode(root, "view", title);
+
+  stripSectionHeadTrigger(root.querySelector("[data-sleeveless-pattern-project-title-edit]"));
+  stripSectionHeadTrigger(root.querySelector("[data-sleeveless-pattern-project-notes-header]"));
 
   const notes = meta.notes;
   const notesReadonly = root.querySelector("[data-sleeveless-pattern-project-notes-readonly]");
@@ -152,24 +175,57 @@ function applyReadOnlyProjectHeader(root: HTMLElement): void {
 
 function bindEditableHeader(root: HTMLElement): void {
   const titleInput = root.querySelector<HTMLInputElement>("[data-sleeveless-pattern-project-title]");
+  const titleEditTrigger = root.querySelector<HTMLElement>("[data-sleeveless-pattern-project-title-edit]");
+  const titleSaveBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-title-save]");
+  const titleCancelBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-title-cancel]");
   const notesInput = root.querySelector<HTMLTextAreaElement>("[data-sleeveless-pattern-project-notes]");
-  const addBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-notes-add]");
-  const editBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-notes-edit]");
+  const notesEditTrigger = root.querySelector<HTMLElement>("[data-sleeveless-pattern-project-notes-edit]");
   const saveBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-notes-save]");
   const cancelBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-notes-cancel]");
+  const deleteBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-notes-delete]");
 
+  let titleEditBaseline = "";
   let notesEditBaseline = "";
+
+  const beginTitleEdit = (): void => {
+    titleEditBaseline = readOnlyPatternTitleFromMeta(getPatternProjectMeta());
+    if (titleInput) {
+      titleInput.value = titleEditBaseline;
+    }
+    setTitleUiMode(root, "edit", titleEditBaseline);
+    titleInput?.focus();
+    titleInput?.select();
+  };
+
+  const finishTitleEdit = (title: string): void => {
+    setTitleUiMode(root, "view", readOnlyPatternTitleFromMeta({ title }));
+  };
+
+  const persistTitleFromInput = (): string => {
+    if (!titleInput) return "";
+    const trimmed = titleInput.value.trim();
+    if (trimmed !== titleInput.value) titleInput.value = trimmed;
+    savePatternProjectMeta({
+      title: trimmed,
+      titleCustomized: true,
+    });
+    return trimmed;
+  };
 
   const beginNotesEdit = (): void => {
     notesEditBaseline = getPatternProjectMeta().notes;
+    if (notesInput) {
+      notesInput.value = notesEditBaseline;
+      updateNotesCharCount(root, notesEditBaseline.length);
+    }
     hideNotesSavedStatus(root);
-    setNotesUiMode(root, "expanded", notesInput?.value ?? notesEditBaseline);
+    setNotesUiMode(root, "edit", notesEditBaseline);
     notesInput?.focus();
   };
 
   const finishNotesEdit = (notes: string, showSaved = false): void => {
     if (showSaved) flashNotesSavedStatus(root);
-    setNotesUiMode(root, notes.trim() ? "collapsed" : "empty", notes);
+    setNotesUiMode(root, notes.trim() ? "view" : "empty", notes);
   };
 
   const persistNotesFromInput = (): string => {
@@ -182,38 +238,39 @@ function bindEditableHeader(root: HTMLElement): void {
 
   const applyMetaToFields = (): void => {
     const meta = getPatternProjectMeta();
-    if (titleInput) titleInput.value = meta.title;
+    const displayTitle = readOnlyPatternTitleFromMeta(meta);
+    if (titleInput) titleInput.value = displayTitle;
     if (notesInput) {
       notesInput.value = meta.notes;
       updateNotesCharCount(root, meta.notes.length);
     }
-    setNotesUiMode(root, meta.notes.trim() ? "collapsed" : "empty", meta.notes);
+    setTitleUiMode(root, "view", displayTitle);
+    setNotesUiMode(root, meta.notes.trim() ? "view" : "empty", meta.notes);
   };
 
   applyMetaToFields();
   refreshAutoPatternProjectTitle();
   if (titleInput && !titleInput.value.trim()) {
-    titleInput.value = getPatternProjectMeta().title;
+    const meta = getPatternProjectMeta();
+    const displayTitle = readOnlyPatternTitleFromMeta(meta);
+    titleInput.value = displayTitle;
+    setTitleUiMode(root, "view", displayTitle);
   }
 
-  titleInput?.addEventListener("input", () => {
-    savePatternProjectMeta({
-      title: titleInput.value,
-      titleCustomized: true,
-    });
+  bindSectionHeadTrigger(titleEditTrigger, beginTitleEdit);
+  bindSectionHeadTrigger(notesEditTrigger, beginNotesEdit);
+
+  titleSaveBtn?.addEventListener("click", () => {
+    if (!titleInput) return;
+    const title = persistTitleFromInput();
+    finishTitleEdit(title);
   });
 
-  titleInput?.addEventListener("blur", () => {
-    const trimmed = titleInput.value.trim();
-    if (trimmed !== titleInput.value) titleInput.value = trimmed;
-    savePatternProjectMeta({
-      title: trimmed,
-      titleCustomized: true,
-    });
+  titleCancelBtn?.addEventListener("click", () => {
+    if (!titleInput) return;
+    titleInput.value = titleEditBaseline;
+    finishTitleEdit(titleEditBaseline);
   });
-
-  addBtn?.addEventListener("click", beginNotesEdit);
-  editBtn?.addEventListener("click", beginNotesEdit);
 
   saveBtn?.addEventListener("click", () => {
     if (!notesInput) return;
@@ -225,9 +282,17 @@ function bindEditableHeader(root: HTMLElement): void {
     if (!notesInput) return;
     notesInput.value = notesEditBaseline;
     updateNotesCharCount(root, notesEditBaseline.length);
-    savePatternProjectMeta({ notes: notesEditBaseline });
     hideNotesSavedStatus(root);
     finishNotesEdit(notesEditBaseline, false);
+  });
+
+  deleteBtn?.addEventListener("click", () => {
+    if (!notesInput) return;
+    notesInput.value = "";
+    updateNotesCharCount(root, 0);
+    savePatternProjectMeta({ notes: "" });
+    hideNotesSavedStatus(root);
+    finishNotesEdit("", false);
   });
 
   notesInput?.addEventListener("input", () => {
@@ -235,7 +300,6 @@ function bindEditableHeader(root: HTMLElement): void {
     hideNotesSavedStatus(root);
     const notes = normalizeNotesInput(notesInput);
     updateNotesCharCount(root, notes.length);
-    savePatternProjectMeta({ notes });
   });
 
   document.addEventListener(SLEEVELESS_REVIEW_CONTEXT_READY_EVENT, (ev) => {
@@ -244,19 +308,38 @@ function bindEditableHeader(root: HTMLElement): void {
         ? (ev.detail as SleevelessPatternTitleContext)
         : undefined;
     const meta = refreshAutoPatternProjectTitle(detail);
+    const titlePanel = root.querySelector("[data-sleeveless-pattern-project-title-panel]");
+    const titleEditing = titlePanel instanceof HTMLElement && !titlePanel.hidden;
+    const displayTitle = readOnlyPatternTitleFromMeta(meta);
     if (titleInput && !meta.titleCustomized) {
-      titleInput.value = meta.title;
+      titleInput.value = displayTitle;
+    }
+    if (!titleEditing) {
+      setTitleUiMode(root, "view", displayTitle);
     }
     if (notesInput) {
+      notesInput.value = meta.notes;
       updateNotesCharCount(root, meta.notes.length);
       const panel = root.querySelector("[data-sleeveless-pattern-project-notes-panel]");
-      const expanded = panel instanceof HTMLElement && !panel.hidden;
+      const editing = panel instanceof HTMLElement && !panel.hidden;
       setNotesUiMode(
         root,
-        meta.notes.trim() ? (expanded ? "expanded" : "collapsed") : "empty",
+        meta.notes.trim() ? (editing ? "edit" : "view") : editing ? "edit" : "empty",
         meta.notes,
       );
     }
+  });
+}
+
+function initSleevelessReviewSummaryEdit(): void {
+  const row = document.querySelector<HTMLElement>("[data-sleeveless-review-summary-edit]");
+  if (!row) return;
+  const href =
+    row.getAttribute("data-href")?.trim() ||
+    document.querySelector<HTMLElement>("[data-express-measurements-root]")?.getAttribute("data-express-href")?.trim() ||
+    "/patterns/sleeveless-express/";
+  bindSectionHeadTrigger(row, () => {
+    window.location.assign(href);
   });
 }
 
@@ -269,6 +352,8 @@ export function initSleevelessReviewProjectHeader(): void {
   } else {
     applyReadOnlyProjectHeader(root);
   }
+
+  initSleevelessReviewSummaryEdit();
 }
 
 if (typeof document !== "undefined") {

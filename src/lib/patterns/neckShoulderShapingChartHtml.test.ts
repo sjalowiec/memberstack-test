@@ -5,7 +5,10 @@ import {
   buildActiveSideInstructionTableRows,
   buildSecondShoulderInstructionTableRows,
   compactActiveSideInstructionRowsForPrint,
+  neckShoulderChartHasCarriagePositionColumn,
+  renderCarriagePositionPatternTipHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
+  renderNeckShoulderShapingPrintInstructionTableHtml,
 } from "./neckShoulderShapingChartHtml";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 
@@ -85,6 +88,74 @@ function baseRoundNeckPattern(): Record<string, unknown> {
     },
   };
 }
+
+describe("carriage position pattern tip", () => {
+  it("detects the Carriage Position column only on active-shoulder checklists", () => {
+    expect(neckShoulderChartHasCarriagePositionColumn({ activeSideOnly: true })).toBe(true);
+    expect(neckShoulderChartHasCarriagePositionColumn({ activeSideOnly: false })).toBe(false);
+    expect(neckShoulderChartHasCarriagePositionColumn(undefined)).toBe(false);
+  });
+
+  it("renders the collapsible tip before the chart table for back and front active-shoulder charts", () => {
+    const r = generateSleevelessBackPattern(baseRoundNeckPattern());
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(
+      r.neckShoulderShapingChart,
+      r.firstArmholeGarmentRc,
+    );
+    const frontRcStart = armholeLocalRcActiveShoulderChecklistStart(
+      r.frontNeckShoulderShapingChart,
+      r.firstArmholeGarmentRc,
+    );
+    const backHtml = renderNeckShoulderShapingChartTableOnlyHtml(
+      r.neckShoulderShapingChart,
+      "test-carriage-tip-back",
+      undefined,
+      { activeSideOnly: true, activeSideRcStart: rcStart },
+    );
+    const frontHtml = renderNeckShoulderShapingChartTableOnlyHtml(
+      r.frontNeckShoulderShapingChart,
+      "test-carriage-tip-front",
+      undefined,
+      { activeSideOnly: true, activeSideRcStart: frontRcStart },
+    );
+    for (const html of [backHtml, frontHtml]) {
+      const tipIdx = html.indexOf("<summary>Carriage Position</summary>");
+      const tableIdx = html.indexOf("ns-shaping-chart__table");
+      expect(tipIdx).toBeGreaterThanOrEqual(0);
+      expect(tableIdx).toBeGreaterThan(tipIdx);
+      expect(html).toContain("before knitting that row");
+      expect(html).toContain("on the right side before you begin knitting");
+      expect(html).toContain("sleeveless-shaping-help-toggle no-print");
+    }
+  });
+
+  it("omits the tip on full-grid charts without a Carriage Position column", () => {
+    const r = generateSleevelessBackPattern(baseRoundNeckPattern());
+    const html = renderNeckShoulderShapingChartTableOnlyHtml(
+      r.neckShoulderShapingChart,
+      "test-carriage-tip-full",
+      undefined,
+      { activeSideOnly: false, includeDoneColumn: false },
+    );
+    expect(html).not.toContain(">Carriage Position</th>");
+    expect(renderCarriagePositionPatternTipHtml({ activeSideOnly: false })).toBe("");
+    expect(html).not.toContain("<summary>Carriage Position</summary>");
+    expect(html).not.toContain("before knitting that row");
+  });
+
+  it("does not add the online tip to print mini-table HTML", () => {
+    const r = generateSleevelessBackPattern(baseRoundNeckPattern());
+    const printHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
+      r.neckShoulderShapingChart,
+      "test-print-carriage-tip",
+      "",
+      {},
+    );
+    expect(printHtml).toContain("Carriage Position</th>");
+    expect(printHtml).not.toContain("<summary>Carriage Position</summary>");
+    expect(printHtml).not.toContain("sleeveless-shaping-help-toggle");
+  });
+});
 
 describe("plainKnitSpanCarriageEdgeDisplay invertCarriageParity", () => {
   it("uses odd Right / even Left when invertCarriageParity is true", () => {

@@ -71,7 +71,7 @@
 }
 
 .express-measurements-confirm-page .sleeveless-review-project-header--read-only [data-sleeveless-pattern-project-notes-add],
-.express-measurements-confirm-page .sleeveless-review-project-header--read-only [data-sleeveless-pattern-project-notes-collapsed],
+.express-measurements-confirm-page .sleeveless-review-project-header--read-only [data-sleeveless-pattern-project-notes-view],
 .express-measurements-confirm-page .sleeveless-review-project-header--read-only [data-sleeveless-pattern-project-notes-panel] {
   display: none !important;
 }
