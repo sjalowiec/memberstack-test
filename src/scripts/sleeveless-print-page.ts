@@ -260,9 +260,12 @@ async function initSleevelessPrintPage(): Promise<void> {
 
   const frontDiagramRouting = resolveSleevelessFrontDiagram(genInput);
   const frontPrintDiagramCaption =
-    frontDiagramRouting.diagramType === "cardiganHalfFrontRound"
+    frontDiagramRouting.diagramType === "cardiganHalfFrontRound" ||
+    frontDiagramRouting.diagramType === "cardiganHalfFrontV"
       ? "Left front schematic (development)"
-      : "Front schematic";
+      : frontDiagramRouting.garmentStyle === "cardigan"
+        ? "Cardigan front schematic"
+        : "Front schematic";
 
   const {
     preludeRows: frontPreludeRows,

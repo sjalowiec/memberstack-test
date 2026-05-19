@@ -835,6 +835,23 @@
     margin: 0.15rem 0 0;
   }
 
+  #pattern-content .pattern-tip .pattern-finishing-video-help.sleeveless-armhole-tip__bind-off-video {
+    margin: 0.5rem 0 0;
+    font-size: inherit;
+    line-height: 1.4;
+  }
+
+  #pattern-content .pattern-tip .sleeveless-armhole-tip__bind-off-video .pattern-finishing-video-help__lead {
+    display: block;
+    margin: 0 0 0.25rem;
+    color: #374151;
+  }
+
+  #pattern-content .pattern-tip .sleeveless-armhole-tip__bind-off-video .pattern-help-link {
+    margin: 0.35rem 0 0;
+    display: block;
+  }
+
   #pattern-content .pattern-finishing-video-help {
     margin: 0.65rem 0 0;
     font-size: 0.88rem;

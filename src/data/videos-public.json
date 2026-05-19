@@ -7627,4 +7627,26 @@
     "subcategory": "Colorwork",
     "vimeo_id": 1186564724
   }
+  ,
+  {
+    "content_id": 5002,
+    "title": "Bind Off Trick",
+    "slug": "bind-off-trick",
+    "description": "A helpful trick for cleaner partial bind-offs when shaping armholes, necklines, or other stepped edges. This simple transfer technique creates a smoother transition and a more polished-looking edge.",
+    "access_level": "free",
+    "posterUrl": "",
+    "category": "Basics",
+    "subcategory": "Bind Off",
+    "vimeo_id": 1193552931,
+    "jumpLinks": [
+      {
+        "label": "The Trick",
+        "time":37
+      },
+      {
+        "label": "Compare",
+        "time": 88
+      }
+    ]
+  }
 ]

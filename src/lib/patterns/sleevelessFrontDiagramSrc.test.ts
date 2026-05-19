@@ -121,24 +121,26 @@ describe("resolveSleevelessFrontDiagram", () => {
     expect(r.src.endsWith("/diagram-front-V.svg")).toBe(true);
   });
 
-  it("routes round-neck cardigan style to half-front schematic", () => {
+  it("routes round-neck cardigan style to full-width schematic", () => {
     const r = resolveSleevelessFrontDiagram(
       { style: { neckline: "round", frontStyle: "open" } },
       { devForceCardiganHalfLeft: false },
     );
     expect(r.garmentStyle).toBe("cardigan");
-    expect(r.diagramType).toBe("cardiganHalfFrontRound");
-    expect(r.src.endsWith("/cardigan-round.svg")).toBe(true);
+    expect(r.diagramType).toBe("cardiganFullFrontRound");
+    expect(r.frontPieceType).toBe("fullFront");
+    expect(r.src).toBe("/images/patterns/sleeveless/cardigan-round.svg");
   });
 
-  it("routes v-neck cardigan style to half-front V schematic", () => {
+  it("routes v-neck cardigan style to full-width V schematic", () => {
     const r = resolveSleevelessFrontDiagram(
       { style: { neckline: "v-neck", garmentStyle: "cardigan" } },
       { devForceCardiganHalfLeft: false },
     );
     expect(r.garmentStyle).toBe("cardigan");
-    expect(r.diagramType).toBe("cardiganHalfFrontV");
-    expect(r.src.endsWith("/cardigan-v.svg")).toBe(true);
+    expect(r.diagramType).toBe("cardiganFullFrontV");
+    expect(r.frontPieceType).toBe("fullFront");
+    expect(r.src).toBe("/images/patterns/sleeveless/cardigan-v.svg");
   });
 
   it("forces cardigan half-front asset when dev flag is true", () => {
@@ -146,7 +148,7 @@ describe("resolveSleevelessFrontDiagram", () => {
     expect(r.garmentStyle).toBe("cardigan");
     expect(r.diagramType).toBe("cardiganHalfFrontRound");
     expect(r.frontPieceType).toBe("leftFront");
-    expect(r.src.endsWith("/cardigan-round.svg")).toBe(true);
+    expect(r.src).toBe("/images/patterns/sleeveless/cardigan-half-front-round.svg");
   });
 
   it("forces V cardigan half-front when dev flag is true and neckline is V", () => {

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  ARMHOLE_ALTERNATE_TECHNIQUES_TIP_HTML,
+  ARMHOLE_BIND_OFF_TRICK_VIDEO_KEY,
   ARMHOLE_RC_FROM_RESET_NOTE,
   generateSleevelessBackPattern,
   type SleevelessPatternDisplayRow,
@@ -55,7 +57,43 @@ function armholeSectionParagraphs(rows: readonly SleevelessPatternDisplayRow[]):
   return out;
 }
 
+function firstArmholeBlock(rows: readonly SleevelessPatternDisplayRow[]) {
+  let inArmhole = false;
+  for (const row of rows) {
+    if (row.kind === "section") {
+      inArmhole = row.title === "ARMHOLE";
+      continue;
+    }
+    if (inArmhole && row.kind === "block") return row;
+  }
+  return undefined;
+}
+
 describe("sleeveless armhole RC wording", () => {
+  it("back ARMHOLE section uses bind off / hold wording and alternate-techniques tip", () => {
+    const r = generateSleevelessBackPattern(basePattern("round"));
+    const armhole = armholeSectionParagraphs(r.displayRows);
+    expect(armhole.some((p) => /bind off \/ hold \d+ stitches at the armhole edge/i.test(p))).toBe(
+      true
+    );
+    expect(armhole.some((p) => /bind off \/ hold \d+ stitches at the remaining armhole edge/i.test(p))).toBe(
+      true
+    );
+    const first = firstArmholeBlock(r.displayRows);
+    expect(first?.tipHtml).toBe(ARMHOLE_ALTERNATE_TECHNIQUES_TIP_HTML);
+    expect(first?.tipHtml).toContain("hold stitches or use short-row shaping");
+    expect(first?.tipHtml).toContain("Cleaner Partial Bind-Off Edge");
+    expect(first?.tipHtml).toContain(`data-sleeveless-help-video="${ARMHOLE_BIND_OFF_TRICK_VIDEO_KEY}"`);
+    expect(first?.tipHtml).toContain("Bind Off Trick");
+  });
+
+  it("front ARMHOLE section shares the same alternate-techniques tip with bind-off video", () => {
+    const r = generateSleevelessBackPattern(basePattern("round"));
+    const first = firstArmholeBlock(r.frontDisplayRows);
+    expect(first?.tipHtml).toBe(ARMHOLE_ALTERNATE_TECHNIQUES_TIP_HTML);
+    expect(first?.tipHtml).toContain(`data-sleeveless-help-video="${ARMHOLE_BIND_OFF_TRICK_VIDEO_KEY}"`);
+  });
+
   it("back ARMHOLE section includes reset note and Armhole RC targets (not body RC)", () => {
     const r = generateSleevelessBackPattern(basePattern("round"));
     const armhole = armholeSectionParagraphs(r.displayRows);

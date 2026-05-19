@@ -5,12 +5,24 @@ import {
 } from "./cardiganFrontBlock";
 import { sectionPattern } from "./sleevelessPatternBuilderMerge";
 
-/** Round-neck cardigan front schematic (`cardiganHalfFrontRound` — `public/images/patterns/cardigan-round.svg`). */
-export const SLEEVELESS_CARDIGAN_HALF_FRONT_ROUND_DIAGRAM_SRC =
-  "/images/patterns/cardigan-round.svg";
+/** Full-width round-neck cardigan (`public/images/patterns/sleeveless/cardigan-round.svg`). */
+export const SLEEVELESS_CARDIGAN_FULL_FRONT_ROUND_DIAGRAM_SRC =
+  "/images/patterns/sleeveless/cardigan-round.svg";
 
-/** V-neck cardigan front schematic (`cardiganHalfFrontV` — `public/images/patterns/cardigan-v.svg`). */
-export const SLEEVELESS_CARDIGAN_V_FRONT_DIAGRAM_SRC = "/images/patterns/cardigan-v.svg";
+/** Full-width V-neck cardigan (`public/images/patterns/sleeveless/cardigan-v.svg`). */
+export const SLEEVELESS_CARDIGAN_FULL_FRONT_V_DIAGRAM_SRC =
+  "/images/patterns/sleeveless/cardigan-v.svg";
+
+/** @deprecated Use {@link SLEEVELESS_CARDIGAN_FULL_FRONT_ROUND_DIAGRAM_SRC}. */
+export const SLEEVELESS_CARDIGAN_HALF_FRONT_ROUND_DIAGRAM_SRC =
+  SLEEVELESS_CARDIGAN_FULL_FRONT_ROUND_DIAGRAM_SRC;
+
+/** @deprecated Use {@link SLEEVELESS_CARDIGAN_FULL_FRONT_V_DIAGRAM_SRC}. */
+export const SLEEVELESS_CARDIGAN_V_FRONT_DIAGRAM_SRC = SLEEVELESS_CARDIGAN_FULL_FRONT_V_DIAGRAM_SRC;
+
+/** DEV-only half-body round cardigan (`public/images/patterns/sleeveless/cardigan-half-front-round.svg`). */
+export const SLEEVELESS_DEV_CARDIGAN_HALF_FRONT_ROUND_DIAGRAM_SRC =
+  "/images/patterns/sleeveless/cardigan-half-front-round.svg";
 
 /** Round neckline / shoulder shaping underlay (back and front round neck — never V-neck). */
 export const SLEEVELESS_SHOULDER_NOTATION_ICON_BACK = "/images/patterns/shoulder-round-icon.svg";
@@ -92,6 +104,13 @@ export function isSleevelessCardiganGarmentStyle(patternData: unknown): boolean 
   return false;
 }
 
+/** True for DEV half-body cardigan diagram types (not production full-width cardigan schematics). */
+export function isSleevelessCardiganHalfFrontDiagramType(
+  diagramType: SleevelessFrontDiagramType | undefined,
+): boolean {
+  return diagramType === "cardiganHalfFrontRound" || diagramType === "cardiganHalfFrontV";
+}
+
 /** DEV + cardigan preview from Express / stored style (for UI banner). */
 export function isSleevelessDevCardiganExpressPreview(patternData: unknown): boolean {
   return import.meta.env.DEV && isSleevelessCardiganGarmentStyle(patternData);
@@ -106,9 +125,8 @@ export type SleevelessFrontDiagramResolution = {
 
 export type ResolveSleevelessFrontDiagramOptions = {
   /**
-   * When `true`, force the cardigan half-front asset (tests).
-   * When `false`, skip the session/localStorage dev toggle only; persisted `garmentStyle` / `frontStyle`
-   * still select the half-front schematic from pattern data.
+   * When `true`, force the legacy half-front DEV asset (tests).
+   * When `false`, skip the session/localStorage dev toggle only.
    */
   devForceCardiganHalfLeft?: boolean;
 };
@@ -133,6 +151,44 @@ export function isSleevelessDevCardiganHalfFrontLeftEnabled(): boolean {
   }
 }
 
+function resolveDevCardiganHalfFrontDiagram(
+  patternData: unknown,
+): SleevelessFrontDiagramResolution {
+  if (isSleevelessVNeckChoice(patternData)) {
+    return {
+      garmentStyle: "cardigan",
+      diagramType: "cardiganHalfFrontV",
+      frontPieceType: "leftFront",
+      src: SLEEVELESS_CARDIGAN_FULL_FRONT_V_DIAGRAM_SRC,
+    };
+  }
+  return {
+    garmentStyle: "cardigan",
+    diagramType: "cardiganHalfFrontRound",
+    frontPieceType: "leftFront",
+    src: SLEEVELESS_DEV_CARDIGAN_HALF_FRONT_ROUND_DIAGRAM_SRC,
+  };
+}
+
+function resolveCardiganFullFrontDiagram(
+  patternData: unknown,
+): SleevelessFrontDiagramResolution {
+  if (isSleevelessVNeckChoice(patternData)) {
+    return {
+      garmentStyle: "cardigan",
+      diagramType: "cardiganFullFrontV",
+      frontPieceType: "fullFront",
+      src: SLEEVELESS_CARDIGAN_FULL_FRONT_V_DIAGRAM_SRC,
+    };
+  }
+  return {
+    garmentStyle: "cardigan",
+    diagramType: "cardiganFullFrontRound",
+    frontPieceType: "fullFront",
+    src: SLEEVELESS_CARDIGAN_FULL_FRONT_ROUND_DIAGRAM_SRC,
+  };
+}
+
 /**
  * Front-opening schematic URL plus discriminators for future routing (`diagramType`, `garmentStyle`, `frontPieceType`).
  */
@@ -140,34 +196,23 @@ export function resolveSleevelessFrontDiagram(
   patternData: unknown,
   options?: ResolveSleevelessFrontDiagramOptions,
 ): SleevelessFrontDiagramResolution {
-  let useCardiganHalf = false;
+  let useDevHalfFront = false;
   if (options?.devForceCardiganHalfLeft === true) {
-    useCardiganHalf = true;
-  } else if (isSleevelessCardiganGarmentStyle(patternData)) {
-    useCardiganHalf = true;
+    useDevHalfFront = true;
   } else if (
     options?.devForceCardiganHalfLeft !== false &&
     import.meta.env.DEV &&
     isSleevelessDevCardiganHalfFrontLeftEnabled()
   ) {
-    useCardiganHalf = true;
+    useDevHalfFront = true;
   }
 
-  if (useCardiganHalf) {
-    if (isSleevelessVNeckChoice(patternData)) {
-      return {
-        garmentStyle: "cardigan",
-        diagramType: "cardiganHalfFrontV",
-        frontPieceType: "leftFront",
-        src: SLEEVELESS_CARDIGAN_V_FRONT_DIAGRAM_SRC,
-      };
-    }
-    return {
-      garmentStyle: "cardigan",
-      diagramType: "cardiganHalfFrontRound",
-      frontPieceType: "leftFront",
-      src: SLEEVELESS_CARDIGAN_HALF_FRONT_ROUND_DIAGRAM_SRC,
-    };
+  if (useDevHalfFront) {
+    return resolveDevCardiganHalfFrontDiagram(patternData);
+  }
+
+  if (isSleevelessCardiganGarmentStyle(patternData)) {
+    return resolveCardiganFullFrontDiagram(patternData);
   }
 
   if (isSleevelessVNeckChoice(patternData)) {

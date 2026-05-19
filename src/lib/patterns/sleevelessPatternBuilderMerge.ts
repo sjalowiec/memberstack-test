@@ -258,7 +258,27 @@ export function buildSleevelessGarmentDiagramPatternData(
     generatorPatternData && typeof generatorPatternData === "object" && !Array.isArray(generatorPatternData)
       ? generatorPatternData
       : {};
-  const style = { ...sectionPattern(patternMerged.style), ...sectionPattern(gen.style) };
+  const canonicalStyle = sectionPattern(patternMerged.style);
+  const genStyle = sectionPattern(gen.style);
+  const patternMode = resolveGeneratorPatternMode(canonicalStyle, genStyle);
+  const style = {
+    ...canonicalStyle,
+    ...genStyle,
+    ...(patternMode === "custom-build"
+      ? {
+          ...resolveCustomBuildGarmentStyleForStyle(
+            canonicalStyle,
+            genStyle,
+            readCustomBuildWizardGarmentType(),
+          ),
+          neckline: resolveCustomBuildNecklineForStyle(
+            canonicalStyle,
+            genStyle,
+            readCustomBuildWizardNeckline(),
+          ),
+        }
+      : {}),
+  };
   const fit = { ...sectionPattern(patternMerged.fit), ...sectionPattern(gen.fit) };
   return { style, fit };
 }

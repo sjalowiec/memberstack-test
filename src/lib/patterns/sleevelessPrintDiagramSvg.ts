@@ -6,9 +6,15 @@
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import { buildSleevelessGarmentDiagramReplacements } from "./sleevelessGarmentDiagramReplacements";
 import { buildSleevelessGarmentDiagramPatternData } from "./sleevelessPatternBuilderMerge";
-import { resolveSleevelessFrontDiagram } from "./sleevelessFrontDiagramSrc";
+import {
+  isSleevelessCardiganHalfFrontDiagramType,
+  resolveSleevelessFrontDiagram,
+} from "./sleevelessFrontDiagramSrc";
 
 async function fetchSvgWithReplacements(src: string, replacements: Record<string, string>): Promise<string> {
+  if (import.meta.env.DEV) {
+    console.log("[sleeveless] Garment schematic SVG fetch (print):", src);
+  }
   const res = await fetch(src, { credentials: "same-origin" });
   if (!res.ok) throw new Error(`Failed to load SVG: ${src} (${res.status})`);
   let svgText = await res.text();
@@ -74,32 +80,37 @@ async function loadSleevelessPieceDiagramSvgMarkup(
       devForceCardiganHalfLeft: frontOpts?.devForceCardiganHalfLeft,
     });
     const cardiganHalfSide =
-      frontRes.diagramType === "cardiganHalfFrontV"
-        ? undefined
-        : frontRes.frontPieceType === "leftFront"
-          ? "left"
-          : frontRes.frontPieceType === "rightFront"
-            ? "right"
-            : undefined;
+      isSleevelessCardiganHalfFrontDiagramType(frontRes.diagramType) &&
+      frontRes.diagramType !== "cardiganHalfFrontV" &&
+      frontRes.frontPieceType === "leftFront"
+        ? "left"
+        : isSleevelessCardiganHalfFrontDiagramType(frontRes.diagramType) &&
+            frontRes.frontPieceType === "rightFront"
+          ? "right"
+          : undefined;
     replacements = buildSleevelessGarmentDiagramReplacements(result, unit, {
       patternData: diagramPatternData,
       measurementPiece: "front",
       cardiganHalfSide,
     });
     src = frontRes.src;
-    const vCardiganHalf = frontRes.diagramType === "cardiganHalfFrontV";
-    ariaLabel =
-      vCardiganHalf && !cardiganHalfSide
-        ? "Cardigan V-neck front schematic with key measurements"
-        : cardiganHalfSide === "left"
-          ? vCardiganHalf
-            ? "Cardigan V-neck left front schematic with key measurements"
-            : "Cardigan left front schematic with key measurements"
-          : cardiganHalfSide === "right"
-            ? vCardiganHalf
-              ? "Cardigan V-neck right front schematic with key measurements"
-              : "Cardigan right front schematic with key measurements"
-            : "Front piece schematic with key measurements";
+    const isCardigan = frontRes.garmentStyle === "cardigan";
+    const isHalfFront = isSleevelessCardiganHalfFrontDiagramType(frontRes.diagramType);
+    const isCardiganV =
+      frontRes.diagramType === "cardiganFullFrontV" || frontRes.diagramType === "cardiganHalfFrontV";
+    ariaLabel = isCardigan
+      ? isHalfFront && cardiganHalfSide === "left"
+        ? isCardiganV
+          ? "Cardigan V-neck left front schematic with key measurements (development)"
+          : "Cardigan left front schematic with key measurements (development)"
+        : isHalfFront && cardiganHalfSide === "right"
+          ? isCardiganV
+            ? "Cardigan V-neck right front schematic with key measurements (development)"
+            : "Cardigan right front schematic with key measurements (development)"
+          : isCardiganV
+            ? "Cardigan V-neck front schematic with key measurements"
+            : "Cardigan front schematic with key measurements"
+      : "Front piece schematic with key measurements";
   }
 
   const raw = await fetchSvgWithReplacements(src, replacements);

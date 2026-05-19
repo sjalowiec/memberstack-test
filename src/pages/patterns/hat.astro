@@ -1201,12 +1201,13 @@ select.disabled {
 
 /* Tips styling - :global needed for dynamically generated content */
 :global(.pattern-tip) {
+  position: relative;
   font-size: 0.85rem;
   color: #374151;
   background: rgba(194, 97, 78, 0.07);
   border-left: 4px solid #c2614e;
   border-radius: 6px;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 2rem 0.75rem 1rem;
   margin: 0.5rem 0 0.75rem 0;
   line-height: 1.4;
 }
@@ -1214,6 +1215,106 @@ select.disabled {
 :global(.pattern-tip strong) {
   font-weight: 700;
   color: #c2614e;
+}
+
+:global(.pattern-tip-dismiss) {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  width: 1.875rem;
+  height: 1.875rem;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+:global(.pattern-tip-dismiss:hover),
+:global(.pattern-tip-dismiss:focus-visible) {
+  color: #6b7280;
+  background: rgba(194, 97, 78, 0.12);
+  outline: none;
+}
+
+:global(.pattern-tips-control-box.pattern-tip) {
+  padding: 0.5rem 0.75rem;
+  margin: 0 0 0.5rem 0;
+}
+
+:global(.pattern-tips-control__layout) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+}
+
+:global(.pattern-tips-control__lead) {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+:global(.pattern-tips-control__info-icon) {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: #c2614e;
+  font-size: 0.95rem;
+}
+
+:global(.pattern-tips-control__text) {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: #374151;
+}
+
+:global(.pattern-tips-control__actions) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+}
+
+:global(.pattern-tips-control-btn) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  font-family: inherit;
+  color: #6b7280;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(194, 97, 78, 0.28);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+:global(.pattern-tips-control-btn i) {
+  font-size: 0.8em;
+  opacity: 0.9;
+}
+
+:global(.pattern-tips-control-btn:hover),
+:global(.pattern-tips-control-btn:focus-visible) {
+  color: #c2614e;
+  border-color: rgba(194, 97, 78, 0.45);
+  background: rgba(255, 255, 255, 0.95);
+  outline: none;
+}
+
+:global(#pattern-content[data-show-tips="true"] .pattern-tip[data-tip-dismissed="true"]) {
+  display: none !important;
 }
 
 /* 4-wedge crown: indent instructional paragraphs under each wedge header */
@@ -1388,8 +1489,8 @@ select.disabled {
   color: #444;
 }
 
-/* Tips visibility (OFF row is not .pattern-tip, so it stays visible) */
-:global(#pattern-content[data-show-tips="false"] .pattern-tip) {
+/* Hide pattern tips except the top control box */
+:global(#pattern-content[data-show-tips="false"] .pattern-tip:not(.pattern-tips-control-box)) {
   display: none;
 }
 
@@ -1483,6 +1584,12 @@ select.disabled {
   }
 
   :global(.pattern-tips-off-row) {
+    display: none !important;
+  }
+
+  :global(.pattern-tip-dismiss),
+  :global(.pattern-tips-control-btn),
+  :global(.pattern-tips-control-box) {
     display: none !important;
   }
 
@@ -2146,6 +2253,27 @@ select.disabled {
 
 <script>
   import "../../scripts/patternPrintPersonalizationBridge.ts";
+  import {
+    bindPatternTipDismiss,
+    patternTipsControlBoxHtml,
+    refreshPatternTipDismiss,
+    updateTipsResetLinkVisibility,
+  } from "../../lib/patterns/patternTipDismiss";
+
+  const HAT_TIPS_STORAGE_KEY = "hat-show-tips";
+  window.kbmPatternTipsControlBoxHtml = patternTipsControlBoxHtml;
+  window.kbmUpdateTipsResetLinkVisibility = updateTipsResetLinkVisibility;
+
+  function initHatPatternTipDismiss() {
+    const scope = document.getElementById("pattern-content");
+    if (!(scope instanceof HTMLElement)) return;
+    bindPatternTipDismiss(scope, HAT_TIPS_STORAGE_KEY, null);
+    refreshPatternTipDismiss(scope, HAT_TIPS_STORAGE_KEY);
+    updateTipsResetLinkVisibility(scope, HAT_TIPS_STORAGE_KEY);
+  }
+
+  document.addEventListener("DOMContentLoaded", initHatPatternTipDismiss);
+  window.addEventListener("kbm:hat-pattern-rendered", initHatPatternTipDismiss);
 </script>
 
 <!-- Load shared wizard utilities -->
@@ -4080,25 +4208,21 @@ async function initHatBuilder() {
   // Apply saved preference to pattern content on initial load
   const savedShowTips = localStorage.getItem('hat-show-tips') === 'true';
   patternContent.dataset.showTips = savedShowTips ? 'true' : 'false';
-  
+
   function updatePatternTipsIntroUi(tipsOn) {
     const slot = patternContent.querySelector('.pattern-tips-intro-slot');
     if (!slot) return;
-    if (tipsOn) {
-      slot.innerHTML =
-        '<div class="pattern-tip pattern-tip-intro" data-tip><strong>Tip:</strong> Pattern Tips are on to give you quick help and helpful reminders as you knit. <a href="#" class="tips-inline-toggle" data-testid="link-tips-toggle">Hide tips</a></div>';
-    } else {
-      slot.innerHTML =
-        '<p class="pattern-tips-off-row"><i class="fa-regular fa-lightbulb" style="color: #c2614e;"></i><a href="#" class="tips-inline-toggle" data-testid="link-tips-toggle"> Show pattern tips</a></p>';
+    const renderControl = window.kbmPatternTipsControlBoxHtml;
+    slot.innerHTML = typeof renderControl === 'function' ? renderControl(tipsOn) : '';
+    if (typeof window.kbmUpdateTipsResetLinkVisibility === 'function') {
+      window.kbmUpdateTipsResetLinkVisibility(patternContent, 'hat-show-tips');
     }
+    window.dispatchEvent(new CustomEvent('kbm:hat-pattern-rendered'));
   }
 
   patternContent.addEventListener('click', (e) => {
-    const link = e.target.closest('.tips-inline-toggle');
-    const icon = e.target.closest('.tips-icon');
-    const iconInOffRow =
-      icon && icon.closest('.pattern-tips-off-row') && patternContent.contains(icon);
-    if (!((link && patternContent.contains(link)) || iconInOffRow)) return;
+    const toggleBtn = e.target.closest('.tips-inline-toggle');
+    if (!(toggleBtn && patternContent.contains(toggleBtn))) return;
     e.preventDefault();
     const isShowing = patternContent.dataset.showTips === 'true';
     const newState = !isShowing;
@@ -4625,14 +4749,14 @@ async function initHatBuilder() {
     } else if (crown === 'gathered') {
       crownInstructions = `
       <p>Transfer every other needle to its neighbor, leaving emptied needles out of work.</p>
-      <div class="pattern-tip" data-tip><strong>Tip:</strong> Keep 2 stitches in work on each edge for seaming.</div>
+      <div class="pattern-tip" data-tip data-tip-id="hat-crown-seaming-edges"><strong>Tip:</strong> Keep 2 stitches in work on each edge for seaming.</div>
       <p>After knitting the full hat length, break the yarn, leaving ${breakYarnTailPhrase}.</p>
       <p>Use a darning needle to run the yarn tail through the remaining live stitches and draw closed.</p>
     `;
     } else {
       crownInstructions = `
       <p>Transfer every other needle to its neighbor, leaving emptied needles out of work.</p>
-      <div class="pattern-tip" data-tip><strong>Tip:</strong> Keep 2 stitches in work on each edge for seaming.</div>
+      <div class="pattern-tip" data-tip data-tip-id="hat-crown-seaming-edges"><strong>Tip:</strong> Keep 2 stitches in work on each edge for seaming.</div>
       <p>Knit ${crownRowCount} rows.</p>
       <p>Break yarn, leaving ${breakYarnTailPhrase}.</p>
     `;
@@ -4665,12 +4789,13 @@ async function initHatBuilder() {
     
     // Pattern HTML — ON: full intro tip + Hide link; OFF: quiet “Show pattern tips” row only
     const savedShowTipsForBtn = localStorage.getItem('hat-show-tips') === 'true';
-    const tipsIntroSlotHtml = savedShowTipsForBtn
-      ? `<div class="pattern-tips-intro-slot"><div class="pattern-tip pattern-tip-intro" data-tip><strong>Tip:</strong> Pattern Tips are on to give you quick help and helpful reminders as you knit. <a href="#" class="tips-inline-toggle" data-testid="link-tips-toggle">Hide tips</a></div></div>`
-      : `<div class="pattern-tips-intro-slot"><p class="pattern-tips-off-row"><i class="fa-regular fa-lightbulb" style="color: #c2614e;"></i><a href="#" class="tips-inline-toggle" data-testid="link-tips-toggle"> Show pattern tips</a></p></div>`;
+    const renderControl = window.kbmPatternTipsControlBoxHtml;
+    const tipsIntroSlotHtml = `<div class="pattern-tips-intro-slot">${
+      typeof renderControl === 'function' ? renderControl(savedShowTipsForBtn) : ''
+    }</div>`;
     const brimDeeperBodyTipHtml =
       bodyRows > 0
-        ? `<div class="pattern-tip" data-tip><strong>Tip:</strong> Want a deeper brim? Knit extra brim rows before continuing to the body.</div>`
+        ? `<div class="pattern-tip" data-tip data-tip-id="hat-deeper-brim"><strong>Tip:</strong> Want a deeper brim? Knit extra brim rows before continuing to the body.</div>`
         : '';
     const bodySectionWrapped =
       bodyRows > 0
@@ -4699,13 +4824,13 @@ async function initHatBuilder() {
         'cast-on',
         '<h4>Cast-On</h4>',
         `<p>Cast on <strong>${patternCastOnSts} stitches</strong>.</p>
-      <div class="pattern-tip" data-tip><strong>Tip:</strong> Use the cast-on method of your choice.</div>`
+      <div class="pattern-tip" data-tip data-tip-id="hat-cast-on-method"><strong>Tip:</strong> Use the cast-on method of your choice.</div>`
       )}
       ${wrapHatPatternSection(
         'brim',
         `<h4>Visible Brim Height (${displayBrimDepth} ${unit})</h4>`,
         `<p>Work ${brimRows} rows:</p>
-      ${brimType === 'folded' ? '<div class="pattern-tip" data-tip><strong>Tip:</strong> This length includes extra rows for folding.</div>' : ''}
+      ${brimType === 'folded' ? '<div class="pattern-tip" data-tip data-tip-id="hat-folded-brim-length"><strong>Tip:</strong> This length includes extra rows for folding.</div>' : ''}
       <p>${brimInstructionHtml}</p>
       ${brimDeeperBodyTipHtml}`
       )}
@@ -4723,6 +4848,7 @@ async function initHatBuilder() {
     
     updateHTML('#pattern-content', patternHTML);
     patternContent.dataset.showTips = savedShowTipsForBtn ? 'true' : 'false';
+    window.dispatchEvent(new CustomEvent('kbm:hat-pattern-rendered'));
     applyHatPatternSectionCollapseState(patternContent);
 
     // Generate diagram

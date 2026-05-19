@@ -58,18 +58,38 @@ export const RIBBED_HEM_PATTERN_TIP_HTML =
 
 /** Trusted HTML for collapsible body-shaping marker tip (glossary id 310). */
 export const BODY_MARKER_TIP_DETAILS_HTML =
-  '<details class="pattern-tip sleeveless-shaping-help-toggle"><summary>Tip: Use markers to track shaping</summary><p>Many machine knitters place small removable <span class="pattern-term" data-glossary-id="310" data-tooltip="Hang a contrasting loop on the edge needle to locate a specific row or checkpoint later.">markers</span> directly into the edge of the fabric at shaping rows or length checkpoints. This makes it easier to verify your progress while the garment is still on the machine.</p></details>';
+  '<details class="pattern-tip sleeveless-shaping-help-toggle" data-tip-id="sleeveless-body-markers"><summary>Tip: Use markers to track shaping</summary><p>Many machine knitters place small removable <span class="pattern-term" data-glossary-id="310" data-tooltip="Hang a contrasting loop on the edge needle to locate a specific row or checkpoint later.">markers</span> directly into the edge of the fabric at shaping rows or length checkpoints. This makes it easier to verify your progress while the garment is still on the machine.</p></details>';
 
 /** Shown once at the armhole reset — RC targets below are from this counter, not the body cast-on RC. */
 export const ARMHOLE_RC_FROM_RESET_NOTE =
   "Row counter numbers in this section are counted from the armhole reset.";
+
+/** Catalog `content_id` in `videos-public.json` (Bind Off Trick). */
+export const ARMHOLE_BIND_OFF_TRICK_CONTENT_ID = 5002;
+
+/** Registry key in `SLEEVELESS_HELP_VIDEOS` for {@link ARMHOLE_BIND_OFF_TRICK_CONTENT_ID}. */
+export const ARMHOLE_BIND_OFF_TRICK_VIDEO_KEY = "bindOffTrick";
+
+/**
+ * Trusted HTML for inline tip on the first armhole shaping block (`tipHtml`).
+ * Rendered after the initial bind-off / hold instructions — opening “Tip:” added by the pattern tab.
+ */
+export const ARMHOLE_ALTERNATE_TECHNIQUES_TIP_HTML =
+  "Some machine knitters prefer to hold stitches or use short-row shaping at the armhole to reduce seam bulk. Feel free to use the technique you are most comfortable with." +
+  '<p class="pattern-finishing-video-help pattern-help-link no-print sleeveless-armhole-tip__bind-off-video">' +
+  '<strong class="pattern-finishing-video-help__lead">Cleaner Partial Bind-Off Edge</strong> ' +
+  "Binding off just a few stitches at the armhole edge? This quick tip shows an optional transfer trick that can create a smoother-looking shaping line. " +
+  '<span class="pattern-help-link"><button type="button" class="pattern-help-link__button" data-sleeveless-help-video="' +
+  ARMHOLE_BIND_OFF_TRICK_VIDEO_KEY +
+  '" aria-haspopup="dialog"><i class="fa-solid fa-play" aria-hidden="true"></i> Bind Off Trick</button></span>' +
+  "</p>";
 
 /**
  * Trusted HTML: carriage left/right vs diagram orientation (BACK and FRONT neckline blocks, before chart mount).
  * {@link sleevelessPatternPrintRender} forces `<details open>` so printouts show the body text.
  */
 export const NECKLINE_SHOULDER_ORIENTATION_HELP_DETAILS_HTML =
-  '<details class="pattern-tip sleeveless-shaping-help-toggle"><summary>Understanding Left, Right &amp; Diagram Orientation</summary>' +
+  '<details class="pattern-tip sleeveless-shaping-help-toggle" data-tip-id="sleeveless-neckline-orientation"><summary>Understanding Left, Right &amp; Diagram Orientation</summary>' +
   "<p>The diagrams and shaping instructions are shown as you work at the machine.</p>" +
   '<p>&ldquo;Left&rdquo; and &ldquo;Right&rdquo; in the chart refer to carriage position, not the finished sweater as worn.</p>' +
   "<p>Shaping edges are labeled &ldquo;Neck&rdquo; and &ldquo;Armhole&rdquo; so you can follow the shaping without needing to rotate or reinterpret the garment.</p>" +
@@ -81,7 +101,7 @@ export const NECKLINE_SHOULDER_ORIENTATION_HELP_DETAILS_HTML =
  * Rendered immediately before the shaping chart table when that column is present.
  */
 export const CARRIAGE_POSITION_PATTERN_TIP_DETAILS_HTML =
-  '<details class="pattern-tip sleeveless-shaping-help-toggle no-print"><summary>Carriage Position</summary>' +
+  '<details class="pattern-tip sleeveless-shaping-help-toggle no-print" data-tip-id="sleeveless-carriage-position"><summary>Carriage Position</summary>' +
   "<p>Carriage Position shows where your carriage should be before knitting that row.</p>" +
   '<p><em>Example:</em> If the chart says &ldquo;Right,&rdquo; your carriage should be on the right side before you begin knitting the row.</p>' +
   "</details>";
@@ -211,6 +231,8 @@ export type SleevelessPatternDisplayRow =
       paragraphs: string[];
       /** Trusted HTML only (e.g. {@link RIBBED_HEM_PATTERN_TIP_HTML}); rendered as innerHTML in the pattern tab. */
       tipHtml?: string;
+      /** Stable id for per-tip dismiss (`data-tip-id` on the rendered `.pattern-tip` wrapper). */
+      tipId?: string;
       /** Trusted HTML for expandable tip blocks (`<details>` UI). */
       collapsibleTipHtml?: string;
       /** Total stitches on the piece after this block; right column only when different from last shown */
@@ -1046,6 +1068,7 @@ export function buildSleevelessBackDisplayRows(args: {
           "Hem rows could not be calculated — check row gauge and sizing chart. Knit your hem to the depth you prefer, then continue.",
         ],
     tipHtml: RIBBED_HEM_PATTERN_TIP_HTML,
+    tipId: "sleeveless-ribbed-hem",
     stitchCount: A > 0 ? A : undefined,
   });
 
@@ -1128,8 +1151,10 @@ export function buildSleevelessBackDisplayRows(args: {
       paragraphs: [
         "Reset Armhole RC to RC:000.",
         ARMHOLE_RC_FROM_RESET_NOTE,
-        `At RC:000, bind off ${bo} stitches at the armhole edge (carriage side). Knit across.`,
+        `At RC:000, bind off / hold ${bo} stitches at the armhole edge (carriage side). Knit across.`,
       ],
+      tipHtml: ARMHOLE_ALTERNATE_TECHNIQUES_TIP_HTML,
+      tipId: "sleeveless-armhole-alternate",
       stitchCount: afterBo1 > 0 ? afterBo1 : undefined,
     });
     if (armholeStyle === "symmetricTwoEdges") {
@@ -1137,7 +1162,7 @@ export function buildSleevelessBackDisplayRows(args: {
         kind: "block",
         rc: formatArmholeLocalRc(first + 1, first),
         paragraphs: [
-          `At RC:001, bind off ${bo} stitches at the remaining armhole edge (carriage side). Knit across.`,
+          `At RC:001, bind off / hold ${bo} stitches at the remaining armhole edge (carriage side). Knit across.`,
         ],
         stitchCount: afterBo2 > 0 ? afterBo2 : undefined,
       });
@@ -1333,6 +1358,7 @@ export function buildSleevelessBackDisplayRows(args: {
     kind: "block",
     paragraphs: [],
     tipHtml: LIFELINE_BEFORE_NECK_SHOULDER_SHAPING_TIP_HTML,
+    tipId: "sleeveless-lifeline-neck-shoulder",
   });
 
   if (args.useNeckChartRows && args.neckChartRows.length > 0) {

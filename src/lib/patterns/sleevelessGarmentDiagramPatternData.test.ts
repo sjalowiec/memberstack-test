@@ -35,7 +35,7 @@ describe("buildSleevelessGarmentDiagramPatternData", () => {
     expect(fromDiagramData.src.endsWith("/diagram-front-V.svg")).toBe(true);
   });
 
-  it("matches cardigan half-front routing used by pattern generation", () => {
+  it("matches full-width cardigan routing used by pattern generation", () => {
     const patternMerged = {
       style: { neckline: "round", garmentStyle: "cardigan", frontStyle: "open" },
       fit: { selectedMeasurements: baseMeasurements },
@@ -54,13 +54,13 @@ describe("buildSleevelessGarmentDiagramPatternData", () => {
     const front = resolveSleevelessFrontDiagram(diagramData);
 
     expect(genResult.debug.cardiganHalfLeftCastOnSts).toBeDefined();
-    expect(front.diagramType).toBe("cardiganHalfFrontRound");
-    expect(front.src.endsWith("/cardigan-round.svg")).toBe(true);
+    expect(front.diagramType).toBe("cardiganFullFrontRound");
+    expect(front.frontPieceType).toBe("fullFront");
+    expect(front.src).toBe("/images/patterns/sleeveless/cardigan-round.svg");
 
     const repl = buildSleevelessGarmentDiagramReplacements(genResult, "in", {
       patternData: diagramData,
       measurementPiece: "front",
-      cardiganHalfSide: "left",
     });
     expect(repl.ARMHOLE_DEPTH).toBe("10");
     expect(repl.ARMHOLE_ROWS).toBe(String(genResult.debug.armholeRows));

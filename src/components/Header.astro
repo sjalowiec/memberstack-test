@@ -18,6 +18,80 @@
   }
 }
 
+/* Tablet / iPad landscape: desktop nav bar, tighter fit (mobile unchanged ≤1024px) */
+@media (min-width: 1025px) and (max-width: 1199px) {
+  .kbm-header-wrap {
+    overflow-x: clip;
+  }
+
+  .kbm-nav-bar .kbm-container {
+    gap: 0.65rem;
+    padding-inline: 16px;
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
+  }
+
+  .kbm-nav-bar .kbm-nav-center,
+  .kbm-nav-bar .kbm-nav-center-cluster {
+    min-width: 0;
+  }
+
+  .kbm-nav-bar .brand {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .kbm-logo-section {
+    padding: 4px 12px 0 8px;
+  }
+
+  .kbm-nav-bar .kbm-logo-img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .kbm-nav-bar .kbm-logo-text {
+    font-size: 1.45rem;
+  }
+
+  .kbm-nav-bar .kbm-nav-row {
+    gap: 0.85rem;
+  }
+
+  .kbm-menu {
+    gap: 0.85rem;
+  }
+
+  .kbm-menu > li > a,
+  .kbm-menu > li > .dd-trigger {
+    font-size: 0.95rem;
+    padding: 6px 0;
+  }
+
+  .kbm-nav-bar .header-search-trigger {
+    display: none;
+  }
+
+  .kbm-nav-bar .kbm-nav-right {
+    gap: 0.45rem;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .kbm-nav-bar .nav-cta-wrapper {
+    margin-left: 0.35rem;
+  }
+
+  .kbm-nav-bar a.kbm-button.kbm-button-accent.nav-cta {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.85rem;
+  }
+
+  .kbm-nav-bar .kbm-header-auth .kbm-btn-outline {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+  }
+}
+
 /* ===== FIXED HEADER ===== */
 .kbm-header-wrap {
   position: fixed;

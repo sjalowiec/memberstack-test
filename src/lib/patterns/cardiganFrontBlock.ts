@@ -34,6 +34,9 @@ export type SleevelessGarmentStyle = "pullover" | "cardigan";
 export type SleevelessFrontDiagramType =
   | "pulloverFullFrontRound"
   | "pulloverFullFrontV"
+  | "cardiganFullFrontRound"
+  | "cardiganFullFrontV"
+  /** DEV-only half-body preview (`cardigan-half-front-round.svg`). */
   | "cardiganHalfFrontRound"
   | "cardiganHalfFrontV";
 

@@ -7,6 +7,7 @@ import {
   cardiganHalfFrontBodySts,
   splitBodyBackCastOnToSymmetricCardiganHalves,
 } from "./cardiganFrontBlock";
+import { resolveDiagramFinishedHipInches } from "./customBuildEffectiveFinishedHip";
 import { resolveEffectiveHemDepthInches } from "./customBuildEffectiveHemDepth";
 import { calculateHemRowsFromInches } from "./hemDefaults";
 import {
@@ -64,6 +65,32 @@ function pickAudienceFromPatternData(patternData: Record<string, unknown>): stri
   const cat = style.recipientCategory;
   if (typeof cat === "string" && cat.trim()) return cat.trim();
   return undefined;
+}
+
+/** Hip stitch count + half-width for `{{HIP_STS}}` / `{{HIP_INCHES}}` diagram labels (no hip shaping math yet). */
+function resolveHipFieldsForSleevelessDiagram(
+  d: SleevelessBackPatternResult["debug"],
+  patternData: Record<string, unknown>,
+  unit: "cm" | "in",
+): { HIP_STS: string; HIP_INCHES: string } {
+  const finishedBust = isFiniteNumber(d.finishedBustChest) ? d.finishedBustChest : undefined;
+  const finishedHip = resolveDiagramFinishedHipInches(patternData, finishedBust);
+  const spi = d.stitchesPerInch;
+
+  let hipSts: number | undefined;
+  if (isFiniteNumber(finishedHip) && isFiniteNumber(spi) && spi > 0) {
+    hipSts = Math.round(finishedHip * spi);
+  } else if (isFiniteNumber(d.backStitches)) {
+    hipSts = Math.round(d.backStitches);
+  }
+
+  const hipHalfWidthIn =
+    isFiniteNumber(finishedHip) && finishedHip > 0 ? finishedHip / 2 : undefined;
+
+  return {
+    HIP_STS: isFiniteNumber(hipSts) ? String(Math.max(0, hipSts)) : "",
+    HIP_INCHES: fmtNumber(inchesToUnit(hipHalfWidthIn, unit) ?? Number.NaN),
+  };
 }
 
 /** Hem band rows + depth for `{{HEM_ROWS}}` / `{{HEM_INCHES}}` diagram labels. */
@@ -136,6 +163,7 @@ function applyCardiganHalfFrontMeasurements(
   split: CardiganFrontSplit,
   side: "left" | "right",
   finishedBust: number | undefined,
+  finishedHip: number | undefined,
   unit: "cm" | "in",
 ): void {
   const bustSts = cardiganHalfFrontBodySts(split, side);
@@ -143,6 +171,17 @@ function applyCardiganHalfFrontMeasurements(
 
   const bustWidthIn = finishedBust !== undefined ? finishedBust / 4 : undefined;
   repl.BUST_WIDTH = fmtNumber(inchesToUnit(bustWidthIn, unit) ?? NaN);
+
+  const hipCirc = finishedHip ?? finishedBust;
+  const spi = d.stitchesPerInch;
+  const hipBodySts =
+    isFiniteNumber(hipCirc) && isFiniteNumber(spi) && spi > 0
+      ? Math.round(hipCirc * spi)
+      : split.bodyBackCastOnSts;
+  const hipSplit = splitBodyBackCastOnToSymmetricCardiganHalves(hipBodySts);
+  repl.HIP_STS = String(cardiganHalfFrontBodySts(hipSplit, side));
+  const hipWidthIn = hipCirc !== undefined ? hipCirc / 4 : undefined;
+  repl.HIP_INCHES = fmtNumber(inchesToUnit(hipWidthIn, unit) ?? NaN);
 
   // RULE 5: shoulder seam matches back / pullover front — not halved for half-body schematic.
   repl.SHOULDER_STS = isFiniteNumber(d.stitchesAfterArmhole)
@@ -189,8 +228,10 @@ export function buildSleevelessGarmentDiagramReplacements(
     unit,
   );
   const hemFields = resolveHemFieldsForSleevelessDiagram(d, options.patternData, unit);
+  const hipFields = resolveHipFieldsForSleevelessDiagram(d, options.patternData, unit);
 
   const finishedBust = isFiniteNumber(d.finishedBustChest) ? d.finishedBustChest : undefined;
+  const finishedHip = resolveDiagramFinishedHipInches(options.patternData, finishedBust);
   const bustWidthIn = finishedBust !== undefined ? finishedBust / 2 : undefined;
 
   const unitLabel = unit === "cm" ? "cm" : "in";
@@ -224,6 +265,8 @@ export function buildSleevelessGarmentDiagramReplacements(
     SIDE_LENGTH,
     HEM_ROWS: hemFields.HEM_ROWS,
     HEM_INCHES: hemFields.HEM_INCHES,
+    HIP_STS: hipFields.HIP_STS,
+    HIP_INCHES: hipFields.HIP_INCHES,
     OPENING_STS: "",
     PIECE_TITLE: "",
     CF_EDGE_NOTE: "",
@@ -231,7 +274,15 @@ export function buildSleevelessGarmentDiagramReplacements(
 
   if (options.cardiganHalfSide === "left" || options.cardiganHalfSide === "right") {
     const split = splitBodyBackCastOnToSymmetricCardiganHalves(d.backStitches ?? 0);
-    applyCardiganHalfFrontMeasurements(repl, d, split, options.cardiganHalfSide, finishedBust, unit);
+    applyCardiganHalfFrontMeasurements(
+      repl,
+      d,
+      split,
+      options.cardiganHalfSide,
+      finishedBust,
+      finishedHip,
+      unit,
+    );
     if (options.cardiganHalfSide === "left" && isFiniteNumber(d.cardiganHalfLeftCastOnSts)) {
       repl.BUST_STS = String(Math.round(d.cardiganHalfLeftCastOnSts));
     }

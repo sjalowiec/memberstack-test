@@ -4,6 +4,7 @@ import { calculateHemRows, getDefaultHemLengthInches } from "./hemDefaults";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
 const baseDebug = {
+  stitchesPerInch: 81 / 40,
   rowsPerInch: 10,
   hemRows: 20,
   bodyRows: 80,
@@ -124,6 +125,67 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
 
     expect(replCardigan.NECK_STS).toBe("15");
     expect(replPullover.NECK_STS).toBe("30");
+  });
+
+  it("provides HIP_STS (not HIP_ROWS) for diagram token replacement", () => {
+    const result = { debug: { ...baseDebug } } as unknown as SleevelessBackPatternResult;
+    const repl = buildSleevelessGarmentDiagramReplacements(result, "in", {
+      patternData: {},
+      measurementPiece: "back",
+    });
+    expect(repl).toHaveProperty("HIP_STS");
+    expect(repl).toHaveProperty("HIP_INCHES");
+    expect(repl).not.toHaveProperty("HIP_ROWS");
+  });
+
+  it("includes HIP_STS and HIP_INCHES defaulting hip to bust when finished_hip is absent", () => {
+    const result = { debug: { ...baseDebug } } as unknown as SleevelessBackPatternResult;
+
+    const repl = buildSleevelessGarmentDiagramReplacements(result, "in", {
+      patternData: {},
+      measurementPiece: "back",
+    });
+
+    expect(repl.HIP_STS).toBe(String(baseDebug.backStitches));
+    expect(repl.HIP_INCHES).toBe("20");
+    expect(repl.HIP_INCHES).toBe(repl.BUST_WIDTH);
+  });
+
+  it("uses chart finished_hip for HIP tokens when present", () => {
+    const result = { debug: { ...baseDebug } } as unknown as SleevelessBackPatternResult;
+    const patternData = {
+      fit: { selectedMeasurements: { finished_hip: 44, finished_bust_chest: 40 } },
+    };
+
+    const repl = buildSleevelessGarmentDiagramReplacements(result, "in", {
+      patternData,
+      measurementPiece: "front",
+    });
+
+    expect(repl.HIP_INCHES).toBe("22");
+    expect(repl.HIP_STS).toBe("89");
+    expect(repl.BUST_WIDTH).toBe("20");
+  });
+
+  it("halves HIP tokens on cardigan half schematic", () => {
+    const result = { debug: { ...baseDebug } } as unknown as SleevelessBackPatternResult;
+
+    const replCardigan = buildSleevelessGarmentDiagramReplacements(result, "in", {
+      patternData: {},
+      measurementPiece: "front",
+      cardiganHalfSide: "left",
+    });
+    const replPullover = buildSleevelessGarmentDiagramReplacements(result, "in", {
+      patternData: {},
+      measurementPiece: "front",
+    });
+
+    expect(Number(replCardigan.HIP_STS)).toBeLessThan(Number(replPullover.HIP_STS));
+    expect(Number(replCardigan.HIP_STS) + Number(replCardigan.HIP_STS)).toBe(
+      Number(replPullover.HIP_STS) + 1,
+    );
+    expect(replCardigan.HIP_INCHES).toBe("10");
+    expect(replPullover.HIP_INCHES).toBe("20");
   });
 
   it("keeps row and armhole tokens identical to pullover when cardigan half", () => {
