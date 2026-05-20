@@ -3,10 +3,13 @@
  * Mirrors the former inline logic on the builder pattern tab / print route (localStorage-free).
  */
 import { loadMeasurementOverrides } from "./sleevelessCustomMeasurementStorage";
+import { CUSTOM_BUILD_STYLE_STORAGE_KEYS } from "./sleevelessCustomBuildStyleKeys";
 import {
   readCustomBuildWizardGarmentType,
   readCustomBuildWizardNeckline,
 } from "./sleevelessCustomBuildWizardNeckline";
+import { mapExpressStyleKey } from "./syncSleevelessExpressDesignToStorage";
+import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "./patternStorage";
 
 export function sectionPattern(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
@@ -167,25 +170,88 @@ export function resolveGeneratorPatternMode(
   return modes.find((m) => m) || undefined;
 }
 
+function readExpressBuilderValues(): Record<string, string> {
+  if (typeof localStorage === "undefined") return {};
+  try {
+    const raw = localStorage.getItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY);
+    if (!raw) return {};
+    const p = JSON.parse(raw) as unknown;
+    if (!p || typeof p !== "object" || Array.isArray(p)) return {};
+    const v = (p as Record<string, unknown>).values;
+    if (v && typeof v === "object" && !Array.isArray(v)) {
+      return { ...(v as Record<string, string>) };
+    }
+  } catch {
+    /* ignore */
+  }
+  return {};
+}
+
+function readCustomBuildStyleBodyShapeFromStorage(): string | undefined {
+  if (typeof localStorage === "undefined") return undefined;
+  try {
+    const raw = localStorage.getItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.bodyShape)?.trim();
+    if (raw === "aline" || raw === "straight") return raw;
+  } catch {
+    /* ignore */
+  }
+  return undefined;
+}
+
+/** Generator only distinguishes straight vs A-line body math; unknown shapes fall back to straight. */
+export function normalizeGeneratorBodyShape(raw: unknown): "straight" | "aline" {
+  const s = typeof raw === "string" ? raw.trim().toLowerCase() : "";
+  return s === "aline" ? "aline" : "straight";
+}
+
 /**
- * Merges Custom Build measurement overrides from Express builder storage into generator input and
- * ensures `style.patternMode` is `custom-build` so {@link resolveEffectiveArmholeDepthInches} applies.
+ * Resolves `style.bodyShape` for generator input when canonical/PB style is stale.
+ * Always returns `straight` or `aline` so builder/pattern init never sees undefined.
+ */
+export function resolveGeneratorBodyShape(
+  canonicalStyle: Record<string, unknown>,
+  patternBuilderStyle: Record<string, unknown>,
+): "straight" | "aline" {
+  const fromStyleStep = readCustomBuildStyleBodyShapeFromStorage();
+  if (fromStyleStep) return normalizeGeneratorBodyShape(fromStyleStep);
+
+  const expressStyleKey = readExpressBuilderValues().style?.trim();
+  if (expressStyleKey) {
+    try {
+      return normalizeGeneratorBodyShape(mapExpressStyleKey(expressStyleKey).bodyShape);
+    } catch {
+      /* ignore — fall through */
+    }
+  }
+
+  const fromStored =
+    (typeof canonicalStyle.bodyShape === "string" && canonicalStyle.bodyShape.trim()) ||
+    (typeof patternBuilderStyle.bodyShape === "string" && patternBuilderStyle.bodyShape.trim());
+  if (fromStored) return normalizeGeneratorBodyShape(fromStored);
+
+  return "straight";
+}
+
+/**
+ * Merges review / measurement diagram overrides from storage and generator fit into
+ * {@link generateSleevelessBackPattern} input (hip, bust, armhole, etc.).
  */
 export function applyCustomBuildMeasurementOverridesToGenerator(
   gen: Record<string, unknown>,
   loadOverrides: () => Record<string, string> = loadMeasurementOverrides,
 ): Record<string, unknown> {
-  const style = sectionPattern(gen.style);
-  if (style.patternMode === "express") return gen;
-
-  const fromStorage = loadOverrides();
+  let fromStorage: Record<string, string> = {};
+  try {
+    fromStorage = loadOverrides();
+  } catch {
+    /* localStorage unavailable or corrupt — continue without review overrides */
+  }
   const fromFit = sectionPattern(sectionPattern(gen.fit).cbMeasurementOverrides);
   const overrides = { ...fromFit, ...fromStorage };
   if (Object.keys(overrides).length === 0) return gen;
 
   return {
     ...gen,
-    style: { ...style, patternMode: "custom-build" },
     fit: { ...sectionPattern(gen.fit), cbMeasurementOverrides: overrides },
   };
 }
@@ -199,7 +265,10 @@ export function buildGeneratorPatternDataFromSources(
   const fitMerged = { ...sectionPattern(merged.fit), ...sectionPattern(pb.fit) };
   const smA = sectionPattern(fitMerged.selectedMeasurements);
   const smB = sectionPattern(sectionPattern(pb.fit).selectedMeasurements);
-  const cbOverrides = sectionPattern(sectionPattern(pb.fit).cbMeasurementOverrides);
+  const cbOverrides = {
+    ...sectionPattern(sectionPattern(merged.fit).cbMeasurementOverrides),
+    ...sectionPattern(sectionPattern(pb.fit).cbMeasurementOverrides),
+  };
   const fit = {
     ...fitMerged,
     selectedMeasurements: { ...smB, ...smA },
@@ -208,9 +277,11 @@ export function buildGeneratorPatternDataFromSources(
   const canonicalStyle = sectionPattern(merged.style);
   const pbStyle = sectionPattern(pb.style);
   const patternMode = resolveGeneratorPatternMode(canonicalStyle, pbStyle);
+  const bodyShape = resolveGeneratorBodyShape(canonicalStyle, pbStyle);
   const style = {
     ...canonicalStyle,
     ...pbStyle,
+    bodyShape,
     ...(patternMode ? { patternMode } : {}),
     // Custom Build sync writes garment/neckline to canonical; stale express `patternBuilderData` must not win.
     ...(patternMode === "custom-build"
@@ -233,9 +304,11 @@ export function buildGeneratorPatternDataFromSources(
       ? sectionPattern(pb.yarnGaugeMachine)
       : {};
   const ygMerged = sectionPattern(merged.yarnGauge);
+  const measurements = sectionPattern(merged.measurements);
   const gen = {
     fit,
     style,
+    ...(Object.keys(measurements).length > 0 ? { measurements } : {}),
     yarnGaugeMachine: {
       gaugeStitchesPerInch: ygm.gaugeStitchesPerInch ?? ygMerged.stitchGauge,
       gaugeRowsPerInch: ygm.gaugeRowsPerInch ?? ygMerged.rowGauge,

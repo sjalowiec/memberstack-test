@@ -127,7 +127,7 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
     expect(replPullover.NECK_STS).toBe("30");
   });
 
-  it("provides HIP_STS (not HIP_ROWS) for diagram token replacement", () => {
+  it("provides HIP_STS, HIP_ROWS, and HIP_INCHES for diagram token replacement", () => {
     const result = { debug: { ...baseDebug } } as unknown as SleevelessBackPatternResult;
     const repl = buildSleevelessGarmentDiagramReplacements(result, "in", {
       patternData: {},
@@ -135,7 +135,20 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
     });
     expect(repl).toHaveProperty("HIP_STS");
     expect(repl).toHaveProperty("HIP_INCHES");
-    expect(repl).not.toHaveProperty("HIP_ROWS");
+    expect(repl).toHaveProperty("HIP_ROWS");
+    expect(repl.HIP_ROWS).toBe("");
+  });
+
+  it("uses hipRowsFromHem 0 when hip line is at cast-on (A-line)", () => {
+    const result = {
+      debug: { ...baseDebug, hipRowsFromHem: 0, hemCastOnStitches: 90 },
+    } as unknown as SleevelessBackPatternResult;
+    const repl = buildSleevelessGarmentDiagramReplacements(result, "in", {
+      patternData: {},
+      measurementPiece: "back",
+    });
+    expect(repl.HIP_ROWS).toBe("0");
+    expect(repl.HIP_STS).toBe("90");
   });
 
   it("includes HIP_STS and HIP_INCHES defaulting hip to bust when finished_hip is absent", () => {

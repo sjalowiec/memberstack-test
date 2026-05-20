@@ -1,5 +1,9 @@
 import { positiveMeasurementInches } from "./customBuildEffectiveArmholeDepth";
 import type { SleevelessCustomBuildBodyFinishedMeasurements } from "./sleevelessCustomBuildBodyMeasurements";
+import {
+  hipInchesAboveBustForValidation,
+  SLEEVELESS_ALINE_HIP_MAX_INCHES_ABOVE_BUST,
+} from "./sleevelessAlineShaping";
 import { normalizeSleevelessAudience } from "./patternStorage";
 
 export type SleevelessPatternValidationSeverity = "error" | "warning";
@@ -21,6 +25,7 @@ export type SleevelessCustomBuildGarmentMeasurements = Partial<{
   shoulderWidth: number | string;
   finishedNeckOpeningWidth: number | string;
   chestBust: number | string;
+  hip: number | string;
 }>;
 
 export type SleevelessCustomBuildMeasurements = SleevelessCustomBuildGarmentMeasurements &
@@ -197,6 +202,37 @@ function validateStructuralErrors(
   }
 }
 
+function validateHipSizing(
+  input: SleevelessCustomBuildMeasurements,
+  messages: SleevelessPatternValidationMessage[],
+): void {
+  const finishedHip =
+    positiveMeasurementInches(input.finishedHip) ?? positiveMeasurementInches(input.hip);
+  const finishedBust = finishedBustWidthInches(input);
+  if (finishedHip === undefined || finishedBust === undefined) return;
+
+  const aboveBust = hipInchesAboveBustForValidation(finishedHip, finishedBust);
+  if (aboveBust === undefined) return;
+
+  if (aboveBust > SLEEVELESS_ALINE_HIP_MAX_INCHES_ABOVE_BUST) {
+    pushWarning(
+      messages,
+      "hip-unusually-wide-above-bust",
+      `Finished hip is more than ${SLEEVELESS_ALINE_HIP_MAX_INCHES_ABOVE_BUST}" wider than the finished bust — side shaping may be steep. Consider a smaller hip or longer body length.`,
+      "hip",
+    );
+  }
+
+  if (aboveBust < 0) {
+    pushWarning(
+      messages,
+      "hip-narrower-than-bust",
+      "Finished hip is narrower than the finished bust. A-line shaping expects the hip/hem at least as wide as the bust.",
+      "hip",
+    );
+  }
+}
+
 function validateWarnings(
   input: SleevelessCustomBuildMeasurements,
   messages: SleevelessPatternValidationMessage[],
@@ -277,6 +313,7 @@ export function validateSleevelessPatternInputs(
 ): SleevelessPatternValidationMessage[] {
   const messages: SleevelessPatternValidationMessage[] = [];
   validateStructuralErrors(input, messages);
+  validateHipSizing(input, messages);
   validateWarnings(input, messages);
   return messages;
 }

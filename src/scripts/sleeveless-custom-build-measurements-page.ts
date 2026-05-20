@@ -14,8 +14,10 @@ import {
   computeDefaultMeasurementsFromChartRow,
   expressWhoToChartAudience,
   findExpressChartRow,
+  getExpressUiUnit,
   loadExpressSweaterCharts,
   resolveExpressChartFit,
+  SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID,
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
 import type { ChartRow } from "../lib/patterns/sleevelessExpressSizeChartTypes";
 import { buildSleevelessCustomBuildValidationInput } from "../lib/patterns/sleevelessCustomBuildValidationInput";
@@ -30,6 +32,12 @@ import {
   type MeasureReviewSummarySegment,
 } from "../lib/patterns/sleevelessMeasureReviewSummaryUi";
 import { SLEEVELESS_REVIEW_CONTEXT_READY_EVENT } from "../lib/patterns/sleevelessPatternProjectMeta";
+import {
+  applyMeasurementTargetToBox,
+  bindPatternSummaryOverlayPositioning,
+  collectOverlayAnchors,
+  PATTERN_SUMMARY_MEASUREMENT_TARGETS,
+} from "../lib/patterns/patternSummaryMeasurementOverlay";
 
 const MEASUREMENT_BLUEPRINT_SVG_URL = "/images/patterns/pattern_summary.svg";
 const YARN_GAUGE_HREF = "/patterns/sleeveless/custom-build/yarn-gauge";
@@ -53,6 +61,7 @@ const DIAGRAM_FIELD_KEYS = [
   "shoulderWidth",
   "armholeDepth",
   "chestBust",
+  "hip",
   "finishedLength",
   "hemDepth",
 ] as const;
@@ -62,6 +71,9 @@ type DiagramFieldKey = (typeof DIAGRAM_FIELD_KEYS)[number];
 type DiagramFieldDef = {
   key: DiagramFieldKey;
   positionMod: string;
+  targetId: string;
+  /** Optional CSS transform for anchor alignment (e.g. hem chip above target). */
+  anchorTransform?: string;
   label: string;
   labelLines?: string[];
   axis?: "horizontal" | "vertical";
@@ -72,6 +84,7 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
   {
     key: "finishedNeckOpeningWidth",
     positionMod: "neck-opening",
+    targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.neckOpening,
     label: "Neck opening",
     axis: "horizontal",
     defaultInches: (row, computed) =>
@@ -80,6 +93,7 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
   {
     key: "neckDepth",
     positionMod: "neckline-depth",
+    targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.neckDepth,
     label: "Neck depth",
     axis: "vertical",
     defaultInches: (row, computed) =>
@@ -88,6 +102,7 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
   {
     key: "shoulderWidth",
     positionMod: "shoulder",
+    targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.chest,
     label: "Shoulder width",
     axis: "horizontal",
     defaultInches: (row, computed) =>
@@ -96,6 +111,7 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
   {
     key: "armholeDepth",
     positionMod: "armhole",
+    targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.armholeDepth,
     label: "Armhole depth",
     axis: "vertical",
     defaultInches: (row, computed) =>
@@ -104,15 +120,31 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
   {
     key: "chestBust",
     positionMod: "finished-bust",
-    label: "Finished bust (ease)",
-    labelLines: ["Finished", "bust (ease)"],
+    targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.bust,
+    label: "Finished bust circ",
+    labelLines: ["Finished", "bust circ"],
     axis: "horizontal",
     defaultInches: (row, computed) =>
       pickPositive(computed.finished_bust_chest, toFinite(row.bust_or_chest)),
   },
   {
+    key: "hip",
+    positionMod: "hip-width",
+    targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.hip,
+    label: "Hip circ",
+    axis: "horizontal",
+    defaultInches: (row, computed) =>
+      pickPositive(
+        computed.finished_hip,
+        toFinite(row.hip),
+        computed.finished_bust_chest,
+        toFinite(row.bust_or_chest),
+      ),
+  },
+  {
     key: "finishedLength",
     positionMod: "back-length",
+    targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.garmentLength,
     label: "Garment length",
     axis: "vertical",
     defaultInches: (row, computed) =>
@@ -121,7 +153,9 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
   {
     key: "hemDepth",
     positionMod: "ribbed-hem-depth",
-    label: "Ribbed hem depth",
+    targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.hem,
+    anchorTransform: "translate(-50%, -100%)",
+    label: "Hem depth",
     axis: "vertical",
     defaultInches: (_row, _computed, audience) => getDefaultHemLengthInches(audience),
   },
@@ -155,6 +189,42 @@ function parseInchesInput(raw: string): number | undefined {
   const n = parseFloat(s.replace(/[^\d.-]/g, ""));
   if (!Number.isFinite(n) || n <= 0) return undefined;
   return roundQuarter(n);
+}
+
+type UiLengthUnit = "in" | "cm";
+
+function inchesToCmRounded(inches: number): number {
+  return Math.round(inches * 2.54 * 10) / 10;
+}
+
+/** Display-only: stored inches → input/value text for the active UI unit. */
+function formatMeasurementDisplayFromInches(
+  inches: number | undefined,
+  unit: UiLengthUnit,
+): string {
+  if (inches === undefined || !Number.isFinite(inches)) return "";
+  if (unit === "cm") return String(inchesToCmRounded(inches));
+  return formatInchesInput(inches);
+}
+
+/** Display-only: stored inch string → readonly chip text. */
+function formatReadonlyMeasurementDisplay(rawInches: string, unit: UiLengthUnit): string {
+  const trimmed = rawInches.trim();
+  if (!trimmed) return "—";
+  const inches = parseInchesInput(trimmed);
+  if (inches === undefined) return trimmed;
+  if (unit === "cm") return `${inchesToCmRounded(inches)} cm`;
+  return `${formatSwatchCountForGaugeInput(inches)} in`;
+}
+
+/** Parse visible field text in the active UI unit; returns stored inches. */
+function parseMeasurementInputToInches(raw: string, unit: UiLengthUnit): number | undefined {
+  const s = raw.trim();
+  if (!s) return undefined;
+  const n = parseFloat(s.replace(/[^\d.-]/g, ""));
+  if (!Number.isFinite(n) || n <= 0) return undefined;
+  const inches = unit === "cm" ? n / 2.54 : n;
+  return roundQuarter(inches);
 }
 
 function readExpressValues(): Record<string, string> {
@@ -211,7 +281,12 @@ function mergeOverridesWithDefaults(
 
 function applyExpressMeasurementBlueprintSvgDisplay(svg: SVGElement): void {
   svg.querySelector("#line-waist-width")?.setAttribute("visibility", "hidden");
-  svg.querySelector("#line-hem-width")?.setAttribute("visibility", "hidden");
+  const hemLine = svg.querySelector("#line-hem-width");
+  if (hemLine instanceof SVGGraphicsElement) {
+    hemLine.removeAttribute("visibility");
+    hemLine.style.visibility = "visible";
+    hemLine.style.opacity = "1";
+  }
   const shoulderLine = svg.querySelector("#line-chest-width");
   if (shoulderLine instanceof SVGGraphicsElement) {
     shoulderLine.removeAttribute("visibility");
@@ -335,7 +410,8 @@ type BlueprintBoxOpts = {
 
 function createDiagramFieldBox(
   field: DiagramFieldDef,
-  value: string,
+  valueInches: string,
+  unit: UiLengthUnit,
   opts?: BlueprintBoxOpts,
 ): HTMLElement {
   const box = document.createElement("div");
@@ -382,18 +458,27 @@ function createDiagramFieldBox(
 
   const fieldRow = document.createElement("div");
   fieldRow.className = "express-mbp-box__field";
+
+  const chip = document.createElement("div");
+  chip.className = "measurement-chip";
+
   const input = document.createElement("input");
   input.type = "text";
   input.inputMode = "decimal";
   input.autocomplete = "off";
-  input.className = "express-mbp-box__input";
+  input.className = "measurement-input express-mbp-box__input";
   input.setAttribute("data-cb-measure-input", field.key);
-  input.setAttribute("aria-label", `${field.label} in inches`);
-  input.value = value;
-  const unit = document.createElement("span");
-  unit.className = "express-mbp-box__unit";
-  unit.textContent = "in";
-  fieldRow.append(input, unit);
+  input.setAttribute("aria-label", `${field.label} in ${unit === "cm" ? "centimeters" : "inches"}`);
+  input.value = formatMeasurementDisplayFromInches(parseInchesInput(valueInches), unit);
+
+  const unitEl = document.createElement("span");
+  unitEl.className = "measurement-unit express-mbp-box__unit";
+  unitEl.setAttribute("data-cb-measure-unit-suffix", "");
+  unitEl.setAttribute("aria-hidden", "true");
+  unitEl.textContent = unit;
+
+  chip.append(input, unitEl);
+  fieldRow.append(chip);
 
   const err = document.createElement("span");
   err.className = "express-mbp-box__error";
@@ -401,20 +486,16 @@ function createDiagramFieldBox(
   err.hidden = true;
 
   box.append(lab, fieldRow, err);
+  applyMeasurementTargetToBox(box, field.targetId, {
+    transform: field.anchorTransform,
+  });
   return box;
-}
-
-function formatReadonlyInchesDisplay(raw: string): string {
-  const trimmed = raw.trim();
-  if (!trimmed) return "—";
-  const n = parseInchesInput(trimmed);
-  if (n === undefined) return trimmed;
-  return `${formatSwatchCountForGaugeInput(n)} in`;
 }
 
 function createDiagramReadonlyFieldBox(
   field: DiagramFieldDef,
-  value: string,
+  valueInches: string,
+  unit: UiLengthUnit,
   opts?: BlueprintBoxOpts,
 ): HTMLElement {
   const box = document.createElement("div");
@@ -461,17 +542,33 @@ function createDiagramReadonlyFieldBox(
 
   const valEl = document.createElement("span");
   valEl.className = "express-mbp-box__value";
-  valEl.textContent = formatReadonlyInchesDisplay(value);
+  valEl.setAttribute("data-cb-measure-readonly-value", "");
+  valEl.textContent = formatReadonlyMeasurementDisplay(valueInches, unit);
 
   box.append(lab, valEl);
+  applyMeasurementTargetToBox(box, field.targetId, {
+    transform: field.anchorTransform,
+  });
   return box;
 }
 
-function collectValues(root: HTMLElement): Record<DiagramFieldKey, string> {
+let diagramOverlayPositionCleanup: (() => void) | null = null;
+
+function collectValues(
+  root: HTMLElement,
+  options?: { displayUnit?: UiLengthUnit | null },
+): Record<DiagramFieldKey, string> {
+  const displayUnit = options?.displayUnit;
   const out = {} as Record<DiagramFieldKey, string>;
   for (const key of DIAGRAM_FIELD_KEYS) {
     const input = root.querySelector<HTMLInputElement>(`[data-cb-measure-input="${key}"]`);
-    out[key] = input?.value.trim() ?? "";
+    const raw = input?.value.trim() ?? "";
+    if (displayUnit == null) {
+      out[key] = raw;
+      continue;
+    }
+    const inches = parseMeasurementInputToInches(raw, displayUnit);
+    out[key] = inches !== undefined ? formatInchesInput(inches) : raw;
   }
   return out;
 }
@@ -497,10 +594,10 @@ function clearAllFieldErrors(root: HTMLElement): void {
   for (const key of DIAGRAM_FIELD_KEYS) setFieldError(root, key, null);
 }
 
-function validateFields(root: HTMLElement): boolean {
+function validateFields(root: HTMLElement, displayUnit: UiLengthUnit | null): boolean {
   clearAllFieldErrors(root);
   let ok = true;
-  const values = collectValues(root);
+  const values = collectValues(root, { displayUnit });
   for (const key of DIAGRAM_FIELD_KEYS) {
     const raw = values[key];
     if (!raw) {
@@ -516,8 +613,8 @@ function validateFields(root: HTMLElement): boolean {
   return ok;
 }
 
-function persistFromRoot(root: HTMLElement): void {
-  const values = collectValues(root);
+function persistFromRoot(root: HTMLElement, displayUnit: UiLengthUnit | null): void {
+  const values = collectValues(root, { displayUnit });
   const toStore: Record<string, string> = {};
   for (const key of DIAGRAM_FIELD_KEYS) {
     const n = parseInchesInput(values[key]);
@@ -526,8 +623,11 @@ function persistFromRoot(root: HTMLElement): void {
   persistMeasurementOverrides(toStore);
 }
 
-function buildValidationInputFromRoot(root: HTMLElement): ReturnType<typeof buildSleevelessCustomBuildValidationInput> {
-  const values = collectValues(root);
+function buildValidationInputFromRoot(
+  root: HTMLElement,
+  displayUnit: UiLengthUnit | null,
+): ReturnType<typeof buildSleevelessCustomBuildValidationInput> {
+  const values = collectValues(root, { displayUnit });
   const overrides: Record<string, string> = {};
   for (const key of DIAGRAM_FIELD_KEYS) {
     if (values[key]) overrides[key] = values[key];
@@ -543,17 +643,17 @@ function continueButtonDefaultLabel(root: HTMLElement): string {
 
 let cbMeasureWarningsDismissed = false;
 
-function refreshPatternValidationUi(root: HTMLElement): boolean {
+function refreshPatternValidationUi(root: HTMLElement, displayUnit: UiLengthUnit | null): boolean {
   const validationHost = root.querySelector("[data-cb-pattern-validation]");
   const continueBtn = root.querySelector("[data-cb-measure-continue]");
   if (!(validationHost instanceof HTMLElement)) return true;
 
-  const messages = validateSleevelessPatternInputs(buildValidationInputFromRoot(root));
+  const messages = validateSleevelessPatternInputs(buildValidationInputFromRoot(root, displayUnit));
   const { errors } = renderCbMeasureValidationOverlay(validationHost, messages, {
     warningsDismissed: cbMeasureWarningsDismissed,
     onDismissWarnings: () => {
       cbMeasureWarningsDismissed = true;
-      refreshPatternValidationUi(root);
+      refreshPatternValidationUi(root, displayUnit);
     },
   });
   const hasErrors = errors.length > 0;
@@ -570,31 +670,97 @@ function resetCbMeasureWarningDismissal(): void {
   cbMeasureWarningsDismissed = false;
 }
 
-function wireFieldPersistence(root: HTMLElement): void {
+function wireFieldPersistence(root: HTMLElement, getDisplayUnit: () => UiLengthUnit | null): void {
   root.querySelectorAll("[data-cb-measure-input]").forEach((el) => {
     if (!(el instanceof HTMLInputElement)) return;
     const save = (): void => {
       resetCbMeasureWarningDismissal();
       const key = el.getAttribute("data-cb-measure-input") as DiagramFieldKey | null;
       if (!key) return;
-      const n = parseInchesInput(el.value);
+      const displayUnit = getDisplayUnit();
+      const n =
+        displayUnit == null
+          ? parseInchesInput(el.value)
+          : parseMeasurementInputToInches(el.value, displayUnit);
       if (el.value.trim() && n === undefined) {
         setFieldError(root, key, "Enter a positive number");
-        refreshPatternValidationUi(root);
+        refreshPatternValidationUi(root, displayUnit);
         return;
       }
       setFieldError(root, key, null);
       el.closest(".express-mbp-box")?.classList.remove("express-mbp-box--invalid");
-      persistFromRoot(root);
-      refreshPatternValidationUi(root);
+      persistFromRoot(root, displayUnit);
+      refreshPatternValidationUi(root, displayUnit);
     };
     el.addEventListener("change", save);
     el.addEventListener("blur", save);
     el.addEventListener("input", () => {
       resetCbMeasureWarningDismissal();
-      refreshPatternValidationUi(root);
+      refreshPatternValidationUi(root, getDisplayUnit());
     });
   });
+}
+
+function findReviewDiagramOverlay(diagramHost: HTMLElement): HTMLElement | null {
+  const overlay = diagramHost.querySelector(".express-mbp-overlay");
+  return overlay instanceof HTMLElement ? overlay : null;
+}
+
+function applyDiagramUnitDisplay(
+  diagramHost: HTMLElement,
+  inchesByKey: Record<DiagramFieldKey, string>,
+  readOnly: boolean,
+  unit: UiLengthUnit,
+): { boxesFound: number; suffixesUpdated: number; valuesUpdated: number } {
+  const scope = findReviewDiagramOverlay(diagramHost) ?? diagramHost;
+  let boxesFound = 0;
+  let suffixesUpdated = 0;
+  let valuesUpdated = 0;
+
+  for (const field of DIAGRAM_FIELDS) {
+    const inchesRaw = inchesByKey[field.key] ?? "";
+    const box = scope.querySelector(`.express-mbp-box--${field.positionMod}`);
+    if (!(box instanceof HTMLElement)) continue;
+    boxesFound += 1;
+
+    if (readOnly) {
+      const valEl =
+        box.querySelector("[data-cb-measure-readonly-value]") ??
+        box.querySelector(".express-mbp-box__value");
+      if (valEl instanceof HTMLElement) {
+        valEl.textContent = formatReadonlyMeasurementDisplay(inchesRaw, unit);
+        valuesUpdated += 1;
+      }
+      continue;
+    }
+
+    const input = box.querySelector<HTMLInputElement>(`[data-cb-measure-input="${field.key}"]`);
+    const unitEl =
+      box.querySelector("[data-cb-measure-unit-suffix]") ?? box.querySelector(".express-mbp-box__unit");
+    const inches = parseInchesInput(inchesRaw);
+    if (input) {
+      input.value = formatMeasurementDisplayFromInches(inches, unit);
+      input.setAttribute(
+        "aria-label",
+        `${field.label} in ${unit === "cm" ? "centimeters" : "inches"}`,
+      );
+      valuesUpdated += 1;
+    }
+    if (unitEl instanceof HTMLElement) {
+      unitEl.textContent = unit;
+      suffixesUpdated += 1;
+    }
+  }
+
+  return { boxesFound, suffixesUpdated, valuesUpdated };
+}
+
+const REVIEW_UNIT_DEBUG = import.meta.env.DEV;
+
+function logReviewUnitDebug(message: string, detail?: Record<string, unknown>): void {
+  if (!REVIEW_UNIT_DEBUG) return;
+  if (detail !== undefined) console.log(`[sleeveless-review-unit] ${message}`, detail);
+  else console.log(`[sleeveless-review-unit] ${message}`);
 }
 
 function wireReadOnlyContinueToPattern(root: HTMLElement, onContinue: () => void): void {
@@ -624,7 +790,12 @@ async function renderDiagram(
   pageRoot: HTMLElement,
   merged: Record<DiagramFieldKey, string>,
   readOnly: boolean,
+  displayUnit: UiLengthUnit | null,
+  getDisplayUnit: () => UiLengthUnit | null,
 ): Promise<void> {
+  const unitForBoxes: UiLengthUnit = displayUnit ?? "in";
+  diagramOverlayPositionCleanup?.();
+  diagramOverlayPositionCleanup = null;
   diagramHost.replaceChildren();
 
   const wrap = document.createElement("div");
@@ -652,8 +823,8 @@ async function renderDiagram(
     const boxOpts = { axis: field.axis, labelLines: field.labelLines };
     overlay.appendChild(
       readOnly
-        ? createDiagramReadonlyFieldBox(field, merged[field.key] ?? "", boxOpts)
-        : createDiagramFieldBox(field, merged[field.key] ?? "", boxOpts),
+        ? createDiagramReadonlyFieldBox(field, merged[field.key] ?? "", unitForBoxes, boxOpts)
+        : createDiagramFieldBox(field, merged[field.key] ?? "", unitForBoxes, boxOpts),
     );
   }
 
@@ -667,7 +838,18 @@ async function renderDiagram(
     wrap.append(validationOverlay, rootMbp);
   }
   diagramHost.appendChild(wrap);
-  if (!readOnly) wireFieldPersistence(pageRoot);
+
+  if (art instanceof SVGSVGElement) {
+    const anchors = collectOverlayAnchors(overlay);
+    diagramOverlayPositionCleanup = bindPatternSummaryOverlayPositioning(
+      inner,
+      art,
+      overlay,
+      anchors,
+    );
+  }
+
+  if (!readOnly) wireFieldPersistence(pageRoot, getDisplayUnit);
 }
 
 export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurementsInitOptions): void {
@@ -675,16 +857,70 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
   if (!(root instanceof HTMLElement)) return;
 
   const readOnly = options?.readOnly === true;
+  const useUiUnitDisplay = options?.preserveUnitsHost === true;
   const summaryEl = root.querySelector("[data-cb-build-summary]");
   const missingEl = root.querySelector("[data-cb-measure-missing]");
   const diagramHost = root.querySelector("[data-cb-measure-diagram]");
   const continueBtn = root.querySelector("[data-cb-measure-continue]");
 
+  const getDisplayUnit = (): UiLengthUnit | null => (useUiUnitDisplay ? getExpressUiUnit() : null);
+  let diagramInches = {} as Record<DiagramFieldKey, string>;
+  let lastDisplayUnit: UiLengthUnit = useUiUnitDisplay ? getExpressUiUnit() : "in";
+  let diagramUnitDisplayReady = false;
+
+  if (useUiUnitDisplay) {
+    const onReviewUnitsChange = (ev: Event): void => {
+      const ce = ev as CustomEvent<{ unit?: string; toggleId?: string }>;
+      const toggleId = ce.detail?.toggleId;
+      if (toggleId != null && toggleId !== SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID) {
+        logReviewUnitDebug("ignored: other toggle", { toggleId });
+        return;
+      }
+
+      const unit: UiLengthUnit = ce.detail?.unit === "cm" ? "cm" : "in";
+      logReviewUnitDebug("kbm:units-change received", {
+        event: "kbm:units-change",
+        unit,
+        toggleId: toggleId ?? SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID,
+        diagramReady: diagramUnitDisplayReady,
+      });
+
+      if (!(diagramHost instanceof HTMLElement)) {
+        logReviewUnitDebug("abort: diagram host missing");
+        return;
+      }
+      if (!diagramUnitDisplayReady) {
+        logReviewUnitDebug("abort: diagram not ready yet");
+        return;
+      }
+
+      if (!readOnly) {
+        diagramInches = collectValues(root, { displayUnit: lastDisplayUnit });
+      }
+      lastDisplayUnit = unit;
+      const stats = applyDiagramUnitDisplay(diagramHost, diagramInches, readOnly, unit);
+      logReviewUnitDebug("applyDiagramUnitDisplay", {
+        unit,
+        boxesFound: stats.boxesFound,
+        suffixesUpdated: stats.suffixesUpdated,
+        valuesUpdated: stats.valuesUpdated,
+        overlayFound: !!findReviewDiagramOverlay(diagramHost),
+      });
+      if (!readOnly) refreshPatternValidationUi(root, getDisplayUnit());
+    };
+
+    window.addEventListener("kbm:units-change", onReviewUnitsChange);
+    logReviewUnitDebug("listener attached (sync at init)", {
+      toggleId: SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID,
+    });
+  }
+
   if (!readOnly) {
     continueBtn?.addEventListener("click", () => {
-      if (!validateFields(root)) return;
-      if (!refreshPatternValidationUi(root)) return;
-      persistFromRoot(root);
+      const displayUnit = getDisplayUnit();
+      if (!validateFields(root, displayUnit)) return;
+      if (!refreshPatternValidationUi(root, displayUnit)) return;
+      persistFromRoot(root, displayUnit);
       syncCustomBuildToPatternStorage({ awaitCharts: false });
       if (options?.onContinue) {
         options.onContinue();
@@ -767,10 +1003,29 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
     const defaults = computeDefaultsFromChart(row, fitPref, audience);
     const saved = loadMeasurementOverrides();
     const merged = mergeOverridesWithDefaults(saved, defaults);
+    diagramInches = merged;
 
     if (diagramHost instanceof HTMLElement) {
-      await renderDiagram(diagramHost, root, merged, readOnly);
-      if (!readOnly) refreshPatternValidationUi(root);
+      lastDisplayUnit = useUiUnitDisplay ? getExpressUiUnit() : "in";
+      await renderDiagram(
+        diagramHost,
+        root,
+        merged,
+        readOnly,
+        useUiUnitDisplay ? lastDisplayUnit : null,
+        getDisplayUnit,
+      );
+      diagramUnitDisplayReady = true;
+      if (useUiUnitDisplay) {
+        const stats = applyDiagramUnitDisplay(diagramHost, diagramInches, readOnly, lastDisplayUnit);
+        logReviewUnitDebug("initial diagram unit display", {
+          unit: lastDisplayUnit,
+          boxesFound: stats.boxesFound,
+          suffixesUpdated: stats.suffixesUpdated,
+          valuesUpdated: stats.valuesUpdated,
+        });
+      }
+      if (!readOnly) refreshPatternValidationUi(root, getDisplayUnit());
     }
 
     if (readOnly && options?.onContinue) {

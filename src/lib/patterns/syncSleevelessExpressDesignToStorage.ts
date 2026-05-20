@@ -17,6 +17,28 @@ export function expressWhoToChartAudience(whoRaw: unknown): string {
 }
 
 /** Express UI uses `round` | `v-neck` (any casing); canonical pattern uses `round` | `v`. */
+/** Maps Express wizard style keys (`shaped-pullover`, etc.) to canonical style fields. */
+export function mapExpressStyleKey(styleKey: string): {
+  bodyShape: string;
+  frontStyle: "open" | "closed";
+} {
+  switch (String(styleKey ?? "").trim().toLowerCase()) {
+    case "shaped-pullover":
+      return { bodyShape: "aline", frontStyle: "closed" };
+    case "shaped-cardigan":
+      return { bodyShape: "aline", frontStyle: "open" };
+    case "straight-cardigan":
+      return { bodyShape: "straight", frontStyle: "open" };
+    case "waist-pullover":
+      return { bodyShape: "waist", frontStyle: "closed" };
+    case "waist-cardigan":
+      return { bodyShape: "waist", frontStyle: "open" };
+    case "straight-pullover":
+    default:
+      return { bodyShape: "straight", frontStyle: "closed" };
+  }
+}
+
 export function mapExpressNecklineToStorage(n: string): "round" | "v" {
   const s = String(n ?? "")
     .trim()
@@ -47,6 +69,8 @@ export function syncSleevelessDesignBasicsToPatternStorage(
     chartRow?: ChartRow;
     /** When false, re-seed finished bust/waist/hip from chart on each sync. Default true. */
     preserveCustomBuildFinished?: boolean;
+    /** Express / shaped styles — avoids resetting to straight on review continue. */
+    bodyShape?: string;
   }>,
 ): void {
   const stylePayload: Record<string, unknown> = {};
@@ -80,7 +104,10 @@ export function syncSleevelessDesignBasicsToPatternStorage(
   const explicitGarment = params.garmentStyle === "cardigan" || params.garmentStyle === "pullover";
 
   if (params.who || params.neckline || explicitFront || explicitGarment || params.patternMode) {
-    stylePayload.bodyShape = "straight";
+    stylePayload.bodyShape =
+      typeof params.bodyShape === "string" && params.bodyShape.trim() !== ""
+        ? params.bodyShape.trim()
+        : "straight";
     stylePayload.length = "top";
     stylePayload.armholeStyle = "standard";
 

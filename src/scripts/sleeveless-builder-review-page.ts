@@ -6,7 +6,10 @@ import { canCustomizePattern } from "../lib/patterns/sleevelessPatternAccessGate
 import { initSleevelessLockedBannerDismiss } from "./sleevelessLockedBannerDismiss";
 import { initExpressYarnDrawer } from "./sleeveless-express-measurements-page";
 import { initCustomBuildMeasurementsPage } from "./sleeveless-custom-build-measurements-page";
-import { syncSleevelessDesignBasicsToPatternStorage } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
+import {
+  mapExpressStyleKey,
+  syncSleevelessDesignBasicsToPatternStorage,
+} from "../lib/patterns/syncSleevelessExpressDesignToStorage";
 import {
   expressWhoToChartAudience,
   loadExpressSweaterCharts,
@@ -59,9 +62,15 @@ function syncExpressBasicsFromBuilderAndContinue(): void {
       ? "cardigan"
       : "pullover";
 
+  const expressStyleKey = String(ls.style ?? styleKey ?? "").trim();
+  const expressStyle = mapExpressStyleKey(expressStyleKey);
   const aud = expressWhoToChartAudience(who);
   const chartFit =
-    who && selectedSize ? resolveExpressChartFit(aud, selectedSize, fitEase || "standard") : null;
+    who && selectedSize
+      ? resolveExpressChartFit(aud, selectedSize, fitEase || "standard", {
+          bodyShape: expressStyle.bodyShape,
+        })
+      : null;
 
   if (chartFit) {
     syncSleevelessDesignBasicsToPatternStorage({
@@ -72,6 +81,7 @@ function syncExpressBasicsFromBuilderAndContinue(): void {
       selectedMeasurements: chartFit.selectedMeasurements,
       frontStyle: garmentStyle === "cardigan" ? "open" : "closed",
       garmentStyle,
+      bodyShape: expressStyle.bodyShape,
       patternMode: "express",
     });
   }
@@ -93,7 +103,14 @@ function configureReviewActions(advanced: boolean): void {
 
 function continueToPatternFromReview(): void {
   void loadExpressSweaterCharts()
-    .then(() => syncExpressBasicsFromBuilderAndContinue())
+    .then(() => {
+      // Customizable review already persisted overrides + syncCustomBuildToPatternStorage.
+      if (canCustomizePattern()) {
+        window.location.assign(PATTERN_WORKSPACE_TAB_PATTERN_HREF);
+        return;
+      }
+      syncExpressBasicsFromBuilderAndContinue();
+    })
     .catch(() => {
       window.alert("Could not load size charts. Check your connection and try again.");
     });
@@ -109,6 +126,7 @@ function initUnifiedSleevelessReviewPage(): void {
     initCustomBuildMeasurementsPage({
       continueHref: PATTERN_WORKSPACE_TAB_PATTERN_HREF,
       onContinue: continueToPatternFromReview,
+      preserveUnitsHost: true,
     });
     return;
   }

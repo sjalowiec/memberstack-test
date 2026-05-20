@@ -2,8 +2,7 @@
  * Custom Build — effective finished bust/chest for sleeveless pattern generation.
  *
  * Chart-derived `fit.selectedMeasurements.finished_bust_chest` is the fallback.
- * Override: `fit.cbMeasurementOverrides.chestBust` when `style.patternMode` is `custom-build`.
- * Express and non–custom-build modes always use the chart value.
+ * Override: `fit.cbMeasurementOverrides.chestBust` from the review / measurement diagram when set.
  */
 
 import {
@@ -38,10 +37,11 @@ function customBuildFinishedBustOverrideInches(
 export function resolveEffectiveFinishedBustInches(
   patternData: Record<string, unknown>,
 ): number | undefined {
+  const overrideInches = customBuildFinishedBustOverrideInches(patternData);
+  if (overrideInches !== undefined) return overrideInches;
   const chartInches = chartFinishedBustInches(patternData);
   if (!isCustomBuildPatternMode(patternData)) {
     return chartInches;
   }
-  const overrideInches = customBuildFinishedBustOverrideInches(patternData);
-  return overrideInches ?? chartInches;
+  return chartInches;
 }

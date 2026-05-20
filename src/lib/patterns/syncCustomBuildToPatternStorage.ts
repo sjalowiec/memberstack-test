@@ -22,8 +22,9 @@ import {
   nonEmptyTrimmed,
   resolveExpressChartFit,
 } from "./sleevelessExpressSizeChartClient";
-import { expressWhoToChartAudience } from "./syncSleevelessExpressDesignToStorage";
 import {
+  expressWhoToChartAudience,
+  mapExpressStyleKey,
   mapExpressNecklineToStorage,
   syncSleevelessDesignBasicsToPatternStorage,
 } from "./syncSleevelessExpressDesignToStorage";
@@ -33,12 +34,9 @@ import {
   CUSTOM_BUILD_NECKLINE_STYLE_KEY,
   readCustomBuildWizardNeckline,
 } from "./sleevelessCustomBuildWizardNeckline";
+import { CUSTOM_BUILD_STYLE_STORAGE_KEYS } from "./sleevelessCustomBuildStyleKeys";
 
-/** Keys written by `/patterns/sleeveless/custom-style` (see `sleeveless-custom-style-page.ts`). */
-export const CUSTOM_BUILD_STYLE_STORAGE_KEYS = {
-  bodyShape: "bodyShape",
-  garmentType: "garmentType",
-} as const;
+export { CUSTOM_BUILD_STYLE_STORAGE_KEYS };
 
 /** Neckline choices on Style & Shaping (`sleeveless-custom-style-page.ts`). */
 const CUSTOM_BUILD_NECKLINE_VALUES = new Set(["round", "v-neck"]);
@@ -136,11 +134,14 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
     const wizardNeckline = readCustomBuildWizardNeckline();
     const neckline =
       ev.neckline && CUSTOM_BUILD_NECKLINE_VALUES.has(ev.neckline) ? ev.neckline : wizardNeckline;
-    const bodyShapeRaw = readStyleStepValue(
+    const bodyShapeFromStyleStep = readStyleStepValue(
       CUSTOM_BUILD_STYLE_STORAGE_KEYS.bodyShape,
       new Set(["straight", "aline", "shaped"]),
       "straight",
     );
+    const bodyShapeRaw = ev.style?.trim()
+      ? resolveBodyShape(mapExpressStyleKey(ev.style.trim()).bodyShape)
+      : resolveBodyShape(bodyShapeFromStyleStep);
     const garmentType = readStyleStepValue(
       CUSTOM_BUILD_STYLE_STORAGE_KEYS.garmentType,
       new Set(["pullover", "cardigan"]),
@@ -151,13 +152,18 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
     const aud = ev.who ? expressWhoToChartAudience(ev.who) : "";
     const size = nonEmptyTrimmed(ev.selectedSize) ? ev.selectedSize!.trim() : "";
 
+    const bodyShapeForChart = resolveBodyShape(bodyShapeRaw);
     const chartFit =
-      aud && size ? resolveExpressChartFit(aud, size, fit) : null;
+      aud && size
+        ? resolveExpressChartFit(aud, size, fit, { bodyShape: bodyShapeForChart })
+        : null;
     const chartRow = chartFit ? findExpressChartRow(aud, chartFit.selectedSize) : null;
 
     let selectedMeasurements = chartFit?.selectedMeasurements;
     if (!selectedMeasurements && chartRow) {
-      selectedMeasurements = computeDefaultMeasurementsFromChartRow(chartRow, fit);
+      selectedMeasurements = computeDefaultMeasurementsFromChartRow(chartRow, fit, {
+        bodyShape: bodyShapeForChart,
+      });
     }
 
     syncSleevelessDesignBasicsToPatternStorage({
@@ -189,7 +195,10 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
     savePatternData("style", { ...section(getPatternData().style), ...stylePatch });
 
     if (chartRow && fit) {
-      seedCustomBuildBodyFinishedFromChartRow(chartRow, fit, { preserveFinished: true });
+      seedCustomBuildBodyFinishedFromChartRow(chartRow, fit, {
+        preserveFinished: true,
+        bodyShape: bodyShapeForChart,
+      });
     }
 
     const overrides = loadMeasurementOverrides();

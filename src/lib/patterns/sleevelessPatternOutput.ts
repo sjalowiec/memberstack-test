@@ -12,7 +12,13 @@ import {
   type ShapingAction,
 } from "./legoBlocks/neckShoulderExecution";
 import { resolveEffectiveArmholeDepthInches } from "./customBuildEffectiveArmholeDepth";
+import { resolveDiagramFinishedHipInches } from "./customBuildEffectiveFinishedHip";
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
+import {
+  computeSleevelessAlineBodyShaping,
+  isSleevelessAlineBodyShape,
+  type SleevelessAlineBodyShapingPlan,
+} from "./sleevelessAlineShaping";
 import { resolveEffectiveFinishedLengthInches } from "./customBuildEffectiveFinishedLength";
 import {
   resolveEffectiveBackNeckDepthInches,
@@ -56,9 +62,9 @@ import {
 export const RIBBED_HEM_PATTERN_TIP_HTML =
   'Work even in your chosen hem treatment — for example 1x1 or 2x2 ribbing or <span class="glossary-tooltip-placeholder" data-glossary-id="291">mock ribbing</span>, a rolled stockinette edge, a fold-up band, or a <span class="glossary-tooltip-placeholder" data-glossary-id="284">hung hem</span> — for the depth shown.<br><br>Fold-up and hung hems typically require double the hem depth before rehanging.';
 
-/** Trusted HTML for collapsible body-shaping marker tip (glossary id 310). */
+/** Trusted HTML for collapsible body-shaping marker tip (glossary id 1779219555295). */
 export const BODY_MARKER_TIP_DETAILS_HTML =
-  '<details class="pattern-tip sleeveless-shaping-help-toggle" data-tip-id="sleeveless-body-markers"><summary>Tip: Use markers to track shaping</summary><p>Many machine knitters place small removable <span class="pattern-term" data-glossary-id="310" data-tooltip="Hang a contrasting loop on the edge needle to locate a specific row or checkpoint later.">markers</span> directly into the edge of the fabric at shaping rows or length checkpoints. This makes it easier to verify your progress while the garment is still on the machine.</p></details>';
+  '<details class="pattern-tip sleeveless-shaping-help-toggle" data-tip-id="sleeveless-body-markers"><summary>Tip: Use markers to track shaping</summary><p>Many machine knitters place small removable <span class="glossary-tooltip-placeholder" data-glossary-id="1779219555295">markers</span> directly into the edge of the fabric at shaping rows or length checkpoints. This makes it easier to verify your progress while the garment is still on the machine.</p></details>';
 
 /** Shown once at the armhole reset — RC targets below are from this counter, not the body cast-on RC. */
 export const ARMHOLE_RC_FROM_RESET_NOTE =
@@ -214,6 +220,12 @@ export type SleevelessBackPatternDebug = {
   cardiganFrontEdgeRows?: number;
   /** Cardigan: approximate pickup stitches for one front edge ({@link approximatePickupStitchesFromRows}). */
   cardiganFrontEdgePickupSts?: number;
+  /** Bust-width body stitches (diagram `BUST_STS`; may differ from cast-on when A-line). */
+  bustBodyStitches?: number;
+  /** Hem/hip cast-on when A-line; same as {@link backStitches} for straight fit. */
+  hemCastOnStitches?: number;
+  /** Rows from hem/cast-on edge to hip line on schematic (`HIP_ROWS`; 0 when hip is at cast-on). */
+  hipRowsFromHem?: number;
 };
 
 /** Two-column pattern UI: piece banner, section title, or instruction block with optional stitch count. */
@@ -1005,6 +1017,8 @@ function backNecklineShoulderSummaryParagraphs(args: {
 
 export function buildSleevelessBackDisplayRows(args: {
   castOnSts: number;
+  /** Stitches on the needle at the armhole (bust width when A-line); defaults to {@link castOnSts}. */
+  armholeStartSts?: number;
   hemRows: number;
   hemRowsValid: boolean;
   bodyToArmholeRows: number;
@@ -1032,6 +1046,8 @@ export function buildSleevelessBackDisplayRows(args: {
   armholeInstructionStyle?: "symmetricTwoEdges" | "cardiganHalfLeftFront";
   /** Cast-on sentence only, e.g. `"the back"` or `"the left front"`. */
   castOnForPieceLabel?: string;
+  /** When set, body section uses hem→bust side decreases instead of plain knitting. */
+  alineBodyShaping?: SleevelessAlineBodyShapingPlan | null;
 }): SleevelessPatternDisplayRow[] {
   const rows: SleevelessPatternDisplayRow[] = [];
   rows.push({ kind: "piece", title: "BACK" });
@@ -1041,17 +1057,23 @@ export function buildSleevelessBackDisplayRows(args: {
       : undefined;
 
   const A = args.castOnSts;
+  const armholeA = args.armholeStartSts ?? args.castOnSts;
   const armholeStyle = args.armholeInstructionStyle ?? "symmetricTwoEdges";
   const castOnLabel = args.castOnForPieceLabel ?? "the back";
   const ribs = args.hemRows;
   const hemRcLabel = formatRcColon(0);
 
+  const aline = args.alineBodyShaping ?? null;
   rows.push({
     kind: "block",
     rc: hemRcLabel,
     paragraphs:
       A > 0
-        ? [`Cast on ${A} stitches for ${castOnLabel}.`]
+        ? [
+            aline
+              ? `Cast on ${A} stitches for ${castOnLabel} (hem/hip width for gentle A-line shaping).`
+              : `Cast on ${A} stitches for ${castOnLabel}.`,
+          ]
         : [
             "Cast-on stitch count could not be calculated from your measurements. Add finished bust or chest and stitch gauge in the builder, then open this tab again.",
           ],
@@ -1073,17 +1095,49 @@ export function buildSleevelessBackDisplayRows(args: {
   });
 
   rows.push({ kind: "section", title: "BODY" });
-  rows.push({
-    kind: "block",
-    rc: formatRcColon(ribs),
-    paragraphs: args.bodyRowsValid
-      ? plainKnitSpanParagraphs(args.bodyToArmholeRows, ribs)
-      : [
-          "Body length to the armhole could not be calculated. Confirm back neck to hem, armhole depth, and row gauge in Fit, then try again.",
-        ],
-    collapsibleTipHtml: BODY_MARKER_TIP_DETAILS_HTML,
-    stitchCount: A > 0 ? A : undefined,
-  });
+  if (aline && args.bodyRowsValid && aline.bodyFirstHalf.rows + aline.bodySecondHalf.rows > 0) {
+    const bodyStartRc = ribs;
+    const bodyMidRc = ribs + aline.bodyFirstHalf.rows;
+    const firstParas: string[] = [
+      `After the ribbed hem, knit ${aline.bodyFirstHalf.rows} row${aline.bodyFirstHalf.rows === 1 ? "" : "s"} with A-line side shaping from the hip/hem width toward the bust:`,
+      ...aline.bodyFirstHalf.instructionLines,
+    ];
+    if (aline.bodyFirstHalf.instructionLines.length === 0) {
+      firstParas.push("Work even — no side decreases needed in this section.");
+    }
+    rows.push({
+      kind: "block",
+      rc: formatRcColon(bodyStartRc),
+      paragraphs: firstParas,
+      collapsibleTipHtml: BODY_MARKER_TIP_DETAILS_HTML,
+      stitchCount: aline.bodyFirstHalf.endSts > 0 ? aline.bodyFirstHalf.endSts : undefined,
+    });
+    const secondParas: string[] = [
+      `Knit ${aline.bodySecondHalf.rows} row${aline.bodySecondHalf.rows === 1 ? "" : "s"}, continuing side shaping to the bust width (${aline.bustBodySts} stitches on the needle) at the armhole:`,
+      ...aline.bodySecondHalf.instructionLines,
+    ];
+    if (aline.bodySecondHalf.instructionLines.length === 0) {
+      secondParas.push("Work even to the armhole.");
+    }
+    rows.push({
+      kind: "block",
+      rc: formatRcColon(bodyMidRc),
+      paragraphs: secondParas,
+      stitchCount: aline.bustBodySts > 0 ? aline.bustBodySts : undefined,
+    });
+  } else {
+    rows.push({
+      kind: "block",
+      rc: formatRcColon(ribs),
+      paragraphs: args.bodyRowsValid
+        ? plainKnitSpanParagraphs(args.bodyToArmholeRows, ribs)
+        : [
+            "Body length to the armhole could not be calculated. Confirm back neck to hem, armhole depth, and row gauge in Fit, then try again.",
+          ],
+      collapsibleTipHtml: BODY_MARKER_TIP_DETAILS_HTML,
+      stitchCount: A > 0 ? A : undefined,
+    });
+  }
 
   const plainRowsBeforeBackNeck = args.upperBackRows + args.evenRowPadRows;
   const backNeckFirstRc =
@@ -1113,16 +1167,16 @@ export function buildSleevelessBackDisplayRows(args: {
   if (
     args.armholeMath &&
     args.firstArmholeRC !== null &&
-    A > 0 &&
+    armholeA > 0 &&
     args.stitchesAfterArmhole !== undefined &&
     args.stitchesAfterArmhole > 0 &&
-    args.stitchesAfterArmhole < A
+    args.stitchesAfterArmhole < armholeA
   ) {
     const m = args.armholeMath;
     const first = args.firstArmholeRC;
     const bo = m.bindOffSts;
-    const afterBo1 = A - bo;
-    const afterBo2 = A - 2 * bo;
+    const afterBo1 = armholeA - bo;
+    const afterBo2 = armholeA - 2 * bo;
     const decreasesTotalSymmetric = 2 * Math.max(0, m.decreaseSts);
     const decreasesTotalCardigan = Math.max(0, m.decreaseSts);
     const B =
@@ -1619,34 +1673,17 @@ export function generateSleevelessBackPattern(
   const frontNeckDepthIn = resolveEffectiveFrontNeckDepthInches(patternData);
   const neckWidthIn = resolveEffectiveNeckOpeningWidthInches(patternData);
 
-  const castOnSts =
+  const bustBodySts =
     (() => {
       const baseCastOn =
         backStitchesFromPattern(bustChestStitchesForCastOn) ||
         (finishedBust > 0 && stitchesPerInch > 0
           ? Math.round((finishedBust * stitchesPerInch) / 2)
           : 0);
-      // Keep the pattern symmetrical by using an even cast-on stitch count.
       return baseCastOn > 0 && baseCastOn % 2 !== 0 ? baseCastOn + 1 : baseCastOn;
     })();
 
-  const cardiganBodySplit =
-    isCardiganRoundHalfFront && castOnSts > 0
-      ? splitBodyBackCastOnToSymmetricCardiganHalves(castOnSts)
-      : null;
-  const cardiganHalfLeftCastOnSts =
-    cardiganBodySplit !== null ? cardiganHalfFrontBodySts(cardiganBodySplit, "left") : undefined;
-
-  if (
-    isCardiganRoundHalfFront &&
-    cardiganHalfLeftCastOnSts !== undefined &&
-    cardiganHalfLeftStitchesAfterArmhole !== undefined &&
-    cardiganHalfLeftCastOnSts <= cardiganHalfLeftStitchesAfterArmhole
-  ) {
-    warnings.push(
-      "Cardigan left front: cast-on must be greater than stitches after armhole — check bust vs shoulder width and gauge."
-    );
-  }
+  let castOnSts = bustBodySts;
 
   const hemDepthIn = resolveEffectiveHemDepthInches(patternData, audience);
   const hemRows = calculateHemRowsFromInches(rowsPerInch, hemDepthIn);
@@ -1673,8 +1710,8 @@ export function generateSleevelessBackPattern(
     armholeDepthIn && rowGauge > 0 ? Math.max(1, Math.round(armholeDepthIn * rowGauge)) : 0;
 
   const armholeStitchesTotal =
-    castOnSts > 0 && stitchesAfterArmhole !== undefined
-      ? castOnSts - stitchesAfterArmhole
+    bustBodySts > 0 && stitchesAfterArmhole !== undefined
+      ? bustBodySts - stitchesAfterArmhole
       : undefined;
   const armholeStitchesEachSide =
     armholeStitchesTotal !== undefined ? armholeStitchesTotal / 2 : undefined;
@@ -1688,9 +1725,9 @@ export function generateSleevelessBackPattern(
   const canDeriveNeckFromInches = neckWidthIn !== undefined && stitchesPerInch > 0;
 
   if (
-    castOnSts > 0 &&
+    bustBodySts > 0 &&
     stitchesAfterArmhole !== undefined &&
-    stitchesAfterArmhole < castOnSts &&
+    stitchesAfterArmhole < bustBodySts &&
     (canDeriveNeckFromInches || (neckOpeningStitchesExplicit !== undefined && neckOpeningStitchesExplicit > 0))
   ) {
     const B = stitchesAfterArmhole;
@@ -1719,7 +1756,7 @@ export function generateSleevelessBackPattern(
     if (shoulderStitches <= 0) {
       warnings.push("shoulder stitches must be greater than zero — check neck opening vs shoulder width.");
     }
-  } else if (castOnSts > 0 && stitchesAfterArmhole !== undefined && stitchesAfterArmhole >= castOnSts) {
+  } else if (bustBodySts > 0 && stitchesAfterArmhole !== undefined && stitchesAfterArmhole >= bustBodySts) {
     warnings.push("stitchesAfterArmhole (B) must be less than back stitches (A) — check shoulder vs bust.");
   }
 
@@ -1747,6 +1784,50 @@ export function generateSleevelessBackPattern(
       );
     }
     bodyToArmholeRows = Math.max(0, derivedBodyRows);
+  }
+
+  /* --- A-line body shaping (hem/hip cast-on → bust at armhole); straight fit leaves castOnSts = bustBodySts --- */
+  let alineBodyShaping: SleevelessAlineBodyShapingPlan | null = null;
+  if (isSleevelessAlineBodyShape(patternData)) {
+    const finishedHipIn = resolveDiagramFinishedHipInches(patternData, finishedBust);
+    const alinePlan = computeSleevelessAlineBodyShaping({
+      bustBodySts,
+      finishedHipInches: finishedHipIn,
+      finishedBustInches: finishedBust > 0 ? finishedBust : undefined,
+      stitchesPerInch,
+      bodyToArmholeRows,
+      hemRows,
+    });
+    if (alinePlan) {
+      castOnSts = alinePlan.hemCastOnSts;
+      warnings.push(...alinePlan.warnings);
+      alineBodyShaping = alinePlan.shapingType === "straight" ? null : alinePlan;
+    }
+  }
+  /* --- end A-line body shaping --- */
+
+  const cardiganBodySplit =
+    isCardiganRoundHalfFront && castOnSts > 0
+      ? splitBodyBackCastOnToSymmetricCardiganHalves(castOnSts)
+      : null;
+  const cardiganHalfLeftCastOnSts =
+    cardiganBodySplit !== null ? cardiganHalfFrontBodySts(cardiganBodySplit, "left") : undefined;
+  const cardiganBustSplit =
+    isCardiganRoundHalfFront && bustBodySts > 0
+      ? splitBodyBackCastOnToSymmetricCardiganHalves(bustBodySts)
+      : null;
+  const cardiganHalfLeftBustBodySts =
+    cardiganBustSplit !== null ? cardiganHalfFrontBodySts(cardiganBustSplit, "left") : undefined;
+
+  if (
+    isCardiganRoundHalfFront &&
+    cardiganHalfLeftCastOnSts !== undefined &&
+    cardiganHalfLeftStitchesAfterArmhole !== undefined &&
+    cardiganHalfLeftCastOnSts <= cardiganHalfLeftStitchesAfterArmhole
+  ) {
+    warnings.push(
+      "Cardigan left front: cast-on must be greater than stitches after armhole — check bust vs shoulder width and gauge."
+    );
   }
 
   const canonicalRowsFromCastOnToArmholeStart = hemRows + bodyToArmholeRows;
@@ -1778,16 +1859,18 @@ export function generateSleevelessBackPattern(
   let armholeMathResult: ArmholeResult | null = null;
   let firstArmholeRCNum: number | null = null;
 
+  const stitchesAtArmholeStart = alineBodyShaping ? bustBodySts : castOnSts;
+
   if (
-    castOnSts > 0 &&
+    stitchesAtArmholeStart > 0 &&
     stitchesAfterArmhole !== undefined &&
     stitchesAfterArmhole > 0 &&
-    stitchesAfterArmhole < castOnSts &&
+    stitchesAfterArmhole < stitchesAtArmholeStart &&
     armholeDepthRows > 0
   ) {
     try {
       armholeMathResult = calculateArmholeShaping({
-        startingStitches: castOnSts,
+        startingStitches: stitchesAtArmholeStart,
         targetStitches: stitchesAfterArmhole,
         totalRows: armholeDepthRows,
       });
@@ -1803,7 +1886,7 @@ export function generateSleevelessBackPattern(
       warnings.push(
         "stitchesAfterArmhole not available — need shoulder_width in selected measurements and stitch gauge."
       );
-    } else if (stitchesAfterArmhole >= castOnSts) {
+    } else if (stitchesAfterArmhole >= stitchesAtArmholeStart) {
       warnings.push(
         "stitchesAfterArmhole (B) must be less than back stitches (A) — check shoulder width vs bust."
       );
@@ -2242,7 +2325,10 @@ export function generateSleevelessBackPattern(
       finishedBust > 0 ? finishedBust : undefined,
     stitchesPerInch,
     rowsPerInch,
-    backStitches: castOnSts,
+    backStitches: bustBodySts,
+    bustBodyStitches: bustBodySts,
+    hemCastOnStitches: castOnSts,
+    hipRowsFromHem: alineBodyShaping !== null ? alineBodyShaping.hipRowsFromHem : undefined,
     shoulderWidthInches: shoulderWidthIn,
     stitchesAfterArmhole,
     armholeStitchesTotal,
@@ -2358,6 +2444,7 @@ export function generateSleevelessBackPattern(
 
   const backDisplayRowsRaw = buildSleevelessBackDisplayRows({
     castOnSts,
+    armholeStartSts: stitchesAtArmholeStart,
     hemRows,
     hemRowsValid: hemRows > 0,
     bodyToArmholeRows,
@@ -2374,6 +2461,7 @@ export function generateSleevelessBackPattern(
     useNeckChartRows: neckShoulderChartUsesLiveRows,
     necklineStitches,
     shoulderStitches,
+    alineBodyShaping,
   });
 
   const cardiganFrontExecutionRowsRaw =
@@ -2384,6 +2472,10 @@ export function generateSleevelessBackPattern(
     firstArmholeRCNum !== null
       ? buildSleevelessBackDisplayRows({
           castOnSts: cardiganHalfLeftCastOnSts,
+          armholeStartSts:
+            alineBodyShaping && cardiganHalfLeftBustBodySts !== undefined
+              ? cardiganHalfLeftBustBodySts
+              : undefined,
           hemRows,
           hemRowsValid: hemRows > 0,
           bodyToArmholeRows,
@@ -2402,6 +2494,7 @@ export function generateSleevelessBackPattern(
           shoulderStitches,
           armholeInstructionStyle: "cardiganHalfLeftFront",
           castOnForPieceLabel: "the left front",
+          alineBodyShaping,
         })
       : null;
 

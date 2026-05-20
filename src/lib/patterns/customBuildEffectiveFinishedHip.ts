@@ -1,9 +1,9 @@
 /**
- * Custom Build — effective finished hip circumference for sleeveless diagram tokens.
+ * Effective finished hip circumference for sleeveless cast-on and diagram tokens.
  *
- * Chart-derived `fit.selectedMeasurements.finished_hip` is the primary fallback.
- * Custom-build: `measurements.finishedHip`, then `fit.cbMeasurementOverrides.hip`.
- * When hip is unavailable, callers default to finished bust (see diagram replacements).
+ * Chart-derived `fit.selectedMeasurements.finished_hip` is the fallback.
+ * `fit.cbMeasurementOverrides.hip` (review / measurements diagram) applies in Express and Custom Build.
+ * Custom-build also reads `measurements.finishedHip`. When hip is unavailable, callers default to bust.
  */
 
 import {
@@ -47,13 +47,16 @@ function customBuildFinishedHipOverrideInches(
 export function resolveEffectiveFinishedHipInches(
   patternData: Record<string, unknown>,
 ): number | undefined {
+  const overrideInches = customBuildFinishedHipOverrideInches(patternData);
+  if (overrideInches !== undefined) {
+    return overrideInches;
+  }
   const chartInches = chartFinishedHipInches(patternData);
   if (!isCustomBuildPatternMode(patternData)) {
     return chartInches;
   }
-  const overrideInches = customBuildFinishedHipOverrideInches(patternData);
   const layerInches = customBuildFinishedHipLayerInches(patternData);
-  return overrideInches ?? layerInches ?? chartInches;
+  return layerInches ?? chartInches;
 }
 
 /** Finished hip for diagrams, falling back to bust when hip is not set yet. */

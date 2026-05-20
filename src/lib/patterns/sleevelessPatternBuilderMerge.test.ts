@@ -14,6 +14,7 @@ import { CUSTOM_BUILD_GARMENT_TYPE_KEY } from "./sleevelessCustomBuildWizardNeck
 import { resolveSleevelessFrontDiagram } from "./sleevelessFrontDiagramSrc";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "./patternStorage";
+import { CUSTOM_BUILD_STYLE_STORAGE_KEYS } from "./sleevelessCustomBuildStyleKeys";
 
 const baseMeasurements = {
   finished_bust_chest: 40,
@@ -189,15 +190,66 @@ describe("buildGeneratorPatternDataFromSources", () => {
     expect(result.debug.armholeDepth).toBe(10);
   });
 
-  it("does not apply storage overrides when generator mode is express", () => {
+  it("merges storage overrides into generator input without forcing express style mode", () => {
     const gen = applyCustomBuildMeasurementOverridesToGenerator(
       {
-        style: { patternMode: "express" },
+        style: { patternMode: "express", bodyShape: "aline" },
         fit: { selectedMeasurements: baseMeasurements },
+        yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
       },
-      () => ({ armholeDepth: "10" }),
+      () => ({ hip: "28.8", chestBust: "20", hemDepth: "1.75" }),
     );
-    expect(gen.fit).not.toHaveProperty("cbMeasurementOverrides");
+    expect(gen.style).toMatchObject({ patternMode: "express" });
+    expect(gen.fit).toMatchObject({
+      cbMeasurementOverrides: { hip: "28.8", chestBust: "20", hemDepth: "1.75" },
+    });
     expect(resolveEffectiveArmholeDepthInches(gen)).toBe(8);
+  });
+
+  it("wires review hip/bust overrides and A-line shape into pattern cast-on and body shaping", () => {
+    vi.spyOn(customMeasurementStorage, "loadMeasurementOverrides").mockReturnValue({
+      hip: "28.8",
+      chestBust: "20",
+      hemDepth: "1.75",
+    });
+    localStorage.setItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.bodyShape, "aline");
+
+    const merged = {
+      style: { patternMode: "custom-build", bodyShape: "straight", garmentStyle: "pullover" },
+      fit: {
+        selectedMeasurements: {
+          ...baseMeasurements,
+          finished_bust_chest: 40,
+          finished_hip: 40,
+        },
+      },
+    };
+    const pb = {
+      style: { patternMode: "express", bodyShape: "straight", garmentStyle: "pullover" },
+      fit: { selectedMeasurements: baseMeasurements },
+      yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
+    };
+
+    const gen = buildGeneratorPatternDataFromSources(merged, pb);
+    expect(gen.style).toMatchObject({ bodyShape: "aline", patternMode: "custom-build" });
+
+    const result = generateSleevelessBackPattern(gen);
+    expect(result.debug.bustBodyStitches).toBe(50);
+    expect(result.debug.hemCastOnStitches).toBe(72);
+    expect(result.debug.hemRows).toBe(12);
+
+    const castOnLine = result.displayRows
+      .flatMap((row) => (row.kind === "block" && row.paragraphs ? row.paragraphs : []))
+      .find((p) => /Cast on \d+ stitches/i.test(p));
+    expect(castOnLine).toMatch(/Cast on 72 stitches/);
+
+    const hasDecrease = result.displayRows.some(
+      (row) =>
+        row.kind === "block" &&
+        row.paragraphs?.some((p) =>
+          /Decrease 1 stitch at each side edge on the following rows:/i.test(p),
+        ),
+    );
+    expect(hasDecrease).toBe(true);
   });
 });

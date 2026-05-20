@@ -199,7 +199,7 @@ function initCustomStylePage(): void {
     fit = resolveInitialFit();
   }
 
-  if (bodyShape === "aline" || bodyShape === "shaped") {
+  if (bodyShape === "shaped") {
     bodyShape = DEFAULTS.bodyShape;
     writeStored(STORAGE.bodyShape, bodyShape);
   }
@@ -237,7 +237,7 @@ function initCustomStylePage(): void {
 
   wireRadiogroup(root, "neckline", NECKLINE_VALUES, syncNeckline);
   wireRadiogroup(root, "fit", FIT_VALUES, syncFit);
-  wireRadiogroup(root, "bodyShape", new Set(["straight"]), syncBody);
+  wireRadiogroup(root, "bodyShape", new Set(["straight", "aline"]), syncBody);
   wireRadiogroup(root, "garmentType", new Set(["pullover"]), syncGarment);
 
   syncBasicsFromExpressValues(readExpressValues());

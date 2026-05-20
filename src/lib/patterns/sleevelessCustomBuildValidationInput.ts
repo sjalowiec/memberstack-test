@@ -16,6 +16,7 @@ const MEASUREMENT_OVERRIDE_KEYS = [
   "shoulderWidth",
   "finishedNeckOpeningWidth",
   "chestBust",
+  "hip",
 ] as const;
 
 function resolveCustomBuildAudience(): string {
@@ -58,6 +59,11 @@ export function buildSleevelessCustomBuildValidationInput(
   const diagramBust = positiveMeasurementInches(input.chestBust);
   if (diagramBust !== undefined) {
     input.finishedBustOrChest = diagramBust;
+  }
+
+  const diagramHip = positiveMeasurementInches(input.hip);
+  if (diagramHip !== undefined) {
+    input.finishedHip = diagramHip;
   }
 
   return input;

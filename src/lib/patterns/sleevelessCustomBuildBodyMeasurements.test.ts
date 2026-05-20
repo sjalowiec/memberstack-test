@@ -32,6 +32,14 @@ describe("computeCustomBuildBodyFinishedFromChartRow", () => {
     expect(m.bodyHip).toBe(34);
     expect(m.finishedBustOrChest).toBe(35);
   });
+
+  it("uses chart hip + ease for finished hip when body shape is A-line", () => {
+    const m = computeCustomBuildBodyFinishedFromChartRow(sampleRow, "standard", {
+      bodyShape: "aline",
+    });
+    expect(m.finishedBustOrChest).toBe(39);
+    expect(m.finishedHip).toBe(41);
+  });
 });
 
 describe("custom build measurements persistence", () => {

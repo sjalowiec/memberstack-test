@@ -178,7 +178,7 @@
 
   .sleeveless-print-root .print-hero-band {
     display: grid;
-    grid-template-columns: 1.9in minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 1.9in;
     column-gap: 0.35in;
     row-gap: 0;
     align-items: start;
@@ -190,7 +190,7 @@
   }
 
   .sleeveless-print-root .print-hero-visual {
-    grid-column: 1;
+    grid-column: 2;
     grid-row: 1;
     margin: 0;
     padding: 0;
@@ -202,7 +202,8 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    justify-self: start;
+    justify-self: end;
+    align-self: start;
   }
 
   .sleeveless-print-root .print-hero-figure {
@@ -217,13 +218,14 @@
   }
 
   .sleeveless-print-root .print-hero-summary {
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 1;
     margin: 0;
     min-width: 0;
     max-width: none;
     position: static;
     float: none;
+    align-self: start;
   }
 
   .sleeveless-print-root .print-hero-img {
@@ -852,7 +854,7 @@
 
     .sleeveless-print-root .print-hero-band {
       display: grid !important;
-      grid-template-columns: 1.9in minmax(0, 1fr) !important;
+      grid-template-columns: minmax(0, 1fr) 1.9in !important;
       column-gap: 0.35in !important;
       row-gap: 0 !important;
       align-items: start !important;
@@ -862,7 +864,7 @@
     }
 
     .sleeveless-print-root .print-hero-visual {
-      grid-column: 1 !important;
+      grid-column: 2 !important;
       grid-row: 1 !important;
       position: static !important;
       float: none !important;
@@ -872,6 +874,8 @@
       display: flex !important;
       flex-direction: column !important;
       align-items: stretch !important;
+      justify-self: end !important;
+      align-self: start !important;
     }
 
     .sleeveless-print-root .print-hero-figure {
@@ -883,12 +887,13 @@
     }
 
     .sleeveless-print-root .print-hero-summary {
-      grid-column: 2 !important;
+      grid-column: 1 !important;
       grid-row: 1 !important;
       position: static !important;
       float: none !important;
       margin: 0 !important;
       min-width: 0 !important;
+      align-self: start !important;
     }
 
     .sleeveless-print-root .print-hero-summary-basics {

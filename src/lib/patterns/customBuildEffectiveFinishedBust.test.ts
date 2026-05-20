@@ -47,12 +47,12 @@ function patternData(overrides: {
 }
 
 describe("resolveEffectiveFinishedBustInches", () => {
-  it("uses chart finished_bust_chest for Express (ignores overrides)", () => {
+  it("uses chestBust override when present on review measurement data", () => {
     expect(
       resolveEffectiveFinishedBustInches(
         patternData({ patternMode: "express", chestBustOverride: "44" }),
       ),
-    ).toBe(40);
+    ).toBe(44);
   });
 
   it("uses chart value for custom-build when no override", () => {
@@ -109,12 +109,14 @@ describe("generateSleevelessBackPattern custom-build finished bust override", ()
     expect(result.debug.armholeDepth).toBe(10);
   });
 
-  it("Express output unchanged when chestBust override present on data", () => {
+  it("applies chestBust override in generated pattern when override is on fit data", () => {
     const express = generateSleevelessBackPattern(
       patternData({ patternMode: "express", chestBustOverride: "44" }),
     );
     const expressBaseline = generateSleevelessBackPattern(patternData({ patternMode: "express" }));
-    expect(express.debug).toEqual(expressBaseline.debug);
+    expect(express.debug.finishedBustChest).toBe(44);
+    expect(expressBaseline.debug.finishedBustChest).toBe(40);
+    expect(express.debug.bustBodyStitches).toBeGreaterThan(expressBaseline.debug.bustBodyStitches!);
   });
 
   it("diagram BUST_WIDTH and BUST_STS reflect wider finished bust", () => {

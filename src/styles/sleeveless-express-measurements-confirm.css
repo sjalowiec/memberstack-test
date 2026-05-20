@@ -541,7 +541,11 @@
   margin: 0 0 0.35rem;
 }
 
-/* --- Blueprint layout (viewBox 141.8 × 194.4) --- */
+/* --- Blueprint layout (pattern_summary.svg viewBox 195.14 × 210.19) --- */
+.express-measurements-confirm-page {
+  --pattern-summary-aspect-ratio: 195.14 / 210.19;
+}
+
 .express-measurements-confirm-page .express-mbp {
   box-sizing: border-box;
 }
@@ -550,15 +554,16 @@
   overflow-x: auto;
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
-  padding: 0.1rem 0 0.5rem;
+  padding: 0 0 0.35rem;
 }
 
 .express-measurements-confirm-page .express-mbp-stage {
   position: relative;
   width: min(100%, 720px);
   min-width: min(100%, 280px);
+  height: auto;
   margin: 0 auto;
-  aspect-ratio: 141.8 / 194.4;
+  overflow: visible;
   border-radius: 12px;
   background: var(--page-bg, #fff);
   border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 12%, #e2e2e2);
@@ -592,7 +597,8 @@
   }
 
   .express-measurements-confirm-page .sleeveless-measure-diagram-host .express-mbp-stage__inner {
-    padding: 2.4% 3.2% 2.8% 3.4%;
+    padding: clamp(0.2rem, 1%, 0.4rem) clamp(0.3rem, 2.25%, 0.55rem)
+      clamp(0.2rem, 1.15%, 0.45rem);
   }
 }
 
@@ -603,18 +609,20 @@
 }
 
 .express-measurements-confirm-page .express-mbp-stage__inner {
-  position: absolute;
-  inset: 0;
+  position: relative;
   box-sizing: border-box;
-  padding: 4% 5.5% 5% 6%;
+  /* Small margin for overlay chips; SVG viewBox already includes garment inset. */
+  padding: clamp(0.2rem, 1.25%, 0.45rem) clamp(0.35rem, 2.75%, 0.65rem)
+    clamp(0.2rem, 1.5%, 0.5rem);
 }
 
 .express-measurements-confirm-page .express-mbp-art {
-  position: absolute;
-  inset: 0;
+  position: relative;
   width: 100%;
-  height: 100%;
+  height: auto;
+  aspect-ratio: var(--pattern-summary-aspect-ratio);
   display: block;
+  vertical-align: top;
   object-fit: contain;
   object-position: center;
   pointer-events: none;
@@ -625,6 +633,12 @@
 .express-measurements-confirm-page svg.express-mbp-art #line-waist-width,
 .express-measurements-confirm-page svg.express-mbp-art #line-hem-width {
   visibility: hidden !important;
+}
+
+/* Custom Build fit: show cast-on / hip width guide (#line-hem-width in pattern_summary.svg). */
+.cb-measure-page.express-measurements-confirm-page svg.express-mbp-art #line-hem-width {
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .express-measurements-confirm-page svg.express-mbp-art #line-chest-width {
@@ -725,45 +739,7 @@
   user-select: none;
 }
 
-/* Percent positions tuned to pattern_summary.svg */
-.express-measurements-confirm-page .express-mbp-box--neck-opening {
-  left: 50%;
-  top: 5.5%;
-}
-
-/* Lower than neck opening so “BACK NECK” / neck depth label row do not overlap */
-.express-measurements-confirm-page .express-mbp-box--neckline-depth {
-  left: 50%;
-  top: 19%;
-}
-
-.express-measurements-confirm-page .express-mbp-box--shoulder {
-  left: 78%;
-  top: 20%;
-}
-
-/* Finished bust (ease-inclusive): center torso position (former body bust/chest chip). */
-.express-measurements-confirm-page .express-mbp-box--finished-bust {
-  left: 50%;
-  top: 41%;
-}
-
-.express-measurements-confirm-page .express-mbp-box--armhole {
-  left: 11%;
-  top: 22%;
-}
-
-/* Below finished bust chip; centered on vertical body-length guide */
-.express-measurements-confirm-page .express-mbp-box--back-length {
-  left: 50%;
-  top: 58%;
-}
-
-/* Ribbed hem depth: lower-left vertical guide (#measurement-lines hem depth line ~x 2.4%) */
-.express-measurements-confirm-page .express-mbp-box--ribbed-hem-depth {
-  left: 12%;
-  top: 91.5%;
-}
+/* Desktop overlay positions are set from pattern_summary.svg targets (see patternSummaryMeasurementOverlay.ts). */
 
 /* --- Mobile: stack measurement chips under diagram (not unified review; see sleeveless-review-measurements.css) --- */
 @media (max-width: 699.98px) {
@@ -775,7 +751,7 @@
   .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-stage {
     width: 100%;
     max-width: 420px;
-    aspect-ratio: 141.8 / 194.4;
+    height: auto;
   }
 
   .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-box__lab {
@@ -806,7 +782,8 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    padding: 3.5% 4% 4%;
+    padding: clamp(0.2rem, 1.25%, 0.45rem) clamp(0.35rem, 3%, 0.65rem)
+      clamp(0.2rem, 1.5%, 0.5rem);
     min-height: 0;
   }
 
@@ -814,7 +791,7 @@
     position: relative;
     width: 100%;
     height: auto;
-    aspect-ratio: 141.8 / 194.4;
+    aspect-ratio: var(--pattern-summary-aspect-ratio);
     flex-shrink: 0;
   }
 

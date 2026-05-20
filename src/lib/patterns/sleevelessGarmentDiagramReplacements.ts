@@ -67,18 +67,20 @@ function pickAudienceFromPatternData(patternData: Record<string, unknown>): stri
   return undefined;
 }
 
-/** Hip stitch count + half-width for `{{HIP_STS}}` / `{{HIP_INCHES}}` diagram labels (no hip shaping math yet). */
+/** Hip labels for `{{HIP_STS}}`, `{{HIP_ROWS}}`, and `{{HIP_INCHES}}` on garment schematics. */
 function resolveHipFieldsForSleevelessDiagram(
   d: SleevelessBackPatternResult["debug"],
   patternData: Record<string, unknown>,
   unit: "cm" | "in",
-): { HIP_STS: string; HIP_INCHES: string } {
+): { HIP_STS: string; HIP_ROWS: string; HIP_INCHES: string } {
   const finishedBust = isFiniteNumber(d.finishedBustChest) ? d.finishedBustChest : undefined;
   const finishedHip = resolveDiagramFinishedHipInches(patternData, finishedBust);
   const spi = d.stitchesPerInch;
 
   let hipSts: number | undefined;
-  if (isFiniteNumber(finishedHip) && isFiniteNumber(spi) && spi > 0) {
+  if (isFiniteNumber(d.hemCastOnStitches) && d.hemCastOnStitches > 0) {
+    hipSts = Math.round(d.hemCastOnStitches);
+  } else if (isFiniteNumber(finishedHip) && isFiniteNumber(spi) && spi > 0) {
     hipSts = Math.round(finishedHip * spi);
   } else if (isFiniteNumber(d.backStitches)) {
     hipSts = Math.round(d.backStitches);
@@ -87,8 +89,13 @@ function resolveHipFieldsForSleevelessDiagram(
   const hipHalfWidthIn =
     isFiniteNumber(finishedHip) && finishedHip > 0 ? finishedHip / 2 : undefined;
 
+  const hipRowsFromHem = isFiniteNumber(d.hipRowsFromHem)
+    ? Math.max(0, Math.round(d.hipRowsFromHem))
+    : undefined;
+
   return {
     HIP_STS: isFiniteNumber(hipSts) ? String(Math.max(0, hipSts)) : "",
+    HIP_ROWS: isFiniteNumber(hipRowsFromHem) ? String(hipRowsFromHem) : "",
     HIP_INCHES: fmtNumber(inchesToUnit(hipHalfWidthIn, unit) ?? Number.NaN),
   };
 }
@@ -266,6 +273,7 @@ export function buildSleevelessGarmentDiagramReplacements(
     HEM_ROWS: hemFields.HEM_ROWS,
     HEM_INCHES: hemFields.HEM_INCHES,
     HIP_STS: hipFields.HIP_STS,
+    HIP_ROWS: hipFields.HIP_ROWS,
     HIP_INCHES: hipFields.HIP_INCHES,
     OPENING_STS: "",
     PIECE_TITLE: "",

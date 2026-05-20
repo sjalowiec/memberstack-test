@@ -23,6 +23,12 @@ import {
   type MeasureReviewSummarySegment,
 } from "../lib/patterns/sleevelessMeasureReviewSummaryUi";
 import { SLEEVELESS_REVIEW_CONTEXT_READY_EVENT } from "../lib/patterns/sleevelessPatternProjectMeta";
+import {
+  applyMeasurementTargetToBox,
+  bindPatternSummaryOverlayPositioning,
+  collectOverlayAnchors,
+  PATTERN_SUMMARY_MEASUREMENT_TARGETS,
+} from "../lib/patterns/patternSummaryMeasurementOverlay";
 
 const LOG_PREFIX = "[express-measurements]";
 
@@ -386,13 +392,17 @@ export function initExpressMeasurementsConfirmPage(options?: ExpressMeasurements
     axis?: "vertical" | "horizontal";
     /** Multi-line label; when set, overrides single-line `fieldLabel` display. */
     labelLines?: string[];
+    targetId: string;
+    anchorTransform?: string;
   };
+
+  let blueprintOverlayPositionCleanup: (() => void) | null = null;
 
   function blueprintReadonlyBox(
     positionMod: string,
     fieldLabel: string,
     value: string,
-    opts?: BlueprintReadonlyBoxOpts,
+    opts: BlueprintReadonlyBoxOpts,
   ): HTMLElement {
     const box = document.createElement("div");
     box.className = `express-mbp-box express-mbp-box--${positionMod}`;
@@ -438,6 +448,9 @@ export function initExpressMeasurementsConfirmPage(options?: ExpressMeasurements
     valEl.className = "express-mbp-box__value";
     valEl.textContent = value;
     box.append(lab, valEl);
+    applyMeasurementTargetToBox(box, opts.targetId, {
+      transform: opts.anchorTransform,
+    });
     return box;
   }
 
@@ -489,6 +502,8 @@ export function initExpressMeasurementsConfirmPage(options?: ExpressMeasurements
 
   function renderFromUrl(): void {
     hideContinue();
+    blueprintOverlayPositionCleanup?.();
+    blueprintOverlayPositionCleanup = null;
     dispatchExpressYarnDimensions(NaN, NaN, getExpressUiUnit());
     clearProjectSummary();
     summaryEl.replaceChildren();
@@ -659,21 +674,48 @@ export function initExpressMeasurementsConfirmPage(options?: ExpressMeasurements
           const overlay = document.createElement("div");
           overlay.className = "express-mbp-overlay";
           overlay.append(
-            blueprintReadonlyBox("neck-opening", "Neck opening", neckVal, { axis: "horizontal" }),
-            blueprintReadonlyBox("neckline-depth", "Neck depth", necklineDepthVal, { axis: "vertical" }),
-            blueprintReadonlyBox("shoulder", "Shoulder width", shoulderVal, { axis: "horizontal" }),
+            blueprintReadonlyBox("neck-opening", "Neck opening", neckVal, {
+              axis: "horizontal",
+              targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.neckOpening,
+            }),
+            blueprintReadonlyBox("neckline-depth", "Neck depth", necklineDepthVal, {
+              axis: "vertical",
+              targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.neckDepth,
+            }),
+            blueprintReadonlyBox("shoulder", "Shoulder width", shoulderVal, {
+              axis: "horizontal",
+              targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.chest,
+            }),
             blueprintReadonlyBox("finished-bust", "", finishedBustVal, {
               axis: "horizontal",
-              labelLines: ["FINISHED", "BUST (EASE)"],
+              labelLines: ["FINISHED", "BUST CIRC"],
+              targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.bust,
             }),
-            blueprintReadonlyBox("armhole", "Armhole depth", armVal, { axis: "vertical" }),
-            blueprintReadonlyBox("back-length", "Garment length", backLenVal, { axis: "vertical" }),
-            blueprintReadonlyBox("ribbed-hem-depth", "Ribbed hem depth", ribbedHemDepthVal, {
+            blueprintReadonlyBox("armhole", "Armhole depth", armVal, {
               axis: "vertical",
+              targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.armholeDepth,
+            }),
+            blueprintReadonlyBox("back-length", "Garment length", backLenVal, {
+              axis: "vertical",
+              targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.garmentLength,
+            }),
+            blueprintReadonlyBox("ribbed-hem-depth", "Hem depth", ribbedHemDepthVal, {
+              axis: "vertical",
+              targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.hem,
+              anchorTransform: "translate(-50%, -100%)",
             }),
           );
 
           inner.append(art, overlay);
+
+          if (art instanceof SVGSVGElement) {
+            blueprintOverlayPositionCleanup = bindPatternSummaryOverlayPositioning(
+              inner,
+              art,
+              overlay,
+              collectOverlayAnchors(overlay),
+            );
+          }
           stage.appendChild(inner);
           scroll.appendChild(stage);
           rootMbp.appendChild(scroll);

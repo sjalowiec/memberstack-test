@@ -44,6 +44,15 @@
     display: none !important;
   }
 
+  /*
+   * Dev-only fixed banners (BaseLayout) sit top-right and overlap the hero image
+   * in the right column — hide on pattern tab only; still visible on builder steps.
+   */
+  body:has(.sleeveless-pattern-page) .dev-banner,
+  body:has(.sleeveless-pattern-page) .preview-banner {
+    display: none !important;
+  }
+
   .sg-tab-build__cta {
     margin: 0;
   }
@@ -1396,6 +1405,11 @@
   }
 
   @media print {
+    body:has(.sleeveless-pattern-page) .dev-banner,
+    body:has(.sleeveless-pattern-page) .preview-banner {
+      display: none !important;
+    }
+
     /* Generated on-screen pattern summary — keep on screen; omit from printed intro (title / At a glance / notes only). */
     .pattern-generated-description,
     .sg-pattern-intro-line,
@@ -1589,10 +1603,10 @@
       display: none !important;
     }
 
-    /* Print first-page intro: fixed left image column + text column (no overlap) */
+    /* Print first-page intro: text column left, fixed right image column (no overlap) */
     .sleeveless-pattern-page .sleeveless-pattern-intro {
       display: grid !important;
-      grid-template-columns: 1.9in minmax(0, 1fr) !important;
+      grid-template-columns: minmax(0, 1fr) 1.9in !important;
       column-gap: 0.35in !important;
       row-gap: 0 !important;
       align-items: start !important;
@@ -1604,7 +1618,7 @@
     }
 
     .sleeveless-pattern-page .sleeveless-pattern-intro__image {
-      grid-column: 1 !important;
+      grid-column: 2 !important;
       grid-row: 1 !important;
       order: 0 !important;
       position: static !important;
@@ -1614,7 +1628,7 @@
       width: 1.9in !important;
       max-width: 1.9in !important;
       min-width: 0 !important;
-      justify-self: start !important;
+      justify-self: end !important;
       align-self: start !important;
     }
 
@@ -1638,7 +1652,7 @@
     }
 
     .sleeveless-pattern-page .sleeveless-pattern-intro__content {
-      grid-column: 2 !important;
+      grid-column: 1 !important;
       grid-row: 1 !important;
       order: 0 !important;
       position: static !important;
@@ -1646,6 +1660,7 @@
       margin: 0 !important;
       min-width: 0 !important;
       max-width: none !important;
+      align-self: start !important;
     }
 
     .sleeveless-pattern-page .sg-pattern-print-at-a-glance {

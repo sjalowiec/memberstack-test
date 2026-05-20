@@ -6006,5 +6006,18 @@
     "metaDescription": "Stair steps in machine knitting",
     "active": true,
     "vimeoIds": []
+  },
+  {
+    "glossaryId": 1779219555295,
+    "english": "Marker",
+    "example": "Place a marker to make seaming easier",
+    "helpinfo": "Add a marker to a specific point (ie. every 10-20 rows) in your knitting so you can easily find that location later.<br>\nMarkers are often used to identify matching points for seams, shaping, or garment sections. In this example, yarn markers have been placed to help align the pieces during finishing.",
+    "image": "/images/glossary/place-marker-for-seaming.jpg",
+    "image_alt": "place yarn markers for easier seaming",
+    "image_description": "Yarn markers placed along the edges of knitted pieces to help align seams during finishing.",
+    "metaTitle": "Place Markers for Easier Seaming | Machine Knitting Glossary",
+    "metaDescription": "Learn how and why to place markers in knitting. Markers help identify matching points for easier seaming, shaping, and garment assembly.",
+    "active": true,
+    "vimeoIds": []
   }
 ]

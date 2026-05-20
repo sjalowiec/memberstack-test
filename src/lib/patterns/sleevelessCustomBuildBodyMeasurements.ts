@@ -60,10 +60,11 @@ export function readCustomBuildBodyFinishedMeasurements(
   return out;
 }
 
-/** Chart row + fit ease → initial body/finished layer (finished waist/hip match bust for phase 1). */
+/** Chart row + fit ease → initial body/finished layer (hip follows bust unless A-line). */
 export function computeCustomBuildBodyFinishedFromChartRow(
   row: ChartRow,
   fitPreference: string,
+  options?: { bodyShape?: string },
 ): SleevelessCustomBuildBodyFinishedMeasurements {
   const ease = easeInchesForFit(fitPreference);
   const bodyBustOrChest = toFiniteNumber(row.bust_or_chest);
@@ -71,6 +72,13 @@ export function computeCustomBuildBodyFinishedFromChartRow(
   const bodyHip = toFiniteNumber(row.hip) ?? bodyBustOrChest;
   const finishedBustOrChest =
     bodyBustOrChest !== undefined ? roundQuarter(bodyBustOrChest + ease) : undefined;
+  const bodyShape = options?.bodyShape ?? "straight";
+  const finishedHip =
+    finishedBustOrChest !== undefined
+      ? bodyShape === "aline" && bodyHip !== undefined
+        ? Math.max(finishedBustOrChest, roundQuarter(bodyHip + ease))
+        : finishedBustOrChest
+      : undefined;
   return {
     ...(bodyBustOrChest !== undefined ? { bodyBustOrChest } : {}),
     ...(bodyWaist !== undefined ? { bodyWaist } : {}),
@@ -79,7 +87,7 @@ export function computeCustomBuildBodyFinishedFromChartRow(
       ? {
           finishedBustOrChest,
           finishedWaist: finishedBustOrChest,
-          finishedHip: finishedBustOrChest,
+          finishedHip,
         }
       : {}),
   };
@@ -129,9 +137,13 @@ export function persistCustomBuildBodyFinishedMeasurements(
 export function seedCustomBuildBodyFinishedFromChartRow(
   row: ChartRow,
   fitPreference: string,
-  options: PersistCustomBuildMeasurementsOptions = { preserveFinished: true },
+  options: PersistCustomBuildMeasurementsOptions & { bodyShape?: string } = {
+    preserveFinished: true,
+  },
 ): SleevelessCustomBuildBodyFinishedMeasurements {
-  const computed = computeCustomBuildBodyFinishedFromChartRow(row, fitPreference);
+  const computed = computeCustomBuildBodyFinishedFromChartRow(row, fitPreference, {
+    bodyShape: options.bodyShape,
+  });
   persistCustomBuildBodyFinishedMeasurements(computed, {
     preserveFinished: options.preserveFinished ?? true,
     refreshBody: true,

@@ -193,6 +193,7 @@ function syncExpressSelectionsToBuilderStorage(
 
   const stylePayload: Record<string, string> = {};
   const fitPayload: Record<string, unknown> = {};
+  const sm = mapExpressStyle(values.style ?? "");
 
   if (values.who) {
     const aud = expressWhoToChartAudience(values.who);
@@ -200,7 +201,6 @@ function syncExpressSelectionsToBuilderStorage(
     fitPayload.sizingChart = aud;
   }
   if (values.style) {
-    const sm = mapExpressStyle(values.style);
     stylePayload.bodyShape = sm.bodyShape;
     stylePayload.frontStyle = sm.frontStyle;
     stylePayload.garmentStyle = sm.frontStyle === "open" ? "cardigan" : "pullover";
@@ -272,7 +272,10 @@ function syncExpressSelectionsToBuilderStorage(
     const aud = expressWhoToChartAudience(values.who);
     const row = findExpressChartRow(aud, chartFit.selectedSize);
     if (row) {
-      seedCustomBuildBodyFinishedFromChartRow(row, values.fit, { preserveFinished: true });
+      seedCustomBuildBodyFinishedFromChartRow(row, values.fit, {
+        preserveFinished: true,
+        bodyShape: sm.bodyShape,
+      });
     }
   }
 }
@@ -1000,8 +1003,11 @@ function initExpressPage() {
         return;
       }
       const aud = expressWhoToChartAudience(values.who);
+      const sm = mapExpressStyle(values.style ?? "");
       const chartFit = nonEmptyTrimmed(values.selectedSize)
-        ? resolveExpressChartFit(aud, values.selectedSize!.trim(), values.fit || "standard")
+        ? resolveExpressChartFit(aud, values.selectedSize!.trim(), values.fit || "standard", {
+            bodyShape: sm.bodyShape,
+          })
         : null;
       syncExpressSelectionsToBuilderStorage(values, chartFit);
       window.location.assign("/patterns/sleeveless-custom");
@@ -1057,7 +1063,10 @@ function initExpressPage() {
         window.alert("Could not load size charts. Check your connection and try again.");
         return;
       }
-      const chartFit = resolveExpressChartFit(aud, values.selectedSize!.trim(), fitPref);
+      const sm = mapExpressStyle(values.style ?? "");
+      const chartFit = resolveExpressChartFit(aud, values.selectedSize!.trim(), fitPref, {
+        bodyShape: sm.bodyShape,
+      });
       if (!chartFit) {
         window.alert("Please choose a valid size for this wearer.");
         return;

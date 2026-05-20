@@ -13,6 +13,13 @@
 }
 
 @media print {
+  /* Astro dev overlays (fixed top-right); must not print over pattern hero images */
+  .dev-banner,
+  .preview-banner {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
   /* Pattern builder attribution — margin footer only (pattern-print-footer.css). */
   .pattern-print-origin {
     display: none !important;
