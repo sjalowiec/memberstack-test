@@ -41,7 +41,7 @@ const cssFooterBottomLeftToken = JSON.stringify(patternPrintFooterBottomLeftFull
 const patternPrintFooterCss = `:root {\n  --pattern-print-generated-date: ${cssDateToken};\n  --pattern-print-footer-bottom-left: ${cssFooterBottomLeftToken};\n}`;
 ---
 
-<style is:global>{patternPrintFooterCss}</style>
+<style is:global is:inline set:html={patternPrintFooterCss}></style>
 
 <script is:inline>
 (function () {
