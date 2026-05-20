@@ -47,9 +47,20 @@
 .ns-shaping-chart__table-wrap {
   overflow-x: auto;
   margin: 0 0 0.6rem;
-  border: 1px solid rgba(55, 65, 81, 0.2);
-  border-radius: 6px;
+}
+
+.ns-shaping-chart__table-scroll {
+  max-height: 520px;
+  overflow-y: auto;
+  border: 1px solid var(--kin-border, #ddd);
+  border-radius: 12px;
   background: #fff;
+}
+
+.ns-shaping-chart__table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .ns-shaping-chart__table {
@@ -465,8 +476,14 @@
     display: table-row !important;
   }
 
-  .ns-shaping-chart__table-wrap {
-    border-color: #999;
+  .ns-shaping-chart__table-scroll {
+    max-height: none !important;
+    overflow: visible !important;
+    border: none !important;
+  }
+
+  .ns-shaping-chart__table-scroll thead th {
+    position: static;
   }
 
   .ns-shaping-chart__tr--neck-both td {

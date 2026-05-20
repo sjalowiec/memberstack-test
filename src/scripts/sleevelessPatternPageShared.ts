@@ -1284,6 +1284,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       .sg-pattern-output,
       .ns-shaping-chart,
       .ns-shaping-chart__table-wrap,
+      .ns-shaping-chart__table-scroll,
       .ns-shaping-chart__table {
         width: 100%;
         max-width: none !important;
@@ -1352,7 +1353,9 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       .ns-shaping-chart__intro {
         margin: 0 0 0.55rem;
       }
-      .ns-shaping-chart__table-wrap {
+      .ns-shaping-chart__table-scroll {
+        max-height: none !important;
+        overflow: visible !important;
         border: 1px solid #9ca3af;
         border-radius: 0;
         margin: 0;

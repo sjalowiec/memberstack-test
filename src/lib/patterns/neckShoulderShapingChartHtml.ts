@@ -848,6 +848,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
   <div class="ns-shaping-chart__progress-section" data-chart-id="${escapeHtml(progressChartIdPrimary)}">
     ${progressToolbarHtml}
     <div class="ns-shaping-chart__table-wrap">
+    <div class="ns-shaping-chart__table-scroll">
     <table class="ns-shaping-chart__table">
       <thead>
         <tr>
@@ -884,6 +885,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
       <tbody>${rowsHtml}</tbody>
     </table>
     </div>
+    </div>
   </div>
   ${activeSideOnly ? renderActiveSideBindoffRemainingHtml(activeRowsRaw) : ""}
   ${
@@ -906,6 +908,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
   <div class="ns-shaping-chart__progress-section" data-chart-id="${escapeHtml(progressChartIdSecondary)}">
     ${progressToolbarHtml}
     <div class="ns-shaping-chart__table-wrap">
+    <div class="ns-shaping-chart__table-scroll">
     <table class="ns-shaping-chart__table">
       <thead>
         <tr>
@@ -919,6 +922,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
       </thead>
       <tbody>${oppositeRowsHtml}</tbody>
     </table>
+    </div>
     </div>
   </div>
 </div>`
