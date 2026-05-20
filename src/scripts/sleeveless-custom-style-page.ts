@@ -5,7 +5,6 @@
  * Body shape + garment type use dedicated localStorage keys for the style step.
  */
 
-import { mirrorCustomBuildBodyShapeToExpressBuilder } from "../lib/patterns/sleevelessGeneratorBodyShape";
 import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "../lib/patterns/patternStorage";
 import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
 
@@ -220,8 +219,18 @@ function initCustomStylePage(): void {
   };
   const mirrorGarmentToExpress = () => {
     const shape = bodyShape === "aline" ? "aline" : "straight";
-    const garment = garmentType === "cardigan" ? "cardigan" : "pullover";
-    mirrorCustomBuildBodyShapeToExpressBuilder(shape, garment);
+    const front = garmentType === "cardigan" ? "open" : "closed";
+    const style =
+      shape === "straight" && front === "closed"
+        ? "straight-pullover"
+        : shape === "aline" && front === "closed"
+          ? "shaped-pullover"
+          : shape === "straight" && front === "open"
+            ? "straight-cardigan"
+            : shape === "aline" && front === "open"
+              ? "shaped-cardigan"
+              : "";
+    if (style) patchExpressBuilderValues({ shape, front, style });
   };
 
   const syncBody = (v: string) => {
