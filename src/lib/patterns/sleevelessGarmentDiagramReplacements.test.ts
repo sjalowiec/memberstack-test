@@ -53,7 +53,10 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
 
   it("uses baby default hem depth for HEM_INCHES when audience is baby", () => {
     const patternData = { style: { recipientCategory: "baby" } };
-    const result = { debug: { ...baseDebug } } as unknown as SleevelessBackPatternResult;
+    const babyHemRows = calculateHemRows(baseDebug.rowsPerInch, "baby");
+    const result = {
+      debug: { ...baseDebug, hemRows: babyHemRows },
+    } as unknown as SleevelessBackPatternResult;
 
     const repl = buildSleevelessGarmentDiagramReplacements(result, "in", {
       patternData,
@@ -62,7 +65,7 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
     });
 
     expect(repl.HEM_INCHES).toBe("1");
-    expect(repl.HEM_ROWS).toBe(String(baseDebug.hemRows));
+    expect(repl.HEM_ROWS).toBe(String(babyHemRows));
   });
 
   it("converts HEM_INCHES to cm when unit is cm", () => {
@@ -92,11 +95,11 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
     expect(repl.OPENING_STS).toBe("0");
   });
 
-  it("keeps full shoulder tokens on cardigan half (same as back / pullover front)", () => {
+  it("halves shoulder stitch tokens on cardigan half schematic", () => {
     const result = { debug: { ...baseDebug } } as unknown as SleevelessBackPatternResult;
 
     const replCardigan = buildSleevelessGarmentDiagramReplacements(result, "in", {
-      patternData: {},
+      patternData: { style: { frontStyle: "open" } },
       measurementPiece: "front",
       cardiganHalfSide: "left",
     });
@@ -105,9 +108,8 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
       measurementPiece: "front",
     });
 
-    expect(replCardigan.SHOULDER_STS).toBe("60");
-    expect(replCardigan.SHOULDER_STS).toBe(replPullover.SHOULDER_STS);
-    expect(replCardigan.SHOULDER_WIDTH).toBe(replPullover.SHOULDER_WIDTH);
+    expect(replCardigan.SHOULDER_STS).toBe("30");
+    expect(Number(replCardigan.SHOULDER_STS)).toBeLessThan(Number(replPullover.SHOULDER_STS));
   });
 
   it("halves neck tokens on cardigan half schematic only (CF split)", () => {
@@ -199,6 +201,42 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
     );
     expect(replCardigan.HIP_INCHES).toBe("10");
     expect(replPullover.HIP_INCHES).toBe("20");
+  });
+
+  it("SIDE_LENGTH above hem excludes hem rows from cast-on-to-armhole", () => {
+    const debug = {
+      ...baseDebug,
+      rowsPerInch: 11,
+      hemRows: 22,
+      bodyRows: 143,
+      rowsFromCastOnToArmholeStart: 165,
+      backNeckToHem: 22,
+    };
+    const result = { debug } as unknown as SleevelessBackPatternResult;
+
+    const replBack = buildSleevelessGarmentDiagramReplacements(result, "in", {
+      patternData: {},
+      measurementPiece: "back",
+    });
+    const replFront = buildSleevelessGarmentDiagramReplacements(result, "in", {
+      patternData: {},
+      measurementPiece: "front",
+    });
+    const replCardigan = buildSleevelessGarmentDiagramReplacements(result, "in", {
+      patternData: {},
+      measurementPiece: "front",
+      cardiganHalfSide: "left",
+    });
+
+    expect(replBack.SIDE_LENGTH_ROWS).toBe("143");
+    expect(replBack.SIDE_LENGTH).toBe("13");
+    expect(replFront.SIDE_LENGTH_ROWS).toBe(replBack.SIDE_LENGTH_ROWS);
+    expect(replFront.SIDE_LENGTH).toBe(replBack.SIDE_LENGTH);
+    expect(replCardigan.SIDE_LENGTH_ROWS).toBe(replBack.SIDE_LENGTH_ROWS);
+    expect(replCardigan.SIDE_LENGTH).toBe(replBack.SIDE_LENGTH);
+    expect(Number(replBack.SIDE_LENGTH_ROWS)).toBe(
+      debug.rowsFromCastOnToArmholeStart - debug.hemRows,
+    );
   });
 
   it("keeps row and armhole tokens identical to pullover when cardigan half", () => {

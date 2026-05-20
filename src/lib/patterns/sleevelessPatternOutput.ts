@@ -21,7 +21,9 @@ import {
 import {
   bodyBlockPlanToAlineShapingPlan,
   formatSleevelessAlineBodyShapingInstructionLines,
+  scaleAlineBodyShapingPlanForCardiganHalf,
   sleevelessAlineShapingLineNeedsTrustedHtml,
+  type SleevelessAlineShapingEdgeScope,
   isSleevelessExplicitCustomBuildStraight,
   measurementsImplySleevelessAlineBody,
   resolveBodyBlockHipCircumferenceInches,
@@ -40,6 +42,12 @@ import { calculateBasicPatternNumbers } from "./patternCalculator";
 import { resolveEffectiveHemDepthInches } from "./customBuildEffectiveHemDepth";
 import { calculateHemRowsFromInches } from "./hemDefaults";
 import {
+  buildRowAccountingInputFromDebug,
+  rowsToInches,
+  validateRowAccounting,
+  warnRowAccountingDriftIfDev,
+} from "./sleevelessRowAccounting";
+import {
   neckShoulderShapingChartFromRows,
   type NeckShoulderShapingChart,
   type NeckShoulderShapingChartRow,
@@ -53,7 +61,7 @@ import {
   isSleevelessCardiganGarmentStyle,
   isSleevelessVNeckChoice,
 } from "./sleevelessFrontDiagramSrc";
-import { cardiganHalfFrontBodySts, splitBodyBackCastOnToSymmetricCardiganHalves } from "./cardiganFrontBlock";
+import { resolveCardiganHalfFrontWidths } from "./cardiganFrontBlock";
 import {
   cardiganFrontEdgePickupStitchesFromDebug,
   cardiganFrontEdgeRowsFromDebug,
@@ -257,6 +265,8 @@ export type SleevelessBackPatternDebug = {
   frontSvgLastRc?: number;
   /** Round cardigan left front: cast-on stitches (half body, default left receives odd +1). */
   cardiganHalfLeftCastOnSts?: number;
+  /** Round cardigan left front: bust-width stitches at armhole (half of back bust body when A-line). */
+  cardiganHalfLeftBustBodySts?: number;
   /** Stitches on the needle after armhole on that half piece (matches written left front). */
   cardiganHalfLeftStitchesAfterArmhole?: number;
   /** Cardigan: rows along one CF edge from hem to front neckline bind-off (for front-band pickup). */
@@ -1116,6 +1126,8 @@ export function buildSleevelessBackDisplayRows(args: {
   castOnForPieceLabel?: string;
   /** When set, body section uses hem→bust side decreases instead of plain knitting. */
   alineBodyShaping?: SleevelessAlineBodyShapingPlan | null;
+  /** Cardigan left front: one armhole edge only; back/pullover use both side edges. */
+  alineShapingEdgeScope?: SleevelessAlineShapingEdgeScope;
 }): SleevelessPatternDisplayRow[] {
   const rows: SleevelessPatternDisplayRow[] = [];
   rows.push({ kind: "piece", title: "BACK" });
@@ -1133,6 +1145,7 @@ export function buildSleevelessBackDisplayRows(args: {
   const hemRcLabel = formatRcColon(0);
 
   const aline = args.alineBodyShaping ?? null;
+  const alineEdgeScope = args.alineShapingEdgeScope ?? "symmetricSides";
   rows.push({
     kind: "block",
     rc: hemRcLabel,
@@ -1179,6 +1192,7 @@ export function buildSleevelessBackDisplayRows(args: {
         aline.shapingType,
         aline.shapingRowNumbers,
         aline.availableShapingRows,
+        alineEdgeScope,
       );
       const bustSts = aline.bustBodySts > 0 ? aline.bustBodySts : undefined;
       const shapingContentLines = [
@@ -1747,10 +1761,6 @@ export function generateSleevelessBackPattern(
         : rawStitchesAfterArmhole + 1
       : rawStitchesAfterArmhole;
 
-  const cardiganHalfLeftStitchesAfterArmhole =
-    isCardiganRoundHalfFront && stitchesAfterArmhole !== undefined
-      ? Math.max(1, stitchesAfterArmhole / 2)
-      : undefined;
 
   if (!Number.isFinite(rowsPerInch) || rowsPerInch <= 0) {
     warnings.push("Row gauge is missing or invalid — row counts and RC targets may be wrong.");
@@ -1937,9 +1947,8 @@ export function generateSleevelessBackPattern(
     finalCastOnStitches: castOnSts,
   };
   if (shouldRunBodyBlock) {
-    const garmentStyle = isCardiganRoundHalfFront ? "cardigan" : "pullover";
     const bodyBlockPlan = buildSleevelessBodyBlockPlan({
-      garmentStyle,
+      garmentStyle: "pullover",
       pieceRole: "back",
       bustCircumferenceInches: finishedBust,
       hipCircumferenceInches: hipForBodyBlock!,
@@ -1980,18 +1989,24 @@ export function generateSleevelessBackPattern(
   }
   /* --- end body block --- */
 
-  const cardiganBodySplit =
-    isCardiganRoundHalfFront && castOnSts > 0
-      ? splitBodyBackCastOnToSymmetricCardiganHalves(castOnSts)
+  const cardiganLeftHalfWidths =
+    isCardiganRoundHalfFront &&
+    castOnSts > 0 &&
+    bustBodySts > 0 &&
+    stitchesAfterArmhole !== undefined &&
+    stitchesAfterArmhole > 0
+      ? resolveCardiganHalfFrontWidths(
+          {
+            hemCastOnSts: castOnSts,
+            bustBodySts,
+            stitchesAfterArmhole,
+          },
+          "left",
+        )
       : null;
-  const cardiganHalfLeftCastOnSts =
-    cardiganBodySplit !== null ? cardiganHalfFrontBodySts(cardiganBodySplit, "left") : undefined;
-  const cardiganBustSplit =
-    isCardiganRoundHalfFront && bustBodySts > 0
-      ? splitBodyBackCastOnToSymmetricCardiganHalves(bustBodySts)
-      : null;
-  const cardiganHalfLeftBustBodySts =
-    cardiganBustSplit !== null ? cardiganHalfFrontBodySts(cardiganBustSplit, "left") : undefined;
+  const cardiganHalfLeftCastOnSts = cardiganLeftHalfWidths?.hemCastOnSts;
+  const cardiganHalfLeftBustBodySts = cardiganLeftHalfWidths?.bustBodySts;
+  const cardiganHalfLeftStitchesAfterArmhole = cardiganLeftHalfWidths?.stitchesAfterArmhole;
 
   if (
     isCardiganRoundHalfFront &&
@@ -2519,7 +2534,7 @@ export function generateSleevelessBackPattern(
     backNeckToHem,
     armholeDepth: armholeDepthIn,
     bodyInchesToArmhole:
-      rowGauge > 0 ? bodyToArmholeRows / rowGauge : undefined,
+      rowGauge > 0 ? rowsToInches(bodyToArmholeRows, rowGauge) : undefined,
     reservedNecklineShoulderInches: neckShoulderInches,
     reservedNecklineShoulderRows: neckShoulderRowsEstimate,
     remainingRowsBeforeNeckline: upperBackRows,
@@ -2562,6 +2577,7 @@ export function generateSleevelessBackPattern(
     ...(isCardiganRoundHalfFront && cardiganHalfLeftCastOnSts !== undefined
       ? {
           cardiganHalfLeftCastOnSts: cardiganHalfLeftCastOnSts,
+          cardiganHalfLeftBustBodySts: cardiganHalfLeftBustBodySts,
           cardiganHalfLeftStitchesAfterArmhole: cardiganHalfLeftStitchesAfterArmhole,
         }
       : {}),
@@ -2574,6 +2590,11 @@ export function generateSleevelessBackPattern(
         }
       : {}),
   };
+
+  const rowAccountingInput = buildRowAccountingInputFromDebug(debug);
+  if (rowAccountingInput) {
+    warnRowAccountingDriftIfDev(validateRowAccounting(rowAccountingInput), "sleevelessPatternOutput");
+  }
 
   /**
    * Validation guard: the front and back must end on the same final RC, and that RC must equal
@@ -2640,23 +2661,52 @@ export function generateSleevelessBackPattern(
     alineBodyShaping,
   });
 
+  const cardiganFrontAlineShaping =
+    isCardiganRoundHalfFront &&
+    alineBodyShaping &&
+    cardiganHalfLeftCastOnSts !== undefined &&
+    cardiganHalfLeftBustBodySts !== undefined
+      ? scaleAlineBodyShapingPlanForCardiganHalf(
+          alineBodyShaping,
+          cardiganHalfLeftCastOnSts,
+          cardiganHalfLeftBustBodySts,
+        )
+      : null;
+
+  let cardiganFrontArmholeMath: ArmholeResult | null = null;
+  if (
+    cardiganHalfLeftBustBodySts !== undefined &&
+    cardiganHalfLeftStitchesAfterArmhole !== undefined &&
+    cardiganHalfLeftBustBodySts > cardiganHalfLeftStitchesAfterArmhole &&
+    armholeDepthRows > 0
+  ) {
+    try {
+      cardiganFrontArmholeMath = calculateArmholeShaping({
+        startingStitches: cardiganHalfLeftBustBodySts,
+        targetStitches: cardiganHalfLeftStitchesAfterArmhole,
+        totalRows: armholeDepthRows,
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      warnings.push(`Cardigan front armhole: ${msg}`);
+    }
+  }
+
   const cardiganFrontExecutionRowsRaw =
     isCardiganRoundHalfFront &&
     cardiganHalfLeftCastOnSts !== undefined &&
+    cardiganHalfLeftBustBodySts !== undefined &&
     cardiganHalfLeftStitchesAfterArmhole !== undefined &&
-    armholeMathResult !== null &&
+    cardiganFrontArmholeMath !== null &&
     firstArmholeRCNum !== null
       ? buildSleevelessBackDisplayRows({
           castOnSts: cardiganHalfLeftCastOnSts,
-          armholeStartSts:
-            alineBodyShaping && cardiganHalfLeftBustBodySts !== undefined
-              ? cardiganHalfLeftBustBodySts
-              : undefined,
+          armholeStartSts: cardiganHalfLeftBustBodySts,
           hemRows,
           hemRowsValid: hemRows > 0,
           bodyToArmholeRows,
           bodyRowsValid: bodyToArmholeRows > 0,
-          armholeMath: armholeMathResult,
+          armholeMath: cardiganFrontArmholeMath,
           firstArmholeRC: firstArmholeRCNum,
           stitchesAfterArmhole: cardiganHalfLeftStitchesAfterArmhole,
           upperBackRows,
@@ -2670,7 +2720,8 @@ export function generateSleevelessBackPattern(
           shoulderStitches,
           armholeInstructionStyle: "cardiganHalfLeftFront",
           castOnForPieceLabel: "the left front",
-          alineBodyShaping,
+          alineBodyShaping: cardiganFrontAlineShaping,
+          alineShapingEdgeScope: "armholeEdgeOnly",
         })
       : null;
 

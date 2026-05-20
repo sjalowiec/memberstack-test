@@ -2,18 +2,19 @@
  * Shared `{{TOKEN}}` replacement maps for sleeveless garment SVG diagrams (screen + print).
  */
 
-import type { CardiganFrontSplit } from "./cardiganFrontBlock";
 import {
-  cardiganHalfFrontBodySts,
-  splitBodyBackCastOnToSymmetricCardiganHalves,
+  resolveCardiganHalfFrontWidths,
+  type CardiganHalfFrontWidths,
 } from "./cardiganFrontBlock";
 import { resolveDiagramFinishedHipInches } from "./customBuildEffectiveFinishedHip";
 import { resolveEffectiveHemDepthInches } from "./customBuildEffectiveHemDepth";
 import { calculateHemRowsFromInches } from "./hemDefaults";
+import { lengthFromRowsForDiagram, resolveTotalInstructionRows } from "./sleevelessRowAccounting";
 import {
   resolveEffectiveBackNeckDepthInches,
   resolveEffectiveFrontNeckDepthInches,
 } from "./customBuildEffectiveNeckDepth";
+import { isSleevelessCardiganGarmentStyle } from "./sleevelessFrontDiagramSrc";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
 function section(obj: unknown): Record<string, unknown> {
@@ -100,6 +101,26 @@ function resolveHipFieldsForSleevelessDiagram(
   };
 }
 
+/**
+ * Vertical side-seam label above the hem: cast-on-to-armhole rows minus hem rows
+ * (body only — does not include the hem band).
+ */
+function resolveSideSeamAboveHemRows(d: SleevelessBackPatternResult["debug"]): number | undefined {
+  const hemRows = isFiniteNumber(d.hemRows) ? Math.round(d.hemRows) : undefined;
+  const castOnToArmhole = isFiniteNumber(d.rowsFromCastOnToArmholeStart)
+    ? Math.round(d.rowsFromCastOnToArmholeStart)
+    : isFiniteNumber(hemRows) && isFiniteNumber(d.bodyRows)
+      ? hemRows + Math.round(d.bodyRows)
+      : undefined;
+  if (castOnToArmhole !== undefined && hemRows !== undefined) {
+    return Math.max(0, castOnToArmhole - hemRows);
+  }
+  if (isFiniteNumber(d.bodyRows)) {
+    return Math.max(0, Math.round(d.bodyRows));
+  }
+  return undefined;
+}
+
 /** Hem band rows + depth for `{{HEM_ROWS}}` / `{{HEM_INCHES}}` diagram labels. */
 function resolveHemFieldsForSleevelessDiagram(
   d: SleevelessBackPatternResult["debug"],
@@ -111,9 +132,14 @@ function resolveHemFieldsForSleevelessDiagram(
   const hemRows = isFiniteNumber(d.hemRows)
     ? Math.round(d.hemRows)
     : calculateHemRowsFromInches(d.rowsPerInch ?? NaN, hemDepthIn);
+  const rpi = d.rowsPerInch;
+  const hemInchesFromRows =
+    isFiniteNumber(hemRows) && isFiniteNumber(rpi) && rpi > 0
+      ? lengthFromRowsForDiagram(hemRows, rpi, unit)
+      : undefined;
   return {
     HEM_ROWS: isFiniteNumber(hemRows) ? String(Math.max(0, hemRows)) : "",
-    HEM_INCHES: fmtNumber(inchesToUnit(hemDepthIn, unit) ?? Number.NaN),
+    HEM_INCHES: fmtNumber(hemInchesFromRows ?? inchesToUnit(hemDepthIn, unit) ?? Number.NaN),
   };
 }
 
@@ -167,34 +193,27 @@ function halfStitchesRounded(value: number | undefined): number | undefined {
 function applyCardiganHalfFrontMeasurements(
   repl: Record<string, string>,
   d: SleevelessBackPatternResult["debug"],
-  split: CardiganFrontSplit,
+  half: CardiganHalfFrontWidths,
   side: "left" | "right",
   finishedBust: number | undefined,
   finishedHip: number | undefined,
   unit: "cm" | "in",
 ): void {
-  const bustSts = cardiganHalfFrontBodySts(split, side);
-  repl.BUST_STS = String(bustSts);
-
+  repl.BUST_STS = String(half.bustBodySts);
   const bustWidthIn = finishedBust !== undefined ? finishedBust / 4 : undefined;
   repl.BUST_WIDTH = fmtNumber(inchesToUnit(bustWidthIn, unit) ?? NaN);
 
+  repl.HIP_STS = String(half.hemCastOnSts);
   const hipCirc = finishedHip ?? finishedBust;
-  const spi = d.stitchesPerInch;
-  const hipBodySts =
-    isFiniteNumber(hipCirc) && isFiniteNumber(spi) && spi > 0
-      ? Math.round(hipCirc * spi)
-      : split.bodyBackCastOnSts;
-  const hipSplit = splitBodyBackCastOnToSymmetricCardiganHalves(hipBodySts);
-  repl.HIP_STS = String(cardiganHalfFrontBodySts(hipSplit, side));
   const hipWidthIn = hipCirc !== undefined ? hipCirc / 4 : undefined;
   repl.HIP_INCHES = fmtNumber(inchesToUnit(hipWidthIn, unit) ?? NaN);
 
-  // RULE 5: shoulder seam matches back / pullover front — not halved for half-body schematic.
-  repl.SHOULDER_STS = isFiniteNumber(d.stitchesAfterArmhole)
-    ? String(Math.round(d.stitchesAfterArmhole))
-    : "";
-  repl.SHOULDER_WIDTH = fmtNumber(inchesToUnit(d.shoulderWidthInches, unit) ?? NaN);
+  repl.SHOULDER_STS = String(half.stitchesAfterArmhole);
+  const shoulderWidthHalfIn =
+    isFiniteNumber(d.shoulderWidthInches) && d.shoulderWidthInches > 0
+      ? d.shoulderWidthInches / 2
+      : undefined;
+  repl.SHOULDER_WIDTH = fmtNumber(inchesToUnit(shoulderWidthHalfIn, unit) ?? NaN);
 
   // Half-front diagram: neckline at CF is split — show half the neck stitches / width on this piece.
   repl.NECK_STS =
@@ -205,7 +224,7 @@ function applyCardiganHalfFrontMeasurements(
     inchesToUnit(isFiniteNumber(d.necklineWidthInches) ? d.necklineWidthInches / 2 : undefined, unit) ?? NaN,
   );
 
-  repl.OPENING_STS = String(split.frontOpeningWidthSts);
+  repl.OPENING_STS = "0";
   repl.PIECE_TITLE = side === "left" ? "LEFT FRONT" : "RIGHT FRONT";
   /** Reserved token for future CF annotations; empty until bands/overlap UI exists. */
   repl.CF_EDGE_NOTE = "";
@@ -215,10 +234,7 @@ export type BuildSleevelessGarmentDiagramReplacementsOptions = {
   patternData: Record<string, unknown>;
   /** Which neckline depth row applies (matches diagram URL inference). */
   measurementPiece: SleevelessDiagramReplacementPiece;
-  /**
-   * One cardigan half — cast-on / bust width tokens use half **body/back** width; shoulder and
-   * row/armhole tokens stay aligned with back / pullover front (RULE 3–5).
-   */
+  /** One cardigan half — all width stitch tokens use half-panel values (hem, bust, armhole). */
   cardiganHalfSide?: "left" | "right";
 };
 
@@ -243,19 +259,38 @@ export function buildSleevelessGarmentDiagramReplacements(
 
   const unitLabel = unit === "cm" ? "cm" : "in";
 
+  const sideSeamAboveHemRows = resolveSideSeamAboveHemRows(d);
+
   const SIDE_LENGTH = (() => {
     const rpi = d.rowsPerInch;
     if (!isFiniteNumber(rpi) || rpi <= 0) return "";
-    if (!isFiniteNumber(d.hemRows) || !isFiniteNumber(d.bodyRows)) return "";
-    const sideRows = Math.max(0, Math.round(d.hemRows + d.bodyRows));
-    const inches = sideRows / rpi;
-    return fmtNumber(inchesToUnit(inches, unit) ?? NaN);
+    if (!isFiniteNumber(sideSeamAboveHemRows)) return "";
+    const fromRows = lengthFromRowsForDiagram(sideSeamAboveHemRows, rpi, unit);
+    return fmtNumber(fromRows ?? Number.NaN);
   })();
+
+  const rpiForDiagram = d.rowsPerInch;
+  const totalInstructionRows = resolveTotalInstructionRows(d);
+  const heightFromRows =
+    isFiniteNumber(totalInstructionRows) &&
+    isFiniteNumber(rpiForDiagram) &&
+    rpiForDiagram > 0
+      ? lengthFromRowsForDiagram(totalInstructionRows, rpiForDiagram, unit)
+      : undefined;
+  const armholeRowsForDiagram = isFiniteNumber(d.armholeRows) ? Math.round(d.armholeRows) : undefined;
+  const armholeDepthFromRows =
+    isFiniteNumber(armholeRowsForDiagram) &&
+    isFiniteNumber(rpiForDiagram) &&
+    rpiForDiagram > 0
+      ? lengthFromRowsForDiagram(armholeRowsForDiagram, rpiForDiagram, unit)
+      : undefined;
 
   const repl: Record<string, string> = {
     UNIT: unitLabel,
-    HEIGHT: fmtNumber(inchesToUnit(d.backNeckToHem, unit) ?? NaN),
-    ARMHOLE_DEPTH: fmtNumber(inchesToUnit(d.armholeDepth, unit) ?? NaN),
+    HEIGHT: fmtNumber(heightFromRows ?? inchesToUnit(d.backNeckToHem, unit) ?? NaN),
+    ARMHOLE_DEPTH: fmtNumber(
+      armholeDepthFromRows ?? inchesToUnit(d.armholeDepth, unit) ?? Number.NaN,
+    ),
     ARMHOLE_ROWS: isFiniteNumber(d.armholeRows) ? String(Math.round(d.armholeRows)) : "",
     BUST_STS: isFiniteNumber(d.backStitches) ? String(Math.round(d.backStitches)) : "",
     BUST_WIDTH: fmtNumber(inchesToUnit(bustWidthIn, unit) ?? NaN),
@@ -265,10 +300,9 @@ export function buildSleevelessGarmentDiagramReplacements(
     NECK_WIDTH: fmtNumber(inchesToUnit(d.necklineWidthInches, unit) ?? NaN),
     NECK_DEPTH_ROWS: neckDepth.NECK_DEPTH_ROWS,
     NECK_DEPTH: neckDepth.NECK_DEPTH,
-    SIDE_LENGTH_ROWS:
-      isFiniteNumber(d.hemRows) && isFiniteNumber(d.bodyRows)
-        ? String(Math.max(0, Math.round(d.hemRows + d.bodyRows)))
-        : "",
+    SIDE_LENGTH_ROWS: isFiniteNumber(sideSeamAboveHemRows)
+      ? String(sideSeamAboveHemRows)
+      : "",
     SIDE_LENGTH,
     HEM_ROWS: hemFields.HEM_ROWS,
     HEM_INCHES: hemFields.HEM_INCHES,
@@ -280,20 +314,46 @@ export function buildSleevelessGarmentDiagramReplacements(
     CF_EDGE_NOTE: "",
   };
 
-  if (options.cardiganHalfSide === "left" || options.cardiganHalfSide === "right") {
-    const split = splitBodyBackCastOnToSymmetricCardiganHalves(d.backStitches ?? 0);
+  let cardiganHalfSide = options.cardiganHalfSide;
+  if (
+    !cardiganHalfSide &&
+    options.measurementPiece === "front" &&
+    isSleevelessCardiganGarmentStyle(options.patternData)
+  ) {
+    cardiganHalfSide = "left";
+  }
+
+  if (cardiganHalfSide === "left" || cardiganHalfSide === "right") {
+    const hemBase =
+      isFiniteNumber(d.hemCastOnStitches) && d.hemCastOnStitches > 0
+        ? d.hemCastOnStitches
+        : isFiniteNumber(d.backStitches)
+          ? d.backStitches
+          : 0;
+    const bustBase =
+      isFiniteNumber(d.bustBodyStitches) && d.bustBodyStitches > 0
+        ? d.bustBodyStitches
+        : hemBase;
+    const shoulderBase = isFiniteNumber(d.stitchesAfterArmhole) ? d.stitchesAfterArmhole : 0;
+    const half = resolveCardiganHalfFrontWidths(
+      {
+        hemCastOnSts: hemBase,
+        bustBodySts: bustBase,
+        stitchesAfterArmhole: shoulderBase,
+      },
+      cardiganHalfSide,
+    );
     applyCardiganHalfFrontMeasurements(
       repl,
       d,
-      split,
-      options.cardiganHalfSide,
+      half,
+      cardiganHalfSide,
       finishedBust,
       finishedHip,
       unit,
     );
-    if (options.cardiganHalfSide === "left" && isFiniteNumber(d.cardiganHalfLeftCastOnSts)) {
-      repl.BUST_STS = String(Math.round(d.cardiganHalfLeftCastOnSts));
-    }
+    const hipFieldsHalf = resolveHipFieldsForSleevelessDiagram(d, options.patternData, unit);
+    if (hipFieldsHalf.HIP_ROWS) repl.HIP_ROWS = hipFieldsHalf.HIP_ROWS;
   }
 
   return repl;
