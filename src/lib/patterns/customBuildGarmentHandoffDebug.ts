@@ -186,3 +186,15 @@ export function logGarmentTypeRaw(groupLabel: string): void {
   console.log('localStorage.getItem("garmentType")', raw);
   console.groupEnd();
 }
+
+/** Express wizard Pullover/Cardigan click trace (remove after verification). */
+export function logExpressGarmentClick(
+  before: CardiganSelectionWriteSnapshot,
+  after: CardiganSelectionWriteSnapshot,
+): void {
+  if (typeof console === "undefined" || typeof console.group !== "function") return;
+  console.group("[kbm express garment click]");
+  console.log("before", before);
+  console.log("after", after);
+  console.groupEnd();
+}

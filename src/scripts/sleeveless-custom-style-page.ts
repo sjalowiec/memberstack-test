@@ -13,6 +13,10 @@ import {
   logGarmentTypeRaw,
 } from "../lib/patterns/customBuildGarmentHandoffDebug";
 import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
+import {
+  type SleevelessGarmentType,
+  writeSleevelessGarmentTypeLocalStorage,
+} from "../lib/patterns/writeSleevelessGarmentSelection";
 
 const STORAGE = {
   neckline: "necklineStyle",
@@ -106,6 +110,10 @@ function readStored(key: string, allowed: Set<string>, fallback: string): string
 }
 
 function writeStored(key: string, value: string): void {
+  if (key === STORAGE.garmentType && (value === "pullover" || value === "cardigan")) {
+    writeSleevelessGarmentTypeLocalStorage(value as SleevelessGarmentType);
+    return;
+  }
   if (typeof localStorage === "undefined") return;
   try {
     localStorage.setItem(key, value);

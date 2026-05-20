@@ -8,6 +8,14 @@ import {
   getPatternData,
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
 } from "../lib/patterns/patternStorage";
+import {
+  buildCardiganSelectionWriteSnapshot,
+  logExpressGarmentClick,
+} from "../lib/patterns/customBuildGarmentHandoffDebug";
+import {
+  garmentTypeFromFront,
+  writeSleevelessGarmentTypeLocalStorage,
+} from "../lib/patterns/writeSleevelessGarmentSelection";
 import { formatSwatchCountForGaugeInput } from "../lib/patterns/gaugeDisplayFormat";
 import {
   loadExpressSweaterCharts,
@@ -808,6 +816,16 @@ function initExpressPage() {
     if (field === "shape" || field === "front") {
       values.style = deriveExpressStyleKey(values.shape, values.front) || "straight-pullover";
     }
+
+    if (field === "front") {
+      const garmentType = garmentTypeFromFront(value);
+      const before = buildCardiganSelectionWriteSnapshot("before", garmentType);
+      writeSleevelessGarmentTypeLocalStorage(garmentType);
+      syncExpressSelectionsToBuilderStorage(values, null);
+      const after = buildCardiganSelectionWriteSnapshot("after", garmentType);
+      logExpressGarmentClick(before, after);
+    }
+
     markChoiceSelected(sec, btn as HTMLElement);
 
     if (field === "who") {
@@ -1113,6 +1131,11 @@ function initExpressPage() {
         st.removeAttribute("hidden");
       }
     });
+
+  if (nonEmptyTrimmed(values.front)) {
+    writeSleevelessGarmentTypeLocalStorage(garmentTypeFromFront(values.front));
+    syncExpressSelectionsToBuilderStorage(values, null);
+  }
 
   refreshBuilderState();
   applyExpressGaugeSectionHash();
