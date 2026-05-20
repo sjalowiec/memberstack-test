@@ -35,12 +35,16 @@ import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
 import {
   isSleevelessCardiganHalfFrontDiagramType,
+  isSleevelessCardiganGarmentStyle,
   resolveSleevelessFrontDiagram,
   isSleevelessVNeckChoice,
   isSleevelessDevCardiganExpressPreview,
 } from "../lib/patterns/sleevelessFrontDiagramSrc.ts";
 import { resolveSleevelessAudienceHeroImageSrc } from "../lib/patterns/sleevelessAudienceHeroImage.ts";
-import { injectBodyShapeGuidesIntoGarmentSvg } from "../lib/patterns/sleevelessBodyShapeDiagramGuides.ts";
+import {
+  injectBodyShapeGuidesIntoGarmentSvg,
+  scaleDiagramGuidesForCardiganHalf,
+} from "../lib/patterns/sleevelessBodyShapeDiagramGuides.ts";
 import { buildSleevelessGarmentDiagramReplacements } from "../lib/patterns/sleevelessGarmentDiagramReplacements.ts";
 import {
   buildSleevelessPrintBasicsSummaryDlHtml,
@@ -732,7 +736,12 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       svg.classList.add("sleeveless-piece-split__diagram-inline");
 
       const guideLayout =
-        guideOpts?.layout === "front" || guideOpts?.layout === "back" ? guideOpts.layout : undefined;
+        guideOpts?.layout === "front" ||
+        guideOpts?.layout === "back" ||
+        guideOpts?.layout === "cardiganHalfLeft" ||
+        guideOpts?.layout === "cardiganHalfRight"
+          ? guideOpts.layout
+          : undefined;
       if (guideLayout && guideOpts?.diagramGuides) {
         injectBodyShapeGuidesIntoGarmentSvg(svg, guideOpts.diagramGuides, guideLayout);
       }
@@ -772,7 +781,8 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         frontResolution !== undefined && src === frontResolution.src;
       const dsHalf = el.dataset.sleevelessCardiganHalf || "";
       const cardiganHalfSide = isFrontSchematic
-        ? frontCardiganHalfSide
+        ? frontCardiganHalfSide ??
+          (isSleevelessCardiganGarmentStyle(patternData) ? "left" : undefined)
         : dsHalf === "left" || dsHalf === "right"
           ? dsHalf
           : undefined;
@@ -781,10 +791,19 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         patternData,
         cardiganHalfSide,
       });
-      const guideLayout = piece === "front" ? "front" : "back";
+      let guideLayout = piece === "front" ? "front" : "back";
+      let diagramGuides = result?.debug?.diagramGuides;
+      if (
+        isFrontSchematic &&
+        cardiganHalfSide &&
+        diagramGuides?.showBodyShapeGuides
+      ) {
+        diagramGuides = scaleDiagramGuidesForCardiganHalf(diagramGuides, cardiganHalfSide);
+        guideLayout = cardiganHalfSide === "right" ? "cardiganHalfRight" : "cardiganHalfLeft";
+      }
       jobs.push(
         inlineSvgWithReplacements(el, src, alt, replacements, hydrateOpts?.hydrateGeneration, {
-          diagramGuides: result?.debug?.diagramGuides,
+          diagramGuides,
           layout: guideLayout,
         }),
       );
