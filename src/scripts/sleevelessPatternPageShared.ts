@@ -265,7 +265,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
 
   /** Shape expected by {@link generateSleevelessBackPattern}. */
   function buildGeneratorPatternData(merged) {
-    return buildGeneratorPatternDataFromSources(merged, getPatternData());
+    return buildGeneratorPatternDataFromSources(merged, getPatternData(), getCurrentPattern());
   }
 
   function audienceLabelFromPattern(st, ft) {

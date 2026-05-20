@@ -9,6 +9,8 @@ export function buildSleevelessBodyBlockDebugPanelHtml(
   }
   const rows: [string, string][] = [
     ["garmentStyle", debug.garmentStyle],
+    ["frontStyle", debug.frontStyle || "(empty)"],
+    ["garmentKindSource", debug.garmentKindSource || "(empty)"],
     ["patternMode", debug.patternMode || "(empty)"],
     ["style.bodyShape", debug.styleBodyShape || "(empty)"],
     ["effective bust (in)", String(debug.effectiveBustInches ?? "—")],

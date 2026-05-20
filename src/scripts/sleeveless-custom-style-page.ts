@@ -6,6 +6,12 @@
  */
 
 import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "../lib/patterns/patternStorage";
+import {
+  buildCardiganSelectionWriteSnapshot,
+  logCardiganSelectionWrite,
+  logCustomBuildGarmentHandoff,
+  logGarmentTypeRaw,
+} from "../lib/patterns/customBuildGarmentHandoffDebug";
 import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
 
 const STORAGE = {
@@ -83,7 +89,7 @@ function patchExpressBuilderValues(partial: Record<string, string>): void {
 }
 
 function syncBasicsFromExpressValues(_ev: Record<string, string>): void {
-  syncCustomBuildToPatternStorage();
+  syncCustomBuildToPatternStorage({ awaitCharts: false });
 }
 
 function readStored(key: string, allowed: Set<string>, fallback: string): string {
@@ -169,6 +175,41 @@ function wireRadiogroup(root: HTMLElement, group: string, allowed: Set<string>, 
   });
 }
 
+/** Garment cards: direct listeners so image/label clicks always hit syncGarment (not only delegated section click). */
+function wireGarmentTypeButtonsDirect(
+  root: HTMLElement,
+  onPick: (v: string) => void,
+): void {
+  const section = root.querySelector('[data-cb-style-group="garmentType"]');
+  if (!section) return;
+
+  section.querySelectorAll<HTMLButtonElement>("[data-cb-style-value]").forEach((btn) => {
+    btn.addEventListener(
+      "click",
+      (e) => {
+        const v = btn.getAttribute("data-cb-style-value") ?? "";
+        if (!GARMENT_VALUES.has(v) || btn.disabled) return;
+        e.preventDefault();
+        e.stopPropagation();
+        onPick(v);
+        applyRadiogroup(root, "garmentType", v);
+      },
+      { capture: true },
+    );
+  });
+}
+
+function readPressedGarmentTypeFromDom(root: HTMLElement): "pullover" | "cardigan" | null {
+  const section = root.querySelector('[data-cb-style-group="garmentType"]');
+  if (!section) return null;
+  const pressed = section.querySelector<HTMLButtonElement>(
+    '[data-cb-style-value][aria-pressed="true"]',
+  );
+  const v = pressed?.getAttribute("data-cb-style-value") ?? "";
+  if (v === "cardigan" || v === "pullover") return v;
+  return null;
+}
+
 function resolveInitialNeckline(): string {
   const ev = readExpressValues();
   if (ev.neckline && NECKLINE_VALUES.has(ev.neckline)) return ev.neckline;
@@ -184,6 +225,8 @@ function resolveInitialFit(): string {
 function initCustomStylePage(): void {
   const root = document.querySelector("[data-cb-custom-style-root]");
   if (!(root instanceof HTMLElement)) return;
+  if (root.dataset.cbStyleWired === "1") return;
+  root.dataset.cbStyleWired = "1";
 
   let neckline = resolveInitialNeckline();
   let fit = resolveInitialFit();
@@ -191,6 +234,15 @@ function initCustomStylePage(): void {
   let garmentType = readStored(STORAGE.garmentType, GARMENT_VALUES, DEFAULTS.garmentType);
 
   const ev0 = readExpressValues();
+  const ev0Style = ev0.style?.trim().toLowerCase() ?? "";
+  const ev0Front = ev0.front?.trim().toLowerCase() ?? "";
+  if (
+    garmentType === "pullover" &&
+    (ev0Front === "open" || ev0Style.includes("cardigan"))
+  ) {
+    garmentType = "cardigan";
+    writeStored(STORAGE.garmentType, garmentType);
+  }
   if (!ev0.neckline || !NECKLINE_VALUES.has(ev0.neckline)) {
     patchExpressBuilderValues({ neckline });
   }
@@ -240,24 +292,58 @@ function initCustomStylePage(): void {
     syncBasicsFromExpressValues(readExpressValues());
   };
   const syncGarment = (v: string) => {
+    const before = buildCardiganSelectionWriteSnapshot("before", v);
     garmentType = v;
     writeStored(STORAGE.garmentType, v);
+    if (v === "cardigan") {
+      logGarmentTypeRaw("[kbm after cardigan click]");
+    }
     mirrorGarmentToExpress();
     syncBasicsFromExpressValues(readExpressValues());
+    const after = buildCardiganSelectionWriteSnapshot("after", v);
+    logCardiganSelectionWrite(`syncGarment (${v})`, before, after);
+    logCustomBuildGarmentHandoff("custom-style syncGarment", {
+      resolvedGarmentStyle: v === "cardigan" ? "cardigan" : "pullover",
+      resolvedFrontStyle: v === "cardigan" ? "open" : "closed",
+    });
   };
+
+  wireRadiogroup(root, "neckline", NECKLINE_VALUES, syncNeckline);
+  wireRadiogroup(root, "fit", FIT_VALUES, syncFit);
+  wireRadiogroup(root, "bodyShape", new Set(["straight", "aline"]), syncBody);
+  wireRadiogroup(root, "garmentType", GARMENT_VALUES, syncGarment);
+  wireGarmentTypeButtonsDirect(root, syncGarment);
 
   applyRadiogroup(root, "neckline", neckline);
   applyRadiogroup(root, "fit", fit);
   applyRadiogroup(root, "bodyShape", bodyShape);
   applyRadiogroup(root, "garmentType", garmentType);
 
-  wireRadiogroup(root, "neckline", NECKLINE_VALUES, syncNeckline);
-  wireRadiogroup(root, "fit", FIT_VALUES, syncFit);
-  wireRadiogroup(root, "bodyShape", new Set(["straight", "aline"]), syncBody);
-  wireRadiogroup(root, "garmentType", GARMENT_VALUES, syncGarment);
-
   mirrorGarmentToExpress();
   syncBasicsFromExpressValues(readExpressValues());
+  logCustomBuildGarmentHandoff("custom-style init", {
+    resolvedGarmentStyle: garmentType === "cardigan" ? "cardigan" : "pullover",
+    resolvedFrontStyle: garmentType === "cardigan" ? "open" : "closed",
+  });
+
+  const continueLink = document.querySelector<HTMLAnchorElement>(
+    'a.kbm-btn-accent[href*="custom-build/fit"]',
+  );
+  continueLink?.addEventListener("click", (e) => {
+    e.preventDefault();
+    const href = continueLink.href;
+    const pressed = readPressedGarmentTypeFromDom(root);
+    if (pressed) {
+      syncGarment(pressed);
+    } else {
+      mirrorGarmentToExpress();
+      syncBasicsFromExpressValues(readExpressValues());
+    }
+    logGarmentTypeRaw("[kbm style Continue → Measurements]");
+    const after = buildCardiganSelectionWriteSnapshot("after", garmentType);
+    logCardiganSelectionWrite("Continue → Measurements (pre-nav)", after, after);
+    window.location.assign(href);
+  });
 }
 
 if (typeof document !== "undefined") {

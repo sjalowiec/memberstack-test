@@ -73,7 +73,7 @@ function mergedPatternForDisplay(base: Record<string, unknown>): Record<string, 
 }
 
 function buildGeneratorPatternData(merged: Record<string, unknown>): Record<string, unknown> {
-  return buildGeneratorPatternDataFromSources(merged, getPatternData());
+  return buildGeneratorPatternDataFromSources(merged, getPatternData(), getCurrentPattern());
 }
 
 function printFinishingSectionHtml(

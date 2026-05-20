@@ -9,6 +9,8 @@ import {
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
   type SleevelessPatternRecord,
 } from "./patternStorage";
+import { resolveSleevelessGarmentKind } from "./resolveSleevelessGarmentKind";
+import { readCustomBuildWizardGarmentType } from "./sleevelessCustomBuildWizardNeckline";
 
 export const PROJECT_NOTES_MAX_LENGTH = 300;
 
@@ -68,12 +70,6 @@ function readExpressValues(): Record<string, string> {
   return {};
 }
 
-function expressStyleKeyIndicatesCardigan(styleKey: string): boolean {
-  return String(styleKey ?? "")
-    .toLowerCase()
-    .includes("cardigan");
-}
-
 function possessiveAudienceLabel(who: string, chartAudience?: string): string {
   const w = who.trim().toLowerCase();
   if (w === "women" || w === "woman") return "Women's";
@@ -126,14 +122,11 @@ export function inferSleevelessPatternTitleContext(
     else if (canon === "round") neckline = "round";
   }
 
-  const lsFront = String(ls.front ?? "").trim().toLowerCase();
-  const styleKey = String(ls.style ?? "").trim().toLowerCase();
-  const pbGarment = String(style.garmentStyle ?? "").trim().toLowerCase() === "cardigan";
-  const pbOpen = String(style.frontStyle ?? "").trim().toLowerCase() === "open";
-  const garmentStyle: "pullover" | "cardigan" =
-    pbGarment || pbOpen || lsFront === "open" || expressStyleKeyIndicatesCardigan(styleKey)
-      ? "cardigan"
-      : "pullover";
+  const garmentStyle = resolveSleevelessGarmentKind({
+    wizardGarmentType: readCustomBuildWizardGarmentType(),
+    canonicalStyle: style as Record<string, unknown>,
+    expressValues: ls,
+  }).garmentStyle;
 
   const fit = pattern.fit ?? {};
   const selectedSize =

@@ -4,11 +4,20 @@
  */
 import { formatSwatchCountForGaugeInput } from "../lib/patterns/gaugeDisplayFormat";
 import { getDefaultHemLengthInches } from "../lib/patterns/hemDefaults";
-import { getCurrentPattern, SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "../lib/patterns/patternStorage";
+import {
+  getCurrentPattern,
+  getPatternData,
+  SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+} from "../lib/patterns/patternStorage";
 import {
   loadMeasurementOverrides,
   persistMeasurementOverrides,
 } from "../lib/patterns/sleevelessCustomMeasurementStorage";
+import {
+  logCustomBuildGarmentHandoff,
+  logGarmentTypeRaw,
+  logSummaryGarmentRead,
+} from "../lib/patterns/customBuildGarmentHandoffDebug";
 import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
 import {
   computeDefaultMeasurementsFromChartRow,
@@ -32,6 +41,8 @@ import {
   type MeasureReviewSummarySegment,
 } from "../lib/patterns/sleevelessMeasureReviewSummaryUi";
 import { SLEEVELESS_REVIEW_CONTEXT_READY_EVENT } from "../lib/patterns/sleevelessPatternProjectMeta";
+import { resolveSleevelessGarmentKind } from "../lib/patterns/resolveSleevelessGarmentKind";
+import { readCustomBuildWizardGarmentType } from "../lib/patterns/sleevelessCustomBuildWizardNeckline";
 import {
   applyMeasurementTargetToBox,
   bindPatternSummaryOverlayPositioning,
@@ -344,16 +355,14 @@ function necklineLabel(neckline: string): string {
 
 function garmentStyleLabel(expressValues: Record<string, string>, pattern: ReturnType<typeof getCurrentPattern>): string {
   const style = pattern.style ?? {};
-  const pbGarment = String(style.garmentStyle ?? "").trim().toLowerCase();
-  const pbOpen = String(style.frontStyle ?? "").trim().toLowerCase() === "open";
-  const lsFront = String(expressValues.front ?? "").trim().toLowerCase();
-  const styleKey = String(expressValues.style ?? "").trim().toLowerCase();
-  const isCardigan =
-    pbGarment === "cardigan" ||
-    pbOpen ||
-    lsFront === "open" ||
-    styleKey.includes("cardigan");
-  const base = isCardigan ? "Cardigan" : "Pullover";
+  const pbStyle = (getPatternData().style ?? {}) as Record<string, unknown>;
+  const kind = resolveSleevelessGarmentKind({
+    wizardGarmentType: readCustomBuildWizardGarmentType(),
+    canonicalStyle: style as Record<string, unknown>,
+    patternBuilderStyle: pbStyle,
+    expressValues,
+  });
+  const base = kind.isCardigan ? "Cardigan" : "Pullover";
   const shape = String(expressValues.shape ?? style.shape ?? "").trim();
   if (shape && shape !== "straight") {
     const shapeLabel = shape.charAt(0).toUpperCase() + shape.slice(1);
@@ -853,6 +862,7 @@ async function renderDiagram(
 }
 
 export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurementsInitOptions): void {
+  logGarmentTypeRaw("[kbm summary first read]");
   const root = document.querySelector("[data-cb-measure-root]");
   if (!(root instanceof HTMLElement)) return;
 
@@ -922,6 +932,7 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
       if (!refreshPatternValidationUi(root, displayUnit)) return;
       persistFromRoot(root, displayUnit);
       syncCustomBuildToPatternStorage({ awaitCharts: false });
+      logCustomBuildGarmentHandoff("review/measurements Continue (after sync)");
       if (options?.onContinue) {
         options.onContinue();
         return;
@@ -931,6 +942,8 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
   }
 
   void loadExpressSweaterCharts().then(async () => {
+    syncCustomBuildToPatternStorage({ awaitCharts: false });
+    logSummaryGarmentRead("measurements/review page (after sync, before label)");
     const pattern = getCurrentPattern();
     const expressValues = readExpressValues();
     const fit = pattern.fit ?? {};
@@ -968,15 +981,12 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
       );
     }
 
-    const style = pattern.style ?? {};
-    const lsFront = String(expressValues.front ?? "").trim().toLowerCase();
-    const styleKey = String(expressValues.style ?? "").trim().toLowerCase();
-    const pbGarment = String(style.garmentStyle ?? "").trim().toLowerCase() === "cardigan";
-    const pbOpen = String(style.frontStyle ?? "").trim().toLowerCase() === "open";
-    const garmentStyle: "pullover" | "cardigan" =
-      pbGarment || pbOpen || lsFront === "open" || styleKey.includes("cardigan")
-        ? "cardigan"
-        : "pullover";
+    const garmentStyle = resolveSleevelessGarmentKind({
+      wizardGarmentType: readCustomBuildWizardGarmentType(),
+      canonicalStyle: (pattern.style ?? {}) as Record<string, unknown>,
+      patternBuilderStyle: (getPatternData().style ?? {}) as Record<string, unknown>,
+      expressValues,
+    }).garmentStyle;
 
     document.dispatchEvent(
       new CustomEvent(SLEEVELESS_REVIEW_CONTEXT_READY_EVENT, {

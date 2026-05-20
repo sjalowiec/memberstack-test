@@ -15,7 +15,13 @@ import {
   loadExpressSweaterCharts,
   resolveExpressChartFit,
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
-import { getPatternData, SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "../lib/patterns/patternStorage";
+import {
+  getCurrentPattern,
+  getPatternData,
+  SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+} from "../lib/patterns/patternStorage";
+import { resolveSleevelessGarmentKind } from "../lib/patterns/resolveSleevelessGarmentKind";
+import { readCustomBuildWizardGarmentType } from "../lib/patterns/sleevelessCustomBuildWizardNeckline";
 
 const PATTERN_WORKSPACE_TAB_PATTERN_HREF = "/patterns/sleeveless/pattern/?tab=pattern";
 
@@ -53,16 +59,14 @@ function syncExpressBasicsFromBuilderAndContinue(): void {
     else if (canon === "round") neckline = "round";
   }
 
-  const lsFront = String(ls.front ?? "").trim().toLowerCase();
-  const pbGarment = String(style?.garmentStyle ?? "").trim().toLowerCase() === "cardigan";
-  const pbOpen = String(style?.frontStyle ?? "").trim().toLowerCase() === "open";
-  const styleKey = String(ls.style ?? "").trim().toLowerCase();
-  const garmentStyle: "pullover" | "cardigan" =
-    pbGarment || pbOpen || lsFront === "open" || styleKey.includes("cardigan")
-      ? "cardigan"
-      : "pullover";
+  const garmentKind = resolveSleevelessGarmentKind({
+    wizardGarmentType: readCustomBuildWizardGarmentType(),
+    canonicalStyle: (getCurrentPattern().style ?? {}) as Record<string, unknown>,
+    patternBuilderStyle: (style ?? {}) as Record<string, unknown>,
+    expressValues: ls,
+  });
 
-  const expressStyleKey = String(ls.style ?? styleKey ?? "").trim();
+  const expressStyleKey = String(ls.style ?? "").trim();
   const expressStyle = mapExpressStyleKey(expressStyleKey);
   const aud = expressWhoToChartAudience(who);
   const chartFit =
@@ -79,8 +83,8 @@ function syncExpressBasicsFromBuilderAndContinue(): void {
       fit: fitEase || "standard",
       selectedSize: chartFit.selectedSize,
       selectedMeasurements: chartFit.selectedMeasurements,
-      frontStyle: garmentStyle === "cardigan" ? "open" : "closed",
-      garmentStyle,
+      frontStyle: garmentKind.frontStyle,
+      garmentStyle: garmentKind.garmentStyle,
       bodyShape: expressStyle.bodyShape,
       patternMode: "express",
     });

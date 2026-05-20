@@ -24,10 +24,31 @@ const LABELS: Record<string, Record<string, string>> = {
   who: { women: "Women", men: "Men", kids: "Kids", baby: "Baby" },
 };
 
+function readStyleStepGarmentType(): string {
+  if (typeof localStorage === "undefined") return "";
+  try {
+    const raw = localStorage.getItem("garmentType")?.trim() ?? "";
+    if (raw === "cardigan" || raw === "pullover") return raw;
+  } catch {
+    /* ignore */
+  }
+  return "";
+}
+
 function ensureExpressStyleDefaults(v: Record<string, string>): void {
-  v.shape = "straight";
-  v.front = "closed";
-  v.style = "straight-pullover";
+  const garment = readStyleStepGarmentType();
+  const shape = v.shape?.trim() || "straight";
+  v.shape = shape === "aline" ? "aline" : "straight";
+  if (garment === "cardigan") {
+    v.front = "open";
+    v.style =
+      v.shape === "aline" ? "shaped-cardigan" : "straight-cardigan";
+    return;
+  }
+  v.front = v.front?.trim() || "closed";
+  if (!v.style?.trim()) {
+    v.style = v.shape === "aline" ? "shaped-pullover" : "straight-pullover";
+  }
 }
 
 interface ExpressPersistedV1 {
@@ -174,7 +195,7 @@ function initCustomBuildDesignPage(): void {
   }
 
   function syncPatternIfPossible(): void {
-    syncCustomBuildToPatternStorage();
+    syncCustomBuildToPatternStorage({ awaitCharts: false });
   }
 
   function updateFlowPills() {

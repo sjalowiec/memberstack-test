@@ -2,7 +2,15 @@
  * Pure merge helpers for sleeveless pattern display + {@link generateSleevelessBackPattern} input.
  * Mirrors the former inline logic on the builder pattern tab / print route (localStorage-free).
  */
+import { logCustomBuildGarmentHandoff } from "./customBuildGarmentHandoffDebug";
 import { loadMeasurementOverrides } from "./sleevelessCustomMeasurementStorage";
+import {
+  logSleevelessGarmentKindResolution,
+  resolveSleevelessGarmentKind,
+  sleevelessGarmentKindToStyleFields,
+  type ResolveSleevelessGarmentKindOptions,
+  type SleevelessGarmentKind,
+} from "./resolveSleevelessGarmentKind";
 import { CUSTOM_BUILD_STYLE_STORAGE_KEYS } from "./sleevelessCustomBuildStyleKeys";
 import {
   readCustomBuildWizardGarmentType,
@@ -71,7 +79,39 @@ export function mergedPatternForDisplayFromSources(
       machine = { ...machine, availableNeedles: v !== undefined && v !== null ? String(v) : "" };
     }
   }
-  return { ...base, style: st, fit: ft, yarnGauge, machine };
+  let merged = { ...base, style: st, fit: ft, yarnGauge, machine };
+  const patternMode = resolveGeneratorPatternMode(
+    sectionPattern(base.style),
+    sectionPattern(patternData.style),
+  );
+  if (patternMode === "custom-build") {
+    const garment = resolveSleevelessGarmentKindForSources({
+      canonicalStyle: sectionPattern(base.style),
+      patternBuilderStyle: sectionPattern(patternData.style),
+      mergedStyle: st,
+      expressValues: readExpressBuilderValues(),
+      wizardGarmentType: readCustomBuildWizardGarmentType(),
+    });
+    const resolvedStyle = { ...st, ...sleevelessGarmentKindToStyleFields(garment) };
+    merged = { ...merged, style: resolvedStyle };
+    logSleevelessGarmentKindResolution(
+      {
+        wizardGarmentType: readCustomBuildWizardGarmentType(),
+        canonicalStyle: sectionPattern(base.style),
+        patternBuilderStyle: sectionPattern(patternData.style),
+        mergedStyle: st,
+        expressValues: readExpressBuilderValues(),
+      },
+      garment,
+    );
+    logCustomBuildGarmentHandoff("mergedPatternForDisplayFromSources", {
+      merged,
+      patternBuilderData: patternData,
+      resolvedGarmentStyle: garment.garmentStyle,
+      resolvedFrontStyle: garment.frontStyle,
+    });
+  }
+  return merged;
 }
 
 /**
@@ -118,44 +158,31 @@ export type CustomBuildGarmentStyleFields = {
   frontStyle: "open" | "closed";
 };
 
-function styleRecordIndicatesCardigan(style: Record<string, unknown>): boolean {
-  const gs = String(style.garmentStyle ?? "")
-    .trim()
-    .toLowerCase();
-  const fs = String(style.frontStyle ?? "")
-    .trim()
-    .toLowerCase();
-  return gs === "cardigan" || fs === "open";
+export function resolveSleevelessGarmentKindForSources(
+  options: ResolveSleevelessGarmentKindOptions,
+): SleevelessGarmentKind {
+  return resolveSleevelessGarmentKind(options);
 }
 
 /**
- * Custom Build garment routing for generator/diagrams. Wizard `garmentType` wins; stale canonical
- * `cardigan` / `open` must not override patternBuilderData pullover (routes to cardigan SVG family).
+ * Custom Build garment routing for generator/diagrams (delegates to {@link resolveSleevelessGarmentKind}).
  */
 export function resolveCustomBuildGarmentStyleForStyle(
   canonicalStyle: Record<string, unknown>,
   patternBuilderStyle: Record<string, unknown>,
   wizardGarmentType?: string,
+  expressValues?: Record<string, unknown>,
+  mergedStyle?: Record<string, unknown>,
 ): CustomBuildGarmentStyleFields {
-  const wizard = String(wizardGarmentType ?? "")
-    .trim()
-    .toLowerCase();
-  if (wizard === "cardigan") return { garmentStyle: "cardigan", frontStyle: "open" };
-  if (wizard === "pullover") return { garmentStyle: "pullover", frontStyle: "closed" };
-
-  const canonicalCardigan = styleRecordIndicatesCardigan(canonicalStyle);
-  const pbCardigan = styleRecordIndicatesCardigan(patternBuilderStyle);
-  if (canonicalCardigan && !pbCardigan) {
-    return { garmentStyle: "pullover", frontStyle: "closed" };
-  }
-  if (pbCardigan) return { garmentStyle: "cardigan", frontStyle: "open" };
-  if (canonicalCardigan) return { garmentStyle: "cardigan", frontStyle: "open" };
-
-  const gs = String(patternBuilderStyle.garmentStyle ?? canonicalStyle.garmentStyle ?? "")
-    .trim()
-    .toLowerCase();
-  if (gs === "cardigan") return { garmentStyle: "cardigan", frontStyle: "open" };
-  return { garmentStyle: "pullover", frontStyle: "closed" };
+  return sleevelessGarmentKindToStyleFields(
+    resolveSleevelessGarmentKind({
+      wizardGarmentType,
+      canonicalStyle,
+      patternBuilderStyle,
+      expressValues,
+      mergedStyle,
+    }),
+  );
 }
 
 export function resolveGeneratorPatternMode(
@@ -260,6 +287,8 @@ export function applyCustomBuildMeasurementOverridesToGenerator(
 export function buildGeneratorPatternDataFromSources(
   merged: Record<string, unknown>,
   patternBuilderData: Record<string, unknown>,
+  /** `kbm_current_pattern` — use for garment resolve; do not use merged.style (PB spread wins there). */
+  canonicalPattern?: Record<string, unknown>,
 ): Record<string, unknown> {
   const pb = patternBuilderData;
   const fitMerged = { ...sectionPattern(merged.fit), ...sectionPattern(pb.fit) };
@@ -274,25 +303,36 @@ export function buildGeneratorPatternDataFromSources(
     selectedMeasurements: { ...smB, ...smA },
     ...(Object.keys(cbOverrides).length > 0 ? { cbMeasurementOverrides: cbOverrides } : {}),
   };
-  const canonicalStyle = sectionPattern(merged.style);
+  const mergedStyle = sectionPattern(merged.style);
+  const storageCanonicalStyle = sectionPattern(
+    canonicalPattern?.style !== undefined ? canonicalPattern.style : merged.style,
+  );
   const pbStyle = sectionPattern(pb.style);
-  const patternMode = resolveGeneratorPatternMode(canonicalStyle, pbStyle);
-  const bodyShape = resolveGeneratorBodyShape(canonicalStyle, pbStyle);
+  const patternMode = resolveGeneratorPatternMode(storageCanonicalStyle, pbStyle);
+  const bodyShape = resolveGeneratorBodyShape(storageCanonicalStyle, pbStyle);
+  const wizardGarment = readCustomBuildWizardGarmentType();
+  const expressValues = readExpressBuilderValues();
+  const garmentKind =
+    patternMode === "custom-build"
+      ? resolveSleevelessGarmentKindForSources({
+          wizardGarmentType: wizardGarment,
+          canonicalStyle: storageCanonicalStyle,
+          patternBuilderStyle: pbStyle,
+          expressValues,
+          mergedStyle,
+        })
+      : null;
   const style = {
-    ...canonicalStyle,
+    ...mergedStyle,
     ...pbStyle,
     bodyShape,
     ...(patternMode ? { patternMode } : {}),
     // Custom Build sync writes garment/neckline to canonical; stale express `patternBuilderData` must not win.
-    ...(patternMode === "custom-build"
+    ...(garmentKind
       ? {
-          ...resolveCustomBuildGarmentStyleForStyle(
-            canonicalStyle,
-            pbStyle,
-            readCustomBuildWizardGarmentType(),
-          ),
+          ...sleevelessGarmentKindToStyleFields(garmentKind),
           neckline: resolveCustomBuildNecklineForStyle(
-            canonicalStyle,
+            storageCanonicalStyle,
             pbStyle,
             readCustomBuildWizardNeckline(),
           ),
@@ -315,7 +355,28 @@ export function buildGeneratorPatternDataFromSources(
       availableNeedles: ygm.availableNeedles ?? sectionPattern(merged.machine).availableNeedles,
     },
   };
-  return applyCustomBuildMeasurementOverridesToGenerator(gen);
+  const finalGen = applyCustomBuildMeasurementOverridesToGenerator(gen);
+  if (patternMode === "custom-build" && garmentKind) {
+    logSleevelessGarmentKindResolution(
+      {
+        wizardGarmentType: wizardGarment,
+        canonicalStyle: storageCanonicalStyle,
+        patternBuilderStyle: pbStyle,
+        expressValues,
+        mergedStyle,
+      },
+      garmentKind,
+    );
+    logCustomBuildGarmentHandoff("buildGeneratorPatternDataFromSources", {
+      merged,
+      patternBuilderData: pb,
+      canonicalPattern,
+      finalGeneratorInput: finalGen,
+      resolvedGarmentStyle: garmentKind.garmentStyle,
+      resolvedFrontStyle: garmentKind.frontStyle,
+    });
+  }
+  return finalGen;
 }
 
 /**
@@ -334,16 +395,23 @@ export function buildSleevelessGarmentDiagramPatternData(
   const canonicalStyle = sectionPattern(patternMerged.style);
   const genStyle = sectionPattern(gen.style);
   const patternMode = resolveGeneratorPatternMode(canonicalStyle, genStyle);
+  const expressValues = readExpressBuilderValues();
+  const garmentKind =
+    patternMode === "custom-build"
+      ? resolveSleevelessGarmentKindForSources({
+          wizardGarmentType: readCustomBuildWizardGarmentType(),
+          canonicalStyle,
+          patternBuilderStyle: genStyle,
+          expressValues,
+          mergedStyle: { ...canonicalStyle, ...genStyle },
+        })
+      : null;
   const style = {
     ...canonicalStyle,
     ...genStyle,
-    ...(patternMode === "custom-build"
+    ...(garmentKind
       ? {
-          ...resolveCustomBuildGarmentStyleForStyle(
-            canonicalStyle,
-            genStyle,
-            readCustomBuildWizardGarmentType(),
-          ),
+          ...sleevelessGarmentKindToStyleFields(garmentKind),
           neckline: resolveCustomBuildNecklineForStyle(
             canonicalStyle,
             genStyle,
@@ -352,6 +420,18 @@ export function buildSleevelessGarmentDiagramPatternData(
         }
       : {}),
   };
+  if (garmentKind) {
+    logSleevelessGarmentKindResolution(
+      {
+        wizardGarmentType: readCustomBuildWizardGarmentType(),
+        canonicalStyle,
+        patternBuilderStyle: genStyle,
+        expressValues,
+        mergedStyle: { ...canonicalStyle, ...genStyle },
+      },
+      garmentKind,
+    );
+  }
   const fit = { ...sectionPattern(patternMerged.fit), ...sectionPattern(gen.fit) };
   return { style, fit };
 }

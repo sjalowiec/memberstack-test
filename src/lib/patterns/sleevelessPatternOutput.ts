@@ -1904,8 +1904,15 @@ export function generateSleevelessBackPattern(
   const hipForBodyBlock = shouldRunBodyBlock
     ? resolveBodyBlockHipCircumferenceInches(patternData, finishedBust, finishedHipResolved)
     : undefined;
+  const resolvedGarmentStyle = String(styleSection.garmentStyle ?? "").trim().toLowerCase();
+  const resolvedFrontStyle = String(styleSection.frontStyle ?? "").trim().toLowerCase();
+  const debugGarmentStyle: "pullover" | "cardigan" =
+    resolvedGarmentStyle === "cardigan" || resolvedFrontStyle === "open" ? "cardigan" : "pullover";
+  const debugFrontStyle: "open" | "closed" = debugGarmentStyle === "cardigan" ? "open" : "closed";
   let bodyBlockRuntime: SleevelessBodyBlockRuntimeDebug = {
-    garmentStyle: isCardiganRoundHalfFront ? "cardigan" : "pullover",
+    garmentStyle: debugGarmentStyle,
+    frontStyle: debugFrontStyle,
+    garmentKindSource: "generatorInput.style",
     patternMode: String(styleSection.patternMode ?? ""),
     styleBodyShape: String(styleSection.bodyShape ?? ""),
     effectiveBustInches: finishedBust > 0 ? finishedBust : undefined,

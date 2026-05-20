@@ -107,6 +107,8 @@ export function shouldApplySleevelessAlineShapingFromMeasurements(
 /** Temporary runtime audit surfaced on the Pattern tab (remove after live verification). */
 export type SleevelessBodyBlockRuntimeDebug = {
   garmentStyle: string;
+  frontStyle: string;
+  garmentKindSource: string;
   patternMode: string;
   styleBodyShape: string;
   effectiveBustInches: number | undefined;

@@ -87,7 +87,73 @@ describe("buildGeneratorPatternDataFromSources V-neck front diagram routing", ()
     expect(front.src).toBe("/images/patterns/sleeveless/diagram-front-V.svg");
   });
 
-  it("routes to diagram-front-V.svg when canonical cardigan is stale but wizard is pullover v-neck", () => {
+  it("uses kbm canonical for resolve when merged display style is stale pullover", () => {
+    lsStore[CUSTOM_BUILD_GARMENT_TYPE_KEY] = "cardigan";
+
+    const merged = {
+      style: {
+        patternMode: "custom-build",
+        neckline: "round",
+        garmentStyle: "pullover",
+        frontStyle: "closed",
+      },
+      fit: { selectedMeasurements: baseMeasurements },
+    };
+    const pb = {
+      style: {
+        patternMode: "custom-build",
+        neckline: "round",
+        garmentStyle: "pullover",
+        frontStyle: "closed",
+      },
+      yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
+    };
+    const kbmCanonical = {
+      style: {
+        patternMode: "custom-build",
+        neckline: "round",
+        garmentStyle: "cardigan",
+        frontStyle: "open",
+      },
+    };
+
+    const gen = buildGeneratorPatternDataFromSources(merged, pb, kbmCanonical);
+    expect(gen.style).toMatchObject({
+      garmentStyle: "cardigan",
+      frontStyle: "open",
+    });
+  });
+
+  it("keeps cardigan in generator input when canonical is cardigan, PB is stale pullover, wizard is cardigan", () => {
+    lsStore[CUSTOM_BUILD_GARMENT_TYPE_KEY] = "cardigan";
+
+    const merged = {
+      style: {
+        patternMode: "custom-build",
+        neckline: "round",
+        garmentStyle: "cardigan",
+        frontStyle: "open",
+      },
+      fit: { selectedMeasurements: baseMeasurements },
+    };
+    const pb = {
+      style: {
+        patternMode: "custom-build",
+        neckline: "round",
+        garmentStyle: "pullover",
+        frontStyle: "closed",
+      },
+      yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
+    };
+
+    const gen = buildGeneratorPatternDataFromSources(merged, pb);
+    expect(gen.style).toMatchObject({
+      garmentStyle: "cardigan",
+      frontStyle: "open",
+    });
+  });
+
+  it("routes to diagram-front-V.svg when canonical has cardigan but wizard garmentType is pullover", () => {
     lsStore[CUSTOM_BUILD_GARMENT_TYPE_KEY] = "pullover";
     lsStore[SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY] = JSON.stringify({
       values: { neckline: "v-neck" },
@@ -146,13 +212,33 @@ describe("buildGeneratorPatternDataFromSources V-neck front diagram routing", ()
 });
 
 describe("resolveCustomBuildGarmentStyleForStyle", () => {
-  it("prefers pullover when canonical cardigan is stale and patternBuilderData is pullover", () => {
+  it("preserves cardigan when canonical is fresh cardigan and patternBuilderData is stale pullover", () => {
     expect(
       resolveCustomBuildGarmentStyleForStyle(
         { garmentStyle: "cardigan", frontStyle: "open" },
         { garmentStyle: "pullover", frontStyle: "closed" },
       ),
-    ).toEqual({ garmentStyle: "pullover", frontStyle: "closed" });
+    ).toEqual({ garmentStyle: "cardigan", frontStyle: "open" });
+  });
+
+  it("prefers patternBuilderData cardigan over canonical pullover when wizard is unset", () => {
+    expect(
+      resolveCustomBuildGarmentStyleForStyle(
+        { garmentStyle: "pullover", frontStyle: "closed" },
+        { garmentStyle: "cardigan", frontStyle: "open" },
+      ),
+    ).toEqual({ garmentStyle: "cardigan", frontStyle: "open" });
+  });
+
+  it("prefers express cardigan over stale patternBuilder pullover when wizard is unset", () => {
+    expect(
+      resolveCustomBuildGarmentStyleForStyle(
+        { garmentStyle: "pullover", frontStyle: "closed" },
+        { garmentStyle: "pullover", frontStyle: "closed" },
+        undefined,
+        { front: "open", style: "straight-cardigan" },
+      ),
+    ).toEqual({ garmentStyle: "cardigan", frontStyle: "open" });
   });
 
   it("uses wizard garmentType when set", () => {

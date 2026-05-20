@@ -34,6 +34,7 @@ import {
   CUSTOM_BUILD_NECKLINE_STYLE_KEY,
   readCustomBuildWizardNeckline,
 } from "./sleevelessCustomBuildWizardNeckline";
+import { logCustomBuildGarmentHandoff } from "./customBuildGarmentHandoffDebug";
 import { CUSTOM_BUILD_STYLE_STORAGE_KEYS } from "./sleevelessCustomBuildStyleKeys";
 
 export { CUSTOM_BUILD_STYLE_STORAGE_KEYS };
@@ -142,11 +143,19 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
     const bodyShapeRaw = ev.style?.trim()
       ? resolveBodyShape(mapExpressStyleKey(ev.style.trim()).bodyShape)
       : resolveBodyShape(bodyShapeFromStyleStep);
-    const garmentType = readStyleStepValue(
+    let garmentType = readStyleStepValue(
       CUSTOM_BUILD_STYLE_STORAGE_KEYS.garmentType,
       new Set(["pullover", "cardigan"]),
       "pullover",
     );
+    const expressStyleKey = ev.style?.trim().toLowerCase() ?? "";
+    const expressFront = ev.front?.trim().toLowerCase() ?? "";
+    if (
+      garmentType === "pullover" &&
+      (expressFront === "open" || expressStyleKey.includes("cardigan"))
+    ) {
+      garmentType = "cardigan";
+    }
     const garment = resolveGarmentFromType(garmentType);
     const fit = ev.fit === "close" || ev.fit === "standard" || ev.fit === "relaxed" ? ev.fit : "standard";
     const aud = ev.who ? expressWhoToChartAudience(ev.who) : "";
@@ -209,6 +218,11 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
     }
 
     ensureYarnGaugeMachineDefaults();
+
+    logCustomBuildGarmentHandoff("syncCustomBuildToPatternStorage", {
+      resolvedGarmentStyle: garment.garmentStyle,
+      resolvedFrontStyle: garment.frontStyle,
+    });
   };
 
   if (options.awaitCharts === false) {
