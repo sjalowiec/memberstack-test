@@ -4,6 +4,7 @@
  */
 
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
+import { injectBodyShapeGuidesIntoGarmentSvg } from "./sleevelessBodyShapeDiagramGuides";
 import { buildSleevelessGarmentDiagramReplacements } from "./sleevelessGarmentDiagramReplacements";
 import { buildSleevelessGarmentDiagramPatternData } from "./sleevelessPatternBuilderMerge";
 import {
@@ -124,5 +125,10 @@ async function loadSleevelessPieceDiagramSvgMarkup(
   svg.setAttribute("role", "img");
   svg.setAttribute("aria-label", ariaLabel);
   svg.classList.add("print-back-diagram-svg");
+  injectBodyShapeGuidesIntoGarmentSvg(
+    svg as SVGSVGElement,
+    result.debug?.diagramGuides,
+    piece === "front" ? "front" : "back",
+  );
   return svg.outerHTML;
 }

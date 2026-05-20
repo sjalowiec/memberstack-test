@@ -6019,5 +6019,20 @@
     "metaDescription": "Learn how and why to place markers in knitting. Markers help identify matching points for easier seaming, shaping, and garment assembly.",
     "active": true,
     "vimeoIds": []
+  },
+  {
+    "glossaryId": 1779296723857,
+    "english": "Lifeline",
+    "example": "Lifeline",
+    "helpinfo": "A row where you've secured your stitches. You can rip back to this row, easily pick up the stitches and start knitting again without starting from the beginning of your piece.",
+    "image": "/images/glossary/lifeline.webp",
+    "image_alt": "Lifeline in machine knitting",
+    "image_description": "Make recovering from mistakes easier",
+    "metaTitle": "Lifeline in Machine Knitting",
+    "metaDescription": "A lifeline is a row where you've secured your stitches. You can rip back to this row, easily pick up the stitches and start knitting again without starting from the beginning of your piece.",
+    "active": true,
+    "vimeoIds": [
+      "151859753"
+    ]
   }
 ]

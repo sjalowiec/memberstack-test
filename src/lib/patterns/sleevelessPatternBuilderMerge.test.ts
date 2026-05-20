@@ -243,13 +243,13 @@ describe("buildGeneratorPatternDataFromSources", () => {
       .find((p) => /Cast on \d+ stitches/i.test(p));
     expect(castOnLine).toMatch(/Cast on 72 stitches/);
 
-    const hasDecrease = result.displayRows.some(
-      (row) =>
-        row.kind === "block" &&
-        row.paragraphs?.some((p) =>
-          /Decrease 1 stitch at each side edge on the following rows:/i.test(p),
-        ),
-    );
+    const hasDecrease = result.displayRows.some((row) => {
+      if (row.kind !== "block") return false;
+      const paras = [...(row.paragraphs ?? []), ...(row.trustedParagraphs ?? [])];
+      return paras.some((p) =>
+        /1 stitch at each side edge \d+ times evenly across/i.test(p),
+      );
+    });
     expect(hasDecrease).toBe(true);
   });
 });

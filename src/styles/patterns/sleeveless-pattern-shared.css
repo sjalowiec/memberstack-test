@@ -575,6 +575,14 @@
     text-align: center;
   }
 
+  #pattern-content .sleeveless-piece-split__diagram-hint-icon {
+    font-size: 0.72rem;
+    opacity: 0.8;
+    margin-right: 5px;
+    vertical-align: baseline;
+    color: inherit;
+  }
+
   #pattern-content .sleeveless-piece-split__diagram-img {
     display: block;
     width: 100%;

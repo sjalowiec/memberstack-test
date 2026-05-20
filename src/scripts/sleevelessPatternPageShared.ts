@@ -22,6 +22,7 @@ import {
   centerBindOffStitchesFromNeckShoulderChart,
   generateSleevelessBackPattern,
 } from "../lib/patterns/sleevelessPatternOutput.ts";
+import { buildSleevelessBodyBlockDebugPanelHtml } from "../lib/patterns/sleevelessBodyBlockDebugHtml.ts";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
   renderActiveShoulderChartIntroHtml,
@@ -39,6 +40,7 @@ import {
   isSleevelessDevCardiganExpressPreview,
 } from "../lib/patterns/sleevelessFrontDiagramSrc.ts";
 import { resolveSleevelessAudienceHeroImageSrc } from "../lib/patterns/sleevelessAudienceHeroImage.ts";
+import { injectBodyShapeGuidesIntoGarmentSvg } from "../lib/patterns/sleevelessBodyShapeDiagramGuides.ts";
 import { buildSleevelessGarmentDiagramReplacements } from "../lib/patterns/sleevelessGarmentDiagramReplacements.ts";
 import {
   buildSleevelessPrintBasicsSummaryDlHtml,
@@ -498,14 +500,24 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       if (row.rc) {
         leftBits.push(`<p class="sleeveless-pattern-rc">${escapeHtml(row.rc)}</p>`);
       }
-      for (const p of row.paragraphs) {
-        const t = String(p).trim();
-        if (t) leftBits.push(`<p class="sleeveless-pattern-line">${escapeHtml(t)}</p>`);
+      const trusted = row.trustedParagraphs;
+      if (trusted && trusted.length > 0) {
+        for (const p of trusted) {
+          const t = String(p).trim();
+          if (t) leftBits.push(`<p class="sleeveless-pattern-line">${p}</p>`);
+        }
+      } else {
+        for (const p of row.paragraphs) {
+          const t = String(p).trim();
+          if (t) leftBits.push(`<p class="sleeveless-pattern-line">${escapeHtml(t)}</p>`);
+        }
       }
       if (row.tipHtml) {
         const tipIdAttr = row.tipId ? ` data-tip-id="${escapeHtml(row.tipId)}"` : "";
         leftBits.push(
-          `<div class="pattern-tip" data-tip${tipIdAttr}><strong>Tip:</strong> ${row.tipHtml}</div>`
+          row.tipHtmlIsFull
+            ? `<div class="pattern-tip" data-tip${tipIdAttr}>${row.tipHtml}</div>`
+            : `<div class="pattern-tip" data-tip${tipIdAttr}><strong>Tip:</strong> ${row.tipHtml}</div>`,
         );
       }
       if (row.collapsibleTipHtml) {
@@ -614,7 +626,10 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
           <p class="sleeveless-pattern-boot-msg">Loading diagram…</p>
         </div>
       </button>
-      <p class="sleeveless-piece-split__diagram-hint">Click diagram to enlarge</p>
+      <p class="sleeveless-piece-split__diagram-hint">
+        <i class="fa-solid fa-magnifying-glass sleeveless-piece-split__diagram-hint-icon" aria-hidden="true"></i>
+        Click diagram to enlarge
+      </p>
     </div>
   </aside>
 </div>${post}`;
@@ -672,7 +687,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     });
   }
 
-  async function inlineSvgWithReplacements(hostEl, src, alt, replacements, hydrateGeneration) {
+  async function inlineSvgWithReplacements(hostEl, src, alt, replacements, hydrateGeneration, guideOpts) {
     if (!(hostEl instanceof HTMLElement)) return;
     const hydrateGen =
       hydrateGeneration === undefined || hydrateGeneration === null
@@ -715,6 +730,12 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       svg.setAttribute("role", "img");
       if (alt) svg.setAttribute("aria-label", alt);
       svg.classList.add("sleeveless-piece-split__diagram-inline");
+
+      const guideLayout =
+        guideOpts?.layout === "front" || guideOpts?.layout === "back" ? guideOpts.layout : undefined;
+      if (guideLayout && guideOpts?.diagramGuides) {
+        injectBodyShapeGuidesIntoGarmentSvg(svg, guideOpts.diagramGuides, guideLayout);
+      }
 
       // Match print route: inject SVG via markup string. importNode(from DOMParser doc) can fail to paint SVG in some browsers.
       if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
@@ -760,8 +781,12 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         patternData,
         cardiganHalfSide,
       });
+      const guideLayout = piece === "front" ? "front" : "back";
       jobs.push(
-        inlineSvgWithReplacements(el, src, alt, replacements, hydrateOpts?.hydrateGeneration),
+        inlineSvgWithReplacements(el, src, alt, replacements, hydrateOpts?.hydrateGeneration, {
+          diagramGuides: result?.debug?.diagramGuides,
+          layout: guideLayout,
+        }),
       );
     });
     await Promise.all(jobs);
@@ -2174,6 +2199,19 @@ table {
     return document.querySelector(".sleeveless-pattern-page .pattern-tabs");
   }
 
+  /** Temporary visible audit for live body-block wiring (remove after verification). */
+  function renderSleevelessBodyBlockDebugPanel(bodyBlockRuntime) {
+    const patternContent = document.querySelector("[data-pattern-content]");
+    if (!patternContent) return;
+    let host = patternContent.querySelector("[data-sleeveless-body-block-debug]");
+    if (!host) {
+      host = document.createElement("div");
+      host.setAttribute("data-sleeveless-body-block-debug", "");
+      patternContent.insertBefore(host, patternContent.firstChild);
+    }
+    host.innerHTML = buildSleevelessBodyBlockDebugPanelHtml(bodyBlockRuntime);
+  }
+
   function updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, validationOk) {
     const body = document.querySelector("[data-sg-pattern-print-basics-body]");
     if (!(body instanceof HTMLElement)) return;
@@ -2219,6 +2257,8 @@ table {
 
     const genInput = buildGeneratorPatternData(patternMerged);
     const result = generateSleevelessBackPattern(genInput);
+
+    renderSleevelessBodyBlockDebugPanel(result.debug?.bodyBlockRuntime);
 
     const yg = section(patternMerged.yarnGauge);
     const ygm =

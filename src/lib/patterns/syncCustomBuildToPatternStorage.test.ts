@@ -83,6 +83,29 @@ describe("syncCustomBuildToPatternStorage", () => {
     expect(readCustomBuildExpressValues().who).toBe("women");
   });
 
+  it("persists cardigan garmentStyle to canonical and patternBuilderData", () => {
+    localStorage.setItem(
+      SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+      JSON.stringify({
+        values: {
+          who: "women",
+          selectedSize: "M",
+          fit: "standard",
+          neckline: "round",
+        },
+      }),
+    );
+    localStorage.setItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.bodyShape, "straight");
+    localStorage.setItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.garmentType, "cardigan");
+
+    syncCustomBuildToPatternStorage({ awaitCharts: false });
+
+    expect(getCurrentPattern().style?.garmentStyle).toBe("cardigan");
+    expect(getCurrentPattern().style?.frontStyle).toBe("open");
+    expect(getPatternData().style?.garmentStyle).toBe("cardigan");
+    expect(getPatternData().style?.frontStyle).toBe("open");
+  });
+
   it("writes v neckline to pattern storage when express values have v-neck", () => {
     localStorage.setItem(
       SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,

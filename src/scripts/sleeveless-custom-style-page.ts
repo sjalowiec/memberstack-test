@@ -5,6 +5,7 @@
  * Body shape + garment type use dedicated localStorage keys for the style step.
  */
 
+import { mirrorCustomBuildBodyShapeToExpressBuilder } from "../lib/patterns/sleevelessGeneratorBodyShape";
 import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "../lib/patterns/patternStorage";
 import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
 
@@ -203,10 +204,6 @@ function initCustomStylePage(): void {
     bodyShape = DEFAULTS.bodyShape;
     writeStored(STORAGE.bodyShape, bodyShape);
   }
-  if (garmentType === "cardigan") {
-    garmentType = DEFAULTS.garmentType;
-    writeStored(STORAGE.garmentType, garmentType);
-  }
 
   initAccordions(root);
 
@@ -221,13 +218,23 @@ function initCustomStylePage(): void {
     patchExpressBuilderValues({ fit: v });
     syncBasicsFromExpressValues(readExpressValues());
   };
+  const mirrorGarmentToExpress = () => {
+    const shape = bodyShape === "aline" ? "aline" : "straight";
+    const garment = garmentType === "cardigan" ? "cardigan" : "pullover";
+    mirrorCustomBuildBodyShapeToExpressBuilder(shape, garment);
+  };
+
   const syncBody = (v: string) => {
     bodyShape = v;
     writeStored(STORAGE.bodyShape, v);
+    mirrorGarmentToExpress();
+    syncBasicsFromExpressValues(readExpressValues());
   };
   const syncGarment = (v: string) => {
     garmentType = v;
     writeStored(STORAGE.garmentType, v);
+    mirrorGarmentToExpress();
+    syncBasicsFromExpressValues(readExpressValues());
   };
 
   applyRadiogroup(root, "neckline", neckline);
@@ -238,8 +245,9 @@ function initCustomStylePage(): void {
   wireRadiogroup(root, "neckline", NECKLINE_VALUES, syncNeckline);
   wireRadiogroup(root, "fit", FIT_VALUES, syncFit);
   wireRadiogroup(root, "bodyShape", new Set(["straight", "aline"]), syncBody);
-  wireRadiogroup(root, "garmentType", new Set(["pullover"]), syncGarment);
+  wireRadiogroup(root, "garmentType", GARMENT_VALUES, syncGarment);
 
+  mirrorGarmentToExpress();
   syncBasicsFromExpressValues(readExpressValues());
 }
 

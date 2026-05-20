@@ -22,7 +22,8 @@
 
   @bottom-center {
     content: "Page " counter(page) " of " counter(pages);
-    font-size: 9pt;
+    font-size: 12.6pt;
+    font-weight: 700;
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     color: #4b5563;
     white-space: nowrap;

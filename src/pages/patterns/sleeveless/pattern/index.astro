@@ -100,6 +100,7 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
             </section>
 
             <div id="pattern-content" data-pattern-content>
+              <div data-sleeveless-body-block-debug></div>
               <nav
                 class="sleeveless-pattern-inpage-nav no-print"
                 data-sleeveless-pattern-inpage-nav
@@ -126,6 +127,51 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
 </Layout>
 
 <style>
+  .sleeveless-body-block-debug {
+    max-width: 52rem;
+    margin: 0 auto 1rem;
+    padding: 0.75rem 1rem;
+    border: 2px dashed #b45309;
+    border-radius: 8px;
+    background: #fffbeb;
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  .sleeveless-body-block-debug__title {
+    margin: 0 0 0.35rem;
+    font-size: 1rem;
+    color: #92400e;
+  }
+
+  .sleeveless-body-block-debug__note {
+    margin: 0 0 0.5rem;
+    color: #78350f;
+  }
+
+  .sleeveless-body-block-debug__table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .sleeveless-body-block-debug__table th {
+    text-align: left;
+    padding: 0.2rem 0.75rem 0.2rem 0;
+    vertical-align: top;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .sleeveless-body-block-debug__table td {
+    padding: 0.2rem 0;
+    word-break: break-word;
+  }
+
+  .sleeveless-body-block-debug__check {
+    margin: 0.5rem 0 0;
+    font-weight: 600;
+  }
+
   .sleeveless-beta-pattern__top {
     max-width: 52rem;
     margin: 0 auto;
