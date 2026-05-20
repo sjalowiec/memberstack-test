@@ -114,15 +114,15 @@ describe("generateSleevelessBackPattern cardigan (round neck, open front)", () =
 });
 
 describe("diagram vs written cardigan left front", () => {
-  it("BUST_STS matches debug.cardiganHalfLeftCastOnSts when present", () => {
+  it("BUST_STS uses half bust/body width; HIP_STS uses half hem cast-on", () => {
     const r = generateSleevelessBackPattern({
       fit: { selectedMeasurements: baseMeasurements() },
       style: { neckline: "round", frontStyle: "open" },
       yarnGaugeMachine: gauge(),
     } as Record<string, unknown>);
 
-    const written = r.debug.cardiganHalfLeftCastOnSts;
-    expect(written).toBeDefined();
+    expect(r.debug.cardiganHalfLeftCastOnSts).toBeDefined();
+    expect(r.debug.cardiganHalfLeftBustBodySts).toBeDefined();
 
     const repl = buildSleevelessGarmentDiagramReplacements(r, "in", {
       patternData: { style: { neckline: "round", frontStyle: "open" } },
@@ -130,9 +130,8 @@ describe("diagram vs written cardigan left front", () => {
       cardiganHalfSide: "left",
     });
 
-    expect(repl.BUST_STS).toBe(String(written));
-    expect(repl.SHOULDER_STS).toBe(
-      r.debug.stitchesAfterArmhole !== undefined ? String(Math.round(r.debug.stitchesAfterArmhole)) : "",
-    );
+    expect(repl.BUST_STS).toBe(String(r.debug.cardiganHalfLeftBustBodySts));
+    expect(repl.HIP_STS).toBe(String(r.debug.cardiganHalfLeftCastOnSts));
+    expect(repl.SHOULDER_STS).toBe(String(r.debug.cardiganHalfLeftStitchesAfterArmhole));
   });
 });

@@ -207,11 +207,15 @@ function withIncreaseGlossaryTooltip(line: string): string {
   );
 }
 
+/** Back uses both side edges; one cardigan front panel shapes only at the armhole edge. */
+export type SleevelessAlineShapingEdgeScope = "symmetricSides" | "armholeEdgeOnly";
+
 /** Written pattern lines for one continuous A-line shaping span. */
 export function formatSleevelessAlineBodyShapingInstructionLines(
   shapingType: SleevelessAlineShapingType,
   rowNumbers: readonly number[],
   shapingSpanRows?: number,
+  edgeScope: SleevelessAlineShapingEdgeScope = "symmetricSides",
 ): string[] {
   if (shapingType === "straight" || rowNumbers.length === 0) return [];
   const verb = shapingType === "decrease-to-bust" ? "Decrease" : "Increase";
@@ -220,16 +224,18 @@ export function formatSleevelessAlineBodyShapingInstructionLines(
   const span =
     shapingSpanRows !== undefined && shapingSpanRows > 0 ? shapingSpanRows : undefined;
   const list = rowNumbers.map((r) => formatRcColon(r)).join(", ");
+  const edgePhrase =
+    edgeScope === "armholeEdgeOnly" ? "at the armhole edge" : "at each side edge";
   const lines: string[] = [];
   if (span !== undefined) {
-    const decreaseLine = `${verb} 1 stitch at each side edge ${times} time${times === 1 ? "" : "s"} evenly across the next ${span} row${span === 1 ? "" : "s"}.`;
+    const decreaseLine = `${verb} 1 stitch ${edgePhrase} ${times} time${times === 1 ? "" : "s"} evenly across the next ${span} row${span === 1 ? "" : "s"}.`;
     lines.push(
       shapingType === "decrease-to-bust"
         ? withDecreaseGlossaryTooltip(decreaseLine)
         : withIncreaseGlossaryTooltip(decreaseLine),
     );
   } else {
-    const fallbackLine = `${verb} 1 stitch at each side edge on the following rows: ${list}.`;
+    const fallbackLine = `${verb} 1 stitch ${edgePhrase} on the following rows: ${list}.`;
     lines.push(
       shapingType === "decrease-to-bust"
         ? withDecreaseGlossaryTooltip(fallbackLine)
@@ -239,6 +245,27 @@ export function formatSleevelessAlineBodyShapingInstructionLines(
   }
   lines.push(`Work ${workLabel} on: ${list}.`);
   return lines;
+}
+
+/**
+ * One cardigan front panel: same shaping row placement as the back, hem/bust stitch counts halved.
+ */
+export function scaleAlineBodyShapingPlanForCardiganHalf(
+  plan: SleevelessAlineBodyShapingPlan,
+  halfCastOnSts: number,
+  halfBustBodySts: number,
+): SleevelessAlineBodyShapingPlan {
+  const hem = Math.max(0, Math.floor(halfCastOnSts));
+  const bust = Math.max(0, Math.floor(halfBustBodySts));
+  const totalStitchDifference = Math.max(0, hem - bust);
+  return {
+    ...plan,
+    hemCastOnSts: hem,
+    bustBodySts: bust,
+    totalStitchDifference,
+    bodyFirstHalf: { ...plan.bodyFirstHalf, endSts: bust },
+    bodySecondHalf: { ...plan.bodySecondHalf, endSts: bust },
+  };
 }
 
 /** True when a shaping instruction line contains trusted HTML (glossary placeholders). */

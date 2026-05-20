@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   cardiganHalfFrontBodySts,
+  resolveCardiganHalfFrontWidths,
   splitBodyBackCastOnToSymmetricCardiganHalves,
   splitFullFrontToSymmetricCardiganHalves,
 } from "./cardiganFrontBlock";
@@ -69,5 +70,17 @@ describe("cardiganHalfFrontBodySts", () => {
     const s = splitBodyBackCastOnToSymmetricCardiganHalves(41);
     expect(cardiganHalfFrontBodySts(s, "left")).toBe(s.leftFrontWidthSts);
     expect(cardiganHalfFrontBodySts(s, "right")).toBe(s.rightFrontWidthSts);
+  });
+});
+
+describe("resolveCardiganHalfFrontWidths", () => {
+  it("halves hem, bust, and armhole stitch counts for the left front (140 / 112 example)", () => {
+    const left = resolveCardiganHalfFrontWidths(
+      { hemCastOnSts: 140, bustBodySts: 112, stitchesAfterArmhole: 60 },
+      "left",
+    );
+    expect(left.hemCastOnSts).toBe(70);
+    expect(left.bustBodySts).toBe(56);
+    expect(left.stitchesAfterArmhole).toBe(30);
   });
 });

@@ -12,12 +12,12 @@
  * `left + right + opening === bodyBackCastOn` deterministically so two fronts always reconcile to
  * full body width.
  *
- * **RULE 3–4** — Total rows, armhole depth rows, and shoulder stitch counts are **not** derived by
- * halving a “front”; they match back / pullover front (handled in pattern output + diagram base
- * tokens — this module only splits cast-on width).
+ * **RULE 3–4** — Total rows and armhole depth rows match the back (same RC placement).
  *
- * **RULE 5** — Shoulder stitches stay **full** garment shoulder values on each cardigan front (same
- * as back / pullover front). The opening is at center front; it does not shrink the shoulder seam.
+ * **RULE 5** — Stitch **widths** on each cardigan front panel are half of the corresponding full
+ * back/body values: hem cast-on, bust/body at armhole, and stitches after armhole shaping. Use
+ * {@link resolveCardiganHalfFrontWidths} so diagram tokens and written counts never show full-back
+ * bust/hem/armhole stitch totals on one front.
  *
  * ## Why the split exists
  *
@@ -101,4 +101,34 @@ export function splitFullFrontToSymmetricCardiganHalves(
 /** Stitches for one labeled half (after opening reserve). */
 export function cardiganHalfFrontBodySts(split: CardiganFrontSplit, side: "left" | "right"): number {
   return side === "left" ? split.leftFrontWidthSts : split.rightFrontWidthSts;
+}
+
+/** Half-panel stitch counts for one cardigan front (hem, bust/body, post-armhole). */
+export type CardiganHalfFrontWidths = {
+  hemCastOnSts: number;
+  bustBodySts: number;
+  stitchesAfterArmhole: number;
+};
+
+/**
+ * Maps full back/body stitch widths to one cardigan front panel (default left receives odd +1).
+ * Example: hem 140 / bust 112 → left front 70 / 56 when workable width splits evenly.
+ */
+export function resolveCardiganHalfFrontWidths(
+  full: {
+    hemCastOnSts: number;
+    bustBodySts: number;
+    stitchesAfterArmhole: number;
+  },
+  side: "left" | "right",
+  opts?: CardiganFrontSplitOptions,
+): CardiganHalfFrontWidths {
+  const hemSplit = splitBodyBackCastOnToSymmetricCardiganHalves(full.hemCastOnSts, opts);
+  const bustSplit = splitBodyBackCastOnToSymmetricCardiganHalves(full.bustBodySts, opts);
+  const shoulderSplit = splitBodyBackCastOnToSymmetricCardiganHalves(full.stitchesAfterArmhole, opts);
+  return {
+    hemCastOnSts: cardiganHalfFrontBodySts(hemSplit, side),
+    bustBodySts: cardiganHalfFrontBodySts(bustSplit, side),
+    stitchesAfterArmhole: cardiganHalfFrontBodySts(shoulderSplit, side),
+  };
 }
