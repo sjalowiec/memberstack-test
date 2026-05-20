@@ -6,11 +6,45 @@
 import type { ShapingEvent } from "../shapingTimeline";
 import { distributeEvenly } from "../shapingTimeline";
 
+export type VNeckDivideSideStarts = {
+  left: number;
+  right: number;
+};
+
+/**
+ * Per-side stitch counts immediately after a full-width V-neck center divide with **no** center
+ * bind-off — split from the live stitch count B only (not from round-neck center-bind-off math).
+ */
+export function vNeckDivideSideStartsFromLiveStitches(stitchesAfterArmhole: number): VNeckDivideSideStarts {
+  const B = Math.max(0, Math.floor(stitchesAfterArmhole));
+  if (B % 2 === 0) {
+    const half = B / 2;
+    return { left: half, right: half };
+  }
+  return { left: Math.floor(B / 2), right: Math.ceil(B / 2) };
+}
+
+/** Inner-neck decreases on one side after divide: side start minus shoulder stitches on that side. */
+export function vNeckNeckDecreasesForSide(args: {
+  sideStartStitches: number;
+  shoulderStitchesOnSide: number;
+}): number {
+  return Math.max(
+    0,
+    Math.floor(args.sideStartStitches) - Math.max(0, Math.floor(args.shoulderStitchesOnSide))
+  );
+}
+
 export type VNeckNeckEdgeInputs = {
   /** Full piece width in stitches after armhole shaping (builder passes B before front split). */
   stitchesAfterArmhole: number;
   /** Finished neck opening width N in stitches (from neck opening × stitch gauge). */
   neckOpeningStitches: number;
+  /**
+   * When set, overrides {@link neckDecreaseStitchesPerSideFromOpening}(N). Full-width fronts use
+   * {@link vNeckNeckDecreasesForSide} from post-divide side starts.
+   */
+  neckDecreaseStitchesPerSide?: number;
   /** RC where neck-edge decreases begin on this half (after plain rows from armhole / lifeline). */
   vNeckStartRow: number;
   /** RC of last shaping row for this shoulder/neck section (same vertical budget as shoulder timeline). */
@@ -99,7 +133,10 @@ export function calculateVNeckNeckEdgePlan(inputs: VNeckNeckEdgeInputs): VNeckNe
   const vEnd = Math.floor(inputs.shoulderEndRow);
   const side = inputs.side;
 
-  const neckDecreaseStitchesPerSide = neckDecreaseStitchesPerSideFromOpening(N);
+  const neckDecreaseStitchesPerSide =
+    inputs.neckDecreaseStitchesPerSide !== undefined
+      ? Math.max(0, Math.floor(inputs.neckDecreaseStitchesPerSide))
+      : neckDecreaseStitchesPerSideFromOpening(N);
   const shapingRowsAvailable = vEnd >= vStart ? vEnd - vStart + 1 : 0;
 
   if (!Number.isFinite(B) || B <= 0) {

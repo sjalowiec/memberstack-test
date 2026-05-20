@@ -6,17 +6,23 @@
 
 import {
   calculateVNeckNeckEdgePlan,
+  vNeckDivideSideStartsFromLiveStitches,
+  vNeckNeckDecreasesForSide,
   vNeckPlanToInnerEdgeEventsByRow,
 } from "./legoBlocks/vNeckline";
 import type { BuildTimelineOptions, RowEntry, ShapingEvent, ShapingTimelineInputs } from "./shapingTimeline";
 import { distributeTotalAcrossRows } from "./shapingTimeline";
 
-function innerLeftDecreaseAmountAtRc(eventsByRow: Map<number, ShapingEvent[]>, rc: number): number {
+function innerDecreaseAmountAtRc(
+  eventsByRow: Map<number, ShapingEvent[]>,
+  rc: number,
+  side: "left" | "right"
+): number {
   const evs = eventsByRow.get(rc);
   if (!evs) return 0;
   let n = 0;
   for (const e of evs) {
-    if (e.kind === "decrease" && e.side === "left" && e.edge === "inner") n += e.amount;
+    if (e.kind === "decrease" && e.side === side && e.edge === "inner") n += e.amount;
   }
   return n;
 }
@@ -66,16 +72,20 @@ export function buildVNeckFrontFullWidthTimeline(
     return { timeline: [], vNeckPlanWarnings: [] };
   }
 
-  const C = 0;
   const shoulderBandTotal = B - N;
-  const neckOpeningRemainingAfterBo = N - C;
-  const leftStart =
-    Math.floor(shoulderBandTotal / 2) + Math.floor(neckOpeningRemainingAfterBo / 2);
-  const rightStart = Math.ceil(shoulderBandTotal / 2) + Math.ceil(neckOpeningRemainingAfterBo / 2);
+  const { left: leftStart, right: rightStart } = vNeckDivideSideStartsFromLiveStitches(B);
 
   const shoulderBindoffRowsIn = Math.max(1, Math.floor(shoulderBindoffRowsRaw));
   const leftShoulderTotal = Math.floor(shoulderBandTotal / 2);
   const rightShoulderTotal = Math.ceil(shoulderBandTotal / 2);
+  const leftNeckDecreases = vNeckNeckDecreasesForSide({
+    sideStartStitches: leftStart,
+    shoulderStitchesOnSide: leftShoulderTotal,
+  });
+  const rightNeckDecreases = vNeckNeckDecreasesForSide({
+    sideStartStitches: rightStart,
+    shoulderStitchesOnSide: rightShoulderTotal,
+  });
   const schedule = options?.shoulderSchedule ?? undefined;
   const shoulderStartsAtFirstPostCenter = options?.shoulderStartsAtFirstPostCenter === true;
 
@@ -116,23 +126,35 @@ export function buildVNeckFrontFullWidthTimeline(
     }
   }
 
-  const vPlan = calculateVNeckNeckEdgePlan({
+  const firstDecreaseRow = firstRow + 1;
+  const lastShapingRow = firstRow + neckDepthRows - 1;
+
+  const vPlanLeft = calculateVNeckNeckEdgePlan({
     stitchesAfterArmhole: B,
     neckOpeningStitches: N,
-    vNeckStartRow: firstRow,
-    shoulderEndRow: firstRow + neckDepthRows - 1,
+    neckDecreaseStitchesPerSide: leftNeckDecreases,
+    vNeckStartRow: firstDecreaseRow,
+    shoulderEndRow: lastShapingRow,
     side: "left",
   });
-  const vNeckPlanWarnings = [...vPlan.warnings];
-  const innerByRow = vNeckPlanToInnerEdgeEventsByRow(vPlan);
+  const vPlanRight = calculateVNeckNeckEdgePlan({
+    stitchesAfterArmhole: B,
+    neckOpeningStitches: N,
+    neckDecreaseStitchesPerSide: rightNeckDecreases,
+    vNeckStartRow: firstDecreaseRow,
+    shoulderEndRow: lastShapingRow,
+    side: "right",
+  });
+  const vNeckPlanWarnings = [...vPlanLeft.warnings, ...vPlanRight.warnings];
+  const innerByRowLeft = vNeckPlanToInnerEdgeEventsByRow(vPlanLeft);
+  const innerByRowRight = vNeckPlanToInnerEdgeEventsByRow(vPlanRight);
 
   const plannedInnerLPerRow: number[] = [];
   const plannedInnerRPerRow: number[] = [];
   for (let rowIdx = 0; rowIdx < neckDepthRows; rowIdx++) {
     const rc = firstRow + rowIdx;
-    const amt = innerLeftDecreaseAmountAtRc(innerByRow, rc);
-    plannedInnerLPerRow.push(amt);
-    plannedInnerRPerRow.push(amt);
+    plannedInnerLPerRow.push(innerDecreaseAmountAtRc(innerByRowLeft, rc, "left"));
+    plannedInnerRPerRow.push(innerDecreaseAmountAtRc(innerByRowRight, rc, "right"));
   }
 
   const futureInnerLAfterRow = Array<number>(neckDepthRows).fill(0);
@@ -151,9 +173,12 @@ export function buildVNeckFrontFullWidthTimeline(
   let carryShoulderL = 0;
   let carryShoulderR = 0;
 
+  /** 0 when B is even (halves meet at center); 1 when B is odd (explicit center stitch between halves). */
+  const centerStitchGap = B % 2;
+
   let leftOuterEdge = 1;
   let leftInnerEdge = leftStart;
-  let rightInnerEdge = leftInnerEdge + N + 1;
+  let rightInnerEdge = leftInnerEdge + centerStitchGap + 1;
   let rightOuterEdge = rightInnerEdge + rightStart - 1;
 
   let leftCount = leftStart;
@@ -161,7 +186,22 @@ export function buildVNeckFrontFullWidthTimeline(
 
   const rows: RowEntry[] = [];
 
-  for (let rowIdx = 0; rowIdx < neckDepthRows; rowIdx++) {
+  rows.push({
+    row: firstRow,
+    events: [],
+    stitchesL: leftStart,
+    stitchesR: rightStart,
+    netChangeL: 0,
+    netChangeR: 0,
+    isSplit: true,
+    centerWidth: centerStitchGap,
+    leftOuterEdge,
+    leftInnerEdge,
+    rightInnerEdge,
+    rightOuterEdge,
+  });
+
+  for (let rowIdx = 1; rowIdx < neckDepthRows; rowIdx++) {
     const rc = firstRow + rowIdx;
     const events: ShapingEvent[] = [];
     const innerNetL = plannedInnerLPerRow[rowIdx] ?? 0;
