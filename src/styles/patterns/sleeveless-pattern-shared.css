@@ -612,36 +612,116 @@
     overflow: visible;
   }
 
-  /* Dev-only Japanese notation PoC (sample placeholders). */
-  #pattern-content .sleeveless-jp-notation-poc {
-    margin-top: 1.25rem;
-    padding: 0.75rem 0.5rem 0;
-    border-top: 1px dashed var(--pattern-border-muted, #bcbec0);
+  /* Back diagram panel: compact toggle + white diagram well (pullover round-neck only). */
+  #pattern-content .sleeveless-piece-split__diagram-inner--back-panel {
+    width: 100%;
   }
 
-  #pattern-content .sleeveless-jp-notation-poc__label {
-    margin: 0 0 0.5rem;
-    font-size: 0.85rem;
-    color: var(--pattern-text-muted, #555);
-  }
-
-  #pattern-content .sleeveless-jp-notation-poc__inner {
+  #pattern-content .sleeveless-back-diagram-panel {
+    width: 100%;
     max-width: 14rem;
     margin: 0 auto;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #d1d5db);
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(17, 24, 39, 0.05);
   }
 
-  #pattern-content .sleeveless-jp-notation-poc__svg {
+  #pattern-content .sleeveless-back-diagram-mode {
+    display: flex;
+    gap: 1px;
     width: 100%;
-    max-width: 100%;
+    margin: 0;
+    padding: 0.22rem 0.22rem 0;
+    border: 0;
+    border-radius: 0;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 5%, #f3f4f6);
+  }
+
+  #pattern-content .sleeveless-back-diagram-mode__btn {
+    flex: 1 1 0;
+    min-width: 0;
+    margin: 0;
+    padding: 0.1rem 0.12rem;
+    min-height: 1.375rem;
+    border: 0;
+    border-radius: 5px 5px 0 0;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.5625rem;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: 0.01em;
+    color: #6b7280;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  #pattern-content .sleeveless-back-diagram-mode__btn:hover {
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #fff);
+    color: #374151;
+  }
+
+  #pattern-content .sleeveless-back-diagram-mode__btn:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: -2px;
+    z-index: 1;
+  }
+
+  #pattern-content .sleeveless-back-diagram-mode__btn.is-active {
+    background: var(--kbm-green, #52682d);
+    color: #fff;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12) inset;
+  }
+
+  #pattern-content .sleeveless-back-diagram-well {
+    background: #fff;
+    border: 0;
+    border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 10%, #e5e7eb);
+    border-radius: 0;
+    padding: 0.45rem 0.5rem 0.38rem;
+    box-shadow: none;
+  }
+
+  #pattern-content .sleeveless-back-diagram-well .sleeveless-piece-split__diagram-trigger {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #pattern-content .sleeveless-back-diagram-well .sleeveless-piece-split__diagram-svg {
+    width: 100%;
     margin: 0 auto;
   }
 
-  #pattern-content .sleeveless-jp-notation-poc__inline {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    overflow: visible;
+  #pattern-content .sleeveless-back-diagram-well .sleeveless-piece-split__diagram-trigger:focus-visible {
+    border-radius: 5px;
+  }
+
+  #pattern-content .sleeveless-back-diagram-well .sleeveless-piece-split__diagram-hint {
+    margin: 0.28rem 0 0;
+    font-size: 0.72rem;
+    line-height: 1.25;
+  }
+
+  #pattern-content .sleeveless-back-diagram-well .sleeveless-piece-split__diagram-hint-icon {
+    font-size: 0.64rem;
+  }
+
+  @media (max-width: 420px) {
+    #pattern-content .sleeveless-back-diagram-mode {
+      padding: 0.24rem 0.24rem 0;
+    }
+
+    #pattern-content .sleeveless-back-diagram-mode__btn {
+      font-size: 0.6rem;
+      padding: 0.14rem 0.1rem;
+      min-height: 1.5rem;
+    }
   }
 
   .sleeveless-diagram-modal[hidden] {
@@ -1639,8 +1719,21 @@
       print-color-adjust: exact !important;
     }
 
-    #pattern-content .ns-shaping-chart__second-shoulder-toggle {
+    #pattern-content .ns-shaping-chart__second-shoulder-toggle,
+    #pattern-content .sleeveless-back-diagram-mode {
       display: none !important;
+    }
+
+    #pattern-content .sleeveless-back-diagram-panel {
+      border-radius: 8px !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    #pattern-content .sleeveless-back-diagram-well {
+      border-top: 0 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
 
     /* Print first-page intro: text column left, fixed right image column (no overlap) */

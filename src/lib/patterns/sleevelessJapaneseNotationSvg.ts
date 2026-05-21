@@ -95,8 +95,8 @@ export const SAMPLE_JP_BACK_NOTATION_REPLACEMENTS: Record<string, string> = {
   "rc-caston": "rc000",
   "rc-hem": "rc020",
   "rc-neckline-start": "rc014",
-  "rc-armhole-bo": "rc000",
-  rc_reset: "rc000",
+  "rc-armhole-bo": "rc187",
+  rc_reset: "↺ rc000",
 };
 
 const DEFAULT_FONT_SIZE_PX = 12;
@@ -156,6 +156,11 @@ function attrValue(attrs: string, name: string): string | undefined {
   return m ? m[1] : undefined;
 }
 
+function firstTspanOpenAttrs(inner: string): string {
+  const match = /<tspan(\s[^>]*)>/i.exec(inner);
+  return match ? match[1]! : "";
+}
+
 function buildMultilineTspanMarkup(
   lines: readonly string[],
   firstTspanAttrs: string,
@@ -164,16 +169,26 @@ function buildMultilineTspanMarkup(
   const x = attrValue(firstTspanAttrs, "x") ?? "0";
   const y = attrValue(firstTspanAttrs, "y") ?? "0";
   const lineHeight = Math.round(fontSizePx * MULTILINE_LINE_HEIGHT_EM * 10) / 10;
+  const firstAttrs =
+    firstTspanAttrs.trim().length > 0 ? firstTspanAttrs : ` x="${x}" y="${y}"`;
 
   return lines
     .map((line, index) => {
       const text = escapeXmlText(line);
       if (index === 0) {
-        return `<tspan x="${x}" y="${y}">${text}</tspan>`;
+        return `<tspan${firstAttrs}>${text}</tspan>`;
       }
       return `<tspan x="${x}" dy="${lineHeight}">${text}</tspan>`;
     })
     .join("");
+}
+
+function replaceSingleLineTextInner(inner: string, escapedValue: string): string {
+  const firstTspanAttrs = firstTspanOpenAttrs(inner);
+  if (firstTspanAttrs.length > 0) {
+    return `<tspan${firstTspanAttrs}>${escapedValue}</tspan>`;
+  }
+  return escapedValue;
 }
 
 function replacePlaceholderInTextElements(
@@ -185,27 +200,22 @@ function replacePlaceholderInTextElements(
   const lines = value.split(/\r?\n/);
   while (lines.length > 0 && lines[lines.length - 1] === "") lines.pop();
 
-  const textRe = /<text(\s[^>]*)>([\s\S]*?)<\/text>/gi;
-  return svgText.replace(textRe, (full, openAttrs: string, inner: string) => {
+  const textRe = /<text(\s[^>]*)?>([\s\S]*?)<\/text>/gi;
+  return svgText.replace(textRe, (full, openAttrs: string | undefined, inner: string) => {
     if (!textElementContainsPlaceholder(inner, key)) return full;
+
+    const attrs = openAttrs ?? "";
 
     if (lines.length <= 1) {
       const text = escapeXmlText(lines[0] ?? "");
-      const firstTspanMatch = /<tspan(\s[^>]*)>[\s\S]*?<\/tspan>/i.exec(inner);
-      if (firstTspanMatch) {
-        const attrs = firstTspanMatch[1]!;
-        const x = attrValue(attrs, "x") ?? "0";
-        const y = attrValue(attrs, "y") ?? "0";
-        return `<text${openAttrs}><tspan x="${x}" y="${y}">${text}</tspan></text>`;
-      }
-      return `<text${openAttrs}>${text}</text>`;
+      const newInner = replaceSingleLineTextInner(inner, text);
+      return `<text${attrs}>${newInner}</text>`;
     }
 
-    const firstTspanMatch = /<tspan(\s[^>]*)>[\s\S]*?<\/tspan>/i.exec(inner);
-    const firstTspanAttrs = firstTspanMatch ? firstTspanMatch[1] : "";
-    const fontSizePx = fontSizePxForTextOpenTag(openAttrs, classFontSizes);
+    const firstTspanAttrs = firstTspanOpenAttrs(inner);
+    const fontSizePx = fontSizePxForTextOpenTag(attrs, classFontSizes);
     const tspans = buildMultilineTspanMarkup(lines, firstTspanAttrs, fontSizePx);
-    return `<text${openAttrs}>${tspans}</text>`;
+    return `<text${attrs}>${tspans}</text>`;
   });
 }
 

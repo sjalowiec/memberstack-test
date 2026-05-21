@@ -8,7 +8,9 @@ import {
   formatBindOffNotation,
   formatCastOnNotation,
   formatRcNotation,
+  formatRcResetNotation,
   formatShapingSegment,
+  garmentRcAtArmholeStart,
   isBackJapaneseNotationSupported,
 } from "./sleevelessBackJapaneseNotation";
 import {
@@ -76,8 +78,12 @@ describe("buildBackJapaneseNotationReplacements", () => {
     expect(Object.keys(repl).sort()).toEqual([...JP_BACK_NOTATION_SVG_TOKEN_KEYS].sort());
     expect(repl["rc-caston"]).toBe(formatRcNotation(0));
     expect(repl["rc-hem"]).toBe(formatRcNotation(result.debug.hemRows));
-    expect(repl["rc-armhole-bo"]).toBe(formatRcNotation(0));
-    expect(repl.rc_reset).toBe(formatRcNotation(0));
+    const armholeStartRc = garmentRcAtArmholeStart(result.debug);
+    expect(armholeStartRc).toBe(result.debug.rowsFromCastOnToArmholeStart);
+    expect(repl["rc-armhole-bo"]).toBe(formatRcNotation(armholeStartRc!));
+    expect(repl["rc-armhole-bo"]).not.toBe(formatRcNotation(0));
+    expect(repl.rc_reset).toBe(formatRcResetNotation(0));
+    expect(repl.rc_reset).toContain("↺");
     if (result.debug.backNecklineStartLocalRC !== undefined) {
       expect(repl["rc-neckline-start"]).toBe(formatRcNotation(result.debug.backNecklineStartLocalRC));
     }

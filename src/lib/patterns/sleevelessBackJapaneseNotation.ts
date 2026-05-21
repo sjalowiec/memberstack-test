@@ -54,6 +54,25 @@ export function formatRcNotation(rc: number): string {
   return `rc${String(n).padStart(3, "0")}`;
 }
 
+/** Armhole RC reset marker for the notation margin (`↺ rc000`). */
+export function formatRcResetNotation(rc = 0): string {
+  return `↺ ${formatRcNotation(rc)}`;
+}
+
+/** Garment RC at the first armhole bind-off row (body counter, before reset). */
+export function garmentRcAtArmholeStart(debug: SleevelessBackPatternResult["debug"]): number | undefined {
+  if (debug.armholeStartRow !== undefined && Number.isFinite(debug.armholeStartRow)) {
+    return Math.max(0, Math.floor(debug.armholeStartRow));
+  }
+  if (Number.isFinite(debug.rowsFromCastOnToArmholeStart)) {
+    return Math.max(0, Math.floor(debug.rowsFromCastOnToArmholeStart));
+  }
+  if (Number.isFinite(debug.hemRows) && Number.isFinite(debug.bodyRows)) {
+    return Math.max(0, Math.floor(debug.hemRows) + Math.floor(debug.bodyRows));
+  }
+  return undefined;
+}
+
 /** Per-edge bind-off label (e.g. `bo10` — one working edge, not summed across both sides). */
 export function formatBindOffNotation(totalStitches: number): string {
   const n = Math.max(0, Math.round(totalStitches));
@@ -134,6 +153,7 @@ export type BackJapaneseNotationDebugPayload = {
   centerNeckBindOff: number | undefined;
   necklineDecreasePoints: StitchDecreasePoint[];
   shoulderBindOffPoints: StitchDecreasePoint[];
+  armholeStartGarmentRc: number | undefined;
   rcCaston: string;
   rcHem: string;
   rcArmholeBo: string;
@@ -189,10 +209,12 @@ export function buildBackJapaneseNotationReplacements(
 
   const hemRows = d.hemRows;
   const necklineLocalRc = d.backNecklineStartLocalRC;
+  const armholeStartGarmentRc = garmentRcAtArmholeStart(d);
   const rcCaston = formatRcNotation(0);
   const rcHem = formatRcNotation(hemRows);
-  const rcArmholeBo = formatRcNotation(0);
-  const rcReset = formatRcNotation(0);
+  const rcArmholeBo =
+    armholeStartGarmentRc !== undefined ? formatRcNotation(armholeStartGarmentRc) : "";
+  const rcReset = formatRcResetNotation(0);
   const rcNecklineStart =
     necklineLocalRc !== undefined && Number.isFinite(necklineLocalRc)
       ? formatRcNotation(necklineLocalRc)
@@ -225,6 +247,7 @@ export function buildBackJapaneseNotationReplacements(
       centerNeckBindOff,
       necklineDecreasePoints,
       shoulderBindOffPoints,
+      armholeStartGarmentRc,
       rcCaston,
       rcHem,
       rcArmholeBo,

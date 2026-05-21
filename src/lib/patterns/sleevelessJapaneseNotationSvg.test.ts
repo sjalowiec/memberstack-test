@@ -8,6 +8,7 @@ import {
   SAMPLE_JP_BACK_NOTATION_REPLACEMENTS,
   applyJapaneseNotationSvgReplacements,
   assertJapaneseNotationSvgFullyReplaced,
+  concatSvgTextElementContent,
   findUnreplacedJapaneseNotationPlaceholders,
   listJapaneseNotationPlaceholdersInSvg,
 } from "./sleevelessJapaneseNotationSvg";
@@ -50,6 +51,7 @@ describe("applyJapaneseNotationSvgReplacements", () => {
     expect(out).toContain("1s-2r-10x");
     expect(out).toContain("bo14");
     expect(out).toContain("rc000");
+    expect(out).toContain("↺ rc000");
     expect(findUnreplacedJapaneseNotationPlaceholders(out)).toEqual([]);
   });
 
@@ -71,6 +73,34 @@ describe("applyJapaneseNotationSvgReplacements", () => {
     });
 
     expect(out).toContain('transform="translate(30.05 50.58)"');
+  });
+
+  it("places single-line replacement at the placeholder text element transform", () => {
+    const textRe = /<text(\s[^>]*)?>([\s\S]*?)<\/text>/gi;
+    let castonBlock: string | undefined;
+    let m: RegExpExecArray | null;
+    while ((m = textRe.exec(rawSvg)) !== null) {
+      if (concatSvgTextElementContent(m[2]!).includes("jp-caston")) {
+        castonBlock = m[0];
+        break;
+      }
+    }
+    expect(castonBlock).toBeDefined();
+
+    const movedBlock = castonBlock!.replace(
+      /transform="translate\([^"]+\)"/,
+      'transform="translate(12.34 56.78)"',
+    );
+    const movedSvg = rawSvg.replace(castonBlock!, movedBlock);
+
+    const out = applyJapaneseNotationSvgReplacements(movedSvg, {
+      ...SAMPLE_JP_BACK_NOTATION_REPLACEMENTS,
+      "jp-caston": "co128",
+    });
+
+    expect(out).toContain('transform="translate(12.34 56.78)"');
+    expect(out).toContain(">co128</tspan>");
+    expect(out).not.toContain("translate(72.64 286.78)");
   });
 
   it("fails when the SVG contains a jp/rc placeholder with no replacement key", () => {
