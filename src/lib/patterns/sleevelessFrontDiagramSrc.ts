@@ -24,6 +24,10 @@ export const SLEEVELESS_CARDIGAN_V_FRONT_DIAGRAM_SRC = SLEEVELESS_CARDIGAN_FULL_
 export const SLEEVELESS_DEV_CARDIGAN_HALF_FRONT_ROUND_DIAGRAM_SRC =
   "/images/patterns/sleeveless/cardigan-half-front-round.svg";
 
+/** Pullover round-neck front measurement schematic (`public/images/patterns/sleeveless/diagrams/diagram-front-round.svg`). */
+export const SLEEVELESS_PULLOVER_ROUND_FRONT_DIAGRAM_SRC =
+  "/images/patterns/sleeveless/diagrams/diagram-front-round.svg";
+
 /** Round neckline / shoulder shaping underlay (back and front round neck — never V-neck). */
 export const SLEEVELESS_SHOULDER_NOTATION_ICON_BACK = "/images/patterns/shoulder-round-icon.svg";
 /** Front round neckline — same asset as back; garment style (pullover vs cardigan) does not change this. */
@@ -228,7 +232,7 @@ export function resolveSleevelessFrontDiagram(
     garmentStyle: "pullover",
     diagramType: "pulloverFullFrontRound",
     frontPieceType: "fullFront",
-    src: "/images/patterns/sleeveless/diagram-front.svg",
+    src: SLEEVELESS_PULLOVER_ROUND_FRONT_DIAGRAM_SRC,
   };
 }
 

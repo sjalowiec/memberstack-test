@@ -7,12 +7,27 @@ export {
   buildBackJapaneseNotationReplacements,
   JP_BACK_NOTATION_SVG_TOKEN_KEYS,
 } from "./sleevelessBackJapaneseNotation";
-
-export const JP_BACK_NOTATION_SVG_SRC = "/images/patterns/sleeveless/jp-back-notation.svg";
+export {
+  buildFrontJapaneseNotationReplacements,
+  JP_FRONT_NOTATION_SVG_TOKEN_KEYS,
+  SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC as JP_FRONT_NOTATION_SVG_SRC,
+} from "./sleevelessFrontJapaneseNotation";
+export { JP_BACK_NOTATION_SVG_SRC } from "./sleevelessBackDiagramSrc";
 
 /** Matches `{{jp-*}}`, `{{rc-*}}`, and `{{rc_reset}}` in concatenated SVG text. */
 export const JAPANESE_NOTATION_SVG_PLACEHOLDER_RE =
   /\{\{\s*(jp-[a-z0-9-]+|rc-[a-z0-9-]+|rc_reset)\s*\}\}/gi;
+
+/** Concatenate text across all `<text>` elements in a markup fragment. */
+function concatAllTextInMarkup(markup: string): string {
+  const textRe = /<text(\s[^>]*)?>([\s\S]*?)<\/text>/gi;
+  let out = "";
+  let textMatch: RegExpExecArray | null;
+  while ((textMatch = textRe.exec(markup)) !== null) {
+    out += concatSvgTextElementContent(textMatch[2]!);
+  }
+  return out;
+}
 
 /** Concatenate `<tspan>` text (Illustrator re-exports split `{{token}}` across tspans). */
 export function concatSvgTextElementContent(innerMarkup: string): string {
@@ -48,6 +63,24 @@ export function listJapaneseNotationPlaceholdersInSvg(svgText: string): string[]
     for (const token of listPlaceholdersInConcatenatedText(
       concatSvgTextElementContent(textMatch[2]!),
     )) {
+      found.add(token);
+    }
+  }
+  const groupRe = /<g isolation="isolate">([\s\S]*?)<\/g>/gi;
+  let groupMatch: RegExpExecArray | null;
+  while ((groupMatch = groupRe.exec(svgText)) !== null) {
+    for (const token of listPlaceholdersInConcatenatedText(concatAllTextInMarkup(groupMatch[1]!))) {
+      found.add(token);
+    }
+  }
+  const adjacentTextRunRe = /((?:<text(?:\s[^>]*)>[\s\S]*?<\/text>\s*)+)/gi;
+  let runMatch: RegExpExecArray | null;
+  while ((runMatch = adjacentTextRunRe.exec(svgText)) !== null) {
+    const run = runMatch[1]!;
+    const textParts = [...run.matchAll(/<text(\s[^>]*)>([\s\S]*?)<\/text>/gi)];
+    if (textParts.length < 2) continue;
+    const concatenated = textParts.map((p) => concatSvgTextElementContent(p[2]!)).join("");
+    for (const token of listPlaceholdersInConcatenatedText(concatenated)) {
       found.add(token);
     }
   }
@@ -117,6 +150,31 @@ function placeholderPattern(key: string): RegExp {
   return new RegExp(`\\{\\{\\s*${safeKey}\\s*\\}\\}`, "g");
 }
 
+function isExactPlaceholderConcatenation(concatenated: string, key: string): boolean {
+  const safeKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`^\\{\\{\\s*${safeKey}\\s*\\}\\}$`).test(concatenated);
+}
+
+function buildReplacementTextElement(
+  attrs: string,
+  firstInner: string,
+  value: string,
+  classFontSizes: Map<string, number>,
+): string {
+  const lines = value.split(/\r?\n/);
+  while (lines.length > 0 && lines[lines.length - 1] === "") lines.pop();
+
+  if (lines.length <= 1) {
+    const text = escapeXmlText(lines[0] ?? "");
+    return `<text${attrs}>${replaceSingleLineTextInner(firstInner, text)}</text>`;
+  }
+
+  const firstTspanAttrs = firstTspanOpenAttrs(firstInner);
+  const fontSizePx = fontSizePxForTextOpenTag(attrs, classFontSizes);
+  const tspans = buildMultilineTspanMarkup(lines, firstTspanAttrs, fontSizePx);
+  return `<text${attrs}>${tspans}</text>`;
+}
+
 function textElementContainsPlaceholder(innerMarkup: string, key: string): boolean {
   return placeholderPattern(key).test(concatSvgTextElementContent(innerMarkup));
 }
@@ -161,6 +219,11 @@ function firstTspanOpenAttrs(inner: string): string {
   return match ? match[1]! : "";
 }
 
+/**
+ * Stack multiline notation for bottom-up reading (matches `.ns-notation-overlay__stack`
+ * `flex-direction: column-reverse` — first line in the replacement string sits lowest).
+ * Replacement string line order is unchanged; only tspan paint order is reversed.
+ */
 function buildMultilineTspanMarkup(
   lines: readonly string[],
   firstTspanAttrs: string,
@@ -172,7 +235,9 @@ function buildMultilineTspanMarkup(
   const firstAttrs =
     firstTspanAttrs.trim().length > 0 ? firstTspanAttrs : ` x="${x}" y="${y}"`;
 
-  return lines
+  const stackLines = [...lines].reverse();
+
+  return stackLines
     .map((line, index) => {
       const text = escapeXmlText(line);
       if (index === 0) {
@@ -189,6 +254,90 @@ function replaceSingleLineTextInner(inner: string, escapedValue: string): string
     return `<tspan${firstTspanAttrs}>${escapedValue}</tspan>`;
   }
   return escapedValue;
+}
+
+function isolateGroupContainsPlaceholder(inner: string, key: string): boolean {
+  return placeholderPattern(key).test(concatAllTextInMarkup(inner));
+}
+
+/** Replace placeholders split across sibling `<text>` in `<g isolation="isolate">` (front notation export). */
+function replacePlaceholderInIsolateGroups(
+  svgText: string,
+  key: string,
+  value: string,
+  classFontSizes: Map<string, number>,
+): string {
+  const groupRe = /<g isolation="isolate">([\s\S]*?)<\/g>/gi;
+  return svgText.replace(groupRe, (full, inner: string) => {
+    if (!isolateGroupContainsPlaceholder(inner, key)) return full;
+
+    const firstTextRe = /<text(\s[^>]*)>([\s\S]*?)<\/text>/i;
+    const firstMatch = firstTextRe.exec(inner);
+    if (!firstMatch) return full;
+
+    const attrs = firstMatch[1] ?? "";
+    const firstInner = firstMatch[2] ?? "";
+    const innerWithoutText = inner.replace(/<text[\s\S]*?<\/text>/gi, "");
+
+    const replacementText = buildReplacementTextElement(attrs, firstInner, value, classFontSizes);
+
+    return `<g isolation="isolate">${replacementText}${innerWithoutText}</g>`;
+  });
+}
+
+/** Replace one placeholder split across a minimal consecutive `<text>` span inside a longer run. */
+function replaceKeyInAdjacentTextPartSequence(
+  textParts: RegExpMatchArray[],
+  key: string,
+  value: string,
+  classFontSizes: Map<string, number>,
+): string {
+  const chunks: string[] = [];
+  let i = 0;
+  while (i < textParts.length) {
+    let j = i;
+    let concatenated = "";
+    let matchedEnd = -1;
+    while (j < textParts.length) {
+      concatenated += concatSvgTextElementContent(textParts[j]![2] ?? "");
+      if (isExactPlaceholderConcatenation(concatenated, key)) {
+        matchedEnd = j;
+        break;
+      }
+      const tokens = listPlaceholdersInConcatenatedText(concatenated);
+      if (tokens.length > 1) break;
+      if (tokens.length === 1 && tokens[0] !== key) break;
+      j += 1;
+    }
+    if (matchedEnd >= 0) {
+      const attrs = textParts[i]![1] ?? "";
+      const firstInner = textParts[i]![2] ?? "";
+      chunks.push(buildReplacementTextElement(attrs, firstInner, value, classFontSizes));
+      i = matchedEnd + 1;
+    } else {
+      const part = textParts[i]!;
+      chunks.push(`<text${part[1] ?? ""}>${part[2] ?? ""}</text>`);
+      i += 1;
+    }
+  }
+  return chunks.join("");
+}
+
+/**
+ * Replace placeholders split across consecutive sibling `<text>` nodes (Illustrator layer export).
+ */
+function replacePlaceholderInAdjacentTextRuns(
+  svgText: string,
+  key: string,
+  value: string,
+  classFontSizes: Map<string, number>,
+): string {
+  const adjacentTextRunRe = /((?:<text(?:\s[^>]*)>[\s\S]*?<\/text>\s*)+)/gi;
+  return svgText.replace(adjacentTextRunRe, (run) => {
+    const textParts = [...run.matchAll(/<text(\s[^>]*)>([\s\S]*?)<\/text>/gi)];
+    if (textParts.length < 2) return run;
+    return replaceKeyInAdjacentTextPartSequence(textParts, key, value, classFontSizes);
+  });
 }
 
 function replacePlaceholderInTextElements(
@@ -232,6 +381,9 @@ export function applyJapaneseNotationSvgReplacements(
 
   for (const [key, rawValue] of Object.entries(replacements)) {
     const value = rawValue == null ? "" : String(rawValue);
+    // Split-token exports (front jp-diagram) before single-<text> replacement (back + front).
+    out = replacePlaceholderInIsolateGroups(out, key, value, classFontSizes);
+    out = replacePlaceholderInAdjacentTextRuns(out, key, value, classFontSizes);
     out = replacePlaceholderInTextElements(out, key, value, classFontSizes);
   }
 

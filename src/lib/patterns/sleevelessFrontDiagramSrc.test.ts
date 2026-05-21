@@ -107,12 +107,12 @@ describe("isSleevelessDevCardiganExpressPreview", () => {
 describe("resolveSleevelessFrontDiagram", () => {
   const roundPattern = { style: { neckline: "round" } };
 
-  it("routes pullover round neck to diagram-front.svg", () => {
+  it("routes pullover round neck to diagram-front-round.svg", () => {
     const r = resolveSleevelessFrontDiagram(roundPattern, { devForceCardiganHalfLeft: false });
     expect(r.garmentStyle).toBe("pullover");
     expect(r.diagramType).toBe("pulloverFullFrontRound");
     expect(r.frontPieceType).toBe("fullFront");
-    expect(r.src.endsWith("/diagram-front.svg")).toBe(true);
+    expect(r.src).toBe("/images/patterns/sleeveless/diagrams/diagram-front-round.svg");
   });
 
   it("routes pullover v-neck to diagram-front-V.svg", () => {

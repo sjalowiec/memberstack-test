@@ -3,6 +3,7 @@ import { neckShoulderShapingChartFromRows } from "./neckShoulderShapingChart";
 import { neckShoulderChartRowsFromTimeline } from "./neckShoulderShapingChartRows";
 import {
   innerNeckDecreaseNotationLinesFromTimeline,
+  neckEdgeNotationLinesFromNeckShoulderChart,
   renderNotationOverlayDiagram,
 } from "./notationOverlaySvg";
 import type { RowEntry, ShapingEvent } from "./shapingTimeline";
@@ -50,6 +51,32 @@ describe("innerNeckDecreaseNotationLinesFromTimeline", () => {
       stubRow(16, 1),
     ];
     expect(innerNeckDecreaseNotationLinesFromTimeline(tl, "right")).toEqual(["1s-2r-3x", "1s-1r-2x"]);
+  });
+});
+
+describe("neckEdgeNotationLinesFromNeckShoulderChart", () => {
+  it("groups chart neck-edge cells into multiple summary lines (not timeline-only compaction)", () => {
+    const base = {
+      action: "Neck" as const,
+      leftSide: "-",
+      leftNeck: "-",
+      centerNeck: "-",
+      rightSide: "-",
+      leftStitchCount: 40,
+      rightStitchCount: 40,
+    };
+    const rows = [
+      ...[0, 2, 4, 6, 8, 10, 12, 14].map((row) => ({ ...base, row, rightNeck: "-1" })),
+      { ...base, row: 15, rightNeck: "-2" },
+      { ...base, row: 16, rightNeck: "-3" },
+      { ...base, row: 17, rightNeck: "-3" },
+    ];
+    const chart = neckShoulderShapingChartFromRows(rows);
+    expect(neckEdgeNotationLinesFromNeckShoulderChart(chart, "right")).toEqual([
+      "1s-2r-8x",
+      "2s-1r-1x",
+      "3s-1r-2x",
+    ]);
   });
 });
 

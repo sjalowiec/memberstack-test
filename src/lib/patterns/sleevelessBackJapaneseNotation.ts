@@ -17,10 +17,10 @@ import type { RowEntry } from "./shapingTimeline";
 const BACK_NOTATION_DIAGRAM_SIDE: "left" | "right" = "right";
 
 /**
- * Placeholders in `jp-back-notation.svg` `#draft` / Japanese overlay (not `#sts-rows`, which stays hidden).
+ * Placeholders in `diagram-jp-back.svg` `#draft` / Japanese overlay (not `#sts-rows`, which stays hidden).
  * Stitches/rows measurement tokens (`{{BUST_STS}}`, etc.) are intentionally excluded.
  */
-/** Token names inside `{{…}}` in `jp-back-notation.svg` (concatenated across Illustrator tspans). */
+/** Token names inside `{{…}}` in `diagram-jp-back.svg` (concatenated across Illustrator tspans). */
 export const JP_BACK_NOTATION_SVG_TOKEN_KEYS = [
   "jp-caston",
   "jp-body-rows",

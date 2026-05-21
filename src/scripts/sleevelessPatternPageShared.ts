@@ -46,13 +46,22 @@ import {
 } from "../lib/patterns/sleevelessBodyShapeDiagramGuides.ts";
 import { buildSleevelessGarmentDiagramReplacements } from "../lib/patterns/sleevelessGarmentDiagramReplacements.ts";
 import {
-  JP_BACK_NOTATION_SVG_SRC,
+  BACK_DIAGRAM_STS_ROWS_SRC,
+  resolveSleevelessBackDiagramSrc,
+} from "../lib/patterns/sleevelessBackDiagramSrc.ts";
+import {
+  JP_FRONT_NOTATION_SVG_SRC,
   applyJapaneseNotationSvgReplacements,
 } from "../lib/patterns/sleevelessJapaneseNotationSvg.ts";
 import {
   buildBackJapaneseNotationReplacements,
   isBackJapaneseNotationSupported,
 } from "../lib/patterns/sleevelessBackJapaneseNotation.ts";
+import {
+  SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC,
+  buildFrontJapaneseNotationReplacements,
+  isFrontJapaneseNotationSupported,
+} from "../lib/patterns/sleevelessFrontJapaneseNotation.ts";
 import {
   buildSleevelessPrintBasicsSummaryDlHtml,
   buildSleevelessScreenBasicsSummaryDlHtml,
@@ -623,17 +632,16 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     return { splitInner, postSplit };
   }
 
-  const BACK_DIAGRAM_STS_ROWS_SRC = "/images/patterns/sleeveless/diagram-back.svg";
   const BACK_DIAGRAM_STS_ROWS_ALT = "Sleeveless back piece diagram";
   const BACK_DIAGRAM_NOTATION_ALT = "Sleeveless back piece shaping notation diagram";
-  const BACK_DIAGRAM_HINT_STS_ROWS = "Click diagram to enlarge";
-
+  const FRONT_DIAGRAM_STS_ROWS_ALT = "Sleeveless front piece diagram";
+  const FRONT_DIAGRAM_NOTATION_ALT = "Sleeveless front piece shaping notation diagram";
   /**
    * Two-column shell for Back/Front: prose + chart (left) and static SVG (right, sticky on desktop).
    * @param {string} innerHtml
    * @param {string} diagramSrc
    * @param {string} diagramAlt
-   * @param {{ cardiganHalfSide?: "left" | "right"; backDiagramModeToggle?: boolean }} [diagramOpts]
+   * @param {{ cardiganHalfSide?: "left" | "right"; backDiagramModeToggle?: boolean; frontDiagramModeToggle?: boolean }} [diagramOpts]
    */
   function wrapSleevelessPieceSplit(innerHtml, diagramSrc, diagramAlt, postSplitHtml, diagramOpts) {
     const src = escapeHtml(diagramSrc);
@@ -643,42 +651,49 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     const halfAttr =
       half === "left" || half === "right" ? ` data-sleeveless-cardigan-half="${half}"` : "";
     const backModeToggle = diagramOpts?.backDiagramModeToggle === true;
+    const frontModeToggle = diagramOpts?.frontDiagramModeToggle === true;
+    const garmentModeToggle = backModeToggle || frontModeToggle;
     const backDiagramAttrs = backModeToggle
       ? ' data-sleeveless-back-diagram data-sleeveless-back-diagram-mode="sts-rows"'
       : "";
-    const modeToggleHtml = backModeToggle
-      ? `<div class="sleeveless-back-diagram-mode no-print" role="group" aria-label="Back diagram view">
-        <button type="button" class="sleeveless-back-diagram-mode__btn is-active" data-sleeveless-back-diagram-mode-btn="sts-rows" aria-pressed="true">Stitches &amp; Rows</button>
-        <button type="button" class="sleeveless-back-diagram-mode__btn" data-sleeveless-back-diagram-mode-btn="shaping-notation" aria-pressed="false">Shaping Notation</button>
+    const frontDiagramAttrs = frontModeToggle
+      ? ' data-sleeveless-front-diagram data-sleeveless-front-diagram-mode="sts-rows"'
+      : "";
+    const diagramModeAttrs = `${backDiagramAttrs}${frontDiagramAttrs}`;
+    const modeToggleGroupLabel = backModeToggle ? "Back diagram view" : "Front diagram view";
+    const modeBtnAttr = backModeToggle
+      ? "data-sleeveless-back-diagram-mode-btn"
+      : "data-sleeveless-front-diagram-mode-btn";
+    const modeToggleHtml = garmentModeToggle
+      ? `<div class="sleeveless-back-diagram-mode no-print" role="group" aria-label="${modeToggleGroupLabel}">
+        <button type="button" class="sleeveless-back-diagram-mode__btn is-active" ${modeBtnAttr}="sts-rows" aria-pressed="true">Stitches &amp; Rows</button>
+        <button type="button" class="sleeveless-back-diagram-mode__btn" ${modeBtnAttr}="shaping-notation" aria-pressed="false">Shaping Notation</button>
       </div>`
       : "";
-    const hintInner = backModeToggle
-      ? `<span data-sleeveless-diagram-hint-text>${BACK_DIAGRAM_HINT_STS_ROWS}</span>`
-      : BACK_DIAGRAM_HINT_STS_ROWS;
-    const hintAttrs = backModeToggle ? " data-sleeveless-diagram-hint" : "";
     const diagramTriggerHtml = `<button type="button" class="sleeveless-piece-split__diagram-trigger" data-sleeveless-diagram-trigger aria-label="Open larger diagram: ${alt}">
-        <div class="sleeveless-piece-split__diagram-svg" data-sleeveless-diagram data-src="${src}" data-alt="${alt}"${halfAttr}${backDiagramAttrs}>
+        <div class="sleeveless-piece-split__diagram-svg" data-sleeveless-diagram data-src="${src}" data-alt="${alt}"${halfAttr}${diagramModeAttrs}>
           <p class="sleeveless-pattern-boot-msg">Loading diagram…</p>
         </div>
       </button>`;
-    const diagramHintHtml = `<p class="sleeveless-piece-split__diagram-hint"${hintAttrs}>
-        <i class="fa-solid fa-magnifying-glass sleeveless-piece-split__diagram-hint-icon" aria-hidden="true"></i>
-        ${hintInner}
-      </p>`;
-    const diagramAsideInner = backModeToggle
+    const diagramEnlargeBtnHtml = `<button type="button" class="sleeveless-piece-split__diagram-enlarge-btn no-print" data-sleeveless-diagram-enlarge aria-label="Enlarge diagram">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+      </button>`;
+    const diagramCardHtml = `<div class="sleeveless-piece-split__diagram-card">
+        ${diagramEnlargeBtnHtml}
+        ${diagramTriggerHtml}
+      </div>`;
+    const diagramAsideInner = garmentModeToggle
       ? `<div class="sleeveless-back-diagram-panel">
       ${modeToggleHtml}
       <div class="sleeveless-back-diagram-well">
-        ${diagramTriggerHtml}
-        ${diagramHintHtml}
+        ${diagramCardHtml}
       </div>
     </div>`
-      : `${diagramTriggerHtml}
-      ${diagramHintHtml}`;
+      : diagramCardHtml;
     return `<div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split">
   <div class="pattern-layout__content sleeveless-piece-split__text">${innerHtml}</div>
   <aside class="pattern-layout__sidebar sleeveless-piece-split__diagram" aria-label="Garment diagram">
-    <div class="sleeveless-piece-split__diagram-inner${backModeToggle ? " sleeveless-piece-split__diagram-inner--back-panel" : ""}">
+    <div class="sleeveless-piece-split__diagram-inner${garmentModeToggle ? " sleeveless-piece-split__diagram-inner--back-panel" : ""}">
       ${diagramAsideInner}
     </div>
   </aside>
@@ -707,7 +722,13 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   function inferSleevelessDiagramPiece(src, alt) {
     const s = String(src || "").toLowerCase();
     const a = String(alt || "").toLowerCase();
-    if (s.includes("diagram-back") || a.includes(" back ")) return "back";
+    if (
+      s.includes("diagram-jp-back") ||
+      s.includes("diagram-back") ||
+      a.includes(" back ")
+    ) {
+      return "back";
+    }
     if (
       s.includes("sleeveless/cardigan-round") ||
       s.includes("sleeveless/cardigan-v") ||
@@ -717,7 +738,13 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     ) {
       return "front";
     }
-    if (s.includes("diagram-front") || a.includes(" front ")) return "front";
+    if (
+      s.includes("diagram-jp-front") ||
+      s.includes("jp-diagram-front") ||
+      s.includes("diagram-front") ||
+      a.includes(" front ")
+    )
+      return "front";
     return "shared";
   }
 
@@ -802,18 +829,17 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     }
   }
 
-  const JP_NOTATION_DIAGRAM_HINT =
-    "Click diagram to enlarge \u2022 Shaping notation reads bottom-up";
-
   /** @type {{ result: import("../lib/patterns/sleevelessPatternOutput").SleevelessBackPatternResult; unit: string; diagramPatternData: unknown; hydrateGeneration: number } | null} */
   let sleevelessBackDiagramHydrateContext = null;
-
-  function backDiagramHintForMode(mode) {
-    return mode === "shaping-notation" ? JP_NOTATION_DIAGRAM_HINT : BACK_DIAGRAM_HINT_STS_ROWS;
-  }
+  /** @type {{ result: import("../lib/patterns/sleevelessPatternOutput").SleevelessBackPatternResult; unit: string; diagramPatternData: unknown; hydrateGeneration: number } | null} */
+  let sleevelessFrontDiagramHydrateContext = null;
 
   function backDiagramAltForMode(mode) {
     return mode === "shaping-notation" ? BACK_DIAGRAM_NOTATION_ALT : BACK_DIAGRAM_STS_ROWS_ALT;
+  }
+
+  function frontDiagramAltForMode(mode) {
+    return mode === "shaping-notation" ? FRONT_DIAGRAM_NOTATION_ALT : FRONT_DIAGRAM_STS_ROWS_ALT;
   }
 
   function updateBackDiagramModeUi(root, mode) {
@@ -827,13 +853,26 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       btn.classList.toggle("is-active", active);
       btn.setAttribute("aria-pressed", active ? "true" : "false");
     });
-    const hintText = backSection.querySelector("[data-sleeveless-diagram-hint-text]");
-    if (hintText instanceof HTMLElement) {
-      hintText.textContent = backDiagramHintForMode(mode);
-    }
     const trigger = backSection.querySelector("[data-sleeveless-diagram-trigger]");
     if (trigger instanceof HTMLElement) {
       trigger.setAttribute("aria-label", `Open larger diagram: ${backDiagramAltForMode(mode)}`);
+    }
+  }
+
+  function updateFrontDiagramModeUi(root, mode) {
+    if (!root) return;
+    const frontSection = root.querySelector("#sg-front");
+    if (!frontSection) return;
+    frontSection.querySelectorAll("[data-sleeveless-front-diagram-mode-btn]").forEach((btn) => {
+      if (!(btn instanceof HTMLButtonElement)) return;
+      const btnMode = btn.getAttribute("data-sleeveless-front-diagram-mode-btn");
+      const active = btnMode === mode;
+      btn.classList.toggle("is-active", active);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+    const trigger = frontSection.querySelector("[data-sleeveless-diagram-trigger]");
+    if (trigger instanceof HTMLElement) {
+      trigger.setAttribute("aria-label", `Open larger diagram: ${frontDiagramAltForMode(mode)}`);
     }
   }
 
@@ -845,8 +884,9 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         : String(hydrateGeneration);
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
     try {
-      const res = await fetch(JP_BACK_NOTATION_SVG_SRC, { credentials: "same-origin" });
-      if (!res.ok) throw new Error(`Failed to load SVG: ${JP_BACK_NOTATION_SVG_SRC} (${res.status})`);
+      const notationSrc = resolveSleevelessBackDiagramSrc("shaping-notation");
+      const res = await fetch(notationSrc, { credentials: "same-origin" });
+      if (!res.ok) throw new Error(`Failed to load SVG: ${notationSrc} (${res.status})`);
       const jpReplacements = buildBackJapaneseNotationReplacements(result, patternData);
       const svgText = applyJapaneseNotationSvgReplacements(await res.text(), jpReplacements);
 
@@ -875,8 +915,133 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     }
   }
 
+  async function inlineFrontJapaneseNotationSvg(hostEl, result, patternData, hydrateGeneration) {
+    const frontJpLog = "[sleeveless:front-jp-notation]";
+    if (!(hostEl instanceof HTMLElement)) {
+      console.warn(frontJpLog, "abort: missing diagram host container", { hostEl });
+      return;
+    }
+    const hydrateGen =
+      hydrateGeneration === undefined || hydrateGeneration === null
+        ? null
+        : String(hydrateGeneration);
+    if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
+    const fetchUrl = JP_FRONT_NOTATION_SVG_SRC;
+    console.log(frontJpLog, "fetch URL:", fetchUrl);
+    try {
+      const res = await fetch(fetchUrl, { credentials: "same-origin" });
+      console.log(frontJpLog, "fetch response:", {
+        ok: res.ok,
+        status: res.status,
+        statusText: res.statusText,
+        url: res.url,
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to load SVG: ${fetchUrl} (${res.status})`);
+      }
+      const rawSvgText = await res.text();
+      console.log(frontJpLog, "raw SVG text:", {
+        returned: rawSvgText.length > 0,
+        byteLength: rawSvgText.length,
+        startsWithSvg: /^\s*<svg[\s>]/i.test(rawSvgText.replace(/^\uFEFF/, "").replace(/^<\?xml[\s\S]*?\?>\s*/, "")),
+      });
+      const jpReplacements = buildFrontJapaneseNotationReplacements(result, patternData);
+      let svgText;
+      try {
+        svgText = applyJapaneseNotationSvgReplacements(rawSvgText, jpReplacements);
+        console.log(frontJpLog, "applyJapaneseNotationSvgReplacements: ok", {
+          outputLength: svgText.length,
+        });
+      } catch (replaceErr) {
+        const replaceMessage =
+          replaceErr instanceof Error ? replaceErr.message : String(replaceErr);
+        console.error(frontJpLog, "applyJapaneseNotationSvgReplacements: threw", replaceMessage, replaceErr);
+        throw replaceErr;
+      }
+
+      const parser = new DOMParser();
+      let doc = parser.parseFromString(svgText, "image/svg+xml");
+      let svg = doc.documentElement;
+      if (!svg || svg.nodeName.toLowerCase() !== "svg" || doc.querySelector("parsererror")) {
+        doc = parser.parseFromString(svgText, "text/xml");
+        svg = doc.documentElement;
+      }
+      if (!svg || svg.nodeName.toLowerCase() !== "svg") {
+        const pe = doc.querySelector("parsererror");
+        throw new Error(pe ? pe.textContent || "SVG parse error" : "SVG parse error");
+      }
+
+      svg.setAttribute("role", "img");
+      svg.setAttribute("aria-label", FRONT_DIAGRAM_NOTATION_ALT);
+      svg.classList.add("sleeveless-piece-split__diagram-inline");
+
+      if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) {
+        console.log(frontJpLog, "abort: stale hydrate generation", {
+          expected: hydrateGen,
+          current: hostEl.dataset.sleevelessHydrateGen,
+        });
+        return;
+      }
+      hostEl.innerHTML = svg.outerHTML;
+      console.log(frontJpLog, "diagram injected into host");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const failureKind =
+        message.includes("Failed to load SVG")
+          ? "fetch"
+          : message.includes("SVG parse error") || message.toLowerCase().includes("parse")
+            ? "svg-parse"
+            : "replacement-or-other";
+      console.warn("[sleeveless] Front shaping notation diagram failed:", err);
+      console.warn(frontJpLog, "fallback: Diagram unavailable.", {
+        failureKind,
+        message,
+        fetchUrl,
+      });
+      if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
+      hostEl.innerHTML = `<p class="sleeveless-pattern-boot-msg">Diagram unavailable.</p>`;
+    }
+  }
+
+  async function hydrateSleevelessFrontDiagram(
+    el,
+    mode,
+    result,
+    unit,
+    patternData,
+    hydrateGeneration,
+    guideOpts,
+  ) {
+    if (!(el instanceof HTMLElement)) return;
+    if (mode === "shaping-notation") {
+      await inlineFrontJapaneseNotationSvg(el, result, patternData, hydrateGeneration);
+      return;
+    }
+    const replacements = buildSleevelessDiagramReplacements(result, unit, {
+      piece: "front",
+      patternData,
+      cardiganHalfSide: guideOpts?.cardiganHalfSide,
+    });
+    await inlineSvgWithReplacements(
+      el,
+      SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC,
+      FRONT_DIAGRAM_STS_ROWS_ALT,
+      replacements,
+      hydrateGeneration,
+      {
+        diagramGuides: guideOpts?.diagramGuides,
+        layout: guideOpts?.layout,
+      },
+    );
+  }
+
   async function hydrateSleevelessBackDiagram(el, mode, result, unit, patternData, hydrateGeneration) {
     if (!(el instanceof HTMLElement)) return;
+    const diagramSrc = resolveSleevelessBackDiagramSrc(mode);
+    el.dataset.src = diagramSrc;
+    if (import.meta.env.DEV) {
+      console.log("[sleeveless] Back garment schematic route:", { mode, src: diagramSrc });
+    }
     if (mode === "shaping-notation") {
       await inlineBackJapaneseNotationSvg(el, result, patternData, hydrateGeneration);
       return;
@@ -887,7 +1052,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     });
     await inlineSvgWithReplacements(
       el,
-      BACK_DIAGRAM_STS_ROWS_SRC,
+      diagramSrc,
       BACK_DIAGRAM_STS_ROWS_ALT,
       replacements,
       hydrateGeneration,
@@ -927,6 +1092,39 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     });
   }
 
+  function bindSleevelessFrontDiagramMode(root) {
+    if (!root || root.dataset.sleevelessFrontDiagramModeBound === "true") return;
+    root.dataset.sleevelessFrontDiagramModeBound = "true";
+    root.addEventListener("click", (e) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      const btn = target.closest("[data-sleeveless-front-diagram-mode-btn]");
+      if (!(btn instanceof HTMLButtonElement)) return;
+      const mode = btn.getAttribute("data-sleeveless-front-diagram-mode-btn");
+      if (mode !== "sts-rows" && mode !== "shaping-notation") return;
+      const frontHost = root.querySelector("[data-sleeveless-front-diagram]");
+      if (!(frontHost instanceof HTMLElement)) return;
+      if (frontHost.dataset.sleevelessFrontDiagramMode === mode) return;
+      const ctx = sleevelessFrontDiagramHydrateContext;
+      if (!ctx || ctx.hydrateGeneration !== sleevelessRenderMountSeq) return;
+      frontHost.dataset.sleevelessFrontDiagramMode = mode;
+      frontHost.innerHTML = '<p class="sleeveless-pattern-boot-msg">Loading diagram…</p>';
+      updateFrontDiagramModeUi(root, mode);
+      void hydrateSleevelessFrontDiagram(
+        frontHost,
+        mode,
+        ctx.result,
+        ctx.unit,
+        ctx.diagramPatternData,
+        sleevelessRenderMountSeq,
+        {
+          diagramGuides: ctx.result?.debug?.diagramGuides,
+          layout: "front",
+        },
+      );
+    });
+  }
+
   async function hydrateSleevelessDiagrams(root, result, unit, patternData, hydrateOpts) {
     if (!root) return;
     const frontResolution = hydrateOpts?.frontResolution;
@@ -956,6 +1154,27 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
             unit,
             patternData,
             hydrateOpts?.hydrateGeneration,
+          ),
+        );
+        return;
+      }
+      if (el.hasAttribute("data-sleeveless-front-diagram")) {
+        const mode =
+          el.dataset.sleevelessFrontDiagramMode === "shaping-notation"
+            ? "shaping-notation"
+            : "sts-rows";
+        jobs.push(
+          hydrateSleevelessFrontDiagram(
+            el,
+            mode,
+            result,
+            unit,
+            patternData,
+            hydrateOpts?.hydrateGeneration,
+            {
+              diagramGuides: result?.debug?.diagramGuides,
+              layout: "front",
+            },
           ),
         );
         return;
@@ -1393,6 +1612,16 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     root.addEventListener("click", (e) => {
       const target = e.target;
       if (!(target instanceof Element)) return;
+      const enlargeBtn = target.closest("[data-sleeveless-diagram-enlarge]");
+      if (enlargeBtn instanceof HTMLElement) {
+        e.preventDefault();
+        const card = enlargeBtn.closest(".sleeveless-piece-split__diagram-card");
+        const trigger = card?.querySelector("[data-sleeveless-diagram-trigger]");
+        if (trigger instanceof HTMLElement) {
+          openSleevelessDiagramModal(trigger);
+        }
+        return;
+      }
       const trigger = target.closest("[data-sleeveless-diagram-trigger]");
       if (!(trigger instanceof HTMLElement)) return;
       openSleevelessDiagramModal(trigger);
@@ -2243,12 +2472,20 @@ table {
         cardiganHalfSide: frontCardiganHalfSide ?? null,
       });
     }
+    const frontNotationSupported = isFrontJapaneseNotationSupported(diagramPatternData, result);
+    const frontWrapSrc = frontNotationSupported
+      ? SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC
+      : frontDiagramResolution.src;
     const frontWrapped = wrapSleevelessPieceSplit(
       frontInner,
-      frontDiagramResolution.src,
+      frontWrapSrc,
       frontDiagramAlt,
       frontPost,
-      frontCardiganHalfSide ? { cardiganHalfSide: frontCardiganHalfSide } : undefined,
+      frontNotationSupported
+        ? { frontDiagramModeToggle: true }
+        : frontCardiganHalfSide
+          ? { cardiganHalfSide: frontCardiganHalfSide }
+          : undefined,
     );
 
     mount.innerHTML =
@@ -2382,6 +2619,14 @@ table {
       diagramPatternData,
       hydrateGeneration: renderSeq,
     };
+    sleevelessFrontDiagramHydrateContext = frontNotationSupported
+      ? {
+          result,
+          unit,
+          diagramPatternData,
+          hydrateGeneration: renderSeq,
+        }
+      : null;
 
     await hydrateSleevelessDiagrams(mount, result, unit, diagramPatternData, {
       frontResolution: frontDiagramResolution,
@@ -2392,6 +2637,7 @@ table {
     ensureSleevelessDiagramModal();
     bindSleevelessDiagramZoom(mount);
     bindSleevelessBackDiagramMode(mount);
+    bindSleevelessFrontDiagramMode(mount);
     ensureSleevelessVideoModal();
     const videoHelpRoot =
       document.getElementById("sleeveless-pattern-tips-scope") || mount;

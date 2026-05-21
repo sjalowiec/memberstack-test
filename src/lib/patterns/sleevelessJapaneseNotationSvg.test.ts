@@ -13,13 +13,17 @@ import {
   listJapaneseNotationPlaceholdersInSvg,
 } from "./sleevelessJapaneseNotationSvg";
 
-const JP_SVG_PATH = resolve(
+const JP_BACK_SVG_PATH = resolve(
   process.cwd(),
-  "public/images/patterns/sleeveless/jp-back-notation.svg",
+  "public/images/patterns/sleeveless/diagrams/diagram-jp-back.svg",
+);
+const JP_FRONT_SVG_PATH = resolve(
+  process.cwd(),
+  "public/images/patterns/sleeveless/diagrams/diagram-jp-front-round.svg",
 );
 
-describe("jp-back-notation.svg placeholders", () => {
-  const rawSvg = readFileSync(JP_SVG_PATH, "utf8");
+describe("diagram-jp-back.svg placeholders", () => {
+  const rawSvg = readFileSync(JP_BACK_SVG_PATH, "utf8");
 
   it("lists every jp/rc token in the draft layer", () => {
     const tokens = listJapaneseNotationPlaceholdersInSvg(rawSvg);
@@ -34,7 +38,7 @@ describe("jp-back-notation.svg placeholders", () => {
 });
 
 describe("applyJapaneseNotationSvgReplacements", () => {
-  const rawSvg = readFileSync(JP_SVG_PATH, "utf8");
+  const rawSvg = readFileSync(JP_BACK_SVG_PATH, "utf8");
 
   it("replaces all notation tokens with sample values", () => {
     expect(() =>
@@ -59,10 +63,10 @@ describe("applyJapaneseNotationSvgReplacements", () => {
     const out = applyJapaneseNotationSvgReplacements(rawSvg, SAMPLE_JP_BACK_NOTATION_REPLACEMENTS);
 
     expect(out).toMatch(
-      /<text transform="translate\(30\.05 50\.58\)"[^>]*>\s*<tspan x="0" y="0">1s-2r-4x<\/tspan>\s*<tspan x="0" dy="14\.4">2s-1r-1x<\/tspan>\s*<tspan x="0" dy="14\.4">3s-2r-2x<\/tspan>\s*<\/text>/,
+      /<text transform="translate\(30\.05 50\.58\)"[^>]*>\s*<tspan x="0" y="0">3s-2r-2x<\/tspan>\s*<tspan x="0" dy="14\.4">2s-1r-1x<\/tspan>\s*<tspan x="0" dy="14\.4">1s-2r-4x<\/tspan>\s*<\/text>/,
     );
     expect(out).toMatch(
-      /<text font-family="MyriadPro-Regular[^"]*" font-size="12">\s*<tspan x="149\.81" y="55\.48">bo5s-2r-1x<\/tspan>\s*<tspan x="149\.81" dy="14\.4">bo4s-2r-4x<\/tspan>\s*<\/text>/,
+      /<text font-family="MyriadPro-Regular[^"]*" font-size="14">\s*<tspan x="149\.81" y="57\.88">bo4s-2r-4x<\/tspan>\s*<tspan x="149\.81" dy="14\.4">bo5s-2r-1x<\/tspan>\s*<\/text>/,
     );
   });
 
@@ -120,8 +124,21 @@ describe("applyJapaneseNotationSvgReplacements", () => {
   });
 });
 
+describe("diagram-jp-front-round.svg multiline shaping", () => {
+  const rawSvg = readFileSync(JP_FRONT_SVG_PATH, "utf8");
+
+  it("expands multiline tokens in diagram-jp-front-round.svg", () => {
+    const out = applyJapaneseNotationSvgReplacements(rawSvg, SAMPLE_JP_BACK_NOTATION_REPLACEMENTS);
+
+    expect(out).toMatch(
+      /<text transform="translate\(97\.63 44\.87\)"[^>]*>\s*<tspan x="0" y="0">3s-2r-2x<\/tspan>\s*<tspan x="0" dy="14\.4">2s-1r-1x<\/tspan>\s*<tspan x="0" dy="14\.4">1s-2r-4x<\/tspan>\s*<\/text>/,
+    );
+    expect(findUnreplacedJapaneseNotationPlaceholders(out)).toEqual([]);
+  });
+});
+
 describe("live back Japanese notation SVG", () => {
-  const rawSvg = readFileSync(JP_SVG_PATH, "utf8");
+  const rawSvg = readFileSync(JP_BACK_SVG_PATH, "utf8");
 
   it("replaces every jp/rc token from demo pullover back output", () => {
     const result = demoSleevelessBackPattern();

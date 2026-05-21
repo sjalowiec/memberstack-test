@@ -78,6 +78,24 @@ export function innerNeckDecreaseNotationLinesFromTimeline(
   return compressStitchDecreasePointsToNotationLines(collectInnerNeckDecreasePointsFromTimeline(timeline, side));
 }
 
+/** Same neck-edge grouped lines as {@link renderNotationOverlayDiagram} (round-neck: chart cells). */
+export function neckEdgeNotationLinesFromNeckShoulderChart(
+  chart: NeckShoulderShapingChart,
+  side: DiagramSide,
+  overlayOpts?: NotationOverlayDiagramOptions,
+): string[] {
+  return notationLinesForEdge(chart, side, "neck", overlayOpts);
+}
+
+/** Same shoulder-edge grouped lines as {@link renderNotationOverlayDiagram} (chart cells). */
+export function shoulderEdgeNotationLinesFromNeckShoulderChart(
+  chart: NeckShoulderShapingChart,
+  side: DiagramSide,
+  overlayOpts?: NotationOverlayDiagramOptions,
+): string[] {
+  return notationLinesForEdge(chart, side, "shoulder", overlayOpts);
+}
+
 function notationLinesForEdge(
   chart: NeckShoulderShapingChart,
   side: DiagramSide,

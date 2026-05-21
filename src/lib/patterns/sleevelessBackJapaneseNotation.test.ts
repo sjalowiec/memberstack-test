@@ -20,7 +20,7 @@ import {
 import { demoSleevelessBackPattern, generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 
 const JP_BACK_SVG = readFileSync(
-  resolve(process.cwd(), "public/images/patterns/sleeveless/jp-back-notation.svg"),
+  resolve(process.cwd(), "public/images/patterns/sleeveless/diagrams/diagram-jp-back.svg"),
   "utf8",
 );
 
@@ -43,7 +43,7 @@ describe("sleevelessBackJapaneseNotation formatters", () => {
 });
 
 describe("buildBackJapaneseNotationReplacements", () => {
-  it("covers every jp/rc placeholder token in jp-back-notation.svg", () => {
+  it("covers every jp/rc placeholder token in diagram-jp-back.svg", () => {
     const svgTokens = listJapaneseNotationPlaceholdersInSvg(JP_BACK_SVG);
     expect(svgTokens).toEqual([...JP_BACK_NOTATION_SVG_TOKEN_KEYS].sort());
     const result = demoSleevelessBackPattern();

@@ -1,0 +1,247 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
+import {
+  formatCastOnNotation,
+  formatRcNotation,
+  garmentRcAtArmholeStart,
+} from "./sleevelessBackJapaneseNotation";
+import {
+  JP_FRONT_NOTATION_SVG_TOKEN_KEYS,
+  SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC,
+  SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC,
+  buildFrontJapaneseNotationReplacements,
+  isFrontJapaneseNotationSupported,
+} from "./sleevelessFrontJapaneseNotation";
+import { resolveSleevelessFrontDiagram } from "./sleevelessFrontDiagramSrc";
+import {
+  collectInnerNeckDecreasePointsFromTimeline,
+  neckEdgeNotationLinesFromNeckShoulderChart,
+  renderNotationOverlayDiagram,
+  shoulderEdgeNotationLinesFromNeckShoulderChart,
+} from "./notationOverlaySvg";
+import { compressStitchDecreasePointsToNotationLines } from "./shapingNotationCompress";
+
+function joinTimelineInnerNeckNotation(result: ReturnType<typeof demoSleevelessBackPattern>): string {
+  const timeline = result.frontNeckShoulderTimeline ?? [];
+  const lines = compressStitchDecreasePointsToNotationLines(
+    collectInnerNeckDecreasePointsFromTimeline(timeline, "right"),
+  );
+  return lines.filter((line) => line.length > 0).join("\n");
+}
+import {
+  SAMPLE_JP_BACK_NOTATION_REPLACEMENTS,
+  applyJapaneseNotationSvgReplacements,
+  assertJapaneseNotationSvgFullyReplaced,
+  findUnreplacedJapaneseNotationPlaceholders,
+  listJapaneseNotationPlaceholdersInSvg,
+} from "./sleevelessJapaneseNotationSvg";
+import { demoSleevelessBackPattern, generateSleevelessBackPattern } from "./sleevelessPatternOutput";
+
+const JP_FRONT_SVG = readFileSync(
+  resolve(process.cwd(), "public/images/patterns/sleeveless/diagrams/diagram-jp-front-round.svg"),
+  "utf8",
+);
+
+describe("isFrontJapaneseNotationSupported", () => {
+  it("is true for pullover round neck with live front chart", () => {
+    const result = demoSleevelessBackPattern();
+    expect(isFrontJapaneseNotationSupported({}, result)).toBe(true);
+    expect(result.frontNeckShoulderChartUsesLiveRows).toBe(true);
+  });
+
+  it("is false for cardigan and V-neck", () => {
+    const cardigan = generateSleevelessBackPattern({
+      fit: {
+        sizingChart: "misses",
+        selectedMeasurements: {
+          finished_bust_chest: 40,
+          back_neck_to_hem: 22,
+          armhole_depth: 8,
+          neck_opening: 3,
+          shoulder_width: 4.25,
+        },
+      },
+      style: { garmentStyle: "cardigan", recipientCategory: "misses" },
+      yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
+    });
+    expect(isFrontJapaneseNotationSupported({ style: { garmentStyle: "cardigan" } }, cardigan)).toBe(
+      false,
+    );
+
+    const vNeck = generateSleevelessBackPattern({
+      fit: {
+        sizingChart: "misses",
+        selectedMeasurements: {
+          finished_bust_chest: 40,
+          back_neck_to_hem: 22,
+          armhole_depth: 8,
+          neck_opening: 3,
+          shoulder_width: 4.25,
+          front_neck_depth: 3,
+          back_neck_depth: 1,
+        },
+      },
+      style: { neckline: "v-neck", recipientCategory: "misses" },
+      yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
+    });
+    expect(isFrontJapaneseNotationSupported({ style: { neckline: "v-neck" } }, vNeck)).toBe(false);
+  });
+});
+
+describe("round pullover front diagram routing", () => {
+  it("uses diagram-front-round.svg for sts-rows and diagram-jp-front-round.svg for notation", () => {
+    const r = resolveSleevelessFrontDiagram(
+      { style: { garmentStyle: "pullover", neckline: "round" } },
+      { devForceCardiganHalfLeft: false },
+    );
+    expect(r.diagramType).toBe("pulloverFullFrontRound");
+    expect(r.src).toBe(SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC);
+    expect(SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC).toBe(
+      "/images/patterns/sleeveless/diagrams/diagram-front-round.svg",
+    );
+    expect(SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC).toBe(
+      "/images/patterns/sleeveless/diagrams/diagram-jp-front-round.svg",
+    );
+  });
+});
+
+describe("buildFrontJapaneseNotationReplacements", () => {
+  it("lists every jp/rc token name present in diagram-jp-front-round.svg", () => {
+    const svgTokens = listJapaneseNotationPlaceholdersInSvg(JP_FRONT_SVG);
+    expect(svgTokens).toEqual([...JP_FRONT_NOTATION_SVG_TOKEN_KEYS].sort());
+  });
+
+  it("replaces all jp/rc placeholders in diagram-jp-front-round.svg for demo pattern", () => {
+    const result = demoSleevelessBackPattern();
+    const repl = buildFrontJapaneseNotationReplacements(result, {});
+    expect(() => assertJapaneseNotationSvgFullyReplaced(JP_FRONT_SVG, repl)).not.toThrow();
+    expect(Object.keys(repl).sort()).toEqual([...JP_FRONT_NOTATION_SVG_TOKEN_KEYS].sort());
+  });
+
+  it("stacks multiline neckline shaping bottom-up (first replacement line lowest)", () => {
+    const out = applyJapaneseNotationSvgReplacements(
+      JP_FRONT_SVG,
+      SAMPLE_JP_BACK_NOTATION_REPLACEMENTS,
+    );
+
+    const neckBlock = out.match(/translate\(97\.63 44\.87\)[\s\S]*?<\/text>/)?.[0] ?? "";
+    const tspans = [...neckBlock.matchAll(/<tspan[^>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]);
+    const lines = SAMPLE_JP_BACK_NOTATION_REPLACEMENTS["jp-neckline-shaping"].split("\n");
+
+    expect(tspans).toEqual([...lines].reverse());
+    expect(tspans[tspans.length - 1]).toBe("1s-2r-4x");
+    expect(tspans[0]).toBe("3s-2r-2x");
+    expect(out).not.toMatch(/1s-2r-4x[\r\n]+2s-1r-1x/);
+  });
+
+  it("leaves no raw {{jp- or {{rc- placeholders in output after live replacement", () => {
+    const result = demoSleevelessBackPattern();
+    const repl = buildFrontJapaneseNotationReplacements(result, {});
+    const out = applyJapaneseNotationSvgReplacements(JP_FRONT_SVG, repl);
+    expect(findUnreplacedJapaneseNotationPlaceholders(out)).toEqual([]);
+    expect(out).not.toMatch(/\{\{\s*jp-/i);
+    expect(out).not.toMatch(/\{\{\s*rc[-_]/i);
+    expect(out).toContain(repl["jp-caston"]);
+    expect(out).toContain(repl["jp-body-rows"]);
+    expect(out).toContain(repl["jp-armhole-bo"]);
+  });
+
+  function overlayNotationLabels(html: string, stack: "neck" | "shoulder"): string[] {
+    const re = new RegExp(`stack--${stack}[^>]*>([\\s\\S]*?)<\\/div>`);
+    const m = html.match(re);
+    if (!m?.[1]) return [];
+    return [...m[1].matchAll(/class="ns-notation-overlay__label">([^<]*)/g)].map((x) => String(x[1]));
+  }
+
+  function tspanTextsFromSvgBlock(svgOut: string, transformSnippet: string): string[] {
+    const block = svgOut.match(new RegExp(`${transformSnippet}[\\s\\S]*?<\\/text>`))?.[0] ?? "";
+    return [...block.matchAll(/<tspan[^>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]!);
+  }
+
+  it("jp-neckline-shaping matches front neckline/shoulder diagram neck summary", () => {
+    const result = demoSleevelessBackPattern();
+    const chart = result.frontNeckShoulderShapingChart;
+    const repl = buildFrontJapaneseNotationReplacements(result, {});
+
+    const fromChart = neckEdgeNotationLinesFromNeckShoulderChart(chart, "right");
+    const overlayHtml = renderNotationOverlayDiagram(chart, "right", {});
+    const overlayNeck = overlayNotationLabels(overlayHtml, "neck");
+
+    expect(repl["jp-neckline-shaping"]).toBe(fromChart.join("\n"));
+    expect(repl["jp-neckline-shaping"]).toBe(overlayNeck.join("\n"));
+    expect(fromChart.length).toBeGreaterThan(1);
+
+    const timelineOnly = joinTimelineInnerNeckNotation(result);
+    expect(repl["jp-neckline-shaping"]).not.toBe(timelineOnly);
+    expect(repl["jp-neckline-shaping"].split("\n")).toEqual(
+      expect.arrayContaining(["1s-2r-2x", "2s-1r-1x"]),
+    );
+    expect(repl["jp-neckline-shaping"].split("\n").length).toBeGreaterThan(1);
+
+    const out = applyJapaneseNotationSvgReplacements(JP_FRONT_SVG, repl);
+    const tspans = tspanTextsFromSvgBlock(out, "translate\\(97\\.63 44\\.87\\)");
+    const lines = repl["jp-neckline-shaping"].split("\n").filter((l) => l.length > 0);
+    expect(tspans).toEqual([...lines].reverse());
+    expect(tspans[tspans.length - 1]).toBe(lines[0]);
+  });
+
+  it("jp-shoulder-shaping matches front diagram shoulder summary (decrease lines, not bind-off)", () => {
+    const result = demoSleevelessBackPattern();
+    const chart = result.frontNeckShoulderShapingChart;
+    const repl = buildFrontJapaneseNotationReplacements(result, {});
+
+    const fromChart = shoulderEdgeNotationLinesFromNeckShoulderChart(chart, "right");
+    const overlayHtml = renderNotationOverlayDiagram(chart, "right", {});
+    const overlayShoulder = overlayNotationLabels(overlayHtml, "shoulder");
+
+    expect(repl["jp-shoulder-shaping"]).toBe(fromChart.join("\n"));
+    expect(repl["jp-shoulder-shaping"]).toBe(overlayShoulder.join("\n"));
+    expect(repl["jp-shoulder-shaping"]).not.toMatch(/^bo/i);
+    expect(repl["jp-shoulder-shaping"].split("\n").length).toBeGreaterThan(1);
+
+    const out = applyJapaneseNotationSvgReplacements(JP_FRONT_SVG, repl);
+    const tspans = tspanTextsFromSvgBlock(out, "translate\\(175\\.17 94\\.74\\)");
+    const lines = repl["jp-shoulder-shaping"].split("\n").filter((l) => l.length > 0);
+    expect(tspans).toEqual([...lines].reverse());
+  });
+
+  it("builds live front tokens from demo pullover round neck", () => {
+    const result = demoSleevelessBackPattern();
+    const repl = buildFrontJapaneseNotationReplacements(result, {});
+    const castOn = result.debug.hemCastOnStitches ?? result.debug.backStitches;
+
+    expect(repl["jp-caston"]).toBe(formatCastOnNotation(castOn));
+    expect(repl["jp-body-rows"]).toBe(`${result.debug.bodyRows}r`);
+    expect(repl["rc-hem"]).toBe(formatRcNotation(result.debug.hemRows));
+    const armholeStartRc = garmentRcAtArmholeStart(result.debug);
+    expect(repl["rc-armhole-bo"]).toBe(formatRcNotation(armholeStartRc!));
+    if (result.debug.frontNecklineStartLocalRC !== undefined) {
+      expect(repl["rc-neckline-start"]).toBe(
+        formatRcNotation(result.debug.frontNecklineStartLocalRC),
+      );
+    }
+  });
+
+  it("returns empty tokens when unsupported", () => {
+    const svgTokens = listJapaneseNotationPlaceholdersInSvg(JP_FRONT_SVG);
+    expect(svgTokens.length).toBeGreaterThan(0);
+
+    const result = generateSleevelessBackPattern({
+      fit: {
+        sizingChart: "misses",
+        selectedMeasurements: {
+          finished_bust_chest: 40,
+          back_neck_to_hem: 22,
+          armhole_depth: 8,
+          neck_opening: 3,
+          shoulder_width: 4.25,
+        },
+      },
+      style: { garmentStyle: "cardigan", recipientCategory: "misses" },
+      yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
+    });
+    const repl = buildFrontJapaneseNotationReplacements(result, { style: { garmentStyle: "cardigan" } });
+    expect(repl["jp-caston"]).toBe("");
+  });
+});
