@@ -150,9 +150,6 @@ describe("generateSleevelessBackPattern hip cast-on (Express review overrides)",
     expect(r.debug.bustBodyStitches).toBe(96);
     expect(r.debug.hemCastOnStitches).toBe(110);
     expect(r.debug.hemCastOnStitches).toBeGreaterThan(r.debug.bustBodyStitches!);
-    expect(r.debug.bodyBlockRuntime?.bodyBlockCalled).toBe(true);
-    expect(r.debug.bodyBlockRuntime?.finalCastOnStitches).toBe(110);
-    expect(r.debug.bodyBlockRuntime?.bodyBlockHemStitches).toBe(110);
     expect(extractCastOnFromRows(r.displayRows)).toBe(110);
     expect(
       hasBodyShapingInstruction(
@@ -193,8 +190,6 @@ describe("generateSleevelessBackPattern hip cast-on (Express review overrides)",
         chartFinishedHip: 38,
       }),
     );
-    expect(r.debug.bodyBlockRuntime?.bodyBlockCalled).toBe(true);
-    expect(r.debug.bodyBlockRuntime?.explicitCustomBuildStraight).toBe(false);
     expect(r.debug.hemCastOnStitches).toBe(110);
     expect(r.debug.hemCastOnStitches).toBeGreaterThan(r.debug.bustBodyStitches!);
     expect(
@@ -216,7 +211,6 @@ describe("generateSleevelessBackPattern hip cast-on (Express review overrides)",
         chartFinishedHip: 40,
       }),
     );
-    expect(r.debug.bodyBlockRuntime?.explicitCustomBuildStraight).toBe(true);
     expect(r.debug.hemCastOnStitches).toBe(r.debug.bustBodyStitches);
   });
 });

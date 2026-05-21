@@ -4,7 +4,11 @@
  */
 
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
-import { injectBodyShapeGuidesIntoGarmentSvg } from "./sleevelessBodyShapeDiagramGuides";
+import {
+  injectBodyShapeGuidesIntoGarmentSvg,
+  scaleDiagramGuidesForCardiganHalf,
+  type SleevelessGarmentDiagramLayout,
+} from "./sleevelessBodyShapeDiagramGuides";
 import { buildSleevelessGarmentDiagramReplacements } from "./sleevelessGarmentDiagramReplacements";
 import { buildSleevelessGarmentDiagramPatternData } from "./sleevelessPatternBuilderMerge";
 import {
@@ -68,6 +72,7 @@ async function loadSleevelessPieceDiagramSvgMarkup(
   let replacements: Record<string, string>;
   let src: string;
   let ariaLabel: string;
+  let cardiganHalfSide: "left" | "right" | undefined;
 
   if (piece === "back") {
     replacements = buildSleevelessGarmentDiagramReplacements(result, unit, {
@@ -80,7 +85,7 @@ async function loadSleevelessPieceDiagramSvgMarkup(
     const frontRes = resolveSleevelessFrontDiagram(diagramPatternData, {
       devForceCardiganHalfLeft: frontOpts?.devForceCardiganHalfLeft,
     });
-    const cardiganHalfSide =
+    cardiganHalfSide =
       isSleevelessCardiganHalfFrontDiagramType(frontRes.diagramType) &&
       frontRes.diagramType !== "cardiganHalfFrontV" &&
       frontRes.frontPieceType === "leftFront"
@@ -125,10 +130,14 @@ async function loadSleevelessPieceDiagramSvgMarkup(
   svg.setAttribute("role", "img");
   svg.setAttribute("aria-label", ariaLabel);
   svg.classList.add("print-back-diagram-svg");
-  injectBodyShapeGuidesIntoGarmentSvg(
-    svg as SVGSVGElement,
-    result.debug?.diagramGuides,
-    piece === "front" ? "front" : "back",
-  );
+
+  let guideLayout: SleevelessGarmentDiagramLayout = piece === "front" ? "front" : "back";
+  let diagramGuides = result.debug?.diagramGuides;
+  if (piece === "front" && diagramGuides?.showBodyShapeGuides && cardiganHalfSide) {
+    diagramGuides = scaleDiagramGuidesForCardiganHalf(diagramGuides, cardiganHalfSide);
+    guideLayout = cardiganHalfSide === "right" ? "cardiganHalfRight" : "cardiganHalfLeft";
+  }
+
+  injectBodyShapeGuidesIntoGarmentSvg(svg as SVGSVGElement, diagramGuides, guideLayout);
   return svg.outerHTML;
 }

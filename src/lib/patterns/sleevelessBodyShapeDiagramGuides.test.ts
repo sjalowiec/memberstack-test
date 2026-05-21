@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildSleevelessBodyBlockPlan } from "./bodyBlock/sleevelessBodyBlock";
 import {
   buildBodyShapeGuideSvgFragment,
+  diagramGuidesForAppliedBodyShaping,
   SLEEVELESS_BODY_SHAPE_GUIDE_STROKE,
 } from "./sleevelessBodyShapeDiagramGuides";
 import type { SleevelessBodyDiagramGuides } from "./bodyBlock/sleevelessBodyBlock";
@@ -15,6 +16,23 @@ const alineDecreaseGuides: SleevelessBodyDiagramGuides = {
   hemCircumferenceInches: 44,
   bustCircumferenceInches: 40,
 };
+
+describe("diagramGuidesForAppliedBodyShaping", () => {
+  it("clears guides when A-line shaping is not active", () => {
+    const synced = diagramGuidesForAppliedBodyShaping(alineDecreaseGuides, false);
+    expect(synced.showBodyShapeGuides).toBe(false);
+    expect(synced.bodyShapeKind).toBe("straight");
+    expect(synced.shapingDirection).toBe("none");
+    expect(synced.hemStitches).toBe(alineDecreaseGuides.bustStitches);
+    expect(buildBodyShapeGuideSvgFragment(synced, "back")).toBe("");
+  });
+
+  it("preserves guides when A-line shaping is active", () => {
+    const synced = diagramGuidesForAppliedBodyShaping(alineDecreaseGuides, true);
+    expect(synced.showBodyShapeGuides).toBe(true);
+    expect(buildBodyShapeGuideSvgFragment(synced, "back")).toContain('id="body-shape-guides"');
+  });
+});
 
 describe("buildBodyShapeGuideSvgFragment", () => {
   it("returns empty for straight / hidden guides", () => {

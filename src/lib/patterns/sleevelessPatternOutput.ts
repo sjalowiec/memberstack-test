@@ -13,6 +13,7 @@ import {
 } from "./legoBlocks/neckShoulderExecution";
 import { resolveEffectiveArmholeDepthInches } from "./customBuildEffectiveArmholeDepth";
 import { resolveDiagramFinishedHipInches } from "./customBuildEffectiveFinishedHip";
+import { diagramGuidesForAppliedBodyShaping } from "./sleevelessBodyShapeDiagramGuides";
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 import {
   buildSleevelessBodyBlockPlan,
@@ -24,12 +25,9 @@ import {
   scaleAlineBodyShapingPlanForCardiganHalf,
   sleevelessAlineShapingLineNeedsTrustedHtml,
   type SleevelessAlineShapingEdgeScope,
-  isSleevelessExplicitCustomBuildStraight,
-  measurementsImplySleevelessAlineBody,
   resolveBodyBlockHipCircumferenceInches,
   shouldRunSleevelessBodyBlockForPullover,
   type SleevelessAlineBodyShapingPlan,
-  type SleevelessBodyBlockRuntimeDebug,
 } from "./sleevelessAlineShaping";
 import { resolveEffectiveFinishedLengthInches } from "./customBuildEffectiveFinishedLength";
 import {
@@ -281,8 +279,6 @@ export type SleevelessBackPatternDebug = {
   hipRowsFromHem?: number;
   /** Body-block diagram overlay hints for A-line side guides on garment schematics. */
   diagramGuides?: SleevelessBodyDiagramGuides;
-  /** Temporary — Pattern tab body-block audit (remove after live verification). */
-  bodyBlockRuntime?: SleevelessBodyBlockRuntimeDebug;
 };
 
 /** Two-column pattern UI: piece banner, section title, or instruction block with optional stitch count. */
@@ -1908,44 +1904,11 @@ export function generateSleevelessBackPattern(
     hemCircumferenceInches: finishedBust > 0 ? finishedBust : 0,
     bustCircumferenceInches: finishedBust > 0 ? finishedBust : 0,
   };
-  const styleSection = section(patternData.style);
   const finishedHipResolved = resolveDiagramFinishedHipInches(patternData, finishedBust);
   const shouldRunBodyBlock = shouldRunSleevelessBodyBlockForPullover(finishedBust);
   const hipForBodyBlock = shouldRunBodyBlock
     ? resolveBodyBlockHipCircumferenceInches(patternData, finishedBust, finishedHipResolved)
     : undefined;
-  const resolvedGarmentStyle = String(styleSection.garmentStyle ?? "").trim().toLowerCase();
-  const resolvedFrontStyle = String(styleSection.frontStyle ?? "").trim().toLowerCase();
-  const debugGarmentStyle: "pullover" | "cardigan" =
-    resolvedGarmentStyle === "cardigan" || resolvedFrontStyle === "open" ? "cardigan" : "pullover";
-  const debugFrontStyle: "open" | "closed" = debugGarmentStyle === "cardigan" ? "open" : "closed";
-  let bodyBlockRuntime: SleevelessBodyBlockRuntimeDebug = {
-    garmentStyle: debugGarmentStyle,
-    frontStyle: debugFrontStyle,
-    garmentKindSource: "generatorInput.style",
-    patternMode: String(styleSection.patternMode ?? ""),
-    styleBodyShape: String(styleSection.bodyShape ?? ""),
-    effectiveBustInches: finishedBust > 0 ? finishedBust : undefined,
-    effectiveHipInches: finishedHipResolved,
-    shouldRunSleevelessBodyBlockForPullover: shouldRunBodyBlock,
-    hipSentToBodyBlock: hipForBodyBlock,
-    explicitCustomBuildStraight: isSleevelessExplicitCustomBuildStraight(
-      patternData,
-      finishedBust,
-      finishedHipResolved,
-    ),
-    measurementsImplyAline: measurementsImplySleevelessAlineBody(
-      finishedBust,
-      finishedHipResolved,
-    ),
-    bodyBlockCalled: false,
-    bodyShapeKind: undefined,
-    shapingDirection: undefined,
-    bodyBlockHemStitches: undefined,
-    bodyBlockBustStitches: undefined,
-    shapingEventsCount: undefined,
-    finalCastOnStitches: castOnSts,
-  };
   if (shouldRunBodyBlock) {
     const bodyBlockPlan = buildSleevelessBodyBlockPlan({
       garmentStyle: "pullover",
@@ -1959,15 +1922,6 @@ export function generateSleevelessBackPattern(
       mode: "auto",
       precomputedBustStitches: bustBodySts,
     });
-    bodyBlockRuntime = {
-      ...bodyBlockRuntime,
-      bodyBlockCalled: true,
-      bodyShapeKind: bodyBlockPlan.bodyShapeKind,
-      shapingDirection: bodyBlockPlan.shapingDirection,
-      bodyBlockHemStitches: bodyBlockPlan.hemStitches,
-      bodyBlockBustStitches: bodyBlockPlan.bustStitches,
-      shapingEventsCount: bodyBlockPlan.shapingEvents.length,
-    };
     bodyDiagramGuides = bodyBlockPlan.diagramGuides;
     if (bustBodySts > 0) {
       castOnSts =
@@ -1985,7 +1939,10 @@ export function generateSleevelessBackPattern(
         );
       }
     }
-    bodyBlockRuntime.finalCastOnStitches = castOnSts;
+    bodyDiagramGuides = diagramGuidesForAppliedBodyShaping(
+      bodyDiagramGuides,
+      alineBodyShaping !== null,
+    );
   }
   /* --- end body block --- */
 
@@ -2519,7 +2476,6 @@ export function generateSleevelessBackPattern(
     hemCastOnStitches: castOnSts,
     hipRowsFromHem: alineBodyShaping !== null ? alineBodyShaping.hipRowsFromHem : undefined,
     diagramGuides: bodyDiagramGuides,
-    bodyBlockRuntime,
     shoulderWidthInches: shoulderWidthIn,
     stitchesAfterArmhole,
     armholeStitchesTotal,

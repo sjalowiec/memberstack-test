@@ -22,7 +22,6 @@ import {
   centerBindOffStitchesFromNeckShoulderChart,
   generateSleevelessBackPattern,
 } from "../lib/patterns/sleevelessPatternOutput.ts";
-import { buildSleevelessBodyBlockDebugPanelHtml } from "../lib/patterns/sleevelessBodyBlockDebugHtml.ts";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
   renderActiveShoulderChartIntroHtml,
@@ -67,6 +66,9 @@ import {
   type SleevelessBackPatternDebug,
 } from "../lib/patterns/sleevelessPatternOutput.ts";
 import { sleevelessHelpVideoFromCatalog } from "../lib/patterns/sleevelessCatalogHelpVideo.ts";
+import { resolveEffectiveFinishedBustInches } from "../lib/patterns/customBuildEffectiveFinishedBust.ts";
+import { resolveDiagramFinishedHipInches } from "../lib/patterns/customBuildEffectiveFinishedHip.ts";
+import { resolveEffectiveSleevelessBodyShapePhrase } from "../lib/patterns/sleevelessAlineShaping.ts";
 
 // DEV-only cardigan half-front schematic: sessionStorage or localStorage key `kbmDevCardiganHalfFrontLeft` = "1" (vite dev).
 
@@ -304,12 +306,18 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     }
   }
 
-  function garmentShapeLengthPhrase(st) {
+  function garmentShapeLengthPhrase(st, patternData) {
+    const finishedBust = resolveEffectiveFinishedBustInches(patternData);
+    const finishedHip = resolveDiagramFinishedHipInches(patternData, finishedBust);
+    const effective = resolveEffectiveSleevelessBodyShapePhrase(
+      patternData,
+      finishedBust,
+      finishedHip,
+    );
+    if (effective) return effective;
+
     const shapeKey = st.bodyShape;
     const lenKey = st.length;
-
-    if (shapeKey === "straight") return "straight body";
-    if (shapeKey === "aline") return "A-line body";
 
     const shapeWord =
       shapeKey === "gathered"
@@ -360,7 +368,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
 
     const aud = audienceLabelFromPattern(st, ft);
     const size = ft.selectedSize != null && String(ft.selectedSize).trim() ? String(ft.selectedSize).trim() : "";
-    const garment = garmentShapeLengthPhrase(st);
+    const garment = garmentShapeLengthPhrase(st, patternData);
     const neck = necklineIntroPhrase(st);
     const front = frontIntroPhrase(st);
     const gaugeStr = formatGaugeIntroPhrase(ygm, yg);
@@ -2302,19 +2310,6 @@ table {
     return document.querySelector(".sleeveless-pattern-page .pattern-tabs");
   }
 
-  /** Temporary visible audit for live body-block wiring (remove after verification). */
-  function renderSleevelessBodyBlockDebugPanel(bodyBlockRuntime) {
-    const patternContent = document.querySelector("[data-pattern-content]");
-    if (!patternContent) return;
-    let host = patternContent.querySelector("[data-sleeveless-body-block-debug]");
-    if (!host) {
-      host = document.createElement("div");
-      host.setAttribute("data-sleeveless-body-block-debug", "");
-      patternContent.insertBefore(host, patternContent.firstChild);
-    }
-    host.innerHTML = buildSleevelessBodyBlockDebugPanelHtml(bodyBlockRuntime);
-  }
-
   function updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, validationOk) {
     const body = document.querySelector("[data-sg-pattern-print-basics-body]");
     if (!(body instanceof HTMLElement)) return;
@@ -2360,8 +2355,6 @@ table {
 
     const genInput = buildGeneratorPatternData(patternMerged);
     const result = generateSleevelessBackPattern(genInput);
-
-    renderSleevelessBodyBlockDebugPanel(result.debug?.bodyBlockRuntime);
 
     const yg = section(patternMerged.yarnGauge);
     const ygm =

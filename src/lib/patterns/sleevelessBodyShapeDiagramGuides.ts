@@ -70,6 +70,27 @@ function guideOffsetPx(
   return Math.max(minFlare, scaled);
 }
 
+/**
+ * Diagram overlays follow applied A-line shaping in the generator, not body-block inference alone.
+ * When shaping is not active, hide guides and use straight silhouette stitch counts.
+ */
+export function diagramGuidesForAppliedBodyShaping(
+  planGuides: SleevelessBodyDiagramGuides,
+  alineShapingActive: boolean,
+): SleevelessBodyDiagramGuides {
+  if (!alineShapingActive) {
+    return {
+      ...planGuides,
+      showBodyShapeGuides: false,
+      bodyShapeKind: "straight",
+      shapingDirection: "none",
+      hemStitches: planGuides.bustStitches,
+      hemCircumferenceInches: planGuides.bustCircumferenceInches,
+    };
+  }
+  return planGuides;
+}
+
 /** Halve full-body guide stitch counts for one cardigan front panel schematic. */
 export function scaleDiagramGuidesForCardiganHalf(
   guides: SleevelessBodyDiagramGuides,

@@ -104,27 +104,40 @@ export function shouldApplySleevelessAlineShapingFromMeasurements(
   return measurementsImplySleevelessAlineBody(finishedBust, finishedHip);
 }
 
-/** Temporary runtime audit surfaced on the Pattern tab (remove after live verification). */
-export type SleevelessBodyBlockRuntimeDebug = {
-  garmentStyle: string;
-  frontStyle: string;
-  garmentKindSource: string;
-  patternMode: string;
-  styleBodyShape: string;
-  effectiveBustInches: number | undefined;
-  effectiveHipInches: number | undefined;
-  shouldRunSleevelessBodyBlockForPullover: boolean;
-  hipSentToBodyBlock: number | undefined;
-  explicitCustomBuildStraight: boolean;
-  measurementsImplyAline: boolean;
-  bodyBlockCalled: boolean;
-  bodyShapeKind: string | undefined;
-  shapingDirection: string | undefined;
-  bodyBlockHemStitches: number | undefined;
-  bodyBlockBustStitches: number | undefined;
-  shapingEventsCount: number | undefined;
-  finalCastOnStitches: number;
-};
+/**
+ * Resolved body shape for labels and diagrams — matches {@link resolveBodyBlockHipCircumferenceInches}
+ * and when the generator applies {@link SleevelessAlineBodyShapingPlan} (hip ≠ bust within tolerance).
+ */
+export function resolveEffectiveSleevelessBodyShapeKind(
+  patternData: Record<string, unknown>,
+  finishedBust: number | undefined,
+  finishedHip: number | undefined,
+): "straight" | "aline" {
+  if (finishedBust === undefined || finishedBust <= 0) return "straight";
+  if (!shouldApplySleevelessAlineShapingFromMeasurements(patternData, finishedBust, finishedHip)) {
+    return "straight";
+  }
+  const hipForBodyBlock = resolveBodyBlockHipCircumferenceInches(
+    patternData,
+    finishedBust,
+    finishedHip,
+  );
+  if (!measurementsImplySleevelessAlineBody(finishedBust, hipForBodyBlock)) {
+    return "straight";
+  }
+  return "aline";
+}
+
+/** Short phrase for pattern summary (“straight body” / “A-line body”). */
+export function resolveEffectiveSleevelessBodyShapePhrase(
+  patternData: Record<string, unknown>,
+  finishedBust: number | undefined,
+  finishedHip: number | undefined,
+): string {
+  return resolveEffectiveSleevelessBodyShapeKind(patternData, finishedBust, finishedHip) === "aline"
+    ? "A-line body"
+    : "straight body";
+}
 
 function formatRcColon(rc: number): string {
   const n = Math.max(0, Math.floor(rc));
