@@ -612,6 +612,38 @@
     overflow: visible;
   }
 
+  /* Dev-only Japanese notation PoC (sample placeholders). */
+  #pattern-content .sleeveless-jp-notation-poc {
+    margin-top: 1.25rem;
+    padding: 0.75rem 0.5rem 0;
+    border-top: 1px dashed var(--pattern-border-muted, #bcbec0);
+  }
+
+  #pattern-content .sleeveless-jp-notation-poc__label {
+    margin: 0 0 0.5rem;
+    font-size: 0.85rem;
+    color: var(--pattern-text-muted, #555);
+  }
+
+  #pattern-content .sleeveless-jp-notation-poc__inner {
+    max-width: 14rem;
+    margin: 0 auto;
+  }
+
+  #pattern-content .sleeveless-jp-notation-poc__svg {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  #pattern-content .sleeveless-jp-notation-poc__inline {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
   .sleeveless-diagram-modal[hidden] {
     display: none !important;
   }

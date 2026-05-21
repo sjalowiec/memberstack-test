@@ -47,6 +47,14 @@ import {
 } from "../lib/patterns/sleevelessBodyShapeDiagramGuides.ts";
 import { buildSleevelessGarmentDiagramReplacements } from "../lib/patterns/sleevelessGarmentDiagramReplacements.ts";
 import {
+  JP_BACK_NOTATION_SVG_SRC,
+  applyJapaneseNotationSvgReplacements,
+} from "../lib/patterns/sleevelessJapaneseNotationSvg.ts";
+import {
+  buildBackJapaneseNotationReplacements,
+  isBackJapaneseNotationSupported,
+} from "../lib/patterns/sleevelessBackJapaneseNotation.ts";
+import {
   buildSleevelessPrintBasicsSummaryDlHtml,
   buildSleevelessScreenBasicsSummaryDlHtml,
   formatGaugeIntroPhrase,
@@ -753,6 +761,76 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       console.warn("[sleeveless] Diagram load failed:", err);
       if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
       hostEl.innerHTML = `<p class="sleeveless-pattern-boot-msg">Diagram unavailable.</p>`;
+    }
+  }
+
+  const JP_NOTATION_DIAGRAM_HINT =
+    "Click diagram to enlarge \u2022 Shaping notation reads bottom-up";
+
+  /** Dev-only: Japanese notation SVG PoC (live back pullover round-neck replacements). */
+  async function hydrateJapaneseNotationPoCPreview(root, result, patternData, hydrateGeneration) {
+    if (!import.meta.env.DEV || !root || !result) return;
+    if (!isBackJapaneseNotationSupported(patternData, result)) return;
+
+    const backSection = root.querySelector("#sg-back");
+    if (!backSection) return;
+
+    let host = backSection.querySelector("[data-jp-notation-poc-svg]");
+    if (!host) {
+      const aside = document.createElement("aside");
+      aside.className = "sleeveless-jp-notation-poc pattern-subtext";
+      aside.dataset.jpNotationPoc = "";
+      aside.setAttribute("aria-label", "Japanese notation diagram (development preview)");
+      aside.innerHTML =
+        '<p class="sleeveless-jp-notation-poc__label">Japanese notation (PoC preview)</p>' +
+        '<div class="sleeveless-jp-notation-poc__inner">' +
+        '<div class="sleeveless-jp-notation-poc__svg" data-jp-notation-poc-svg></div>' +
+        '<p class="sleeveless-piece-split__diagram-hint" data-jp-notation-diagram-hint>' +
+        '<i class="fa-solid fa-magnifying-glass sleeveless-piece-split__diagram-hint-icon" aria-hidden="true"></i> ' +
+        JP_NOTATION_DIAGRAM_HINT +
+        "</p></div>";
+      const split = backSection.querySelector(".sleeveless-piece-split");
+      if (split) split.after(aside);
+      else backSection.appendChild(aside);
+      host = aside.querySelector("[data-jp-notation-poc-svg]");
+    }
+    if (!(host instanceof HTMLElement)) return;
+
+    const hydrateGen =
+      hydrateGeneration === undefined || hydrateGeneration === null
+        ? null
+        : String(hydrateGeneration);
+    if (hydrateGen) host.dataset.jpNotationHydrateGen = hydrateGen;
+
+    try {
+      const res = await fetch(JP_BACK_NOTATION_SVG_SRC, { credentials: "same-origin" });
+      if (!res.ok) throw new Error(`Failed to load SVG: ${JP_BACK_NOTATION_SVG_SRC} (${res.status})`);
+      const jpReplacements = buildBackJapaneseNotationReplacements(result, patternData);
+      const svgText = applyJapaneseNotationSvgReplacements(await res.text(), jpReplacements);
+
+      const parser = new DOMParser();
+      let doc = parser.parseFromString(svgText, "image/svg+xml");
+      let svg = doc.documentElement;
+      if (!svg || svg.nodeName.toLowerCase() !== "svg" || doc.querySelector("parsererror")) {
+        doc = parser.parseFromString(svgText, "text/xml");
+        svg = doc.documentElement;
+      }
+      if (!svg || svg.nodeName.toLowerCase() !== "svg") {
+        const pe = doc.querySelector("parsererror");
+        throw new Error(pe ? pe.textContent || "SVG parse error" : "SVG parse error");
+      }
+
+      svg.setAttribute("role", "img");
+      svg.setAttribute("aria-label", "Japanese notation back piece (live pattern values)");
+      svg.classList.add("sleeveless-jp-notation-poc__inline");
+
+      if (hydrateGen && host.dataset.jpNotationHydrateGen !== hydrateGen) return;
+      host.innerHTML = svg.outerHTML;
+    } catch (err) {
+      console.warn("[sleeveless] Japanese notation PoC preview failed:", err);
+      if (hydrateGen && host.dataset.jpNotationHydrateGen !== hydrateGen) return;
+      host.innerHTML =
+        '<p class="sleeveless-pattern-boot-msg">Japanese notation preview unavailable.</p>';
     }
   }
 
@@ -2190,6 +2268,9 @@ table {
       frontResolution: frontDiagramResolution,
       hydrateGeneration: renderSeq,
     });
+    if (renderSeq !== sleevelessRenderMountSeq) return;
+
+    await hydrateJapaneseNotationPoCPreview(mount, result, diagramPatternData, renderSeq);
     if (renderSeq !== sleevelessRenderMountSeq) return;
 
     ensureSleevelessDiagramModal();
