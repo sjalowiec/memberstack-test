@@ -14,6 +14,10 @@ import {
   isBackJapaneseNotationSupported,
 } from "./sleevelessBackJapaneseNotation";
 import {
+  shoulderShapingNotationLinesFromTimeline,
+  totalStitchesFromShapingNotationLines,
+} from "./shoulderShapingNotation";
+import {
   assertJapaneseNotationSvgFullyReplaced,
   listJapaneseNotationPlaceholdersInSvg,
 } from "./sleevelessJapaneseNotationSvg";
@@ -86,6 +90,16 @@ describe("buildBackJapaneseNotationReplacements", () => {
     expect(repl.rc_reset).toContain("↺");
     if (result.debug.backNecklineStartLocalRC !== undefined) {
       expect(repl["rc-neckline-start"]).toBe(formatRcNotation(result.debug.backNecklineStartLocalRC));
+    }
+
+    const shoulderLines = shoulderShapingNotationLinesFromTimeline(
+      result.backNeckShoulderTimeline ?? [],
+      "right",
+    );
+    expect(repl["jp-shoulder-shaping"]).toBe(shoulderLines.join("\n"));
+    expect(repl["jp-shoulder-shaping"]).not.toMatch(/^bo/i);
+    if (result.debug.shoulderStitches) {
+      expect(totalStitchesFromShapingNotationLines(shoulderLines)).toBe(result.debug.shoulderStitches);
     }
   });
 

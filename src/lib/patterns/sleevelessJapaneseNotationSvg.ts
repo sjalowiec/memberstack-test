@@ -124,7 +124,7 @@ export const SAMPLE_JP_BACK_NOTATION_REPLACEMENTS: Record<string, string> = {
   "jp-armhole-shaping": "1s-2r-10x",
   "jp-neckline-bo": "bo14",
   "jp-neckline-shaping": "1s-2r-4x\n2s-1r-1x\n3s-2r-2x",
-  "jp-shoulder-shaping": "bo5s-2r-1x\nbo4s-2r-4x",
+  "jp-shoulder-shaping": "5s-2r-1x\n4s-2r-4x",
   "rc-caston": "rc000",
   "rc-hem": "rc020",
   "rc-neckline-start": "rc014",

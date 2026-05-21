@@ -11,6 +11,10 @@ import {
   compressStitchDecreasePointsToNotationLines,
   type StitchDecreasePoint,
 } from "./shapingNotationCompress";
+import {
+  collectCompleteShoulderShapingPoints,
+  shoulderShapingNotationLinesFromTimeline,
+} from "./shoulderShapingNotation";
 import type { RowEntry } from "./shapingTimeline";
 
 /** Diagram side for back neckline/shoulder notation (matches shoulder overlay convention). */
@@ -90,10 +94,6 @@ export function formatDecreaseNotationLines(points: readonly StitchDecreasePoint
   return compressStitchDecreasePointsToNotationLines(points);
 }
 
-export function formatBindOffNotationLines(points: readonly StitchDecreasePoint[]): string[] {
-  return compressStitchDecreasePointsToNotationLines(points).map((line) => `bo${line}`);
-}
-
 /**
  * Split per-side armhole stitch removal into bind-off vs decrease counts
  * (same distribution as {@link calculateArmholeShaping}, using stored per-side total only).
@@ -107,24 +107,6 @@ export function armholeBindOffDecreaseFromEachSide(stitchesPerSide: number): Pic
   const bindOffSts = Math.round(side / 2);
   const decreaseSts = side - bindOffSts;
   return { bindOffSts, decreaseSts };
-}
-
-function collectOuterShoulderBindOffPoints(
-  timeline: readonly RowEntry[],
-  side: "left" | "right",
-): StitchDecreasePoint[] {
-  return [...timeline]
-    .sort((a, b) => a.row - b.row)
-    .map((entry) => {
-      let amount = 0;
-      for (const ev of entry.events) {
-        if (ev.kind !== "bindOff" || ev.edge !== "outer") continue;
-        if (side === "left" ? ev.side !== "left" : ev.side !== "right") continue;
-        amount += ev.amount;
-      }
-      return { row: entry.row, amount };
-    })
-    .filter((p) => p.amount > 0);
 }
 
 function joinNotationLines(lines: readonly string[]): string {
@@ -199,12 +181,15 @@ export function buildBackJapaneseNotationReplacements(
 
   const shoulderBindOffPoints =
     timeline.length > 0
-      ? collectOuterShoulderBindOffPoints(timeline, BACK_NOTATION_DIAGRAM_SIDE)
+      ? collectCompleteShoulderShapingPoints(timeline, BACK_NOTATION_DIAGRAM_SIDE)
       : [];
 
   const armholeShapingLines = formatDecreaseNotationLines(armholeDecreasePoints);
   const necklineShapingLines = formatDecreaseNotationLines(necklineDecreasePoints);
-  const shoulderShapingLines = formatBindOffNotationLines(shoulderBindOffPoints);
+  const shoulderShapingLines =
+    timeline.length > 0
+      ? shoulderShapingNotationLinesFromTimeline(timeline, BACK_NOTATION_DIAGRAM_SIDE)
+      : [];
 
   const hemRows = d.hemRows;
   const necklineLocalRc = d.backNecklineStartLocalRC;

@@ -14,10 +14,8 @@ import {
   JP_BACK_NOTATION_SVG_TOKEN_KEYS,
   type JpBackNotationSvgTokenKey,
 } from "./sleevelessBackJapaneseNotation";
-import {
-  neckEdgeNotationLinesFromNeckShoulderChart,
-  shoulderEdgeNotationLinesFromNeckShoulderChart,
-} from "./notationOverlaySvg";
+import { neckEdgeNotationLinesFromNeckShoulderChart } from "./notationOverlaySvg";
+import { shoulderShapingNotationLinesFromTimeline } from "./shoulderShapingNotation";
 import {
   isSleevelessCardiganGarmentStyle,
   isSleevelessVNeckChoice,
@@ -112,10 +110,11 @@ export function buildFrontJapaneseNotationReplacements(
     frontChart,
     FRONT_NOTATION_DIAGRAM_SIDE,
   );
-  const shoulderShapingLines = shoulderEdgeNotationLinesFromNeckShoulderChart(
-    frontChart,
-    FRONT_NOTATION_DIAGRAM_SIDE,
-  );
+  const frontTimeline = result.frontNeckShoulderTimeline ?? frontChart.timeline ?? [];
+  const shoulderShapingLines =
+    frontTimeline.length > 0
+      ? shoulderShapingNotationLinesFromTimeline(frontTimeline, FRONT_NOTATION_DIAGRAM_SIDE)
+      : [];
 
   const hemRows = d.hemRows;
   const necklineLocalRc = d.frontNecklineStartLocalRC;

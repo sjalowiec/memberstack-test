@@ -4,6 +4,7 @@ import {
   compressStitchDecreasePointsToNotationLines,
   type StitchDecreasePoint,
 } from "./shapingNotationCompress";
+import { shoulderShapingNotationLinesFromTimeline } from "./shoulderShapingNotation";
 
 type DiagramSide = "left" | "right";
 type EdgeKind = "neck" | "shoulder";
@@ -102,14 +103,14 @@ function notationLinesForEdge(
   edge: EdgeKind,
   overlayOpts?: NotationOverlayDiagramOptions,
 ): string[] {
-  if (
-    edge === "neck" &&
-    overlayOpts?.innerNeckNotationFromTimeline === true &&
-    chart.timeline &&
-    chart.timeline.length > 0
-  ) {
-    const pts = collectInnerNeckDecreasePointsFromTimeline(chart.timeline, side);
-    return compressStitchDecreasePointsToNotationLines(pts);
+  if (chart.timeline && chart.timeline.length > 0) {
+    if (edge === "shoulder") {
+      return shoulderShapingNotationLinesFromTimeline(chart.timeline, side);
+    }
+    if (edge === "neck" && overlayOpts?.innerNeckNotationFromTimeline === true) {
+      const pts = collectInnerNeckDecreasePointsFromTimeline(chart.timeline, side);
+      return compressStitchDecreasePointsToNotationLines(pts);
+    }
   }
   const points = collectEdgePoints(chart.rows, side, edge);
   return compressStitchDecreasePointsToNotationLines(points);

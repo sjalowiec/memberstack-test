@@ -63,10 +63,10 @@ describe("applyJapaneseNotationSvgReplacements", () => {
     const out = applyJapaneseNotationSvgReplacements(rawSvg, SAMPLE_JP_BACK_NOTATION_REPLACEMENTS);
 
     expect(out).toMatch(
-      /<text transform="translate\(30\.05 50\.58\)"[^>]*>\s*<tspan x="0" y="0">3s-2r-2x<\/tspan>\s*<tspan x="0" dy="14\.4">2s-1r-1x<\/tspan>\s*<tspan x="0" dy="14\.4">1s-2r-4x<\/tspan>\s*<\/text>/,
+      /<text transform="translate\(86\.22 151\.8\)"[^>]*>\s*<tspan x="0" y="0">3s-2r-2x<\/tspan>\s*<tspan x="0" dy="14\.4">2s-1r-1x<\/tspan>\s*<tspan x="0" dy="14\.4">1s-2r-4x<\/tspan>\s*<\/text>/,
     );
     expect(out).toMatch(
-      /<text font-family="MyriadPro-Regular[^"]*" font-size="14">\s*<tspan x="149\.81" y="57\.88">bo4s-2r-4x<\/tspan>\s*<tspan x="149\.81" dy="14\.4">bo5s-2r-1x<\/tspan>\s*<\/text>/,
+      /<text transform="translate\(175\.17 94\.74\)"[^>]*>\s*<tspan x="0" y="0">4s-2r-4x<\/tspan>\s*<tspan x="0" dy="14\.4">5s-2r-1x<\/tspan>\s*<\/text>/,
     );
   });
 
@@ -76,7 +76,7 @@ describe("applyJapaneseNotationSvgReplacements", () => {
       "jp-neckline-shaping": "A\nB",
     });
 
-    expect(out).toContain('transform="translate(30.05 50.58)"');
+    expect(out).toContain('transform="translate(86.22 151.8)"');
   });
 
   it("places single-line replacement at the placeholder text element transform", () => {
@@ -131,7 +131,7 @@ describe("diagram-jp-front-round.svg multiline shaping", () => {
     const out = applyJapaneseNotationSvgReplacements(rawSvg, SAMPLE_JP_BACK_NOTATION_REPLACEMENTS);
 
     expect(out).toMatch(
-      /<text transform="translate\(97\.63 44\.87\)"[^>]*>\s*<tspan x="0" y="0">3s-2r-2x<\/tspan>\s*<tspan x="0" dy="14\.4">2s-1r-1x<\/tspan>\s*<tspan x="0" dy="14\.4">1s-2r-4x<\/tspan>\s*<\/text>/,
+      /<text transform="translate\(86\.22 151\.8\)"[^>]*>\s*<tspan x="0" y="0">3s-2r-2x<\/tspan>\s*<tspan x="0" dy="14\.4">2s-1r-1x<\/tspan>\s*<tspan x="0" dy="14\.4">1s-2r-4x<\/tspan>\s*<\/text>/,
     );
     expect(findUnreplacedJapaneseNotationPlaceholders(out)).toEqual([]);
   });

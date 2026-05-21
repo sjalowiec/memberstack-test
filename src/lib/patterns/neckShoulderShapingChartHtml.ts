@@ -28,6 +28,7 @@ import {
   activeShoulderIntroUsesVNeckDivideCopy,
   SCRAP_OFF_GLOSSARY_ID,
 } from "./neckShoulderActiveIntroCopy";
+import { finalShoulderRemainderStitches } from "./shoulderShapingNotation";
 import {
   CARRIAGE_POSITION_PATTERN_TIP_DETAILS_HTML,
   centerBindOffStitchesFromNeckShoulderChart,
@@ -490,6 +491,17 @@ function buildActiveSideActionsFromTimeline(timeline: readonly RowEntry[]): {
       if (action) actions.push(action);
     }
   }
+  const remainder = finalShoulderRemainderStitches(timeline, "right");
+  if (remainder > 0) {
+    actions.push({
+      sourceRelativeRow: finalSourceRelativeRow + 1,
+      edge: "Armhole",
+      amount: remainder,
+      kind: "bindOff",
+    });
+    finalSourceRelativeRow += 1;
+  }
+
   return {
     initialStitches: Math.max(0, Math.floor(center.stitchesR)),
     finalSourceRelativeRow,
@@ -531,6 +543,18 @@ function buildActiveSideActionsFromChartRows(rows: readonly NeckShoulderShapingC
     if (armhole > 0) {
       actions.push({ sourceRelativeRow: rel, edge: "Armhole", amount: armhole, kind: "bindOff" });
     }
+  }
+  const lastSource = sourceRows[sourceRows.length - 1];
+  const remainder = lastSource ? Math.max(0, Math.floor(lastSource.rightStitchCount)) : 0;
+  const lastArmhole = lastSource ? parseDecreaseCell(lastSource.rightSide) : 0;
+  if (remainder > 0 && lastArmhole < remainder) {
+    actions.push({
+      sourceRelativeRow: finalSourceRelativeRow + 1,
+      edge: "Armhole",
+      amount: remainder,
+      kind: "bindOff",
+    });
+    finalSourceRelativeRow += 1;
   }
   return { initialStitches, finalSourceRelativeRow, actions };
 }
