@@ -5,7 +5,7 @@
 
 import type { ArmholeResult } from "./legoBlocks/armholeShaping";
 import { collectInnerNeckDecreasePointsFromTimeline } from "./notationOverlaySvg";
-import { isSleevelessCardiganGarmentStyle, isSleevelessVNeckChoice } from "./sleevelessFrontDiagramSrc";
+import { isSleevelessCardiganGarmentStyle } from "./sleevelessFrontDiagramSrc";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import {
   compressStitchDecreasePointsToNotationLines,
@@ -136,7 +136,6 @@ export function isBackJapaneseNotationSupported(
   result: SleevelessBackPatternResult,
 ): boolean {
   if (isSleevelessCardiganGarmentStyle(patternData)) return false;
-  if (isSleevelessVNeckChoice(patternData)) return false;
   if (!result.neckShoulderChartUsesLiveRows) return false;
   if (result.neckShoulderShapingChart.sleevelessFullWidthVNeckFront === true) return false;
   return true;

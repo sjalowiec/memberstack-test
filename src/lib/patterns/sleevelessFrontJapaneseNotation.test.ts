@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  formatBindOffNotation,
   formatCastOnNotation,
   formatRcNotation,
   garmentRcAtArmholeStart,
@@ -10,8 +11,10 @@ import {
   JP_FRONT_NOTATION_SVG_TOKEN_KEYS,
   SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC,
   SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC,
+  SLEEVELESS_PULLOVER_V_FRONT_JP_NOTATION_DIAGRAM_SRC,
   buildFrontJapaneseNotationReplacements,
   isFrontJapaneseNotationSupported,
+  resolveSleevelessFrontDiagramSrc,
 } from "./sleevelessFrontJapaneseNotation";
 import { resolveSleevelessFrontDiagram } from "./sleevelessFrontDiagramSrc";
 import {
@@ -43,6 +46,11 @@ const JP_FRONT_SVG = readFileSync(
   "utf8",
 );
 
+const JP_FRONT_V_SVG = readFileSync(
+  resolve(process.cwd(), "public/images/patterns/sleeveless/diagrams/diagram-jp-front-v.svg"),
+  "utf8",
+);
+
 describe("isFrontJapaneseNotationSupported", () => {
   it("is true for pullover round neck with live front chart", () => {
     const result = demoSleevelessBackPattern();
@@ -50,7 +58,7 @@ describe("isFrontJapaneseNotationSupported", () => {
     expect(result.frontNeckShoulderChartUsesLiveRows).toBe(true);
   });
 
-  it("is false for cardigan and V-neck", () => {
+  it("is false for cardigan", () => {
     const cardigan = generateSleevelessBackPattern({
       fit: {
         sizingChart: "misses",
@@ -68,7 +76,9 @@ describe("isFrontJapaneseNotationSupported", () => {
     expect(isFrontJapaneseNotationSupported({ style: { garmentStyle: "cardigan" } }, cardigan)).toBe(
       false,
     );
+  });
 
+  it("is true for pullover V-neck with live front chart", () => {
     const vNeck = generateSleevelessBackPattern({
       fit: {
         sizingChart: "misses",
@@ -85,16 +95,16 @@ describe("isFrontJapaneseNotationSupported", () => {
       style: { neckline: "v-neck", recipientCategory: "misses" },
       yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
     });
-    expect(isFrontJapaneseNotationSupported({ style: { neckline: "v-neck" } }, vNeck)).toBe(false);
+    expect(vNeck.frontNeckShoulderChartUsesLiveRows).toBe(true);
+    expect(vNeck.frontNeckShoulderShapingChart.sleevelessFullWidthVNeckFront).toBe(true);
+    expect(isFrontJapaneseNotationSupported({ style: { neckline: "v-neck" } }, vNeck)).toBe(true);
   });
 });
 
 describe("round pullover front diagram routing", () => {
   it("uses diagram-front-round.svg for sts-rows and diagram-jp-front-round.svg for notation", () => {
-    const r = resolveSleevelessFrontDiagram(
-      { style: { garmentStyle: "pullover", neckline: "round" } },
-      { devForceCardiganHalfLeft: false },
-    );
+    const pattern = { style: { garmentStyle: "pullover", neckline: "round" } };
+    const r = resolveSleevelessFrontDiagram(pattern, { devForceCardiganHalfLeft: false });
     expect(r.diagramType).toBe("pulloverFullFrontRound");
     expect(r.src).toBe(SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC);
     expect(SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC).toBe(
@@ -102,6 +112,28 @@ describe("round pullover front diagram routing", () => {
     );
     expect(SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC).toBe(
       "/images/patterns/sleeveless/diagrams/diagram-jp-front-round.svg",
+    );
+    expect(resolveSleevelessFrontDiagramSrc("sts-rows", pattern)).toBe(SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC);
+    expect(resolveSleevelessFrontDiagramSrc("shaping-notation", pattern)).toBe(
+      SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC,
+    );
+  });
+});
+
+describe("v-neck pullover front diagram routing", () => {
+  it("uses diagram-front-v.svg for sts-rows and diagram-jp-front-v.svg for notation", () => {
+    const pattern = { style: { garmentStyle: "pullover", neckline: "v-neck" } };
+    const r = resolveSleevelessFrontDiagram(pattern, { devForceCardiganHalfLeft: false });
+    expect(r.diagramType).toBe("pulloverFullFrontV");
+    expect(r.src).toBe("/images/patterns/sleeveless/diagrams/diagram-front-v.svg");
+    expect(resolveSleevelessFrontDiagramSrc("sts-rows", pattern)).toBe(
+      "/images/patterns/sleeveless/diagrams/diagram-front-v.svg",
+    );
+    expect(resolveSleevelessFrontDiagramSrc("shaping-notation", pattern)).toBe(
+      SLEEVELESS_PULLOVER_V_FRONT_JP_NOTATION_DIAGRAM_SRC,
+    );
+    expect(SLEEVELESS_PULLOVER_V_FRONT_JP_NOTATION_DIAGRAM_SRC).toBe(
+      "/images/patterns/sleeveless/diagrams/diagram-jp-front-v.svg",
     );
   });
 });
@@ -117,6 +149,29 @@ describe("buildFrontJapaneseNotationReplacements", () => {
     const repl = buildFrontJapaneseNotationReplacements(result, {});
     expect(() => assertJapaneseNotationSvgFullyReplaced(JP_FRONT_SVG, repl)).not.toThrow();
     expect(Object.keys(repl).sort()).toEqual([...JP_FRONT_NOTATION_SVG_TOKEN_KEYS].sort());
+  });
+
+  it("replaces all jp/rc placeholders in diagram-jp-front-v.svg for V-neck pullover", () => {
+    const result = generateSleevelessBackPattern({
+      fit: {
+        sizingChart: "misses",
+        selectedMeasurements: {
+          finished_bust_chest: 40,
+          back_neck_to_hem: 22,
+          armhole_depth: 8,
+          neck_opening: 3,
+          shoulder_width: 4.25,
+          front_neck_depth: 3,
+          back_neck_depth: 1,
+        },
+      },
+      style: { neckline: "v-neck", recipientCategory: "misses" },
+      yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
+    });
+    const repl = buildFrontJapaneseNotationReplacements(result, { style: { neckline: "v-neck" } });
+    expect(() => assertJapaneseNotationSvgFullyReplaced(JP_FRONT_V_SVG, repl)).not.toThrow();
+    expect(repl["jp-caston"].length).toBeGreaterThan(0);
+    expect(repl["jp-neckline-bo"]).toBe("");
   });
 
   it("stacks multiline neckline shaping bottom-up (first replacement line lowest)", () => {
@@ -211,6 +266,10 @@ describe("buildFrontJapaneseNotationReplacements", () => {
     const repl = buildFrontJapaneseNotationReplacements(result, {});
     const castOn = result.debug.hemCastOnStitches ?? result.debug.backStitches;
 
+    expect(repl["jp-neckline-bo"]).toBe(
+      formatBindOffNotation(result.debug.centerNeckBindOffStitches ?? 0),
+    );
+    expect(repl["jp-neckline-bo"].length).toBeGreaterThan(0);
     expect(repl["jp-caston"]).toBe(formatCastOnNotation(castOn));
     expect(repl["jp-body-rows"]).toBe(`${result.debug.bodyRows}r`);
     expect(repl["rc-hem"]).toBe(formatRcNotation(result.debug.hemRows));

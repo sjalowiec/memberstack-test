@@ -32,7 +32,7 @@ describe("buildSleevelessGarmentDiagramPatternData", () => {
 
     expect(fromMergedOnly.diagramType).toBe("pulloverFullFrontRound");
     expect(fromDiagramData.diagramType).toBe("pulloverFullFrontV");
-    expect(fromDiagramData.src.endsWith("/diagram-front-V.svg")).toBe(true);
+    expect(fromDiagramData.src).toBe("/images/patterns/sleeveless/diagrams/diagram-front-v.svg");
   });
 
   it("matches full-width cardigan routing used by pattern generation", () => {

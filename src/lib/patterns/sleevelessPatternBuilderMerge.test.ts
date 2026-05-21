@@ -84,7 +84,7 @@ describe("buildGeneratorPatternDataFromSources V-neck front diagram routing", ()
     const diagramData = buildSleevelessGarmentDiagramPatternData(merged, gen);
     const front = resolveSleevelessFrontDiagram(diagramData, { devForceCardiganHalfLeft: false });
     expect(front.diagramType).toBe("pulloverFullFrontV");
-    expect(front.src).toBe("/images/patterns/sleeveless/diagram-front-V.svg");
+    expect(front.src).toBe("/images/patterns/sleeveless/diagrams/diagram-front-v.svg");
   });
 
   it("uses kbm canonical for resolve when merged display style is stale pullover", () => {
@@ -188,7 +188,7 @@ describe("buildGeneratorPatternDataFromSources V-neck front diagram routing", ()
     const diagramData = buildSleevelessGarmentDiagramPatternData(merged, gen);
     const front = resolveSleevelessFrontDiagram(diagramData, { devForceCardiganHalfLeft: false });
     expect(front.diagramType).toBe("pulloverFullFrontV");
-    expect(front.src).toBe("/images/patterns/sleeveless/diagram-front-V.svg");
+    expect(front.src).toBe("/images/patterns/sleeveless/diagrams/diagram-front-v.svg");
   });
 
   it("routes to diagram-front-V.svg when canonical round is stale but PB has v-neck", () => {
@@ -207,7 +207,7 @@ describe("buildGeneratorPatternDataFromSources V-neck front diagram routing", ()
     const diagramData = buildSleevelessGarmentDiagramPatternData(merged, gen);
     const front = resolveSleevelessFrontDiagram(diagramData, { devForceCardiganHalfLeft: false });
     expect(front.diagramType).toBe("pulloverFullFrontV");
-    expect(front.src).toBe("/images/patterns/sleeveless/diagram-front-V.svg");
+    expect(front.src).toBe("/images/patterns/sleeveless/diagrams/diagram-front-v.svg");
   });
 });
 

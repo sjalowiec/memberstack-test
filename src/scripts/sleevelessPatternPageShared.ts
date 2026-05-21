@@ -49,18 +49,15 @@ import {
   BACK_DIAGRAM_STS_ROWS_SRC,
   resolveSleevelessBackDiagramSrc,
 } from "../lib/patterns/sleevelessBackDiagramSrc.ts";
-import {
-  JP_FRONT_NOTATION_SVG_SRC,
-  applyJapaneseNotationSvgReplacements,
-} from "../lib/patterns/sleevelessJapaneseNotationSvg.ts";
+import { applyJapaneseNotationSvgReplacements } from "../lib/patterns/sleevelessJapaneseNotationSvg.ts";
 import {
   buildBackJapaneseNotationReplacements,
   isBackJapaneseNotationSupported,
 } from "../lib/patterns/sleevelessBackJapaneseNotation.ts";
 import {
-  SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC,
   buildFrontJapaneseNotationReplacements,
   isFrontJapaneseNotationSupported,
+  resolveSleevelessFrontDiagramSrc,
 } from "../lib/patterns/sleevelessFrontJapaneseNotation.ts";
 import {
   buildSleevelessPrintBasicsSummaryDlHtml,
@@ -926,7 +923,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         ? null
         : String(hydrateGeneration);
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
-    const fetchUrl = JP_FRONT_NOTATION_SVG_SRC;
+    const fetchUrl = resolveSleevelessFrontDiagramSrc("shaping-notation", patternData);
     console.log(frontJpLog, "fetch URL:", fetchUrl);
     try {
       const res = await fetch(fetchUrl, { credentials: "same-origin" });
@@ -1024,7 +1021,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     });
     await inlineSvgWithReplacements(
       el,
-      SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC,
+      resolveSleevelessFrontDiagramSrc("sts-rows", patternData),
       FRONT_DIAGRAM_STS_ROWS_ALT,
       replacements,
       hydrateGeneration,
@@ -2474,7 +2471,7 @@ table {
     }
     const frontNotationSupported = isFrontJapaneseNotationSupported(diagramPatternData, result);
     const frontWrapSrc = frontNotationSupported
-      ? SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC
+      ? resolveSleevelessFrontDiagramSrc("sts-rows", diagramPatternData)
       : frontDiagramResolution.src;
     const frontWrapped = wrapSleevelessPieceSplit(
       frontInner,

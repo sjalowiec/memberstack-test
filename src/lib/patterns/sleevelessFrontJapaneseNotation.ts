@@ -22,6 +22,7 @@ import {
   isSleevelessCardiganGarmentStyle,
   isSleevelessVNeckChoice,
   SLEEVELESS_PULLOVER_ROUND_FRONT_DIAGRAM_SRC,
+  SLEEVELESS_PULLOVER_V_FRONT_DIAGRAM_SRC,
 } from "./sleevelessFrontDiagramSrc";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import type { StitchDecreasePoint } from "./shapingNotationCompress";
@@ -32,6 +33,30 @@ export const SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC = SLEEVELESS_PULLOVER_ROUND_F
 /** Pullover round-neck front Japanese notation schematic (Shaping Notation mode). */
 export const SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC =
   "/images/patterns/sleeveless/diagrams/diagram-jp-front-round.svg";
+
+/** Pullover V-neck front Japanese notation schematic (Shaping Notation mode). */
+export const SLEEVELESS_PULLOVER_V_FRONT_JP_NOTATION_DIAGRAM_SRC =
+  "/images/patterns/sleeveless/diagrams/diagram-jp-front-v.svg";
+
+/** Alias used by Japanese notation fetch/replace (shaping notation mode, round pullover). */
+export const JP_FRONT_NOTATION_SVG_SRC = SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC;
+
+export type SleevelessFrontDiagramViewMode = "sts-rows" | "shaping-notation";
+
+/** Canonical pullover front garment diagram URL for the pattern-tab mode toggle. */
+export function resolveSleevelessFrontDiagramSrc(
+  mode: SleevelessFrontDiagramViewMode,
+  patternData: unknown,
+): string {
+  if (isSleevelessVNeckChoice(patternData)) {
+    return mode === "shaping-notation"
+      ? SLEEVELESS_PULLOVER_V_FRONT_JP_NOTATION_DIAGRAM_SRC
+      : SLEEVELESS_PULLOVER_V_FRONT_DIAGRAM_SRC;
+  }
+  return mode === "shaping-notation"
+    ? SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC
+    : SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC;
+}
 
 /** Token names in `diagram-jp-front-round.svg` (same keys as back notation). */
 export const JP_FRONT_NOTATION_SVG_TOKEN_KEYS = JP_BACK_NOTATION_SVG_TOKEN_KEYS;
@@ -49,9 +74,7 @@ export function isFrontJapaneseNotationSupported(
   result: SleevelessBackPatternResult,
 ): boolean {
   if (isSleevelessCardiganGarmentStyle(patternData)) return false;
-  if (isSleevelessVNeckChoice(patternData)) return false;
   if (!result.frontNeckShoulderChartUsesLiveRows) return false;
-  if (result.frontNeckShoulderShapingChart.sleevelessFullWidthVNeckFront === true) return false;
   return true;
 }
 
@@ -83,6 +106,8 @@ export function buildFrontJapaneseNotationReplacements(
 
   const centerNeckBindOff = d.centerNeckBindOffStitches;
   const frontChart = result.frontNeckShoulderShapingChart;
+  const isVNeckFront =
+    isSleevelessVNeckChoice(patternData) || frontChart.sleevelessFullWidthVNeckFront === true;
   const necklineShapingLines = neckEdgeNotationLinesFromNeckShoulderChart(
     frontChart,
     FRONT_NOTATION_DIAGRAM_SIDE,
@@ -101,7 +126,7 @@ export function buildFrontJapaneseNotationReplacements(
     "jp-body-rows": formatBodyRowsNotation(bodyRows),
     "jp-armhole-bo": formatBindOffNotation(bindOffSts),
     "jp-armhole-shaping": joinNotationLines(formatDecreaseNotationLines(armholeDecreasePoints)),
-    "jp-neckline-bo": formatBindOffNotation(centerNeckBindOff ?? 0),
+    "jp-neckline-bo": isVNeckFront ? "" : formatBindOffNotation(centerNeckBindOff ?? 0),
     "jp-neckline-shaping": joinNotationLines(necklineShapingLines),
     "jp-shoulder-shaping": joinNotationLines(shoulderShapingLines),
     "rc-caston": formatRcNotation(0),

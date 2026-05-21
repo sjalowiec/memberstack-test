@@ -115,10 +115,10 @@ describe("resolveSleevelessFrontDiagram", () => {
     expect(r.src).toBe("/images/patterns/sleeveless/diagrams/diagram-front-round.svg");
   });
 
-  it("routes pullover v-neck to diagram-front-V.svg", () => {
+  it("routes pullover v-neck to diagram-front-v.svg", () => {
     const r = resolveSleevelessFrontDiagram({ style: { neckline: "v-neck" } }, { devForceCardiganHalfLeft: false });
     expect(r.diagramType).toBe("pulloverFullFrontV");
-    expect(r.src.endsWith("/diagram-front-V.svg")).toBe(true);
+    expect(r.src).toBe("/images/patterns/sleeveless/diagrams/diagram-front-v.svg");
   });
 
   it("routes round-neck cardigan style to full-width schematic", () => {

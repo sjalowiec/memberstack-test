@@ -109,7 +109,7 @@ describe("buildBackJapaneseNotationReplacements", () => {
     expect(repl["jp-caston"]).toBe("");
   });
 
-  it("returns empty tokens for V-neck pullover", () => {
+  it("is supported for V-neck pullover with live back chart", () => {
     const result = generateSleevelessBackPattern({
       fit: {
         sizingChart: "misses",
@@ -126,6 +126,9 @@ describe("buildBackJapaneseNotationReplacements", () => {
       style: { neckline: "v-neck", recipientCategory: "misses" },
       yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
     });
-    expect(isBackJapaneseNotationSupported({ style: { neckline: "v-neck" } }, result)).toBe(false);
+    expect(result.neckShoulderChartUsesLiveRows).toBe(true);
+    expect(isBackJapaneseNotationSupported({ style: { neckline: "v-neck" } }, result)).toBe(true);
+    const repl = buildBackJapaneseNotationReplacements(result, { style: { neckline: "v-neck" } });
+    expect(repl["jp-caston"].length).toBeGreaterThan(0);
   });
 });
