@@ -6,9 +6,26 @@ interface Props {
   alt: string;
   caption?: string;
   class?: string;
+  loading?: "lazy" | "eager";
+  hintText?: string;
+  /** "below" shows hint under thumbnail; "overlay" shows magnifier hint on hover/focus (always visible on touch). */
+  hintStyle?: "below" | "overlay";
+  /** Lightbox image sizing: "contain" fits viewport (default); "readable" shows larger image with scroll/pan. */
+  modalFit?: "contain" | "readable";
 }
 
-const { src, alt, caption, class: className } = Astro.props;
+const {
+  src,
+  alt,
+  caption,
+  class: className,
+  loading = "lazy",
+  hintText = "View larger",
+  hintStyle = "below",
+  modalFit = "contain",
+} = Astro.props;
+
+const readableModal = modalFit === "readable";
 
 const rootId = `pattern-header-image-${randomUUID()}`;
 const dialogId = `pattern-header-lightbox-${randomUUID()}`;
@@ -16,7 +33,11 @@ const titleId = `pattern-header-lightbox-title-${randomUUID()}`;
 ---
 
 <div
-  class:list={["pattern-header-image", className]}
+  class:list={[
+    "pattern-header-image",
+    hintStyle === "overlay" && "pattern-header-image--hint-overlay",
+    className,
+  ]}
   id={rootId}
   data-ph-dialog={dialogId}
 >
@@ -33,6 +54,7 @@ const titleId = `pattern-header-lightbox-title-${randomUUID()}`;
         class="pattern-header-image__img"
         src={src}
         alt={alt}
+        loading={loading}
         decoding="async"
         draggable="false"
       />
@@ -54,7 +76,7 @@ const titleId = `pattern-header-lightbox-title-${randomUUID()}`;
         <circle cx="11" cy="11" r="7"></circle>
         <path d="M21 21l-4.3-4.3"></path>
       </svg>
-      <span class="pattern-header-image__hint-text">View larger</span>
+      <span class="pattern-header-image__hint-text">{hintText}</span>
     </span>
   </button>
   {
@@ -66,7 +88,10 @@ const titleId = `pattern-header-lightbox-title-${randomUUID()}`;
 
 <div
   id={dialogId}
-  class="pattern-header-lightbox"
+  class:list={[
+    "pattern-header-lightbox",
+    readableModal && "pattern-header-lightbox--readable",
+  ]}
   role="dialog"
   aria-modal="true"
   aria-labelledby={titleId}
@@ -86,13 +111,27 @@ const titleId = `pattern-header-lightbox-title-${randomUUID()}`;
     >
       ×
     </button>
-    <img
-      class="pattern-header-lightbox__img"
-      src={src}
-      alt={alt}
-      decoding="async"
-      draggable="false"
-    />
+    {
+      readableModal ? (
+        <div class="pattern-header-lightbox__scroll" data-phi-scroll>
+          <img
+            class="pattern-header-lightbox__img pattern-header-lightbox__img--readable"
+            src={src}
+            alt={alt}
+            decoding="async"
+            draggable="false"
+          />
+        </div>
+      ) : (
+        <img
+          class="pattern-header-lightbox__img"
+          src={src}
+          alt={alt}
+          decoding="async"
+          draggable="false"
+        />
+      )
+    }
     {
       caption && (
         <p class="pattern-header-lightbox__caption" aria-hidden="false">
@@ -287,6 +326,36 @@ const titleId = `pattern-header-lightbox-title-${randomUUID()}`;
     white-space: nowrap;
   }
 
+  .pattern-header-image--hint-overlay .pattern-header-image__frame {
+    position: relative;
+  }
+
+  .pattern-header-image--hint-overlay .pattern-header-image__hint {
+    position: absolute;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    z-index: 2;
+    margin: 0;
+    padding: 0.35rem 0.55rem;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+
+  .pattern-header-image--hint-overlay .pattern-header-image__trigger:hover .pattern-header-image__hint,
+  .pattern-header-image--hint-overlay .pattern-header-image__trigger:focus-visible .pattern-header-image__hint {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    .pattern-header-image--hint-overlay .pattern-header-image__hint {
+      opacity: 0.92;
+    }
+  }
+
   .pattern-header-image__caption {
     font-size: 0.75rem;
     color: #777;
@@ -407,6 +476,60 @@ const titleId = `pattern-header-lightbox-title-${randomUUID()}`;
     color: rgba(255, 255, 255, 0.92);
     text-align: center;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Readable lightbox: larger image, scroll/pan inside viewport (homepage screenshots). */
+  .pattern-header-lightbox--readable {
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0;
+    overflow: hidden;
+    cursor: default;
+  }
+
+  .pattern-header-lightbox--readable .pattern-header-lightbox__panel {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    padding: 3.5rem 0.75rem 1rem;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .pattern-header-lightbox--readable .pattern-header-lightbox__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-x pan-y pinch-zoom;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.25rem;
+    box-sizing: border-box;
+  }
+
+  .pattern-header-lightbox--readable .pattern-header-lightbox__img--readable {
+    width: min(1400px, 95vw);
+    max-width: none;
+    max-height: none;
+    height: auto;
+    object-fit: unset;
+    flex-shrink: 0;
+    display: block;
+    margin: auto;
+  }
+
+  .pattern-header-lightbox--readable .pattern-header-lightbox__caption {
+    flex-shrink: 0;
+    padding: 0 0.5rem 0.25rem;
   }
 </style>
 

@@ -43,7 +43,7 @@ describe("patternsFeaturePreviewModal", () => {
       stopPropagation,
       target: {
         closest: (sel: string) => {
-          if (sel !== ".patterns-page [data-feature-media]") return null;
+          if (sel !== "[data-patterns-feature-preview-root] [data-feature-media]") return null;
           return {
             tagName: "BUTTON",
             getAttribute: (name: string) => (name === "type" ? "button" : null),

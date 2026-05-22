@@ -1,7 +1,10 @@
 /**
- * Lazy-loaded feature preview modal for /patterns catalog page.
+ * Lazy-loaded feature preview modal for PatternsFeaturesSection.
  * Media loads only after a feature card is clicked; src is cleared on close.
  */
+
+const FEATURE_PREVIEW_ROOT_SELECTOR = "[data-patterns-feature-preview-root]";
+const FEATURE_PREVIEW_TRIGGER_SELECTOR = `${FEATURE_PREVIEW_ROOT_SELECTOR} [data-feature-media]`;
 
 export function normalizeFeatureMediaSrc(path: string): string {
   const trimmed = String(path ?? "").trim();
@@ -36,7 +39,7 @@ function isElementLike(node: unknown): node is Element {
 /** Resolves a feature card button from a click target; does not navigate or scroll. */
 export function resolveFeaturePreviewTriggerFromClick(target: unknown): HTMLElement | null {
   if (!isElementLike(target)) return null;
-  const trigger = target.closest(".patterns-page [data-feature-media]");
+  const trigger = target.closest(FEATURE_PREVIEW_TRIGGER_SELECTOR);
   if (!trigger || trigger.tagName !== "BUTTON") return null;
   const type = trigger.getAttribute("type");
   if (type && type !== "button") return null;
@@ -137,9 +140,11 @@ export function openPatternsFeaturePreviewModal(trigger: HTMLElement) {
 }
 
 export function initPatternsFeaturePreviewModal(root: ParentNode = document) {
-  const page = root.querySelector(".patterns-page");
-  if (!page || page.getAttribute("data-feature-preview-bound") === "true") return;
-  page.setAttribute("data-feature-preview-bound", "true");
+  if (!root.querySelector(FEATURE_PREVIEW_ROOT_SELECTOR)) return;
+  if (document.documentElement.getAttribute("data-patterns-feature-preview-initialized") === "true") {
+    return;
+  }
+  document.documentElement.setAttribute("data-patterns-feature-preview-initialized", "true");
 
   const modal = ensureFeaturePreviewModalOnBody();
   if (!modal) return;
