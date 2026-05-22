@@ -9,6 +9,10 @@ import {
 } from "./sleevelessBackJapaneseNotation";
 import {
   JP_FRONT_NOTATION_SVG_TOKEN_KEYS,
+  SLEEVELESS_CARDIGAN_ROUND_FRONT_DIAGRAM_SRC,
+  SLEEVELESS_CARDIGAN_ROUND_FRONT_JP_NOTATION_DIAGRAM_SRC,
+  SLEEVELESS_CARDIGAN_V_FRONT_DIAGRAM_SRC,
+  SLEEVELESS_CARDIGAN_V_FRONT_JP_NOTATION_DIAGRAM_SRC,
   SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC,
   SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC,
   SLEEVELESS_PULLOVER_V_FRONT_JP_NOTATION_DIAGRAM_SRC,
@@ -54,6 +58,16 @@ const JP_FRONT_V_SVG = readFileSync(
   "utf8",
 );
 
+const JP_CARDIGAN_ROUND_SVG = readFileSync(
+  resolve(process.cwd(), "public/images/patterns/sleeveless/diagrams/diagram-jp-cardigan-round.svg"),
+  "utf8",
+);
+
+const JP_CARDIGAN_V_SVG = readFileSync(
+  resolve(process.cwd(), "public/images/patterns/sleeveless/diagrams/diagram-jp-cardigan-v.svg"),
+  "utf8",
+);
+
 describe("isFrontJapaneseNotationSupported", () => {
   it("is true for pullover round neck with live front chart", () => {
     const result = demoSleevelessBackPattern();
@@ -61,7 +75,7 @@ describe("isFrontJapaneseNotationSupported", () => {
     expect(result.frontNeckShoulderChartUsesLiveRows).toBe(true);
   });
 
-  it("is false for cardigan", () => {
+  it("is true for round cardigan with live front chart", () => {
     const cardigan = generateSleevelessBackPattern({
       fit: {
         sizingChart: "misses",
@@ -73,11 +87,12 @@ describe("isFrontJapaneseNotationSupported", () => {
           shoulder_width: 4.25,
         },
       },
-      style: { garmentStyle: "cardigan", recipientCategory: "misses" },
+      style: { garmentStyle: "cardigan", frontStyle: "open", recipientCategory: "misses" },
       yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
     });
+    expect(cardigan.frontNeckShoulderChartUsesLiveRows).toBe(true);
     expect(isFrontJapaneseNotationSupported({ style: { garmentStyle: "cardigan" } }, cardigan)).toBe(
-      false,
+      true,
     );
   });
 
@@ -119,6 +134,34 @@ describe("round pullover front diagram routing", () => {
     expect(resolveSleevelessFrontDiagramSrc("sts-rows", pattern)).toBe(SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC);
     expect(resolveSleevelessFrontDiagramSrc("shaping-notation", pattern)).toBe(
       SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC,
+    );
+  });
+});
+
+describe("round cardigan front diagram routing", () => {
+  it("uses diagram-cardigan-round.svg for sts-rows and diagram-jp-cardigan-round.svg for notation", () => {
+    const pattern = { style: { garmentStyle: "cardigan", neckline: "round", frontStyle: "open" } };
+    const r = resolveSleevelessFrontDiagram(pattern, { devForceCardiganHalfLeft: false });
+    expect(r.diagramType).toBe("cardiganFullFrontRound");
+    expect(r.src).toBe(SLEEVELESS_CARDIGAN_ROUND_FRONT_DIAGRAM_SRC);
+    expect(resolveSleevelessFrontDiagramSrc("sts-rows", pattern)).toBe(
+      SLEEVELESS_CARDIGAN_ROUND_FRONT_DIAGRAM_SRC,
+    );
+    expect(resolveSleevelessFrontDiagramSrc("shaping-notation", pattern)).toBe(
+      SLEEVELESS_CARDIGAN_ROUND_FRONT_JP_NOTATION_DIAGRAM_SRC,
+    );
+  });
+});
+
+describe("v-neck cardigan front diagram routing", () => {
+  it("uses diagram-cardigan-v.svg for sts-rows and diagram-jp-cardigan-v.svg for notation", () => {
+    const pattern = { style: { garmentStyle: "cardigan", neckline: "v-neck" } };
+    const r = resolveSleevelessFrontDiagram(pattern, { devForceCardiganHalfLeft: false });
+    expect(r.diagramType).toBe("cardiganFullFrontV");
+    expect(r.src).toBe(SLEEVELESS_CARDIGAN_V_FRONT_DIAGRAM_SRC);
+    expect(resolveSleevelessFrontDiagramSrc("sts-rows", pattern)).toBe(SLEEVELESS_CARDIGAN_V_FRONT_DIAGRAM_SRC);
+    expect(resolveSleevelessFrontDiagramSrc("shaping-notation", pattern)).toBe(
+      SLEEVELESS_CARDIGAN_V_FRONT_JP_NOTATION_DIAGRAM_SRC,
     );
   });
 });
@@ -286,10 +329,19 @@ describe("buildFrontJapaneseNotationReplacements", () => {
     }
   });
 
-  it("returns empty tokens when unsupported", () => {
+  it("returns empty tokens when front chart is not live", () => {
     const svgTokens = listJapaneseNotationPlaceholdersInSvg(JP_FRONT_SVG);
     expect(svgTokens.length).toBeGreaterThan(0);
 
+    const result = demoSleevelessBackPattern();
+    const saved = result.frontNeckShoulderChartUsesLiveRows;
+    (result as { frontNeckShoulderChartUsesLiveRows: boolean }).frontNeckShoulderChartUsesLiveRows = false;
+    const repl = buildFrontJapaneseNotationReplacements(result, {});
+    expect(repl["jp-caston"]).toBe("");
+    (result as { frontNeckShoulderChartUsesLiveRows: boolean }).frontNeckShoulderChartUsesLiveRows = saved;
+  });
+
+  it("uses cardigan half-panel cast-on for round cardigan notation", () => {
     const result = generateSleevelessBackPattern({
       fit: {
         sizingChart: "misses",
@@ -301,10 +353,39 @@ describe("buildFrontJapaneseNotationReplacements", () => {
           shoulder_width: 4.25,
         },
       },
-      style: { garmentStyle: "cardigan", recipientCategory: "misses" },
+      style: { garmentStyle: "cardigan", frontStyle: "open", recipientCategory: "misses" },
       yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
     });
-    const repl = buildFrontJapaneseNotationReplacements(result, { style: { garmentStyle: "cardigan" } });
-    expect(repl["jp-caston"]).toBe("");
+    const patternData = { style: { garmentStyle: "cardigan", frontStyle: "open" } };
+    const repl = buildFrontJapaneseNotationReplacements(result, patternData);
+    expect(result.debug.cardiganHalfLeftCastOnSts).toBeDefined();
+    expect(repl["jp-caston"]).toBe(formatCastOnNotation(result.debug.cardiganHalfLeftCastOnSts!));
+    expect(repl["jp-caston"]).not.toBe(formatCastOnNotation(result.debug.backStitches ?? 0));
+    expect(() => assertJapaneseNotationSvgFullyReplaced(JP_CARDIGAN_ROUND_SVG, repl)).not.toThrow();
+  });
+
+  it("replaces all jp/rc placeholders in diagram-jp-cardigan-v.svg for V-neck cardigan", () => {
+    const result = generateSleevelessBackPattern({
+      fit: {
+        sizingChart: "misses",
+        selectedMeasurements: {
+          finished_bust_chest: 40,
+          back_neck_to_hem: 22,
+          armhole_depth: 8,
+          neck_opening: 3,
+          shoulder_width: 4.25,
+          front_neck_depth: 3,
+          back_neck_depth: 1,
+        },
+      },
+      style: { garmentStyle: "cardigan", neckline: "v-neck", recipientCategory: "misses" },
+      yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
+    });
+    const repl = buildFrontJapaneseNotationReplacements(result, {
+      style: { garmentStyle: "cardigan", neckline: "v-neck" },
+    });
+    expect(() => assertJapaneseNotationSvgFullyReplaced(JP_CARDIGAN_V_SVG, repl)).not.toThrow();
+    expect(repl["jp-neckline-bo"]).toBe("");
+    expect(repl["jp-caston"].length).toBeGreaterThan(0);
   });
 });

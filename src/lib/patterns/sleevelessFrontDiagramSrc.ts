@@ -5,13 +5,13 @@ import {
 } from "./cardiganFrontBlock";
 import { sectionPattern } from "./sleevelessPatternBuilderMerge";
 
-/** Full-width round-neck cardigan (`public/images/patterns/sleeveless/cardigan-round.svg`). */
+/** Round-neck cardigan front measurement schematic (Stitches & Rows mode). */
 export const SLEEVELESS_CARDIGAN_FULL_FRONT_ROUND_DIAGRAM_SRC =
-  "/images/patterns/sleeveless/cardigan-round.svg";
+  "/images/patterns/sleeveless/diagrams/diagram-cardigan-round.svg";
 
-/** Full-width V-neck cardigan (`public/images/patterns/sleeveless/cardigan-v.svg`). */
+/** V-neck cardigan front measurement schematic (Stitches & Rows mode). */
 export const SLEEVELESS_CARDIGAN_FULL_FRONT_V_DIAGRAM_SRC =
-  "/images/patterns/sleeveless/cardigan-v.svg";
+  "/images/patterns/sleeveless/diagrams/diagram-cardigan-v.svg";
 
 /** @deprecated Use {@link SLEEVELESS_CARDIGAN_FULL_FRONT_ROUND_DIAGRAM_SRC}. */
 export const SLEEVELESS_CARDIGAN_HALF_FRONT_ROUND_DIAGRAM_SRC =

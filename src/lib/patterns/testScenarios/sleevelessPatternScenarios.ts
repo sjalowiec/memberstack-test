@@ -17,7 +17,7 @@ export type SleevelessScenarioShoulderQa = {
   /** Timeline/chart shoulder stitch totals should reconcile to `debug.shoulderStitches`. */
   shoulderReconciliation: boolean;
   pieces: SleevelessScenarioPiece[];
-  /** `jp-shoulder-shaping` garment overview tokens are expected to be live (pullover only today). */
+  /** `jp-shoulder-shaping` garment overview tokens are expected to be live on supported diagram pieces. */
   garmentOverviewNotation: boolean;
   /** Front and back must match via `shoulderShapingNotationLinesFromTimeline` (and JP tokens when supported). */
   frontBackCanonicalRule: boolean;
@@ -30,7 +30,7 @@ export type SleevelessPatternScenario = {
   label: string;
   patternData: Record<string, unknown>;
   shoulderQa: SleevelessScenarioShoulderQa;
-  /** Human-readable note when `garmentOverviewNotation` is false (e.g. cardigan). */
+  /** Human-readable note when `garmentOverviewNotation` is false. */
   garmentOverviewUnsupportedReason?: string;
 };
 
@@ -133,11 +133,10 @@ export const SLEEVELESS_PATTERN_SCENARIOS: readonly SleevelessPatternScenario[] 
     shoulderQa: {
       shoulderReconciliation: true,
       pieces: ["back", "front"],
-      garmentOverviewNotation: false,
+      garmentOverviewNotation: true,
       frontBackCanonicalRule: false,
       noDuplicateBindOffRemainingProse: true,
     },
-    garmentOverviewUnsupportedReason: "Japanese garment-overview notation is not supported for cardigans.",
   },
   {
     id: "cardigan-v-neck",
@@ -150,11 +149,10 @@ export const SLEEVELESS_PATTERN_SCENARIOS: readonly SleevelessPatternScenario[] 
     shoulderQa: {
       shoulderReconciliation: true,
       pieces: ["back", "front"],
-      garmentOverviewNotation: false,
+      garmentOverviewNotation: true,
       frontBackCanonicalRule: true,
       noDuplicateBindOffRemainingProse: true,
     },
-    garmentOverviewUnsupportedReason: "Japanese garment-overview notation is not supported for cardigans.",
   },
 ];
 

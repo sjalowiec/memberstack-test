@@ -144,17 +144,19 @@ export function assertNoDuplicateBindOffRemainingProse(
   expect(rows[rows.length - 1]?.stitchesRemaining).toBe(0);
 }
 
-export function assertGarmentOverviewNotationExplicitlyUnsupported(
+/** Cardigan back uses the same JP back diagram/tokens as pullover; front uses cardigan front assets. */
+export function assertCardiganBackJapaneseNotationSupported(
   result: SleevelessBackPatternResult,
   patternData: Record<string, unknown>,
 ): void {
-  expect(isBackJapaneseNotationSupported(patternData, result)).toBe(false);
-  expect(isFrontJapaneseNotationSupported(patternData, result)).toBe(false);
+  expect(isBackJapaneseNotationSupported(patternData, result)).toBe(true);
+  expect(isFrontJapaneseNotationSupported(patternData, result)).toBe(true);
 
   const backRepl = buildBackJapaneseNotationReplacements(result, patternData);
   const frontRepl = buildFrontJapaneseNotationReplacements(result, patternData);
-  expect(backRepl["jp-shoulder-shaping"]).toBe("");
-  expect(frontRepl["jp-shoulder-shaping"]).toBe("");
+  expect(backRepl["jp-caston"].length).toBeGreaterThan(0);
+  expect(backRepl["jp-shoulder-shaping"].length).toBeGreaterThan(0);
+  expect(frontRepl["jp-caston"].length).toBeGreaterThan(0);
 }
 
 export function assertLiveNeckShoulderCharts(

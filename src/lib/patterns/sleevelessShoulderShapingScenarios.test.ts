@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   SLEEVELESS_PATTERN_SCENARIOS,
-  SLEEVELESS_SCENARIOS_WITHOUT_GARMENT_OVERVIEW_NOTATION,
   SLEEVELESS_SCENARIOS_WITH_GARMENT_OVERVIEW_NOTATION,
   type SleevelessPatternScenario,
   type SleevelessScenarioPiece,
 } from "./testScenarios/sleevelessPatternScenarios";
 import {
+  assertCardiganBackJapaneseNotationSupported,
   assertCompactShoulderNotationFormat,
   assertFrontBackCanonicalShoulderNotation,
-  assertGarmentOverviewNotationExplicitlyUnsupported,
   assertLiveNeckShoulderCharts,
   assertNoDuplicateBindOffRemainingProse,
   assertShoulderNotationReconciles,
@@ -77,23 +76,15 @@ describe.each(SLEEVELESS_SCENARIOS_WITH_GARMENT_OVERVIEW_NOTATION)(
   },
 );
 
-describe.each(SLEEVELESS_SCENARIOS_WITHOUT_GARMENT_OVERVIEW_NOTATION)(
-  "garment overview notation unsupported ($id)",
-  (scenario) => {
-    const result = buildResult(scenario);
+const CARDIGAN_SCENARIOS = SLEEVELESS_PATTERN_SCENARIOS.filter((s) => s.id.startsWith("cardigan-"));
 
-    it("explicitly does not emit Japanese shoulder overview tokens", () => {
-      assertGarmentOverviewNotationExplicitlyUnsupported(result, scenario.patternData);
-      expect(scenario.garmentOverviewUnsupportedReason?.length).toBeGreaterThan(0);
-    });
+describe.each(CARDIGAN_SCENARIOS)("cardigan back Japanese notation ($id)", (scenario) => {
+  const result = buildResult(scenario);
 
-    it("still reconciles shoulder notation from timelines (written chart QA)", () => {
-      for (const piece of scenario.shoulderQa.pieces) {
-        assertShoulderNotationReconciles(result, piece);
-      }
-    });
-  },
-);
+  it("enables back JP notation (pullover back diagram) and front cardigan JP diagrams", () => {
+    assertCardiganBackJapaneseNotationSupported(result, scenario.patternData);
+  });
+});
 
 describe("shoulder shaping notation (unit)", () => {
   it("append final remainder to complete points when timeline ends with stitches on the active side", () => {

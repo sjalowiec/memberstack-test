@@ -56,7 +56,7 @@ describe("buildSleevelessGarmentDiagramPatternData", () => {
     expect(genResult.debug.cardiganHalfLeftCastOnSts).toBeDefined();
     expect(front.diagramType).toBe("cardiganFullFrontRound");
     expect(front.frontPieceType).toBe("fullFront");
-    expect(front.src).toBe("/images/patterns/sleeveless/cardigan-round.svg");
+    expect(front.src).toBe("/images/patterns/sleeveless/diagrams/diagram-cardigan-round.svg");
 
     const repl = buildSleevelessGarmentDiagramReplacements(genResult, "in", {
       patternData: diagramData,

@@ -727,6 +727,8 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       return "back";
     }
     if (
+      s.includes("diagram-cardigan") ||
+      s.includes("diagram-jp-cardigan") ||
       s.includes("sleeveless/cardigan-round") ||
       s.includes("sleeveless/cardigan-v") ||
       s.includes("cardigan-round") ||

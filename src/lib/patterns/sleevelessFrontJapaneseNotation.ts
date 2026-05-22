@@ -36,22 +36,49 @@ export const SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC =
 export const SLEEVELESS_PULLOVER_V_FRONT_JP_NOTATION_DIAGRAM_SRC =
   "/images/patterns/sleeveless/diagrams/diagram-jp-front-v.svg";
 
+/** Round-neck cardigan front measurement schematic (Stitches & Rows mode). */
+export const SLEEVELESS_CARDIGAN_ROUND_FRONT_DIAGRAM_SRC =
+  "/images/patterns/sleeveless/diagrams/diagram-cardigan-round.svg";
+
+/** V-neck cardigan front measurement schematic (Stitches & Rows mode). */
+export const SLEEVELESS_CARDIGAN_V_FRONT_DIAGRAM_SRC =
+  "/images/patterns/sleeveless/diagrams/diagram-cardigan-v.svg";
+
+/** Round-neck cardigan front Japanese notation schematic (Shaping Notation mode). */
+export const SLEEVELESS_CARDIGAN_ROUND_FRONT_JP_NOTATION_DIAGRAM_SRC =
+  "/images/patterns/sleeveless/diagrams/diagram-jp-cardigan-round.svg";
+
+/** V-neck cardigan front Japanese notation schematic (Shaping Notation mode). */
+export const SLEEVELESS_CARDIGAN_V_FRONT_JP_NOTATION_DIAGRAM_SRC =
+  "/images/patterns/sleeveless/diagrams/diagram-jp-cardigan-v.svg";
+
 /** Alias used by Japanese notation fetch/replace (shaping notation mode, round pullover). */
 export const JP_FRONT_NOTATION_SVG_SRC = SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC;
 
 export type SleevelessFrontDiagramViewMode = "sts-rows" | "shaping-notation";
 
-/** Canonical pullover front garment diagram URL for the pattern-tab mode toggle. */
+/** Canonical front garment diagram URL for the pattern-tab mode toggle (pullover and cardigan). */
 export function resolveSleevelessFrontDiagramSrc(
   mode: SleevelessFrontDiagramViewMode,
   patternData: unknown,
 ): string {
+  const shapingNotation = mode === "shaping-notation";
+  if (isSleevelessCardiganGarmentStyle(patternData)) {
+    if (isSleevelessVNeckChoice(patternData)) {
+      return shapingNotation
+        ? SLEEVELESS_CARDIGAN_V_FRONT_JP_NOTATION_DIAGRAM_SRC
+        : SLEEVELESS_CARDIGAN_V_FRONT_DIAGRAM_SRC;
+    }
+    return shapingNotation
+      ? SLEEVELESS_CARDIGAN_ROUND_FRONT_JP_NOTATION_DIAGRAM_SRC
+      : SLEEVELESS_CARDIGAN_ROUND_FRONT_DIAGRAM_SRC;
+  }
   if (isSleevelessVNeckChoice(patternData)) {
-    return mode === "shaping-notation"
+    return shapingNotation
       ? SLEEVELESS_PULLOVER_V_FRONT_JP_NOTATION_DIAGRAM_SRC
       : SLEEVELESS_PULLOVER_V_FRONT_DIAGRAM_SRC;
   }
-  return mode === "shaping-notation"
+  return shapingNotation
     ? SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC
     : SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC;
 }
@@ -71,9 +98,23 @@ export function isFrontJapaneseNotationSupported(
   patternData: unknown,
   result: SleevelessBackPatternResult,
 ): boolean {
-  if (isSleevelessCardiganGarmentStyle(patternData)) return false;
   if (!result.frontNeckShoulderChartUsesLiveRows) return false;
   return true;
+}
+
+/** Front cast-on for Japanese notation — cardigan half-panel when available, else full front/back hem. */
+function frontJapaneseNotationCastOnSts(
+  result: SleevelessBackPatternResult,
+  patternData: unknown,
+): number {
+  const d = result.debug;
+  if (
+    isSleevelessCardiganGarmentStyle(patternData) &&
+    d.cardiganHalfLeftCastOnSts !== undefined
+  ) {
+    return d.cardiganHalfLeftCastOnSts;
+  }
+  return d.hemCastOnStitches ?? d.backStitches ?? 0;
 }
 
 export function buildFrontJapaneseNotationReplacements(
@@ -90,7 +131,7 @@ export function buildFrontJapaneseNotationReplacements(
   }
 
   const d = result.debug;
-  const castOnSts = d.hemCastOnStitches ?? d.backStitches;
+  const castOnSts = frontJapaneseNotationCastOnSts(result, patternData ?? {});
   const bodyRows = d.bodyRows;
 
   const eachSide = d.armholeStitchesEachSide;

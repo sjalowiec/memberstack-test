@@ -103,7 +103,7 @@ describe("buildBackJapaneseNotationReplacements", () => {
     }
   });
 
-  it("returns empty tokens for cardigan", () => {
+  it("supports round cardigan back the same as pullover (live back chart)", () => {
     const result = generateSleevelessBackPattern({
       fit: {
         sizingChart: "misses",
@@ -115,12 +115,45 @@ describe("buildBackJapaneseNotationReplacements", () => {
           shoulder_width: 4.25,
         },
       },
-      style: { garmentStyle: "cardigan", recipientCategory: "misses" },
+      style: { garmentStyle: "cardigan", frontStyle: "open", recipientCategory: "misses" },
       yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
     });
-    expect(isBackJapaneseNotationSupported({ style: { garmentStyle: "cardigan" } }, result)).toBe(false);
-    const repl = buildBackJapaneseNotationReplacements(result, { style: { garmentStyle: "cardigan" } });
-    expect(repl["jp-caston"]).toBe("");
+    const patternData = { style: { garmentStyle: "cardigan", frontStyle: "open" } };
+    expect(result.neckShoulderChartUsesLiveRows).toBe(true);
+    expect(result.neckShoulderShapingChart.sleevelessFullWidthVNeckFront).not.toBe(true);
+    expect(isBackJapaneseNotationSupported(patternData, result)).toBe(true);
+
+    const repl = buildBackJapaneseNotationReplacements(result, patternData);
+    const castOn = result.debug.hemCastOnStitches ?? result.debug.backStitches;
+    expect(repl["jp-caston"]).toBe(formatCastOnNotation(castOn));
+    expect(repl["jp-caston"].length).toBeGreaterThan(0);
+    expect(() => assertJapaneseNotationSvgFullyReplaced(JP_BACK_SVG, repl)).not.toThrow();
+  });
+
+  it("supports V-neck cardigan back (back chart is never full-width V front)", () => {
+    const result = generateSleevelessBackPattern({
+      fit: {
+        sizingChart: "misses",
+        selectedMeasurements: {
+          finished_bust_chest: 40,
+          back_neck_to_hem: 22,
+          armhole_depth: 8,
+          neck_opening: 3,
+          shoulder_width: 4.25,
+          front_neck_depth: 3,
+          back_neck_depth: 1,
+        },
+      },
+      style: { garmentStyle: "cardigan", neckline: "v-neck", recipientCategory: "misses" },
+      yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
+    });
+    expect(isBackJapaneseNotationSupported({ style: { garmentStyle: "cardigan", neckline: "v-neck" } }, result)).toBe(
+      true,
+    );
+    const repl = buildBackJapaneseNotationReplacements(result, {
+      style: { garmentStyle: "cardigan", neckline: "v-neck" },
+    });
+    expect(repl["jp-shoulder-shaping"].length).toBeGreaterThan(0);
   });
 
   it("is supported for V-neck pullover with live back chart", () => {
