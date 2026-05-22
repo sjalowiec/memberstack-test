@@ -100,8 +100,8 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
             href={expressNavHref}
             data-tab="express"
             aria-current={expressTabActive ? "page" : undefined}
-            aria-label="Build"
-            title="Build"
+            aria-label="Create"
+            title="Create"
           >
             <img
               class="tab-workspace-brand-icon"
@@ -111,7 +111,7 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
               height="18"
               decoding="async"
             />
-            <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Build</span>
+            <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Create</span>
           </a>
           <a
             class:list={["tab-btn", "tab-btn--custom", "tab-btn--workspace-brand", { active: customTabActive }]}

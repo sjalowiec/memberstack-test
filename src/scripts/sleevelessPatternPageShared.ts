@@ -48,6 +48,10 @@ import {
   BACK_DIAGRAM_STS_ROWS_SRC,
   resolveSleevelessBackDiagramSrc,
 } from "../lib/patterns/sleevelessBackDiagramSrc.ts";
+import {
+  buildShapingNotationDiagramPrintDocument,
+  shouldShowShapingNotationDiagramPrint,
+} from "../lib/patterns/sleevelessDiagramModal.ts";
 import { applyJapaneseNotationSvgReplacements } from "../lib/patterns/sleevelessJapaneseNotationSvg.ts";
 import {
   buildBackJapaneseNotationReplacements,
@@ -1216,7 +1220,16 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     modal.setAttribute("aria-label", "Enlarged pattern diagram");
     modal.innerHTML = `
       <div class="sleeveless-diagram-modal__dialog" data-sleeveless-diagram-dialog>
-        <button type="button" class="sleeveless-diagram-modal__close" data-sleeveless-diagram-close aria-label="Close enlarged diagram">X</button>
+        <div class="sleeveless-diagram-modal__actions no-print">
+          <button
+            type="button"
+            class="sleeveless-diagram-modal__print kbm-btn kbm-btn-outline no-print"
+            data-sleeveless-diagram-print
+            hidden
+            aria-label="Print shaping notation diagram"
+          >Print</button>
+          <button type="button" class="sleeveless-diagram-modal__close" data-sleeveless-diagram-close aria-label="Close enlarged diagram">X</button>
+        </div>
         <div class="sleeveless-diagram-modal__content" data-sleeveless-diagram-content></div>
       </div>
     `;
@@ -1225,6 +1238,10 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     modal.addEventListener("click", (e) => {
       const target = e.target;
       if (!(target instanceof Element)) return;
+      if (target.closest("[data-sleeveless-diagram-print]")) {
+        printSleevelessShapingNotationDiagramModal(modal);
+        return;
+      }
       if (target.closest("[data-sleeveless-diagram-close]")) {
         closeSleevelessDiagramModal();
         return;
@@ -1246,8 +1263,35 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     if (content instanceof HTMLElement) {
       content.innerHTML = "";
     }
+    const printBtn = modal.querySelector("[data-sleeveless-diagram-print]");
+    if (printBtn instanceof HTMLButtonElement) {
+      printBtn.hidden = true;
+    }
+    delete modal.dataset.sleevelessDiagramMode;
     modal.hidden = true;
     document.body.classList.remove("sleeveless-diagram-modal-open");
+  }
+
+  function printSleevelessShapingNotationDiagramModal(modal) {
+    if (!(modal instanceof HTMLElement)) return;
+    if (modal.dataset.sleevelessDiagramMode !== "shaping-notation") return;
+    const content = modal.querySelector("[data-sleeveless-diagram-content]");
+    const svg = content?.querySelector("svg");
+    if (!(svg instanceof SVGElement)) return;
+
+    const label = modal.getAttribute("aria-label") || "Shaping notation diagram";
+    const printHtml = buildShapingNotationDiagramPrintDocument(svg.outerHTML, label);
+    const printWindow = window.open("", "_blank", "width=900,height=700");
+    if (!printWindow) return;
+
+    printWindow.document.open();
+    printWindow.document.write(printHtml);
+    printWindow.document.close();
+
+    setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+    }, 400);
   }
 
   function openSleevelessDiagramModal(triggerEl) {
@@ -1258,6 +1302,22 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     const modal = ensureSleevelessDiagramModal();
     const content = modal.querySelector("[data-sleeveless-diagram-content]");
     if (!(content instanceof HTMLElement)) return;
+
+    const showPrint = shouldShowShapingNotationDiagramPrint(triggerEl);
+    const printBtn = modal.querySelector("[data-sleeveless-diagram-print]");
+    if (printBtn instanceof HTMLButtonElement) {
+      printBtn.hidden = !showPrint;
+    }
+    if (showPrint) {
+      modal.dataset.sleevelessDiagramMode = "shaping-notation";
+      const alt =
+        triggerEl.querySelector("[data-sleeveless-diagram]")?.getAttribute("data-alt") ||
+        "Shaping notation diagram";
+      modal.setAttribute("aria-label", alt);
+    } else {
+      delete modal.dataset.sleevelessDiagramMode;
+      modal.setAttribute("aria-label", "Enlarged pattern diagram");
+    }
 
     content.innerHTML = "";
     const clone = srcSvg.cloneNode(true);
