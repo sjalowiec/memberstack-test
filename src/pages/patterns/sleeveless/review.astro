@@ -20,6 +20,8 @@ const patternFamilyUnlockHref = "#";
 const membershipHref = "/join";
 const lockedBannerStripCopy = `Want more customization? Unlock the full ${SLEEVELESS_PATTERN_FAMILY_NAME} System`;
 const lockedBannerStripAriaLabel = `Unlock the full ${SLEEVELESS_PATTERN_FAMILY_NAME} System for more customization`;
+/** Temporary beta state: patterns are currently open to everyone until Memberstack gating is connected. */
+const SHOW_UPSELL = false;
 ---
 
 <Layout
@@ -47,17 +49,14 @@ const lockedBannerStripAriaLabel = `Unlock the full ${SLEEVELESS_PATTERN_FAMILY_
           data-express-href={builderHref}
         >
           {/*
-            TODO(access): Render only the matching banner once Memberstack / canCustomizePattern()
-            gating is wired. Both blocks are visible temporarily for visual comparison.
+            TODO(access): Toggle locked upsell via SHOW_UPSELL and canCustomizePattern() once
+            Memberstack gating is wired. Temporary beta state: patterns are currently open to
+            everyone until Memberstack gating is connected.
           */}
           <div
             class="sleeveless-review-access-messages"
             data-sleeveless-review-access-messages
           >
-            <p class="sleeveless-review-access-preview-note" aria-hidden="true">
-              Dev preview: both access messages shown until gating is wired.
-            </p>
-
             <div
               class="sleeveless-review-access-banner sleeveless-review-access-banner--paid"
               data-sleeveless-review-access-paid
@@ -83,6 +82,7 @@ const lockedBannerStripAriaLabel = `Unlock the full ${SLEEVELESS_PATTERN_FAMILY_
               </div>
             </div>
 
+            {SHOW_UPSELL && (
             <div
               class="sleeveless-review-access-banner sleeveless-review-access-banner--locked"
               data-sleeveless-review-access-locked
@@ -157,6 +157,7 @@ const lockedBannerStripAriaLabel = `Unlock the full ${SLEEVELESS_PATTERN_FAMILY_
                 →
               </span>
             </button>
+            )}
           </div>
 
           <p

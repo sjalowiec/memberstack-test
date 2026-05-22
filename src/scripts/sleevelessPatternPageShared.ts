@@ -36,7 +36,6 @@ import {
   isSleevelessCardiganGarmentStyle,
   resolveSleevelessFrontDiagram,
   isSleevelessVNeckChoice,
-  isSleevelessDevCardiganExpressPreview,
 } from "../lib/patterns/sleevelessFrontDiagramSrc.ts";
 import { resolveSleevelessAudienceHeroImageSrc } from "../lib/patterns/sleevelessAudienceHeroImage.ts";
 import {
@@ -2496,20 +2495,6 @@ table {
       wrapPatternSection("sg-finishing", "Finishing", buildFinishingHtml(patternMerged, result.debug), {
         defaultCollapsed: true,
       });
-
-    const patternContentEl = document.getElementById("pattern-content");
-    const existingDevCardiganBanner = patternContentEl?.querySelector("[data-sleeveless-dev-cardigan-banner]");
-    if (existingDevCardiganBanner) existingDevCardiganBanner.remove();
-    if (import.meta.env.DEV && isSleevelessDevCardiganExpressPreview(diagramPatternData) && patternContentEl) {
-      const devBanner = document.createElement("p");
-      devBanner.className = "sleeveless-dev-cardigan-banner no-print pattern-subtext";
-      devBanner.dataset.sleevelessDevCardiganBanner = "";
-      devBanner.setAttribute("role", "status");
-      devBanner.textContent = "Development Cardigan Preview";
-      const inpageNav = patternContentEl.querySelector("[data-sleeveless-pattern-inpage-nav]");
-      if (inpageNav) patternContentEl.insertBefore(devBanner, inpageNav);
-      else patternContentEl.insertBefore(devBanner, patternContentEl.firstChild);
-    }
 
     const backArmholeLocalChartStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
       ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC))

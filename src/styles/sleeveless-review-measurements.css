@@ -249,6 +249,8 @@
   padding: 0.45rem 0.55rem;
   border: 1px solid #d1d5db;
   border-radius: 8px;
+  background: #fff;
+  color: #26351f;
   font-family: var(--font);
   font-size: 0.88rem;
   line-height: 1.45;
@@ -526,6 +528,7 @@
   box-sizing: border-box;
 }
 
+/* Editable measurement chips: white active surface */
 .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-diagram-section .measurement-chip {
   display: inline-flex;
   align-items: center;
@@ -537,10 +540,10 @@
   min-width: 3.5rem;
   margin: 0;
   padding: 0.22rem 0.38rem 0.22rem 0.42rem;
-  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 24%, #c5c9c2);
+  border: 1px solid #c5c9c2;
   border-radius: 6px;
-  background: color-mix(in srgb, var(--kbm-green, #52682d) 7%, #fff);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.72);
+  background: #fff;
+  box-shadow: none;
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease,
@@ -551,19 +554,17 @@
   .express-measurements-confirm-page.sleeveless-unified-review-page
     .sleeveless-review-diagram-section
     .measurement-chip:hover {
-    border-color: color-mix(in srgb, var(--kbm-green, #52682d) 40%, #b5bab3);
-    background: color-mix(in srgb, var(--kbm-green, #52682d) 9%, #fff);
+    border-color: #9aa38f;
+    background: #fff;
   }
 }
 
 .express-measurements-confirm-page.sleeveless-unified-review-page
   .sleeveless-review-diagram-section
   .measurement-chip:focus-within {
-  border-color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #9fa59a);
+  border-color: color-mix(in srgb, var(--kbm-green, #52682d) 45%, #9aa38f);
   background: #fff;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.85),
-    0 0 0 2px color-mix(in srgb, var(--kbm-green, #52682d) 16%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--kbm-green, #52682d) 14%, transparent);
 }
 
 .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-diagram-section .measurement-input {
@@ -576,14 +577,37 @@
   padding: 0.06rem 0.04rem 0.06rem 0;
   border: none;
   border-radius: 0;
-  background: transparent;
+  background: #fff;
   box-shadow: none;
   outline: none;
   font-family: var(--font);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   text-align: center;
-  color: #2a2a2a;
+  color: #26351f;
+}
+
+/* Locked/read-only measurement values (free preview / gated state) */
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-diagram-section .express-mbp-box__value {
+  display: inline-block;
+  box-sizing: border-box;
+  width: fit-content;
+  min-width: 3.5rem;
+  max-width: 5.5rem;
+  margin: 0;
+  padding: 0.26rem 0.42rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-family: var(--font);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: #6b7280;
+  background: #f3f4f6;
+  box-shadow: none;
+  user-select: none;
 }
 
 .express-measurements-confirm-page.sleeveless-unified-review-page
@@ -601,9 +625,8 @@
   .express-mbp-box--invalid
   .measurement-chip {
   border-color: color-mix(in srgb, #b91c1c 55%, #ccc);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.65),
-    0 0 0 1px color-mix(in srgb, #b91c1c 12%, transparent);
+  background: #fff;
+  box-shadow: 0 0 0 1px color-mix(in srgb, #b91c1c 12%, transparent);
 }
 
 .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-diagram-section .measurement-unit {
