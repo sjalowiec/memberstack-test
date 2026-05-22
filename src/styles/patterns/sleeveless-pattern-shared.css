@@ -1083,45 +1083,6 @@
     width: 100%;
   }
 
-  #pattern-content .sleeveless-neck-shoulder-diagram {
-    display: block;
-    width: 100%;
-    min-width: 0;
-    margin-top: 1rem;
-  }
-
-  #pattern-content .sg-neck-chart-diagram-block {
-    margin: 0;
-  }
-
-  #pattern-content .ns-shaping-chart--diagram-block {
-    margin: 0;
-  }
-
-  #pattern-content .ns-shaping-chart__diagram {
-    margin: 0;
-    padding: 0.45rem 0.75rem 0.75rem;
-    border: 1px solid rgba(55, 65, 81, 0.16);
-    border-radius: 8px;
-    background: #fff;
-  }
-
-  #pattern-content .ns-shaping-chart__diagram-svg-wrap {
-    overflow-x: auto;
-    max-width: 100%;
-  }
-
-  #pattern-content .ns-shaping-chart__diagram-svg-wrap svg {
-    display: block;
-    width: 100%;
-    min-width: 320px;
-    height: auto;
-  }
-
-  #pattern-content .ns-shaping-chart__diagram-svg-wrap .ns-notation-overlay {
-    min-width: 320px;
-  }
-
   #pattern-content .ns-shaping-chart__second-shoulder-toggle {
     margin: 0.45rem 0 0.75rem;
     padding: 0.55rem 0.7rem;
@@ -1636,15 +1597,6 @@
       page-break-inside: avoid !important;
     }
 
-    #pattern-content .ns-shaping-chart--diagram-block,
-    #pattern-content .ns-shaping-chart__diagram,
-    #pattern-content .ns-shaping-chart__diagram-svg-wrap,
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay,
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay__stack {
-      break-inside: auto !important;
-      page-break-inside: auto !important;
-    }
-
     #pattern-content .pattern-section__heading,
     #pattern-content .pattern-subsection__heading,
     #pattern-content .sleeveless-piece-split__diagram {
@@ -1712,42 +1664,6 @@
       height: auto !important;
       opacity: 1 !important;
       overflow: visible !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    #pattern-content .sleeveless-neck-shoulder-diagram {
-      display: block !important;
-      visibility: visible !important;
-      break-inside: auto !important;
-      page-break-inside: auto !important;
-      overflow: visible !important;
-      margin-top: 0.45rem !important;
-    }
-
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-shaping-chart__diagram,
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-shaping-chart__diagram-svg-wrap,
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay,
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay__image-wrap,
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay__image {
-      display: block !important;
-      visibility: visible !important;
-      overflow: visible !important;
-      opacity: 1 !important;
-      height: auto !important;
-      max-height: none !important;
-    }
-
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay {
-      position: relative !important;
-      margin: 0 auto !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay__stack {
-      display: flex !important;
-      visibility: visible !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }

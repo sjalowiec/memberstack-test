@@ -16,9 +16,6 @@ import {
   NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
   plainKnitSpanCarriageEdgeDisplay,
 } from "./neckShoulderShapingChart";
-import { renderShoulderShapingSvg, type ShoulderShapingSvgPiece } from "./shoulderShapingSvg";
-import { renderNotationOverlayDiagram, type NotationOverlayDiagramOptions } from "./notationOverlaySvg";
-import { getSleevelessShoulderNotationIconSrc, isSleevelessVNeckChoice } from "./sleevelessFrontDiagramSrc";
 import type { RowEntry, ShapingEvent } from "./shapingTimeline";
 import {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
@@ -37,18 +34,6 @@ import {
 
 /** Registry key in `SLEEVELESS_HELP_VIDEOS` (Vimeo 252565241 — shallow round neck shaping). */
 export const NECKLINE_SHAPING_HELP_VIDEO_KEY = "shallowBackNeck";
-
-function sleevelessNotationOverlayOpts(
-  piece: ShoulderShapingSvgPiece | undefined,
-  patternData: Record<string, unknown> | undefined,
-): NotationOverlayDiagramOptions | undefined {
-  if (piece !== "front" && piece !== "back") return undefined;
-  const outlineImageSrc = getSleevelessShoulderNotationIconSrc(piece, patternData);
-  if (piece === "front" && patternData && isSleevelessVNeckChoice(patternData)) {
-    return { outlineImageSrc, innerNeckNotationFromTimeline: true };
-  }
-  return { outlineImageSrc };
-}
 
 export {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
@@ -816,7 +801,7 @@ export function renderCarriagePositionPatternTipHtml(options?: NeckShoulderChart
     : "";
 }
 
-/** Chart title and table only — pairs with {@link renderNeckShoulderShapingPreviewOnlyHtml}. */
+/** Chart title and table only (no neckline/shoulder diagram block). */
 export function renderNeckShoulderShapingChartTableOnlyHtml(
   chart: NeckShoulderShapingChart,
   idPrefix = "ns-shaping-chart",
@@ -967,8 +952,6 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
   options?: {
     showSecondShoulderChecklist?: boolean;
     activeSideRcStart?: number;
-    piece?: ShoulderShapingSvgPiece;
-    patternData?: Record<string, unknown>;
     fullWidthChartOneRowPerRc?: boolean;
   },
 ): string {
@@ -1007,30 +990,6 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
       )}</td><td class="ns-shaping-mini__sts">${r.stitchesRemaining}</td></tr>`;
     })
     .join("");
-  /**
-   * Diagram block: heading + bordered wrapper around the notation/SVG so the print
-   * shaping section reads as "table → diagram" instead of leaving the SVG as a loose
-   * floating image. Same wording as the online {@link renderNeckShoulderShapingDiagramOnlyHtml}
-   * heading. Both back and front charts go through this function, so wrapping here
-   * gives the front piece the same labeled diagram block as the back.
-   */
-  const printDiagramNotationHelpHtml = `<div class="ns-shaping-mini__diagram-notation-help">
-  <div><strong>Shaping notation:</strong> stitches, rows, times</div>
-  <div><em>Example:</em> 1s-2r-3x = decrease 1 stitch every 2 rows, 3 times</div>
-</div>`;
-  const notationOutlineOpts = sleevelessNotationOverlayOpts(options?.piece, options?.patternData);
-  /* Notation sits inside the diagram border, directly above the SVG — matches knitter scan pattern (title → helper → art). */
-  const geometrySvgHtml = `<h3 class="ns-shaping-mini__diagram-title">Neckline / Shoulder Diagram</h3>
-<div class="ns-shaping-mini__diagram-block">
-  ${printDiagramNotationHelpHtml}
-  <div class="ns-shaping-mini__svg-wrap">${renderNotationOverlayDiagram(chart, "right", notationOutlineOpts)}</div>
-</div>`;
-  const oppositeGeometrySvgHtml = `<h3 class="ns-shaping-mini__diagram-title">Neckline / Shoulder Diagram</h3>
-<div class="ns-shaping-mini__diagram-block">
-  ${printDiagramNotationHelpHtml}
-  <div class="ns-shaping-mini__svg-wrap">${renderNotationOverlayDiagram(chart, "left", notationOutlineOpts)}</div>
-</div>`;
-
   return `<section class="ns-shaping-mini" aria-labelledby="${escapeHtml(headingId)}">
   <h2 id="${escapeHtml(headingId)}" class="ns-shaping-mini__title">Neckline / Shoulder Shaping</h2>
   ${intro}
@@ -1050,7 +1009,6 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
   </div>
   ${renderActiveSideBindoffRemainingHtml(printRowsRaw, "ns-shaping-mini__bindoff-remaining")}
   <p class="ns-shaping-mini__sts-note">Sts Remaining is for this side only.</p>
-  ${geometrySvgHtml}
   <p class="ns-shaping-mini__sts-note">${escapeHtml(instructionWithHeldStitches(heldShoulderStitches, false))}</p>
   ${
     showSecondShoulderChecklist
@@ -1070,74 +1028,9 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
         <tbody>${oppositeRowsHtml}</tbody>
       </table>
     </div>
-    ${oppositeGeometrySvgHtml}
     <p class="ns-shaping-mini__sts-note">${escapeHtml(instructionWithHeldStitches(heldShoulderStitches, true))}</p>
   </section>`
       : ""
   }
 </section>`;
-}
-
-/** Shape preview block only — render below the two-column piece layout on the pattern tab. */
-export function renderNeckShoulderShapingPreviewOnlyHtml(
-  chart: NeckShoulderShapingChart,
-  idPrefix = "ns-shaping-chart",
-  piece?: ShoulderShapingSvgPiece
-): string {
-  const previewHeadingId = `${idPrefix}-preview-heading`;
-  const shoulderPreviewSvg = renderShoulderShapingSvg(chart, "right", piece ? { piece } : undefined);
-
-  return `<div class="ns-shaping-chart ns-shaping-chart--preview-block" aria-labelledby="${escapeHtml(previewHeadingId)}">
-  <div class="ns-shaping-chart__preview">
-    <h3 id="${escapeHtml(previewHeadingId)}" class="ns-shaping-chart__preview-title">Neckline / Shoulder Shape Preview</h3>
-    <div class="ns-shaping-chart__preview-svg-wrap">${shoulderPreviewSvg}</div>
-  </div>
-</div>`;
-}
-
-/**
- * Online SVG diagram block for neckline / shoulder shaping.
- * Uses the same timeline geometry renderer as the print chart when live timeline data is available.
- */
-export function renderNeckShoulderShapingDiagramOnlyHtml(
-  chart: NeckShoulderShapingChart,
-  idPrefix = "ns-shaping-chart",
-  piece?: ShoulderShapingSvgPiece,
-  patternData?: Record<string, unknown>,
-): string {
-  const notationOutlineOpts = sleevelessNotationOverlayOpts(piece, patternData);
-  const diagramHeadingId = `${idPrefix}-diagram-heading`;
-  const svgHtml = renderNotationOverlayDiagram(chart, "right", notationOutlineOpts);
-  const secondSvgHtml = renderNotationOverlayDiagram(chart, "left", notationOutlineOpts);
-
-  const notationHintHtml = `<div class="ns-shaping-chart__diagram-notation-hint">
-  <p class="ns-shaping-chart__diagram-notation-hint-main"><span class="glossary-tooltip-placeholder" data-glossary-id="354">Shaping notation</span>: <span class="ns-shaping-chart__diagram-notation-hint-kernel"><span class="ns-shaping-chart__diagram-notation-order">stitches</span>, <span class="ns-shaping-chart__diagram-notation-order">rows</span>, <span class="ns-shaping-chart__diagram-notation-order">times</span></span></p>
-  <p class="ns-shaping-chart__diagram-notation-hint-example">${escapeHtml("Example: 1s-2r-3x = decrease 1 stitch every 2 rows, 3 times")}</p>
-</div>`;
-
-  return `<div class="ns-shaping-chart ns-shaping-chart--diagram-block" aria-labelledby="${escapeHtml(diagramHeadingId)}">
-  <div class="ns-shaping-chart__diagram">
-    <h3 id="${escapeHtml(diagramHeadingId)}" class="ns-shaping-chart__preview-title">Neckline / Shoulder Diagram</h3>
-    ${notationHintHtml}
-    <div class="ns-shaping-chart__diagram-svg-wrap">${svgHtml}</div>
-    <div class="ns-shaping-chart__second-shoulder-block" data-second-shoulder-content hidden>
-      <h3 class="ns-shaping-chart__preview-title">Second Shoulder Diagram</h3>
-      <div class="ns-shaping-chart__diagram-svg-wrap">${secondSvgHtml}</div>
-    </div>
-  </div>
-</div>`;
-}
-
-/**
- * Full chart section markup (table + SVG preview) for client-side injection or legacy single-column hosts.
- */
-export function renderNeckShoulderShapingChartSectionHtml(
-  chart: NeckShoulderShapingChart,
-  idPrefix = "ns-shaping-chart",
-  piece?: ShoulderShapingSvgPiece
-): string {
-  return (
-    renderNeckShoulderShapingChartTableOnlyHtml(chart, idPrefix) +
-    renderNeckShoulderShapingPreviewOnlyHtml(chart, idPrefix, piece)
-  );
 }

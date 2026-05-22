@@ -9,14 +9,6 @@ import { shoulderShapingNotationLinesFromTimeline } from "./shoulderShapingNotat
 type DiagramSide = "left" | "right";
 type EdgeKind = "neck" | "shoulder";
 
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
 function parseDecreaseCell(cell: string): number {
   const text = String(cell ?? "").trim();
   if (!text || text === "-") return 0;
@@ -79,22 +71,13 @@ export function innerNeckDecreaseNotationLinesFromTimeline(
   return compressStitchDecreasePointsToNotationLines(collectInnerNeckDecreasePointsFromTimeline(timeline, side));
 }
 
-/** Same neck-edge grouped lines as {@link renderNotationOverlayDiagram} (round-neck: chart cells). */
+/** Neck-edge grouped notation lines (round-neck: chart cells; V-neck front may use timeline inner decreases). */
 export function neckEdgeNotationLinesFromNeckShoulderChart(
   chart: NeckShoulderShapingChart,
   side: DiagramSide,
   overlayOpts?: NotationOverlayDiagramOptions,
 ): string[] {
   return notationLinesForEdge(chart, side, "neck", overlayOpts);
-}
-
-/** Same shoulder-edge grouped lines as {@link renderNotationOverlayDiagram} (chart cells). */
-export function shoulderEdgeNotationLinesFromNeckShoulderChart(
-  chart: NeckShoulderShapingChart,
-  side: DiagramSide,
-  overlayOpts?: NotationOverlayDiagramOptions,
-): string[] {
-  return notationLinesForEdge(chart, side, "shoulder", overlayOpts);
 }
 
 function notationLinesForEdge(
@@ -116,12 +99,6 @@ function notationLinesForEdge(
   return compressStitchDecreasePointsToNotationLines(points);
 }
 
-function notationStackHtml(lines: readonly string[], stackKindClass: "shoulder" | "neck"): string {
-  return `<div class="ns-notation-overlay__stack ns-notation-overlay__stack--${stackKindClass}" aria-hidden="true">${lines
-    .map((line) => `<span class="ns-notation-overlay__label">${escapeHtml(line)}</span>`)
-    .join("")}</div>`;
-}
-
 export type NotationOverlayDiagramOptions = {
   /** Underlay silhouette (round vs V front); defaults to round shoulder reference icon. */
   outlineImageSrc?: string;
@@ -131,37 +108,3 @@ export type NotationOverlayDiagramOptions = {
    */
   innerNeckNotationFromTimeline?: boolean;
 };
-
-const DEFAULT_NOTATION_OUTLINE_SRC = "/images/patterns/shoulder-round-icon.svg";
-
-const MACHINE_ORIENTATION_CAPTION = "As viewed on the machine";
-
-export function renderNotationOverlayDiagram(
-  chart: NeckShoulderShapingChart,
-  side: DiagramSide,
-  options?: NotationOverlayDiagramOptions,
-): string {
-  const shoulderLines = notationLinesForEdge(chart, side, "shoulder", options);
-  const neckLines = notationLinesForEdge(chart, side, "neck", options);
-  const mirrored = side === "left";
-  const imageClass = mirrored ? "ns-notation-overlay__image ns-notation-overlay__image--mirrored" : "ns-notation-overlay__image";
-  const rootClass = mirrored ? "ns-notation-overlay ns-notation-overlay--mirrored" : "ns-notation-overlay";
-  const outlineSrc = options?.outlineImageSrc ?? DEFAULT_NOTATION_OUTLINE_SRC;
-
-  /**
-   * Eager image load: the same overlay is rendered for back AND front in the sleeveless
-   * print page. The back overlay sits near the top of the document (loads on first paint),
-   * but the front overlay is pages further down. With `loading="lazy"` the front image
-   * frequently stays unloaded when the print page is captured/scrolled, so only the
-   * absolutely-positioned notation labels were visible. Eager loading is a tiny cost
-   * (this SVG is well under 1 KB) and guarantees both pieces show the underlying outline.
-   */
-  return `<div class="${rootClass}">
-  <div class="ns-notation-overlay__image-wrap">
-    <img class="${imageClass}" src="${escapeHtml(outlineSrc)}" alt="Neckline and shoulder shaping reference" loading="eager" decoding="async" />
-  </div>
-  ${shoulderLines.length ? notationStackHtml(shoulderLines, "shoulder") : ""}
-  ${neckLines.length ? notationStackHtml(neckLines, "neck") : ""}
-  <p class="ns-notation-overlay__machine-orientation">${escapeHtml(MACHINE_ORIENTATION_CAPTION)}</p>
-</div>`;
-}

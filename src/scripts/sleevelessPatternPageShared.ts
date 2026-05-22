@@ -25,7 +25,6 @@ import {
 import {
   armholeLocalRcActiveShoulderChecklistStart,
   renderActiveShoulderChartIntroHtml,
-  renderNeckShoulderShapingDiagramOnlyHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
 import { initChartProgressTracking } from "./chartProgressTracker.ts";
@@ -455,15 +454,13 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
 
   /**
    * Renders structured rows: left column RC + text, right column total sts only when it changes.
-   * Chart table stays in the left column; shape preview mounts below the two-column piece split.
+   * Chart table stays in the left column below neckline/shoulder prose.
    * @param {unknown[]} rows
    * @param {string} chartTableMountId
-   * @param {string} chartDiagramMountId
    */
   function renderSleevelessDisplayHtml(
     rows,
     chartTableMountId,
-    chartDiagramMountId,
     pieceSectionId,
     patternIntroSentence,
     neckChartStartRow,
@@ -591,20 +588,12 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
             ? "front-neckline-shoulder-chart-print-area"
             : "neckline-shoulder-chart-print-area";
         const chartAreaOpen = `<div id="${chartAreaId}" data-second-shoulder-scope>`;
-        const diagramLabel =
-          pieceSectionId === "front"
-            ? "Front neckline and shoulder diagram"
-            : "Back neckline and shoulder diagram";
-        const diagramChunk = `<aside class="sleeveless-neck-shoulder-diagram" aria-label="${escapeHtml(diagramLabel)}">
-  <div class="sg-pattern-output sg-neck-chart-diagram-block" id="${escapeHtml(chartDiagramMountId)}"></div>
-</aside>`;
         const chartChunk = `${chartAreaOpen}
   <div class="neckline-chart-print-only-header" aria-hidden="true">
     <p class="neckline-chart-print-only-header-title">${escapeHtml(printPatternTitle)}</p>
     <p class="neckline-chart-print-only-header-intro">Custom pattern for ${escapeHtml(printIntro)}</p>
   </div>
   <div class="sg-pattern-output sg-neck-chart-print-block" id="${escapeHtml(chartTableMountId)}"></div>
-  ${diagramChunk}
   <p class="neckline-chart-print-only-footer">Created by Knit It Now · Printed <span data-neckline-chart-print-date></span></p>
 </div>`;
         if (openSectionSlugSource) {
@@ -612,9 +601,6 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
           continue;
         }
         postParts.push(`<section class="sleeveless-piece-chart-fullwidth">${chartChunk}</section>`);
-        continue;
-      }
-      if (row.kind === "neckShoulderChartPreviewMount") {
         continue;
       }
       if (row.kind !== "block") continue;
@@ -1738,53 +1724,6 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         font-size: 1rem;
         font-weight: 700;
       }
-      /* Chart-only print popup does not load ns-shaping-chart.css — keep notation + diagram text readable. */
-      .ns-shaping-chart__diagram {
-        display: block !important;
-        visibility: visible !important;
-        margin: 0.5rem 0 0 !important;
-        padding: 0.45rem 0.55rem 0.55rem !important;
-        border: 1px solid #d1d5db !important;
-        background: #fff !important;
-      }
-      .ns-shaping-chart__diagram .ns-shaping-chart__preview-title {
-        margin: 0 0 0.28rem !important;
-        font-size: 0.95rem !important;
-        font-weight: 700 !important;
-        color: #1f2937 !important;
-      }
-      .ns-shaping-chart__diagram-notation-hint {
-        display: block !important;
-        visibility: visible !important;
-        margin: 0 0 0.35rem !important;
-        font-size: 0.72rem !important;
-        line-height: 1.4 !important;
-        color: #64748b !important;
-      }
-      .ns-shaping-chart__diagram-notation-hint-main {
-        display: block !important;
-        margin: 0 0 0.15rem !important;
-        font-size: inherit !important;
-        color: #64748b !important;
-      }
-      .ns-shaping-chart__diagram-notation-hint-example {
-        display: block !important;
-        margin: 0 !important;
-        font-size: 0.65rem !important;
-        line-height: 1.38 !important;
-        font-style: italic !important;
-        color: #64748b !important;
-      }
-      .ns-shaping-chart__diagram-notation-hint-kernel,
-      .ns-shaping-chart__diagram-notation-order {
-        color: #475569 !important;
-      }
-      .ns-shaping-chart__diagram-svg-wrap {
-        display: block !important;
-        visibility: visible !important;
-        overflow: visible !important;
-        margin-top: 0 !important;
-      }
       .ns-shaping-chart__intro {
         margin: 0 0 0.55rem;
       }
@@ -2404,7 +2343,6 @@ table {
         ? renderSleevelessDisplayHtml(
             displayRows,
             "sg-neck-shoulder-chart-table-back",
-            "sg-neck-shoulder-diagram-back",
             "back",
             patternIntroSentence,
             result?.neckShoulderShapingChart?.rows?.[0]?.row,
@@ -2416,7 +2354,6 @@ table {
         ? renderSleevelessDisplayHtml(
             frontDisplayRows,
             "sg-neck-shoulder-chart-table-front",
-            "sg-neck-shoulder-diagram-front",
             "front",
             patternIntroSentence,
             result?.frontNeckShoulderShapingChart?.rows?.[0]?.row,
@@ -2541,15 +2478,6 @@ table {
         { activeSideOnly: true, activeSideRcStart: backActiveSideRcStart }
       );
     }
-    const backDiagramHost = mount.querySelector("#sg-neck-shoulder-diagram-back");
-    if (backDiagramHost) {
-      backDiagramHost.innerHTML = renderNeckShoulderShapingDiagramOnlyHtml(
-        result.neckShoulderShapingChart,
-        "ns-shaping-chart-back",
-        "back",
-        diagramPatternData,
-      );
-    }
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
     if (frontChartTableHost) {
       frontChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
@@ -2587,17 +2515,7 @@ table {
         options: { activeSideOnly: true, activeSideRcStart: frontActiveSideRcStart },
       },
     };
-    const frontDiagramHost = mount.querySelector("#sg-neck-shoulder-diagram-front");
-    if (frontDiagramHost) {
-      frontDiagramHost.innerHTML = renderNeckShoulderShapingDiagramOnlyHtml(
-        result.frontNeckShoulderShapingChart,
-        "ns-shaping-chart-front",
-        "front",
-        diagramPatternData,
-      );
-    }
-
-    // Finishing HTML + neckline/shoulder diagram HTML (incl. glossary placeholders) are injected above.
+    // Finishing HTML + chart table HTML (incl. glossary placeholders) are injected above.
     // Hydrate after those nodes exist — early hydration skipped diagram placeholders (they were not in the DOM yet).
     hydrateGlossaryTooltipPlaceholders(mount);
 

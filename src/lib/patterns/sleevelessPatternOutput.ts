@@ -287,8 +287,6 @@ export type SleevelessPatternDisplayRow =
   | { kind: "section"; title: string }
   /** Filled client-side with chart table (see pattern tab). */
   | { kind: "neckShoulderChartTableMount" }
-  /** Filled client-side with shape preview SVG (see pattern tab); rendered below two-column piece layout. */
-  | { kind: "neckShoulderChartPreviewMount" }
   | {
       kind: "block";
       /** e.g. RC:014 — optional when block is prose-only */
@@ -320,16 +318,16 @@ export type SleevelessBackPatternResult = {
   /** Structured front instructions (reuses back through armhole by reference). */
   frontDisplayRows: SleevelessPatternDisplayRow[];
   debug: SleevelessBackPatternDebug;
-  /** Row-by-row neckline / shoulder chart — source of truth for printed table and SVG. */
+  /** Row-by-row neckline / shoulder chart — source of truth for printed table and shaping notation. */
   neckShoulderShapingChart: NeckShoulderShapingChart;
   /** Front neckline/shoulder chart — same stitch math and row span as back; start RC differs when front neck is deeper. */
   frontNeckShoulderShapingChart: NeckShoulderShapingChart;
   /** True when chart rows were generated from back calculations; false when demo fallback is used. */
   neckShoulderChartUsesLiveRows: boolean;
   frontNeckShoulderChartUsesLiveRows: boolean;
-  /** Single source of truth for back chart + SVG + execution shaping RCs (when live rows). */
+  /** Single source of truth for back chart + garment notation + execution shaping RCs (when live rows). */
   backNeckShoulderTimeline?: RowEntry[];
-  /** Single source of truth for front chart + SVG + execution shaping RCs (when live rows). */
+  /** Single source of truth for front chart + garment notation + execution shaping RCs (when live rows). */
   frontNeckShoulderTimeline?: RowEntry[];
 };
 
@@ -430,8 +428,6 @@ function flattenDisplayRowsToLines(rows: readonly SleevelessPatternDisplayRow[])
       out.push(r.title, "");
     } else if (r.kind === "neckShoulderChartTableMount") {
       out.push("Neckline / shoulder shaping chart", "");
-    } else if (r.kind === "neckShoulderChartPreviewMount") {
-      out.push("Neckline / shoulder shape preview", "");
     } else {
       if (r.rc) out.push(r.rc);
       const plainParas =
@@ -812,7 +808,7 @@ function mergeAdjacentPlainKnitBlocks(
         inArmholeSection = false;
       }
     }
-    if (row.kind === "neckShoulderChartTableMount" || row.kind === "neckShoulderChartPreviewMount") {
+    if (row.kind === "neckShoulderChartTableMount") {
       out.push(row);
       i++;
       continue;
@@ -1565,7 +1561,6 @@ export function buildSleevelessBackDisplayRows(args: {
   }
 
   rows.push({ kind: "neckShoulderChartTableMount" });
-  rows.push({ kind: "neckShoulderChartPreviewMount" });
 
   return rows;
 }
@@ -1599,7 +1594,7 @@ export function buildSleevelessFrontDisplayRows(args: {
       continue;
     }
     if (inBackNecklineSection) continue;
-    if (row.kind === "neckShoulderChartTableMount" || row.kind === "neckShoulderChartPreviewMount") {
+    if (row.kind === "neckShoulderChartTableMount") {
       continue;
     }
     if (row.kind === "section") {
@@ -1680,7 +1675,6 @@ export function buildSleevelessFrontDisplayRows(args: {
   }
 
   rows.push({ kind: "neckShoulderChartTableMount" });
-  rows.push({ kind: "neckShoulderChartPreviewMount" });
 
   return rows;
 }

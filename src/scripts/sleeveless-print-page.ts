@@ -217,8 +217,6 @@ async function initSleevelessPrintPage(): Promise<void> {
     }),
     {
       activeSideRcStart: backChecklistArmholeStart,
-      piece: "back",
-      patternData: patternMerged,
     },
   );
   const frontChartHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
@@ -233,8 +231,6 @@ async function initSleevelessPrintPage(): Promise<void> {
     }),
     {
       activeSideRcStart: frontChecklistArmholeStart,
-      piece: "front",
-      patternData: patternMerged,
     },
   );
 

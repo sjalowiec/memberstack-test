@@ -24,7 +24,6 @@ import { resolveSleevelessFrontDiagram } from "./sleevelessFrontDiagramSrc";
 import {
   collectInnerNeckDecreasePointsFromTimeline,
   neckEdgeNotationLinesFromNeckShoulderChart,
-  renderNotationOverlayDiagram,
 } from "./notationOverlaySvg";
 import {
   shoulderShapingNotationLinesFromTimeline,
@@ -248,29 +247,19 @@ describe("buildFrontJapaneseNotationReplacements", () => {
     expect(out).toContain(repl["jp-armhole-bo"]);
   });
 
-  function overlayNotationLabels(html: string, stack: "neck" | "shoulder"): string[] {
-    const re = new RegExp(`stack--${stack}[^>]*>([\\s\\S]*?)<\\/div>`);
-    const m = html.match(re);
-    if (!m?.[1]) return [];
-    return [...m[1].matchAll(/class="ns-notation-overlay__label">([^<]*)/g)].map((x) => String(x[1]));
-  }
-
   function tspanTextsFromSvgBlock(svgOut: string, transformSnippet: string): string[] {
     const block = svgOut.match(new RegExp(`${transformSnippet}[\\s\\S]*?<\\/text>`))?.[0] ?? "";
     return [...block.matchAll(/<tspan[^>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]!);
   }
 
-  it("jp-neckline-shaping matches front neckline/shoulder diagram neck summary", () => {
+  it("jp-neckline-shaping matches front neck-edge chart summary", () => {
     const result = demoSleevelessBackPattern();
     const chart = result.frontNeckShoulderShapingChart;
     const repl = buildFrontJapaneseNotationReplacements(result, {});
 
     const fromChart = neckEdgeNotationLinesFromNeckShoulderChart(chart, "right");
-    const overlayHtml = renderNotationOverlayDiagram(chart, "right", {});
-    const overlayNeck = overlayNotationLabels(overlayHtml, "neck");
 
     expect(repl["jp-neckline-shaping"]).toBe(fromChart.join("\n"));
-    expect(repl["jp-neckline-shaping"]).toBe(overlayNeck.join("\n"));
     expect(fromChart.length).toBeGreaterThan(1);
 
     const timelineOnly = joinTimelineInnerNeckNotation(result);
@@ -294,11 +283,8 @@ describe("buildFrontJapaneseNotationReplacements", () => {
     const timeline = result.frontNeckShoulderTimeline ?? [];
 
     const fromTimeline = shoulderShapingNotationLinesFromTimeline(timeline, "right");
-    const overlayHtml = renderNotationOverlayDiagram(chart, "right", {});
-    const overlayShoulder = overlayNotationLabels(overlayHtml, "shoulder");
 
     expect(repl["jp-shoulder-shaping"]).toBe(fromTimeline.join("\n"));
-    expect(repl["jp-shoulder-shaping"]).toBe(overlayShoulder.join("\n"));
     expect(repl["jp-shoulder-shaping"]).not.toMatch(/^bo/i);
     expect(repl["jp-shoulder-shaping"].split("\n").length).toBeGreaterThan(1);
 

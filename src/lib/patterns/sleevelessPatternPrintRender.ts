@@ -122,9 +122,6 @@ export function renderSleevelessPrintPieceHtml(
       chunks.push(`<div class="print-chart-wrap">${neckChartHtml}</div>`);
       continue;
     }
-    if (row.kind === "neckShoulderChartPreviewMount") {
-      continue;
-    }
     if (row.kind === "block") {
       chunks.push(renderPrintBlockRow(row, lastStitchRef));
     }
