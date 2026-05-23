@@ -5,6 +5,7 @@ import GlossaryTooltip from "../../components/common/GlossaryTooltip.astro";
 import GaugeInput from "../../components/wizards/GaugeInput.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import PatternWorkspaceTabs from "../../components/patterns/PatternWorkspaceTabs.astro";
+import SleevelessExpressEditingBar from "../../components/patterns/SleevelessExpressEditingBar.astro";
 /* Wizard is @import'd first inside sleeveless-express-builder-cards.css so Express overrides always win cascade */
 import "../../styles/sleeveless-express-builder-cards.css";
 import "../../styles/sleeveless-express-wizard-layout.css";
@@ -100,10 +101,10 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
             </div>
 
             <header class="pattern-header page-header">
-              
               <h1 class="pattern-title">Sleeveless Sweater</h1>
+              <SleevelessExpressEditingBar />
               <p class="pattern-subtext">
-                Create a ready-to-knit sweater pattern in a few guided steps.
+                Don't know your gauge yet? You can still explore the pattern. Use 16 stitches and 24 rows for a mid-gauge sample, or 28 stitches and 44 rows for a standard-gauge sample. When you're ready to knit, come back and enter your actual swatch gauge.
               </p>
             </header>
 
@@ -111,7 +112,7 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
               <div class="express-builder-root" data-express-builder>
                 <div class="express-builder-toolbar no-print">
                   <button type="button" id="express-start-over-btn" class="btn btn-outline-secondary btn-sm">
-                    Start over
+                    Start a New Pattern
                   </button>
                 </div>
                 <div class="express-builder-units no-print">
@@ -311,11 +312,11 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
               >
                 <button
                   type="button"
-                  class="hat-length-picker__option is-selected"
+                  class="hat-length-picker__option"
                   data-choice
                   data-field="front"
                   data-value="closed"
-                  aria-pressed="true"
+                  aria-pressed="false"
                 >
                   <span class="express-front-card__img-wrap">
                     <img
