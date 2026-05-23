@@ -44,7 +44,6 @@ import {
 } from "../lib/patterns/sleevelessBodyShapeDiagramGuides.ts";
 import { buildSleevelessGarmentDiagramReplacements } from "../lib/patterns/sleevelessGarmentDiagramReplacements.ts";
 import {
-  BACK_DIAGRAM_STS_ROWS_SRC,
   resolveSleevelessBackDiagramSrc,
 } from "../lib/patterns/sleevelessBackDiagramSrc.ts";
 import {
@@ -76,7 +75,7 @@ import {
 import { sleevelessHelpVideoFromCatalog } from "../lib/patterns/sleevelessCatalogHelpVideo.ts";
 import { resolveEffectiveFinishedBustInches } from "../lib/patterns/customBuildEffectiveFinishedBust.ts";
 import { resolveDiagramFinishedHipInches } from "../lib/patterns/customBuildEffectiveFinishedHip.ts";
-import { resolveEffectiveSleevelessBodyShapePhrase } from "../lib/patterns/sleevelessAlineShaping.ts";
+import { resolveEffectiveSleevelessBodyShapeKind, resolveEffectiveSleevelessBodyShapePhrase } from "../lib/patterns/sleevelessAlineShaping.ts";
 
 // DEV-only cardigan half-front schematic: sessionStorage or localStorage key `kbmDevCardiganHalfFrontLeft` = "1" (vite dev).
 
@@ -872,7 +871,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         : String(hydrateGeneration);
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
     try {
-      const notationSrc = resolveSleevelessBackDiagramSrc("shaping-notation");
+      const notationSrc = resolveSleevelessBackDiagramSrc("shaping-notation", patternData);
       const res = await fetch(notationSrc, { credentials: "same-origin" });
       if (!res.ok) throw new Error(`Failed to load SVG: ${notationSrc} (${res.status})`);
       const jpReplacements = buildBackJapaneseNotationReplacements(result, patternData);
@@ -904,48 +903,18 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   }
 
   async function inlineFrontJapaneseNotationSvg(hostEl, result, patternData, hydrateGeneration) {
-    const frontJpLog = "[sleeveless:front-jp-notation]";
-    if (!(hostEl instanceof HTMLElement)) {
-      console.warn(frontJpLog, "abort: missing diagram host container", { hostEl });
-      return;
-    }
+    if (!(hostEl instanceof HTMLElement)) return;
     const hydrateGen =
       hydrateGeneration === undefined || hydrateGeneration === null
         ? null
         : String(hydrateGeneration);
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
-    const fetchUrl = resolveSleevelessFrontDiagramSrc("shaping-notation", patternData);
-    console.log(frontJpLog, "fetch URL:", fetchUrl);
     try {
-      const res = await fetch(fetchUrl, { credentials: "same-origin" });
-      console.log(frontJpLog, "fetch response:", {
-        ok: res.ok,
-        status: res.status,
-        statusText: res.statusText,
-        url: res.url,
-      });
-      if (!res.ok) {
-        throw new Error(`Failed to load SVG: ${fetchUrl} (${res.status})`);
-      }
-      const rawSvgText = await res.text();
-      console.log(frontJpLog, "raw SVG text:", {
-        returned: rawSvgText.length > 0,
-        byteLength: rawSvgText.length,
-        startsWithSvg: /^\s*<svg[\s>]/i.test(rawSvgText.replace(/^\uFEFF/, "").replace(/^<\?xml[\s\S]*?\?>\s*/, "")),
-      });
+      const notationSrc = resolveSleevelessFrontDiagramSrc("shaping-notation", patternData);
+      const res = await fetch(notationSrc, { credentials: "same-origin" });
+      if (!res.ok) throw new Error(`Failed to load SVG: ${notationSrc} (${res.status})`);
       const jpReplacements = buildFrontJapaneseNotationReplacements(result, patternData);
-      let svgText;
-      try {
-        svgText = applyJapaneseNotationSvgReplacements(rawSvgText, jpReplacements);
-        console.log(frontJpLog, "applyJapaneseNotationSvgReplacements: ok", {
-          outputLength: svgText.length,
-        });
-      } catch (replaceErr) {
-        const replaceMessage =
-          replaceErr instanceof Error ? replaceErr.message : String(replaceErr);
-        console.error(frontJpLog, "applyJapaneseNotationSvgReplacements: threw", replaceMessage, replaceErr);
-        throw replaceErr;
-      }
+      const svgText = applyJapaneseNotationSvgReplacements(await res.text(), jpReplacements);
 
       const parser = new DOMParser();
       let doc = parser.parseFromString(svgText, "image/svg+xml");
@@ -963,29 +932,10 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       svg.setAttribute("aria-label", FRONT_DIAGRAM_NOTATION_ALT);
       svg.classList.add("sleeveless-piece-split__diagram-inline");
 
-      if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) {
-        console.log(frontJpLog, "abort: stale hydrate generation", {
-          expected: hydrateGen,
-          current: hostEl.dataset.sleevelessHydrateGen,
-        });
-        return;
-      }
+      if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
       hostEl.innerHTML = svg.outerHTML;
-      console.log(frontJpLog, "diagram injected into host");
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      const failureKind =
-        message.includes("Failed to load SVG")
-          ? "fetch"
-          : message.includes("SVG parse error") || message.toLowerCase().includes("parse")
-            ? "svg-parse"
-            : "replacement-or-other";
       console.warn("[sleeveless] Front shaping notation diagram failed:", err);
-      console.warn(frontJpLog, "fallback: Diagram unavailable.", {
-        failureKind,
-        message,
-        fetchUrl,
-      });
       if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
       hostEl.innerHTML = `<p class="sleeveless-pattern-boot-msg">Diagram unavailable.</p>`;
     }
@@ -1025,7 +975,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
 
   async function hydrateSleevelessBackDiagram(el, mode, result, unit, patternData, hydrateGeneration) {
     if (!(el instanceof HTMLElement)) return;
-    const diagramSrc = resolveSleevelessBackDiagramSrc(mode);
+    const diagramSrc = resolveSleevelessBackDiagramSrc(mode, patternData);
     el.dataset.src = diagramSrc;
     if (import.meta.env.DEV) {
       console.log("[sleeveless] Back garment schematic route:", { mode, src: diagramSrc });
@@ -2429,7 +2379,7 @@ table {
     const backNotationSupported = isBackJapaneseNotationSupported(diagramPatternData, result);
     const backWrapped = wrapSleevelessPieceSplit(
       backInner,
-      BACK_DIAGRAM_STS_ROWS_SRC,
+      resolveSleevelessBackDiagramSrc("sts-rows", diagramPatternData),
       BACK_DIAGRAM_STS_ROWS_ALT,
       backPost,
       backNotationSupported ? { backDiagramModeToggle: true } : undefined,
@@ -2458,18 +2408,10 @@ table {
           ? "Sleeveless cardigan V-neck front diagram"
           : "Sleeveless cardigan front diagram"
       : "Sleeveless front piece diagram";
-    if (import.meta.env.DEV) {
-      console.log("[sleeveless] Front garment schematic route:", {
-        src: frontDiagramResolution.src,
-        diagramType: frontDiagramResolution.diagramType,
-        garmentStyle: frontDiagramResolution.garmentStyle,
-        frontPieceType: frontDiagramResolution.frontPieceType,
-        cardiganHalfSide: frontCardiganHalfSide ?? null,
-      });
-    }
     const frontNotationSupported = isFrontJapaneseNotationSupported(diagramPatternData, result);
+    const frontInitialDiagramMode = "sts-rows";
     const frontWrapSrc = frontNotationSupported
-      ? resolveSleevelessFrontDiagramSrc("sts-rows", diagramPatternData)
+      ? resolveSleevelessFrontDiagramSrc(frontInitialDiagramMode, diagramPatternData)
       : frontDiagramResolution.src;
     const frontWrapped = wrapSleevelessPieceSplit(
       frontInner,

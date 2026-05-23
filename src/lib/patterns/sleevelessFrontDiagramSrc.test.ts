@@ -1,14 +1,26 @@
 import { describe, expect, it } from "vitest";
 import {
   getSleevelessShoulderNotationIconSrc,
+  isSleevelessEffectiveAlineBody,
+  isSleevelessEffectiveShapedBody,
+  isSleevelessPulloverVNeckAlineFront,
   isSleevelessVNeckChoice,
   isSleevelessCardiganGarmentStyle,
   isSleevelessDevCardiganExpressPreview,
   resolveSleevelessFrontDiagram,
+  SLEEVELESS_CARDIGAN_ROUND_ALINE_FRONT_DIAGRAM_SRC,
+  SLEEVELESS_CARDIGAN_V_ALINE_FRONT_DIAGRAM_SRC,
+  SLEEVELESS_PULLOVER_ROUND_ALINE_FRONT_DIAGRAM_SRC,
+  SLEEVELESS_PULLOVER_V_ALINE_FRONT_DIAGRAM_SRC,
   SLEEVELESS_SHOULDER_NOTATION_ICON_BACK,
   SLEEVELESS_SHOULDER_NOTATION_ICON_FRONT_ROUND,
   SLEEVELESS_SHOULDER_NOTATION_ICON_FRONT_V,
 } from "./sleevelessFrontDiagramSrc";
+
+const alineFit = {
+  style: { bodyShape: "aline" },
+  fit: { selectedMeasurements: { finished_bust_chest: 38, finished_hip: 44 } },
+};
 
 describe("getSleevelessShoulderNotationIconSrc", () => {
   const vNeckPattern = { style: { neckline: "v-neck" } };
@@ -121,6 +133,51 @@ describe("resolveSleevelessFrontDiagram", () => {
     expect(r.src).toBe("/images/patterns/sleeveless/diagrams/diagram-front-v.svg");
   });
 
+  it("routes pullover v-neck A-line to diagram-front-v-aline.svg", () => {
+    const alinePattern = {
+      style: { neckline: "v-neck", bodyShape: "aline", garmentStyle: "pullover" },
+      fit: {
+        selectedMeasurements: { finished_bust_chest: 38, finished_hip: 44 },
+      },
+    };
+    expect(isSleevelessPulloverVNeckAlineFront(alinePattern)).toBe(true);
+    const r = resolveSleevelessFrontDiagram(alinePattern, { devForceCardiganHalfLeft: false });
+    expect(r.diagramType).toBe("pulloverFullFrontV");
+    expect(r.src).toBe(SLEEVELESS_PULLOVER_V_ALINE_FRONT_DIAGRAM_SRC);
+  });
+
+  it("routes v-neck cardigan A-line to diagram-cardigan-v-aline.svg", () => {
+    const cardiganAline = {
+      style: { neckline: "v-neck", bodyShape: "aline", garmentStyle: "cardigan" },
+      fit: {
+        selectedMeasurements: { finished_bust_chest: 38, finished_hip: 44 },
+      },
+    };
+    expect(isSleevelessPulloverVNeckAlineFront(cardiganAline)).toBe(false);
+    expect(isSleevelessEffectiveAlineBody(cardiganAline)).toBe(true);
+    const r = resolveSleevelessFrontDiagram(cardiganAline, { devForceCardiganHalfLeft: false });
+    expect(r.src).toBe(SLEEVELESS_CARDIGAN_V_ALINE_FRONT_DIAGRAM_SRC);
+  });
+
+  it("routes round-neck pullover A-line to diagram-front-round-aline.svg", () => {
+    const pattern = {
+      ...alineFit,
+      style: { neckline: "round", garmentStyle: "pullover", bodyShape: "aline" },
+    };
+    expect(isSleevelessEffectiveAlineBody(pattern)).toBe(true);
+    const r = resolveSleevelessFrontDiagram(pattern, { devForceCardiganHalfLeft: false });
+    expect(r.src).toBe(SLEEVELESS_PULLOVER_ROUND_ALINE_FRONT_DIAGRAM_SRC);
+  });
+
+  it("routes round-neck cardigan A-line to diagram-cardigan-round-aline.svg", () => {
+    const pattern = {
+      ...alineFit,
+      style: { neckline: "round", garmentStyle: "cardigan", frontStyle: "open", bodyShape: "aline" },
+    };
+    const r = resolveSleevelessFrontDiagram(pattern, { devForceCardiganHalfLeft: false });
+    expect(r.src).toBe(SLEEVELESS_CARDIGAN_ROUND_ALINE_FRONT_DIAGRAM_SRC);
+  });
+
   it("routes round-neck cardigan style to full-width schematic", () => {
     const r = resolveSleevelessFrontDiagram(
       { style: { neckline: "round", frontStyle: "open" } },
@@ -158,5 +215,16 @@ describe("resolveSleevelessFrontDiagram", () => {
     );
     expect(r.diagramType).toBe("cardiganHalfFrontV");
     expect(r.src).toBe("/images/patterns/sleeveless/diagrams/diagram-cardigan-v.svg");
+  });
+
+  it("routes shaped waist to -shaped.svg variants", () => {
+    const shaped = {
+      style: { neckline: "round", bodyShape: "shaped", garmentStyle: "pullover" },
+      fit: { selectedMeasurements: { finished_bust_chest: 40, finished_hip: 40 } },
+    };
+    expect(isSleevelessEffectiveShapedBody(shaped)).toBe(true);
+    expect(isSleevelessEffectiveAlineBody(shaped)).toBe(false);
+    const r = resolveSleevelessFrontDiagram(shaped, { devForceCardiganHalfLeft: false });
+    expect(r.src).toBe("/images/patterns/sleeveless/diagrams/diagram-front-round-shaped.svg");
   });
 });

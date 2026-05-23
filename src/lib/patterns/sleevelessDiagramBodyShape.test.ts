@@ -84,7 +84,21 @@ describe("sleeveless diagram body shape vs applied shaping", () => {
     expect(r.debug.hemCastOnStitches).toBe(r.debug.bustBodyStitches);
   });
 
-  it("A-line from measurements (38/44): guide overlay active on back layout", () => {
+  it("shaped body (stored shaped): dedicated SVG — no dotted guide overlay", () => {
+    const input = patternData({
+      bodyShape: "shaped",
+      chestBustOverride: "40",
+      hipOverride: "40",
+      chartFinishedBust: 40,
+      chartFinishedHip: 40,
+    });
+    const r = generateSleevelessBackPattern(input);
+    expect(resolveEffectiveSleevelessBodyShapeKind(input, 40, 40)).toBe("shaped");
+    expect(r.debug.diagramGuides?.showBodyShapeGuides).toBe(false);
+    expect(buildBodyShapeGuideSvgFragment(r.debug.diagramGuides, "back")).toBe("");
+  });
+
+  it("A-line from measurements (38/44): dedicated SVG — no dotted guide overlay", () => {
     const input = patternData({
       chestBustOverride: "38",
       hipOverride: "44",
@@ -93,9 +107,9 @@ describe("sleeveless diagram body shape vs applied shaping", () => {
     });
     const r = generateSleevelessBackPattern(input);
     expect(resolveEffectiveSleevelessBodyShapeKind(input, 38, 44)).toBe("aline");
-    expect(r.debug.diagramGuides?.showBodyShapeGuides).toBe(true);
-    const frag = buildBodyShapeGuideSvgFragment(r.debug.diagramGuides, "back");
-    expect(frag).toContain('id="body-shape-guides"');
-    expect(frag).toContain("stroke-dasharray");
+    expect(r.debug.diagramGuides?.showBodyShapeGuides).toBe(false);
+    expect(r.debug.diagramGuides?.bodyShapeKind).toBe("aline");
+    expect(buildBodyShapeGuideSvgFragment(r.debug.diagramGuides, "back")).toBe("");
+    expect(buildBodyShapeGuideSvgFragment(r.debug.diagramGuides, "front")).toBe("");
   });
 });

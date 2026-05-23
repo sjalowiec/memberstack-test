@@ -30,15 +30,45 @@ function storedBodyShapeKey(patternData: Record<string, unknown>): string {
   return raw.trim().toLowerCase();
 }
 
-/** True when hip and bust differ beyond the body-block straight tolerance. */
+export type SleevelessEffectiveBodyShapeKind = "straight" | "aline" | "shaped";
+
+/**
+ * Whether stored style requests waist-shaped diagrams (`shaped` or Express `waist`).
+ * Does not infer from measurements — use {@link resolveEffectiveSleevelessBodyShapeKind} for routing.
+ */
+export function isSleevelessShapedBodyShape(patternData: Record<string, unknown>): boolean {
+  const key = storedBodyShapeKey(patternData);
+  return key === "shaped" || key === "waist";
+}
+
+/** True when hip is wider than bust beyond the body-block straight tolerance (A-line flare). */
 export function measurementsImplySleevelessAlineBody(
   finishedBust: number | undefined,
   finishedHip: number | undefined,
 ): boolean {
   if (finishedBust === undefined || finishedHip === undefined) return false;
   if (finishedBust <= 0 || finishedHip <= 0) return false;
+  return finishedHip - finishedBust > SLEEVELESS_BODY_STRAIGHT_TOLERANCE_INCHES;
+}
+
+/** True when hip is narrower than bust beyond the body-block straight tolerance (waist-shaped). */
+export function measurementsImplySleevelessShapedBody(
+  finishedBust: number | undefined,
+  finishedHip: number | undefined,
+): boolean {
+  if (finishedBust === undefined || finishedHip === undefined) return false;
+  if (finishedBust <= 0 || finishedHip <= 0) return false;
+  return finishedBust - finishedHip > SLEEVELESS_BODY_STRAIGHT_TOLERANCE_INCHES;
+}
+
+/** True when hip and bust differ in either direction beyond the straight tolerance. */
+export function measurementsImplySleevelessBodyShaping(
+  finishedBust: number | undefined,
+  finishedHip: number | undefined,
+): boolean {
   return (
-    Math.abs(finishedHip - finishedBust) > SLEEVELESS_BODY_STRAIGHT_TOLERANCE_INCHES
+    measurementsImplySleevelessAlineBody(finishedBust, finishedHip) ||
+    measurementsImplySleevelessShapedBody(finishedBust, finishedHip)
   );
 }
 
@@ -53,7 +83,7 @@ export function isSleevelessExplicitCustomBuildStraight(
 ): boolean {
   if (!isCustomBuildPatternMode(patternData)) return false;
   if (storedBodyShapeKey(patternData) !== "straight") return false;
-  return !measurementsImplySleevelessAlineBody(finishedBust, finishedHip);
+  return !measurementsImplySleevelessBodyShaping(finishedBust, finishedHip);
 }
 
 /**
@@ -101,7 +131,8 @@ export function shouldApplySleevelessAlineShapingFromMeasurements(
     return false;
   }
   if (isSleevelessAlineBodyShape(patternData)) return true;
-  return measurementsImplySleevelessAlineBody(finishedBust, finishedHip);
+  if (isSleevelessShapedBodyShape(patternData)) return true;
+  return measurementsImplySleevelessBodyShaping(finishedBust, finishedHip);
 }
 
 /**
@@ -112,31 +143,33 @@ export function resolveEffectiveSleevelessBodyShapeKind(
   patternData: Record<string, unknown>,
   finishedBust: number | undefined,
   finishedHip: number | undefined,
-): "straight" | "aline" {
+): SleevelessEffectiveBodyShapeKind {
   if (finishedBust === undefined || finishedBust <= 0) return "straight";
-  if (!shouldApplySleevelessAlineShapingFromMeasurements(patternData, finishedBust, finishedHip)) {
+  if (isSleevelessExplicitCustomBuildStraight(patternData, finishedBust, finishedHip)) {
     return "straight";
   }
+  if (isSleevelessAlineBodyShape(patternData)) return "aline";
+  if (isSleevelessShapedBodyShape(patternData)) return "shaped";
   const hipForBodyBlock = resolveBodyBlockHipCircumferenceInches(
     patternData,
     finishedBust,
     finishedHip,
   );
-  if (!measurementsImplySleevelessAlineBody(finishedBust, hipForBodyBlock)) {
-    return "straight";
-  }
-  return "aline";
+  if (measurementsImplySleevelessAlineBody(finishedBust, hipForBodyBlock)) return "aline";
+  if (measurementsImplySleevelessShapedBody(finishedBust, hipForBodyBlock)) return "shaped";
+  return "straight";
 }
 
-/** Short phrase for pattern summary (“straight body” / “A-line body”). */
+/** Short phrase for pattern summary (“straight body” / “A-line body” / “Shaped waist”). */
 export function resolveEffectiveSleevelessBodyShapePhrase(
   patternData: Record<string, unknown>,
   finishedBust: number | undefined,
   finishedHip: number | undefined,
 ): string {
-  return resolveEffectiveSleevelessBodyShapeKind(patternData, finishedBust, finishedHip) === "aline"
-    ? "A-line body"
-    : "straight body";
+  const kind = resolveEffectiveSleevelessBodyShapeKind(patternData, finishedBust, finishedHip);
+  if (kind === "aline") return "A-line body";
+  if (kind === "shaped") return "Shaped waist";
+  return "straight body";
 }
 
 function formatRcColon(rc: number): string {

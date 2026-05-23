@@ -27,10 +27,17 @@ describe("diagramGuidesForAppliedBodyShaping", () => {
     expect(buildBodyShapeGuideSvgFragment(synced, "back")).toBe("");
   });
 
-  it("preserves guides when A-line shaping is active", () => {
+  it("preserves guides when A-line shaping is active without dedicated SVG", () => {
     const synced = diagramGuidesForAppliedBodyShaping(alineDecreaseGuides, true);
     expect(synced.showBodyShapeGuides).toBe(true);
     expect(buildBodyShapeGuideSvgFragment(synced, "back")).toContain('id="body-shape-guides"');
+  });
+
+  it("suppresses guides when dedicated body-shape diagram SVG is used", () => {
+    const synced = diagramGuidesForAppliedBodyShaping(alineDecreaseGuides, true, true);
+    expect(synced.showBodyShapeGuides).toBe(false);
+    expect(synced.bodyShapeKind).toBe("aline");
+    expect(buildBodyShapeGuideSvgFragment(synced, "back")).toBe("");
   });
 });
 

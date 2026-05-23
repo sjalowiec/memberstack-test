@@ -11,6 +11,7 @@ import {
 } from "./sleevelessBodyShapeDiagramGuides";
 import { buildSleevelessGarmentDiagramReplacements } from "./sleevelessGarmentDiagramReplacements";
 import { buildSleevelessGarmentDiagramPatternData } from "./sleevelessPatternBuilderMerge";
+import { resolveSleevelessBackDiagramSrc } from "./sleevelessBackDiagramSrc";
 import {
   isSleevelessCardiganHalfFrontDiagramType,
   resolveSleevelessFrontDiagram,
@@ -79,7 +80,7 @@ async function loadSleevelessPieceDiagramSvgMarkup(
       patternData: diagramPatternData,
       measurementPiece: "back",
     });
-    src = "/images/patterns/sleeveless/diagram-back.svg";
+    src = resolveSleevelessBackDiagramSrc("sts-rows", diagramPatternData);
     ariaLabel = "Back piece schematic with key measurements";
   } else {
     const frontRes = resolveSleevelessFrontDiagram(diagramPatternData, {

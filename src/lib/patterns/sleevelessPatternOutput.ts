@@ -22,6 +22,7 @@ import {
 import {
   bodyBlockPlanToAlineShapingPlan,
   formatSleevelessAlineBodyShapingInstructionLines,
+  resolveEffectiveSleevelessBodyShapeKind,
   scaleAlineBodyShapingPlanForCardiganHalf,
   sleevelessAlineShapingLineNeedsTrustedHtml,
   type SleevelessAlineShapingEdgeScope,
@@ -1936,6 +1937,8 @@ export function generateSleevelessBackPattern(
     bodyDiagramGuides = diagramGuidesForAppliedBodyShaping(
       bodyDiagramGuides,
       alineBodyShaping !== null,
+      resolveEffectiveSleevelessBodyShapeKind(patternData, finishedBust, finishedHipResolved) !==
+        "straight",
     );
   }
   /* --- end body block --- */

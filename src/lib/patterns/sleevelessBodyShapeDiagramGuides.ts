@@ -77,6 +77,7 @@ function guideOffsetPx(
 export function diagramGuidesForAppliedBodyShaping(
   planGuides: SleevelessBodyDiagramGuides,
   alineShapingActive: boolean,
+  useDedicatedBodyShapeDiagramSvg = false,
 ): SleevelessBodyDiagramGuides {
   if (!alineShapingActive) {
     return {
@@ -86,6 +87,12 @@ export function diagramGuidesForAppliedBodyShaping(
       shapingDirection: "none",
       hemStitches: planGuides.bustStitches,
       hemCircumferenceInches: planGuides.bustCircumferenceInches,
+    };
+  }
+  if (useDedicatedBodyShapeDiagramSvg) {
+    return {
+      ...planGuides,
+      showBodyShapeGuides: false,
     };
   }
   return planGuides;

@@ -17,6 +17,10 @@ import {
 import { neckEdgeNotationLinesFromNeckShoulderChart } from "./notationOverlaySvg";
 import { shoulderShapingNotationLinesFromTimeline } from "./shoulderShapingNotation";
 import {
+  applySleevelessDiagramBodyShapeSuffix,
+  resolveSleevelessDiagramBodyShapeKind,
+} from "./sleevelessDiagramBodyShapeSrc";
+import {
   isSleevelessCardiganGarmentStyle,
   isSleevelessVNeckChoice,
   SLEEVELESS_PULLOVER_ROUND_FRONT_DIAGRAM_SRC,
@@ -32,9 +36,17 @@ export const SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC = SLEEVELESS_PULLOVER_ROUND_F
 export const SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC =
   "/images/patterns/sleeveless/diagrams/diagram-jp-front-round.svg";
 
+/** Pullover round-neck A-line front Japanese notation schematic (Shaping Notation mode). */
+export const SLEEVELESS_PULLOVER_ROUND_ALINE_FRONT_JP_NOTATION_DIAGRAM_SRC =
+  "/images/patterns/sleeveless/diagrams/diagram-jp-front-round-aline.svg";
+
 /** Pullover V-neck front Japanese notation schematic (Shaping Notation mode). */
 export const SLEEVELESS_PULLOVER_V_FRONT_JP_NOTATION_DIAGRAM_SRC =
   "/images/patterns/sleeveless/diagrams/diagram-jp-front-v.svg";
+
+/** Pullover V-neck A-line front Japanese notation schematic (Shaping Notation mode). */
+export const SLEEVELESS_PULLOVER_V_ALINE_FRONT_JP_NOTATION_DIAGRAM_SRC =
+  "/images/patterns/sleeveless/diagrams/diagram-jp-front-v-aline.svg";
 
 /** Round-neck cardigan front measurement schematic (Stitches & Rows mode). */
 export const SLEEVELESS_CARDIGAN_ROUND_FRONT_DIAGRAM_SRC =
@@ -48,9 +60,17 @@ export const SLEEVELESS_CARDIGAN_V_FRONT_DIAGRAM_SRC =
 export const SLEEVELESS_CARDIGAN_ROUND_FRONT_JP_NOTATION_DIAGRAM_SRC =
   "/images/patterns/sleeveless/diagrams/diagram-jp-cardigan-round.svg";
 
+/** Round-neck cardigan A-line front Japanese notation schematic (Shaping Notation mode). */
+export const SLEEVELESS_CARDIGAN_ROUND_ALINE_FRONT_JP_NOTATION_DIAGRAM_SRC =
+  "/images/patterns/sleeveless/diagrams/diagram-jp-cardigan-round-aline.svg";
+
 /** V-neck cardigan front Japanese notation schematic (Shaping Notation mode). */
 export const SLEEVELESS_CARDIGAN_V_FRONT_JP_NOTATION_DIAGRAM_SRC =
   "/images/patterns/sleeveless/diagrams/diagram-jp-cardigan-v.svg";
+
+/** V-neck cardigan A-line front Japanese notation schematic (Shaping Notation mode). */
+export const SLEEVELESS_CARDIGAN_V_ALINE_FRONT_JP_NOTATION_DIAGRAM_SRC =
+  "/images/patterns/sleeveless/diagrams/diagram-jp-cardigan-v-aline.svg";
 
 /** Alias used by Japanese notation fetch/replace (shaping notation mode, round pullover). */
 export const JP_FRONT_NOTATION_SVG_SRC = SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC;
@@ -62,25 +82,30 @@ export function resolveSleevelessFrontDiagramSrc(
   mode: SleevelessFrontDiagramViewMode,
   patternData: unknown,
 ): string {
+  const bodyShapeKind = resolveSleevelessDiagramBodyShapeKind(patternData);
   const shapingNotation = mode === "shaping-notation";
   if (isSleevelessCardiganGarmentStyle(patternData)) {
     if (isSleevelessVNeckChoice(patternData)) {
-      return shapingNotation
+      const straightBase = shapingNotation
         ? SLEEVELESS_CARDIGAN_V_FRONT_JP_NOTATION_DIAGRAM_SRC
         : SLEEVELESS_CARDIGAN_V_FRONT_DIAGRAM_SRC;
+      return applySleevelessDiagramBodyShapeSuffix(straightBase, bodyShapeKind);
     }
-    return shapingNotation
+    const straightBase = shapingNotation
       ? SLEEVELESS_CARDIGAN_ROUND_FRONT_JP_NOTATION_DIAGRAM_SRC
       : SLEEVELESS_CARDIGAN_ROUND_FRONT_DIAGRAM_SRC;
+    return applySleevelessDiagramBodyShapeSuffix(straightBase, bodyShapeKind);
   }
   if (isSleevelessVNeckChoice(patternData)) {
-    return shapingNotation
+    const straightBase = shapingNotation
       ? SLEEVELESS_PULLOVER_V_FRONT_JP_NOTATION_DIAGRAM_SRC
       : SLEEVELESS_PULLOVER_V_FRONT_DIAGRAM_SRC;
+    return applySleevelessDiagramBodyShapeSuffix(straightBase, bodyShapeKind);
   }
-  return shapingNotation
+  const straightBase = shapingNotation
     ? SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC
-    : SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC;
+    : SLEEVELESS_PULLOVER_ROUND_FRONT_DIAGRAM_SRC;
+  return applySleevelessDiagramBodyShapeSuffix(straightBase, bodyShapeKind);
 }
 
 /** Token names in `diagram-jp-front-round.svg` (same keys as back notation). */

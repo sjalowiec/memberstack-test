@@ -6,8 +6,12 @@ import {
   distributeSleevelessAlineBodyShapingRows,
   isSleevelessAlineBodyShape,
   isSleevelessExplicitCustomBuildStraight,
+  isSleevelessShapedBodyShape,
   measurementsImplySleevelessAlineBody,
+  measurementsImplySleevelessBodyShaping,
+  measurementsImplySleevelessShapedBody,
   resolveBodyBlockHipCircumferenceInches,
+  resolveEffectiveSleevelessBodyShapeKind,
   shouldApplySleevelessAlineShapingFromMeasurements,
   shouldRunSleevelessBodyBlockForPullover,
 } from "./sleevelessAlineShaping";
@@ -19,11 +23,62 @@ describe("isSleevelessAlineBodyShape", () => {
   });
 });
 
+describe("isSleevelessShapedBodyShape", () => {
+  it("detects shaped and waist tokens", () => {
+    expect(isSleevelessShapedBodyShape({ style: { bodyShape: "shaped" } })).toBe(true);
+    expect(isSleevelessShapedBodyShape({ style: { bodyShape: "waist" } })).toBe(true);
+    expect(isSleevelessShapedBodyShape({ style: { bodyShape: "aline" } })).toBe(false);
+  });
+});
+
+describe("resolveEffectiveSleevelessBodyShapeKind", () => {
+  const express = { style: { bodyShape: "straight", patternMode: "express" } };
+
+  it("returns shaped before measurement-inferred aline when bodyShape is shaped", () => {
+    expect(
+      resolveEffectiveSleevelessBodyShapeKind({ style: { bodyShape: "shaped" } }, 38, 44),
+    ).toBe("shaped");
+  });
+
+  it("resolves aline when hip is wider than bust beyond tolerance", () => {
+    expect(resolveEffectiveSleevelessBodyShapeKind(express, 40, 44)).toBe("aline");
+    expect(resolveEffectiveSleevelessBodyShapeKind(express, 38, 44)).toBe("aline");
+  });
+
+  it("resolves shaped when hip is narrower than bust beyond tolerance", () => {
+    expect(resolveEffectiveSleevelessBodyShapeKind(express, 44, 40)).toBe("shaped");
+  });
+
+  it("resolves straight when bust and hip match within tolerance", () => {
+    expect(resolveEffectiveSleevelessBodyShapeKind(express, 40, 40)).toBe("straight");
+    expect(resolveEffectiveSleevelessBodyShapeKind(express, 40, 40.125)).toBe("straight");
+  });
+
+  it("honors explicit aline even when measurements are straight", () => {
+    expect(resolveEffectiveSleevelessBodyShapeKind({ style: { bodyShape: "aline" } }, 40, 40)).toBe(
+      "aline",
+    );
+  });
+});
+
 describe("body block gating from measurements", () => {
-  it("infers A-line when hip differs from bust beyond tolerance", () => {
+  it("infers A-line only when hip is wider than bust beyond tolerance", () => {
     expect(measurementsImplySleevelessAlineBody(38, 44)).toBe(true);
+    expect(measurementsImplySleevelessAlineBody(44, 40)).toBe(false);
     expect(measurementsImplySleevelessAlineBody(40, 40)).toBe(false);
     expect(measurementsImplySleevelessAlineBody(40, 40.125)).toBe(false);
+  });
+
+  it("infers shaped only when hip is narrower than bust beyond tolerance", () => {
+    expect(measurementsImplySleevelessShapedBody(44, 40)).toBe(true);
+    expect(measurementsImplySleevelessShapedBody(38, 44)).toBe(false);
+    expect(measurementsImplySleevelessShapedBody(40, 40)).toBe(false);
+  });
+
+  it("infers body shaping in either direction beyond tolerance", () => {
+    expect(measurementsImplySleevelessBodyShaping(38, 44)).toBe(true);
+    expect(measurementsImplySleevelessBodyShaping(44, 40)).toBe(true);
+    expect(measurementsImplySleevelessBodyShaping(40, 40)).toBe(false);
   });
 
   it("runs body block for pullover whenever bust is set", () => {
@@ -31,14 +86,11 @@ describe("body block gating from measurements", () => {
     expect(shouldRunSleevelessBodyBlockForPullover(undefined)).toBe(false);
   });
 
-  it("applies A-line shaping from measurements when bodyShape is straight (express)", () => {
-    expect(
-      shouldApplySleevelessAlineShapingFromMeasurements(
-        { style: { bodyShape: "straight", patternMode: "express" } },
-        38,
-        44,
-      ),
-    ).toBe(true);
+  it("applies body shaping from measurements when bodyShape is straight (express)", () => {
+    const express = { style: { bodyShape: "straight", patternMode: "express" } };
+    expect(shouldApplySleevelessAlineShapingFromMeasurements(express, 38, 44)).toBe(true);
+    expect(shouldApplySleevelessAlineShapingFromMeasurements(express, 44, 40)).toBe(true);
+    expect(shouldApplySleevelessAlineShapingFromMeasurements(express, 40, 40)).toBe(false);
   });
 
   it("infers A-line for custom-build straight when review hip exceeds bust", () => {

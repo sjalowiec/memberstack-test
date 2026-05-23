@@ -9,18 +9,27 @@ import {
 } from "./sleevelessBackJapaneseNotation";
 import {
   JP_FRONT_NOTATION_SVG_TOKEN_KEYS,
+  SLEEVELESS_CARDIGAN_ROUND_ALINE_FRONT_JP_NOTATION_DIAGRAM_SRC,
   SLEEVELESS_CARDIGAN_ROUND_FRONT_DIAGRAM_SRC,
   SLEEVELESS_CARDIGAN_ROUND_FRONT_JP_NOTATION_DIAGRAM_SRC,
+  SLEEVELESS_CARDIGAN_V_ALINE_FRONT_JP_NOTATION_DIAGRAM_SRC,
   SLEEVELESS_CARDIGAN_V_FRONT_DIAGRAM_SRC,
   SLEEVELESS_CARDIGAN_V_FRONT_JP_NOTATION_DIAGRAM_SRC,
   SLEEVELESS_FRONT_DIAGRAM_STS_ROWS_SRC,
   SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC,
+  SLEEVELESS_PULLOVER_ROUND_ALINE_FRONT_JP_NOTATION_DIAGRAM_SRC,
   SLEEVELESS_PULLOVER_V_FRONT_JP_NOTATION_DIAGRAM_SRC,
+  SLEEVELESS_PULLOVER_V_ALINE_FRONT_JP_NOTATION_DIAGRAM_SRC,
   buildFrontJapaneseNotationReplacements,
   isFrontJapaneseNotationSupported,
   resolveSleevelessFrontDiagramSrc,
 } from "./sleevelessFrontJapaneseNotation";
-import { resolveSleevelessFrontDiagram } from "./sleevelessFrontDiagramSrc";
+import {
+  resolveSleevelessFrontDiagram,
+  SLEEVELESS_CARDIGAN_ROUND_ALINE_FRONT_DIAGRAM_SRC,
+  SLEEVELESS_CARDIGAN_V_ALINE_FRONT_DIAGRAM_SRC,
+  SLEEVELESS_PULLOVER_ROUND_ALINE_FRONT_DIAGRAM_SRC,
+} from "./sleevelessFrontDiagramSrc";
 import {
   collectInnerNeckDecreasePointsFromTimeline,
   neckEdgeNotationLinesFromNeckShoulderChart,
@@ -165,6 +174,52 @@ describe("v-neck cardigan front diagram routing", () => {
   });
 });
 
+const alineFit = {
+  fit: { selectedMeasurements: { finished_bust_chest: 38, finished_hip: 44 } },
+  style: { bodyShape: "aline" },
+};
+
+describe("A-line front diagram routing (all necklines and cardigan)", () => {
+  it("round pullover uses round-aline SVGs in both modes", () => {
+    const pattern = {
+      ...alineFit,
+      style: { garmentStyle: "pullover", neckline: "round", bodyShape: "aline" },
+    };
+    expect(resolveSleevelessFrontDiagramSrc("sts-rows", pattern)).toBe(
+      SLEEVELESS_PULLOVER_ROUND_ALINE_FRONT_DIAGRAM_SRC,
+    );
+    expect(resolveSleevelessFrontDiagramSrc("shaping-notation", pattern)).toBe(
+      SLEEVELESS_PULLOVER_ROUND_ALINE_FRONT_JP_NOTATION_DIAGRAM_SRC,
+    );
+  });
+
+  it("round cardigan uses cardigan-round-aline SVGs in both modes", () => {
+    const pattern = {
+      ...alineFit,
+      style: { garmentStyle: "cardigan", neckline: "round", frontStyle: "open", bodyShape: "aline" },
+    };
+    expect(resolveSleevelessFrontDiagramSrc("sts-rows", pattern)).toBe(
+      SLEEVELESS_CARDIGAN_ROUND_ALINE_FRONT_DIAGRAM_SRC,
+    );
+    expect(resolveSleevelessFrontDiagramSrc("shaping-notation", pattern)).toBe(
+      SLEEVELESS_CARDIGAN_ROUND_ALINE_FRONT_JP_NOTATION_DIAGRAM_SRC,
+    );
+  });
+
+  it("v-neck cardigan uses cardigan-v-aline SVGs in both modes", () => {
+    const pattern = {
+      ...alineFit,
+      style: { garmentStyle: "cardigan", neckline: "v-neck", bodyShape: "aline" },
+    };
+    expect(resolveSleevelessFrontDiagramSrc("sts-rows", pattern)).toBe(
+      SLEEVELESS_CARDIGAN_V_ALINE_FRONT_DIAGRAM_SRC,
+    );
+    expect(resolveSleevelessFrontDiagramSrc("shaping-notation", pattern)).toBe(
+      SLEEVELESS_CARDIGAN_V_ALINE_FRONT_JP_NOTATION_DIAGRAM_SRC,
+    );
+  });
+});
+
 describe("v-neck pullover front diagram routing", () => {
   it("uses diagram-front-v.svg for sts-rows and diagram-jp-front-v.svg for notation", () => {
     const pattern = { style: { garmentStyle: "pullover", neckline: "v-neck" } };
@@ -179,6 +234,26 @@ describe("v-neck pullover front diagram routing", () => {
     );
     expect(SLEEVELESS_PULLOVER_V_FRONT_JP_NOTATION_DIAGRAM_SRC).toBe(
       "/images/patterns/sleeveless/diagrams/diagram-jp-front-v.svg",
+    );
+  });
+
+  it("uses A-line SVGs for sts-rows and shaping notation when body shape is A-line", () => {
+    const pattern = {
+      style: { garmentStyle: "pullover", neckline: "v-neck", bodyShape: "aline" },
+      fit: {
+        selectedMeasurements: { finished_bust_chest: 38, finished_hip: 44 },
+      },
+    };
+    const r = resolveSleevelessFrontDiagram(pattern, { devForceCardiganHalfLeft: false });
+    expect(r.src).toBe("/images/patterns/sleeveless/diagrams/diagram-front-v-aline.svg");
+    expect(resolveSleevelessFrontDiagramSrc("sts-rows", pattern)).toBe(
+      "/images/patterns/sleeveless/diagrams/diagram-front-v-aline.svg",
+    );
+    expect(resolveSleevelessFrontDiagramSrc("shaping-notation", pattern)).toBe(
+      SLEEVELESS_PULLOVER_V_ALINE_FRONT_JP_NOTATION_DIAGRAM_SRC,
+    );
+    expect(SLEEVELESS_PULLOVER_V_ALINE_FRONT_JP_NOTATION_DIAGRAM_SRC).toBe(
+      "/images/patterns/sleeveless/diagrams/diagram-jp-front-v-aline.svg",
     );
   });
 });

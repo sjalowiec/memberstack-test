@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveCardiganHalfFrontWidths } from "./cardiganFrontBlock";
 import { buildBodyShapeGuideSvgFragment } from "./sleevelessBodyShapeDiagramGuides";
+import { resolveSleevelessFrontDiagram } from "./sleevelessFrontDiagramSrc";
 import { buildSleevelessGarmentDiagramReplacements } from "./sleevelessGarmentDiagramReplacements";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 import type { SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
@@ -124,22 +125,10 @@ describe("A-line round cardigan front", () => {
     expect(frontRows).toBe(backRows);
   });
 
-  it("renders a single armhole-side A-line guide on the cardigan half schematic", () => {
-    const guides = result.debug.diagramGuides;
-    expect(guides?.showBodyShapeGuides).toBe(true);
-    const fragment = buildBodyShapeGuideSvgFragment(
-      {
-        showBodyShapeGuides: true,
-        bodyShapeKind: "aline",
-        shapingDirection: guides!.shapingDirection,
-        hemStitches: Math.ceil(guides!.hemStitches / 2),
-        bustStitches: Math.ceil(guides!.bustStitches / 2),
-        hemCircumferenceInches: guides!.hemCircumferenceInches,
-        bustCircumferenceInches: guides!.bustCircumferenceInches,
-      },
-      "cardiganHalfLeft",
-    );
-    expect(fragment.match(/<line /g)?.length).toBe(1);
-    expect(fragment).toContain('opacity="0.82"');
+  it("uses dedicated cardigan A-line SVG instead of dotted guide overlay", () => {
+    expect(result.debug.diagramGuides?.showBodyShapeGuides).toBe(false);
+    expect(buildBodyShapeGuideSvgFragment(result.debug.diagramGuides, "cardiganHalfLeft")).toBe("");
+    const frontDiagram = resolveSleevelessFrontDiagram(patternData, { devForceCardiganHalfLeft: false });
+    expect(frontDiagram.src).toContain("-aline.svg");
   });
 });
