@@ -2,6 +2,7 @@
  * Express Pattern wizard (/patterns/sleeveless-express): accordion steps + shared GaugeInput (ids express-stitch-gauge / express-row-gauge).
  */
 import { initPatternTabs } from "../lib/patterns/patternTabsClient";
+import { clearActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
 import {
   saveCurrentPattern,
   savePatternData,
@@ -33,6 +34,11 @@ import {
 import { seedCustomBuildBodyFinishedFromChartRow } from "../lib/patterns/sleevelessCustomBuildBodyMeasurements";
 import { scrollToBuilderSection } from "../lib/patterns/scrollToBuilderSection";
 import { resolveSleevelessAudienceHeroImageSrc } from "../lib/patterns/sleevelessAudienceHeroImage";
+import {
+  getExpressEditingProjectLabel,
+  hasExpressResumeProgress,
+  loadExpressPersisted,
+} from "../lib/patterns/sleevelessExpressResume";
 
 const STEPS = 5;
 const LOCKED_STEP_NAV_TITLE = "Finish the previous step to continue.";
@@ -159,11 +165,12 @@ function migrateExpressStyleFields(v: Record<string, string>): void {
   }
 }
 
-/** Express only offers straight body; front pullover vs cardigan. */
+/** Express only offers straight body; front pullover vs cardigan is chosen on step 2. */
 function ensureExpressStyleDefaults(v: Record<string, string>): void {
   v.shape = "straight";
-  if (!v.front) v.front = "closed";
-  v.style = deriveExpressStyleKey(v.shape, v.front) || "straight-pullover";
+  const derived = deriveExpressStyleKey(v.shape, v.front);
+  if (derived) v.style = derived;
+  else delete v.style;
 }
 
 function mapExpressNeckline(n: string) {
@@ -384,31 +391,6 @@ function formatGaugeSummary(): string {
   const unit = getExpressGaugeUnit();
   const over = unit === "cm" ? "10 cm" : '4"';
   return `${Math.round(s)} sts × ${Math.round(r)} rows over ${over}`;
-}
-
-interface ExpressPersistedV1 {
-  values?: Record<string, string>;
-  openStep?: number;
-  maxReachable?: number;
-  gaugeStitchRaw?: string;
-  gaugeRowRaw?: string;
-  /** `5` with {@link whoSizeCombined}: current Quick Build (Who & Size → Front → …). `6` / `5` / `4` without flag = legacy — migrated on load. */
-  flowSteps?: number;
-  /** True when Who + Size share one accordion (post–May 2026 layout). */
-  whoSizeCombined?: boolean;
-}
-
-function loadExpressPersisted(): ExpressPersistedV1 | null {
-  if (typeof localStorage === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY);
-    if (!raw) return null;
-    const p = JSON.parse(raw) as unknown;
-    if (!p || typeof p !== "object" || Array.isArray(p)) return null;
-    return p as ExpressPersistedV1;
-  } catch {
-    return null;
-  }
 }
 
 /** Furthest step the user can open from accumulated Express choices (steps 1–5). */
@@ -814,7 +796,9 @@ function initExpressPage() {
 
     values[field] = value;
     if (field === "shape" || field === "front") {
-      values.style = deriveExpressStyleKey(values.shape, values.front) || "straight-pullover";
+      const derived = deriveExpressStyleKey(values.shape, values.front);
+      if (derived) values.style = derived;
+      else delete values.style;
     }
 
     if (field === "front") {
@@ -930,7 +914,8 @@ function initExpressPage() {
   }
 
   function resetExpressBuilder(): void {
-    if (!confirm("Start over and clear your Express selections?")) return;
+    if (!confirm("Start a new pattern? Your current sleeveless choices on this page will be reset.")) return;
+    clearActiveCustomPatternProjectId();
     try {
       localStorage.removeItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY);
     } catch {
@@ -989,6 +974,39 @@ function initExpressPage() {
     }
 
     document.getElementById("express-pattern-top")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    hideExpressEditingBar();
+  }
+
+  function hideExpressEditingBar(): void {
+    const bar = document.querySelector("[data-express-editing-bar]");
+    if (bar instanceof HTMLElement) bar.hidden = true;
+    const toolbar = document.querySelector(".express-builder-toolbar");
+    if (toolbar instanceof HTMLElement) toolbar.hidden = false;
+  }
+
+  function showExpressEditingBar(): void {
+    const bar = document.querySelector("[data-express-editing-bar]");
+    if (!(bar instanceof HTMLElement)) return;
+
+    const nameEl = bar.querySelector("[data-express-editing-name]");
+    if (nameEl) nameEl.textContent = getExpressEditingProjectLabel();
+
+    bar.hidden = false;
+    const toolbar = document.querySelector(".express-builder-toolbar");
+    if (toolbar instanceof HTMLElement) toolbar.hidden = true;
+  }
+
+  function initExpressEditingBar(): void {
+    if (!persisted || !hasExpressResumeProgress(values)) {
+      hideExpressEditingBar();
+      return;
+    }
+
+    showExpressEditingBar();
+
+    document.querySelector("[data-express-editing-start-new]")?.addEventListener("click", () => {
+      resetExpressBuilder();
+    });
   }
 
   const root = document.getElementById("express-accordions");
@@ -1139,6 +1157,7 @@ function initExpressPage() {
 
   refreshBuilderState();
   applyExpressGaugeSectionHash();
+  initExpressEditingBar();
 }
 
 function initExpressTopTabs(): void {

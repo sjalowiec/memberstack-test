@@ -6,6 +6,7 @@
  * `customPatternProjectClient` — load copies a saved project into this draft; Express behavior is unchanged.
  */
 
+import { clearActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import { swatchCountFromPerInchForDisplay } from "./gaugeDisplayFormat";
 import type { SleevelessPatternProjectMeta } from "./sleevelessPatternProjectMeta";
 
@@ -633,6 +634,7 @@ const SLEEVELESS_LEGACY_CUSTOM_MEASUREMENTS_KEY = "kbm_sleeveless_custom_measure
  */
 export function clearSleevelessExpressSession(): void {
   clearSleevelessPatternBuilderData();
+  clearActiveCustomPatternProjectId();
   if (typeof localStorage === "undefined") return;
   try {
     localStorage.removeItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY);

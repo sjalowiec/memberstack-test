@@ -56,6 +56,7 @@ import {
   neckShoulderChartRowsFromTimeline,
   type NeckShoulderShapingPatternNumbers,
 } from "./neckShoulderShapingChartRows";
+import { armholeLocalRcFirstActiveSideNecklineShapingAction } from "./neckShoulderActiveSideChecklist";
 import {
   isSleevelessCardiganGarmentStyle,
   isSleevelessVNeckChoice,
@@ -73,11 +74,11 @@ import {
 } from "./legoBlocks/roundNeckline";
 
 /**
- * Trusted HTML for ribbed-hem helper — glossary placeholders hydrated client-side (mock rib 291, hung hem 284).
+ * Trusted HTML for ribbed-hem helper — plain text so print/PDF output stays readable.
  * Render only via innerHTML from pattern output, never user input.
  */
 export const RIBBED_HEM_PATTERN_TIP_HTML =
-  'Work even in your chosen hem treatment — for example 1x1 or 2x2 ribbing or <span class="glossary-tooltip-placeholder" data-glossary-id="291">mock ribbing</span>, a rolled stockinette edge, a fold-up band, or a <span class="glossary-tooltip-placeholder" data-glossary-id="284">hung hem</span> — for the depth shown.<br><br>Fold-up and hung hems typically require double the hem depth before rehanging.';
+  'Work even in your chosen hem treatment — for example 1x1 or 2x2 ribbing or mock ribbing, a rolled stockinette edge, or a fold-up band — for the depth shown.<br><br>Fold-up and hung hems typically require double the hem depth before rehanging.';
 
 /** First block inside RIBBED HEM (before hem RC / knit rows). */
 export function ribbedHemTipDisplayRow(
@@ -159,15 +160,12 @@ export const CARRIAGE_POSITION_PATTERN_TIP_DETAILS_HTML =
   '<p><em>Example:</em> If the chart says &ldquo;Right,&rdquo; your carriage should be on the right side before you begin knitting the row.</p>' +
   "</details>";
 
-/** Glossary entry for “lifeline” (neckline / shoulder shaping tip). */
-export const LIFELINE_GLOSSARY_ID = 1779296723857;
-
 /**
  * Trusted HTML for inline tip after armhole shaping, before neckline and shoulder shaping (`tipHtml` block).
- * Rendered after `<strong>Tip:</strong>` — opening “Tip:” omitted here to avoid duplication.
+ * Plain text so print/PDF output stays readable. Rendered after `<strong>Tip:</strong>`.
  */
 export const LIFELINE_BEFORE_NECK_SHOULDER_SHAPING_TIP_HTML =
-  `Before starting the neckline and shoulder shaping, consider adding a <span class="glossary-link" data-glossary-id="${LIFELINE_GLOSSARY_ID}">lifeline</span>. It gives you a safe place to rip back to if you make a mistake during shaping.`;
+  "Before starting the neckline and shoulder shaping, consider adding a lifeline or waste yarn row. It gives you a safe place to rip back to if you make a mistake during shaping.";
 
 /** Row/stitch audit for console — verify math before changing pattern wording. */
 export type SleevelessBackPatternDebug = {
@@ -228,6 +226,8 @@ export type SleevelessBackPatternDebug = {
   /** Neckline bind-off milestone as Armhole RC (intro + chart wiring). */
   backNecklineStartLocalRC?: number;
   frontNecklineStartLocalRC?: number;
+  /** First front neckline shaping action RC on the active-shoulder checklist (matches print table). */
+  frontNecklineShapingBeginLocalRC?: number;
   finalRC: number;
   /** Hem rows + body rows — identical on back, pullover front, and cardigan half front (canonical). */
   rowsFromCastOnToArmholeStart: number;
@@ -741,20 +741,20 @@ function clampFrontSharedRowsBeforeNeckStart(
 /** FRONT-only: replace shared BACK armhole checkpoint with neckline / shoulder milestones (Armhole RC). */
 function replaceFrontArmholeCheckpointParagraphs(
   rows: readonly SleevelessPatternDisplayRow[],
-  frontNecklineStartLocalRC: number | undefined,
+  frontNecklineShapingBeginLocalRC: number | undefined,
   shoulderShapingBeginLocalRC: number | undefined,
   isVNeck?: boolean
 ): SleevelessPatternDisplayRow[] {
   if (
-    frontNecklineStartLocalRC === undefined ||
+    frontNecklineShapingBeginLocalRC === undefined ||
     shoulderShapingBeginLocalRC === undefined ||
-    !Number.isFinite(frontNecklineStartLocalRC) ||
+    !Number.isFinite(frontNecklineShapingBeginLocalRC) ||
     !Number.isFinite(shoulderShapingBeginLocalRC)
   ) {
     return [...rows];
   }
 
-  const neckN = String(Math.max(0, Math.floor(frontNecklineStartLocalRC))).padStart(3, "0");
+  const neckN = String(Math.max(0, Math.floor(frontNecklineShapingBeginLocalRC))).padStart(3, "0");
   const shoulderN = String(Math.max(0, Math.floor(shoulderShapingBeginLocalRC))).padStart(3, "0");
   const milestone = isVNeck
     ? `The row counter was reset at the beginning of armhole shaping. Front neckline (V-neck) shaping begins at Armhole RC ${neckN}; shoulder shaping at Armhole RC ${shoulderN}.`
@@ -1570,6 +1570,8 @@ export function buildSleevelessFrontDisplayRows(args: {
   frontNecklineStartRC: number;
   /** Armhole RC where front neckline shaping begins (post armhole reset). */
   frontNecklineStartLocalRC?: number;
+  /** Armhole RC of the first generated front neckline shaping action (active-shoulder checklist). */
+  frontNecklineShapingBeginLocalRC?: number;
   /** Armhole RC where shoulder shaping begins (same vertical line as back neckline / shoulders). */
   shoulderShapingBeginLocalRC?: number;
   sharedExecutionRows: readonly SleevelessPatternDisplayRow[];
@@ -1630,7 +1632,7 @@ export function buildSleevelessFrontDisplayRows(args: {
   );
   const sharedRowsFrontMilestones = replaceFrontArmholeCheckpointParagraphs(
     sharedRowsClamped,
-    args.frontNecklineStartLocalRC,
+    args.frontNecklineShapingBeginLocalRC,
     args.shoulderShapingBeginLocalRC,
     args.isVNeck
   );
@@ -2311,6 +2313,7 @@ export function generateSleevelessBackPattern(
       frontNeckShoulderShapingChart = neckShoulderShapingChartFromRows(frontLiveRows, {
         timeline: frontTimeline,
         sleevelessFullWidthVNeckFront: isFrontVNeck,
+        ...(isSleevelessCardiganGarmentStyle(patternData) ? { sleevelessCardiganFront: true } : {}),
       });
       frontNeckShoulderChartUsesLiveRows = true;
 
@@ -2439,6 +2442,12 @@ export function generateSleevelessBackPattern(
     armholeStartRC !== undefined
       ? Math.max(0, Math.floor(frontNecklineStartRC - armholeStartRC))
       : undefined;
+  const frontNecklineShapingBeginLocalRC = frontNeckShoulderChartUsesLiveRows
+    ? armholeLocalRcFirstActiveSideNecklineShapingAction(
+        frontNeckShoulderShapingChart,
+        armholeStartRC,
+      )
+    : undefined;
 
   /** Final piece RCs derived from the timeline (chart) when present, else from the scheduled span. */
   const backFinalRow =
@@ -2507,6 +2516,7 @@ export function generateSleevelessBackPattern(
     frontNecklineStartRC,
     backNecklineStartLocalRC,
     frontNecklineStartLocalRC,
+    frontNecklineShapingBeginLocalRC,
     rowsFromCastOnToArmholeStart: canonicalRowsFromCastOnToArmholeStart,
     finalRC: rc,
     armholeStartRow: armholeStartRC,
@@ -2692,6 +2702,7 @@ export function generateSleevelessBackPattern(
     buildSleevelessFrontDisplayRows({
       frontNecklineStartRC,
       frontNecklineStartLocalRC,
+      frontNecklineShapingBeginLocalRC,
       shoulderShapingBeginLocalRC: backNecklineStartLocalRC,
       sharedExecutionRows: frontSharedExecutionRows,
       useNeckChartRows: frontNeckShoulderChartUsesLiveRows,

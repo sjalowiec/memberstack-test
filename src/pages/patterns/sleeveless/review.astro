@@ -175,87 +175,42 @@ const SHOW_UPSELL = false;
             aria-label="Pattern project"
           >
             <div class="sleeveless-review-project-header__name">
+              <label class="sleeveless-review-project-header__label" for="sleeveless-pattern-name">
+                Pattern name
+              </label>
+              <p
+                class="sleeveless-review-project-header__title-display"
+                data-sleeveless-pattern-project-title-display
+              ></p>
               <div
-                class="sleeveless-review-project-header__title-view"
-                data-sleeveless-pattern-project-title-view
+                class="sleeveless-review-project-header__title-field"
+                data-sleeveless-pattern-project-title-field
               >
-                <div
-                  class="sleeveless-review-project-header__section-head"
-                  data-sleeveless-pattern-project-title-edit
-                  role="button"
-                  tabindex="0"
-                  title="Edit pattern name"
-                  aria-label="Edit pattern name"
+                <input
+                  id="sleeveless-pattern-name"
+                  class="sleeveless-review-project-header__title-input"
+                  type="text"
+                  data-sleeveless-pattern-project-title
+                  maxlength="120"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+                <button
+                  type="button"
+                  class="sleeveless-review-project-header__notes-icon-btn sleeveless-review-project-header__notes-icon-btn--save"
+                  data-sleeveless-pattern-project-cloud-save
+                  title="Save pattern"
+                  aria-label="Save pattern"
                 >
-                  <span class="sleeveless-review-project-header__section-pencil" aria-hidden="true">
-                    <svg
-                      class="sleeveless-review-project-header__pencil-icon"
-                      width="21"
-                      height="21"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"></path>
-                    </svg>
-                  </span>
-                  <span class="sleeveless-review-project-header__label">Pattern name</span>
-                </div>
-                <p
-                  class="sleeveless-review-project-header__title-display"
-                  data-sleeveless-pattern-project-title-display
-                ></p>
+                  <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                </button>
               </div>
-              <div
-                class="sleeveless-review-project-header__title-panel"
-                data-sleeveless-pattern-project-title-panel
-                hidden
-              >
-                <label class="sleeveless-review-project-header__label" for="sleeveless-pattern-name">
-                  Pattern name
-                </label>
-                <div class="sleeveless-review-project-header__title-field">
-                  <input
-                    id="sleeveless-pattern-name"
-                    class="sleeveless-review-project-header__title-input"
-                    type="text"
-                    data-sleeveless-pattern-project-title
-                    autocomplete="off"
-                    spellcheck="false"
-                  />
-                </div>
-                <div class="sleeveless-review-project-header__title-footer">
-                  <div
-                    class="sleeveless-review-project-header__title-toolbar"
-                    role="group"
-                    aria-label="Pattern name actions"
-                  >
-                    <button
-                      type="button"
-                      class="sleeveless-review-project-header__notes-icon-btn sleeveless-review-project-header__notes-icon-btn--save"
-                      data-sleeveless-pattern-project-title-save
-                      title="Save pattern name"
-                      aria-label="Save pattern name"
-                    >
-                      <i class="fa-solid fa-check" aria-hidden="true"></i>
-                    </button>
-                    <button
-                      type="button"
-                      class="sleeveless-review-project-header__notes-icon-btn sleeveless-review-project-header__notes-icon-btn--close"
-                      data-sleeveless-pattern-project-title-cancel
-                      title="Cancel"
-                      aria-label="Cancel"
-                    >
-                      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <p
+                class="sleeveless-review-project-header__save-status cb-project-status"
+                data-cb-project-status
+                role="status"
+                aria-live="polite"
+              ></p>
             </div>
             <div class="sleeveless-review-project-header__notes">
               <div
@@ -377,37 +332,6 @@ const SHOW_UPSELL = false;
               </div>
             </div>
           </header>
-
-          <section
-            class="cb-saved-projects cb-saved-projects--review no-print"
-            data-cb-saved-projects
-            aria-labelledby="review-saved-projects-heading"
-          >
-            <h2 id="review-saved-projects-heading" class="cb-saved-projects__title">Save pattern</h2>
-            <p class="pattern-subtext cb-saved-projects__draft-note">
-              Save this pattern to your account. Open saved patterns anytime from
-              <a href="/account">My Account</a>.
-            </p>
-            <p class="pattern-subtext cb-saved-projects__auth" data-cb-project-auth-hint></p>
-            <label class="cb-saved-projects__field">
-              <span class="cb-saved-projects__label">Project name</span>
-              <input
-                type="text"
-                class="form-control"
-                data-cb-project-name
-                maxlength="120"
-                placeholder="e.g. Mom’s relaxed cardigan"
-                autocomplete="off"
-              />
-            </label>
-            <div class="cb-saved-projects__actions">
-              <button type="button" class="btn btn-sm btn-primary" data-cb-project-save>Save as new</button>
-              <button type="button" class="btn btn-sm btn-outline-secondary" data-cb-project-update>
-                Update saved
-              </button>
-            </div>
-            <p class="cb-project-status" data-cb-project-status role="status" aria-live="polite"></p>
-          </section>
 
           <div
             class="sleeveless-measure-project-summary sleeveless-measure-project-summary--below-header"
@@ -805,63 +729,9 @@ const SHOW_UPSELL = false;
     }
   }
 
-  .sleeveless-unified-review-page .cb-saved-projects--review {
-    margin: 0 0 1.25rem;
-    padding: 0.85rem 1rem;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.6);
-  }
-
-  .sleeveless-unified-review-page .cb-saved-projects--review .cb-saved-projects__title {
-    font-size: 1rem;
-    margin: 0 0 0.4rem;
-  }
-
-  .sleeveless-unified-review-page .cb-saved-projects--review .cb-saved-projects__draft-note {
-    margin-bottom: 0.35rem;
-    font-size: 0.92rem;
-  }
-
-  .sleeveless-unified-review-page .cb-saved-projects--review .cb-saved-projects__auth {
-    margin-bottom: 0.65rem;
-    font-size: 0.88rem;
-    color: var(--text-muted, #555);
-  }
-
-  .sleeveless-unified-review-page .cb-saved-projects--review .cb-saved-projects__field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    margin-bottom: 0.6rem;
-    max-width: 24rem;
-  }
-
-  .sleeveless-unified-review-page .cb-saved-projects--review .cb-saved-projects__label {
-    font-weight: 600;
-    font-size: 0.9rem;
-  }
-
-  .sleeveless-unified-review-page .cb-saved-projects--review .cb-saved-projects__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 0.35rem;
-  }
-
-  .sleeveless-unified-review-page .cb-saved-projects--review .cb-project-status {
-    margin: 0.35rem 0 0;
-    font-size: 0.9rem;
-    min-height: 1.25em;
-  }
-
-  .sleeveless-unified-review-page .cb-saved-projects--review .cb-project-status--error {
-    color: #b91c1c;
-  }
 </style>
 
 <script>
   import "/src/scripts/sleevelessReviewProjectHeader.ts";
   import "/src/scripts/sleeveless-builder-review-page.ts";
-  import "/src/scripts/sleeveless-review-saved-projects.ts";
 </script>

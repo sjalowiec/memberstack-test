@@ -35,11 +35,51 @@ function resolveProjectNameForSave(nameInput: HTMLInputElement | null): string {
   return getPatternProjectMeta().title.trim();
 }
 
-function setStatus(root: HTMLElement, message: string, isError = false): void {
-  const el = root.querySelector("[data-cb-project-status]");
-  if (!(el instanceof HTMLElement)) return;
+function setStatusEl(el: HTMLElement | null, message: string, isError = false): void {
+  if (!el) return;
   el.textContent = message;
   el.classList.toggle("cb-project-status--error", isError);
+}
+
+function setStatus(root: HTMLElement, message: string, isError = false): void {
+  setStatusEl(root.querySelector("[data-cb-project-status]"), message, isError);
+}
+
+export type SmartSaveCustomPatternProjectOptions = {
+  family?: CustomPatternFamily;
+  resolveName: () => string;
+  onStatus?: (message: string, isError?: boolean) => void;
+};
+
+/** Create or update the active saved project from the working draft (one action). */
+export async function smartSaveCustomPatternProject(
+  options: SmartSaveCustomPatternProjectOptions,
+): Promise<
+  | { ok: true; project: CustomPatternProject; created: boolean }
+  | { ok: false; error: string }
+> {
+  const family = options.family ?? "sleeveless";
+  const name = options.resolveName().trim();
+  if (!name) {
+    return { ok: false, error: "Enter a pattern name before saving." };
+  }
+
+  const activeId = readActiveCustomPatternProjectId();
+  const base = buildSavePayloadFromWorkingDraft(name, { family });
+
+  if (activeId) {
+    options.onStatus?.("Updating…");
+    const res = await updateCustomPatternProject({ ...base, id: activeId });
+    if (!res.ok) return { ok: false, error: res.error };
+    writeActiveCustomPatternProjectId(res.project.id);
+    return { ok: true, project: res.project, created: false };
+  }
+
+  options.onStatus?.("Saving…");
+  const res = await createCustomPatternProject(base);
+  if (!res.ok) return { ok: false, error: res.error };
+  writeActiveCustomPatternProjectId(res.project.id);
+  return { ok: true, project: res.project, created: true };
 }
 
 function setAuthHint(root: HTMLElement, text: string): void {

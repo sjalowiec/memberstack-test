@@ -2448,9 +2448,11 @@ table {
         : 0;
 
     const armholeGarmentStartRc = result?.debug?.armholeStartRow;
+    const backChecklistOptions = { includeCenterNecklineSetupRow: true as const };
     const backActiveSideRcStart = armholeLocalRcActiveShoulderChecklistStart(
       result.neckShoulderShapingChart,
       armholeGarmentStartRc,
+      backChecklistOptions,
     );
     const frontActiveSideRcStart = armholeLocalRcActiveShoulderChecklistStart(
       result.frontNeckShoulderShapingChart,
@@ -2464,7 +2466,7 @@ table {
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
         neckShoulderChartHelpRowHtml(`RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`, result?.neckShoulderShapingChart, "back"),
-        { activeSideOnly: true, activeSideRcStart: backActiveSideRcStart }
+        { activeSideOnly: true, activeSideRcStart: backActiveSideRcStart, includeCenterNecklineSetupRow: true }
       );
     }
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
@@ -2491,7 +2493,7 @@ table {
           result?.neckShoulderShapingChart,
           "back"
         ),
-        options: { activeSideOnly: true, activeSideRcStart: backActiveSideRcStart },
+        options: { activeSideOnly: true, activeSideRcStart: backActiveSideRcStart, includeCenterNecklineSetupRow: true },
       },
       front: {
         chart: result.frontNeckShoulderShapingChart,

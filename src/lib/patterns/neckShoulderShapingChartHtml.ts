@@ -500,7 +500,17 @@ export type NeckShoulderChartRenderOptions = {
   fullWidthChartOneRowPerRc?: boolean;
   /** When true (or chart flag), completion copy uses cardigan front wording and hides second-shoulder UI. */
   isCardiganFront?: boolean;
+  /** Back neckline only: prepend center divide/setup row at the timeline center-bind-off RC. */
+  includeCenterNecklineSetupRow?: boolean;
 };
+
+function activeShoulderChecklistOptions(
+  options?: NeckShoulderChartRenderOptions,
+): { includeCenterNecklineSetupRow?: boolean } | undefined {
+  return options?.includeCenterNecklineSetupRow === true
+    ? { includeCenterNecklineSetupRow: true }
+    : undefined;
+}
 
 function chartBodyRowsHtml(
   chart: NeckShoulderShapingChart,
@@ -515,7 +525,11 @@ function chartBodyRowsHtml(
   const vNeckStyleOneRowPerRc =
     isFullWidthVNeckFrontStyleChart(chart) && options?.fullWidthChartOneRowPerRc !== false;
   if (activeSideOnly) {
-    let activeRows = buildActiveSideInstructionTableRows(chart, activeSideRcStart);
+    let activeRows = buildActiveSideInstructionTableRows(
+      chart,
+      activeSideRcStart,
+      activeShoulderChecklistOptions(options),
+    );
     const activeRowsBeforeCompact = activeRows.length;
     /** Plain-knit merge matches full-chart rules except sleeveless V-neck (one RC per row). */
     if (!vNeckStyleOneRowPerRc) {
@@ -603,7 +617,9 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
   const activeSideRcStart = Math.max(0, Math.floor(Number(options?.activeSideRcStart ?? 0)));
   const vNeckStyleOneRowPerRc =
     isFullWidthVNeckFrontStyleChart(chart) && options?.fullWidthChartOneRowPerRc !== false;
-  const activeRowsRaw = activeSideOnly ? buildActiveSideInstructionTableRows(chart, activeSideRcStart) : [];
+  const activeRowsRaw = activeSideOnly
+    ? buildActiveSideInstructionTableRows(chart, activeSideRcStart, activeShoulderChecklistOptions(options))
+    : [];
   const oppositeRowsPrep = buildSecondShoulderInstructionTableRows(activeRowsRaw);
   const oppositeRowsHtml = activeSideOnly
     ? renderActiveSideInstructionRowsTrHtml(
@@ -742,6 +758,7 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
     activeSideRcStart?: number;
     fullWidthChartOneRowPerRc?: boolean;
     isCardiganFront?: boolean;
+    includeCenterNecklineSetupRow?: boolean;
   },
 ): string {
   const headingId = `${idPrefix}-heading`;
@@ -751,7 +768,11 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
     chart,
     isCardiganFront: options?.isCardiganFront,
   });
-  const printRowsRaw = buildActiveSideInstructionTableRows(chart, activeSideRcStart);
+  const printRowsRaw = buildActiveSideInstructionTableRows(
+    chart,
+    activeSideRcStart,
+    options?.includeCenterNecklineSetupRow === true ? { includeCenterNecklineSetupRow: true } : undefined,
+  );
   const vNeckStyleOneRowPerRc =
     isFullWidthVNeckFrontStyleChart(chart) && options?.fullWidthChartOneRowPerRc !== false;
   const printRows = vNeckStyleOneRowPerRc

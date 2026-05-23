@@ -19,3 +19,12 @@ export function writeActiveCustomPatternProjectId(id: string): void {
     /* ignore */
   }
 }
+
+/**
+ * Clears the link between the working draft and a saved Blob project.
+ * Call when starting a brand-new pattern (Express reset, session clear, etc.).
+ * Does not delete the saved project from account storage.
+ */
+export function clearActiveCustomPatternProjectId(): void {
+  writeActiveCustomPatternProjectId("");
+}

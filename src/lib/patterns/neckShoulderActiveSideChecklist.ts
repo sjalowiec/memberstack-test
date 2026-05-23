@@ -28,6 +28,93 @@ export type ActiveSideInstructionTableRow = {
   stitchesRemaining: number;
 };
 
+/** Back neckline checklist: prepend center divide/setup row at the timeline center-bind-off RC. */
+export type ActiveShoulderChecklistOptions = {
+  includeCenterNecklineSetupRow?: boolean;
+};
+
+/** Edge label for the center neckline divide/setup row (not a worked shaping pass). */
+export const ACTIVE_SHOULDER_CENTER_NECKLINE_SETUP_EDGE = "Center";
+
+export function isCenterNecklineSetupChecklistRow(row: ActiveSideInstructionTableRow): boolean {
+  return row.edge === ACTIVE_SHOULDER_CENTER_NECKLINE_SETUP_EDGE;
+}
+
+type CenterNecklineDivideInfo = {
+  garmentRc: number;
+  centerBindOff: number;
+  stitchesLeftAfter: number;
+  stitchesRightAfter: number;
+};
+
+function stitchCountPhrase(n: number): string {
+  const k = Math.max(0, Math.floor(n));
+  return k === 1 ? "1 stitch" : `${k} stitches`;
+}
+
+function centerNecklineDivideInfo(chart: NeckShoulderShapingChart): CenterNecklineDivideInfo | null {
+  if (chart.timeline && chart.timeline.length > 0) {
+    const sorted = [...chart.timeline].sort((a, b) => a.row - b.row);
+    const center = sorted[0];
+    if (!center) return null;
+    const centerBindOff = center.events
+      .filter((e) => e.kind === "bindOff" && e.side === "center" && e.edge === "center")
+      .reduce((sum, e) => sum + e.amount, 0);
+    if (centerBindOff <= 0) return null;
+    return {
+      garmentRc: center.row,
+      centerBindOff,
+      stitchesLeftAfter: Math.max(0, Math.floor(center.stitchesL)),
+      stitchesRightAfter: Math.max(0, Math.floor(center.stitchesR)),
+    };
+  }
+
+  const sorted = [...chart.rows].sort((a, b) => a.row - b.row);
+  const first = sorted[0];
+  if (!first) return null;
+  const centerBindOff = parseDecreaseCell(String(first.centerNeck ?? ""));
+  if (centerBindOff <= 0) return null;
+  return {
+    garmentRc: first.row,
+    centerBindOff,
+    stitchesLeftAfter: Math.max(0, Math.floor(first.leftStitchCount)),
+    stitchesRightAfter: Math.max(0, Math.floor(first.rightStitchCount)),
+  };
+}
+
+function shouldIncludeCenterNecklineSetupRow(
+  chart: NeckShoulderShapingChart,
+  options?: ActiveShoulderChecklistOptions,
+): boolean {
+  return options?.includeCenterNecklineSetupRow === true && centerNecklineDivideInfo(chart) !== null;
+}
+
+/** Checklist action text — matches round-neck “scrap off … divide” intro wording. */
+export function formatCenterNecklineSetupChecklistAction(info: CenterNecklineDivideInfo): string {
+  const n = Math.max(0, Math.floor(info.centerBindOff));
+  const centerWord = n === 1 ? "stitch" : "stitches";
+  const L = Math.max(0, Math.floor(info.stitchesLeftAfter));
+  const R = Math.max(0, Math.floor(info.stitchesRightAfter));
+  const shoulders =
+    L === R
+      ? `${stitchCountPhrase(L)} on each shoulder`
+      : `${stitchCountPhrase(L)} left, ${stitchCountPhrase(R)} right`;
+  return `Scrap off center ${n} neckline ${centerWord} to divide; ${shoulders} remaining. Place opposite shoulder in hold; ${stitchCountPhrase(R)} active shoulder.`;
+}
+
+function buildCenterNecklineSetupChecklistRow(
+  rc: number,
+  info: CenterNecklineDivideInfo,
+): ActiveSideInstructionTableRow {
+  return {
+    rc,
+    carriagePosition: carriagePositionForActiveSideRc(rc),
+    action: formatCenterNecklineSetupChecklistAction(info),
+    edge: ACTIVE_SHOULDER_CENTER_NECKLINE_SETUP_EDGE,
+    stitchesRemaining: Math.max(0, Math.floor(info.stitchesRightAfter)),
+  };
+}
+
 function parseDecreaseCell(cell: string): number {
   const text = String(cell ?? "").trim();
   if (!text || text === "-") return 0;
@@ -43,16 +130,22 @@ function parseDecreaseCell(cell: string): number {
  */
 export function armholeLocalRcActiveShoulderChecklistStart(
   chart: NeckShoulderShapingChart,
-  firstArmholeGarmentRc: number | null | undefined
+  firstArmholeGarmentRc: number | null | undefined,
+  options?: ActiveShoulderChecklistOptions,
 ): number {
   const fhRaw = Number(firstArmholeGarmentRc);
   if (!Number.isFinite(fhRaw)) return 0;
   const fh = Math.max(0, Math.floor(fhRaw));
+  const includeCenterSetup = shouldIncludeCenterNecklineSetupRow(chart, options);
+  const divideInfo = includeCenterSetup ? centerNecklineDivideInfo(chart) : null;
 
   if (chart.timeline && chart.timeline.length > 0) {
     const sorted = [...chart.timeline].sort((a, b) => a.row - b.row);
     const center = sorted[0];
     if (!center) return 0;
+    if (divideInfo) {
+      return Math.max(0, Math.floor(divideInfo.garmentRc) - fh);
+    }
     const second = sorted[1];
     const startGarment = second !== undefined ? second.row : center.row + 1;
     return Math.max(0, Math.floor(startGarment) - fh);
@@ -62,6 +155,9 @@ export function armholeLocalRcActiveShoulderChecklistStart(
   const first = rows[0];
   if (!first) return 0;
   const centerBo = parseDecreaseCell(String(first.centerNeck ?? "")) > 0;
+  if (divideInfo && centerBo) {
+    return Math.max(0, Math.floor(divideInfo.garmentRc) - fh);
+  }
   const sourceBaseRow = centerBo ? first.row + 1 : first.row;
   return Math.max(0, Math.floor(sourceBaseRow) - fh);
 }
@@ -208,7 +304,8 @@ function buildActiveSideActionsFromChartRows(rows: readonly NeckShoulderShapingC
 
 export function buildActiveSideInstructionTableRows(
   chart: NeckShoulderShapingChart,
-  rcStart = 0
+  rcStart = 0,
+  options?: ActiveShoulderChecklistOptions,
 ): ActiveSideInstructionTableRow[] {
   const source =
     chart.timeline && chart.timeline.length > 0
@@ -219,8 +316,14 @@ export function buildActiveSideInstructionTableRows(
   if (!source) return [];
 
   const out: ActiveSideInstructionTableRow[] = [];
-  let checklistIdx = 0;
   const rcBase = Math.max(0, Math.floor(rcStart));
+  const divideInfo = shouldIncludeCenterNecklineSetupRow(chart, options)
+    ? centerNecklineDivideInfo(chart)
+    : null;
+  let checklistIdx = divideInfo ? 1 : 0;
+  if (divideInfo) {
+    out.push(buildCenterNecklineSetupChecklistRow(rcBase, divideInfo));
+  }
   let stitchesRemaining = source.initialStitches;
   const actions = [...source.actions].sort((a, b) => {
     const dr = a.sourceRelativeRow - b.sourceRelativeRow;
@@ -274,7 +377,9 @@ export function armholeLocalRcFirstActiveSideNecklineShapingAction(
 ): number | undefined {
   const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, firstArmholeGarmentRc);
   const rows = buildActiveSideInstructionTableRows(chart, rcStart);
-  const shapingRows = rows.filter((row) => !isPlainKnitActiveSideRow(row));
+  const shapingRows = rows.filter(
+    (row) => !isPlainKnitActiveSideRow(row) && !isCenterNecklineSetupChecklistRow(row),
+  );
   const firstNeck = shapingRows.find((row) => row.edge === "Neck");
   const first = firstNeck ?? shapingRows[0];
   return first !== undefined ? first.rc : undefined;

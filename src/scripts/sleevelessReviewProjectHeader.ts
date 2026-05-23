@@ -3,6 +3,7 @@
  */
 
 import { canCustomizePattern } from "../lib/patterns/sleevelessPatternAccessGate";
+import { smartSaveCustomPatternProject } from "../lib/patterns/customPatternSavedProjectsPanel";
 import {
   getPatternProjectMeta,
   PROJECT_NOTES_MAX_LENGTH,
@@ -55,27 +56,6 @@ function getHeaderRoot(): HTMLElement | null {
 }
 
 type NotesUiMode = "empty" | "view" | "edit";
-type TitleUiMode = "view" | "edit";
-
-function setTitleUiMode(root: HTMLElement, mode: TitleUiMode, title = ""): void {
-  const viewBlock = root.querySelector("[data-sleeveless-pattern-project-title-view]");
-  const panel = root.querySelector("[data-sleeveless-pattern-project-title-panel]");
-  const display = root.querySelector("[data-sleeveless-pattern-project-title-display]");
-  const editTrigger = root.querySelector<HTMLElement>("[data-sleeveless-pattern-project-title-edit]");
-
-  if (viewBlock instanceof HTMLElement) {
-    viewBlock.hidden = mode === "edit";
-  }
-  if (panel instanceof HTMLElement) {
-    panel.hidden = mode !== "edit";
-  }
-  if (display instanceof HTMLElement && title) {
-    display.textContent = title;
-  }
-  if (editTrigger) {
-    editTrigger.setAttribute("aria-expanded", mode === "edit" ? "true" : "false");
-  }
-}
 
 function setNotesUiMode(root: HTMLElement, mode: NotesUiMode, notes = ""): void {
   const notesHeader = root.querySelector<HTMLElement>("[data-sleeveless-pattern-project-notes-header]");
@@ -132,6 +112,24 @@ function normalizeNotesInput(notesInput: HTMLTextAreaElement): string {
   return notes;
 }
 
+function setCloudSaveStatus(root: HTMLElement, message: string, isError = false): void {
+  const el = root.querySelector("[data-cb-project-status]");
+  if (!(el instanceof HTMLElement)) return;
+  el.textContent = message;
+  el.classList.toggle("cb-project-status--error", isError);
+}
+
+function persistTitleFromInput(titleInput: HTMLInputElement | null): string {
+  if (!titleInput) return "";
+  const trimmed = titleInput.value.trim();
+  if (trimmed !== titleInput.value) titleInput.value = trimmed;
+  savePatternProjectMeta({
+    title: trimmed,
+    titleCustomized: true,
+  });
+  return trimmed;
+}
+
 function applyReadOnlyProjectHeader(root: HTMLElement): void {
   root.classList.add("sleeveless-review-project-header--read-only");
 
@@ -145,9 +143,7 @@ function applyReadOnlyProjectHeader(root: HTMLElement): void {
   if (display instanceof HTMLElement) {
     display.textContent = title;
   }
-  setTitleUiMode(root, "view", title);
 
-  stripSectionHeadTrigger(root.querySelector("[data-sleeveless-pattern-project-title-edit]"));
   stripSectionHeadTrigger(root.querySelector("[data-sleeveless-pattern-project-notes-header]"));
 
   const notes = meta.notes;
@@ -175,42 +171,63 @@ function applyReadOnlyProjectHeader(root: HTMLElement): void {
 
 function bindEditableHeader(root: HTMLElement): void {
   const titleInput = root.querySelector<HTMLInputElement>("[data-sleeveless-pattern-project-title]");
-  const titleEditTrigger = root.querySelector<HTMLElement>("[data-sleeveless-pattern-project-title-edit]");
-  const titleSaveBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-title-save]");
-  const titleCancelBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-title-cancel]");
+  const cloudSaveBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-cloud-save]");
   const notesInput = root.querySelector<HTMLTextAreaElement>("[data-sleeveless-pattern-project-notes]");
   const notesEditTrigger = root.querySelector<HTMLElement>("[data-sleeveless-pattern-project-notes-edit]");
   const saveBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-notes-save]");
   const cancelBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-notes-cancel]");
   const deleteBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-notes-delete]");
 
-  let titleEditBaseline = "";
   let notesEditBaseline = "";
 
-  const beginTitleEdit = (): void => {
-    titleEditBaseline = readOnlyPatternTitleFromMeta(getPatternProjectMeta());
-    if (titleInput) {
-      titleInput.value = titleEditBaseline;
+  const applyTitleToInput = (): void => {
+    refreshAutoPatternProjectTitle();
+    const meta = getPatternProjectMeta();
+    const displayTitle = readOnlyPatternTitleFromMeta(meta);
+    if (titleInput) titleInput.value = displayTitle;
+  };
+
+  const applyMetaToFields = (): void => {
+    const meta = getPatternProjectMeta();
+    applyTitleToInput();
+    if (notesInput) {
+      notesInput.value = meta.notes;
+      updateNotesCharCount(root, meta.notes.length);
     }
-    setTitleUiMode(root, "edit", titleEditBaseline);
-    titleInput?.focus();
-    titleInput?.select();
+    setNotesUiMode(root, meta.notes.trim() ? "view" : "empty", meta.notes);
   };
 
-  const finishTitleEdit = (title: string): void => {
-    setTitleUiMode(root, "view", readOnlyPatternTitleFromMeta({ title }));
-  };
+  applyMetaToFields();
 
-  const persistTitleFromInput = (): string => {
-    if (!titleInput) return "";
-    const trimmed = titleInput.value.trim();
-    if (trimmed !== titleInput.value) titleInput.value = trimmed;
-    savePatternProjectMeta({
-      title: trimmed,
-      titleCustomized: true,
+  titleInput?.addEventListener("blur", () => {
+    if (!titleInput?.value.trim()) return;
+    persistTitleFromInput(titleInput);
+  });
+
+  cloudSaveBtn?.addEventListener("click", async () => {
+    const name = persistTitleFromInput(titleInput);
+    if (!name) {
+      setCloudSaveStatus(root, "Enter a pattern name before saving.", true);
+      titleInput?.focus();
+      return;
+    }
+    cloudSaveBtn.disabled = true;
+    const res = await smartSaveCustomPatternProject({
+      resolveName: () => name,
+      onStatus: (message, isError) => setCloudSaveStatus(root, message, isError),
     });
-    return trimmed;
-  };
+    cloudSaveBtn.disabled = false;
+    if (!res.ok) {
+      setCloudSaveStatus(root, res.error, true);
+      return;
+    }
+    if (titleInput) titleInput.value = res.project.name;
+    persistTitleFromInput(titleInput);
+    setCloudSaveStatus(
+      root,
+      res.created ? `Saved “${res.project.name}”.` : `Updated “${res.project.name}”.`,
+    );
+  });
 
   const beginNotesEdit = (): void => {
     notesEditBaseline = getPatternProjectMeta().notes;
@@ -236,41 +253,7 @@ function bindEditableHeader(root: HTMLElement): void {
     return notes;
   };
 
-  const applyMetaToFields = (): void => {
-    const meta = getPatternProjectMeta();
-    const displayTitle = readOnlyPatternTitleFromMeta(meta);
-    if (titleInput) titleInput.value = displayTitle;
-    if (notesInput) {
-      notesInput.value = meta.notes;
-      updateNotesCharCount(root, meta.notes.length);
-    }
-    setTitleUiMode(root, "view", displayTitle);
-    setNotesUiMode(root, meta.notes.trim() ? "view" : "empty", meta.notes);
-  };
-
-  applyMetaToFields();
-  refreshAutoPatternProjectTitle();
-  if (titleInput && !titleInput.value.trim()) {
-    const meta = getPatternProjectMeta();
-    const displayTitle = readOnlyPatternTitleFromMeta(meta);
-    titleInput.value = displayTitle;
-    setTitleUiMode(root, "view", displayTitle);
-  }
-
-  bindSectionHeadTrigger(titleEditTrigger, beginTitleEdit);
   bindSectionHeadTrigger(notesEditTrigger, beginNotesEdit);
-
-  titleSaveBtn?.addEventListener("click", () => {
-    if (!titleInput) return;
-    const title = persistTitleFromInput();
-    finishTitleEdit(title);
-  });
-
-  titleCancelBtn?.addEventListener("click", () => {
-    if (!titleInput) return;
-    titleInput.value = titleEditBaseline;
-    finishTitleEdit(titleEditBaseline);
-  });
 
   saveBtn?.addEventListener("click", () => {
     if (!notesInput) return;
@@ -308,14 +291,9 @@ function bindEditableHeader(root: HTMLElement): void {
         ? (ev.detail as SleevelessPatternTitleContext)
         : undefined;
     const meta = refreshAutoPatternProjectTitle(detail);
-    const titlePanel = root.querySelector("[data-sleeveless-pattern-project-title-panel]");
-    const titleEditing = titlePanel instanceof HTMLElement && !titlePanel.hidden;
     const displayTitle = readOnlyPatternTitleFromMeta(meta);
     if (titleInput && !meta.titleCustomized) {
       titleInput.value = displayTitle;
-    }
-    if (!titleEditing) {
-      setTitleUiMode(root, "view", displayTitle);
     }
     if (notesInput) {
       notesInput.value = meta.notes;
