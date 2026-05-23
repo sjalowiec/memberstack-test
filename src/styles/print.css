@@ -36,6 +36,30 @@
     white-space: nowrap !important;
   }
 
+  /*
+   * Pattern PDFs: @page margin-box page numbers must not paint over the last body lines.
+   * Keep fixed UI layers out of the print stack (Chromium can otherwise overlap table cells).
+   */
+  body.pattern-print-global-footer .dev-banner,
+  body.pattern-print-global-footer .preview-banner,
+  body.pattern-print-global-footer .ms-modal__overlay,
+  body.pattern-print-global-footer .ms-overlay,
+  body.pattern-print-global-footer [data-ms-overlay],
+  body.pattern-print-global-footer memberstack-prebuilt-ui {
+    display: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    top: -9999px !important;
+    left: -9999px !important;
+    pointer-events: none !important;
+  }
+
+  body.pattern-print-global-footer .sleeveless-print-root .print-doc-inner,
+  body.pattern-print-global-footer .sleeveless-pattern-page #sg-sleeveless-results {
+    box-sizing: border-box;
+    padding-bottom: 0.1in;
+  }
+
   /* ========================================
      HIDE: Global Chrome & Navigation
      CRITICAL: Remove from flow completely to prevent blank first page

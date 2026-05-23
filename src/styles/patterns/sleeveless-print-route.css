@@ -838,4 +838,36 @@
       break-inside: auto;
       page-break-inside: auto;
     }
+
+    /* Compact shaping tables (print route): keep chart block intact when it fits one page. */
+    .sleeveless-print-root .print-chart-wrap,
+    .sleeveless-print-root .ns-shaping-mini {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .sleeveless-print-root .ns-shaping-mini__title,
+    .sleeveless-print-root .print-chart-intro {
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+
+    .sleeveless-print-root .ns-shaping-mini__wrap,
+    .sleeveless-print-root .ns-shaping-mini__table {
+      break-before: avoid;
+      page-break-before: avoid;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .sleeveless-print-root .ns-shaping-mini__table thead {
+      display: table-header-group;
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+
+    .sleeveless-print-root .ns-shaping-mini__table tr {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
   }

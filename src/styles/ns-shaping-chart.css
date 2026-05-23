@@ -291,6 +291,34 @@
     break-inside: avoid;
   }
 
+  .ns-shaping-chart__table-wrap,
+  .ns-shaping-chart__table-scroll,
+  .ns-shaping-chart__table {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    break-before: avoid;
+    page-break-before: avoid;
+  }
+
+  .ns-shaping-chart__title,
+  .ns-shaping-chart__intro,
+  .pattern-shaping-intro,
+  .print-chart-intro {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .ns-shaping-chart__table thead {
+    display: table-header-group;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .ns-shaping-chart__table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
   /* Print: always show full checklist even when hide-completed is active on-screen */
   .ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__table tbody tr.ns-shaping-chart__tr--progress-complete,
   .ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__table tbody tr:has(.ns-shaping-chart__row-check:checked) {

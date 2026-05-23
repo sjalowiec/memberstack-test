@@ -10,7 +10,8 @@
 
 @page pattern_print_footer {
   size: letter;
-  margin: 0.75in 0.7in 0.88in 0.7in;
+  /* Extra bottom margin keeps @bottom-center page counters out of body/table text in Chromium PDF. */
+  margin: 0.75in 0.7in 1.08in 0.7in;
 
   @bottom-left {
     content: var(--pattern-print-footer-bottom-left, "Created by Knit It Now LLC");
@@ -22,8 +23,8 @@
 
   @bottom-center {
     content: "Page " counter(page) " of " counter(pages);
-    font-size: 12.6pt;
-    font-weight: 700;
+    font-size: 9pt;
+    font-weight: 600;
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     color: #4b5563;
     white-space: nowrap;

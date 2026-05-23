@@ -33,7 +33,7 @@ function stepSection(
 
 function blockPiecesBody(deps: SleevelessFinishingHtmlDeps): string {
   return `<ul>
-      <li>Lightly steam or ${deps.glossaryTooltip(659, "Wet Block")} pieces to measurements.</li>
+      <li>Lightly steam your pieces to measurements.</li>
       <li>Allow pieces to dry completely before assembly.</li>
       <li>Pin edges flat if needed.</li>
     </ul>

@@ -80,6 +80,8 @@ describe("sleeveless pattern output copy (print-safe)", () => {
   for (const { label, pattern } of patterns) {
     it(`${label}: no broken hem, lifeline, or finishing fragments`, () => {
       const plain = collectSleevelessOutputPlainText(pattern);
+      expect(plain).toContain("Lightly steam your pieces to measurements.");
+      expect(plain).not.toMatch(/steam or pieces to measurements/i);
       expect(plain).not.toMatch(/or ,/);
       expect(plain).not.toMatch(/adding a \./);
       expect(plain).not.toMatch(/Knit 1 \./);

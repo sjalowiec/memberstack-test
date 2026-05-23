@@ -5,7 +5,10 @@
  */
 
 import type { NeckShoulderShapingChart, NeckShoulderShapingChartRow } from "./neckShoulderShapingChart";
-import { NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL } from "./neckShoulderShapingChart";
+import {
+  NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
+  isSleevelessCardiganFrontNeckShoulderChart,
+} from "./neckShoulderShapingChart";
 import type { RowEntry, ShapingEvent } from "./shapingTimeline";
 import { finalShoulderRemainderStitches } from "./shoulderShapingNotation";
 
@@ -52,6 +55,12 @@ function stitchCountPhrase(n: number): string {
   return k === 1 ? "1 stitch" : `${k} stitches`;
 }
 
+function timelineHasCenterBindOffRow(timeline: readonly RowEntry[]): boolean {
+  const first = timeline[0];
+  if (!first) return false;
+  return first.events.some((e) => e.side === "center" && e.kind === "bindOff" && e.amount > 0);
+}
+
 function centerNecklineDivideInfo(chart: NeckShoulderShapingChart): CenterNecklineDivideInfo | null {
   if (chart.timeline && chart.timeline.length > 0) {
     const sorted = [...chart.timeline].sort((a, b) => a.row - b.row);
@@ -86,6 +95,7 @@ function shouldIncludeCenterNecklineSetupRow(
   chart: NeckShoulderShapingChart,
   options?: ActiveShoulderChecklistOptions,
 ): boolean {
+  if (isSleevelessCardiganFrontNeckShoulderChart(chart)) return false;
   return options?.includeCenterNecklineSetupRow === true && centerNecklineDivideInfo(chart) !== null;
 }
 
@@ -143,6 +153,9 @@ export function armholeLocalRcActiveShoulderChecklistStart(
     const sorted = [...chart.timeline].sort((a, b) => a.row - b.row);
     const center = sorted[0];
     if (!center) return 0;
+    if (isSleevelessCardiganFrontNeckShoulderChart(chart) || !timelineHasCenterBindOffRow(chart.timeline)) {
+      return Math.max(0, Math.floor(center.row) - fh);
+    }
     if (divideInfo) {
       return Math.max(0, Math.floor(divideInfo.garmentRc) - fh);
     }
@@ -216,21 +229,35 @@ function activeSideActionFromTimelineEvent(
   };
 }
 
-function buildActiveSideActionsFromTimeline(timeline: readonly RowEntry[]): {
+function buildActiveSideActionsFromTimeline(
+  timeline: readonly RowEntry[],
+  chart?: NeckShoulderShapingChart,
+): {
   initialStitches: number;
   finalSourceRelativeRow: number;
   actions: ActiveSideScheduledAction[];
 } | null {
   const sorted = [...timeline].sort((a, b) => a.row - b.row);
-  const center = sorted[0];
-  if (!center) return null;
+  const first = sorted[0];
+  if (!first) return null;
+  const cardiganFront =
+    chart !== undefined && isSleevelessCardiganFrontNeckShoulderChart(chart);
+  const hasCenterDivide = !cardiganFront && timelineHasCenterBindOffRow(timeline);
+  const center = hasCenterDivide ? first : null;
+  const shapingEntries = hasCenterDivide ? sorted.slice(1) : sorted;
+  const baseRow = hasCenterDivide && center ? center.row : first.row - 1;
+
   const actions: ActiveSideScheduledAction[] = [];
   let finalSourceRelativeRow = 0;
-  for (const entry of sorted.slice(1)) {
-    const rel = Math.max(0, Math.floor(entry.row - center.row - 1));
+  for (const entry of shapingEntries) {
+    const rel = Math.max(0, Math.floor(entry.row - baseRow - 1));
     finalSourceRelativeRow = Math.max(finalSourceRelativeRow, rel);
     for (const event of entry.events) {
-      const action = activeSideActionFromTimelineEvent(entry, event, center.row);
+      const action = activeSideActionFromTimelineEvent(
+        entry,
+        event,
+        hasCenterDivide && center ? center.row : baseRow,
+      );
       if (action) actions.push(action);
     }
   }
@@ -245,8 +272,13 @@ function buildActiveSideActionsFromTimeline(timeline: readonly RowEntry[]): {
     finalSourceRelativeRow += 1;
   }
 
+  const initialStitches =
+    hasCenterDivide && center
+      ? Math.max(0, Math.floor(center.stitchesR))
+      : Math.max(0, Math.floor(first.stitchesR - first.netChangeR));
+
   return {
-    initialStitches: Math.max(0, Math.floor(center.stitchesR)),
+    initialStitches,
     finalSourceRelativeRow,
     actions,
   };
@@ -309,7 +341,7 @@ export function buildActiveSideInstructionTableRows(
 ): ActiveSideInstructionTableRow[] {
   const source =
     chart.timeline && chart.timeline.length > 0
-      ? buildActiveSideActionsFromTimeline(chart.timeline)
+      ? buildActiveSideActionsFromTimeline(chart.timeline, chart)
       : chart.rows.length > 0
         ? buildActiveSideActionsFromChartRows(chart.rows)
         : null;
