@@ -30,12 +30,15 @@ import {
   loadSleevelessBackDiagramSvgMarkup,
   loadSleevelessFrontDiagramSvgMarkup,
 } from "../lib/patterns/sleevelessPrintDiagramSvg.ts";
+import { resolveSleevelessFrontDiagram } from "../lib/patterns/sleevelessFrontDiagramSrc.ts";
 import {
   renderSleevelessPrintPieceHtml,
   splitRowsBeforeNeckShoulderChartMount,
 } from "../lib/patterns/sleevelessPatternPrintRender.ts";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
 import { buildSleevelessPrintBasicsSummaryDlHtml } from "../lib/patterns/sleevelessPrintBasicsSummaryHtml.ts";
+import { sleevelessFinishingFromPattern } from "../lib/patterns/sleevelessPatternFinishing.ts";
+import { buildSleevelessFinishingPrintListHtml } from "../lib/patterns/sleevelessPatternFinishingHtml.ts";
 import {
   hydratePatternPrintPersonalizationSlotsFromSession,
   triggerPatternPrint,
@@ -70,18 +73,23 @@ function mergedPatternForDisplay(base: Record<string, unknown>): Record<string, 
 }
 
 function buildGeneratorPatternData(merged: Record<string, unknown>): Record<string, unknown> {
-  return buildGeneratorPatternDataFromSources(merged, getPatternData());
+  return buildGeneratorPatternDataFromSources(merged, getPatternData(), getCurrentPattern());
 }
 
-function printFinishingPlaceholderHtml(): string {
+function printFinishingSectionHtml(
+  patternMerged: Record<string, unknown>,
+  debug: { frontNecklineStartRC?: number; cardiganFrontEdgePickupSts?: number },
+): string {
+  const finishing = sleevelessFinishingFromPattern(patternMerged, debug);
+  const listItems = buildSleevelessFinishingPrintListHtml({
+    isCardigan: finishing.isCardigan,
+    cardiganFrontEdgeFinishingMode: finishing.cardiganFrontEdgeFinishingMode,
+    frontEdgePickupSts: finishing.frontEdgePickupSts,
+  });
   return `<section class="print-major print-finishing" aria-labelledby="print-finishing-heading">
   <h2 id="print-finishing-heading" class="print-heading-major print-heading-with-checkbox"><span class="print-heading-checkbox" aria-hidden="true"></span><span class="print-heading-label">Finishing</span></h2>
   <ol class="print-finishing-list">
-    <li>Optional: block pieces to measurements; allow to dry.</li>
-    <li>Join shoulders with your preferred method.</li>
-    <li>Work neckline and armhole trims to match your yarn and tension.</li>
-    <li>Join side seams from hem toward underarm, matching edges.</li>
-    <li>Weave in ends; lightly steam if needed.</li>
+    ${listItems}
   </ol>
   <p class="print-muted">The online version of this pattern includes videos and glossary help.</p>
 </section>`;
@@ -203,13 +211,12 @@ async function initSleevelessPrintPage(): Promise<void> {
     renderActiveShoulderChartIntroHtml({
       localStartRcLabel: backLocalStartLabel,
       centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(result.neckShoulderShapingChart),
+      chart: result.neckShoulderShapingChart,
       wrapperClass: "print-chart-intro",
       layout: "compact",
     }),
     {
       activeSideRcStart: backChecklistArmholeStart,
-      piece: "back",
-      patternData: patternMerged,
     },
   );
   const frontChartHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
@@ -218,13 +225,12 @@ async function initSleevelessPrintPage(): Promise<void> {
     renderActiveShoulderChartIntroHtml({
       localStartRcLabel: frontLocalStartLabel,
       centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(result.frontNeckShoulderShapingChart),
+      chart: result.frontNeckShoulderShapingChart,
       wrapperClass: "print-chart-intro",
       layout: "compact",
     }),
     {
       activeSideRcStart: frontChecklistArmholeStart,
-      piece: "front",
-      patternData: patternMerged,
     },
   );
 
@@ -247,6 +253,15 @@ async function initSleevelessPrintPage(): Promise<void> {
   } catch {
     frontDiagramMarkup = `<p class="print-muted print-diagram-fallback">Front schematic could not be loaded.</p>`;
   }
+
+  const frontDiagramRouting = resolveSleevelessFrontDiagram(genInput);
+  const frontPrintDiagramCaption =
+    frontDiagramRouting.diagramType === "cardiganHalfFrontRound" ||
+    frontDiagramRouting.diagramType === "cardiganHalfFrontV"
+      ? "Left front schematic (development)"
+      : frontDiagramRouting.garmentStyle === "cardigan"
+        ? "Cardigan front schematic"
+        : "Front schematic";
 
   const {
     preludeRows: frontPreludeRows,
@@ -336,13 +351,13 @@ async function initSleevelessPrintPage(): Promise<void> {
       </div>
       <aside class="print-opening-diagram" aria-label="Front schematic">
         <div class="print-opening-diagram-inner">${frontDiagramMarkup}</div>
-        <p class="print-diagram-caption">Front schematic</p>
+        <p class="print-diagram-caption">${escapeHtml(frontPrintDiagramCaption)}</p>
       </aside>
     </div>
     ${frontContinuationHtml}
   </section>
 
-  ${printFinishingPlaceholderHtml()}
+  ${printFinishingSectionHtml(patternMerged, result.debug)}
 </div>`;
 
   hydrateGlossaryTooltipPlaceholders(root);

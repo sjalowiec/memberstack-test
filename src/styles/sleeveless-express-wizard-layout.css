@@ -355,3 +355,63 @@
 .express-page .express-custom-build-callout__link:hover {
   color: color-mix(in srgb, var(--sg-accent, #c2614e) 85%, #000);
 }
+
+/* Express builder — final review CTA (Gauge step footer) */
+.express-page .express-generate-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.express-page .express-generate-wrap--footer {
+  margin-top: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(82, 104, 45, 0.1);
+}
+
+.express-page .express-acc.express-acc--open .express-generate-wrap--footer {
+  margin-top: 1.25rem;
+}
+
+.express-page .express-generate-cta__helper {
+  margin: 0 0 0.75rem;
+  max-width: 28rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--express-muted);
+}
+
+.express-page .express-generate {
+  appearance: none;
+  width: auto;
+  max-width: 100%;
+  font: inherit;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--express-terracotta);
+  color: #fff;
+  cursor: pointer;
+  transition:
+    opacity 0.15s ease,
+    transform 0.1s ease;
+}
+
+.express-page .express-generate:hover {
+  opacity: 0.92;
+}
+
+.express-page .express-generate:focus-visible {
+  outline: 2px solid var(--express-terracotta);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .express-page .express-generate {
+    width: 100%;
+  }
+}

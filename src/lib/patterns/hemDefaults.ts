@@ -83,6 +83,16 @@ export function calculateHemRows(rowGauge: number, audience: PatternAudience): n
 }
 
 /**
+ * Hem rows from an explicit finished depth in inches (e.g. Custom Build override).
+ * Uses the same even-row rounding as {@link calculateHemRows}.
+ */
+export function calculateHemRowsFromInches(rowGauge: number, hemDepthInches: number): number {
+  if (!Number.isFinite(rowGauge) || rowGauge <= 0) return 0;
+  if (!Number.isFinite(hemDepthInches) || hemDepthInches <= 0) return 0;
+  return roundUpToEvenRows(hemDepthInches * rowGauge);
+}
+
+/**
  * Default cuff rows from gauge (rows per inch) and audience.
  * Returns 0 if rowGauge is missing, non-finite, or ≤ 0.
  */

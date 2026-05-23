@@ -16,32 +16,29 @@ import {
   NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
   plainKnitSpanCarriageEdgeDisplay,
 } from "./neckShoulderShapingChart";
-import { renderShoulderShapingSvg, type ShoulderShapingSvgPiece } from "./shoulderShapingSvg";
-import { renderNotationOverlayDiagram, type NotationOverlayDiagramOptions } from "./notationOverlaySvg";
-import { getSleevelessShoulderNotationIconSrc, isSleevelessVNeckChoice } from "./sleevelessFrontDiagramSrc";
 import type { RowEntry, ShapingEvent } from "./shapingTimeline";
 import {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
   ACTIVE_SHOULDER_DIVIDE_SENTENCE,
-  formatActiveShoulderCenterNecklinePlainSentence,
+  ACTIVE_VNECK_CENTER_DIVIDE_TAIL,
+  activeShoulderCenterDivideIntroApplies,
+  activeShoulderIntroUsesVNeckDivideCopy,
+  SCRAP_OFF_GLOSSARY_ID,
 } from "./neckShoulderActiveIntroCopy";
-import { formatShoulderBindoffRemainingInstruction } from "./sleevelessPatternOutput";
+import { finalShoulderRemainderStitches } from "./shoulderShapingNotation";
+import {
+  CARRIAGE_POSITION_PATTERN_TIP_DETAILS_HTML,
+  centerBindOffStitchesFromNeckShoulderChart,
+  formatShoulderBindoffRemainingInstruction,
+} from "./sleevelessPatternOutput";
 
-function sleevelessNotationOverlayOpts(
-  piece: ShoulderShapingSvgPiece | undefined,
-  patternData: Record<string, unknown> | undefined,
-): NotationOverlayDiagramOptions | undefined {
-  if (piece !== "front" && piece !== "back") return undefined;
-  const outlineImageSrc = getSleevelessShoulderNotationIconSrc(piece, patternData);
-  if (piece === "front" && patternData && isSleevelessVNeckChoice(patternData)) {
-    return { outlineImageSrc, innerNeckNotationFromTimeline: true };
-  }
-  return { outlineImageSrc };
-}
+/** Registry key in `SLEEVELESS_HELP_VIDEOS` (Vimeo 252565241 — shallow round neck shaping). */
+export const NECKLINE_SHAPING_HELP_VIDEO_KEY = "shallowBackNeck";
 
 export {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
   ACTIVE_SHOULDER_DIVIDE_SENTENCE,
+  SCRAP_OFF_GLOSSARY_ID,
 } from "./neckShoulderActiveIntroCopy";
 
 function escapeHtml(text: string): string {
@@ -50,6 +47,59 @@ function escapeHtml(text: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function chartProgressRcAttrFromActiveRow(r: ActiveSideInstructionTableRow): string {
+  const start = Math.max(0, Math.floor(Number(r.rc)));
+  const endRaw = r.rcEnd !== undefined ? Math.max(0, Math.floor(Number(r.rcEnd))) : start;
+  return endRaw !== start ? `${start}-${endRaw}` : String(start);
+}
+
+function chartProgressRcAttrFromGarmentRow(r: NeckShoulderShapingChartRow): string {
+  const lo = Math.max(0, Math.floor(Number(r.row)));
+  const hi =
+    r.chartRowSpanLast !== undefined && Number.isFinite(r.chartRowSpanLast)
+      ? Math.max(0, Math.floor(Number(r.chartRowSpanLast)))
+      : lo;
+  return hi !== lo ? `${lo}-${hi}` : String(lo);
+}
+
+/** Stable checklist row identity for persistence (paired with [`data-chart-id`](/)). */
+function buildActiveSideStableRowId(chartProgressId: string, r: ActiveSideInstructionTableRow): string {
+  const start = Math.max(0, Math.floor(Number(r.rc)));
+  const endRaw =
+    r.rcEnd !== undefined && Number.isFinite(Number(r.rcEnd))
+      ? Math.max(0, Math.floor(Number(r.rcEnd)))
+      : start;
+  return `${chartProgressId}|arc|${start}|${endRaw}|${Number(r.stitchesRemaining)}|${
+    r.carriagePosition
+  }|${r.action}|${r.edge}`;
+}
+
+function buildFullChartStableRowId(
+  chartProgressId: string,
+  displayRow: NeckShoulderShapingChartDisplayRow,
+): string {
+  const r = displayRow.sourceRow;
+  const lo = Math.max(0, Math.floor(Number(r.row)));
+  const hi =
+    r.chartRowSpanLast !== undefined && Number.isFinite(r.chartRowSpanLast)
+      ? Math.max(0, Math.floor(Number(r.chartRowSpanLast)))
+      : lo;
+  const center = String(r.centerNeck ?? "").trim();
+  return `${chartProgressId}|full|${lo}|${hi}|${displayRow.rowLabel}|${displayRow.actionLabel}|${center}|${
+    r.leftStitchCount
+  }|${r.rightStitchCount}`;
+}
+
+function renderNsChartProgressToolbarHtml(): string {
+  return `<div class="ns-shaping-chart__progress-toolbar no-print">
+    <div class="ns-shaping-chart__progress-toolbar-main" role="toolbar" aria-label="Chart checklist tracking">
+      <button type="button" class="ns-shaping-chart__progress-btn ns-shaping-chart__progress-toggle-hide" data-chart-progress-toggle-hide aria-pressed="false">Hide completed rows</button>
+      <button type="button" class="ns-shaping-chart__progress-btn ns-shaping-chart__progress-reset" data-chart-progress-reset>Reset checklist</button>
+    </div>
+    <p class="ns-shaping-chart__progress-hide-status" data-chart-progress-hide-status role="status" aria-live="polite"><span class="ns-shaping-chart__progress-hide-status-mark" aria-hidden="true"></span><span data-chart-progress-hide-status-text>Completed rows are visible.</span></p>
+  </div>`;
 }
 
 function rowClassFromHighlight(hi: ReturnType<typeof getNeckShoulderChartRowHighlightFromRow>): string {
@@ -142,40 +192,139 @@ export type ActiveShoulderChartIntroOptions = {
   localStartRcLabel?: string | undefined;
   /** Whole-stitch center bind-off count from chart row 0; omit tail when unknown. */
   centerBindOffStitches?: number | undefined;
+  /** When set, V-neck front charts use divide-at-center copy instead of round-neck center scrap-off. */
+  chart?: NeckShoulderShapingChart | undefined;
   /** Host-specific wrapper class (`print-chart-intro` vs `pattern-shaping-intro`). */
   wrapperClass: string;
   /** Reserved for callers (online vs print); intro wording is the same for both layouts. */
   layout: ActiveShoulderChartIntroLayout;
 };
 
-function activeShoulderAnchoredCenterBindOffHtml(
-  localStartRcLabel: string | undefined,
-  centerBindOffStitches: number | undefined
-): string {
-  return escapeHtml(
-    formatActiveShoulderCenterNecklinePlainSentence({
-      localStartRcLabel,
-      centerBindOffStitches,
-    })
-  );
+function scrapOffGlossaryPlaceholderHtml(): string {
+  return `<span class="glossary-tooltip-placeholder" data-glossary-id="${SCRAP_OFF_GLOSSARY_ID}">Scrap off</span>`;
+}
+
+/** HTML center-neckline divide line with glossary on “Scrap off” (plain-text twin in intro copy module). */
+function formatActiveShoulderCenterNecklineHtml(args: {
+  localStartRcLabel?: string | undefined;
+  centerBindOffStitches?: number | undefined;
+}): string {
+  const localStartLabel = String(args.localStartRcLabel ?? "").trim();
+  const centerCount = Number(args.centerBindOffStitches);
+  const centerCountLabel =
+    Number.isFinite(centerCount) && centerCount > 0 ? String(Math.round(centerCount)) : "";
+  const scrapOff = scrapOffGlossaryPlaceholderHtml();
+  const scrapOffTail = centerCountLabel
+    ? `${scrapOff} the center ${escapeHtml(centerCountLabel)} neckline stitches to divide the neckline`
+    : `${scrapOff} the center neckline stitches to divide the neckline`;
+  const rcColon = localStartLabel.match(/^RC:(\d{1,4})$/i);
+  if (rcColon) {
+    const n = String(Math.max(0, parseInt(rcColon[1], 10))).padStart(3, "0");
+    return `When Armhole RC reaches ${escapeHtml(n)}, ${scrapOffTail}.`;
+  }
+  if (localStartLabel) {
+    return `At ${escapeHtml(localStartLabel)}, ${scrapOffTail}.`;
+  }
+  return `${scrapOffTail.charAt(0).toUpperCase()}${scrapOffTail.slice(1)}.`;
+}
+
+/** HTML V-neck center divide line (no scrap-off / bind-off wording). */
+function formatActiveShoulderVNeckCenterNecklineHtml(args: {
+  localStartRcLabel?: string | undefined;
+}): string {
+  const localStartLabel = String(args.localStartRcLabel ?? "").trim();
+  const tail = escapeHtml(ACTIVE_VNECK_CENTER_DIVIDE_TAIL);
+  const rcColon = localStartLabel.match(/^RC:(\d{1,4})$/i);
+  if (rcColon) {
+    const n = String(Math.max(0, parseInt(rcColon[1], 10))).padStart(3, "0");
+    return `When Armhole RC reaches ${escapeHtml(n)}, ${tail}.`;
+  }
+  if (localStartLabel) {
+    return `At ${escapeHtml(localStartLabel)}, ${tail}.`;
+  }
+  return `${tail.charAt(0).toUpperCase()}${tail.slice(1)}.`;
 }
 
 /**
  * Shared HTML intro placed above the active-shoulder shaping checklist (online pattern tab + print/PDF).
+ * Round-neck center scrap-off copy is omitted when {@link centerBindOffStitches} is 0; V-neck front
+ * charts use divide-at-center copy via {@link activeShoulderIntroUsesVNeckDivideCopy}.
  */
 export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartIntroOptions): string {
   const wrappedClass = String(options.wrapperClass ?? "").trim() || "active-shoulder-chart-intro";
-  const bindOffHtml = activeShoulderAnchoredCenterBindOffHtml(
-    options.localStartRcLabel,
-    options.centerBindOffStitches
-  );
-  const inner = `<p><strong>Center Neckline:</strong><br>${bindOffHtml}</p>
-  <p><strong>Divide:</strong><br>${escapeHtml(ACTIVE_SHOULDER_DIVIDE_SENTENCE)}</p>
-  <p>${escapeHtml(ACTIVE_SHOULDER_CHART_INTRO_SENTENCE)}</p>`;
+  const vNeckDivide = activeShoulderIntroUsesVNeckDivideCopy(options.chart);
+  const roundCenterDivide =
+    !vNeckDivide &&
+    activeShoulderCenterDivideIntroApplies(options.centerBindOffStitches, options.chart);
+  const showCenterDivide = vNeckDivide || roundCenterDivide;
+  const centerHtml = vNeckDivide
+    ? formatActiveShoulderVNeckCenterNecklineHtml({ localStartRcLabel: options.localStartRcLabel })
+    : roundCenterDivide
+      ? formatActiveShoulderCenterNecklineHtml({
+          localStartRcLabel: options.localStartRcLabel,
+          centerBindOffStitches: options.centerBindOffStitches,
+        })
+      : "";
+  const innerParts: string[] = [];
+  if (showCenterDivide && centerHtml) {
+    innerParts.push(`<p><strong>Center Neckline:</strong><br>${centerHtml}</p>`);
+    innerParts.push(
+      `<p><strong>Divide:</strong><br>${escapeHtml(ACTIVE_SHOULDER_DIVIDE_SENTENCE)}</p>`,
+    );
+  }
+  innerParts.push(`<p>${escapeHtml(ACTIVE_SHOULDER_CHART_INTRO_SENTENCE)}</p>`);
+  const inner = innerParts.join("\n  ");
 
   return `<div class="${escapeHtml(wrappedClass)}">
   ${inner}
 </div>`;
+}
+
+/**
+ * True when the optional neckline shaping video helper should appear (division and/or shaping chart).
+ * Omits empty charts and plain sections with no shaping rows.
+ */
+export function activeShoulderNecklineShapingHelpApplies(
+  chart: NeckShoulderShapingChart | undefined,
+  centerBindOffStitches?: number | undefined,
+): boolean {
+  if (!chart?.rows?.length) return false;
+  const center =
+    centerBindOffStitches !== undefined
+      ? centerBindOffStitches
+      : centerBindOffStitchesFromNeckShoulderChart(chart);
+  if (activeShoulderCenterDivideIntroApplies(center, chart)) return true;
+  if (isFullWidthVNeckFrontStyleChart(chart)) return true;
+  return chart.rows.length > 1;
+}
+
+/** Compact “New to shaping necklines?” helper — online only; uses existing sleeveless video modal. */
+export function renderActiveShoulderNecklineShapingHelpHtml(): string {
+  return `<aside class="sleeveless-neck-shoulder-help sleeveless-neck-shoulder-help--compact no-print" aria-label="Neckline shaping video help">
+  <p class="sleeveless-neck-shoulder-help__text"><strong>New to shaping necklines?</strong> This video walks through the process of dividing and shaping a neckline on the knitting machine. <span class="pattern-help-link"><button type="button" class="pattern-help-link__button" data-sleeveless-help-video="${NECKLINE_SHAPING_HELP_VIDEO_KEY}" aria-haspopup="dialog"><i class="fa-solid fa-play" aria-hidden="true"></i> Shallow round neck shaping</button></span></p>
+</aside>`;
+}
+
+/**
+ * Optional shaping help (when applicable) + chart intro copy. Help renders immediately before intro.
+ */
+export function renderNeckShoulderChartIntroBlockHtml(
+  options: ActiveShoulderChartIntroOptions & { chart?: NeckShoulderShapingChart | undefined },
+): string {
+  const center =
+    options.centerBindOffStitches !== undefined
+      ? options.centerBindOffStitches
+      : centerBindOffStitchesFromNeckShoulderChart(options.chart);
+  const introOpts: ActiveShoulderChartIntroOptions = {
+    ...options,
+    chart: options.chart,
+    centerBindOffStitches: center,
+  };
+  const help =
+    options.chart && activeShoulderNecklineShapingHelpApplies(options.chart, center)
+      ? renderActiveShoulderNecklineShapingHelpHtml()
+      : "";
+  return `${help}${renderActiveShoulderChartIntroHtml(introOpts)}`;
 }
 
 type ActiveSideEdge = "Neck" | "Armhole";
@@ -239,6 +388,11 @@ function renderActiveSideBindoffRemainingHtml(
  */
 function carriagePositionForActiveSideRc(rc: number): "Right" | "Left" {
   return rc % 2 === 0 ? "Right" : "Left";
+}
+
+/** Physical carriage at RC start for the second-shoulder checklist (inverted RC parity vs active). */
+function carriagePositionForSecondShoulderRc(rc: number): "Right" | "Left" {
+  return oppositeCarriagePosition(carriagePositionForActiveSideRc(rc));
 }
 
 function edgeForActiveSideCarriagePosition(position: "Right" | "Left"): ActiveSideEdge {
@@ -322,6 +476,17 @@ function buildActiveSideActionsFromTimeline(timeline: readonly RowEntry[]): {
       if (action) actions.push(action);
     }
   }
+  const remainder = finalShoulderRemainderStitches(timeline, "right");
+  if (remainder > 0) {
+    actions.push({
+      sourceRelativeRow: finalSourceRelativeRow + 1,
+      edge: "Armhole",
+      amount: remainder,
+      kind: "bindOff",
+    });
+    finalSourceRelativeRow += 1;
+  }
+
   return {
     initialStitches: Math.max(0, Math.floor(center.stitchesR)),
     finalSourceRelativeRow,
@@ -364,10 +529,22 @@ function buildActiveSideActionsFromChartRows(rows: readonly NeckShoulderShapingC
       actions.push({ sourceRelativeRow: rel, edge: "Armhole", amount: armhole, kind: "bindOff" });
     }
   }
+  const lastSource = sourceRows[sourceRows.length - 1];
+  const remainder = lastSource ? Math.max(0, Math.floor(lastSource.rightStitchCount)) : 0;
+  const lastArmhole = lastSource ? parseDecreaseCell(lastSource.rightSide) : 0;
+  if (remainder > 0 && lastArmhole < remainder) {
+    actions.push({
+      sourceRelativeRow: finalSourceRelativeRow + 1,
+      edge: "Armhole",
+      amount: remainder,
+      kind: "bindOff",
+    });
+    finalSourceRelativeRow += 1;
+  }
   return { initialStitches, finalSourceRelativeRow, actions };
 }
 
-function buildActiveSideInstructionTableRows(
+export function buildActiveSideInstructionTableRows(
   chart: NeckShoulderShapingChart,
   rcStart = 0
 ): ActiveSideInstructionTableRow[] {
@@ -422,15 +599,12 @@ function buildActiveSideInstructionTableRows(
   return out;
 }
 
-function buildOppositeShoulderInstructionTableRows(
-  rows: readonly ActiveSideInstructionTableRow[]
+export function buildSecondShoulderInstructionTableRows(
+  rows: readonly ActiveSideInstructionTableRow[],
 ): ActiveSideInstructionTableRow[] {
   return rows.map((r) => ({
     ...r,
-    carriagePosition:
-      r.carriagePosition === "Right" || r.carriagePosition === "Left"
-        ? oppositeCarriagePosition(r.carriagePosition)
-        : r.carriagePosition,
+    carriagePosition: carriagePositionForSecondShoulderRc(r.rc),
   }));
 }
 
@@ -441,6 +615,7 @@ function buildOppositeShoulderInstructionTableRows(
  */
 export function compactActiveSideInstructionRowsForPrint(
   rows: readonly ActiveSideInstructionTableRow[],
+  options?: { invertCarriageParity?: boolean },
 ): ActiveSideInstructionTableRow[] {
   const out: ActiveSideInstructionTableRow[] = [];
   let i = 0;
@@ -462,7 +637,9 @@ export function compactActiveSideInstructionRowsForPrint(
     }
     const firstRc = row.rc;
     const lastRc = rows[j]!.rc;
-    const { carriage, edge } = plainKnitSpanCarriageEdgeDisplay(firstRc, lastRc);
+    const { carriage, edge } = plainKnitSpanCarriageEdgeDisplay(firstRc, lastRc, {
+      invertCarriageParity: options?.invertCarriageParity === true,
+    });
     if (j > i) {
       out.push({
         rc: firstRc,
@@ -491,11 +668,19 @@ function formatActiveSideRcDisplay(r: ActiveSideInstructionTableRow): string {
   return formatActiveSideRc(r.rc);
 }
 
-function renderActiveSideInstructionRowsTrHtml(rows: readonly ActiveSideInstructionTableRow[]): string {
+function renderActiveSideInstructionRowsTrHtml(
+  rows: readonly ActiveSideInstructionTableRow[],
+  chartProgressId: string,
+): string {
   return rows
     .map((r) => {
       const rcDisp = formatActiveSideRcDisplay(r);
-      return `<tr class="ns-shaping-chart__tr"><td class="ns-shaping-chart__td-num">${escapeHtml(
+      const rowId = buildActiveSideStableRowId(chartProgressId, r);
+      const rcAttr = chartProgressRcAttrFromActiveRow(r);
+      const doneCell = `<td class="ns-shaping-chart__td-complete"><label class="ns-shaping-chart__row-check-label"><input type="checkbox" class="ns-shaping-chart__row-check" aria-label="Mark chart row RC ${escapeHtml(
+        rcDisp
+      )} complete" /></label></td>`;
+      return `<tr class="ns-shaping-chart__tr" data-row-id="${escapeHtml(rowId)}" data-rc="${escapeHtml(rcAttr)}">${doneCell}<td class="ns-shaping-chart__td-num">${escapeHtml(
         rcDisp
       )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${escapeHtml(r.action)}</td><td>${escapeHtml(
         r.edge
@@ -516,7 +701,7 @@ function renderFullChartActionCellHtml(displayRow: NeckShoulderShapingChartDispl
   )}</span></div>`;
 }
 
-type NeckShoulderChartRenderOptions = {
+export type NeckShoulderChartRenderOptions = {
   includeDoneColumn?: boolean;
   tableClassName?: string;
   activeSideOnly?: boolean;
@@ -537,10 +722,14 @@ type NeckShoulderChartRenderOptions = {
   fullWidthChartOneRowPerRc?: boolean;
 };
 
-function chartBodyRowsHtml(chart: NeckShoulderShapingChart, options?: NeckShoulderChartRenderOptions): string {
+function chartBodyRowsHtml(
+  chart: NeckShoulderShapingChart,
+  chartProgressId: string,
+  options?: NeckShoulderChartRenderOptions,
+): string {
   const activeSideOnly = options?.activeSideOnly === true;
   const activeSideRcStart = Math.max(0, Math.floor(Number(options?.activeSideRcStart ?? 0)));
-  const includeDoneColumn = activeSideOnly ? false : options?.includeDoneColumn !== false;
+  const includeDoneColumn = activeSideOnly ? true : options?.includeDoneColumn !== false;
   const compactPrint = options?.compactPlainKnitSpansForPrint === true;
   const rowLabelStyle = compactPrint ? "print" : "online";
   const vNeckStyleOneRowPerRc =
@@ -562,7 +751,7 @@ function chartBodyRowsHtml(chart: NeckShoulderShapingChart, options?: NeckShould
         rowsAfter: activeRows.length,
       });
     }
-    return renderActiveSideInstructionRowsTrHtml(activeRows);
+    return renderActiveSideInstructionRowsTrHtml(activeRows, chartProgressId);
   }
   const displayRows = vNeckStyleOneRowPerRc
     ? chartDisplayRowsOnePerRc(chart.rows, { rowLabelStyle })
@@ -573,6 +762,8 @@ function chartBodyRowsHtml(chart: NeckShoulderShapingChart, options?: NeckShould
       const hi = getNeckShoulderChartRowHighlightFromRow(r);
       const trClass = rowClassFromHighlight(hi);
       const rowNum = Math.max(0, Math.floor(r.row));
+      const rowStableId = buildFullChartStableRowId(chartProgressId, displayRow);
+      const rcAttr = chartProgressRcAttrFromGarmentRow(r);
       const doneCell = includeDoneColumn
         ? `<td class="ns-shaping-chart__td-complete"><label class="ns-shaping-chart__row-check-label"><input type="checkbox" class="ns-shaping-chart__row-check" aria-label="Mark chart row ${rowNum} complete" /></label></td>`
         : "";
@@ -582,7 +773,8 @@ function chartBodyRowsHtml(chart: NeckShoulderShapingChart, options?: NeckShould
         displayRow.rowLabel.includes("\u2013");
       const stitchLeft = mergedPlainSpan ? "stitch count unchanged" : String(r.leftStitchCount);
       const stitchRight = mergedPlainSpan ? "stitch count unchanged" : String(r.rightStitchCount);
-      return `<tr class="${trClass}">${doneCell}<td class="ns-shaping-chart__td-num">${escapeHtml(displayRow.rowLabel)}</td><td>${renderFullChartActionCellHtml(
+      const dataAttrs = ` data-row-id="${escapeHtml(rowStableId)}" data-rc="${escapeHtml(rcAttr)}"`;
+      return `<tr class="${trClass}"${dataAttrs}>${doneCell}<td class="ns-shaping-chart__td-num">${escapeHtml(displayRow.rowLabel)}</td><td>${renderFullChartActionCellHtml(
         displayRow,
       )}</td><td class="ns-shaping-chart__td-center">${escapeHtml(r.leftSide)}</td><td class="ns-shaping-chart__td-center">${escapeHtml(
         r.leftNeck
@@ -595,7 +787,21 @@ function chartBodyRowsHtml(chart: NeckShoulderShapingChart, options?: NeckShould
     .join("");
 }
 
-/** Chart title and table only — pairs with {@link renderNeckShoulderShapingPreviewOnlyHtml}. */
+/** True when the rendered chart table includes a dedicated Carriage Position column. */
+export function neckShoulderChartHasCarriagePositionColumn(
+  options?: NeckShoulderChartRenderOptions,
+): boolean {
+  return options?.activeSideOnly === true;
+}
+
+/** Collapsible Pattern Tip for the Carriage Position column; empty when the column is absent. */
+export function renderCarriagePositionPatternTipHtml(options?: NeckShoulderChartRenderOptions): string {
+  return neckShoulderChartHasCarriagePositionColumn(options)
+    ? CARRIAGE_POSITION_PATTERN_TIP_DETAILS_HTML
+    : "";
+}
+
+/** Chart title and table only (no neckline/shoulder diagram block). */
 export function renderNeckShoulderShapingChartTableOnlyHtml(
   chart: NeckShoulderShapingChart,
   idPrefix = "ns-shaping-chart",
@@ -603,39 +809,59 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
   options?: NeckShoulderChartRenderOptions
 ): string {
   const headingId = `${idPrefix}-heading`;
-  const rowsHtml = chartBodyRowsHtml(chart, options);
-  const intro = typeof introHtml === "string" && introHtml.trim() ? introHtml : "";
-  const includeDoneColumn = options?.includeDoneColumn !== false;
+  const introParts = [
+    typeof introHtml === "string" && introHtml.trim() ? introHtml : "",
+    renderCarriagePositionPatternTipHtml(options),
+  ].filter((part) => part.trim());
+  const intro = introParts.join("\n");
+  const includeDoneColumnOption = options?.includeDoneColumn !== false;
   const activeSideOnly = options?.activeSideOnly === true;
+  const progressChartIdPrimary = activeSideOnly ? `${idPrefix}-primary` : idPrefix;
+  const progressChartIdSecondary = `${idPrefix}-secondary`;
+  const rowsHtml = chartBodyRowsHtml(chart, progressChartIdPrimary, options);
+
   const activeSideRcStart = Math.max(0, Math.floor(Number(options?.activeSideRcStart ?? 0)));
-  const compactPrint = options?.compactPlainKnitSpansForPrint === true;
   const vNeckStyleOneRowPerRc =
     isFullWidthVNeckFrontStyleChart(chart) && options?.fullWidthChartOneRowPerRc !== false;
   const activeRowsRaw = activeSideOnly ? buildActiveSideInstructionTableRows(chart, activeSideRcStart) : [];
-  const oppositeRowsPrep = buildOppositeShoulderInstructionTableRows(activeRowsRaw);
+  const oppositeRowsPrep = buildSecondShoulderInstructionTableRows(activeRowsRaw);
   const oppositeRowsHtml = activeSideOnly
     ? renderActiveSideInstructionRowsTrHtml(
-        vNeckStyleOneRowPerRc ? oppositeRowsPrep : compactActiveSideInstructionRowsForPrint(oppositeRowsPrep),
+        vNeckStyleOneRowPerRc
+          ? oppositeRowsPrep
+          : compactActiveSideInstructionRowsForPrint(oppositeRowsPrep, { invertCarriageParity: true }),
+        progressChartIdSecondary,
       )
     : "";
   const heldShoulderStitches = Math.max(0, Math.floor(Number(chart.rows[0]?.leftStitchCount ?? 0)));
-  const showDoneColumn = activeSideOnly ? false : includeDoneColumn;
+  const showDoneColumn = activeSideOnly ? true : includeDoneColumnOption;
   const tableClassName = String(options?.tableClassName ?? "").trim();
   const sectionClass = tableClassName ? `ns-shaping-chart ${tableClassName}` : "ns-shaping-chart";
-  const doneHeader = showDoneColumn
-    ? `<th scope="col" rowspan="2" class="ns-shaping-chart__th-complete" aria-label="Completion status">
+  const doneHeaderFullGrid = `<th scope="col" rowspan="2" class="ns-shaping-chart__th-complete" aria-label="Completion status">
             Done
-          </th>`
-    : "";
+          </th>`;
+  const doneHeaderActiveSide = `<th scope="col" rowspan="1" class="ns-shaping-chart__th-complete" aria-label="Completion status">Done</th>`;
+  const doneLeadingCell = activeSideOnly
+    ? showDoneColumn
+      ? doneHeaderActiveSide
+      : ""
+    : showDoneColumn
+      ? doneHeaderFullGrid
+      : "";
+
+  const progressToolbarHtml = renderNsChartProgressToolbarHtml();
 
   return `<section class="${escapeHtml(sectionClass)}" aria-labelledby="${escapeHtml(headingId)}">
   <h2 id="${escapeHtml(headingId)}" class="ns-shaping-chart__title">Neckline / Shoulder Shaping Chart</h2>
   ${intro}
-  <div class="ns-shaping-chart__table-wrap">
+  <div class="ns-shaping-chart__progress-section" data-chart-id="${escapeHtml(progressChartIdPrimary)}">
+    ${progressToolbarHtml}
+    <div class="ns-shaping-chart__table-wrap">
+    <div class="ns-shaping-chart__table-scroll">
     <table class="ns-shaping-chart__table">
       <thead>
         <tr>
-          ${doneHeader}
+          ${doneLeadingCell}
           ${
             activeSideOnly
               ? `<th scope="col" rowspan="1" class="ns-shaping-chart__th-row">RC</th>
@@ -667,6 +893,8 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
       </thead>
       <tbody>${rowsHtml}</tbody>
     </table>
+    </div>
+    </div>
   </div>
   ${activeSideOnly ? renderActiveSideBindoffRemainingHtml(activeRowsRaw) : ""}
   ${
@@ -686,10 +914,14 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
 </div>
 <div class="ns-shaping-chart__second-shoulder-block" data-second-shoulder-content hidden>
   <h3 class="ns-shaping-chart__preview-title">Second Shoulder Checklist</h3>
-  <div class="ns-shaping-chart__table-wrap">
+  <div class="ns-shaping-chart__progress-section" data-chart-id="${escapeHtml(progressChartIdSecondary)}">
+    ${progressToolbarHtml}
+    <div class="ns-shaping-chart__table-wrap">
+    <div class="ns-shaping-chart__table-scroll">
     <table class="ns-shaping-chart__table">
       <thead>
         <tr>
+          ${doneHeaderActiveSide}
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-row">RC</th>
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-action">Carriage Position</th>
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-action">Action</th>
@@ -699,6 +931,8 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
       </thead>
       <tbody>${oppositeRowsHtml}</tbody>
     </table>
+    </div>
+    </div>
   </div>
 </div>`
       : ""
@@ -718,8 +952,6 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
   options?: {
     showSecondShoulderChecklist?: boolean;
     activeSideRcStart?: number;
-    piece?: ShoulderShapingSvgPiece;
-    patternData?: Record<string, unknown>;
     fullWidthChartOneRowPerRc?: boolean;
   },
 ): string {
@@ -733,10 +965,10 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
     ? printRowsRaw
     : compactActiveSideInstructionRowsForPrint(printRowsRaw);
   const showSecondShoulderChecklist = options?.showSecondShoulderChecklist === true;
-  const oppositePrintRowsRaw = buildOppositeShoulderInstructionTableRows(printRowsRaw);
+  const oppositePrintRowsRaw = buildSecondShoulderInstructionTableRows(printRowsRaw);
   const oppositePrintRows = vNeckStyleOneRowPerRc
     ? oppositePrintRowsRaw
-    : compactActiveSideInstructionRowsForPrint(oppositePrintRowsRaw);
+    : compactActiveSideInstructionRowsForPrint(oppositePrintRowsRaw, { invertCarriageParity: true });
   const heldShoulderStitches = Math.max(0, Math.floor(Number(chart.rows[0]?.leftStitchCount ?? 0)));
   const rowsHtml = printRows
     .map((r) => {
@@ -758,30 +990,6 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
       )}</td><td class="ns-shaping-mini__sts">${r.stitchesRemaining}</td></tr>`;
     })
     .join("");
-  /**
-   * Diagram block: heading + bordered wrapper around the notation/SVG so the print
-   * shaping section reads as "table → diagram" instead of leaving the SVG as a loose
-   * floating image. Same wording as the online {@link renderNeckShoulderShapingDiagramOnlyHtml}
-   * heading. Both back and front charts go through this function, so wrapping here
-   * gives the front piece the same labeled diagram block as the back.
-   */
-  const printDiagramNotationHelpHtml = `<div class="ns-shaping-mini__diagram-notation-help">
-  <div><strong>Shaping notation:</strong> stitches, rows, times</div>
-  <div><em>Example:</em> 1s-2r-3x = decrease 1 stitch every 2 rows, 3 times</div>
-</div>`;
-  const notationOutlineOpts = sleevelessNotationOverlayOpts(options?.piece, options?.patternData);
-  /* Notation sits inside the diagram border, directly above the SVG — matches knitter scan pattern (title → helper → art). */
-  const geometrySvgHtml = `<h3 class="ns-shaping-mini__diagram-title">Neckline / Shoulder Diagram</h3>
-<div class="ns-shaping-mini__diagram-block">
-  ${printDiagramNotationHelpHtml}
-  <div class="ns-shaping-mini__svg-wrap">${renderNotationOverlayDiagram(chart, "right", notationOutlineOpts)}</div>
-</div>`;
-  const oppositeGeometrySvgHtml = `<h3 class="ns-shaping-mini__diagram-title">Neckline / Shoulder Diagram</h3>
-<div class="ns-shaping-mini__diagram-block">
-  ${printDiagramNotationHelpHtml}
-  <div class="ns-shaping-mini__svg-wrap">${renderNotationOverlayDiagram(chart, "left", notationOutlineOpts)}</div>
-</div>`;
-
   return `<section class="ns-shaping-mini" aria-labelledby="${escapeHtml(headingId)}">
   <h2 id="${escapeHtml(headingId)}" class="ns-shaping-mini__title">Neckline / Shoulder Shaping</h2>
   ${intro}
@@ -801,7 +1009,6 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
   </div>
   ${renderActiveSideBindoffRemainingHtml(printRowsRaw, "ns-shaping-mini__bindoff-remaining")}
   <p class="ns-shaping-mini__sts-note">Sts Remaining is for this side only.</p>
-  ${geometrySvgHtml}
   <p class="ns-shaping-mini__sts-note">${escapeHtml(instructionWithHeldStitches(heldShoulderStitches, false))}</p>
   ${
     showSecondShoulderChecklist
@@ -821,74 +1028,9 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
         <tbody>${oppositeRowsHtml}</tbody>
       </table>
     </div>
-    ${oppositeGeometrySvgHtml}
     <p class="ns-shaping-mini__sts-note">${escapeHtml(instructionWithHeldStitches(heldShoulderStitches, true))}</p>
   </section>`
       : ""
   }
 </section>`;
-}
-
-/** Shape preview block only — render below the two-column piece layout on the pattern tab. */
-export function renderNeckShoulderShapingPreviewOnlyHtml(
-  chart: NeckShoulderShapingChart,
-  idPrefix = "ns-shaping-chart",
-  piece?: ShoulderShapingSvgPiece
-): string {
-  const previewHeadingId = `${idPrefix}-preview-heading`;
-  const shoulderPreviewSvg = renderShoulderShapingSvg(chart, "right", piece ? { piece } : undefined);
-
-  return `<div class="ns-shaping-chart ns-shaping-chart--preview-block" aria-labelledby="${escapeHtml(previewHeadingId)}">
-  <div class="ns-shaping-chart__preview">
-    <h3 id="${escapeHtml(previewHeadingId)}" class="ns-shaping-chart__preview-title">Neckline / Shoulder Shape Preview</h3>
-    <div class="ns-shaping-chart__preview-svg-wrap">${shoulderPreviewSvg}</div>
-  </div>
-</div>`;
-}
-
-/**
- * Online SVG diagram block for neckline / shoulder shaping.
- * Uses the same timeline geometry renderer as the print chart when live timeline data is available.
- */
-export function renderNeckShoulderShapingDiagramOnlyHtml(
-  chart: NeckShoulderShapingChart,
-  idPrefix = "ns-shaping-chart",
-  piece?: ShoulderShapingSvgPiece,
-  patternData?: Record<string, unknown>,
-): string {
-  const notationOutlineOpts = sleevelessNotationOverlayOpts(piece, patternData);
-  const diagramHeadingId = `${idPrefix}-diagram-heading`;
-  const svgHtml = renderNotationOverlayDiagram(chart, "right", notationOutlineOpts);
-  const secondSvgHtml = renderNotationOverlayDiagram(chart, "left", notationOutlineOpts);
-
-  const notationHintHtml = `<div class="ns-shaping-chart__diagram-notation-hint">
-  <p class="ns-shaping-chart__diagram-notation-hint-main"><span class="glossary-tooltip-placeholder" data-glossary-id="354">Shaping notation</span>: <span class="ns-shaping-chart__diagram-notation-hint-kernel"><span class="ns-shaping-chart__diagram-notation-order">stitches</span>, <span class="ns-shaping-chart__diagram-notation-order">rows</span>, <span class="ns-shaping-chart__diagram-notation-order">times</span></span></p>
-  <p class="ns-shaping-chart__diagram-notation-hint-example">${escapeHtml("Example: 1s-2r-3x = decrease 1 stitch every 2 rows, 3 times")}</p>
-</div>`;
-
-  return `<div class="ns-shaping-chart ns-shaping-chart--diagram-block" aria-labelledby="${escapeHtml(diagramHeadingId)}">
-  <div class="ns-shaping-chart__diagram">
-    <h3 id="${escapeHtml(diagramHeadingId)}" class="ns-shaping-chart__preview-title">Neckline / Shoulder Diagram</h3>
-    ${notationHintHtml}
-    <div class="ns-shaping-chart__diagram-svg-wrap">${svgHtml}</div>
-    <div class="ns-shaping-chart__second-shoulder-block" data-second-shoulder-content hidden>
-      <h3 class="ns-shaping-chart__preview-title">Second Shoulder Diagram</h3>
-      <div class="ns-shaping-chart__diagram-svg-wrap">${secondSvgHtml}</div>
-    </div>
-  </div>
-</div>`;
-}
-
-/**
- * Full chart section markup (table + SVG preview) for client-side injection or legacy single-column hosts.
- */
-export function renderNeckShoulderShapingChartSectionHtml(
-  chart: NeckShoulderShapingChart,
-  idPrefix = "ns-shaping-chart",
-  piece?: ShoulderShapingSvgPiece
-): string {
-  return (
-    renderNeckShoulderShapingChartTableOnlyHtml(chart, idPrefix) +
-    renderNeckShoulderShapingPreviewOnlyHtml(chart, idPrefix, piece)
-  );
 }

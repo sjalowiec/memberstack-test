@@ -23,52 +23,56 @@ const { storageKey, scopeSelector = "#pattern-content" } = Astro.props;
   <div class="pattern-tips-intro-slot"></div>
 </div>
 
-<script is:inline>
-  (function () {
-    function tipsPreferenceVisible(key) {
-      var v = localStorage.getItem(key);
-      if (v === "false") return false;
-      return true;
-    }
+<script>
+  import {
+    bindPatternTipDismiss,
+    patternTipsControlBoxHtml,
+    refreshPatternTipDismiss,
+    updateTipsResetLinkVisibility,
+  } from "../../lib/patterns/patternTipDismiss";
 
-    function renderIntro(slot, tipsOn) {
-      if (!slot) return;
-      if (tipsOn) {
-        slot.innerHTML =
-          '<div class="pattern-tip pattern-tip-intro pattern-print-personalization-never-print" data-tip data-pattern-print-personalization-tip><strong>Tip:</strong> Pattern Tips are on to give you quick help and helpful reminders as you knit. <a href="#" class="tips-inline-toggle" data-testid="link-tips-toggle">Hide tips</a></div>';
-      } else {
-        slot.innerHTML =
-          '<p class="pattern-tips-off-row"><i class="fa-regular fa-lightbulb tips-icon" style="color: #c2614e;"></i><a href="#" class="tips-inline-toggle" data-testid="link-tips-toggle">Show pattern tips</a></p>';
-      }
-    }
+  function tipsPreferenceVisible(key: string) {
+    const v = localStorage.getItem(key);
+    if (v === "false") return false;
+    return true;
+  }
 
-    document.querySelectorAll("[data-pattern-tips-host]:not([data-pattern-tips-init])").forEach(function (host) {
-      host.setAttribute("data-pattern-tips-init", "");
-      var key = host.getAttribute("data-storage-key");
-      var sel = host.getAttribute("data-scope-selector") || "#pattern-content";
-      if (!key) return;
+  function renderIntro(slot: HTMLElement | null, tipsOn: boolean) {
+    if (!slot) return;
+    slot.innerHTML = patternTipsControlBoxHtml(tipsOn);
+  }
 
-      var scope = document.querySelector(sel);
-      if (!scope) return;
+  document.querySelectorAll("[data-pattern-tips-host]:not([data-pattern-tips-init])").forEach((host) => {
+    if (!(host instanceof HTMLElement)) return;
+    host.setAttribute("data-pattern-tips-init", "");
+    const key = host.getAttribute("data-storage-key");
+    const sel = host.getAttribute("data-scope-selector") || "#pattern-content";
+    if (!key) return;
 
-      var slot = host.querySelector(".pattern-tips-intro-slot");
-      var visible = tipsPreferenceVisible(key);
-      scope.setAttribute("data-show-tips", visible ? "true" : "false");
-      renderIntro(slot, visible);
+    const scope = document.querySelector(sel);
+    if (!(scope instanceof HTMLElement)) return;
 
-      scope.addEventListener("click", function (e) {
-        var link = e.target.closest(".tips-inline-toggle");
-        var icon = e.target.closest(".tips-icon");
-        var iconInOffRow =
-          icon && icon.closest(".pattern-tips-off-row") && scope.contains(icon);
-        if (!((link && scope.contains(link)) || iconInOffRow)) return;
-        e.preventDefault();
-        var isShowing = scope.getAttribute("data-show-tips") === "true";
-        var newState = !isShowing;
-        scope.setAttribute("data-show-tips", newState ? "true" : "false");
-        localStorage.setItem(key, newState ? "true" : "false");
-        renderIntro(slot, newState);
-      });
+    const slot = host.querySelector(".pattern-tips-intro-slot");
+    const slotEl = slot instanceof HTMLElement ? slot : null;
+    const visible = tipsPreferenceVisible(key);
+    scope.setAttribute("data-show-tips", visible ? "true" : "false");
+    renderIntro(slotEl, visible);
+    bindPatternTipDismiss(scope, key, null);
+    updateTipsResetLinkVisibility(scope, key);
+
+    scope.addEventListener("click", (e) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      const toggleBtn = target.closest(".tips-inline-toggle");
+      if (!(toggleBtn && scope.contains(toggleBtn))) return;
+      e.preventDefault();
+      const isShowing = scope.getAttribute("data-show-tips") === "true";
+      const newState = !isShowing;
+      scope.setAttribute("data-show-tips", newState ? "true" : "false");
+      localStorage.setItem(key, newState ? "true" : "false");
+      renderIntro(slotEl, newState);
+      refreshPatternTipDismiss(scope, key);
+      updateTipsResetLinkVisibility(scope, key);
     });
-  })();
+  });
 </script>

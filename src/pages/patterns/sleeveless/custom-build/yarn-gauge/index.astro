@@ -8,7 +8,8 @@ const customBuildHref = "/patterns/sleeveless/custom-build/";
 const foundationHref = "/patterns/sleeveless/custom-build/design";
 const styleHref = "/patterns/sleeveless/custom-style";
 const fitHref = "/patterns/sleeveless/custom-build/fit/";
-const patternHref = "/patterns/sleeveless/pattern/";
+const classicYarnGaugeHref = "/patterns/sleeveless-yarn-gauge";
+const patternHref = "/patterns/sleeveless/pattern/?tab=pattern";
 
 type WizardStep = {
   step: number;
@@ -169,22 +170,13 @@ const customWizardSteps: WizardStep[] = [
           <header class="pattern-header page-header">
             <p class="pattern-mode-label">Custom Pattern</p>
             <h1 class="pattern-title">Yarn &amp; gauge</h1>
-            <p class="pattern-subtext">
-              Yarn &amp; Gauge covers yarn choice, swatch, stitch and row gauge, and needle or machine details. This
-              step will be wired into the guided flow next.
-            </p>
           </header>
           <div class="express-panel calculator-card">
-            <p class="pattern-subtext">
-              <a href="/patterns/sleeveless-yarn-gauge" class="express-custom-build-callout__link"
-                >Open classic Yarn &amp; Gauge</a
-              >
-            </p>
             <div class="wizard-next-cta wizard-next-cta--split cb-design-wizard-nav no-print">
-              <a href={fitHref} class="kbm-btn kbm-btn-outline">← Back: Measurements</a>
-              <span class="kbm-btn kbm-btn-accent" aria-disabled="true" title="Pattern step opens when it is ready.">
-                Continue: Pattern →
-              </span>
+              <a href={fitHref} class="kbm-btn kbm-btn-outline">← Back</a>
+              <a href={classicYarnGaugeHref} class="kbm-btn kbm-btn-accent" data-cb-yarn-continue>
+                Save &amp; Continue →
+              </a>
             </div>
           </div>
         </div>
@@ -192,6 +184,10 @@ const customWizardSteps: WizardStep[] = [
     </div>
   </main>
 </Layout>
+
+<script>
+  import "/src/scripts/sleeveless-custom-build-yarn-gauge-page.ts";
+</script>
 
 <style>
   .express-builder-nav-row--custom-flow {

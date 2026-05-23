@@ -49,14 +49,28 @@ function renderPrintBlockRow(
   if (row.rc) {
     leftBits.push(`<p class="print-rc">${escapeHtml(row.rc)}</p>`);
   }
-  for (const p of row.paragraphs) {
-    const raw = String(p);
-    if (isOmittedTipParagraph(raw)) continue;
-    const t = String(p).trim();
-    if (t) leftBits.push(`<p class="print-line">${escapeHtml(t)}</p>`);
+  const trusted = row.trustedParagraphs;
+  if (trusted && trusted.length > 0) {
+    for (const p of trusted) {
+      const t = String(p).trim();
+      const plain = stripTrustedPatternHtmlToPlain(t);
+      if (isOmittedTipParagraph(plain)) continue;
+      if (t) leftBits.push(`<p class="print-line">${p}</p>`);
+    }
+  } else {
+    for (const p of row.paragraphs) {
+      const raw = String(p);
+      if (isOmittedTipParagraph(raw)) continue;
+      const t = String(p).trim();
+      if (t) leftBits.push(`<p class="print-line">${escapeHtml(t)}</p>`);
+    }
   }
   if (row.tipHtml) {
-    leftBits.push(`<div class="pattern-tip"><strong>Tip:</strong> ${row.tipHtml}</div>`);
+    leftBits.push(
+      row.tipHtmlIsFull
+        ? `<div class="pattern-tip">${row.tipHtml}</div>`
+        : `<div class="pattern-tip"><strong>Tip:</strong> ${row.tipHtml}</div>`,
+    );
   }
   if (row.collapsibleTipHtml) {
     leftBits.push(detailsOpenForPrint(row.collapsibleTipHtml));
@@ -106,9 +120,6 @@ export function renderSleevelessPrintPieceHtml(
     }
     if (row.kind === "neckShoulderChartTableMount") {
       chunks.push(`<div class="print-chart-wrap">${neckChartHtml}</div>`);
-      continue;
-    }
-    if (row.kind === "neckShoulderChartPreviewMount") {
       continue;
     }
     if (row.kind === "block") {

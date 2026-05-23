@@ -3,12 +3,12 @@ import Layout from "../../../../../layouts/Layout.astro";
 import WizardBackLink from "../../../../../components/wizards/WizardBackLink.astro";
 import PatternWorkspaceTabs from "../../../../../components/patterns/PatternWorkspaceTabs.astro";
 import "../../../../../styles/sleeveless-express-wizard-layout.css";
+import "../../../../../styles/sleeveless-express-measurements-confirm.css";
+import "../../../../../styles/sleeveless-custom-build-measurements.css";
 
 const customBuildHref = "/patterns/sleeveless/custom-build/";
 const foundationHref = "/patterns/sleeveless/custom-build/design";
 const styleHref = "/patterns/sleeveless/custom-style";
-const yarnGaugeHref = "/patterns/sleeveless/custom-build/yarn-gauge";
-const patternHref = "/patterns/sleeveless/pattern/";
 
 type WizardStep = {
   step: number;
@@ -28,9 +28,12 @@ const customWizardSteps: WizardStep[] = [
 
 <Layout
   title="Custom Pattern — Measurements | Sleeveless Sweater"
-  description="Custom Pattern body measurements follow your Foundation size and Style choices. Continue to yarn and gauge for the next step."
+  description="Enter custom body measurements for your sleeveless sweater pattern."
 >
-  <main class="express-page wizard-page sleeveless-express-page">
+  <main
+    class="express-page wizard-page sleeveless-express-page cb-measure-page express-measurements-confirm-page"
+    data-cb-measure-page
+  >
     <div class="wizard-container express-wizard scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
         <PatternWorkspaceTabs
@@ -38,7 +41,7 @@ const customWizardSteps: WizardStep[] = [
           activeTab="custom"
           expressHref="/patterns/sleeveless-express/"
           customBuildHref={customBuildHref}
-          patternHref={patternHref}
+          patternHref="/patterns/sleeveless/pattern/"
           askShareHref="/patterns/sleeveless/ask-share/"
           inspirationHref="/patterns/sleeveless/inspiration/"
         />
@@ -83,7 +86,9 @@ const customWizardSteps: WizardStep[] = [
                               class:list={[
                                 "express-step-nav__seg",
                                 "express-step-nav__seg--after",
-                                { "express-step-nav__seg--empty": i === customWizardSteps.length - 1 },
+                                {
+                                  "express-step-nav__seg--empty": i === customWizardSteps.length - 1,
+                                },
                               ]}
                               aria-hidden="true"
                             />
@@ -120,7 +125,9 @@ const customWizardSteps: WizardStep[] = [
                               class:list={[
                                 "express-step-nav__seg",
                                 "express-step-nav__seg--after",
-                                { "express-step-nav__seg--empty": i === customWizardSteps.length - 1 },
+                                {
+                                  "express-step-nav__seg--empty": i === customWizardSteps.length - 1,
+                                },
                               ]}
                               aria-hidden="true"
                             />
@@ -131,7 +138,6 @@ const customWizardSteps: WizardStep[] = [
                         <span
                           class:list={["express-step-nav__btn", "sg-builder-nav__link", "is-upcoming"]}
                           aria-disabled="true"
-                          title="Use Continue to move through the Custom Pattern steps."
                         >
                           <span class="express-step-nav__track">
                             <span
@@ -152,7 +158,9 @@ const customWizardSteps: WizardStep[] = [
                               class:list={[
                                 "express-step-nav__seg",
                                 "express-step-nav__seg--after",
-                                { "express-step-nav__seg--empty": i === customWizardSteps.length - 1 },
+                                {
+                                  "express-step-nav__seg--empty": i === customWizardSteps.length - 1,
+                                },
                               ]}
                               aria-hidden="true"
                             />
@@ -167,20 +175,36 @@ const customWizardSteps: WizardStep[] = [
             </nav>
           </div>
 
-          <header class="pattern-header page-header">
-            <p class="pattern-mode-label">Custom Pattern</p>
-            <h1 class="pattern-title">Measurements</h1>
-            <p class="pattern-subtext">
-              In Custom Pattern, your sizing chart row comes from <a href={foundationHref} class="express-custom-build-callout__link">Foundation</a> (who and size) and your fit choice on <a href={styleHref} class="express-custom-build-callout__link">Style &amp; Shaping</a>. Those values feed the pattern after you enter yarn and gauge.
-            </p>
-            <p class="pattern-subtext">
-              For a visual measurement confirmation before the pattern, use <a href="/patterns/sleeveless-express/" class="express-custom-build-callout__link">Express</a> and generate from there.
-            </p>
-          </header>
+          <div data-cb-measure-root>
+            <header class="pattern-header page-header sleeveless-measure-review__title">
+              <h1 class="pattern-title">Custom Measurements</h1>
+            </header>
 
-          <div class="wizard-next-cta wizard-next-cta--split cb-design-wizard-nav no-print">
-            <a href={styleHref} class="kbm-btn kbm-btn-outline">← Back: Style &amp; Shaping</a>
-            <a href={yarnGaugeHref} class="kbm-btn kbm-btn-accent">Continue: Yarn &amp; Gauge →</a>
+            <div class="sleeveless-measure-review-body">
+              <div
+                class="sleeveless-measure-project-summary"
+                data-cb-build-summary
+                aria-label="Current build summary"
+              ></div>
+
+              <p class="cb-measure-missing" data-cb-measure-missing hidden>
+                Complete Foundation and Style &amp; Shaping to load measurements.
+              </p>
+
+              <div class="sleeveless-measure-diagram-host cb-measure-diagram-host" data-cb-measure-diagram></div>
+            </div>
+
+            <div class="sleeveless-measure-actions cb-measure-actions no-print">
+              <a href={styleHref} class="kbm-btn kbm-btn-outline">← Back</a>
+              <button
+                type="button"
+                class="kbm-btn kbm-btn-accent"
+                data-cb-measure-continue
+                data-cb-measure-continue-default="Save &amp; Continue →"
+              >
+                Save &amp; Continue →
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -188,11 +212,6 @@ const customWizardSteps: WizardStep[] = [
   </main>
 </Layout>
 
-<style>
-  .express-custom-build-callout__link {
-    color: var(--sg-accent, #c2614e);
-    font-weight: 600;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
-</style>
+<script>
+  import "/src/scripts/sleeveless-custom-build-measurements-page.ts";
+</script>

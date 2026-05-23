@@ -58,15 +58,22 @@ export function normalizeChartRowSize(row: ChartRow): string {
 export function computeDefaultMeasurementsFromChartRow(
   row: ChartRow,
   fitPreference: string,
+  options?: { bodyShape?: string },
 ): Record<string, number> {
   const ease = easeInchesForFit(fitPreference);
   const bust = toFiniteNumber(row.bust_or_chest);
   const waist = toFiniteNumber(row.waist);
   const finishedBustChest = roundQuarter(bust + ease);
+  const bodyShape = options?.bodyShape ?? "straight";
+  const chartHip = toFiniteNumber(row.hip);
+  const finishedHip =
+    bodyShape === "aline" && Number.isFinite(chartHip)
+      ? Math.max(finishedBustChest, roundQuarter(chartHip + ease))
+      : finishedBustChest;
   return {
     finished_bust_chest: finishedBustChest,
     finished_waist: roundQuarter(waist + ease),
-    finished_hip: finishedBustChest,
+    finished_hip: finishedHip,
     back_neck_to_hem: roundQuarter(toFiniteNumber(row.garment_back_length)),
     armhole_depth: roundQuarter(toFiniteNumber(row.armhole_depth)),
     shoulder_width: roundQuarter(toFiniteNumber(row.shoulder_width)),
@@ -173,6 +180,7 @@ export function resolveExpressChartFit(
   chartAudience: string,
   sizeStr: string,
   fitPreference: string,
+  options?: { bodyShape?: string },
 ): { selectedSize: string; selectedMeasurements: Record<string, number> } | null {
   const row = findExpressChartRow(chartAudience, sizeStr);
   if (!row) return null;
@@ -180,7 +188,7 @@ export function resolveExpressChartFit(
   if (!selectedSize) return null;
   return {
     selectedSize,
-    selectedMeasurements: computeDefaultMeasurementsFromChartRow(row, fitPreference),
+    selectedMeasurements: computeDefaultMeasurementsFromChartRow(row, fitPreference, options),
   };
 }
 

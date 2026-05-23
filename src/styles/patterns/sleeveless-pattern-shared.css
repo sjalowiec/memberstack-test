@@ -18,6 +18,19 @@
     color: #374151;
   }
 
+  .sleeveless-dev-cardigan-banner {
+    margin: 0 0 0.65rem;
+    padding: 0.4rem 0.65rem;
+    max-width: 52rem;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 0.88rem;
+    color: #7c2d12;
+    background: rgba(251, 191, 36, 0.2);
+    border: 1px solid rgba(251, 146, 60, 0.45);
+    border-radius: 6px;
+  }
+
   .sg-build-steps-list {
     margin: 0 0 1.25rem;
     padding-left: 1.25rem;
@@ -28,6 +41,15 @@
 
   /* Print-only attribution under hero image; hidden on screen */
   .pattern-print-origin {
+    display: none !important;
+  }
+
+  /*
+   * Dev-only fixed banners (BaseLayout) sit top-right and overlap the hero image
+   * in the right column — hide on pattern tab only; still visible on builder steps.
+   */
+  body:has(.sleeveless-pattern-page) .dev-banner,
+  body:has(.sleeveless-pattern-page) .preview-banner {
     display: none !important;
   }
 
@@ -312,10 +334,10 @@
     top: calc(var(--site-header-offset, 7rem) + 4px);
     z-index: 8;
     margin: 0 0 0.65rem;
-    padding: 0.45rem 0;
-    background: color-mix(in srgb, var(--page-bg, #f7f8f7) 92%, white);
-    border-bottom: 1px solid rgba(82, 104, 45, 0.12);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+    padding: 0.5rem 0 0.55rem;
+    background: color-mix(in srgb, var(--page-bg, #f7f8f7) 78%, white);
+    border-bottom: 1px solid rgba(82, 104, 45, 0.16);
+    box-shadow: 0 2px 8px rgba(82, 104, 45, 0.07);
   }
 
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__track {
@@ -328,33 +350,80 @@
     padding: 0 0.15rem;
   }
 
+  @media (max-width: 640px) {
+    .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__track {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      padding-bottom: 0.15rem;
+    }
+  }
+
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill {
-    display: inline-block;
-    padding: 0.22rem 0.55rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.28rem 0.65rem;
     font-size: 0.78rem;
     font-weight: 600;
     line-height: 1.35;
     letter-spacing: 0.01em;
-    color: #4b5563;
+    color: #fff;
     text-decoration: none;
-    background: rgba(255, 255, 255, 0.85);
-    border: 1px solid rgba(82, 104, 45, 0.18);
+    background: var(--kbm-green, #52682d);
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 88%, #000);
     border-radius: 999px;
+    white-space: nowrap;
+    cursor: pointer;
     transition:
       background-color 0.12s ease,
       border-color 0.12s ease,
-      color 0.12s ease;
+      box-shadow 0.12s ease,
+      filter 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill:hover {
-    color: var(--kbm-green, #52682d);
-    border-color: rgba(82, 104, 45, 0.35);
-    background: #fff;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 82%, #000);
+    border-color: color-mix(in srgb, var(--kbm-green, #52682d) 72%, #000);
+    filter: brightness(0.97);
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill.is-active {
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 72%, #000);
+    border-color: color-mix(in srgb, var(--kbm-green, #52682d) 60%, #000);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--kbm-green, #52682d) 55%, #fff),
+      0 0 0 2px color-mix(in srgb, var(--kbm-green, #52682d) 35%, transparent);
   }
 
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill:focus-visible {
-    outline: 2px solid var(--kbm-green, #52682d);
+    outline: 2px solid #fff;
     outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--kbm-green, #52682d);
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill--print {
+    background: var(--sg-accent, #c2614e);
+    border-color: color-mix(in srgb, var(--sg-accent, #c2614e) 88%, #000);
+    font-family: inherit;
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill--print:hover {
+    background: color-mix(in srgb, var(--sg-accent, #c2614e) 82%, #000);
+    border-color: color-mix(in srgb, var(--sg-accent, #c2614e) 72%, #000);
+    filter: brightness(0.97);
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill--print:focus-visible {
+    box-shadow: 0 0 0 2px var(--sg-accent, #c2614e);
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill--print .fa-print {
+    font-size: 0.72rem;
+    opacity: 0.95;
   }
 
   #pattern-content .pattern-section,
@@ -498,12 +567,58 @@
     border-radius: 6px;
   }
 
-  #pattern-content .sleeveless-piece-split__diagram-hint {
-    margin: 0.4rem 0 0;
-    font-size: 0.82rem;
-    line-height: 1.3;
-    color: #4b5563;
-    text-align: center;
+  #pattern-content .sleeveless-piece-split__diagram-card {
+    position: relative;
+    width: 100%;
+  }
+
+  #pattern-content .sleeveless-piece-split__diagram-enlarge-btn {
+    position: absolute;
+    top: 0.15rem;
+    right: 0.15rem;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height: auto;
+    min-width: 1.75rem;
+    min-height: 1.75rem;
+    margin: 0;
+    padding: 0.15rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #6b7280;
+    cursor: pointer;
+    box-shadow: none;
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    transition: color 0.12s ease;
+  }
+
+  #pattern-content .sleeveless-piece-split__diagram-enlarge-btn:hover {
+    background: transparent;
+    color: #374151;
+    box-shadow: none;
+  }
+
+  #pattern-content .sleeveless-piece-split__diagram-enlarge-btn:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  #pattern-content .sleeveless-piece-split__diagram-enlarge-btn .fa-magnifying-glass {
+    font-size: 1.25rem;
+    line-height: 1;
+    opacity: 0.82;
+    pointer-events: none;
+  }
+
+  #pattern-content .sleeveless-piece-split__diagram-enlarge-btn:hover .fa-magnifying-glass {
+    opacity: 1;
   }
 
   #pattern-content .sleeveless-piece-split__diagram-img {
@@ -535,6 +650,113 @@
     overflow: visible;
   }
 
+  /* Back diagram panel: compact toggle + white diagram well (pullover round-neck only). */
+  #pattern-content .sleeveless-piece-split__diagram-inner--back-panel {
+    width: 100%;
+  }
+
+  #pattern-content .sleeveless-back-diagram-panel {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #d1d5db);
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(17, 24, 39, 0.05);
+  }
+
+  #pattern-content .sleeveless-back-diagram-mode {
+    display: flex;
+    gap: 1px;
+    width: 100%;
+    margin: 0;
+    padding: 0.22rem 0.22rem 0;
+    border: 0;
+    border-radius: 0;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 5%, #f3f4f6);
+  }
+
+  #pattern-content .sleeveless-back-diagram-mode__btn {
+    flex: 1 1 0;
+    min-width: 0;
+    margin: 0;
+    padding: 0.1rem 0.12rem;
+    min-height: 1.375rem;
+    border: 0;
+    border-radius: 5px 5px 0 0;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.5625rem;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: 0.01em;
+    color: #6b7280;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  #pattern-content .sleeveless-back-diagram-mode__btn:hover {
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #fff);
+    color: #374151;
+  }
+
+  #pattern-content .sleeveless-back-diagram-mode__btn:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: -2px;
+    z-index: 1;
+  }
+
+  #pattern-content .sleeveless-back-diagram-mode__btn.is-active {
+    background: var(--kbm-green, #52682d);
+    color: #fff;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12) inset;
+  }
+
+  #pattern-content .sleeveless-back-diagram-well {
+    background: #fff;
+    border: 0;
+    border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 10%, #e5e7eb);
+    border-radius: 0;
+    padding: 0.28rem 0.32rem 0.28rem;
+    box-shadow: none;
+  }
+
+  #pattern-content .sleeveless-back-diagram-well .sleeveless-piece-split__diagram-trigger {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #pattern-content .sleeveless-back-diagram-well .sleeveless-piece-split__diagram-svg {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  #pattern-content .sleeveless-back-diagram-well .sleeveless-piece-split__diagram-trigger:focus-visible {
+    border-radius: 5px;
+  }
+
+  #pattern-content .sleeveless-back-diagram-well .sleeveless-piece-split__diagram-enlarge-btn {
+    top: 0.1rem;
+    right: 0.1rem;
+  }
+
+  @media (max-width: 420px) {
+    #pattern-content .sleeveless-back-diagram-mode {
+      padding: 0.24rem 0.24rem 0;
+    }
+
+    #pattern-content .sleeveless-back-diagram-mode__btn {
+      font-size: 0.6rem;
+      padding: 0.14rem 0.1rem;
+      min-height: 1.5rem;
+    }
+  }
+
   .sleeveless-diagram-modal[hidden] {
     display: none !important;
   }
@@ -561,12 +783,37 @@
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.32);
   }
 
-  .sleeveless-diagram-modal__close {
+  [data-sleeveless-diagram-modal] .sleeveless-diagram-modal__dialog {
+    padding-top: 2.5rem;
+  }
+
+  .sleeveless-diagram-modal__actions {
     position: absolute;
     top: 0.35rem;
     right: 0.35rem;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .sleeveless-diagram-modal__print {
+    margin: 0;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .sleeveless-diagram-modal__print[hidden] {
+    display: none !important;
+  }
+
+  .sleeveless-diagram-modal__close {
+    position: static;
     width: 2rem;
     height: 2rem;
+    flex-shrink: 0;
     border: 0;
     border-radius: 999px;
     background: rgba(17, 24, 39, 0.9);
@@ -579,6 +826,12 @@
   .sleeveless-diagram-modal__close:focus-visible {
     outline: 2px solid #fff;
     outline-offset: 2px;
+  }
+
+  [data-sleeveless-video-modal] .sleeveless-diagram-modal__close {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
   }
 
   .sleeveless-diagram-modal__content {
@@ -775,6 +1028,23 @@
     margin: 0.15rem 0 0;
   }
 
+  #pattern-content .pattern-tip .pattern-finishing-video-help.sleeveless-armhole-tip__bind-off-video {
+    margin: 0.5rem 0 0;
+    font-size: inherit;
+    line-height: 1.4;
+  }
+
+  #pattern-content .pattern-tip .sleeveless-armhole-tip__bind-off-video .pattern-finishing-video-help__lead {
+    display: block;
+    margin: 0 0 0.25rem;
+    color: #374151;
+  }
+
+  #pattern-content .pattern-tip .sleeveless-armhole-tip__bind-off-video .pattern-help-link {
+    margin: 0.35rem 0 0;
+    display: block;
+  }
+
   #pattern-content .pattern-finishing-video-help {
     margin: 0.65rem 0 0;
     font-size: 0.88rem;
@@ -842,45 +1112,6 @@
 
   #pattern-content .sleeveless-piece-chart-fullwidth .ns-shaping-chart__table {
     width: 100%;
-  }
-
-  #pattern-content .sleeveless-neck-shoulder-diagram {
-    display: block;
-    width: 100%;
-    min-width: 0;
-    margin-top: 1rem;
-  }
-
-  #pattern-content .sg-neck-chart-diagram-block {
-    margin: 0;
-  }
-
-  #pattern-content .ns-shaping-chart--diagram-block {
-    margin: 0;
-  }
-
-  #pattern-content .ns-shaping-chart__diagram {
-    margin: 0;
-    padding: 0.45rem 0.75rem 0.75rem;
-    border: 1px solid rgba(55, 65, 81, 0.16);
-    border-radius: 8px;
-    background: #fff;
-  }
-
-  #pattern-content .ns-shaping-chart__diagram-svg-wrap {
-    overflow-x: auto;
-    max-width: 100%;
-  }
-
-  #pattern-content .ns-shaping-chart__diagram-svg-wrap svg {
-    display: block;
-    width: 100%;
-    min-width: 320px;
-    height: auto;
-  }
-
-  #pattern-content .ns-shaping-chart__diagram-svg-wrap .ns-notation-overlay {
-    min-width: 320px;
   }
 
   #pattern-content .ns-shaping-chart__second-shoulder-toggle {
@@ -1319,6 +1550,11 @@
   }
 
   @media print {
+    body:has(.sleeveless-pattern-page) .dev-banner,
+    body:has(.sleeveless-pattern-page) .preview-banner {
+      display: none !important;
+    }
+
     /* Generated on-screen pattern summary — keep on screen; omit from printed intro (title / At a glance / notes only). */
     .pattern-generated-description,
     .sg-pattern-intro-line,
@@ -1392,15 +1628,6 @@
       page-break-inside: avoid !important;
     }
 
-    #pattern-content .ns-shaping-chart--diagram-block,
-    #pattern-content .ns-shaping-chart__diagram,
-    #pattern-content .ns-shaping-chart__diagram-svg-wrap,
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay,
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay__stack {
-      break-inside: auto !important;
-      page-break-inside: auto !important;
-    }
-
     #pattern-content .pattern-section__heading,
     #pattern-content .pattern-subsection__heading,
     #pattern-content .sleeveless-piece-split__diagram {
@@ -1472,50 +1699,27 @@
       print-color-adjust: exact !important;
     }
 
-    #pattern-content .sleeveless-neck-shoulder-diagram {
-      display: block !important;
-      visibility: visible !important;
-      break-inside: auto !important;
-      page-break-inside: auto !important;
-      overflow: visible !important;
-      margin-top: 0.45rem !important;
-    }
-
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-shaping-chart__diagram,
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-shaping-chart__diagram-svg-wrap,
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay,
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay__image-wrap,
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay__image {
-      display: block !important;
-      visibility: visible !important;
-      overflow: visible !important;
-      opacity: 1 !important;
-      height: auto !important;
-      max-height: none !important;
-    }
-
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay {
-      position: relative !important;
-      margin: 0 auto !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    #pattern-content .sleeveless-neck-shoulder-diagram .ns-notation-overlay__stack {
-      display: flex !important;
-      visibility: visible !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    #pattern-content .ns-shaping-chart__second-shoulder-toggle {
+    #pattern-content .ns-shaping-chart__second-shoulder-toggle,
+    #pattern-content .sleeveless-back-diagram-mode {
       display: none !important;
     }
 
-    /* Print first-page intro: fixed left image column + text column (no overlap) */
+    #pattern-content .sleeveless-back-diagram-panel {
+      border-radius: 8px !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    #pattern-content .sleeveless-back-diagram-well {
+      border-top: 0 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    /* Print first-page intro: text column left, fixed right image column (no overlap) */
     .sleeveless-pattern-page .sleeveless-pattern-intro {
       display: grid !important;
-      grid-template-columns: 1.9in minmax(0, 1fr) !important;
+      grid-template-columns: minmax(0, 1fr) 1.9in !important;
       column-gap: 0.35in !important;
       row-gap: 0 !important;
       align-items: start !important;
@@ -1527,7 +1731,7 @@
     }
 
     .sleeveless-pattern-page .sleeveless-pattern-intro__image {
-      grid-column: 1 !important;
+      grid-column: 2 !important;
       grid-row: 1 !important;
       order: 0 !important;
       position: static !important;
@@ -1537,7 +1741,7 @@
       width: 1.9in !important;
       max-width: 1.9in !important;
       min-width: 0 !important;
-      justify-self: start !important;
+      justify-self: end !important;
       align-self: start !important;
     }
 
@@ -1561,7 +1765,7 @@
     }
 
     .sleeveless-pattern-page .sleeveless-pattern-intro__content {
-      grid-column: 2 !important;
+      grid-column: 1 !important;
       grid-row: 1 !important;
       order: 0 !important;
       position: static !important;
@@ -1569,6 +1773,7 @@
       margin: 0 !important;
       min-width: 0 !important;
       max-width: none !important;
+      align-self: start !important;
     }
 
     .sleeveless-pattern-page .sg-pattern-print-at-a-glance {
@@ -1625,3 +1830,4 @@
     }
 
   }
+

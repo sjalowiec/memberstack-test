@@ -2,12 +2,10 @@
  * Custom Build — Design step (/patterns/sleeveless/custom-build/design).
  * Accordion + persistence aligned with Quick Build; merges into {@link SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY}.
  */
-import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "../lib/patterns/patternStorage";
-import { syncSleevelessDesignBasicsToPatternStorage } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
+import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY, getPatternData } from "../lib/patterns/patternStorage";
 import {
   loadExpressSweaterCharts,
   expressWhoToChartAudience,
-  resolveExpressChartFit,
   formatExpressSelectedSizeSummary,
   nonEmptyTrimmed,
   refreshExpressSizePanel,
@@ -16,6 +14,8 @@ import {
   SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID,
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
 import { scrollToBuilderSection } from "../lib/patterns/scrollToBuilderSection";
+import { resolveSleevelessAudienceHeroImageSrc } from "../lib/patterns/sleevelessAudienceHeroImage";
+import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
 
 const STEPS = 2;
 const LOCKED_STEP_NAV_TITLE = "Finish the previous step to continue.";
@@ -24,10 +24,31 @@ const LABELS: Record<string, Record<string, string>> = {
   who: { women: "Women", men: "Men", kids: "Kids", baby: "Baby" },
 };
 
+function readStyleStepGarmentType(): string {
+  if (typeof localStorage === "undefined") return "";
+  try {
+    const raw = localStorage.getItem("garmentType")?.trim() ?? "";
+    if (raw === "cardigan" || raw === "pullover") return raw;
+  } catch {
+    /* ignore */
+  }
+  return "";
+}
+
 function ensureExpressStyleDefaults(v: Record<string, string>): void {
-  v.shape = "straight";
-  v.front = "closed";
-  v.style = "straight-pullover";
+  const garment = readStyleStepGarmentType();
+  const shape = v.shape?.trim() || "straight";
+  v.shape = shape === "aline" ? "aline" : "straight";
+  if (garment === "cardigan") {
+    v.front = "open";
+    v.style =
+      v.shape === "aline" ? "shaped-cardigan" : "straight-cardigan";
+    return;
+  }
+  v.front = v.front?.trim() || "closed";
+  if (!v.style?.trim()) {
+    v.style = v.shape === "aline" ? "shaped-pullover" : "straight-pullover";
+  }
 }
 
 interface ExpressPersistedV1 {
@@ -174,20 +195,7 @@ function initCustomBuildDesignPage(): void {
   }
 
   function syncPatternIfPossible(): void {
-    void loadExpressSweaterCharts().then(() => {
-      const aud = expressWhoToChartAudience(values.who);
-      const chartFit =
-        values.who && nonEmptyTrimmed(values.selectedSize) && values.fit
-          ? resolveExpressChartFit(aud, values.selectedSize!.trim(), values.fit)
-          : null;
-      syncSleevelessDesignBasicsToPatternStorage({
-        ...(values.who ? { who: values.who } : {}),
-        ...(values.neckline ? { neckline: values.neckline } : {}),
-        ...(values.fit ? { fit: values.fit } : {}),
-        ...(nonEmptyTrimmed(values.selectedSize) ? { selectedSize: values.selectedSize!.trim() } : {}),
-        ...(chartFit?.selectedMeasurements ? { selectedMeasurements: chartFit.selectedMeasurements } : {}),
-      });
-    });
+    syncCustomBuildToPatternStorage({ awaitCharts: false });
   }
 
   function updateFlowPills() {
@@ -246,6 +254,18 @@ function initCustomBuildDesignPage(): void {
     refreshExpressSizePanel(root, values, canInteractWithSizeStep());
   }
 
+  function refreshCbDesignWhoCardImages(): void {
+    const patternData = getPatternData();
+    root.querySelectorAll('[data-choice][data-field="who"]').forEach((btn) => {
+      if (!(btn instanceof HTMLElement)) return;
+      const whoPick = btn.getAttribute("data-value");
+      const img = btn.querySelector("img");
+      if (!(img instanceof HTMLImageElement) || !whoPick) return;
+      const aud = expressWhoToChartAudience(whoPick);
+      img.src = resolveSleevelessAudienceHeroImageSrc(patternData, aud);
+    });
+  }
+
   function updateSections() {
     sections.forEach((el) => {
       const sectionEl = el as HTMLElement;
@@ -280,6 +300,7 @@ function initCustomBuildDesignPage(): void {
     updateContinueLink();
     applySelectionUI();
     refreshSizePanel();
+    refreshCbDesignWhoCardImages();
   }
 
   function updateContinueLink() {

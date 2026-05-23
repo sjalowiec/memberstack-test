@@ -7,86 +7,515 @@
   min-width: 0;
 }
 
-.express-measurements-confirm-page .express-measurements-page-nav {
-  margin: 0 0 0.35rem;
-  padding-bottom: 0.65rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.express-measurements-confirm-page .express-mbp-page-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  align-items: stretch;
-}
-
-.express-measurements-confirm-page .express-mbp-page-grid__main {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  align-items: stretch;
-  min-width: 0;
-}
-
-.express-measurements-confirm-page .express-mbp-page-grid__rail {
-  min-width: 0;
-}
-
-.express-measurements-confirm-page .express-mbp-page-grid__diagram {
-  min-width: 0;
-}
-
-/* Full-width title above both columns */
-.express-measurements-confirm-page .express-mbp-page-grid__title.pattern-header {
+/* Compact editable project header (unified review) */
+.express-measurements-confirm-page .sleeveless-review-project-header {
+  max-width: min(52rem, 100%);
+  margin: 0 auto 0.65rem;
+  padding: 0;
   text-align: center;
-  margin: 0 0 1.1rem;
-  padding-inline: 0;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__lede {
+  margin: 0 0 0.5rem;
+  font-size: 0.92rem;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__name {
+  margin: 0 0 0.35rem;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__label {
+  display: block;
+  margin: 0 0 0.2rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #6b7280);
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__title-input {
+  box-sizing: border-box;
   width: 100%;
+  max-width: 28rem;
+  margin: 0 auto;
+  display: block;
+  padding: 0.2rem 0.1rem;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 22%, #d1d5db);
+  border-radius: 0;
+  background: transparent;
+  font-family: var(--font);
+  font-size: clamp(1.2rem, 2.2vw, 1.55rem);
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  color: #26351f;
 }
 
-.express-measurements-confirm-page .express-mbp-page-grid__title .pattern-title {
-  font-size: clamp(1.45rem, 2.5vw, 1.85rem);
+.express-measurements-confirm-page .sleeveless-review-project-header__title-input:focus-visible {
+  outline: none;
+  border-bottom-color: var(--kbm-green, #52682d);
+  box-shadow: 0 1px 0 0 var(--kbm-green, #52682d);
 }
 
-.express-measurements-confirm-page .express-measurements-rail-fill {
+.express-measurements-confirm-page .sleeveless-review-project-header__title-display {
+  margin: 0 auto;
+  max-width: 28rem;
+  font-family: var(--font);
+  font-size: clamp(1.2rem, 2.2vw, 1.55rem);
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  color: #26351f;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header--read-only [data-sleeveless-pattern-project-notes-add],
+.express-measurements-confirm-page .sleeveless-review-project-header--read-only [data-sleeveless-pattern-project-notes-view],
+.express-measurements-confirm-page .sleeveless-review-project-header--read-only [data-sleeveless-pattern-project-notes-panel] {
+  display: none !important;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__notes {
+  margin-top: 0.15rem;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__notes-toggle {
+  margin: 0;
+  padding: 0.15rem 0.35rem;
+  border: none;
+  background: none;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--kbm-green, #52682d);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__notes-toggle:hover {
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 75%, #1f2937);
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__notes-panel {
+  max-width: 28rem;
+  margin: 0.35rem auto 0;
+  text-align: left;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__notes-input {
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 0.2rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-family: var(--font);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  resize: vertical;
+  min-height: 4.5rem;
+}
+
+.express-measurements-confirm-page .sleeveless-review-project-header__notes-count {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.78rem;
+  text-align: right;
+  color: #6b7280;
+}
+
+.express-measurements-confirm-page .sleeveless-measure-review-body {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.65rem;
+  align-items: stretch;
+  max-width: min(52rem, 100%);
+  margin: 0 auto;
+  min-width: 0;
 }
 
-@media (min-width: 900px) {
-  .express-measurements-confirm-page .express-mbp-page-grid__main {
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 1.5rem;
-  }
-
-  .express-measurements-confirm-page .express-mbp-page-grid__rail {
-    flex: 0 0 clamp(260px, 28%, 320px);
-    max-width: 320px;
-  }
-
-  .express-measurements-confirm-page .express-mbp-page-grid__diagram {
-    flex: 1 1 72%;
-    min-width: 0;
-  }
+.express-measurements-confirm-page .sleeveless-measure-project-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 1rem;
+  margin: 0;
+  padding: 0 0 0.25rem;
+  border: none;
+  background: none;
+  border-radius: 0;
 }
 
+.express-measurements-confirm-page .sleeveless-measure-project-summary .express-measurements-intro-units {
+  margin: 0;
+  flex: 0 0 auto;
+  align-self: center;
+}
+
+/* Compact inline project summary (replaces card grid) */
+.express-measurements-confirm-page .sleeveless-measure-summary-line {
+  flex: 1 1 18rem;
+  margin: 0;
+  max-width: 100%;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  text-align: center;
+  color: #374151;
+}
+
+.express-measurements-confirm-page .sleeveless-measure-summary-line__segment {
+  display: inline;
+  white-space: normal;
+}
+
+.express-measurements-confirm-page .sleeveless-measure-summary-line__label {
+  font-weight: 600;
+  color: #26351f;
+}
+
+.express-measurements-confirm-page .sleeveless-measure-summary-line__value {
+  font-weight: 500;
+  color: #3f4a42;
+}
+
+.express-measurements-confirm-page .sleeveless-measure-summary-line__sep {
+  display: inline;
+  margin: 0 0.35em;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 40%, #9ca3af);
+  font-weight: 400;
+  user-select: none;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-project-summary--above-title,
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-project-summary--below-header {
+  margin-bottom: 0.5rem;
+}
+
+/* Unified review — stack header, units, then diagram (no overlap with measurement chips) */
+.express-measurements-confirm-page.sleeveless-unified-review-page .express-measurements-review {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-top,
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header,
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-project-summary {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header {
+  margin-bottom: 0.75rem;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header__notes-panel:not([hidden]) {
+  max-height: 9rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-diagram-section {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-actions {
+  flex-shrink: 0;
+}
+
+.express-measurements-confirm-page .sleeveless-measure-custom-promo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.85rem;
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--sg-accent, #c2614e) 22%, #e8e4df);
+  background: color-mix(in srgb, var(--sg-accent, #c2614e) 6%, var(--page-bg, #fff));
+}
+
+.express-measurements-confirm-page .sleeveless-measure-custom-promo__text {
+  flex: 1 1 16rem;
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 18%, #444);
+}
+
+.express-measurements-confirm-page .sleeveless-measure-custom-promo__link {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--sg-accent, #c2614e) 45%, #ccc);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  color: var(--sg-accent, #c2614e);
+  background: #fff;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.express-measurements-confirm-page .sleeveless-measure-custom-promo__link:hover {
+  border-color: color-mix(in srgb, var(--sg-accent, #c2614e) 65%, #aaa);
+  background: color-mix(in srgb, var(--sg-accent, #c2614e) 8%, #fff);
+}
+
+.express-measurements-confirm-page .sleeveless-measure-custom-promo__link:focus-visible {
+  outline: 2px solid var(--sg-accent, #c2614e);
+  outline-offset: 2px;
+}
+
+.express-measurements-confirm-page .sleeveless-measure-diagram-host,
 .express-measurements-confirm-page .express-measurements-summary {
   width: 100%;
   max-width: none;
-  margin: 0 auto 0.5rem;
+  margin: 0 auto;
+  min-width: 0;
 }
 
+.express-measurements-confirm-page .sleeveless-measure-actions,
 .express-measurements-confirm-page .express-measurements-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
   justify-content: center;
-  align-items: center;
+  align-items: stretch;
   margin-top: 1.75rem;
   padding-top: 1.25rem;
   border-top: 1px solid #e8e8e8;
+}
+
+.express-measurements-confirm-page .express-measurements-actions .kbm-btn {
+  flex: 1 1 auto;
+  min-width: min(100%, 12rem);
+  max-width: 20rem;
+  text-align: center;
+  justify-content: center;
+}
+
+@media (min-width: 520px) {
+  .express-measurements-confirm-page .express-measurements-actions .kbm-btn {
+    flex: 0 1 auto;
+    min-width: 11rem;
+  }
+}
+
+/* Yarn drawer shell (matches hat builder) */
+:global(body.hat-yarn-drawer-open) {
+  overflow: hidden;
+}
+
+.express-measurements-confirm-page .hat-yarn-drawer-body :global(.yarn-requirement-tool) {
+  margin: 0;
+}
+
+.express-measurements-confirm-page .hat-yarn-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 10040;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.express-measurements-confirm-page .hat-yarn-drawer.is-open {
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.express-measurements-confirm-page .hat-yarn-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: default;
+  background: rgba(30, 41, 59, 0.38);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.express-measurements-confirm-page .hat-yarn-drawer.is-open .hat-yarn-drawer-backdrop {
+  opacity: 1;
+}
+
+.express-measurements-confirm-page .hat-yarn-drawer-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  isolation: isolate;
+  pointer-events: auto;
+  width: min(30rem, 100vw);
+  max-width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  background: linear-gradient(180deg, #faf9f6 0%, #f4f3ee 100%);
+  border-radius: 20px 0 0 20px;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.75),
+    -1px 0 0 rgba(82, 104, 45, 0.07),
+    -16px 0 48px rgba(15, 23, 42, 0.07),
+    -6px 0 24px rgba(15, 23, 42, 0.04);
+}
+
+.express-measurements-confirm-page .hat-yarn-drawer.is-open .hat-yarn-drawer-panel {
+  transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .express-measurements-confirm-page .hat-yarn-drawer-backdrop,
+  .express-measurements-confirm-page .hat-yarn-drawer-panel {
+    transition: none;
+  }
+}
+
+.express-measurements-confirm-page .hat-yarn-drawer-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem 1.25rem;
+  padding: 1.4rem 1.25rem 1rem 1.5rem;
+  border-bottom: none;
+}
+
+.express-measurements-confirm-page .hat-yarn-drawer-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.express-measurements-confirm-page .hat-yarn-drawer-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.28rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #374151;
+  line-height: 1.2;
+}
+
+.express-measurements-confirm-page .hat-yarn-drawer-lede {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  font-weight: 450;
+  color: #6b7280;
+  max-width: 42ch;
+}
+
+.express-measurements-confirm-page .hat-yarn-drawer-note {
+  margin: 0.65rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  font-weight: 450;
+  color: #6b7280;
+}
+
+.express-measurements-confirm-page .hat-yarn-drawer-close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.375rem;
+  height: 2.375rem;
+  margin-top: 0.1rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(55, 65, 81, 0.07);
+  color: #6b7280;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.express-measurements-confirm-page .hat-yarn-drawer-close:hover {
+  background: rgba(82, 104, 45, 0.14);
+  color: #3d4a2f;
+}
+
+.express-measurements-confirm-page .hat-yarn-drawer-close:focus-visible {
+  outline: 2px solid #52682d;
+  outline-offset: 2px;
+}
+
+.express-measurements-confirm-page .hat-yarn-drawer-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.35rem 1.5rem 1.75rem;
+  padding-bottom: max(1.75rem, env(safe-area-inset-bottom, 0px));
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 640px) {
+  .express-measurements-confirm-page .hat-yarn-drawer-panel {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    box-shadow: -8px 0 40px rgba(15, 23, 42, 0.08);
+  }
+
+  .express-measurements-confirm-page .hat-yarn-drawer-header {
+    padding: max(0.85rem, env(safe-area-inset-top, 0px)) 1rem 0.85rem 1.15rem;
+  }
+
+  .express-measurements-confirm-page .hat-yarn-drawer-title {
+    font-size: 1.15rem;
+  }
+
+  .express-measurements-confirm-page .hat-yarn-drawer-lede,
+  .express-measurements-confirm-page .hat-yarn-drawer-note {
+    max-width: none;
+  }
+
+  .express-measurements-confirm-page .hat-yarn-drawer-close {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .express-measurements-confirm-page .hat-yarn-drawer-body {
+    padding: 0.25rem 1.1rem max(1.5rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .express-measurements-confirm-page .sleeveless-measure-actions,
+  .express-measurements-confirm-page .express-measurements-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .express-measurements-confirm-page .sleeveless-measure-actions .kbm-btn,
+  .express-measurements-confirm-page .express-measurements-actions .kbm-btn {
+    max-width: none;
+    width: 100%;
+  }
+
 }
 
 .express-measurements-confirm-page .express-measurements-status {
@@ -112,206 +541,29 @@
   margin: 0 0 0.35rem;
 }
 
-/* --- Blueprint layout (viewBox 141.5 × 194.61) --- */
+/* --- Blueprint layout (pattern_summary.svg viewBox 195.14 × 210.19) --- */
+.express-measurements-confirm-page {
+  --pattern-summary-aspect-ratio: 195.14 / 210.19;
+}
+
 .express-measurements-confirm-page .express-mbp {
   box-sizing: border-box;
-}
-
-.express-measurements-confirm-page .express-mbp-meta {
-  margin: 0 auto 1rem;
-  max-width: min(52rem, 100%);
-}
-
-.express-measurements-confirm-page .express-mbp-page-grid__rail .express-mbp-meta {
-  margin: 0;
-  max-width: none;
-}
-
-.express-measurements-confirm-page .express-mbp-meta__grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem 0.75rem;
-}
-
-@media (min-width: 640px) {
-  .express-measurements-confirm-page .express-mbp-meta__grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-/* Selection summary in the left rail: two columns for readability */
-.express-measurements-confirm-page .express-mbp-page-grid__rail .express-mbp-meta__grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-@media (min-width: 640px) {
-  .express-measurements-confirm-page .express-mbp-page-grid__rail .express-mbp-meta__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-.express-measurements-confirm-page .express-mbp-meta__item {
-  padding: 0.45rem 0.55rem;
-  border-radius: 8px;
-  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 10%, #e4e4e4);
-  background: color-mix(in srgb, var(--kbm-green, #52682d) 7%, #f3f4f1);
-  cursor: default;
-  box-shadow: none;
-}
-
-.express-measurements-confirm-page .express-mbp-meta__k {
-  display: block;
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--kbm-green, #52682d) 65%, #555);
-  margin-bottom: 0.2rem;
-  line-height: 1.35;
-}
-
-.express-measurements-confirm-page .express-mbp-meta__v {
-  font-size: 0.98rem;
-  font-weight: 600;
-  color: #2a2a2a;
-  line-height: 1.4;
-  word-break: break-word;
-}
-
-.express-measurements-confirm-page .express-mbp-meta__item--size .express-mbp-meta__v {
-  display: block;
-}
-
-.express-measurements-confirm-page .express-mbp-meta__sub {
-  display: block;
-  margin-top: 0.15rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  line-height: 1.35;
-  color: color-mix(in srgb, var(--kbm-green, #52682d) 35%, #444);
-}
-
-/* Quiet link back to Express — reuses `.express-custom-build-callout__link` (terra cotta) from wizard layout */
-.express-measurements-confirm-page .express-mbp-edit-build-choices {
-  margin: 0 0 0.5rem;
-  padding: 0;
-  font-size: 0.82rem;
-  line-height: 1.35;
-}
-
-.express-measurements-confirm-page .express-mbp-edit-build-choices__link {
-  font-size: inherit;
-}
-
-.express-measurements-confirm-page .express-mbp-edit-build-choices__lead {
-  font-weight: 600;
-  color: color-mix(in srgb, var(--kbm-green, #52682d) 32%, #444);
-}
-
-.express-measurements-confirm-page .express-mbp-meta .express-measurements-intro-units {
-  margin: 0.25rem 0 0.65rem;
-}
-
-/* Inline workspace tab icons beside Express / Custom copy */
-.express-measurements-confirm-page .express-mbp-edit-build-choices-line {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.4rem;
-  margin: 0;
-  max-width: none;
-  font-size: 0.9rem;
-  line-height: 1.45;
-  color: color-mix(in srgb, var(--kbm-green, #52682d) 22%, #4a4a4a);
-}
-
-.express-measurements-confirm-page .express-mbp-edit-build-choices + .express-mbp-edit-build-choices-line {
-  margin-top: 0.35rem;
-}
-
-.express-measurements-confirm-page .express-mbp-edit-build-choices-line + .express-mbp-edit-build-choices-line {
-  margin-top: 0.25rem;
-}
-
-.express-measurements-confirm-page .express-mbp-edit-build-choices-line:last-of-type {
-  margin-bottom: 0.65rem;
-}
-
-.express-measurements-confirm-page .express-mbp-edit-build-choices__workspace-icon {
-  flex-shrink: 0;
-  width: 1.0625rem;
-  height: 1.0625rem;
-  margin-top: 0.12em;
-  object-fit: contain;
-}
-
-.express-measurements-confirm-page .express-mbp-rail-reassurance {
-  margin: 0.25rem 0 0;
-  padding: 0.65rem 0 0;
-  border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 8%, #ebebeb);
-  font-size: 0.88rem;
-  line-height: 1.45;
-  color: color-mix(in srgb, var(--kbm-green, #52682d) 20%, #555);
-}
-
-.express-measurements-confirm-page .express-mbp-rail-reassurance__lead {
-  margin: 0 0 0.35rem;
-  font-weight: 600;
-  color: color-mix(in srgb, var(--kbm-green, #52682d) 32%, #444);
-}
-
-.express-measurements-confirm-page .express-mbp-rail-reassurance__list {
-  margin: 0;
-  padding: 0 0 0 1.1rem;
-  list-style: disc;
-}
-
-.express-measurements-confirm-page .express-mbp-rail-reassurance__list li {
-  margin: 0.12rem 0;
-  padding: 0;
-}
-
-/* Gauge summary (left rail): plain text, not input-like */
-.express-measurements-confirm-page .express-mbp-gauge-card {
-  padding: 0.75rem 0.85rem;
-  border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 16%, #d8d8d8);
-  background: color-mix(in srgb, var(--kbm-green, #52682d) 5%, var(--page-bg, #fff));
-  cursor: default;
-}
-
-.express-measurements-confirm-page .express-mbp-gauge-card__title {
-  margin: 0 0 0.45rem;
-  padding: 0;
-  border: 0;
-  font: inherit;
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  line-height: 1.35;
-  color: color-mix(in srgb, var(--kbm-green, #52682d) 72%, #444);
-}
-
-.express-measurements-confirm-page .express-mbp-gauge-card__value {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 600;
-  line-height: 1.45;
-  color: #222;
 }
 
 .express-measurements-confirm-page .express-mbp-scroll {
   overflow-x: auto;
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
-  padding: 0.25rem 0 0.5rem;
+  padding: 0 0 0.35rem;
 }
 
 .express-measurements-confirm-page .express-mbp-stage {
   position: relative;
   width: min(100%, 720px);
   min-width: min(100%, 280px);
+  height: auto;
   margin: 0 auto;
-  aspect-ratio: 141.5 / 194.61;
+  overflow: visible;
   border-radius: 12px;
   background: var(--page-bg, #fff);
   border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 12%, #e2e2e2);
@@ -319,57 +571,58 @@
 }
 
 @media (min-width: 900px) {
-  .express-measurements-confirm-page .express-mbp-page-grid__diagram {
+  .express-measurements-confirm-page .sleeveless-measure-diagram-host {
     display: flex;
     flex-direction: column;
     align-items: center;
   }
 
-  .express-measurements-confirm-page .express-mbp-page-grid__diagram .express-measurements-summary {
-    align-self: stretch;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .express-measurements-confirm-page .express-mbp-page-grid__diagram .express-mbp {
+  .express-measurements-confirm-page .sleeveless-measure-diagram-host .express-mbp {
     align-self: center;
     width: min(100%, 550px);
     max-width: 550px;
   }
 
-  .express-measurements-confirm-page .express-mbp-page-grid__diagram .express-mbp-scroll {
+  .express-measurements-confirm-page .sleeveless-measure-diagram-host .express-mbp-scroll {
     width: 100%;
     overflow-x: visible;
     padding-top: 0;
     padding-bottom: 0.35rem;
   }
 
-  .express-measurements-confirm-page .express-mbp-page-grid__diagram .express-mbp-stage {
+  .express-measurements-confirm-page .sleeveless-measure-diagram-host .express-mbp-stage {
     width: min(100%, 550px);
     max-width: 550px;
     margin-inline: auto;
   }
 
-  .express-measurements-confirm-page .express-mbp-page-grid__diagram .express-mbp-stage__inner {
-    padding: 2.4% 3.2% 2.8% 3.4%;
+  .express-measurements-confirm-page .sleeveless-measure-diagram-host .express-mbp-stage__inner {
+    padding: clamp(0.2rem, 1%, 0.4rem) clamp(0.3rem, 2.25%, 0.55rem)
+      clamp(0.2rem, 1.15%, 0.45rem);
   }
 }
 
+.express-measurements-confirm-page .sleeveless-measure-actions {
+  max-width: min(52rem, 100%);
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .express-measurements-confirm-page .express-mbp-stage__inner {
-  position: absolute;
-  inset: 0;
+  position: relative;
   box-sizing: border-box;
-  padding: 4% 5.5% 5% 6%;
+  /* Small margin for overlay chips; SVG viewBox already includes garment inset. */
+  padding: clamp(0.2rem, 1.25%, 0.45rem) clamp(0.35rem, 2.75%, 0.65rem)
+    clamp(0.2rem, 1.5%, 0.5rem);
 }
 
 .express-measurements-confirm-page .express-mbp-art {
-  position: absolute;
-  inset: 0;
+  position: relative;
   width: 100%;
-  height: 100%;
+  height: auto;
+  aspect-ratio: var(--pattern-summary-aspect-ratio);
   display: block;
+  vertical-align: top;
   object-fit: contain;
   object-position: center;
   pointer-events: none;
@@ -380,6 +633,12 @@
 .express-measurements-confirm-page svg.express-mbp-art #line-waist-width,
 .express-measurements-confirm-page svg.express-mbp-art #line-hem-width {
   visibility: hidden !important;
+}
+
+/* Custom Build fit: show cast-on / hip width guide (#line-hem-width in pattern_summary.svg). */
+.cb-measure-page.express-measurements-confirm-page svg.express-mbp-art #line-hem-width {
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .express-measurements-confirm-page svg.express-mbp-art #line-chest-width {
@@ -480,60 +739,28 @@
   user-select: none;
 }
 
-/* Percent positions tuned to measurement-blueprint.svg */
-.express-measurements-confirm-page .express-mbp-box--neck-opening {
-  left: 50%;
-  top: 5.5%;
-}
+/* Desktop overlay positions are set from pattern_summary.svg targets (see patternSummaryMeasurementOverlay.ts). */
 
-/* Lower than neck opening so “BACK NECK” / neck depth label row do not overlap */
-.express-measurements-confirm-page .express-mbp-box--neckline-depth {
-  left: 50%;
-  top: 19%;
-}
-
-.express-measurements-confirm-page .express-mbp-box--shoulder {
-  left: 78%;
-  top: 20%;
-}
-
-/* Finished bust (ease-inclusive): center torso position (former body bust/chest chip). */
-.express-measurements-confirm-page .express-mbp-box--finished-bust {
-  left: 50%;
-  top: 41%;
-}
-
-.express-measurements-confirm-page .express-mbp-box--armhole {
-  left: 11%;
-  top: 22%;
-}
-
-/* Below finished bust chip; centered on vertical body-length guide */
-.express-measurements-confirm-page .express-mbp-box--back-length {
-  left: 50%;
-  top: 58%;
-}
-
-/* --- Mobile: stack measurement chips under diagram --- */
+/* --- Mobile: stack measurement chips under diagram (not unified review; see sleeveless-review-measurements.css) --- */
 @media (max-width: 699.98px) {
-  .express-measurements-confirm-page .express-mbp-scroll {
+  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-scroll {
     overflow-x: visible;
     padding-bottom: 0.25rem;
   }
 
-  .express-measurements-confirm-page .express-mbp-stage {
+  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-stage {
     width: 100%;
     max-width: 420px;
-    aspect-ratio: 141.5 / 194.61;
+    height: auto;
   }
 
-  .express-measurements-confirm-page .express-mbp-box__lab {
+  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-box__lab {
     font-size: 0.65rem;
     text-align: center;
     gap: 0;
   }
 
-  .express-measurements-confirm-page .express-mbp-box__value {
+  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-box__value {
     align-self: center;
     width: 100%;
     max-width: 5.5rem;
@@ -541,7 +768,7 @@
     font-size: 0.92rem;
   }
 
-  .express-measurements-confirm-page .express-mbp-overlay {
+  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-overlay {
     position: static;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -551,23 +778,24 @@
     box-sizing: border-box;
   }
 
-  .express-measurements-confirm-page .express-mbp-stage__inner {
+  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-stage__inner {
     position: relative;
     display: flex;
     flex-direction: column;
-    padding: 3.5% 4% 4%;
+    padding: clamp(0.2rem, 1.25%, 0.45rem) clamp(0.35rem, 3%, 0.65rem)
+      clamp(0.2rem, 1.5%, 0.5rem);
     min-height: 0;
   }
 
-  .express-measurements-confirm-page .express-mbp-art {
+  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-art {
     position: relative;
     width: 100%;
     height: auto;
-    aspect-ratio: 141.5 / 194.61;
+    aspect-ratio: var(--pattern-summary-aspect-ratio);
     flex-shrink: 0;
   }
 
-  .express-measurements-confirm-page .express-mbp-box {
+  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-box {
     position: static;
     transform: none;
     align-self: stretch;

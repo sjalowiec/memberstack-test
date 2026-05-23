@@ -77,6 +77,18 @@
     "active": true
   },
   {
+    "id": 35,
+    "title": "Button Band Buttonhole Calculator",
+    "href": "/tools/button-band-buttonholes",
+    "icon": "band_pickup.svg",
+    "description": "Calculate sideways-knit cardigan button bands and evenly spaced buttonhole placement instructions.",
+    "membersonly": false,
+    "helpID": null,
+    "category": "Design Elements",
+    "help_text": "Plan vertical button bands for machine-knit cardigans, including buttonhole spacing, offsets, band dimensions, and written knitting instructions.\n\nUse this tool for sideways-knit vertical button bands: cast on across the band depth, knit rows along the band length, and work buttonholes evenly spaced across one row at the midpoint of the band. Helpful for cardigan finishing, bands, and closures.",
+    "active": true
+  },
+  {
     "id": 8,
     "title": "Knitters Graph Paper",
     "href": "graphpaper.cfm",

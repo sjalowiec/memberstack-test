@@ -3,16 +3,9 @@ import { neckShoulderShapingChartFromRows } from "./neckShoulderShapingChart";
 import { neckShoulderChartRowsFromTimeline } from "./neckShoulderShapingChartRows";
 import {
   innerNeckDecreaseNotationLinesFromTimeline,
-  renderNotationOverlayDiagram,
+  neckEdgeNotationLinesFromNeckShoulderChart,
 } from "./notationOverlaySvg";
 import type { RowEntry, ShapingEvent } from "./shapingTimeline";
-import { DEMO_NECK_SHOULDER_SHAPING_CHART } from "./neckShoulderShapingChart";
-
-function neckLabelsFromOverlayHtml(html: string): string[] {
-  const m = html.match(/ns-notation-overlay__stack--neck[^>]*>([\s\S]*?)<\/div>/);
-  if (!m?.[1]) return [];
-  return [...m[1].matchAll(/class="ns-notation-overlay__label">([^<]*)/g)].map((x) => String(x[1]));
-}
 
 function stubRow(rc: number, innerRight: number): RowEntry {
   const ev: ShapingEvent[] =
@@ -53,24 +46,39 @@ describe("innerNeckDecreaseNotationLinesFromTimeline", () => {
   });
 });
 
-describe("renderNotationOverlayDiagram V-neck inner-neck path", () => {
-  it("injects timeline-based neck notation when innerNeckNotationFromTimeline is true", () => {
+describe("neckEdgeNotationLinesFromNeckShoulderChart", () => {
+  it("groups chart neck-edge cells into multiple summary lines (not timeline-only compaction)", () => {
+    const base = {
+      action: "Neck" as const,
+      leftSide: "-",
+      leftNeck: "-",
+      centerNeck: "-",
+      rightSide: "-",
+      leftStitchCount: 40,
+      rightStitchCount: 40,
+    };
+    const rows = [
+      ...[0, 2, 4, 6, 8, 10, 12, 14].map((row) => ({ ...base, row, rightNeck: "-1" })),
+      { ...base, row: 15, rightNeck: "-2" },
+      { ...base, row: 16, rightNeck: "-3" },
+      { ...base, row: 17, rightNeck: "-3" },
+    ];
+    const chart = neckShoulderShapingChartFromRows(rows);
+    expect(neckEdgeNotationLinesFromNeckShoulderChart(chart, "right")).toEqual([
+      "1s-2r-8x",
+      "2s-1r-1x",
+      "3s-1r-2x",
+    ]);
+  });
+
+  it("uses timeline inner-neck decreases when innerNeckNotationFromTimeline is true", () => {
     const tl: RowEntry[] = Array.from({ length: 26 }, (_, i) => stubRow(100 + i, 1));
     const rows = neckShoulderChartRowsFromTimeline(tl);
     const chart = neckShoulderShapingChartFromRows(rows, { timeline: tl });
-    const html = renderNotationOverlayDiagram(chart, "right", {
-      innerNeckNotationFromTimeline: true,
-      outlineImageSrc: "/images/patterns/shoulder-front-icon-v.svg",
-    });
-    expect(neckLabelsFromOverlayHtml(html)).toEqual(["1s-1r-26x"]);
-  });
-
-  it("leaves round-neck demo neck notation unchanged when timeline is absent (flag ignored)", () => {
-    const htmlFlag = renderNotationOverlayDiagram(DEMO_NECK_SHOULDER_SHAPING_CHART, "right", {
-      innerNeckNotationFromTimeline: true,
-    });
-    const htmlBase = renderNotationOverlayDiagram(DEMO_NECK_SHOULDER_SHAPING_CHART, "right");
-    expect(neckLabelsFromOverlayHtml(htmlFlag)).toEqual(neckLabelsFromOverlayHtml(htmlBase));
-    expect(neckLabelsFromOverlayHtml(htmlBase).length).toBeGreaterThan(0);
+    expect(
+      neckEdgeNotationLinesFromNeckShoulderChart(chart, "right", {
+        innerNeckNotationFromTimeline: true,
+      }),
+    ).toEqual(["1s-1r-26x"]);
   });
 });

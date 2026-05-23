@@ -2,3 +2,17 @@
   for = "/admin/*"
   [headers.values]
     Basic-Auth = "admin:knit741"
+
+# Local dev: proxy to Astro (port 4321) and run functions in one process.
+# Prefer `netlify dev` over running `netlify dev --framework=#static` beside `npm run dev`.
+[dev]
+  command = "npm run dev"
+  targetPort = 4321
+  port = 8888
+  framework = "#custom"
+  autoLaunch = false
+
+[dev.environment]
+  ALLOW_DEV_PATTERN_USER = "true"
+  # Reduce Windows EPERM failures from chokidar on `.netlify/functions-serve`
+  CHOKIDAR_USEPOLLING = "true"

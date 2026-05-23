@@ -70,18 +70,29 @@ export const NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL = "Knit in pattern";
 
 export type NeckShoulderRowLabelStyle = "online" | "print";
 
+export type PlainKnitSpanCarriageEdgeOptions = {
+  /** When true, odd RC → Right and even RC → Left (second-shoulder checklist parity). */
+  invertCarriageParity?: boolean;
+};
+
 /** Carriage position and edge labels for one or more consecutive plain RCs (parity matches the active-shoulder checklist). */
-export function plainKnitSpanCarriageEdgeDisplay(firstRc: number, lastRc: number): {
+export function plainKnitSpanCarriageEdgeDisplay(
+  firstRc: number,
+  lastRc: number,
+  options?: PlainKnitSpanCarriageEdgeOptions,
+): {
   carriage: string;
   edge: string;
 } {
   const a = Math.max(0, Math.floor(Math.min(firstRc, lastRc)));
   const b = Math.max(0, Math.floor(Math.max(firstRc, lastRc)));
+  const invert = options?.invertCarriageParity === true;
   const carriages: string[] = [];
   const edges: string[] = [];
   for (let rc = a; rc <= b; rc++) {
-    carriages.push(rc % 2 === 0 ? "Right" : "Left");
-    edges.push(rc % 2 === 0 ? "Armhole" : "Neck");
+    const evenRc = rc % 2 === 0;
+    carriages.push(invert ? (evenRc ? "Left" : "Right") : evenRc ? "Right" : "Left");
+    edges.push(evenRc ? "Armhole" : "Neck");
   }
   const uniqCar = new Set(carriages);
   const uniqEdge = new Set(edges);

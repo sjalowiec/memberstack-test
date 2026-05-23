@@ -3,6 +3,9 @@
  * Used by the dedicated print route, the pattern tab print layout, and the on-screen pattern intro metadata block.
  */
 
+import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
+import { resolveDiagramFinishedHipInches } from "./customBuildEffectiveFinishedHip";
+import { resolveEffectiveSleevelessBodyShapePhrase } from "./sleevelessAlineShaping";
 import { SLEEVELESS_CHART_AUDIENCE_LABELS } from "./patternStorage.ts";
 
 const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
@@ -99,12 +102,21 @@ function audienceLabelFromPattern(st: Record<string, unknown>, ft: Record<string
   return "";
 }
 
-function garmentShapeLengthPhrase(st: Record<string, unknown>): string {
+function garmentShapeLengthPhrase(
+  st: Record<string, unknown>,
+  patternData: Record<string, unknown>,
+): string {
+  const finishedBust = resolveEffectiveFinishedBustInches(patternData);
+  const finishedHip = resolveDiagramFinishedHipInches(patternData, finishedBust);
+  const effective = resolveEffectiveSleevelessBodyShapePhrase(
+    patternData,
+    finishedBust,
+    finishedHip,
+  );
+  if (effective) return effective;
+
   const shapeKey = st.bodyShape;
   const lenKey = st.length;
-
-  if (shapeKey === "straight") return "straight body";
-  if (shapeKey === "aline") return "A-line body";
 
   const shapeWord =
     shapeKey === "gathered" ? "gathered" : shapeKey ? String(shapeKey) : "";
@@ -168,7 +180,7 @@ function collectSleevelessBasicsSummaryRows(
     });
   }
 
-  const garmentRaw = garmentShapeLengthPhrase(st);
+  const garmentRaw = garmentShapeLengthPhrase(st, patternData);
   if (garmentRaw) {
     rows.push({
       term: "Body style",

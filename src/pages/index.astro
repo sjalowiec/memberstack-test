@@ -2,10 +2,12 @@
 import Layout from "../layouts/Layout.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import PatternsFeaturesSection from "../components/patterns/PatternsFeaturesSection.astro";
+import PatternHeaderImage from "../components/patterns/PatternHeaderImage.astro";
 import "../styles/global.css";
 ---   
 
-<Layout>
+<Layout bodyClass="page--tight-header page--home">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -24,79 +26,107 @@ import "../styles/global.css";
       }
     </style>
     
-    <title>Knit it Now | Machine Knitting Help & Patterns</title>
+    <title>Knit it Now | Custom Machine Knitting Patterns</title>
     <meta
       name="description"
-      content="New to machine knitting? Start here. Find your next step, build skills, and get guidance one small win at a time."
+      content="Build, customize, and knit sweater patterns for your machine, your gauge, and your measurements with Knit It Now's guided pattern system."
     />
   </head>
 
     <main class="kbm-start-here">
       <!-- HERO SECTION -->
-      <section class="kbm-hero">
-        <div class="kbm-hero__grid">
-          <div class="kbm-hero__content">
-            <h1>We’ve been busy behind the scenes</h1>
-            <p class="hero-tagline">Patterns that fit your machine, your gauge - and your knitting.</p>
-            <p class="kbm-hero__text">
-              There’s more to explore this week - including patterns, tools, videos, and new Help Hubs to guide you along the way.
+      <section class="kbm-hero kbm-hero--patterns">
+        <div class="kbm-hero__content">
+          <h1>The Next Generation of Knit It Now Patterns</h1>
+          <p class="kbm-hero__framing">
+            These next-generation patterns are just one part of the new Knit It Now experience we’re building for machine knitters.
+          </p>
+          <p class="kbm-hero__ecosystem" aria-label="Areas of the Knit It Now experience">
+            Patterns • Interactive Tools • Planning • Tutorials • Community
+          </p>
+          <p class="kbm-hero__text">
+            Choose your style and enter your measurements.<br />
+            Generate a ready-to-knit custom pattern in just a few guided steps.
+          </p>
+          <ul class="kbm-hero__benefits">
+            <li>Built around your gauge, machine, and fit</li>
+            <li>Easier-to-follow shaping with visual guidance</li>
+            <li>Customize styles without rewriting pattern instructions</li>
+            <li>Track your progress as you knit</li>
+            <li>Cleaner, more modern patterns designed for machine knitters</li>
+            <li>Print-friendly layouts that work beside your machine</li>
+          </ul>
+          <div class="kbm-hero__cta-group">
+            <p class="kbm-hero__cta-helper">
+              Beta Preview: We’re testing our new builder with the Sleeveless Pattern first. Give it a try.
             </p>
-            <div class="kbm-hero__cta-group">
-              <div class="kbm-hero__actions">
-                <a href="/patterns" class="kbm-btn kbm-btn-accent">Try a Pattern</a>
-                <a href="/tools" class="kbm-btn kbm-btn-outline">Explore Tools</a>
-              </div>
+            <div class="kbm-hero__actions">
+              <a href="/patterns/sleeveless-express/" class="kbm-btn kbm-btn-accent" data-testid="home-cta-sleeveless">
+                Try the Sleeveless Pattern
+              </a>
             </div>
-          </div>
-          <div class="kbm-hero__image">
-            <picture>
-              <source srcset="/images/seeit-loveit-knitit.webp" type="image/webp" />
-              <img 
-                src="/images/seeit-loveit-knitit.webp" 
-                alt="Machine knitting in progress with transfer tools, machine set up and ready to knit."
-                loading="eager"
-                data-testid="img-hero"
-              />
-            </picture>
           </div>
         </div>
       </section>
 
-      <div id="weekly-tip-content" class="kbm-welcome kbm-welcome--branded">
-        <div class="kbm-welcome-founder">
-          <div class="kbm-welcome-founder__content">
-            <div class="kbm-welcome-founder__text">
-              <h2>Take a look around</h2>
-
-              <p>
-                I’ve been making changes based on your feedback - especially to the patterns - and adding tools to help you plan and knit with confidence.
-              </p>
-
-              <p>Here’s where to start:</p>
-
-              <ul>
-                <li><a href="/patterns/sleeveless-express">Express Pattern Builder</a> – the fastest way to a custom knitting pattern.</li>
-                <li><a href="/tools">Tools</a> – calculators like gauge and width to help you get the numbers right</li>
-                <li><a href="/videos">Videos</a> – browse and search the entire Knit it Now video library by title and description.</li>
-                <li><a href="/whats-new">What’s New</a> – a quick look at what’s been added this week</li>
-              </ul>
-
-              <p>
-                This is still a beta, so if something feels confusing or missing, that helps shape what comes next.
-              </p>
-
-              <p>
-                <a href="/whats-new#comments">Join the conversation and let me know what you think →</a>
-              </p>
-            </div>
-
-            <div class="kbm-welcome-founder__photo">
-              <img src="/images/sue_icon9.png" alt="Sue" width="120" height="120" loading="lazy" decoding="async" />
-              <div class="kbm-welcome-founder__caption">~Sue</div>
-            </div>
+      <section class="kbm-home-split kbm-home-split--build-steps kbm-home-split--stack-media-first kbm-home-split--text-45" aria-labelledby="home-build-steps-heading">
+        <div class="kbm-home-split__grid">
+          <div class="kbm-home-split__content">
+            <h2 id="home-build-steps-heading">Create your custom pattern in guided steps.</h2>
+            <ol class="kbm-home-split__steps">
+              <li>Choose who you’re knitting for</li>
+              <li>Select your garment style</li>
+              <li>Pick your neckline and fit</li>
+              <li>Enter your gauge and measurements</li>
+              <li>Generate your custom pattern</li>
+            </ol>
+          </div>
+          <div class="kbm-home-split__media">
+            <PatternHeaderImage
+              class="kbm-home-split__enlarge"
+              src="/images/patterns/build-steps.jpg"
+              alt="Guided sweater pattern builder showing style, neckline, fit, and gauge steps"
+              hintText="Click to enlarge"
+              hintStyle="overlay"
+              modalFit="readable"
+              loading="lazy"
+            />
           </div>
         </div>
-      </div>
+      </section>
+
+      <section class="kbm-home-split kbm-home-split--media-first" aria-labelledby="home-custom-sizing-heading">
+        <div class="kbm-home-split__grid">
+          <div class="kbm-home-split__media">
+            <PatternHeaderImage
+              class="kbm-home-split__enlarge"
+              src="/images/patterns/custom-sizing.jpg"
+              alt="Custom sizing controls for adjusting sweater measurements before knitting"
+              hintText="Click to enlarge"
+              hintStyle="overlay"
+              modalFit="readable"
+              loading="lazy"
+            />
+          </div>
+          <div class="kbm-home-split__content">
+            <h2 id="home-custom-sizing-heading">Customize the fit before you cast on.</h2>
+            <p class="kbm-home-split__intro">
+              Our interactive summary page takes the guesswork out of sizing your project. Use the blueprint diagram to enter your exact target measurements before your pattern is generated:
+            </p>
+            <ul class="kbm-home-split__callouts">
+              <li><strong>Visual measurement layout:</strong> Clearly see where each measurement applies on the garment.</li>
+              <li><strong>Complete sizing control:</strong> Adjust key lengths, widths, and depths to match your body and style preferences.</li>
+              <li><strong>Built for your project:</strong> Generate a custom pattern based on your measurements, gauge, and fit choices, not a generic sample size.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <PatternsFeaturesSection
+        sectionId="home-pattern-features"
+        headingId="home-patterns-features-heading"
+        subtitle="Designed to make machine knitting easier to follow, customize, and track."
+      />
 
       <!-- SOFT LAUNCH: Hidden temporarily. Bring back after initial onboarding phase -->
       <!-- WHERE ARE YOU RIGHT NOW? SECTION -->
@@ -170,15 +200,19 @@ import "../styles/global.css";
         </div>
       </section>
 
-      <section class="kbm-home-feedback" style="margin-top:60px; text-align:center;">
-        <h3>Have feedback?</h3>
-
+      <section class="kbm-home-feedback">
+        <h3>Help shape the future of Knit It Now patterns</h3>
         <p>
-          If something feels confusing or not quite right, I'd really like to hear about it.
+          This pattern system is still in progress. If something feels confusing or missing, we’d love to hear from you.
         </p>
-
-        <p style="margin-top:15px;">
-          <a href="/contact" class="kbm-btn kbm-btn-outline">Send Feedback</a>
+        <div class="kbm-home-feedback__actions">
+          <a href="/contact" class="kbm-btn kbm-btn-accent">Send Feedback</a>
+          <a href="/patterns/sleeveless-express/" class="kbm-btn kbm-btn-outline" data-testid="home-cta-sleeveless-bottom">
+            Try the Sleeveless Pattern
+          </a>
+        </div>
+        <p><br />
+          As we continue rebuilding Knit It Now, these interactive patterns are only the beginning.
         </p>
       </section>
 
@@ -207,10 +241,14 @@ import "../styles/global.css";
   }
 
   /* ========== MAIN WRAPPER ========== */
+  :global(body.page--home .site-content) {
+    padding-top: calc(var(--header-offset, 150px) + 10px);
+  }
+
   .kbm-start-here {
     max-width: 1000px;
     margin: 0 auto;
-    padding: 1rem 1.5rem 3rem;
+    padding: 0.25rem 1.5rem 3rem;
   }
 
   /* ========== SHARED BUTTON STYLES ========== */
@@ -277,13 +315,43 @@ import "../styles/global.css";
 
   /* ========== HERO SECTION ========== */
   .kbm-hero {
-    margin-bottom: 2.5rem;
-    padding-top: 0.5rem;
+    margin-bottom: 2.25rem;
+    padding-top: 0.25rem;
+  }
+
+  .kbm-hero--patterns {
+    margin-bottom: 1.65rem;
+    padding: 1.25rem 1.5rem 1.5rem;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, #f9f9f6 0%, #fff 55%);
+    border: 1px solid #d6dbc9;
+    box-shadow: 0 4px 16px rgba(82, 104, 45, 0.1);
+  }
+
+  .kbm-hero--patterns .kbm-hero__content {
+    text-align: center;
+    max-width: 42rem;
+    margin: 0 auto;
+  }
+
+  .kbm-hero--patterns .kbm-hero__cta-group,
+  .kbm-hero--patterns .kbm-hero__actions {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .kbm-hero__beta-note {
+    margin: 0 auto 1.5rem;
+    max-width: 36rem;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: #6b7565;
+    font-style: italic;
   }
 
   @media (max-width: 640px) {
     .kbm-hero {
-      padding-top: 0.5rem;
+      padding-top: 0.15rem;
     }
   }
 
@@ -313,9 +381,26 @@ import "../styles/global.css";
 
   .kbm-hero h1 {
     font-size: clamp(1.4rem, 3vw, 2rem);
-    margin: 0 0 1rem;
+    margin: 0 0 0.65rem;
     color: #2c3a57;
     line-height: 1.3;
+  }
+
+  .kbm-hero__framing {
+    margin: 0 auto 0.55rem;
+    max-width: 36rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #5f6b58;
+  }
+
+  .kbm-hero__ecosystem {
+    margin: 0 auto 0.75rem;
+    max-width: 36rem;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    letter-spacing: 0.03em;
+    color: #8a9484;
   }
 
   .kbm-hero .hero-tagline {
@@ -328,10 +413,30 @@ import "../styles/global.css";
 
   .kbm-hero__text {
     max-width: 42rem;
-    margin: 0 auto 1.85rem;
+    margin: 0 auto 0.85rem;
     font-size: 1rem;
-    line-height: 1.6;
+    line-height: 1.55;
     color: #4d5a48;
+  }
+
+  .kbm-hero__benefits {
+    list-style: disc;
+    list-style-position: outside;
+    margin: 0 auto 1.25rem;
+    padding-left: 1.25rem;
+    max-width: 36rem;
+    text-align: left;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #4d5a48;
+  }
+
+  .kbm-hero__benefits li {
+    margin-bottom: 0.35rem;
+  }
+
+  .kbm-hero__benefits li:last-child {
+    margin-bottom: 0;
   }
 
   .kbm-hero__actions {
@@ -355,11 +460,21 @@ import "../styles/global.css";
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.65rem;
+    gap: 0.4rem;
     width: 100%;
     max-width: 42rem;
     margin-left: auto;
     margin-right: auto;
+  }
+
+  .kbm-hero__cta-helper {
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: #6b7565;
+    text-align: center;
   }
 
   .kbm-hero__support {
@@ -439,12 +554,248 @@ import "../styles/global.css";
       margin-right: auto;
     }
 
+    .kbm-hero--patterns .kbm-hero__cta-group,
+    .kbm-hero--patterns .kbm-hero__actions {
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
     .kbm-hero__support {
       text-align: left;
     }
 
     .kbm-hero__image img {
       max-width: 100%;
+    }
+  }
+
+  /* ========== HOME PATTERN SPLIT ROWS ========== */
+  .kbm-home-split {
+    margin-bottom: 2.5rem;
+    padding: 1.75rem;
+    border-radius: 1rem;
+    background: #fff;
+    border: 1px solid #d6dbc9;
+    box-shadow: 0 2px 10px rgba(82, 104, 45, 0.08);
+  }
+
+  .kbm-home-split__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+    align-items: center;
+  }
+
+  .kbm-home-split__content {
+    align-self: center;
+  }
+
+  .kbm-home-split__media {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+  }
+
+  .kbm-home-split__content h2 {
+    margin: 0 0 0.85rem;
+    font-size: clamp(1.2rem, 2.4vw, 1.45rem);
+    color: #2c3a57;
+    line-height: 1.3;
+  }
+
+  .kbm-home-split__content p {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #4d5a48;
+  }
+
+  .kbm-home-split__callouts {
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kbm-home-split__callouts li,
+  .kbm-home-split__steps li {
+    margin: 0 0 0.6rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #4d5a48;
+    border-radius: 0.75rem;
+    background: rgba(82, 104, 45, 0.06);
+    border: 1px solid rgba(82, 104, 45, 0.18);
+    box-shadow: 0 1px 3px rgba(82, 104, 45, 0.06);
+  }
+
+  .kbm-home-split__callouts li {
+    padding: 0.6rem 0.75rem;
+  }
+
+  .kbm-home-split__callouts li:last-child,
+  .kbm-home-split__steps li:last-child {
+    margin-bottom: 0;
+  }
+
+  .kbm-home-split__callouts strong {
+    color: #2c3a57;
+  }
+
+  .kbm-home-split__callouts strong::after {
+    content: "\00a0";
+  }
+
+  .kbm-home-split__steps {
+    margin: 0.75rem 0 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: home-build-step;
+  }
+
+  .kbm-home-split__steps li {
+    counter-increment: home-build-step;
+    position: relative;
+    padding: 0.6rem 0.75rem 0.6rem 2.5rem;
+    line-height: 1.45;
+  }
+
+  .kbm-home-split__steps li::before {
+    content: counter(home-build-step);
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--kbm-green);
+    line-height: 1;
+  }
+
+  .kbm-home-split--build-steps .kbm-home-split__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  @media (min-width: 768px) {
+    .kbm-home-split--build-steps .kbm-home-split__grid {
+      align-items: stretch;
+    }
+  }
+
+  .kbm-home-split--build-steps .kbm-home-split__media :global(.pattern-header-image) {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .kbm-home-split--build-steps .kbm-home-split__media :global(.pattern-header-image__img) {
+    max-height: min(62vh, 540px);
+  }
+
+  .kbm-home-split--stack-media-first .kbm-home-split__media {
+    order: -1;
+  }
+
+  .kbm-home-split__media .kbm-home-split__enlarge {
+    max-width: 100%;
+  }
+
+  .kbm-home-split__media .pattern-header-image__img {
+    width: 100%;
+    max-height: none;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(82, 104, 45, 0.18);
+    box-shadow:
+      0 10px 28px rgba(0, 0, 0, 0.08),
+      0 2px 8px rgba(82, 104, 45, 0.12);
+  }
+
+  @media (min-width: 768px) {
+    .kbm-home-split__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .kbm-home-split--text-45 .kbm-home-split__grid {
+      grid-template-columns: 9fr 11fr;
+      gap: 2.5rem;
+    }
+
+    .kbm-home-split--build-steps.kbm-home-split--text-45 .kbm-home-split__grid {
+      grid-template-columns: 7fr 13fr;
+      gap: 2rem;
+    }
+
+    .kbm-home-split--stack-media-first .kbm-home-split__media,
+    .kbm-home-split--stack-media-first .kbm-home-split__content {
+      order: unset;
+    }
+
+    .kbm-home-split--media-first .kbm-home-split__media {
+      order: 0;
+    }
+
+    .kbm-home-split--media-first .kbm-home-split__content {
+      order: 1;
+    }
+  }
+
+  /* ========== HOME FEEDBACK ========== */
+  .kbm-home-feedback {
+    margin-top: 2.5rem;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    border-radius: 1rem;
+    background: #fff;
+    border: 1px solid #d6dbc9;
+    box-shadow: 0 2px 8px rgba(82, 104, 45, 0.06);
+  }
+
+  .kbm-home-feedback h3 {
+    margin: 0 0 0.75rem;
+    font-size: 1.15rem;
+    color: #2c3a57;
+  }
+
+  .kbm-home-feedback p {
+    margin: 0;
+    color: #4d5a48;
+    line-height: 1.55;
+  }
+
+  .kbm-home-feedback__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    max-width: 22rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .kbm-home-feedback__actions .kbm-btn {
+    text-align: center;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .kbm-home-feedback__outro {
+    margin: 1rem auto 0;
+    max-width: 28rem;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #6b7565;
+  }
+
+  @media (min-width: 520px) {
+    .kbm-home-feedback__actions {
+      flex-direction: column;
+      align-items: stretch;
     }
   }
 

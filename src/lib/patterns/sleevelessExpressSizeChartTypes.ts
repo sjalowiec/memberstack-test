@@ -3,6 +3,7 @@ export type ChartRow = {
   size?: unknown;
   bust_or_chest?: unknown;
   waist?: unknown;
+  hip?: unknown;
   garment_back_length?: unknown;
   armhole_depth?: unknown;
   shoulder_width?: unknown;

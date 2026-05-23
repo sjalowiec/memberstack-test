@@ -6,16 +6,6 @@
   color: #1f2937;
 }
 
-/* Wraps shape preview when rendered outside the chart table section (e.g. full-width below two-column layout). */
-.ns-shaping-chart--preview-block {
-  margin: 1.25rem 0 1.5rem;
-}
-
-/* Avoid stacking outer section margin with preview-block margin when table + preview are consecutive siblings. */
-.ns-shaping-chart + .ns-shaping-chart--preview-block {
-  margin-top: 0;
-}
-
 .ns-shaping-chart__title {
   margin: 0 0 0.5rem;
   font-size: 1rem;
@@ -47,9 +37,20 @@
 .ns-shaping-chart__table-wrap {
   overflow-x: auto;
   margin: 0 0 0.6rem;
-  border: 1px solid rgba(55, 65, 81, 0.2);
-  border-radius: 6px;
+}
+
+.ns-shaping-chart__table-scroll {
+  max-height: 520px;
+  overflow-y: auto;
+  border: 1px solid var(--kin-border, #ddd);
+  border-radius: 12px;
   background: #fff;
+}
+
+.ns-shaping-chart__table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .ns-shaping-chart__table {
@@ -140,12 +141,129 @@
   accent-color: var(--kbm-green);
 }
 
+.ns-shaping-chart__progress-section {
+  margin-bottom: 0;
+}
+
+.ns-shaping-chart__progress-toolbar {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  align-items: flex-start;
+  align-self: stretch;
+  margin-bottom: 0.45rem;
+}
+
+.ns-shaping-chart__progress-toolbar-main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.ns-shaping-chart__progress-hide-status {
+  margin: 0;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.ns-shaping-chart__progress-hide-status-mark {
+  flex-shrink: 0;
+  position: relative;
+  display: inline-block;
+  inline-size: 0.65rem;
+  block-size: 0.65rem;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.9;
+}
+
+.ns-shaping-chart__progress-hide-status-mark::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0.14rem;
+  inset-block-start: 0.02rem;
+  inline-size: 0.2rem;
+  block-size: 0.34rem;
+  border: solid #fff;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+
+.ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__progress-hide-status {
+  color: #334155;
+  font-weight: 600;
+}
+
+.ns-shaping-chart__progress-btn {
+  margin: 0;
+  padding: 0.22rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  background: #fff;
+  border: 1px solid rgba(55, 65, 81, 0.35);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__progress-toggle-hide {
+  background: rgba(82, 104, 45, 0.16);
+  border-color: rgba(82, 104, 45, 0.75);
+  color: var(--kbm-green, #52682d);
+  box-shadow: inset 0 1px 2px rgba(82, 104, 45, 0.12);
+}
+
+.ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__progress-toggle-hide:hover {
+  border-color: var(--kbm-green, #52682d);
+  color: var(--kbm-green, #52682d);
+}
+
+.ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__progress-toggle-hide:focus-visible {
+  outline-color: var(--kbm-green, #52682d);
+}
+
+.ns-shaping-chart__progress-btn:hover {
+  border-color: rgba(82, 104, 45, 0.55);
+  color: var(--kbm-green, #52682d);
+}
+
+.ns-shaping-chart__progress-btn:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+.ns-shaping-chart__tr--progress-complete td {
+  opacity: 0.86;
+}
+
+.ns-shaping-chart__tr--progress-complete td:first-child {
+  opacity: 1;
+}
+
 .ns-shaping-chart__tr:has(.ns-shaping-chart__row-check:checked) td {
   opacity: 0.86;
 }
 
 .ns-shaping-chart__tr:has(.ns-shaping-chart__row-check:checked) td:first-child {
   opacity: 1;
+}
+
+/*
+ * Hide-mode: use progress-complete class (synced from checkboxes in JS) and :checked for redundancy.
+ * !important avoids losing cascade conflicts on tr display.
+ */
+.ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__table tbody tr.ns-shaping-chart__tr--progress-complete,
+.ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__table tbody tr:has(.ns-shaping-chart__row-check:checked) {
+  display: none !important;
 }
 
 .ns-shaping-chart__tr--neck-both td {
@@ -160,180 +278,11 @@
   background: #f3f4f6;
 }
 
-.ns-shaping-chart__preview {
-  margin: 1rem 0 0.75rem;
-  padding: 0.75rem 0 0;
-  border-top: 1px solid rgba(55, 65, 81, 0.12);
-}
-
 .ns-shaping-chart__preview-title {
   margin: 0 0 0.35rem;
   font-size: 0.9375rem;
   font-weight: 700;
   color: var(--kbm-green, #52682d);
-}
-
-.ns-shaping-chart__preview-svg-wrap {
-  overflow-x: auto;
-  max-width: 100%;
-}
-
-.ns-shaping-chart__preview-svg-wrap svg {
-  display: block;
-  max-width: 100%;
-  height: auto;
-}
-
-/* Timeline geometry diagram (grouped notation helper + SVG). */
-.ns-shaping-chart__diagram .ns-shaping-chart__preview-title {
-  margin: 0 0 0.2rem;
-}
-
-.ns-shaping-chart__diagram-notation-hint {
-  margin: 0 0 0.35rem;
-  max-width: 100%;
-  min-width: 0;
-  font-weight: 400;
-  color: #64748b;
-  line-height: 1.45;
-}
-
-.ns-shaping-chart__diagram-notation-hint-main {
-  margin: 0 0 0.12rem;
-  font-size: 0.75rem;
-  font-style: normal;
-  font-weight: 400;
-  color: #64748b;
-  line-height: 1.45;
-}
-
-.ns-shaping-chart__diagram-notation-hint-example {
-  margin: 0;
-  font-size: 0.68rem;
-  font-style: italic;
-  font-weight: 400;
-  color: #64748b;
-  line-height: 1.4;
-  overflow-wrap: break-word;
-}
-
-.ns-shaping-chart__diagram-notation-hint-kernel {
-  color: #64748b;
-}
-
-.ns-shaping-chart__diagram-notation-order {
-  font-style: normal;
-  font-weight: 600;
-  color: #475569;
-}
-
-.ns-shaping-chart__diagram .ns-shaping-chart__diagram-svg-wrap {
-  margin-top: 0;
-}
-
-.ns-notation-overlay {
-  position: relative;
-  width: min(100%, 340px);
-  margin: 0 auto;
-  overflow: visible;
-}
-
-.ns-notation-overlay__image-wrap {
-  position: relative;
-  width: 100%;
-  min-height: 220px;
-}
-
-.ns-notation-overlay__image {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.ns-notation-overlay__image--mirrored {
-  transform: scaleX(-1);
-  transform-origin: center;
-}
-
-.ns-notation-overlay__stack {
-  position: absolute;
-  z-index: 1;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 0.38rem;
-}
-
-/* Green shoulder notation: above outer shoulder slope, upper area (first row lowest in stack). */
-.ns-notation-overlay__stack--shoulder {
-  top: 18%;
-  left: 6px;
-  right: auto;
-  bottom: auto;
-  max-width: 52%;
-  align-items: flex-start;
-}
-
-/* Terra cotta neckline notation: beside neckline opening, vertically centered. */
-.ns-notation-overlay__stack--neck {
-  top: 50%;
-  right: 6%;
-  left: auto;
-  bottom: auto;
-  transform: translateY(-50%);
-  max-width: 46%;
-  align-items: flex-end;
-  text-align: right;
-}
-
-/* Mirrored / second-shoulder image: flip anchors so labels stay on shoulder vs neckline sides. */
-.ns-notation-overlay--mirrored .ns-notation-overlay__stack--shoulder {
-  left: auto;
-  right: 6px;
-  align-items: flex-end;
-}
-
-.ns-notation-overlay--mirrored .ns-notation-overlay__stack--neck {
-  right: auto;
-  left: 6%;
-  align-items: flex-start;
-  text-align: left;
-}
-
-.ns-notation-overlay__stack--shoulder .ns-notation-overlay__label {
-  color: #52682d;
-}
-
-.ns-notation-overlay__stack--neck .ns-notation-overlay__label {
-  color: #c2614e;
-}
-
-.ns-notation-overlay__label {
-  position: relative;
-  display: inline-block;
-  font-size: 1.08rem;
-  font-weight: 700;
-  line-height: 1.28;
-  letter-spacing: 0.01em;
-  background: rgba(255, 255, 255, 0.86);
-  border-radius: 0.2rem;
-  padding: 0.1rem 0.24rem;
-  white-space: nowrap;
-}
-
-/* Knitter-at-machine perspective — shared by online diagram, second shoulder, and print mini diagram */
-.ns-notation-overlay__machine-orientation {
-  position: relative;
-  z-index: 0;
-  margin: 0.18rem 0 0;
-  padding: 0;
-  text-align: center;
-  font-size: 0.625rem;
-  line-height: 1.25;
-  font-weight: 400;
-  font-style: italic;
-  color: #94a3b8;
-  letter-spacing: 0.01em;
 }
 
 @media print {
@@ -342,8 +291,20 @@
     break-inside: avoid;
   }
 
-  .ns-shaping-chart__table-wrap {
-    border-color: #999;
+  /* Print: always show full checklist even when hide-completed is active on-screen */
+  .ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__table tbody tr.ns-shaping-chart__tr--progress-complete,
+  .ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__table tbody tr:has(.ns-shaping-chart__row-check:checked) {
+    display: table-row !important;
+  }
+
+  .ns-shaping-chart__table-scroll {
+    max-height: none !important;
+    overflow: visible !important;
+    border: none !important;
+  }
+
+  .ns-shaping-chart__table-scroll thead th {
+    position: static;
   }
 
   .ns-shaping-chart__tr--neck-both td {
@@ -362,11 +323,5 @@
     background: #eee !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-  }
-
-  .ns-notation-overlay__machine-orientation {
-    font-size: 6.5pt;
-    margin-top: 0.12rem;
-    color: #64748b;
   }
 }

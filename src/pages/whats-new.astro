@@ -4,7 +4,7 @@ import PageHead from "../components/PageHead.astro";
 export const prerender = true;
 
 const description =
-  "What’s new this week on Knit it Now — beta updates, featured tools, and what’s next.";
+  "Knit It Now patterns are getting a major upgrade — more interactive, more visual, and easier to follow beside your knitting machine.";
 const hyvorWebsiteId = import.meta.env.PUBLIC_HYVOR_TALK_WEBSITE_ID ?? "14706";
 
 /** Sue headshot for Note from Sue card + Message Sue modal (swap file here only). */
@@ -18,87 +18,107 @@ const sueHeadshot = "/images/sue.gif";
 >
   <section class="whats-new-page" aria-label="What's new at Knit it Now">
     <div class="whats-new-container">
-      <section class="whats-new-top" aria-label="Introduction">
+      <section class="whats-new-top" aria-label="Pattern system update">
         <div class="whats-new-top__lead">
           <div class="whats-new-header" role="banner">
-            <PageHead title="What's New" />
-            <p class="whats-new-updated" role="status">Updated May 13</p>
+            <PageHead title="What's New in Knit It Now Patterns" />
+            <p class="whats-new-updated" role="status">Updated May 23</p>
             <p class="whats-new-intro">
-              Here’s what’s new this week and what’s ready for you to explore.
+              Knit It Now patterns have gotten a <strong>major upgrade</strong>. These updates are designed to make your pattern easier to set up, easier to follow, and easier to use beside your knitting machine.
             </p>
+            <div class="whats-new-hero-cta">
+              <a class="kbm-btn kbm-btn-primary whats-new-hero-cta__btn" href="/beta/pattern-update">
+                Watch the 2-Minute Pattern Update
+              </a>
+            </div>
           </div>
 
-          <section class="whats-new-box" aria-labelledby="whats-new-featured">
-          <h2 class="whats-new-box__title" id="whats-new-featured">Featured This Week</h2>
+          <section class="whats-new-features" aria-labelledby="whats-new-features-heading">
+            <h2 class="whats-new-features__heading" id="whats-new-features-heading">What’s in the Upgrade</h2>
+            <ul class="whats-new-features__grid">
+              <li class="whats-new-feature-card">
+                <h3 class="whats-new-feature-card__title">Cardigan Support</h3>
+                <p class="whats-new-feature-card__lead">
+                  Choose pullover or cardigan and customize your pattern without rewriting it yourself.
+                </p>
+                <ul class="whats-new-feature-card__points">
+                  <li>Pullover and cardigan support</li>
+                  <li>More flexibility without rewriting patterns manually</li>
+                  <li>Easier customization</li>
+                </ul>
+              </li>
+              <li class="whats-new-feature-card">
+                <h3 class="whats-new-feature-card__title">Adjustable A-Line Shaping</h3>
+                <p class="whats-new-feature-card__lead">
+                  Shape the silhouette to fit your project and your preferences.
+                </p>
+                <ul class="whats-new-feature-card__points">
+                  <li>Adjustable shaping options</li>
+                  <li>Better fit flexibility</li>
+                  <li>More control over silhouette shaping</li>
+                </ul>
+              </li>
+              <li class="whats-new-feature-card">
+                <h3 class="whats-new-feature-card__title">Interactive Row-by-Row Tracking</h3>
+                <p class="whats-new-feature-card__lead">
+                  Stay oriented through long shaping sections without losing your place.
+                </p>
+                <ul class="whats-new-feature-card__points">
+                  <li>Mark completed shaping rows</li>
+                  <li>Hide completed rows while knitting</li>
+                  <li>Stay oriented in long shaping sections</li>
+                  <li>Reset progress anytime</li>
+                </ul>
+              </li>
+              <li class="whats-new-feature-card">
+                <h3 class="whats-new-feature-card__title">Visual Shaping Notation</h3>
+                <p class="whats-new-feature-card__lead">
+                  See the full picture of your shaping before and while you knit.
+                </p>
+                <ul class="whats-new-feature-card__points">
+                  <li>Full-piece shaping diagrams</li>
+                  <li>Visual row-by-row shaping guidance</li>
+                  <li>Toggle between views</li>
+                  <li>Easier shaping comprehension at a glance</li>
+                </ul>
+              </li>
+            </ul>
+          </section>
 
-          <ul class="whats-new-items">
-            <li class="whats-new-item">
-              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
-              <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title whats-new-item__title--pattern">
-                  <a href="/patterns/sleeveless-express/">NEW: Express Sweater Pattern System</a>
-                </h3>
-                <p class="whats-new-item__desc">
-                  Create your own sleeveless sweater pattern using your size, gauge, and neckline choices. Generate a printable machine knitting pattern with interactive help built in.
+          <section class="whats-new-more" aria-labelledby="whats-new-more-heading">
+            <h2 class="whats-new-more__heading" id="whats-new-more-heading">More Improvements</h2>
+            <div class="whats-new-more__items">
+              <article class="whats-new-more__item">
+                <h3 class="whats-new-more__title">Guided Pattern Builder</h3>
+                <p class="whats-new-more__copy">
+                  Set up a custom pattern step by step—choose audience, style, neckline, fit, and gauge for Women, Men, Kids, or Baby, and generate a ready-to-knit pattern without manual rewriting.
                 </p>
-                <p class="whats-new-item__links">
-                  <a class="whats-new-item__link" href="/patterns/sleeveless-express/">
-                    <img
-                      class="whats-new-item__link-icon"
-                      src="/images/express-icon.svg"
-                      alt=""
-                      width="18"
-                      height="18"
-                      decoding="async"
-                      aria-hidden="true"
-                    />
-                    Build Your Pattern
-                  </a>
-                  <span class="whats-new-item__links-sep" aria-hidden="true"> · </span>
-                  <a class="whats-new-item__link" href="/patterns/sleeveless/beta-pattern">
-                    <i class="fa-regular fa-file whats-new-item__link-icon whats-new-item__link-icon--fa" aria-hidden="true"></i>
-                    View Sample Pattern
-                  </a>
+              </article>
+              <article class="whats-new-more__item">
+                <h3 class="whats-new-more__title">Make the Pattern Your Own</h3>
+                <p class="whats-new-more__copy">
+                  Add your own project title and personal notes, hide or show tips and charts, and print cleaner pattern pages tailored to how you knit.
                 </p>
-              </div>
-            </li>
-            <li class="whats-new-item">
-              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
-              <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title whats-new-item__title--pattern">
-                  <a href="/videos">Videos</a>
-                </h3>
-                <p class="whats-new-item__desc">
-                  Browse and search the Knit it Now video library by title and description.
+              </article>
+              <article class="whats-new-more__item">
+                <h3 class="whats-new-more__title">Better Finishing Support</h3>
+                <p class="whats-new-more__copy">
+                  Finishing sections are now better organized, with help videos placed where knitters need them and clearer assembly guidance.
                 </p>
-              </div>
-            </li>
-            <li class="whats-new-item">
-              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
-              <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title whats-new-item__title--pattern">
-                  <a href="/help-hub">Help Hubs</a>
-                </h3>
-                <p class="whats-new-item__desc">
-                  Find focused tips and quick answers for common machine knitting questions.
+              </article>
+              <article class="whats-new-more__item">
+                <h3 class="whats-new-more__title">Yarn Estimator</h3>
+                <p class="whats-new-more__copy">
+                  Plan your yarn without leaving the pattern. The estimator uses your swatch and garment measurements, with support for ounces/grams and inches/cm.
                 </p>
-              </div>
-            </li>
-            <li class="whats-new-item">
-              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
-              <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title whats-new-item__title--pattern">
-                  <a href="/reference">References</a>
-                </h3>
-                <p class="whats-new-item__desc">
-                  Use quick guides for common terms, techniques, and go-to information.
+              </article>
+              <article class="whats-new-more__item">
+                <h3 class="whats-new-more__title">Cleaner Pattern Layouts</h3>
+                <p class="whats-new-more__copy">
+                  Patterns are easier to read, easier to scan beside the machine, better on mobile, and more print-friendly.
                 </p>
-              </div>
-            </li>
-          </ul>
-          <p class="whats-new-login-note">
-            <em>Note: This is a new platform, so to see the videos, you’ll need to set your password the first time you log in. Just use the "reset password" option to get started.</em>
-          </p>
+              </article>
+            </div>
           </section>
         </div>
 
@@ -111,16 +131,16 @@ const sueHeadshot = "/images/sue.gif";
             <div class="whats-new-footer__content">
               <h3>A Note from Sue</h3>
               <p>
-                Every week, more of the new Knit it Now experience is coming online.
+                This is a big moment for Knit It Now patterns—and I’m excited to share it with you.
               </p>
               <p>
-                This week’s <strong>biggest update</strong> is the new Express Pattern Builder along with pattern updates based directly on beta feedback.
+                These updates make patterns <strong>more interactive, more visual, and easier to follow</strong> while you’re at your machine. I built them with beta feedback from knitters like you.
               </p>
               <p>
-                The feedback you’ve shared is already shaping what comes next, and I’m excited to keep building this with you.
+                Take a look at the 2-minute walkthrough, try a feature or two, and let me know what you think. Your feedback helps shape what comes next.
               </p>
               <p>
-                <strong>Thank you</strong> for being here and helping make the new Knit it Now clearer, easier to use, and more helpful for machine knitters.
+                <strong>Thank you</strong> for being here and helping make Knit It Now clearer, easier to use, and more helpful for machine knitters.
               </p>
 
               <div class="whats-new-footer__cta">
@@ -144,46 +164,23 @@ const sueHeadshot = "/images/sue.gif";
         </footer>
       </section>
 
-      <section class="whats-new-box whats-new-box--coming whats-new-coming-block" aria-labelledby="whats-new-coming-soon">
-          <h2 class="whats-new-box__title" id="whats-new-coming-soon">Coming Soon</h2>
-          <ul class="whats-new-items">
-            <li class="whats-new-item">
-              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
-              <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title">More patterns</h3>
-              </div>
-            </li>
-            <li class="whats-new-item">
-              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
-              <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title">More Help Hub entries</h3>
-              </div>
-            </li>
-            <li class="whats-new-item">
-              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
-              <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title">Expanded video chapters and jump links</h3>
-              </div>
-            </li>
-            <li class="whats-new-item">
-              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
-              <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title">Knitting Machine Reference</h3>
-              </div>
-            </li>
-            <li class="whats-new-item">
-              <span class="whats-new-item__glyph" aria-hidden="true">✧</span>
-              <div class="whats-new-item__body">
-                <h3 class="whats-new-item__title">Site bookmarks</h3>
-              </div>
-            </li>
-          </ul>
+      <section class="whats-new-beginning-callout" aria-labelledby="whats-new-beginning">
+        <h2 class="whats-new-beginning-callout__title" id="whats-new-beginning">This Is Just the Beginning</h2>
+        <p class="whats-new-beginning-callout__copy">
+          These updates lay the groundwork for more garment styles, new shaping systems, additional interactive knitting tools, and ways to save and revisit your custom projects. We’re building this with you, one step at a time—and your feedback helps shape what comes next.
+        </p>
+        <div class="whats-new-bottom-cta">
+          <a class="kbm-btn kbm-btn-primary whats-new-bottom-cta__btn" href="/beta/pattern-update">
+            See the Pattern Update
+          </a>
+        </div>
       </section>
-<hr class="whats-new-divider" aria-label="Divider" >
+
+      <hr class="whats-new-divider" aria-label="Divider">
       <section id="comments" class="whats-new-conversation" aria-labelledby="whats-new-conversation-title">
         <h2 id="whats-new-conversation-title">Help Shape What’s Next</h2>
         <p>
-          Have thoughts as you explore? I’d love to hear what’s working, what’s confusing, or what you expected to see.
+          Have thoughts as you explore the new patterns? I’d love to hear what’s working, what’s confusing, or what you expected to see.
         </p>
                <div id="hyvor-talk-view" class="whats-new-conversation__comments"></div>
       </section>
@@ -326,7 +323,7 @@ const sueHeadshot = "/images/sue.gif";
       min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: clamp(1.25rem, 2.5vw, 1.75rem);
+      gap: clamp(1.75rem, 3vw, 2.25rem);
     }
 
     .whats-new-top .whats-new-header {
@@ -371,8 +368,179 @@ const sueHeadshot = "/images/sue.gif";
       color: #243015;
     }
 
-    .whats-new-coming-block {
-      margin-bottom: clamp(1.875rem, 3vw, 2.5rem);
+    .whats-new-hero-cta {
+      margin-top: 1.35rem;
+    }
+
+    .whats-new-hero-cta__btn,
+    .whats-new-bottom-cta__btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      padding: 0.8rem 1.45rem;
+      border-radius: 10px;
+      text-decoration: none;
+      font-family: inherit;
+    }
+
+    .whats-new-features {
+      margin-top: 0.25rem;
+    }
+
+    .whats-new-features__heading {
+      margin: 0 0 1.15rem 0;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #c2614e;
+      font-size: 1.2rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--kbm-green);
+    }
+
+    .whats-new-features__grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.1rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .whats-new-feature-card {
+      box-sizing: border-box;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      padding: 1.2rem 1.3rem;
+    }
+
+    .whats-new-feature-card__title {
+      margin: 0 0 0.45rem 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.3;
+      color: #2c3820;
+    }
+
+    .whats-new-feature-card__lead {
+      margin: 0 0 0.6rem 0;
+      font-size: var(--text-base);
+      line-height: 1.5;
+      color: #3d4a2e;
+    }
+
+    .whats-new-feature-card__points {
+      margin: 0;
+      padding-left: 1.1rem;
+      font-size: 0.94rem;
+      line-height: 1.45;
+      color: #4a5640;
+    }
+
+    .whats-new-feature-card__points li + li {
+      margin-top: 0.28rem;
+    }
+
+    .whats-new-more {
+      padding-top: 0.35rem;
+    }
+
+    .whats-new-more__heading {
+      margin: 0 0 1rem 0;
+      font-size: 1.05rem;
+      font-weight: 600;
+      line-height: 1.3;
+      color: rgba(82, 104, 45, 0.88);
+      letter-spacing: 0.01em;
+    }
+
+    .whats-new-more__items {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      max-width: 42rem;
+    }
+
+    .whats-new-more__item + .whats-new-more__item {
+      padding-top: 1.25rem;
+      border-top: 1px solid rgba(82, 104, 45, 0.1);
+    }
+
+    .whats-new-more__item {
+      min-width: 0;
+    }
+
+    .whats-new-more__title {
+      margin: 0 0 0.35rem 0;
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.35;
+      color: #2c3820;
+    }
+
+    .whats-new-more__copy {
+      margin: 0;
+      font-size: 0.98rem;
+      line-height: 1.55;
+      color: #4a5640;
+    }
+
+    .whats-new-beginning-callout {
+      box-sizing: border-box;
+      width: 100%;
+      margin: clamp(2rem, 4vw, 2.75rem) 0 clamp(1.75rem, 3vw, 2.5rem);
+      padding: clamp(1.5rem, 3vw, 2rem) clamp(1.5rem, 3.5vw, 2.25rem);
+      background: linear-gradient(165deg, #fffef9 0%, #f5f2ea 100%);
+      border: 1px solid rgba(82, 104, 45, 0.14);
+      border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(82, 104, 45, 0.06);
+    }
+
+    .whats-new-beginning-callout__title {
+      margin: 0 0 0.75rem 0;
+      font-size: clamp(1.15rem, 2.2vw, 1.35rem);
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--kbm-green);
+    }
+
+    .whats-new-beginning-callout__copy {
+      margin: 0;
+      max-width: 52rem;
+      font-size: var(--text-base);
+      line-height: 1.6;
+      color: #3d4a2e;
+    }
+
+    .whats-new-bottom-cta {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 1.35rem;
+    }
+
+    .whats-new-divider {
+      margin: 0 0 clamp(1.75rem, 3vw, 2.5rem);
+      border: 0;
+      border-top: 1px solid #e5e5e5;
+    }
+
+    @media (max-width: 768px) {
+      .whats-new-features__grid {
+        grid-template-columns: 1fr;
+      }
+
+      .whats-new-hero-cta__btn,
+      .whats-new-bottom-cta__btn {
+        width: 100%;
+      }
+
+      .whats-new-bottom-cta {
+        justify-content: stretch;
+      }
     }
 
     @media (max-width: 768px) {

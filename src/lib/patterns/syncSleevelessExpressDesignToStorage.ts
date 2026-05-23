@@ -3,6 +3,8 @@
  * into canonical sleeveless pattern storage. Shared by Express and Custom Build design step.
  */
 import { normalizeSleevelessAudience, saveCurrentPattern, savePatternData } from "./patternStorage";
+import { seedCustomBuildBodyFinishedFromChartRow } from "./sleevelessCustomBuildBodyMeasurements";
+import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 
 export function expressWhoToChartAudience(whoRaw: unknown): string {
   const s = String(whoRaw ?? "").trim().toLowerCase();
@@ -14,9 +16,38 @@ export function expressWhoToChartAudience(whoRaw: unknown): string {
   return n || "misses";
 }
 
-/** Express UI uses `round` | `v-neck`; canonical pattern uses `round` | `v`. */
+/** Express UI uses `round` | `v-neck` (any casing); canonical pattern uses `round` | `v`. */
+/** Maps Express wizard style keys (`shaped-pullover`, etc.) to canonical style fields. */
+export function mapExpressStyleKey(styleKey: string): {
+  bodyShape: string;
+  frontStyle: "open" | "closed";
+} {
+  switch (String(styleKey ?? "").trim().toLowerCase()) {
+    case "shaped-pullover":
+      return { bodyShape: "aline", frontStyle: "closed" };
+    case "shaped-cardigan":
+      return { bodyShape: "aline", frontStyle: "open" };
+    case "straight-cardigan":
+      return { bodyShape: "straight", frontStyle: "open" };
+    case "waist-pullover":
+      return { bodyShape: "waist", frontStyle: "closed" };
+    case "waist-cardigan":
+      return { bodyShape: "waist", frontStyle: "open" };
+    case "straight-pullover":
+    default:
+      return { bodyShape: "straight", frontStyle: "closed" };
+  }
+}
+
 export function mapExpressNecklineToStorage(n: string): "round" | "v" {
-  return n === "v-neck" ? "v" : "round";
+  const s = String(n ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+  if (!s) return "round";
+  if (s === "v" || s === "v-neck" || s === "vneck" || s === "v_neck" || s === "v neck") return "v";
+  if (/\bv[\s_-]?neck\b/.test(s)) return "v";
+  return "round";
 }
 
 /**
@@ -30,6 +61,16 @@ export function syncSleevelessDesignBasicsToPatternStorage(
     fit: string;
     selectedSize: string;
     selectedMeasurements: Record<string, number>;
+    /** When set (e.g. Express cardigan), preserves open front instead of forcing pullover. */
+    frontStyle?: "open" | "closed";
+    garmentStyle?: "pullover" | "cardigan";
+    patternMode?: string;
+    /** Sweater chart row for Custom Build body/finished measurement layer (optional). */
+    chartRow?: ChartRow;
+    /** When false, re-seed finished bust/waist/hip from chart on each sync. Default true. */
+    preserveCustomBuildFinished?: boolean;
+    /** Express / shaped styles — avoids resetting to straight on review continue. */
+    bodyShape?: string;
   }>,
 ): void {
   const stylePayload: Record<string, unknown> = {};
@@ -59,11 +100,36 @@ export function syncSleevelessDesignBasicsToPatternStorage(
     fitPayload.selectedMeasurements = params.selectedMeasurements;
   }
 
-  if (params.who || params.neckline) {
-    stylePayload.bodyShape = "straight";
-    stylePayload.frontStyle = "closed";
+  const explicitFront = params.frontStyle === "open" || params.frontStyle === "closed";
+  const explicitGarment = params.garmentStyle === "cardigan" || params.garmentStyle === "pullover";
+
+  if (params.who || params.neckline || explicitFront || explicitGarment || params.patternMode) {
+    stylePayload.bodyShape =
+      typeof params.bodyShape === "string" && params.bodyShape.trim() !== ""
+        ? params.bodyShape.trim()
+        : "straight";
     stylePayload.length = "top";
     stylePayload.armholeStyle = "standard";
+
+    let front: "open" | "closed" = "closed";
+    if (params.frontStyle === "open" || params.frontStyle === "closed") {
+      front = params.frontStyle;
+    } else if (params.garmentStyle === "cardigan") {
+      front = "open";
+    } else if (params.garmentStyle === "pullover") {
+      front = "closed";
+    }
+    stylePayload.frontStyle = front;
+
+    let garment: "pullover" | "cardigan" = front === "open" ? "cardigan" : "pullover";
+    if (params.garmentStyle === "cardigan" || params.garmentStyle === "pullover") {
+      garment = params.garmentStyle;
+    }
+    stylePayload.garmentStyle = garment;
+
+    if (typeof params.patternMode === "string" && params.patternMode.trim() !== "") {
+      stylePayload.patternMode = params.patternMode.trim();
+    }
   }
 
   const hasStyle = Object.keys(stylePayload).length > 0;
@@ -78,4 +144,14 @@ export function syncSleevelessDesignBasicsToPatternStorage(
 
   if (hasStyle) savePatternData("style", stylePayload);
   if (hasFit) savePatternData("fit", fitPayload);
+
+  const fitPref =
+    params.fit === "close" || params.fit === "standard" || params.fit === "relaxed"
+      ? params.fit
+      : "standard";
+  if (params.chartRow && params.fit) {
+    seedCustomBuildBodyFinishedFromChartRow(params.chartRow, fitPref, {
+      preserveFinished: params.preserveCustomBuildFinished !== false,
+    });
+  }
 }

@@ -1,0 +1,536 @@
+---
+export const prerender = true;
+import Layout from "../../layouts/Layout.astro";
+import { getVimeoThumbnailUrl } from "../../lib/vimeo";
+
+const pageTitle = "Sweater Pattern Update — Beta";
+const description =
+  "A short video walkthrough of what’s new in the updated sweater patterns: cardigan support, row tracking, shaping charts, and A-line options.";
+const patternUrl = "/patterns/sleeveless-express/";
+const vimeoId = "1194772210";
+const videoTitle = "What’s new in the updated sweater pattern";
+
+const previewThumbnailUrl = await getVimeoThumbnailUrl(`https://vimeo.com/${vimeoId}`);
+
+const vimeoPlayerSrc = `https://player.vimeo.com/video/${vimeoId}?autoplay=1&title=0&byline=0&portrait=0`;
+---
+
+<Layout
+  title={`${pageTitle} | Knit it Now`}
+  description={description}
+  bodyClass="page--tight-header"
+  skipGlobalHyvor={true}
+>
+  <article class="beta-pattern-update">
+    <div class="beta-pattern-update__hero">
+      <header class="beta-pattern-update__header">
+        <h1 class="beta-pattern-update__title">Take a Quick Look at What’s New</h1>
+        <p class="beta-pattern-update__intro">
+          We’ve added several new features to the sweater patterns, including cardigan support,
+          interactive row tracking, visual shaping notation charts, and adjustable A-line shaping.
+        </p>
+      </header>
+
+      <section class="beta-pattern-update__video" aria-labelledby="beta-pattern-update-video-heading">
+        <h2 id="beta-pattern-update-video-heading" class="visually-hidden">Update video</h2>
+        <button
+          type="button"
+          class="beta-pattern-update__preview"
+          data-beta-pattern-video-open
+          aria-label={`Play video: ${videoTitle}`}
+        >
+          <span class="beta-pattern-update__preview-fallback" aria-hidden="true"></span>
+          <img
+            class="beta-pattern-update__preview-img"
+            src={previewThumbnailUrl ?? undefined}
+            alt=""
+            decoding="async"
+            loading="eager"
+          />
+          <span class="beta-pattern-update__play" aria-hidden="true">
+            <span class="beta-pattern-update__play-icon"></span>
+          </span>
+        </button>
+        <p class="beta-pattern-update__preview-caption">2 minute video</p>
+      </section>
+
+      <div class="beta-pattern-update__actions">
+        <p class="beta-pattern-update__feedback">
+          I know it’s hard to fully review a knitting pattern without actually knitting it, <strong>so I’m only
+          asking for one small thing:</strong> take a look at just one new feature and tell me what you think. 😊
+        </p>
+
+        <section class="beta-pattern-update__cta" aria-labelledby="beta-pattern-update-cta-heading">
+          <h2 id="beta-pattern-update-cta-heading" class="visually-hidden">Try the pattern</h2>
+          <a class="kbm-btn kbm-btn-primary beta-pattern-update__cta-btn" href={patternUrl}>
+            Try the Updated Pattern
+          </a>
+        </section>
+
+        <p class="beta-pattern-update__reply">
+          After you try it, just reply to the email and tell me what you noticed.
+        </p>
+      </div>
+    </div>
+  </article>
+
+  <div
+    class="beta-pattern-update__modal"
+    id="beta-pattern-update-video-modal"
+    hidden
+    aria-hidden="true"
+  >
+    <button
+      type="button"
+      class="beta-pattern-update__modal-backdrop"
+      data-beta-pattern-video-close
+      tabindex="-1"
+      aria-label="Close video"
+    ></button>
+    <div
+      class="beta-pattern-update__modal-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="beta-pattern-update-video-modal-title"
+    >
+      <h2 id="beta-pattern-update-video-modal-title" class="visually-hidden">{videoTitle}</h2>
+      <button
+        type="button"
+        class="beta-pattern-update__modal-close"
+        data-beta-pattern-video-close
+        aria-label="Close video"
+      >
+        <span aria-hidden="true">×</span>
+      </button>
+      <div class="beta-pattern-update__modal-player">
+        <iframe
+          id="beta-pattern-update-video-iframe"
+          title={videoTitle}
+          src=""
+          frameborder="0"
+          allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script define:vars={{ vimeoPlayerSrc, vimeoId }}>
+  (function () {
+    var openBtn = document.querySelector("[data-beta-pattern-video-open]");
+    var modal = document.getElementById("beta-pattern-update-video-modal");
+    var iframe = document.getElementById("beta-pattern-update-video-iframe");
+    var closeBtns = document.querySelectorAll("[data-beta-pattern-video-close]");
+    var previewImg = document.querySelector(".beta-pattern-update__preview-img");
+    var lastActive = null;
+
+    if (previewImg && !previewImg.getAttribute("src")) {
+      fetch(
+        "https://vimeo.com/api/oembed.json?url=" +
+          encodeURIComponent("https://vimeo.com/" + vimeoId)
+      )
+        .then(function (res) {
+          return res.ok ? res.json() : null;
+        })
+        .then(function (data) {
+          if (data && data.thumbnail_url) previewImg.src = data.thumbnail_url;
+        })
+        .catch(function () {});
+    }
+
+    function openModal() {
+      if (!modal || !iframe) return;
+      lastActive = document.activeElement;
+      iframe.src = vimeoPlayerSrc;
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      var closeEl = modal.querySelector(".beta-pattern-update__modal-close");
+      if (closeEl && typeof closeEl.focus === "function") {
+        closeEl.focus();
+      }
+    }
+
+    function closeModal() {
+      if (!modal || !iframe) return;
+      iframe.src = "";
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+      if (lastActive && typeof lastActive.focus === "function") {
+        lastActive.focus();
+      }
+    }
+
+    if (openBtn) {
+      openBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        openModal();
+      });
+    }
+
+    closeBtns.forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        closeModal();
+      });
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      if (!modal || modal.hidden) return;
+      e.preventDefault();
+      closeModal();
+    });
+  })();
+</script>
+
+<style>
+  .beta-pattern-update {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 3rem;
+    color: var(--kbm-text, #1f2d3d);
+  }
+
+  .beta-pattern-update__hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "video"
+      "actions";
+    gap: 1.75rem;
+    align-items: start;
+  }
+
+  .beta-pattern-update__header {
+    grid-area: header;
+    margin: 0;
+  }
+
+  .beta-pattern-update__video {
+    grid-area: video;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .beta-pattern-update__actions {
+    grid-area: actions;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .beta-pattern-update__title {
+    margin: 0 0 1rem;
+    font-size: var(--text-xxl, 1.75rem);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .beta-pattern-update__intro {
+    margin: 0;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #3a4a38;
+  }
+
+  .beta-pattern-update__preview {
+    display: block;
+    position: relative;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: #1a2412;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    aspect-ratio: 16 / 9;
+    box-shadow: 0 4px 18px rgba(26, 36, 18, 0.14);
+    isolation: isolate;
+  }
+
+  .beta-pattern-update__preview:focus-visible {
+    outline: 3px solid var(--kbm-green, #52682d);
+    outline-offset: 3px;
+  }
+
+  .beta-pattern-update__preview-caption {
+    margin: 0.35rem 0 0;
+    text-align: center;
+    font-size: 0.9rem;
+    line-height: 1.35;
+    color: #4a5638;
+  }
+
+  .beta-pattern-update__preview-fallback {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(145deg, #3a4a38 0%, #1a2412 100%);
+  }
+
+  .beta-pattern-update__preview-img {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .beta-pattern-update__preview:has(.beta-pattern-update__preview-img)::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(20, 28, 14, 0.12) 0%,
+      rgba(15, 20, 10, 0.42) 50%,
+      rgba(15, 20, 10, 0.52) 100%
+    );
+    transition: background 0.2s ease;
+  }
+
+  .beta-pattern-update__preview:hover::after,
+  .beta-pattern-update__preview:focus-visible::after {
+    background: linear-gradient(
+      180deg,
+      rgba(20, 28, 14, 0.18) 0%,
+      rgba(15, 20, 10, 0.5) 50%,
+      rgba(15, 20, 10, 0.58) 100%
+    );
+  }
+
+  .beta-pattern-update__play {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    pointer-events: none;
+  }
+
+  .beta-pattern-update__play-icon {
+    display: block;
+    pointer-events: none;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    position: relative;
+  }
+
+  .beta-pattern-update__play-icon::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 54%;
+    transform: translate(-50%, -50%);
+    border-style: solid;
+    border-width: 0.7rem 0 0.7rem 1.15rem;
+    border-color: transparent transparent transparent var(--kbm-green, #52682d);
+  }
+
+  .beta-pattern-update__feedback {
+    margin: 0 0 1.5rem;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: #3a4a38;
+  }
+
+  .beta-pattern-update__cta {
+    display: flex;
+    margin-bottom: 1.25rem;
+  }
+
+  .beta-pattern-update__cta-btn {
+    width: 100%;
+    max-width: 320px;
+    justify-content: center;
+    text-align: center;
+    font-size: 1.05rem;
+    padding: 0.85rem 1.5rem;
+  }
+
+  .beta-pattern-update__reply {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: #4a5638;
+  }
+
+  .beta-pattern-update__modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    box-sizing: border-box;
+  }
+
+  .beta-pattern-update__modal[hidden],
+  .beta-pattern-update__modal[aria-hidden="true"] {
+    display: none !important;
+  }
+
+  .beta-pattern-update__modal-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: rgba(20, 28, 14, 0.72);
+    cursor: pointer;
+  }
+
+  .beta-pattern-update__modal-panel {
+    position: relative;
+    z-index: 1;
+    width: min(1100px, 92vw);
+    margin: 0 auto;
+    padding: 0;
+    background: #0f140a;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+  }
+
+  .beta-pattern-update__modal-close {
+    position: absolute;
+    top: 0.65rem;
+    right: 0.65rem;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    color: #1a2412;
+    font-size: 1.65rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .beta-pattern-update__modal-close:hover,
+  .beta-pattern-update__modal-close:focus-visible {
+    background: #fff;
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .beta-pattern-update__modal-player {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+  }
+
+  .beta-pattern-update__modal-player iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (min-width: 768px) {
+    .beta-pattern-update__hero {
+      grid-template-columns: minmax(0, 9fr) minmax(0, 11fr);
+      grid-template-areas:
+        "header video"
+        "actions video";
+      gap: 2rem 2.5rem;
+      align-items: start;
+    }
+
+    .beta-pattern-update__video {
+      align-self: start;
+      width: 100%;
+    }
+
+    .beta-pattern-update__play-icon {
+      width: 5.25rem;
+      height: 5.25rem;
+    }
+
+    .beta-pattern-update__play-icon::after {
+      border-width: 0.8rem 0 0.8rem 1.35rem;
+    }
+  }
+
+  @media (min-width: 960px) {
+    .beta-pattern-update__hero {
+      gap: 2.5rem 3rem;
+    }
+
+    .beta-pattern-update__title {
+      font-size: 2rem;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .beta-pattern-update__cta-btn {
+      max-width: none;
+    }
+
+    .beta-pattern-update__modal-panel {
+      width: min(100%, 96vw);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .beta-pattern-update {
+      padding-top: 2rem;
+      padding-bottom: 2.5rem;
+    }
+
+    .beta-pattern-update__title {
+      font-size: 1.5rem;
+    }
+
+    .beta-pattern-update__intro,
+    .beta-pattern-update__feedback {
+      font-size: 1rem;
+    }
+
+    .beta-pattern-update__play-icon {
+      width: 3.75rem;
+      height: 3.75rem;
+    }
+
+    .beta-pattern-update__play-icon::after {
+      border-width: 0.55rem 0 0.55rem 0.95rem;
+    }
+  }
+</style>

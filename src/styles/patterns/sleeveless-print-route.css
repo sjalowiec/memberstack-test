@@ -178,7 +178,7 @@
 
   .sleeveless-print-root .print-hero-band {
     display: grid;
-    grid-template-columns: 1.9in minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 1.9in;
     column-gap: 0.35in;
     row-gap: 0;
     align-items: start;
@@ -190,7 +190,7 @@
   }
 
   .sleeveless-print-root .print-hero-visual {
-    grid-column: 1;
+    grid-column: 2;
     grid-row: 1;
     margin: 0;
     padding: 0;
@@ -202,7 +202,8 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    justify-self: start;
+    justify-self: end;
+    align-self: start;
   }
 
   .sleeveless-print-root .print-hero-figure {
@@ -217,13 +218,14 @@
   }
 
   .sleeveless-print-root .print-hero-summary {
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 1;
     margin: 0;
     min-width: 0;
     max-width: none;
     position: static;
     float: none;
+    align-self: start;
   }
 
   .sleeveless-print-root .print-hero-img {
@@ -628,115 +630,6 @@
     print-color-adjust: exact;
   }
 
-  /*
-    Diagram block: visible "Neckline / Shoulder Diagram" sub-heading + bordered wrapper
-    around the notation SVG so the print shaping section reads as "table â†’ diagram"
-    rather than leaving the SVG as a loose floating image. Both BACK and FRONT charts
-    flow through `renderNeckShoulderShapingPrintInstructionTableHtml`, so this single
-    block style applies to both pieces.
-  */
-  .sleeveless-print-root .ns-shaping-mini__diagram-title {
-    margin: 0.45rem 0 0.18rem;
-    font-size: 0.79rem;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    color: #1f2937;
-    break-after: avoid;
-  }
-
-  /* Print-only shaping notation key (mirrors online .ns-shaping-chart__diagram-notation-hint tones). */
-  .sleeveless-print-root .ns-shaping-mini__diagram-notation-help {
-    display: block;
-    visibility: visible;
-    margin: 0 0 0.42rem;
-    padding: 0;
-    font-size: 0.68rem;
-    font-weight: 400;
-    color: #64748b;
-    line-height: 1.35;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  .sleeveless-print-root .ns-shaping-mini__diagram-notation-help > div:first-child {
-    margin-bottom: 0.06rem;
-  }
-
-  .sleeveless-print-root .ns-shaping-mini__diagram-notation-help strong {
-    font-weight: 600;
-    color: #475569;
-  }
-
-  .sleeveless-print-root .ns-shaping-mini__diagram-notation-help em {
-    font-style: italic;
-    font-weight: 400;
-    color: #64748b;
-  }
-
-  .sleeveless-print-root .ns-shaping-mini__diagram-block {
-    margin: 0 0 0.35rem;
-    padding: 0.35rem;
-    border: 1px solid #e5e7eb;
-    background: #fff;
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-  .sleeveless-print-root .ns-shaping-mini__svg-wrap {
-    margin: 0.2rem auto 0.15rem;
-    max-width: 11.25rem;
-    overflow: visible;
-  }
-
-  .sleeveless-print-root .ns-shaping-mini__svg-wrap .ns-notation-overlay {
-    width: 100%;
-    position: relative;
-    overflow: visible;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  .sleeveless-print-root .ns-shaping-mini__svg-wrap .ns-notation-overlay__image-wrap {
-    min-height: 170px;
-  }
-
-  .sleeveless-print-root .ns-shaping-mini__svg-wrap .ns-notation-overlay__stack {
-    display: flex !important;
-    visibility: visible !important;
-    z-index: 2;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  .sleeveless-print-root .ns-shaping-mini__svg-wrap .ns-notation-overlay__stack--shoulder .ns-notation-overlay__label {
-    color: #52682d !important;
-  }
-
-  .sleeveless-print-root .ns-shaping-mini__svg-wrap .ns-notation-overlay__stack--neck .ns-notation-overlay__label {
-    color: #c2614e !important;
-  }
-
-  .sleeveless-print-root .ns-shaping-mini__svg-wrap .ns-notation-overlay__label {
-    font-size: 10pt;
-    padding: 0.03rem 0.12rem;
-    background: rgba(255, 255, 255, 0.92);
-    white-space: nowrap;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  .sleeveless-print-root .ns-shaping-mini__svg-wrap .ns-notation-overlay__machine-orientation {
-    margin: 0.06rem 0 0;
-    font-size: 6pt;
-    line-height: 1.2;
-    font-weight: 400;
-    font-style: italic;
-    color: #64748b;
-    text-align: center;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
   .sleeveless-print-root .print-finishing-list {
     margin: 0.5rem 0 0;
     padding-left: 1.25rem;
@@ -852,7 +745,7 @@
 
     .sleeveless-print-root .print-hero-band {
       display: grid !important;
-      grid-template-columns: 1.9in minmax(0, 1fr) !important;
+      grid-template-columns: minmax(0, 1fr) 1.9in !important;
       column-gap: 0.35in !important;
       row-gap: 0 !important;
       align-items: start !important;
@@ -862,7 +755,7 @@
     }
 
     .sleeveless-print-root .print-hero-visual {
-      grid-column: 1 !important;
+      grid-column: 2 !important;
       grid-row: 1 !important;
       position: static !important;
       float: none !important;
@@ -872,6 +765,8 @@
       display: flex !important;
       flex-direction: column !important;
       align-items: stretch !important;
+      justify-self: end !important;
+      align-self: start !important;
     }
 
     .sleeveless-print-root .print-hero-figure {
@@ -883,12 +778,13 @@
     }
 
     .sleeveless-print-root .print-hero-summary {
-      grid-column: 2 !important;
+      grid-column: 1 !important;
       grid-row: 1 !important;
       position: static !important;
       float: none !important;
       margin: 0 !important;
       min-width: 0 !important;
+      align-self: start !important;
     }
 
     .sleeveless-print-root .print-hero-summary-basics {

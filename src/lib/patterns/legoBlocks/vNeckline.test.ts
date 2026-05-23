@@ -7,6 +7,8 @@ import {
   calculateVNeckNeckEdgePlan,
   distributeVNeckInnerDecreaseRows,
   neckDecreaseStitchesPerSideFromOpening,
+  vNeckDivideSideStartsFromLiveStitches,
+  vNeckNeckDecreasesForSide,
   vNeckPlanToInnerEdgeEventsByRow,
 } from "./vNeckline";
 
@@ -42,6 +44,31 @@ describe("distributeVNeckInnerDecreaseRows", () => {
 
   it("places a single decrease at startRow", () => {
     expect(distributeVNeckInnerDecreaseRows(1, 100, 200)).toEqual([100]);
+  });
+});
+
+describe("vNeckDivideSideStartsFromLiveStitches", () => {
+  it("uses exact half for even live B (no center stitch consumed)", () => {
+    expect(vNeckDivideSideStartsFromLiveStitches(88)).toEqual({ left: 44, right: 44 });
+  });
+
+  it("derives per-side neck decreases from side start minus shoulder on that side", () => {
+    expect(
+      vNeckNeckDecreasesForSide({ sideStartStitches: 44, shoulderStitchesOnSide: 26 }),
+    ).toBe(18);
+  });
+
+  it("honors neckDecreaseStitchesPerSide override instead of floor(N/2)", () => {
+    const plan = calculateVNeckNeckEdgePlan({
+      stitchesAfterArmhole: 88,
+      neckOpeningStitches: 37,
+      neckDecreaseStitchesPerSide: 19,
+      vNeckStartRow: 10,
+      shoulderEndRow: 28,
+      side: "left",
+    });
+    expect(plan.neckDecreaseStitchesPerSide).toBe(19);
+    expect(plan.decreaseRows.length).toBe(19);
   });
 });
 

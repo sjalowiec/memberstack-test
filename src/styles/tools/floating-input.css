@@ -298,3 +298,19 @@
   line-height: 1.4;
   display: block;
 }
+
+/* Opt-in native number steppers (e.g. button-band buttonhole count) */
+.floating-input.bb-buttonhole-count input[type="number"][data-bb-stepper] {
+  -moz-appearance: number-input;
+  appearance: auto;
+  padding-right: 1.5rem;
+}
+
+.floating-input.bb-buttonhole-count input[type="number"][data-bb-stepper]::-webkit-outer-spin-button,
+.floating-input.bb-buttonhole-count input[type="number"][data-bb-stepper]::-webkit-inner-spin-button {
+  -webkit-appearance: inner-spin-button;
+  opacity: 1;
+  display: block;
+  height: 1.5em;
+  margin: 0;
+}

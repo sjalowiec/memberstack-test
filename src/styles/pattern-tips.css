@@ -1,14 +1,118 @@
 /* Shared pattern tips UI — import once per page that uses PatternTipsToggle + .pattern-tip */
 
 .pattern-tip {
+  position: relative;
   font-size: 0.85rem;
   color: #374151;
   background: rgba(194, 97, 78, 0.07);
   border-left: 4px solid #c2614e;
   border-radius: 6px;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 2rem 0.75rem 1rem;
   margin: 0.5rem 0 0.75rem 0;
   line-height: 1.4;
+}
+
+.pattern-tip-dismiss {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  width: 1.875rem;
+  height: 1.875rem;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pattern-tip-dismiss:hover,
+.pattern-tip-dismiss:focus-visible {
+  color: #6b7280;
+  background: rgba(194, 97, 78, 0.12);
+  outline: none;
+}
+
+/* Top control banner — always visible; compact; not hidden when global tips are off */
+.pattern-tips-control-box.pattern-tip {
+  padding: 0.5rem 0.75rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.pattern-tips-control__layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+}
+
+.pattern-tips-control__lead {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.pattern-tips-control__info-icon {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: #c2614e;
+  font-size: 0.95rem;
+}
+
+.pattern-tips-control__text {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: #374151;
+}
+
+.pattern-tips-control__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+}
+
+.pattern-tips-control-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  font-family: inherit;
+  color: #6b7280;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(194, 97, 78, 0.28);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pattern-tips-control-btn i {
+  font-size: 0.8em;
+  opacity: 0.9;
+}
+
+.pattern-tips-control-btn:hover,
+.pattern-tips-control-btn:focus-visible {
+  color: #c2614e;
+  border-color: rgba(194, 97, 78, 0.45);
+  background: rgba(255, 255, 255, 0.95);
+  outline: none;
+}
+
+/* Individually dismissed tips stay hidden when global tips are on */
+.pattern-tips-scope[data-show-tips="true"] .pattern-tip[data-tip-dismissed="true"],
+#pattern-content[data-show-tips="true"] .pattern-tip[data-tip-dismissed="true"] {
+  display: none !important;
 }
 
 .pattern-tip strong {
@@ -29,13 +133,14 @@
 
 .tips-icon {
   color: #c2614e;
-  margin-right: 6px;
+  margin-right: 4px;
   font-size: 0.9em;
   vertical-align: middle;
   opacity: 0.85;
+  cursor: pointer;
 }
 
-/* Tips OFF: quiet utility row only (not .pattern-tip, stays visible when tips hidden) */
+/* Legacy off-row (hat/sleeveless now use control box) */
 .pattern-tips-off-row {
   margin: 0 0 0.5rem 0;
   padding: 0;
@@ -47,12 +152,14 @@
   cursor: pointer;
 }
 
-/* Toggle all tips inside the scope; off-row is not .pattern-tip */
-.pattern-tips-scope[data-show-tips="false"] .pattern-tip {
+/* Hide pattern tips except the top control box */
+.pattern-tips-scope[data-show-tips="false"] .pattern-tip:not(.pattern-tips-control-box),
+#pattern-content[data-show-tips="false"] .pattern-tip:not(.pattern-tips-control-box) {
   display: none;
 }
 
-.pattern-tips-scope[data-show-tips="true"] .pattern-tip {
+.pattern-tips-scope[data-show-tips="true"] .pattern-tip,
+#pattern-content[data-show-tips="true"] .pattern-tip {
   display: block;
 }
 
@@ -66,13 +173,19 @@
     border-left: 1px solid #333 !important;
   }
 
-  /* Tips-toggle intro (near personalization); must never appear on the printed sheet */
   .pattern-tips-scope[data-show-tips="true"] .pattern-tip.pattern-print-personalization-never-print,
-  .pattern-tips-scope[data-show-tips="true"] .pattern-tip[data-pattern-print-personalization-tip] {
+  .pattern-tips-scope[data-show-tips="true"] .pattern-tip[data-pattern-print-personalization-tip],
+  .pattern-tips-scope[data-show-tips="true"] .pattern-tips-control-box,
+  #pattern-content .pattern-tips-control-box {
     display: none !important;
   }
 
   .pattern-tips-off-row {
+    display: none !important;
+  }
+
+  .pattern-tip-dismiss,
+  .pattern-tips-control-btn {
     display: none !important;
   }
 }

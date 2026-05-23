@@ -4,6 +4,7 @@
  */
 
 import type { NeckShoulderShapingChartRow } from "./neckShoulderShapingChart";
+import { finalShoulderRemainderStitches } from "./shoulderShapingNotation";
 import {
   buildTimeline,
   type BuildTimelineOptions,
@@ -77,7 +78,37 @@ function mapTimelineToChartRows(timeline: RowEntry[]): NeckShoulderShapingChartR
     };
   });
   annotateSplitCarriageShoulderDisplay(timeline, rows);
+  applyFinalShoulderBindOffToChartDisplay(timeline, rows);
   return rows;
+}
+
+/**
+ * Display-only: when the timeline still has shoulder stitches on the last row, show that
+ * final bind-off on the active-side armhole column so the grid matches garment notation.
+ */
+function applyFinalShoulderBindOffToChartDisplay(
+  timeline: RowEntry[],
+  rows: NeckShoulderShapingChartRow[],
+): void {
+  if (timeline.length === 0 || rows.length === 0) return;
+  const lastIdx = rows.length - 1;
+  const lastRow = rows[lastIdx]!;
+  const remR = finalShoulderRemainderStitches(timeline, "right");
+  const remL = finalShoulderRemainderStitches(timeline, "left");
+  if (remR > 0) {
+    const cur = lastRow.rightSide === "-" ? 0 : Math.abs(parseInt(String(lastRow.rightSide).replace(/\D/g, ""), 10) || 0);
+    lastRow.rightSide = fmt(cur + remR);
+    if (!String(lastRow.action ?? "").trim()) {
+      lastRow.action = "Shoulder";
+    }
+  }
+  if (remL > 0) {
+    const cur = lastRow.leftSide === "-" ? 0 : Math.abs(parseInt(String(lastRow.leftSide).replace(/\D/g, ""), 10) || 0);
+    lastRow.leftSide = fmt(cur + remL);
+    if (!String(lastRow.action ?? "").trim()) {
+      lastRow.action = "Shoulder";
+    }
+  }
 }
 
 /**

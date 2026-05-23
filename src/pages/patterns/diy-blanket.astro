@@ -11,8 +11,8 @@ import NeedleCheckDrawer from "../../components/patterns/NeedleCheckDrawer.astro
 import PatternHeaderImage from "../../components/patterns/PatternHeaderImage.astro";
 import WarningBox from "../../components/ui/WarningBox.astro";
 import GlossaryTooltip from "../../components/common/GlossaryTooltip.astro";
+import YarnRequirement from "../../components/tools/YarnRequirement.astro";
 import "../../styles/wizard.css";
-import "../../styles/tools/yarn-drawer-presentation.css";
 
 const patternPersistWarning =
   "Your pattern will not be saved on this site. Please be sure to download and save your PDF — once you leave this page, your pattern will be gone.";
@@ -1380,78 +1380,15 @@ const patternPersistWarning =
             aria-live="polite"
           ></p>
 
-          <div class="yarn-section yarn-section--drawer-swatch">
-            <h3 class="yarn-drawer-section-title">Swatch</h3>
-            <p class="yarn-drawer-section-hint">
-              Measure edge to edge, then weigh on a kitchen or postal scale.
-            </p>
-            <div class="yarn-field-stack">
-              <div class="yarn-field">
-                <label for="swatch-width">
-                  Swatch width (<span class="yarn-length-unit-label">in</span>)
-                </label>
-                <input
-                  type="number"
-                  id="swatch-width"
-                  step="0.1"
-                  min="0"
-                  inputmode="decimal"
-                  autocomplete="off"
-                  data-testid="input-swatch-width"
-                />
-              </div>
-              <div class="yarn-field">
-                <label for="swatch-length">
-                  Swatch length (<span class="yarn-length-unit-label">in</span>)
-                </label>
-                <input
-                  type="number"
-                  id="swatch-length"
-                  step="0.1"
-                  min="0"
-                  inputmode="decimal"
-                  autocomplete="off"
-                  data-testid="input-swatch-length"
-                />
-              </div>
-              <div class="yarn-field">
-                <label for="swatch-weight">Swatch weight (grams)</label>
-                <input
-                  type="number"
-                  id="swatch-weight"
-                  step="0.1"
-                  min="0"
-                  inputmode="decimal"
-                  autocomplete="off"
-                  data-testid="input-swatch-weight"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div
-            class="yarn-results-section yarn-results-section--drawer"
-            id="diy-blanket-yarn-results-section"
-            role="status"
-            aria-live="polite"
-          >
-            <div class="yarn-results-section-head">
-              <h4 class="yarn-results-heading yarn-results-heading--drawer">Estimated yarn needed</h4>
-              <p class="yarn-results-subline">
-                From your swatch density and this blanket’s finished size.
-              </p>
-            </div>
-            <div class="yarn-results-cards yarn-results-cards--drawer">
-              <div class="yarn-result-card">
-                <div class="yarn-result-card-title">Estimated Grams</div>
-                <div class="yarn-result-card-value" id="diy-blanket-yarn-result-grams">---</div>
-              </div>
-              <div class="yarn-result-card">
-                <div class="yarn-result-card-title">Estimated Ounces</div>
-                <div class="yarn-result-card-value" id="diy-blanket-yarn-result-ounces">---</div>
-              </div>
-            </div>
-          </div>
+          <YarnRequirement
+            variant="blanket"
+            layout="panel"
+            presentation="drawer"
+            projectWidth={0}
+            projectLength={0}
+            lengthUnit="in"
+            source="sample"
+          />
         </div>
       </div>
     </div>
@@ -1689,10 +1626,6 @@ document.addEventListener('DOMContentLoaded', function() {
   let useCustomSize = false;
   let customLength = '';
   let customWidth = '';
-  let swatchWidth = '';
-  let swatchLength = '';
-  let swatchWeight = '';
-
   // DOM elements
   const btnInches = document.getElementById('diy-btn-inches');
   const btnCm = document.getElementById('diy-btn-cm');
@@ -1702,9 +1635,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const customSizeDiv = document.getElementById('custom-size-section');
   const inputCustomLength = document.getElementById('custom-length');
   const inputCustomWidth = document.getElementById('custom-width');
-  const inputSwatchWidth = document.getElementById('swatch-width');
-  const inputSwatchLength = document.getElementById('swatch-length');
-  const inputSwatchWeight = document.getElementById('swatch-weight');
   const startOverBtn = document.getElementById('start-over-btn');
   const printBtn = document.getElementById('print-btn');
 
@@ -1782,6 +1712,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.classList.add('hat-yarn-drawer-open');
     hatYarnDrawerToggle?.classList.add('is-open');
     hatYarnDrawerToggle?.setAttribute('aria-expanded', 'true');
+    syncBlanketYarnCalculator();
     hatYarnDrawerCloseBtn?.focus();
   }
 
@@ -1827,18 +1758,6 @@ document.addEventListener('DOMContentLoaded', function() {
   
   console.log('DOM elements loaded, standardSizesDiv:', standardSizesDiv);
   
-  // Update placeholders based on units
-  function updatePlaceholders() {
-    if (!inputSwatchWidth || !inputSwatchLength) return;
-    const unitLabel = units === 'inches' ? 'in' : 'cm';
-    inputSwatchWidth.placeholder = unitLabel === 'in' ? 'e.g. 4' : 'e.g. 10';
-    inputSwatchLength.placeholder = unitLabel === 'in' ? 'e.g. 4' : 'e.g. 10';
-    if (inputSwatchWeight) inputSwatchWeight.placeholder = 'e.g. 12';
-    document.querySelectorAll('#yarn-calculator-section .yarn-length-unit-label').forEach((el) => {
-      el.textContent = unitLabel;
-    });
-  }
-
   // Populate size cards
   function populateSizes() {
     console.log('populateSizes() called');
@@ -1958,7 +1877,7 @@ document.addEventListener('DOMContentLoaded', function() {
       opt.classList.toggle('selected', opt.dataset.sizeKey === key);
     });
     updateYarnCalculatorVisibility();
-    updateYarnEstimate();
+    syncBlanketYarnCalculator();
     updateNeedleCount();
     calculate();
   }
@@ -2008,49 +1927,49 @@ document.addEventListener('DOMContentLoaded', function() {
     return stitchesGauge && rowsGauge && !hasGaugeError;
   }
 
-  /** Swatch area → blanket area scaling; grams only (same units as blanket width/length). */
-  function computeSwatchYarnEstimate(sizeSelection) {
-    if (!sizeSelection) return null;
-    if (!swatchWidth || !swatchLength || !swatchWeight) return null;
-
-    const sw = parseFloat(swatchWidth);
-    const sl = parseFloat(swatchLength);
-    const swt = parseFloat(swatchWeight);
-    if (
-      !(sw > 0 && sl > 0 && swt > 0) ||
-      isNaN(sw) ||
-      isNaN(sl) ||
-      isNaN(swt)
-    ) {
-      return null;
-    }
-
-    const swatchArea = sw * sl;
-    const blanketArea =
-      sizeSelection.dimensions.width * sizeSelection.dimensions.length;
-    if (!(swatchArea > 0) || !(blanketArea > 0)) return null;
-
-    const gramsTotal = Math.round((blanketArea / swatchArea) * swt);
-
-    return { gramsTotal };
-  }
-
-  function updateYarnEstimate() {
-    updateYarnDrawerSelectedSizeLine();
-    const gramsEl = document.getElementById('diy-blanket-yarn-result-grams');
-    const ouncesEl = document.getElementById('diy-blanket-yarn-result-ounces');
-    if (!gramsEl || !ouncesEl) return;
-
-    const sizeSelection = getCurrentSize();
-    const est = computeSwatchYarnEstimate(sizeSelection);
-    if (!est) {
-      gramsEl.textContent = '---';
-      ouncesEl.textContent = '---';
+  /** Push blanket finished size into shared YarnRequirement (area estimate + 10% buffer). */
+  function dispatchBlanketYarnDimensions() {
+    const lengthUnit = units === 'cm' ? 'cm' : 'in';
+    const sel = getCurrentSize();
+    if (!sel) {
+      window.dispatchEvent(
+        new CustomEvent('kbm:yarnDimensions', {
+          detail: {
+            projectWidth: 0,
+            projectLength: 0,
+            lengthUnit,
+            source: 'sample',
+          },
+        }),
+      );
       return;
     }
+    window.dispatchEvent(
+      new CustomEvent('kbm:yarnDimensions', {
+        detail: {
+          projectWidth: sel.dimensions.width,
+          projectLength: sel.dimensions.length,
+          lengthUnit,
+          source: useCustomSize ? 'custom' : 'sample',
+        },
+      }),
+    );
+  }
 
-    gramsEl.textContent = `${est.gramsTotal} g`;
-    ouncesEl.textContent = `${(est.gramsTotal / 28.349523125).toFixed(1)} oz`;
+  function syncBlanketYarnCalculator() {
+    updateYarnDrawerSelectedSizeLine();
+    dispatchBlanketYarnDimensions();
+  }
+
+  function clearBlanketYarnSwatchFields() {
+    const root = document.getElementById('yarn-requirement');
+    if (!root) return;
+    for (const id of ['yarn-swatch-width', 'yarn-swatch-length', 'yarn-swatch-weight']) {
+      const input = root.querySelector(`#${id}`);
+      if (input instanceof HTMLInputElement) {
+        input.value = '';
+      }
+    }
   }
 
   // Validation
@@ -2470,7 +2389,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Main calculate function (updates Pattern tab content when build is complete; same math as before)
   function calculate() {
     updateYarnCalculatorVisibility();
-    updateYarnEstimate();
+    syncBlanketYarnCalculator();
     updateNeedleCount();
     if (!requiredBlanketInputsComplete()) {
       hideResults(resultsVisibilityConfig);
@@ -2508,8 +2427,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const u = d?.unit;
     if (u !== 'in' && u !== 'cm') return;
     units = u === 'cm' ? 'cm' : 'inches';
-    updatePlaceholders();
     populateSizes();
+    syncBlanketYarnCalculator();
     calculate();
   });
 
@@ -2527,14 +2446,14 @@ document.addEventListener('DOMContentLoaded', function() {
   inputCustomLength.addEventListener('input', (e) => {
     customLength = e.target.value;
     updateYarnCalculatorVisibility();
-    updateYarnEstimate();
+    syncBlanketYarnCalculator();
     calculate();
   });
 
   inputCustomWidth.addEventListener('input', (e) => {
     customWidth = e.target.value;
     updateYarnCalculatorVisibility();
-    updateYarnEstimate();
+    syncBlanketYarnCalculator();
     calculate();
   });
 
@@ -2547,24 +2466,6 @@ document.addEventListener('DOMContentLoaded', function() {
     openHatYarnDrawer();
   });
 
-  inputSwatchWidth.addEventListener('input', (e) => {
-    swatchWidth = e.target.value;
-    updateYarnEstimate();
-    calculate();
-  });
-
-  inputSwatchLength.addEventListener('input', (e) => {
-    swatchLength = e.target.value;
-    updateYarnEstimate();
-    calculate();
-  });
-
-  inputSwatchWeight.addEventListener('input', (e) => {
-    swatchWeight = e.target.value;
-    updateYarnEstimate();
-    calculate();
-  });
-
   // Action bar event listeners (buttons are inside results section, so check if they exist)
   if (startOverBtn) {
     startOverBtn.addEventListener('click', () => {
@@ -2573,22 +2474,19 @@ document.addEventListener('DOMContentLoaded', function() {
       selectedSize = '';
       useCustomSize = false;
       customLength = customWidth = '';
-      swatchWidth = swatchLength = swatchWeight = '';
       
       inputStitches.value = '';
       inputRows.value = '';
       inputCustomLength.value = '';
       inputCustomWidth.value = '';
-      inputSwatchWidth.value = '';
-      inputSwatchLength.value = '';
-      inputSwatchWeight.value = '';
+      clearBlanketYarnSwatchFields();
       
       btnInches.classList.add('active');
       btnCm.classList.remove('active');
       applySizeMode(false);
       closeHatYarnDrawer();
       closeWidthDrawer();
-      updateYarnEstimate();
+      syncBlanketYarnCalculator();
       updateYarnCalculatorVisibility();
       
       document.querySelectorAll('.size-option').forEach(opt => opt.classList.remove('selected'));
@@ -2660,8 +2558,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Initialize (`units` already matches `kbm-units`; `kbm:units-change` may have fired before listener existed)
   console.log('Initializing wizard, calling populateSizes()...');
-  updatePlaceholders();
   populateSizes();
+  syncBlanketYarnCalculator();
   calculate();
   console.log('Wizard initialized!');
 });

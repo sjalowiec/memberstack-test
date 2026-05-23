@@ -137,6 +137,36 @@ export function isSleevelessExpressFlowComplete(
   return true;
 }
 
+/**
+ * Custom Build (`style.patternMode` === `"custom-build"`) — same readiness rules as Express;
+ * chart-derived `fit.selectedMeasurements` only (not `cbMeasurementOverrides`).
+ */
+export function isSleevelessCustomBuildFlowComplete(
+  patternData: Record<string, unknown> = typeof localStorage !== "undefined" ? getPatternData() : {},
+): boolean {
+  const style = styleSection(patternData);
+  if (style.patternMode !== "custom-build") return false;
+
+  const fit = fitSection(patternData);
+  const sm = selectedMeasurements(fit);
+  const audience =
+    normalizeSleevelessAudience(style.recipientCategory) ||
+    normalizeSleevelessAudience(fit.sizingChart);
+  if (!audience) return false;
+  if (!nonEmptyTrimmed(fit.selectedSize)) return false;
+  if (!isFitEaseChoiceComplete(fit)) return false;
+  if (!isPositiveNumericMeasurement(sm.finished_bust_chest)) return false;
+
+  const stitchRaw = patternBuilderStitchGaugeRaw(patternData);
+  const rowRaw = patternBuilderRowGaugeRaw(patternData);
+  if (!isPositiveNumericMeasurement(stitchRaw) || !isPositiveNumericMeasurement(rowRaw)) return false;
+
+  const ygm = yarnGaugeMachineSection(patternData);
+  if (!isPositiveNumericMeasurement(ygm.availableNeedles)) return false;
+
+  return true;
+}
+
 function fitSection(data: Record<string, unknown>): Record<string, unknown> {
   const fit = data.fit;
   if (fit && typeof fit === "object" && !Array.isArray(fit)) {
@@ -178,7 +208,8 @@ export function validatePatternBuilderRequired(
       href: PATTERN_BUILDER_DESIGN_HREF,
       complete:
         isSleevelessBuilderNavStyleComplete(patternData) ||
-        isSleevelessExpressFlowComplete(patternData),
+        isSleevelessExpressFlowComplete(patternData) ||
+        isSleevelessCustomBuildFlowComplete(patternData),
     },
     {
       id: "selected_size",

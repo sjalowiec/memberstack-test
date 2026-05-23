@@ -1,63 +1,53 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import PatternsFeaturesSection from '../../components/patterns/PatternsFeaturesSection.astro';
 ---
 
 <Layout title="Patterns Catalog">
 
     <div class="patterns-page">
 
-        <!-- Featured Patterns -->
-        <section>
-          <h1>Custom Machine Knitting Patterns</h1>
-          
-          <p class="machine-note">
-            Check out our new Express Builder—the fastest way to a custom knitting pattern.
-          </p>
-
-          <a href="/patterns/sleeveless-express" class="patterns-express-featured">
-            <div class="patterns-express-featured__content">
-              <div class="patterns-express-featured__heading-group">
-                <img
-                  class="patterns-express-featured__accent-icon"
-                  src="/images/express-icon.svg"
-                  alt=""
-                  width="32"
-                  height="32"
-                  loading="eager"
-                  decoding="async"
-                  aria-hidden="true"
-                />
-                <h2 class="patterns-express-featured__title">Build your sweater with the new Express Pattern System</h2>
-              </div>
-              <p class="patterns-express-featured__body">
-                Choose your size, neckline, fit, and gauge to generate a ready-to-knit sweater pattern with interactive instructions and printable output.
+        <!-- Sleeveless pattern hero -->
+        <section class="patterns-hero" aria-labelledby="patterns-hero-heading">
+          <div class="patterns-hero__grid">
+            <div class="patterns-hero__content">
+              <h1 id="patterns-hero-heading">Custom Sweater Patterns Designed for Machine Knitters</h1>
+              <p class="patterns-hero__intro">
+                The ultimate pattern generator for modern machine knitters. Easily map out your favorite silhouettes, unlock automated shaping math, and create knit-ready sweater patterns in just a few guided steps.
               </p>
-              <span class="kbm-btn kbm-btn-accent patterns-express-featured__cta">
-                <img
-                  class="patterns-express-featured__cta-icon"
-                  src="/images/express-icon.svg"
-                  alt=""
-                  width="16"
-                  height="16"
-                  decoding="async"
-                  aria-hidden="true"
-                />
-                Try Express Build
-              </span>
+              <div class="patterns-hero__actions">
+                <a href="/patterns/sleeveless-express" class="kbm-btn kbm-btn-accent">Start a Sleeveless Pattern</a>
+                <a href="#pattern-features" class="kbm-btn kbm-btn-outline patterns-features-jump">
+                  <img
+                    class="patterns-pinwheel"
+                    src="/images/KINlogo.svg"
+                    alt=""
+                    width="22"
+                    height="22"
+                    decoding="async"
+                    aria-hidden="true"
+                  />
+                  <span>Explore the Pattern Features</span>
+                </a>
+              </div>
             </div>
-            <div class="patterns-express-featured__preview">
+            <div class="patterns-hero__media">
               <img
-                class="patterns-express-featured__preview-img"
-                src="/images/patterns/express-intro.png"
-                alt="Express Pattern Builder — style choices and garment preview"
+                class="patterns-hero__img"
+                src="/images/patterns/patterns-intro.webp"
+                alt="Sleeveless sweater pattern workspace showing size, fit, neckline, and gauge choices"
                 width="720"
                 height="540"
                 loading="eager"
                 decoding="async"
               />
             </div>
-          </a>
-      
+          </div>
+        </section>
+
+        <PatternsFeaturesSection />
+
+        <section aria-label="Additional pattern builders">
           <div class="patterns-featured-clean">
             <a href="/patterns/hat" class="pattern-card patterns-featured-card">
               <img class="patterns-featured-card-img" src="/images/patterns/basic-hat.webp" alt="Basic hat pattern" />
@@ -95,7 +85,7 @@ import Layout from '../../layouts/Layout.astro';
           </div>
         </section>
 
-    <section class="patterns-coming-soon">
+        <section class="patterns-coming-soon">
       <h2 class="patterns-coming-title">More Patterns Coming</h2>
       <p class="patterns-coming-subtitle">
         Hat and blanket builders are live — more pattern types are on the way.
@@ -142,50 +132,63 @@ import Layout from '../../layouts/Layout.astro';
   padding: 20px;
 }
 
-/* Express featured — primary entry point */
-.patterns-express-featured {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
-  gap: 28px 36px;
-  align-items: center;
-  margin: 24px 0 32px;
-  padding: 28px 32px;
+/* Hero — sleeveless pattern experience */
+.patterns-hero {
+  margin: 8px 0 12px;
+  padding: 32px 36px;
   border-radius: 12px;
   background: linear-gradient(135deg, #f9f9f6 0%, #fff 55%);
   border: 1px solid #d6dbc9;
   box-shadow: 0 4px 16px rgba(82, 104, 45, 0.1);
-  text-decoration: none;
-  color: inherit;
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.patterns-express-featured:hover {
-  border-color: #52682d;
-  box-shadow: 0 6px 20px rgba(82, 104, 45, 0.14);
+.patterns-hero__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 28px 40px;
+  align-items: center;
 }
 
-.patterns-express-featured:focus-visible {
-  outline: 2px solid #52682d;
-  outline-offset: 3px;
-}
-
-.patterns-express-featured__content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
+.patterns-hero__content {
   min-width: 0;
-  padding-right: 4px;
 }
 
-.patterns-express-featured__preview {
+.patterns-hero h1 {
+  margin: 0 0 14px;
+  font-size: clamp(1.45rem, 2.8vw, 1.85rem);
+  font-weight: 600;
+  color: #52682d;
+  line-height: 1.25;
+}
+
+.patterns-hero__intro {
+  margin: 0 0 22px;
+  font-size: 1.02rem;
+  font-weight: 500;
+  line-height: 1.55;
+  color: #333;
+  max-width: 34rem;
+}
+
+.patterns-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.patterns-hero__actions .kbm-btn {
+  margin: 0;
+}
+
+.patterns-hero__media {
   display: flex;
   align-items: center;
   justify-content: center;
   min-width: 0;
 }
 
-.patterns-express-featured__preview-img {
+.patterns-hero__img {
   display: block;
   width: 100%;
   max-width: 100%;
@@ -198,82 +201,50 @@ import Layout from '../../layouts/Layout.astro';
     0 2px 8px rgba(82, 104, 45, 0.12);
 }
 
-.patterns-express-featured__heading-group {
-  width: 100%;
-  margin-bottom: 4px;
-}
-
-.patterns-express-featured__accent-icon {
-  display: block;
-  width: 32px;
-  height: 32px;
-  margin: 0 auto 8px;
+/* Pinwheel accent — ties Explore CTA to features heading */
+.patterns-pinwheel {
+  width: 22px;
+  height: 22px;
   object-fit: contain;
+  opacity: 0.58;
+  flex-shrink: 0;
 }
 
-.patterns-express-featured__title {
-  margin: 0 0 8px;
-  font-size: 1.35rem;
-  font-weight: 600;
-  color: #52682d;
-  line-height: 1.25;
-}
-
-.patterns-express-featured__body {
-  margin: 0 0 16px;
-  font-size: 1rem;
-  font-weight: 500;
-  line-height: 1.5;
-  color: #333;
-  max-width: 36rem;
-}
-
-.patterns-express-featured__cta {
+.patterns-features-jump {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  align-self: center;
-  gap: 6px;
-  margin-top: 0;
-  padding: 10px 18px;
-  font-size: 1rem;
-  line-height: 1.2;
+  gap: 8px;
 }
 
-.patterns-express-featured__cta-icon {
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-  flex-shrink: 0;
-  filter: brightness(0) invert(1);
+.patterns-features-jump .patterns-pinwheel {
+  margin-top: -1px;
 }
 
 @media (max-width: 720px) {
-  .patterns-express-featured {
+  .patterns-hero {
+    padding: 24px 20px;
+  }
+
+  .patterns-hero__grid {
     grid-template-columns: 1fr;
     gap: 24px;
-    padding: 24px 20px;
+  }
+
+  .patterns-hero__content {
     text-align: center;
   }
 
-  .patterns-express-featured__content {
-    align-items: center;
-    text-align: center;
-    padding-right: 0;
+  .patterns-hero__intro {
+    max-width: none;
   }
 
-  .patterns-express-featured__preview {
-    width: 100%;
+  .patterns-hero__actions {
+    justify-content: center;
+  }
+
+  .patterns-hero__media {
     max-width: min(100%, 440px);
     margin: 0 auto;
-  }
-
-  .patterns-express-featured__preview-img {
-    max-width: 100%;
-  }
-
-  .patterns-express-featured__title {
-    font-size: 1.2rem;
   }
 }
 

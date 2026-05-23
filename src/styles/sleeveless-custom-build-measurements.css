@@ -1,0 +1,327 @@
+/**
+ * Custom Build — Measurements step (diagram + compact summary).
+ * Diagram layout mirrors Express measurement confirmation; scoped under `.cb-measure-page`.
+ */
+
+.cb-measure-page .cb-measure-missing {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #b45309;
+}
+
+.cb-measure-page .cb-measure-diagram-host,
+.cb-measure-page .sleeveless-measure-diagram-host {
+  min-width: 0;
+  overflow: visible;
+}
+
+.cb-measure-page .cb-measure-diagram-wrap {
+  position: relative;
+  margin: 0 auto;
+  max-width: min(100%, 560px);
+  overflow: visible;
+}
+
+.cb-measure-page .express-mbp {
+  margin: 0;
+}
+
+/* Editable measurement chips on the diagram */
+.cb-measure-page .express-mbp-box {
+  pointer-events: auto;
+  max-width: min(42%, 8.5rem);
+}
+
+.cb-measure-page .express-mbp-box__field {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Editable value chip: number + unit inside a single drafting-style control */
+.cb-measure-page .measurement-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12rem;
+  box-sizing: border-box;
+  width: fit-content;
+  max-width: 100%;
+  min-width: 3.35rem;
+  margin: 0;
+  padding: 0.2rem 0.34rem 0.2rem 0.38rem;
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 24%, #c5c9c2);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 7%, #fff);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.72);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+@media (hover: hover) {
+  .cb-measure-page .measurement-chip:hover {
+    border-color: color-mix(in srgb, var(--kbm-green, #52682d) 40%, #b5bab3);
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 9%, #fff);
+  }
+}
+
+.cb-measure-page .measurement-chip:focus-within {
+  border-color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #9fa59a);
+  background: #fff;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.85),
+    0 0 0 2px color-mix(in srgb, var(--kbm-green, #52682d) 16%, transparent);
+}
+
+.cb-measure-page .measurement-input {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 1.65rem;
+  max-width: 3.35rem;
+  margin: 0;
+  padding: 0.06rem 0.04rem 0.06rem 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  font-family: var(--font);
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: #2a2a2a;
+}
+
+.cb-measure-page .measurement-input:focus,
+.cb-measure-page .measurement-input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.cb-measure-page .measurement-unit {
+  flex: 0 0 auto;
+  padding: 0 0.02rem 0 0;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-transform: lowercase;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 44%, #666);
+  pointer-events: none;
+  user-select: none;
+}
+
+.cb-measure-page .express-mbp-box--invalid .measurement-chip {
+  border-color: color-mix(in srgb, #b91c1c 55%, #ccc);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.65),
+    0 0 0 1px color-mix(in srgb, #b91c1c 12%, transparent);
+}
+
+.cb-measure-page .express-mbp-box__error {
+  display: block;
+  margin-top: 0.12rem;
+  max-width: 7.5rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #b91c1c;
+}
+
+.cb-measure-page .express-mbp-box__error[hidden] {
+  display: none;
+}
+
+.cb-measure-page .cb-measure-actions.sleeveless-measure-actions {
+  justify-content: space-between;
+}
+
+.cb-measure-page .cb-measure-actions .kbm-btn {
+  flex: 1 1 auto;
+  min-width: min(100%, 10rem);
+  max-width: 16rem;
+}
+
+.cb-measure-page .cb-validation-overlay {
+  position: absolute;
+  z-index: 8;
+  margin: 0;
+  padding: 0.4rem 0.5rem;
+  max-width: min(16.25rem, 92vw);
+  border-radius: 8px;
+  border: 1px solid transparent;
+  box-shadow: 0 2px 8px rgba(30, 35, 20, 0.1);
+  pointer-events: none;
+}
+
+.cb-measure-page .cb-validation-overlay[hidden] {
+  display: none !important;
+}
+
+.cb-measure-page .cb-validation-overlay--error {
+  border-color: #e8a0a8;
+  background: rgba(255, 244, 244, 0.96);
+}
+
+.cb-measure-page .cb-validation-overlay--warning {
+  border-color: #e8cf7a;
+  background: rgba(255, 251, 235, 0.96);
+}
+
+.cb-measure-page .cb-validation-overlay__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.35rem;
+  margin-bottom: 0.28rem;
+}
+
+.cb-measure-page .cb-validation-overlay__header .cb-validation-overlay__title {
+  margin-bottom: 0;
+}
+
+.cb-measure-page .cb-validation-overlay__title {
+  margin: 0 0 0.28rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+}
+
+.cb-measure-page .cb-validation-overlay__dismiss {
+  flex-shrink: 0;
+  margin: -0.15rem -0.1rem 0 0;
+  padding: 0;
+  width: 1.35rem;
+  height: 1.35rem;
+  border: none;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.cb-measure-page .cb-validation-overlay__dismiss:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.cb-measure-page .cb-validation-overlay__dismiss:focus-visible {
+  outline: 2px solid var(--sg-accent, #c2614e);
+  outline-offset: 1px;
+}
+
+.cb-measure-page .cb-validation-overlay--error .cb-validation-overlay__title {
+  color: #991b1b;
+}
+
+.cb-measure-page .cb-validation-overlay--warning .cb-validation-overlay__title {
+  color: #92400e;
+}
+
+.cb-measure-page .cb-validation-overlay__list {
+  margin: 0;
+  padding-left: 0.95rem;
+  font-size: 0.68rem;
+  line-height: 1.28;
+}
+
+.cb-measure-page .cb-validation-overlay__list li + li {
+  margin-top: 0.15rem;
+}
+
+.cb-measure-page .cb-validation-overlay--error .cb-validation-overlay__list {
+  color: #7f1d1d;
+}
+
+.cb-measure-page .cb-validation-overlay--warning .cb-validation-overlay__list {
+  color: #78350f;
+}
+
+.cb-measure-page .kbm-btn.is-disabled,
+.cb-measure-page .kbm-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+@media (min-width: 520px) {
+  .cb-measure-page .sleeveless-measure-actions.cb-measure-actions .kbm-btn {
+    flex: 0 1 auto;
+  }
+}
+
+@media (min-width: 700px) and (max-width: 899.98px) {
+  .cb-measure-page .cb-validation-overlay {
+    top: 100%;
+    right: 0;
+    left: 0;
+    margin-top: 0.4rem;
+    width: auto;
+    max-width: none;
+  }
+}
+
+@media (min-width: 900px) {
+  .cb-measure-page .cb-validation-overlay {
+    top: 0.35rem;
+    left: 100%;
+    right: auto;
+    margin-left: 0.6rem;
+    margin-top: 0;
+    width: min(15rem, 38vw);
+    max-width: 15rem;
+  }
+}
+
+@media (max-width: 699.98px) {
+  .cb-measure-page .cb-validation-overlay {
+    top: 100%;
+    right: 0;
+    left: 0;
+    margin-top: 0.4rem;
+    width: auto;
+    max-width: none;
+  }
+}
+
+/* Mobile: keep inputs on diagram (no separate form column). Not used on unified review. */
+@media (max-width: 699.98px) {
+  .cb-measure-page:not(.sleeveless-unified-review-page) .express-mbp-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .cb-measure-page:not(.sleeveless-unified-review-page) .express-mbp-box {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    max-width: min(44vw, 7.25rem);
+  }
+
+  .cb-measure-page:not(.sleeveless-unified-review-page) .express-mbp-box__lab {
+    font-size: 0.58rem;
+  }
+
+  .cb-measure-page:not(.sleeveless-unified-review-page) .measurement-input {
+    font-size: 0.85rem;
+    max-width: 2.85rem;
+  }
+
+  .cb-measure-page:not(.sleeveless-unified-review-page) .measurement-chip {
+    min-width: 3rem;
+    padding: 0.16rem 0.28rem 0.16rem 0.32rem;
+  }
+}

@@ -2,8 +2,25 @@
  * Custom Build — Step 3 measurement overrides.
  * Stored inside {@link SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY} as `cbMeasurementOverrides`
  * (values in inches as decimal strings). Falls back to legacy standalone key when present.
+ *
+ * Armhole depth, finished length, finished bust, shoulder width, and neck opening width overrides
+ * apply in pattern generation when `style.patternMode` is `custom-build` (see
+ * {@link resolveEffectiveArmholeDepthInches}, {@link resolveEffectiveFinishedLengthInches},
+ * {@link resolveEffectiveFinishedBustInches}, {@link resolveEffectiveShoulderWidthInches},
+ * {@link resolveEffectiveNeckOpeningWidthInches}, {@link resolveEffectiveFrontNeckDepthInches},
+ * {@link resolveEffectiveHemDepthInches}); other fields are stored for future use.
  */
-import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "./patternStorage";
+import {
+  getPatternData,
+  saveCurrentPattern,
+  savePatternData,
+  SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+} from "./patternStorage";
+
+function section(obj: unknown): Record<string, unknown> {
+  if (obj && typeof obj === "object" && !Array.isArray(obj)) return obj as Record<string, unknown>;
+  return {};
+}
 
 export const LEGACY_STANDALONE_MEASUREMENTS_KEY = "kbm_sleeveless_custom_measurements";
 
@@ -16,6 +33,7 @@ export type MeasurementOverrideKey =
   | "hemToArmhole"
   | "widthAtHem"
   | "finishedNeckOpeningWidth"
+  | "neckDepth"
   | "neckbandWidth"
   | "sweaterNeckOpeningWidth"
   | "armholeDepth"
@@ -96,6 +114,18 @@ export function persistMeasurementOverrides(overrides: Record<string, string>): 
         cbMeasurementOverrides: { ...overrides },
       }),
     );
+  } catch {
+    /* quota */
+  }
+  try {
+    const pbFit = section(getPatternData().fit);
+    savePatternData("fit", { ...pbFit, cbMeasurementOverrides: { ...overrides } });
+    const pbStyle = section(getPatternData().style);
+    savePatternData("style", { ...pbStyle, patternMode: "custom-build" });
+    saveCurrentPattern({
+      fit: { cbMeasurementOverrides: { ...overrides } },
+      style: { patternMode: "custom-build" },
+    });
   } catch {
     /* quota */
   }

@@ -8,11 +8,20 @@ import {
   getPatternData,
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
 } from "../lib/patterns/patternStorage";
+import {
+  buildCardiganSelectionWriteSnapshot,
+  logExpressGarmentClick,
+} from "../lib/patterns/customBuildGarmentHandoffDebug";
+import {
+  garmentTypeFromFront,
+  writeSleevelessGarmentTypeLocalStorage,
+} from "../lib/patterns/writeSleevelessGarmentSelection";
 import { formatSwatchCountForGaugeInput } from "../lib/patterns/gaugeDisplayFormat";
 import {
   loadExpressSweaterCharts,
   expressWhoToChartAudience,
   resolveExpressChartFit,
+  findExpressChartRow,
   formatExpressSelectedSizeSummary,
   getExpressUiUnit,
   nonEmptyTrimmed,
@@ -21,7 +30,9 @@ import {
   isValidExpressSizeForAudience,
   SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID,
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
+import { seedCustomBuildBodyFinishedFromChartRow } from "../lib/patterns/sleevelessCustomBuildBodyMeasurements";
 import { scrollToBuilderSection } from "../lib/patterns/scrollToBuilderSection";
+import { resolveSleevelessAudienceHeroImageSrc } from "../lib/patterns/sleevelessAudienceHeroImage";
 
 const STEPS = 5;
 const LOCKED_STEP_NAV_TITLE = "Finish the previous step to continue.";
@@ -66,6 +77,31 @@ function rawSwatchToPerInch(stitchRaw: string, rowRaw: string, unit: "cm" | "in"
     if (Number.isFinite(r) && r > 0) gaugeRowsPerInch = String(r / 4);
   }
   return { gaugeStitchesPerInch, gaugeRowsPerInch };
+}
+
+/** Minimal merged-style shape for {@link resolveSleevelessAudienceHeroImageSrc} from live Express wizard values. */
+function expressPatternDataForAudienceHeroImages(values: Record<string, string>): Record<string, unknown> {
+  const sm = mapExpressStyle(values.style ?? "");
+  return {
+    style: {
+      garmentStyle: sm.frontStyle === "open" ? "cardigan" : "pullover",
+      frontStyle: sm.frontStyle,
+    },
+  };
+}
+
+function refreshExpressWhoCardHeroImages(values: Record<string, string>): void {
+  const patternData = expressPatternDataForAudienceHeroImages(values);
+  const scope = document.querySelector("[data-express-builder]");
+  if (!scope) return;
+  scope.querySelectorAll('[data-choice][data-field="who"]').forEach((btn) => {
+    if (!(btn instanceof HTMLElement)) return;
+    const whoPick = btn.getAttribute("data-value");
+    const img = btn.querySelector("img");
+    if (!(img instanceof HTMLImageElement) || !whoPick) return;
+    const aud = expressWhoToChartAudience(whoPick);
+    img.src = resolveSleevelessAudienceHeroImageSrc(patternData, aud);
+  });
 }
 
 function mapExpressStyle(styleKey: string) {
@@ -123,11 +159,11 @@ function migrateExpressStyleFields(v: Record<string, string>): void {
   }
 }
 
-/** Express only offers a straight pullover; keep storage/URL fields fixed without a style step. */
+/** Express only offers straight body; front pullover vs cardigan. */
 function ensureExpressStyleDefaults(v: Record<string, string>): void {
   v.shape = "straight";
-  v.front = "closed";
-  v.style = "straight-pullover";
+  if (!v.front) v.front = "closed";
+  v.style = deriveExpressStyleKey(v.shape, v.front) || "straight-pullover";
 }
 
 function mapExpressNeckline(n: string) {
@@ -165,6 +201,7 @@ function syncExpressSelectionsToBuilderStorage(
 
   const stylePayload: Record<string, string> = {};
   const fitPayload: Record<string, unknown> = {};
+  const sm = mapExpressStyle(values.style ?? "");
 
   if (values.who) {
     const aud = expressWhoToChartAudience(values.who);
@@ -172,11 +209,12 @@ function syncExpressSelectionsToBuilderStorage(
     fitPayload.sizingChart = aud;
   }
   if (values.style) {
-    const sm = mapExpressStyle(values.style);
     stylePayload.bodyShape = sm.bodyShape;
     stylePayload.frontStyle = sm.frontStyle;
+    stylePayload.garmentStyle = sm.frontStyle === "open" ? "cardigan" : "pullover";
     stylePayload.length = "top";
     stylePayload.armholeStyle = "standard";
+    stylePayload.patternMode = "express";
   }
   if (values.neckline) {
     stylePayload.neckline = mapExpressNeckline(values.neckline);
@@ -237,6 +275,17 @@ function syncExpressSelectionsToBuilderStorage(
   if (hasYarn || gaugeStitchRaw || gaugeRowRaw) {
     savePatternData("yarnGaugeMachine", { ...prevMachine, ...yarnMachinePayload });
   }
+
+  if (chartFit && values.fit) {
+    const aud = expressWhoToChartAudience(values.who);
+    const row = findExpressChartRow(aud, chartFit.selectedSize);
+    if (row) {
+      seedCustomBuildBodyFinishedFromChartRow(row, values.fit, {
+        preserveFinished: true,
+        bodyShape: sm.bodyShape,
+      });
+    }
+  }
 }
 
 function persistExpressBuilderState(
@@ -267,6 +316,7 @@ function persistExpressBuilderState(
     length: "top",
     armholeStyle: "standard",
     patternMode: "express",
+    garmentStyle: sm.frontStyle === "open" ? "cardigan" : "pullover",
   };
 
   const fitPayload: Record<string, unknown> = {
@@ -624,6 +674,7 @@ function initExpressPage() {
     updateSummaries();
     updateGeneratePatternAvailability();
     applySelectionUI();
+    refreshExpressWhoCardHeroImages(values);
   }
 
   function goToStep(step: number) {
@@ -757,12 +808,24 @@ function initExpressPage() {
       }
     }
 
-    if (field === "front" && value !== "closed") return;
+    if (field === "front") {
+      if (value !== "closed" && value !== "open") return;
+    }
 
     values[field] = value;
     if (field === "shape" || field === "front") {
       values.style = deriveExpressStyleKey(values.shape, values.front) || "straight-pullover";
     }
+
+    if (field === "front") {
+      const garmentType = garmentTypeFromFront(value);
+      const before = buildCardiganSelectionWriteSnapshot("before", garmentType);
+      writeSleevelessGarmentTypeLocalStorage(garmentType);
+      syncExpressSelectionsToBuilderStorage(values, null);
+      const after = buildCardiganSelectionWriteSnapshot("after", garmentType);
+      logExpressGarmentClick(before, after);
+    }
+
     markChoiceSelected(sec, btn as HTMLElement);
 
     if (field === "who") {
@@ -958,8 +1021,11 @@ function initExpressPage() {
         return;
       }
       const aud = expressWhoToChartAudience(values.who);
+      const sm = mapExpressStyle(values.style ?? "");
       const chartFit = nonEmptyTrimmed(values.selectedSize)
-        ? resolveExpressChartFit(aud, values.selectedSize!.trim(), values.fit || "standard")
+        ? resolveExpressChartFit(aud, values.selectedSize!.trim(), values.fit || "standard", {
+            bodyShape: sm.bodyShape,
+          })
         : null;
       syncExpressSelectionsToBuilderStorage(values, chartFit);
       window.location.assign("/patterns/sleeveless-custom");
@@ -1015,7 +1081,10 @@ function initExpressPage() {
         window.alert("Could not load size charts. Check your connection and try again.");
         return;
       }
-      const chartFit = resolveExpressChartFit(aud, values.selectedSize!.trim(), fitPref);
+      const sm = mapExpressStyle(values.style ?? "");
+      const chartFit = resolveExpressChartFit(aud, values.selectedSize!.trim(), fitPref, {
+        bodyShape: sm.bodyShape,
+      });
       if (!chartFit) {
         window.alert("Please choose a valid size for this wearer.");
         return;
@@ -1032,13 +1101,18 @@ function initExpressPage() {
       if (values.neckline) q.set("neckline", values.neckline);
       if (values.fit) q.set("fit", values.fit);
       if (values.selectedSize) q.set("selectedSize", values.selectedSize);
+      if (values.front === "open") q.set("garmentStyle", "cardigan");
       q.set("gaugeStitchRaw", gaugeStitchRaw);
       q.set("gaugeRowRaw", gaugeRowRaw);
       q.set("gaugeRawUnit", unit);
       q.set("stitches", gaugeStitchesPerInch);
       q.set("rows", gaugeRowsPerInch);
 
-      window.location.href = `/patterns/sleeveless-express-measurements?${q.toString()}`;
+      const reviewBase =
+        document.querySelector<HTMLElement>("[data-express-review-href]")?.getAttribute("data-express-review-href")?.trim() ||
+        "/patterns/sleeveless-express-measurements";
+      const reviewPath = reviewBase.replace(/\?.*$/, "");
+      window.location.href = `${reviewPath}?${q.toString()}`;
     })();
   });
 
@@ -1057,6 +1131,11 @@ function initExpressPage() {
         st.removeAttribute("hidden");
       }
     });
+
+  if (nonEmptyTrimmed(values.front)) {
+    writeSleevelessGarmentTypeLocalStorage(garmentTypeFromFront(values.front));
+    syncExpressSelectionsToBuilderStorage(values, null);
+  }
 
   refreshBuilderState();
   applyExpressGaugeSectionHash();
