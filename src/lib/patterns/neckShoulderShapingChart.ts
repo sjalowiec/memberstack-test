@@ -51,6 +51,8 @@ export type NeckShoulderShapingChart = {
    * round/shallow regardless of the front neckline choice.
    */
   sleevelessFullWidthVNeckFront?: boolean;
+  /** When true, front chart intro/completion copy uses cardigan (open-front) wording. */
+  sleevelessCardiganFront?: boolean;
 };
 
 export type NeckShoulderShapingChartDisplayRow = {
@@ -365,7 +367,11 @@ export type NeckShoulderChartRowHighlight =
 /** Build a chart object from computed rows (same columnKeys as demo). */
 export function neckShoulderShapingChartFromRows(
   rows: NeckShoulderShapingChartRow[],
-  options?: { timeline?: RowEntry[]; sleevelessFullWidthVNeckFront?: boolean }
+  options?: {
+    timeline?: RowEntry[];
+    sleevelessFullWidthVNeckFront?: boolean;
+    sleevelessCardiganFront?: boolean;
+  },
 ): NeckShoulderShapingChart {
   return {
     columnKeys: [
@@ -386,7 +392,13 @@ export function neckShoulderShapingChartFromRows(
       : options?.sleevelessFullWidthVNeckFront === false
         ? { sleevelessFullWidthVNeckFront: false }
         : {}),
+    ...(options?.sleevelessCardiganFront === true ? { sleevelessCardiganFront: true } : {}),
   };
+}
+
+/** True when neckline/shoulder chart copy should use cardigan front (open-front) wording. */
+export function isSleevelessCardiganFrontNeckShoulderChart(chart?: NeckShoulderShapingChart): boolean {
+  return chart?.sleevelessCardiganFront === true;
 }
 
 export const DEMO_NECK_SHOULDER_SHAPING_CHART: NeckShoulderShapingChart = {

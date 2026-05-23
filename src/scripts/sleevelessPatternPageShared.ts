@@ -2441,9 +2441,11 @@ table {
     const backArmholeLocalChartStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
       ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC))
       : 0;
-    const frontArmholeLocalChartStartRc = Number.isFinite(result?.debug?.frontNecklineStartLocalRC)
-      ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC))
-      : 0;
+    const frontArmholeLocalChartStartRc = Number.isFinite(result?.debug?.frontNecklineShapingBeginLocalRC)
+      ? Math.max(0, Math.floor(result.debug.frontNecklineShapingBeginLocalRC))
+      : Number.isFinite(result?.debug?.frontNecklineStartLocalRC)
+        ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC))
+        : 0;
 
     const armholeGarmentStartRc = result?.debug?.armholeStartRow;
     const backActiveSideRcStart = armholeLocalRcActiveShoulderChecklistStart(

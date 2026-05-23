@@ -9,24 +9,52 @@ import {
 } from "./neckShoulderActiveIntroCopy";
 import {
   NECKLINE_SHAPING_HELP_VIDEO_KEY,
+  armholeLocalRcActiveShoulderChecklistStart,
   renderActiveShoulderChartIntroHtml,
   renderNeckShoulderChartIntroBlockHtml,
+  renderNeckShoulderShapingChartTableOnlyHtml,
 } from "./neckShoulderShapingChartHtml";
 import { centerBindOffStitchesFromNeckShoulderChart, generateSleevelessBackPattern } from "./sleevelessPatternOutput";
+
+function baseRoundNeckMeasurements() {
+  return {
+    finished_bust_chest: 40,
+    back_neck_to_hem: 22,
+    armhole_depth: 8,
+    neck_opening: 3,
+    shoulder_width: 4.25,
+    front_neck_depth: 3,
+    back_neck_depth: 1,
+  };
+}
+
+function roundNeckPattern(overrides: Record<string, unknown> = {}) {
+  return generateSleevelessBackPattern({
+    fit: {
+      sizingChart: "misses",
+      selectedMeasurements: baseRoundNeckMeasurements(),
+    },
+    style: { recipientCategory: "misses", neckline: "round" },
+    yarnGaugeMachine: {
+      gaugeStitchesPerInch: 5,
+      gaugeRowsPerInch: 7,
+      availableNeedles: 200,
+    },
+    ...overrides,
+  });
+}
+
+function cardiganRoundFrontPattern() {
+  return roundNeckPattern({
+    style: { recipientCategory: "misses", neckline: "round", frontStyle: "open" },
+  });
+}
 
 function vNeckPattern() {
   return generateSleevelessBackPattern({
     fit: {
       sizingChart: "misses",
-      selectedMeasurements: {
-        finished_bust_chest: 40,
-        back_neck_to_hem: 22,
-        armhole_depth: 8,
-        neck_opening: 3,
-        shoulder_width: 4.25,
-        front_neck_depth: 3,
-        back_neck_depth: 1,
-      },
+      selectedMeasurements: baseRoundNeckMeasurements(),
     },
     style: { recipientCategory: "misses", neckline: "v-neck" },
     yarnGaugeMachine: {
@@ -177,5 +205,76 @@ describe("renderActiveShoulderChartIntroHtml", () => {
     expect(html).toMatch(/divide the piece at the center/i);
     expect(html).not.toMatch(/scrap off the center/i);
     expect(html).not.toMatch(/bind off the center/i);
+  });
+});
+
+describe("cardigan front neckline / shoulder chart copy", () => {
+  const baseOpts = {
+    wrapperClass: "pattern-shaping-intro",
+    layout: "compact" as const,
+  };
+
+  it("uses cardigan front wording in intro and completion (not pullover divide language)", () => {
+    const r = cardiganRoundFrontPattern();
+    const chart = r.frontNeckShoulderShapingChart;
+    const localStart = "RC:050";
+    const center = centerBindOffStitchesFromNeckShoulderChart(chart);
+
+    const introHtml = renderActiveShoulderChartIntroHtml({
+      ...baseOpts,
+      localStartRcLabel: localStart,
+      centerBindOffStitches: center,
+      chart,
+    });
+    const combined = `${introHtml}${renderNeckShoulderShapingChartTableOnlyHtml(chart, "test-cardigan-front", introHtml, {
+      activeSideOnly: true,
+      activeSideRcStart: armholeLocalRcActiveShoulderChecklistStart(chart, r.firstArmholeGarmentRc),
+    })}`;
+
+    expect(combined).toMatch(/center-front edge/i);
+    expect(combined).toMatch(/opposite front/i);
+    expect(combined).not.toMatch(/center neckline/i);
+    expect(combined).not.toMatch(/divide the neckline/i);
+    expect(combined).not.toMatch(/opposite shoulder/i);
+    expect(combined).not.toMatch(/second side/i);
+    expect(combined).not.toMatch(/second shoulder/i);
+    expect(combined).not.toContain("Divide:");
+    expect(combined).not.toContain("Center Neckline:");
+  });
+
+  it("keeps pullover front divide and second-side wording", () => {
+    const r = roundNeckPattern();
+    const chart = r.frontNeckShoulderShapingChart;
+    const center = centerBindOffStitchesFromNeckShoulderChart(chart);
+
+    const introHtml = renderActiveShoulderChartIntroHtml({
+      ...baseOpts,
+      localStartRcLabel: "RC:050",
+      centerBindOffStitches: center,
+      chart,
+    });
+    const combined = `${introHtml}${renderNeckShoulderShapingChartTableOnlyHtml(chart, "test-pullover-front", introHtml, {
+      activeSideOnly: true,
+      activeSideRcStart: armholeLocalRcActiveShoulderChecklistStart(chart, r.firstArmholeGarmentRc),
+    })}`;
+
+    expect(combined).toMatch(/divide the neckline/i);
+    expect(combined).toMatch(/work one shoulder at a time/i);
+    expect(combined).toMatch(/second side/i);
+    expect(combined).toContain("Center Neckline:");
+    expect(combined).toContain("Divide:");
+  });
+
+  it("cardigan front plain paragraphs omit pullover divide phrases", () => {
+    const r = cardiganRoundFrontPattern();
+    const paras = activeShoulderIntroPlainParagraphs({
+      localStartRcLabel: "RC:050",
+      centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(r.frontNeckShoulderShapingChart),
+      chart: r.frontNeckShoulderShapingChart,
+    });
+    const text = paras.join(" ");
+    expect(text).toMatch(/center-front edge/i);
+    expect(text).toMatch(/following the chart below/i);
+    expect(text).not.toMatch(/center neckline|divide the neckline|opposite shoulder|second side/i);
   });
 });

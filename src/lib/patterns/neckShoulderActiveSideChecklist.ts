@@ -1,0 +1,298 @@
+/**
+ * Active-shoulder shaping checklist rows (Armhole RC, carriage parity, shaping actions).
+ * Kept separate from {@link neckShoulderShapingChartHtml} so {@link sleevelessPatternOutput}
+ * can read the same RC values as the rendered table without an import cycle.
+ */
+
+import type { NeckShoulderShapingChart, NeckShoulderShapingChartRow } from "./neckShoulderShapingChart";
+import { NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL } from "./neckShoulderShapingChart";
+import type { RowEntry, ShapingEvent } from "./shapingTimeline";
+import { finalShoulderRemainderStitches } from "./shoulderShapingNotation";
+
+type ActiveSideEdge = "Neck" | "Armhole";
+
+type ActiveSideScheduledAction = {
+  sourceRelativeRow: number;
+  edge: ActiveSideEdge;
+  amount: number;
+  kind: "bindOff" | "decrease";
+};
+
+export type ActiveSideInstructionTableRow = {
+  rc: number;
+  /** When set (print compaction), RC column shows `rc–rcEnd`. */
+  rcEnd?: number;
+  carriagePosition: string;
+  action: string;
+  edge: string;
+  stitchesRemaining: number;
+};
+
+function parseDecreaseCell(cell: string): number {
+  const text = String(cell ?? "").trim();
+  if (!text || text === "-") return 0;
+  const normalized = text.replace(/[^\d-]/g, "");
+  const n = Number(normalized);
+  if (!Number.isFinite(n)) return 0;
+  return Math.abs(Math.trunc(n));
+}
+
+/**
+ * Armhole-local RC for the first row of the active-shoulder checklist (continuous with the armhole
+ * counter — same base as {@link buildActiveSideInstructionTableRows} `rcStart`).
+ */
+export function armholeLocalRcActiveShoulderChecklistStart(
+  chart: NeckShoulderShapingChart,
+  firstArmholeGarmentRc: number | null | undefined
+): number {
+  const fhRaw = Number(firstArmholeGarmentRc);
+  if (!Number.isFinite(fhRaw)) return 0;
+  const fh = Math.max(0, Math.floor(fhRaw));
+
+  if (chart.timeline && chart.timeline.length > 0) {
+    const sorted = [...chart.timeline].sort((a, b) => a.row - b.row);
+    const center = sorted[0];
+    if (!center) return 0;
+    const second = sorted[1];
+    const startGarment = second !== undefined ? second.row : center.row + 1;
+    return Math.max(0, Math.floor(startGarment) - fh);
+  }
+
+  const rows = [...chart.rows].sort((a, b) => a.row - b.row);
+  const first = rows[0];
+  if (!first) return 0;
+  const centerBo = parseDecreaseCell(String(first.centerNeck ?? "")) > 0;
+  const sourceBaseRow = centerBo ? first.row + 1 : first.row;
+  return Math.max(0, Math.floor(sourceBaseRow) - fh);
+}
+
+function carriagePositionForActiveSideRc(rc: number): "Right" | "Left" {
+  return rc % 2 === 0 ? "Right" : "Left";
+}
+
+function edgeForActiveSideCarriagePosition(position: "Right" | "Left"): ActiveSideEdge {
+  return position === "Right" ? "Armhole" : "Neck";
+}
+
+function requiredParityForActiveSideEdge(edge: ActiveSideEdge): 0 | 1 {
+  return edge === "Armhole" ? 0 : 1;
+}
+
+function activeSideActionText(action: ActiveSideScheduledAction): string {
+  const noun = action.amount === 1 ? "st" : "sts";
+  let verb: string;
+  if (action.kind === "bindOff") {
+    verb = action.edge === "Armhole" ? "Bind off / hold" : "Bind off";
+  } else {
+    verb = "Decrease";
+  }
+  return `${verb} ${action.amount} ${noun}`;
+}
+
+function addActiveSideKnitEvenRow(
+  rows: ActiveSideInstructionTableRow[],
+  rc: number,
+  stitchesRemaining: number
+): void {
+  const carriagePosition = carriagePositionForActiveSideRc(rc);
+  rows.push({
+    rc,
+    carriagePosition,
+    action: NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
+    edge: edgeForActiveSideCarriagePosition(carriagePosition),
+    stitchesRemaining,
+  });
+}
+
+function activeSideActionFromTimelineEvent(
+  entry: RowEntry,
+  event: ShapingEvent,
+  centerRow: number
+): ActiveSideScheduledAction | null {
+  if (event.side !== "right" || event.amount <= 0) return null;
+  if (event.edge !== "inner" && event.edge !== "outer") return null;
+  if (event.kind !== "bindOff" && event.kind !== "decrease") return null;
+  return {
+    sourceRelativeRow: Math.max(0, Math.floor(entry.row - centerRow - 1)),
+    edge: event.edge === "inner" ? "Neck" : "Armhole",
+    amount: Math.max(0, Math.floor(event.amount)),
+    kind: event.kind,
+  };
+}
+
+function buildActiveSideActionsFromTimeline(timeline: readonly RowEntry[]): {
+  initialStitches: number;
+  finalSourceRelativeRow: number;
+  actions: ActiveSideScheduledAction[];
+} | null {
+  const sorted = [...timeline].sort((a, b) => a.row - b.row);
+  const center = sorted[0];
+  if (!center) return null;
+  const actions: ActiveSideScheduledAction[] = [];
+  let finalSourceRelativeRow = 0;
+  for (const entry of sorted.slice(1)) {
+    const rel = Math.max(0, Math.floor(entry.row - center.row - 1));
+    finalSourceRelativeRow = Math.max(finalSourceRelativeRow, rel);
+    for (const event of entry.events) {
+      const action = activeSideActionFromTimelineEvent(entry, event, center.row);
+      if (action) actions.push(action);
+    }
+  }
+  const remainder = finalShoulderRemainderStitches(timeline, "right");
+  if (remainder > 0) {
+    actions.push({
+      sourceRelativeRow: finalSourceRelativeRow + 1,
+      edge: "Armhole",
+      amount: remainder,
+      kind: "bindOff",
+    });
+    finalSourceRelativeRow += 1;
+  }
+
+  return {
+    initialStitches: Math.max(0, Math.floor(center.stitchesR)),
+    finalSourceRelativeRow,
+    actions,
+  };
+}
+
+function buildActiveSideActionsFromChartRows(rows: readonly NeckShoulderShapingChartRow[]): {
+  initialStitches: number;
+  finalSourceRelativeRow: number;
+  actions: ActiveSideScheduledAction[];
+} {
+  const sorted = [...rows].sort((a, b) => a.row - b.row);
+  const first = sorted[0];
+  if (!first) {
+    return { initialStitches: 0, finalSourceRelativeRow: 0, actions: [] };
+  }
+  const firstHasCenterBindOff = parseDecreaseCell(first.centerNeck) > 0;
+  const sourceRows = firstHasCenterBindOff ? sorted.slice(1) : sorted;
+  const sourceBaseRow = firstHasCenterBindOff ? first.row + 1 : first.row;
+  const firstSource = sourceRows[0];
+  const firstSourceDecrease =
+    firstSource !== undefined
+      ? parseDecreaseCell(firstSource.rightNeck) + parseDecreaseCell(firstSource.rightSide)
+      : 0;
+  const initialStitches = firstHasCenterBindOff
+    ? Math.max(0, Math.floor(first.rightStitchCount))
+    : Math.max(0, Math.floor(first.rightStitchCount + firstSourceDecrease));
+  const actions: ActiveSideScheduledAction[] = [];
+  let finalSourceRelativeRow = 0;
+  for (const row of sourceRows) {
+    const rel = Math.max(0, Math.floor(row.row - sourceBaseRow));
+    finalSourceRelativeRow = Math.max(finalSourceRelativeRow, rel);
+    const neck = parseDecreaseCell(row.rightNeck);
+    const armhole = parseDecreaseCell(row.rightSide);
+    if (neck > 0) {
+      actions.push({ sourceRelativeRow: rel, edge: "Neck", amount: neck, kind: "decrease" });
+    }
+    if (armhole > 0) {
+      actions.push({ sourceRelativeRow: rel, edge: "Armhole", amount: armhole, kind: "bindOff" });
+    }
+  }
+  const lastSource = sourceRows[sourceRows.length - 1];
+  const remainder = lastSource ? Math.max(0, Math.floor(lastSource.rightStitchCount)) : 0;
+  const lastArmhole = lastSource ? parseDecreaseCell(lastSource.rightSide) : 0;
+  if (remainder > 0 && lastArmhole < remainder) {
+    actions.push({
+      sourceRelativeRow: finalSourceRelativeRow + 1,
+      edge: "Armhole",
+      amount: remainder,
+      kind: "bindOff",
+    });
+    finalSourceRelativeRow += 1;
+  }
+  return { initialStitches, finalSourceRelativeRow, actions };
+}
+
+export function buildActiveSideInstructionTableRows(
+  chart: NeckShoulderShapingChart,
+  rcStart = 0
+): ActiveSideInstructionTableRow[] {
+  const source =
+    chart.timeline && chart.timeline.length > 0
+      ? buildActiveSideActionsFromTimeline(chart.timeline)
+      : chart.rows.length > 0
+        ? buildActiveSideActionsFromChartRows(chart.rows)
+        : null;
+  if (!source) return [];
+
+  const out: ActiveSideInstructionTableRow[] = [];
+  let checklistIdx = 0;
+  const rcBase = Math.max(0, Math.floor(rcStart));
+  let stitchesRemaining = source.initialStitches;
+  const actions = [...source.actions].sort((a, b) => {
+    const dr = a.sourceRelativeRow - b.sourceRelativeRow;
+    if (dr !== 0) return dr;
+    if (a.edge === b.edge) return 0;
+    return a.edge === "Neck" ? -1 : 1;
+  });
+
+  for (const action of actions) {
+    while (checklistIdx < action.sourceRelativeRow) {
+      addActiveSideKnitEvenRow(out, rcBase + checklistIdx, stitchesRemaining);
+      checklistIdx += 1;
+    }
+    let displayRc = rcBase + checklistIdx;
+    while (displayRc % 2 !== requiredParityForActiveSideEdge(action.edge)) {
+      addActiveSideKnitEvenRow(out, displayRc, stitchesRemaining);
+      checklistIdx += 1;
+      displayRc = rcBase + checklistIdx;
+    }
+    const carriagePosition = carriagePositionForActiveSideRc(displayRc);
+    stitchesRemaining = Math.max(0, stitchesRemaining - action.amount);
+    out.push({
+      rc: displayRc,
+      carriagePosition,
+      action: activeSideActionText(action),
+      edge: action.edge,
+      stitchesRemaining,
+    });
+    checklistIdx += 1;
+  }
+
+  while (checklistIdx <= source.finalSourceRelativeRow) {
+    addActiveSideKnitEvenRow(out, rcBase + checklistIdx, stitchesRemaining);
+    checklistIdx += 1;
+  }
+
+  return out;
+}
+
+function isPlainKnitActiveSideRow(row: ActiveSideInstructionTableRow): boolean {
+  return row.action === NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL;
+}
+
+/**
+ * Armhole-local RC of the first neckline shaping action in the generated active-shoulder
+ * checklist (after carriage parity — same rows as the print/online shaping table).
+ */
+export function armholeLocalRcFirstActiveSideNecklineShapingAction(
+  chart: NeckShoulderShapingChart,
+  firstArmholeGarmentRc: number | null | undefined
+): number | undefined {
+  const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, firstArmholeGarmentRc);
+  const rows = buildActiveSideInstructionTableRows(chart, rcStart);
+  const shapingRows = rows.filter((row) => !isPlainKnitActiveSideRow(row));
+  const firstNeck = shapingRows.find((row) => row.edge === "Neck");
+  const first = firstNeck ?? shapingRows[0];
+  return first !== undefined ? first.rc : undefined;
+}
+
+function oppositeCarriagePosition(position: "Right" | "Left"): "Right" | "Left" {
+  return position === "Right" ? "Left" : "Right";
+}
+
+function carriagePositionForSecondShoulderRc(rc: number): "Right" | "Left" {
+  return oppositeCarriagePosition(carriagePositionForActiveSideRc(rc));
+}
+
+export function buildSecondShoulderInstructionTableRows(
+  rows: readonly ActiveSideInstructionTableRow[],
+): ActiveSideInstructionTableRow[] {
+  return rows.map((r) => ({
+    ...r,
+    carriagePosition: carriagePositionForSecondShoulderRc(r.rc),
+  }));
+}

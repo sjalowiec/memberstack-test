@@ -6,6 +6,12 @@ import {
   generateSleevelessBackPattern,
   type SleevelessPatternDisplayRow,
 } from "./sleevelessPatternOutput";
+import {
+  armholeLocalRcActiveShoulderChecklistStart,
+  armholeLocalRcFirstActiveSideNecklineShapingAction,
+  buildActiveSideInstructionTableRows,
+} from "./neckShoulderActiveSideChecklist";
+import { NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL } from "./neckShoulderShapingChart";
 
 function basePattern(styleNeckline: string): Record<string, unknown> {
   return {
@@ -69,6 +75,24 @@ function firstArmholeBlock(rows: readonly SleevelessPatternDisplayRow[]) {
   return undefined;
 }
 
+function cardiganPattern(): Record<string, unknown> {
+  return {
+    ...basePattern("round"),
+    style: { recipientCategory: "misses", neckline: "round", frontStyle: "open" },
+  };
+}
+
+function firstFrontNecklineShapingActionRc(
+  chart: Parameters<typeof buildActiveSideInstructionTableRows>[0],
+  armholeStart: number | undefined,
+): number | undefined {
+  const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, armholeStart);
+  const rows = buildActiveSideInstructionTableRows(chart, rcStart);
+  const shaping = rows.filter((row) => row.action !== NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL);
+  const firstNeck = shaping.find((row) => row.edge === "Neck");
+  return (firstNeck ?? shaping[0])?.rc;
+}
+
 describe("sleeveless armhole RC wording", () => {
   it("back ARMHOLE section uses bind off / hold wording and alternate-techniques tip", () => {
     const r = generateSleevelessBackPattern(basePattern("round"));
@@ -122,7 +146,7 @@ describe("sleeveless armhole RC wording", () => {
     expect(
       frontParas.some((p) => /Front neckline \(V-neck\) shaping begins at Armhole RC/i.test(p))
     ).toBe(true);
-    const localNeck = r.debug.frontNecklineStartLocalRC;
+    const localNeck = r.debug.frontNecklineShapingBeginLocalRC;
     expect(localNeck).toBeDefined();
     const neckPadded = String(Math.max(0, Math.floor(localNeck!))).padStart(3, "0");
     expect(
@@ -151,5 +175,28 @@ describe("sleeveless armhole RC wording", () => {
     expect(bodyKnitTo).toBeDefined();
     expect(bodyKnitTo).toMatch(/^Knit to RC \d+\.$/);
     expect(bodyKnitTo).not.toMatch(/Armhole/i);
+  });
+
+  it("round-neck and cardigan front milestone RC matches first generated neckline shaping table row", () => {
+    for (const pattern of [basePattern("round"), cardiganPattern()]) {
+      const r = generateSleevelessBackPattern(pattern);
+      const armholeStart = r.debug.armholeStartRow;
+      const tableRc = firstFrontNecklineShapingActionRc(
+        r.frontNeckShoulderShapingChart,
+        armholeStart,
+      );
+      const helperRc = armholeLocalRcFirstActiveSideNecklineShapingAction(
+        r.frontNeckShoulderShapingChart,
+        armholeStart,
+      );
+      expect(helperRc).toBe(tableRc);
+      expect(r.debug.frontNecklineShapingBeginLocalRC).toBe(tableRc);
+
+      const neckPadded = String(Math.max(0, Math.floor(tableRc ?? 0))).padStart(3, "0");
+      const frontParas = collectParagraphs(r.frontDisplayRows);
+      expect(
+        frontParas.some((p) => p.includes(`Front neckline shaping begins at Armhole RC ${neckPadded}`)),
+      ).toBe(true);
+    }
   });
 });
