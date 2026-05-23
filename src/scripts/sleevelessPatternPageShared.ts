@@ -69,6 +69,10 @@ import { sleevelessFinishingFromPattern } from "../lib/patterns/sleevelessPatter
 import { buildSleevelessFinishingStepsHtml } from "../lib/patterns/sleevelessPatternFinishingHtml.ts";
 import { scrollToBuilderSection } from "../lib/patterns/scrollToBuilderSection.ts";
 import {
+  buildExpressNeedleHardStopHtml,
+  evaluateExpressNeedleFailSafeBeforeRender,
+} from "../lib/patterns/sleevelessExpressAvailableNeedles.ts";
+import {
   ARMHOLE_BIND_OFF_TRICK_CONTENT_ID,
   type SleevelessBackPatternDebug,
 } from "../lib/patterns/sleevelessPatternOutput.ts";
@@ -2332,9 +2336,51 @@ table {
   let sleevelessPatternRefreshInFlight = false;
   let sleevelessPatternRefreshQueued = false;
 
+  function logExpressNeedleFailSafeDev(failSafe) {
+    if (typeof import.meta !== "undefined" && import.meta.env?.DEV) {
+      console.log("[express needles fail-safe]", {
+        ran: failSafe.ran,
+        active: failSafe.active,
+        shouldBlockRender: failSafe.shouldBlockRender,
+        skipReason: failSafe.skipReason,
+        activeReason: failSafe.activeReason,
+        availableNeedles: failSafe.availableNeedles,
+        availableSource: failSafe.availableSource,
+        requiredNeedles: failSafe.requiredNeedles,
+        requiredSource: failSafe.requiredSource,
+        validation: failSafe.validation,
+      });
+    }
+  }
+
+  /** Final gate before pattern HTML is built. Returns true when instructions must not render. */
+  function tryExpressNeedleFailSafeBlock(result, patternMerged, generatorPatternData) {
+    const patternData = getPatternData();
+    const canonStyle =
+      getCurrentPattern().style && typeof getCurrentPattern().style === "object"
+        ? /** @type {Record<string, unknown>} */ (getCurrentPattern().style)
+        : {};
+    const failSafe = evaluateExpressNeedleFailSafeBeforeRender(result, {
+      patternData,
+      patternMerged,
+      canonicalStyle: canonStyle,
+      generatorPatternData,
+    });
+    logExpressNeedleFailSafeDev(failSafe);
+    if (failSafe.shouldBlockRender) {
+      renderExpressNeedleHardStop(failSafe.validation);
+      return true;
+    }
+    return false;
+  }
+
   async function renderMount(patternMerged, result, unit, generatorPatternData) {
     const mount = document.querySelector("[data-sleeveless-mount]");
     if (!mount) return;
+
+    if (tryExpressNeedleFailSafeBlock(result, patternMerged, generatorPatternData)) {
+      return;
+    }
 
     const renderSeq = ++sleevelessRenderMountSeq;
 
@@ -2583,6 +2629,22 @@ table {
     body.innerHTML = buildSleevelessPrintBasicsSummaryDlHtml(patternMerged, patternData);
   }
 
+  function renderExpressNeedleHardStop(needleCheck) {
+    const mount = document.querySelector("[data-sleeveless-mount]");
+    if (mount) {
+      mount.innerHTML = buildExpressNeedleHardStopHtml(needleCheck);
+    }
+    if (resultsVisibilityConfig.actionBarSelector) {
+      const actionBar = document.querySelector(resultsVisibilityConfig.actionBarSelector);
+      if (actionBar instanceof HTMLElement) actionBar.style.display = "none";
+    }
+    if (resultsVisibilityConfig.printFooterSelector) {
+      const printFooter = document.querySelector(resultsVisibilityConfig.printFooterSelector);
+      if (printFooter instanceof HTMLElement) printFooter.style.display = "none";
+    }
+    syncSleevelessPatternInpageNav();
+  }
+
   async function refreshPatternTabContent() {
     if (sleevelessPatternRefreshInFlight) {
       sleevelessPatternRefreshQueued = true;
@@ -2613,11 +2675,11 @@ table {
       return;
     }
 
-    setPatternTabsReadiness(tabsRoot, true);
-    showResults(resultsVisibilityConfig);
-
     const genInput = buildGeneratorPatternData(patternMerged);
     const result = generateSleevelessBackPattern(genInput);
+
+    setPatternTabsReadiness(tabsRoot, true);
+    showResults(resultsVisibilityConfig);
 
     const yg = section(patternMerged.yarnGauge);
     const ygm =
@@ -2625,6 +2687,11 @@ table {
         ? section(patternData.yarnGaugeMachine)
         : {};
     const unit = (ygm && ygm.gaugeRawUnit === "cm") || (yg && yg.gaugeRawUnit === "cm") ? "cm" : "in";
+
+    if (tryExpressNeedleFailSafeBlock(result, patternMerged, genInput)) {
+      updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, false);
+      return;
+    }
 
     updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, true);
 

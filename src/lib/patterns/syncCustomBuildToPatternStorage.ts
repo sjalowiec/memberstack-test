@@ -10,11 +10,13 @@
  * {@link resolveEffectiveHemDepthInches}). Other overrides remain stored only.
  */
 import {
+  getCurrentPattern,
   getPatternData,
   saveCurrentPattern,
   savePatternData,
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
 } from "./patternStorage";
+import { resolveGeneratorPatternMode } from "./sleevelessPatternBuilderMerge";
 import {
   computeDefaultMeasurementsFromChartRow,
   findExpressChartRow,
@@ -90,6 +92,15 @@ function resolveGarmentFromType(garmentType: string): {
 function resolveBodyShape(raw: string): string {
   if (raw === "aline") return "aline";
   return "straight";
+}
+
+/** Express review must keep `patternMode: express`; only true Custom Build sessions become custom-build. */
+function resolveSyncPatternMode(): "express" | "custom-build" {
+  const existing = resolveGeneratorPatternMode(
+    section(getCurrentPattern().style),
+    section(getPatternData().style),
+  );
+  return existing === "express" ? "express" : "custom-build";
 }
 
 function ensureYarnGaugeMachineDefaults(): void {
@@ -175,6 +186,8 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
       });
     }
 
+    const patternMode = resolveSyncPatternMode();
+
     syncSleevelessDesignBasicsToPatternStorage({
       ...(ev.who ? { who: ev.who } : {}),
       ...(neckline ? { neckline } : {}),
@@ -183,7 +196,7 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
       ...(selectedMeasurements ? { selectedMeasurements } : {}),
       frontStyle: garment.frontStyle,
       garmentStyle: garment.garmentStyle,
-      patternMode: "custom-build",
+      patternMode,
       ...(chartRow ? { chartRow, preserveCustomBuildFinished: true } : {}),
     });
 
@@ -193,7 +206,7 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
       bodyShape,
       length: "top",
       armholeStyle: "standard",
-      patternMode: "custom-build",
+      patternMode,
       garmentStyle: garment.garmentStyle,
       frontStyle: garment.frontStyle,
     };

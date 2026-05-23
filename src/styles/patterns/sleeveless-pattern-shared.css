@@ -162,6 +162,63 @@
     border: 1px solid rgba(234, 179, 8, 0.35);
   }
 
+  .express-needle-hard-stop {
+    width: 100%;
+    max-width: min(32rem, 100%);
+    margin: 1.25rem auto 2rem;
+    padding: 1.15rem 1.25rem;
+    border-radius: 10px;
+    border: 1px solid rgba(194, 97, 78, 0.22);
+    background: rgba(255, 251, 251, 0.94);
+    box-shadow: 0 1px 3px rgba(124, 45, 18, 0.06);
+  }
+
+  .express-needle-hard-stop__title {
+    margin: 0 0 0.55rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #7c2d12;
+  }
+
+  .express-needle-hard-stop__body {
+    margin: 0 0 0.55rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  .express-needle-hard-stop__lead {
+    margin: 0 0 0.2rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .express-needle-hard-stop__list {
+    margin: 0 0 0.75rem;
+    padding-left: 1.65rem;
+    list-style-position: outside;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #374151;
+  }
+
+  .express-needle-hard-stop__list li {
+    padding-left: 0.2rem;
+  }
+
+  .express-needle-hard-stop__list li + li {
+    margin-top: 0.4rem;
+  }
+
+  .express-needle-hard-stop__actions {
+    margin: 0;
+  }
+
+  .express-needle-hard-stop__btn {
+    display: inline-flex;
+  }
+
   .sleeveless-pattern-boot-msg {
     margin: 0;
     font-size: 0.95rem;
