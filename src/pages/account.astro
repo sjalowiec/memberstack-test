@@ -78,12 +78,26 @@ const description =
         Manage your Knit It Now account details and profile information here.
       </p>
 
-      <section class="account-page__card account-page__card--muted" aria-labelledby="resources-heading">
-        <h2 id="resources-heading" class="account-page__card-title">Member Resources</h2>
-        <p class="account-page__muted-copy">
-          This area will grow as we add saved patterns, member links, downloads, and other Knit It Now
-          resources.
+      <section
+        class="account-page__card"
+        aria-labelledby="my-patterns-heading"
+        data-kbm-my-patterns
+      >
+        <h2 id="my-patterns-heading" class="account-page__card-title">My Patterns</h2>
+        <p
+          class="account-page__muted-copy account-my-patterns__status"
+          data-kbm-my-patterns-status
+          role="status"
+          aria-live="polite"
+        >
+          Loading your saved patterns…
         </p>
+        <ul
+          class="account-my-patterns__list"
+          data-kbm-my-patterns-list
+          hidden
+          aria-label="Saved sleeveless patterns"
+        ></ul>
       </section>
 
       <p class="account-page__welcome">
@@ -187,6 +201,10 @@ const description =
     </div>
   </div>
 </Layout>
+
+<script>
+  import "/src/scripts/account-my-patterns.ts";
+</script>
 
 <style>
   .account-page {
@@ -346,7 +364,69 @@ const description =
     color: #4b5563;
   }
 
+  .account-my-patterns__status--error {
+    color: #b42318;
+  }
+
+  .account-my-patterns__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .account-my-patterns__item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    padding: 0.85rem 0;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .account-my-patterns__item:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .account-my-patterns__item-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+    flex: 1 1 12rem;
+  }
+
+  .account-my-patterns__name {
+    font-weight: 600;
+    color: #2c3a57;
+    word-break: break-word;
+  }
+
+  .account-my-patterns__updated {
+    font-size: 0.9rem;
+    color: #6b7280;
+  }
+
+  .account-my-patterns__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
   @media (max-width: 480px) {
+    .account-my-patterns__actions {
+      width: 100%;
+    }
+
+    .account-my-patterns__actions .btn {
+      flex: 1 1 auto;
+    }
+
     .account-page__form .contact-form__submit {
       width: 100%;
     }

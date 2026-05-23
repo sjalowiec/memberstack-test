@@ -86,8 +86,10 @@ export function readAllowDevPatternUserFromDotEnv() {
   return dotEnvAllowDevCached;
 }
 
-/** True when local dev pattern saves are allowed (never on by default in production). */
+/** True when local dev pattern saves are allowed (never in production deploys). */
 export function isAllowDevPatternUser() {
+  if (process.env.NODE_ENV === "production") return false;
+  if (process.env.CONTEXT === "production") return false;
   const fromEnv = process.env.ALLOW_DEV_PATTERN_USER;
   if (fromEnv === "true") return true;
   if (fromEnv === "false") return false;

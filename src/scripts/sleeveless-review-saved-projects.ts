@@ -1,17 +1,16 @@
 /**
- * Custom Build — save/load saved projects (Netlify Blobs).
- * Working draft stays in localStorage (`kbm_current_pattern`); this UI writes/reads Blob-backed projects.
+ * Unified review — save/update saved projects (no load UI; use /account to open).
  */
 import { initCustomPatternSavedProjectsPanel } from "../lib/patterns/customPatternSavedProjectsPanel";
 
-function initCustomBuildSavedProjects(): void {
+function initReviewSavedProjects(): void {
   const root = document.querySelector("[data-cb-saved-projects]");
   if (!(root instanceof HTMLElement)) return;
-  initCustomPatternSavedProjectsPanel(root);
+  initCustomPatternSavedProjectsPanel(root, { showLoadControls: false });
 }
 
 if (typeof document !== "undefined") {
-  const boot = (): void => initCustomBuildSavedProjects();
+  const boot = (): void => initReviewSavedProjects();
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
   } else {

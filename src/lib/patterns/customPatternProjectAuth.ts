@@ -9,13 +9,17 @@
  * TODO: Verify Memberstack session/JWT server-side (`MEMBERSTACK_SECRET_KEY`) instead of trusting client-sent id.
  */
 
+import { memberIdFromMemberstackPayload } from "./memberstackMember";
 import { DEFAULT_DEV_PATTERN_USER_ID } from "./customPatternProjectStoreKeys";
 
 const DEV_USER_STORAGE_KEY = "kbm_dev_pattern_user_id";
 
 export { DEFAULT_DEV_PATTERN_USER_ID };
 
-/** Local save/list/load when Astro dev is running and dev pattern saves are enabled in `.env`. */
+/**
+ * Local save/list/load when Astro dev + Netlify dev allow anonymous pattern user.
+ * Never enabled in production builds (import.meta.env.DEV is false).
+ */
 export function isDevCustomPatternProjectsEnabled(): boolean {
   return (
     typeof import.meta !== "undefined" &&
@@ -31,23 +35,6 @@ export type CustomPatternProjectAuth = {
   memberId?: string;
   devUserId?: string;
 };
-
-function memberIdFromMemberstackPayload(payload: unknown): string | undefined {
-  if (!payload || typeof payload !== "object") return undefined;
-  const root = payload as Record<string, unknown>;
-  const data =
-    root.data && typeof root.data === "object" && !Array.isArray(root.data)
-      ? (root.data as Record<string, unknown>)
-      : root;
-  const id = data.id ?? data._id;
-  if (typeof id === "string" && id.trim()) return id.trim();
-  const auth = data.auth;
-  if (auth && typeof auth === "object" && !Array.isArray(auth)) {
-    const authId = (auth as Record<string, unknown>).id;
-    if (typeof authId === "string" && authId.trim()) return authId.trim();
-  }
-  return undefined;
-}
 
 /** Stable dev user id for local dev when Memberstack is unavailable. */
 export function getOrCreateDevPatternUserId(): string {

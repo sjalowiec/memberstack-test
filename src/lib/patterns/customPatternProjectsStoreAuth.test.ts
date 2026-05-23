@@ -58,10 +58,16 @@ describe("resolveProjectUserId (Netlify store)", () => {
 
 describe("isAllowDevPatternUser", () => {
   const prevAllow = process.env.ALLOW_DEV_PATTERN_USER;
+  const prevNodeEnv = process.env.NODE_ENV;
+  const prevContext = process.env.CONTEXT;
 
   afterEach(() => {
     if (prevAllow === undefined) delete process.env.ALLOW_DEV_PATTERN_USER;
     else process.env.ALLOW_DEV_PATTERN_USER = prevAllow;
+    if (prevNodeEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = prevNodeEnv;
+    if (prevContext === undefined) delete process.env.CONTEXT;
+    else process.env.CONTEXT = prevContext;
   });
 
   it("is true when ALLOW_DEV_PATTERN_USER=true", () => {
@@ -71,6 +77,13 @@ describe("isAllowDevPatternUser", () => {
 
   it("is false when explicitly disabled", () => {
     process.env.ALLOW_DEV_PATTERN_USER = "false";
+    expect(isAllowDevPatternUser()).toBe(false);
+  });
+
+  it("is false in production even when ALLOW_DEV_PATTERN_USER=true", () => {
+    process.env.NODE_ENV = "production";
+    process.env.CONTEXT = "production";
+    process.env.ALLOW_DEV_PATTERN_USER = "true";
     expect(isAllowDevPatternUser()).toBe(false);
   });
 });

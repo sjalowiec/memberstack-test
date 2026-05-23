@@ -1,5 +1,6 @@
 ---
 import Layout from "../../../../../layouts/Layout.astro";
+import SleevelessPatternMemberGate from "../../../../../components/patterns/SleevelessPatternMemberGate.astro";
 import WizardBackLink from "../../../../../components/wizards/WizardBackLink.astro";
 import PatternWorkspaceTabs from "../../../../../components/patterns/PatternWorkspaceTabs.astro";
 import UnitToggle from "../../../../../components/wizards/UnitToggle.astro";
@@ -22,6 +23,7 @@ const customWizardSteps = [
   title="Custom Pattern — Foundation | Sleeveless Sweater"
   description="Choose who you are knitting for and a starting size for your custom sleeveless sweater pattern."
 >
+  <SleevelessPatternMemberGate>
   <main
     class="express-page wizard-page sleeveless-express-page"
     data-express-page="sleeveless-custom-build-design"
@@ -388,6 +390,7 @@ const customWizardSteps = [
       </div>
     </div>
   </main>
+  </SleevelessPatternMemberGate>
 </Layout>
 
 <style>

@@ -1,5 +1,6 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
+import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
 import PatternWorkspaceTabs from "../../../components/patterns/PatternWorkspaceTabs.astro";
 import UnitToggle from "../../../components/wizards/UnitToggle.astro";
 import YarnRequirement from "../../../components/tools/YarnRequirement.astro";
@@ -28,6 +29,7 @@ const SHOW_UPSELL = false;
   title="Review Measurements | Sleeveless Sweater"
   description="Review sizing and measurements, then generate your sleeveless sweater pattern."
 >
+  <SleevelessPatternMemberGate>
   <main class="express-page wizard-page sleeveless-express-page express-measurements-confirm-page sleeveless-unified-review-page">
     <div class="wizard-container express-wizard scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
@@ -376,6 +378,37 @@ const SHOW_UPSELL = false;
             </div>
           </header>
 
+          <section
+            class="cb-saved-projects cb-saved-projects--review no-print"
+            data-cb-saved-projects
+            aria-labelledby="review-saved-projects-heading"
+          >
+            <h2 id="review-saved-projects-heading" class="cb-saved-projects__title">Save pattern</h2>
+            <p class="pattern-subtext cb-saved-projects__draft-note">
+              Save this pattern to your account. Open saved patterns anytime from
+              <a href="/account">My Account</a>.
+            </p>
+            <p class="pattern-subtext cb-saved-projects__auth" data-cb-project-auth-hint></p>
+            <label class="cb-saved-projects__field">
+              <span class="cb-saved-projects__label">Project name</span>
+              <input
+                type="text"
+                class="form-control"
+                data-cb-project-name
+                maxlength="120"
+                placeholder="e.g. Mom’s relaxed cardigan"
+                autocomplete="off"
+              />
+            </label>
+            <div class="cb-saved-projects__actions">
+              <button type="button" class="btn btn-sm btn-primary" data-cb-project-save>Save as new</button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-cb-project-update>
+                Update saved
+              </button>
+            </div>
+            <p class="cb-project-status" data-cb-project-status role="status" aria-live="polite"></p>
+          </section>
+
           <div
             class="sleeveless-measure-project-summary sleeveless-measure-project-summary--below-header"
             data-express-measurements-project-summary
@@ -505,6 +538,7 @@ const SHOW_UPSELL = false;
       ></div>
     </div>
   </main>
+  </SleevelessPatternMemberGate>
 </Layout>
 
 <style>
@@ -770,9 +804,64 @@ const SHOW_UPSELL = false;
       font-size: 0.82rem;
     }
   }
+
+  .sleeveless-unified-review-page .cb-saved-projects--review {
+    margin: 0 0 1.25rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.6);
+  }
+
+  .sleeveless-unified-review-page .cb-saved-projects--review .cb-saved-projects__title {
+    font-size: 1rem;
+    margin: 0 0 0.4rem;
+  }
+
+  .sleeveless-unified-review-page .cb-saved-projects--review .cb-saved-projects__draft-note {
+    margin-bottom: 0.35rem;
+    font-size: 0.92rem;
+  }
+
+  .sleeveless-unified-review-page .cb-saved-projects--review .cb-saved-projects__auth {
+    margin-bottom: 0.65rem;
+    font-size: 0.88rem;
+    color: var(--text-muted, #555);
+  }
+
+  .sleeveless-unified-review-page .cb-saved-projects--review .cb-saved-projects__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0.6rem;
+    max-width: 24rem;
+  }
+
+  .sleeveless-unified-review-page .cb-saved-projects--review .cb-saved-projects__label {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .sleeveless-unified-review-page .cb-saved-projects--review .cb-saved-projects__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .sleeveless-unified-review-page .cb-saved-projects--review .cb-project-status {
+    margin: 0.35rem 0 0;
+    font-size: 0.9rem;
+    min-height: 1.25em;
+  }
+
+  .sleeveless-unified-review-page .cb-saved-projects--review .cb-project-status--error {
+    color: #b91c1c;
+  }
 </style>
 
 <script>
   import "/src/scripts/sleevelessReviewProjectHeader.ts";
   import "/src/scripts/sleeveless-builder-review-page.ts";
+  import "/src/scripts/sleeveless-review-saved-projects.ts";
 </script>

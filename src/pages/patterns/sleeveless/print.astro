@@ -1,5 +1,6 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
+import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
 import WizardBackLink from "../../../components/wizards/WizardBackLink.astro";
 import PatternPrintFooter from "../../../components/common/PatternPrintFooter.astro";
 import PatternPrintPersonalization from "../../../components/common/PatternPrintPersonalization.astro";
@@ -19,6 +20,7 @@ const pageUrl = Astro.url.href;
 >
   <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/sleeveless" />
   <PatternPrintPersonalization includePrintSection={false} />
+  <SleevelessPatternMemberGate>
   <div class="sleeveless-print-shell" data-pattern-print-skip-modal>
     <div class="sleeveless-print-actions no-print">
       <WizardBackLink className="back-link" fallback="/patterns/sleeveless/pattern" />
@@ -33,6 +35,7 @@ const pageUrl = Astro.url.href;
 
     <p class="print-url-meta no-print" aria-hidden="true">{pageUrl}</p>
   </div>
+  </SleevelessPatternMemberGate>
 </Layout>
 
 <script>
