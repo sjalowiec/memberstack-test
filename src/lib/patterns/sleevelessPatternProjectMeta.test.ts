@@ -1,11 +1,19 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { saveCurrentPattern } from "./patternStorage";
+import { stubLocalStorage } from "./test/stubLocalStorage";
 import {
   buildDefaultSleevelessPatternTitle,
   formatPatternProjectNotesPreview,
+  getPatternProjectMeta,
   getSleevelessPatternOnlineHeading,
   getSleevelessPatternOnlineNotesText,
+  resetPatternProjectMetaForNewDraft,
   SLEEVELESS_PATTERN_ONLINE_HEADING_FALLBACK,
 } from "./sleevelessPatternProjectMeta";
+import {
+  EXPRESS_EDITING_FALLBACK_LABEL,
+  getExpressEditingProjectLabel,
+} from "./sleevelessExpressResume";
 
 describe("buildDefaultSleevelessPatternTitle", () => {
   it("builds women's round pullover with size", () => {
@@ -91,6 +99,28 @@ describe("online pattern project display", () => {
     expect(getSleevelessPatternOnlineNotesText({ title: "", notes: "Line one\nLine two" })).toBe(
       "Line one\nLine two",
     );
+  });
+});
+
+describe("resetPatternProjectMetaForNewDraft", () => {
+  beforeEach(() => {
+    stubLocalStorage();
+    localStorage.clear();
+  });
+
+  it("clears a previously loaded saved project title and notes on the working draft", () => {
+    saveCurrentPattern({
+      patternProject: {
+        title: "Aubrey's Green Vest",
+        notes: "Use cotton yarn",
+        titleCustomized: true,
+      },
+    });
+
+    resetPatternProjectMetaForNewDraft();
+
+    expect(getPatternProjectMeta()).toEqual({ title: "", notes: "" });
+    expect(getExpressEditingProjectLabel()).toBe(EXPRESS_EDITING_FALLBACK_LABEL);
   });
 });
 

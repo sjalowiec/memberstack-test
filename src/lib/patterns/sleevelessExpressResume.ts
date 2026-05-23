@@ -11,6 +11,8 @@ export interface ExpressPersistedV1 {
   maxReachable?: number;
   gaugeStitchRaw?: string;
   gaugeRowRaw?: string;
+  /** Needle bed width from Express gauge step (`express-available-needles`). */
+  availableNeedles?: string;
   flowSteps?: number;
   whoSizeCombined?: boolean;
 }

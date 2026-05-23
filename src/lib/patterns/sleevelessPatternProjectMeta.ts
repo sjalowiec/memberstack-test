@@ -149,6 +149,17 @@ export function getPatternProjectMeta(
   return normalizeMeta(getCurrentPattern().patternProject);
 }
 
+/**
+ * Clears project title/notes on the working draft for a brand-new unsaved pattern.
+ * Does not touch saved Blob projects or the active saved-project link (clear that separately).
+ */
+export function resetPatternProjectMetaForNewDraft(): SleevelessPatternProjectMeta {
+  const next: SleevelessPatternProjectMeta = { title: "", notes: "", titleCustomized: false };
+  saveCurrentPattern({ patternProject: next });
+  syncPatternProjectToPrintSession({ title: "", notes: "" });
+  return { title: "", notes: "" };
+}
+
 export function savePatternProjectMeta(
   patch: Partial<SleevelessPatternProjectMeta>,
   pattern: SleevelessPatternRecord = getCurrentPattern(),

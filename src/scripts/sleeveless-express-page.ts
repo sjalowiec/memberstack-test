@@ -39,6 +39,13 @@ import {
   hasExpressResumeProgress,
   loadExpressPersisted,
 } from "../lib/patterns/sleevelessExpressResume";
+import { resetPatternProjectMetaForNewDraft } from "../lib/patterns/sleevelessPatternProjectMeta";
+import {
+  EXPRESS_AVAILABLE_NEEDLES_INPUT_ID,
+  isValidExpressAvailableNeedles,
+  resolveExpressAvailableNeedles,
+  resolveExpressAvailableNeedlesForResume,
+} from "../lib/patterns/sleevelessExpressAvailableNeedles";
 
 const STEPS = 5;
 const LOCKED_STEP_NAV_TITLE = "Finish the previous step to continue.";
@@ -53,17 +60,9 @@ const LABELS: Record<string, Record<string, string>> = {
 const GAUGE_STITCH_ID = "express-stitch-gauge";
 const GAUGE_ROW_ID = "express-row-gauge";
 
-/** Express patterns assume a standard 200-needle machine unless customized. */
-const EXPRESS_DEFAULT_AVAILABLE_NEEDLES = "200";
-
-function resolveExpressAvailableNeedles(
-  prevYarnGaugeMachine: Record<string, unknown> | undefined,
-): string {
-  const raw = prevYarnGaugeMachine?.availableNeedles;
-  if (raw != null && String(raw).trim() !== "") {
-    return String(raw).trim();
-  }
-  return EXPRESS_DEFAULT_AVAILABLE_NEEDLES;
+function readExpressAvailableNeedlesInput(): string {
+  const el = document.getElementById(EXPRESS_AVAILABLE_NEEDLES_INPUT_ID);
+  return el instanceof HTMLInputElement ? el.value.trim() : "";
 }
 
 function getExpressGaugeUnit(): "cm" | "in" {
@@ -254,7 +253,7 @@ function syncExpressSelectionsToBuilderStorage(
   const yarnMachinePayload: Record<string, unknown> = {
     yarnNotes: "",
     yarnWeight: "",
-    availableNeedles: resolveExpressAvailableNeedles(prevMachine),
+    availableNeedles: resolveExpressAvailableNeedles(prevMachine, readExpressAvailableNeedlesInput()),
     gaugeStitchRaw,
     gaugeRowRaw,
     gaugeRawUnit: unit,
@@ -344,7 +343,7 @@ function persistExpressBuilderState(
     gaugeStitchRaw,
     gaugeRowRaw,
     gaugeRawUnit: unit,
-    availableNeedles: resolveExpressAvailableNeedles(prevMachine),
+    availableNeedles: resolveExpressAvailableNeedles(prevMachine, readExpressAvailableNeedlesInput()),
   };
 
   const yarnGaugeSection: Record<string, unknown> = {
@@ -378,6 +377,15 @@ function gaugeOk(): boolean {
   const rw = document.getElementById(GAUGE_ROW_ID);
   if (!(st instanceof HTMLInputElement) || !(rw instanceof HTMLInputElement)) return false;
   return isValidPositiveNumber(st.value) && isValidPositiveNumber(rw.value);
+}
+
+function needlesOk(): boolean {
+  return isValidExpressAvailableNeedles(readExpressAvailableNeedlesInput());
+}
+
+/** Gauge step complete: swatch gauge + available needles (no machine-width checks yet). */
+function gaugeStepOk(): boolean {
+  return gaugeOk() && needlesOk();
 }
 
 function formatGaugeSummary(): string {
@@ -458,6 +466,7 @@ function initExpressPage() {
     if (typeof localStorage === "undefined") return;
     const stEl = document.getElementById(GAUGE_STITCH_ID);
     const rwEl = document.getElementById(GAUGE_ROW_ID);
+    const needlesEl = document.getElementById(EXPRESS_AVAILABLE_NEEDLES_INPUT_ID);
     try {
       localStorage.setItem(
         SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
@@ -469,11 +478,23 @@ function initExpressPage() {
           whoSizeCombined: true,
           gaugeStitchRaw: stEl instanceof HTMLInputElement ? stEl.value : "",
           gaugeRowRaw: rwEl instanceof HTMLInputElement ? rwEl.value : "",
+          availableNeedles:
+            needlesEl instanceof HTMLInputElement ? needlesEl.value.trim() : "",
         }),
       );
     } catch {
       /* quota */
     }
+  }
+
+  const prevMachineOnLoad =
+    (getPatternData().yarnGaugeMachine as Record<string, unknown> | undefined) ?? {};
+  const needlesElOnLoad = document.getElementById(EXPRESS_AVAILABLE_NEEDLES_INPUT_ID);
+  if (needlesElOnLoad instanceof HTMLInputElement) {
+    needlesElOnLoad.value = resolveExpressAvailableNeedlesForResume(
+      typeof persisted?.availableNeedles === "string" ? persisted.availableNeedles : undefined,
+      prevMachineOnLoad,
+    );
   }
 
   if (persisted) {
@@ -514,7 +535,7 @@ function initExpressPage() {
     if (step === 4) return !!values.fit;
     const sec = stepSection(step);
     const f = sec?.getAttribute("data-express-field");
-    if (f === "gauge") return gaugeOk();
+    if (f === "gauge") return gaugeStepOk();
     return !!(f && values[f]);
   }
 
@@ -557,7 +578,7 @@ function initExpressPage() {
       nonEmptyTrimmed(values.front) &&
       !!values.neckline &&
       !!values.fit &&
-      gaugeOk();
+      gaugeStepOk();
 
     if (wrap) {
       if (complete) wrap.removeAttribute("hidden");
@@ -904,18 +925,27 @@ function initExpressPage() {
     }
   }
 
-  function onGaugeInput() {
+  function refreshGaugeStepUi() {
     updateSummaries();
     updateGeneratePatternAvailability();
     const secG = stepSection(STEPS);
-    if (secG) secG.classList.toggle("express-acc--complete", gaugeOk());
+    if (secG) secG.classList.toggle("express-acc--complete", gaugeStepOk());
     updatePills();
     persistExpressSession();
+  }
+
+  function onGaugeInput() {
+    refreshGaugeStepUi();
+  }
+
+  function onNeedlesInput() {
+    refreshGaugeStepUi();
   }
 
   function resetExpressBuilder(): void {
     if (!confirm("Start a new pattern? Your current sleeveless choices on this page will be reset.")) return;
     clearActiveCustomPatternProjectId();
+    resetPatternProjectMetaForNewDraft();
     try {
       localStorage.removeItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY);
     } catch {
@@ -1052,12 +1082,15 @@ function initExpressPage() {
 
   const stitchesInput = document.getElementById(GAUGE_STITCH_ID);
   const rowsInput = document.getElementById(GAUGE_ROW_ID);
+  const needlesInput = document.getElementById(EXPRESS_AVAILABLE_NEEDLES_INPUT_ID);
   const gaugeForm = document.getElementById("express-gauge-form");
 
   stitchesInput?.addEventListener("input", onGaugeInput);
   stitchesInput?.addEventListener("change", onGaugeInput);
   rowsInput?.addEventListener("input", onGaugeInput);
   rowsInput?.addEventListener("change", onGaugeInput);
+  needlesInput?.addEventListener("input", onNeedlesInput);
+  needlesInput?.addEventListener("change", onNeedlesInput);
 
   window.addEventListener("kbm:units-change", (ev: Event) => {
     const tid = (ev as CustomEvent<{ toggleId?: string }>).detail?.toggleId;
@@ -1071,7 +1104,15 @@ function initExpressPage() {
     const stEl = document.getElementById(GAUGE_STITCH_ID);
     const rwEl = document.getElementById(GAUGE_ROW_ID);
     if (!(stEl instanceof HTMLInputElement) || !(rwEl instanceof HTMLInputElement)) return;
-    if (!isValidPositiveNumber(stEl.value) || !isValidPositiveNumber(rwEl.value)) return;
+    const needlesEl = document.getElementById(EXPRESS_AVAILABLE_NEEDLES_INPUT_ID);
+    if (
+      !isValidPositiveNumber(stEl.value) ||
+      !isValidPositiveNumber(rwEl.value) ||
+      !(needlesEl instanceof HTMLInputElement) ||
+      !isValidPositiveNumber(needlesEl.value)
+    ) {
+      return;
+    }
 
     if (
       !values.who ||

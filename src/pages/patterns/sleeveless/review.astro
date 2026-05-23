@@ -186,18 +186,42 @@ const SHOW_UPSELL = false;
                 class="sleeveless-review-project-header__title-field"
                 data-sleeveless-pattern-project-title-field
               >
-                <input
-                  id="sleeveless-pattern-name"
-                  class="sleeveless-review-project-header__title-input"
-                  type="text"
-                  data-sleeveless-pattern-project-title
-                  maxlength="120"
-                  autocomplete="off"
-                  spellcheck="false"
-                />
+                <div
+                  class="sleeveless-review-project-header__title-input-wrap sleeveless-review-project-header__editable-field"
+                >
+                  <input
+                    id="sleeveless-pattern-name"
+                    class="sleeveless-review-project-header__title-input"
+                    type="text"
+                    data-sleeveless-pattern-project-title
+                    maxlength="120"
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                  <span
+                    class="sleeveless-review-project-header__field-pencil"
+                    aria-hidden="true"
+                  >
+                    <svg
+                      class="sleeveless-review-project-header__pencil-icon sleeveless-review-project-header__pencil-icon--inline"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"></path>
+                    </svg>
+                  </span>
+                </div>
                 <button
                   type="button"
-                  class="sleeveless-review-project-header__notes-icon-btn sleeveless-review-project-header__notes-icon-btn--save"
+                  class="sleeveless-review-project-header__notes-icon-btn sleeveless-review-project-header__notes-icon-btn--save sleeveless-review-project-header__title-save-btn"
                   data-sleeveless-pattern-project-cloud-save
                   title="Save pattern"
                   aria-label="Save pattern"
@@ -224,20 +248,26 @@ const SHOW_UPSELL = false;
                   data-sleeveless-pattern-project-notes-display
                 ></p>
               </div>
+              <label
+                class="sleeveless-review-project-header__label sleeveless-review-project-header__notes-label"
+                for="sleeveless-pattern-notes"
+              >
+                Project notes
+              </label>
               <div
-                class="sleeveless-review-project-header__section-head"
+                class="sleeveless-review-project-header__section-head sleeveless-review-project-header__editable-field sleeveless-review-project-header__notes-trigger"
                 data-sleeveless-pattern-project-notes-header
                 data-sleeveless-pattern-project-notes-edit
                 role="button"
                 tabindex="0"
-                title="Edit project notes"
-                aria-label="Edit project notes"
+                title="Add project notes"
+                aria-label="Add project notes"
               >
                 <span class="sleeveless-review-project-header__section-pencil" aria-hidden="true">
                   <svg
                     class="sleeveless-review-project-header__pencil-icon"
-                    width="21"
-                    height="21"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
                     fill="none"
                     aria-hidden="true"
@@ -250,10 +280,12 @@ const SHOW_UPSELL = false;
                       stroke-linejoin="round"></path>
                   </svg>
                 </span>
-                <span class="sleeveless-review-project-header__label">Project notes</span>
+                <span class="sleeveless-review-project-header__notes-empty-hint">
+                  Add project notes…
+                </span>
               </div>
               <div
-                class="sleeveless-review-project-header__notes-view"
+                class="sleeveless-review-project-header__notes-view sleeveless-review-project-header__editable-field"
                 data-sleeveless-pattern-project-notes-view
                 hidden
               >
@@ -267,9 +299,6 @@ const SHOW_UPSELL = false;
                 data-sleeveless-pattern-project-notes-panel
                 hidden
               >
-                <label class="sleeveless-review-project-header__label" for="sleeveless-pattern-notes">
-                  Project notes
-                </label>
                 <textarea
                   id="sleeveless-pattern-notes"
                   class="sleeveless-review-project-header__notes-input"
@@ -277,6 +306,8 @@ const SHOW_UPSELL = false;
                   rows={3}
                   maxlength={300}
                   autocomplete="off"
+                  placeholder="Add project notes…"
+                  aria-label="Project notes"
                 ></textarea>
                 <div class="sleeveless-review-project-header__notes-footer">
                   <div
