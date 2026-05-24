@@ -15,6 +15,7 @@ import {
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
 import { scrollToBuilderSection } from "../lib/patterns/scrollToBuilderSection";
 import { resolveSleevelessAudienceHeroImageSrc } from "../lib/patterns/sleevelessAudienceHeroImage";
+import { applySleevelessExpressEditChoicesFromUrl } from "../lib/patterns/restoreSleevelessExpressBuilderFromPattern";
 import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
 
 const STEPS = 2;
@@ -112,6 +113,7 @@ function stepSection(step: number): HTMLElement | null {
 }
 
 function initCustomBuildDesignPage(): void {
+  applySleevelessExpressEditChoicesFromUrl();
   const root = document.querySelector("[data-cb-design-root]");
   if (!(root instanceof HTMLElement)) return;
 

@@ -15,6 +15,16 @@ export interface ExpressPersistedV1 {
   availableNeedles?: string;
   flowSteps?: number;
   whoSizeCombined?: boolean;
+  /** Saved project reopened via Change Pattern Choices — unlock full wizard for editing. */
+  editChoicesReopen?: boolean;
+}
+
+export const EXPRESS_FLOW_STEPS = 5;
+
+export function isExpressEditChoicesReopenSession(
+  persisted: ExpressPersistedV1 | null | undefined,
+): boolean {
+  return persisted?.editChoicesReopen === true;
 }
 
 export function loadExpressPersisted(): ExpressPersistedV1 | null {
@@ -27,6 +37,27 @@ export function loadExpressPersisted(): ExpressPersistedV1 | null {
     return p as ExpressPersistedV1;
   } catch {
     return null;
+  }
+}
+
+/** Merge a partial snapshot into `kbm_sleeveless_express_builder` (preserves unrelated fields). */
+export function writeExpressPersistedSnapshot(
+  patch: Partial<ExpressPersistedV1> & { values?: Record<string, string> },
+): void {
+  if (typeof localStorage === "undefined") return;
+  const prev = loadExpressPersisted() ?? {};
+  const next: ExpressPersistedV1 = {
+    ...prev,
+    ...patch,
+    values:
+      patch.values != null
+        ? { ...(prev.values ?? {}), ...patch.values }
+        : prev.values,
+  };
+  try {
+    localStorage.setItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    /* quota */
   }
 }
 

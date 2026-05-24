@@ -234,6 +234,17 @@ export function syncPatternProjectToPrintSession(
   }
 }
 
+/** Clears legacy session-only print title/notes so they are not migrated into a new draft. */
+export function clearPatternProjectPrintSession(): void {
+  if (typeof sessionStorage === "undefined") return;
+  try {
+    sessionStorage.removeItem(LEGACY_PRINT_TITLE_KEY);
+    sessionStorage.removeItem(LEGACY_PRINT_NOTES_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 /** One-time migration from session-only print keys into the working draft. */
 export function migrateLegacyPrintSessionToPatternProject(
   pattern: SleevelessPatternRecord = getCurrentPattern(),

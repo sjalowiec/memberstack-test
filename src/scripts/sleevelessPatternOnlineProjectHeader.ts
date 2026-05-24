@@ -4,6 +4,7 @@
  */
 
 import { canCustomizePattern } from "../lib/patterns/sleevelessPatternAccessGate";
+import { initChangePatternChoicesLinks } from "../lib/patterns/restoreSleevelessExpressBuilderFromPattern";
 import { navigateToCustomizeProjectField } from "../lib/patterns/sleevelessCustomizeProjectFieldNav";
 import {
   getPatternProjectMeta,
@@ -70,6 +71,7 @@ export function applySleevelessPatternOnlineProjectHeader(): void {
 export function initSleevelessPatternOnlineProjectHeader(): void {
   if (!document.querySelector("[data-sleeveless-pattern-online-heading]")) return;
   applySleevelessPatternOnlineProjectHeader();
+  initChangePatternChoicesLinks();
 }
 
 if (typeof document !== "undefined") {

@@ -198,9 +198,17 @@ export async function listCustomPatternProjects(
   return { ok: true, projects: res.projects ?? [], authMode: res.authMode };
 }
 
+function patternSectionRecord(section: unknown): Record<string, unknown> {
+  return section && typeof section === "object" && !Array.isArray(section)
+    ? (section as Record<string, unknown>)
+    : {};
+}
+
 /**
  * Copies a saved project into the working draft (`kbm_current_pattern` + `patternBuilderData` mirrors).
  * Does not change Express routes or pattern math — only restores stored sections.
+ *
+ * Does not prefill the Express wizard — use Change Pattern Choices for that.
  */
 export function loadProjectIntoWorkingDraft(project: CustomPatternProject): SleevelessPatternRecord {
   const pattern = project.pattern;
@@ -211,13 +219,13 @@ export function loadProjectIntoWorkingDraft(project: CustomPatternProject): Slee
         ? pattern.patternProject.notes
         : "";
   saveCurrentPattern({
-    style: pattern.style,
-    fit: pattern.fit,
-    yarnGauge: pattern.yarnGauge,
-    measurements: pattern.measurements,
-    machine: pattern.machine,
-    calculations: pattern.calculations,
-    instructions: pattern.instructions,
+    style: patternSectionRecord(pattern.style),
+    fit: patternSectionRecord(pattern.fit),
+    yarnGauge: patternSectionRecord(pattern.yarnGauge),
+    measurements: patternSectionRecord(pattern.measurements),
+    machine: patternSectionRecord(pattern.machine),
+    calculations: patternSectionRecord(pattern.calculations),
+    instructions: patternSectionRecord(pattern.instructions),
     version: pattern.version,
     patternProject: {
       title: project.name,
@@ -225,11 +233,15 @@ export function loadProjectIntoWorkingDraft(project: CustomPatternProject): Slee
       titleCustomized: true,
     },
   });
-  savePatternData("style", pattern.style);
-  savePatternData("fit", pattern.fit);
-  savePatternData("yarnGauge", pattern.yarnGauge);
-  savePatternData("measurements", pattern.measurements);
-  savePatternData("machine", pattern.machine);
-  applySleevelessReadingWorkflow(project.readingWorkflow, pattern.id);
+  savePatternData("style", patternSectionRecord(pattern.style));
+  savePatternData("fit", patternSectionRecord(pattern.fit));
+  savePatternData("yarnGauge", patternSectionRecord(pattern.yarnGauge));
+  savePatternData("measurements", patternSectionRecord(pattern.measurements));
+  savePatternData("machine", patternSectionRecord(pattern.machine));
+  try {
+    applySleevelessReadingWorkflow(project.readingWorkflow, pattern.id);
+  } catch (error) {
+    console.error("[kbm] Reading workflow restore failed; continuing.", error);
+  }
   return getCurrentPattern();
 }

@@ -3,7 +3,13 @@
  */
 
 import { canCustomizePattern } from "../lib/patterns/sleevelessPatternAccessGate";
+import { getCurrentPattern } from "../lib/patterns/patternStorage";
 import { smartSaveCustomPatternProject } from "../lib/patterns/customPatternSavedProjectsPanel";
+import {
+  buildChangePatternChoicesHref,
+  initChangePatternChoicesLinks,
+  navigateToChangePatternChoices,
+} from "../lib/patterns/restoreSleevelessExpressBuilderFromPattern";
 import {
   getPatternProjectMeta,
   PROJECT_NOTES_MAX_LENGTH,
@@ -348,12 +354,14 @@ function bindEditableHeader(root: HTMLElement): void {
 function initSleevelessReviewSummaryEdit(): void {
   const row = document.querySelector<HTMLElement>("[data-sleeveless-review-summary-edit]");
   if (!row) return;
-  const href =
-    row.getAttribute("data-href")?.trim() ||
-    document.querySelector<HTMLElement>("[data-express-measurements-root]")?.getAttribute("data-express-href")?.trim() ||
-    "/patterns/sleeveless-express/";
+  const mode = getCurrentPattern().style?.patternMode;
+  const source = mode === "express" ? "express" : "custom-build";
+  const href = buildChangePatternChoicesHref(source);
+  row.setAttribute("data-href", href);
+  row.setAttribute("title", "Change pattern choices");
+  row.setAttribute("aria-label", "Change pattern choices");
   bindSectionHeadTrigger(row, () => {
-    window.location.assign(href);
+    navigateToChangePatternChoices(href);
   });
 }
 
@@ -376,6 +384,7 @@ export function initSleevelessReviewProjectHeader(): void {
   }
 
   initSleevelessReviewSummaryEdit();
+  initChangePatternChoicesLinks();
   applyCustomizeFieldFocusFromNavigation();
 }
 

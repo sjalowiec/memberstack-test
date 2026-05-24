@@ -18,6 +18,20 @@ export function expressWhoToChartAudience(whoRaw: unknown): string {
 
 /** Express UI uses `round` | `v-neck` (any casing); canonical pattern uses `round` | `v`. */
 /** Maps Express wizard style keys (`shaped-pullover`, etc.) to canonical style fields. */
+/** Canonical Express style key from stored body shape + front (inverse of {@link mapExpressStyleKey}). */
+export function deriveExpressStyleKey(bodyShape: string, front: string): string {
+  const shape = String(bodyShape ?? "").trim().toLowerCase();
+  const f = front === "open" ? "open" : front === "closed" ? "closed" : "";
+  if (!shape || !f) return "";
+  if (shape === "straight" && f === "closed") return "straight-pullover";
+  if (shape === "aline" && f === "closed") return "shaped-pullover";
+  if (shape === "straight" && f === "open") return "straight-cardigan";
+  if (shape === "aline" && f === "open") return "shaped-cardigan";
+  if (shape === "waist" && f === "closed") return "waist-pullover";
+  if (shape === "waist" && f === "open") return "waist-cardigan";
+  return "";
+}
+
 export function mapExpressStyleKey(styleKey: string): {
   bodyShape: string;
   frontStyle: "open" | "closed";

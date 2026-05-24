@@ -111,6 +111,16 @@ function updateSortHeaders(root: HTMLElement): void {
   });
 }
 
+function releaseMyPatternsListInteraction(root: HTMLElement): void {
+  root.querySelectorAll<HTMLElement>("[data-kbm-my-patterns-row]").forEach((row) => {
+    row.removeAttribute("aria-disabled");
+    row.tabIndex = 0;
+  });
+  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-sort]").forEach((b) => {
+    b.disabled = false;
+  });
+}
+
 async function onProjectOpen(root: HTMLElement, projectId: string, label: string): Promise<void> {
   const actionStart = perfStart();
   perfMark("6-account-list-action start", { action: "open", projectId, label });
@@ -125,32 +135,34 @@ async function onProjectOpen(root: HTMLElement, projectId: string, label: string
     b.disabled = true;
   });
 
-  const loadStart = perfStart();
-  const result = await loadSavedCustomPatternProject(projectId, "open");
-  perfEnd("6-account-list-action loadSavedCustomPatternProject", loadStart, {
-    action: "open",
-    projectId,
-    ok: result.ok,
-  });
-  if (!result.ok) {
-    rows.forEach((row) => {
-      row.removeAttribute("aria-disabled");
-      row.tabIndex = 0;
+  try {
+    const loadStart = perfStart();
+    const result = await loadSavedCustomPatternProject(projectId, "open");
+    perfEnd("6-account-list-action loadSavedCustomPatternProject", loadStart, {
+      action: "open",
+      projectId,
+      ok: result.ok,
     });
-    sortButtons.forEach((b) => {
-      b.disabled = false;
-    });
-    setStatus(root, result.error, true);
-    perfEnd("6-account-list-action total", actionStart, { action: "open", ok: false });
-    return;
-  }
+    if (!result.ok) {
+      setStatus(root, result.error, true);
+      perfEnd("6-account-list-action total", actionStart, { action: "open", ok: false });
+      return;
+    }
 
-  perfEnd("6-account-list-action total", actionStart, {
-    action: "open",
-    ok: true,
-    redirect: result.redirectHref,
-  });
-  window.location.assign(result.redirectHref);
+    perfEnd("6-account-list-action total", actionStart, {
+      action: "open",
+      ok: true,
+      redirect: result.redirectHref,
+    });
+    setStatus(root, "");
+    window.location.assign(result.redirectHref);
+  } catch (error) {
+    console.error("[kbm] Failed to open saved pattern from My Patterns.", error);
+    setStatus(root, "Could not open this pattern. Please try again.", true);
+    perfEnd("6-account-list-action total", actionStart, { action: "open", ok: false, thrown: true });
+  } finally {
+    releaseMyPatternsListInteraction(root);
+  }
 }
 
 function wireProjectRow(

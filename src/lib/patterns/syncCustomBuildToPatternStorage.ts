@@ -100,7 +100,15 @@ function resolveSyncPatternMode(): "express" | "custom-build" {
     section(getCurrentPattern().style),
     section(getPatternData().style),
   );
-  return existing === "express" ? "express" : "custom-build";
+  if (existing === "express") return "express";
+  const ev = readCustomBuildExpressValues();
+  const fromExpressWizard =
+    Boolean(ev.who?.trim()) ||
+    Boolean(ev.selectedSize?.trim()) ||
+    Boolean(ev.style?.trim()) ||
+    Boolean(ev.front?.trim());
+  if (fromExpressWizard) return "express";
+  return "custom-build";
 }
 
 function ensureYarnGaugeMachineDefaults(): void {

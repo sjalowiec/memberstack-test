@@ -139,3 +139,25 @@ export function persistMeasurementOverrides(overrides: Record<string, string>): 
 export function clearMeasurementOverrides(): void {
   persistMeasurementOverrides({});
 }
+
+/** Drop override maps from the working draft fit section (Express builder key cleared separately). */
+export function clearMeasurementOverridesOnWorkingDraft(): void {
+  if (typeof localStorage === "undefined") return;
+  try {
+    const pbFit = section(getPatternData().fit);
+    if (pbFit.cbMeasurementOverrides) {
+      const nextFit = { ...pbFit };
+      delete nextFit.cbMeasurementOverrides;
+      savePatternData("fit", nextFit);
+    }
+    const canon = getCurrentPattern();
+    const canonFit = section(canon.fit);
+    if (canonFit.cbMeasurementOverrides) {
+      const nextCanonFit = { ...canonFit };
+      delete nextCanonFit.cbMeasurementOverrides;
+      saveCurrentPattern({ fit: nextCanonFit });
+    }
+  } catch {
+    /* quota */
+  }
+}
