@@ -28,9 +28,11 @@ import {
   renderNeckShoulderShapingChartTableOnlyHtml,
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
 import { initChartProgressTracking } from "./chartProgressTracker.ts";
+import { scheduleReadingWorkflowSync } from "../lib/patterns/patternReadingWorkflowSync.ts";
 import { showResults, initializeActionBar } from "../components/wizards/utils/wizardBehavior.ts";
 import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
+import { buildShapingNotationChartHelpHtml } from "../lib/glossary/shapingNotationGlossary.ts";
 import {
   isSleevelessCardiganHalfFrontDiagramType,
   isSleevelessCardiganGarmentStyle,
@@ -667,6 +669,12 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     const diagramEnlargeBtnHtml = `<button type="button" class="sleeveless-piece-split__diagram-enlarge-btn no-print" data-sleeveless-diagram-enlarge aria-label="Enlarge diagram">
         <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
       </button>`;
+    const shapingNotationHelpHtml = garmentModeToggle
+      ? buildShapingNotationChartHelpHtml(
+          escapeGlossaryPlaceholderAttr,
+          escapeGlossaryPlaceholderText,
+        )
+      : "";
     const diagramCardHtml = `<div class="sleeveless-piece-split__diagram-card">
         ${diagramEnlargeBtnHtml}
         ${diagramTriggerHtml}
@@ -675,6 +683,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       ? `<div class="sleeveless-back-diagram-panel">
       ${modeToggleHtml}
       <div class="sleeveless-back-diagram-well">
+        ${shapingNotationHelpHtml}
         ${diagramCardHtml}
       </div>
     </div>`
@@ -833,6 +842,17 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     return mode === "shaping-notation" ? FRONT_DIAGRAM_NOTATION_ALT : FRONT_DIAGRAM_STS_ROWS_ALT;
   }
 
+  function updateShapingNotationHelpVisibility(section, mode) {
+    if (!section) return;
+    const help = section.querySelector("[data-sleeveless-shaping-notation-help]");
+    if (!(help instanceof HTMLElement)) return;
+    const show = mode === "shaping-notation";
+    help.hidden = !show;
+    if (show) {
+      hydrateGlossaryTooltipPlaceholders(help);
+    }
+  }
+
   function updateBackDiagramModeUi(root, mode) {
     if (!root) return;
     const backSection = root.querySelector("#sg-back");
@@ -848,6 +868,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     if (trigger instanceof HTMLElement) {
       trigger.setAttribute("aria-label", `Open larger diagram: ${backDiagramAltForMode(mode)}`);
     }
+    updateShapingNotationHelpVisibility(backSection, mode);
   }
 
   function updateFrontDiagramModeUi(root, mode) {
@@ -865,6 +886,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     if (trigger instanceof HTMLElement) {
       trigger.setAttribute("aria-label", `Open larger diagram: ${frontDiagramAltForMode(mode)}`);
     }
+    updateShapingNotationHelpVisibility(frontSection, mode);
   }
 
   async function inlineBackJapaneseNotationSvg(hostEl, result, patternData, hydrateGeneration) {
@@ -2104,6 +2126,11 @@ table {
       localStorage.setItem(`sleevelessPattern_section_${id}`, collapsed ? "true" : "false");
     } catch {
       /* quota */
+    }
+    try {
+      scheduleReadingWorkflowSync(getCurrentPattern().id);
+    } catch {
+      /* ignore */
     }
   }
 

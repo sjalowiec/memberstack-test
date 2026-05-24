@@ -13,6 +13,7 @@ import {
   type SleevelessPatternProjectMeta,
   type SleevelessPatternTitleContext,
 } from "../lib/patterns/sleevelessPatternProjectMeta";
+import { consumeCustomizeProjectFieldHash } from "../lib/patterns/sleevelessCustomizeProjectFieldNav";
 
 const DEFAULT_READ_ONLY_TITLE = "Sleeveless Sweater";
 
@@ -30,6 +31,40 @@ export function shouldShowReadOnlyProjectNotes(notes: string): boolean {
 }
 
 const NOTES_SAVED_FLASH_MS = 2200;
+const FIELD_FOCUS_HIGHLIGHT_MS = 2200;
+
+let beginNotesEditForFocus: (() => void) | null = null;
+
+function flashCustomizeFieldHighlight(el: HTMLElement | null): void {
+  if (!el) return;
+  el.classList.add("sleeveless-customize-field-highlight");
+  el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  window.setTimeout(() => {
+    el.classList.remove("sleeveless-customize-field-highlight");
+  }, FIELD_FOCUS_HIGHLIGHT_MS);
+}
+
+/** Scroll to and focus title or notes on the Customize (review) page. */
+export function focusSleevelessCustomizeProjectField(target: "title" | "notes"): void {
+  const root = getHeaderRoot();
+  if (!root || !canCustomizePattern()) return;
+
+  if (target === "title") {
+    const titleInput = root.querySelector<HTMLInputElement>("[data-sleeveless-pattern-project-title]");
+    const wrap = root.querySelector(".sleeveless-review-project-header__title-input-wrap");
+    titleInput?.focus({ preventScroll: true });
+    flashCustomizeFieldHighlight(
+      wrap instanceof HTMLElement ? wrap : titleInput instanceof HTMLElement ? titleInput : null,
+    );
+    return;
+  }
+
+  beginNotesEditForFocus?.();
+  const panel = root.querySelector("[data-sleeveless-pattern-project-notes-panel]");
+  const notesInput = root.querySelector<HTMLTextAreaElement>("[data-sleeveless-pattern-project-notes]");
+  notesInput?.focus({ preventScroll: true });
+  flashCustomizeFieldHighlight(panel instanceof HTMLElement ? panel : notesInput);
+}
 
 function bindSectionHeadTrigger(el: HTMLElement | null, onActivate: () => void): void {
   if (!el) return;
@@ -253,6 +288,7 @@ function bindEditableHeader(root: HTMLElement): void {
     return notes;
   };
 
+  beginNotesEditForFocus = beginNotesEdit;
   bindSectionHeadTrigger(notesEditTrigger, beginNotesEdit);
 
   saveBtn?.addEventListener("click", () => {
@@ -321,6 +357,14 @@ function initSleevelessReviewSummaryEdit(): void {
   });
 }
 
+function applyCustomizeFieldFocusFromNavigation(): void {
+  const target = consumeCustomizeProjectFieldHash();
+  if (!target) return;
+  window.requestAnimationFrame(() => {
+    window.setTimeout(() => focusSleevelessCustomizeProjectField(target), 80);
+  });
+}
+
 export function initSleevelessReviewProjectHeader(): void {
   const root = getHeaderRoot();
   if (!root) return;
@@ -332,6 +376,7 @@ export function initSleevelessReviewProjectHeader(): void {
   }
 
   initSleevelessReviewSummaryEdit();
+  applyCustomizeFieldFocusFromNavigation();
 }
 
 if (typeof document !== "undefined") {

@@ -782,6 +782,50 @@
     box-shadow: none;
   }
 
+  #pattern-content .sleeveless-shaping-notation-help {
+    margin: 0 0 0.2rem;
+    padding: 0 0.08rem;
+    font-size: 0.625rem;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+    color: #9ca3af;
+    text-align: center;
+  }
+
+  #pattern-content .sleeveless-shaping-notation-help .glossary-tooltip-wrap,
+  #pattern-content .sleeveless-shaping-notation-help .glossary-tooltip-placeholder {
+    display: inline;
+    font-size: inherit;
+    font-weight: 500;
+    color: #6b7280;
+  }
+
+  #pattern-content .sleeveless-shaping-notation-help .glossary-tooltip-trigger {
+    display: inline;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-weight: 500;
+    color: #6b7280;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, #6b7280 45%, transparent);
+    text-underline-offset: 0.12em;
+    cursor: pointer;
+  }
+
+  #pattern-content .sleeveless-shaping-notation-help .glossary-tooltip-trigger:hover,
+  #pattern-content .sleeveless-shaping-notation-help .glossary-tooltip-trigger:focus-visible {
+    color: var(--kbm-green, #52682d);
+    text-decoration-color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, transparent);
+  }
+
+  #pattern-content .sleeveless-shaping-notation-help .glossary-tooltip-icon {
+    display: none;
+  }
+
   #pattern-content .sleeveless-back-diagram-well .sleeveless-piece-split__diagram-trigger {
     display: flex;
     justify-content: center;

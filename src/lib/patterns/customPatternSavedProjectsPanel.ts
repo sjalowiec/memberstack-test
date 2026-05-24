@@ -20,6 +20,7 @@ import {
 } from "./customPatternProjectActiveId";
 import { resolveCustomPatternProjectAuth } from "./customPatternProjectAuth";
 import { getPatternProjectMeta } from "./sleevelessPatternProjectMeta";
+import { nextPanelListRefresh, perfEnd, perfMark, perfStart } from "./savedPatternsPerfLog";
 
 export type CustomPatternSavedProjectsPanelOptions = {
   family?: CustomPatternFamily;
@@ -102,6 +103,7 @@ async function refreshAuthHint(root: HTMLElement): Promise<void> {
 }
 
 function fillProjectSelect(select: HTMLSelectElement, projects: CustomPatternProjectSummary[]): void {
+  const domStart = perfStart();
   const activeId = readActiveCustomPatternProjectId();
   select.replaceChildren();
   const placeholder = document.createElement("option");
@@ -116,20 +118,53 @@ function fillProjectSelect(select: HTMLSelectElement, projects: CustomPatternPro
     if (p.id === activeId) opt.selected = true;
     select.appendChild(opt);
   }
+  perfEnd("5-saved-patterns-panel-select-dom-render", domStart, {
+    projectCount: projects.length,
+    fullRebuild: true,
+  });
 }
 
 async function refreshProjectList(
   root: HTMLElement,
   family: CustomPatternFamily,
+  trigger: "init" | "save" | "update" | "load" = "init",
 ): Promise<void> {
+  const refreshNumber = nextPanelListRefresh();
+  const refreshStart = perfStart();
+  perfMark("6-panel-list-refresh start", { refreshNumber, trigger, family });
   const select = root.querySelector("[data-cb-project-select]");
-  if (!(select instanceof HTMLSelectElement)) return;
+  if (!(select instanceof HTMLSelectElement)) {
+    perfEnd("6-panel-list-refresh total", refreshStart, {
+      refreshNumber,
+      trigger,
+      outcome: "no-select",
+    });
+    return;
+  }
+  const listStart = perfStart();
   const res = await listCustomPatternProjects(family);
+  perfEnd("6-panel-list-refresh listCustomPatternProjects", listStart, {
+    refreshNumber,
+    trigger,
+    ok: res.ok,
+    projectCount: res.ok ? res.projects.length : 0,
+  });
   if (!res.ok) {
     fillProjectSelect(select, []);
+    perfEnd("6-panel-list-refresh total", refreshStart, {
+      refreshNumber,
+      trigger,
+      outcome: "list-error",
+    });
     return;
   }
   fillProjectSelect(select, res.projects);
+  perfEnd("6-panel-list-refresh total", refreshStart, {
+    refreshNumber,
+    trigger,
+    outcome: "rendered",
+    projectCount: res.projects.length,
+  });
 }
 
 /**
@@ -150,7 +185,7 @@ export function initCustomPatternSavedProjectsPanel(
 
   void refreshAuthHint(root);
   if (showLoadControls) {
-    void refreshProjectList(root, family);
+    void refreshProjectList(root, family, "init");
   }
 
   const meta = getPatternProjectMeta();
@@ -175,7 +210,7 @@ export function initCustomPatternSavedProjectsPanel(
     if (nameInput) nameInput.value = res.project.name;
     setStatus(root, `Saved “${res.project.name}”.`);
     if (showLoadControls) {
-      await refreshProjectList(root, family);
+      await refreshProjectList(root, family, "save");
     }
   });
 
@@ -206,7 +241,7 @@ export function initCustomPatternSavedProjectsPanel(
     writeActiveCustomPatternProjectId(res.project.id);
     setStatus(root, `Updated “${res.project.name}”.`);
     if (showLoadControls) {
-      await refreshProjectList(root, family);
+      await refreshProjectList(root, family, "update");
     }
   });
 
@@ -215,15 +250,21 @@ export function initCustomPatternSavedProjectsPanel(
   }
 
   loadBtn.addEventListener("click", async () => {
+    const loadStart = perfStart();
+    perfMark("6-panel-list-action load start");
     const id = select?.value?.trim() ?? "";
     if (!id) {
       setStatus(root, "Choose a saved project to load.", true);
+      perfEnd("6-panel-list-action load total", loadStart, { outcome: "no-selection" });
       return;
     }
     setStatus(root, "Loading…");
+    const fetchStart = perfStart();
     const res = await loadCustomPatternProject(id, family);
+    perfEnd("6-panel-list-action loadCustomPatternProject", fetchStart, { ok: res.ok, projectId: id });
     if (!res.ok) {
       setStatus(root, res.error, true);
+      perfEnd("6-panel-list-action load total", loadStart, { outcome: "error" });
       return;
     }
     loadProjectIntoWorkingDraft(res.project);
@@ -234,6 +275,7 @@ export function initCustomPatternSavedProjectsPanel(
       root,
       `Loaded “${res.project.name}” into your working draft (localStorage). Refresh other Custom Build steps if needed.`,
     );
+    perfEnd("6-panel-list-action load total", loadStart, { outcome: "loaded", projectId: id });
   });
 
   if (showLoadControls && select) {

@@ -1,24 +1,25 @@
 ---
 export const prerender = true;
 import Layout from "../layouts/Layout.astro";
+import DashboardShell from "../components/dashboard/DashboardShell.astro";
+import MyPatternsPanel from "../components/dashboard/MyPatternsPanel.astro";
+import TagsPlaceholder from "../components/dashboard/TagsPlaceholder.astro";
+import WorkspaceToolsGrid from "../components/dashboard/WorkspaceToolsGrid.astro";
+import AccountSettingsPanel from "../components/dashboard/AccountSettingsPanel.astro";
 
-const title = "My Account | Knit it Now";
+const title = "My Workspace | Knit it Now";
 const description =
-  "Manage your Knit It Now account details, profile, email, and password in one place.";
+  "Your Knit It Now workspace — saved patterns, tools, and account in one place.";
 ---
 
-<Layout {title} {description} bodyClass="page--tight-header">
-  <div class="account-page container">
+<Layout {title} {description} bodyClass="page--tight-header page--dashboard">
+  <div class="account-dashboard">
     <div class="account-page__guest" data-ms-content="!members">
-      <div class="account-page__intro">
-        <h1>My Account</h1>
-        <p class="account-page__lead">
-          Log in to view and edit your profile, email, and password.
+      <section class="dashboard-card account-page__login-card" aria-labelledby="account-login-heading">
+        <h1 id="account-login-heading" class="dashboard-card__title">Log in to your workspace</h1>
+        <p class="account-page__lead account-page__lead--guest">
+          Access saved patterns and your knitting workspace.
         </p>
-      </div>
-
-      <section class="account-page__card" aria-labelledby="account-login-heading">
-        <h2 id="account-login-heading" class="account-page__card-title">Log in</h2>
         <form data-ms-form="login" class="contact-form account-page__form">
           <div class="contact-form__field">
             <label for="account-login-email">Email</label>
@@ -47,7 +48,6 @@ const description =
           </p>
           <button type="submit" class="contact-form__submit">Log in</button>
         </form>
-        <!-- In-page reset fields for MemberStack forgot-password modal (token + password contract). -->
         <form
           class="account-page__ms-reset-sync"
           aria-hidden="true"
@@ -72,132 +72,12 @@ const description =
     </div>
 
     <div data-ms-content="members">
-    <div class="account-page__intro">
-      <h1>My Account</h1>
-      <p class="account-page__lead">
-        Manage your Knit It Now account details and profile information here.
-      </p>
-
-      <section
-        class="account-page__card"
-        aria-labelledby="my-patterns-heading"
-        data-kbm-my-patterns
-      >
-        <h2 id="my-patterns-heading" class="account-page__card-title">My Patterns</h2>
-        <p
-          class="account-page__muted-copy account-my-patterns__status"
-          data-kbm-my-patterns-status
-          role="status"
-          aria-live="polite"
-        >
-          Loading your saved patterns…
-        </p>
-        <ul
-          class="account-my-patterns__list"
-          data-kbm-my-patterns-list
-          hidden
-          aria-label="Saved sleeveless patterns"
-        ></ul>
-      </section>
-
-      <p class="account-page__welcome">
-        Welcome back, <span data-ms-member="first-name">Member</span>!
-      </p>
-    </div>
-
-    <section class="account-page__card" aria-labelledby="account-summary-heading">
-      <h2 id="account-summary-heading" class="account-page__card-title">Account summary</h2>
-      <p class="account-page__email-line">
-        <span class="account-page__label-inline">Email:</span>
-        <span data-ms-member="email"></span>
-      </p>
-    </section>
-
-    <section class="account-page__card" aria-labelledby="profile-heading">
-      <h2 id="profile-heading" class="account-page__card-title">Profile</h2>
-      <form data-ms-form="profile" class="contact-form account-page__form">
-        <div class="contact-form__field">
-          <label for="first-name">First Name</label>
-          <input
-            type="text"
-            id="first-name"
-            data-ms-member="first-name"
-            name="first-name"
-            autocomplete="given-name"
-            required
-          />
-        </div>
-        <div class="contact-form__field">
-          <label for="last-name">Last Name</label>
-          <input
-            type="text"
-            id="last-name"
-            data-ms-member="last-name"
-            name="last-name"
-            autocomplete="family-name"
-            required
-          />
-        </div>
-        <div class="contact-form__field">
-          <label for="birthday">Birthday</label>
-          <input
-            type="text"
-            id="birthday"
-            name="birthday"
-            data-ms-member="birthday"
-            placeholder="MM/DD"
-          />
-          <p class="account-page__field-hint">
-            Optional — enter month/day only. Used for Knit It Now birthday wishes and surprises.
-          </p>
-        </div>
-        <button type="submit" class="contact-form__submit">Save Changes</button>
-      </form>
-    </section>
-
-    <section class="account-page__card" aria-labelledby="email-heading">
-      <h2 id="email-heading" class="account-page__card-title">Email</h2>
-      <form data-ms-form="email" class="contact-form account-page__form">
-        <div class="contact-form__field">
-          <label for="email">New Email Address</label>
-          <input type="email" id="email" data-ms-member="email" name="email" autocomplete="email" required />
-        </div>
-        <button type="submit" class="contact-form__submit">Update Email</button>
-      </form>
-    </section>
-
-    <section class="account-page__card" aria-labelledby="password-heading">
-      <h2 id="password-heading" class="account-page__card-title">Password</h2>
-      <form data-ms-form="password" class="contact-form account-page__form">
-        <div class="contact-form__field">
-          <label for="current-password">Current Password</label>
-          <input
-            type="password"
-            id="current-password"
-            data-ms-member="current-password"
-            name="current-password"
-            autocomplete="current-password"
-            required
-          />
-        </div>
-        <div class="contact-form__field">
-          <label for="new-password">New Password</label>
-          <input
-            type="password"
-            id="new-password"
-            data-ms-member="new-password"
-            name="new-password"
-            autocomplete="new-password"
-            required
-          />
-        </div>
-        <button type="submit" class="contact-form__submit">Update Password</button>
-      </form>
-      <p class="account-page__password-reset-hint">
-        Don't remember your current password?
-        <a href="#" data-ms-modal="forgot-password" class="account-page__forgot-link">Reset it by email instead</a>.
-      </p>
-    </section>
+      <DashboardShell>
+        <MyPatternsPanel />
+        <TagsPlaceholder />
+        <WorkspaceToolsGrid />
+        <AccountSettingsPanel />
+      </DashboardShell>
     </div>
   </div>
 </Layout>
@@ -207,71 +87,122 @@ const description =
 </script>
 
 <style>
-  .account-page {
-    max-width: 720px;
-    margin: 0 auto 4rem;
-    padding-left: 1rem;
-    padding-right: 1rem;
+  :global(body.page--dashboard .site-content) {
+    max-width: none;
+    padding-left: 0;
+    padding-right: 0;
   }
 
-  .account-page__intro {
-    margin-bottom: 2rem;
+  .account-dashboard {
+    width: 100%;
+    background: linear-gradient(180deg, #f7f8f5 0%, #fff 12rem);
   }
 
-  .account-page__intro h1 {
-    margin: 0 0 0.75rem;
-    color: #2c3a57;
-    font-weight: 700;
+  .account-page__guest {
+    max-width: 28rem;
+    margin: 0 auto;
+    padding: 0.35rem 1.25rem 4rem;
+  }
+
+  .account-page__login-card {
+    margin-top: 0.25rem;
   }
 
   .account-page__lead {
-    margin: 0 0 1rem;
-    font-size: 1.05rem;
+    margin: 0 0 1.1rem;
+    font-size: 0.98rem;
     line-height: 1.5;
-    color: #374151;
+    color: #4b5563;
   }
 
-  .account-page__welcome {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #2c3a57;
+  .account-page__lead--guest {
+    margin-bottom: 1.25rem;
   }
 
-  .account-page__card {
+  /* Shared dashboard card styles */
+  :global(.dashboard-card) {
     position: relative;
     background: #fff;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 1.35rem 1.5rem 1.5rem;
-    margin-bottom: 1.25rem;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   }
 
-  .account-page__card--muted {
-    background: #f9fafb;
+  :global(.dashboard-card--primary) {
+    padding: 1.65rem 1.65rem 1.5rem;
+    border-color: #d8dfd0;
+    box-shadow: 0 2px 8px rgba(82, 104, 45, 0.06);
   }
 
-  .account-page__card-title {
-    margin: 0 0 1rem;
+  :global(.dashboard-card--patterns) {
+    scroll-margin-top: calc(var(--header-offset, 170px) + 1rem);
+  }
+
+  :global(.dashboard-card__header-row--primary) {
+    margin-bottom: 1rem;
+  }
+
+  :global(.dashboard-card__title) {
+    margin: 0 0 0.35rem;
     font-size: 1.15rem;
     font-weight: 600;
     color: #2c3a57;
   }
 
-  .account-page__email-line {
-    margin: 0 0 1.25rem;
-    word-break: break-word;
+  :global(.dashboard-card__title--primary) {
+    font-size: clamp(1.35rem, 2.2vw, 1.65rem);
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  :global(.dashboard-card__subtitle) {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #6b7280;
+  }
+
+  :global(.dashboard-card__subtitle--primary) {
+    font-size: 1rem;
+    color: #4b5563;
+  }
+
+  :global(.dashboard-muted) {
+    margin: 0;
+    line-height: 1.55;
+    color: #4b5563;
+  }
+
+  :global(.dashboard-mini-card),
+  :global(#my-tags),
+  :global(#account) {
+    scroll-margin-top: calc(var(--header-offset, 170px) + 1rem);
+  }
+
+  :global(.account-details-grid) {
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 0.75rem;
+  }
+
+  :global(.account-details-block) {
+    padding-top: 1.25rem;
+    border-top: 1px solid #eef0f2;
+  }
+
+  :global(.account-details-block:first-child) {
+    padding-top: 0;
+    border-top: none;
+  }
+
+  :global(.account-details-block__title) {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    font-weight: 600;
     color: #374151;
   }
 
-  .account-page__label-inline {
-    font-weight: 600;
-    color: #2c3a57;
-    margin-right: 0.35rem;
-  }
-
-  /* contact-form__field global styles target span; here label + input are siblings */
   .account-page__form .contact-form__field label {
     display: block;
     font-weight: 600;
@@ -312,7 +243,6 @@ const description =
     margin-top: 0.25rem;
   }
 
-  /* Visually hidden; holds fields the MS reset modal may sync to. */
   .account-page__ms-reset-sync {
     position: absolute;
     width: 1px;
@@ -351,82 +281,216 @@ const description =
     border-radius: 2px;
   }
 
-  .account-page__password-reset-hint {
+  :global(.account-page__password-reset-hint) {
     margin: 0.85rem 0 0;
     font-size: 0.95rem;
     line-height: 1.45;
     color: #4b5563;
   }
 
-  .account-page__muted-copy {
-    margin: 0;
-    line-height: 1.55;
-    color: #4b5563;
-  }
-
-  .account-my-patterns__status--error {
+  :global(.account-my-patterns__status--error) {
     color: #b42318;
   }
 
-  .account-my-patterns__list {
-    list-style: none;
-    margin: 0;
+  :global(.account-my-patterns__table-wrap) {
+    margin-top: 0.25rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  :global(.account-my-patterns__table) {
+    width: 100%;
+    min-width: 28rem;
+    border-collapse: collapse;
+    border-spacing: 0;
+    font-size: 0.95rem;
+  }
+
+  :global(.account-my-patterns__table thead th) {
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
+    text-align: left;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #4b5563;
+    background: #eef0ea;
+    border-bottom: 2px solid #c8cfc0;
+    white-space: nowrap;
   }
 
-  .account-my-patterns__item {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.75rem 1rem;
-    padding: 0.85rem 0;
-    border-top: 1px solid #e5e7eb;
+  :global(.account-my-patterns__sort) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.65rem 0.85rem;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 0;
+    transition: background-color 0.15s ease, color 0.15s ease;
   }
 
-  .account-my-patterns__item:first-child {
-    border-top: none;
-    padding-top: 0;
+  :global(.account-my-patterns__sort:hover) {
+    background: #e4e8dc;
+    color: #2c3a57;
   }
 
-  .account-my-patterns__item-main {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-    min-width: 0;
-    flex: 1 1 12rem;
+  :global(.account-my-patterns__sort:focus-visible) {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: -2px;
+    z-index: 1;
+    position: relative;
   }
 
-  .account-my-patterns__name {
+  :global(.account-my-patterns__sort--active) {
+    color: #2c3a57;
+    background: #e8ebe3;
+  }
+
+  :global(.account-my-patterns__sort-indicator) {
+    display: inline-block;
+    min-width: 0.85em;
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--kbm-green, #52682d);
+  }
+
+  :global(.account-my-patterns__table tbody tr.account-my-patterns__row) {
+    border-bottom: 1px solid #e5e7eb;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  :global(.account-my-patterns__table tbody tr.account-my-patterns__row:last-child) {
+    border-bottom: none;
+  }
+
+  :global(.account-my-patterns__table tbody tr.account-my-patterns__row:hover) {
+    background: #f3f5ef;
+    box-shadow: inset 3px 0 0 var(--kbm-green, #52682d);
+  }
+
+  :global(.account-my-patterns__table tbody tr.account-my-patterns__row:focus-visible) {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: -2px;
+    background: #f3f5ef;
+    box-shadow: inset 3px 0 0 var(--kbm-green, #52682d);
+  }
+
+  :global(.account-my-patterns__table tbody tr.account-my-patterns__row[aria-disabled="true"]) {
+    opacity: 0.55;
+    cursor: wait;
+    pointer-events: none;
+  }
+
+  :global(.account-my-patterns__table td) {
+    padding: 0.85rem;
+    vertical-align: middle;
+    color: #374151;
+  }
+
+  :global(.account-my-patterns__pattern-name) {
+    display: block;
     font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.35;
     color: #2c3a57;
     word-break: break-word;
+    transition: color 0.15s ease;
   }
 
-  .account-my-patterns__updated {
-    font-size: 0.9rem;
+  :global(.account-my-patterns__row:hover .account-my-patterns__pattern-name),
+  :global(.account-my-patterns__row:focus-visible .account-my-patterns__pattern-name) {
+    color: #1f2a40;
+  }
+
+  :global(.account-my-patterns__type) {
+    color: #4b5563;
+    white-space: nowrap;
+  }
+
+  :global(.account-my-patterns__updated) {
     color: #6b7280;
+    white-space: nowrap;
   }
 
-  .account-my-patterns__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    align-items: center;
+  @media (max-width: 640px) {
+    :global(.account-my-patterns__table-wrap) {
+      overflow-x: visible;
+    }
+
+    :global(.account-my-patterns__table) {
+      min-width: 0;
+    }
+
+    :global(.account-my-patterns__table thead) {
+      display: none;
+    }
+
+    :global(.account-my-patterns__table tbody tr.account-my-patterns__row) {
+      display: block;
+      margin-bottom: 0.85rem;
+      padding: 0.85rem 1rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #fafafa;
+    }
+
+    :global(.account-my-patterns__table tbody tr.account-my-patterns__row:hover),
+    :global(.account-my-patterns__table tbody tr.account-my-patterns__row:focus-visible) {
+      background: #eef1e8;
+      box-shadow: inset 3px 0 0 var(--kbm-green, #52682d);
+    }
+
+    :global(.account-my-patterns__table td) {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.45rem 0;
+      border: none;
+    }
+
+    :global(.account-my-patterns__table td::before) {
+      content: attr(data-label);
+      flex: 0 0 7rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+
+    :global(.account-my-patterns__table td.account-my-patterns__cell--name) {
+      flex-direction: column;
+      gap: 0.35rem;
+      padding-top: 0;
+      padding-bottom: 0.65rem;
+      border-bottom: 1px solid #e5e7eb;
+      margin-bottom: 0.25rem;
+    }
+
+    :global(.account-my-patterns__table td.account-my-patterns__cell--name::before) {
+      display: none;
+    }
+
+    :global(.account-my-patterns__pattern-name) {
+      font-size: 1.05rem;
+    }
   }
 
   @media (max-width: 480px) {
-    .account-my-patterns__actions {
-      width: 100%;
-    }
-
-    .account-my-patterns__actions .btn {
-      flex: 1 1 auto;
-    }
-
     .account-page__form .contact-form__submit {
       width: 100%;
     }

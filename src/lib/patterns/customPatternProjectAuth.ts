@@ -11,6 +11,7 @@
 
 import { memberIdFromMemberstackPayload } from "./memberstackMember";
 import { DEFAULT_DEV_PATTERN_USER_ID } from "./customPatternProjectStoreKeys";
+import { memberstackReadinessSnapshot, perfEnd, perfStart } from "./savedPatternsPerfLog";
 
 const DEV_USER_STORAGE_KEY = "kbm_dev_pattern_user_id";
 
@@ -50,23 +51,48 @@ export function getOrCreateDevPatternUserId(): string {
 }
 
 export async function resolveCustomPatternProjectAuth(): Promise<CustomPatternProjectAuth> {
-  if (typeof window === "undefined") return { mode: "none" };
+  const authStart = perfStart();
+  if (typeof window === "undefined") {
+    perfEnd("2-member-auth (ssr)", authStart, { mode: "none" });
+    return { mode: "none" };
+  }
 
+  const readiness = memberstackReadinessSnapshot();
   const ms = window.$memberstackDom;
   if (ms?.getCurrentMember) {
+    const memberStart = perfStart();
     try {
       const res = await ms.getCurrentMember();
       const memberId = memberIdFromMemberstackPayload(res);
-      if (memberId) return { mode: "member", memberId };
-    } catch {
+      perfEnd("2-member-auth getCurrentMember", memberStart, {
+        ...readiness,
+        memberIdResolved: Boolean(memberId),
+      });
+      if (memberId) {
+        perfEnd("2-member-auth total", authStart, { mode: "member", ...readiness });
+        return { mode: "member", memberId };
+      }
+    } catch (error) {
+      perfEnd("2-member-auth getCurrentMember (failed)", memberStart, {
+        ...readiness,
+        error: error instanceof Error ? error.message : String(error),
+      });
       /* fall through */
     }
+  } else {
+    perfEnd("2-member-auth getCurrentMember (skipped)", authStart, {
+      ...readiness,
+      reason: "getCurrentMember unavailable",
+    });
   }
 
   if (isDevCustomPatternProjectsEnabled()) {
-    return { mode: "dev", devUserId: getOrCreateDevPatternUserId() };
+    const devUserId = getOrCreateDevPatternUserId();
+    perfEnd("2-member-auth total", authStart, { mode: "dev", ...readiness });
+    return { mode: "dev", devUserId };
   }
 
+  perfEnd("2-member-auth total", authStart, { mode: "none", ...readiness });
   return { mode: "none" };
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chartProgressStorageKey } from "./chartProgressTracker.ts";
+import { chartProgressStorageKey } from "../lib/patterns/chartProgressStorage.ts";
 
 describe("chartProgressTracker", () => {
   describe("chartProgressStorageKey", () => {

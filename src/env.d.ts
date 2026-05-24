@@ -48,6 +48,10 @@ declare global {
       ensureGlobalListeners?: () => void;
     };
     __kbmGlossaryGlobalsBound?: boolean;
+    /** Client hydration for glossary placeholders (glossary index modal, pattern pages). */
+    __kbmHydrateGlossaryTooltips?: (root: ParentNode) => void;
+    /** Glossary index: open or switch the term modal by slug (cross-links). */
+    __kbmOpenGlossaryTermModal?: (slug: string) => void;
   }
 }
 

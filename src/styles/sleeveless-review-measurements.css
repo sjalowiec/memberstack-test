@@ -161,6 +161,14 @@
   max-width: none;
 }
 
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-customize-field-highlight {
+  border-radius: 8px;
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 10%, #fff);
+  transition: background-color 0.25s ease, outline-color 0.25s ease;
+}
+
 .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header__title-input-wrap {
   display: flex;
   align-items: center;

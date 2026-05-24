@@ -6021,6 +6021,32 @@
     "vimeoIds": []
   },
   {
+    "glossaryId": 1779400000001,
+    "english": "Japanese Notation (Traditional)",
+    "example": "Example: 1-2-9 = 1 stitch every 2 rows 9 times",
+    "helpinfo": "Traditional Japanese garment notation shows abbreviated shaping on a schematic of your piece — for increases, decreases, or short-row shaping.<br><br>Numbers are written in three parts: <strong>stitches – rows – times</strong>. For example, <strong>1-2-9</strong> means work the shaping action (decrease, increase, or hold) on <strong>1 stitch</strong>, every <strong>2 rows</strong>, <strong>9 times</strong>. If the diagram does not spell out increase or decrease, read the schematic — the taper shows whether stitches are added or removed.<br><br>Knit It Now has adapted this traditional notation system into a more knitter-friendly shaping format with row-by-row instructions built directly into the chart.<br>See: <a href=\"#\" data-glossary-id=\"1779400000002\">Shaping Notation (Knit It Now)</a>",
+    "image": "/images/glossary/japanese-knitting-notation-symbols-diagram.jpg",
+    "image_alt": "Diagram of Japanese knitting notation symbols on a garment piece",
+    "image_description": "Illustration of traditional Japanese notation symbols used on garment shaping diagrams",
+    "metaTitle": "Japanese Notation (Traditional) | Machine Knitting Glossary",
+    "metaDescription": "Learn traditional Japanese garment notation: stitches, rows, and times. Example 1-2-9 means 1 stitch every 2 rows 9 times.",
+    "active": true,
+    "vimeoIds": []
+  },
+  {
+    "glossaryId": 1779400000002,
+    "english": "Shaping Notation (Knit It Now)",
+    "example": "Visual shorthand on the schematic, with row-by-row instructions in plain knitting language.",
+    "helpinfo": "Knit It Now shaping notation is based on traditional Japanese garment notation, using the same visual shorthand directly on the garment schematic.<br><br>The chart shows where shaping happens, while the row-by-row instructions below explain the same shaping in plain knitting language.<br><br>See: <a href=\"#\" data-glossary-id=\"1779400000001\">Japanese Notation (Traditional)</a>",
+    "image": "/images/glossary/shaping-notation.jpg",
+    "image_alt": "Knit it Now Shaping Notation",
+    "image_description": "example of shaping notation similar to tradiational Japanese notation knitting instruciton",
+    "metaTitle": "Shaping Notation (Knit It Now) | Machine Knitting Glossary",
+    "metaDescription": "Knit It Now shaping notation charts combine visual Japanese-style diagrams with row-by-row knitting instructions in plain language.",
+    "active": true,
+    "vimeoIds": []
+  },
+  {
     "glossaryId": 1779296723857,
     "english": "Lifeline",
     "example": "Lifeline",

@@ -1,0 +1,235 @@
+---
+/** Account settings — collapsed by default; preserves MemberStack forms. */
+---
+
+<section id="account" class="dashboard-card dashboard-card--account" aria-labelledby="account-settings-heading">
+  <details class="account-settings">
+    <summary class="account-settings__summary">
+      <span class="account-settings__summary-main">
+        <span id="account-settings-heading" class="account-settings__label">Account settings</span>
+        <span class="account-settings__identity">
+          <span data-ms-member="first-name"></span>
+          <span data-ms-member="last-name"></span>
+          <span class="account-settings__sep" aria-hidden="true">·</span>
+          <span data-ms-member="email"></span>
+        </span>
+      </span>
+      <span class="account-settings__toggle-hint">Edit profile, email, password</span>
+    </summary>
+
+    <div class="account-settings__body">
+      <div class="account-details-grid">
+        <section class="account-details-block" aria-labelledby="profile-heading">
+          <h3 id="profile-heading" class="account-details-block__title">Profile</h3>
+          <form data-ms-form="profile" class="contact-form account-page__form">
+            <div class="contact-form__field">
+              <label for="first-name">First Name</label>
+              <input
+                type="text"
+                id="first-name"
+                data-ms-member="first-name"
+                name="first-name"
+                autocomplete="given-name"
+                required
+              />
+            </div>
+            <div class="contact-form__field">
+              <label for="last-name">Last Name</label>
+              <input
+                type="text"
+                id="last-name"
+                data-ms-member="last-name"
+                name="last-name"
+                autocomplete="family-name"
+                required
+              />
+            </div>
+            <div class="contact-form__field">
+              <label for="birthday">Birthday</label>
+              <input
+                type="text"
+                id="birthday"
+                name="birthday"
+                data-ms-member="birthday"
+                placeholder="MM/DD"
+              />
+              <p class="account-page__field-hint">
+                Optional — enter month/day only. Used for Knit It Now birthday wishes and surprises.
+              </p>
+            </div>
+            <button type="submit" class="contact-form__submit">Save Changes</button>
+          </form>
+        </section>
+
+        <section class="account-details-block" aria-labelledby="email-heading">
+          <h3 id="email-heading" class="account-details-block__title">Email</h3>
+          <form data-ms-form="email" class="contact-form account-page__form">
+            <div class="contact-form__field">
+              <label for="email">New Email Address</label>
+              <input type="email" id="email" data-ms-member="email" name="email" autocomplete="email" required />
+            </div>
+            <button type="submit" class="contact-form__submit">Update Email</button>
+          </form>
+        </section>
+
+        <section class="account-details-block" aria-labelledby="password-heading">
+          <h3 id="password-heading" class="account-details-block__title">Password</h3>
+          <form data-ms-form="password" class="contact-form account-page__form">
+            <div class="contact-form__field">
+              <label for="current-password">Current Password</label>
+              <input
+                type="password"
+                id="current-password"
+                data-ms-member="current-password"
+                name="current-password"
+                autocomplete="current-password"
+                required
+              />
+            </div>
+            <div class="contact-form__field">
+              <label for="new-password">New Password</label>
+              <input
+                type="password"
+                id="new-password"
+                data-ms-member="new-password"
+                name="new-password"
+                autocomplete="new-password"
+                required
+              />
+            </div>
+            <button type="submit" class="contact-form__submit">Update Password</button>
+          </form>
+          <p class="account-page__password-reset-hint">
+            Don't remember your current password?
+            <a href="#" data-ms-modal="forgot-password" class="account-page__forgot-link">Reset it by email instead</a>.
+          </p>
+        </section>
+      </div>
+
+      <p class="account-settings__logout-wrap">
+        <a href="#" data-ms-action="logout" class="account-settings__logout">Log out</a>
+      </p>
+    </div>
+  </details>
+</section>
+
+<style>
+  .dashboard-card--account {
+    padding: 0;
+    background: #fafafa;
+    border-color: #e5e7eb;
+  }
+
+  .account-settings {
+    margin: 0;
+  }
+
+  .account-settings__summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1.25rem;
+    padding: 0.95rem 1.25rem;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .account-settings__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .account-settings__summary::after {
+    content: "+";
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #6b7280;
+    background: #fff;
+    line-height: 1;
+  }
+
+  .account-settings[open] .account-settings__summary::after {
+    content: "−";
+  }
+
+  .account-settings__summary-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  .account-settings__label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .account-settings__identity {
+    font-size: 0.88rem;
+    color: #6b7280;
+    word-break: break-word;
+  }
+
+  .account-settings__sep {
+    margin: 0 0.25rem;
+  }
+
+  .account-settings__toggle-hint {
+    font-size: 0.82rem;
+    color: #9ca3af;
+  }
+
+  .account-settings__body {
+    padding: 0 1.25rem 1.25rem;
+    border-top: 1px solid #eef0f2;
+  }
+
+  .account-settings__logout-wrap {
+    margin: 0.5rem 0 0;
+    padding-top: 0.85rem;
+    border-top: 1px solid #eef0f2;
+  }
+
+  .account-settings__logout {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-decoration: none;
+  }
+
+  .account-settings__logout:hover {
+    color: #2c3a57;
+    text-decoration: underline;
+  }
+
+  @media (max-width: 640px) {
+    .account-settings__summary {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .account-settings__summary::after {
+      position: absolute;
+      right: 1.25rem;
+      top: 0.95rem;
+    }
+
+    .account-settings__summary {
+      position: relative;
+      padding-right: 3rem;
+    }
+
+    .account-settings__toggle-hint {
+      display: none;
+    }
+  }
+</style>
