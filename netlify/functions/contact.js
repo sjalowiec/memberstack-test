@@ -47,24 +47,61 @@ async function handleContactPost(req, event) {
     } catch (parseError) {
       const contentType = (
         event?.headers?.["content-type"] ||
+        event?.headers?.["Content-Type"] ||
         req.headers.get("content-type") ||
         ""
       ).toLowerCase();
-      console.error("Failed to parse contact form body:", parseError, {
+      const contentLength =
+        event?.headers?.["content-length"] ||
+        event?.headers?.["Content-Length"] ||
+        req.headers.get("content-length") ||
+        null;
+      const parseMessage =
+        parseError instanceof Error ? parseError.message : String(parseError);
+      console.error("[contact] Failed to parse form body:", parseMessage, {
         contentType,
+        contentLength,
         boundaryFound: /boundary=/i.test(contentType),
+        handlerMode: event ? "HandlerEvent" : "Request",
         hasEventBody: !!(event && event.body),
+        eventBodyLength:
+          event && typeof event.body === "string" ? event.body.length : null,
         isBase64Encoded: !!(event && event.isBase64Encoded),
+        requestHasBody: req.body != null,
       });
       return formParseErrorResponse();
     }
+
+    const imageField = formData.get("images");
+    const hasImage =
+      imageField != null &&
+      imageField !== "" &&
+      typeof imageField !== "string" &&
+      imageField instanceof Blob &&
+      imageField.size > 0;
+
+    console.info("[contact] Form parsed successfully", {
+      hasName: !!(formData.get("name") || formData.get("firstName")),
+      hasEmail: !!formData.get("email"),
+      hasMessage: !!(formData.get("message") || formData.get("question")),
+      hasImage,
+      formSource: (formData.get("form_source") || "").toString().trim() || null,
+    });
+
+    const ip =
+      req.headers.get("x-nf-client-connection-ip") ||
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      "unknown";
 
     // --- SPAM PROTECTION #1: Honeypot ---
     // Your form already includes: <input name="bot-field" />
     // Humans never fill it. Bots often do.
     const botField = (formData.get("bot-field") || "").toString().trim();
     if (botField) {
-      // Pretend success so bots don't learn anything
+      console.info("[contact] Honeypot triggered — returning decoy success", {
+        formSource: (formData.get("form_source") || "").toString().trim() || null,
+        ip,
+      });
       return new Response(null, {
         status: 302,
         headers: { Location: "/contact/thanks/" },
@@ -74,10 +111,6 @@ async function handleContactPost(req, event) {
     // --- SPAM PROTECTION #2: Simple rate limit by IP ---
     // Limits repeated hits from the same IP within a short window.
     // Uses a short-lived in-memory map (works well enough for small sites).
-    const ip =
-      req.headers.get("x-nf-client-connection-ip") ||
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      "unknown";
 
     const now = Date.now();
     globalThis.__kbmRateLimit ??= new Map(); // key: ip, value: {count, resetAt}
@@ -93,7 +126,11 @@ async function handleContactPost(req, event) {
       entry.count += 1;
       store.set(ip, entry);
       if (entry.count > maxPerWindow) {
-        // Too many submissions - pretend success (don’t confirm block to attacker)
+        console.warn("[contact] Rate limit exceeded — returning decoy success", {
+          ip,
+          count: entry.count,
+          formSource: (formData.get("form_source") || "").toString().trim() || null,
+        });
         return new Response(null, {
           status: 302,
           headers: { Location: "/contact/thanks/" },
@@ -122,11 +159,14 @@ async function handleContactPost(req, event) {
     const formSource = (formData.get("form_source") || "").toString().trim();
 
     if (!email || !message) {
-      // Don’t give attackers feedback
-      return new Response(null, {
-        status: 302,
-        headers: { Location: "/contact/thanks/" },
+      console.warn("[contact] Rejected — missing required email or message", {
+        hasEmail: !!email,
+        hasMessage: !!message,
+        hasName: !!name,
+        formSource: formSource || null,
+        ip,
       });
+      return validationErrorResponse();
     }
 
     // --- Optional image (contact page: field name "images") ---
@@ -142,14 +182,27 @@ async function handleContactPost(req, event) {
       : { link: null, warning: null };
 
     // --- Resend send ---
-    const RESEND_API_KEY = process.env.RESEND_API_KEY;
-    console.log("RESEND key found?", !!process.env.RESEND_API_KEY);
+    const RESEND_API_KEY = (process.env.RESEND_API_KEY || "").trim();
+    const contactFrom = getContactFromAddress();
+
     if (!RESEND_API_KEY) {
-      console.error("Missing RESEND_API_KEY env var");
-      return new Response("Server configuration error", { status: 500 });
+      console.error(
+        "[contact] Missing RESEND_API_KEY — add it in Netlify site environment variables",
+      );
+      return serverConfigErrorResponse();
     }
 
-    const subject = "New Contact Message – Knit it Now";
+    if (!contactFrom) {
+      console.error(
+        "[contact] CONTACT_FROM_EMAIL is empty and no default from address is configured",
+      );
+      return serverConfigErrorResponse();
+    }
+
+    const subject =
+      formSource === "help-hub"
+        ? "New Help Hub Question – Knit it Now"
+        : "New Contact Message – Knit it Now";
     const textBody =
 `New contact form submission
 
@@ -178,8 +231,14 @@ ${submittedImage ? imageTextSection(submittedImage, imageStorage) : ""}
       ${submittedImage ? imageHtmlSection(submittedImage, imageStorage) : ""}
     `;
 
-    const from = getContactFromAddress();
     const to = "sue@knititnow.com";
+
+    console.info("[contact] Sending email via Resend", {
+      from: contactFrom,
+      to,
+      hasImage: !!submittedImage,
+      imageStored: !!imageStorage.link,
+    });
 
     const resendResp = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -188,7 +247,7 @@ ${submittedImage ? imageTextSection(submittedImage, imageStorage) : ""}
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from,
+        from: contactFrom,
         to,
         subject,
         text: textBody,
@@ -199,9 +258,14 @@ ${submittedImage ? imageTextSection(submittedImage, imageStorage) : ""}
 
     if (!resendResp.ok) {
       const errText = await resendResp.text();
-      console.error("Resend error:", resendResp.status, errText);
-      return Response.redirect(new URL("/contact/thanks/", req.url), 303);
+      console.error("[contact] Resend API error:", resendResp.status, errText, {
+        from: contactFrom,
+        to,
+      });
+      return resendFailureResponse();
     }
+
+    console.info("[contact] Resend email accepted", { to });
 
     // Redirect user to thank-you page
     return new Response(`
@@ -222,14 +286,48 @@ ${submittedImage ? imageTextSection(submittedImage, imageStorage) : ""}
   headers: { "Content-Type": "text/html; charset=utf-8" },
 });
   } catch (error) {
-    console.error("Error in contact form handler:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[contact] Unhandled error in contact handler:", message, error);
     return new Response("Internal server error", { status: 500 });
   }
+}
+
+function serverConfigErrorResponse() {
+  console.error(
+    "[contact] Server misconfiguration — check RESEND_API_KEY and CONTACT_FROM_EMAIL in Netlify",
+  );
+  return new Response(
+    "We couldn't send your message right now. Please try again later or email us directly.",
+    {
+      status: 500,
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    },
+  );
+}
+
+function resendFailureResponse() {
+  return new Response(
+    "We couldn't send your message right now. Please try again in a moment.",
+    {
+      status: 502,
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    },
+  );
 }
 
 function formParseErrorResponse() {
   return new Response(
     "We couldn't read the form submission. Please try again.",
+    {
+      status: 400,
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    },
+  );
+}
+
+function validationErrorResponse() {
+  return new Response(
+    "We couldn't read your message. Please check your email and message, then try again.",
     {
       status: 400,
       headers: { "Content-Type": "text/plain; charset=utf-8" },

@@ -7,6 +7,8 @@ import {
 import {
   getCurrentPattern,
   getPatternData,
+  saveCurrentPattern,
+  savePatternData,
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
 } from "./patternStorage";
 
@@ -125,5 +127,45 @@ describe("syncCustomBuildToPatternStorage", () => {
 
     expect(getCurrentPattern().style?.neckline).toBe("v");
     expect(getPatternData().style?.neckline).toBe("v");
+  });
+
+  it("preserves express patternMode when canonical storage is express (review handoff)", () => {
+    localStorage.setItem(
+      SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+      JSON.stringify({
+        values: {
+          who: "women",
+          selectedSize: "M",
+          fit: "standard",
+          neckline: "round",
+          style: "straight-pullover",
+        },
+        availableNeedles: "100",
+      }),
+    );
+    localStorage.setItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.bodyShape, "straight");
+    localStorage.setItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.garmentType, "pullover");
+
+    saveCurrentPattern({
+      style: {
+        patternMode: "express",
+        bodyShape: "straight",
+        frontStyle: "closed",
+        garmentStyle: "pullover",
+        recipientCategory: "misses",
+      },
+    });
+    savePatternData("style", { patternMode: "express" });
+    savePatternData("yarnGaugeMachine", {
+      availableNeedles: "100",
+      gaugeStitchesPerInch: "5",
+      gaugeRowsPerInch: "7",
+    });
+
+    syncCustomBuildToPatternStorage({ awaitCharts: false });
+
+    expect(getCurrentPattern().style?.patternMode).toBe("express");
+    expect(getPatternData().style?.patternMode).toBe("express");
+    expect(getPatternData().yarnGaugeMachine?.availableNeedles).toBe("100");
   });
 });

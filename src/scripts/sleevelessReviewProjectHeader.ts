@@ -3,6 +3,13 @@
  */
 
 import { canCustomizePattern } from "../lib/patterns/sleevelessPatternAccessGate";
+import { getCurrentPattern } from "../lib/patterns/patternStorage";
+import { smartSaveCustomPatternProject } from "../lib/patterns/customPatternSavedProjectsPanel";
+import {
+  buildChangePatternChoicesHref,
+  initChangePatternChoicesLinks,
+  navigateToChangePatternChoices,
+} from "../lib/patterns/restoreSleevelessExpressBuilderFromPattern";
 import {
   getPatternProjectMeta,
   PROJECT_NOTES_MAX_LENGTH,
@@ -12,6 +19,7 @@ import {
   type SleevelessPatternProjectMeta,
   type SleevelessPatternTitleContext,
 } from "../lib/patterns/sleevelessPatternProjectMeta";
+import { consumeCustomizeProjectFieldHash } from "../lib/patterns/sleevelessCustomizeProjectFieldNav";
 
 const DEFAULT_READ_ONLY_TITLE = "Sleeveless Sweater";
 
@@ -29,6 +37,40 @@ export function shouldShowReadOnlyProjectNotes(notes: string): boolean {
 }
 
 const NOTES_SAVED_FLASH_MS = 2200;
+const FIELD_FOCUS_HIGHLIGHT_MS = 2200;
+
+let beginNotesEditForFocus: (() => void) | null = null;
+
+function flashCustomizeFieldHighlight(el: HTMLElement | null): void {
+  if (!el) return;
+  el.classList.add("sleeveless-customize-field-highlight");
+  el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  window.setTimeout(() => {
+    el.classList.remove("sleeveless-customize-field-highlight");
+  }, FIELD_FOCUS_HIGHLIGHT_MS);
+}
+
+/** Scroll to and focus title or notes on the Customize (review) page. */
+export function focusSleevelessCustomizeProjectField(target: "title" | "notes"): void {
+  const root = getHeaderRoot();
+  if (!root || !canCustomizePattern()) return;
+
+  if (target === "title") {
+    const titleInput = root.querySelector<HTMLInputElement>("[data-sleeveless-pattern-project-title]");
+    const wrap = root.querySelector(".sleeveless-review-project-header__title-input-wrap");
+    titleInput?.focus({ preventScroll: true });
+    flashCustomizeFieldHighlight(
+      wrap instanceof HTMLElement ? wrap : titleInput instanceof HTMLElement ? titleInput : null,
+    );
+    return;
+  }
+
+  beginNotesEditForFocus?.();
+  const panel = root.querySelector("[data-sleeveless-pattern-project-notes-panel]");
+  const notesInput = root.querySelector<HTMLTextAreaElement>("[data-sleeveless-pattern-project-notes]");
+  notesInput?.focus({ preventScroll: true });
+  flashCustomizeFieldHighlight(panel instanceof HTMLElement ? panel : notesInput);
+}
 
 function bindSectionHeadTrigger(el: HTMLElement | null, onActivate: () => void): void {
   if (!el) return;
@@ -55,27 +97,6 @@ function getHeaderRoot(): HTMLElement | null {
 }
 
 type NotesUiMode = "empty" | "view" | "edit";
-type TitleUiMode = "view" | "edit";
-
-function setTitleUiMode(root: HTMLElement, mode: TitleUiMode, title = ""): void {
-  const viewBlock = root.querySelector("[data-sleeveless-pattern-project-title-view]");
-  const panel = root.querySelector("[data-sleeveless-pattern-project-title-panel]");
-  const display = root.querySelector("[data-sleeveless-pattern-project-title-display]");
-  const editTrigger = root.querySelector<HTMLElement>("[data-sleeveless-pattern-project-title-edit]");
-
-  if (viewBlock instanceof HTMLElement) {
-    viewBlock.hidden = mode === "edit";
-  }
-  if (panel instanceof HTMLElement) {
-    panel.hidden = mode !== "edit";
-  }
-  if (display instanceof HTMLElement && title) {
-    display.textContent = title;
-  }
-  if (editTrigger) {
-    editTrigger.setAttribute("aria-expanded", mode === "edit" ? "true" : "false");
-  }
-}
 
 function setNotesUiMode(root: HTMLElement, mode: NotesUiMode, notes = ""): void {
   const notesHeader = root.querySelector<HTMLElement>("[data-sleeveless-pattern-project-notes-header]");
@@ -132,6 +153,24 @@ function normalizeNotesInput(notesInput: HTMLTextAreaElement): string {
   return notes;
 }
 
+function setCloudSaveStatus(root: HTMLElement, message: string, isError = false): void {
+  const el = root.querySelector("[data-cb-project-status]");
+  if (!(el instanceof HTMLElement)) return;
+  el.textContent = message;
+  el.classList.toggle("cb-project-status--error", isError);
+}
+
+function persistTitleFromInput(titleInput: HTMLInputElement | null): string {
+  if (!titleInput) return "";
+  const trimmed = titleInput.value.trim();
+  if (trimmed !== titleInput.value) titleInput.value = trimmed;
+  savePatternProjectMeta({
+    title: trimmed,
+    titleCustomized: true,
+  });
+  return trimmed;
+}
+
 function applyReadOnlyProjectHeader(root: HTMLElement): void {
   root.classList.add("sleeveless-review-project-header--read-only");
 
@@ -145,9 +184,7 @@ function applyReadOnlyProjectHeader(root: HTMLElement): void {
   if (display instanceof HTMLElement) {
     display.textContent = title;
   }
-  setTitleUiMode(root, "view", title);
 
-  stripSectionHeadTrigger(root.querySelector("[data-sleeveless-pattern-project-title-edit]"));
   stripSectionHeadTrigger(root.querySelector("[data-sleeveless-pattern-project-notes-header]"));
 
   const notes = meta.notes;
@@ -175,42 +212,63 @@ function applyReadOnlyProjectHeader(root: HTMLElement): void {
 
 function bindEditableHeader(root: HTMLElement): void {
   const titleInput = root.querySelector<HTMLInputElement>("[data-sleeveless-pattern-project-title]");
-  const titleEditTrigger = root.querySelector<HTMLElement>("[data-sleeveless-pattern-project-title-edit]");
-  const titleSaveBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-title-save]");
-  const titleCancelBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-title-cancel]");
+  const cloudSaveBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-cloud-save]");
   const notesInput = root.querySelector<HTMLTextAreaElement>("[data-sleeveless-pattern-project-notes]");
   const notesEditTrigger = root.querySelector<HTMLElement>("[data-sleeveless-pattern-project-notes-edit]");
   const saveBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-notes-save]");
   const cancelBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-notes-cancel]");
   const deleteBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-notes-delete]");
 
-  let titleEditBaseline = "";
   let notesEditBaseline = "";
 
-  const beginTitleEdit = (): void => {
-    titleEditBaseline = readOnlyPatternTitleFromMeta(getPatternProjectMeta());
-    if (titleInput) {
-      titleInput.value = titleEditBaseline;
+  const applyTitleToInput = (): void => {
+    refreshAutoPatternProjectTitle();
+    const meta = getPatternProjectMeta();
+    const displayTitle = readOnlyPatternTitleFromMeta(meta);
+    if (titleInput) titleInput.value = displayTitle;
+  };
+
+  const applyMetaToFields = (): void => {
+    const meta = getPatternProjectMeta();
+    applyTitleToInput();
+    if (notesInput) {
+      notesInput.value = meta.notes;
+      updateNotesCharCount(root, meta.notes.length);
     }
-    setTitleUiMode(root, "edit", titleEditBaseline);
-    titleInput?.focus();
-    titleInput?.select();
+    setNotesUiMode(root, meta.notes.trim() ? "view" : "empty", meta.notes);
   };
 
-  const finishTitleEdit = (title: string): void => {
-    setTitleUiMode(root, "view", readOnlyPatternTitleFromMeta({ title }));
-  };
+  applyMetaToFields();
 
-  const persistTitleFromInput = (): string => {
-    if (!titleInput) return "";
-    const trimmed = titleInput.value.trim();
-    if (trimmed !== titleInput.value) titleInput.value = trimmed;
-    savePatternProjectMeta({
-      title: trimmed,
-      titleCustomized: true,
+  titleInput?.addEventListener("blur", () => {
+    if (!titleInput?.value.trim()) return;
+    persistTitleFromInput(titleInput);
+  });
+
+  cloudSaveBtn?.addEventListener("click", async () => {
+    const name = persistTitleFromInput(titleInput);
+    if (!name) {
+      setCloudSaveStatus(root, "Enter a pattern name before saving.", true);
+      titleInput?.focus();
+      return;
+    }
+    cloudSaveBtn.disabled = true;
+    const res = await smartSaveCustomPatternProject({
+      resolveName: () => name,
+      onStatus: (message, isError) => setCloudSaveStatus(root, message, isError),
     });
-    return trimmed;
-  };
+    cloudSaveBtn.disabled = false;
+    if (!res.ok) {
+      setCloudSaveStatus(root, res.error, true);
+      return;
+    }
+    if (titleInput) titleInput.value = res.project.name;
+    persistTitleFromInput(titleInput);
+    setCloudSaveStatus(
+      root,
+      res.created ? `Saved “${res.project.name}”.` : `Updated “${res.project.name}”.`,
+    );
+  });
 
   const beginNotesEdit = (): void => {
     notesEditBaseline = getPatternProjectMeta().notes;
@@ -236,41 +294,8 @@ function bindEditableHeader(root: HTMLElement): void {
     return notes;
   };
 
-  const applyMetaToFields = (): void => {
-    const meta = getPatternProjectMeta();
-    const displayTitle = readOnlyPatternTitleFromMeta(meta);
-    if (titleInput) titleInput.value = displayTitle;
-    if (notesInput) {
-      notesInput.value = meta.notes;
-      updateNotesCharCount(root, meta.notes.length);
-    }
-    setTitleUiMode(root, "view", displayTitle);
-    setNotesUiMode(root, meta.notes.trim() ? "view" : "empty", meta.notes);
-  };
-
-  applyMetaToFields();
-  refreshAutoPatternProjectTitle();
-  if (titleInput && !titleInput.value.trim()) {
-    const meta = getPatternProjectMeta();
-    const displayTitle = readOnlyPatternTitleFromMeta(meta);
-    titleInput.value = displayTitle;
-    setTitleUiMode(root, "view", displayTitle);
-  }
-
-  bindSectionHeadTrigger(titleEditTrigger, beginTitleEdit);
+  beginNotesEditForFocus = beginNotesEdit;
   bindSectionHeadTrigger(notesEditTrigger, beginNotesEdit);
-
-  titleSaveBtn?.addEventListener("click", () => {
-    if (!titleInput) return;
-    const title = persistTitleFromInput();
-    finishTitleEdit(title);
-  });
-
-  titleCancelBtn?.addEventListener("click", () => {
-    if (!titleInput) return;
-    titleInput.value = titleEditBaseline;
-    finishTitleEdit(titleEditBaseline);
-  });
 
   saveBtn?.addEventListener("click", () => {
     if (!notesInput) return;
@@ -308,14 +333,9 @@ function bindEditableHeader(root: HTMLElement): void {
         ? (ev.detail as SleevelessPatternTitleContext)
         : undefined;
     const meta = refreshAutoPatternProjectTitle(detail);
-    const titlePanel = root.querySelector("[data-sleeveless-pattern-project-title-panel]");
-    const titleEditing = titlePanel instanceof HTMLElement && !titlePanel.hidden;
     const displayTitle = readOnlyPatternTitleFromMeta(meta);
     if (titleInput && !meta.titleCustomized) {
       titleInput.value = displayTitle;
-    }
-    if (!titleEditing) {
-      setTitleUiMode(root, "view", displayTitle);
     }
     if (notesInput) {
       notesInput.value = meta.notes;
@@ -334,12 +354,22 @@ function bindEditableHeader(root: HTMLElement): void {
 function initSleevelessReviewSummaryEdit(): void {
   const row = document.querySelector<HTMLElement>("[data-sleeveless-review-summary-edit]");
   if (!row) return;
-  const href =
-    row.getAttribute("data-href")?.trim() ||
-    document.querySelector<HTMLElement>("[data-express-measurements-root]")?.getAttribute("data-express-href")?.trim() ||
-    "/patterns/sleeveless-express/";
+  const mode = getCurrentPattern().style?.patternMode;
+  const source = mode === "express" ? "express" : "custom-build";
+  const href = buildChangePatternChoicesHref(source);
+  row.setAttribute("data-href", href);
+  row.setAttribute("title", "Change pattern choices");
+  row.setAttribute("aria-label", "Change pattern choices");
   bindSectionHeadTrigger(row, () => {
-    window.location.assign(href);
+    navigateToChangePatternChoices(href);
+  });
+}
+
+function applyCustomizeFieldFocusFromNavigation(): void {
+  const target = consumeCustomizeProjectFieldHash();
+  if (!target) return;
+  window.requestAnimationFrame(() => {
+    window.setTimeout(() => focusSleevelessCustomizeProjectField(target), 80);
   });
 }
 
@@ -354,6 +384,8 @@ export function initSleevelessReviewProjectHeader(): void {
   }
 
   initSleevelessReviewSummaryEdit();
+  initChangePatternChoicesLinks();
+  applyCustomizeFieldFocusFromNavigation();
 }
 
 if (typeof document !== "undefined") {

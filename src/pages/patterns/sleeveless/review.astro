@@ -1,5 +1,6 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
+import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
 import PatternWorkspaceTabs from "../../../components/patterns/PatternWorkspaceTabs.astro";
 import UnitToggle from "../../../components/wizards/UnitToggle.astro";
 import YarnRequirement from "../../../components/tools/YarnRequirement.astro";
@@ -28,6 +29,7 @@ const SHOW_UPSELL = false;
   title="Review Measurements | Sleeveless Sweater"
   description="Review sizing and measurements, then generate your sleeveless sweater pattern."
 >
+  <SleevelessPatternMemberGate>
   <main class="express-page wizard-page sleeveless-express-page express-measurements-confirm-page sleeveless-unified-review-page">
     <div class="wizard-container express-wizard scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
@@ -173,23 +175,37 @@ const SHOW_UPSELL = false;
             aria-label="Pattern project"
           >
             <div class="sleeveless-review-project-header__name">
+              <label class="sleeveless-review-project-header__label" for="sleeveless-pattern-name">
+                Pattern name
+              </label>
+              <p
+                class="sleeveless-review-project-header__title-display"
+                data-sleeveless-pattern-project-title-display
+              ></p>
               <div
-                class="sleeveless-review-project-header__title-view"
-                data-sleeveless-pattern-project-title-view
+                class="sleeveless-review-project-header__title-field"
+                data-sleeveless-pattern-project-title-field
               >
                 <div
-                  class="sleeveless-review-project-header__section-head"
-                  data-sleeveless-pattern-project-title-edit
-                  role="button"
-                  tabindex="0"
-                  title="Edit pattern name"
-                  aria-label="Edit pattern name"
+                  class="sleeveless-review-project-header__title-input-wrap sleeveless-review-project-header__editable-field"
                 >
-                  <span class="sleeveless-review-project-header__section-pencil" aria-hidden="true">
+                  <input
+                    id="sleeveless-pattern-name"
+                    class="sleeveless-review-project-header__title-input"
+                    type="text"
+                    data-sleeveless-pattern-project-title
+                    maxlength="120"
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                  <span
+                    class="sleeveless-review-project-header__field-pencil"
+                    aria-hidden="true"
+                  >
                     <svg
-                      class="sleeveless-review-project-header__pencil-icon"
-                      width="21"
-                      height="21"
+                      class="sleeveless-review-project-header__pencil-icon sleeveless-review-project-header__pencil-icon--inline"
+                      width="18"
+                      height="18"
                       viewBox="0 0 24 24"
                       fill="none"
                       aria-hidden="true"
@@ -202,58 +218,23 @@ const SHOW_UPSELL = false;
                         stroke-linejoin="round"></path>
                     </svg>
                   </span>
-                  <span class="sleeveless-review-project-header__label">Pattern name</span>
                 </div>
-                <p
-                  class="sleeveless-review-project-header__title-display"
-                  data-sleeveless-pattern-project-title-display
-                ></p>
+                <button
+                  type="button"
+                  class="sleeveless-review-project-header__notes-icon-btn sleeveless-review-project-header__notes-icon-btn--save sleeveless-review-project-header__title-save-btn"
+                  data-sleeveless-pattern-project-cloud-save
+                  title="Save pattern"
+                  aria-label="Save pattern"
+                >
+                  <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                </button>
               </div>
-              <div
-                class="sleeveless-review-project-header__title-panel"
-                data-sleeveless-pattern-project-title-panel
-                hidden
-              >
-                <label class="sleeveless-review-project-header__label" for="sleeveless-pattern-name">
-                  Pattern name
-                </label>
-                <div class="sleeveless-review-project-header__title-field">
-                  <input
-                    id="sleeveless-pattern-name"
-                    class="sleeveless-review-project-header__title-input"
-                    type="text"
-                    data-sleeveless-pattern-project-title
-                    autocomplete="off"
-                    spellcheck="false"
-                  />
-                </div>
-                <div class="sleeveless-review-project-header__title-footer">
-                  <div
-                    class="sleeveless-review-project-header__title-toolbar"
-                    role="group"
-                    aria-label="Pattern name actions"
-                  >
-                    <button
-                      type="button"
-                      class="sleeveless-review-project-header__notes-icon-btn sleeveless-review-project-header__notes-icon-btn--save"
-                      data-sleeveless-pattern-project-title-save
-                      title="Save pattern name"
-                      aria-label="Save pattern name"
-                    >
-                      <i class="fa-solid fa-check" aria-hidden="true"></i>
-                    </button>
-                    <button
-                      type="button"
-                      class="sleeveless-review-project-header__notes-icon-btn sleeveless-review-project-header__notes-icon-btn--close"
-                      data-sleeveless-pattern-project-title-cancel
-                      title="Cancel"
-                      aria-label="Cancel"
-                    >
-                      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <p
+                class="sleeveless-review-project-header__save-status cb-project-status"
+                data-cb-project-status
+                role="status"
+                aria-live="polite"
+              ></p>
             </div>
             <div class="sleeveless-review-project-header__notes">
               <div
@@ -267,20 +248,26 @@ const SHOW_UPSELL = false;
                   data-sleeveless-pattern-project-notes-display
                 ></p>
               </div>
+              <label
+                class="sleeveless-review-project-header__label sleeveless-review-project-header__notes-label"
+                for="sleeveless-pattern-notes"
+              >
+                Project notes
+              </label>
               <div
-                class="sleeveless-review-project-header__section-head"
+                class="sleeveless-review-project-header__section-head sleeveless-review-project-header__editable-field sleeveless-review-project-header__notes-trigger"
                 data-sleeveless-pattern-project-notes-header
                 data-sleeveless-pattern-project-notes-edit
                 role="button"
                 tabindex="0"
-                title="Edit project notes"
-                aria-label="Edit project notes"
+                title="Add project notes"
+                aria-label="Add project notes"
               >
                 <span class="sleeveless-review-project-header__section-pencil" aria-hidden="true">
                   <svg
                     class="sleeveless-review-project-header__pencil-icon"
-                    width="21"
-                    height="21"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
                     fill="none"
                     aria-hidden="true"
@@ -293,10 +280,12 @@ const SHOW_UPSELL = false;
                       stroke-linejoin="round"></path>
                   </svg>
                 </span>
-                <span class="sleeveless-review-project-header__label">Project notes</span>
+                <span class="sleeveless-review-project-header__notes-empty-hint">
+                  Add project notes…
+                </span>
               </div>
               <div
-                class="sleeveless-review-project-header__notes-view"
+                class="sleeveless-review-project-header__notes-view sleeveless-review-project-header__editable-field"
                 data-sleeveless-pattern-project-notes-view
                 hidden
               >
@@ -310,9 +299,6 @@ const SHOW_UPSELL = false;
                 data-sleeveless-pattern-project-notes-panel
                 hidden
               >
-                <label class="sleeveless-review-project-header__label" for="sleeveless-pattern-notes">
-                  Project notes
-                </label>
                 <textarea
                   id="sleeveless-pattern-notes"
                   class="sleeveless-review-project-header__notes-input"
@@ -320,6 +306,8 @@ const SHOW_UPSELL = false;
                   rows={3}
                   maxlength={300}
                   autocomplete="off"
+                  placeholder="Add project notes…"
+                  aria-label="Project notes"
                 ></textarea>
                 <div class="sleeveless-review-project-header__notes-footer">
                   <div
@@ -436,6 +424,13 @@ const SHOW_UPSELL = false;
           </section>
 
           <div class="sleeveless-measure-actions express-measurements-actions no-print">
+            <a
+              href="/patterns/sleeveless-express?edit=choices"
+              class="kbm-btn kbm-btn-outline"
+              data-sleeveless-change-pattern-choices
+            >
+              Change Pattern Choices
+            </a>
             <button type="button" id="express-yarn-drawer-open" class="kbm-btn kbm-btn-outline">
               Check Yarn Needed
             </button>
@@ -505,6 +500,7 @@ const SHOW_UPSELL = false;
       ></div>
     </div>
   </main>
+  </SleevelessPatternMemberGate>
 </Layout>
 
 <style>
@@ -770,6 +766,7 @@ const SHOW_UPSELL = false;
       font-size: 0.82rem;
     }
   }
+
 </style>
 
 <script>

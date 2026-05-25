@@ -148,27 +148,20 @@ describe("buildSleevelessFinishingStepsHtml", () => {
   const deps = {
     escapeHtml: (s: string) => s,
     glossaryTooltip: (_id: number, term: string) => term,
-    oneShoulderFinishingHelpHtml: () => "one shoulder",
     neckFinishingVideoKey: "onePieceBand",
     neckFinishingButtonLabel: "One-piece neckband",
     neckFinishingLeadHtml: "",
   };
 
-  it("round-neck cardigan finish front edges wraps turning row with glossary id 324", () => {
+  it("round-neck cardigan finish front edges includes turning row instructions", () => {
     const html = buildSleevelessFinishingStepsHtml({
       isCardigan: true,
       cardiganFrontEdgeFinishingMode: "pickup",
       frontEdgePickupSts: 99,
-      deps: {
-        ...deps,
-        glossaryTooltip: (id, term) =>
-          `<span data-glossary-id="${id}" data-term="${term}">${term}</span>`,
-      },
+      deps,
     });
-    const turningRowSpans = html.match(/data-glossary-id="324"[^>]*>turning row<\/span>/g);
-    expect(turningRowSpans?.length).toBe(2);
-    expect(html).toContain("Knit 1 <span data-glossary-id=\"324\"");
-    expect(html).toContain("Fold the band on the <span data-glossary-id=\"324\"");
+    expect(html).toContain("Knit 1 turning row.");
+    expect(html).toContain("Fold the band on the turning row and stitch it down.");
   });
 
   it("renders numbered steps without duplicate numbers for round-neck cardigan", () => {

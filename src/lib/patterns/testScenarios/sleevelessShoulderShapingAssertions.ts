@@ -52,15 +52,14 @@ export function expectedShoulderStitchesPerSideForPiece(
   const full = expectedShoulderStitchesPerSide(result);
   if (piece !== "front") return full;
 
-  const halfAfterArmhole = result.debug.cardiganHalfLeftStitchesAfterArmhole;
-  const fullAfterArmhole = result.debug.stitchesAfterArmhole;
-  if (
-    halfAfterArmhole !== undefined &&
-    fullAfterArmhole !== undefined &&
-    halfAfterArmhole > 0 &&
-    halfAfterArmhole < fullAfterArmhole
-  ) {
-    return Math.max(1, Math.floor(full / 2));
+  const neckHalf =
+    result.debug.necklineStitches !== undefined
+      ? Math.max(1, Math.round(result.debug.necklineStitches / 2))
+      : undefined;
+  const postArmhole =
+    result.debug.cardiganFrontPostArmholeSts ?? result.debug.cardiganHalfLeftStitchesAfterArmhole;
+  if (postArmhole !== undefined && neckHalf !== undefined && postArmhole > neckHalf) {
+    return Math.max(1, postArmhole - neckHalf);
   }
   return full;
 }

@@ -4,11 +4,14 @@ import PatternPrintFooter from "../../../components/common/PatternPrintFooter.as
 import PatternPrintPersonalization from "../../../components/common/PatternPrintPersonalization.astro";
 import PatternTipsToggle from "../../../components/patterns/PatternTipsToggle.astro";
 import ActionBar from "../../../components/wizards/ActionBar.astro";
+import SleevelessPatternPrintNotice from "../../../components/patterns/SleevelessPatternPrintNotice.astro";
 
 import "../../../styles/ns-shaping-chart.css";
 import "../../../styles/wizard.css";
 import "../../../styles/glossary-tooltip.css";
 import "../../../styles/pattern-tips.css";
+import "../../../styles/pattern-quick-tip.css";
+import "../../../styles/pattern-help-card.css";
 
 import "../../../styles/patterns/sleeveless-pattern-shared.css";
 
@@ -38,6 +41,7 @@ import "../../../styles/patterns/sleeveless-pattern-shared.css";
         <div id="sg-sleeveless-results" class="sg-sleeveless-results">
           <ActionBar formScrollTarget="sleeveless-beta-pattern-top" />
           <div id="sleeveless-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
+            <SleevelessPatternPrintNotice />
             <section class="sleeveless-pattern-intro">
               <div class="sleeveless-pattern-intro__image">
                 <div class="beta-pattern-video">

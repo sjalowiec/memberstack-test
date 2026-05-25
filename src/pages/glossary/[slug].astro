@@ -79,4 +79,10 @@ const termLabel = cleanTerm((entry as any).english);
       document.querySelectorAll('[data-member="false"]').forEach(el => (el as HTMLElement).style.display = 'none');
     }
   </script>
+
+  <script>
+    import { hydrateGlossaryTooltipPlaceholders } from "../../lib/glossary/glossaryTooltipHydrate.ts";
+
+    hydrateGlossaryTooltipPlaceholders(document.querySelector("[data-glossary-entry]"));
+  </script>
 </Layout>

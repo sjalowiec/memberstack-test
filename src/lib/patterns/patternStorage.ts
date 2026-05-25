@@ -6,6 +6,7 @@
  * `customPatternProjectClient` — load copies a saved project into this draft; Express behavior is unchanged.
  */
 
+import { clearActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import { swatchCountFromPerInchForDisplay } from "./gaugeDisplayFormat";
 import type { SleevelessPatternProjectMeta } from "./sleevelessPatternProjectMeta";
 
@@ -20,6 +21,14 @@ export const PATTERN_BUILDER_DATA_KEY = "patternBuilderData";
 /** Query flag on `/patterns/sleeveless/pattern` (legacy standalone design URL) for post–Start Over reset (strip after handling). */
 export const SLEEVELESS_BUILDER_RESET_PARAM = "reset";
 export const SLEEVELESS_BUILDER_RESET_VALUE = "1";
+
+/** Query flag on `/patterns/sleeveless-express` for a blank Express session (strip after handling). */
+export const SLEEVELESS_EXPRESS_NEW_SESSION_PARAM = "new";
+export const SLEEVELESS_EXPRESS_NEW_SESSION_VALUE = "1";
+
+export function buildSleevelessExpressNewPatternHref(): string {
+  return `/patterns/sleeveless-express?${SLEEVELESS_EXPRESS_NEW_SESSION_PARAM}=${SLEEVELESS_EXPRESS_NEW_SESSION_VALUE}`;
+}
 
 /**
  * Express-only wizard snapshot (`/patterns/sleeveless-express`).
@@ -624,7 +633,26 @@ export function clearSleevelessPatternBuilderData(): void {
 }
 
 /** Legacy standalone custom measurements (see `sleevelessCustomMeasurementStorage.ts`). */
-const SLEEVELESS_LEGACY_CUSTOM_MEASUREMENTS_KEY = "kbm_sleeveless_custom_measurements";
+export const SLEEVELESS_LEGACY_CUSTOM_MEASUREMENTS_KEY = "kbm_sleeveless_custom_measurements";
+
+/**
+ * Custom Build style-step keys reused on unified review (`syncCustomBuildToPatternStorage`).
+ * Must be cleared for a blank Express session so review does not resurrect a prior build.
+ */
+/** Keep in sync with `sleevelessCustomBuildStyleKeys` / `sleevelessCustomBuildWizardNeckline` (no import — avoids cycle). */
+const SLEEVELESS_EXPRESS_WORKFLOW_EXTRA_LS_KEYS = ["bodyShape", "garmentType", "necklineStyle"] as const;
+
+/** Removes Customize/review handoff keys without touching saved Blob projects. */
+export function clearSleevelessExpressWorkflowExtraLocalStorage(): void {
+  if (typeof localStorage === "undefined") return;
+  for (const key of SLEEVELESS_EXPRESS_WORKFLOW_EXTRA_LS_KEYS) {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      /* ignore */
+    }
+  }
+}
 
 /**
  * Clears everything used by Express plus the shared canonical pattern / builder blobs
@@ -633,6 +661,8 @@ const SLEEVELESS_LEGACY_CUSTOM_MEASUREMENTS_KEY = "kbm_sleeveless_custom_measure
  */
 export function clearSleevelessExpressSession(): void {
   clearSleevelessPatternBuilderData();
+  clearActiveCustomPatternProjectId();
+  clearSleevelessExpressWorkflowExtraLocalStorage();
   if (typeof localStorage === "undefined") return;
   try {
     localStorage.removeItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY);

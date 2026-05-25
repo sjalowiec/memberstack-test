@@ -63,11 +63,50 @@
   }
 }
 
+.pattern-header .express-editing-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  margin: 0.15rem 0 0.5rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 8px;
+  background: var(--kbm-surface-muted, #f6f8f6);
+  border: 1px solid var(--kbm-border-subtle, #d8e0d9);
+}
+
+.pattern-header .express-editing-bar[hidden] {
+  display: none;
+}
+
+.express-editing-bar__status {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: var(--kbm-text-muted, #3d5244);
+  min-width: 0;
+}
+
+.express-editing-bar__prefix {
+  font-weight: 600;
+  color: var(--kbm-text, #1a2e1f);
+}
+
+.express-editing-bar__name {
+  font-weight: 600;
+  color: var(--kbm-text, #1a2e1f);
+}
+
 .express-builder-toolbar {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   margin-bottom: 0.65rem;
+}
+
+.express-builder-toolbar[hidden] {
+  display: none;
 }
 
 .express-builder-units {

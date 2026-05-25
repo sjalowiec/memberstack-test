@@ -1,5 +1,6 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
+import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
 import WizardBackLink from "../../../components/wizards/WizardBackLink.astro";
 import PatternWorkspaceTabs from "../../../components/patterns/PatternWorkspaceTabs.astro";
 import "../../../styles/sleeveless-express-builder-cards.css";
@@ -27,6 +28,7 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
   title="Custom Pattern — Style &amp; Shaping | Sleeveless Sweater"
   description="Choose neckline, fit, body shape, and garment type for your custom sleeveless sweater. Style choices are saved for pattern generation."
 >
+  <SleevelessPatternMemberGate>
   <main class="express-page wizard-page sleeveless-express-page" data-express-page="sleeveless-custom-style">
     <div class="wizard-container express-wizard scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
@@ -557,6 +559,7 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
       </div>
     </div>
   </main>
+  </SleevelessPatternMemberGate>
 </Layout>
 
 <style>

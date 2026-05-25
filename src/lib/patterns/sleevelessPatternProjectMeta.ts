@@ -149,6 +149,17 @@ export function getPatternProjectMeta(
   return normalizeMeta(getCurrentPattern().patternProject);
 }
 
+/**
+ * Clears project title/notes on the working draft for a brand-new unsaved pattern.
+ * Does not touch saved Blob projects or the active saved-project link (clear that separately).
+ */
+export function resetPatternProjectMetaForNewDraft(): SleevelessPatternProjectMeta {
+  const next: SleevelessPatternProjectMeta = { title: "", notes: "", titleCustomized: false };
+  saveCurrentPattern({ patternProject: next });
+  syncPatternProjectToPrintSession({ title: "", notes: "" });
+  return { title: "", notes: "" };
+}
+
 export function savePatternProjectMeta(
   patch: Partial<SleevelessPatternProjectMeta>,
   pattern: SleevelessPatternRecord = getCurrentPattern(),
@@ -218,6 +229,17 @@ export function syncPatternProjectToPrintSession(
   try {
     sessionStorage.setItem(LEGACY_PRINT_TITLE_KEY, meta.title.trim());
     sessionStorage.setItem(LEGACY_PRINT_NOTES_KEY, meta.notes);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Clears legacy session-only print title/notes so they are not migrated into a new draft. */
+export function clearPatternProjectPrintSession(): void {
+  if (typeof sessionStorage === "undefined") return;
+  try {
+    sessionStorage.removeItem(LEGACY_PRINT_TITLE_KEY);
+    sessionStorage.removeItem(LEGACY_PRINT_NOTES_KEY);
   } catch {
     /* ignore */
   }

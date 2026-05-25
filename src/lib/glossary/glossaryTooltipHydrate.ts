@@ -1,11 +1,13 @@
 /**
  * Client-side hydration for glossary spans in dynamic HTML (e.g. pattern `tipHtml`):
- * `.glossary-tooltip-placeholder` and `span.glossary-link[data-glossary-id]`.
+ * `.glossary-tooltip-placeholder`, `span.glossary-link[data-glossary-id]`, and help cross-links.
  * Mirrors markup + behavior from GlossaryTooltip.astro.
  */
 import glossaryData from "../../data/glossary.json";
 import videosPublic from "../../data/videos-public.json";
 import { buildGlossaryRelatedVideosHtml } from "./glossaryCatalogVideos";
+import { getGlossaryPlaceholderVisibleText } from "./glossaryTooltipPrint";
+import { slugify } from "../slugify";
 import type { PublicVideoRow } from "../lessonVideo";
 
 type RelatedTool = { name: string; url: string; icon?: string };
@@ -110,6 +112,112 @@ function buildGlossaryContentHtml(entry: GlossaryRow): string {
 }
 
 const stripHtml = (s: string) => (s ?? "").replace(/<[^>]*>/g, "").trim();
+
+const GLOSSARY_HYDRATED_ATTR = "data-glossary-hydrated";
+const GLOSSARY_CROSS_LINK_BOUND = "data-glossary-cross-link-bound";
+
+/** Skip diagram hosts and nodes already converted to tooltip UI. */
+function isGlossaryHydrationExcluded(el: Element): boolean {
+  if (el.closest(".glossary-tooltip-wrap")) return true;
+  if (el.closest("[data-glossary-popup]")) return true;
+  if (el.closest("[data-sleeveless-diagram]")) return true;
+  if (el.closest(".sleeveless-piece-split__diagram-svg")) return true;
+  if (el.closest(".sleeveless-piece-split__diagram-trigger")) return true;
+  if (el.hasAttribute(GLOSSARY_HYDRATED_ATTR)) return true;
+  return false;
+}
+
+function collectGlossaryHydrationTargets(root: ParentNode): HTMLElement[] {
+  const out: HTMLElement[] = [];
+  root
+    .querySelectorAll(".glossary-tooltip-placeholder, span.glossary-link[data-glossary-id]")
+    .forEach((el) => {
+      if (!(el instanceof HTMLElement)) return;
+      if (isGlossaryHydrationExcluded(el)) return;
+      out.push(el);
+    });
+  return out;
+}
+
+/** Resolve a glossary entry slug for full-page / modal navigation. */
+export function glossarySlugForId(glossaryId: number): string | null {
+  const entry = glossary.find((e) => e.glossaryId === glossaryId && e.active === true);
+  if (!entry) return null;
+  return slugify(stripHtml(entry.english ?? ""));
+}
+
+function isOpenGlossaryModal(el: Element): boolean {
+  const modal = el.closest("#glossaryModal.glossaryModal.is-open, .glossaryModal.is-open");
+  return modal instanceof HTMLElement && !modal.hidden;
+}
+
+function swapGlossaryPopupContent(popup: HTMLElement, glossaryId: number) {
+  const payload = getGlossaryTooltipPayload(glossaryId);
+  if (!payload) return;
+
+  const titleEl = popup.querySelector(".glossary-popup-sr-title");
+  if (titleEl instanceof HTMLElement) titleEl.textContent = payload.titlePlain;
+
+  const contentEl = popup.querySelector(".glossary-content");
+  if (!(contentEl instanceof HTMLElement)) return;
+  contentEl.innerHTML = payload.cleanHtml;
+  bindGlossaryCrossLinksInHelp(contentEl, new Set([glossaryId]));
+
+  requestAnimationFrame(() => {
+    const closeBtn = popup.querySelector("[data-glossary-close]");
+    if (closeBtn instanceof HTMLElement) closeBtn.focus();
+  });
+}
+
+function handleGlossaryCrossLinkClick(glossaryId: number, anchor: HTMLElement, event: Event) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (isOpenGlossaryModal(anchor)) {
+    const slug = glossarySlugForId(glossaryId);
+    const openModal = (
+      window as Window & { __kbmOpenGlossaryTermModal?: (slug: string) => void }
+    ).__kbmOpenGlossaryTermModal;
+    if (slug && typeof openModal === "function") {
+      openModal(slug);
+    }
+    return;
+  }
+
+  const popup = anchor.closest("[data-glossary-popup]");
+  if (popup instanceof HTMLElement) {
+    swapGlossaryPopupContent(popup, glossaryId);
+    return;
+  }
+
+  if (anchor.closest("[data-glossary-entry], .glossary-entry-helpinfo")) {
+    const slug = glossarySlugForId(glossaryId);
+    if (slug) window.location.assign(`/glossary/${slug}/`);
+  }
+}
+
+/**
+ * Bind See: cross-links in help HTML — no nested tooltip hydration.
+ * Pattern popups swap content; glossary modal reloads; term pages navigate.
+ */
+export function bindGlossaryCrossLinksInHelp(
+  root: ParentNode,
+  skipGlossaryIds: ReadonlySet<number> = new Set(),
+) {
+  root
+    .querySelectorAll(
+      ".glossary-popup-help a[data-glossary-id], .glossary-entry-helpinfo a[data-glossary-id]",
+    )
+    .forEach((el) => {
+      if (!(el instanceof HTMLAnchorElement)) return;
+      if (el.hasAttribute(GLOSSARY_CROSS_LINK_BOUND)) return;
+      const idRaw = el.getAttribute("data-glossary-id");
+      const glossaryId = idRaw != null ? Number(idRaw) : NaN;
+      if (!Number.isFinite(glossaryId) || skipGlossaryIds.has(glossaryId)) return;
+      el.setAttribute(GLOSSARY_CROSS_LINK_BOUND, "true");
+      el.addEventListener("click", (e) => handleGlossaryCrossLinkClick(glossaryId, el, e));
+    });
+}
 
 export function getGlossaryTooltipPayload(glossaryId: number): {
   cleanHtml: string;
@@ -294,10 +402,13 @@ function replacePlaceholderWithTooltip(placeholder: HTMLElement) {
   const w = window as Window & { __kbmGlossaryApi?: unknown; __kbmGlossaryGlobalsBound?: boolean };
   ensureGlossaryApi(w);
 
+  if (placeholder.hasAttribute(GLOSSARY_HYDRATED_ATTR)) return;
+  placeholder.setAttribute(GLOSSARY_HYDRATED_ATTR, "true");
+
   const idRaw = placeholder.getAttribute("data-glossary-id");
   const glossaryId = idRaw != null ? Number(idRaw) : NaN;
   const fallbackTerm = placeholder.getAttribute("data-term") ?? "";
-  const visibleLabel = (placeholder.textContent ?? fallbackTerm).trim() || fallbackTerm;
+  const visibleLabel = getGlossaryPlaceholderVisibleText(placeholder) || fallbackTerm;
 
   const entry = Number.isFinite(glossaryId) ? glossary.find((e) => e.glossaryId === glossaryId) : undefined;
 
@@ -325,10 +436,11 @@ function replacePlaceholderWithTooltip(placeholder: HTMLElement) {
   const wrap = document.createElement("span");
   wrap.className = "glossary-tooltip glossary-tooltip-wrap";
   wrap.id = rootId;
+  wrap.setAttribute(GLOSSARY_HYDRATED_ATTR, "true");
 
   const btn = document.createElement("button");
   btn.type = "button";
-  btn.className = "glossary-tooltip-trigger";
+  btn.className = "glossary-tooltip-trigger print-visible";
   btn.setAttribute("aria-haspopup", "dialog");
   btn.setAttribute("aria-expanded", "false");
   btn.setAttribute("aria-controls", popupId);
@@ -376,6 +488,7 @@ function replacePlaceholderWithTooltip(placeholder: HTMLElement) {
     const contentEl = document.createElement("div");
     contentEl.className = "glossary-content";
     contentEl.innerHTML = payload.cleanHtml;
+    bindGlossaryCrossLinksInHelp(contentEl, new Set([entry.glossaryId]));
 
     popup.append(srH, closeB, contentEl);
     document.body.appendChild(popup);
@@ -394,7 +507,9 @@ function replacePlaceholderWithTooltip(placeholder: HTMLElement) {
 /** Finds glossary placeholder spans under `root` and swaps in real glossary tooltip UI. */
 export function hydrateGlossaryTooltipPlaceholders(root: ParentNode | null | undefined) {
   if (!root) return;
-  root.querySelectorAll(".glossary-tooltip-placeholder, span.glossary-link[data-glossary-id]").forEach((el) => {
-    if (el instanceof HTMLElement) replacePlaceholderWithTooltip(el);
-  });
+  const targets = collectGlossaryHydrationTargets(root);
+  for (const el of targets) {
+    replacePlaceholderWithTooltip(el);
+  }
+  bindGlossaryCrossLinksInHelp(root);
 }

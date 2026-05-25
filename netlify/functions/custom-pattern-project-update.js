@@ -11,6 +11,7 @@ import {
   publicProject,
   readProjectJson,
   resolveProjectUserId,
+  upsertProjectSummaryInIndex,
   withCors,
 } from "./lib/custom-pattern-projects-store.js";
 
@@ -53,11 +54,48 @@ export default async (req) => {
     return withCors(jsonResponse({ ok: false, error: "Project not found." }, 404));
   }
 
+  if (body.data.workflowOnly === true) {
+    const readingWorkflow = body.data.readingWorkflow;
+    if (!readingWorkflow || typeof readingWorkflow !== "object" || Array.isArray(readingWorkflow)) {
+      return withCors(
+        jsonResponse({ ok: false, error: "readingWorkflow object is required for workflowOnly." }, 400),
+      );
+    }
+    const project = {
+      ...existing,
+      readingWorkflow,
+      updatedAt: existing.updatedAt,
+      version: existing.version,
+    };
+    try {
+      await store.set(key, JSON.stringify(publicProject(project)), {
+        metadata: {
+          userId: user.userId,
+          family: project.family,
+          projectId: project.id,
+          updatedAt: project.updatedAt,
+        },
+      });
+      await upsertProjectSummaryInIndex(store, project.family, user.userId, project);
+      return withCors(
+        jsonResponse({
+          ok: true,
+          project: publicProject(project),
+          authMode: user.mode,
+        }),
+      );
+    } catch (err) {
+      console.error("custom-pattern-project-update workflowOnly failed:", err);
+      return withCors(jsonResponse({ ok: false, error: "Failed to update project." }, 500));
+    }
+  }
+
   const mergedInput = {
     ...body.data,
     createdAt: existing.createdAt,
     version: existing.version,
     family: existing.family ?? family,
+    readingWorkflow: existing.readingWorkflow,
   };
 
   const built = buildProjectRecord(mergedInput, user.userId, id);
@@ -76,6 +114,7 @@ export default async (req) => {
         updatedAt: project.updatedAt,
       },
     });
+    await upsertProjectSummaryInIndex(store, project.family, user.userId, project);
     return withCors(
       jsonResponse({
         ok: true,

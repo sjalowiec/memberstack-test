@@ -1,3 +1,7 @@
+import { getCurrentPattern } from "./patternStorage";
+import { SLEEVELESS_PATTERN_TIPS_STORAGE_KEY } from "./patternReadingWorkflow";
+import { scheduleReadingWorkflowSync } from "./patternReadingWorkflowSync";
+
 /** localStorage suffix for individually dismissed tip IDs (JSON string array). */
 export function dismissedTipsStorageKey(storageKey: string): string {
   return `${storageKey}-dismissed`;
@@ -27,6 +31,15 @@ export function dismissTipId(storageKey: string, tipId: string): void {
 
 export function resetDismissedTips(storageKey: string): void {
   localStorage.removeItem(dismissedTipsStorageKey(storageKey));
+}
+
+function notifySleevelessReadingWorkflowIfSaved(storageKey: string): void {
+  if (storageKey !== SLEEVELESS_PATTERN_TIPS_STORAGE_KEY) return;
+  try {
+    scheduleReadingWorkflowSync(getCurrentPattern().id);
+  } catch {
+    /* not on a pattern page with draft */
+  }
 }
 
 const DISMISSABLE_TIP_SELECTOR =
@@ -125,6 +138,7 @@ export function bindPatternTipDismiss(
         dismissTipId(storageKey, id);
         tip.setAttribute("data-tip-dismissed", "true");
         updateTipsResetLinkVisibility(scope, storageKey);
+        notifySleevelessReadingWorkflowIfSaved(storageKey);
         return;
       }
 
@@ -136,6 +150,7 @@ export function bindPatternTipDismiss(
           tip.removeAttribute("data-tip-dismissed");
         });
         updateTipsResetLinkVisibility(scope, storageKey);
+        notifySleevelessReadingWorkflowIfSaved(storageKey);
       }
     });
 

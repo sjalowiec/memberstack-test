@@ -30,6 +30,96 @@ export function userProjectsPrefix(family, userId) {
   return `${sanitizeKeySegment(family)}/${sanitizeKeySegment(userId)}/`;
 }
 
+/** Lightweight summary index: `{family}/{userId}/index.json` */
+export function projectIndexKey(family, userId) {
+  return `${userProjectsPrefix(family, userId)}index.json`;
+}
+
+export const PROJECT_SUMMARY_INDEX_VERSION = 1;
+
+/** @param {Record<string, unknown>} project */
+export function summaryFromProject(project) {
+  return {
+    id: project.id,
+    name: project.name,
+    family: project.family,
+    source: project.source,
+    createdAt: project.createdAt,
+    updatedAt: project.updatedAt,
+    version: project.version,
+  };
+}
+
+/** @param {unknown[]} summaries */
+export function sortProjectSummaries(summaries) {
+  return [...summaries].sort((a, b) =>
+    String(b.updatedAt ?? "").localeCompare(String(a.updatedAt ?? "")),
+  );
+}
+
+/** @param {unknown} summary */
+function isValidProjectSummary(summary) {
+  if (!summary || typeof summary !== "object" || Array.isArray(summary)) return false;
+  const row = /** @type {Record<string, unknown>} */ (summary);
+  return typeof row.id === "string" && row.id.trim().length > 0;
+}
+
+/** @param {unknown} parsed */
+function parseProjectSummaryIndex(parsed) {
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+  const root = /** @type {Record<string, unknown>} */ (parsed);
+  const raw = root.summaries;
+  if (!Array.isArray(raw)) return null;
+  const summaries = raw.filter(isValidProjectSummary);
+  if (summaries.length === 0) return null;
+  return sortProjectSummaries(summaries);
+}
+
+/** @param {import("@netlify/blobs").Store} store @param {string} family @param {string} userId */
+export async function readProjectSummaryIndex(store, family, userId) {
+  const key = projectIndexKey(family, userId);
+  const parsed = await readProjectJson(store, key);
+  return parseProjectSummaryIndex(parsed);
+}
+
+/** @param {import("@netlify/blobs").Store} store @param {string} family @param {string} userId @param {unknown[]} summaries */
+export async function writeProjectSummaryIndex(store, family, userId, summaries) {
+  const key = projectIndexKey(family, userId);
+  const sorted = sortProjectSummaries(summaries);
+  const payload = {
+    version: PROJECT_SUMMARY_INDEX_VERSION,
+    updatedAt: new Date().toISOString(),
+    summaries: sorted,
+  };
+  await store.set(key, JSON.stringify(payload), {
+    metadata: {
+      userId,
+      family: sanitizeKeySegment(family),
+      kind: "summary-index",
+      updatedAt: payload.updatedAt,
+    },
+  });
+  return sorted;
+}
+
+/**
+ * Upsert one project summary into the index (after save/update).
+ * @param {import("@netlify/blobs").Store} store
+ * @param {string} family
+ * @param {string} userId
+ * @param {Record<string, unknown>} project
+ */
+export async function upsertProjectSummaryInIndex(store, family, userId, project) {
+  const summary = summaryFromProject(project);
+  let existing = await readProjectSummaryIndex(store, family, userId);
+  if (!existing) {
+    existing = await listProjectSummariesFromBlobScan(store, family, userId);
+  }
+  const next = existing.filter((row) => row.id !== summary.id);
+  next.push(summary);
+  return writeProjectSummaryIndex(store, family, userId, next);
+}
+
 export function getProjectsStore() {
   return getStore({
     name: CUSTOM_PATTERN_PROJECTS_BLOB_STORE,
@@ -86,8 +176,10 @@ export function readAllowDevPatternUserFromDotEnv() {
   return dotEnvAllowDevCached;
 }
 
-/** True when local dev pattern saves are allowed (never on by default in production). */
+/** True when local dev pattern saves are allowed (never in production deploys). */
 export function isAllowDevPatternUser() {
+  if (process.env.NODE_ENV === "production") return false;
+  if (process.env.CONTEXT === "production") return false;
   const fromEnv = process.env.ALLOW_DEV_PATTERN_USER;
   if (fromEnv === "true") return true;
   if (fromEnv === "false") return false;
@@ -175,6 +267,13 @@ export function buildProjectRecord(data, userId, existingId) {
       ? data.customOverrides
       : {};
 
+  const readingWorkflow =
+    data.readingWorkflow &&
+    typeof data.readingWorkflow === "object" &&
+    !Array.isArray(data.readingWorkflow)
+      ? data.readingWorkflow
+      : undefined;
+
   const id = existingId ? sanitizeKeySegment(existingId) : crypto.randomUUID();
   const createdAt =
     typeof data.createdAt === "string" && data.createdAt ? data.createdAt : now;
@@ -196,6 +295,7 @@ export function buildProjectRecord(data, userId, existingId) {
       version: existingId ? version + 1 : 1,
       pattern,
       customOverrides,
+      ...(readingWorkflow ? { readingWorkflow } : {}),
       _storageUserId: userId,
     },
   };
@@ -219,25 +319,27 @@ export async function readProjectJson(store, key) {
   }
 }
 
-/** @param {import("@netlify/blobs").Store} store @param {string} family @param {string} userId */
-export async function listProjectSummaries(store, family, userId) {
+/** Scan all project blobs (legacy path; skips index.json). */
+export async function listProjectSummariesFromBlobScan(store, family, userId) {
   const prefix = userProjectsPrefix(family, userId);
+  const indexKey = projectIndexKey(family, userId);
   const { blobs } = await store.list({ prefix });
   const summaries = [];
   for (const blob of blobs) {
-    if (!blob.key.endsWith(".json")) continue;
+    if (blob.key === indexKey || !blob.key.endsWith(".json")) continue;
     const project = await readProjectJson(store, blob.key);
-    if (!project) continue;
-    summaries.push({
-      id: project.id,
-      name: project.name,
-      family: project.family,
-      source: project.source,
-      createdAt: project.createdAt,
-      updatedAt: project.updatedAt,
-      version: project.version,
-    });
+    if (!project?.id) continue;
+    summaries.push(summaryFromProject(project));
   }
-  summaries.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
-  return summaries;
+  return sortProjectSummaries(summaries);
+}
+
+/** @param {import("@netlify/blobs").Store} store @param {string} family @param {string} userId */
+export async function listProjectSummaries(store, family, userId) {
+  const fromIndex = await readProjectSummaryIndex(store, family, userId);
+  if (fromIndex) return fromIndex;
+
+  const fromScan = await listProjectSummariesFromBlobScan(store, family, userId);
+  await writeProjectSummaryIndex(store, family, userId, fromScan);
+  return fromScan;
 }

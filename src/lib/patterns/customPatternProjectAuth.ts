@@ -9,13 +9,18 @@
  * TODO: Verify Memberstack session/JWT server-side (`MEMBERSTACK_SECRET_KEY`) instead of trusting client-sent id.
  */
 
+import { memberIdFromMemberstackPayload } from "./memberstackMember";
 import { DEFAULT_DEV_PATTERN_USER_ID } from "./customPatternProjectStoreKeys";
+import { memberstackReadinessSnapshot, perfEnd, perfStart } from "./savedPatternsPerfLog";
 
 const DEV_USER_STORAGE_KEY = "kbm_dev_pattern_user_id";
 
 export { DEFAULT_DEV_PATTERN_USER_ID };
 
-/** Local save/list/load when Astro dev is running and dev pattern saves are enabled in `.env`. */
+/**
+ * Local save/list/load when Astro dev + Netlify dev allow anonymous pattern user.
+ * Never enabled in production builds (import.meta.env.DEV is false).
+ */
 export function isDevCustomPatternProjectsEnabled(): boolean {
   return (
     typeof import.meta !== "undefined" &&
@@ -32,23 +37,6 @@ export type CustomPatternProjectAuth = {
   devUserId?: string;
 };
 
-function memberIdFromMemberstackPayload(payload: unknown): string | undefined {
-  if (!payload || typeof payload !== "object") return undefined;
-  const root = payload as Record<string, unknown>;
-  const data =
-    root.data && typeof root.data === "object" && !Array.isArray(root.data)
-      ? (root.data as Record<string, unknown>)
-      : root;
-  const id = data.id ?? data._id;
-  if (typeof id === "string" && id.trim()) return id.trim();
-  const auth = data.auth;
-  if (auth && typeof auth === "object" && !Array.isArray(auth)) {
-    const authId = (auth as Record<string, unknown>).id;
-    if (typeof authId === "string" && authId.trim()) return authId.trim();
-  }
-  return undefined;
-}
-
 /** Stable dev user id for local dev when Memberstack is unavailable. */
 export function getOrCreateDevPatternUserId(): string {
   if (typeof localStorage === "undefined") return DEFAULT_DEV_PATTERN_USER_ID;
@@ -63,23 +51,48 @@ export function getOrCreateDevPatternUserId(): string {
 }
 
 export async function resolveCustomPatternProjectAuth(): Promise<CustomPatternProjectAuth> {
-  if (typeof window === "undefined") return { mode: "none" };
+  const authStart = perfStart();
+  if (typeof window === "undefined") {
+    perfEnd("2-member-auth (ssr)", authStart, { mode: "none" });
+    return { mode: "none" };
+  }
 
+  const readiness = memberstackReadinessSnapshot();
   const ms = window.$memberstackDom;
   if (ms?.getCurrentMember) {
+    const memberStart = perfStart();
     try {
       const res = await ms.getCurrentMember();
       const memberId = memberIdFromMemberstackPayload(res);
-      if (memberId) return { mode: "member", memberId };
-    } catch {
+      perfEnd("2-member-auth getCurrentMember", memberStart, {
+        ...readiness,
+        memberIdResolved: Boolean(memberId),
+      });
+      if (memberId) {
+        perfEnd("2-member-auth total", authStart, { mode: "member", ...readiness });
+        return { mode: "member", memberId };
+      }
+    } catch (error) {
+      perfEnd("2-member-auth getCurrentMember (failed)", memberStart, {
+        ...readiness,
+        error: error instanceof Error ? error.message : String(error),
+      });
       /* fall through */
     }
+  } else {
+    perfEnd("2-member-auth getCurrentMember (skipped)", authStart, {
+      ...readiness,
+      reason: "getCurrentMember unavailable",
+    });
   }
 
   if (isDevCustomPatternProjectsEnabled()) {
-    return { mode: "dev", devUserId: getOrCreateDevPatternUserId() };
+    const devUserId = getOrCreateDevPatternUserId();
+    perfEnd("2-member-auth total", authStart, { mode: "dev", ...readiness });
+    return { mode: "dev", devUserId };
   }
 
+  perfEnd("2-member-auth total", authStart, { mode: "none", ...readiness });
   return { mode: "none" };
 }
 

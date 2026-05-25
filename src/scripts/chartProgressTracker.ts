@@ -2,6 +2,12 @@
  * Progress checklists for neckline/shoulder chart tables ({@link initChartProgressTracking}).
  * Storage keys: `kbm:chart-rows:<sanitizedPatternId>:<sanitizedChartId>`
  */
+import {
+  chartProgressStorageKey,
+  readChartProgressBlob,
+  writeChartProgressBlob,
+} from "../lib/patterns/chartProgressStorage";
+import { scheduleReadingWorkflowSync } from "../lib/patterns/patternReadingWorkflowSync";
 
 export type ChartProgressTrackerOptions = {
   patternId: string;
@@ -9,41 +15,25 @@ export type ChartProgressTrackerOptions = {
   root?: ParentNode | null;
 };
 
-const STORAGE_NS = "kbm:chart-rows";
+export {
+  chartProgressStorageKey,
+  sanitizeChartProgressKeyPart as sanitizeKeyPart,
+} from "../lib/patterns/chartProgressStorage";
 
 const CHART_PROGRESS_LABEL_FILTER_OFF = "Hide completed rows";
 const CHART_PROGRESS_LABEL_FILTER_ON = "Showing unfinished rows only";
 const CHART_PROGRESS_STATUS_FILTER_OFF = "Completed rows are visible.";
 const CHART_PROGRESS_STATUS_FILTER_ON = "Completed rows are hidden.";
 
-function sanitizeKeyPart(raw: string): string {
-  return String(raw ?? "")
-    .trim()
-    .replace(/[^\w.-]/g, "_");
-}
-
-export function chartProgressStorageKey(patternId: string, chartId: string): string {
-  return `${STORAGE_NS}:${sanitizeKeyPart(patternId)}:${sanitizeKeyPart(chartId)}`;
-}
-
 function readCheckedRows(key: string): Set<string> {
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return new Set();
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return new Set();
-    return new Set(parsed.filter((x): x is string => typeof x === "string"));
-  } catch {
-    return new Set();
-  }
+  return new Set(readChartProgressBlob(key).checkedRowIds);
 }
 
-function writeCheckedRows(key: string, ids: ReadonlySet<string>): void {
-  try {
-    localStorage.setItem(key, JSON.stringify([...ids].sort()));
-  } catch {
-    /* quota / blocked */
-  }
+function writeCheckedRows(key: string, ids: ReadonlySet<string>, hideCompleted: boolean): void {
+  writeChartProgressBlob(key, {
+    checkedRowIds: [...ids],
+    hideCompleted,
+  });
 }
 
 function checkboxInRow(row: HTMLTableRowElement): HTMLInputElement | null {
@@ -103,7 +93,8 @@ function bindChartSection(
   };
 
   const applyStorage = (): void => {
-    const stored = readCheckedRows(key);
+    const blob = readChartProgressBlob(key);
+    const stored = new Set(blob.checkedRowIds);
     tbody.querySelectorAll<HTMLTableRowElement>("tr[data-row-id]").forEach((row) => {
       const rid = row.dataset.rowId?.trim();
       const cb = checkboxInRow(row);
@@ -111,13 +102,15 @@ function bindChartSection(
       cb.checked = stored.has(rid);
       syncRowCompletedClass(row);
     });
+    setCompletedHiddenUi(blob.hideCompleted);
     chartRoot.dataset.chartRowsLoaded = "true";
   };
 
   /** Persist union of tbody row ids referenced on this render. */
   const pruneStorageToCurrentRows = (): void => {
     const ids = rowById();
-    const stored = readCheckedRows(key);
+    const blob = readChartProgressBlob(key);
+    const stored = new Set(blob.checkedRowIds);
     let changed = false;
     for (const id of [...stored]) {
       if (!ids.has(id)) {
@@ -125,7 +118,13 @@ function bindChartSection(
         changed = true;
       }
     }
-    if (changed) writeCheckedRows(key, stored);
+    if (changed) {
+      writeCheckedRows(key, stored, blob.hideCompleted);
+    }
+  };
+
+  const notifyWorkflow = (): void => {
+    scheduleReadingWorkflowSync(patternId);
   };
 
   pruneStorageToCurrentRows();
@@ -139,7 +138,9 @@ function bindChartSection(
       if (!rid || !(cb instanceof HTMLInputElement)) return;
       if (cb.checked) next.add(rid);
     });
-    writeCheckedRows(key, next);
+    const hideCompleted = chartRoot.dataset.chartProgressHideCompleted === "true";
+    writeCheckedRows(key, next, hideCompleted);
+    notifyWorkflow();
   };
 
   chartRoot.addEventListener("change", (e) => {
@@ -155,6 +156,9 @@ function bindChartSection(
   hideBtn?.addEventListener("click", () => {
     const nextActive = chartRoot.dataset.chartProgressHideCompleted !== "true";
     setCompletedHiddenUi(nextActive);
+    const stored = readCheckedRows(key);
+    writeCheckedRows(key, stored, nextActive);
+    notifyWorkflow();
   });
 
   resetBtn?.addEventListener("click", () => {
@@ -171,6 +175,7 @@ function bindChartSection(
       }
     });
     setCompletedHiddenUi(false);
+    notifyWorkflow();
   });
 }
 

@@ -489,33 +489,57 @@
     min-width: 0;
   }
 
-  /* Expandable shaping help (details) — same classes as online pattern tab */
-  .sleeveless-print-root .sleeveless-shaping-help-toggle {
-    margin: 0.35rem 0 0.55rem;
-    padding: 0.45rem 0.65rem;
-    border-left: 4px solid #c2614e;
-    border-radius: 4px;
-    background: rgba(194, 97, 78, 0.06);
-    line-height: 1.45;
+  .sleeveless-print-root .pattern-tip.pattern-quick-tip {
+    background: #f7f6f4;
+    border-left: 3px solid #c2614e;
+    padding: 0.2rem 0.5rem;
+    margin: 0.25rem 0 0.4rem;
     break-inside: avoid;
     page-break-inside: avoid;
   }
 
-  .sleeveless-print-root .sleeveless-shaping-help-toggle summary {
-    cursor: default;
-    font-size: 0.82rem;
+  .sleeveless-print-root .pattern-quick-tip__summary {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .sleeveless-print-root .pattern-quick-tip__body {
+    margin-top: 0.3rem;
+    padding-top: 0.25rem;
+    font-size: 0.78rem;
+    border-top: 1px solid #d1d5db;
+  }
+
+  .sleeveless-print-root .pattern-tip.pattern-help-card {
+    border-left: 4px solid #c2614e;
+    background: #fdf9f8;
+    padding: 0.45rem 0.7rem;
+    margin: 0.35rem 0 0.55rem;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .sleeveless-print-root .pattern-help-card__summary {
+    font-size: 0.84rem;
     font-weight: 700;
     color: #1f2937;
   }
 
-  .sleeveless-print-root .sleeveless-shaping-help-toggle p {
-    margin: 0.4rem 0 0;
-    font-size: 0.8rem;
-    color: #374151;
+  .sleeveless-print-root .pattern-help-card__title {
+    color: #1f2937;
   }
 
-  .sleeveless-print-root .sleeveless-shaping-help-toggle p:first-of-type {
-    margin-top: 0.35rem;
+  .sleeveless-print-root .pattern-help-card__body {
+    margin-top: 0.4rem;
+    padding-top: 0.35rem;
+    font-size: 0.82rem;
+    color: #374151;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .sleeveless-print-root .pattern-help-card__body p {
+    margin: 0.4rem 0 0;
   }
 
   .sleeveless-print-root .print-rc {
@@ -837,5 +861,37 @@
       padding: 0.25rem;
       break-inside: auto;
       page-break-inside: auto;
+    }
+
+    /* Compact shaping tables (print route): keep chart block intact when it fits one page. */
+    .sleeveless-print-root .print-chart-wrap,
+    .sleeveless-print-root .ns-shaping-mini {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .sleeveless-print-root .ns-shaping-mini__title,
+    .sleeveless-print-root .print-chart-intro {
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+
+    .sleeveless-print-root .ns-shaping-mini__wrap,
+    .sleeveless-print-root .ns-shaping-mini__table {
+      break-before: avoid;
+      page-break-before: avoid;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .sleeveless-print-root .ns-shaping-mini__table thead {
+      display: table-header-group;
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+
+    .sleeveless-print-root .ns-shaping-mini__table tr {
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
   }

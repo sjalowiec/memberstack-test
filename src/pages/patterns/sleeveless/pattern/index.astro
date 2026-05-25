@@ -1,14 +1,18 @@
 ---
 import Layout from "../../../../layouts/Layout.astro";
+import SleevelessPatternMemberGate from "../../../../components/patterns/SleevelessPatternMemberGate.astro";
 import PatternPrintFooter from "../../../../components/common/PatternPrintFooter.astro";
 import PatternPrintPersonalization from "../../../../components/common/PatternPrintPersonalization.astro";
 import PatternTipsToggle from "../../../../components/patterns/PatternTipsToggle.astro";
 import PatternWorkspaceTabs from "../../../../components/patterns/PatternWorkspaceTabs.astro";
+import SleevelessPatternPrintNotice from "../../../../components/patterns/SleevelessPatternPrintNotice.astro";
 
 import "../../../../styles/ns-shaping-chart.css";
 import "../../../../styles/wizard.css";
 import "../../../../styles/glossary-tooltip.css";
 import "../../../../styles/pattern-tips.css";
+import "../../../../styles/pattern-quick-tip.css";
+import "../../../../styles/pattern-help-card.css";
 
 import "../../../../styles/patterns/sleeveless-pattern-shared.css";
 
@@ -25,6 +29,7 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
   bodyClass="pattern-print-global-footer"
 >
   <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/sleeveless" />
+  <SleevelessPatternMemberGate>
   <main class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage" data-pattern-print-skip-modal>
     <div id="sleeveless-pattern-top" class="wizard-container scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
@@ -38,15 +43,9 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
           inspirationHref={inspirationHref}
         />
 
-        <div class="sleeveless-beta-pattern__top no-print">
-          <div class="sleeveless-beta-pattern__top-inner">
-            <p class="sleeveless-beta-pattern__label" data-sleeveless-pattern-online-heading>
-              Sleeveless sweater · Pattern instructions
-            </p>
-          </div>
-        </div>
         <div id="sg-sleeveless-results" class="sg-sleeveless-results">
           <div id="sleeveless-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
+            <SleevelessPatternPrintNotice />
             <section class="sleeveless-pattern-intro">
               <div class="sleeveless-pattern-intro__image">
                 <div class="beta-pattern-video">
@@ -69,16 +68,47 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
                 </div>
               </div>
               <div class="sleeveless-pattern-intro__content">
-                <div
-                  class="sleeveless-pattern-project-notes no-print"
-                  data-sleeveless-pattern-online-notes
-                  hidden
-                >
-                  <p class="sleeveless-pattern-project-notes__label">Project notes</p>
+                <div class="sleeveless-pattern-online-project-header no-print">
+                  <div class="sleeveless-pattern-edit-row sleeveless-pattern-online-heading-row">
+                    <button
+                      type="button"
+                      class="sleeveless-pattern-edit-shortcut"
+                      data-sleeveless-edit-customize="title"
+                      aria-label="Edit pattern name"
+                      title="Edit pattern name"
+                      hidden
+                    ></button>
+                    <p class="sleeveless-pattern-online-heading" data-sleeveless-pattern-online-heading>
+                      Sleeveless sweater · Pattern instructions
+                    </p>
+                  </div>
                   <div
-                    class="sleeveless-pattern-project-notes__text"
-                    data-sleeveless-pattern-online-notes-text
-                  ></div>
+                    class="sleeveless-pattern-project-notes-wrap"
+                    data-sleeveless-pattern-online-notes-wrap
+                    hidden
+                  >
+                    <div class="sleeveless-pattern-edit-row sleeveless-pattern-project-notes__head">
+                      <button
+                        type="button"
+                        class="sleeveless-pattern-edit-shortcut"
+                        data-sleeveless-edit-customize="notes"
+                        aria-label="Edit project notes"
+                        title="Edit project notes"
+                        hidden
+                      ></button>
+                      <p class="sleeveless-pattern-project-notes__label">Project notes</p>
+                    </div>
+                    <div
+                      class="sleeveless-pattern-project-notes"
+                      data-sleeveless-pattern-online-notes
+                      hidden
+                    >
+                      <div
+                        class="sleeveless-pattern-project-notes__text"
+                        data-sleeveless-pattern-online-notes-text
+                      ></div>
+                    </div>
+                  </div>
                 </div>
                 <PatternPrintPersonalization>
                   <div slot="print-summary" class="sg-pattern-print-at-a-glance" data-sg-pattern-print-at-a-glance>
@@ -92,6 +122,15 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
                   data-pattern-generated-description
                   aria-label="Pattern summary"
                 ></div>
+                <p class="sleeveless-pattern-change-choices no-print">
+                  <a
+                    href="/patterns/sleeveless-express?edit=choices"
+                    class="kbm-btn kbm-btn-outline kbm-btn--compact"
+                    data-sleeveless-change-pattern-choices
+                  >
+                    Change Pattern Choices
+                  </a>
+                </p>
                 <PatternTipsToggle
                   storageKey="sleeveless-show-tips"
                   scopeSelector="#sleeveless-pattern-tips-scope"
@@ -123,24 +162,28 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
     </div>
 
   </main>
+  </SleevelessPatternMemberGate>
 </Layout>
 
 <style>
-  .sleeveless-beta-pattern__top {
-    max-width: 52rem;
-    margin: 0 auto;
-    padding: 0.75rem 1rem 0;
+  .sleeveless-pattern-online-project-header {
+    --pattern-edit-icon-col: 1.25rem;
+    --pattern-edit-text-indent: calc(var(--pattern-edit-icon-col) + 0.35rem);
+    margin: 0 0 0.75rem;
   }
 
-  .sleeveless-beta-pattern__top-inner {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
+  .sleeveless-pattern-edit-row {
+    display: grid;
+    grid-template-columns: var(--pattern-edit-icon-col) minmax(0, 1fr);
+    align-items: baseline;
+    column-gap: 0.35rem;
   }
 
-  .sleeveless-beta-pattern__label {
+  .sleeveless-pattern-online-heading-row {
+    margin: 0 0 0.4rem;
+  }
+
+  .sleeveless-pattern-online-heading {
     margin: 0;
     font-size: 0.95rem;
     font-weight: 600;
@@ -150,8 +193,48 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
     word-break: break-word;
   }
 
+  :global(.sleeveless-pattern-edit-shortcut) {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: baseline;
+    margin: 0;
+    padding: 0.1rem;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: color-mix(in srgb, var(--kbm-green, #52682d) 50%, #9ca3af);
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.15s ease, opacity 0.15s ease;
+  }
+
+  :global(.sleeveless-pattern-edit-shortcut:hover) {
+    color: var(--kbm-green, #52682d);
+  }
+
+  :global(.sleeveless-pattern-edit-shortcut:focus-visible) {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  :global(.sleeveless-pattern-edit-shortcut__icon) {
+    display: block;
+    width: 14px;
+    height: 14px;
+  }
+
+  .sleeveless-pattern-project-notes-wrap {
+    margin: 0;
+  }
+
+  .sleeveless-pattern-project-notes__head {
+    margin-bottom: 0.25rem;
+  }
+
   .sleeveless-pattern-project-notes {
-    margin: 0 0 0.65rem;
+    margin-left: var(--pattern-edit-text-indent);
     padding: 0.45rem 0.6rem;
     border-radius: 8px;
     border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #e5e7eb);
@@ -159,7 +242,7 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
   }
 
   .sleeveless-pattern-project-notes__label {
-    margin: 0 0 0.2rem;
+    margin: 0;
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.03em;

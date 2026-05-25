@@ -118,10 +118,11 @@ const allData = videos.flatMap(video =>
         </p>
 
         <form
+          id="video-help-question-form"
           name="help-hub-question"
           method="POST"
           action="/.netlify/functions/contact"
-          data-netlify="true"
+          enctype="multipart/form-data"
           netlify-honeypot="bot-field"
           class="help-hub-form"
         >
@@ -165,7 +166,9 @@ const allData = videos.flatMap(video =>
             />
           </div>
 
-          <button type="submit" class="kbm-btn kbm-btn-primary help-hub-form__submit">
+          <p id="video-help-submit-error" class="help-hub-form__error" hidden role="alert"></p>
+
+          <button type="submit" class="kbm-btn kbm-btn-primary help-hub-form__submit" id="video-help-submit-btn">
             Send my request
           </button>
         </form>
@@ -690,6 +693,17 @@ const allData = videos.flatMap(video =>
         margin-right: auto;
       }
 
+      .help-hub-form__error {
+        margin: 0.75rem 0 0;
+        font-size: 0.9rem;
+        color: #b91c1c;
+        text-align: center;
+      }
+
+      .help-hub-form__error[hidden] {
+        display: none;
+      }
+
       @media (max-width: 768px) {
         .help-hub-request-card {
           padding: 1.2rem 1.05rem 1.45rem;
@@ -1032,22 +1046,16 @@ const allData = videos.flatMap(video =>
     </script>
 
   <script>
-    const form = document.querySelector(".help-hub-form");
+    import { wireContactFormSubmit } from "../scripts/contactFormSubmit";
 
-    if (form) {
-      form.addEventListener("submit", function (e) {
-        const emailInput = form.querySelector("#email");
-        const email =
-          emailInput instanceof HTMLInputElement ? emailInput.value : "";
-
-        const pageUrl = form.querySelector("#helpHubFormPageUrl");
-        const submittedAt = form.querySelector("#helpHubFormSubmittedAt");
-        if (pageUrl instanceof HTMLInputElement) {
-          pageUrl.value = window.location.href;
-        }
-        if (submittedAt instanceof HTMLInputElement) {
-          submittedAt.value = new Date().toISOString();
-        }
+    const form = document.getElementById("video-help-question-form");
+    if (form instanceof HTMLFormElement) {
+      wireContactFormSubmit({
+        form,
+        submitBtn: document.getElementById("video-help-submit-btn") as HTMLButtonElement | null,
+        submitErrorEl: document.getElementById("video-help-submit-error"),
+        pageUrlInput: document.getElementById("helpHubFormPageUrl") as HTMLInputElement | null,
+        submittedAtInput: document.getElementById("helpHubFormSubmittedAt") as HTMLInputElement | null,
       });
     }
   </script>

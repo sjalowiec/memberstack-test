@@ -30,6 +30,9 @@ const { storageKey, scopeSelector = "#pattern-content" } = Astro.props;
     refreshPatternTipDismiss,
     updateTipsResetLinkVisibility,
   } from "../../lib/patterns/patternTipDismiss";
+  import { SLEEVELESS_PATTERN_TIPS_STORAGE_KEY } from "../../lib/patterns/patternReadingWorkflow";
+  import { scheduleReadingWorkflowSync } from "../../lib/patterns/patternReadingWorkflowSync";
+  import { getCurrentPattern } from "../../lib/patterns/patternStorage";
 
   function tipsPreferenceVisible(key: string) {
     const v = localStorage.getItem(key);
@@ -73,6 +76,13 @@ const { storageKey, scopeSelector = "#pattern-content" } = Astro.props;
       renderIntro(slotEl, newState);
       refreshPatternTipDismiss(scope, key);
       updateTipsResetLinkVisibility(scope, key);
+      if (key === SLEEVELESS_PATTERN_TIPS_STORAGE_KEY) {
+        try {
+          scheduleReadingWorkflowSync(getCurrentPattern().id);
+        } catch {
+          /* ignore */
+        }
+      }
     });
   });
 </script>

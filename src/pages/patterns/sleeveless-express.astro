@@ -1,9 +1,11 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import SleevelessPatternMemberGate from "../../components/patterns/SleevelessPatternMemberGate.astro";
 import GlossaryTooltip from "../../components/common/GlossaryTooltip.astro";
 import GaugeInput from "../../components/wizards/GaugeInput.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import PatternWorkspaceTabs from "../../components/patterns/PatternWorkspaceTabs.astro";
+import SleevelessExpressEditingBar from "../../components/patterns/SleevelessExpressEditingBar.astro";
 /* Wizard is @import'd first inside sleeveless-express-builder-cards.css so Express overrides always win cascade */
 import "../../styles/sleeveless-express-builder-cards.css";
 import "../../styles/sleeveless-express-wizard-layout.css";
@@ -29,6 +31,7 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
   title="Express Pattern | Sleeveless Sweater"
   description="Create a ready-to-knit sleeveless sweater pattern in guided steps."
 >
+  <SleevelessPatternMemberGate>
   <main class="express-page wizard-page sleeveless-express-page" data-express-page="sleeveless-express">
     <div id="express-pattern-top" class="wizard-container express-wizard scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
@@ -98,10 +101,10 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
             </div>
 
             <header class="pattern-header page-header">
-              
               <h1 class="pattern-title">Sleeveless Sweater</h1>
+              <SleevelessExpressEditingBar />
               <p class="pattern-subtext">
-                Create a ready-to-knit sweater pattern in a few guided steps.
+                Don't know your gauge yet? You can still explore the pattern. Use 16sts/24 rows for a mid-gauge sample, or 28sts/44 rows for a standard-gauge sample.<br>When you're ready to knit, come back and enter your actual swatch gauge.
               </p>
             </header>
 
@@ -109,7 +112,7 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
               <div class="express-builder-root" data-express-builder>
                 <div class="express-builder-toolbar no-print">
                   <button type="button" id="express-start-over-btn" class="btn btn-outline-secondary btn-sm">
-                    Start over
+                    Start a New Pattern
                   </button>
                 </div>
                 <div class="express-builder-units no-print">
@@ -309,11 +312,11 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
               >
                 <button
                   type="button"
-                  class="hat-length-picker__option is-selected"
+                  class="hat-length-picker__option"
                   data-choice
                   data-field="front"
                   data-value="closed"
-                  aria-pressed="true"
+                  aria-pressed="false"
                 >
                   <span class="express-front-card__img-wrap">
                     <img
@@ -591,18 +594,46 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
                     </button>
                   </div>
                 </div>
-                <div class="express-gauge-block">
-                  <GaugeInput
-                    id="express"
-                    showTitle={false}
-                    showGaugeSubLabel={false}
-                    showToggle={false}
-                    toggleId="sleeveless-fit"
-                    stitchLabelInches='Stitch gauge — stitches over 4"'
-                    stitchLabelCm="Stitch gauge — stitches over 10 cm"
-                    rowLabelInches='Row gauge — rows over 4"'
-                    rowLabelCm="Row gauge — rows over 10 cm"
-                  />
+                <div class="express-gauge-fields">
+                  <div class="express-gauge-pair">
+                    <GaugeInput
+                      id="express"
+                      flatRow={true}
+                      showTitle={false}
+                      showGaugeSubLabel={false}
+                      showToggle={false}
+                      toggleId="sleeveless-fit"
+                      stitchLabelInches='Stitch gauge — sts / 4"'
+                      stitchLabelCm="Stitch gauge — sts / 10 cm"
+                      rowLabelInches='Row gauge — rows / 4"'
+                      rowLabelCm="Row gauge — rows / 10 cm"
+                    />
+                  </div>
+                  <div class="express-needle-block">
+                    <div class="express-needle-label-row">
+                      <label for="express-available-needles" class="express-needle-label">
+                        Available needles
+                      </label>
+                    </div>
+                    <p class="express-needle-label">
+                      Used to check whether your pattern pieces will fit on your machine.
+                    </p>
+                    <div class="express-needle-input-group">
+                      <input
+                        type="number"
+                        id="express-available-needles"
+                        class="express-needle-input"
+                        name="availableNeedles"
+                        min="1"
+                        step="1"
+                        inputmode="numeric"
+                        value="150"
+                        required
+                        data-testid="input-express-available-needles"
+                      />
+                      <span class="express-needle-suffix" aria-hidden="true">needles</span>
+                    </div>
+                  </div>
                 </div>
               </form>
             </div>
@@ -621,17 +652,18 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
       </div>
     </div>
   </main>
+  </SleevelessPatternMemberGate>
 </Layout>
 
 <style>
   .express-gauge-intro-group {
-    margin: 0 0 1rem;
+    margin: 0 0 0.5rem;
   }
 
   .express-gauge-intro {
-    margin: 0 0 0.4rem;
-    font-size: 0.95rem;
-    line-height: 1.55;
+    margin: 0 0 0.25rem;
+    font-size: 0.92rem;
+    line-height: 1.45;
     color: var(--express-muted);
   }
 
@@ -691,8 +723,231 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
     border-radius: 2px;
   }
 
-  .express-gauge-block {
-    margin-bottom: 0.25rem;
+  /* GaugeInput lives in a child component — :global() so scoped styles reach it. */
+  .express-gauge-fields {
+    --express-gauge-field-h: 52px;
+    --express-gauge-divider-color: rgba(82, 104, 45, 0.58);
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin: 0;
+    width: 100%;
+  }
+
+  .express-gauge-pair {
+    max-width: 26rem;
+    width: 100%;
+  }
+
+  .express-gauge-pair :global(.gauge-input-wrapper) {
+    margin-bottom: 0;
+  }
+
+  .express-gauge-pair :global(.gauge-input-wrapper--flat) {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    flex-wrap: nowrap;
+    gap: 0.6rem;
+    width: 100%;
+  }
+
+  .express-gauge-pair :global(.gauge-input-wrapper--flat > .floating-input) {
+    flex: 1 1 0;
+    min-width: 7.5rem;
+    max-width: 12rem;
+    width: auto;
+  }
+
+  .express-gauge-pair :global(.gauge-input-wrapper--flat > .floating-input input) {
+    min-height: var(--express-gauge-field-h) !important;
+    height: var(--express-gauge-field-h);
+    padding: 1.25rem 0.55rem 0.5rem !important;
+    font-size: 1rem !important;
+    border-radius: 8px !important;
+  }
+
+  .express-gauge-pair :global(.gauge-input-wrapper--flat > .floating-input .floating-label) {
+    left: 0.55rem !important;
+    max-width: calc(100% - 0.65rem);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .express-gauge-pair :global(.gauge-divider) {
+    flex: 0 0 auto;
+    align-self: center;
+    margin: 0 0.15rem;
+    padding: 0 0.55rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--express-gauge-divider-color);
+    letter-spacing: 0.02em;
+  }
+
+  .express-needle-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    max-width: 14rem;
+  }
+
+  .express-needle-label-row {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 1.1rem;
+  }
+
+  .express-needle-label {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: #6b7280;
+  }
+
+  .express-needle-input-group {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    min-height: var(--express-gauge-field-h);
+    height: var(--express-gauge-field-h);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #e5e7eb;
+    background: #fff;
+    box-sizing: border-box;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+
+  .express-needle-input-group:focus-within {
+    border-color: var(--kbm-green, #52682d) !important;
+    box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.1) !important;
+  }
+
+  .express-needle-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: none;
+    padding: 0 0.5rem;
+    font-family: inherit;
+    font-size: 1rem !important;
+    font-weight: 600;
+    color: #374151;
+    background: transparent;
+    -moz-appearance: textfield;
+    box-sizing: border-box;
+  }
+
+  .express-needle-input::-webkit-outer-spin-button,
+  .express-needle-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .express-needle-input:focus {
+    outline: none;
+  }
+
+  .express-needle-suffix {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    align-self: stretch;
+    padding: 0 0.75rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #4b5563;
+    background: #fff;
+    border-left: 2px solid #e5e7eb;
+  }
+
+  @media (max-width: 640px) {
+    .express-gauge-fields {
+      --express-gauge-field-h: 58px;
+      gap: 0.85rem;
+    }
+
+    .express-gauge-pair {
+      max-width: none;
+      width: 100%;
+    }
+
+    /* Stack: stitch → × → row (full-width rows; override GaugeInput flex-wrap: wrap) */
+    .express-gauge-pair :global(.gauge-input-wrapper--flat) {
+      flex-direction: column !important;
+      flex-wrap: nowrap !important;
+      align-items: stretch !important;
+      gap: 0.3rem;
+      width: 100%;
+    }
+
+    .express-gauge-pair :global(.gauge-input-wrapper--flat > .floating-input) {
+      flex: none !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: none !important;
+    }
+
+    .express-gauge-pair :global(.gauge-input-wrapper--flat > .floating-input input) {
+      min-height: var(--express-gauge-field-h) !important;
+      height: var(--express-gauge-field-h) !important;
+      padding: 1.4rem 0.75rem 0.65rem !important;
+      font-size: 1.125rem !important;
+    }
+
+    .express-gauge-pair :global(.gauge-input-wrapper--flat > .floating-input .floating-label) {
+      left: 0.75rem !important;
+      max-width: calc(100% - 1rem) !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+      white-space: nowrap !important;
+    }
+
+    .express-gauge-pair :global(.gauge-divider) {
+      flex: none !important;
+      align-self: center !important;
+      width: 100%;
+      margin: 0;
+      padding: 0.15rem 0;
+      font-size: 2.75rem;
+      font-weight: 700;
+      line-height: 1;
+      text-align: center;
+      color: var(--express-gauge-divider-color);
+    }
+
+    .express-needle-block {
+      max-width: none;
+      width: 100%;
+      gap: 0.45rem;
+    }
+
+    .express-needle-label {
+      font-size: 0.8125rem;
+    }
+
+    .express-needle-input-group {
+      max-width: none;
+      width: 100%;
+      min-height: var(--express-gauge-field-h);
+      height: var(--express-gauge-field-h);
+    }
+
+    .express-needle-input {
+      padding: 0 0.75rem;
+      font-size: 1.125rem !important;
+      min-height: var(--express-gauge-field-h);
+    }
+
+    .express-needle-suffix {
+      padding: 0 0.95rem;
+      font-size: 0.95rem;
+    }
   }
 
   .sg-tab-share__intro {

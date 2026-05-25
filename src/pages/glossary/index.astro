@@ -226,6 +226,7 @@ const glossaryJson = JSON.stringify(
         modalBody.innerHTML = "<p>Loading...</p>";
         if (modalTitleEl) modalTitleEl.textContent = "";
         if (closeBtn) closeBtn.focus();
+        window.__kbmOpenGlossaryTermModal = openTermModal;
         fetch("/glossary/modal/" + slug + "/")
           .then(function (res) { return res.text(); })
           .then(function (html) {
@@ -242,6 +243,9 @@ const glossaryJson = JSON.stringify(
               img.style.maxWidth = "100%";
               img.style.height = "auto";
             });
+            if (typeof window.__kbmHydrateGlossaryTooltips === "function") {
+              window.__kbmHydrateGlossaryTooltips(modalBody);
+            }
           })
           .catch(function () {
             modalBody.innerHTML = "<p>Error loading entry.</p>";
@@ -1026,5 +1030,40 @@ const glossaryJson = JSON.stringify(
       max-width: 100% !important;
       height: auto !important;
     }
+
+    .glossaryModal .glossaryModal__body .glossary-entry-helpinfo a[data-glossary-id] {
+      color: var(--kbm-green, #52682d);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 0.12em;
+    }
+
+    .glossaryModal .glossaryModal__body .glossary-entry-helpinfo .glossary-tooltip-wrap {
+      display: inline;
+    }
+
+    .glossaryModal .glossaryModal__body .glossary-entry-helpinfo .glossary-tooltip-trigger {
+      display: inline;
+      padding: 0;
+      margin: 0;
+      border: 0;
+      background: none;
+      font: inherit;
+      font-weight: 600;
+      color: var(--kbm-green, #52682d);
+      text-decoration: underline;
+      text-underline-offset: 0.12em;
+      cursor: pointer;
+    }
+
+    .glossaryModal .glossaryModal__body .glossary-entry-helpinfo .glossary-tooltip-icon {
+      display: none;
+    }
   </style>
+
+  <script>
+    import { hydrateGlossaryTooltipPlaceholders } from "../../lib/glossary/glossaryTooltipHydrate.ts";
+
+  window.__kbmHydrateGlossaryTooltips = hydrateGlossaryTooltipPlaceholders;
+  </script>
 </Layout>

@@ -12,6 +12,7 @@ import {
   type SleevelessBodyBlockPlan,
 } from "./bodyBlock/sleevelessBodyBlock";
 import { isCustomBuildPatternMode } from "./customBuildEffectiveArmholeDepth";
+import { buildGlossaryTooltipPlaceholderHtml } from "../glossary/glossaryTooltipPrint";
 
 function section(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
@@ -229,11 +230,23 @@ export type ComputeSleevelessAlineBodyShapingArgs = {
   hemRows: number;
 };
 
-const DECREASE_GLOSSARY_TOOLTIP_HTML =
-  '<span class="glossary-tooltip-placeholder" data-glossary-id="178" data-term="Decrease">Decrease</span>';
+function glossaryPlaceholderAttrEscape(s: string): string {
+  return String(s).replace(/"/g, "&quot;");
+}
 
-const INCREASE_GLOSSARY_TOOLTIP_HTML =
-  '<span class="glossary-tooltip-placeholder" data-glossary-id="186" data-term="Increase">Increase</span>';
+const DECREASE_GLOSSARY_TOOLTIP_HTML = buildGlossaryTooltipPlaceholderHtml(
+  178,
+  "Decrease",
+  glossaryPlaceholderAttrEscape,
+  (s) => s,
+);
+
+const INCREASE_GLOSSARY_TOOLTIP_HTML = buildGlossaryTooltipPlaceholderHtml(
+  186,
+  "Increase",
+  glossaryPlaceholderAttrEscape,
+  (s) => s,
+);
 
 /** First body-shaping instruction line: glossary tooltip on “Decrease” (id 178). */
 function withDecreaseGlossaryTooltip(line: string): string {

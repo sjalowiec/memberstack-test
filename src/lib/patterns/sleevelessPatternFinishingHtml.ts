@@ -8,7 +8,6 @@ import {
 export type SleevelessFinishingHtmlDeps = {
   escapeHtml: (s: string) => string;
   glossaryTooltip: (id: number, term: string) => string;
-  oneShoulderFinishingHelpHtml: () => string;
   neckFinishingVideoKey: string;
   neckFinishingButtonLabel: string;
   neckFinishingLeadHtml: string;
@@ -33,7 +32,7 @@ function stepSection(
 
 function blockPiecesBody(deps: SleevelessFinishingHtmlDeps): string {
   return `<ul>
-      <li>Lightly steam or ${deps.glossaryTooltip(659, "Wet Block")} pieces to measurements.</li>
+      <li>Lightly steam your pieces to measurements.</li>
       <li>Allow pieces to dry completely before assembly.</li>
       <li>Pin edges flat if needed.</li>
     </ul>
@@ -41,7 +40,7 @@ function blockPiecesBody(deps: SleevelessFinishingHtmlDeps): string {
 }
 
 function joinShouldersBody(deps: SleevelessFinishingHtmlDeps): string {
-  return `<p class="pattern-finishing-lead">Join ${deps.oneShoulderFinishingHelpHtml()} using your preferred method.</p>
+  return `<p class="pattern-finishing-lead">Join one shoulder using your preferred method.</p>
     <ul>
       <li>${deps.glossaryTooltip(745, "Linker")}</li>
       <li>crochet slip stitch</li>
@@ -73,14 +72,13 @@ function finishFrontEdgesPickupBody(
     pickupSts !== undefined && Number.isFinite(pickupSts) && pickupSts > 0
       ? String(Math.round(pickupSts))
       : "the calculated number of";
-  const turningRow = deps.glossaryTooltip(324, "turning row");
   return `<ul>
       <li>Pick up approximately ${xx} stitches evenly along one front edge, beginning at the hem and ending at the neckline.</li>
       <li>Knit the first side of the band.</li>
-      <li>Knit 1 ${turningRow}.</li>
+      <li>Knit 1 turning row.</li>
       <li>Knit the second side of the band.</li>
       <li>Bind off loosely.</li>
-      <li>Fold the band on the ${turningRow} and stitch it down.</li>
+      <li>Fold the band on the turning row and stitch it down.</li>
       <li>Repeat for the opposite front edge, adding buttonholes if desired.</li>
     </ul>`;
 }

@@ -21,6 +21,7 @@ import { setPatternTabsReadiness } from "../lib/patterns/patternTabsClient.ts";
 import {
   centerBindOffStitchesFromNeckShoulderChart,
   generateSleevelessBackPattern,
+  patternTipWrapperHtml,
 } from "../lib/patterns/sleevelessPatternOutput.ts";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
@@ -28,9 +29,13 @@ import {
   renderNeckShoulderShapingChartTableOnlyHtml,
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
 import { initChartProgressTracking } from "./chartProgressTracker.ts";
+import { scheduleReadingWorkflowSync } from "../lib/patterns/patternReadingWorkflowSync.ts";
 import { showResults, initializeActionBar } from "../components/wizards/utils/wizardBehavior.ts";
 import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
+import { buildGlossaryTooltipPlaceholderHtml } from "../lib/glossary/glossaryTooltipPrint.ts";
+import { buildPatternHelpCardInnerHtml } from "../lib/patterns/patternHelpCard.ts";
+import { buildShapingNotationChartHelpHtml } from "../lib/glossary/shapingNotationGlossary.ts";
 import {
   isSleevelessCardiganHalfFrontDiagramType,
   isSleevelessCardiganGarmentStyle,
@@ -68,6 +73,10 @@ import {
 import { sleevelessFinishingFromPattern } from "../lib/patterns/sleevelessPatternFinishing.ts";
 import { buildSleevelessFinishingStepsHtml } from "../lib/patterns/sleevelessPatternFinishingHtml.ts";
 import { scrollToBuilderSection } from "../lib/patterns/scrollToBuilderSection.ts";
+import {
+  buildExpressNeedleHardStopHtml,
+  evaluateExpressNeedleFailSafeBeforeRender,
+} from "../lib/patterns/sleevelessExpressAvailableNeedles.ts";
 import {
   ARMHOLE_BIND_OFF_TRICK_CONTENT_ID,
   type SleevelessBackPatternDebug,
@@ -445,13 +454,22 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="shallowBackNeck" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Short row shoulder shaping</button>
 </div>`;
     const necklineTipLead = `<p>Many knitters prefer to use ${glossaryTooltip(250, "Short Rows")} to shape shoulders because they create a smoother edge and help prevent ${glossaryTooltip(902, "stair steps")} caused by bind-offs.</p>`;
-    return `${intro}
-<details class="pattern-tip sleeveless-shaping-help-toggle no-print" data-tip-id="sleeveless-neckline-machine-help">
-  <summary>New to shaping necklines on the machine?</summary>
-  ${necklineTipLead}
-  <p class="sleeveless-neckline-tip__short-rows-prompt">New to ${glossaryTooltip(250, "Short Rows")}?</p>
-  ${necklineTipVideoButtons}
-</details>`;
+    const necklineMachineHelpBody =
+      `${necklineTipLead}` +
+      `<p class="sleeveless-neckline-tip__short-rows-prompt">New to ${glossaryTooltip(250, "Short Rows")}?</p>` +
+      necklineTipVideoButtons;
+    const necklineMachineHelpCard = patternTipWrapperHtml({
+      tipHtml: buildPatternHelpCardInnerHtml({
+        title: "New to shaping necklines on the machine?",
+        bodyHtml: necklineMachineHelpBody,
+        icon: false,
+      }),
+      tipHtmlIsFull: true,
+      tipPresentation: "help-card",
+      tipId: "sleeveless-neckline-machine-help",
+      tipWrapperClass: "no-print",
+    });
+    return `${intro}\n${necklineMachineHelpCard}`;
   }
 
   /**
@@ -538,15 +556,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         }
       }
       if (row.tipHtml) {
-        const tipIdAttr = row.tipId ? ` data-tip-id="${escapeHtml(row.tipId)}"` : "";
-        leftBits.push(
-          row.tipHtmlIsFull
-            ? `<div class="pattern-tip" data-tip${tipIdAttr}>${row.tipHtml}</div>`
-            : `<div class="pattern-tip" data-tip${tipIdAttr}><strong>Tip:</strong> ${row.tipHtml}</div>`,
-        );
-      }
-      if (row.collapsibleTipHtml) {
-        leftBits.push(row.collapsibleTipHtml);
+        leftBits.push(patternTipWrapperHtml(row));
       }
       const leftHtml = `<div class="sleeveless-pattern-left">${leftBits.join("")}</div>`;
       const rightHtml = showStitch
@@ -663,6 +673,12 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     const diagramEnlargeBtnHtml = `<button type="button" class="sleeveless-piece-split__diagram-enlarge-btn no-print" data-sleeveless-diagram-enlarge aria-label="Enlarge diagram">
         <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
       </button>`;
+    const shapingNotationHelpHtml = garmentModeToggle
+      ? buildShapingNotationChartHelpHtml(
+          escapeGlossaryPlaceholderAttr,
+          escapeGlossaryPlaceholderText,
+        )
+      : "";
     const diagramCardHtml = `<div class="sleeveless-piece-split__diagram-card">
         ${diagramEnlargeBtnHtml}
         ${diagramTriggerHtml}
@@ -671,6 +687,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       ? `<div class="sleeveless-back-diagram-panel">
       ${modeToggleHtml}
       <div class="sleeveless-back-diagram-well">
+        ${shapingNotationHelpHtml}
         ${diagramCardHtml}
       </div>
     </div>`
@@ -829,6 +846,17 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     return mode === "shaping-notation" ? FRONT_DIAGRAM_NOTATION_ALT : FRONT_DIAGRAM_STS_ROWS_ALT;
   }
 
+  function updateShapingNotationHelpVisibility(section, mode) {
+    if (!section) return;
+    const help = section.querySelector("[data-sleeveless-shaping-notation-help]");
+    if (!(help instanceof HTMLElement)) return;
+    const show = mode === "shaping-notation";
+    help.hidden = !show;
+    if (show) {
+      hydrateGlossaryTooltipPlaceholders(help);
+    }
+  }
+
   function updateBackDiagramModeUi(root, mode) {
     if (!root) return;
     const backSection = root.querySelector("#sg-back");
@@ -844,6 +872,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     if (trigger instanceof HTMLElement) {
       trigger.setAttribute("aria-label", `Open larger diagram: ${backDiagramAltForMode(mode)}`);
     }
+    updateShapingNotationHelpVisibility(backSection, mode);
   }
 
   function updateFrontDiagramModeUi(root, mode) {
@@ -861,6 +890,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     if (trigger instanceof HTMLElement) {
       trigger.setAttribute("aria-label", `Open larger diagram: ${frontDiagramAltForMode(mode)}`);
     }
+    updateShapingNotationHelpVisibility(frontSection, mode);
   }
 
   async function inlineBackJapaneseNotationSvg(hostEl, result, patternData, hydrateGeneration) {
@@ -2101,6 +2131,11 @@ table {
     } catch {
       /* quota */
     }
+    try {
+      scheduleReadingWorkflowSync(getCurrentPattern().id);
+    } catch {
+      /* ignore */
+    }
   }
 
   function scrollPatternSectionHeader(section) {
@@ -2158,15 +2193,12 @@ table {
   /** One-line glossary term in finishing HTML; hydrated after mount to match GlossaryTooltip.astro. */
   function glossaryTooltip(id, term) {
     const t = String(term ?? "");
-    return `<span class="glossary-tooltip-placeholder" data-glossary-id="${id}" data-term="${escapeGlossaryPlaceholderAttr(t)}">${escapeGlossaryPlaceholderText(t)}</span>`;
-  }
-
-  /** Inline help on “one shoulder” in finishing (not glossary); uses global `.kbm-tooltip` styles. */
-  function oneShoulderFinishingHelpHtml() {
-    const tip =
-      "One shoulder is joined first so the neckband can be worked in one continuous piece around the neckline. The second shoulder is joined after the neckband is finished.";
-    const escapedTip = escapeGlossaryPlaceholderAttr(tip);
-    return `<span class="kbm-tooltip" tabindex="0" title="${escapedTip}" aria-label="${escapedTip}" data-tooltip="${escapedTip}">one shoulder</span>`;
+    return buildGlossaryTooltipPlaceholderHtml(
+      id,
+      t,
+      escapeGlossaryPlaceholderAttr,
+      escapeGlossaryPlaceholderText,
+    );
   }
 
   function buildFinishingHtml(patternMergedForNeckline, patternDebug) {
@@ -2198,7 +2230,6 @@ table {
       deps: {
         escapeHtml,
         glossaryTooltip,
-        oneShoulderFinishingHelpHtml,
         neckFinishingVideoKey,
         neckFinishingButtonLabel,
         neckFinishingLeadHtml,
@@ -2332,9 +2363,51 @@ table {
   let sleevelessPatternRefreshInFlight = false;
   let sleevelessPatternRefreshQueued = false;
 
+  function logExpressNeedleFailSafeDev(failSafe) {
+    if (typeof import.meta !== "undefined" && import.meta.env?.DEV) {
+      console.log("[express needles fail-safe]", {
+        ran: failSafe.ran,
+        active: failSafe.active,
+        shouldBlockRender: failSafe.shouldBlockRender,
+        skipReason: failSafe.skipReason,
+        activeReason: failSafe.activeReason,
+        availableNeedles: failSafe.availableNeedles,
+        availableSource: failSafe.availableSource,
+        requiredNeedles: failSafe.requiredNeedles,
+        requiredSource: failSafe.requiredSource,
+        validation: failSafe.validation,
+      });
+    }
+  }
+
+  /** Final gate before pattern HTML is built. Returns true when instructions must not render. */
+  function tryExpressNeedleFailSafeBlock(result, patternMerged, generatorPatternData) {
+    const patternData = getPatternData();
+    const canonStyle =
+      getCurrentPattern().style && typeof getCurrentPattern().style === "object"
+        ? /** @type {Record<string, unknown>} */ (getCurrentPattern().style)
+        : {};
+    const failSafe = evaluateExpressNeedleFailSafeBeforeRender(result, {
+      patternData,
+      patternMerged,
+      canonicalStyle: canonStyle,
+      generatorPatternData,
+    });
+    logExpressNeedleFailSafeDev(failSafe);
+    if (failSafe.shouldBlockRender) {
+      renderExpressNeedleHardStop(failSafe.validation);
+      return true;
+    }
+    return false;
+  }
+
   async function renderMount(patternMerged, result, unit, generatorPatternData) {
     const mount = document.querySelector("[data-sleeveless-mount]");
     if (!mount) return;
+
+    if (tryExpressNeedleFailSafeBlock(result, patternMerged, generatorPatternData)) {
+      return;
+    }
 
     const renderSeq = ++sleevelessRenderMountSeq;
 
@@ -2441,14 +2514,18 @@ table {
     const backArmholeLocalChartStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
       ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC))
       : 0;
-    const frontArmholeLocalChartStartRc = Number.isFinite(result?.debug?.frontNecklineStartLocalRC)
-      ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC))
-      : 0;
+    const frontArmholeLocalChartStartRc = Number.isFinite(result?.debug?.frontNecklineShapingBeginLocalRC)
+      ? Math.max(0, Math.floor(result.debug.frontNecklineShapingBeginLocalRC))
+      : Number.isFinite(result?.debug?.frontNecklineStartLocalRC)
+        ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC))
+        : 0;
 
     const armholeGarmentStartRc = result?.debug?.armholeStartRow;
+    const backChecklistOptions = { includeCenterNecklineSetupRow: true as const };
     const backActiveSideRcStart = armholeLocalRcActiveShoulderChecklistStart(
       result.neckShoulderShapingChart,
       armholeGarmentStartRc,
+      backChecklistOptions,
     );
     const frontActiveSideRcStart = armholeLocalRcActiveShoulderChecklistStart(
       result.frontNeckShoulderShapingChart,
@@ -2462,7 +2539,7 @@ table {
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
         neckShoulderChartHelpRowHtml(`RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`, result?.neckShoulderShapingChart, "back"),
-        { activeSideOnly: true, activeSideRcStart: backActiveSideRcStart }
+        { activeSideOnly: true, activeSideRcStart: backActiveSideRcStart, includeCenterNecklineSetupRow: true }
       );
     }
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
@@ -2489,7 +2566,7 @@ table {
           result?.neckShoulderShapingChart,
           "back"
         ),
-        options: { activeSideOnly: true, activeSideRcStart: backActiveSideRcStart },
+        options: { activeSideOnly: true, activeSideRcStart: backActiveSideRcStart, includeCenterNecklineSetupRow: true },
       },
       front: {
         chart: result.frontNeckShoulderShapingChart,
@@ -2579,6 +2656,22 @@ table {
     body.innerHTML = buildSleevelessPrintBasicsSummaryDlHtml(patternMerged, patternData);
   }
 
+  function renderExpressNeedleHardStop(needleCheck) {
+    const mount = document.querySelector("[data-sleeveless-mount]");
+    if (mount) {
+      mount.innerHTML = buildExpressNeedleHardStopHtml(needleCheck);
+    }
+    if (resultsVisibilityConfig.actionBarSelector) {
+      const actionBar = document.querySelector(resultsVisibilityConfig.actionBarSelector);
+      if (actionBar instanceof HTMLElement) actionBar.style.display = "none";
+    }
+    if (resultsVisibilityConfig.printFooterSelector) {
+      const printFooter = document.querySelector(resultsVisibilityConfig.printFooterSelector);
+      if (printFooter instanceof HTMLElement) printFooter.style.display = "none";
+    }
+    syncSleevelessPatternInpageNav();
+  }
+
   async function refreshPatternTabContent() {
     if (sleevelessPatternRefreshInFlight) {
       sleevelessPatternRefreshQueued = true;
@@ -2609,11 +2702,11 @@ table {
       return;
     }
 
-    setPatternTabsReadiness(tabsRoot, true);
-    showResults(resultsVisibilityConfig);
-
     const genInput = buildGeneratorPatternData(patternMerged);
     const result = generateSleevelessBackPattern(genInput);
+
+    setPatternTabsReadiness(tabsRoot, true);
+    showResults(resultsVisibilityConfig);
 
     const yg = section(patternMerged.yarnGauge);
     const ygm =
@@ -2621,6 +2714,11 @@ table {
         ? section(patternData.yarnGaugeMachine)
         : {};
     const unit = (ygm && ygm.gaugeRawUnit === "cm") || (yg && yg.gaugeRawUnit === "cm") ? "cm" : "in";
+
+    if (tryExpressNeedleFailSafeBlock(result, patternMerged, genInput)) {
+      updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, false);
+      return;
+    }
 
     updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, true);
 

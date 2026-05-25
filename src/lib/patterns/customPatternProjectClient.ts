@@ -16,14 +16,17 @@ import type {
   CustomPatternProject,
   CustomPatternProjectSource,
   CustomPatternProjectSummary,
+  PatternReadingWorkflowState,
   SaveCustomPatternProjectRequest,
   UpdateCustomPatternProjectRequest,
 } from "./customPatternProjectTypes";
+import { applySleevelessReadingWorkflow } from "./patternReadingWorkflow";
 import {
   authHeadersForCustomPatternProjects,
   resolveCustomPatternProjectAuth,
   type CustomPatternProjectAuthMode,
 } from "./customPatternProjectAuth";
+import { perfEnd, perfStart } from "./savedPatternsPerfLog";
 
 const FN_BASE = "/.netlify/functions";
 
@@ -34,6 +37,7 @@ async function projectFetch<T>(
   path: string,
   init: RequestInit,
 ): Promise<(ApiOk<T> & T) | ApiErr> {
+  const requestStart = perfStart();
   const auth = await resolveCustomPatternProjectAuth();
   const headers = {
     "Content-Type": "application/json",
@@ -42,27 +46,44 @@ async function projectFetch<T>(
   };
 
   if (auth.mode === "none") {
+    perfEnd(`3-saved-patterns-request ${path} (auth blocked)`, requestStart, { authMode: auth.mode });
     return {
       ok: false,
       error: "Sign in to save Custom Pattern projects.",
     };
   }
 
+  const fetchStart = perfStart();
   const res = await fetch(`${FN_BASE}/${path}`, { ...init, headers });
+  perfEnd(`3-saved-patterns-fetch ${path}`, fetchStart, {
+    status: res.status,
+    authMode: auth.mode,
+  });
+
   let data: unknown;
+  const parseStart = perfStart();
   try {
     data = await res.json();
   } catch {
+    perfEnd(`4-response-json-parse ${path} (failed)`, parseStart, { status: res.status });
+    perfEnd(`3-saved-patterns-request ${path} total`, requestStart, { ok: false });
     return { ok: false, error: `Request failed (${res.status}).` };
   }
+  perfEnd(`4-response-json-parse ${path}`, parseStart, {
+    status: res.status,
+    bodyType: data === null ? "null" : typeof data,
+  });
 
   if (!data || typeof data !== "object") {
+    perfEnd(`3-saved-patterns-request ${path} total`, requestStart, { ok: false });
     return { ok: false, error: `Request failed (${res.status}).` };
   }
   const body = data as Record<string, unknown>;
   if (!body.ok) {
+    perfEnd(`3-saved-patterns-request ${path} total`, requestStart, { ok: false });
     return { ok: false, error: typeof body.error === "string" ? body.error : "Request failed." };
   }
+  perfEnd(`3-saved-patterns-request ${path} total`, requestStart, { ok: true, authMode: auth.mode });
   return body as ApiOk<T> & T;
 }
 
@@ -129,6 +150,23 @@ export async function updateCustomPatternProject(
   return { ok: true, project: res.project, authMode: res.authMode };
 }
 
+/** Persist My Pattern reading workflow only (tips, chart progress, section collapse). */
+export async function patchCustomPatternProjectReadingWorkflow(
+  id: string,
+  readingWorkflow: PatternReadingWorkflowState,
+  family: CustomPatternFamily = "sleeveless",
+): Promise<
+  | { ok: true; project: CustomPatternProject; authMode?: CustomPatternProjectAuthMode }
+  | { ok: false; error: string }
+> {
+  const res = await projectFetch<{ project: CustomPatternProject }>("custom-pattern-project-update", {
+    method: "PUT",
+    body: JSON.stringify({ id, family, workflowOnly: true, readingWorkflow }),
+  });
+  if (!res.ok) return res;
+  return { ok: true, project: res.project, authMode: res.authMode };
+}
+
 export async function loadCustomPatternProject(
   id: string,
   family: CustomPatternFamily = "sleeveless",
@@ -160,9 +198,17 @@ export async function listCustomPatternProjects(
   return { ok: true, projects: res.projects ?? [], authMode: res.authMode };
 }
 
+function patternSectionRecord(section: unknown): Record<string, unknown> {
+  return section && typeof section === "object" && !Array.isArray(section)
+    ? (section as Record<string, unknown>)
+    : {};
+}
+
 /**
  * Copies a saved project into the working draft (`kbm_current_pattern` + `patternBuilderData` mirrors).
  * Does not change Express routes or pattern math — only restores stored sections.
+ *
+ * Does not prefill the Express wizard — use Change Pattern Choices for that.
  */
 export function loadProjectIntoWorkingDraft(project: CustomPatternProject): SleevelessPatternRecord {
   const pattern = project.pattern;
@@ -173,13 +219,13 @@ export function loadProjectIntoWorkingDraft(project: CustomPatternProject): Slee
         ? pattern.patternProject.notes
         : "";
   saveCurrentPattern({
-    style: pattern.style,
-    fit: pattern.fit,
-    yarnGauge: pattern.yarnGauge,
-    measurements: pattern.measurements,
-    machine: pattern.machine,
-    calculations: pattern.calculations,
-    instructions: pattern.instructions,
+    style: patternSectionRecord(pattern.style),
+    fit: patternSectionRecord(pattern.fit),
+    yarnGauge: patternSectionRecord(pattern.yarnGauge),
+    measurements: patternSectionRecord(pattern.measurements),
+    machine: patternSectionRecord(pattern.machine),
+    calculations: patternSectionRecord(pattern.calculations),
+    instructions: patternSectionRecord(pattern.instructions),
     version: pattern.version,
     patternProject: {
       title: project.name,
@@ -187,10 +233,15 @@ export function loadProjectIntoWorkingDraft(project: CustomPatternProject): Slee
       titleCustomized: true,
     },
   });
-  savePatternData("style", pattern.style);
-  savePatternData("fit", pattern.fit);
-  savePatternData("yarnGauge", pattern.yarnGauge);
-  savePatternData("measurements", pattern.measurements);
-  savePatternData("machine", pattern.machine);
+  savePatternData("style", patternSectionRecord(pattern.style));
+  savePatternData("fit", patternSectionRecord(pattern.fit));
+  savePatternData("yarnGauge", patternSectionRecord(pattern.yarnGauge));
+  savePatternData("measurements", patternSectionRecord(pattern.measurements));
+  savePatternData("machine", patternSectionRecord(pattern.machine));
+  try {
+    applySleevelessReadingWorkflow(project.readingWorkflow, pattern.id);
+  } catch (error) {
+    console.error("[kbm] Reading workflow restore failed; continuing.", error);
+  }
   return getCurrentPattern();
 }

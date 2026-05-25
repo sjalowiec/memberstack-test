@@ -39,6 +39,7 @@ import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTool
 import { buildSleevelessPrintBasicsSummaryDlHtml } from "../lib/patterns/sleevelessPrintBasicsSummaryHtml.ts";
 import { sleevelessFinishingFromPattern } from "../lib/patterns/sleevelessPatternFinishing.ts";
 import { buildSleevelessFinishingPrintListHtml } from "../lib/patterns/sleevelessPatternFinishingHtml.ts";
+import { SLEEVELESS_PATTERN_PRINT_NOTICE_HTML } from "../lib/patterns/sleevelessPatternPrintNoticeHtml.ts";
 import {
   hydratePatternPrintPersonalizationSlotsFromSession,
   triggerPatternPrint,
@@ -189,16 +190,20 @@ async function initSleevelessPrintPage(): Promise<void> {
   const backLocalStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
     ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC ?? 0))
     : 0;
-  const frontLocalStartRc = Number.isFinite(result?.debug?.frontNecklineStartLocalRC)
-    ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC ?? 0))
-    : 0;
+  const frontLocalStartRc = Number.isFinite(result?.debug?.frontNecklineShapingBeginLocalRC)
+    ? Math.max(0, Math.floor(result.debug.frontNecklineShapingBeginLocalRC ?? 0))
+    : Number.isFinite(result?.debug?.frontNecklineStartLocalRC)
+      ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC ?? 0))
+      : 0;
   const backLocalStartLabel = `RC:${String(backLocalStartRc).padStart(3, "0")}`;
   const frontLocalStartLabel = `RC:${String(frontLocalStartRc).padStart(3, "0")}`;
 
   const armholeGarmentStart = result?.debug?.armholeStartRow;
+  const backChecklistOptions = { includeCenterNecklineSetupRow: true as const };
   const backChecklistArmholeStart = armholeLocalRcActiveShoulderChecklistStart(
     result.neckShoulderShapingChart,
     armholeGarmentStart,
+    backChecklistOptions,
   );
   const frontChecklistArmholeStart = armholeLocalRcActiveShoulderChecklistStart(
     result.frontNeckShoulderShapingChart,
@@ -217,6 +222,7 @@ async function initSleevelessPrintPage(): Promise<void> {
     }),
     {
       activeSideRcStart: backChecklistArmholeStart,
+      includeCenterNecklineSetupRow: true,
     },
   );
   const frontChartHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
@@ -281,6 +287,7 @@ async function initSleevelessPrintPage(): Promise<void> {
 
   root.innerHTML = `
 <div class="print-doc-inner">
+  ${SLEEVELESS_PATTERN_PRINT_NOTICE_HTML}
   <section class="print-page-first" aria-label="Pattern overview and start of back">
     <header class="print-doc-header">
       <div class="print-doc-header-brand">

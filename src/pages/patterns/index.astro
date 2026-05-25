@@ -1,11 +1,23 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import PatternsFeaturesSection from '../../components/patterns/PatternsFeaturesSection.astro';
+import { buildSleevelessExpressNewPatternHref } from '../../lib/patterns/patternStorage';
+
+const startNewPatternHref = buildSleevelessExpressNewPatternHref();
 ---
 
 <Layout title="Patterns Catalog">
 
     <div class="patterns-page">
+
+        <nav class="patterns-action-bar" aria-label="Pattern workspace actions">
+          <a href={startNewPatternHref} class="patterns-action-bar__btn kbm-btn kbm-btn-accent">
+            Start a New Pattern
+          </a>
+          <a href="/account#my-patterns" class="patterns-action-bar__btn kbm-btn kbm-btn-outline">
+            My Patterns
+          </a>
+        </nav>
 
         <!-- Sleeveless pattern hero -->
         <section class="patterns-hero" aria-labelledby="patterns-hero-heading">
@@ -15,21 +27,6 @@ import PatternsFeaturesSection from '../../components/patterns/PatternsFeaturesS
               <p class="patterns-hero__intro">
                 The ultimate pattern generator for modern machine knitters. Easily map out your favorite silhouettes, unlock automated shaping math, and create knit-ready sweater patterns in just a few guided steps.
               </p>
-              <div class="patterns-hero__actions">
-                <a href="/patterns/sleeveless-express" class="kbm-btn kbm-btn-accent">Start a Sleeveless Pattern</a>
-                <a href="#pattern-features" class="kbm-btn kbm-btn-outline patterns-features-jump">
-                  <img
-                    class="patterns-pinwheel"
-                    src="/images/KINlogo.svg"
-                    alt=""
-                    width="22"
-                    height="22"
-                    decoding="async"
-                    aria-hidden="true"
-                  />
-                  <span>Explore the Pattern Features</span>
-                </a>
-              </div>
             </div>
             <div class="patterns-hero__media">
               <img
@@ -132,9 +129,29 @@ import PatternsFeaturesSection from '../../components/patterns/PatternsFeaturesS
   padding: 20px;
 }
 
+.patterns-action-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 0 0 20px;
+}
+
+.patterns-action-bar__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.25rem;
+  padding: 0.85rem 1.25rem;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+
 /* Hero — sleeveless pattern experience */
 .patterns-hero {
-  margin: 8px 0 12px;
+  margin: 0 0 12px;
   padding: 32px 36px;
   border-radius: 12px;
   background: linear-gradient(135deg, #f9f9f6 0%, #fff 55%);
@@ -162,23 +179,12 @@ import PatternsFeaturesSection from '../../components/patterns/PatternsFeaturesS
 }
 
 .patterns-hero__intro {
-  margin: 0 0 22px;
+  margin: 0;
   font-size: 1.02rem;
   font-weight: 500;
   line-height: 1.55;
   color: #333;
   max-width: 34rem;
-}
-
-.patterns-hero__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-}
-
-.patterns-hero__actions .kbm-btn {
-  margin: 0;
 }
 
 .patterns-hero__media {
@@ -201,26 +207,11 @@ import PatternsFeaturesSection from '../../components/patterns/PatternsFeaturesS
     0 2px 8px rgba(82, 104, 45, 0.12);
 }
 
-/* Pinwheel accent — ties Explore CTA to features heading */
-.patterns-pinwheel {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-  opacity: 0.58;
-  flex-shrink: 0;
-}
-
-.patterns-features-jump {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.patterns-features-jump .patterns-pinwheel {
-  margin-top: -1px;
-}
-
 @media (max-width: 720px) {
+  .patterns-action-bar {
+    grid-template-columns: 1fr;
+  }
+
   .patterns-hero {
     padding: 24px 20px;
   }
@@ -236,10 +227,6 @@ import PatternsFeaturesSection from '../../components/patterns/PatternsFeaturesS
 
   .patterns-hero__intro {
     max-width: none;
-  }
-
-  .patterns-hero__actions {
-    justify-content: center;
   }
 
   .patterns-hero__media {

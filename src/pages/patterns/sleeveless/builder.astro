@@ -1,5 +1,6 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
+import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
 import GlossaryTooltip from "../../../components/common/GlossaryTooltip.astro";
 import GaugeInput from "../../../components/wizards/GaugeInput.astro";
 import UnitToggle from "../../../components/wizards/UnitToggle.astro";
@@ -29,6 +30,7 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
   title="Sleeveless Pattern Builder"
   description="Create a ready-to-knit sleeveless sweater pattern in guided steps."
 >
+  <SleevelessPatternMemberGate>
   <main
     class="express-page wizard-page sleeveless-express-page sleeveless-unified-builder-page"
     data-express-page="sleeveless-builder"
@@ -625,6 +627,7 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
       </div>
     </div>
   </main>
+  </SleevelessPatternMemberGate>
 </Layout>
 
 <style>

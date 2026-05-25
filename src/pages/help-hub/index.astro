@@ -163,10 +163,11 @@ const fixCategories = [
         </p>
 
         <form
+          id="help-hub-question-form"
           name="help-hub-question"
           method="POST"
           action="/.netlify/functions/contact"
-          data-netlify="true"
+          enctype="multipart/form-data"
           netlify-honeypot="bot-field"
           class="help-hub-form"
         >
@@ -193,7 +194,9 @@ const fixCategories = [
             <label for="question" class="floating-label">What do you need help with?</label>
           </div>
 
-          <button type="submit" class="kbm-btn kbm-btn-primary help-hub-form__submit">
+          <p id="help-hub-submit-error" class="help-hub-form__error" hidden role="alert"></p>
+
+          <button type="submit" class="kbm-btn kbm-btn-primary help-hub-form__submit" id="help-hub-submit-btn">
             Send My Question
           </button>
         </form>
@@ -204,18 +207,16 @@ const fixCategories = [
   </section>
 
   <script>
-    const form = document.querySelector(".help-hub-form");
+    import { wireContactFormSubmit } from "../../scripts/contactFormSubmit";
 
-    if (form) {
-      form.addEventListener("submit", function (e) {
-        const pageUrl = form.querySelector("#helpHubFormPageUrl");
-        const submittedAt = form.querySelector("#helpHubFormSubmittedAt");
-        if (pageUrl instanceof HTMLInputElement) {
-          pageUrl.value = window.location.href;
-        }
-        if (submittedAt instanceof HTMLInputElement) {
-          submittedAt.value = new Date().toISOString();
-        }
+    const form = document.getElementById("help-hub-question-form");
+    if (form instanceof HTMLFormElement) {
+      wireContactFormSubmit({
+        form,
+        submitBtn: document.getElementById("help-hub-submit-btn") as HTMLButtonElement | null,
+        submitErrorEl: document.getElementById("help-hub-submit-error"),
+        pageUrlInput: document.getElementById("helpHubFormPageUrl") as HTMLInputElement | null,
+        submittedAtInput: document.getElementById("helpHubFormSubmittedAt") as HTMLInputElement | null,
       });
     }
   </script>
@@ -457,6 +458,17 @@ const fixCategories = [
       display: block;
       margin-left: auto;
       margin-right: auto;
+    }
+
+    .help-hub-form__error {
+      margin: 0.75rem 0 0;
+      font-size: 0.9rem;
+      color: #b91c1c;
+      text-align: center;
+    }
+
+    .help-hub-form__error[hidden] {
+      display: none;
     }
 
     @media (max-width: 768px) {

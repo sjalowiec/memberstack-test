@@ -10,6 +10,7 @@ import {
   projectBlobKey,
   publicProject,
   resolveProjectUserId,
+  upsertProjectSummaryInIndex,
   withCors,
 } from "./lib/custom-pattern-projects-store.js";
 
@@ -54,6 +55,7 @@ export default async (req) => {
         updatedAt: project.updatedAt,
       },
     });
+    await upsertProjectSummaryInIndex(store, project.family, user.userId, project);
     return withCors(
       jsonResponse({
         ok: true,
