@@ -212,6 +212,16 @@ export function formatExpressSelectedSizeSummary(values: Record<string, string>)
   return meas ? `Size ${sz} • Bust/Chest ${meas}` : `Size ${sz}`;
 }
 
+/** Confirmation line shown below the size chart after the user picks a row. */
+export function formatExpressSizeBodyConfirmation(values: Record<string, string>): string {
+  const sz = values.selectedSize?.trim();
+  if (!sz) return "";
+  const aud = expressWhoToChartAudience(values.who);
+  const row = findExpressChartRow(aud, sz);
+  const meas = row ? formatBustChestDisplay(row, getExpressUiUnit()) : "";
+  return meas ? `Selected: Size ${sz}, ${meas} bust/chest` : `Selected: Size ${sz}`;
+}
+
 /**
  * Inline “selected size” line under the chart (Express parity).
  */
@@ -226,10 +236,10 @@ export function patchExpressSizeBodyConfirmation(scope: ParentNode, values: Reco
     el.setAttribute("aria-live", "polite");
     el.setAttribute("hidden", "");
     const wrap = nested.querySelector("[data-express-size-select-wrap]");
-    if (wrap) nested.insertBefore(el, wrap);
+    if (wrap instanceof HTMLElement) wrap.after(el);
     else nested.appendChild(el);
   }
-  const t = nonEmptyTrimmed(values.selectedSize) ? formatExpressSelectedSizeSummary(values) : "";
+  const t = nonEmptyTrimmed(values.selectedSize) ? formatExpressSizeBodyConfirmation(values) : "";
   el.textContent = t;
   if (t) el.removeAttribute("hidden");
   else el.setAttribute("hidden", "");
@@ -322,7 +332,18 @@ export function refreshExpressSizePanel(
 
           const tdMeas = document.createElement("td");
           tdMeas.className = "express-size-row__measure";
-          tdMeas.textContent = meas;
+
+          const measSpan = document.createElement("span");
+          measSpan.className = "express-size-row__measure-value";
+          measSpan.textContent = meas;
+
+          tdMeas.append(measSpan);
+          if (isSelected) {
+            const badge = document.createElement("span");
+            badge.className = "express-size-row__selected-badge";
+            badge.textContent = "Selected";
+            tdMeas.append(badge);
+          }
 
           rowEl.append(tdSize, tdMeas);
           tableBody.appendChild(rowEl);
@@ -334,4 +355,6 @@ export function refreshExpressSizePanel(
       if (tableBody instanceof HTMLElement) tableBody.replaceChildren();
     }
   }
+
+  patchExpressSizeBodyConfirmation(scope, values);
 }
