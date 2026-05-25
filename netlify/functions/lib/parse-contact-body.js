@@ -160,52 +160,37 @@ async function collectBodyCandidates(req, event) {
 }
 
 /**
- * @param {{ source: string, buffer: Buffer, rawBodyLength?: number }[]} candidates
- * @param {string | null} boundary
- * @param {number | null} expectedContentLength
+ * @param {Buffer} buffer
  */
 function looksLikeMultipartBody(buffer) {
   return buffer.includes(Buffer.from("Content-Disposition:"));
 }
 
-function selectBestBodyCandidate(candidates, boundary, expectedContentLength) {
-  const scored = candidates
-    .filter((c) => c.buffer.length > 0)
-    .map((c) => ({
-      ...c,
-      hasClosing: hasClosingMultipartBoundary(c.buffer, boundary),
-    }));
+/**
+ * Pick the largest non-empty buffer that looks like multipart (closing boundary not required).
+ *
+ * @param {{ source: string, buffer: Buffer, rawBodyLength?: number }[]} candidates
+ * @param {number | null} expectedContentLength
+ */
+function selectMultipartBodyCandidate(candidates, expectedContentLength) {
+  const scored = candidates.filter((c) => c.buffer.length > 0);
 
   if (scored.length === 0) {
     return null;
   }
 
-  const withClosing = scored.filter((c) => c.hasClosing);
-  if (withClosing.length > 0) {
-    withClosing.sort((a, b) => b.buffer.length - a.buffer.length);
-    return withClosing[0];
-  }
+  const multipartLike = scored.filter((c) => looksLikeMultipartBody(c.buffer));
+  const pool = multipartLike.length > 0 ? multipartLike : scored;
 
   if (expectedContentLength != null && expectedContentLength > 0) {
-    const exact = scored.find((c) => c.buffer.length === expectedContentLength);
+    const exact = pool.find((c) => c.buffer.length === expectedContentLength);
     if (exact) {
       return exact;
     }
-    scored.sort((a, b) => b.buffer.length - a.buffer.length);
-    const longest = scored[0];
-    if (longest.buffer.length >= expectedContentLength) {
-      return longest;
-    }
   }
 
-  // Last resort: parse the longest buffer that still looks like multipart.
-  scored.sort((a, b) => b.buffer.length - a.buffer.length);
-  const longest = scored[0];
-  if (longest && looksLikeMultipartBody(longest.buffer)) {
-    return longest;
-  }
-
-  return null;
+  pool.sort((a, b) => b.buffer.length - a.buffer.length);
+  return pool[0] || null;
 }
 
 /**
@@ -221,11 +206,122 @@ function pickLongestCandidate(candidates) {
 }
 
 /**
+ * @param {Buffer} buffer
+ * @param {string | null} boundary
+ * @returns {FormData}
+ */
+function extractMultipartFieldsBestEffort(buffer, boundary) {
+  const formData = new FormData();
+  let resolvedBoundary = boundary;
+
+  if (!resolvedBoundary && buffer.length > 0) {
+    const head = buffer.subarray(0, Math.min(256, buffer.length)).toString("latin1");
+    const inline = /^--([^\r\n]+)/.exec(head);
+    if (inline) {
+      resolvedBoundary = inline[1];
+    }
+  }
+
+  if (!resolvedBoundary) {
+    return formData;
+  }
+
+  const delimiter = Buffer.from(`--${resolvedBoundary}`);
+  /** @type {number[]} */
+  const indices = [];
+  let searchFrom = 0;
+
+  while (searchFrom < buffer.length) {
+    const idx = buffer.indexOf(delimiter, searchFrom);
+    if (idx === -1) {
+      break;
+    }
+    indices.push(idx);
+    searchFrom = idx + delimiter.length;
+  }
+
+  if (indices.length === 0) {
+    return formData;
+  }
+
+  for (let i = 0; i < indices.length; i += 1) {
+    const partStart = indices[i] + delimiter.length;
+    const partEnd = i + 1 < indices.length ? indices[i + 1] : buffer.length;
+    if (partStart >= partEnd) {
+      continue;
+    }
+
+    let part = buffer.subarray(partStart, partEnd);
+    if (part.length >= 2 && part[0] === 0x2d && part[1] === 0x2d) {
+      continue;
+    }
+    if (part.length >= 2 && part[0] === 0x0d && part[1] === 0x0a) {
+      part = part.subarray(2);
+    } else if (part.length >= 1 && part[0] === 0x0a) {
+      part = part.subarray(1);
+    }
+
+    const headerEnd = part.indexOf(Buffer.from("\r\n\r\n"));
+    const headerEndLen = 4;
+    let bodyStart = -1;
+    let headersBuf = part;
+
+    if (headerEnd !== -1) {
+      headersBuf = part.subarray(0, headerEnd);
+      bodyStart = headerEnd + headerEndLen;
+    } else {
+      const headerEndLf = part.indexOf(Buffer.from("\n\n"));
+      if (headerEndLf !== -1) {
+        headersBuf = part.subarray(0, headerEndLf);
+        bodyStart = headerEndLf + 2;
+      }
+    }
+
+    if (bodyStart === -1) {
+      continue;
+    }
+
+    const headersText = headersBuf.toString("latin1");
+    const nameMatch = /name="([^"]+)"/i.exec(headersText);
+    if (!nameMatch) {
+      continue;
+    }
+    const fieldName = nameMatch[1];
+
+    let body = part.subarray(bodyStart);
+    if (body.length >= 2 && body[body.length - 2] === 0x0d && body[body.length - 1] === 0x0a) {
+      body = body.subarray(0, body.length - 2);
+    } else if (body.length >= 1 && body[body.length - 1] === 0x0a) {
+      body = body.subarray(0, body.length - 1);
+    }
+
+    const filenameMatch = /filename="([^"]*)"/i.exec(headersText);
+    if (filenameMatch) {
+      const mimeMatch = /content-type:\s*([^\r\n]+)/i.exec(headersText);
+      const mimeType = mimeMatch ? mimeMatch[1].trim() : "application/octet-stream";
+      const filename = filenameMatch[1] || "upload";
+      if (body.length > 0) {
+        const file = new File([body], filename, { type: mimeType });
+        formData.append(fieldName, file);
+      }
+      continue;
+    }
+
+    formData.append(fieldName, body.toString("utf8"));
+  }
+
+  return formData;
+}
+
+/**
  * @param {Record<string, string>} headers
  * @param {Buffer} buffer
+ * @param {{ bestEffort?: boolean }} [options]
  * @returns {Promise<FormData>}
  */
-function parseMultipartBuffer(headers, buffer) {
+function parseMultipartBuffer(headers, buffer, options = {}) {
+  const { bestEffort = true } = options;
+
   return new Promise((resolve, reject) => {
     /** @type {{ name: string, value: string }[]} */
     const fields = [];
@@ -233,11 +329,9 @@ function parseMultipartBuffer(headers, buffer) {
     const files = [];
     let pendingFiles = 0;
     let busboyFinished = false;
+    let settled = false;
 
-    const finishIfReady = () => {
-      if (!busboyFinished || pendingFiles > 0) {
-        return;
-      }
+    const buildFormData = () => {
       const formData = new FormData();
       for (const { name, value } of fields) {
         formData.append(name, value);
@@ -245,7 +339,50 @@ function parseMultipartBuffer(headers, buffer) {
       for (const { name, file } of files) {
         formData.append(name, file);
       }
-      resolve(formData);
+      return formData;
+    };
+
+    const finishIfReady = () => {
+      if (!busboyFinished || pendingFiles > 0 || settled) {
+        return;
+      }
+      settled = true;
+      resolve(buildFormData());
+    };
+
+    const settlePartial = (reason) => {
+      if (settled) {
+        return;
+      }
+      const partial = buildFormData();
+      if (partial.keys().next().done === false) {
+        settled = true;
+        console.warn(
+          "[contact] Busboy settled with partial multipart fields:",
+          reason,
+        );
+        resolve(partial);
+        return;
+      }
+
+      if (bestEffort) {
+        const boundary = extractBoundary(headers["content-type"] || "");
+        const extracted = extractMultipartFieldsBestEffort(buffer, boundary);
+        if (extracted.keys().next().done === false) {
+          settled = true;
+          console.warn(
+            "[contact] Busboy failed; used best-effort multipart extraction:",
+            reason,
+          );
+          resolve(extracted);
+          return;
+        }
+      }
+
+      if (!settled) {
+        settled = true;
+        reject(new Error(reason));
+      }
     };
 
     const busboy = Busboy({ headers });
@@ -273,7 +410,16 @@ function parseMultipartBuffer(headers, buffer) {
         finishIfReady();
       });
 
-      fileStream.on("error", reject);
+      fileStream.on("error", (fileError) => {
+        pendingFiles = Math.max(0, pendingFiles - 1);
+        const message =
+          fileError instanceof Error ? fileError.message : String(fileError);
+        if (bestEffort) {
+          settlePartial(`file stream error: ${message}`);
+        } else {
+          reject(fileError);
+        }
+      });
     });
 
     busboy.on("finish", () => {
@@ -281,9 +427,28 @@ function parseMultipartBuffer(headers, buffer) {
       finishIfReady();
     });
 
-    busboy.on("error", reject);
-    busboy.write(buffer);
-    busboy.end();
+    busboy.on("error", (error) => {
+      const message = error instanceof Error ? error.message : String(error);
+      if (bestEffort) {
+        busboyFinished = true;
+        settlePartial(message);
+      } else {
+        reject(error);
+      }
+    });
+
+    try {
+      busboy.write(buffer);
+      busboy.end();
+    } catch (writeError) {
+      const message =
+        writeError instanceof Error ? writeError.message : String(writeError);
+      if (bestEffort) {
+        settlePartial(message);
+      } else {
+        reject(writeError);
+      }
+    }
   });
 }
 
@@ -320,15 +485,14 @@ function logBodyDebug(debug, buffer) {
 }
 
 /**
- * Prefer the platform Request.formData() parser; fall back to Busboy on the raw body.
+ * Primary parser: platform Request.formData(). Only returns when parsing succeeds.
  *
  * @param {Request} req
- * @param {import("@netlify/functions").HandlerEvent | null | undefined} [event]
- * @returns {Promise<FormData>}
+ * @returns {Promise<{ ok: true, formData: FormData } | { ok: false, reason: "skipped" | "failed", message?: string }>}
  */
 async function tryNativeRequestFormData(req) {
   if (!(req instanceof Request) || req.body == null) {
-    return null;
+    return { ok: false, reason: "skipped" };
   }
 
   const contentType = (req.headers.get("content-type") || "").toLowerCase();
@@ -336,16 +500,21 @@ async function tryNativeRequestFormData(req) {
     !contentType.includes("multipart/form-data") &&
     !contentType.includes("application/x-www-form-urlencoded")
   ) {
-    return null;
+    return { ok: false, reason: "skipped" };
   }
 
   try {
     const cloned = typeof req.clone === "function" ? req.clone() : req;
-    return await cloned.formData();
+    const formData = await cloned.formData();
+    console.log("[contact] Request.formData() succeeded (parser: Request.formData)");
+    return { ok: true, formData };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.warn("[contact] Request.formData() failed, using busboy fallback:", message);
-    return null;
+    console.warn(
+      "[contact] Request.formData() failed; Busboy fallback may run:",
+      message,
+    );
+    return { ok: false, reason: "failed", message };
   }
 }
 
@@ -355,17 +524,17 @@ async function tryNativeRequestFormData(req) {
  * @returns {Promise<FormData>}
  */
 export async function parseContactFormData(req, event) {
-  const nativeFormData = await tryNativeRequestFormData(req);
-  if (nativeFormData) {
-    return nativeFormData;
-  }
-
   const contentType = (
     event?.headers?.["content-type"] ||
     event?.headers?.["Content-Type"] ||
     req.headers.get("content-type") ||
     ""
   ).toLowerCase();
+
+  const nativeResult = await tryNativeRequestFormData(req);
+  if (nativeResult.ok) {
+    return nativeResult.formData;
+  }
 
   const boundary = extractBoundary(contentType);
   const contentLengthHeader =
@@ -386,6 +555,9 @@ export async function parseContactFormData(req, event) {
       Number.isFinite(expectedContentLength) && expectedContentLength != null
         ? expectedContentLength
         : null,
+    requestFormData: nativeResult.reason,
+    requestFormDataError:
+      nativeResult.reason === "failed" ? nativeResult.message : null,
   };
 
   const candidates = await collectBodyCandidates(req, event);
@@ -402,40 +574,69 @@ export async function parseContactFormData(req, event) {
   }
 
   if (contentType.includes("multipart/form-data")) {
-    const selected = selectBestBodyCandidate(
-      candidates,
-      boundary,
-      Number.isFinite(expectedContentLength) ? expectedContentLength : null,
-    );
-
-    if (!selected) {
-      logBodyDebug(
-        {
-          ...debug,
-          bodySource: "none",
-          bodyLength: 0,
-          hasClosingBoundary: false,
-        },
-        Buffer.alloc(0),
+    if (nativeResult.reason === "failed") {
+      console.log(
+        "[contact] Using Busboy fallback (Request.formData threw)",
+        { error: nativeResult.message },
       );
-      throw new Error(
-        "Incomplete multipart body (no usable body buffer from request or event)",
+    } else {
+      console.log(
+        "[contact] Using Busboy fallback (Request.formData not used)",
+        { reason: nativeResult.reason },
       );
     }
 
-    debug.bodySource = selected.source;
-    debug.bodyLength = selected.buffer.length;
-    debug.hasClosingBoundary = selected.hasClosing;
-    logBodyDebug(debug, selected.buffer);
+    const selected = selectMultipartBodyCandidate(
+      candidates,
+      Number.isFinite(expectedContentLength) ? expectedContentLength : null,
+    );
+
+    const buffer =
+      selected?.buffer ||
+      pickLongestCandidate(candidates)?.buffer ||
+      Buffer.alloc(0);
+
+    debug.bodySource = selected?.source || (buffer.length > 0 ? "longest" : "none");
+    debug.bodyLength = buffer.length;
+    debug.hasClosingBoundary = hasClosingMultipartBoundary(buffer, boundary);
+    logBodyDebug(debug, buffer);
+
+    if (buffer.length === 0) {
+      const extracted = extractMultipartFieldsBestEffort(buffer, boundary);
+      if (extracted.keys().next().done === false) {
+        console.log(
+          "[contact] Parser succeeded via best-effort extraction (empty buffer path)",
+        );
+        return extracted;
+      }
+      throw new Error(
+        "Multipart body unavailable (no body buffer from request or event)",
+      );
+    }
 
     const headers = event ? { ...event.headers } : headersFromRequest(req);
     try {
-      return await parseMultipartBuffer(headers, selected.buffer);
+      const formData = await parseMultipartBuffer(headers, buffer, {
+        bestEffort: true,
+      });
+      console.log(
+        "[contact] Parser succeeded via Busboy",
+        { source: debug.bodySource, bytes: buffer.length },
+      );
+      return formData;
     } catch (parseError) {
       const message =
         parseError instanceof Error ? parseError.message : String(parseError);
+      const extracted = extractMultipartFieldsBestEffort(buffer, boundary);
+      if (extracted.keys().next().done === false) {
+        console.warn(
+          "[contact] Busboy threw; parser succeeded via best-effort extraction:",
+          message,
+        );
+        return extracted;
+      }
       throw new Error(
-        `Multipart busboy parse failed (${selected.source}, ${selected.buffer.length} bytes, closing=${selected.hasClosing}): ${message}`,
+        `Multipart parse failed (${debug.bodySource}, ${buffer.length} bytes): ${message}`,
       );
     }
   }
@@ -450,6 +651,10 @@ export async function parseContactFormData(req, event) {
   logBodyDebug(debug, longest.buffer);
 
   if (contentType.includes("application/x-www-form-urlencoded")) {
+    console.log(
+      "[contact] Parser succeeded via urlencoded buffer",
+      { source: longest.source },
+    );
     return formDataFromUrlEncodedBuffer(longest.buffer);
   }
 
@@ -458,12 +663,20 @@ export async function parseContactFormData(req, event) {
       boundary ||
       longest.buffer.includes(Buffer.from("Content-Disposition:"))
     ) {
-      if (!hasClosingMultipartBoundary(longest.buffer, boundary)) {
-        throw new Error("Incomplete multipart body (missing closing boundary)");
-      }
       const headers = event ? { ...event.headers } : headersFromRequest(req);
-      return parseMultipartBuffer(headers, longest.buffer);
+      const formData = await parseMultipartBuffer(headers, longest.buffer, {
+        bestEffort: true,
+      });
+      console.log(
+        "[contact] Parser succeeded via Busboy (inferred multipart)",
+        { source: longest.source },
+      );
+      return formData;
     }
+    console.log(
+      "[contact] Parser succeeded via urlencoded buffer (no content-type)",
+      { source: longest.source },
+    );
     return formDataFromUrlEncodedBuffer(longest.buffer);
   }
 

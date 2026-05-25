@@ -116,6 +116,32 @@ describe("parseContactFormData", () => {
     expect(formData.get("form_source")).toBe("help-hub");
   });
 
+  it("parses incomplete multipart without a closing boundary", async () => {
+    const complete = buildMultipartBuffer({
+      name: "Sue",
+      email: "sue@example.com",
+      message: "Truncated upload",
+      "bot-field": "",
+    });
+    const closing = Buffer.from(`--${BOUNDARY}--\r\n`);
+    const withoutClosing = complete.subarray(
+      0,
+      complete.length - closing.length,
+    );
+
+    expect(withoutClosing.includes(closing)).toBe(false);
+
+    const formData = await parseContactFormData(
+      multipartRequest(withoutClosing, {
+        contentLength: withoutClosing.length,
+      }),
+      null,
+    );
+
+    expect(formData.get("email")).toBe("sue@example.com");
+    expect(formData.get("message")).toBe("Truncated upload");
+  });
+
   it("parses HandlerEvent bodies when the Request is built from the event", async () => {
     const buffer = buildMultipartBuffer({
       name: "Handler",
