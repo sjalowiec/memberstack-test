@@ -6,6 +6,7 @@ import PatternWorkspaceTabs from "../../../../../components/patterns/PatternWork
 import UnitToggle from "../../../../../components/wizards/UnitToggle.astro";
 import "../../../../../styles/sleeveless-express-builder-cards.css";
 import "../../../../../styles/sleeveless-express-wizard-layout.css";
+import "../../../../../styles/express-size-selection.css";
 
 const customBuildHref = "/patterns/sleeveless/custom-build/";
 const styleHref = "/patterns/sleeveless/custom-style";
@@ -334,8 +335,8 @@ const customWizardSteps = [
                     hidden
                   >
                     <div class="express-who-size-nested" data-express-nested-size hidden>
-                      <p class="express-size-helper sg-fit-size-copy" id="cb-design-size-helper-text">
-                        Choose the size whose Bust/Chest measurement is closest to yours.
+                      <p class="express-size-instruction" id="cb-design-size-helper-text">
+                        Choose your size: Select the bust/chest measurement closest to yours.
                       </p>
                       <p class="express-size-load-msg sg-fit-size-copy" data-express-size-status>
                         Loading size charts…
