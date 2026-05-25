@@ -4,10 +4,12 @@ import {
   renderNeckShoulderShapingChartTableOnlyHtml,
 } from "../neckShoulderShapingChartHtml";
 import type { NeckShoulderShapingChart } from "../neckShoulderShapingChart";
+import { isSleevelessCardiganFrontNeckShoulderChart } from "../neckShoulderShapingChart";
 import {
   buildBackJapaneseNotationReplacements,
   isBackJapaneseNotationSupported,
 } from "../sleevelessBackJapaneseNotation";
+import { isSleevelessVNeckChoice } from "../sleevelessFrontDiagramSrc";
 import {
   buildFrontJapaneseNotationReplacements,
   isFrontJapaneseNotationSupported,
@@ -122,8 +124,16 @@ export function assertFrontBackCanonicalShoulderNotation(
   if (garmentOverviewNotation) {
     const backRepl = buildBackJapaneseNotationReplacements(result, patternData);
     const frontRepl = buildFrontJapaneseNotationReplacements(result, patternData);
+    const isCardiganRoundFrontJp =
+      isSleevelessCardiganFrontNeckShoulderChart(result.frontNeckShoulderShapingChart) &&
+      !isSleevelessVNeckChoice(patternData);
+
     expect(backRepl["jp-shoulder-shaping"]).toBe(backLines.join("\n"));
-    expect(frontRepl["jp-shoulder-shaping"]).toBe(frontLines.join("\n"));
+    if (isCardiganRoundFrontJp) {
+      expect(frontRepl["jp-shoulder-shaping"]).toBe(backRepl["jp-shoulder-shaping"]);
+    } else {
+      expect(frontRepl["jp-shoulder-shaping"]).toBe(frontLines.join("\n"));
+    }
     expect(backRepl["jp-shoulder-shaping"]).not.toMatch(/^bo/i);
     expect(frontRepl["jp-shoulder-shaping"]).not.toMatch(/\nbo/i);
   }

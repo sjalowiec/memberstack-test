@@ -6,6 +6,8 @@ import {
   generateSleevelessBackPattern,
   type SleevelessPatternDisplayRow,
 } from "./sleevelessPatternOutput";
+import { armholeBindOffDecreaseFromEachSide } from "./sleevelessBackJapaneseNotation";
+import { buildFrontJapaneseNotationReplacements } from "./sleevelessFrontJapaneseNotation";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
   armholeLocalRcFirstActiveSideNecklineShapingAction,
@@ -179,6 +181,28 @@ describe("sleeveless armhole RC wording", () => {
     expect(bodyKnitTo).toBeDefined();
     expect(bodyKnitTo).toMatch(/^Knit to RC \d+\.$/);
     expect(bodyKnitTo).not.toMatch(/Armhole/i);
+  });
+
+  it("cardigan front RC:000 bind-off matches diagram initial armhole hold count (per-edge back plan)", () => {
+    const r = generateSleevelessBackPattern(cardiganPattern());
+    const eachSide = r.debug.armholeStitchesEachSide;
+    expect(eachSide).toBeDefined();
+    const { bindOffSts, decreaseSts } = armholeBindOffDecreaseFromEachSide(eachSide!);
+    expect(bindOffSts).toBeGreaterThan(0);
+    expect(bindOffSts).not.toBe(decreaseSts);
+
+    const armhole = armholeSectionParagraphs(r.frontDisplayRows);
+    expect(
+      armhole.some((p) =>
+        new RegExp(
+          `At RC:000, bind off / hold ${bindOffSts} stitches at the armhole edge \\(carriage side\\)\\. Knit across\\.`,
+          "i",
+        ).test(p),
+      ),
+    ).toBe(true);
+
+    const repl = buildFrontJapaneseNotationReplacements(r, cardiganPattern());
+    expect(repl["jp-armhole-bo"]).toBe(`bo${bindOffSts}`);
   });
 
   it("round-neck and cardigan front milestone RC matches first generated neckline shaping table row", () => {

@@ -1,10 +1,18 @@
 import { describe, expect, it } from "vitest";
-import {
-  armholeLocalRcActiveShoulderChecklistStart,
-  buildActiveSideInstructionTableRows,
-} from "./neckShoulderActiveSideChecklist";
 import { parseDecreaseCellChart } from "./neckShoulderShapingChart";
-import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
+import { formatBindOffNotation } from "./sleevelessBackJapaneseNotation";
+import { buildFrontJapaneseNotationReplacements } from "./sleevelessFrontJapaneseNotation";
+import {
+  buildActiveSideInstructionTableRows,
+  armholeLocalRcActiveShoulderChecklistStart,
+} from "./neckShoulderActiveSideChecklist";
+import { initialCenterNeckStitches } from "./legoBlocks/roundNeckline";
+import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
+import {
+  centerBindOffStitchesFromNeckShoulderChart,
+  generateSleevelessBackPattern,
+  initialNeckBindOffFromNeckShoulderChart,
+} from "./sleevelessPatternOutput";
 import { totalStitchesFromShapingNotationLines } from "./shoulderShapingNotation";
 import { shoulderShapingNotationLinesFromTimeline } from "./shoulderShapingNotation";
 
@@ -60,11 +68,12 @@ describe("round cardigan front neckline / shoulder chart stitch counts", () => {
     expect(centerEvents.length).toBe(0);
   });
 
-  it("starts active-shoulder table from post-armhole piece stitches, not half-shoulder after divide", () => {
+  it("starts active-shoulder table from post-armhole piece stitches after one-edge armhole shaping", () => {
     const postArmhole =
       d.cardiganFrontPostArmholeSts ?? postArmholeFromFrontArmholeRows(result.frontDisplayRows);
     expect(postArmhole).toBeDefined();
-    expect(postArmhole).toBeGreaterThan(d.cardiganHalfLeftStitchesAfterArmhole ?? 0);
+    expect(postArmhole).toBe(d.cardiganHalfLeftStitchesAfterArmhole);
+    expect(d.cardiganFrontPostArmholeSts).toBe(postArmhole);
 
     const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, result.firstArmholeGarmentRc);
     const rows = buildActiveSideInstructionTableRows(chart, rcStart);
@@ -112,6 +121,46 @@ describe("round cardigan front neckline / shoulder chart stitch counts", () => {
     );
     expect(shoulderBound).toBe(shoulderSts);
     expect(notationTotal).toBe(shoulderSts);
+  });
+
+  it("initial CF-edge neckline bind-off is half-panel math, not pullover center bind-off", () => {
+    const neckFull = d.necklineStitches!;
+    const neckHalf = Math.max(1, Math.round(neckFull / 2));
+    const pulloverCenter = initialCenterNeckStitches(neckFull);
+    const cardiganInitial = initialNeckBindOffFromNeckShoulderChart(chart, {
+      fullNecklineStitches: neckFull,
+    });
+    const chartCenterColumn = centerBindOffStitchesFromNeckShoulderChart(chart);
+
+    expect(cardiganInitial).toBe(Math.max(1, Math.round(pulloverCenter / 2)));
+    expect(cardiganInitial).toBe(d.cardiganFrontInitialNeckBindOffStitches);
+    expect(chartCenterColumn).toBe(0);
+    expect(d.centerNeckBindOffStitches).toBe(pulloverCenter);
+
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, result.firstArmholeGarmentRc);
+    const firstNeck = buildActiveSideInstructionTableRows(chart, rcStart).find(
+      (row) => row.edge === "Neck" && /bind off/i.test(row.action),
+    );
+    expect(firstNeck?.action).toMatch(new RegExp(`Bind off ${cardiganInitial} sts`, "i"));
+
+    const repl = buildFrontJapaneseNotationReplacements(result, cardiganRoundPattern());
+    expect(repl["jp-neckline-bo"]).toBe(formatBindOffNotation(cardiganInitial));
+    expect(repl["jp-neckline-bo"]).not.toBe(formatBindOffNotation(pulloverCenter));
+
+    const pulloverPattern = {
+      ...cardiganRoundPattern(),
+      style: {
+        ...(cardiganRoundPattern().style as Record<string, unknown>),
+        garmentStyle: "pullover",
+        frontStyle: "closed",
+      },
+    };
+    const pulloverShaping = buildFrontJapaneseNotationReplacements(
+      generateSleevelessBackPattern(pulloverPattern),
+      pulloverPattern,
+    )["jp-neckline-shaping"];
+    expect(pulloverShaping.length).toBeGreaterThan(0);
+    expect(repl["jp-neckline-shaping"]).toBe(pulloverShaping);
   });
 
   it("chart first-row stitch counts match post-armhole width (not pullover active-shoulder half)", () => {

@@ -1,0 +1,110 @@
+/**
+ * Cloud-save control on Customize/review summary (`/patterns/sleeveless/review/`).
+ */
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header__save-status {
+  margin: 0.25rem 0 0;
+  font-size: 0.88rem;
+  min-height: 1.2em;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header__save-status.cb-project-status--error {
+  color: #b91c1c;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header__title-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  max-width: none;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header__title-field
+  .sleeveless-review-project-header__title-save-btn {
+  flex: 0 0 auto;
+  align-self: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header__title-field
+  .sleeveless-review-project-header__notes-icon-btn {
+  flex: 0 0 auto;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header__notes-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: 0;
+  padding: 0;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header__notes-icon-btn--save {
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 38%, #d1d5db);
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 10%, #fff);
+  color: var(--kbm-green, #52682d);
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header__notes-icon-btn--save:hover {
+  border-color: color-mix(in srgb, var(--kbm-green, #52682d) 52%, #d1d5db);
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 16%, #fff);
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 88%, #1f2937);
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header__title-field
+  .sleeveless-review-project-header__title-save-btn {
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 38%, #d1d5db);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 10%, #fff);
+  color: var(--kbm-green, #52682d);
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header__title-field
+  .sleeveless-review-project-header__title-save-btn:hover {
+  border-color: color-mix(in srgb, var(--kbm-green, #52682d) 52%, #d1d5db);
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 16%, #fff);
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 88%, #1f2937);
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header__title-field
+  .sleeveless-review-project-header__title-save-btn:focus-visible {
+  outline: 2px solid var(--sg-accent, #c2614e);
+  outline-offset: 1px;
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 14%, #fff);
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header__title-field
+  .sleeveless-review-project-header__title-save-btn
+  i {
+  display: block;
+  line-height: 1;
+}

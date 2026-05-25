@@ -4,7 +4,7 @@
 
 import { canCustomizePattern } from "../lib/patterns/sleevelessPatternAccessGate";
 import { getCurrentPattern } from "../lib/patterns/patternStorage";
-import { smartSaveCustomPatternProject } from "../lib/patterns/customPatternSavedProjectsPanel";
+import { bindSleevelessPatternProjectCloudSave } from "../lib/patterns/sleevelessPatternProjectCloudSave";
 import {
   buildChangePatternChoicesHref,
   initChangePatternChoicesLinks,
@@ -153,13 +153,6 @@ function normalizeNotesInput(notesInput: HTMLTextAreaElement): string {
   return notes;
 }
 
-function setCloudSaveStatus(root: HTMLElement, message: string, isError = false): void {
-  const el = root.querySelector("[data-cb-project-status]");
-  if (!(el instanceof HTMLElement)) return;
-  el.textContent = message;
-  el.classList.toggle("cb-project-status--error", isError);
-}
-
 function persistTitleFromInput(titleInput: HTMLInputElement | null): string {
   if (!titleInput) return "";
   const trimmed = titleInput.value.trim();
@@ -212,7 +205,6 @@ function applyReadOnlyProjectHeader(root: HTMLElement): void {
 
 function bindEditableHeader(root: HTMLElement): void {
   const titleInput = root.querySelector<HTMLInputElement>("[data-sleeveless-pattern-project-title]");
-  const cloudSaveBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-cloud-save]");
   const notesInput = root.querySelector<HTMLTextAreaElement>("[data-sleeveless-pattern-project-notes]");
   const notesEditTrigger = root.querySelector<HTMLElement>("[data-sleeveless-pattern-project-notes-edit]");
   const saveBtn = root.querySelector<HTMLButtonElement>("[data-sleeveless-pattern-project-notes-save]");
@@ -245,29 +237,13 @@ function bindEditableHeader(root: HTMLElement): void {
     persistTitleFromInput(titleInput);
   });
 
-  cloudSaveBtn?.addEventListener("click", async () => {
-    const name = persistTitleFromInput(titleInput);
-    if (!name) {
-      setCloudSaveStatus(root, "Enter a pattern name before saving.", true);
-      titleInput?.focus();
-      return;
-    }
-    cloudSaveBtn.disabled = true;
-    const res = await smartSaveCustomPatternProject({
-      resolveName: () => name,
-      onStatus: (message, isError) => setCloudSaveStatus(root, message, isError),
-    });
-    cloudSaveBtn.disabled = false;
-    if (!res.ok) {
-      setCloudSaveStatus(root, res.error, true);
-      return;
-    }
-    if (titleInput) titleInput.value = res.project.name;
-    persistTitleFromInput(titleInput);
-    setCloudSaveStatus(
-      root,
-      res.created ? `Saved “${res.project.name}”.` : `Updated “${res.project.name}”.`,
-    );
+  bindSleevelessPatternProjectCloudSave(root, {
+    resolveName: () => persistTitleFromInput(titleInput),
+    onMissingName: () => titleInput?.focus(),
+    onSuccess: (res) => {
+      if (titleInput) titleInput.value = res.project.name;
+      persistTitleFromInput(titleInput);
+    },
   });
 
   const beginNotesEdit = (): void => {

@@ -95,8 +95,10 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
     expect(repl.OPENING_STS).toBe("0");
   });
 
-  it("halves shoulder stitch tokens on cardigan half schematic", () => {
-    const result = { debug: { ...baseDebug } } as unknown as SleevelessBackPatternResult;
+  it("uses per-side shoulder stitch count on cardigan half and pullover schematics", () => {
+    const result = {
+      debug: { ...baseDebug, shoulderStitches: 15 },
+    } as unknown as SleevelessBackPatternResult;
 
     const replCardigan = buildSleevelessGarmentDiagramReplacements(result, "in", {
       patternData: { style: { frontStyle: "open" } },
@@ -108,8 +110,9 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
       measurementPiece: "front",
     });
 
-    expect(replCardigan.SHOULDER_STS).toBe("30");
-    expect(Number(replCardigan.SHOULDER_STS)).toBeLessThan(Number(replPullover.SHOULDER_STS));
+    expect(replCardigan.SHOULDER_STS).toBe("15");
+    expect(replPullover.SHOULDER_STS).toBe("15");
+    expect(replCardigan.SHOULDER_STS).not.toBe(String(baseDebug.stitchesAfterArmhole));
   });
 
   it("halves neck tokens on cardigan half schematic only (CF split)", () => {

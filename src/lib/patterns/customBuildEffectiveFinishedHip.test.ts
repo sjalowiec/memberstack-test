@@ -48,12 +48,27 @@ function patternData(overrides: {
 }
 
 describe("resolveEffectiveFinishedHipInches", () => {
-  it("uses cbMeasurementOverrides.hip for Express when set", () => {
+  it("uses cbMeasurementOverrides.hip for Express A-line when set", () => {
     expect(
       resolveEffectiveFinishedHipInches(
-        patternData({ patternMode: "express", hipOverride: "22", chartFinishedHip: 20 }),
+        patternData({ patternMode: "express", bodyShape: "aline", hipOverride: "22", chartFinishedHip: 20 }),
       ),
     ).toBe(22);
+  });
+
+  it("ignores stale wide hip override on express straight torso", () => {
+    expect(
+      resolveEffectiveFinishedHipInches(
+        patternData({
+          patternMode: "express",
+          bodyShape: "straight",
+          hipOverride: "43",
+          chestBustOverride: "37",
+          chartFinishedHip: 37,
+          chartFinishedBust: 37,
+        }),
+      ),
+    ).toBe(37);
   });
 
   it("uses chart finished_hip for Express when no override", () => {
@@ -136,7 +151,7 @@ describe("generateSleevelessBackPattern hip cast-on (Express review overrides)",
     expect(flared.debug.bustBodyStitches).toBe(straight.debug.bustBodyStitches);
   });
 
-  it("uses hip cast-on when bodyShape is straight but review hip exceeds bust (38 vs 44)", () => {
+  it("stays straight when bodyShape is straight and review hip exceeds bust (stale override)", () => {
     const r = generateSleevelessBackPattern(
       patternData({
         bodyShape: "straight",
@@ -148,15 +163,14 @@ describe("generateSleevelessBackPattern hip cast-on (Express review overrides)",
       }),
     );
     expect(r.debug.bustBodyStitches).toBe(96);
-    expect(r.debug.hemCastOnStitches).toBe(110);
-    expect(r.debug.hemCastOnStitches).toBeGreaterThan(r.debug.bustBodyStitches!);
-    expect(extractCastOnFromRows(r.displayRows)).toBe(110);
+    expect(r.debug.hemCastOnStitches).toBe(96);
+    expect(extractCastOnFromRows(r.displayRows)).toBe(96);
     expect(
       hasBodyShapingInstruction(
         r.displayRows,
-        /1 stitch at each side edge \d+ times evenly across/,
+        /Decrease 1 stitch at each side edge|Increase 1 stitch at each side edge/,
       ),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("stays straight when bust and hip match within tolerance (40 vs 40)", () => {
