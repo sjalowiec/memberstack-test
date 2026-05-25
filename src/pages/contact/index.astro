@@ -90,143 +90,20 @@ import Layout from "../../layouts/Layout.astro";
     }
   </style>
 
-  <script is:inline>
-    const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-    const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-
-    /** @param {File | undefined} file */
-    function validateContactImage(file) {
-      if (!file || file.size === 0) {
-        return { ok: true };
-      }
-      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-        return {
-          ok: false,
-          message: "Please choose a JPG, PNG, or WEBP image.",
-        };
-      }
-      if (file.size > MAX_IMAGE_BYTES) {
-        return {
-          ok: false,
-          message: "Please choose an image smaller than 5MB.",
-        };
-      }
-      return { ok: true };
-    }
+  <script>
+    import { wireContactFormSubmit } from "../../scripts/contactFormSubmit";
 
     const form = document.getElementById("contact-page-form");
-    const fileInput = document.getElementById("contactImages");
-    const imageErrorEl = document.getElementById("contact-image-error");
-    const submitErrorEl = document.getElementById("contact-submit-error");
-    const submitBtn = document.getElementById("contact-page-submit");
-
-    function showImageError(message) {
-      if (!imageErrorEl) return;
-      imageErrorEl.textContent = message;
-      imageErrorEl.hidden = false;
-      if (submitErrorEl) submitErrorEl.hidden = true;
-    }
-
-    function clearImageError() {
-      if (!imageErrorEl) return;
-      imageErrorEl.textContent = "";
-      imageErrorEl.hidden = true;
-    }
-
-    function showSubmitError(message) {
-      if (!submitErrorEl) return;
-      submitErrorEl.textContent = message;
-      submitErrorEl.hidden = false;
-    }
-
-    function clearSubmitError() {
-      if (!submitErrorEl) return;
-      submitErrorEl.textContent = "";
-      submitErrorEl.hidden = true;
-    }
-
-    if (fileInput instanceof HTMLInputElement) {
-      fileInput.addEventListener("change", () => {
-        const file = fileInput.files?.[0];
-        if (!file) {
-          clearImageError();
-          return;
-        }
-        const result = validateContactImage(file);
-        if (!result.ok) {
-          showImageError(result.message);
-        } else {
-          clearImageError();
-        }
-      });
-    }
-
     if (form instanceof HTMLFormElement) {
-      form.addEventListener(
-        "submit",
-        async (e) => {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          clearSubmitError();
-
-          const file =
-            fileInput instanceof HTMLInputElement
-              ? fileInput.files?.[0]
-              : undefined;
-          const result = validateContactImage(file);
-          if (!result.ok) {
-            showImageError(result.message);
-            fileInput?.focus();
-            return;
-          }
-          clearImageError();
-
-          const pageUrl = document.getElementById("contactPageURL");
-          const submittedAt = document.getElementById("contactSubmittedAt");
-          if (pageUrl instanceof HTMLInputElement) {
-            pageUrl.value = window.location.href;
-          }
-          if (submittedAt instanceof HTMLInputElement) {
-            submittedAt.value = new Date().toISOString();
-          }
-
-          if (submitBtn instanceof HTMLButtonElement) {
-            submitBtn.disabled = true;
-          }
-
-          try {
-            const res = await fetch(form.action, {
-              method: "POST",
-              body: new FormData(form),
-            });
-
-            if (res.status >= 200 && res.status < 300) {
-              window.location.href = "/contact/thanks/";
-              return;
-            }
-
-            const serverMessage = (await res.text()).trim();
-            const fallback =
-              "Something went wrong sending your message. Please try again in a moment.";
-
-            if (res.status === 400) {
-              showSubmitError(serverMessage || fallback);
-              return;
-            }
-
-            showSubmitError(serverMessage || fallback);
-          } catch {
-            showSubmitError(
-              "Something went wrong sending your message. Please try again in a moment.",
-            );
-          } finally {
-            if (submitBtn instanceof HTMLButtonElement) {
-              submitBtn.disabled = false;
-            }
-          }
-        },
-        true,
-      );
+      wireContactFormSubmit({
+        form,
+        fileInput: document.getElementById("contactImages") as HTMLInputElement | null,
+        submitBtn: document.getElementById("contact-page-submit") as HTMLButtonElement | null,
+        submitErrorEl: document.getElementById("contact-submit-error"),
+        imageErrorEl: document.getElementById("contact-image-error"),
+        pageUrlInput: document.getElementById("contactPageURL") as HTMLInputElement | null,
+        submittedAtInput: document.getElementById("contactSubmittedAt") as HTMLInputElement | null,
+      });
     }
   </script>
 </Layout>

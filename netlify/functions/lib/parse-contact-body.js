@@ -46,9 +46,12 @@ export function handlerEventToRequest(event) {
     event.rawUrl ||
     `http://localhost${event.path || "/.netlify/functions/contact"}`;
 
+  const bodyBuffer = decodeEventBody(event);
+
   return new Request(url, {
     method: event.httpMethod || "POST",
     headers,
+    body: bodyBuffer.length > 0 ? bodyBuffer : undefined,
   });
 }
 
@@ -161,6 +164,10 @@ async function collectBodyCandidates(req, event) {
  * @param {string | null} boundary
  * @param {number | null} expectedContentLength
  */
+function looksLikeMultipartBody(buffer) {
+  return buffer.includes(Buffer.from("Content-Disposition:"));
+}
+
 function selectBestBodyCandidate(candidates, boundary, expectedContentLength) {
   const scored = candidates
     .filter((c) => c.buffer.length > 0)
@@ -189,6 +196,13 @@ function selectBestBodyCandidate(candidates, boundary, expectedContentLength) {
     if (longest.buffer.length >= expectedContentLength) {
       return longest;
     }
+  }
+
+  // Last resort: parse the longest buffer that still looks like multipart.
+  scored.sort((a, b) => b.buffer.length - a.buffer.length);
+  const longest = scored[0];
+  if (longest && looksLikeMultipartBody(longest.buffer)) {
+    return longest;
   }
 
   return null;
@@ -306,13 +320,46 @@ function logBodyDebug(debug, buffer) {
 }
 
 /**
- * Parse contact POST body without relying on Request.formData().
+ * Prefer the platform Request.formData() parser; fall back to Busboy on the raw body.
  *
  * @param {Request} req
  * @param {import("@netlify/functions").HandlerEvent | null | undefined} [event]
  * @returns {Promise<FormData>}
  */
+async function tryNativeRequestFormData(req) {
+  if (!(req instanceof Request) || req.body == null) {
+    return null;
+  }
+
+  const contentType = (req.headers.get("content-type") || "").toLowerCase();
+  if (
+    !contentType.includes("multipart/form-data") &&
+    !contentType.includes("application/x-www-form-urlencoded")
+  ) {
+    return null;
+  }
+
+  try {
+    const cloned = typeof req.clone === "function" ? req.clone() : req;
+    return await cloned.formData();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn("[contact] Request.formData() failed, using busboy fallback:", message);
+    return null;
+  }
+}
+
+/**
+ * @param {Request} req
+ * @param {import("@netlify/functions").HandlerEvent | null | undefined} [event]
+ * @returns {Promise<FormData>}
+ */
 export async function parseContactFormData(req, event) {
+  const nativeFormData = await tryNativeRequestFormData(req);
+  if (nativeFormData) {
+    return nativeFormData;
+  }
+
   const contentType = (
     event?.headers?.["content-type"] ||
     event?.headers?.["Content-Type"] ||
@@ -361,7 +408,7 @@ export async function parseContactFormData(req, event) {
       Number.isFinite(expectedContentLength) ? expectedContentLength : null,
     );
 
-    if (!selected || !selected.hasClosing) {
+    if (!selected) {
       logBodyDebug(
         {
           ...debug,
@@ -372,17 +419,25 @@ export async function parseContactFormData(req, event) {
         Buffer.alloc(0),
       );
       throw new Error(
-        "Incomplete multipart body (missing closing boundary in all sources)",
+        "Incomplete multipart body (no usable body buffer from request or event)",
       );
     }
 
     debug.bodySource = selected.source;
     debug.bodyLength = selected.buffer.length;
-    debug.hasClosingBoundary = true;
+    debug.hasClosingBoundary = selected.hasClosing;
     logBodyDebug(debug, selected.buffer);
 
     const headers = event ? { ...event.headers } : headersFromRequest(req);
-    return parseMultipartBuffer(headers, selected.buffer);
+    try {
+      return await parseMultipartBuffer(headers, selected.buffer);
+    } catch (parseError) {
+      const message =
+        parseError instanceof Error ? parseError.message : String(parseError);
+      throw new Error(
+        `Multipart busboy parse failed (${selected.source}, ${selected.buffer.length} bytes, closing=${selected.hasClosing}): ${message}`,
+      );
+    }
   }
 
   const longest = pickLongestCandidate(candidates);
