@@ -3,7 +3,7 @@
  * Pattern math lives in {@link generateSleevelessBackPattern}; this is presentation only.
  */
 
-import type { SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
+import { patternTipWrapperHtml, type SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
 
 function escapeHtml(s: string): string {
   return String(s)
@@ -66,14 +66,7 @@ function renderPrintBlockRow(
     }
   }
   if (row.tipHtml) {
-    leftBits.push(
-      row.tipHtmlIsFull
-        ? `<div class="pattern-tip">${row.tipHtml}</div>`
-        : `<div class="pattern-tip"><strong>Tip:</strong> ${row.tipHtml}</div>`,
-    );
-  }
-  if (row.collapsibleTipHtml) {
-    leftBits.push(detailsOpenForPrint(row.collapsibleTipHtml));
+    leftBits.push(detailsOpenForPrint(patternTipWrapperHtml(row)));
   }
 
   const leftHtml =

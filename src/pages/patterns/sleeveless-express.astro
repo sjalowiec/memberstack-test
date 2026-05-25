@@ -614,15 +614,10 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
                       <label for="express-available-needles" class="express-needle-label">
                         Available needles
                       </label>
-                      <button
-                        type="button"
-                        class="express-needle-help kbm-tooltip"
-                        data-tip="Used to check whether your pattern pieces will fit on your machine."
-                        aria-label="About available needles"
-                      >
-                        <i class="fa-regular fa-circle-question" aria-hidden="true"></i>
-                      </button>
                     </div>
+                    <p class="express-needle-label">
+                      Used to check whether your pattern pieces will fit on your machine.
+                    </p>
                     <div class="express-needle-input-group">
                       <input
                         type="number"
@@ -811,28 +806,6 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
     font-weight: 500;
     line-height: 1.2;
     color: #6b7280;
-  }
-
-  .express-needle-help.kbm-tooltip {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.25rem;
-    height: 1.25rem;
-    padding: 0;
-    border: none;
-    background: none;
-    color: #6b7280;
-    font-size: 0.95rem;
-    line-height: 1;
-    text-decoration: none;
-    cursor: help;
-    vertical-align: middle;
-  }
-
-  .express-needle-help.kbm-tooltip:hover,
-  .express-needle-help.kbm-tooltip:focus-visible {
-    color: var(--express-nav-green, #52682d);
   }
 
   .express-needle-input-group {

@@ -8,7 +8,6 @@ import {
 export type SleevelessFinishingHtmlDeps = {
   escapeHtml: (s: string) => string;
   glossaryTooltip: (id: number, term: string) => string;
-  oneShoulderFinishingHelpHtml: () => string;
   neckFinishingVideoKey: string;
   neckFinishingButtonLabel: string;
   neckFinishingLeadHtml: string;
@@ -41,7 +40,7 @@ function blockPiecesBody(deps: SleevelessFinishingHtmlDeps): string {
 }
 
 function joinShouldersBody(deps: SleevelessFinishingHtmlDeps): string {
-  return `<p class="pattern-finishing-lead">Join ${deps.oneShoulderFinishingHelpHtml()} using your preferred method.</p>
+  return `<p class="pattern-finishing-lead">Join one shoulder using your preferred method.</p>
     <ul>
       <li>${deps.glossaryTooltip(745, "Linker")}</li>
       <li>crochet slip stitch</li>

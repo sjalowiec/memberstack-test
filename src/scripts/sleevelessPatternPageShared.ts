@@ -21,6 +21,7 @@ import { setPatternTabsReadiness } from "../lib/patterns/patternTabsClient.ts";
 import {
   centerBindOffStitchesFromNeckShoulderChart,
   generateSleevelessBackPattern,
+  patternTipWrapperHtml,
 } from "../lib/patterns/sleevelessPatternOutput.ts";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
@@ -33,6 +34,7 @@ import { showResults, initializeActionBar } from "../components/wizards/utils/wi
 import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
 import { buildGlossaryTooltipPlaceholderHtml } from "../lib/glossary/glossaryTooltipPrint.ts";
+import { buildPatternHelpCardInnerHtml } from "../lib/patterns/patternHelpCard.ts";
 import { buildShapingNotationChartHelpHtml } from "../lib/glossary/shapingNotationGlossary.ts";
 import {
   isSleevelessCardiganHalfFrontDiagramType,
@@ -452,13 +454,22 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="shallowBackNeck" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Short row shoulder shaping</button>
 </div>`;
     const necklineTipLead = `<p>Many knitters prefer to use ${glossaryTooltip(250, "Short Rows")} to shape shoulders because they create a smoother edge and help prevent ${glossaryTooltip(902, "stair steps")} caused by bind-offs.</p>`;
-    return `${intro}
-<details class="pattern-tip sleeveless-shaping-help-toggle no-print" data-tip-id="sleeveless-neckline-machine-help">
-  <summary>New to shaping necklines on the machine?</summary>
-  ${necklineTipLead}
-  <p class="sleeveless-neckline-tip__short-rows-prompt">New to ${glossaryTooltip(250, "Short Rows")}?</p>
-  ${necklineTipVideoButtons}
-</details>`;
+    const necklineMachineHelpBody =
+      `${necklineTipLead}` +
+      `<p class="sleeveless-neckline-tip__short-rows-prompt">New to ${glossaryTooltip(250, "Short Rows")}?</p>` +
+      necklineTipVideoButtons;
+    const necklineMachineHelpCard = patternTipWrapperHtml({
+      tipHtml: buildPatternHelpCardInnerHtml({
+        title: "New to shaping necklines on the machine?",
+        bodyHtml: necklineMachineHelpBody,
+        icon: false,
+      }),
+      tipHtmlIsFull: true,
+      tipPresentation: "help-card",
+      tipId: "sleeveless-neckline-machine-help",
+      tipWrapperClass: "no-print",
+    });
+    return `${intro}\n${necklineMachineHelpCard}`;
   }
 
   /**
@@ -545,15 +556,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         }
       }
       if (row.tipHtml) {
-        const tipIdAttr = row.tipId ? ` data-tip-id="${escapeHtml(row.tipId)}"` : "";
-        leftBits.push(
-          row.tipHtmlIsFull
-            ? `<div class="pattern-tip" data-tip${tipIdAttr}>${row.tipHtml}</div>`
-            : `<div class="pattern-tip" data-tip${tipIdAttr}><strong>Tip:</strong> ${row.tipHtml}</div>`,
-        );
-      }
-      if (row.collapsibleTipHtml) {
-        leftBits.push(row.collapsibleTipHtml);
+        leftBits.push(patternTipWrapperHtml(row));
       }
       const leftHtml = `<div class="sleeveless-pattern-left">${leftBits.join("")}</div>`;
       const rightHtml = showStitch
@@ -2198,14 +2201,6 @@ table {
     );
   }
 
-  /** Inline help on “one shoulder” in finishing (not glossary); uses global `.kbm-tooltip` styles. */
-  function oneShoulderFinishingHelpHtml() {
-    const tip =
-      "One shoulder is joined first so the neckband can be worked in one continuous piece around the neckline. The second shoulder is joined after the neckband is finished.";
-    const escapedTip = escapeGlossaryPlaceholderAttr(tip);
-    return `<span class="kbm-tooltip" tabindex="0" title="${escapedTip}" aria-label="${escapedTip}" data-tooltip="${escapedTip}">one shoulder</span>`;
-  }
-
   function buildFinishingHtml(patternMergedForNeckline, patternDebug) {
     const isVNeckFinishing = isSleevelessVNeckChoice(patternMergedForNeckline);
     const neckFinishingVideoKey = isVNeckFinishing ? "vNeckBandFinishing" : "onePieceBand";
@@ -2235,7 +2230,6 @@ table {
       deps: {
         escapeHtml,
         glossaryTooltip,
-        oneShoulderFinishingHelpHtml,
         neckFinishingVideoKey,
         neckFinishingButtonLabel,
         neckFinishingLeadHtml,

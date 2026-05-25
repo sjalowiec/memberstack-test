@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
+import {
+  generateSleevelessBackPattern,
+  lifelineBeforeNeckShoulderQuickTipBodyHtml,
+  LIFELINE_GLOSSARY_ID,
+} from "./sleevelessPatternOutput";
 import { sleevelessFinishingFromPattern } from "./sleevelessPatternFinishing";
 import { buildSleevelessFinishingStepsHtml } from "./sleevelessPatternFinishingHtml";
 import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
@@ -58,7 +62,6 @@ function collectSleevelessOutputPlainText(pattern: Record<string, unknown>): str
     deps: {
       escapeHtml: (s: string) => s,
       glossaryTooltip: (_id: number, term: string) => term,
-      oneShoulderFinishingHelpHtml: () => "one shoulder",
       neckFinishingVideoKey: "onePieceBand",
       neckFinishingButtonLabel: "One-piece neckband",
       neckFinishingLeadHtml: "",
@@ -94,6 +97,19 @@ describe("sleeveless pattern output copy (print-safe)", () => {
     expect(plain).toContain(
       "Before starting the neckline and shoulder shaping, consider adding a lifeline or waste yarn row. It gives you a safe place to rip back to if you make a mistake during shaping.",
     );
+  });
+
+  it("lifeline tip uses glossary placeholder on lifeline only", () => {
+    expect(lifelineBeforeNeckShoulderQuickTipBodyHtml()).toContain(
+      `data-glossary-id="${LIFELINE_GLOSSARY_ID}"`,
+    );
+    expect(lifelineBeforeNeckShoulderQuickTipBodyHtml()).toContain('data-term="lifeline"');
+    const result = generateSleevelessBackPattern(pulloverPattern());
+    const lifelineRow = [...result.displayRows, ...result.frontDisplayRows].find(
+      (r) => r.kind === "block" && r.tipId === "sleeveless-lifeline-neck-shoulder",
+    );
+    expect(lifelineRow?.tipPresentation).toBe("quick-tip");
+    expect(lifelineRow?.tipHtml).toContain(`data-glossary-id="${LIFELINE_GLOSSARY_ID}"`);
   });
 
   it("round-neck cardigan includes fold band on turning row instruction", () => {

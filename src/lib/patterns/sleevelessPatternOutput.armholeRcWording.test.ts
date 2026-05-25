@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  ARMHOLE_ALTERNATE_TECHNIQUES_TIP_HTML,
+  armholeAlternateTechniquesHelpCardBodyHtml,
   ARMHOLE_BIND_OFF_TRICK_VIDEO_KEY,
   ARMHOLE_RC_FROM_RESET_NOTE,
   generateSleevelessBackPattern,
@@ -104,7 +104,10 @@ describe("sleeveless armhole RC wording", () => {
       true
     );
     const first = firstArmholeBlock(r.displayRows);
-    expect(first?.tipHtml).toBe(ARMHOLE_ALTERNATE_TECHNIQUES_TIP_HTML);
+    expect(first?.tipPresentation).toBe("help-card");
+    expect(first?.tipHtmlIsFull).toBe(true);
+    expect(first?.tipHtml).toContain("pattern-help-card__details");
+    expect(first?.tipHtml).toContain(armholeAlternateTechniquesHelpCardBodyHtml());
     expect(first?.tipHtml).toContain("hold stitches or use short-row shaping");
     expect(first?.tipHtml).toContain("Cleaner Partial Bind-Off Edge");
     expect(first?.tipHtml).toContain(`data-sleeveless-help-video="${ARMHOLE_BIND_OFF_TRICK_VIDEO_KEY}"`);
@@ -114,7 +117,8 @@ describe("sleeveless armhole RC wording", () => {
   it("front ARMHOLE section shares the same alternate-techniques tip with bind-off video", () => {
     const r = generateSleevelessBackPattern(basePattern("round"));
     const first = firstArmholeBlock(r.frontDisplayRows);
-    expect(first?.tipHtml).toBe(ARMHOLE_ALTERNATE_TECHNIQUES_TIP_HTML);
+    expect(first?.tipPresentation).toBe("help-card");
+    expect(first?.tipHtml).toContain(armholeAlternateTechniquesHelpCardBodyHtml());
     expect(first?.tipHtml).toContain(`data-sleeveless-help-video="${ARMHOLE_BIND_OFF_TRICK_VIDEO_KEY}"`);
   });
 

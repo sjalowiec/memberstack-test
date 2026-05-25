@@ -1,0 +1,152 @@
+/* Help Card — richer expandable pattern instructional support (import with pattern-tips.css) */
+
+.pattern-tip.pattern-help-card {
+  --pattern-help-card-accent: #c2614e;
+  --pattern-help-card-bg: #fdf9f8;
+  --pattern-help-card-bg-hover: #faf4f2;
+  position: relative;
+  margin: 0.5rem 0 0.85rem;
+  padding: 0.55rem 2.15rem 0.55rem 0.8rem;
+  background: var(--pattern-help-card-bg);
+  border: none;
+  border-left: 4px solid var(--pattern-help-card-accent);
+  border-radius: 8px;
+  color: #374151;
+  box-shadow: 0 1px 3px rgba(45, 55, 30, 0.05);
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.pattern-tip.pattern-help-card:has(.pattern-help-card__details:not([open])):hover,
+.pattern-tip.pattern-help-card:has(.pattern-help-card__details:not([open])):focus-within {
+  background: var(--pattern-help-card-bg-hover);
+  box-shadow: 0 2px 6px rgba(45, 55, 30, 0.07);
+}
+
+.pattern-tip.pattern-help-card strong {
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.pattern-help-card__details {
+  margin: 0;
+}
+
+.pattern-help-card__summary {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  list-style: none;
+  cursor: pointer;
+  font-size: 0.925rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--pattern-help-card-accent);
+  border-radius: 4px;
+  padding: 0.1rem 0.15rem 0.1rem 0;
+  margin: 0;
+  min-height: 1.5rem;
+  transition: color 0.15s ease;
+}
+
+.pattern-help-card__details:not([open]) .pattern-help-card__summary:hover,
+.pattern-help-card__details:not([open]) .pattern-help-card__summary:focus-visible {
+  color: #a85444;
+}
+
+.pattern-help-card__summary::-webkit-details-marker {
+  display: none;
+}
+
+.pattern-help-card__chevron {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.85rem;
+  height: 0.85rem;
+  color: var(--pattern-help-card-accent);
+  font-size: 0.65rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.pattern-help-card__chevron i {
+  display: block;
+  transition: transform 0.18s ease;
+}
+
+.pattern-help-card__details[open] .pattern-help-card__chevron i {
+  transform: rotate(90deg);
+}
+
+.pattern-help-card__summary-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.pattern-help-card__icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.pattern-help-card__icon {
+  font-size: 0.9rem;
+  line-height: 1;
+  color: var(--pattern-help-card-accent);
+  opacity: 0.92;
+}
+
+.pattern-help-card__title {
+  color: #1f2937;
+}
+
+.pattern-help-card__body {
+  margin: 0.6rem 0 0.12rem;
+  padding: 0.55rem 0 0.1rem;
+  border-top: 1px solid rgba(194, 97, 78, 0.16);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #374151;
+}
+
+.pattern-help-card__body p {
+  margin: 0 0 0.55rem;
+}
+
+.pattern-help-card__body p:last-child {
+  margin-bottom: 0;
+}
+
+.pattern-help-card__body .pattern-help-link,
+.pattern-help-card__body .pattern-finishing-video-help {
+  margin-top: 0.45rem;
+}
+
+.pattern-tip.pattern-help-card .pattern-tip-dismiss {
+  top: 0.28rem;
+  right: 0.28rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 1.4rem;
+}
+
+.pattern-tip.pattern-help-card .pattern-tip-dismiss:hover,
+.pattern-tip.pattern-help-card .pattern-tip-dismiss:focus-visible {
+  color: #6b7280;
+  background: rgba(194, 97, 78, 0.1);
+}
+
+@media print {
+  .pattern-tip.pattern-help-card {
+    box-shadow: none;
+  }
+
+  .pattern-help-card__chevron {
+    display: none;
+  }
+}

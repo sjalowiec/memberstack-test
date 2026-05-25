@@ -119,13 +119,17 @@ describe("carriage position pattern tip", () => {
       { activeSideOnly: true, activeSideRcStart: frontRcStart },
     );
     for (const html of [backHtml, frontHtml]) {
-      const tipIdx = html.indexOf("<summary>Carriage Position</summary>");
+      const tipIdx = html.indexOf("pattern-help-card__title");
+      const titleIdx = html.indexOf("Carriage Position");
       const tableIdx = html.indexOf("ns-shaping-chart__table");
       expect(tipIdx).toBeGreaterThanOrEqual(0);
-      expect(tableIdx).toBeGreaterThan(tipIdx);
+      expect(titleIdx).toBeGreaterThanOrEqual(0);
+      expect(tableIdx).toBeGreaterThan(titleIdx);
       expect(html).toContain("before knitting that row");
       expect(html).toContain("on the right side before you begin knitting");
-      expect(html).toContain("sleeveless-shaping-help-toggle no-print");
+      expect(html).toContain("pattern-help-card__details");
+      expect(html).toContain('data-tip-id="sleeveless-carriage-position"');
+      expect(html).toContain("no-print");
     }
   });
 
@@ -139,7 +143,8 @@ describe("carriage position pattern tip", () => {
     );
     expect(html).not.toContain(">Carriage Position</th>");
     expect(renderCarriagePositionPatternTipHtml({ activeSideOnly: false })).toBe("");
-    expect(html).not.toContain("<summary>Carriage Position</summary>");
+    expect(html).not.toContain("pattern-help-card__title");
+    expect(html).not.toContain('data-tip-id="sleeveless-carriage-position"');
     expect(html).not.toContain("before knitting that row");
   });
 
@@ -152,8 +157,8 @@ describe("carriage position pattern tip", () => {
       {},
     );
     expect(printHtml).toContain("Carriage Position</th>");
-    expect(printHtml).not.toContain("<summary>Carriage Position</summary>");
-    expect(printHtml).not.toContain("sleeveless-shaping-help-toggle");
+    expect(printHtml).not.toContain('data-tip-id="sleeveless-carriage-position"');
+    expect(printHtml).not.toContain("pattern-help-card__details");
   });
 });
 

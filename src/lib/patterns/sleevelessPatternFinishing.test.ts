@@ -148,7 +148,6 @@ describe("buildSleevelessFinishingStepsHtml", () => {
   const deps = {
     escapeHtml: (s: string) => s,
     glossaryTooltip: (_id: number, term: string) => term,
-    oneShoulderFinishingHelpHtml: () => "one shoulder",
     neckFinishingVideoKey: "onePieceBand",
     neckFinishingButtonLabel: "One-piece neckband",
     neckFinishingLeadHtml: "",

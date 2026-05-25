@@ -45,7 +45,7 @@ export {
 } from "./neckShoulderActiveSideChecklist";
 import { buildGlossaryTooltipPlaceholderHtml } from "../glossary/glossaryTooltipPrint";
 import {
-  CARRIAGE_POSITION_PATTERN_TIP_DETAILS_HTML,
+  carriagePositionHelpCardHtml,
   centerBindOffStitchesFromNeckShoulderChart,
   formatShoulderBindoffRemainingInstruction,
 } from "./sleevelessPatternOutput";
@@ -596,9 +596,7 @@ export function neckShoulderChartHasCarriagePositionColumn(
 
 /** Collapsible Pattern Tip for the Carriage Position column; empty when the column is absent. */
 export function renderCarriagePositionPatternTipHtml(options?: NeckShoulderChartRenderOptions): string {
-  return neckShoulderChartHasCarriagePositionColumn(options)
-    ? CARRIAGE_POSITION_PATTERN_TIP_DETAILS_HTML
-    : "";
+  return neckShoulderChartHasCarriagePositionColumn(options) ? carriagePositionHelpCardHtml() : "";
 }
 
 /** Chart title and table only (no neckline/shoulder diagram block). */
