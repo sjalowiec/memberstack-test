@@ -6,6 +6,7 @@
 import glossaryData from "../../data/glossary.json";
 import videosPublic from "../../data/videos-public.json";
 import { buildGlossaryRelatedVideosHtml } from "./glossaryCatalogVideos";
+import { getGlossaryPlaceholderVisibleText } from "./glossaryTooltipPrint";
 import { slugify } from "../slugify";
 import type { PublicVideoRow } from "../lessonVideo";
 
@@ -407,7 +408,7 @@ function replacePlaceholderWithTooltip(placeholder: HTMLElement) {
   const idRaw = placeholder.getAttribute("data-glossary-id");
   const glossaryId = idRaw != null ? Number(idRaw) : NaN;
   const fallbackTerm = placeholder.getAttribute("data-term") ?? "";
-  const visibleLabel = (placeholder.textContent ?? fallbackTerm).trim() || fallbackTerm;
+  const visibleLabel = getGlossaryPlaceholderVisibleText(placeholder) || fallbackTerm;
 
   const entry = Number.isFinite(glossaryId) ? glossary.find((e) => e.glossaryId === glossaryId) : undefined;
 
@@ -439,7 +440,7 @@ function replacePlaceholderWithTooltip(placeholder: HTMLElement) {
 
   const btn = document.createElement("button");
   btn.type = "button";
-  btn.className = "glossary-tooltip-trigger";
+  btn.className = "glossary-tooltip-trigger print-visible";
   btn.setAttribute("aria-haspopup", "dialog");
   btn.setAttribute("aria-expanded", "false");
   btn.setAttribute("aria-controls", popupId);

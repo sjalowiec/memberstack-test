@@ -39,6 +39,7 @@ import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTool
 import { buildSleevelessPrintBasicsSummaryDlHtml } from "../lib/patterns/sleevelessPrintBasicsSummaryHtml.ts";
 import { sleevelessFinishingFromPattern } from "../lib/patterns/sleevelessPatternFinishing.ts";
 import { buildSleevelessFinishingPrintListHtml } from "../lib/patterns/sleevelessPatternFinishingHtml.ts";
+import { SLEEVELESS_PATTERN_PRINT_NOTICE_HTML } from "../lib/patterns/sleevelessPatternPrintNoticeHtml.ts";
 import {
   hydratePatternPrintPersonalizationSlotsFromSession,
   triggerPatternPrint,
@@ -286,6 +287,7 @@ async function initSleevelessPrintPage(): Promise<void> {
 
   root.innerHTML = `
 <div class="print-doc-inner">
+  ${SLEEVELESS_PATTERN_PRINT_NOTICE_HTML}
   <section class="print-page-first" aria-label="Pattern overview and start of back">
     <header class="print-doc-header">
       <div class="print-doc-header-brand">

@@ -43,6 +43,7 @@ export {
   buildSecondShoulderInstructionTableRows,
   type ActiveSideInstructionTableRow,
 } from "./neckShoulderActiveSideChecklist";
+import { buildGlossaryTooltipPlaceholderHtml } from "../glossary/glossaryTooltipPrint";
 import {
   CARRIAGE_POSITION_PATTERN_TIP_DETAILS_HTML,
   centerBindOffStitchesFromNeckShoulderChart,
@@ -192,7 +193,12 @@ export type ActiveShoulderChartIntroOptions = {
 };
 
 function scrapOffGlossaryPlaceholderHtml(): string {
-  return `<span class="glossary-tooltip-placeholder" data-glossary-id="${SCRAP_OFF_GLOSSARY_ID}">Scrap off</span>`;
+  return buildGlossaryTooltipPlaceholderHtml(
+    SCRAP_OFF_GLOSSARY_ID,
+    "Scrap off",
+    (s) => s.replace(/"/g, "&quot;"),
+    (s) => s,
+  );
 }
 
 /** HTML center-neckline divide line with glossary on “Scrap off” (plain-text twin in intro copy module). */

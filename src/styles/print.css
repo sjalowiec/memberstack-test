@@ -6,6 +6,8 @@
 
 @import "./patterns/pattern-print-footer.css";
 @import "./patterns/pattern-print-personalization.css";
+@import "./tooltip-print.css";
+@import "./patterns/pattern-print-notice.css";
 
 /* Screen: tool attribution line (shown only when printing) */
 .tool-print-footer {

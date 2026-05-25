@@ -1,3 +1,5 @@
+import { buildGlossaryTooltipPlaceholderHtml } from "./glossaryTooltipPrint";
+
 /** Glossary entry for traditional stitches–rows–times diagram notation. */
 export const JAPANESE_NOTATION_TRADITIONAL_GLOSSARY_ID = 1779400000001;
 
@@ -13,6 +15,11 @@ export function buildShapingNotationChartHelpHtml(
   escapeText: (s: string) => string,
 ): string {
   const term = "Shaping Notation";
-  const placeholder = `<span class="glossary-tooltip-placeholder" data-glossary-id="${SHAPING_NOTATION_KIN_GLOSSARY_ID}" data-term="${escapeAttr(term)}">${escapeText(term)}</span>`;
+  const placeholder = buildGlossaryTooltipPlaceholderHtml(
+    SHAPING_NOTATION_KIN_GLOSSARY_ID,
+    term,
+    escapeAttr,
+    escapeText,
+  );
   return `<p class="sleeveless-shaping-notation-help no-print" data-sleeveless-shaping-notation-help hidden>Need help reading this chart? Learn about ${placeholder}.</p>`;
 }

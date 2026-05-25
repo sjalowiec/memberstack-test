@@ -1,0 +1,76 @@
+/* Print/PDF: glossary/inline trigger words only — no notes, icons, or popovers. */
+
+.tooltip-print-note {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+@media print {
+  .tooltip-print-note,
+  .tooltip-print-note[hidden] {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  button.glossary-tooltip-trigger,
+  .glossary-tooltip-trigger,
+  .glossary-tooltip-term,
+  .glossary-tooltip-label,
+  .glossary-tooltip-fallback,
+  .glossary-tooltip-placeholder,
+  .kbm-tooltip,
+  .pattern-term,
+  .tooltip-trigger {
+    display: inline !important;
+    visibility: visible !important;
+  }
+
+  button.glossary-tooltip-trigger {
+    appearance: none !important;
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font: inherit !important;
+    color: inherit !important;
+    text-decoration: underline dotted !important;
+    text-underline-offset: 3px !important;
+    cursor: default !important;
+  }
+
+  .glossary-tooltip-wrap,
+  .glossary-tooltip.glossary-tooltip-wrap {
+    display: inline !important;
+    visibility: visible !important;
+  }
+
+  .glossary-popup,
+  .glossary-tooltip-popup,
+  .glossary-tooltip-popup[data-glossary-popup],
+  .glossary-tooltip-popover,
+  .glossary-mobile-scrim,
+  .glossary-tooltip-scrim,
+  .tooltip-popover,
+  .tooltip-bubble,
+  .tooltip-text {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .glossary-tooltip-icon,
+  .tooltip-icon {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .kbm-tooltip::after,
+  .kbm-tooltip::before,
+  .pattern-term::after,
+  .pattern-term::before,
+  .sleeveless-pattern-left .pattern-term::after,
+  .sleeveless-pattern-left .pattern-term::before {
+    display: none !important;
+    content: none !important;
+    visibility: hidden !important;
+  }
+}

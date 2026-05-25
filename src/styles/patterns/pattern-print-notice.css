@@ -1,0 +1,40 @@
+/* Print-only sleeveless pattern notice (screen hidden via .print-only-pattern-note). */
+
+.print-only-pattern-note {
+  display: none !important;
+}
+
+@media print {
+  .print-only-pattern-note {
+    display: block !important;
+    margin: 0 0 1rem 0 !important;
+    padding: 0.75rem 1rem !important;
+    border: 1px solid #d8dcc8 !important;
+    background: #f7f8f1 !important;
+    font-size: 0.95rem !important;
+    line-height: 1.45 !important;
+    color: #374151 !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .print-only-pattern-note__title {
+    display: block !important;
+    margin: 0 0 0.5rem 0 !important;
+    font-weight: 600 !important;
+    color: #1f2937 !important;
+  }
+
+  .print-only-pattern-note__line {
+    margin: 0 0 0.5rem 0 !important;
+  }
+
+  .print-only-pattern-note__line:last-child {
+    margin-bottom: 0 !important;
+  }
+
+  .print-only-pattern-note__line strong {
+    font-weight: 700 !important;
+    color: #1f2937 !important;
+  }
+}

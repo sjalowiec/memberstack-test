@@ -32,6 +32,7 @@ import { scheduleReadingWorkflowSync } from "../lib/patterns/patternReadingWorkf
 import { showResults, initializeActionBar } from "../components/wizards/utils/wizardBehavior.ts";
 import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
+import { buildGlossaryTooltipPlaceholderHtml } from "../lib/glossary/glossaryTooltipPrint.ts";
 import { buildShapingNotationChartHelpHtml } from "../lib/glossary/shapingNotationGlossary.ts";
 import {
   isSleevelessCardiganHalfFrontDiagramType,
@@ -2189,7 +2190,12 @@ table {
   /** One-line glossary term in finishing HTML; hydrated after mount to match GlossaryTooltip.astro. */
   function glossaryTooltip(id, term) {
     const t = String(term ?? "");
-    return `<span class="glossary-tooltip-placeholder" data-glossary-id="${id}" data-term="${escapeGlossaryPlaceholderAttr(t)}">${escapeGlossaryPlaceholderText(t)}</span>`;
+    return buildGlossaryTooltipPlaceholderHtml(
+      id,
+      t,
+      escapeGlossaryPlaceholderAttr,
+      escapeGlossaryPlaceholderText,
+    );
   }
 
   /** Inline help on “one shoulder” in finishing (not glossary); uses global `.kbm-tooltip` styles. */
