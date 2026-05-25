@@ -100,6 +100,7 @@ describe("sleeveless diagram body shape vs applied shaping", () => {
 
   it("A-line from measurements (38/44): dedicated SVG — no dotted guide overlay", () => {
     const input = patternData({
+      bodyShape: "aline",
       chestBustOverride: "38",
       hipOverride: "44",
       chartFinishedBust: 38,

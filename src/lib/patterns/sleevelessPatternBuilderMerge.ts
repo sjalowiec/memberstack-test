@@ -18,6 +18,8 @@ import {
 } from "./sleevelessCustomBuildWizardNeckline";
 import { mapExpressStyleKey } from "./syncSleevelessExpressDesignToStorage";
 import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "./patternStorage";
+import { reconcileStraightTorsoOverridesAfterChartSync } from "./sleevelessCustomBuildBodyMeasurements";
+import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 
 export function sectionPattern(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
@@ -274,8 +276,19 @@ export function applyCustomBuildMeasurementOverridesToGenerator(
     /* localStorage unavailable or corrupt — continue without review overrides */
   }
   const fromFit = sectionPattern(sectionPattern(gen.fit).cbMeasurementOverrides);
-  const overrides = { ...fromFit, ...fromStorage };
+  let overrides = { ...fromFit, ...fromStorage };
   if (Object.keys(overrides).length === 0) return gen;
+
+  const bodyShape = String(sectionPattern(gen.style).bodyShape ?? "").trim().toLowerCase();
+  if (bodyShape === "straight") {
+    const bust =
+      resolveEffectiveFinishedBustInches(gen) ??
+      sectionPattern(sectionPattern(gen.fit).selectedMeasurements).finished_bust_chest;
+    const bustIn = typeof bust === "number" && bust > 0 ? bust : undefined;
+    if (bustIn !== undefined) {
+      overrides = reconcileStraightTorsoOverridesAfterChartSync(bustIn, overrides);
+    }
+  }
 
   return {
     ...gen,

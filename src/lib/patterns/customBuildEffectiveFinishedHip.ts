@@ -11,6 +11,7 @@ import {
   positiveMeasurementInches,
 } from "./customBuildEffectiveArmholeDepth";
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
+import { measurementsImplySleevelessAlineBody } from "./sleevelessAlineShaping";
 
 function section(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
@@ -44,11 +45,24 @@ function customBuildFinishedHipOverrideInches(
  * Resolves finished hip circumference (inches) for diagram `{{HIP_*}}` tokens.
  * Returns undefined when no hip value is stored — use bust as the diagram fallback.
  */
+function storedBodyShapeKey(patternData: Record<string, unknown>): string {
+  const style = section(patternData.style);
+  const raw = typeof style.bodyShape === "string" ? style.bodyShape : "";
+  return raw.trim().toLowerCase();
+}
+
 export function resolveEffectiveFinishedHipInches(
   patternData: Record<string, unknown>,
 ): number | undefined {
   const overrideInches = customBuildFinishedHipOverrideInches(patternData);
-  if (overrideInches !== undefined) {
+  const bust = resolveEffectiveFinishedBustInches(patternData);
+  const ignoreStaleWideHipOverride =
+    overrideInches !== undefined &&
+    storedBodyShapeKey(patternData) === "straight" &&
+    !isCustomBuildPatternMode(patternData) &&
+    bust !== undefined &&
+    measurementsImplySleevelessAlineBody(bust, overrideInches);
+  if (overrideInches !== undefined && !ignoreStaleWideHipOverride) {
     return overrideInches;
   }
   const chartInches = chartFinishedHipInches(patternData);

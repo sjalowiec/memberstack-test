@@ -3,6 +3,8 @@ import {
   computeCustomBuildBodyFinishedFromChartRow,
   persistCustomBuildBodyFinishedMeasurements,
   readCustomBuildBodyFinishedMeasurements,
+  reconcileStraightTorsoChartMeasurements,
+  reconcileStraightTorsoOverridesAfterChartSync,
   seedCustomBuildBodyFinishedFromChartRow,
 } from "./sleevelessCustomBuildBodyMeasurements";
 import { getCurrentPattern, PATTERN_STORAGE_KEY } from "./patternStorage";
@@ -14,6 +16,33 @@ const sampleRow: ChartRow = {
   waist: 28,
   hip: 38,
 };
+
+describe("reconcileStraightTorsoChartMeasurements", () => {
+  it("sets finished hip to bust for straight chart sync", () => {
+    const m = reconcileStraightTorsoChartMeasurements({
+      finished_bust_chest: 37,
+      finished_hip: 43,
+      finished_waist: 35,
+    });
+    expect(m.finished_hip).toBe(37);
+  });
+});
+
+describe("reconcileStraightTorsoOverridesAfterChartSync", () => {
+  it("clears stale hip override well above chart bust (43 vs 37)", () => {
+    const next = reconcileStraightTorsoOverridesAfterChartSync(37, {
+      hip: "43",
+      chestBust: "43",
+    });
+    expect(next.hip).toBe("37");
+    expect(next.chestBust).toBe("37");
+  });
+
+  it("keeps hip slightly above bust within straight tolerance", () => {
+    const next = reconcileStraightTorsoOverridesAfterChartSync(37, { hip: "37.2" });
+    expect(next.hip).toBe("37.2");
+  });
+});
 
 describe("computeCustomBuildBodyFinishedFromChartRow", () => {
   it("derives body from chart and applies standard ease to finished bust", () => {

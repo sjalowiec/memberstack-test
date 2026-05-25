@@ -117,6 +117,13 @@ export function resolveBodyBlockHipCircumferenceInches(
   if (isSleevelessExplicitCustomBuildStraight(patternData, finishedBust, finishedHip)) {
     return finishedBust;
   }
+  // Express (and any non–custom-build) straight torso: honor style, not stale review hip overrides.
+  if (
+    storedBodyShapeKey(patternData) === "straight" &&
+    !isCustomBuildPatternMode(patternData)
+  ) {
+    return finishedBust;
+  }
   return finishedHip !== undefined && finishedHip > 0 ? finishedHip : finishedBust;
 }
 
@@ -133,7 +140,11 @@ export function shouldApplySleevelessAlineShapingFromMeasurements(
   }
   if (isSleevelessAlineBodyShape(patternData)) return true;
   if (isSleevelessShapedBodyShape(patternData)) return true;
-  return measurementsImplySleevelessBodyShaping(finishedBust, finishedHip);
+  const hipForBlock =
+    finishedBust !== undefined && finishedBust > 0
+      ? resolveBodyBlockHipCircumferenceInches(patternData, finishedBust, finishedHip)
+      : finishedHip;
+  return measurementsImplySleevelessBodyShaping(finishedBust, hipForBlock);
 }
 
 /**

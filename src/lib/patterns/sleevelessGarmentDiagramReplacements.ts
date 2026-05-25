@@ -28,6 +28,26 @@ function isFiniteNumber(n: unknown): n is number {
   return typeof n === "number" && Number.isFinite(n);
 }
 
+/**
+ * Per-side shoulder stitch count for garment schematic `{{SHOULDER_STS}}` (not B = stitches after armhole).
+ * Cardigan half front uses the same per-side target as the back (`debug.shoulderStitches`).
+ */
+export function shoulderStitchesPerSideForDiagram(
+  d: SleevelessBackPatternResult["debug"],
+): number | undefined {
+  if (isFiniteNumber(d.shoulderStitches) && d.shoulderStitches > 0) {
+    return Math.round(d.shoulderStitches);
+  }
+  if (
+    isFiniteNumber(d.stitchesAfterArmhole) &&
+    isFiniteNumber(d.necklineStitches) &&
+    d.stitchesAfterArmhole > d.necklineStitches
+  ) {
+    return Math.max(1, Math.floor((d.stitchesAfterArmhole - d.necklineStitches) / 2));
+  }
+  return undefined;
+}
+
 function fmtNumber(n: number): string {
   if (!isFiniteNumber(n)) return "";
   const rounded = Math.round(n);
@@ -81,10 +101,10 @@ function resolveHipFieldsForSleevelessDiagram(
   let hipSts: number | undefined;
   if (isFiniteNumber(d.hemCastOnStitches) && d.hemCastOnStitches > 0) {
     hipSts = Math.round(d.hemCastOnStitches);
-  } else if (isFiniteNumber(finishedHip) && isFiniteNumber(spi) && spi > 0) {
-    hipSts = Math.round(finishedHip * spi);
-  } else if (isFiniteNumber(d.backStitches)) {
+  } else if (isFiniteNumber(d.backStitches) && d.backStitches > 0) {
     hipSts = Math.round(d.backStitches);
+  } else if (isFiniteNumber(finishedHip) && isFiniteNumber(spi) && spi > 0) {
+    hipSts = Math.round((finishedHip * spi) / 2);
   }
 
   const hipHalfWidthIn =
@@ -208,7 +228,8 @@ function applyCardiganHalfFrontMeasurements(
   const hipWidthIn = hipCirc !== undefined ? hipCirc / 4 : undefined;
   repl.HIP_INCHES = fmtNumber(inchesToUnit(hipWidthIn, unit) ?? NaN);
 
-  repl.SHOULDER_STS = String(half.stitchesAfterArmhole);
+  const shoulderStsLabel = shoulderStitchesPerSideForDiagram(d);
+  repl.SHOULDER_STS = shoulderStsLabel !== undefined ? String(shoulderStsLabel) : "";
   const shoulderWidthHalfIn =
     isFiniteNumber(d.shoulderWidthInches) && d.shoulderWidthInches > 0
       ? d.shoulderWidthInches / 2
@@ -285,6 +306,8 @@ export function buildSleevelessGarmentDiagramReplacements(
       ? lengthFromRowsForDiagram(armholeRowsForDiagram, rpiForDiagram, unit)
       : undefined;
 
+  const shoulderStsForDiagram = shoulderStitchesPerSideForDiagram(d);
+
   const repl: Record<string, string> = {
     UNIT: unitLabel,
     HEIGHT: fmtNumber(heightFromRows ?? inchesToUnit(d.backNeckToHem, unit) ?? NaN),
@@ -294,7 +317,8 @@ export function buildSleevelessGarmentDiagramReplacements(
     ARMHOLE_ROWS: isFiniteNumber(d.armholeRows) ? String(Math.round(d.armholeRows)) : "",
     BUST_STS: isFiniteNumber(d.backStitches) ? String(Math.round(d.backStitches)) : "",
     BUST_WIDTH: fmtNumber(inchesToUnit(bustWidthIn, unit) ?? NaN),
-    SHOULDER_STS: isFiniteNumber(d.stitchesAfterArmhole) ? String(Math.round(d.stitchesAfterArmhole)) : "",
+    SHOULDER_STS:
+      shoulderStsForDiagram !== undefined ? String(shoulderStsForDiagram) : "",
     SHOULDER_WIDTH: fmtNumber(inchesToUnit(d.shoulderWidthInches, unit) ?? NaN),
     NECK_STS: isFiniteNumber(d.necklineStitches) ? String(Math.round(d.necklineStitches)) : "",
     NECK_WIDTH: fmtNumber(inchesToUnit(d.necklineWidthInches, unit) ?? NaN),

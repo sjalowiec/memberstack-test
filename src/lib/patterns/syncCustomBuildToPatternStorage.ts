@@ -30,8 +30,15 @@ import {
   mapExpressNecklineToStorage,
   syncSleevelessDesignBasicsToPatternStorage,
 } from "./syncSleevelessExpressDesignToStorage";
-import { seedCustomBuildBodyFinishedFromChartRow } from "./sleevelessCustomBuildBodyMeasurements";
-import { loadMeasurementOverrides } from "./sleevelessCustomMeasurementStorage";
+import {
+  reconcileStraightTorsoChartMeasurements,
+  reconcileStraightTorsoOverridesAfterChartSync,
+  seedCustomBuildBodyFinishedFromChartRow,
+} from "./sleevelessCustomBuildBodyMeasurements";
+import {
+  loadMeasurementOverrides,
+  persistMeasurementOverrides,
+} from "./sleevelessCustomMeasurementStorage";
 import {
   CUSTOM_BUILD_NECKLINE_STYLE_KEY,
   readCustomBuildWizardNeckline,
@@ -192,6 +199,23 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
       selectedMeasurements = computeDefaultMeasurementsFromChartRow(chartRow, fit, {
         bodyShape: bodyShapeForChart,
       });
+    }
+    if (selectedMeasurements && bodyShapeForChart === "straight") {
+      selectedMeasurements = reconcileStraightTorsoChartMeasurements(selectedMeasurements);
+      const bust = selectedMeasurements.finished_bust_chest;
+      if (bust !== undefined && bust > 0) {
+        const reconciledOverrides = reconcileStraightTorsoOverridesAfterChartSync(
+          bust,
+          loadMeasurementOverrides(),
+        );
+        persistMeasurementOverrides(reconciledOverrides);
+        const pbFit = section(getPatternData().fit);
+        savePatternData("fit", {
+          ...pbFit,
+          cbMeasurementOverrides: reconciledOverrides,
+        });
+        saveCurrentPattern({ fit: { cbMeasurementOverrides: reconciledOverrides } });
+      }
     }
 
     const patternMode = resolveSyncPatternMode();

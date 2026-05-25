@@ -2,6 +2,7 @@
  * Custom Build body + finished measurement layer (`SleevelessPatternRecord.measurements`).
  * Pattern math still reads `fit.selectedMeasurements` — this layer is storage/UI only for phase 1.
  */
+import { SLEEVELESS_BODY_STRAIGHT_TOLERANCE_INCHES } from "./bodyBlock/sleevelessBodyBlock";
 import {
   getCurrentPattern,
   saveCurrentPattern,
@@ -61,6 +62,49 @@ export function readCustomBuildBodyFinishedMeasurements(
 }
 
 /** Chart row + fit ease → initial body/finished layer (hip follows bust unless A-line). */
+/**
+ * Straight torso: chart hip follows finished bust (neckline does not change body width).
+ */
+export function reconcileStraightTorsoChartMeasurements(
+  measurements: Record<string, number>,
+): Record<string, number> {
+  const bust = measurements.finished_bust_chest;
+  if (bust === undefined || bust <= 0) return measurements;
+  return {
+    ...measurements,
+    finished_hip: bust,
+    finished_waist:
+      measurements.finished_waist !== undefined && measurements.finished_waist > 0
+        ? measurements.finished_waist
+        : bust,
+  };
+}
+
+/**
+ * When chart bust is refreshed, drop stale review hip overrides from another size/fit
+ * (e.g. hip 43″ with Men's Med close bust 37″ → erroneous A-line cast-on 86).
+ * Intentional straight + wide hip (hip slightly above bust within tolerance) is kept.
+ */
+export function reconcileStraightTorsoOverridesAfterChartSync(
+  chartBustInches: number,
+  overrides: Record<string, string>,
+): Record<string, string> {
+  const bustStr = String(chartBustInches);
+  const next = { ...overrides };
+  const hipRaw = next.hip?.trim();
+  if (!hipRaw) {
+    return { ...next, chestBust: next.chestBust ?? bustStr, hip: bustStr };
+  }
+  const hipIn = parseFloat(hipRaw.replace(/[^\d.-]/g, ""));
+  if (
+    !Number.isFinite(hipIn) ||
+    hipIn > chartBustInches + SLEEVELESS_BODY_STRAIGHT_TOLERANCE_INCHES
+  ) {
+    return { ...next, chestBust: bustStr, hip: bustStr };
+  }
+  return next;
+}
+
 export function computeCustomBuildBodyFinishedFromChartRow(
   row: ChartRow,
   fitPreference: string,

@@ -134,7 +134,7 @@ export const SLEEVELESS_PATTERN_SCENARIOS: readonly SleevelessPatternScenario[] 
       shoulderReconciliation: true,
       pieces: ["back", "front"],
       garmentOverviewNotation: true,
-      frontBackCanonicalRule: false,
+      frontBackCanonicalRule: true,
       noDuplicateBindOffRemainingProse: true,
     },
   },
