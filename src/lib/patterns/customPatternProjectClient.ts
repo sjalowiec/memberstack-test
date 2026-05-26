@@ -198,6 +198,21 @@ export async function listCustomPatternProjects(
   return { ok: true, projects: res.projects ?? [], authMode: res.authMode };
 }
 
+export async function deleteCustomPatternProject(
+  projectId: string,
+  family: CustomPatternFamily = "sleeveless",
+): Promise<
+  | { ok: true; authMode?: CustomPatternProjectAuthMode }
+  | { ok: false; error: string }
+> {
+  const res = await projectFetch<{ deleted: true }>("custom-pattern-project-delete", {
+    method: "DELETE",
+    body: JSON.stringify({ id: projectId, family }),
+  });
+  if (!res.ok) return res;
+  return { ok: true, authMode: res.authMode };
+}
+
 function patternSectionRecord(section: unknown): Record<string, unknown> {
   return section && typeof section === "object" && !Array.isArray(section)
     ? (section as Record<string, unknown>)

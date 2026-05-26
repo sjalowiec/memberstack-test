@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { stubLocalStorage } from "./test/stubLocalStorage";
 import {
   clearActiveCustomPatternProjectId,
+  readActiveCustomPatternProjectId,
   writeActiveCustomPatternProjectId,
 } from "./customPatternProjectActiveId";
 import {
@@ -43,7 +44,7 @@ function makeClassList() {
 }
 
 type MockEl = HTMLElement & {
-  _click?: () => void;
+  _click?: () => unknown;
   _children: MockEl[];
 };
 
@@ -77,21 +78,20 @@ function makeEl(tag = "div"): MockEl {
       const matches = collectMatches(el._children, sel);
       return matches as unknown as NodeListOf<Element>;
     },
-    addEventListener(event: string, handler: () => void) {
+    addEventListener(event: string, handler: () => unknown) {
       if (event === "click") el._click = handler;
     },
     matches(sel: string) {
       if (sel === "[data-pattern-workspace-library-item]") {
         return attrs.has("data-pattern-workspace-library-item");
       }
+      if (sel === "[data-pattern-workspace-library-item-card]") {
+        return attrs.has("data-pattern-workspace-library-item-card");
+      }
       return false;
     },
     focus: vi.fn(),
   }) as unknown as MockEl;
-
-  if (tag === "button") {
-    el.setAttribute("data-pattern-workspace-library-item", "");
-  }
 
   return el;
 }
@@ -99,9 +99,7 @@ function makeEl(tag = "div"): MockEl {
 function collectMatches(nodes: MockEl[], sel: string): MockEl[] {
   const out: MockEl[] = [];
   for (const node of nodes) {
-    if (sel === "[data-pattern-workspace-library-item]" && node.matches(sel)) {
-      out.push(node);
-    }
+    if (node.matches?.(sel)) out.push(node);
     out.push(...collectMatches(node._children, sel));
   }
   return out;
@@ -144,7 +142,10 @@ function makeDrawerBindings(): PatternWorkspaceLibraryDrawerBindings & {
     return null;
   };
   drawer.querySelectorAll = (sel: string) => {
-    if (sel === "[data-pattern-workspace-library-item]") {
+    if (
+      sel === "[data-pattern-workspace-library-item]" ||
+      sel === "[data-pattern-workspace-library-item-card]"
+    ) {
       return collectMatches(list._children, sel) as unknown as NodeListOf<HTMLElement>;
     }
     return [] as unknown as NodeListOf<HTMLElement>;
@@ -221,9 +222,9 @@ describe("patternWorkspaceLibraryDrawer", () => {
 
     await refreshPatternWorkspaceLibraryList(bindings.drawer);
 
-    const items = bindings.drawer.querySelectorAll("[data-pattern-workspace-library-item]");
-    expect(items.length).toBe(2);
-    const active = Array.from(items).find((item) => item.classList.contains("is-active"));
+    const cards = bindings.drawer.querySelectorAll("[data-pattern-workspace-library-item-card]");
+    expect(cards.length).toBe(2);
+    const active = Array.from(cards).find((card) => card.classList.contains("is-active"));
     expect(active?.dataset.projectId).toBe("proj-b");
     expect(bindings.list.hidden).toBe(false);
     expect(bindings.status.hidden).toBe(true);

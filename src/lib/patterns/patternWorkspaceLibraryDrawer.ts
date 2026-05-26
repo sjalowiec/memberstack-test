@@ -59,15 +59,20 @@ function renderLibraryItem(
   const li = document.createElement("li");
   li.className = "pattern-workspace-library__item";
 
+  const card = document.createElement("div");
+  card.className = "pattern-workspace-library__item-card";
+  card.setAttribute("data-pattern-workspace-library-item-card", "");
+  card.dataset.projectId = project.id;
+  if (project.id === activeId) {
+    card.classList.add("is-active");
+  }
+
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = "pattern-workspace-library__item-btn";
   btn.setAttribute("data-pattern-workspace-library-item", "");
   btn.dataset.projectId = project.id;
-  if (project.id === activeId) {
-    btn.classList.add("is-active");
-    btn.setAttribute("aria-current", "true");
-  }
+  if (project.id === activeId) btn.setAttribute("aria-current", "true");
   btn.setAttribute("aria-label", `Open ${displayName}`);
 
   const nameEl = document.createElement("span");
@@ -81,11 +86,13 @@ function renderLibraryItem(
   metaEl.textContent = stamp ? `${type} · ${stamp}` : type;
 
   btn.append(nameEl, metaEl);
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", async () => {
     if (btn.disabled) return;
-    void onLibraryProjectOpen(root, project.id, displayName, btn);
+    await onLibraryProjectOpen(root, project.id, displayName, btn);
   });
-  li.append(btn);
+
+  card.append(btn);
+  li.append(card);
   list.append(li);
 }
 
@@ -96,8 +103,8 @@ async function onLibraryProjectOpen(
   trigger: HTMLButtonElement,
 ): Promise<void> {
   setDrawerStatus(root, `Loading “${label}”…`);
-  const items = root.querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-item]");
-  items.forEach((item) => {
+  const openItems = root.querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-item]");
+  openItems.forEach((item) => {
     item.disabled = true;
   });
 
@@ -112,7 +119,7 @@ async function onLibraryProjectOpen(
   } catch {
     setDrawerStatus(root, "Could not open this pattern. Please try again.", true);
   } finally {
-    items.forEach((item) => {
+    openItems.forEach((item) => {
       item.disabled = false;
     });
     trigger.disabled = false;

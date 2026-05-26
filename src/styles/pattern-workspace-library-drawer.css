@@ -178,17 +178,13 @@
   margin-top: 0.35rem;
 }
 
-.pattern-workspace-library__item-btn {
+.pattern-workspace-library__item-card {
   display: flex;
-  flex-direction: column;
   align-items: flex-start;
-  gap: 0.2rem;
+  gap: 0.75rem;
   width: 100%;
   padding: 0.65rem 0.75rem;
-  font: inherit;
-  text-align: left;
-  color: #1f2937;
-  cursor: pointer;
+  box-sizing: border-box;
   background: #fff;
   border: 1px solid rgba(82, 104, 45, 0.12);
   border-radius: 10px;
@@ -197,19 +193,36 @@
     border-color 0.12s ease;
 }
 
-.pattern-workspace-library__item-btn:hover:not(:disabled) {
+.pattern-workspace-library__item-card:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(82, 104, 45, 0.22);
+}
+
+.pattern-workspace-library__item-card.is-active {
+  border-color: rgba(82, 104, 45, 0.35);
+  background: rgba(82, 104, 45, 0.06);
+}
+
+.pattern-workspace-library__item-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  color: #1f2937;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  border-radius: 0;
 }
 
 .pattern-workspace-library__item-btn:focus-visible {
   outline: 2px solid #c2614e;
   outline-offset: 2px;
-}
-
-.pattern-workspace-library__item-btn.is-active {
-  border-color: rgba(82, 104, 45, 0.35);
-  background: rgba(82, 104, 45, 0.06);
+  border-radius: 4px;
 }
 
 .pattern-workspace-library__item-btn:disabled {

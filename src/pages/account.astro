@@ -425,6 +425,57 @@ const description =
     white-space: nowrap;
   }
 
+  :global(.account-my-patterns__actions-header) {
+    width: 1%;
+    padding: 0.65rem 0.85rem;
+    text-align: right;
+  }
+
+  :global(.account-my-patterns__cell--actions) {
+    width: 1%;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  :global(.account-my-patterns__delete) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: #9ca3af;
+    cursor: pointer;
+    opacity: 0.85;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease,
+      opacity 0.15s ease;
+  }
+
+  :global(.account-my-patterns__delete:hover:not(:disabled)) {
+    background: rgba(82, 104, 45, 0.1);
+    color: #52682d;
+    opacity: 1;
+  }
+
+  :global(.account-my-patterns__delete:focus-visible) {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  :global(.account-my-patterns__delete:disabled) {
+    opacity: 0.55;
+    cursor: wait;
+  }
+
+  :global(.account-my-patterns__table tbody tr.account-my-patterns__row[aria-disabled="true"] .account-my-patterns__delete) {
+    pointer-events: none;
+  }
+
   @media (max-width: 640px) {
     :global(.account-my-patterns__table-wrap) {
       overflow-x: visible;
@@ -487,6 +538,15 @@ const description =
 
     :global(.account-my-patterns__pattern-name) {
       font-size: 1.05rem;
+    }
+
+    :global(.account-my-patterns__cell--actions) {
+      justify-content: flex-end;
+      padding-top: 0.15rem;
+    }
+
+    :global(.account-my-patterns__cell--actions::before) {
+      display: none;
     }
   }
 

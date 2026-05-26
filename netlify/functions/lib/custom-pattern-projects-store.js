@@ -103,6 +103,27 @@ export async function writeProjectSummaryIndex(store, family, userId, summaries)
 }
 
 /**
+ * Deletes a project blob and updates the lightweight summary index.
+ * @param {import("@netlify/blobs").Store} store
+ * @param {string} family
+ * @param {string} userId
+ * @param {string} projectId
+ */
+export async function deleteProjectAndUpdateIndex(store, family, userId, projectId) {
+  const key = projectBlobKey(family, userId, projectId);
+  await store.delete(key);
+
+  // Index might still reference the deleted project — filter before rewriting.
+  let existing = await readProjectSummaryIndex(store, family, userId);
+  if (!existing) {
+    existing = await listProjectSummariesFromBlobScan(store, family, userId);
+  }
+  const next = existing.filter((row) => row.id !== projectId);
+  await writeProjectSummaryIndex(store, family, userId, next);
+  return next;
+}
+
+/**
  * Upsert one project summary into the index (after save/update).
  * @param {import("@netlify/blobs").Store} store
  * @param {string} family
@@ -142,7 +163,7 @@ export function corsHeaders() {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers":
       "Content-Type, Authorization, X-KBM-Member-Id, X-KBM-Dev-User-Id",
-    "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   };
 }
 
