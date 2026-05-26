@@ -7,7 +7,8 @@ import {
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
 } from "../lib/patterns/patternStorage";
 import { applySleevelessExpressEditChoicesFromUrl } from "../lib/patterns/restoreSleevelessExpressBuilderFromPattern";
-import { applySleevelessExpressNewSessionFromUrl, startFreshSleevelessExpressPattern } from "../lib/patterns/sleevelessExpressFreshStart";
+import { startNewCustomPatternFromExpress } from "../lib/patterns/startNewCustomPatternWorkflow";
+import { applySleevelessExpressNewSessionFromUrl } from "../lib/patterns/sleevelessExpressFreshStart";
 import {
   buildCardiganSelectionWriteSnapshot,
   logExpressGarmentClick,
@@ -39,6 +40,7 @@ import {
   loadExpressPersisted,
 } from "../lib/patterns/sleevelessExpressResume";
 import { isEditingSavedCustomPatternProject } from "../lib/patterns/customPatternEditingUx";
+import { ensureSavedCustomPatternSessionHydratedOnExpressPage } from "../lib/patterns/hydrateSavedCustomPatternProject";
 import { syncSleevelessBuilderHeaderTitle } from "../lib/patterns/sleevelessBuilderHeaderUx";
 import {
   EXPRESS_AVAILABLE_NEEDLES_INPUT_ID,
@@ -76,10 +78,13 @@ function getExpressGaugeUnit(): "cm" | "in" {
 /** Minimal merged-style shape for {@link resolveSleevelessAudienceHeroImageSrc} from live Express wizard values. */
 function expressPatternDataForAudienceHeroImages(values: Record<string, string>): Record<string, unknown> {
   const sm = mapExpressStyle(values.style ?? "");
+  const neckRaw = String(values.neckline ?? "").trim();
+  const neckline = neckRaw ? (mapExpressNeckline(neckRaw) === "v" ? "v" : "round") : "round";
   return {
     style: {
       garmentStyle: sm.frontStyle === "open" ? "cardigan" : "pullover",
       frontStyle: sm.frontStyle,
+      neckline,
     },
   };
 }
@@ -225,6 +230,9 @@ function initExpressPage() {
   const startedFreshSession = applySleevelessExpressNewSessionFromUrl();
   if (!startedFreshSession) {
     applySleevelessExpressEditChoicesFromUrl();
+  }
+  if (!startedFreshSession && isEditingSavedCustomPatternProject()) {
+    ensureSavedCustomPatternSessionHydratedOnExpressPage();
   }
   const persisted = startedFreshSession ? null : loadExpressPersisted();
   const editChoicesReopen = isExpressEditChoicesReopenSession(persisted);
@@ -770,10 +778,7 @@ function initExpressPage() {
     refreshGaugeStepUi(false);
   }
 
-  function resetExpressBuilder(): void {
-    if (!confirm("Start a new pattern? Your current sleeveless choices on this page will be reset.")) return;
-    startFreshSleevelessExpressPattern();
-
+  function applyExpressBuilderUiReset(): void {
     for (const k of Object.keys(values)) {
       delete values[k];
     }
@@ -830,6 +835,16 @@ function initExpressPage() {
     syncSleevelessBuilderHeaderTitle();
   }
 
+  let expressStartOverBusy = false;
+
+  function requestResetExpressBuilder(): void {
+    if (expressStartOverBusy) return;
+    expressStartOverBusy = true;
+    void startNewCustomPatternFromExpress(applyExpressBuilderUiReset).finally(() => {
+      expressStartOverBusy = false;
+    });
+  }
+
   function hideExpressEditingBar(): void {
     const bar = document.querySelector("[data-express-editing-bar]");
     if (bar instanceof HTMLElement) bar.hidden = true;
@@ -868,7 +883,7 @@ function initExpressPage() {
     showExpressEditingBar();
 
     document.querySelector("[data-express-editing-start-new]")?.addEventListener("click", () => {
-      resetExpressBuilder();
+      requestResetExpressBuilder();
     });
   }
 
@@ -891,7 +906,7 @@ function initExpressPage() {
 
   pills.forEach((p) => p.addEventListener("click", onPillClick));
 
-  document.getElementById("express-start-over-btn")?.addEventListener("click", resetExpressBuilder);
+  document.getElementById("express-start-over-btn")?.addEventListener("click", requestResetExpressBuilder);
 
   document.getElementById("express-customize-pattern")?.addEventListener("click", () => {
     void (async () => {
@@ -1025,7 +1040,10 @@ function initExpressPage() {
       }
     });
 
-  if (nonEmptyTrimmed(values.front)) {
+  if (
+    nonEmptyTrimmed(values.front) &&
+    (!isEditingSavedCustomPatternProject() || editChoicesReopen)
+  ) {
     writeSleevelessGarmentTypeLocalStorage(garmentTypeFromFront(values.front));
     syncExpressWizardToPatternStorage(values, null);
   }

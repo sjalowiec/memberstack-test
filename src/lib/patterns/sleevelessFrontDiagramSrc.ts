@@ -93,6 +93,10 @@ function isExplicitRoundNeckFamily(normalized: string): boolean {
   if (normalized === "round" || normalized === "crew" || normalized === "scoop" || normalized === "boat") {
     return true;
   }
+  if (normalized === "roundneck" || normalized === "round-neck" || normalized === "round neck") {
+    return true;
+  }
+  if (normalized.replace(/[\s_-]+/g, "") === "roundneck") return true;
   if (/\b(round|crew|scoop|boat|square)\b/.test(normalized)) return true;
   return false;
 }
