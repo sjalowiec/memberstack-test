@@ -5,6 +5,7 @@ import WizardBackLink from "../../../components/wizards/WizardBackLink.astro";
 import PatternWorkspaceTabs from "../../../components/patterns/PatternWorkspaceTabs.astro";
 import "../../../styles/sleeveless-express-builder-cards.css";
 import "../../../styles/sleeveless-express-wizard-layout.css";
+import "../../../styles/custom-pattern-editing-banner.css";
 
 const customBuildHref = "/patterns/sleeveless/custom-build/";
 const foundationHref = "/patterns/sleeveless/custom-build/design";
@@ -43,6 +44,7 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
         />
 
         <WizardBackLink className="back-link no-print" fallback="/patterns" />
+        <div data-cb-editing-banner-host hidden></div>
 
         <div class="sg-tab-build">
           <div class="express-builder-nav-row express-builder-nav-row--custom-flow no-print">
@@ -631,4 +633,5 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
 
 <script>
   import "/src/scripts/sleeveless-custom-style-page.ts";
+  import "/src/scripts/customPatternEditingBanner.ts";
 </script>

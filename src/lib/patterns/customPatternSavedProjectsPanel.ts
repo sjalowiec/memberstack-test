@@ -16,10 +16,17 @@ import type {
 } from "./customPatternProjectTypes";
 import {
   readActiveCustomPatternProjectId,
+  readActiveCustomPatternProjectLinkedName,
   writeActiveCustomPatternProjectId,
 } from "./customPatternProjectActiveId";
 import { resolveCustomPatternProjectAuth } from "./customPatternProjectAuth";
-import { getPatternProjectMeta } from "./sleevelessPatternProjectMeta";
+import {
+  formatEditingSavedPatternStatus,
+  isEditingSavedCustomPatternProject,
+  reconcileActiveSavedProjectLinkedNameFromDraft,
+  resolveCustomPatternDisplayName,
+} from "./customPatternEditingUx";
+import { getPatternProjectMeta, savePatternProjectMeta } from "./sleevelessPatternProjectMeta";
 import { nextPanelListRefresh, perfEnd, perfMark, perfStart } from "./savedPatternsPerfLog";
 
 export type CustomPatternSavedProjectsPanelOptions = {
@@ -46,13 +53,84 @@ function setStatus(root: HTMLElement, message: string, isError = false): void {
   setStatusEl(root.querySelector("[data-cb-project-status]"), message, isError);
 }
 
+function resolveNameForPanelDisplay(nameInput: HTMLInputElement | null): string {
+  const fromInput = nameInput?.value?.trim() ?? "";
+  if (fromInput) return fromInput;
+  return resolveCustomPatternDisplayName();
+}
+
+/** Sync project name field + “Editing saved pattern” row from draft and active-project keys. */
+export function refreshCustomPatternSavedProjectsPanelUi(root: HTMLElement): void {
+  reconcileActiveSavedProjectLinkedNameFromDraft();
+
+  const nameInput = root.querySelector<HTMLInputElement>("[data-cb-project-name]");
+  const editingStatus = root.querySelector("[data-cb-project-editing-status]");
+  const saveBtn = root.querySelector<HTMLButtonElement>("[data-cb-project-save]");
+  const copyBtn = root.querySelector<HTMLButtonElement>("[data-cb-project-save-copy]");
+  const updateBtn = root.querySelector<HTMLButtonElement>("[data-cb-project-update]");
+  const storedName = resolveCustomPatternDisplayName();
+
+  if (nameInput && storedName && !nameInput.value.trim()) {
+    nameInput.value = storedName;
+  }
+
+  const editing = isEditingSavedCustomPatternProject();
+  const bannerHostOnPage =
+    typeof document !== "undefined" && !!document.querySelector("[data-cb-editing-banner-host]");
+  if (saveBtn) {
+    saveBtn.textContent = "Save as new";
+    saveBtn.classList.toggle("btn-primary", !editing);
+    saveBtn.classList.toggle("btn-outline-secondary", editing);
+  }
+  if (copyBtn) copyBtn.textContent = "Save as copy";
+  if (updateBtn) {
+    updateBtn.textContent = "Update saved pattern";
+    updateBtn.classList.toggle("btn-primary", editing && !bannerHostOnPage);
+    updateBtn.classList.toggle("btn-outline-secondary", !editing || bannerHostOnPage);
+    updateBtn.hidden = editing && bannerHostOnPage;
+  }
+
+  if (editingStatus) {
+    const statusName = resolveNameForPanelDisplay(nameInput);
+    if (editing && statusName && !bannerHostOnPage) {
+      editingStatus.textContent = formatEditingSavedPatternStatus(statusName);
+      editingStatus.hidden = false;
+    } else {
+      editingStatus.textContent = "";
+      editingStatus.hidden = true;
+    }
+  }
+}
+
+export type CustomPatternProjectSaveMode = "create" | "update" | "copy";
+
 export type SmartSaveCustomPatternProjectOptions = {
   family?: CustomPatternFamily;
   resolveName: () => string;
   onStatus?: (message: string, isError?: boolean) => void;
+  /**
+   * `create` — always a new saved project (default; review cloud save).
+   * `update` — overwrite the active saved project id only (explicit Update control).
+   * `copy` — new saved project; defaults title to “{linked name} Copy” when unchanged.
+   */
+  mode?: CustomPatternProjectSaveMode;
 };
 
-/** Create or update the active saved project from the working draft (one action). */
+/** Default duplicate title when the user has not renamed since load/link. */
+export function resolveSaveCopyProjectName(
+  requestedName: string,
+  linkedName: string = readActiveCustomPatternProjectLinkedName(),
+): string {
+  const trimmed = requestedName.trim();
+  if (!trimmed) return "";
+  const source = linkedName.trim();
+  if (source && trimmed.localeCompare(source, undefined, { sensitivity: "accent" }) === 0) {
+    return `${trimmed} Copy`;
+  }
+  return trimmed;
+}
+
+/** Create, update, or copy a saved project from the working draft. */
 export async function smartSaveCustomPatternProject(
   options: SmartSaveCustomPatternProjectOptions,
 ): Promise<
@@ -60,26 +138,34 @@ export async function smartSaveCustomPatternProject(
   | { ok: false; error: string }
 > {
   const family = options.family ?? "sleeveless";
-  const name = options.resolveName().trim();
-  if (!name) {
+  const mode = options.mode ?? "create";
+  const rawName = options.resolveName().trim();
+  if (!rawName) {
     return { ok: false, error: "Enter a pattern name before saving." };
   }
 
-  const activeId = readActiveCustomPatternProjectId();
+  const name = mode === "copy" ? resolveSaveCopyProjectName(rawName) : rawName;
   const base = buildSavePayloadFromWorkingDraft(name, { family });
 
-  if (activeId) {
+  if (mode === "update") {
+    const activeId = readActiveCustomPatternProjectId();
+    if (!activeId) {
+      return {
+        ok: false,
+        error: "Open a saved project or save as new before updating.",
+      };
+    }
     options.onStatus?.("Updating…");
     const res = await updateCustomPatternProject({ ...base, id: activeId });
     if (!res.ok) return { ok: false, error: res.error };
-    writeActiveCustomPatternProjectId(res.project.id);
+    writeActiveCustomPatternProjectId(res.project.id, res.project.name);
     return { ok: true, project: res.project, created: false };
   }
 
   options.onStatus?.("Saving…");
   const res = await createCustomPatternProject(base);
   if (!res.ok) return { ok: false, error: res.error };
-  writeActiveCustomPatternProjectId(res.project.id);
+  writeActiveCustomPatternProjectId(res.project.id, res.project.name);
   return { ok: true, project: res.project, created: true };
 }
 
@@ -180,6 +266,7 @@ export function initCustomPatternSavedProjectsPanel(
   const nameInput = root.querySelector<HTMLInputElement>("[data-cb-project-name]");
   const select = root.querySelector<HTMLSelectElement>("[data-cb-project-select]");
   const saveBtn = root.querySelector<HTMLButtonElement>("[data-cb-project-save]");
+  const copyBtn = root.querySelector<HTMLButtonElement>("[data-cb-project-save-copy]");
   const updateBtn = root.querySelector<HTMLButtonElement>("[data-cb-project-update]");
   const loadBtn = root.querySelector<HTMLButtonElement>("[data-cb-project-load]");
 
@@ -188,10 +275,15 @@ export function initCustomPatternSavedProjectsPanel(
     void refreshProjectList(root, family, "init");
   }
 
-  const meta = getPatternProjectMeta();
-  if (nameInput && meta.title.trim() && !nameInput.value.trim()) {
-    nameInput.value = meta.title;
-  }
+  refreshCustomPatternSavedProjectsPanelUi(root);
+
+  nameInput?.addEventListener("input", () => {
+    const trimmed = nameInput.value.trim();
+    if (trimmed) {
+      savePatternProjectMeta({ title: trimmed, titleCustomized: true });
+    }
+    refreshCustomPatternSavedProjectsPanelUi(root);
+  });
 
   saveBtn?.addEventListener("click", async () => {
     const name = resolveProjectNameForSave(nameInput);
@@ -206,9 +298,32 @@ export function initCustomPatternSavedProjectsPanel(
       setStatus(root, res.error, true);
       return;
     }
-    writeActiveCustomPatternProjectId(res.project.id);
-    if (nameInput) nameInput.value = res.project.name;
+    writeActiveCustomPatternProjectId(res.project.id, res.project.name);
+    refreshCustomPatternSavedProjectsPanelUi(root);
     setStatus(root, `Saved “${res.project.name}”.`);
+    if (showLoadControls) {
+      await refreshProjectList(root, family, "save");
+    }
+  });
+
+  copyBtn?.addEventListener("click", async () => {
+    const name = resolveProjectNameForSave(nameInput);
+    if (!name) {
+      setStatus(root, "Enter a project name before saving a copy.", true);
+      return;
+    }
+    setStatus(root, "Saving copy…");
+    const res = await smartSaveCustomPatternProject({
+      family,
+      mode: "copy",
+      resolveName: () => name,
+    });
+    if (!res.ok) {
+      setStatus(root, res.error, true);
+      return;
+    }
+    refreshCustomPatternSavedProjectsPanelUi(root);
+    setStatus(root, `Saved copy “${res.project.name}”.`);
     if (showLoadControls) {
       await refreshProjectList(root, family, "save");
     }
@@ -231,14 +346,21 @@ export function initCustomPatternSavedProjectsPanel(
       setStatus(root, "Enter a project name before updating.", true);
       return;
     }
+    if (id !== readActiveCustomPatternProjectId()) {
+      const opt = select?.selectedOptions[0];
+      writeActiveCustomPatternProjectId(id, opt?.textContent?.split(" (")[0]?.trim() ?? name);
+    }
     setStatus(root, "Updating…");
-    const base = buildSavePayloadFromWorkingDraft(name, { family });
-    const res = await updateCustomPatternProject({ ...base, id });
+    const res = await smartSaveCustomPatternProject({
+      family,
+      mode: "update",
+      resolveName: () => name,
+    });
     if (!res.ok) {
       setStatus(root, res.error, true);
       return;
     }
-    writeActiveCustomPatternProjectId(res.project.id);
+    refreshCustomPatternSavedProjectsPanelUi(root);
     setStatus(root, `Updated “${res.project.name}”.`);
     if (showLoadControls) {
       await refreshProjectList(root, family, "update");
@@ -268,8 +390,8 @@ export function initCustomPatternSavedProjectsPanel(
       return;
     }
     loadProjectIntoWorkingDraft(res.project);
-    writeActiveCustomPatternProjectId(res.project.id);
-    if (nameInput) nameInput.value = res.project.name;
+    writeActiveCustomPatternProjectId(res.project.id, res.project.name);
+    refreshCustomPatternSavedProjectsPanelUi(root);
     options.onProjectLoaded?.(res.project);
     setStatus(
       root,
@@ -282,10 +404,11 @@ export function initCustomPatternSavedProjectsPanel(
     select.addEventListener("change", () => {
       const id = select.value?.trim();
       if (!id) return;
-      writeActiveCustomPatternProjectId(id);
       const opt = select.selectedOptions[0];
+      const selectedName = opt?.textContent?.split(" (")[0]?.trim() ?? "";
+      writeActiveCustomPatternProjectId(id, selectedName);
       if (opt && nameInput && !nameInput.value.trim()) {
-        nameInput.value = opt.textContent?.split(" (")[0]?.trim() ?? "";
+        nameInput.value = selectedName;
       }
     });
   }

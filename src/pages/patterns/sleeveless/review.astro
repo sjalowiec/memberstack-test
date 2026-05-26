@@ -9,6 +9,7 @@ import "../../../styles/sleeveless-express-wizard-layout.css";
 import "../../../styles/sleeveless-express-measurements-confirm.css";
 import "../../../styles/sleeveless-review-measurements.css";
 import "../../../styles/sleeveless-pattern-project-cloud-save.css";
+import "../../../styles/custom-pattern-editing-banner.css";
 import { SLEEVELESS_PATTERN_FAMILY_NAME } from "../../../lib/patterns/sleevelessPatternProjectMeta";
 
 const builderHref = "/patterns/sleeveless/builder";
@@ -44,6 +45,7 @@ const SHOW_UPSELL = false;
           inspirationHref={inspirationHref}
         />
 
+        <div data-cb-editing-banner-host hidden></div>
         <div
           class="express-measurements-review"
           data-express-measurements-root
@@ -773,4 +775,5 @@ const SHOW_UPSELL = false;
 <script>
   import "/src/scripts/sleevelessReviewProjectHeader.ts";
   import "/src/scripts/sleeveless-builder-review-page.ts";
+  import "/src/scripts/customPatternEditingBanner.ts";
 </script>

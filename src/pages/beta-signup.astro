@@ -2,9 +2,9 @@
 export const prerender = true;
 import Layout from "../layouts/Layout.astro";
 
-const pageTitle = "Join the Knit It Now Beta";
+const pageTitle = "Access Your New Knit It Now Account";
 const description =
-  "Confirm your next step: create your Knit It Now beta login with the same membership email when possible.";
+  "Sign in or reset your password to access your Knit It Now beta account on the new platform.";
 ---
 
 <Layout
@@ -25,13 +25,17 @@ const description =
 
               <p class="beta-signup-page__text">Welcome to the Knit It Now beta.</p>
 
-              <p class="beta-signup-page__text">Create your beta login using the form on this page.</p>
-
               <p class="beta-signup-page__text">
-                <strong>Please use the same email address you currently use for your Knit It Now membership</strong> This helps avoid duplicate accounts and preserves access to your existing member benefits
+                Your account on the new platform may already be ready. Use the sign-in option on this page,
+                or reset your password if you need to.
               </p>
 
-                           <p class="beta-signup-page__text">Once you’re in, take a look around and explore when you can.</p>
+              <p class="beta-signup-page__text">
+                <strong>Please use the same email address you currently use for your Knit It Now membership.</strong>
+                This helps you reach the right account and keeps your member benefits connected.
+              </p>
+
+              <p class="beta-signup-page__text">Once you’re in, take a look around and explore when you can.</p>
 
               <p class="beta-signup-page__text">Thank you for helping shape what comes next.😊</p>
 
@@ -49,15 +53,48 @@ const description =
       </div>
 
       <div class="beta-signup-page__col beta-signup-page__col--form">
-        <article class="kbm-card beta-signup-page__signup-card" aria-labelledby="beta-signup-form-heading">
-          <h2 id="beta-signup-form-heading" class="kbm-card__title beta-signup-page__signup-card-title">
-            Create Your Beta Login
+        <article class="kbm-card beta-signup-page__signup-card" aria-labelledby="beta-signup-access-heading">
+          <h2 id="beta-signup-access-heading" class="kbm-card__title beta-signup-page__signup-card-title">
+            {pageTitle}
           </h2>
           <p class="kbm-card__desc beta-signup-page__signup-card-intro">
-            Use the form below to create your new beta login and get access to the preview area.
+            Your new Knit It Now account may already be set up. Use the sign-in option below, or reset
+            your password if needed.
           </p>
 
+          <p class="beta-signup-page__existing-member-note">
+            If your email is already recognized, that’s good news. It means your account is already in
+            the new system. Sign in or reset your password to continue.
+          </p>
+
+          <div class="beta-signup-page__signin-primary">
+            <a
+              href="#"
+              data-ms-modal="login"
+              data-ms-redirect="/beta-welcome"
+              class="kbm-btn kbm-btn-primary beta-signup-page__signin-btn">Sign in instead</a
+            >
+          </div>
+
+          <div class="beta-signup-page__signup-section" aria-labelledby="beta-signup-form-heading">
+            <h3 id="beta-signup-form-heading" class="beta-signup-page__signup-section-title">
+              New to this beta? Create an account
+            </h3>
+
           <form data-ms-form="signup" class="beta-signup-form">
+            <div
+              id="beta-signup-existing-account"
+              class="beta-signup-page__form-alert"
+              role="alert"
+              aria-live="polite"
+              hidden
+            >
+              <p>
+                It looks like this email already has an account. Please use Sign in instead above. If you
+                don’t know your password, use the password reset option.
+              </p>
+            </div>
+
             <div class="form-group">
               <label for="beta-first-name">First Name</label>
               <input
@@ -95,27 +132,189 @@ const description =
             </div>
 
             <!-- TODO: Replace PLAN_OR_PRICE_ID with the actual Memberstack ID for KIN Beta Access if needed -->
-            <input type="hidden" data-ms-price:add="PLAN_OR_PRICE_ID" />
+            <input type="hidden" data-ms-plan:add="pln_kin-beta-access-vyek0a38" />
 
-            <button type="submit" class="kbm-btn kbm-btn-primary beta-signup-page__submit">
-              Create My Beta Login
+            <button type="submit" class="kbm-btn kbm-btn-outline beta-signup-page__submit">
+              Create account
             </button>
           </form>
-
-          <p class="beta-signup-page__signin">
-            Already created your beta login?<br>
-            <a
-              href="#"
-              data-ms-modal="login"
-              data-ms-redirect="current-url"
-              class="beta-signup-page__signin-link">Sign in instead</a
-            >.
-          </p>
+          </div>
         </article>
       </div>
     </div>
   </section>
 </Layout>
+
+<script is:inline>
+  (function () {
+    const page = document.querySelector(".beta-signup-page");
+    const form = page?.querySelector('form[data-ms-form="signup"]');
+    const alertEl = document.getElementById("beta-signup-existing-account");
+    if (!page || !form || !alertEl) return;
+
+    const MS_ERROR_SELECTOR = '[data-ms-message="error"], .ms-error-message';
+    const MS_TOAST_SELECTOR = '[data-ms-message="error"], [role="alert"]';
+    const MS_TOAST_ROOT = "memberstack-prebuilt-ui";
+    const EXISTING_EMAIL_RE =
+      /email-already-in-use|email\s+already\s+(in\s+use|exists|taken|registered)|member\s+already\s+exists/i;
+    const MS_ERROR_MAX_LEN = 160;
+
+    function textLooksLikeExistingEmail(text) {
+      const t = (text || "").trim();
+      return t.length > 0 && t.length <= MS_ERROR_MAX_LEN && EXISTING_EMAIL_RE.test(t);
+    }
+
+    function payloadLooksLikeExistingEmail(payload) {
+      if (!payload || typeof payload !== "object") return false;
+      const rec = payload;
+      const code = rec.code || rec.errorCode || rec.error?.code;
+      if (code === "email-already-in-use") return true;
+      const parts = [rec.message, rec.error?.message, rec.errorMessage, rec.error?.errorMessage];
+      return textLooksLikeExistingEmail(parts.filter(Boolean).join(" "));
+    }
+
+    function hideMemberstackNotification(el) {
+      if (!el || el === alertEl || alertEl.contains(el)) return;
+      el.textContent = "";
+      el.setAttribute("hidden", "");
+      el.style.setProperty("display", "none", "important");
+    }
+
+    function dismissMemberstackNotifications() {
+      const top = document.getElementById("msTopError");
+      if (top) top.hidden = true;
+
+      form.querySelectorAll(MS_ERROR_SELECTOR).forEach(function (el) {
+        if (textLooksLikeExistingEmail(el.textContent)) hideMemberstackNotification(el);
+      });
+
+      const prebuilt = document.querySelector(MS_TOAST_ROOT);
+      if (!prebuilt?.shadowRoot) return;
+
+      prebuilt.shadowRoot.querySelectorAll(MS_TOAST_SELECTOR).forEach(function (el) {
+        if (textLooksLikeExistingEmail(el.textContent)) hideMemberstackNotification(el);
+      });
+    }
+
+    function showExistingAccountAlert() {
+      alertEl.hidden = false;
+      document.body.classList.add("beta-signup-existing-account-error");
+      dismissMemberstackNotifications();
+      window.setTimeout(dismissMemberstackNotifications, 50);
+      window.setTimeout(dismissMemberstackNotifications, 250);
+    }
+
+    function hideExistingAccountAlert() {
+      alertEl.hidden = true;
+      document.body.classList.remove("beta-signup-existing-account-error");
+    }
+
+    function checkForInlineMemberstackErrors() {
+      const formErrors = form.querySelectorAll(MS_ERROR_SELECTOR);
+      for (let i = 0; i < formErrors.length; i++) {
+        if (textLooksLikeExistingEmail(formErrors[i].textContent)) {
+          showExistingAccountAlert();
+          return true;
+        }
+      }
+
+      const prebuilt = document.querySelector(MS_TOAST_ROOT);
+      if (prebuilt?.shadowRoot) {
+        const toastErrors = prebuilt.shadowRoot.querySelectorAll(MS_TOAST_SELECTOR);
+        for (let j = 0; j < toastErrors.length; j++) {
+          if (textLooksLikeExistingEmail(toastErrors[j].textContent)) {
+            showExistingAccountAlert();
+            return true;
+          }
+        }
+      }
+
+      return false;
+    }
+
+    form.addEventListener("submit", function () {
+      hideExistingAccountAlert();
+    });
+
+    form.addEventListener(
+      "input",
+      function (e) {
+        const target = e.target;
+        if (target && target.matches && target.matches('[data-ms-member="email"]')) {
+          hideExistingAccountAlert();
+        }
+      },
+      true,
+    );
+
+    const domObserver = new MutationObserver(function () {
+      checkForInlineMemberstackErrors();
+    });
+    domObserver.observe(form, { childList: true, subtree: true, characterData: true });
+
+    function observePrebuiltUi() {
+      const prebuilt = document.querySelector(MS_TOAST_ROOT);
+      if (!prebuilt?.shadowRoot || prebuilt.dataset.betaSignupObserved) return;
+      prebuilt.dataset.betaSignupObserved = "1";
+      domObserver.observe(prebuilt.shadowRoot, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
+      checkForInlineMemberstackErrors();
+    }
+
+    observePrebuiltUi();
+
+    const bodyObserver = new MutationObserver(function (mutations) {
+      for (let m = 0; m < mutations.length; m++) {
+        const added = mutations[m].addedNodes;
+        for (let n = 0; n < added.length; n++) {
+          const node = added[n];
+          if (node.nodeType !== 1) continue;
+          if (
+            node.matches?.(MS_TOAST_ROOT) ||
+            node.querySelector?.(MS_TOAST_ROOT)
+          ) {
+            observePrebuiltUi();
+            return;
+          }
+        }
+      }
+    });
+    bodyObserver.observe(document.body, { childList: true });
+
+    const origFetch = window.fetch;
+    if (typeof origFetch === "function") {
+      window.fetch = async function () {
+        const res = await origFetch.apply(this, arguments);
+        if (!page.isConnected) return res;
+
+        try {
+          const req = arguments[0];
+          const init = arguments[1] || {};
+          const url = typeof req === "string" ? req : req?.url || "";
+          const method = String(init.method || (typeof req !== "string" && req?.method) || "GET").toUpperCase();
+
+          if (/memberstack/i.test(url) && method === "POST" && !/login/i.test(url) && !res.ok) {
+            const clone = res.clone();
+            let body = null;
+            try {
+              body = await clone.json();
+            } catch (e) {
+              body = null;
+            }
+            if (payloadLooksLikeExistingEmail(body)) {
+              showExistingAccountAlert();
+            }
+          }
+        } catch (e) {}
+
+        return res;
+      };
+    }
+  })();
+</script>
 
 <style>
   .beta-signup-page {
@@ -303,6 +502,72 @@ const description =
     text-align: center;
   }
 
+  .beta-signup-page__signin-primary {
+    margin: 0 0 1.5rem;
+  }
+
+  .beta-signup-page__signin-btn {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    font-family: inherit;
+    font-size: inherit;
+    text-decoration: none;
+  }
+
+  .beta-signup-page__signup-section {
+    padding-top: 1.25rem;
+    border-top: 1px solid #d5dfc8;
+  }
+
+  .beta-signup-page__signup-section-title {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #243015;
+    text-align: center;
+    font-family: inherit;
+    line-height: 1.3;
+  }
+
+  .beta-signup-page__existing-member-note {
+    margin: 0 0 1.25rem;
+    padding: 0.75rem 0.85rem;
+    font-size: 0.95em;
+    line-height: 1.45;
+    color: #3d4a30;
+    background: #f4f7ef;
+    border: 1px solid #d5dfc8;
+    border-radius: 8px;
+    text-align: center;
+    font-family: inherit;
+  }
+
+  .beta-signup-page__form-alert {
+    margin: 0 0 1rem;
+    padding: 0.75rem 0.85rem;
+    font-size: 0.95em;
+    line-height: 1.5;
+    color: #3d4a30;
+    background: #faf8f2;
+    border: 1px solid #d9c9a8;
+    border-radius: 8px;
+    text-align: center;
+    font-family: inherit;
+  }
+
+  .beta-signup-page__form-alert p {
+    margin: 0;
+  }
+
+  .beta-signup-page__form-alert[hidden] {
+    display: none !important;
+  }
+
+  body.beta-signup-existing-account-error #msTopError {
+    display: none !important;
+  }
+
   .beta-signup-page .beta-signup-form .form-group {
     margin-bottom: 1rem;
   }
@@ -351,24 +616,4 @@ const description =
     font-size: inherit;
   }
 
-  .beta-signup-page__signin {
-    margin: 1.25rem 0 0;
-    font-size: inherit;
-    text-align: center;
-    color: #4a5638;
-    line-height: 1.5;
-    font-family: inherit;
-  }
-
-  .beta-signup-page__signin-link {
-    color: var(--kbm-green, #52682d);
-    font-weight: 600;
-    text-decoration: none;
-    font-family: inherit;
-    font-size: inherit;
-  }
-
-  .beta-signup-page__signin-link:hover {
-    text-decoration: underline;
-  }
 </style>

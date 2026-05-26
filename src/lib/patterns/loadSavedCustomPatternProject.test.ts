@@ -2,10 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { stubLocalStorage } from "./test/stubLocalStorage";
 import {
   readActiveCustomPatternProjectId,
+  readActiveCustomPatternProjectLinkedName,
 } from "./customPatternProjectActiveId";
 import * as workflowModule from "./patternReadingWorkflow";
 import type { CustomPatternProject } from "./customPatternProjectTypes";
-import { OPEN_PATTERN_HREF } from "./customPatternProjectNavigation";
+import {
+  CUSTOM_BUILD_CONTINUE_EDITING_HREF,
+  OPEN_PATTERN_HREF,
+} from "./customPatternProjectNavigation";
 import {
   PATTERN_STORAGE_KEY,
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
@@ -81,6 +85,27 @@ describe("loadSavedCustomPatternProject", () => {
     expect(result).toEqual({ ok: true, redirectHref: OPEN_PATTERN_HREF });
     expect(readActiveCustomPatternProjectId()).toBe(PROJECT_ID);
     expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toContain("For Aubrie");
+  });
+
+  it("opens custom-build projects on the Foundation step with active id and name", async () => {
+    loadCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      project: sampleProject({
+        name: "Sue's test pattern",
+        source: "custom-build",
+        pattern: {
+          ...sampleProject().pattern,
+          patternProject: { title: "Sue's test pattern", notes: "", titleCustomized: true },
+        },
+      }),
+    });
+
+    const result = await loadSavedCustomPatternProject(PROJECT_ID, "open");
+
+    expect(result).toEqual({ ok: true, redirectHref: CUSTOM_BUILD_CONTINUE_EDITING_HREF });
+    expect(readActiveCustomPatternProjectId()).toBe(PROJECT_ID);
+    expect(readActiveCustomPatternProjectLinkedName()).toBe("Sue's test pattern");
+    expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toContain("Sue's test pattern");
   });
 
   it("does not call Express builder restore during normal open", async () => {

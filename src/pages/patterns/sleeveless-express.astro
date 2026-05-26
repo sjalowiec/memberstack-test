@@ -10,6 +10,7 @@ import SleevelessExpressEditingBar from "../../components/patterns/SleevelessExp
 import "../../styles/sleeveless-express-builder-cards.css";
 import "../../styles/sleeveless-express-wizard-layout.css";
 import "../../styles/express-size-selection.css";
+import "../../styles/custom-pattern-editing-banner.css";
 
 const expressNavSteps = [
   { step: 1, label: "Who & Size" },
@@ -45,6 +46,9 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
           askShareHref="/patterns/sleeveless/ask-share/"
           inspirationHref="/patterns/sleeveless/inspiration/"
         />
+
+        <div data-cb-editing-banner-host hidden></div>
+
         <div class="sg-tab-build">
             <div class="sg-builder-nav-row express-builder-nav-row no-print">
               <nav class="express-step-nav sg-builder-nav" aria-label="Express pattern steps">
@@ -1000,4 +1004,5 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
 
 <script>
     import "/src/scripts/sleeveless-express-page.ts";
+    import "/src/scripts/customPatternEditingBanner.ts";
 </script>

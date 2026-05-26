@@ -9,6 +9,7 @@ import PatternWorkspaceTabs from "../../../components/patterns/PatternWorkspaceT
 import "../../../styles/sleeveless-express-builder-cards.css";
 import "../../../styles/sleeveless-express-wizard-layout.css";
 import "../../../styles/express-size-selection.css";
+import "../../../styles/custom-pattern-editing-banner.css";
 
 const expressNavSteps = [
   { step: 1, label: "Who & Size" },
@@ -111,6 +112,7 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
                 Create a ready-to-knit sweater pattern in a few guided steps.
               </p>
             </header>
+            <div data-cb-editing-banner-host hidden></div>
 
             <div class="express-panel">
               <div class="express-builder-root" data-express-builder>
@@ -752,4 +754,5 @@ const sleevelessCustomBuildHref = "/patterns/sleeveless/custom-build/";
 
 <script>
   import "/src/scripts/sleeveless-builder-page.ts";
+  import "/src/scripts/customPatternEditingBanner.ts";
 </script>

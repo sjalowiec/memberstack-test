@@ -38,6 +38,8 @@ import {
   isExpressEditChoicesReopenSession,
   loadExpressPersisted,
 } from "../lib/patterns/sleevelessExpressResume";
+import { isEditingSavedCustomPatternProject } from "../lib/patterns/customPatternEditingUx";
+import { syncSleevelessBuilderHeaderTitle } from "../lib/patterns/sleevelessBuilderHeaderUx";
 import {
   EXPRESS_AVAILABLE_NEEDLES_INPUT_ID,
   isValidExpressAvailableNeedles,
@@ -825,6 +827,7 @@ function initExpressPage() {
 
     document.getElementById("express-pattern-top")?.scrollIntoView({ behavior: "smooth", block: "start" });
     hideExpressEditingBar();
+    syncSleevelessBuilderHeaderTitle();
   }
 
   function hideExpressEditingBar(): void {
@@ -847,6 +850,11 @@ function initExpressPage() {
   }
 
   function initExpressEditingBar(): void {
+    if (isEditingSavedCustomPatternProject()) {
+      hideExpressEditingBar();
+      return;
+    }
+
     if (
       startedFreshSession ||
       editChoicesReopen ||
@@ -1024,6 +1032,7 @@ function initExpressPage() {
 
   refreshBuilderState();
   applyExpressGaugeSectionHash();
+  syncSleevelessBuilderHeaderTitle();
   initExpressEditingBar();
 }
 

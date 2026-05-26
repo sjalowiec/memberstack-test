@@ -30,11 +30,13 @@ export async function loadSavedCustomPatternProject(
   }
 
   loadProjectIntoWorkingDraft(res.project);
-  writeActiveCustomPatternProjectId(res.project.id);
+  writeActiveCustomPatternProjectId(res.project.id, res.project.name);
 
   const redirectHref =
     action === "open"
-      ? OPEN_PATTERN_HREF
+      ? res.project.source === "custom-build"
+        ? getContinueEditingHref("custom-build")
+        : OPEN_PATTERN_HREF
       : getContinueEditingHref(res.project.source);
 
   return { ok: true, redirectHref };

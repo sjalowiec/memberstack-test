@@ -1,8 +1,9 @@
-import { getPatternProjectMeta } from "./sleevelessPatternProjectMeta";
 import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "./patternStorage";
 
-/** Generic label when the knitter has not set a custom project name. */
-export const EXPRESS_EDITING_FALLBACK_LABEL = "Sleeveless Sweater";
+export {
+  EXPRESS_EDITING_FALLBACK_LABEL,
+  getExpressEditingProjectLabel,
+} from "./customPatternEditingUx";
 
 /** Express wizard snapshot shape (`kbm_sleeveless_express_builder`). */
 export interface ExpressPersistedV1 {
@@ -82,10 +83,3 @@ export function hasExpressResumeProgress(values: Record<string, string>): boolea
   return false;
 }
 
-/** Display name for the compact Express “Editing:” row (custom title only). */
-export function getExpressEditingProjectLabel(): string {
-  const meta = getPatternProjectMeta();
-  const title = meta.title.trim();
-  if (title && meta.titleCustomized) return title;
-  return EXPRESS_EDITING_FALLBACK_LABEL;
-}

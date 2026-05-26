@@ -6,6 +6,7 @@ import PatternWorkspaceTabs from "../../../../../components/patterns/PatternWork
 import "../../../../../styles/sleeveless-express-wizard-layout.css";
 import "../../../../../styles/sleeveless-express-measurements-confirm.css";
 import "../../../../../styles/sleeveless-custom-build-measurements.css";
+import "../../../../../styles/custom-pattern-editing-banner.css";
 
 const customBuildHref = "/patterns/sleeveless/custom-build/";
 const foundationHref = "/patterns/sleeveless/custom-build/design";
@@ -49,6 +50,7 @@ const customWizardSteps: WizardStep[] = [
         />
 
         <WizardBackLink className="back-link no-print" fallback="/patterns" />
+        <div data-cb-editing-banner-host hidden></div>
 
         <div class="sg-tab-build">
           <div class="express-builder-nav-row express-builder-nav-row--custom-flow no-print">
@@ -217,4 +219,5 @@ const customWizardSteps: WizardStep[] = [
 
 <script>
   import "/src/scripts/sleeveless-custom-build-measurements-page.ts";
+  import "/src/scripts/customPatternEditingBanner.ts";
 </script>

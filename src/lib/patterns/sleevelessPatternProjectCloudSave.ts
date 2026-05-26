@@ -1,6 +1,6 @@
 /**
  * Shared “Save pattern” action for sleeveless Customize (review) and Pattern tabs.
- * Uses `smartSaveCustomPatternProject` — same storage, ids, and status messages.
+ * Uses `smartSaveCustomPatternProject` in create mode — always a new saved project record.
  */
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import { smartSaveCustomPatternProject } from "./customPatternSavedProjectsPanel";
@@ -39,6 +39,7 @@ export async function runSleevelessPatternProjectCloudSave(
 
   if (cloudSaveBtn) cloudSaveBtn.disabled = true;
   const res = await smartSaveCustomPatternProject({
+    mode: "create",
     resolveName: () => name,
     onStatus: (message, isError) =>
       setSleevelessPatternProjectCloudSaveStatus(root, message, isError),

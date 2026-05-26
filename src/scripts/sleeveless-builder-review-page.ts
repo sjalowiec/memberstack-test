@@ -14,9 +14,6 @@ import {
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
 import { getCurrentPattern, getPatternData, SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "../lib/patterns/patternStorage";
 import { resolveSleevelessGarmentKind } from "../lib/patterns/resolveSleevelessGarmentKind";
-import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
-import { smartSaveCustomPatternProject } from "../lib/patterns/customPatternSavedProjectsPanel";
-import { getPatternProjectMeta } from "../lib/patterns/sleevelessPatternProjectMeta";
 import { readCustomBuildWizardGarmentType } from "../lib/patterns/sleevelessCustomBuildWizardNeckline";
 import {
   readExpressWizardValues,
@@ -82,9 +79,7 @@ export function flushExpressWizardToCanonicalPatternForReview(): void {
 
 function syncExpressBasicsFromBuilderAndContinue(): void {
   flushExpressWizardToCanonicalPatternForReview();
-  void persistActiveSavedProjectAfterRebuild().finally(() => {
-    window.location.assign(PATTERN_WORKSPACE_TAB_PATTERN_HREF);
-  });
+  window.location.assign(PATTERN_WORKSPACE_TAB_PATTERN_HREF);
 }
 
 function configureReviewActions(advanced: boolean): void {
@@ -99,19 +94,11 @@ function configureReviewActions(advanced: boolean): void {
   }
 }
 
-async function persistActiveSavedProjectAfterRebuild(): Promise<void> {
-  if (!readActiveCustomPatternProjectId()) return;
-  const meta = getPatternProjectMeta();
-  const name = meta.title.trim() || "Untitled pattern";
-  await smartSaveCustomPatternProject({ resolveName: () => name });
-}
-
 function continueToPatternFromReview(): void {
   void loadExpressSweaterCharts()
     .then(async () => {
       flushExpressWizardToCanonicalPatternForReview();
       if (canCustomizePattern()) {
-        await persistActiveSavedProjectAfterRebuild();
         window.location.assign(PATTERN_WORKSPACE_TAB_PATTERN_HREF);
         return;
       }

@@ -7,6 +7,7 @@ import UnitToggle from "../../../../../components/wizards/UnitToggle.astro";
 import "../../../../../styles/sleeveless-express-builder-cards.css";
 import "../../../../../styles/sleeveless-express-wizard-layout.css";
 import "../../../../../styles/express-size-selection.css";
+import "../../../../../styles/custom-pattern-editing-banner.css";
 
 const customBuildHref = "/patterns/sleeveless/custom-build/";
 const styleHref = "/patterns/sleeveless/custom-style";
@@ -42,6 +43,7 @@ const customWizardSteps = [
         />
 
         <WizardBackLink className="back-link no-print" fallback="/patterns" />
+        <div data-cb-editing-banner-host hidden></div>
 
         <div class="sg-tab-build">
           <div class="express-builder-nav-row express-builder-nav-row--custom-flow no-print">
@@ -137,6 +139,11 @@ const customWizardSteps = [
                   Saved projects below are stored separately (Netlify Blobs) and can be loaded back into the draft.
                 </p>
                 <p class="pattern-subtext cb-saved-projects__auth" data-cb-project-auth-hint></p>
+                <p
+                  class="cb-saved-projects__editing-status"
+                  data-cb-project-editing-status
+                  hidden
+                ></p>
                 <label class="cb-saved-projects__field">
                   <span class="cb-saved-projects__label">Project name</span>
                   <input
@@ -150,8 +157,11 @@ const customWizardSteps = [
                 </label>
                 <div class="cb-saved-projects__actions">
                   <button type="button" class="btn btn-sm btn-primary" data-cb-project-save>Save as new</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-cb-project-save-copy>
+                    Save as copy
+                  </button>
                   <button type="button" class="btn btn-sm btn-outline-secondary" data-cb-project-update>
-                    Update saved
+                    Update saved pattern
                   </button>
                 </div>
                 <label class="cb-saved-projects__field">
@@ -471,6 +481,17 @@ const customWizardSteps = [
     margin-bottom: 0.75rem;
   }
 
+  .cb-saved-projects__editing-status {
+    margin: 0 0 0.65rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--kbm-green-dark, #2d5a27);
+  }
+
+  .cb-saved-projects__editing-status[hidden] {
+    display: none;
+  }
+
   .cb-project-status {
     margin: 0.5rem 0 0;
     font-size: 0.9rem;
@@ -485,4 +506,5 @@ const customWizardSteps = [
 <script>
   import "/src/scripts/sleeveless-custom-build-design-page.ts";
   import "/src/scripts/sleeveless-custom-build-saved-projects.ts";
+  import "/src/scripts/customPatternEditingBanner.ts";
 </script>
