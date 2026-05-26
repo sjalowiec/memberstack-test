@@ -1,5 +1,6 @@
 ---
 import "../../styles/patterns/pattern-tabs-scope.css";
+import PatternWorkspaceLibraryDrawer from "./PatternWorkspaceLibraryDrawer.astro";
 
 interface Props {
   /** When true, Pattern tab cannot be activated by click (programmatic switches still work). */
@@ -91,10 +92,10 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
     { "pattern-workspace-tabs": workspaceNav },
   ]}
 >
-  <div class="pattern-tab-nav">
-    {
-      workspaceNav ? (
-        <>
+  {
+    workspaceNav ? (
+        <div class="pattern-tab-nav">
+          <>
           <a
             class:list={["tab-btn", "tab-btn--express", "tab-btn--workspace-brand", { active: expressTabActive }]}
             href={expressNavHref}
@@ -188,8 +189,23 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
               <i class="fa-solid fa-lightbulb tab-workspace-mobile-icon" aria-hidden="true"></i>
             </a>
           )}
-        </>
-      ) : (
+          <button
+            type="button"
+            class="pattern-workspace-library-trigger"
+            data-pattern-workspace-library-trigger
+            data-testid="pattern-workspace-library-trigger"
+            aria-label="Saved patterns"
+            aria-haspopup="dialog"
+            aria-controls="pattern-workspace-library-drawer-panel"
+            aria-expanded="false"
+            title="Saved patterns"
+          >
+            <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
+          </button>
+          </>
+        </div>
+    ) : (
+      <div class="pattern-tab-nav">
         <>
           <button type="button" class="tab-btn active" data-tab="build">
             <span class="tab-icon" aria-hidden="true">⚙️</span>
@@ -226,9 +242,11 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
             )
           }
         </>
-      )
-    }
-  </div>
+      </div>
+    )
+  }
+
+  {workspaceNav ? <PatternWorkspaceLibraryDrawer /> : null}
 
   {
     workspaceNav ? null : (
@@ -383,6 +401,59 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
     color: currentColor;
   }
 
+  .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-library-trigger {
+    flex: 0 0 auto;
+    align-self: flex-end;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 1.625rem;
+    height: 1.625rem;
+    margin: 0 0 0.3rem 0.45rem;
+    padding: 0;
+    font: inherit;
+    line-height: 1;
+    color: #4a5c32;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(82, 104, 45, 0.14);
+    border-radius: 50%;
+    box-shadow: none;
+    opacity: 1;
+    transition:
+      background 0.12s ease,
+      color 0.12s ease,
+      border-color 0.12s ease,
+      opacity 0.12s ease;
+  }
+
+  .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-library-trigger:hover {
+    opacity: 1;
+    color: #4a5c32;
+    background: rgba(255, 255, 255, 0.72);
+    border-color: rgba(82, 104, 45, 0.18);
+  }
+
+  .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-library-trigger:focus-visible {
+    opacity: 1;
+    outline: 2px solid #c2614e;
+    outline-offset: 2px;
+  }
+
+  .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-library-trigger[aria-expanded="true"] {
+    opacity: 1;
+    color: #4a5c32;
+    background: rgba(82, 104, 45, 0.09);
+    border-color: rgba(82, 104, 45, 0.2);
+  }
+
+  .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-library-trigger i {
+    display: block;
+    font-size: 0.72rem;
+    line-height: 1;
+  }
+
   @media (max-width: 767px) {
     .pattern-workspace-tabs .pattern-tab-nav {
       gap: 0.06rem;
@@ -424,6 +495,17 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
       font-size: 1.1rem;
       line-height: 1;
     }
+
+    .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-library-trigger {
+      width: 1.875rem;
+      height: 1.875rem;
+      margin-bottom: 0.22rem;
+      margin-left: 0.4rem;
+    }
+
+    .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-library-trigger i {
+      font-size: 0.8rem;
+    }
   }
 
   @media (max-width: 420px) {
@@ -443,6 +525,16 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
 
     .pattern-workspace-tabs .pattern-tab-nav .tab-workspace-mobile-icon {
       font-size: 1.02rem;
+    }
+
+    .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-library-trigger {
+      width: 1.75rem;
+      height: 1.75rem;
+      margin-left: 0.35rem;
+    }
+
+    .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-library-trigger i {
+      font-size: 0.76rem;
     }
   }
 </style>
