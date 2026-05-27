@@ -2,11 +2,9 @@
  * Start a brand-new sleeveless pattern session (clears active saved-project link).
  */
 import { buildSleevelessExpressNewPatternHref } from "./patternStorage";
-import {
-  dispatchCustomPatternEditingStateChanged,
-  runUpdateActiveSavedCustomPattern,
-} from "./customPatternEditingBannerActions";
-import { hasUnsavedSavedCustomPatternChanges } from "./customPatternSavedProjectDirtyState";
+import { dispatchCustomPatternEditingStateChanged } from "./customPatternEditingBannerActions";
+import { hasUnsavedCustomPatternChanges } from "./customPatternSavedProjectDirtyState";
+import { saveActiveCustomPatternBeforeNavigate } from "./saveActiveCustomPatternBeforeNavigate";
 import { startFreshSleevelessExpressPattern } from "./sleevelessExpressFreshStart";
 
 export const PATTERN_WORKSPACE_NEW_PATTERN_UNSAVED_DIALOG_ID =
@@ -94,12 +92,9 @@ export function createStartNewCustomPatternWorkflowDeps(options: {
     throw new Error("document unavailable");
   }
   return {
-    hasUnsaved: hasUnsavedSavedCustomPatternChanges,
+    hasUnsaved: hasUnsavedCustomPatternChanges,
     promptUnsaved: () => promptNewPatternUnsavedChoice(root),
-    saveActiveProject: async () => {
-      const res = await runUpdateActiveSavedCustomPattern(root);
-      return res.ok ? { ok: true } : { ok: false };
-    },
+    saveActiveProject: async () => saveActiveCustomPatternBeforeNavigate(root),
     applyFreshSession: applyStartNewCustomPatternSession,
     navigate: options.onAfterFreshSession,
   };

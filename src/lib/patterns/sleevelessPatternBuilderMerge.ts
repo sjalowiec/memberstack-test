@@ -2,8 +2,8 @@
  * Pure merge helpers for sleeveless pattern display + {@link generateSleevelessBackPattern} input.
  * Mirrors the former inline logic on the builder pattern tab / print route (localStorage-free).
  */
-import { logCustomBuildGarmentHandoff } from "./customBuildGarmentHandoffDebug";
 import {
+  augmentCbMeasurementOverridesForGenerator,
   loadMeasurementOverrides,
   mergeCbMeasurementOverridesFromFitSources,
 } from "./sleevelessCustomMeasurementStorage";
@@ -21,7 +21,7 @@ import {
 } from "./sleevelessCustomBuildWizardNeckline";
 import { mapExpressStyleKey } from "./syncSleevelessExpressDesignToStorage";
 import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "./patternStorage";
-import { reconcileStraightTorsoOverridesAfterChartSync } from "./sleevelessCustomBuildBodyMeasurements";
+import { reconcileStraightTorsoOverridesPreservingUserHip } from "./sleevelessCustomBuildBodyMeasurements";
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 
 export function sectionPattern(obj: unknown): Record<string, unknown> {
@@ -114,12 +114,6 @@ export function mergedPatternForDisplayFromSources(
       },
       garment,
     );
-    logCustomBuildGarmentHandoff("mergedPatternForDisplayFromSources", {
-      merged,
-      patternBuilderData: patternData,
-      resolvedGarmentStyle: garment.garmentStyle,
-      resolvedFrontStyle: garment.frontStyle,
-    });
   }
   return merged;
 }
@@ -312,7 +306,7 @@ export function applyCustomBuildMeasurementOverridesToGenerator(
       sectionPattern(sectionPattern(gen.fit).selectedMeasurements).finished_bust_chest;
     const bustIn = typeof bust === "number" && bust > 0 ? bust : undefined;
     if (bustIn !== undefined) {
-      overrides = reconcileStraightTorsoOverridesAfterChartSync(bustIn, overrides);
+      overrides = reconcileStraightTorsoOverridesPreservingUserHip(bustIn, overrides);
     }
   }
 
@@ -334,9 +328,19 @@ export function buildGeneratorPatternDataFromSources(
   const fitMerged = { ...sectionPattern(merged.fit), ...sectionPattern(pb.fit) };
   const smA = sectionPattern(fitMerged.selectedMeasurements);
   const smB = sectionPattern(sectionPattern(pb.fit).selectedMeasurements);
-  const cbOverrides = mergeCbMeasurementOverridesFromFitSources(
-    canonicalFit,
-    { ...sectionPattern(merged.fit), ...sectionPattern(pb.fit) },
+  const canonicalRecord =
+    canonicalPattern && typeof canonicalPattern === "object" && !Array.isArray(canonicalPattern)
+      ? canonicalPattern
+      : merged;
+  const cbOverrides = augmentCbMeasurementOverridesForGenerator(
+    {
+      ...mergeCbMeasurementOverridesFromFitSources(canonicalFit, {
+        ...sectionPattern(merged.fit),
+        ...sectionPattern(pb.fit),
+      }),
+      ...loadMeasurementOverrides(),
+    },
+    canonicalRecord,
   );
   const fit = {
     ...fitMerged,
@@ -407,14 +411,6 @@ export function buildGeneratorPatternDataFromSources(
       },
       garmentKind,
     );
-    logCustomBuildGarmentHandoff("buildGeneratorPatternDataFromSources", {
-      merged,
-      patternBuilderData: pb,
-      canonicalPattern,
-      finalGeneratorInput: finalGen,
-      resolvedGarmentStyle: garmentKind.garmentStyle,
-      resolvedFrontStyle: garmentKind.frontStyle,
-    });
   }
   return finalGen;
 }

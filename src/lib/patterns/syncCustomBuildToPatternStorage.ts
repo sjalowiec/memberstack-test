@@ -32,7 +32,7 @@ import {
 } from "./syncSleevelessExpressDesignToStorage";
 import {
   reconcileStraightTorsoChartMeasurements,
-  reconcileStraightTorsoOverridesAfterChartSync,
+  reconcileStraightTorsoOverridesPreservingUserHip,
   seedCustomBuildBodyFinishedFromChartRow,
 } from "./sleevelessCustomBuildBodyMeasurements";
 import {
@@ -44,7 +44,6 @@ import {
   CUSTOM_BUILD_NECKLINE_STYLE_KEY,
   readCustomBuildWizardNeckline,
 } from "./sleevelessCustomBuildWizardNeckline";
-import { logCustomBuildGarmentHandoff } from "./customBuildGarmentHandoffDebug";
 import { CUSTOM_BUILD_STYLE_STORAGE_KEYS } from "./sleevelessCustomBuildStyleKeys";
 
 export { CUSTOM_BUILD_STYLE_STORAGE_KEYS };
@@ -205,7 +204,7 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
       selectedMeasurements = reconcileStraightTorsoChartMeasurements(selectedMeasurements);
       const bust = selectedMeasurements.finished_bust_chest;
       if (bust !== undefined && bust > 0) {
-        const reconciledOverrides = reconcileStraightTorsoOverridesAfterChartSync(
+        const reconciledOverrides = reconcileStraightTorsoOverridesPreservingUserHip(
           bust,
           loadMeasurementOverrides(),
         );
@@ -285,11 +284,6 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
     }
 
     ensureYarnGaugeMachineDefaults();
-
-    logCustomBuildGarmentHandoff("syncCustomBuildToPatternStorage", {
-      resolvedGarmentStyle: garment.garmentStyle,
-      resolvedFrontStyle: garment.frontStyle,
-    });
   };
 
   if (options.awaitCharts === false) {

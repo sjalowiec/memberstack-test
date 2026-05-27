@@ -61,8 +61,6 @@ export function prepareCustomBuildPatternGeneration(
         : undefined,
   );
 
-  flushCustomBuildMeasurementOverridesToCanonical({ root: root ?? undefined });
-
   if (options.rehydrateSavedProject !== false && isEditingSavedCustomPatternProject()) {
     ensureSavedCustomPatternSessionHydratedOnPatternPage();
   }
@@ -71,4 +69,6 @@ export function prepareCustomBuildPatternGeneration(
     syncCustomBuildToPatternStorage({ awaitCharts: options.awaitCharts ?? false });
   }
 
+  // After sync so diagram overrides (e.g. hip on straight torso) are not reconciled away.
+  flushCustomBuildMeasurementOverridesToCanonical({ root: root ?? undefined });
 }

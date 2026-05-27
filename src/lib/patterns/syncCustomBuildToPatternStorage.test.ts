@@ -159,6 +159,32 @@ describe("syncCustomBuildToPatternStorage", () => {
     expect(getCurrentPattern().fit?.cbMeasurementOverrides?.hemDepth).toBe("4");
   });
 
+  it("preserves user diagram hip above bust+tolerance on straight torso sync (e.g. hip 43, bust 40)", () => {
+    localStorage.setItem(
+      SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+      JSON.stringify({
+        values: { who: "women", selectedSize: "M", fit: "standard" },
+        cbMeasurementOverrides: { chestBust: "40", hip: "43", finishedLength: "24" },
+      }),
+    );
+    localStorage.setItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.bodyShape, "straight");
+    localStorage.setItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.garmentType, "pullover");
+    saveCurrentPattern({
+      fit: {
+        selectedSize: "M",
+        selectedMeasurements: { finished_bust_chest: 39, back_neck_to_hem: 24, armhole_depth: 8 },
+        cbMeasurementOverrides: { chestBust: "40", hip: "43", finishedLength: "24" },
+      },
+    });
+
+    syncCustomBuildToPatternStorage({ awaitCharts: false });
+
+    expect(getCurrentPattern().fit?.cbMeasurementOverrides?.hip).toBe("43");
+    expect(
+      JSON.parse(localStorage.getItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY)!).cbMeasurementOverrides.hip,
+    ).toBe("43");
+  });
+
   it("preserves chestBust and hip overrides above chart bust on straight torso sync", () => {
     localStorage.setItem(
       SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,

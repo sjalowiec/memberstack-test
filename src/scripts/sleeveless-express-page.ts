@@ -10,10 +10,6 @@ import { applySleevelessExpressEditChoicesFromUrl } from "../lib/patterns/restor
 import { startNewCustomPatternFromExpress } from "../lib/patterns/startNewCustomPatternWorkflow";
 import { applySleevelessExpressNewSessionFromUrl } from "../lib/patterns/sleevelessExpressFreshStart";
 import {
-  buildCardiganSelectionWriteSnapshot,
-  logExpressGarmentClick,
-} from "../lib/patterns/customBuildGarmentHandoffDebug";
-import {
   garmentTypeFromFront,
   writeSleevelessGarmentTypeLocalStorage,
 } from "../lib/patterns/writeSleevelessGarmentSelection";
@@ -656,11 +652,8 @@ function initExpressPage() {
 
     if (field === "front") {
       const garmentType = garmentTypeFromFront(value);
-      const before = buildCardiganSelectionWriteSnapshot("before", garmentType);
       writeSleevelessGarmentTypeLocalStorage(garmentType);
       syncExpressWizardToPatternStorage(values, null);
-      const after = buildCardiganSelectionWriteSnapshot("after", garmentType);
-      logExpressGarmentClick(before, after);
     }
 
     markChoiceSelected(sec, btn as HTMLElement);

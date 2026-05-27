@@ -10,6 +10,7 @@
  * {@link resolveEffectiveNeckOpeningWidthInches}, {@link resolveEffectiveFrontNeckDepthInches},
  * {@link resolveEffectiveHemDepthInches}); other fields are stored for future use.
  */
+import { isCustomBuildPatternMode, positiveMeasurementInches } from "./customBuildEffectiveArmholeDepth";
 import { formatSwatchCountForGaugeInput } from "./gaugeDisplayFormat";
 import { getExpressUiUnit } from "./sleevelessExpressSizeChartClient";
 import {
@@ -54,6 +55,25 @@ function parsePositiveInches(raw: string): number | undefined {
 
 function formatOverrideInches(n: number): string {
   return formatSwatchCountForGaugeInput(roundQuarter(n));
+}
+
+/**
+ * Ensures diagram hip reaches {@link generateSleevelessBackPattern} when stored on the working draft
+ * or custom-build measurements layer but missing from merged fit sections.
+ */
+export function augmentCbMeasurementOverridesForGenerator(
+  overrides: Record<string, string>,
+  canonicalPattern?: Record<string, unknown>,
+): Record<string, string> {
+  if (overrides.hip?.trim()) return overrides;
+  const pattern =
+    canonicalPattern && typeof canonicalPattern === "object" && !Array.isArray(canonicalPattern)
+      ? canonicalPattern
+      : getCurrentPattern();
+  if (!isCustomBuildPatternMode(pattern)) return overrides;
+  const finishedHip = positiveMeasurementInches(section(pattern.measurements).finishedHip);
+  if (finishedHip === undefined) return overrides;
+  return { ...overrides, hip: formatOverrideInches(finishedHip) };
 }
 
 export type MeasurementOverrideKey =
@@ -351,6 +371,14 @@ export function persistMeasurementOverrides(overrides: Record<string, string>): 
       Object.keys(stylePatch).length > 0
     ) {
       saveCurrentPattern(canonSave);
+    }
+    const hipIn = positiveMeasurementInches(overrides.hip);
+    if (hipIn !== undefined && (canonMode === "custom-build" || patternModeAlreadyCustomBuild)) {
+      const measurements = section(getCurrentPattern().measurements);
+      const existing = positiveMeasurementInches(measurements.finishedHip);
+      if (existing !== hipIn) {
+        saveCurrentPattern({ measurements: { ...measurements, finishedHip: hipIn } });
+      }
     }
   } catch {
     /* quota */

@@ -179,6 +179,35 @@ describe("saved custom-build measurement save", () => {
     expect(loadMeasurementOverrides().chestBust).toBe("40");
   });
 
+  it("detects dirty after hip-only change (straight torso) and save payload includes updated hip", () => {
+    const project = customBuildProject({
+      chestBust: "40",
+      finishedLength: "24",
+      armholeDepth: "8",
+      shoulderWidth: "14",
+      finishedNeckOpeningWidth: "6",
+      neckDepth: "3",
+      hip: "40",
+    });
+    hydrateSavedCustomPatternProjectSession(project);
+    captureSavedCustomPatternDirtyBaseline();
+    expect(hasUnsavedSavedCustomPatternChanges()).toBe(false);
+
+    persistMeasurementOverrides({
+      ...loadMeasurementOverrides(),
+      hip: "43",
+    });
+
+    expect(hasUnsavedSavedCustomPatternChanges()).toBe(true);
+    expect(loadMeasurementOverrides().hip).toBe("43");
+
+    flushCustomBuildMeasurementOverridesToCanonical();
+
+    const payload = buildSavePayloadFromWorkingDraft(project.name);
+    expect(overrideFromPayload(payload, "hip")).toBe("43");
+    expect(overrideFromPayload(payload, "chestBust")).toBe("40");
+  });
+
   it("detects dirty after hemDepth change and save payload includes updated hemDepth", () => {
     const project = customBuildProject({
       chestBust: "40",

@@ -1,6 +1,6 @@
 import { prepareCustomBuildPatternGeneration } from "./prepareCustomBuildPatternGeneration";
-import { hasUnsavedSavedCustomPatternChanges } from "./customPatternSavedProjectDirtyState";
-import { runUpdateActiveSavedCustomPattern } from "./customPatternEditingBannerActions";
+import { hasUnsavedCustomPatternChanges } from "./customPatternSavedProjectDirtyState";
+import { saveActiveCustomPatternBeforeNavigate } from "./saveActiveCustomPatternBeforeNavigate";
 import { resolveCustomBuildSaveMeasureFlushRoot } from "./sleevelessCustomMeasurementStorage";
 import { promptSavedPatternViewUnsavedChoice } from "./startNewCustomPatternWorkflow";
 
@@ -56,14 +56,10 @@ export function createSavedPatternUnsavedViewWorkflowDeps(options: {
   const flushRoot = resolveCustomBuildSaveMeasureFlushRoot(root);
 
   return {
-    hasUnsaved: hasUnsavedSavedCustomPatternChanges,
+    hasUnsaved: hasUnsavedCustomPatternChanges,
     promptUnsaved: () => promptSavedPatternViewUnsavedChoice(root),
     flushRoot,
-    saveActiveProject: async () => {
-      prepareCustomBuildPatternGeneration({ root: flushRoot, rehydrateSavedProject: false });
-      const res = await runUpdateActiveSavedCustomPattern(flushRoot ?? root);
-      return res.ok ? { ok: true } : { ok: false };
-    },
+    saveActiveProject: async () => saveActiveCustomPatternBeforeNavigate(flushRoot ?? root),
     navigate: () => {
       if (typeof window === "undefined") return;
       window.location.assign(href);

@@ -6,12 +6,6 @@
  */
 
 import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "../lib/patterns/patternStorage";
-import {
-  buildCardiganSelectionWriteSnapshot,
-  logCardiganSelectionWrite,
-  logCustomBuildGarmentHandoff,
-  logGarmentTypeRaw,
-} from "../lib/patterns/customBuildGarmentHandoffDebug";
 import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
 import {
   type SleevelessGarmentType,
@@ -300,20 +294,10 @@ function initCustomStylePage(): void {
     syncBasicsFromExpressValues(readExpressValues());
   };
   const syncGarment = (v: string) => {
-    const before = buildCardiganSelectionWriteSnapshot("before", v);
     garmentType = v;
     writeStored(STORAGE.garmentType, v);
-    if (v === "cardigan") {
-      logGarmentTypeRaw("[kbm after cardigan click]");
-    }
     mirrorGarmentToExpress();
     syncBasicsFromExpressValues(readExpressValues());
-    const after = buildCardiganSelectionWriteSnapshot("after", v);
-    logCardiganSelectionWrite(`syncGarment (${v})`, before, after);
-    logCustomBuildGarmentHandoff("custom-style syncGarment", {
-      resolvedGarmentStyle: v === "cardigan" ? "cardigan" : "pullover",
-      resolvedFrontStyle: v === "cardigan" ? "open" : "closed",
-    });
   };
 
   wireRadiogroup(root, "neckline", NECKLINE_VALUES, syncNeckline);
@@ -329,10 +313,6 @@ function initCustomStylePage(): void {
 
   mirrorGarmentToExpress();
   syncBasicsFromExpressValues(readExpressValues());
-  logCustomBuildGarmentHandoff("custom-style init", {
-    resolvedGarmentStyle: garmentType === "cardigan" ? "cardigan" : "pullover",
-    resolvedFrontStyle: garmentType === "cardigan" ? "open" : "closed",
-  });
 
   const continueLink = document.querySelector<HTMLAnchorElement>(
     'a.kbm-btn-accent[href*="custom-build/fit"]',
@@ -347,9 +327,6 @@ function initCustomStylePage(): void {
       mirrorGarmentToExpress();
       syncBasicsFromExpressValues(readExpressValues());
     }
-    logGarmentTypeRaw("[kbm style Continue → Measurements]");
-    const after = buildCardiganSelectionWriteSnapshot("after", garmentType);
-    logCardiganSelectionWrite("Continue → Measurements (pre-nav)", after, after);
     window.location.assign(href);
   });
 }

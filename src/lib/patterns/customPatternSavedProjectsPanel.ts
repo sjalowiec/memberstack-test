@@ -104,6 +104,7 @@ export function refreshCustomPatternSavedProjectsPanelUi(root: HTMLElement): voi
     saveBtn.classList.toggle("btn-primary", !editing);
     saveBtn.classList.toggle("btn-outline-secondary", editing);
   }
+  // Copy/duplicate is intentionally hidden until the workflow is fully stabilized (no [data-cb-project-save-copy] in UI).
   if (copyBtn) copyBtn.textContent = "Save a Copy";
   if (updateBtn) {
     updateBtn.textContent = "Update saved pattern";
@@ -342,6 +343,7 @@ export function initCustomPatternSavedProjectsPanel(
     }
   });
 
+  // No-op when copy control is absent from markup; mode: "copy" remains for tests/future UI.
   copyBtn?.addEventListener("click", async () => {
     const name = resolveProjectNameForSave(nameInput);
     if (!name) {

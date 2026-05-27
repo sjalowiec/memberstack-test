@@ -111,6 +111,11 @@ export function buildSavePayloadFromWorkingDraft(
     flushRoot?: ParentNode | null;
     /** @internal Tests only — skip flushing measurement overrides into the draft. */
     skipFlushMeasurementOverrides?: boolean;
+    /**
+     * Run {@link syncCustomBuildToPatternStorage} before reading overrides (default false).
+     * Sync reconciles straight-torso hip overrides and must not run during cloud save payload build.
+     */
+    syncToPatternStorage?: boolean;
   }> = {},
 ): SaveCustomPatternProjectRequest {
   const flushRoot = resolveCustomBuildSaveMeasureFlushRoot(
@@ -122,8 +127,10 @@ export function buildSavePayloadFromWorkingDraft(
   );
 
   if (!options.skipFlushMeasurementOverrides) {
+    if (options.syncToPatternStorage === true) {
+      syncCustomBuildToPatternStorage({ awaitCharts: false });
+    }
     flushCustomBuildMeasurementOverridesToCanonical({ root: flushRoot ?? undefined });
-    syncCustomBuildToPatternStorage({ awaitCharts: false });
   }
 
   const pattern = getCurrentPattern();

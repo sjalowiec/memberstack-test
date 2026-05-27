@@ -13,7 +13,6 @@ import {
   mergedPatternForDisplayFromSources,
 } from "../lib/patterns/sleevelessPatternBuilderMerge.ts";
 import { buildCustomBuildEffectivePatternInput } from "../lib/patterns/buildCustomBuildEffectivePatternInput.ts";
-import { reportMyPatternRenderDebug } from "../lib/patterns/customBuildMyPatternRenderDebug.ts";
 import { prepareCustomBuildPatternGeneration, isDedicatedSleevelessPatternWorkspacePage } from "../lib/patterns/prepareCustomBuildPatternGeneration.ts";
 import {
   ensureSavedCustomPatternSessionHydratedOnPatternPage,
@@ -2452,7 +2451,7 @@ table {
     return false;
   }
 
-  async function renderMount(patternMerged, result, unit, generatorPatternData, renderDebugMeta) {
+  async function renderMount(patternMerged, result, unit, generatorPatternData) {
     const mount = document.querySelector("[data-sleeveless-mount]");
     if (!mount) return;
 
@@ -2666,16 +2665,6 @@ table {
     });
     if (renderSeq !== sleevelessRenderMountSeq) return;
 
-    reportMyPatternRenderDebug({
-      renderStage: "after-diagram-hydrate",
-      genInput: generatorPatternData,
-      result,
-      unit,
-      patternMerged,
-      usedFallbackGenInput: renderDebugMeta?.usedFallbackGenInput === true,
-      diagramPatternData,
-    });
-
     ensureSleevelessDiagramModal();
     bindSleevelessDiagramZoom(mount);
     bindSleevelessBackDiagramMode(mount);
@@ -2777,7 +2766,6 @@ table {
     let genInput;
     let result;
     let effectivePatternMerged = patternMerged;
-    let usedFallbackGenInput = false;
 
     try {
       genInput = buildGeneratorPatternData(effectivePatternMerged);
@@ -2787,24 +2775,8 @@ table {
       // Fallback: ignore `patternBuilderData` entirely; render from canonical draft only.
       effectivePatternMerged = mergedPatternForDisplayFromSources(getCurrentPattern(), {});
       genInput = buildCustomBuildEffectivePatternInput({ patternBuilderData: {} });
-      usedFallbackGenInput = true;
       result = generateSleevelessBackPattern(genInput);
     }
-
-    reportMyPatternRenderDebug({
-      renderStage: "after-generate",
-      genInput,
-      result,
-      unit:
-        (patternData.yarnGaugeMachine &&
-        typeof patternData.yarnGaugeMachine === "object" &&
-        /** @type {Record<string, unknown>} */ (patternData.yarnGaugeMachine).gaugeRawUnit === "cm") ||
-        section(effectivePatternMerged.yarnGauge).gaugeRawUnit === "cm"
-          ? "cm"
-          : "in",
-      patternMerged: effectivePatternMerged,
-      usedFallbackGenInput,
-    });
 
     setPatternTabsReadiness(tabsRoot, true);
     showResults(resultsVisibilityConfig);
@@ -2823,7 +2795,7 @@ table {
 
     updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, true);
 
-    await renderMount(effectivePatternMerged, result, unit, genInput, { usedFallbackGenInput });
+    await renderMount(effectivePatternMerged, result, unit, genInput);
     } catch (err) {
       console.error("[sleeveless] Pattern tab refresh failed:", err);
       const mount = document.querySelector("[data-sleeveless-mount]");

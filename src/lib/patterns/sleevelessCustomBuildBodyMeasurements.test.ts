@@ -5,6 +5,7 @@ import {
   readCustomBuildBodyFinishedMeasurements,
   reconcileStraightTorsoChartMeasurements,
   reconcileStraightTorsoOverridesAfterChartSync,
+  reconcileStraightTorsoOverridesPreservingUserHip,
   seedCustomBuildBodyFinishedFromChartRow,
 } from "./sleevelessCustomBuildBodyMeasurements";
 import { getCurrentPattern, PATTERN_STORAGE_KEY } from "./patternStorage";
@@ -47,6 +48,16 @@ describe("reconcileStraightTorsoOverridesAfterChartSync", () => {
   it("keeps hip slightly above bust within straight tolerance", () => {
     const next = reconcileStraightTorsoOverridesAfterChartSync(37, { hip: "37.2" });
     expect(next.hip).toBe("37.2");
+  });
+});
+
+describe("reconcileStraightTorsoOverridesPreservingUserHip", () => {
+  it("keeps stored hip 43 when strict reconcile would reset to bust 40", () => {
+    const next = reconcileStraightTorsoOverridesPreservingUserHip(40, {
+      chestBust: "40",
+      hip: "43",
+    });
+    expect(next.hip).toBe("43");
   });
 });
 

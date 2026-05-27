@@ -13,10 +13,10 @@ import {
   loadMeasurementOverrides,
   persistMeasurementOverrides,
 } from "../lib/patterns/sleevelessCustomMeasurementStorage";
-import { logCustomBuildGarmentHandoff, logGarmentTypeRaw, logSummaryGarmentRead } from "../lib/patterns/customBuildGarmentHandoffDebug";
 import {
   prepareCustomBuildPatternGeneration,
 } from "../lib/patterns/prepareCustomBuildPatternGeneration";
+import { scheduleCaptureCustomPatternDirtyBaselineAfterHydration } from "../lib/patterns/customPatternSavedProjectDirtyState";
 import { wirePatternWorkspacePatternTabPreGeneration } from "../lib/patterns/patternWorkspacePatternTabNavigation";
 import {
   computeDefaultMeasurementsFromChartRow,
@@ -861,7 +861,6 @@ async function renderDiagram(
 }
 
 export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurementsInitOptions): void {
-  logGarmentTypeRaw("[kbm summary first read]");
   const root = document.querySelector("[data-cb-measure-root]");
   if (!(root instanceof HTMLElement)) return;
 
@@ -931,7 +930,6 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
       if (!refreshPatternValidationUi(root, displayUnit)) return;
       persistFromRoot(root, displayUnit);
       prepareCustomBuildPatternGeneration({ root, awaitCharts: false });
-      logCustomBuildGarmentHandoff("review/measurements Continue (after prepare)");
       if (options?.onContinue) {
         options.onContinue();
         return;
@@ -944,7 +942,6 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
 
   void loadExpressSweaterCharts().then(async () => {
     prepareCustomBuildPatternGeneration({ root, awaitCharts: false });
-    logSummaryGarmentRead("measurements/review page (after sync, before label)");
     const pattern = getCurrentPattern();
     const expressValues = readExpressValues();
     const fit = pattern.fit ?? {};
@@ -1027,6 +1024,7 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
         getDisplayUnit,
       );
       diagramUnitDisplayReady = true;
+      scheduleCaptureCustomPatternDirtyBaselineAfterHydration();
       if (useUiUnitDisplay) {
         const stats = applyDiagramUnitDisplay(diagramHost, diagramInches, readOnly, lastDisplayUnit);
         logReviewUnitDebug("initial diagram unit display", {

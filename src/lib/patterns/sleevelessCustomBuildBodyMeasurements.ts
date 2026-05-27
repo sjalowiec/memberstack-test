@@ -114,6 +114,22 @@ export function reconcileStraightTorsoOverridesAfterChartSync(
   return next;
 }
 
+/**
+ * Chart sync reconcile must not drop a diagram hip the user already stored (e.g. 43″ on 40″ bust).
+ * Used by {@link syncCustomBuildToPatternStorage} only; generator path still uses strict reconcile.
+ */
+export function reconcileStraightTorsoOverridesPreservingUserHip(
+  chartBustInches: number,
+  overrides: Record<string, string>,
+): Record<string, string> {
+  const userHip = overrides.hip?.trim();
+  const reconciled = reconcileStraightTorsoOverridesAfterChartSync(chartBustInches, overrides);
+  if (userHip && reconciled.hip?.trim() !== userHip) {
+    return { ...reconciled, hip: userHip };
+  }
+  return reconciled;
+}
+
 export function computeCustomBuildBodyFinishedFromChartRow(
   row: ChartRow,
   fitPreference: string,
