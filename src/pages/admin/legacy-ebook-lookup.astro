@@ -1,9 +1,1234 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import catalog from '../../data/ebooks.json';
+import {
+  auditLegacyEbookCatalog,
+  buildLegacyShopFileIndex,
+  fileStatusSortKey,
+  formatActiveLabel,
+  formatFileStatusLabel,
+  formatLegacyCell,
+  getLegacyShopDownloadPublicUrl,
+  formatShopFileSizeKb,
+  listLegacyShopDownloadFiles,
+  listUnmatchedLegacyShopFiles,
+} from "../../lib/legacy/legacyEbookCatalog";
+import {
+  buildLegacyEbookCatalogById,
+  loadLegacyEbookPurchases,
+  enrichLegacyEbookPurchase,
+  toLegacyEbookPurchaseClientRows,
+} from "../../lib/legacy/legacyEbookPurchases";
+
+const shopFiles = listLegacyShopDownloadFiles();
+const shopIndex = buildLegacyShopFileIndex(shopFiles);
+const books = auditLegacyEbookCatalog(undefined, shopIndex);
+const catalogById = buildLegacyEbookCatalogById(books);
+const purchaseClientRows = toLegacyEbookPurchaseClientRows(
+  loadLegacyEbookPurchases().map((row) => enrichLegacyEbookPurchase(row, catalogById))
+);
+const purchaseClientJson = JSON.stringify(purchaseClientRows);
+const unmatchedShopFiles = listUnmatchedLegacyShopFiles(books, shopFiles);
+
+const missingLegacyIds = new Set(
+  books.filter((b) => b.fileStatus === "missing").map((b) => b.legacyId)
+);
+const unmatchedWithMissingId = unmatchedShopFiles.filter(
+  (f) => f.legacyIdPrefix && missingLegacyIds.has(f.legacyIdPrefix)
+);
+
+const totalBooks = books.length;
+const activeBooks = books.filter((b) => b.active === true).length;
+const inactiveBooks = books.filter((b) => b.active === false).length;
+const booksWithFilenames = books.filter((b) => b.downloadFile).length;
+const filesFound = books.filter((b) => b.fileStatus === "found").length;
+const missingFiles = books.filter((b) => b.fileStatus === "missing").length;
+const booksWithNoFilename = books.filter((b) => b.fileStatus === "no-filename").length;
+
+const activeWithFilenames = books.filter((b) => b.active === true && b.downloadFile);
+const activeBooksWithFilenames = activeWithFilenames.length;
+const activeFilesFound = activeWithFilenames.filter((b) => b.fileStatus === "found").length;
+const activeFilesMissing = activeWithFilenames.filter(
+  (b) => b.fileStatus === "missing"
+).length;
+const activeMissingRows = activeWithFilenames.filter((b) => b.fileStatus === "missing");
 ---
 
-<BaseLayout title="Legacy Ebook Lookup | Knit it Now">
-<h1>Legacy Ebook Lookup</h1>
-<p>Page is working.</p>
-<p>{catalog.length} ebooks found.</p>
+<BaseLayout
+  title="Legacy eBook Lookup | Knit it Now"
+  description="Internal inventory of legacy downloadable eBooks."
+  skipGlobalHyvor={true}
+  bodyClass="help-hub-admin-body"
+>
+  <main class="help-hub-admin">
+    <header class="help-hub-admin__head">
+      <h1 class="help-hub-admin__title">Legacy eBook Lookup</h1>
+      <p class="help-hub-admin__sub">
+        Read-only inventory from <code>src/data/legacy/legacy-ebook-catalog.csv</code>
+        (legacy store export), audited against <code>public/downloads/shop/</code>.
+        Customer purchases come from <code>src/data/legacy/legacy-ebook-purchases.csv</code>.
+      </p>
+    </header>
+
+    <div class="help-hub-admin__toolbar">
+      <a href="/admin" class="kbm-btn kbm-btn-outline">Back to Creator Control Panel</a>
+    </div>
+
+    <section
+      class="admin-panel legacy-ebook-lookup__purchase-panel"
+      aria-labelledby="legacy-ebook-purchase-lookup-heading"
+    >
+      <h2 id="legacy-ebook-purchase-lookup-heading" class="legacy-ebook-lookup__section-title">
+        Customer purchase lookup
+      </h2>
+      <p class="legacy-ebook-lookup__section-sub">
+        Search by billing email (case-insensitive). Results join to the catalog by legacy
+        item ID and show a download link when the catalog audit finds a shop file.
+      </p>
+      <div class="legacy-ebook-lookup__search-row">
+        <label class="legacy-ebook-lookup__search-label" for="legacy-ebook-email-search">
+          Search customer email
+        </label>
+        <div class="legacy-ebook-lookup__search-controls">
+          <input
+            type="search"
+            id="legacy-ebook-email-search"
+            class="legacy-ebook-lookup__search-input"
+            name="customer-email"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="customer@example.com"
+          />
+          <button type="button" class="kbm-btn kbm-btn-primary" id="legacy-ebook-email-search-btn">
+            Search
+          </button>
+        </div>
+      </div>
+      <p
+        class="legacy-ebook-lookup__purchase-status"
+        id="legacy-ebook-purchase-status"
+        aria-live="polite"
+      >
+        Enter an email and search to see legacy eBook purchases.
+      </p>
+      <div
+        class="help-hub-admin__table-wrap legacy-ebook-lookup__purchase-results-wrap is-hidden"
+        id="legacy-ebook-purchase-results-wrap"
+        hidden
+      >
+        <table
+          class="help-hub-admin__table legacy-ebook-lookup__purchase-table"
+          id="legacy-ebook-purchase-results-table"
+        >
+          <thead>
+            <tr>
+              <th scope="col">Purchase date</th>
+              <th scope="col">Email</th>
+              <th scope="col">First name</th>
+              <th scope="col">Last name</th>
+              <th scope="col">Legacy item ID</th>
+              <th scope="col">eBook title</th>
+              <th scope="col">Qty</th>
+              <th scope="col">Total</th>
+              <th scope="col">Download</th>
+            </tr>
+          </thead>
+          <tbody id="legacy-ebook-purchase-results-tbody"></tbody>
+        </table>
+      </div>
+      <p
+        class="help-hub-admin__empty legacy-ebook-lookup__purchase-empty is-hidden"
+        id="legacy-ebook-purchase-empty"
+        hidden
+      >
+        No legacy eBook purchases found for this email.
+      </p>
+    </section>
+
+    <script
+      id="legacy-ebook-purchases-data"
+      type="application/json"
+      set:html={purchaseClientJson}
+    />
+
+    <dl class="legacy-ebook-lookup__stats" aria-live="polite">
+      <div>
+        <dt>Total books</dt>
+        <dd>{totalBooks}</dd>
+      </div>
+      <div>
+        <dt>Active books</dt>
+        <dd>{activeBooks}</dd>
+      </div>
+      <div>
+        <dt>Active books with filenames</dt>
+        <dd>{activeBooksWithFilenames}</dd>
+      </div>
+      <div>
+        <dt>Active files found</dt>
+        <dd class:list={["legacy-ebook-lookup__stat-ok", activeFilesMissing === 0 && activeBooksWithFilenames > 0]}>
+          {activeFilesFound}
+        </dd>
+      </div>
+      <div>
+        <dt>Active files missing</dt>
+        <dd class:list={["legacy-ebook-lookup__stat-warn", activeFilesMissing > 0]}>
+          {activeFilesMissing}
+        </dd>
+      </div>
+      <div>
+        <dt>Inactive books</dt>
+        <dd>{inactiveBooks}</dd>
+      </div>
+      <div>
+        <dt>Files in shop folder</dt>
+        <dd>{shopFiles.length}</dd>
+      </div>
+      <div>
+        <dt>Books with filenames</dt>
+        <dd>{booksWithFilenames}</dd>
+      </div>
+      <div>
+        <dt>Files found (all)</dt>
+        <dd>{filesFound}</dd>
+      </div>
+      <div>
+        <dt>Missing files (all)</dt>
+        <dd class:list={["legacy-ebook-lookup__stat-warn", missingFiles > 0]}>
+          {missingFiles}
+        </dd>
+      </div>
+      <div>
+        <dt>Books with no filename</dt>
+        <dd>{booksWithNoFilename}</dd>
+      </div>
+      <div>
+        <dt>Unmatched shop files</dt>
+        <dd>{unmatchedShopFiles.length}</dd>
+      </div>
+    </dl>
+    {activeFilesMissing === 0 && activeBooksWithFilenames > 0 ? (
+      <p class="legacy-ebook-lookup__success-note">
+        All {activeBooksWithFilenames} active catalog titles with a filename have a
+        matching file in <code>public/downloads/shop/</code>.
+      </p>
+    ) : activeFilesMissing > 0 ? (
+      <div class="legacy-ebook-lookup__alert legacy-ebook-lookup__alert--error">
+        <p>
+          <strong>{activeFilesMissing}</strong> active title(s) still missing a shop file.
+          Enable <strong>Show inactive titles</strong> to review inactive gaps.
+        </p>
+        <ul class="legacy-ebook-lookup__alert-list">
+          {activeMissingRows.map((book) => (
+            <li>
+              <strong>{book.legacyId}</strong> — {book.title}
+              {book.downloadFile && (
+                <>
+                  {" "}
+                  (<code>{book.downloadFile}</code>)
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    ) : null}
+
+    <section
+      class="admin-panel help-hub-admin__table-panel"
+      aria-labelledby="legacy-ebook-inventory-heading"
+    >
+      <h2 id="legacy-ebook-inventory-heading" class="visually-hidden">
+        Legacy eBook inventory
+      </h2>
+      {books.length === 0 ? (
+        <p class="help-hub-admin__empty">No legacy eBooks in catalog.</p>
+      ) : (
+        <>
+        <div class="legacy-ebook-lookup__table-controls">
+          <label class="legacy-ebook-lookup__show-inactive">
+            <input
+              type="checkbox"
+              id="legacy-ebook-show-inactive"
+              name="show-inactive-titles"
+            />
+            Show inactive titles
+          </label>
+          <label class="legacy-ebook-lookup__show-inactive">
+            <input
+              type="checkbox"
+              id="legacy-ebook-show-missing-only"
+              name="show-missing-files-only"
+            />
+            Show missing files only
+          </label>
+          <p class="legacy-ebook-lookup__visible-count" id="legacy-ebook-visible-count" aria-live="polite">
+            Showing {activeBooks} active title{activeBooks === 1 ? "" : "s"}
+            ({inactiveBooks} inactive hidden)
+          </p>
+        </div>
+        <div class="help-hub-admin__table-wrap">
+          <table
+            id="legacy-ebook-inventory-table"
+            class="help-hub-admin__table legacy-ebook-lookup__table"
+          >
+            <thead>
+              <tr>
+                <th
+                  scope="col"
+                  class="legacy-ebook-lookup__th-sortable is-sorted"
+                  data-sort-column="legacyId"
+                  aria-sort="ascending"
+                >
+                  <span class="legacy-ebook-lookup__th-label">Legacy ID</span>
+                  <span class="legacy-ebook-lookup__sort-indicator" aria-hidden="true"
+                    >↑</span
+                  >
+                </th>
+                <th
+                  scope="col"
+                  class="legacy-ebook-lookup__th-sortable"
+                  data-sort-column="title"
+                  aria-sort="none"
+                >
+                  <span class="legacy-ebook-lookup__th-label">Title</span>
+                  <span class="legacy-ebook-lookup__sort-indicator" aria-hidden="true"
+                  ></span>
+                </th>
+                <th
+                  scope="col"
+                  class="legacy-ebook-lookup__th-sortable"
+                  data-sort-column="filename"
+                  aria-sort="none"
+                >
+                  <span class="legacy-ebook-lookup__th-label">Filename</span>
+                  <span class="legacy-ebook-lookup__sort-indicator" aria-hidden="true"
+                  ></span>
+                </th>
+                <th
+                  scope="col"
+                  class="legacy-ebook-lookup__th-sortable"
+                  data-sort-column="active"
+                  aria-sort="none"
+                >
+                  <span class="legacy-ebook-lookup__th-label">Active</span>
+                  <span class="legacy-ebook-lookup__sort-indicator" aria-hidden="true"
+                  ></span>
+                </th>
+                <th
+                  scope="col"
+                  class="legacy-ebook-lookup__th-sortable"
+                  data-sort-column="fileStatus"
+                  aria-sort="none"
+                >
+                  <span class="legacy-ebook-lookup__th-label">File Status</span>
+                  <span class="legacy-ebook-lookup__sort-indicator" aria-hidden="true"
+                  ></span>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="legacy-ebook-inventory-tbody">
+              {books.map((book) => (
+                <tr
+                  class:list={[
+                    book.fileStatus === "missing" && "legacy-ebook-lookup__row--missing-file",
+                    book.active === true &&
+                      book.fileStatus === "missing" &&
+                      "legacy-ebook-lookup__row--active-missing",
+                  ]}
+                  data-inactive-title={book.active === false ? "true" : "false"}
+                  data-missing-file={book.fileStatus === "missing" ? "true" : "false"}
+                  data-legacy-id={book.legacyId}
+                  data-title={book.title}
+                  data-filename={book.downloadFile ?? ""}
+                  data-active={
+                    book.active === true
+                      ? "2"
+                      : book.active === false
+                        ? "1"
+                        : "0"
+                  }
+                  data-file-status={fileStatusSortKey(book.fileStatus)}
+                >
+                  <td class="legacy-ebook-lookup__col-id">
+                    {formatLegacyCell(book.legacyId)}
+                  </td>
+                  <td class="legacy-ebook-lookup__col-title">
+                    {formatLegacyCell(book.title)}
+                  </td>
+                  <td class="legacy-ebook-lookup__col-file">
+                    {book.fileStatus === "found" &&
+                    book.matchedShopFile &&
+                    book.downloadFile ? (
+                      <a
+                        href={getLegacyShopDownloadPublicUrl(book.matchedShopFile)!}
+                        class="legacy-ebook-lookup__file-link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={
+                          book.matchedShopFile &&
+                          book.matchedShopFile !== book.downloadFile
+                            ? `Open ${book.matchedShopFile}`
+                            : `Open ${book.downloadFile}`
+                        }
+                      >
+                        <code>{book.downloadFile}</code>
+                      </a>
+                    ) : book.downloadFile ? (
+                      <code>{book.downloadFile}</code>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                  <td
+                    class:list={[
+                      "legacy-ebook-lookup__col-active",
+                      book.active === true && "is-active",
+                      book.active === false && "is-inactive",
+                    ]}
+                  >
+                    {formatActiveLabel(book.active)}
+                  </td>
+                  <td
+                    class:list={[
+                      "legacy-ebook-lookup__col-file-status",
+                      book.fileStatus === "found" && "is-found",
+                      book.fileStatus === "missing" && "is-missing",
+                      book.fileStatus === "no-filename" && "is-no-filename",
+                    ]}
+                    title={
+                      book.matchedShopFile &&
+                      book.downloadFile &&
+                      book.matchedShopFile !== book.downloadFile
+                        ? `On disk: ${book.matchedShopFile}`
+                        : undefined
+                    }
+                  >
+                    {formatFileStatusLabel(book.fileStatus)}
+                    {book.matchedShopFile &&
+                      book.downloadFile &&
+                      book.matchedShopFile.toLowerCase() !==
+                        book.downloadFile.toLowerCase() && (
+                        <span class="legacy-ebook-lookup__on-disk">
+                          <code>{book.matchedShopFile}</code>
+                        </span>
+                      )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        </>
+      )}
+    </section>
+
+    <section
+      class="admin-panel legacy-ebook-lookup__unmatched-panel"
+      aria-labelledby="unmatched-shop-files-heading"
+    >
+      <h2 id="unmatched-shop-files-heading" class="legacy-ebook-lookup__section-title">
+        Unmatched files in public/downloads/shop
+      </h2>
+      <p class="legacy-ebook-lookup__section-sub">
+        PDF and ZIP files on disk that are not linked to any legacy catalog row by the
+        audit rules above. Compare these against rows marked <strong>Missing file</strong>
+        when filenames were renamed.
+      </p>
+      {unmatchedWithMissingId.length > 0 && (
+        <p class="legacy-ebook-lookup__hint-note">
+          {unmatchedWithMissingId.length} unmatched file(s) use a legacy ID prefix that
+          matches a catalog row still marked missing — likely renamed on disk.
+        </p>
+      )}
+      {unmatchedShopFiles.length === 0 ? (
+        <p class="help-hub-admin__empty">All PDF/ZIP files in the shop folder are matched.</p>
+      ) : (
+        <div class="help-hub-admin__table-wrap">
+          <table class="help-hub-admin__table legacy-ebook-lookup__unmatched-table">
+            <thead>
+              <tr>
+                <th scope="col">Filename</th>
+                <th scope="col">Type</th>
+                <th scope="col">Size</th>
+                <th scope="col">Legacy ID prefix</th>
+              </tr>
+            </thead>
+            <tbody>
+              {unmatchedShopFiles.map((file) => (
+                <tr
+                  class:list={[
+                    file.legacyIdPrefix &&
+                      missingLegacyIds.has(file.legacyIdPrefix) &&
+                      "legacy-ebook-lookup__unmatched--likely-renamed",
+                  ]}
+                >
+                  <td class="legacy-ebook-lookup__col-file">
+                    <code>{file.filename}</code>
+                  </td>
+                  <td>{file.fileType}</td>
+                  <td class="legacy-ebook-lookup__col-size">
+                    {formatShopFileSizeKb(file.sizeKb)}
+                  </td>
+                  <td class="legacy-ebook-lookup__col-id">
+                    {file.legacyIdPrefix ?? "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  </main>
+
+  <style>
+    :global(body.help-hub-admin-body) {
+      margin: 0;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .help-hub-admin {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 1.25rem 1.5rem 3rem;
+      box-sizing: border-box;
+    }
+
+    .help-hub-admin__head {
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .help-hub-admin__title {
+      margin: 0 0 0.35rem 0;
+      font-size: 1.65rem;
+      color: #243015;
+    }
+
+    .help-hub-admin__sub {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #475569;
+      max-width: 56rem;
+    }
+
+    .help-hub-admin__sub code {
+      font-size: 0.88em;
+      background: #f1f5f9;
+      padding: 0.12rem 0.35rem;
+      border-radius: 4px;
+    }
+
+    .help-hub-admin__toolbar {
+      margin-bottom: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem 1rem;
+    }
+
+    .legacy-ebook-lookup__stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.5rem;
+      margin: 0 0 1rem 0;
+      padding: 0;
+    }
+
+    .legacy-ebook-lookup__stats div {
+      margin: 0;
+    }
+
+    .legacy-ebook-lookup__stats dt {
+      margin: 0;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #64748b;
+    }
+
+    .legacy-ebook-lookup__stats dd {
+      margin: 0.15rem 0 0 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: #243015;
+    }
+
+    .legacy-ebook-lookup__table-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .legacy-ebook-lookup__show-inactive {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.95rem;
+      color: #374151;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .legacy-ebook-lookup__show-inactive input {
+      width: 1rem;
+      height: 1rem;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .legacy-ebook-lookup__visible-count {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+
+    .legacy-ebook-lookup__row--hidden-inactive {
+      display: none;
+    }
+
+    .legacy-ebook-lookup__stat-ok {
+      color: #166534;
+    }
+
+    .legacy-ebook-lookup__stat-warn {
+      color: #b91c1c;
+    }
+
+    .legacy-ebook-lookup__success-note {
+      margin: 0 0 1rem 0;
+      font-size: 0.95rem;
+      color: #166534;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      max-width: 56rem;
+    }
+
+    .legacy-ebook-lookup__success-note code {
+      font-size: 0.88em;
+      background: #dcfce7;
+      padding: 0.1rem 0.3rem;
+      border-radius: 4px;
+    }
+
+    .legacy-ebook-lookup__alert {
+      margin: 0 0 1rem 0;
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      max-width: 56rem;
+    }
+
+    .legacy-ebook-lookup__alert p {
+      margin: 0 0 0.5rem 0;
+      font-size: 0.95rem;
+    }
+
+    .legacy-ebook-lookup__alert--error {
+      color: #7f1d1d;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+    }
+
+    .legacy-ebook-lookup__alert-list {
+      margin: 0;
+      padding-left: 1.25rem;
+      font-size: 0.92rem;
+    }
+
+    .legacy-ebook-lookup__alert-list code {
+      font-size: 0.88em;
+      background: #fee2e2;
+      padding: 0.08rem 0.3rem;
+      border-radius: 4px;
+    }
+
+    .legacy-ebook-lookup__row--missing-file {
+      background: #fef2f2;
+    }
+
+    .legacy-ebook-lookup__row--missing-file:hover {
+      background: #fee2e2;
+    }
+
+    .legacy-ebook-lookup__row--active-missing {
+      outline: 2px solid #b91c1c;
+      outline-offset: -2px;
+    }
+
+    .admin-panel {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .help-hub-admin__empty {
+      margin: 0;
+      color: #64748b;
+    }
+
+    .help-hub-admin__table-wrap {
+      overflow-x: auto;
+    }
+
+    .help-hub-admin__table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    .help-hub-admin__table th,
+    .help-hub-admin__table td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0.65rem 0.5rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .help-hub-admin__table th {
+      font-weight: 700;
+      color: #243015;
+      background: #f8fafc;
+    }
+
+    .legacy-ebook-lookup__table thead th.legacy-ebook-lookup__th-sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .legacy-ebook-lookup__th-label {
+      display: inline;
+    }
+
+    .legacy-ebook-lookup__sort-indicator {
+      display: inline-block;
+      min-width: 1ch;
+      margin-left: 0.2rem;
+      font-size: 0.85em;
+      font-weight: 600;
+      color: #526b2d;
+    }
+
+    .legacy-ebook-lookup__th-sortable:not(.is-sorted) .legacy-ebook-lookup__sort-indicator {
+      visibility: hidden;
+    }
+
+    .help-hub-admin__table tbody tr:hover {
+      background: #fafafa;
+    }
+
+    .legacy-ebook-lookup__col-id {
+      font-variant-numeric: tabular-nums;
+      color: #475569;
+      white-space: nowrap;
+      width: 5rem;
+    }
+
+    .legacy-ebook-lookup__col-title {
+      font-weight: 600;
+      color: #111827;
+      max-width: 24rem;
+    }
+
+    .legacy-ebook-lookup__col-file code {
+      font-size: 0.85em;
+      background: #f1f5f9;
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      word-break: break-all;
+    }
+
+    .legacy-ebook-lookup__file-link {
+      color: #1d4ed8;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .legacy-ebook-lookup__file-link:hover {
+      color: #1e3a8a;
+    }
+
+    .legacy-ebook-lookup__file-link code {
+      background: #eff6ff;
+    }
+
+    .legacy-ebook-lookup__file-link:hover code {
+      background: #dbeafe;
+    }
+
+    .legacy-ebook-lookup__col-active {
+      white-space: nowrap;
+      width: 6rem;
+    }
+
+    .legacy-ebook-lookup__col-active.is-active {
+      color: #166534;
+      font-weight: 600;
+    }
+
+    .legacy-ebook-lookup__col-active.is-inactive {
+      color: #64748b;
+    }
+
+    .legacy-ebook-lookup__col-file-status {
+      white-space: nowrap;
+      min-width: 7rem;
+    }
+
+    .legacy-ebook-lookup__col-file-status.is-found {
+      color: #166534;
+      font-weight: 600;
+    }
+
+    .legacy-ebook-lookup__col-file-status.is-missing {
+      color: #b91c1c;
+      font-weight: 600;
+    }
+
+    .legacy-ebook-lookup__col-file-status.is-no-filename {
+      color: #64748b;
+    }
+
+    .legacy-ebook-lookup__on-disk {
+      display: block;
+      margin-top: 0.25rem;
+      font-weight: 400;
+    }
+
+    .legacy-ebook-lookup__on-disk code {
+      font-size: 0.8em;
+      background: #f1f5f9;
+      padding: 0.08rem 0.3rem;
+      border-radius: 4px;
+      word-break: break-all;
+    }
+
+    .legacy-ebook-lookup__unmatched-panel {
+      margin-top: 1.5rem;
+    }
+
+    .legacy-ebook-lookup__section-title {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.2rem;
+      color: #243015;
+    }
+
+    .legacy-ebook-lookup__section-sub {
+      margin: 0 0 1rem 0;
+      font-size: 0.92rem;
+      color: #475569;
+      max-width: 56rem;
+    }
+
+    .legacy-ebook-lookup__hint-note {
+      margin: 0 0 1rem 0;
+      font-size: 0.9rem;
+      color: #1e40af;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 0.6rem 0.75rem;
+      max-width: 56rem;
+    }
+
+    .legacy-ebook-lookup__col-size {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .legacy-ebook-lookup__unmatched--likely-renamed {
+      background: #fffbeb;
+    }
+
+    .legacy-ebook-lookup__unmatched--likely-renamed:hover {
+      background: #fef3c7;
+    }
+
+    .legacy-ebook-lookup__purchase-panel {
+      margin-bottom: 1.25rem;
+    }
+
+    .legacy-ebook-lookup__search-row {
+      margin-bottom: 0.75rem;
+      max-width: 36rem;
+    }
+
+    .legacy-ebook-lookup__search-label {
+      display: block;
+      margin-bottom: 0.35rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .legacy-ebook-lookup__search-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .legacy-ebook-lookup__search-input {
+      flex: 1 1 14rem;
+      min-width: 12rem;
+      padding: 0.5rem 0.65rem;
+      font-size: 1rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+
+    .legacy-ebook-lookup__search-input:focus {
+      outline: 2px solid #526b2d;
+      outline-offset: 1px;
+      border-color: #526b2d;
+    }
+
+    .legacy-ebook-lookup__purchase-status {
+      margin: 0 0 0.75rem 0;
+      font-size: 0.92rem;
+      color: #64748b;
+    }
+
+    .legacy-ebook-lookup__purchase-results-wrap.is-hidden,
+    .legacy-ebook-lookup__purchase-empty.is-hidden {
+      display: none;
+    }
+
+    .legacy-ebook-lookup__purchase-table .legacy-ebook-lookup__col-qty,
+    .legacy-ebook-lookup__purchase-table .legacy-ebook-lookup__col-total {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .legacy-ebook-lookup__purchase-table .legacy-ebook-lookup__col-date {
+      white-space: nowrap;
+      font-size: 0.88em;
+      color: #475569;
+    }
+  </style>
+
+  <script>
+    // @ts-nocheck
+    (function initLegacyEbookPurchaseSearch() {
+      const dataEl = document.getElementById("legacy-ebook-purchases-data");
+      const searchInput = document.getElementById("legacy-ebook-email-search");
+      const searchBtn = document.getElementById("legacy-ebook-email-search-btn");
+      const statusEl = document.getElementById("legacy-ebook-purchase-status");
+      const resultsWrap = document.getElementById("legacy-ebook-purchase-results-wrap");
+      const resultsTbody = document.getElementById("legacy-ebook-purchase-results-tbody");
+      const emptyEl = document.getElementById("legacy-ebook-purchase-empty");
+
+      if (!dataEl || !searchInput || !statusEl || !resultsWrap || !resultsTbody || !emptyEl) {
+        return;
+      }
+
+      /** @type {Array<{purchaseDate:string,email:string,firstName:string,lastName:string,legacyItemId:string,title:string,quantity:number,totalPrice:string,downloadHref:string|null,downloadLabel:string|null}>} */
+      let purchases = [];
+      try {
+        purchases = JSON.parse(dataEl.textContent || "[]");
+      } catch {
+        statusEl.textContent = "Could not load purchase data.";
+        return;
+      }
+
+      function normalizeEmail(value) {
+        return String(value ?? "").trim().toLowerCase();
+      }
+
+      function escapeHtml(text) {
+        return String(text ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function formatPurchaseDate(raw) {
+        const s = String(raw ?? "").trim();
+        if (!s) return "—";
+        const d = new Date(s.replace(" ", "T"));
+        if (Number.isNaN(d.getTime())) return s;
+        return d.toLocaleString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        });
+      }
+
+      function renderDownloadCell(row) {
+        if (row.downloadHref && row.downloadLabel) {
+          return `<a href="${escapeHtml(row.downloadHref)}" class="legacy-ebook-lookup__file-link" target="_blank" rel="noopener noreferrer"><code>${escapeHtml(row.downloadLabel)}</code></a>`;
+        }
+        if (row.downloadLabel) {
+          return `<code>${escapeHtml(row.downloadLabel)}</code>`;
+        }
+        return "—";
+      }
+
+      function setResultsVisible(showTable, showEmpty) {
+        resultsWrap.hidden = !showTable;
+        resultsWrap.classList.toggle("is-hidden", !showTable);
+        emptyEl.hidden = !showEmpty;
+        emptyEl.classList.toggle("is-hidden", !showEmpty);
+      }
+
+      function runSearch() {
+        const query = normalizeEmail(searchInput.value);
+        if (!query) {
+          statusEl.textContent = "Enter an email and search to see legacy eBook purchases.";
+          resultsTbody.innerHTML = "";
+          setResultsVisible(false, false);
+          return;
+        }
+
+        const matches = purchases.filter((row) =>
+          normalizeEmail(row.email).includes(query)
+        );
+
+        matches.sort((a, b) => {
+          const ta = Date.parse(String(a.purchaseDate).replace(" ", "T"));
+          const tb = Date.parse(String(b.purchaseDate).replace(" ", "T"));
+          const sa = Number.isFinite(ta) ? ta : 0;
+          const sb = Number.isFinite(tb) ? tb : 0;
+          return sb - sa;
+        });
+
+        if (matches.length === 0) {
+          statusEl.textContent = "";
+          resultsTbody.innerHTML = "";
+          setResultsVisible(false, true);
+          return;
+        }
+
+        statusEl.textContent = `${matches.length} purchase${matches.length === 1 ? "" : "s"} for “${searchInput.value.trim()}”.`;
+        resultsTbody.innerHTML = matches
+          .map(
+            (row) => `<tr>
+              <td class="legacy-ebook-lookup__col-date">${escapeHtml(formatPurchaseDate(row.purchaseDate))}</td>
+              <td>${escapeHtml(row.email)}</td>
+              <td>${escapeHtml(row.firstName)}</td>
+              <td>${escapeHtml(row.lastName)}</td>
+              <td class="legacy-ebook-lookup__col-id">${escapeHtml(row.legacyItemId)}</td>
+              <td class="legacy-ebook-lookup__col-title">${escapeHtml(row.title)}</td>
+              <td class="legacy-ebook-lookup__col-qty">${escapeHtml(row.quantity)}</td>
+              <td class="legacy-ebook-lookup__col-total">$${escapeHtml(row.totalPrice)}</td>
+              <td class="legacy-ebook-lookup__col-file">${renderDownloadCell(row)}</td>
+            </tr>`
+          )
+          .join("");
+        setResultsVisible(true, false);
+      }
+
+      searchBtn?.addEventListener("click", runSearch);
+      searchInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          runSearch();
+        }
+      });
+    })();
+  </script>
+
+  {books.length > 0 && (
+    <script>
+      // @ts-nocheck
+      const tbody = document.getElementById("legacy-ebook-inventory-tbody");
+      const table = document.getElementById("legacy-ebook-inventory-table");
+      const showInactiveEl = document.getElementById("legacy-ebook-show-inactive");
+      const showMissingOnlyEl = document.getElementById("legacy-ebook-show-missing-only");
+      const visibleCountEl = document.getElementById("legacy-ebook-visible-count");
+      if (!tbody || !table) {
+        /* table not rendered */
+      } else {
+        const inactiveCount = Number(
+          tbody.querySelectorAll('tr[data-inactive-title="true"]').length
+        );
+        const totalCount = tbody.querySelectorAll("tr").length;
+        const activeCount = totalCount - inactiveCount;
+
+        function applyRowVisibility() {
+          const showInactive = showInactiveEl?.checked === true;
+          const showMissingOnly = showMissingOnlyEl?.checked === true;
+          let visible = 0;
+          for (const row of tbody.querySelectorAll("tr")) {
+            const isInactive = row.dataset.inactiveTitle === "true";
+            const isMissing = row.dataset.missingFile === "true";
+            const hidden =
+              (isInactive && !showInactive) || (showMissingOnly && !isMissing);
+            row.classList.toggle("legacy-ebook-lookup__row--hidden-inactive", hidden);
+            if (!hidden) visible += 1;
+          }
+          if (visibleCountEl) {
+            const parts = [`Showing ${visible} row${visible === 1 ? "" : "s"}`];
+            if (!showInactive) {
+              parts.push(`${inactiveCount} inactive hidden`);
+            }
+            if (showMissingOnly) {
+              parts.push("missing files only");
+            }
+            visibleCountEl.textContent = parts.join(" · ");
+          }
+        }
+
+        const headers = Array.from(
+          table.querySelectorAll("th[data-sort-column]")
+        );
+
+        /** @type {"legacyId" | "title" | "filename" | "active" | "fileStatus"} */
+        let sortColumn = "legacyId";
+        /** @type {"asc" | "desc"} */
+        let sortDirection = "asc";
+
+        function compareStrings(a, b) {
+          return a.localeCompare(b, undefined, { sensitivity: "base" });
+        }
+
+        function legacyIdSortKey(raw) {
+          const n = parseInt(String(raw ?? "").trim(), 10);
+          return Number.isFinite(n) ? n : Number.NaN;
+        }
+
+        function compareRows(a, b) {
+          const dir = sortDirection === "asc" ? 1 : -1;
+
+          if (sortColumn === "legacyId") {
+            const na = legacyIdSortKey(a.dataset.legacyId);
+            const nb = legacyIdSortKey(b.dataset.legacyId);
+            const aMissing = Number.isNaN(na);
+            const bMissing = Number.isNaN(nb);
+            if (aMissing && bMissing) return 0;
+            if (aMissing) return 1;
+            if (bMissing) return -1;
+            return (na - nb) * dir;
+          }
+
+          if (sortColumn === "title") {
+            const ta = (a.dataset.title ?? "").trim();
+            const tb = (b.dataset.title ?? "").trim();
+            const aEmpty = !ta;
+            const bEmpty = !tb;
+            if (aEmpty && bEmpty) return 0;
+            if (aEmpty) return 1;
+            if (bEmpty) return -1;
+            return compareStrings(ta, tb) * dir;
+          }
+
+          if (sortColumn === "filename") {
+            const fa = (a.dataset.filename ?? "").trim();
+            const fb = (b.dataset.filename ?? "").trim();
+            const aEmpty = !fa;
+            const bEmpty = !fb;
+            if (aEmpty && bEmpty) return 0;
+            if (aEmpty) return 1;
+            if (bEmpty) return -1;
+            return compareStrings(fa, fb) * dir;
+          }
+
+          if (sortColumn === "active") {
+            const aa = parseInt(a.dataset.active ?? "0", 10);
+            const ab = parseInt(b.dataset.active ?? "0", 10);
+            const sa = Number.isFinite(aa) ? aa : 0;
+            const sb = Number.isFinite(ab) ? ab : 0;
+            return (sa - sb) * dir;
+          }
+
+          if (sortColumn === "fileStatus") {
+            const fa = parseInt(a.dataset.fileStatus ?? "0", 10);
+            const fb = parseInt(b.dataset.fileStatus ?? "0", 10);
+            const sa = Number.isFinite(fa) ? fa : 0;
+            const sb = Number.isFinite(fb) ? fb : 0;
+            if (sa !== sb) return (sa - sb) * dir;
+            return compareStrings(
+              (a.dataset.filename ?? "").trim(),
+              (b.dataset.filename ?? "").trim()
+            ) * dir;
+          }
+
+          return 0;
+        }
+
+        function updateHeaderState() {
+          for (const th of headers) {
+            const col = th.dataset.sortColumn;
+            const sorted = col === sortColumn;
+            th.classList.toggle("is-sorted", sorted);
+            th.setAttribute(
+              "aria-sort",
+              sorted
+                ? sortDirection === "asc"
+                  ? "ascending"
+                  : "descending"
+                : "none"
+            );
+            const indicator = th.querySelector(".legacy-ebook-lookup__sort-indicator");
+            if (indicator) {
+              indicator.textContent = sorted
+                ? sortDirection === "asc"
+                  ? "↑"
+                  : "↓"
+                : "";
+            }
+          }
+        }
+
+        function sortTable() {
+          const rows = Array.from(tbody.querySelectorAll("tr"));
+          rows.sort(compareRows);
+          for (const row of rows) {
+            tbody.appendChild(row);
+          }
+          updateHeaderState();
+        }
+
+        for (const th of headers) {
+          th.addEventListener("click", () => {
+            const col = th.dataset.sortColumn;
+            if (!col) return;
+            if (col === sortColumn) {
+              sortDirection = sortDirection === "asc" ? "desc" : "asc";
+            } else {
+              sortColumn = col;
+              sortDirection = "asc";
+            }
+            sortTable();
+          });
+          th.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              th.click();
+            }
+          });
+          th.setAttribute("tabindex", "0");
+        }
+
+        showInactiveEl?.addEventListener("change", applyRowVisibility);
+        showMissingOnlyEl?.addEventListener("change", applyRowVisibility);
+
+        updateHeaderState();
+        applyRowVisibility();
+      }
+    </script>
+  )}
+</BaseLayout>
