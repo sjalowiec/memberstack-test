@@ -100,6 +100,7 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
             class:list={["tab-btn", "tab-btn--express", "tab-btn--workspace-brand", { active: expressTabActive }]}
             href={expressNavHref}
             data-tab="express"
+            data-pattern-workspace-express-tab
             aria-current={expressTabActive ? "page" : undefined}
             aria-label="Create"
             title="Create"
@@ -112,7 +113,11 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
               height="18"
               decoding="async"
             />
-            <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Create</span>
+            <span
+              class="pattern-workspace-tabs__visible-label"
+              data-pattern-workspace-express-tab-label
+              aria-hidden="true"
+            >Create</span>
           </a>
           <a
             class:list={["tab-btn", "tab-btn--custom", "tab-btn--workspace-brand", { active: customTabActive }]}
@@ -189,6 +194,15 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
               <i class="fa-solid fa-lightbulb tab-workspace-mobile-icon" aria-hidden="true"></i>
             </a>
           )}
+          <button
+            type="button"
+            class="pattern-workspace-new-pattern-trigger"
+            data-pattern-workspace-new-pattern-trigger
+            data-testid="pattern-workspace-new-pattern-trigger"
+            title="New Pattern"
+          >
+            New Pattern
+          </button>
           <button
             type="button"
             class="pattern-workspace-library-trigger"
@@ -401,6 +415,42 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
     color: currentColor;
   }
 
+  .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-new-pattern-trigger {
+    flex: 0 0 auto;
+    align-self: flex-end;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    margin: 0 0 0.3rem 0.35rem;
+    padding: 0.28rem 0.55rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    color: #4a5c32;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(82, 104, 45, 0.14);
+    border-radius: 999px;
+    box-shadow: none;
+    transition:
+      background 0.12s ease,
+      color 0.12s ease,
+      border-color 0.12s ease;
+  }
+
+  .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-new-pattern-trigger:hover {
+    color: #3d4d29;
+    background: rgba(255, 255, 255, 0.88);
+    border-color: rgba(82, 104, 45, 0.22);
+  }
+
+  .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-new-pattern-trigger:focus-visible {
+    outline: 2px solid #c2614e;
+    outline-offset: 2px;
+  }
+
   .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-library-trigger {
     flex: 0 0 auto;
     align-self: flex-end;
@@ -410,7 +460,7 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
     box-sizing: border-box;
     width: 1.625rem;
     height: 1.625rem;
-    margin: 0 0 0.3rem 0.45rem;
+    margin: 0 0 0.3rem 0.25rem;
     padding: 0;
     font: inherit;
     line-height: 1;
@@ -496,11 +546,18 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
       line-height: 1;
     }
 
+    .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-new-pattern-trigger {
+      margin-bottom: 0.22rem;
+      margin-left: 0.28rem;
+      padding: 0.32rem 0.5rem;
+      font-size: 0.68rem;
+    }
+
     .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-library-trigger {
       width: 1.875rem;
       height: 1.875rem;
       margin-bottom: 0.22rem;
-      margin-left: 0.4rem;
+      margin-left: 0.2rem;
     }
 
     .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-library-trigger i {
@@ -527,10 +584,16 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
       font-size: 1.02rem;
     }
 
+    .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-new-pattern-trigger {
+      margin-left: 0.22rem;
+      padding: 0.28rem 0.42rem;
+      font-size: 0.64rem;
+    }
+
     .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-library-trigger {
       width: 1.75rem;
       height: 1.75rem;
-      margin-left: 0.35rem;
+      margin-left: 0.18rem;
     }
 
     .pattern-workspace-tabs .pattern-tab-nav .pattern-workspace-library-trigger i {

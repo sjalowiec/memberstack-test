@@ -35,7 +35,10 @@ import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
 import { buildGlossaryTooltipPlaceholderHtml } from "../lib/glossary/glossaryTooltipPrint.ts";
 import { buildPatternHelpCardInnerHtml } from "../lib/patterns/patternHelpCard.ts";
-import { buildShapingNotationChartHelpHtml } from "../lib/glossary/shapingNotationGlossary.ts";
+import {
+  buildShapingNotationChartHelpHtml,
+  SHAPING_NOTATION_CHART_HELP_VIMEO_ID,
+} from "../lib/glossary/shapingNotationGlossary.ts";
 import {
   isSleevelessCardiganHalfFrontDiagramType,
   isSleevelessCardiganGarmentStyle,
@@ -85,6 +88,7 @@ import { sleevelessHelpVideoFromCatalog } from "../lib/patterns/sleevelessCatalo
 import { resolveEffectiveFinishedBustInches } from "../lib/patterns/customBuildEffectiveFinishedBust.ts";
 import { resolveDiagramFinishedHipInches } from "../lib/patterns/customBuildEffectiveFinishedHip.ts";
 import { resolveEffectiveSleevelessBodyShapeKind, resolveEffectiveSleevelessBodyShapePhrase } from "../lib/patterns/sleevelessAlineShaping.ts";
+import { isEditingSavedCustomPatternProject } from "../lib/patterns/customPatternEditingUx.ts";
 
 // DEV-only cardigan half-front schematic: sessionStorage or localStorage key `kbmDevCardiganHalfFrontLeft` = "1" (vite dev).
 
@@ -97,6 +101,19 @@ if (!bindOffTrickHelpVideo) {
 
 /** Canonical Vimeo help clips for sleeveless pattern pages (modal + optional jump links). */
 export const SLEEVELESS_HELP_VIDEOS = {
+  shapingNotationChartWalkthrough: {
+    id: SHAPING_NOTATION_CHART_HELP_VIMEO_ID,
+    title: "Watch How This Chart Works",
+    description: "",
+    jumpLinks: [],
+    noJumpInfo: {
+      title: "No Sound in This Video",
+      body: [
+        "This short clip shows how the row counter in the written instructions matches the row counter labels on the shaping diagram.",
+        "Watch the highlighted instruction row connect to the matching location on the diagram.",
+      ],
+    },
+  },
   roundNeckShaping: {
     id: "151858551",
     embedUrl:
@@ -850,11 +867,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     if (!section) return;
     const help = section.querySelector("[data-sleeveless-shaping-notation-help]");
     if (!(help instanceof HTMLElement)) return;
-    const show = mode === "shaping-notation";
-    help.hidden = !show;
-    if (show) {
-      hydrateGlossaryTooltipPlaceholders(help);
-    }
+    help.hidden = mode !== "shaping-notation";
   }
 
   function updateBackDiagramModeUi(root, mode) {
@@ -1476,14 +1489,42 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   <ul class="sleeveless-video-modal__jump-list">${items}</ul>
 </div>`;
     }
+    const noJumpInfo =
+      jumps.length === 0 &&
+      meta &&
+      typeof meta.noJumpInfo === "object" &&
+      meta.noJumpInfo &&
+      String(meta.noJumpInfo.title || "").trim()
+        ? {
+            title: String(meta.noJumpInfo.title).trim(),
+            body: Array.isArray(meta.noJumpInfo.body)
+              ? meta.noJumpInfo.body
+                  .map((line) => String(line || "").trim())
+                  .filter((line) => line.length > 0)
+              : [],
+          }
+        : null;
+    const noJumpInfoBodyHtml =
+      noJumpInfo && noJumpInfo.body.length > 0
+        ? noJumpInfo.body
+            .map((line) => `<p class="sleeveless-video-modal__info-text">${escapeHtml(line)}</p>`)
+            .join("")
+        : "";
+    const noJumpInfoHtml = noJumpInfo
+      ? `<aside class="sleeveless-video-modal__info" role="note" aria-label="Video context">
+  <p class="sleeveless-video-modal__info-title">${escapeHtml(noJumpInfo.title)}</p>
+  ${noJumpInfoBodyHtml}
+</aside>`
+      : "";
 
     const iframeSrc = resolveSleevelessHelpVideoIframeSrc(meta, 0);
     const iframeTitle = escapeGlossaryPlaceholderAttr(titleText);
-    return `<div class="sleeveless-video-modal__shell">
+    return `<div class="sleeveless-video-modal__shell${noJumpInfo ? " sleeveless-video-modal__shell--info-no-jumps" : ""}">
   <div class="sleeveless-video-modal__meta">
     <h2 class="sleeveless-video-modal__title">${escapeHtml(titleText)}</h2>
     ${descHtml}
     ${jumpRegion}
+    ${noJumpInfoHtml}
   </div>
   <div class="sleeveless-video-modal__player">
     <iframe
@@ -2692,7 +2733,15 @@ table {
       introEl.innerHTML = validation.ok ? buildSleevelessScreenBasicsSummaryDlHtml(patternMerged, patternData) : "";
     }
 
-    if (!validation.ok) {
+    /**
+     * Saved projects are restored into the canonical working draft (`kbm_current_pattern`) and then
+     * mirrored into `patternBuilderData`. If that mirror becomes stale/partial after quick edits,
+     * generation should still succeed from the canonical draft (and the page must not get stuck
+     * on the boot "Loading pattern…" message).
+     */
+    const allowSavedDraftFallback = isEditingSavedCustomPatternProject();
+
+    if (!validation.ok && !allowSavedDraftFallback) {
       updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, false);
       if (resultsEl) resultsEl.style.display = "none";
       const mount = document.querySelector("[data-sleeveless-mount]");
@@ -2702,29 +2751,52 @@ table {
       return;
     }
 
-    const genInput = buildGeneratorPatternData(patternMerged);
-    const result = generateSleevelessBackPattern(genInput);
+    let genInput;
+    let result;
+    let effectivePatternMerged = patternMerged;
+
+    try {
+      genInput = buildGeneratorPatternData(effectivePatternMerged);
+      result = generateSleevelessBackPattern(genInput);
+    } catch (err) {
+      if (!allowSavedDraftFallback) throw err;
+      // Fallback: ignore `patternBuilderData` entirely; render from canonical draft only.
+      effectivePatternMerged = mergedPatternForDisplayFromSources(getCurrentPattern(), {});
+      genInput = buildGeneratorPatternDataFromSources(
+        effectivePatternMerged,
+        {},
+        getCurrentPattern(),
+      );
+      result = generateSleevelessBackPattern(genInput);
+    }
 
     setPatternTabsReadiness(tabsRoot, true);
     showResults(resultsVisibilityConfig);
 
-    const yg = section(patternMerged.yarnGauge);
+    const yg = section(effectivePatternMerged.yarnGauge);
     const ygm =
       patternData.yarnGaugeMachine && typeof patternData.yarnGaugeMachine === "object"
         ? section(patternData.yarnGaugeMachine)
         : {};
     const unit = (ygm && ygm.gaugeRawUnit === "cm") || (yg && yg.gaugeRawUnit === "cm") ? "cm" : "in";
 
-    if (tryExpressNeedleFailSafeBlock(result, patternMerged, genInput)) {
+    if (tryExpressNeedleFailSafeBlock(result, effectivePatternMerged, genInput)) {
       updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, false);
       return;
     }
 
     updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, true);
 
-    await renderMount(patternMerged, result, unit, genInput);
+    await renderMount(effectivePatternMerged, result, unit, genInput);
     } catch (err) {
       console.error("[sleeveless] Pattern tab refresh failed:", err);
+      const mount = document.querySelector("[data-sleeveless-mount]");
+      if (mount instanceof HTMLElement) {
+        mount.innerHTML =
+          `<div class="kbm-warning-box">` +
+          `<p><strong>We could not render your pattern.</strong> Please refresh the page and try again.</p>` +
+          `</div>`;
+      }
     } finally {
       sleevelessPatternRefreshInFlight = false;
       if (sleevelessPatternRefreshQueued) {

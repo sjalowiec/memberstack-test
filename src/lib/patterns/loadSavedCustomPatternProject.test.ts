@@ -108,8 +108,7 @@ describe("loadSavedCustomPatternProject", () => {
     expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toContain("Sue's test pattern");
   });
 
-  it("does not call Express builder restore during normal open", async () => {
-    const restoreSpy = vi.spyOn(restoreModule, "restoreSleevelessExpressBuilderFromPattern");
+  it("rehydrates Express builder storage during normal open", async () => {
     const safeSpy = vi.spyOn(restoreModule, "safeRestoreSleevelessExpressBuilderFromPattern");
 
     loadCustomPatternProjectMock.mockResolvedValue({
@@ -119,9 +118,7 @@ describe("loadSavedCustomPatternProject", () => {
 
     await loadSavedCustomPatternProject(PROJECT_ID, "open");
 
-    expect(restoreSpy).not.toHaveBeenCalled();
-    expect(safeSpy).not.toHaveBeenCalled();
-    restoreSpy.mockRestore();
+    expect(safeSpy).toHaveBeenCalled();
     safeSpy.mockRestore();
   });
 });

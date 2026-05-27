@@ -100,7 +100,7 @@ describe("Custom Build editing banner", () => {
 
   it("banner copy uses Save, not Update saved pattern", () => {
     const copy = buildCustomPatternEditingBannerCopy(SUES_PATTERN);
-    expect(copy.body).toBe("Changes are not saved until you Save.");
+    expect(copy.body).toBe("Changes won't be saved until you click Save.");
   });
 
   it("New unsaved custom pattern does not show the editing banner", () => {

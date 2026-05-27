@@ -2,9 +2,11 @@
  * Update / exit actions for the Custom Build “Editing saved pattern” banner.
  */
 import { clearActiveCustomPatternProjectId, readActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
+import { clearSavedCustomPatternDirtyBaseline } from "./customPatternSavedProjectDirtyState";
 import { isEditingSavedCustomPatternProject } from "./customPatternEditingUx";
 import { smartSaveCustomPatternProject } from "./customPatternSavedProjectsPanel";
 import { refreshCustomPatternSavedProjectsPanelUi } from "./customPatternSavedProjectsPanel";
+import { syncPatternWorkspaceExpressTabLabel } from "./patternWorkspaceExpressTabLabel";
 import { getPatternProjectMeta } from "./sleevelessPatternProjectMeta";
 
 export const CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT = "kbm:custom-pattern-editing-state-changed";
@@ -18,6 +20,7 @@ export function syncEditingSavedPatternChrome(root: ParentNode = document): void
   if (typeof document === "undefined") return;
   const editing = isEditingSavedCustomPatternProject();
   document.documentElement.classList.toggle("kbm-editing-saved-pattern", editing);
+  syncPatternWorkspaceExpressTabLabel(root);
   root.querySelectorAll("[data-cb-saved-projects]").forEach((el) => {
     if (el instanceof HTMLElement) refreshCustomPatternSavedProjectsPanelUi(el);
   });
@@ -90,5 +93,6 @@ export async function runUpdateActiveSavedCustomPattern(
  */
 export function exitEditingSavedCustomPattern(): void {
   clearActiveCustomPatternProjectId();
+  clearSavedCustomPatternDirtyBaseline();
   dispatchCustomPatternEditingStateChanged();
 }

@@ -7,6 +7,7 @@ import {
   SLEEVELESS_EXPRESS_NEW_SESSION_PARAM,
   SLEEVELESS_EXPRESS_NEW_SESSION_VALUE,
 } from "./patternStorage";
+import { clearSavedCustomPatternDirtyBaseline } from "./customPatternSavedProjectDirtyState";
 import { clearMeasurementOverridesOnWorkingDraft } from "./sleevelessCustomMeasurementStorage";
 import {
   clearPatternProjectPrintSession,
@@ -20,6 +21,7 @@ export function startFreshSleevelessExpressPattern(): void {
   clearPatternProjectPrintSession();
   resetPatternProjectMetaForNewDraft();
   clearMeasurementOverridesOnWorkingDraft();
+  clearSavedCustomPatternDirtyBaseline();
 }
 
 export function isSleevelessExpressNewSessionSearchParams(params: URLSearchParams): boolean {

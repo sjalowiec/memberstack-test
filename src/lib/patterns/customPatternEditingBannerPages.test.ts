@@ -55,6 +55,6 @@ describe("Create tab shows banner while editing a saved pattern", () => {
 
     const copy = buildCustomPatternEditingBannerCopy(SUES_PATTERN);
     expect(copy.title).toBe(`Editing saved pattern: ${SUES_PATTERN}`);
-    expect(copy.body).toBe("Changes are not saved until you Save.");
+    expect(copy.body).toBe("Changes won't be saved until you click Save.");
   });
 });

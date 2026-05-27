@@ -1,25 +1,57 @@
-import { buildGlossaryTooltipPlaceholderHtml } from "./glossaryTooltipPrint";
-
 /** Glossary entry for traditional stitches–rows–times diagram notation. */
 export const JAPANESE_NOTATION_TRADITIONAL_GLOSSARY_ID = 1779400000001;
 
 /** Glossary entry for Knit It Now shaping notation charts (row-by-row wording). */
 export const SHAPING_NOTATION_KIN_GLOSSARY_ID = 1779400000002;
 
+/** Vimeo tutorial embedded above shaping notation garment diagrams. */
+export const SHAPING_NOTATION_CHART_HELP_VIMEO_ID = "1195771788";
+
+const SHAPING_NOTATION_CHART_HELP_VIDEO_TITLE = "Watch How This Chart Works";
+
+/** Inline Vimeo player URL (no autoplay; matches site embed query params). */
+export function buildShapingNotationChartHelpVimeoSrc(vimeoId: string): string {
+  const id = String(vimeoId || "").trim();
+  if (!/^\d+$/.test(id)) return "";
+  const params = new URLSearchParams({ byline: "0", portrait: "0" });
+  return `https://player.vimeo.com/video/${id}?${params.toString()}`;
+}
+
 /**
- * Subtle help line above inline shaping notation diagrams.
- * Hydrate `.glossary-tooltip-placeholder` after mount (and when the help line is shown).
+ * Help panel above inline shaping notation diagrams (shown in Shaping Notation diagram mode).
  */
 export function buildShapingNotationChartHelpHtml(
   escapeAttr: (s: string) => string,
   escapeText: (s: string) => string,
 ): string {
-  const term = "Shaping Notation";
-  const placeholder = buildGlossaryTooltipPlaceholderHtml(
-    SHAPING_NOTATION_KIN_GLOSSARY_ID,
-    term,
-    escapeAttr,
-    escapeText,
+  const vimeoId = SHAPING_NOTATION_CHART_HELP_VIMEO_ID;
+  const iframeSrc = buildShapingNotationChartHelpVimeoSrc(vimeoId);
+  const title = escapeAttr(SHAPING_NOTATION_CHART_HELP_VIDEO_TITLE);
+  const heading = escapeText("Watch How This Chart Works");
+  const supporting = escapeText(
+    "See how the shaping notation matches the row-by-row instructions while knitting.",
   );
-  return `<p class="sleeveless-shaping-notation-help no-print" data-sleeveless-shaping-notation-help hidden>Need help reading this chart? Learn about ${placeholder}.</p>`;
+  return `<div class="sleeveless-shaping-notation-help no-print" data-sleeveless-shaping-notation-help hidden>
+  <h3 class="sleeveless-shaping-notation-help__heading">${heading}</h3>
+  <p class="sleeveless-shaping-notation-help__text">${supporting}</p>
+  <div class="sleeveless-shaping-notation-help__video">
+    <div class="sleeveless-shaping-notation-help__video-aspect">
+      <iframe
+        src="${escapeAttr(iframeSrc)}"
+        title="${title}"
+        loading="lazy"
+        allow="autoplay; fullscreen; picture-in-picture"
+        allowfullscreen
+      ></iframe>
+    </div>
+  </div>
+  <p class="sleeveless-shaping-notation-help__actions">
+    <button
+      type="button"
+      class="sleeveless-shaping-notation-help__watch-larger"
+      data-sleeveless-video-id="${escapeAttr(vimeoId)}"
+      data-video-title="${title}"
+    >Watch larger</button>
+  </p>
+</div>`;
 }

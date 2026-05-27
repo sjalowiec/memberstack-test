@@ -1,5 +1,6 @@
 ---
 import "../../styles/pattern-workspace-library-drawer.css";
+import "../../styles/pattern-workspace-new-pattern.css";
 ---
 
 <div
@@ -65,8 +66,78 @@ import "../../styles/pattern-workspace-library-drawer.css";
   ></div>
 </div>
 
+<dialog
+  id="pattern-workspace-new-pattern-unsaved-dialog"
+  class="pattern-workspace-new-pattern-dialog"
+  aria-labelledby="pattern-workspace-new-pattern-unsaved-title"
+>
+  <div class="pattern-workspace-new-pattern-dialog__panel" data-pattern-new-unsaved-panel>
+    <span class="pattern-workspace-new-pattern-dialog__icon" aria-hidden="true">
+      <svg
+        class="pattern-workspace-new-pattern-dialog__icon-svg"
+        width="26"
+        height="26"
+        viewBox="0 0 24 24"
+        fill="none"
+        focusable="false"
+      >
+        <circle cx="12" cy="12" r="9.25" stroke="currentColor" stroke-width="1.75"></circle>
+        <path
+          d="M12 7.75v5.25M12 15.5h.01"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"></path>
+      </svg>
+    </span>
+    <div class="pattern-workspace-new-pattern-dialog__content">
+      <h2
+        id="pattern-workspace-new-pattern-unsaved-title"
+        class="pattern-workspace-new-pattern-dialog__title"
+        data-pattern-new-unsaved-title
+      >
+        You have unsaved changes to this pattern.
+      </h2>
+      <p class="pattern-workspace-new-pattern-dialog__message" data-pattern-new-unsaved-body>
+        Would you like to save your edits before starting a new pattern?
+      </p>
+      <p
+        class="pattern-workspace-new-pattern-dialog__fallback-hint"
+        data-pattern-new-unsaved-fallback-hint
+        hidden
+      ></p>
+    </div>
+    <div class="pattern-workspace-new-pattern-dialog__actions">
+      <button
+        type="button"
+        class="pattern-workspace-new-pattern-dialog__btn pattern-workspace-new-pattern-dialog__btn--primary"
+        data-pattern-new-unsaved-save
+      >
+        Save &amp; Start New
+      </button>
+      <button
+        type="button"
+        class="pattern-workspace-new-pattern-dialog__btn pattern-workspace-new-pattern-dialog__btn--secondary"
+        data-pattern-new-unsaved-discard
+      >
+        Start New Without Saving
+      </button>
+      <button
+        type="button"
+        class="pattern-workspace-new-pattern-dialog__btn pattern-workspace-new-pattern-dialog__btn--minimal"
+        data-pattern-new-unsaved-cancel
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</dialog>
+
 <script>
   import { initPatternWorkspaceLibraryDrawer } from "../../lib/patterns/patternWorkspaceLibraryDrawer";
+  import { initPatternWorkspaceNewPattern } from "../../lib/patterns/patternWorkspaceNewPattern";
+  import { initPatternWorkspaceExpressTabLabel } from "../../lib/patterns/patternWorkspaceExpressTabLabel";
 
   initPatternWorkspaceLibraryDrawer();
+  initPatternWorkspaceNewPattern();
+  initPatternWorkspaceExpressTabLabel();
 </script>

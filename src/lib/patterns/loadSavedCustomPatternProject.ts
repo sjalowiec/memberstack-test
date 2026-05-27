@@ -1,8 +1,7 @@
-import { writeActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import {
   loadCustomPatternProject,
-  loadProjectIntoWorkingDraft,
 } from "./customPatternProjectClient";
+import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPatternProject";
 import type { CustomPatternFamily } from "./customPatternProjectTypes";
 import {
   getContinueEditingHref,
@@ -29,8 +28,7 @@ export async function loadSavedCustomPatternProject(
     return { ok: false, error: res.error };
   }
 
-  loadProjectIntoWorkingDraft(res.project);
-  writeActiveCustomPatternProjectId(res.project.id, res.project.name);
+  hydrateSavedCustomPatternProjectSession(res.project);
 
   const redirectHref =
     action === "open"

@@ -14,6 +14,8 @@ import {
   runUpdateActiveSavedCustomPattern,
   syncEditingSavedPatternChrome,
 } from "./customPatternEditingBannerActions";
+import { hasUnsavedSavedCustomPatternChanges } from "./customPatternSavedProjectDirtyState";
+import { navigateToPatternWithUnsavedEditsGuard } from "./savedCustomPatternUnsavedViewGuard";
 
 export type CustomPatternEditingBannerState =
   | { show: false; projectName: "" }
@@ -37,7 +39,7 @@ export function shouldMountCustomPatternEditingBannerHost(
 
 /** Plain-text body line; the rendered banner uses a clickable “Save” control in place of the word. */
 export const CUSTOM_PATTERN_EDITING_BANNER_BODY_TEXT =
-  "Changes are not saved until you Save.";
+  "Changes won't be saved until you click Save.";
 
 export function buildCustomPatternEditingBannerCopy(projectName: string): {
   title: string;
@@ -97,7 +99,7 @@ export function renderCustomPatternEditingBanner(host: HTMLElement): void {
 
   const body = document.createElement("p");
   body.className = "cb-editing-banner__body";
-  body.append(document.createTextNode("Changes are not saved until you "));
+  body.append(document.createTextNode("Changes won't be saved until you click "));
   const saveLink = document.createElement("button");
   saveLink.type = "button";
   saveLink.className = "cb-editing-banner__save-link";
@@ -236,11 +238,37 @@ export function initCustomPatternEditingBanner(root: ParentNode = document): () 
   document.addEventListener("change", onInput, true);
   document.addEventListener(CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT, onEditingStateChanged);
 
+  const onClick = (ev: Event): void => {
+    const t = ev.target;
+    if (!(t instanceof Element)) return;
+    if (!isEditingSavedCustomPatternProject()) return;
+    if (!hasUnsavedSavedCustomPatternChanges()) return;
+
+    const link = t.closest("a");
+    if (!(link instanceof HTMLAnchorElement)) return;
+    const href = link.getAttribute("href")?.trim() ?? "";
+    if (!href) return;
+
+    // Workspace tabs + other “view pattern” links should not implicitly save.
+    // We only guard navigations to the pattern reading pages.
+    const isPatternNav =
+      link.getAttribute("data-tab") === "pattern" ||
+      href.startsWith("/patterns/sleeveless/pattern") ||
+      href.startsWith("/patterns/sleeveless/pattern/");
+    if (!isPatternNav) return;
+
+    ev.preventDefault();
+    void navigateToPatternWithUnsavedEditsGuard({ href: link.href, root: host.ownerDocument });
+  };
+
+  document.addEventListener("click", onClick, true);
+
   return () => {
     window.removeEventListener("storage", onStorage);
     document.removeEventListener("input", onInput, true);
     document.removeEventListener("change", onInput, true);
     document.removeEventListener(CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT, onEditingStateChanged);
+    document.removeEventListener("click", onClick, true);
     if (raf) window.cancelAnimationFrame(raf);
     document.documentElement.classList.remove("kbm-editing-saved-pattern");
   };

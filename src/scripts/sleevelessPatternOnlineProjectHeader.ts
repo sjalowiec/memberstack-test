@@ -11,6 +11,7 @@
 import { canCustomizePattern } from "../lib/patterns/sleevelessPatternAccessGate";
 
 import { initChangePatternChoicesLinks } from "../lib/patterns/restoreSleevelessExpressBuilderFromPattern";
+import { ensureSavedCustomPatternSessionHydratedOnPatternPage } from "../lib/patterns/hydrateSavedCustomPatternProject";
 
 import { navigateToCustomizeProjectField } from "../lib/patterns/sleevelessCustomizeProjectFieldNav";
 
@@ -141,6 +142,8 @@ export function applySleevelessPatternOnlineProjectHeader(): void {
 export function initSleevelessPatternOnlineProjectHeader(): void {
 
   if (!document.querySelector("[data-sleeveless-pattern-online-heading]")) return;
+
+  ensureSavedCustomPatternSessionHydratedOnPatternPage();
 
   applySleevelessPatternOnlineProjectHeader();
 

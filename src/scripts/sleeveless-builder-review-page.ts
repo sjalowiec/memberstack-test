@@ -19,6 +19,7 @@ import {
   readExpressWizardValues,
   syncExpressWizardToPatternStorage,
 } from "../lib/patterns/syncExpressWizardToPatternStorage";
+import { navigateToPatternWithUnsavedEditsGuard } from "../lib/patterns/savedCustomPatternUnsavedViewGuard";
 
 const PATTERN_WORKSPACE_TAB_PATTERN_HREF = "/patterns/sleeveless/pattern/?tab=pattern";
 
@@ -79,7 +80,7 @@ export function flushExpressWizardToCanonicalPatternForReview(): void {
 
 function syncExpressBasicsFromBuilderAndContinue(): void {
   flushExpressWizardToCanonicalPatternForReview();
-  window.location.assign(PATTERN_WORKSPACE_TAB_PATTERN_HREF);
+  void navigateToPatternWithUnsavedEditsGuard({ href: PATTERN_WORKSPACE_TAB_PATTERN_HREF });
 }
 
 function configureReviewActions(advanced: boolean): void {
@@ -99,7 +100,7 @@ function continueToPatternFromReview(): void {
     .then(async () => {
       flushExpressWizardToCanonicalPatternForReview();
       if (canCustomizePattern()) {
-        window.location.assign(PATTERN_WORKSPACE_TAB_PATTERN_HREF);
+        await navigateToPatternWithUnsavedEditsGuard({ href: PATTERN_WORKSPACE_TAB_PATTERN_HREF });
         return;
       }
       syncExpressBasicsFromBuilderAndContinue();

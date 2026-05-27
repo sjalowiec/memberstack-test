@@ -27,6 +27,20 @@ export const NEW_PATTERN_UNSAVED_FALLBACK_HINT =
 
 export type NewPatternUnsavedChoice = "save-and-new" | "discard-and-new" | "cancel";
 
+export type UnsavedChangesDialogLabels = {
+  save: string;
+  discard: string;
+  cancel: string;
+};
+
+export type UnsavedChangesDialogCopy = {
+  title: string;
+  body: string;
+  fallbackHint: string;
+  labels: UnsavedChangesDialogLabels;
+  showFallbackHint: boolean;
+};
+
 export type StartNewCustomPatternWorkflowDeps = {
   hasUnsaved: () => boolean;
   promptUnsaved: () => Promise<NewPatternUnsavedChoice>;
@@ -118,29 +132,65 @@ export async function startNewCustomPatternFromExpress(
   );
 }
 
+const NEW_PATTERN_UNSAVED_DIALOG_ICON_HTML = `
+  <span class="pattern-workspace-new-pattern-dialog__icon" aria-hidden="true">
+    <svg
+      class="pattern-workspace-new-pattern-dialog__icon-svg"
+      width="26"
+      height="26"
+      viewBox="0 0 24 24"
+      fill="none"
+      focusable="false"
+    >
+      <circle cx="12" cy="12" r="9.25" stroke="currentColor" stroke-width="1.75"></circle>
+      <path
+        d="M12 7.75v5.25M12 15.5h.01"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+      ></path>
+    </svg>
+  </span>
+`;
+
 /** Inner panel markup shared by `<dialog>` and the non-dialog overlay fallback. */
 export function buildNewPatternUnsavedDialogPanelHtml(): string {
   return `
     <div class="pattern-workspace-new-pattern-dialog__panel" data-pattern-new-unsaved-panel>
-      <h2
-        id="pattern-workspace-new-pattern-unsaved-title"
-        class="pattern-workspace-new-pattern-dialog__title"
-        data-pattern-new-unsaved-title
-      >${NEW_PATTERN_UNSAVED_TITLE}</h2>
-      <p class="pattern-workspace-new-pattern-dialog__message" data-pattern-new-unsaved-body>${NEW_PATTERN_UNSAVED_BODY}</p>
-      <p
-        class="pattern-workspace-new-pattern-dialog__fallback-hint"
-        data-pattern-new-unsaved-fallback-hint
-        hidden
-      >${NEW_PATTERN_UNSAVED_FALLBACK_HINT}</p>
+      ${NEW_PATTERN_UNSAVED_DIALOG_ICON_HTML}
+      <div class="pattern-workspace-new-pattern-dialog__content">
+        <h2
+          id="pattern-workspace-new-pattern-unsaved-title"
+          class="pattern-workspace-new-pattern-dialog__title"
+          data-pattern-new-unsaved-title
+        >${NEW_PATTERN_UNSAVED_TITLE}</h2>
+        <p class="pattern-workspace-new-pattern-dialog__message" data-pattern-new-unsaved-body>${NEW_PATTERN_UNSAVED_BODY}</p>
+        <p
+          class="pattern-workspace-new-pattern-dialog__fallback-hint"
+          data-pattern-new-unsaved-fallback-hint
+          hidden
+        >${NEW_PATTERN_UNSAVED_FALLBACK_HINT}</p>
+      </div>
       <div class="pattern-workspace-new-pattern-dialog__actions">
-        <button type="button" class="btn btn-primary" data-pattern-new-unsaved-save>
+        <button
+          type="button"
+          class="pattern-workspace-new-pattern-dialog__btn pattern-workspace-new-pattern-dialog__btn--primary"
+          data-pattern-new-unsaved-save
+        >
           Save &amp; Start New
         </button>
-        <button type="button" class="btn btn-outline-secondary" data-pattern-new-unsaved-discard>
+        <button
+          type="button"
+          class="pattern-workspace-new-pattern-dialog__btn pattern-workspace-new-pattern-dialog__btn--secondary"
+          data-pattern-new-unsaved-discard
+        >
           Start New Without Saving
         </button>
-        <button type="button" class="btn btn-link" data-pattern-new-unsaved-cancel>
+        <button
+          type="button"
+          class="pattern-workspace-new-pattern-dialog__btn pattern-workspace-new-pattern-dialog__btn--minimal"
+          data-pattern-new-unsaved-cancel
+        >
           Cancel
         </button>
       </div>
@@ -158,6 +208,26 @@ export function syncNewPatternUnsavedDialogCopy(panel: ParentNode, options?: { s
     hint.textContent = NEW_PATTERN_UNSAVED_FALLBACK_HINT;
     hint.hidden = !options?.showFallbackHint;
   }
+}
+
+export function syncUnsavedChangesDialogUi(panel: ParentNode, config: UnsavedChangesDialogCopy): void {
+  const title = panel.querySelector("[data-pattern-new-unsaved-title]");
+  const body = panel.querySelector("[data-pattern-new-unsaved-body]");
+  const hint = panel.querySelector("[data-pattern-new-unsaved-fallback-hint]");
+  const saveBtn = panel.querySelector("[data-pattern-new-unsaved-save]");
+  const discardBtn = panel.querySelector("[data-pattern-new-unsaved-discard]");
+  const cancelBtn = panel.querySelector("[data-pattern-new-unsaved-cancel]");
+
+  if (title) title.textContent = config.title;
+  if (body) body.textContent = config.body;
+  if (hint instanceof HTMLElement) {
+    hint.textContent = config.fallbackHint;
+    hint.hidden = !config.showFallbackHint;
+  }
+
+  if (saveBtn instanceof HTMLElement) saveBtn.textContent = config.labels.save;
+  if (discardBtn instanceof HTMLElement) discardBtn.textContent = config.labels.discard;
+  if (cancelBtn instanceof HTMLElement) cancelBtn.textContent = config.labels.cancel;
 }
 
 function resolveDocumentFromRoot(root: ParentNode): Document {
@@ -195,6 +265,40 @@ function getUnsavedDialogPanel(host: ParentNode): HTMLElement | null {
   return panel instanceof HTMLElement ? panel : null;
 }
 
+export function buildUnsavedDialogCopyForNewPattern(options?: {
+  showFallbackHint?: boolean;
+}): UnsavedChangesDialogCopy {
+  return {
+    title: NEW_PATTERN_UNSAVED_TITLE,
+    body: NEW_PATTERN_UNSAVED_BODY,
+    fallbackHint: NEW_PATTERN_UNSAVED_FALLBACK_HINT,
+    labels: {
+      save: "Save & Start New",
+      discard: "Start New Without Saving",
+      cancel: "Cancel",
+    },
+    showFallbackHint: options?.showFallbackHint === true,
+  };
+}
+
+export type SavedPatternViewUnsavedChoice = "save-and-view" | "view-without-saving" | "cancel";
+
+export function buildUnsavedDialogCopyForViewPattern(options?: {
+  showFallbackHint?: boolean;
+}): UnsavedChangesDialogCopy {
+  return {
+    title: "You have unsaved changes to this pattern.",
+    body: "Would you like to save your edits before viewing your pattern?",
+    fallbackHint: NEW_PATTERN_UNSAVED_FALLBACK_HINT,
+    labels: {
+      save: "Save & View Pattern",
+      discard: "View Without Saving",
+      cancel: "Cancel",
+    },
+    showFallbackHint: options?.showFallbackHint === true,
+  };
+}
+
 function ensureNewPatternUnsavedDialog(doc: Document): HTMLDialogElement {
   let dialog = doc.getElementById(PATTERN_WORKSPACE_NEW_PATTERN_UNSAVED_DIALOG_ID);
   if (!(dialog instanceof HTMLDialogElement)) {
@@ -206,7 +310,7 @@ function ensureNewPatternUnsavedDialog(doc: Document): HTMLDialogElement {
     doc.body.appendChild(dialog);
   }
   const panel = getUnsavedDialogPanel(dialog);
-  if (panel) syncNewPatternUnsavedDialogCopy(panel, { showFallbackHint: false });
+  if (panel) syncUnsavedChangesDialogUi(panel, buildUnsavedDialogCopyForNewPattern({ showFallbackHint: false }));
   return dialog;
 }
 
@@ -234,7 +338,7 @@ function ensureNewPatternUnsavedOverlay(doc: Document): HTMLElement {
     doc.body.appendChild(overlay);
   }
   const panel = getUnsavedDialogPanel(overlay);
-  if (panel) syncNewPatternUnsavedDialogCopy(panel, { showFallbackHint: true });
+  if (panel) syncUnsavedChangesDialogUi(panel, buildUnsavedDialogCopyForNewPattern({ showFallbackHint: true }));
   return overlay;
 }
 
@@ -319,4 +423,30 @@ export function promptNewPatternUnsavedChoice(
   }
 
   return promptWithOverlay(ensureNewPatternUnsavedOverlay(doc));
+}
+
+export async function promptSavedPatternViewUnsavedChoice(
+  root: ParentNode,
+): Promise<SavedPatternViewUnsavedChoice> {
+  const doc = resolveDocumentFromRoot(root);
+  const dialog = ensureNewPatternUnsavedDialog(doc);
+
+  const panel = getUnsavedDialogPanel(dialog);
+  if (panel) syncUnsavedChangesDialogUi(panel, buildUnsavedDialogCopyForViewPattern({ showFallbackHint: false }));
+
+  if (canShowNativeDialog(dialog)) {
+    const base = await promptWithNativeDialog(dialog);
+    if (base === "save-and-new") return "save-and-view";
+    if (base === "discard-and-new") return "view-without-saving";
+    return "cancel";
+  }
+
+  const overlay = ensureNewPatternUnsavedOverlay(doc);
+  const overlayPanel = getUnsavedDialogPanel(overlay);
+  if (overlayPanel) syncUnsavedChangesDialogUi(overlayPanel, buildUnsavedDialogCopyForViewPattern({ showFallbackHint: true }));
+
+  const base = await promptWithOverlay(overlay);
+  if (base === "save-and-new") return "save-and-view";
+  if (base === "discard-and-new") return "view-without-saving";
+  return "cancel";
 }

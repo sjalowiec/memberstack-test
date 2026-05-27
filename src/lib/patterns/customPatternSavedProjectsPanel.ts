@@ -6,7 +6,6 @@ import {
   createCustomPatternProject,
   listCustomPatternProjects,
   loadCustomPatternProject,
-  loadProjectIntoWorkingDraft,
   updateCustomPatternProject,
 } from "./customPatternProjectClient";
 import type {
@@ -26,6 +25,8 @@ import {
   reconcileActiveSavedProjectLinkedNameFromDraft,
   resolveCustomPatternDisplayName,
 } from "./customPatternEditingUx";
+import { captureSavedCustomPatternDirtyBaseline } from "./customPatternSavedProjectDirtyState";
+import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPatternProject";
 import { getPatternProjectMeta, savePatternProjectMeta } from "./sleevelessPatternProjectMeta";
 import { nextPanelListRefresh, perfEnd, perfMark, perfStart } from "./savedPatternsPerfLog";
 
@@ -159,6 +160,7 @@ export async function smartSaveCustomPatternProject(
     const res = await updateCustomPatternProject({ ...base, id: activeId });
     if (!res.ok) return { ok: false, error: res.error };
     writeActiveCustomPatternProjectId(res.project.id, res.project.name);
+    captureSavedCustomPatternDirtyBaseline();
     return { ok: true, project: res.project, created: false };
   }
 
@@ -166,6 +168,7 @@ export async function smartSaveCustomPatternProject(
   const res = await createCustomPatternProject(base);
   if (!res.ok) return { ok: false, error: res.error };
   writeActiveCustomPatternProjectId(res.project.id, res.project.name);
+  captureSavedCustomPatternDirtyBaseline();
   return { ok: true, project: res.project, created: true };
 }
 
@@ -299,6 +302,7 @@ export function initCustomPatternSavedProjectsPanel(
       return;
     }
     writeActiveCustomPatternProjectId(res.project.id, res.project.name);
+    captureSavedCustomPatternDirtyBaseline();
     refreshCustomPatternSavedProjectsPanelUi(root);
     setStatus(root, `Saved “${res.project.name}”.`);
     if (showLoadControls) {
@@ -389,8 +393,7 @@ export function initCustomPatternSavedProjectsPanel(
       perfEnd("6-panel-list-action load total", loadStart, { outcome: "error" });
       return;
     }
-    loadProjectIntoWorkingDraft(res.project);
-    writeActiveCustomPatternProjectId(res.project.id, res.project.name);
+    hydrateSavedCustomPatternProjectSession(res.project);
     refreshCustomPatternSavedProjectsPanelUi(root);
     options.onProjectLoaded?.(res.project);
     setStatus(
