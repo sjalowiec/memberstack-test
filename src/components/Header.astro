@@ -1447,25 +1447,6 @@ div[data-ms-modal-overlay] {
         <div class="kbm-nav-center-cluster">
           <div class="kbm-nav-row menu-row">
             <ul class="kbm-menu">
-              <li class="nav-item nav-dropdown dd">
-                <button
-                  type="button"
-                  class="nav-link nav-dropdown-toggle dd-trigger"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                  data-testid="nav-patterns"
-                >
-                  Plan
-                </button>
-                <ul class="nav-dropdown-menu dd-panel" role="menu">
-                  <li>
-                    <a href="/tools/" data-testid="nav-patterns-catalog">
-                      Charting Tools
-                    </a>
-                  </li>
-                  </ul>
-
-
             <li class="nav-item nav-dropdown dd">
               <button
                 type="button"
@@ -1488,15 +1469,29 @@ div[data-ms-modal-overlay] {
                     Stitch Browser
                   </a>
                 </li>
+              </ul>
+            </li>
+            <li class="nav-item nav-dropdown dd">
+              <button
+                type="button"
+                class="nav-link nav-dropdown-toggle dd-trigger"
+                aria-haspopup="true"
+                aria-expanded="false"
+                data-testid="nav-learn"
+              >
+                Learn
+              </button>
+
+              <ul class="nav-dropdown-menu dd-panel" role="menu">
+                <li><a href="/videos/" data-testid="nav-videos">Videos</a></li>
+                <li><a href="/courses/" data-testid="nav-courses">Courses</a></li>
                 <li>
                   <a href="/reference" data-testid="nav-references">
                     Machine Knitting References
                   </a>
                 </li>
+                <li><a href="/glossary">Glossary</a></li>
               </ul>
-            </li>
-            <li>
-              <a href="/videos" data-testid="nav-videos" class="nav-whats-new-link">Videos</a>
             </li>
             <li class="nav-item nav-dropdown dd">
               <button
@@ -1511,11 +1506,12 @@ div[data-ms-modal-overlay] {
 
               <ul class="nav-dropdown-menu dd-panel" role="menu">
                 <li><a href="/help-hub" data-testid="nav-help-hub">Help Hub</a></li>
-              
-                <li><a href="/glossary">Glossary</a></li>
                 <!-- Hidden for now -->
                  <li class="is-hidden"><a href="/reference">Reference</a></li>
               </ul>
+            </li>
+            <li>
+              <a href="/shop/" data-testid="nav-shop">Shop</a>
             </li>
             <li>
               <a href="/whats-new" data-testid="nav-whats-new" class="nav-whats-new-link">What's New</a>
