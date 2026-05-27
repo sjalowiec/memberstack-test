@@ -12,6 +12,13 @@ import {
   buildSleevelessGarmentDiagramPatternData,
   mergedPatternForDisplayFromSources,
 } from "../lib/patterns/sleevelessPatternBuilderMerge.ts";
+import { buildCustomBuildEffectivePatternInput } from "../lib/patterns/buildCustomBuildEffectivePatternInput.ts";
+import { reportMyPatternRenderDebug } from "../lib/patterns/customBuildMyPatternRenderDebug.ts";
+import { prepareCustomBuildPatternGeneration, isDedicatedSleevelessPatternWorkspacePage } from "../lib/patterns/prepareCustomBuildPatternGeneration.ts";
+import {
+  ensureSavedCustomPatternSessionHydratedOnPatternPage,
+  expressBuilderMatchesActiveSavedProject,
+} from "../lib/patterns/hydrateSavedCustomPatternProject.ts";
 import {
   getSleevelessGoldenBetaCanonicalPattern,
   getSleevelessGoldenBetaPatternBuilderData,
@@ -312,7 +319,8 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
 
   /** Shape expected by {@link generateSleevelessBackPattern}. */
   function buildGeneratorPatternData(merged) {
-    return buildGeneratorPatternDataFromSources(merged, getPatternData(), getCurrentPattern());
+    void merged;
+    return buildCustomBuildEffectivePatternInput();
   }
 
   function audienceLabelFromPattern(st, ft) {
@@ -2403,6 +2411,8 @@ table {
   let sleevelessRenderMountSeq = 0;
   let sleevelessPatternRefreshInFlight = false;
   let sleevelessPatternRefreshQueued = false;
+  let sleevelessPatternRefreshExternalTrigger = false;
+  let sleevelessPatternBuilderPageInitBound = false;
 
   function logExpressNeedleFailSafeDev(failSafe) {
     if (typeof import.meta !== "undefined" && import.meta.env?.DEV) {
@@ -2442,7 +2452,7 @@ table {
     return false;
   }
 
-  async function renderMount(patternMerged, result, unit, generatorPatternData) {
+  async function renderMount(patternMerged, result, unit, generatorPatternData, renderDebugMeta) {
     const mount = document.querySelector("[data-sleeveless-mount]");
     if (!mount) return;
 
@@ -2656,6 +2666,16 @@ table {
     });
     if (renderSeq !== sleevelessRenderMountSeq) return;
 
+    reportMyPatternRenderDebug({
+      renderStage: "after-diagram-hydrate",
+      genInput: generatorPatternData,
+      result,
+      unit,
+      patternMerged,
+      usedFallbackGenInput: renderDebugMeta?.usedFallbackGenInput === true,
+      diagramPatternData,
+    });
+
     ensureSleevelessDiagramModal();
     bindSleevelessDiagramZoom(mount);
     bindSleevelessBackDiagramMode(mount);
@@ -2720,6 +2740,9 @@ table {
     }
     sleevelessPatternRefreshInFlight = true;
     try {
+    if (!isDedicatedSleevelessPatternWorkspacePage()) {
+      prepareCustomBuildPatternGeneration({ awaitCharts: false });
+    }
     const patternMerged = mergedPatternForDisplay(getCurrentPattern());
     const patternData = getPatternData();
     const validation = validatePatternBuilderRequired(patternData);
@@ -2754,6 +2777,7 @@ table {
     let genInput;
     let result;
     let effectivePatternMerged = patternMerged;
+    let usedFallbackGenInput = false;
 
     try {
       genInput = buildGeneratorPatternData(effectivePatternMerged);
@@ -2762,13 +2786,25 @@ table {
       if (!allowSavedDraftFallback) throw err;
       // Fallback: ignore `patternBuilderData` entirely; render from canonical draft only.
       effectivePatternMerged = mergedPatternForDisplayFromSources(getCurrentPattern(), {});
-      genInput = buildGeneratorPatternDataFromSources(
-        effectivePatternMerged,
-        {},
-        getCurrentPattern(),
-      );
+      genInput = buildCustomBuildEffectivePatternInput({ patternBuilderData: {} });
+      usedFallbackGenInput = true;
       result = generateSleevelessBackPattern(genInput);
     }
+
+    reportMyPatternRenderDebug({
+      renderStage: "after-generate",
+      genInput,
+      result,
+      unit:
+        (patternData.yarnGaugeMachine &&
+        typeof patternData.yarnGaugeMachine === "object" &&
+        /** @type {Record<string, unknown>} */ (patternData.yarnGaugeMachine).gaugeRawUnit === "cm") ||
+        section(effectivePatternMerged.yarnGauge).gaugeRawUnit === "cm"
+          ? "cm"
+          : "in",
+      patternMerged: effectivePatternMerged,
+      usedFallbackGenInput,
+    });
 
     setPatternTabsReadiness(tabsRoot, true);
     showResults(resultsVisibilityConfig);
@@ -2787,7 +2823,7 @@ table {
 
     updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, true);
 
-    await renderMount(effectivePatternMerged, result, unit, genInput);
+    await renderMount(effectivePatternMerged, result, unit, genInput, { usedFallbackGenInput });
     } catch (err) {
       console.error("[sleeveless] Pattern tab refresh failed:", err);
       const mount = document.querySelector("[data-sleeveless-mount]");
@@ -2801,7 +2837,10 @@ table {
       sleevelessPatternRefreshInFlight = false;
       if (sleevelessPatternRefreshQueued) {
         sleevelessPatternRefreshQueued = false;
-        void refreshPatternTabContent();
+        if (sleevelessPatternRefreshExternalTrigger) {
+          sleevelessPatternRefreshExternalTrigger = false;
+          void refreshPatternTabContent();
+        }
       }
     }
   }
@@ -2845,6 +2884,17 @@ table {
   }
 
   export function initSleevelessPatternBuilderPage() {
+    if (sleevelessPatternBuilderPageInitBound) return;
+    sleevelessPatternBuilderPageInitBound = true;
+
+    if (
+      isDedicatedSleevelessPatternWorkspacePage() &&
+      isEditingSavedCustomPatternProject() &&
+      !expressBuilderMatchesActiveSavedProject()
+    ) {
+      ensureSavedCustomPatternSessionHydratedOnPatternPage();
+    }
+
     let hadTabPatternQuery = false;
     try {
       const u = new URL(window.location.href);
@@ -2868,6 +2918,7 @@ table {
     const canonKey = getPatternStorageKey();
     window.addEventListener("storage", (e) => {
       if (!e.key || (e.key !== PATTERN_BUILDER_DATA_KEY && e.key !== canonKey)) return;
+      sleevelessPatternRefreshExternalTrigger = true;
       void refreshPatternTabContent();
     });
   }

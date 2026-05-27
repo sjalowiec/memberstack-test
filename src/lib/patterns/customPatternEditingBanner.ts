@@ -14,9 +14,10 @@ import {
   runUpdateActiveSavedCustomPattern,
   syncEditingSavedPatternChrome,
 } from "./customPatternEditingBannerActions";
+import { prepareCustomBuildPatternGeneration } from "./prepareCustomBuildPatternGeneration";
 import { hasUnsavedSavedCustomPatternChanges } from "./customPatternSavedProjectDirtyState";
+import { resolveCustomBuildMeasureFlushRoot } from "./sleevelessCustomMeasurementStorage";
 import { navigateToPatternWithUnsavedEditsGuard } from "./savedCustomPatternUnsavedViewGuard";
-
 export type CustomPatternEditingBannerState =
   | { show: false; projectName: "" }
   | { show: true; projectName: string };
@@ -242,6 +243,9 @@ export function initCustomPatternEditingBanner(root: ParentNode = document): () 
     const t = ev.target;
     if (!(t instanceof Element)) return;
     if (!isEditingSavedCustomPatternProject()) return;
+
+    const flushRoot = resolveCustomBuildMeasureFlushRoot(document);
+    prepareCustomBuildPatternGeneration({ root: flushRoot });
     if (!hasUnsavedSavedCustomPatternChanges()) return;
 
     const link = t.closest("a");

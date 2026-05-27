@@ -99,10 +99,19 @@ describe("runUpdateActiveSavedCustomPattern", () => {
       created: false,
     });
 
-    const res = await runUpdateActiveSavedCustomPattern();
+    const measureRoot = {
+      querySelector: () => null,
+      querySelectorAll: () => [],
+    } as unknown as ParentNode;
+
+    const res = await runUpdateActiveSavedCustomPattern(measureRoot);
     expect(res.ok).toBe(true);
     expect(smartSaveCustomPatternProject).toHaveBeenCalledWith(
-      expect.objectContaining({ mode: "update", resolveName: expect.any(Function) }),
+      expect.objectContaining({
+        mode: "update",
+        resolveName: expect.any(Function),
+        root: measureRoot,
+      }),
     );
   });
 

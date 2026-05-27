@@ -5,7 +5,7 @@ import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPat
 import type { CustomPatternFamily } from "./customPatternProjectTypes";
 import {
   getContinueEditingHref,
-  OPEN_PATTERN_HREF,
+  getSavedCustomPatternOpenHref,
 } from "./customPatternProjectNavigation";
 
 export type SavedCustomPatternOpenAction = "open" | "continue";
@@ -32,9 +32,7 @@ export async function loadSavedCustomPatternProject(
 
   const redirectHref =
     action === "open"
-      ? res.project.source === "custom-build"
-        ? getContinueEditingHref("custom-build")
-        : OPEN_PATTERN_HREF
+      ? getSavedCustomPatternOpenHref(res.project.source)
       : getContinueEditingHref(res.project.source);
 
   return { ok: true, redirectHref };

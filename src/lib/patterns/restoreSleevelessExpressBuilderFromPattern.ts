@@ -17,6 +17,7 @@ import {
   deriveExpressStyleKey,
   mapExpressStyleKey,
 } from "./syncSleevelessExpressDesignToStorage";
+import { mergeCbMeasurementOverridesFromFitSources } from "./sleevelessCustomMeasurementStorage";
 import {
   EXPRESS_FLOW_STEPS,
   isExpressEditChoicesReopenSession,
@@ -256,6 +257,12 @@ export function restoreSleevelessExpressBuilderFromPattern(
     : maxReachableFromExpressValues(values);
   const openStep = editChoicesReopen ? EXPRESS_FLOW_STEPS : 1;
 
+  const fit = { ...section(patternData.fit), ...section(pattern.fit) };
+  const cbMeasurementOverrides = mergeCbMeasurementOverridesFromFitSources(
+    pattern.fit,
+    patternData.fit,
+  );
+
   const snapshot: ExpressPersistedV1 = {
     values,
     openStep,
@@ -264,6 +271,7 @@ export function restoreSleevelessExpressBuilderFromPattern(
     whoSizeCombined: true,
     ...(editChoicesReopen ? { editChoicesReopen: true } : {}),
     ...gauge,
+    ...(Object.keys(cbMeasurementOverrides).length > 0 ? { cbMeasurementOverrides } : {}),
   };
 
   try {

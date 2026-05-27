@@ -19,6 +19,10 @@ const PATTERN_OUTPUT_ASTRO = join(
   process.cwd(),
   "src/pages/patterns/sleeveless/pattern/index.astro",
 );
+const FOUNDATION_DESIGN_ASTRO = join(
+  process.cwd(),
+  "src/pages/patterns/sleeveless/custom-build/design/index.astro",
+);
 
 describe("Create tab editing banner page wiring", () => {
   it("Create tab astro page mounts the editing banner host and script", () => {
@@ -33,6 +37,31 @@ describe("Create tab editing banner page wiring", () => {
     const src = readFileSync(PATTERN_OUTPUT_ASTRO, "utf8");
     expect(src).not.toContain("data-cb-editing-banner-host");
     expect(src).not.toContain("customPatternEditingBanner.ts");
+  });
+
+  it("Foundation design page wires edit-workspace header hooks", () => {
+    const src = readFileSync(FOUNDATION_DESIGN_ASTRO, "utf8");
+    expect(src).toContain("data-cb-foundation-header");
+    expect(src).toContain("data-cb-onboarding-only");
+    expect(src).toContain("data-cb-editing-helper");
+    expect(src).toContain("data-cb-editing-project-name");
+    expect(src).toContain("custom-pattern-editing-banner.css");
+  });
+
+  it("Foundation design page highlights workspace Create tab, not Customize", () => {
+    const src = readFileSync(FOUNDATION_DESIGN_ASTRO, "utf8");
+    expect(src).toMatch(/activeTab="express"/);
+    expect(src).not.toMatch(/activeTab="custom"/);
+  });
+
+  it("Foundation design page marks the internal stepper for saved-edit hiding", () => {
+    const src = readFileSync(FOUNDATION_DESIGN_ASTRO, "utf8");
+    expect(src).toContain("data-cb-custom-build-stepper");
+    const css = readFileSync(
+      join(process.cwd(), "src/styles/custom-pattern-editing-banner.css"),
+      "utf8",
+    );
+    expect(css).toContain("html.kbm-editing-saved-pattern [data-cb-custom-build-stepper]");
   });
 });
 

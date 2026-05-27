@@ -29,13 +29,19 @@ describe("reconcileStraightTorsoChartMeasurements", () => {
 });
 
 describe("reconcileStraightTorsoOverridesAfterChartSync", () => {
-  it("clears stale hip override well above chart bust (43 vs 37)", () => {
-    const next = reconcileStraightTorsoOverridesAfterChartSync(37, {
-      hip: "43",
-      chestBust: "43",
-    });
+  it("clears stale hip override well above chart bust when bust override is absent", () => {
+    const next = reconcileStraightTorsoOverridesAfterChartSync(37, { hip: "43" });
     expect(next.hip).toBe("37");
     expect(next.chestBust).toBe("37");
+  });
+
+  it("keeps edited chest and hip when both exceed chart bust", () => {
+    const next = reconcileStraightTorsoOverridesAfterChartSync(33.5, {
+      chestBust: "40",
+      hip: "40",
+    });
+    expect(next.chestBust).toBe("40");
+    expect(next.hip).toBe("40");
   });
 
   it("keeps hip slightly above bust within straight tolerance", () => {

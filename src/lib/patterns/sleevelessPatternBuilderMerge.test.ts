@@ -1,10 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { resolveEffectiveArmholeDepthInches } from "./customBuildEffectiveArmholeDepth";
+import { resolveEffectiveHemDepthInches } from "./customBuildEffectiveHemDepth";
+import { calculateHemRowsFromInches } from "./hemDefaults";
 import * as customMeasurementStorage from "./sleevelessCustomMeasurementStorage";
 import {
   applyCustomBuildMeasurementOverridesToGenerator,
   buildGeneratorPatternDataFromSources,
   buildSleevelessGarmentDiagramPatternData,
+  mergedPatternForDisplayFromSources,
   resolveCustomBuildGarmentStyleForStyle,
   resolveCustomBuildNecklineForStyle,
   resolveGeneratorPatternMode,
@@ -13,7 +16,11 @@ import {
 import { CUSTOM_BUILD_GARMENT_TYPE_KEY } from "./sleevelessCustomBuildWizardNeckline";
 import { resolveSleevelessFrontDiagram } from "./sleevelessFrontDiagramSrc";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
-import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "./patternStorage";
+import {
+  saveCurrentPattern,
+  savePatternData,
+  SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+} from "./patternStorage";
 import { CUSTOM_BUILD_STYLE_STORAGE_KEYS } from "./sleevelessCustomBuildStyleKeys";
 
 const baseMeasurements = {
@@ -252,6 +259,36 @@ describe("resolveCustomBuildGarmentStyleForStyle", () => {
   });
 });
 
+describe("resolveGeneratorPatternMode", () => {
+  it("infers custom-build when canonical draft has measurement overrides and PB is stale express", () => {
+    expect(
+      resolveGeneratorPatternMode(
+        { recipientCategory: "misses" },
+        { patternMode: "express" },
+        {
+          canonicalFit: {
+            cbMeasurementOverrides: { hemDepth: "4", chestBust: "42" },
+          },
+        },
+      ),
+    ).toBe("custom-build");
+  });
+
+  it("keeps express when canonical draft is an express project", () => {
+    expect(
+      resolveGeneratorPatternMode(
+        { patternMode: "express" },
+        { patternMode: "express" },
+        {
+          canonicalFit: {
+            cbMeasurementOverrides: { hip: "28.8", chestBust: "20" },
+          },
+        },
+      ),
+    ).toBe("express");
+  });
+});
+
 describe("buildGeneratorPatternDataFromSources", () => {
   it("applies armhole override when patternBuilderData still has express mode", () => {
     const merged = {
@@ -274,6 +311,70 @@ describe("buildGeneratorPatternDataFromSources", () => {
 
     const result = generateSleevelessBackPattern(gen);
     expect(result.debug.armholeDepth).toBe(10);
+  });
+
+  it("uses canonical draft hemDepth when patternBuilderData override is stale (live generator path)", () => {
+    const kbmCanonical = {
+      style: { patternMode: "custom-build", recipientCategory: "misses", garmentStyle: "pullover" },
+      fit: {
+        selectedMeasurements: baseMeasurements,
+        cbMeasurementOverrides: {
+          hemDepth: "3",
+          chestBust: "40",
+          armholeDepth: "8",
+          finishedLength: "22",
+        },
+      },
+      yarnGauge: { stitchGauge: "5", rowGauge: "7" },
+      machine: { availableNeedles: "200" },
+    };
+    const pb = {
+      style: { patternMode: "express", garmentStyle: "pullover" },
+      fit: {
+        selectedMeasurements: baseMeasurements,
+        cbMeasurementOverrides: { hemDepth: "2", chestBust: "40", armholeDepth: "8", finishedLength: "22" },
+      },
+      yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
+    };
+    const merged = mergedPatternForDisplayFromSources(kbmCanonical, pb);
+
+    const gen = buildGeneratorPatternDataFromSources(merged, pb, kbmCanonical);
+    expect(gen.fit?.cbMeasurementOverrides).toMatchObject({ hemDepth: "3" });
+    expect(resolveEffectiveHemDepthInches(gen, "misses")).toBe(3);
+
+    const stalePbGen = buildGeneratorPatternDataFromSources(merged, pb);
+    expect(stalePbGen.fit?.cbMeasurementOverrides).toMatchObject({ hemDepth: "3" });
+
+    const result = generateSleevelessBackPattern(gen);
+    const staleRows = calculateHemRowsFromInches(7, 2);
+    expect(result.debug.hemRows).toBe(calculateHemRowsFromInches(7, 3));
+    expect(result.debug.hemRows).not.toBe(staleRows);
+  });
+
+  it("applyCustomBuildMeasurementOverridesToGenerator keeps generator hemDepth over stale storage", () => {
+    saveCurrentPattern({
+      style: { patternMode: "custom-build" },
+      fit: { cbMeasurementOverrides: { hemDepth: "2", chestBust: "40" } },
+    });
+    savePatternData("fit", { cbMeasurementOverrides: { hemDepth: "2", chestBust: "40" } });
+    localStorage.setItem(
+      SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+      JSON.stringify({ cbMeasurementOverrides: { hemDepth: "2" } }),
+    );
+
+    const gen = applyCustomBuildMeasurementOverridesToGenerator({
+      style: { patternMode: "custom-build", bodyShape: "straight" },
+      fit: {
+        selectedMeasurements: baseMeasurements,
+        cbMeasurementOverrides: { hemDepth: "3", chestBust: "40" },
+      },
+      yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
+    });
+
+    expect(gen.fit?.cbMeasurementOverrides).toMatchObject({ hemDepth: "3" });
+    expect(resolveEffectiveHemDepthInches(gen, "misses")).toBe(3);
+    const result = generateSleevelessBackPattern(gen);
+    expect(result.debug.hemRows).toBe(calculateHemRowsFromInches(7, 3));
   });
 
   it("merges storage overrides into generator input without forcing express style mode", () => {

@@ -245,7 +245,9 @@ function bindNewPatternUnsavedChoiceHandlers(
   const discardBtn = panel.querySelector("[data-pattern-new-unsaved-discard]");
   const cancelBtn = panel.querySelector("[data-pattern-new-unsaved-cancel]");
 
-  const onSave = (): void => onChoice("save-and-new");
+  const onSave = (): void => {
+    onChoice("save-and-new");
+  };
   const onDiscard = (): void => onChoice("discard-and-new");
   const onCancel = (): void => onChoice("cancel");
 

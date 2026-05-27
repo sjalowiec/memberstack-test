@@ -19,16 +19,23 @@ import {
   writeActiveCustomPatternProjectId,
 } from "./customPatternProjectActiveId";
 import { resolveCustomPatternProjectAuth } from "./customPatternProjectAuth";
+import { prepareCustomBuildPatternGeneration } from "./prepareCustomBuildPatternGeneration";
+import { resolveCustomBuildSaveMeasureFlushRoot } from "./sleevelessCustomMeasurementStorage";
+import { syncCustomBuildFoundationPageHeader } from "./customBuildFoundationPageEditingUx";
 import {
-  formatEditingSavedPatternStatus,
   isEditingSavedCustomPatternProject,
   reconcileActiveSavedProjectLinkedNameFromDraft,
   resolveCustomPatternDisplayName,
 } from "./customPatternEditingUx";
+import { CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT } from "./customPatternEditingEvents";
 import { captureSavedCustomPatternDirtyBaseline } from "./customPatternSavedProjectDirtyState";
 import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPatternProject";
 import { getPatternProjectMeta, savePatternProjectMeta } from "./sleevelessPatternProjectMeta";
 import { nextPanelListRefresh, perfEnd, perfMark, perfStart } from "./savedPatternsPerfLog";
+
+export const CUSTOM_PATTERN_SAVED_PROJECTS_PANEL_TITLE = "Saved Pattern Projects";
+
+export const CUSTOM_PATTERN_SAVED_PROJECTS_EDITING_TITLE = "Project details";
 
 export type CustomPatternSavedProjectsPanelOptions = {
   family?: CustomPatternFamily;
@@ -78,12 +85,26 @@ export function refreshCustomPatternSavedProjectsPanelUi(root: HTMLElement): voi
   const editing = isEditingSavedCustomPatternProject();
   const bannerHostOnPage =
     typeof document !== "undefined" && !!document.querySelector("[data-cb-editing-banner-host]");
+  root.classList.toggle("cb-saved-projects--editing-compact", editing);
+
+  const panelTitle = root.querySelector(".cb-saved-projects__title");
+  if (panelTitle) {
+    const defaultTitle =
+      (root as HTMLElement).dataset.cbSavedProjectsDefaultTitle?.trim() ||
+      CUSTOM_PATTERN_SAVED_PROJECTS_PANEL_TITLE;
+    if (!(root as HTMLElement).dataset.cbSavedProjectsDefaultTitle) {
+      (root as HTMLElement).dataset.cbSavedProjectsDefaultTitle = panelTitle.textContent?.trim() || defaultTitle;
+    }
+    panelTitle.textContent = editing
+      ? CUSTOM_PATTERN_SAVED_PROJECTS_EDITING_TITLE
+      : (root as HTMLElement).dataset.cbSavedProjectsDefaultTitle || defaultTitle;
+  }
   if (saveBtn) {
-    saveBtn.textContent = "Save as new";
+    saveBtn.textContent = "Save New Project";
     saveBtn.classList.toggle("btn-primary", !editing);
     saveBtn.classList.toggle("btn-outline-secondary", editing);
   }
-  if (copyBtn) copyBtn.textContent = "Save as copy";
+  if (copyBtn) copyBtn.textContent = "Save a Copy";
   if (updateBtn) {
     updateBtn.textContent = "Update saved pattern";
     updateBtn.classList.toggle("btn-primary", editing && !bannerHostOnPage);
@@ -92,14 +113,9 @@ export function refreshCustomPatternSavedProjectsPanelUi(root: HTMLElement): voi
   }
 
   if (editingStatus) {
-    const statusName = resolveNameForPanelDisplay(nameInput);
-    if (editing && statusName && !bannerHostOnPage) {
-      editingStatus.textContent = formatEditingSavedPatternStatus(statusName);
-      editingStatus.hidden = false;
-    } else {
-      editingStatus.textContent = "";
-      editingStatus.hidden = true;
-    }
+    // Project name lives in the page header or editing banner — avoid duplicating it here.
+    editingStatus.textContent = "";
+    editingStatus.hidden = true;
   }
 }
 
@@ -115,6 +131,8 @@ export type SmartSaveCustomPatternProjectOptions = {
    * `copy` — new saved project; defaults title to “{linked name} Copy” when unchanged.
    */
   mode?: CustomPatternProjectSaveMode;
+  /** Scope for diagram measurement inputs when flushing overrides before save. */
+  root?: ParentNode;
 };
 
 /** Default duplicate title when the user has not renamed since load/link. */
@@ -146,20 +164,27 @@ export async function smartSaveCustomPatternProject(
   }
 
   const name = mode === "copy" ? resolveSaveCopyProjectName(rawName) : rawName;
-  const base = buildSavePayloadFromWorkingDraft(name, { family });
+  const flushRoot = resolveCustomBuildSaveMeasureFlushRoot(
+    options.root ?? (typeof document !== "undefined" ? document : undefined),
+  );
+  const base = buildSavePayloadFromWorkingDraft(name, { family, flushRoot });
 
   if (mode === "update") {
     const activeId = readActiveCustomPatternProjectId();
     if (!activeId) {
       return {
         ok: false,
-        error: "Open a saved project or save as new before updating.",
+        error: "Open a saved project or use Save New Project before updating.",
       };
     }
     options.onStatus?.("Updating…");
     const res = await updateCustomPatternProject({ ...base, id: activeId });
     if (!res.ok) return { ok: false, error: res.error };
     writeActiveCustomPatternProjectId(res.project.id, res.project.name);
+    prepareCustomBuildPatternGeneration({
+      root: resolveCustomBuildSaveMeasureFlushRoot(flushRoot),
+      rehydrateSavedProject: false,
+    });
     captureSavedCustomPatternDirtyBaseline();
     return { ok: true, project: res.project, created: false };
   }
@@ -174,18 +199,17 @@ export async function smartSaveCustomPatternProject(
 
 function setAuthHint(root: HTMLElement, text: string): void {
   const el = root.querySelector("[data-cb-project-auth-hint]");
-  if (el instanceof HTMLElement) el.textContent = text;
+  if (!(el instanceof HTMLElement)) return;
+  el.textContent = text;
+  el.hidden = !text.trim();
 }
 
 async function refreshAuthHint(root: HTMLElement): Promise<void> {
   const auth = await resolveCustomPatternProjectAuth();
   if (auth.mode === "member") {
-    setAuthHint(root, "Signed in — projects are stored under your Memberstack account id.");
+    setAuthHint(root, "Signed in — your saved projects are stored in your account.");
   } else if (auth.mode === "dev") {
-    setAuthHint(
-      root,
-      "Development mode — projects are saved under a local dev user id. Not account-backed.",
-    );
+    setAuthHint(root, "");
   } else {
     setAuthHint(root, "Sign in to save projects to your account.");
   }
@@ -197,7 +221,7 @@ function fillProjectSelect(select: HTMLSelectElement, projects: CustomPatternPro
   select.replaceChildren();
   const placeholder = document.createElement("option");
   placeholder.value = "";
-  placeholder.textContent = projects.length ? "Choose a saved project…" : "No saved projects yet";
+  placeholder.textContent = projects.length ? "Select a saved project…" : "No saved projects yet";
   select.appendChild(placeholder);
   for (const p of projects) {
     const opt = document.createElement("option");
@@ -278,6 +302,13 @@ export function initCustomPatternSavedProjectsPanel(
     void refreshProjectList(root, family, "init");
   }
 
+  if (typeof document !== "undefined") {
+    document.documentElement.classList.toggle(
+      "kbm-editing-saved-pattern",
+      isEditingSavedCustomPatternProject(),
+    );
+  }
+  syncCustomBuildFoundationPageHeader(root);
   refreshCustomPatternSavedProjectsPanelUi(root);
 
   nameInput?.addEventListener("input", () => {
@@ -285,6 +316,7 @@ export function initCustomPatternSavedProjectsPanel(
     if (trimmed) {
       savePatternProjectMeta({ title: trimmed, titleCustomized: true });
     }
+    syncCustomBuildFoundationPageHeader(root);
     refreshCustomPatternSavedProjectsPanelUi(root);
   });
 
@@ -295,7 +327,7 @@ export function initCustomPatternSavedProjectsPanel(
       return;
     }
     setStatus(root, "Saving…");
-    const payload = buildSavePayloadFromWorkingDraft(name, { family });
+    const payload = buildSavePayloadFromWorkingDraft(name, { family, flushRoot: root });
     const res = await createCustomPatternProject(payload);
     if (!res.ok) {
       setStatus(root, res.error, true);
@@ -321,6 +353,7 @@ export function initCustomPatternSavedProjectsPanel(
       family,
       mode: "copy",
       resolveName: () => name,
+      root,
     });
     if (!res.ok) {
       setStatus(root, res.error, true);
@@ -340,7 +373,7 @@ export function initCustomPatternSavedProjectsPanel(
         root,
         showLoadControls
           ? "Save a new project first, or choose one to update."
-          : "Save as new first, or open a saved project from My Account before updating.",
+          : "Save New Project first, or open a saved project from My Account before updating.",
         true,
       );
       return;
@@ -359,6 +392,7 @@ export function initCustomPatternSavedProjectsPanel(
       family,
       mode: "update",
       resolveName: () => name,
+      root,
     });
     if (!res.ok) {
       setStatus(root, res.error, true);
@@ -380,7 +414,7 @@ export function initCustomPatternSavedProjectsPanel(
     perfMark("6-panel-list-action load start");
     const id = select?.value?.trim() ?? "";
     if (!id) {
-      setStatus(root, "Choose a saved project to load.", true);
+      setStatus(root, "Choose a saved project to open.", true);
       perfEnd("6-panel-list-action load total", loadStart, { outcome: "no-selection" });
       return;
     }
@@ -394,11 +428,19 @@ export function initCustomPatternSavedProjectsPanel(
       return;
     }
     hydrateSavedCustomPatternProjectSession(res.project);
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.toggle(
+        "kbm-editing-saved-pattern",
+        isEditingSavedCustomPatternProject(),
+      );
+      syncCustomBuildFoundationPageHeader(root);
+      document.dispatchEvent(new CustomEvent(CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT));
+    }
     refreshCustomPatternSavedProjectsPanelUi(root);
     options.onProjectLoaded?.(res.project);
     setStatus(
       root,
-      `Loaded “${res.project.name}” into your working draft (localStorage). Refresh other Custom Build steps if needed.`,
+      `Opened “${res.project.name}” in your workspace. Refresh other Custom Build steps if needed.`,
     );
     perfEnd("6-panel-list-action load total", loadStart, { outcome: "loaded", projectId: id });
   });

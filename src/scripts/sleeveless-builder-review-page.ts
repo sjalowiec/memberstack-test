@@ -19,6 +19,7 @@ import {
   readExpressWizardValues,
   syncExpressWizardToPatternStorage,
 } from "../lib/patterns/syncExpressWizardToPatternStorage";
+import { prepareCustomBuildPatternGeneration } from "../lib/patterns/prepareCustomBuildPatternGeneration";
 import { navigateToPatternWithUnsavedEditsGuard } from "../lib/patterns/savedCustomPatternUnsavedViewGuard";
 
 const PATTERN_WORKSPACE_TAB_PATTERN_HREF = "/patterns/sleeveless/pattern/?tab=pattern";
@@ -98,6 +99,7 @@ function configureReviewActions(advanced: boolean): void {
 function continueToPatternFromReview(): void {
   void loadExpressSweaterCharts()
     .then(async () => {
+      prepareCustomBuildPatternGeneration({ root: document });
       flushExpressWizardToCanonicalPatternForReview();
       if (canCustomizePattern()) {
         await navigateToPatternWithUnsavedEditsGuard({ href: PATTERN_WORKSPACE_TAB_PATTERN_HREF });

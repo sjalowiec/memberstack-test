@@ -154,6 +154,98 @@ html.kbm-editing-saved-pattern [data-express-editing-bar] {
   display: none !important;
 }
 
+/* Foundation step — hide first-time onboarding while editing a saved project. */
+html.kbm-editing-saved-pattern [data-cb-onboarding-only] {
+  display: none !important;
+}
+
+/* Custom Build design — hide 5-step wizard stepper while editing a saved project. */
+html.kbm-editing-saved-pattern [data-cb-custom-build-stepper] {
+  display: none !important;
+}
+
+html.kbm-editing-saved-pattern [data-cb-editing-helper][hidden] {
+  display: none !important;
+}
+
+html.kbm-editing-saved-pattern [data-cb-editing-helper]:not([hidden]) {
+  display: block;
+}
+
+html.kbm-editing-saved-pattern [data-cb-editing-project-name]:not([hidden]) {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--kbm-text-muted, #3d5244);
+}
+
+/* Foundation design — editable choices before compact project panel. */
+html.kbm-editing-saved-pattern [data-cb-design-root] {
+  display: flex;
+  flex-direction: column;
+}
+
+html.kbm-editing-saved-pattern [data-cb-design-root] > .express-builder-toolbar {
+  order: 0;
+}
+
+html.kbm-editing-saved-pattern [data-cb-design-root] > .express-builder-units {
+  order: 1;
+}
+
+html.kbm-editing-saved-pattern [data-cb-design-root] > .express-accordions {
+  order: 2;
+}
+
+html.kbm-editing-saved-pattern [data-cb-design-root] > [data-cb-saved-projects] {
+  order: 4;
+}
+
+html.kbm-editing-saved-pattern [data-cb-design-root] > .cb-design-wizard-nav {
+  order: 5;
+}
+
+/* Workspace Customize tab — locked when entitlement hook denies access. */
+html.kbm-custom-build-customize-locked .pattern-workspace-tabs [data-tab="custom"].kbm-customize-tab--locked {
+  opacity: 0.72;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Saved projects panel — compact secondary chrome while editing on pages with the banner. */
+.cb-saved-projects--editing-compact {
+  margin-bottom: 0.65rem;
+  padding: 0.65rem 0.85rem;
+  border-color: rgba(82, 104, 45, 0.14);
+  background: rgba(248, 250, 245, 0.85);
+}
+
+.cb-saved-projects--editing-compact .cb-saved-projects__title {
+  margin: 0 0 0.45rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(59, 47, 31, 0.82);
+}
+
+.cb-saved-projects--editing-compact .cb-saved-projects__intro,
+.cb-saved-projects--editing-compact .cb-saved-projects__helper,
+.cb-saved-projects--editing-compact .cb-saved-projects__auth,
+.cb-saved-projects--editing-compact .cb-saved-projects__block--open {
+  display: none !important;
+}
+
+.cb-saved-projects--editing-compact .cb-saved-projects__block--save {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.cb-saved-projects--editing-compact .cb-saved-projects__actions {
+  margin-top: 0.35rem;
+}
+
 @media (max-width: 520px) {
   .cb-editing-banner__layout {
     flex-direction: column;

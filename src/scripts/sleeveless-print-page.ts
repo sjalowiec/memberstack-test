@@ -12,6 +12,7 @@ import {
   buildGeneratorPatternDataFromSources,
   mergedPatternForDisplayFromSources,
 } from "../lib/patterns/sleevelessPatternBuilderMerge.ts";
+import { buildCustomBuildEffectivePatternInput } from "../lib/patterns/buildCustomBuildEffectivePatternInput.ts";
 import {
   getSleevelessGoldenBetaCanonicalPattern,
   getSleevelessGoldenBetaPatternBuilderData,
@@ -73,8 +74,8 @@ function mergedPatternForDisplay(base: Record<string, unknown>): Record<string, 
   return mergedPatternForDisplayFromSources(base, getPatternData());
 }
 
-function buildGeneratorPatternData(merged: Record<string, unknown>): Record<string, unknown> {
-  return buildGeneratorPatternDataFromSources(merged, getPatternData(), getCurrentPattern());
+function buildGeneratorPatternData(_merged: Record<string, unknown>): Record<string, unknown> {
+  return buildCustomBuildEffectivePatternInput();
 }
 
 function printFinishingSectionHtml(

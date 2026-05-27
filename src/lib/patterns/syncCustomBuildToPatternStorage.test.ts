@@ -129,6 +129,129 @@ describe("syncCustomBuildToPatternStorage", () => {
     expect(getPatternData().style?.neckline).toBe("v");
   });
 
+  it("preserves custom-build patternMode when express wizard values exist (hem overrides)", () => {
+    localStorage.setItem(
+      SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+      JSON.stringify({
+        values: {
+          who: "women",
+          selectedSize: "M",
+          fit: "standard",
+          neckline: "round",
+        },
+        cbMeasurementOverrides: { hemDepth: "4" },
+      }),
+    );
+    saveCurrentPattern({
+      style: { patternMode: "custom-build", garmentStyle: "pullover", frontStyle: "closed" },
+      fit: {
+        selectedSize: "M",
+        cbMeasurementOverrides: { hemDepth: "4" },
+      },
+    });
+    savePatternData("style", { patternMode: "custom-build" });
+    savePatternData("fit", { cbMeasurementOverrides: { hemDepth: "4" } });
+
+    syncCustomBuildToPatternStorage({ awaitCharts: false });
+
+    expect(getCurrentPattern().style?.patternMode).toBe("custom-build");
+    expect(getPatternData().style?.patternMode).toBe("custom-build");
+    expect(getCurrentPattern().fit?.cbMeasurementOverrides?.hemDepth).toBe("4");
+  });
+
+  it("preserves chestBust and hip overrides above chart bust on straight torso sync", () => {
+    localStorage.setItem(
+      SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+      JSON.stringify({
+        values: { who: "women", selectedSize: "M", fit: "standard" },
+        cbMeasurementOverrides: { chestBust: "40", hip: "40", finishedLength: "24" },
+      }),
+    );
+    localStorage.setItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.bodyShape, "straight");
+    localStorage.setItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.garmentType, "pullover");
+    saveCurrentPattern({
+      fit: {
+        selectedSize: "M",
+        selectedMeasurements: { finished_bust_chest: 33.5, back_neck_to_hem: 24, armhole_depth: 8 },
+        cbMeasurementOverrides: { chestBust: "40", hip: "40", finishedLength: "24" },
+      },
+    });
+
+    syncCustomBuildToPatternStorage({ awaitCharts: false });
+
+    expect(getCurrentPattern().fit?.cbMeasurementOverrides).toMatchObject({
+      chestBust: "40",
+      hip: "40",
+    });
+  });
+
+  it("defaults to custom-build when wizard values exist but patternMode is unset (new Custom Build session)", () => {
+    localStorage.setItem(
+      SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+      JSON.stringify({
+        values: {
+          who: "women",
+          selectedSize: "M",
+          fit: "standard",
+          neckline: "round",
+          front: "closed",
+          style: "straight-pullover",
+        },
+        cbMeasurementOverrides: {
+          hemDepth: "4",
+          chestBust: "40",
+          armholeDepth: "8",
+          finishedLength: "24",
+        },
+      }),
+    );
+    localStorage.setItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.bodyShape, "straight");
+    localStorage.setItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.garmentType, "pullover");
+    saveCurrentPattern({
+      fit: {
+        selectedSize: "M",
+        selectedMeasurements: { finished_bust_chest: 40, back_neck_to_hem: 24, armhole_depth: 8 },
+      },
+    });
+
+    syncCustomBuildToPatternStorage({ awaitCharts: false });
+
+    expect(getCurrentPattern().style?.patternMode).toBe("custom-build");
+    expect(getPatternData().style?.patternMode).toBe("custom-build");
+    expect(getCurrentPattern().fit?.cbMeasurementOverrides?.hemDepth).toBe("4");
+  });
+
+  it("does not rewrite storage when sync runs twice with unchanged wizard state", () => {
+    localStorage.setItem(
+      SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+      JSON.stringify({
+        values: {
+          who: "women",
+          selectedSize: "M",
+          fit: "standard",
+          neckline: "round",
+        },
+      }),
+    );
+    localStorage.setItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.bodyShape, "straight");
+    localStorage.setItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.garmentType, "pullover");
+    saveCurrentPattern({
+      style: { patternMode: "custom-build", garmentStyle: "pullover", frontStyle: "closed" },
+      fit: { selectedSize: "M", cbMeasurementOverrides: { hemDepth: "4" } },
+    });
+    savePatternData("style", { patternMode: "custom-build", garmentStyle: "pullover", frontStyle: "closed" });
+    savePatternData("fit", { selectedSize: "M", cbMeasurementOverrides: { hemDepth: "4" } });
+
+    syncCustomBuildToPatternStorage({ awaitCharts: false });
+    const afterFirst = store["kbm_current_pattern"];
+    const afterFirstPb = store["patternBuilderData"];
+
+    syncCustomBuildToPatternStorage({ awaitCharts: false });
+
+    expect(store["kbm_current_pattern"]).toBe(afterFirst);
+    expect(store["patternBuilderData"]).toBe(afterFirstPb);
+  });
+
   it("preserves express patternMode when canonical storage is express (review handoff)", () => {
     localStorage.setItem(
       SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,

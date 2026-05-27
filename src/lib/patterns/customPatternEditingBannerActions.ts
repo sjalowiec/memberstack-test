@@ -4,12 +4,17 @@
 import { clearActiveCustomPatternProjectId, readActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import { clearSavedCustomPatternDirtyBaseline } from "./customPatternSavedProjectDirtyState";
 import { isEditingSavedCustomPatternProject } from "./customPatternEditingUx";
+import { prepareCustomBuildPatternGeneration } from "./prepareCustomBuildPatternGeneration";
+import { resolveCustomBuildSaveMeasureFlushRoot } from "./sleevelessCustomMeasurementStorage";
 import { smartSaveCustomPatternProject } from "./customPatternSavedProjectsPanel";
 import { refreshCustomPatternSavedProjectsPanelUi } from "./customPatternSavedProjectsPanel";
+import { syncCustomBuildCustomizeAccessChrome } from "./customBuildCustomizeAccess";
+import { syncCustomBuildFoundationPageHeader } from "./customBuildFoundationPageEditingUx";
 import { syncPatternWorkspaceExpressTabLabel } from "./patternWorkspaceExpressTabLabel";
 import { getPatternProjectMeta } from "./sleevelessPatternProjectMeta";
+import { CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT } from "./customPatternEditingEvents";
 
-export const CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT = "kbm:custom-pattern-editing-state-changed";
+export { CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT };
 
 export const CB_EDITING_BANNER_UPDATE_SELECTOR = "[data-cb-editing-banner-update]";
 export const CB_EDITING_BANNER_CANCEL_SELECTOR = "[data-cb-editing-banner-cancel]";
@@ -21,6 +26,8 @@ export function syncEditingSavedPatternChrome(root: ParentNode = document): void
   const editing = isEditingSavedCustomPatternProject();
   document.documentElement.classList.toggle("kbm-editing-saved-pattern", editing);
   syncPatternWorkspaceExpressTabLabel(root);
+  syncCustomBuildFoundationPageHeader(root);
+  syncCustomBuildCustomizeAccessChrome(root);
   root.querySelectorAll("[data-cb-saved-projects]").forEach((el) => {
     if (el instanceof HTMLElement) refreshCustomPatternSavedProjectsPanelUi(el);
   });
@@ -64,6 +71,7 @@ export async function runUpdateActiveSavedCustomPattern(
 
   const scope =
     root ?? (typeof document !== "undefined" ? document : undefined);
+  const measureRoot = resolveCustomBuildSaveMeasureFlushRoot(scope);
   const name = scope
     ? resolveProjectNameForEditingBannerUpdate(scope)
     : getPatternProjectMeta().title.trim();
@@ -73,10 +81,16 @@ export async function runUpdateActiveSavedCustomPattern(
     return { ok: false, error };
   }
 
+  prepareCustomBuildPatternGeneration({
+    root: measureRoot,
+    rehydrateSavedProject: false,
+  });
+
   const res = await smartSaveCustomPatternProject({
     mode: "update",
     resolveName: () => name,
     onStatus: options?.onStatus,
+    root: measureRoot,
   });
 
   if (!res.ok) {

@@ -70,10 +70,19 @@ const pathIsSummaryFlow =
   (summaryRoot && (pathNow === summaryRoot || pathNow.startsWith(`${summaryRoot}/`))) ||
   pathIsCustomStyleFlow;
 
-const expressTabActive =
-  activeTab === "express" || (Boolean(ex) && pathMatchesHref(pathNow, ex));
+/** Custom Build Foundation — workspace Create tab, not Customize. */
+const customBuildFoundationRoot = normPath("/patterns/sleeveless/custom-build/design");
+const pathIsCustomBuildFoundationFlow =
+  pathNow === customBuildFoundationRoot ||
+  (customBuildFoundationRoot && pathNow.startsWith(`${customBuildFoundationRoot}/`));
 
-const customTabActive = activeTab === "custom" || pathIsSummaryFlow;
+const expressTabActive =
+  activeTab === "express" ||
+  pathIsCustomBuildFoundationFlow ||
+  (Boolean(ex) && pathMatchesHref(pathNow, ex));
+
+const customTabActive =
+  (activeTab === "custom" || pathIsSummaryFlow) && !pathIsCustomBuildFoundationFlow;
 
 const patternTabActive =
   activeTab === "pattern" || (!patternTabDisabled && pathMatchesHref(pathNow, patternHref));

@@ -10,6 +10,12 @@ import {
   savePatternData,
   type SleevelessPatternRecord,
 } from "./patternStorage";
+import {
+  flushCustomBuildMeasurementOverridesToCanonical,
+  loadMeasurementOverrides,
+  resolveCustomBuildSaveMeasureFlushRoot,
+} from "./sleevelessCustomMeasurementStorage";
+import { syncCustomBuildToPatternStorage } from "./syncCustomBuildToPatternStorage";
 import { getPatternProjectMeta } from "./sleevelessPatternProjectMeta";
 import type {
   CustomPatternFamily,
@@ -101,11 +107,36 @@ export function buildSavePayloadFromWorkingDraft(
     family: CustomPatternFamily;
     source: CustomPatternProjectSource;
     customOverrides: Record<string, unknown>;
+    /** Diagram inputs to merge before read; defaults to `document` in the browser. */
+    flushRoot?: ParentNode | null;
+    /** @internal Tests only — skip flushing measurement overrides into the draft. */
+    skipFlushMeasurementOverrides?: boolean;
   }> = {},
 ): SaveCustomPatternProjectRequest {
+  const flushRoot = resolveCustomBuildSaveMeasureFlushRoot(
+    options.flushRoot !== undefined
+      ? options.flushRoot
+      : typeof document !== "undefined"
+        ? document
+        : undefined,
+  );
+
+  if (!options.skipFlushMeasurementOverrides) {
+    flushCustomBuildMeasurementOverridesToCanonical({ root: flushRoot ?? undefined });
+    syncCustomBuildToPatternStorage({ awaitCharts: false });
+  }
+
   const pattern = getCurrentPattern();
   const meta = getPatternProjectMeta(pattern);
   const resolvedName = (name ?? meta.title).trim() || "Untitled pattern";
+  const measurementOverrides = loadMeasurementOverrides();
+  const fitBase = patternSectionRecord(pattern.fit);
+  const { cbMeasurementOverrides: _dropCb, ...fitWithoutCb } = fitBase;
+  const fitForSave =
+    Object.keys(measurementOverrides).length > 0
+      ? { ...fitWithoutCb, cbMeasurementOverrides: { ...measurementOverrides } }
+      : fitWithoutCb;
+
   return {
     name: resolvedName,
     notes: meta.notes,
@@ -113,6 +144,7 @@ export function buildSavePayloadFromWorkingDraft(
     source: options.source ?? inferCustomPatternProjectSource(pattern),
     pattern: {
       ...pattern,
+      fit: fitForSave,
       patternProject: {
         ...meta,
         title: resolvedName,

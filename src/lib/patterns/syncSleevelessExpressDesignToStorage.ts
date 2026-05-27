@@ -2,9 +2,15 @@
  * Maps Express / Custom Build design basics (who, selectedSize, neckline, fit, optional chart measurements)
  * into canonical sleeveless pattern storage. Shared by Express and Custom Build design step.
  */
-import { normalizeSleevelessAudience, saveCurrentPattern, savePatternData } from "./patternStorage";
+import { normalizeSleevelessAudience, getCurrentPattern, getPatternData, saveCurrentPattern, savePatternData } from "./patternStorage";
 import { seedCustomBuildBodyFinishedFromChartRow } from "./sleevelessCustomBuildBodyMeasurements";
+import { sectionPatchWouldChange } from "./patternSectionPatch";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
+
+function section(obj: unknown): Record<string, unknown> {
+  if (obj && typeof obj === "object" && !Array.isArray(obj)) return obj as Record<string, unknown>;
+  return {};
+}
 
 export function expressWhoToChartAudience(whoRaw: unknown): string {
   const s = String(whoRaw ?? "").trim().toLowerCase();
@@ -150,14 +156,25 @@ export function syncSleevelessDesignBasicsToPatternStorage(
   const hasFit = Object.keys(fitPayload).length > 0;
   if (!hasStyle && !hasFit) return;
 
-  saveCurrentPattern({
-    ...(hasStyle ? { style: stylePayload } : {}),
-    ...(hasFit ? { fit: fitPayload } : {}),
-    machine: {},
-  });
+  const currentPattern = getCurrentPattern();
+  const currentPatternData = getPatternData();
+  const styleChanges =
+    hasStyle && sectionPatchWouldChange(section(currentPattern.style), stylePayload);
+  const fitChanges = hasFit && sectionPatchWouldChange(section(currentPattern.fit), fitPayload);
+  const pbStyleChanges =
+    hasStyle && sectionPatchWouldChange(section(currentPatternData.style), stylePayload);
+  const pbFitChanges = hasFit && sectionPatchWouldChange(section(currentPatternData.fit), fitPayload);
 
-  if (hasStyle) savePatternData("style", stylePayload);
-  if (hasFit) savePatternData("fit", fitPayload);
+  if (styleChanges || fitChanges) {
+    saveCurrentPattern({
+      ...(styleChanges ? { style: stylePayload } : {}),
+      ...(fitChanges ? { fit: fitPayload } : {}),
+      ...(styleChanges || fitChanges ? { machine: {} } : {}),
+    });
+  }
+
+  if (pbStyleChanges) savePatternData("style", stylePayload);
+  if (pbFitChanges) savePatternData("fit", fitPayload);
 
   const fitPref =
     params.fit === "close" || params.fit === "standard" || params.fit === "relaxed"

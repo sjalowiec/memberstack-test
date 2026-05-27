@@ -3,7 +3,10 @@
  * Mirrors the former inline logic on the builder pattern tab / print route (localStorage-free).
  */
 import { logCustomBuildGarmentHandoff } from "./customBuildGarmentHandoffDebug";
-import { loadMeasurementOverrides } from "./sleevelessCustomMeasurementStorage";
+import {
+  loadMeasurementOverrides,
+  mergeCbMeasurementOverridesFromFitSources,
+} from "./sleevelessCustomMeasurementStorage";
 import {
   logSleevelessGarmentKindResolution,
   resolveSleevelessGarmentKind,
@@ -35,6 +38,10 @@ export function mergedPatternForDisplayFromSources(
   const patternData = patternBuilderData;
   const st = { ...sectionPattern(base.style), ...sectionPattern(patternData.style) };
   const ft = { ...sectionPattern(base.fit), ...sectionPattern(patternData.fit) };
+  const cbOverrides = mergeCbMeasurementOverridesFromFitSources(base.fit, patternData.fit);
+  if (Object.keys(cbOverrides).length > 0) {
+    ft.cbMeasurementOverrides = cbOverrides;
+  }
   let yarnGauge = { ...sectionPattern(base.yarnGauge) };
   let machine = { ...sectionPattern(base.machine) };
   const ygm = patternData.yarnGaugeMachine;
@@ -85,6 +92,7 @@ export function mergedPatternForDisplayFromSources(
   const patternMode = resolveGeneratorPatternMode(
     sectionPattern(base.style),
     sectionPattern(patternData.style),
+    { canonicalFit: base.fit },
   );
   if (patternMode === "custom-build") {
     const garment = resolveSleevelessGarmentKindForSources({
@@ -190,12 +198,29 @@ export function resolveCustomBuildGarmentStyleForStyle(
 export function resolveGeneratorPatternMode(
   canonicalStyle: Record<string, unknown>,
   patternBuilderStyle: Record<string, unknown>,
+  options?: { canonicalFit?: unknown },
 ): string | undefined {
   const modes = [canonicalStyle.patternMode, patternBuilderStyle.patternMode].map((m) =>
     String(m ?? "").trim(),
   );
   if (modes.some((m) => m === "custom-build")) return "custom-build";
-  if (modes.some((m) => m === "express")) return "express";
+
+  const canonMode = String(canonicalStyle.patternMode ?? "").trim();
+  const canonicalOverrides = mergeCbMeasurementOverridesFromFitSources(options?.canonicalFit, {});
+  const hasCanonicalMeasurementOverrides = Object.keys(canonicalOverrides).length > 0;
+
+  if (modes.some((m) => m === "express")) {
+    // Stale express-shaped patternBuilderData must not suppress canonical draft overrides.
+    if (hasCanonicalMeasurementOverrides && canonMode !== "express") {
+      return "custom-build";
+    }
+    return "express";
+  }
+
+  if (hasCanonicalMeasurementOverrides && canonMode !== "express") {
+    return "custom-build";
+  }
+
   return modes.find((m) => m) || undefined;
 }
 
@@ -276,7 +301,8 @@ export function applyCustomBuildMeasurementOverridesToGenerator(
     /* localStorage unavailable or corrupt — continue without review overrides */
   }
   const fromFit = sectionPattern(sectionPattern(gen.fit).cbMeasurementOverrides);
-  let overrides = { ...fromFit, ...fromStorage };
+  // Canonical draft overrides merged into `gen.fit` win over express / patternBuilder storage.
+  let overrides = { ...fromStorage, ...fromFit };
   if (Object.keys(overrides).length === 0) return gen;
 
   const bodyShape = String(sectionPattern(gen.style).bodyShape ?? "").trim().toLowerCase();
@@ -304,13 +330,14 @@ export function buildGeneratorPatternDataFromSources(
   canonicalPattern?: Record<string, unknown>,
 ): Record<string, unknown> {
   const pb = patternBuilderData;
+  const canonicalFit = canonicalPattern?.fit ?? merged.fit;
   const fitMerged = { ...sectionPattern(merged.fit), ...sectionPattern(pb.fit) };
   const smA = sectionPattern(fitMerged.selectedMeasurements);
   const smB = sectionPattern(sectionPattern(pb.fit).selectedMeasurements);
-  const cbOverrides = {
-    ...sectionPattern(sectionPattern(merged.fit).cbMeasurementOverrides),
-    ...sectionPattern(sectionPattern(pb.fit).cbMeasurementOverrides),
-  };
+  const cbOverrides = mergeCbMeasurementOverridesFromFitSources(
+    canonicalFit,
+    { ...sectionPattern(merged.fit), ...sectionPattern(pb.fit) },
+  );
   const fit = {
     ...fitMerged,
     selectedMeasurements: { ...smB, ...smA },
@@ -321,7 +348,7 @@ export function buildGeneratorPatternDataFromSources(
     canonicalPattern?.style !== undefined ? canonicalPattern.style : merged.style,
   );
   const pbStyle = sectionPattern(pb.style);
-  const patternMode = resolveGeneratorPatternMode(storageCanonicalStyle, pbStyle);
+  const patternMode = resolveGeneratorPatternMode(storageCanonicalStyle, pbStyle, { canonicalFit });
   const bodyShape = resolveGeneratorBodyShape(storageCanonicalStyle, pbStyle);
   const wizardGarment = readCustomBuildWizardGarmentType();
   const expressValues = readExpressBuilderValues();

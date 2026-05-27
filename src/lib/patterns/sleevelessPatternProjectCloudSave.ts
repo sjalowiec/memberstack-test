@@ -41,6 +41,7 @@ export async function runSleevelessPatternProjectCloudSave(
   const res = await smartSaveCustomPatternProject({
     mode: "create",
     resolveName: () => name,
+    root,
     onStatus: (message, isError) =>
       setSleevelessPatternProjectCloudSaveStatus(root, message, isError),
   });

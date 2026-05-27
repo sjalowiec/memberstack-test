@@ -13,12 +13,11 @@ import {
   loadMeasurementOverrides,
   persistMeasurementOverrides,
 } from "../lib/patterns/sleevelessCustomMeasurementStorage";
+import { logCustomBuildGarmentHandoff, logGarmentTypeRaw, logSummaryGarmentRead } from "../lib/patterns/customBuildGarmentHandoffDebug";
 import {
-  logCustomBuildGarmentHandoff,
-  logGarmentTypeRaw,
-  logSummaryGarmentRead,
-} from "../lib/patterns/customBuildGarmentHandoffDebug";
-import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
+  prepareCustomBuildPatternGeneration,
+} from "../lib/patterns/prepareCustomBuildPatternGeneration";
+import { wirePatternWorkspacePatternTabPreGeneration } from "../lib/patterns/patternWorkspacePatternTabNavigation";
 import {
   computeDefaultMeasurementsFromChartRow,
   expressWhoToChartAudience,
@@ -624,7 +623,7 @@ function validateFields(root: HTMLElement, displayUnit: UiLengthUnit | null): bo
 
 function persistFromRoot(root: HTMLElement, displayUnit: UiLengthUnit | null): void {
   const values = collectValues(root, { displayUnit });
-  const toStore: Record<string, string> = {};
+  const toStore: Record<string, string> = { ...loadMeasurementOverrides() };
   for (const key of DIAGRAM_FIELD_KEYS) {
     const n = parseInchesInput(values[key]);
     if (n !== undefined) toStore[key] = formatInchesInput(n);
@@ -931,8 +930,8 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
       if (!validateFields(root, displayUnit)) return;
       if (!refreshPatternValidationUi(root, displayUnit)) return;
       persistFromRoot(root, displayUnit);
-      syncCustomBuildToPatternStorage({ awaitCharts: false });
-      logCustomBuildGarmentHandoff("review/measurements Continue (after sync)");
+      prepareCustomBuildPatternGeneration({ root, awaitCharts: false });
+      logCustomBuildGarmentHandoff("review/measurements Continue (after prepare)");
       if (options?.onContinue) {
         options.onContinue();
         return;
@@ -941,8 +940,10 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
     });
   }
 
+  wirePatternWorkspacePatternTabPreGeneration();
+
   void loadExpressSweaterCharts().then(async () => {
-    syncCustomBuildToPatternStorage({ awaitCharts: false });
+    prepareCustomBuildPatternGeneration({ root, awaitCharts: false });
     logSummaryGarmentRead("measurements/review page (after sync, before label)");
     const pattern = getCurrentPattern();
     const expressValues = readExpressValues();

@@ -38,6 +38,7 @@ import {
 import {
   loadMeasurementOverrides,
   persistMeasurementOverrides,
+  readCanonicalMeasurementOverrides,
 } from "./sleevelessCustomMeasurementStorage";
 import {
   CUSTOM_BUILD_NECKLINE_STYLE_KEY,
@@ -101,20 +102,20 @@ function resolveBodyShape(raw: string): string {
   return "straight";
 }
 
-/** Express review must keep `patternMode: express`; only true Custom Build sessions become custom-build. */
+/**
+ * Pattern mode for {@link syncCustomBuildToPatternStorage} only (Custom Build routes).
+ * Express review keeps `patternMode: express` when already stored; otherwise default custom-build.
+ * Do not infer Express from wizard `values` — Custom Build uses the same express-builder storage shape.
+ */
 function resolveSyncPatternMode(): "express" | "custom-build" {
-  const existing = resolveGeneratorPatternMode(
-    section(getCurrentPattern().style),
-    section(getPatternData().style),
-  );
-  if (existing === "express") return "express";
-  const ev = readCustomBuildExpressValues();
-  const fromExpressWizard =
-    Boolean(ev.who?.trim()) ||
-    Boolean(ev.selectedSize?.trim()) ||
-    Boolean(ev.style?.trim()) ||
-    Boolean(ev.front?.trim());
-  if (fromExpressWizard) return "express";
+  const canonicalMode = String(section(getCurrentPattern().style).patternMode ?? "").trim();
+  const pbMode = String(section(getPatternData().style).patternMode ?? "").trim();
+
+  if (canonicalMode === "custom-build") return "custom-build";
+  if (canonicalMode === "express") return "express";
+  if (pbMode === "custom-build") return "custom-build";
+  if (pbMode === "express") return "express";
+
   return "custom-build";
 }
 
@@ -208,13 +209,20 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
           bust,
           loadMeasurementOverrides(),
         );
-        persistMeasurementOverrides(reconciledOverrides);
-        const pbFit = section(getPatternData().fit);
-        savePatternData("fit", {
-          ...pbFit,
-          cbMeasurementOverrides: reconciledOverrides,
-        });
-        saveCurrentPattern({ fit: { cbMeasurementOverrides: reconciledOverrides } });
+        const canonicalOverrides = readCanonicalMeasurementOverrides();
+        if (!overrideRecordsEqual(reconciledOverrides, canonicalOverrides)) {
+          persistMeasurementOverrides(reconciledOverrides);
+          const pbFit = section(getPatternData().fit);
+          const fitPatch = { ...pbFit, cbMeasurementOverrides: reconciledOverrides };
+          if (sectionPatchWouldChange(pbFit, fitPatch)) {
+            savePatternData("fit", fitPatch);
+          }
+          const canonFit = section(getCurrentPattern().fit);
+          const canonFitPatch = { cbMeasurementOverrides: reconciledOverrides };
+          if (sectionPatchWouldChange(canonFit, canonFitPatch)) {
+            saveCurrentPattern({ fit: canonFitPatch });
+          }
+        }
       }
     }
 
@@ -245,8 +253,15 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
     if (neckCanon) stylePatch.neckline = neckCanon;
     if (aud) stylePatch.recipientCategory = aud;
 
-    saveCurrentPattern({ style: stylePatch });
-    savePatternData("style", { ...section(getPatternData().style), ...stylePatch });
+    const canonStyle = section(getCurrentPattern().style);
+    const pbStyle = section(getPatternData().style);
+    if (sectionPatchWouldChange(canonStyle, stylePatch)) {
+      saveCurrentPattern({ style: stylePatch });
+    }
+    const mergedPbStyle = { ...pbStyle, ...stylePatch };
+    if (sectionPatchWouldChange(pbStyle, mergedPbStyle)) {
+      savePatternData("style", mergedPbStyle);
+    }
 
     if (chartRow && fit) {
       seedCustomBuildBodyFinishedFromChartRow(chartRow, fit, {
@@ -258,8 +273,15 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
     const overrides = loadMeasurementOverrides();
     if (Object.keys(overrides).length > 0) {
       const pbFit = section(getPatternData().fit);
-      savePatternData("fit", { ...pbFit, cbMeasurementOverrides: overrides });
-      saveCurrentPattern({ fit: { cbMeasurementOverrides: overrides } });
+      const fitPatch = { ...pbFit, cbMeasurementOverrides: overrides };
+      if (sectionPatchWouldChange(pbFit, fitPatch)) {
+        savePatternData("fit", fitPatch);
+      }
+      const canonFit = section(getCurrentPattern().fit);
+      const canonFitPatch = { cbMeasurementOverrides: overrides };
+      if (sectionPatchWouldChange(canonFit, canonFitPatch)) {
+        saveCurrentPattern({ fit: canonFitPatch });
+      }
     }
 
     ensureYarnGaugeMachineDefaults();
@@ -282,3 +304,8 @@ function section(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) return obj as Record<string, unknown>;
   return {};
 }
+
+import {
+  overrideRecordsEqual,
+  sectionPatchWouldChange,
+} from "./patternSectionPatch";

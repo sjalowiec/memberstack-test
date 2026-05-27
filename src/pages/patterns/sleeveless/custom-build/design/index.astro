@@ -34,7 +34,7 @@ const customWizardSteps = [
       <div class="calculator-card hat-builder-inputs">
         <PatternWorkspaceTabs
           rootClass="pattern-tabs-scope"
-          activeTab="custom"
+          activeTab="express"
           expressHref="/patterns/sleeveless-express/"
           customBuildHref={customBuildHref}
           patternHref="/patterns/sleeveless/pattern/"
@@ -46,7 +46,10 @@ const customWizardSteps = [
         <div data-cb-editing-banner-host hidden></div>
 
         <div class="sg-tab-build">
-          <div class="express-builder-nav-row express-builder-nav-row--custom-flow no-print">
+          <div
+            class="express-builder-nav-row express-builder-nav-row--custom-flow no-print"
+            data-cb-custom-build-stepper
+          >
             <nav class="express-step-nav sg-builder-nav" aria-label="Custom build steps">
               <ol class="express-step-nav__list sg-builder-nav__list" role="list">
                 {
@@ -101,22 +104,26 @@ const customWizardSteps = [
             </nav>
           </div>
 
-          <header class="pattern-header page-header">
+          <header class="pattern-header page-header" data-cb-foundation-header>
             <p class="pattern-mode-label">Custom Pattern</p>
-            <h1 class="pattern-title">Foundation</h1>
-            <p class="pattern-subtext">
+            <h1 class="pattern-title" data-cb-foundation-step-title>Foundation</h1>
+            <p class="pattern-subtext" data-cb-onboarding-only>
               Start with who you are knitting for and the size you want to use. These choices create the base sizing
               framework for your custom pattern.
             </p>
-            <p class="pattern-subtext">
+            <p class="pattern-subtext" data-cb-onboarding-only>
               Foundation covers who you are knitting for and starting size only. Neckline, fit, and silhouette choices
               come next in Style &amp; Shaping.
             </p>
-            <p class="pattern-subtext">
+            <p class="pattern-subtext" data-cb-onboarding-only>
               <a href="/patterns/sleeveless-express/" class="express-custom-build-callout__link"
                 >Prefer fewer steps?</a
               >
               &nbsp;Use Express and your choices can carry over here.
+            </p>
+            <p class="pattern-subtext" data-cb-editing-project-name hidden></p>
+            <p class="pattern-subtext" data-cb-editing-helper hidden>
+              Make changes below, then save your project when you're ready.
             </p>
           </header>
 
@@ -133,44 +140,62 @@ const customWizardSteps = [
                 data-cb-saved-projects
                 aria-labelledby="cb-saved-projects-heading"
               >
-                <h2 id="cb-saved-projects-heading" class="cb-saved-projects__title">Saved project</h2>
-                <p class="pattern-subtext cb-saved-projects__draft-note">
-                  Your browser keeps a <strong>working draft</strong> in localStorage (<code>kbm_current_pattern</code>).
-                  Saved projects below are stored separately (Netlify Blobs) and can be loaded back into the draft.
-                </p>
-                <p class="pattern-subtext cb-saved-projects__auth" data-cb-project-auth-hint></p>
-                <p
-                  class="cb-saved-projects__editing-status"
-                  data-cb-project-editing-status
-                  hidden
-                ></p>
-                <label class="cb-saved-projects__field">
-                  <span class="cb-saved-projects__label">Project name</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    data-cb-project-name
-                    maxlength="120"
-                    placeholder="e.g. Mom’s relaxed cardigan"
-                    autocomplete="off"
-                  />
-                </label>
-                <div class="cb-saved-projects__actions">
-                  <button type="button" class="btn btn-sm btn-primary" data-cb-project-save>Save as new</button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary" data-cb-project-save-copy>
-                    Save as copy
-                  </button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary" data-cb-project-update>
-                    Update saved pattern
-                  </button>
+                <header class="cb-saved-projects__header">
+                  <h2 id="cb-saved-projects-heading" class="cb-saved-projects__title">
+                    Saved Pattern Projects
+                  </h2>
+                  <p class="cb-saved-projects__intro">
+                    Your current pattern stays open while you work. Saved projects are stored separately
+                    so you can return to them later.
+                  </p>
+                  <p class="cb-saved-projects__auth" data-cb-project-auth-hint hidden></p>
+                  <p
+                    class="cb-saved-projects__editing-status"
+                    data-cb-project-editing-status
+                    hidden
+                  ></p>
+                </header>
+
+                <div class="cb-saved-projects__block cb-saved-projects__block--save">
+                  <label class="cb-saved-projects__field">
+                    <span class="cb-saved-projects__label">Project name</span>
+                    <input
+                      type="text"
+                      class="cb-saved-projects__input"
+                      data-cb-project-name
+                      maxlength="120"
+                      placeholder="e.g. Mom’s relaxed cardigan"
+                      autocomplete="off"
+                    />
+                  </label>
+                  <div class="cb-saved-projects__actions">
+                    <button type="button" class="btn btn-sm btn-primary" data-cb-project-save>
+                      Save New Project
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-cb-project-save-copy>
+                      Save a Copy
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-cb-project-update>
+                      Update saved pattern
+                    </button>
+                  </div>
                 </div>
-                <label class="cb-saved-projects__field">
-                  <span class="cb-saved-projects__label">Load saved project</span>
-                  <select class="form-select" data-cb-project-select></select>
-                </label>
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-cb-project-load>
-                  Load into draft
-                </button>
+
+                <div class="cb-saved-projects__block cb-saved-projects__block--open">
+                  <p class="cb-saved-projects__helper">
+                    Choose a saved project below to load it into your current workspace.
+                  </p>
+                  <label class="cb-saved-projects__field">
+                    <span class="cb-saved-projects__label">Open a Saved Project</span>
+                    <select class="cb-saved-projects__select" data-cb-project-select></select>
+                  </label>
+                  <div class="cb-saved-projects__load-actions">
+                    <button type="button" class="btn btn-sm btn-primary" data-cb-project-load>
+                      Open in Workspace
+                    </button>
+                  </div>
+                </div>
+
                 <p class="cb-project-status" data-cb-project-status role="status" aria-live="polite"></p>
               </section>
 
@@ -439,53 +464,152 @@ const customWizardSteps = [
 
   .cb-saved-projects {
     margin: 1.25rem 0 1.5rem;
-    padding: 1rem 1.1rem;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.6);
+    padding: 1.15rem 1.25rem 1.25rem;
+    border: 1px solid var(--kbm-border-subtle, #d8e0d9);
+    border-radius: 12px;
+    background: var(--kbm-surface-muted, #f6f8f6);
+    box-shadow: 0 1px 3px rgba(26, 46, 31, 0.06);
+  }
+
+  .cb-saved-projects__header {
+    margin-bottom: 1rem;
   }
 
   .cb-saved-projects__title {
-    font-size: 1.05rem;
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.45rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--kbm-green, #52682d);
   }
 
-  .cb-saved-projects__draft-note {
-    margin-bottom: 0.35rem;
-    font-size: 0.92rem;
+  .cb-saved-projects__intro,
+  .cb-saved-projects__helper {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--kbm-text-muted, #3d5244);
+    max-width: 36rem;
   }
 
   .cb-saved-projects__auth {
-    margin-bottom: 0.75rem;
+    margin: 0.5rem 0 0;
     font-size: 0.88rem;
-    color: var(--text-muted, #555);
+    line-height: 1.45;
+    color: var(--text-muted, #6b7280);
+  }
+
+  .cb-saved-projects__auth[hidden] {
+    display: none;
+  }
+
+  .cb-saved-projects__block {
+    padding: 0.95rem 1rem;
+    border: 1px solid var(--ring, #e5e8e0);
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .cb-saved-projects__block + .cb-saved-projects__block {
+    margin-top: 0.85rem;
+  }
+
+  .cb-saved-projects__helper {
+    margin-bottom: 0.75rem;
   }
 
   .cb-saved-projects__field {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+    max-width: 28rem;
+  }
+
+  .cb-saved-projects__block--open .cb-saved-projects__field {
     margin-bottom: 0.65rem;
-    max-width: 24rem;
   }
 
   .cb-saved-projects__label {
     font-weight: 600;
     font-size: 0.9rem;
+    color: var(--kbm-text, #1a2e1f);
   }
 
-  .cb-saved-projects__actions {
+  .cb-saved-projects__input,
+  .cb-saved-projects__select {
+    width: 100%;
+    max-width: 28rem;
+    padding: 0.5rem 0.65rem;
+    font: inherit;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: var(--kbm-text, #1a2e1f);
+    background: #fff;
+    border: 1px solid var(--kbm-border-subtle, #d8e0d9);
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .cb-saved-projects__input:focus,
+  .cb-saved-projects__select:focus {
+    outline: none;
+    border-color: var(--kbm-green-2, #738c52);
+    box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.15);
+  }
+
+  .cb-saved-projects__actions,
+  .cb-saved-projects__load-actions {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 0.5rem;
-    margin-bottom: 0.75rem;
+  }
+
+  .cb-saved-projects .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.125rem;
+    padding: 0.4rem 0.9rem;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.25;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .cb-saved-projects .btn-primary {
+    color: #fff;
+    background: var(--kbm-green, #52682d);
+    border-color: var(--kbm-green, #52682d);
+  }
+
+  .cb-saved-projects .btn-primary:hover {
+    background: var(--kbm-green-hover, #445626);
+    border-color: var(--kbm-green-hover, #445626);
+  }
+
+  .cb-saved-projects .btn-outline-secondary {
+    color: var(--kbm-green, #52682d);
+    background: #fff;
+    border-color: var(--kbm-border-subtle, #d8e0d9);
+  }
+
+  .cb-saved-projects .btn-outline-secondary:hover {
+    background: var(--kbm-surface-muted, #f6f8f6);
+    border-color: var(--kbm-green-2, #738c52);
   }
 
   .cb-saved-projects__editing-status {
-    margin: 0 0 0.65rem;
+    margin: 0.55rem 0 0;
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--kbm-green-dark, #2d5a27);
+    color: var(--kbm-green, #52682d);
   }
 
   .cb-saved-projects__editing-status[hidden] {
@@ -493,9 +617,12 @@ const customWizardSteps = [
   }
 
   .cb-project-status {
-    margin: 0.5rem 0 0;
+    margin: 0.85rem 0 0;
+    padding-top: 0.15rem;
     font-size: 0.9rem;
+    line-height: 1.45;
     min-height: 1.25em;
+    color: var(--kbm-text-muted, #3d5244);
   }
 
   .cb-project-status--error {

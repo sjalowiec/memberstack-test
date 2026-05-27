@@ -8,7 +8,7 @@ import {
   renderPatternValidationUi,
   setPatternGenerateButtonBlocked,
 } from "../lib/patterns/sleevelessPatternValidationUi";
-import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
+import { prepareCustomBuildPatternGeneration } from "../lib/patterns/prepareCustomBuildPatternGeneration";
 
 function isCustomBuildPatternMode(): boolean {
   const style = getCurrentPattern().style ?? {};
@@ -45,13 +45,13 @@ function refreshYarnGaugePatternValidation(): boolean {
 }
 
 export function wireYarnGaugePatternContinue(): void {
-  syncCustomBuildToPatternStorage({ awaitCharts: false });
+  prepareCustomBuildPatternGeneration({ awaitCharts: false });
   refreshYarnGaugePatternValidation();
 
   const generateBtn = document.querySelector("[data-sg-yarn-continue-pattern]");
   if (generateBtn instanceof HTMLAnchorElement) {
     generateBtn.addEventListener("click", (event) => {
-      syncCustomBuildToPatternStorage({ awaitCharts: false });
+      prepareCustomBuildPatternGeneration({ awaitCharts: false });
       if (!isCustomBuildPatternMode()) return;
       if (!refreshYarnGaugePatternValidation()) {
         event.preventDefault();

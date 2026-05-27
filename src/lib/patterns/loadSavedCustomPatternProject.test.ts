@@ -7,7 +7,8 @@ import {
 import * as workflowModule from "./patternReadingWorkflow";
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import {
-  CUSTOM_BUILD_CONTINUE_EDITING_HREF,
+  CUSTOM_BUILD_FIRST_EDIT_HREF,
+  EXPRESS_CONTINUE_EDITING_HREF,
   OPEN_PATTERN_HREF,
 } from "./customPatternProjectNavigation";
 import {
@@ -87,7 +88,7 @@ describe("loadSavedCustomPatternProject", () => {
     expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toContain("For Aubrie");
   });
 
-  it("opens custom-build projects on the Foundation step with active id and name", async () => {
+  it("opens custom-build projects on the first Edit tab (Foundation), not Customize/review", async () => {
     loadCustomPatternProjectMock.mockResolvedValue({
       ok: true,
       project: sampleProject({
@@ -102,7 +103,11 @@ describe("loadSavedCustomPatternProject", () => {
 
     const result = await loadSavedCustomPatternProject(PROJECT_ID, "open");
 
-    expect(result).toEqual({ ok: true, redirectHref: CUSTOM_BUILD_CONTINUE_EDITING_HREF });
+    expect(result).toEqual({ ok: true, redirectHref: CUSTOM_BUILD_FIRST_EDIT_HREF });
+    if (result.ok) {
+      expect(result.redirectHref).not.toBe(EXPRESS_CONTINUE_EDITING_HREF);
+      expect(result.redirectHref).not.toContain("/custom-style");
+    }
     expect(readActiveCustomPatternProjectId()).toBe(PROJECT_ID);
     expect(readActiveCustomPatternProjectLinkedName()).toBe("Sue's test pattern");
     expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toContain("Sue's test pattern");

@@ -18,6 +18,8 @@ export interface ExpressPersistedV1 {
   whoSizeCombined?: boolean;
   /** Saved project reopened via Change Pattern Choices — unlock full wizard for editing. */
   editChoicesReopen?: boolean;
+  /** Custom Build diagram overrides (inches as decimal strings). */
+  cbMeasurementOverrides?: Record<string, string>;
 }
 
 export const EXPRESS_FLOW_STEPS = 5;

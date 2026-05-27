@@ -157,10 +157,11 @@ function resolveHemFieldsForSleevelessDiagram(
     isFiniteNumber(hemRows) && isFiniteNumber(rpi) && rpi > 0
       ? lengthFromRowsForDiagram(hemRows, rpi, unit)
       : undefined;
-  return {
+  const hemFields = {
     HEM_ROWS: isFiniteNumber(hemRows) ? String(Math.max(0, hemRows)) : "",
     HEM_INCHES: fmtNumber(hemInchesFromRows ?? inchesToUnit(hemDepthIn, unit) ?? Number.NaN),
   };
+  return hemFields;
 }
 
 /** Neck depth labels for diagram overlays — matches legacy sleeveless behavior for back/front/shared. */

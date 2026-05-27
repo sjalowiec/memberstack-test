@@ -16,6 +16,11 @@ import {
 import { scrollToBuilderSection } from "../lib/patterns/scrollToBuilderSection";
 import { resolveSleevelessAudienceHeroImageSrc } from "../lib/patterns/sleevelessAudienceHeroImage";
 import { applySleevelessExpressEditChoicesFromUrl } from "../lib/patterns/restoreSleevelessExpressBuilderFromPattern";
+import {
+  canAccessCustomBuildStyleAndShaping,
+  CUSTOM_BUILD_STYLE_STEP_LOCKED_TITLE,
+  syncCustomBuildCustomizeAccessChrome,
+} from "../lib/patterns/customBuildCustomizeAccess";
 import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
 
 const STEPS = 2;
@@ -201,16 +206,18 @@ function initCustomBuildDesignPage(): void {
   }
 
   function updateFlowPills() {
+    const styleAccess = canAccessCustomBuildStyleAndShaping();
     flowPills.forEach((btn) => {
       if (!(btn instanceof HTMLElement)) return;
       const step = parseInt(btn.getAttribute("data-cb-flow-pill") ?? "0", 10);
       const label = btn.getAttribute("data-cb-flow-label") || `Step ${step}`;
       const item = btn.closest(".sg-builder-nav__item");
+      const entitlementLocked = step >= 2 && !styleAccess;
 
       if (step <= STEPS) {
         const complete = isStepComplete(step);
         const isCurrent = step === openStep;
-        const locked = step > maxReachable;
+        const locked = step > maxReachable || entitlementLocked;
 
         btn.classList.toggle("is-complete", complete);
         btn.classList.toggle("is-current", isCurrent);
@@ -218,7 +225,10 @@ function initCustomBuildDesignPage(): void {
 
         if (locked) {
           btn.setAttribute("aria-disabled", "true");
-          btn.setAttribute("title", LOCKED_STEP_NAV_TITLE);
+          btn.setAttribute(
+            "title",
+            entitlementLocked ? CUSTOM_BUILD_STYLE_STEP_LOCKED_TITLE : LOCKED_STEP_NAV_TITLE,
+          );
         } else {
           btn.removeAttribute("aria-disabled");
           btn.removeAttribute("title");
@@ -308,15 +318,22 @@ function initCustomBuildDesignPage(): void {
   function updateContinueLink() {
     const a = document.querySelector("[data-cb-continue-link]");
     if (!(a instanceof HTMLAnchorElement)) return;
-    const ok = designBasicsComplete(values);
+    const ok = designBasicsComplete(values) && canAccessCustomBuildStyleAndShaping();
     if (ok) {
       a.removeAttribute("aria-disabled");
       a.removeAttribute("tabindex");
+      a.removeAttribute("title");
       a.setAttribute("aria-label", "Continue to Style and Shaping");
     } else {
       a.setAttribute("aria-disabled", "true");
       a.setAttribute("tabindex", "-1");
-      a.setAttribute("aria-label", "Complete all design sections to continue");
+      if (designBasicsComplete(values) && !canAccessCustomBuildStyleAndShaping()) {
+        a.setAttribute("title", CUSTOM_BUILD_STYLE_STEP_LOCKED_TITLE);
+        a.setAttribute("aria-label", CUSTOM_BUILD_STYLE_STEP_LOCKED_TITLE);
+      } else {
+        a.removeAttribute("title");
+        a.setAttribute("aria-label", "Complete all design sections to continue");
+      }
     }
   }
 
@@ -539,10 +556,12 @@ function initCustomBuildDesignPage(): void {
   document.querySelector("[data-cb-continue-link]")?.addEventListener("click", (e) => {
     const a = e.currentTarget;
     if (!(a instanceof HTMLAnchorElement)) return;
-    if (!designBasicsComplete(values)) {
+    if (!designBasicsComplete(values) || !canAccessCustomBuildStyleAndShaping()) {
       e.preventDefault();
     }
   });
+
+  syncCustomBuildCustomizeAccessChrome(document);
 
   window.addEventListener("kbm:units-change", (ev: Event) => {
     const tid = (ev as CustomEvent<{ toggleId?: string }>).detail?.toggleId;

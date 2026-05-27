@@ -3,6 +3,7 @@
  * Pattern math still reads `fit.selectedMeasurements` — this layer is storage/UI only for phase 1.
  */
 import { SLEEVELESS_BODY_STRAIGHT_TOLERANCE_INCHES } from "./bodyBlock/sleevelessBodyBlock";
+import { positiveMeasurementInches } from "./customBuildEffectiveArmholeDepth";
 import {
   getCurrentPattern,
   saveCurrentPattern,
@@ -89,8 +90,12 @@ export function reconcileStraightTorsoOverridesAfterChartSync(
   chartBustInches: number,
   overrides: Record<string, string>,
 ): Record<string, string> {
-  const bustStr = String(chartBustInches);
   const next = { ...overrides };
+  const overrideBustIn = positiveMeasurementInches(next.chestBust);
+  const bustInches =
+    overrideBustIn !== undefined && overrideBustIn > 0 ? overrideBustIn : chartBustInches;
+  const bustStr = String(bustInches);
+
   const hipRaw = next.hip?.trim();
   if (!hipRaw) {
     return { ...next, chestBust: next.chestBust ?? bustStr, hip: bustStr };
@@ -98,9 +103,13 @@ export function reconcileStraightTorsoOverridesAfterChartSync(
   const hipIn = parseFloat(hipRaw.replace(/[^\d.-]/g, ""));
   if (
     !Number.isFinite(hipIn) ||
-    hipIn > chartBustInches + SLEEVELESS_BODY_STRAIGHT_TOLERANCE_INCHES
+    hipIn > bustInches + SLEEVELESS_BODY_STRAIGHT_TOLERANCE_INCHES
   ) {
-    return { ...next, chestBust: bustStr, hip: bustStr };
+    return {
+      ...next,
+      chestBust: overrideBustIn !== undefined ? next.chestBust! : bustStr,
+      hip: bustStr,
+    };
   }
   return next;
 }
