@@ -35,8 +35,14 @@ import {
   isExpressEditChoicesReopenSession,
   loadExpressPersisted,
 } from "../lib/patterns/sleevelessExpressResume";
+import { CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT } from "../lib/patterns/customPatternEditingEvents";
 import { isEditingSavedCustomPatternProject } from "../lib/patterns/customPatternEditingUx";
 import { ensureSavedCustomPatternSessionHydratedOnExpressPage } from "../lib/patterns/hydrateSavedCustomPatternProject";
+import {
+  enforceLockedExpressWhoInWizardValues,
+  interceptBlockedExpressWhoChange,
+  syncSavedPatternChartAudienceLockUi,
+} from "../lib/patterns/savedCustomPatternChartAudienceLock";
 import { syncSleevelessBuilderHeaderTitle } from "../lib/patterns/sleevelessBuilderHeaderUx";
 import {
   EXPRESS_AVAILABLE_NEEDLES_INPUT_ID,
@@ -240,6 +246,7 @@ function initExpressPage() {
   if (!editChoicesReopen) {
     ensureExpressStyleDefaults(values);
   }
+  enforceLockedExpressWhoInWizardValues(values);
 
   let openStepCandidate =
     typeof persisted?.openStep === "number" && Number.isFinite(persisted.openStep)
@@ -284,6 +291,20 @@ function initExpressPage() {
   const sections = document.querySelectorAll("[data-express-step]");
   const pills = document.querySelectorAll("[data-pill-step]");
   const expressBuilderRoot = document.querySelector("[data-express-builder]");
+  const audienceLockHost =
+    expressBuilderRoot instanceof HTMLElement
+      ? expressBuilderRoot
+      : document.querySelector("[data-express-step='1']");
+
+  const audienceLockActions = {
+    onStartNewPattern: () => requestResetExpressBuilder(),
+  };
+
+  function syncExpressChartAudienceLockUi(): void {
+    if (audienceLockHost instanceof HTMLElement) {
+      syncSavedPatternChartAudienceLockUi(audienceLockHost, audienceLockActions);
+    }
+  }
 
   function persistExpressSession(): void {
     if (typeof localStorage === "undefined") return;
@@ -499,6 +520,7 @@ function initExpressPage() {
     updateSummaries();
     updateGeneratePatternAvailability();
     applySelectionUI();
+    syncExpressChartAudienceLockUi();
     refreshExpressWhoCardHeroImages(values);
   }
 
@@ -633,6 +655,15 @@ function initExpressPage() {
     if (!field || value == null) return;
 
     if (field === "who") {
+      if (
+        interceptBlockedExpressWhoChange(
+          audienceLockHost instanceof HTMLElement ? audienceLockHost : null,
+          value,
+          audienceLockActions,
+        )
+      ) {
+        return;
+      }
       const prevWho = values.who;
       if (prevWho !== undefined && prevWho !== value) {
         delete values.selectedSize;
@@ -1045,6 +1076,9 @@ function initExpressPage() {
   applyExpressGaugeSectionHash();
   syncSleevelessBuilderHeaderTitle();
   initExpressEditingBar();
+  syncExpressChartAudienceLockUi();
+
+  document.addEventListener(CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT, syncExpressChartAudienceLockUi);
 }
 
 function initExpressTopTabs(): void {

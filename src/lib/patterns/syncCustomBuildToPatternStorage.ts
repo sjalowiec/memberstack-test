@@ -45,6 +45,10 @@ import {
   readCustomBuildWizardNeckline,
 } from "./sleevelessCustomBuildWizardNeckline";
 import { CUSTOM_BUILD_STYLE_STORAGE_KEYS } from "./sleevelessCustomBuildStyleKeys";
+import {
+  buildSizingIdentityFromExpressValues,
+  detachActiveSavedProjectWhenChartAudienceDrifts,
+} from "./savedCustomPatternSessionIdentity";
 
 export { CUSTOM_BUILD_STYLE_STORAGE_KEYS };
 
@@ -284,6 +288,11 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
     }
 
     ensureYarnGaugeMachineDefaults();
+
+    const sizingIdentity = buildSizingIdentityFromExpressValues(ev);
+    if (sizingIdentity) {
+      detachActiveSavedProjectWhenChartAudienceDrifts(sizingIdentity);
+    }
   };
 
   if (options.awaitCharts === false) {

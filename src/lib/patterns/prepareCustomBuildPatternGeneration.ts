@@ -3,7 +3,10 @@
  * pattern storage before {@link generateSleevelessBackPattern} runs.
  */
 import { isEditingSavedCustomPatternProject } from "./customPatternEditingUx";
-import { ensureSavedCustomPatternSessionHydratedOnPatternPage } from "./hydrateSavedCustomPatternProject";
+import {
+  ensureSavedCustomPatternSessionHydratedOnPatternPage,
+  promoteExpressBuilderToCanonicalWhenDrifted,
+} from "./hydrateSavedCustomPatternProject";
 import { getCurrentPattern, getPatternData } from "./patternStorage";
 import { resolveGeneratorPatternMode, sectionPattern } from "./sleevelessPatternBuilderMerge";
 import {
@@ -62,6 +65,7 @@ export function prepareCustomBuildPatternGeneration(
   );
 
   if (options.rehydrateSavedProject !== false && isEditingSavedCustomPatternProject()) {
+    promoteExpressBuilderToCanonicalWhenDrifted();
     ensureSavedCustomPatternSessionHydratedOnPatternPage();
   }
 

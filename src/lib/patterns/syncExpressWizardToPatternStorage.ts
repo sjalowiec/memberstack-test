@@ -25,6 +25,10 @@ import {
   mapExpressNecklineToStorage,
 } from "./syncSleevelessExpressDesignToStorage";
 import { loadExpressPersisted, type ExpressPersistedV1 } from "./sleevelessExpressResume";
+import {
+  buildSizingIdentityFromExpressValues,
+  detachActiveSavedProjectWhenChartAudienceDrifts,
+} from "./savedCustomPatternSessionIdentity";
 
 export const EXPRESS_GAUGE_STITCH_INPUT_ID = "express-stitch-gauge";
 export const EXPRESS_GAUGE_ROW_INPUT_ID = "express-row-gauge";
@@ -314,6 +318,11 @@ export function syncExpressWizardToPatternStorage(
         bodyShape: sm.bodyShape,
       });
     }
+  }
+
+  const sizingIdentity = buildSizingIdentityFromExpressValues(values);
+  if (sizingIdentity) {
+    detachActiveSavedProjectWhenChartAudienceDrifts(sizingIdentity);
   }
 }
 

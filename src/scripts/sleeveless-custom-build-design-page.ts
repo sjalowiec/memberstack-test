@@ -21,6 +21,15 @@ import {
   CUSTOM_BUILD_STYLE_STEP_LOCKED_TITLE,
   syncCustomBuildCustomizeAccessChrome,
 } from "../lib/patterns/customBuildCustomizeAccess";
+import { CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT } from "../lib/patterns/customPatternEditingEvents";
+import { isEditingSavedCustomPatternProject } from "../lib/patterns/customPatternEditingUx";
+import { ensureSavedCustomPatternSessionHydratedOnExpressPage } from "../lib/patterns/hydrateSavedCustomPatternProject";
+import {
+  enforceLockedExpressWhoInWizardValues,
+  interceptBlockedExpressWhoChange,
+  syncSavedPatternChartAudienceLockUi,
+} from "../lib/patterns/savedCustomPatternChartAudienceLock";
+import { startNewCustomPatternFromWorkspace } from "../lib/patterns/startNewCustomPatternWorkflow";
 import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
 
 const STEPS = 2;
@@ -119,6 +128,9 @@ function stepSection(step: number): HTMLElement | null {
 
 function initCustomBuildDesignPage(): void {
   applySleevelessExpressEditChoicesFromUrl();
+  if (isEditingSavedCustomPatternProject()) {
+    ensureSavedCustomPatternSessionHydratedOnExpressPage();
+  }
   const root = document.querySelector("[data-cb-design-root]");
   if (!(root instanceof HTMLElement)) return;
 
@@ -128,6 +140,17 @@ function initCustomBuildDesignPage(): void {
       ? { ...persisted.values }
       : {};
   ensureExpressStyleDefaults(values);
+  enforceLockedExpressWhoInWizardValues(values);
+
+  const audienceLockActions = {
+    onStartNewPattern: () => {
+      void startNewCustomPatternFromWorkspace(document);
+    },
+  };
+
+  function syncDesignChartAudienceLockUi(): void {
+    syncSavedPatternChartAudienceLockUi(root, audienceLockActions);
+  }
 
   let openStep =
     typeof persisted?.cbDesignOpenStep === "number" && Number.isFinite(persisted.cbDesignOpenStep)
@@ -311,6 +334,7 @@ function initCustomBuildDesignPage(): void {
     updateFlowPills();
     updateContinueLink();
     applySelectionUI();
+    syncDesignChartAudienceLockUi();
     refreshSizePanel();
     refreshCbDesignWhoCardImages();
   }
@@ -428,6 +452,9 @@ function initCustomBuildDesignPage(): void {
     if (!field || value == null) return;
 
     if (field === "who") {
+      if (interceptBlockedExpressWhoChange(root, value, audienceLockActions)) {
+        return;
+      }
       const prevWho = values.who;
       if (prevWho !== undefined && prevWho !== value) {
         delete values.selectedSize;
@@ -585,6 +612,9 @@ function initCustomBuildDesignPage(): void {
       }
       refreshBuilderState(true);
     });
+
+  syncDesignChartAudienceLockUi();
+  document.addEventListener(CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT, syncDesignChartAudienceLockUi);
 }
 
 if (typeof document !== "undefined") {

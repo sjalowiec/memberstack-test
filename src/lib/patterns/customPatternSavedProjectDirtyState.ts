@@ -16,6 +16,11 @@ import {
   resolveGeneratorPatternMode,
   sectionPattern,
 } from "./sleevelessPatternBuilderMerge";
+import {
+  buildSizingIdentityFromCanonicalDraft,
+  clearSavedSizingIdentityBaseline,
+  writeSavedSizingIdentityBaseline,
+} from "./savedCustomPatternSessionIdentity";
 
 export const CUSTOM_PATTERN_SAVED_DIRTY_BASELINE_KEY =
   "kbm_custom_pattern_saved_dirty_baseline";
@@ -84,6 +89,7 @@ export function clearSavedCustomPatternDirtyBaseline(): void {
   try {
     localStorage.removeItem(CUSTOM_PATTERN_SAVED_DIRTY_BASELINE_KEY);
     localStorage.removeItem(CUSTOM_PATTERN_SAVED_DIRTY_BASELINE_PROJECT_KEY);
+    clearSavedSizingIdentityBaseline();
   } catch {
     /* ignore */
   }
@@ -126,6 +132,7 @@ export function captureCustomPatternDirtyBaseline(): void {
       CUSTOM_PATTERN_SAVED_DIRTY_BASELINE_KEY,
       buildCurrentCustomPatternDirtySnapshot(),
     );
+    writeSavedSizingIdentityBaseline(buildSizingIdentityFromCanonicalDraft());
   } catch {
     /* ignore */
   }

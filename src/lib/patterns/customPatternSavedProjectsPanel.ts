@@ -27,7 +27,9 @@ import {
   reconcileActiveSavedProjectLinkedNameFromDraft,
   resolveCustomPatternDisplayName,
 } from "./customPatternEditingUx";
-import { CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT } from "./customPatternEditingEvents";
+import {
+  CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT,
+} from "./customPatternEditingEvents";
 import { captureSavedCustomPatternDirtyBaseline } from "./customPatternSavedProjectDirtyState";
 import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPatternProject";
 import { getPatternProjectMeta, savePatternProjectMeta } from "./sleevelessPatternProjectMeta";
@@ -127,7 +129,8 @@ export type SmartSaveCustomPatternProjectOptions = {
   resolveName: () => string;
   onStatus?: (message: string, isError?: boolean) => void;
   /**
-   * `create` — always a new saved project (default; review cloud save).
+   * Omitted — update the active saved project when linked, otherwise create.
+   * `create` — always a new saved project (e.g. after Start New Pattern).
    * `update` — overwrite the active saved project id only (explicit Update control).
    * `copy` — new saved project; defaults title to “{linked name} Copy” when unchanged.
    */
@@ -150,6 +153,32 @@ export function resolveSaveCopyProjectName(
   return trimmed;
 }
 
+/** Ordinary save: update when a saved project is already linked, otherwise create. */
+export function resolveDefaultCustomPatternSaveMode(): "create" | "update" {
+  return readActiveCustomPatternProjectId() ? "update" : "create";
+}
+
+function resolveSmartSaveMode(
+  explicit?: CustomPatternProjectSaveMode,
+): CustomPatternProjectSaveMode {
+  if (explicit === "copy" || explicit === "update" || explicit === "create") {
+    return explicit;
+  }
+  return resolveDefaultCustomPatternSaveMode();
+}
+
+function notifySavedProjectLinkChanged(root?: ParentNode): void {
+  if (typeof document === "undefined") return;
+  document.documentElement.classList.toggle(
+    "kbm-editing-saved-pattern",
+    isEditingSavedCustomPatternProject(),
+  );
+  if (root instanceof HTMLElement) {
+    syncCustomBuildFoundationPageHeader(root);
+  }
+  document.dispatchEvent(new CustomEvent(CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT));
+}
+
 /** Create, update, or copy a saved project from the working draft. */
 export async function smartSaveCustomPatternProject(
   options: SmartSaveCustomPatternProjectOptions,
@@ -158,7 +187,7 @@ export async function smartSaveCustomPatternProject(
   | { ok: false; error: string }
 > {
   const family = options.family ?? "sleeveless";
-  const mode = options.mode ?? "create";
+  const mode = resolveSmartSaveMode(options.mode);
   const rawName = options.resolveName().trim();
   if (!rawName) {
     return { ok: false, error: "Enter a pattern name before saving." };
@@ -187,6 +216,7 @@ export async function smartSaveCustomPatternProject(
       rehydrateSavedProject: false,
     });
     captureSavedCustomPatternDirtyBaseline();
+    notifySavedProjectLinkChanged(options.root ?? undefined);
     return { ok: true, project: res.project, created: false };
   }
 
@@ -195,6 +225,7 @@ export async function smartSaveCustomPatternProject(
   if (!res.ok) return { ok: false, error: res.error };
   writeActiveCustomPatternProjectId(res.project.id, res.project.name);
   captureSavedCustomPatternDirtyBaseline();
+  notifySavedProjectLinkChanged(options.root ?? undefined);
   return { ok: true, project: res.project, created: true };
 }
 
@@ -327,19 +358,23 @@ export function initCustomPatternSavedProjectsPanel(
       setStatus(root, "Enter a project name before saving.", true);
       return;
     }
-    setStatus(root, "Saving…");
-    const payload = buildSavePayloadFromWorkingDraft(name, { family, flushRoot: root });
-    const res = await createCustomPatternProject(payload);
+    const res = await smartSaveCustomPatternProject({
+      family,
+      resolveName: () => name,
+      root,
+      onStatus: (message, isError) => setStatus(root, message, isError),
+    });
     if (!res.ok) {
       setStatus(root, res.error, true);
       return;
     }
-    writeActiveCustomPatternProjectId(res.project.id, res.project.name);
-    captureSavedCustomPatternDirtyBaseline();
     refreshCustomPatternSavedProjectsPanelUi(root);
-    setStatus(root, `Saved “${res.project.name}”.`);
+    setStatus(
+      root,
+      res.created ? `Saved “${res.project.name}”.` : `Updated “${res.project.name}”.`,
+    );
     if (showLoadControls) {
-      await refreshProjectList(root, family, "save");
+      await refreshProjectList(root, family, res.created ? "save" : "update");
     }
   });
 

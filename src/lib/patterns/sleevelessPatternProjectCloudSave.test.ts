@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { stubLocalStorage } from "./test/stubLocalStorage";
+import { writeActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import {
   bindSleevelessPatternProjectCloudSave,
   runSleevelessPatternProjectCloudSave,
@@ -48,6 +50,8 @@ function makeSaveRoot(options?: { withButton?: boolean }) {
 
 describe("sleevelessPatternProjectCloudSave", () => {
   beforeEach(() => {
+    stubLocalStorage();
+    localStorage.clear();
     vi.clearAllMocks();
   });
 
@@ -90,6 +94,43 @@ describe("sleevelessPatternProjectCloudSave", () => {
 
     expect(root._status.textContent).toBe('Saved “Mom\'s vest”.');
     expect(root._button.disabled).toBe(false);
+    expect(smartSaveCustomPatternProject).toHaveBeenCalledWith(
+      expect.not.objectContaining({ mode: "create" }),
+    );
+  });
+
+  it("updates the linked project instead of passing explicit create mode", async () => {
+    const root = makeSaveRoot();
+    writeActiveCustomPatternProjectId("p1", "Mom's vest");
+    vi.mocked(smartSaveCustomPatternProject).mockResolvedValue({
+      ok: true,
+      created: false,
+      project: {
+        id: "p1",
+        name: "Mom's vest",
+        family: "sleeveless",
+        source: "express",
+        notes: "",
+        pattern: {},
+        customOverrides: {},
+        createdAt: "",
+        updatedAt: "",
+      },
+    });
+
+    await runSleevelessPatternProjectCloudSave(root, {
+      resolveName: () => "Mom's vest",
+    });
+
+    expect(smartSaveCustomPatternProject).toHaveBeenCalledWith(
+      expect.objectContaining({
+        resolveName: expect.any(Function),
+      }),
+    );
+    expect(smartSaveCustomPatternProject).toHaveBeenCalledWith(
+      expect.not.objectContaining({ mode: "create" }),
+    );
+    expect(root._status.textContent).toBe('Updated “Mom\'s vest”.');
   });
 
   it("bindSleevelessPatternProjectCloudSave wires click once", async () => {

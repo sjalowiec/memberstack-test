@@ -17,6 +17,16 @@ import {
   safeRestoreSleevelessExpressBuilderFromPattern,
 } from "./restoreSleevelessExpressBuilderFromPattern";
 import { loadExpressPersisted } from "./sleevelessExpressResume";
+import {
+  buildSizingIdentityFromExpressValues,
+  expressValuesHaveSizingIdentity,
+} from "./savedCustomPatternSessionIdentity";
+import {
+  nonEmptyTrimmed,
+  resolveExpressChartFit,
+} from "./sleevelessExpressSizeChartClient";
+import { expressWhoToChartAudience, mapExpressStyleKey } from "./syncSleevelessExpressDesignToStorage";
+import { syncExpressWizardToPatternStorage } from "./syncExpressWizardToPatternStorage";
 
 const EXPRESS_VALUE_COMPARE_KEYS = [
   "who",
@@ -58,6 +68,34 @@ export function rehydrateExpressBuilderFromActiveSavedProject(): boolean {
 }
 
 /**
+ * When the Express wizard has who + size that disagree with the canonical draft, treat the wizard
+ * as the knitter's current choices and sync into `kbm_current_pattern` instead of overwriting the UI
+ * from stale saved-project measurements (e.g. Child 8 → Ladies 8 with the same size label).
+ */
+export function promoteExpressBuilderToCanonicalWhenDrifted(): boolean {
+  if (!isEditingSavedCustomPatternProject()) return false;
+
+  const persisted = loadExpressPersisted();
+  const wizard =
+    persisted?.values && typeof persisted.values === "object" && !Array.isArray(persisted.values)
+      ? { ...(persisted.values as Record<string, string>) }
+      : {};
+
+  if (!expressValuesHaveSizingIdentity(wizard)) return false;
+  if (expressBuilderMatchesActiveSavedProject()) return false;
+
+  const aud = expressWhoToChartAudience(wizard.who);
+  const chartFit = nonEmptyTrimmed(wizard.selectedSize)
+    ? resolveExpressChartFit(aud, wizard.selectedSize!.trim(), wizard.fit || "standard", {
+        bodyShape: mapExpressStyleKey(wizard.style ?? "").bodyShape,
+      })
+    : null;
+
+  syncExpressWizardToPatternStorage(wizard, chartFit, { preferDomGauge: false });
+  return true;
+}
+
+/**
  * Copies the saved project into the working draft, restores Express wizard storage from it,
  * and records the dirty baseline. Use for library/account open and in-panel load.
  */
@@ -69,24 +107,27 @@ export function hydrateSavedCustomPatternProjectSession(project: CustomPatternPr
 }
 
 /**
- * Pattern tab — sync Express wizard storage from the working draft so a prior session cannot leak.
- * Does not update the dirty baseline (preview/generate must not clear unsaved state).
+ * Pattern tab — align Express wizard with the working draft, preferring live wizard choices over
+ * stale canonical data when both are present. Does not update the dirty baseline.
  */
 export function ensureSavedCustomPatternSessionHydratedOnPatternPage(): void {
   if (!isEditingSavedCustomPatternProject()) return;
-  rehydrateExpressBuilderFromActiveSavedProject();
+  if (promoteExpressBuilderToCanonicalWhenDrifted()) return;
+  if (!expressBuilderMatchesActiveSavedProject()) {
+    rehydrateExpressBuilderFromActiveSavedProject();
+  }
 }
 
 /**
- * Express tab — rehydrate only when wizard storage disagrees with the working draft (stale handoff).
- * Re-baselines dirty state only after that corrective restore, not on every visit.
+ * Express tab — when wizard storage disagrees with the working draft, promote wizard → canonical
+ * if the knitter has who + size set; otherwise restore from the saved project draft.
  */
 export function ensureSavedCustomPatternSessionHydratedOnExpressPage(): void {
   if (!isEditingSavedCustomPatternProject()) return;
-  if (!expressBuilderMatchesActiveSavedProject()) {
-    const restored = rehydrateExpressBuilderFromActiveSavedProject();
-    if (restored) {
-      scheduleCaptureSavedCustomPatternDirtyBaselineAfterHydration();
-    }
+  if (expressBuilderMatchesActiveSavedProject()) return;
+  if (promoteExpressBuilderToCanonicalWhenDrifted()) return;
+  const restored = rehydrateExpressBuilderFromActiveSavedProject();
+  if (restored) {
+    scheduleCaptureSavedCustomPatternDirtyBaselineAfterHydration();
   }
 }

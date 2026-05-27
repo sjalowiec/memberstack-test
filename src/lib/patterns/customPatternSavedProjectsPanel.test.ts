@@ -7,6 +7,7 @@ import {
   writeActiveCustomPatternProjectId,
 } from "./customPatternProjectActiveId";
 import {
+  resolveDefaultCustomPatternSaveMode,
   resolveSaveCopyProjectName,
   smartSaveCustomPatternProject,
 } from "./customPatternSavedProjectsPanel";
@@ -69,6 +70,44 @@ describe("smartSaveCustomPatternProject", () => {
     stubLocalStorage();
     localStorage.clear();
     vi.clearAllMocks();
+  });
+
+  it("ordinary save without mode updates the linked project on a later save", async () => {
+    vi.mocked(createCustomPatternProject).mockResolvedValue({
+      ok: true,
+      project: womensPullover,
+    });
+    vi.mocked(updateCustomPatternProject).mockResolvedValue({
+      ok: true,
+      project: { ...womensPullover, name: "Women's Size 40 Pullover (revised)" },
+    });
+
+    const first = await smartSaveCustomPatternProject({
+      resolveName: () => womensPullover.name,
+    });
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    expect(first.created).toBe(true);
+    expect(createCustomPatternProject).toHaveBeenCalledTimes(1);
+    expect(updateCustomPatternProject).not.toHaveBeenCalled();
+
+    const second = await smartSaveCustomPatternProject({
+      resolveName: () => "Women's Size 40 Pullover (revised)",
+    });
+    expect(second.ok).toBe(true);
+    if (!second.ok) return;
+    expect(second.created).toBe(false);
+    expect(second.project.id).toBe("proj-womens-pullover");
+    expect(createCustomPatternProject).toHaveBeenCalledTimes(1);
+    expect(updateCustomPatternProject).toHaveBeenCalledTimes(1);
+    expect(readActiveCustomPatternProjectId()).toBe("proj-womens-pullover");
+  });
+
+  it("resolveDefaultCustomPatternSaveMode returns update when a project is linked", () => {
+    writeActiveCustomPatternProjectId(womensPullover.id, womensPullover.name);
+    expect(resolveDefaultCustomPatternSaveMode()).toBe("update");
+    clearActiveCustomPatternProjectId();
+    expect(resolveDefaultCustomPatternSaveMode()).toBe("create");
   });
 
   it("creates the first saved pattern as a new record", async () => {
@@ -201,6 +240,39 @@ describe("smartSaveCustomPatternProject", () => {
     );
     expect(createCustomPatternProject).not.toHaveBeenCalled();
     expect(readActiveCustomPatternProjectId()).toBe("proj-womens-pullover");
+  });
+
+  it("repeated ordinary saves keep a single project record in storage", async () => {
+    const store = new Map<string, typeof womensPullover>();
+
+    vi.mocked(createCustomPatternProject).mockImplementation(async (payload) => {
+      const project = {
+        ...womensPullover,
+        id: `proj-${store.size + 1}`,
+        name: payload.name,
+        pattern: payload.pattern as typeof womensPullover.pattern,
+        customOverrides: payload.customOverrides ?? {},
+      };
+      store.set(project.id, project);
+      return { ok: true, project };
+    });
+
+    vi.mocked(updateCustomPatternProject).mockImplementation(async (payload) => {
+      const existing = store.get(payload.id);
+      if (!existing) return { ok: false, error: "missing" };
+      const project = { ...existing, ...payload, name: payload.name };
+      store.set(project.id, project);
+      return { ok: true, project };
+    });
+
+    await smartSaveCustomPatternProject({ resolveName: () => womensPullover.name });
+    await smartSaveCustomPatternProject({
+      resolveName: () => "Women's Size 40 Pullover (revised)",
+    });
+
+    expect(store.size).toBe(1);
+    expect([...store.keys()]).toEqual(["proj-1"]);
+    expect([...store.values()][0]?.name).toBe("Women's Size 40 Pullover (revised)");
   });
 
   it("creates a new record after start-new cleared the previous active id", async () => {

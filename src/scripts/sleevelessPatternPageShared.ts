@@ -14,10 +14,7 @@ import {
 } from "../lib/patterns/sleevelessPatternBuilderMerge.ts";
 import { buildCustomBuildEffectivePatternInput } from "../lib/patterns/buildCustomBuildEffectivePatternInput.ts";
 import { prepareCustomBuildPatternGeneration, isDedicatedSleevelessPatternWorkspacePage } from "../lib/patterns/prepareCustomBuildPatternGeneration.ts";
-import {
-  ensureSavedCustomPatternSessionHydratedOnPatternPage,
-  expressBuilderMatchesActiveSavedProject,
-} from "../lib/patterns/hydrateSavedCustomPatternProject.ts";
+import { ensureSavedCustomPatternSessionHydratedOnPatternPage } from "../lib/patterns/hydrateSavedCustomPatternProject.ts";
 import {
   getSleevelessGoldenBetaCanonicalPattern,
   getSleevelessGoldenBetaPatternBuilderData,
@@ -2859,11 +2856,7 @@ table {
     if (sleevelessPatternBuilderPageInitBound) return;
     sleevelessPatternBuilderPageInitBound = true;
 
-    if (
-      isDedicatedSleevelessPatternWorkspacePage() &&
-      isEditingSavedCustomPatternProject() &&
-      !expressBuilderMatchesActiveSavedProject()
-    ) {
+    if (isDedicatedSleevelessPatternWorkspacePage() && isEditingSavedCustomPatternProject()) {
       ensureSavedCustomPatternSessionHydratedOnPatternPage();
     }
 

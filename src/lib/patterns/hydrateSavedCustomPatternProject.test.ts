@@ -4,6 +4,7 @@ import type { CustomPatternProject } from "./customPatternProjectTypes";
 import {
   expressBuilderMatchesActiveSavedProject,
   hydrateSavedCustomPatternProjectSession,
+  promoteExpressBuilderToCanonicalWhenDrifted,
 } from "./hydrateSavedCustomPatternProject";
 import {
   captureSavedCustomPatternDirtyBaseline,
@@ -119,5 +120,22 @@ describe("expressBuilderMatchesActiveSavedProject", () => {
   it("returns true when wizard storage matches the open saved project", () => {
     hydrateSavedCustomPatternProjectSession(mensProject());
     expect(expressBuilderMatchesActiveSavedProject()).toBe(true);
+  });
+});
+
+describe("promoteExpressBuilderToCanonicalWhenDrifted", () => {
+  beforeEach(() => {
+    stubLocalStorage();
+    localStorage.clear();
+  });
+
+  it("syncs wizard ahead of canonical when both differ and wizard has who + size", () => {
+    hydrateSavedCustomPatternProjectSession(mensProject());
+    localStorage.setItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY, kidsExpressBuilderSnapshot());
+
+    expect(promoteExpressBuilderToCanonicalWhenDrifted()).toBe(true);
+    const raw = localStorage.getItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY) ?? "";
+    expect(raw).toContain('"who":"kids"');
+    expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toContain('"recipientCategory":"kids"');
   });
 });
