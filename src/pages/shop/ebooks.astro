@@ -1,30 +1,18 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
-import { loadLegacyEbookStorefrontProducts } from "../../lib/legacy/legacyEbooksActive";
 import { plainTextFromLegacyEbookBrief } from "../../lib/legacy/legacyEbookPlainText";
+import { loadLegacyEbookStorefrontWithSlugs } from "../../lib/legacy/legacyEbookSlug";
+import {
+  formatLegacyEbookPrice,
+  legacyStoreThumbnailPath,
+} from "../../lib/legacy/legacyEbookStorefrontUi";
 
 const title = "eBooks | Knit it Now";
 const description =
   "Downloadable machine knitting eBooks — techniques, patterns, and reference from experienced teachers.";
 
-const products = loadLegacyEbookStorefrontProducts();
-
-function formatPrice(amount: number): string {
-  return amount.toLocaleString("en-US", { style: "currency", currency: "USD" });
-}
-
-/** Legacy store cover image path. */
-function legacyStoreThumbnailPath(filename: string): string {
-  if (
-    filename.startsWith("/") ||
-    filename.startsWith("http://") ||
-    filename.startsWith("https://")
-  ) {
-    return filename;
-  }
-  return `/store/thumbnails/${filename}`;
-}
+const products = loadLegacyEbookStorefrontWithSlugs();
 ---
 
 <Layout {title} {description}>
@@ -49,33 +37,45 @@ function legacyStoreThumbnailPath(filename: string): string {
     </p>
 
     <div class="ebooks-grid">
-      {products.map((product) => (
+      {products.map((product) => {
+        const detailHref = `/shop/ebooks/${product.slug}`;
+        return (
         <article class="ebook-store-card">
           <div class="ebook-store-card__media">
-            <img
-              src={legacyStoreThumbnailPath(product.thumbnail)}
-              alt={product.title}
-              class="ebook-store-card__thumb"
-              loading="lazy"
-              width="160"
-              height="210"
-            />
+            <a href={detailHref} class="ebook-store-card__thumb-link">
+              <img
+                src={legacyStoreThumbnailPath(product.thumbnail)}
+                alt={product.title}
+                class="ebook-store-card__thumb"
+                loading="lazy"
+                width="160"
+                height="210"
+              />
+            </a>
             {product.subscriberFree && (
-              <span class="ebook-store-badge">Subscriber free</span>
+              <span class="ebook-store-badge">Member Free</span>
             )}
           </div>
 
           <div class="ebook-store-card__body">
             <h2 class="ebook-store-card__title">{product.title}</h2>
-            <p class="ebook-store-card__price">{formatPrice(product.sellPrice)}</p>
+            <p class="ebook-store-card__price">
+              {formatLegacyEbookPrice(product.sellPrice)}
+            </p>
             {product.shortDescription && (
               <p class="ebook-store-card__desc">
                 {plainTextFromLegacyEbookBrief(product.shortDescription)}
               </p>
             )}
+            <div class="ebook-store-card__actions">
+              <a href={detailHref} class="ebook-store-card__cta">
+                Learn More
+              </a>
+            </div>
           </div>
         </article>
-      ))}
+        );
+      })}
     </div>
   </div>
 </Layout>
@@ -130,12 +130,30 @@ function legacyStoreThumbnailPath(filename: string): string {
     padding: 1rem 1rem 0.75rem;
   }
 
+  .ebook-store-card__thumb-link {
+    display: block;
+    line-height: 0;
+    border-radius: 4px;
+  }
+
   .ebook-store-card__thumb {
     width: 140px;
     height: auto;
     max-height: 200px;
     object-fit: contain;
     border-radius: 4px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .ebook-store-card__thumb-link:hover .ebook-store-card__thumb,
+  .ebook-store-card__thumb-link:focus-visible .ebook-store-card__thumb {
+    transform: scale(1.04);
+    opacity: 0.88;
+  }
+
+  .ebook-store-card__thumb-link:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 3px;
   }
 
   .ebook-store-badge {
@@ -176,11 +194,42 @@ function legacyStoreThumbnailPath(filename: string): string {
   }
 
   .ebook-store-card__desc {
-    margin: 0;
+    margin: 0 0 0.85rem;
     font-size: 0.9rem;
     line-height: 1.5;
     color: #555;
     flex: 1;
+  }
+
+  .ebook-store-card__actions {
+    display: flex;
+    justify-content: center;
+    margin-top: auto;
+    padding-top: 0.25rem;
+  }
+
+  .ebook-store-card__cta {
+    display: inline-block;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #fff;
+    background: var(--kbm-green, #52682d);
+    border-radius: 8px;
+    text-decoration: none;
+    text-align: center;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .ebook-store-card__cta:hover {
+    background: #445626;
+    color: #fff;
+    transform: translateY(-1px);
+  }
+
+  .ebook-store-card__cta:focus-visible {
+    outline: 2px solid #445626;
+    outline-offset: 2px;
   }
 
   @media (min-width: 640px) {
