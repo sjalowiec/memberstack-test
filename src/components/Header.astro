@@ -1,5 +1,6 @@
 ---
 /* Centered Logo Header for Knit it Now — soft launch (simplified nav) */
+const SHOW_SHOP_NAV = false; // Temporary production hide for unfinished Shop nav item.
 ---
 <style is:global>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
@@ -1510,23 +1511,25 @@ div[data-ms-modal-overlay] {
                  <li class="is-hidden"><a href="/reference">Reference</a></li>
               </ul>
             </li>
-            <li class="nav-item nav-dropdown dd">
-              <button
-                type="button"
-                class="nav-link nav-dropdown-toggle dd-trigger"
-                aria-haspopup="true"
-                aria-expanded="false"
-                data-testid="nav-shop"
-              >
-                Shop
-              </button>
+            {SHOW_SHOP_NAV && (
+              <li class="nav-item nav-dropdown dd">
+                <button
+                  type="button"
+                  class="nav-link nav-dropdown-toggle dd-trigger"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                  data-testid="nav-shop"
+                >
+                  Shop
+                </button>
 
-              <ul class="nav-dropdown-menu dd-panel" role="menu">
-                <li>
-                  <a href="/shop/ebooks/" data-testid="nav-shop-ebooks">eBooks</a>
-                </li>
-              </ul>
-            </li>
+                <ul class="nav-dropdown-menu dd-panel" role="menu">
+                  <li>
+                    <a href="/shop/ebooks/" data-testid="nav-shop-ebooks">eBooks</a>
+                  </li>
+                </ul>
+              </li>
+            )}
             <li>
               <a href="/whats-new" data-testid="nav-whats-new" class="nav-whats-new-link">What's New</a>
             </li>
