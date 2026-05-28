@@ -1,4 +1,5 @@
 import { slugify } from "../slugify";
+import { withLegacyEbookShopifyUrls } from "./legacyEbookShopifyUrls";
 import type { LegacyEbookStorefrontProduct } from "./legacyEbooksActive";
 import { loadLegacyEbookStorefrontProducts } from "./legacyEbooksActive";
 
@@ -42,7 +43,9 @@ export function withLegacyEbookStorefrontSlugs(
 }
 
 export function loadLegacyEbookStorefrontWithSlugs(): LegacyEbookStorefrontWithSlug[] {
-  return withLegacyEbookStorefrontSlugs(loadLegacyEbookStorefrontProducts());
+  return withLegacyEbookShopifyUrls(
+    withLegacyEbookStorefrontSlugs(loadLegacyEbookStorefrontProducts())
+  );
 }
 
 export function findLegacyEbookStorefrontBySlug(

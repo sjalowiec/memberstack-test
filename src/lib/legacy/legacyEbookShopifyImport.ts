@@ -50,6 +50,52 @@ const SHOPIFY_PRODUCT_CATEGORY = "Media > Books";
 const SHOPIFY_TYPE = "eBook";
 const SHOPIFY_TAGS = "legacy-ebook, digital-download, machine-knitting";
 
+/** Shopify image columns other than Image Src — must stay empty unless Src is HTTPS. */
+export const LEGACY_EBOOK_SHOPIFY_IMAGE_METADATA_COLUMNS = [
+  "Image Position",
+  "Image Alt Text",
+] as const;
+
+function isPublicHttpsUrl(value: string): boolean {
+  return /^https:\/\/.+/i.test(value.trim());
+}
+
+/** Public HTTPS cover URL for Shopify import, or blank when unavailable. */
+export function legacyEbookShopifyPublicImageSrc(
+  _product: LegacyEbookStorefrontWithSlug
+): string {
+  // Legacy thumbnails are site-relative paths; add HTTPS URLs here when ready.
+  return "";
+}
+
+export function legacyEbookShopifyImageFields(
+  product: LegacyEbookStorefrontWithSlug
+): Pick<LegacyEbookShopifyImportRow, "Image Src" | "Image Position"> {
+  const imageSrc = legacyEbookShopifyPublicImageSrc(product);
+  if (!isPublicHttpsUrl(imageSrc)) {
+    return { "Image Src": "", "Image Position": "" };
+  }
+  return { "Image Src": imageSrc, "Image Position": "1" };
+}
+
+/** True when Image Position / Alt Text (etc.) are set without a public Image Src. */
+export function legacyEbookShopifyRowHasOrphanImageMetadata(
+  row: LegacyEbookShopifyImportRow
+): boolean {
+  const imageSrc = (row["Image Src"] ?? "").trim();
+  if (isPublicHttpsUrl(imageSrc)) return false;
+
+  if ((row["Image Position"] ?? "").trim() !== "") return true;
+
+  for (const col of LEGACY_EBOOK_SHOPIFY_IMAGE_METADATA_COLUMNS) {
+    if (col === "Image Position") continue;
+    const value = row[col as LegacyEbookShopifyImportColumn];
+    if ((value ?? "").trim() !== "") return true;
+  }
+
+  return false;
+}
+
 /** RFC 4180 field encoding (quote when needed, double internal quotes). */
 export function formatQuotedCsvField(value: string): string {
   if (
@@ -97,8 +143,7 @@ export function mapLegacyEbookToShopifyImportRow(
     "Variant Fulfillment Service": "manual",
     "Variant Requires Shipping": "FALSE",
     "Variant Taxable": "TRUE",
-    "Image Src": "",
-    "Image Position": "1",
+    ...legacyEbookShopifyImageFields(product),
     "Gift Card": "FALSE",
     Status: "active",
   };

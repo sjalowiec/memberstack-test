@@ -33,6 +33,8 @@ export type LegacyEbookStorefrontProduct = {
   descriptionHtml: string;
   active: true;
   subscriberFree: boolean;
+  /** Shopify product page URL when configured in legacy-ebook-shopify-urls.json. */
+  shopifyUrl?: string;
 };
 
 const UTF8_BOM = "\uFEFF";

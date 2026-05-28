@@ -67,6 +67,19 @@ const descriptionHtml = sanitizeLegacyEbookDescriptionHtml(
         <PageHead title={product.title} />
         <p class="ebook-detail-price">{formatLegacyEbookPrice(product.sellPrice)}</p>
 
+        {product.shopifyUrl && (
+          <div class="ebook-detail-actions">
+            <a
+              href={product.shopifyUrl}
+              class="kbm-btn kbm-btn-primary ebook-detail-buy"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Buy eBook
+            </a>
+          </div>
+        )}
+
         {descriptionHtml ? (
           <div
             class="ebook-detail-description"
@@ -77,8 +90,6 @@ const descriptionHtml = sanitizeLegacyEbookDescriptionHtml(
         )}
       </div>
     </div>
-
-    <!-- download filename: {product.downloadFile} -->
   </div>
 </Layout>
 
@@ -157,6 +168,15 @@ const descriptionHtml = sanitizeLegacyEbookDescriptionHtml(
     font-weight: 700;
     font-size: 1.25rem;
     color: #333;
+  }
+
+  .ebook-detail-actions {
+    margin: 0 0 1.5rem;
+  }
+
+  .ebook-detail-buy {
+    display: inline-block;
+    text-decoration: none;
   }
 
   .ebook-detail-empty {

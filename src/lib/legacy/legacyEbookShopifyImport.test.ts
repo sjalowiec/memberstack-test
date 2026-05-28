@@ -7,6 +7,7 @@ import {
   LEGACY_EBOOK_SHOPIFY_IMPORT_CSV_PATH,
   buildLegacyEbookShopifyImportRows,
   legacyEbookShopifyBodyHasDirectDownloadLinks,
+  legacyEbookShopifyRowHasOrphanImageMetadata,
   serializeLegacyEbookShopifyImportCsv,
 } from "./legacyEbookShopifyImport";
 
@@ -51,6 +52,23 @@ describe("legacyEbookShopifyImport", () => {
       const row = rows.find((r) => r["Variant SKU"] === `legacy-ebook-${product.itemId}`);
       expect(row).toBeDefined();
       expect(row!["Variant Price"]).toBe(product.sellPrice.toFixed(2));
+    }
+  });
+
+  it("leaves image import fields blank without a public HTTPS Image Src", () => {
+    const rows = buildLegacyEbookShopifyImportRows();
+    for (const row of rows) {
+      expect(row["Image Src"]).toBe("");
+      expect(row["Image Position"]).toBe("");
+      expect(legacyEbookShopifyRowHasOrphanImageMetadata(row)).toBe(false);
+    }
+
+    const parsed = parseShopifyImportCsv(
+      serializeLegacyEbookShopifyImportCsv(rows)
+    );
+    for (const row of parsed) {
+      expect(row["Image Src"] ?? "").toBe("");
+      expect(row["Image Position"] ?? "").toBe("");
     }
   });
 
