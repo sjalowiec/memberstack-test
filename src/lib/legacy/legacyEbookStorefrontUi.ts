@@ -1,3 +1,6 @@
+// Member Free badge hidden until Memberstack entitlement flow is implemented.
+export const SHOW_LEGACY_EBOOK_MEMBER_FREE_BADGE = false;
+
 /** Legacy store cover image path. */
 export function legacyStoreThumbnailPath(filename: string): string {
   if (

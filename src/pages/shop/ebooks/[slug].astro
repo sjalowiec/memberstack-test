@@ -12,6 +12,7 @@ import { plainTextFromLegacyEbookBrief } from "../../../lib/legacy/legacyEbookPl
 import {
   formatLegacyEbookPrice,
   legacyStoreThumbnailPath,
+  SHOW_LEGACY_EBOOK_MEMBER_FREE_BADGE,
 } from "../../../lib/legacy/legacyEbookStorefrontUi";
 
 export function getStaticPaths() {
@@ -58,7 +59,8 @@ const descriptionHtml = sanitizeLegacyEbookDescriptionHtml(
           width="280"
           height="360"
         />
-        {product.subscriberFree && (
+        {/* Member Free badge hidden until Memberstack entitlement flow is implemented. */}
+        {SHOW_LEGACY_EBOOK_MEMBER_FREE_BADGE && product.subscriberFree && (
           <span class="ebook-store-badge ebook-detail-badge">Member Free</span>
         )}
       </div>

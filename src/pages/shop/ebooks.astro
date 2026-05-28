@@ -6,6 +6,7 @@ import { loadLegacyEbookStorefrontWithSlugs } from "../../lib/legacy/legacyEbook
 import {
   formatLegacyEbookPrice,
   legacyStoreThumbnailPath,
+  SHOW_LEGACY_EBOOK_MEMBER_FREE_BADGE,
 } from "../../lib/legacy/legacyEbookStorefrontUi";
 
 const title = "eBooks | Knit it Now";
@@ -52,7 +53,8 @@ const products = loadLegacyEbookStorefrontWithSlugs();
                 height="210"
               />
             </a>
-            {product.subscriberFree && (
+            {/* Member Free badge hidden until Memberstack entitlement flow is implemented. */}
+            {SHOW_LEGACY_EBOOK_MEMBER_FREE_BADGE && product.subscriberFree && (
               <span class="ebook-store-badge">Member Free</span>
             )}
           </div>
