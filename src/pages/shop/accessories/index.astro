@@ -7,6 +7,7 @@ const description = "Tools and add-ons for the knitting machines you already own
 
 <Layout {title} {description}>
   <div class="placeholder-page">
+    <a class="back-link back-to-shop-link" id="back-to-shop" href="/shop">← Back to Shop</a>
     <header class="page-header">
       <h1 data-testid="text-page-title">Accessories</h1>
     </header>
@@ -25,6 +26,23 @@ const description = "Tools and add-ons for the knitting machines you already own
 </Layout>
 
 <style>
+  .back-link {
+    display: inline-block;
+    color: var(--kbm-green);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .back-link:hover {
+    color: #3d4e21;
+    text-decoration: underline;
+  }
+
+  .back-to-shop-link {
+    margin-bottom: 1rem;
+  }
+
   .placeholder-page {
     max-width: 700px;
     margin: 0 auto;

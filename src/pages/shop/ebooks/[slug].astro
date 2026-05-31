@@ -1,0 +1,257 @@
+---
+export const prerender = true;
+
+import Layout from "../../../layouts/Layout.astro";
+import PageHead from "../../../components/PageHead.astro";
+import { sanitizeLegacyEbookDescriptionHtml } from "../../../lib/legacy/legacyEbookDescriptionHtml";
+import {
+  findLegacyEbookStorefrontBySlug,
+  loadLegacyEbookStorefrontWithSlugs,
+} from "../../../lib/legacy/legacyEbookSlug";
+import { plainTextFromLegacyEbookBrief } from "../../../lib/legacy/legacyEbookPlainText";
+import {
+  formatLegacyEbookPrice,
+  legacyStoreThumbnailPath,
+  SHOW_LEGACY_EBOOK_MEMBER_FREE_BADGE,
+} from "../../../lib/legacy/legacyEbookStorefrontUi";
+
+export function getStaticPaths() {
+  const storefrontProducts = loadLegacyEbookStorefrontWithSlugs();
+  return storefrontProducts.map((product) => ({
+    params: { slug: product.slug },
+    props: { product },
+  }));
+}
+
+const products = loadLegacyEbookStorefrontWithSlugs();
+
+const propProduct = (Astro.props as { product?: (typeof products)[number] })
+  .product;
+const slugParam = Astro.params.slug ?? "";
+const product =
+  propProduct ?? findLegacyEbookStorefrontBySlug(slugParam, products);
+
+if (!product) {
+  return Astro.redirect("/shop/ebooks");
+}
+
+const title = `${product.title} | Knit it Now`;
+const description =
+  plainTextFromLegacyEbookBrief(product.shortDescription) ||
+  `${product.title} — machine knitting eBook.`;
+const descriptionHtml = sanitizeLegacyEbookDescriptionHtml(
+  product.descriptionHtml
+);
+---
+
+<Layout {title} {description}>
+  <div class="ebook-detail-page">
+    <a class="back-link back-to-shop-link" id="back-to-shop" href="/shop">← Back to Shop</a>
+    <nav class="ebook-detail-breadcrumb" aria-label="Breadcrumb">
+      <a href="/shop/ebooks" class="ebook-detail-back">← Back to eBooks</a>
+    </nav>
+
+    <div class="ebook-detail-layout">
+      <div class="ebook-detail-media">
+        <img
+          src={legacyStoreThumbnailPath(product.thumbnail)}
+          alt={product.title}
+          class="ebook-detail-cover"
+          width="280"
+          height="360"
+        />
+        {/* Member Free badge hidden until Memberstack entitlement flow is implemented. */}
+        {SHOW_LEGACY_EBOOK_MEMBER_FREE_BADGE && product.subscriberFree && (
+          <span class="ebook-store-badge ebook-detail-badge">Member Free</span>
+        )}
+      </div>
+
+      <div class="ebook-detail-main">
+        <PageHead title={product.title} />
+        <p class="ebook-detail-price">{formatLegacyEbookPrice(product.sellPrice)}</p>
+
+        {product.shopifyUrl && (
+          <div class="ebook-detail-actions">
+            <a
+              href={product.shopifyUrl}
+              class="kbm-btn kbm-btn-primary ebook-detail-buy"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Buy eBook
+            </a>
+          </div>
+        )}
+
+        {descriptionHtml ? (
+          <div
+            class="ebook-detail-description"
+            set:html={descriptionHtml}
+          />
+        ) : (
+          <p class="ebook-detail-empty">Description coming soon.</p>
+        )}
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .back-link {
+    display: inline-block;
+    color: var(--kbm-green);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .back-link:hover {
+    color: #3d4e21;
+    text-decoration: underline;
+  }
+
+  .back-to-shop-link {
+    margin-bottom: 0.5rem;
+  }
+
+  .ebook-detail-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1rem 4rem;
+  }
+
+  .ebook-detail-breadcrumb {
+    margin-bottom: 1.25rem;
+  }
+
+  .ebook-detail-back {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+    text-decoration: underline;
+  }
+
+  .ebook-detail-back:hover {
+    color: #445626;
+  }
+
+  .ebook-detail-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  @media (min-width: 720px) {
+    .ebook-detail-layout {
+      grid-template-columns: minmax(200px, 280px) 1fr;
+    }
+  }
+
+  .ebook-detail-media {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid #e8ebe4;
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+
+  .ebook-detail-cover {
+    width: 100%;
+    max-width: 260px;
+    height: auto;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+
+  .ebook-store-badge,
+  .ebook-detail-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #52682d;
+    background: #eef3e6;
+    border: 1px solid #d7e2c8;
+    padding: 4px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .ebook-detail-price {
+    margin: 0 0 1.25rem;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #333;
+  }
+
+  .ebook-detail-actions {
+    margin: 0 0 1.5rem;
+  }
+
+  .ebook-detail-buy {
+    display: inline-block;
+    text-decoration: none;
+  }
+
+  .ebook-detail-empty {
+    color: #555;
+    line-height: 1.6;
+  }
+
+  .ebook-detail-description {
+    line-height: 1.6;
+    color: #333;
+    overflow-wrap: anywhere;
+  }
+
+  .ebook-detail-description :global(p) {
+    margin: 0 0 0.85rem;
+  }
+
+  .ebook-detail-description :global(ul),
+  .ebook-detail-description :global(ol) {
+    margin: 0 0 1rem 1.25rem;
+    padding: 0;
+  }
+
+  .ebook-detail-description :global(li) {
+    margin-bottom: 0.35rem;
+  }
+
+  .ebook-detail-description :global(img) {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0.75rem auto;
+  }
+
+  .ebook-detail-description :global(table) {
+    max-width: 100%;
+    width: 100% !important;
+    border-collapse: collapse;
+  }
+
+  .ebook-detail-description :global(.row),
+  .ebook-detail-description :global([class*="col-"]) {
+    max-width: 100%;
+  }
+
+  .ebook-detail-description :global(blockquote) {
+    margin: 0 0 1rem;
+    padding: 0.75rem 1rem;
+    border-left: 3px solid #d7e2c8;
+    background: #fafbf9;
+    color: #444;
+  }
+
+  .ebook-detail-description :global(a) {
+    color: var(--kbm-green, #52682d);
+    text-decoration: underline;
+  }
+</style>

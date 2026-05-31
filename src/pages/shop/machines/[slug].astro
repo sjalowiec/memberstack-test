@@ -52,6 +52,10 @@ export function getStaticPaths() {
 
 const { machine } = Astro.props;
 
+// TODO (temporary): The machines shop is disabled for production.
+// Detail pages redirect to /shop for now. Remove this redirect to re-enable them.
+return Astro.redirect("/shop");
+
 // Defensive: should always exist when built from getStaticPaths; redirect if missing.
 if (!machine) {
   return Astro.redirect("/shop/machines");

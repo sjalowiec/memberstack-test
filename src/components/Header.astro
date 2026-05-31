@@ -1,6 +1,5 @@
 ---
 /* Centered Logo Header for Knit it Now — soft launch (simplified nav) */
-const SHOW_SHOP_NAV = false; // Temporary production hide for unfinished Shop nav item.
 ---
 <style is:global>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
@@ -1511,25 +1510,40 @@ div[data-ms-modal-overlay] {
                  <li class="is-hidden"><a href="/reference">Reference</a></li>
               </ul>
             </li>
-            {SHOW_SHOP_NAV && (
-              <li class="nav-item nav-dropdown dd">
-                <button
-                  type="button"
-                  class="nav-link nav-dropdown-toggle dd-trigger"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                  data-testid="nav-shop"
-                >
-                  Shop
-                </button>
+            <!-- Temporary for local/dev testing: may be disabled again before production release. -->
+            <li class="nav-item nav-dropdown dd">
+              <a
+                href="/shop"
+                class="nav-link nav-dropdown-toggle dd-trigger"
+                aria-haspopup="true"
+                aria-expanded="false"
+                data-testid="nav-shop"
+              >
+                Shop
+              </a>
 
-                <ul class="nav-dropdown-menu dd-panel" role="menu">
-                  <li>
-                    <a href="/shop/ebooks/" data-testid="nav-shop-ebooks">eBooks</a>
-                  </li>
-                </ul>
-              </li>
-            )}
+              <ul class="nav-dropdown-menu dd-panel" role="menu">
+                <li>
+                  <a href="/shop" data-testid="nav-shop-all">Shop All</a>
+                </li>
+                <li>
+                  <a href="/shop/designaknit" data-testid="nav-shop-designaknit">DesignaKnit</a>
+                </li>
+                <li>
+                  <a href="/shop/cables" data-testid="nav-shop-cables">Cables</a>
+                </li>
+                {/* TODO (temporary): Machines shop link hidden for production. Re-enable when the machines shop is ready. */}
+                {/* <li>
+                  <a href="/shop/machines" data-testid="nav-shop-machines">Machines</a>
+                </li> */}
+                <li>
+                  <a href="/shop/ebooks" data-testid="nav-shop-ebooks">eBooks</a>
+                </li>
+                <li>
+                  <a href="/shop/downloads" data-testid="nav-shop-downloads">Downloads</a>
+                </li>
+              </ul>
+            </li>
             <li>
               <a href="/whats-new" data-testid="nav-whats-new" class="nav-whats-new-link">What's New</a>
             </li>
@@ -1778,7 +1792,12 @@ div[data-ms-modal-overlay] {
         dds.forEach(li => {
           const trigger = li.querySelector(':scope > a, :scope > .dd-trigger');
           const handler = (e) => {
-            e.preventDefault();
+            // For linked top-level items, first tap opens dropdown; second tap follows link.
+            if (trigger.tagName === 'A' && !li.classList.contains('open')) {
+              e.preventDefault();
+            } else if (trigger.tagName !== 'A') {
+              e.preventDefault();
+            }
             const nowOpen = li.classList.toggle('open');
             trigger.setAttribute('aria-expanded', nowOpen ? 'true' : 'false');
             if (nowOpen) closeAll(li);
@@ -1797,7 +1816,10 @@ div[data-ms-modal-overlay] {
           const trigger = li.querySelector(':scope > .dd-trigger');
           if (!trigger) return;
           const handler = (e) => {
-            e.preventDefault();
+            // Keep button-based dropdowns toggle-only; allow linked triggers to navigate.
+            if (trigger.tagName !== 'A') {
+              e.preventDefault();
+            }
             const nowOpen = li.classList.toggle('open');
             trigger.setAttribute('aria-expanded', nowOpen ? 'true' : 'false');
             if (nowOpen) closeAll(li);

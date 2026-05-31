@@ -53,6 +53,7 @@ function formatPrice(price: number): string {
   <PageHead title={cable.name} />
 
   <div class="cable-detail-page">
+    <a class="back-link back-to-shop-link" id="back-to-shop" href="/shop">← Back to Shop</a>
     <p class="back-link"> <a href="/shop/cables">Back to Cables</a> </p>
 
     <div class="cable-detail-layout">
@@ -102,6 +103,11 @@ function formatPrice(price: number): string {
 
   .back-link:hover {
     color: var(--kbm-green-hover, #445626);
+  }
+
+  .back-to-shop-link {
+    display: block;
+    margin-bottom: 0.5rem;
   }
 
   .cable-detail-layout {

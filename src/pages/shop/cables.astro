@@ -28,6 +28,7 @@ function formatPrice(price: number): string {
 ---
 
 <Layout {title} {description}>
+  <a class="back-link back-to-shop-link" id="back-to-shop" href="/shop">← Back to Shop</a>
   <PageHead title="Knitting Machine Cables" />
 
   <div class="cables-page">
@@ -62,6 +63,23 @@ function formatPrice(price: number): string {
 </Layout>
 
 <style>
+  .back-link {
+    display: inline-block;
+    color: var(--kbm-green);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .back-link:hover {
+    color: #3d4e21;
+    text-decoration: underline;
+  }
+
+  .back-to-shop-link {
+    margin-bottom: 1rem;
+  }
+
   .cables-page {
     max-width: 1000px;
     margin: 0 auto;
