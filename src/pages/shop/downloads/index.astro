@@ -23,6 +23,7 @@ const isMember =
       const downloads = printables;
 ---
 <Layout title={title} description="Printable templates and tools to help you measure, plan, and work more accurately.">
+  <a class="back-link back-to-shop-link" id="back-to-shop" href="/shop">← Back to Shop</a>
   <PageHead title={title} />
   <div class="downloads-page">
     <header class="page-header">
@@ -61,7 +62,9 @@ const isMember =
             data-testid={`card-link-${item.slug}`}
           >
             {item.memberFree === true ? (
-              <span class="kbm-card-ribbon">Member Bonus</span>
+              // "Member Bonus" ribbon temporarily disabled (display-only change).
+              // Underlying memberFree data + data-ribbon attribute are preserved.
+              null
             ) : (
               <span class="kbm-card-ribbon kbm-card-ribbon--paid" aria-label="Paid item">
                 <i class="fa-solid fa-cart-shopping" style="color: rgb(255, 255, 255);" aria-hidden="true"></i>
@@ -98,6 +101,23 @@ const isMember =
 </Layout>
 
 <style>
+  .back-link {
+    display: inline-block;
+    color: var(--kbm-green);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .back-link:hover {
+    color: #3d4e21;
+    text-decoration: underline;
+  }
+
+  .back-to-shop-link {
+    margin-bottom: 1rem;
+  }
+
   .downloads-page {
     max-width: 1000px;
     margin: 0 auto;

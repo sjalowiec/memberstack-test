@@ -46,6 +46,7 @@ const descriptionHtml = sanitizeLegacyEbookDescriptionHtml(
 
 <Layout {title} {description}>
   <div class="ebook-detail-page">
+    <a class="back-link back-to-shop-link" id="back-to-shop" href="/shop">← Back to Shop</a>
     <nav class="ebook-detail-breadcrumb" aria-label="Breadcrumb">
       <a href="/shop/ebooks" class="ebook-detail-back">← Back to eBooks</a>
     </nav>
@@ -96,6 +97,23 @@ const descriptionHtml = sanitizeLegacyEbookDescriptionHtml(
 </Layout>
 
 <style>
+  .back-link {
+    display: inline-block;
+    color: var(--kbm-green);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .back-link:hover {
+    color: #3d4e21;
+    text-decoration: underline;
+  }
+
+  .back-to-shop-link {
+    margin-bottom: 0.5rem;
+  }
+
   .ebook-detail-page {
     max-width: 900px;
     margin: 0 auto;

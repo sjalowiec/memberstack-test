@@ -184,6 +184,7 @@ const comparisonGroups: { title: string; rows: ComparisonRow[] }[] = [
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
+  <a class="back-link back-to-shop-link" id="back-to-shop" href="/shop">← Back to Shop</a>
   <PageHead title="DesignaKnit" />
 
   <div class="designaknit-page">
@@ -355,6 +356,23 @@ const comparisonGroups: { title: string; rows: ComparisonRow[] }[] = [
 </Layout>
 
 <style>
+  .back-link {
+    display: inline-block;
+    color: var(--kbm-green);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .back-link:hover {
+    color: #3d4e21;
+    text-decoration: underline;
+  }
+
+  .back-to-shop-link {
+    margin-bottom: 1rem;
+  }
+
   .designaknit-page {
     max-width: 1100px;
     margin: 0 auto;

@@ -15,6 +15,7 @@ const categories = [...new Set(activeBooks.map((b) => (b as { category?: string 
 ---
 
 <Layout {title} {description}>
+  <a class="back-link back-to-shop-link" id="back-to-shop" href="/shop">← Back to Shop</a>
   <PageHead title="Machine Knitting eBooks" />
   <div class="ebooks-intro">
     <p>
@@ -112,6 +113,23 @@ const categories = [...new Set(activeBooks.map((b) => (b as { category?: string 
     })();
   </script>
 <style>
+.back-link {
+  display: inline-block;
+  color: var(--kbm-green);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.back-link:hover {
+  color: #3d4e21;
+  text-decoration: underline;
+}
+
+.back-to-shop-link {
+  margin-bottom: 1rem;
+}
+
 .ebook-thumbnail {
   width: 160px;
   height: 210px;

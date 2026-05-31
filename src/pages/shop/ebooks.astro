@@ -18,6 +18,7 @@ const products = loadLegacyEbookStorefrontWithSlugs();
 
 <Layout {title} {description}>
   <div class="ebooks-page">
+    <a class="back-link back-to-shop-link" id="back-to-shop" href="/shop">← Back to Shop</a>
     <PageHead title="Machine Knitting eBooks" />
 
     <div class="ebooks-intro">
@@ -83,6 +84,23 @@ const products = loadLegacyEbookStorefrontWithSlugs();
 </Layout>
 
 <style>
+  .back-link {
+    display: inline-block;
+    color: var(--kbm-green);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .back-link:hover {
+    color: #3d4e21;
+    text-decoration: underline;
+  }
+
+  .back-to-shop-link {
+    margin-bottom: 1rem;
+  }
+
   .ebooks-page {
     max-width: 1100px;
     margin: 0 auto;
