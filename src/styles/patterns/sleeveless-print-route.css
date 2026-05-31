@@ -928,4 +928,15 @@
       break-inside: avoid;
       page-break-inside: avoid;
     }
+
+    /*
+      Force the Front Neckline/Shoulder Shaping section (setup heading + chart, ~RC 037–082)
+      onto a fresh printed page so shoulder shaping never lands at a page flip. Print/PDF only;
+      the interactive screen layout is unaffected. Front-specific wrapper — the Back continuation
+      uses its own section and is not impacted.
+    */
+    .sleeveless-print-root .print-page-break-before-front-neckline {
+      break-before: page;
+      page-break-before: always;
+    }
   }

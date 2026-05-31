@@ -367,7 +367,11 @@ async function initSleevelessPrintPage(): Promise<void> {
         <p class="print-diagram-caption">${escapeHtml(frontPrintDiagramCaption)}</p>
       </aside>
     </div>
-    ${frontContinuationHtml}
+    ${
+      frontContinuationHtml
+        ? `<div class="print-page-break-before-front-neckline">${frontContinuationHtml}</div>`
+        : ""
+    }
   </section>
 
   ${printFinishingSectionHtml(patternMerged, result.debug)}
