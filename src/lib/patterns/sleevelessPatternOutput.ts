@@ -62,7 +62,10 @@ import {
   neckShoulderChartRowsFromTimeline,
   type NeckShoulderShapingPatternNumbers,
 } from "./neckShoulderShapingChartRows";
-import { armholeLocalRcFirstActiveSideNecklineShapingAction } from "./neckShoulderActiveSideChecklist";
+import {
+  armholeLocalRcFirstActiveSideNecklineShapingAction,
+  armholeLocalRcCenterNecklineSetupRow,
+} from "./neckShoulderActiveSideChecklist";
 import {
   isSleevelessCardiganGarmentStyle,
   isSleevelessVNeckChoice,
@@ -428,6 +431,12 @@ export type SleevelessBackPatternDebug = {
   frontNecklineStartLocalRC?: number;
   /** First front neckline shaping action RC on the active-shoulder checklist (matches print table). */
   frontNecklineShapingBeginLocalRC?: number;
+  /**
+   * Armhole RC of the front neckline center divide/setup row exactly as rendered in the Front
+   * Neckline chart (the "Scrap off center … to divide" row). Source of truth for the page 8
+   * summary + page 9 instruction so the prose can never drift from the chart's divide row.
+   */
+  frontNecklineCenterDivideLocalRC?: number;
   finalRC: number;
   /** Hem rows + body rows — identical on back, pullover front, and cardigan half front (canonical). */
   rowsFromCastOnToArmholeStart: number;
@@ -960,7 +969,8 @@ function replaceFrontArmholeCheckpointParagraphs(
   rows: readonly SleevelessPatternDisplayRow[],
   frontNecklineShapingBeginLocalRC: number | undefined,
   shoulderShapingBeginLocalRC: number | undefined,
-  isVNeck?: boolean
+  isVNeck?: boolean,
+  frontNecklineCenterDivideLocalRC?: number
 ): SleevelessPatternDisplayRow[] {
   if (
     frontNecklineShapingBeginLocalRC === undefined ||
@@ -971,7 +981,14 @@ function replaceFrontArmholeCheckpointParagraphs(
     return [...rows];
   }
 
-  const neckN = String(Math.max(0, Math.floor(frontNecklineShapingBeginLocalRC))).padStart(3, "0");
+  // Round-neck front begins with the center divide ("Scrap off center … to divide"); anchor the
+  // milestone to the chart's divide row RC so the prose matches the chart. The first-shaping-action
+  // RC remains the fallback (e.g. V-neck / charts without a center divide row).
+  const milestoneNeckLocalRC =
+    !isVNeck && Number.isFinite(frontNecklineCenterDivideLocalRC)
+      ? (frontNecklineCenterDivideLocalRC as number)
+      : frontNecklineShapingBeginLocalRC;
+  const neckN = String(Math.max(0, Math.floor(milestoneNeckLocalRC))).padStart(3, "0");
   const shoulderN = String(Math.max(0, Math.floor(shoulderShapingBeginLocalRC))).padStart(3, "0");
   const milestone = isVNeck
     ? `The row counter was reset at the beginning of armhole shaping. Front neckline (V-neck) shaping begins at Armhole RC ${neckN}; shoulder shaping at Armhole RC ${shoulderN}.`
@@ -1873,6 +1890,8 @@ export function buildSleevelessFrontDisplayRows(args: {
   frontNecklineStartLocalRC?: number;
   /** Armhole RC of the first generated front neckline shaping action (active-shoulder checklist). */
   frontNecklineShapingBeginLocalRC?: number;
+  /** Armhole RC of the Front Neckline chart's center divide/setup row ("Scrap off center … to divide"). */
+  frontNecklineCenterDivideLocalRC?: number;
   /** Armhole RC where shoulder shaping begins (same vertical line as back neckline / shoulders). */
   shoulderShapingBeginLocalRC?: number;
   sharedExecutionRows: readonly SleevelessPatternDisplayRow[];
@@ -1938,7 +1957,8 @@ export function buildSleevelessFrontDisplayRows(args: {
     sharedRowsClamped,
     args.frontNecklineShapingBeginLocalRC,
     args.shoulderShapingBeginLocalRC,
-    args.isVNeck
+    args.isVNeck,
+    args.frontNecklineCenterDivideLocalRC
   );
 
   const rows: SleevelessPatternDisplayRow[] = [];
@@ -2841,6 +2861,16 @@ export function generateSleevelessBackPattern(
         armholeStartRC,
       )
     : undefined;
+  /**
+   * Armhole RC of the Front Neckline chart's center divide/setup row ("Scrap off center … to
+   * divide"). Derived from the same chart builder + options the rendered chart uses, so the
+   * page 8 summary and page 9 instruction stay locked to the chart's divide row.
+   */
+  const frontNecklineCenterDivideLocalRC = frontNeckShoulderChartUsesLiveRows
+    ? armholeLocalRcCenterNecklineSetupRow(frontNeckShoulderShapingChart, armholeStartRC, {
+        includeCenterNecklineSetupRow: true,
+      })
+    : undefined;
 
   /** Final piece RCs derived from the timeline (chart) when present, else from the scheduled span. */
   const backFinalRow =
@@ -2918,6 +2948,7 @@ export function generateSleevelessBackPattern(
     backNecklineStartLocalRC,
     frontNecklineStartLocalRC,
     frontNecklineShapingBeginLocalRC,
+    frontNecklineCenterDivideLocalRC,
     rowsFromCastOnToArmholeStart: canonicalRowsFromCastOnToArmholeStart,
     finalRC: rc,
     armholeStartRow: armholeStartRC,
@@ -3088,6 +3119,7 @@ export function generateSleevelessBackPattern(
       frontNecklineStartRC,
       frontNecklineStartLocalRC,
       frontNecklineShapingBeginLocalRC,
+      frontNecklineCenterDivideLocalRC,
       shoulderShapingBeginLocalRC: backNecklineStartLocalRC,
       sharedExecutionRows: frontSharedExecutionRows,
       useNeckChartRows: frontNeckShoulderChartUsesLiveRows,
