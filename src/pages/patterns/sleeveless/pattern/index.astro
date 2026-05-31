@@ -156,8 +156,10 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
     </div>
 
     <!--
-      PROTOTYPE ONLY — pattern editing drawer (UX experiment).
-      Not wired to regeneration, save/update, DB, or Netlify Blob.
+      Edit Pattern drawer — primary surface for editing pattern settings (Pattern Setup + Gauge).
+      Applying changes reuses the sleeveless build workflow: it writes the same wizard storage keys,
+      runs syncCustomBuildToPatternStorage(), and regenerates via window.kbmRefreshSleevelessPattern().
+      Measurements are edited in the separate full-screen workspace below (unchanged).
     -->
     <div class="sl-edit-drawer no-print" data-sl-edit-drawer aria-hidden="true">
       <div class="sl-edit-drawer__backdrop" data-sl-edit-close aria-hidden="true"></div>
@@ -203,49 +205,102 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
             />
           </div>
 
-          <fieldset class="sl-edit-field sl-edit-fieldset">
-            <legend class="sl-edit-label">Neckline</legend>
-            <div class="sl-edit-segment" role="radiogroup" aria-label="Neckline">
-              <label class="sl-edit-segment__option">
-                <input type="radio" name="sl-edit-neckline" value="round" checked />
-                <span class="sl-edit-segment__pill">Round Neck</span>
-              </label>
-              <label class="sl-edit-segment__option">
-                <input type="radio" name="sl-edit-neckline" value="v" />
-                <span class="sl-edit-segment__pill">V-Neck</span>
-              </label>
-            </div>
-          </fieldset>
+          <section class="sl-edit-section" aria-labelledby="sl-edit-setup-heading">
+            <h3 class="sl-edit-section__title" id="sl-edit-setup-heading">Pattern Setup</h3>
 
-          <fieldset class="sl-edit-field sl-edit-fieldset">
-            <legend class="sl-edit-label">Gauge</legend>
+            <div class="sl-edit-field sl-edit-locked" data-sl-edit-audience-wrap>
+              <span class="sl-edit-label">Knitting for</span>
+              <p class="sl-edit-locked__value" data-sl-edit-audience>—</p>
+              <p class="sl-edit-locked__note">
+                <i class="fas fa-lock" aria-hidden="true"></i>
+                This sets the sizing chart and can’t be changed after a pattern is created.
+              </p>
+            </div>
+
+            <div class="sl-edit-field">
+              <label class="sl-edit-sublabel" for="sl-edit-size">Size</label>
+              <select id="sl-edit-size" class="sl-edit-input sl-edit-select" data-sl-edit-size>
+                <option value="">Loading sizes…</option>
+              </select>
+            </div>
+
+            <fieldset class="sl-edit-field sl-edit-fieldset">
+              <legend class="sl-edit-sublabel">Garment</legend>
+              <div class="sl-edit-segment" role="radiogroup" aria-label="Garment type">
+                <label class="sl-edit-segment__option">
+                  <input type="radio" name="sl-edit-garment" value="pullover" checked />
+                  <span class="sl-edit-segment__pill">Pullover</span>
+                </label>
+                <label class="sl-edit-segment__option">
+                  <input type="radio" name="sl-edit-garment" value="cardigan" />
+                  <span class="sl-edit-segment__pill">Cardigan</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset class="sl-edit-field sl-edit-fieldset">
+              <legend class="sl-edit-sublabel">Neckline</legend>
+              <div class="sl-edit-segment" role="radiogroup" aria-label="Neckline">
+                <label class="sl-edit-segment__option">
+                  <input type="radio" name="sl-edit-neckline" value="round" checked />
+                  <span class="sl-edit-segment__pill">Round Neck</span>
+                </label>
+                <label class="sl-edit-segment__option">
+                  <input type="radio" name="sl-edit-neckline" value="v-neck" />
+                  <span class="sl-edit-segment__pill">V-Neck</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset class="sl-edit-field sl-edit-fieldset">
+              <legend class="sl-edit-sublabel">Fit</legend>
+              <div class="sl-edit-segment sl-edit-segment--three" role="radiogroup" aria-label="Fit">
+                <label class="sl-edit-segment__option">
+                  <input type="radio" name="sl-edit-fit" value="close" />
+                  <span class="sl-edit-segment__pill">Close</span>
+                </label>
+                <label class="sl-edit-segment__option">
+                  <input type="radio" name="sl-edit-fit" value="standard" checked />
+                  <span class="sl-edit-segment__pill">Standard</span>
+                </label>
+                <label class="sl-edit-segment__option">
+                  <input type="radio" name="sl-edit-fit" value="relaxed" />
+                  <span class="sl-edit-segment__pill">Relaxed</span>
+                </label>
+              </div>
+              <p class="sl-edit-ease" data-sl-edit-ease aria-live="polite"></p>
+            </fieldset>
+          </section>
+
+          <section class="sl-edit-section" aria-labelledby="sl-edit-gauge-heading">
+            <h3 class="sl-edit-section__title" id="sl-edit-gauge-heading">Gauge</h3>
             <div class="sl-edit-grid">
               <div class="sl-edit-subfield">
-                <label class="sl-edit-sublabel" for="sl-edit-spi">Stitches per inch</label>
+                <label class="sl-edit-sublabel" for="sl-edit-spi">Stitch gauge (per inch)</label>
                 <input
                   type="number"
                   id="sl-edit-spi"
                   class="sl-edit-input"
                   inputmode="decimal"
                   min="0"
-                  step="0.1"
+                  step="0.25"
                   placeholder="e.g. 5"
                 />
               </div>
               <div class="sl-edit-subfield">
-                <label class="sl-edit-sublabel" for="sl-edit-rpi">Rows per inch</label>
+                <label class="sl-edit-sublabel" for="sl-edit-rpi">Row gauge (per inch)</label>
                 <input
                   type="number"
                   id="sl-edit-rpi"
                   class="sl-edit-input"
                   inputmode="decimal"
                   min="0"
-                  step="0.1"
+                  step="0.25"
                   placeholder="e.g. 7"
                 />
               </div>
               <div class="sl-edit-subfield">
-                <label class="sl-edit-sublabel" for="sl-edit-needles">Needles available</label>
+                <label class="sl-edit-sublabel" for="sl-edit-needles">Number of needles</label>
                 <input
                   type="number"
                   id="sl-edit-needles"
@@ -257,7 +312,7 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
                 />
               </div>
             </div>
-          </fieldset>
+          </section>
 
           <section class="sl-edit-field sl-edit-measure-cta" aria-label="Measurements">
             <h3 class="sl-edit-label">Measurements</h3>
@@ -278,8 +333,9 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
         </div>
 
         <footer class="sl-edit-drawer__footer">
-          <p class="sl-edit-prototype-note" data-sl-edit-note hidden>
-            Prototype only — this does not save or regenerate yet.
+          <p class="sl-edit-error-note" data-sl-edit-errors hidden role="alert"></p>
+          <p class="sl-edit-saved-note" data-sl-edit-note hidden role="status">
+            Pattern updated.
           </p>
           <div class="sl-edit-drawer__actions">
             <button
@@ -293,10 +349,10 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
             <button
               type="button"
               class="sl-edit-btn sl-edit-btn--primary"
-              data-sl-edit-update
-              data-testid="button-edit-update"
+              data-sl-edit-apply
+              data-testid="button-edit-apply"
             >
-              Update Pattern
+              Apply Changes
             </button>
           </div>
         </footer>
@@ -682,6 +738,102 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
 
   .sl-edit-fieldset {
     min-width: 0;
+  }
+
+  .sl-edit-section {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.05rem;
+  }
+
+  .sl-edit-section__title {
+    margin: 0;
+    padding-bottom: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--kbm-green, #52682d);
+    border-bottom: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 12%, #e5e7eb);
+  }
+
+  .sl-edit-locked {
+    padding: 0.8rem 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #e5e7eb);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 4%, #f9faf6);
+  }
+
+  .sl-edit-locked__value {
+    margin: 0.15rem 0 0.4rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .sl-edit-locked__note {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: #6b7280;
+  }
+
+  .sl-edit-locked__note .fa-lock {
+    margin-right: 0.3rem;
+    color: color-mix(in srgb, var(--kbm-green, #52682d) 65%, #6b7280);
+  }
+
+  .sl-edit-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 12px;
+    padding-right: 2.25rem;
+    cursor: pointer;
+  }
+
+  .sl-edit-segment--three {
+    flex-wrap: wrap;
+  }
+
+  .sl-edit-ease {
+    margin: 0.6rem 0 0;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: #6b7280;
+  }
+
+  .sl-edit-error-note {
+    margin: 0 0 0.6rem;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: #991b1b;
+    background: #fff4f4;
+    border: 1px solid #f5c2c7;
+    border-radius: 8px;
+  }
+
+  .sl-edit-error-note[hidden] {
+    display: none;
+  }
+
+  .sl-edit-saved-note {
+    margin: 0 0 0.6rem;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: #14532d;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+  }
+
+  .sl-edit-saved-note[hidden] {
+    display: none;
   }
 
   .sl-edit-label {

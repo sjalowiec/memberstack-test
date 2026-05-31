@@ -137,6 +137,12 @@ export function formatBustChestDisplay(row: ChartRow, uiUnit: "in" | "cm"): stri
   return `${formatSwatchCountForGaugeInput(inches)}"`;
 }
 
+/** Already-loaded sweater chart rows for an audience (empty until {@link loadExpressSweaterCharts} resolves). */
+export function getExpressChartRowsForAudience(audience: string): ChartRow[] {
+  const list = chartRowsByAudience[audience];
+  return Array.isArray(list) ? list : [];
+}
+
 export function findExpressChartRow(audience: string, sizeStr: string): ChartRow | null {
   const list = chartRowsByAudience[audience];
   if (!Array.isArray(list)) return null;
