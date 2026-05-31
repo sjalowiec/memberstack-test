@@ -4,6 +4,7 @@
  */
 
 import { calculateArmholeShaping, type ArmholeResult } from "./legoBlocks/armholeBlock";
+import { RESET_ROW_COUNTER_TEXT } from "./rowCounterReset";
 import {
   generateNeckShoulderExecution,
   shapingActionsFromTimeline,
@@ -21,7 +22,7 @@ import {
 } from "./bodyBlock/sleevelessBodyBlock";
 import {
   bodyBlockPlanToAlineShapingPlan,
-  formatSleevelessAlineBodyShapingInstructionLines,
+  formatSleevelessAlineBodyShapingSummaryLine,
   resolveEffectiveSleevelessBodyShapeKind,
   scaleAlineBodyShapingPlanForCardiganHalf,
   sleevelessAlineShapingLineNeedsTrustedHtml,
@@ -30,6 +31,10 @@ import {
   shouldRunSleevelessBodyBlockForPullover,
   type SleevelessAlineBodyShapingPlan,
 } from "./sleevelessAlineShaping";
+import {
+  buildSleevelessBodyShapingChartRows,
+  type SleevelessBodyShapingChartRow,
+} from "./sleevelessBodyShapingChartHtml";
 import { resolveEffectiveFinishedLengthInches } from "./customBuildEffectiveFinishedLength";
 import {
   resolveEffectiveBackNeckDepthInches,
@@ -503,6 +508,16 @@ export type SleevelessPatternDisplayRow =
       tipPresentation?: PatternTipPresentation;
       /** Stable id for per-tip dismiss (`data-tip-id` on the rendered `.pattern-tip` wrapper). */
       tipId?: string;
+      /**
+       * Required-action marker: render the {@link rowCounterResetBlockHtml} block
+       * (after {@link rc}, before {@link paragraphs}). Not a tip — see `rowCounterReset.ts`.
+       */
+      rowCounterReset?: boolean;
+      /**
+       * Interactive body / A-line shaping chart rows (checkbox · RC · action). Rendered piece-aware
+       * (chart id derived from the rendering piece) after this block's paragraphs.
+       */
+      bodyShapingChartRows?: SleevelessBodyShapingChartRow[];
       /** Total stitches on the piece after this block; right column only when different from last shown */
       stitchCount?: number;
     };
@@ -628,6 +643,7 @@ function flattenDisplayRowsToLines(rows: readonly SleevelessPatternDisplayRow[])
       out.push("Neckline / shoulder shaping chart", "");
     } else {
       if (r.rc) out.push(r.rc);
+      if (r.rowCounterReset) out.push(RESET_ROW_COUNTER_TEXT);
       const plainParas =
         r.trustedParagraphs && r.trustedParagraphs.length > 0
           ? r.trustedParagraphs
@@ -638,6 +654,11 @@ function flattenDisplayRowsToLines(rows: readonly SleevelessPatternDisplayRow[])
             ? tipHtmlToPlainLine(p)
             : p;
         if (line.trim()) out.push(line);
+      }
+      if (r.bodyShapingChartRows && r.bodyShapingChartRows.length > 0) {
+        for (const cr of r.bodyShapingChartRows) {
+          out.push(`${formatRcColon(cr.rc)} ${cr.action}`);
+        }
       }
       if (r.tipHtml) out.push(tipHtmlToPlainLine(r.tipHtml));
       if (r.stitchCount !== undefined) out.push(`${r.stitchCount} sts`);
@@ -1426,29 +1447,41 @@ export function buildSleevelessBackDisplayRows(args: {
         stitchCount: aline.bustBodySts > 0 ? aline.bustBodySts : A > 0 ? A : undefined,
       });
     } else {
-      const shapingLines = formatSleevelessAlineBodyShapingInstructionLines(
+      const summaryLine = formatSleevelessAlineBodyShapingSummaryLine(
         aline.shapingType,
-        aline.shapingRowNumbers,
+        aline.shapingRowNumbers.length,
         aline.availableShapingRows,
         alineEdgeScope,
       );
+      const chartRows = buildSleevelessBodyShapingChartRows(
+        aline.shapingType,
+        aline.shapingRowNumbers,
+        alineEdgeScope,
+      );
       const bustSts = aline.bustBodySts > 0 ? aline.bustBodySts : undefined;
-      const shapingContentLines = [
-        "Begin A-line shaping.",
-        ...shapingLines,
-        aline.shapingType !== "increase-to-bust" && bustSts !== undefined
-          ? `${bustSts} sts remain after shaping.`
-          : "",
-      ].filter((p) => p.length > 0);
-      const useTrusted = shapingContentLines.some(sleevelessAlineShapingLineNeedsTrustedHtml);
+      // Heading + summary sit ABOVE the chart; the per-row counters that were the
+      // "Work decreases on: RC:…" sentence are now the interactive chart rows below.
+      const beforeChartLines = ["Begin A-line shaping.", summaryLine].filter(
+        (p) => p.length > 0,
+      );
+      const useTrusted = beforeChartLines.some(sleevelessAlineShapingLineNeedsTrustedHtml);
       rows.push({
         kind: "block",
         rc: formatRcColon(aline.shapingBeginRc),
         ...(useTrusted
-          ? { trustedParagraphs: shapingContentLines, paragraphs: [] as string[] }
-          : { paragraphs: shapingContentLines }),
+          ? { trustedParagraphs: beforeChartLines, paragraphs: [] as string[] }
+          : { paragraphs: beforeChartLines }),
+        ...(chartRows.length > 0 ? { bodyShapingChartRows: chartRows } : {}),
         stitchCount: A > 0 ? A : undefined,
       });
+      // "N sts remain after shaping." stays AFTER the chart (decrease / waist-shaped only).
+      if (aline.shapingType !== "increase-to-bust" && bustSts !== undefined) {
+        rows.push({
+          kind: "block",
+          paragraphs: [`${bustSts} sts remain after shaping.`],
+          stitchCount: bustSts,
+        });
+      }
       const straightRows = aline.straightRowsBeforeArmhole;
       if (straightRows > 0) {
         rows.push({
@@ -1541,9 +1574,8 @@ export function buildSleevelessBackDisplayRows(args: {
     rows.push({
       kind: "block",
       rc: formatArmholeLocalRc(first, first),
+      rowCounterReset: true,
       paragraphs: [
-        "Reset Armhole RC to RC:000.",
-        ARMHOLE_RC_FROM_RESET_NOTE,
         `At RC:000, bind off / hold ${bo} stitches at the armhole edge (carriage side). Knit across.`,
       ],
       tipHtml: armholeAlternateTechniquesHelpCardInnerHtml(),

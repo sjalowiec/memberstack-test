@@ -124,10 +124,10 @@ describe("sleeveless armhole RC wording", () => {
     expect(first?.tipHtml).toContain(`data-sleeveless-help-video="${ARMHOLE_BIND_OFF_TRICK_VIDEO_KEY}"`);
   });
 
-  it("back ARMHOLE section includes reset note and Armhole RC targets (not body RC)", () => {
+  it("back ARMHOLE section omits the reset explanatory note and uses Armhole RC targets (not body RC)", () => {
     const r = generateSleevelessBackPattern(basePattern("round"));
     const armhole = armholeSectionParagraphs(r.displayRows);
-    expect(armhole.some((p) => p.includes(ARMHOLE_RC_FROM_RESET_NOTE))).toBe(true);
+    expect(armhole.some((p) => p.includes(ARMHOLE_RC_FROM_RESET_NOTE))).toBe(false);
     expect(
       armhole.some(
         (p) =>
@@ -160,10 +160,10 @@ describe("sleeveless armhole RC wording", () => {
     ).toBe(true);
   });
 
-  it("round-neck front shares armhole reset note and Armhole RC targets", () => {
+  it("round-neck front omits the reset note and uses Armhole RC targets", () => {
     const r = generateSleevelessBackPattern(basePattern("round"));
     const armhole = armholeSectionParagraphs(r.frontDisplayRows);
-    expect(armhole.some((p) => p.includes(ARMHOLE_RC_FROM_RESET_NOTE))).toBe(true);
+    expect(armhole.some((p) => p.includes(ARMHOLE_RC_FROM_RESET_NOTE))).toBe(false);
     expect(armhole.some((p) => /Armhole RC:\d{3}/i.test(p))).toBe(true);
   });
 

@@ -295,6 +295,44 @@
     color: #374151;
   }
 
+  /*
+   * Row Counter Reset — required action marker (NOT a pattern tip).
+   * Intentionally distinct from `.pattern-tip`: full accent border, accent
+   * icon + uppercase text. Not collapsible, no dismiss control.
+   */
+  .row-counter-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.45rem 0 0.5rem;
+    padding: 0.35rem 0.7rem;
+    border: 2px solid var(--sg-accent, #c2614e);
+    border-radius: 6px;
+    background: #f7f6f4;
+    color: var(--sg-accent, #c2614e);
+    line-height: 1.2;
+  }
+
+  .row-counter-reset__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--sg-accent, #c2614e);
+  }
+
+  .row-counter-reset__icon svg {
+    display: block;
+  }
+
+  .row-counter-reset__text {
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--sg-accent, #c2614e);
+  }
+
   .sleeveless-pattern-sts {
     flex: 0 0 auto;
     min-width: 3.25rem;

@@ -318,6 +318,33 @@ export function formatSleevelessAlineBodyShapingInstructionLines(
 }
 
 /**
+ * Summary sentence only (no row-counter list) for the body-shaping block heading.
+ * The per-row counters now live in the interactive body-shaping chart, so this keeps the
+ * glossary-tooltipped "Decrease/Increase 1 stitch … evenly across the next N rows." line
+ * without duplicating the RC list as prose.
+ */
+export function formatSleevelessAlineBodyShapingSummaryLine(
+  shapingType: SleevelessAlineShapingType,
+  times: number,
+  shapingSpanRows?: number,
+  edgeScope: SleevelessAlineShapingEdgeScope = "symmetricSides",
+): string {
+  if (shapingType === "straight" || times <= 0) return "";
+  const verb = shapingType === "decrease-to-bust" ? "Decrease" : "Increase";
+  const edgePhrase =
+    edgeScope === "armholeEdgeOnly" ? "at the armhole edge" : "at each side edge";
+  const span =
+    shapingSpanRows !== undefined && shapingSpanRows > 0 ? shapingSpanRows : undefined;
+  const line =
+    span !== undefined
+      ? `${verb} 1 stitch ${edgePhrase} ${times} time${times === 1 ? "" : "s"} evenly across the next ${span} row${span === 1 ? "" : "s"}.`
+      : `${verb} 1 stitch ${edgePhrase} ${times} time${times === 1 ? "" : "s"}.`;
+  return shapingType === "decrease-to-bust"
+    ? withDecreaseGlossaryTooltip(line)
+    : withIncreaseGlossaryTooltip(line);
+}
+
+/**
  * One cardigan front panel: same shaping row placement as the back, hem/bust stitch counts halved.
  */
 export function scaleAlineBodyShapingPlanForCardiganHalf(

@@ -242,10 +242,10 @@ async function initSleevelessPrintPage(): Promise<void> {
   );
 
   const { preludeRows, continuationRows } = splitRowsBeforeNeckShoulderChartMount(result.displayRows ?? []);
-  const openingBackHtml = renderSleevelessPrintPieceHtml(preludeRows, "");
+  const openingBackHtml = renderSleevelessPrintPieceHtml(preludeRows, "", "back");
   const continuationBackHtml =
     continuationRows.length > 0
-      ? renderSleevelessPrintPieceHtml(continuationRows, backChartHtml)
+      ? renderSleevelessPrintPieceHtml(continuationRows, backChartHtml, "back")
       : "";
 
   let diagramMarkup = `<p class="print-muted print-diagram-fallback">Loading back schematic…</p>`;
@@ -274,10 +274,10 @@ async function initSleevelessPrintPage(): Promise<void> {
     preludeRows: frontPreludeRows,
     continuationRows: frontContinuationRows,
   } = splitRowsBeforeNeckShoulderChartMount(result.frontDisplayRows ?? []);
-  const frontOpeningHtml = renderSleevelessPrintPieceHtml(frontPreludeRows, "");
+  const frontOpeningHtml = renderSleevelessPrintPieceHtml(frontPreludeRows, "", "front");
   const frontContinuationHtml =
     frontContinuationRows.length > 0
-      ? renderSleevelessPrintPieceHtml(frontContinuationRows, frontChartHtml)
+      ? renderSleevelessPrintPieceHtml(frontContinuationRows, frontChartHtml, "front")
       : "";
 
   const warningsFiltered = warningsForSleevelessPrintPrintout(result.warnings);

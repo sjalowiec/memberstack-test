@@ -4,6 +4,8 @@
  */
 
 import { patternTipWrapperHtml, type SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
+import { rowCounterResetBlockHtml } from "./rowCounterReset";
+import { renderSleevelessBodyShapingChartHtml } from "./sleevelessBodyShapingChartHtml";
 
 function escapeHtml(s: string): string {
   return String(s)
@@ -39,6 +41,7 @@ function detailsOpenForPrint(html: string): string {
 function renderPrintBlockRow(
   row: Extract<SleevelessPatternDisplayRow, { kind: "block" }>,
   lastStitchRef: { value: number | undefined },
+  pieceKey = "print",
 ): string {
   const showStitch =
     row.stitchCount !== undefined &&
@@ -48,6 +51,9 @@ function renderPrintBlockRow(
   const leftBits: string[] = [];
   if (row.rc) {
     leftBits.push(`<p class="print-rc">${escapeHtml(row.rc)}</p>`);
+  }
+  if (row.rowCounterReset) {
+    leftBits.push(rowCounterResetBlockHtml());
   }
   const trusted = row.trustedParagraphs;
   if (trusted && trusted.length > 0) {
@@ -64,6 +70,13 @@ function renderPrintBlockRow(
       const t = String(p).trim();
       if (t) leftBits.push(`<p class="print-line">${escapeHtml(t)}</p>`);
     }
+  }
+  if (row.bodyShapingChartRows && row.bodyShapingChartRows.length > 0) {
+    leftBits.push(
+      renderSleevelessBodyShapingChartHtml(row.bodyShapingChartRows, {
+        chartId: `sleeveless-body-shaping-chart-${pieceKey}`,
+      }),
+    );
   }
   if (row.tipHtml) {
     leftBits.push(detailsOpenForPrint(patternTipWrapperHtml(row)));
@@ -93,6 +106,7 @@ function renderPrintBlockRow(
 export function renderSleevelessPrintPieceHtml(
   rows: readonly SleevelessPatternDisplayRow[],
   neckChartHtml: string,
+  pieceKey = "print",
 ): string {
   const list = Array.isArray(rows) ? rows : [];
   const lastStitchRef = { value: undefined as number | undefined };
@@ -116,7 +130,7 @@ export function renderSleevelessPrintPieceHtml(
       continue;
     }
     if (row.kind === "block") {
-      chunks.push(renderPrintBlockRow(row, lastStitchRef));
+      chunks.push(renderPrintBlockRow(row, lastStitchRef, pieceKey));
     }
   }
 

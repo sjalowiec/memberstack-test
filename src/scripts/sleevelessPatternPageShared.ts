@@ -26,11 +26,13 @@ import {
   generateSleevelessBackPattern,
   patternTipWrapperHtml,
 } from "../lib/patterns/sleevelessPatternOutput.ts";
+import { rowCounterResetBlockHtml } from "../lib/patterns/rowCounterReset.ts";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
   renderActiveShoulderChartIntroHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
+import { renderSleevelessBodyShapingChartHtml } from "../lib/patterns/sleevelessBodyShapingChartHtml.ts";
 import { initChartProgressTracking } from "./chartProgressTracker.ts";
 import { scheduleReadingWorkflowSync } from "../lib/patterns/patternReadingWorkflowSync.ts";
 import { showResults, initializeActionBar } from "../components/wizards/utils/wizardBehavior.ts";
@@ -568,6 +570,9 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       if (row.rc) {
         leftBits.push(`<p class="sleeveless-pattern-rc">${escapeHtml(row.rc)}</p>`);
       }
+      if (row.rowCounterReset) {
+        leftBits.push(rowCounterResetBlockHtml());
+      }
       const trusted = row.trustedParagraphs;
       if (trusted && trusted.length > 0) {
         for (const p of trusted) {
@@ -579,6 +584,13 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
           const t = String(p).trim();
           if (t) leftBits.push(`<p class="sleeveless-pattern-line">${escapeHtml(t)}</p>`);
         }
+      }
+      if (row.bodyShapingChartRows && row.bodyShapingChartRows.length > 0) {
+        leftBits.push(
+          renderSleevelessBodyShapingChartHtml(row.bodyShapingChartRows, {
+            chartId: `sleeveless-body-shaping-chart-${pieceSectionId || "back"}`,
+          })
+        );
       }
       if (row.tipHtml) {
         leftBits.push(patternTipWrapperHtml(row));

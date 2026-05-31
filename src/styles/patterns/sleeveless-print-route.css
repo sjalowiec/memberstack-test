@@ -555,6 +555,40 @@
     line-height: 1.55;
   }
 
+  /* Row Counter Reset — required action marker; keep border + accent in print. */
+  .sleeveless-print-root .row-counter-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.3rem 0 0.35rem;
+    padding: 0.25rem 0.55rem;
+    border: 2px solid #c2614e;
+    border-radius: 6px;
+    background: #f7f6f4;
+    color: #c2614e;
+    line-height: 1.2;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .sleeveless-print-root .row-counter-reset__icon {
+    display: inline-flex;
+    align-items: center;
+    color: #c2614e;
+  }
+
+  .sleeveless-print-root .row-counter-reset__icon svg {
+    display: block;
+  }
+
+  .sleeveless-print-root .row-counter-reset__text {
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #c2614e;
+  }
+
   .sleeveless-print-root .print-inst-row--sts-only {
     justify-content: flex-end;
   }

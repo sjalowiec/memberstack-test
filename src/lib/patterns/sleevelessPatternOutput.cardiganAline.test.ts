@@ -51,10 +51,18 @@ function frontBodyParagraphs(rows: readonly SleevelessPatternDisplayRow[]): stri
   return out;
 }
 
-function backBodyShapingRows(rows: readonly SleevelessPatternDisplayRow[]): string {
-  return frontBodyParagraphs(rows)
-    .filter((p) => /Work (decreases|increases) on:/i.test(p))
-    .join(" ");
+/** RC values from the interactive body-shaping chart rows (replaces the old "Work …on:" sentence). */
+function bodyShapingChartRcs(rows: readonly SleevelessPatternDisplayRow[]): number[] {
+  let inBody = false;
+  const out: number[] = [];
+  for (const row of rows) {
+    if (row.kind === "section" && row.title === "BODY") inBody = true;
+    else if (row.kind === "section") inBody = false;
+    else if (inBody && row.kind === "block" && row.bodyShapingChartRows) {
+      for (const cr of row.bodyShapingChartRows) out.push(cr.rc);
+    }
+  }
+  return out;
 }
 
 describe("A-line round cardigan front", () => {
@@ -118,11 +126,26 @@ describe("A-line round cardigan front", () => {
     expect(frontBody).not.toMatch(/at each side edge/i);
   });
 
-  it("aligns front shaping row list with the back", () => {
-    const backRows = backBodyShapingRows(result.displayRows);
-    const frontRows = backBodyShapingRows(result.frontDisplayRows);
-    expect(backRows.length).toBeGreaterThan(0);
-    expect(frontRows).toBe(backRows);
+  it("front body shaping chart uses armhole edge, never each side edge", () => {
+    let inBody = false;
+    const actions: string[] = [];
+    for (const row of result.frontDisplayRows) {
+      if (row.kind === "section" && row.title === "BODY") inBody = true;
+      else if (row.kind === "section") inBody = false;
+      else if (inBody && row.kind === "block" && row.bodyShapingChartRows) {
+        for (const cr of row.bodyShapingChartRows) actions.push(cr.action);
+      }
+    }
+    expect(actions.length).toBeGreaterThan(0);
+    expect(actions.every((a) => /at armhole edge/i.test(a))).toBe(true);
+    expect(actions.some((a) => /each side edge/i.test(a))).toBe(false);
+  });
+
+  it("aligns front shaping chart row counters with the back", () => {
+    const backRcs = bodyShapingChartRcs(result.displayRows);
+    const frontRcs = bodyShapingChartRcs(result.frontDisplayRows);
+    expect(backRcs.length).toBeGreaterThan(0);
+    expect(frontRcs).toEqual(backRcs);
   });
 
   it("uses dedicated cardigan A-line SVG instead of dotted guide overlay", () => {
