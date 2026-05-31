@@ -191,7 +191,7 @@ function activeSideActionText(action: ActiveSideScheduledAction): string {
   const noun = action.amount === 1 ? "st" : "sts";
   let verb: string;
   if (action.kind === "bindOff") {
-    verb = action.edge === "Armhole" ? "Bind off / hold" : "Bind off";
+    verb = action.edge === "Armhole" ? "Bind off OR hold" : "Bind off";
   } else {
     verb = "Decrease";
   }

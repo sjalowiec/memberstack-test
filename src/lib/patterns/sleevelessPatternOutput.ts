@@ -1586,7 +1586,7 @@ export function buildSleevelessBackDisplayRows(args: {
       rc: formatArmholeLocalRc(first, first),
       rowCounterReset: true,
       paragraphs: [
-        `At RC:000, bind off / hold ${bo} stitches at the armhole edge (carriage side). Knit across.`,
+        `At RC:000, bind off OR hold ${bo} stitches at the armhole edge (carriage side). Knit across.`,
       ],
       tipHtml: armholeAlternateTechniquesHelpCardInnerHtml(),
       tipHtmlIsFull: true,
@@ -1599,7 +1599,7 @@ export function buildSleevelessBackDisplayRows(args: {
         kind: "block",
         rc: formatArmholeLocalRc(first + 1, first),
         paragraphs: [
-          `At RC:001, bind off / hold ${bo} stitches at the remaining armhole edge (carriage side). Knit across.`,
+          `At RC:001, bind off OR hold ${bo} stitches at the remaining armhole edge (carriage side). Knit across.`,
         ],
         stitchCount: afterBo2 > 0 ? afterBo2 : undefined,
       });

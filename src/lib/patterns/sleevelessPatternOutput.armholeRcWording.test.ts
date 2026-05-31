@@ -96,13 +96,14 @@ function firstFrontNecklineShapingActionRc(
 }
 
 describe("sleeveless armhole RC wording", () => {
-  it("back ARMHOLE section uses bind off / hold wording and alternate-techniques tip", () => {
+  it("back ARMHOLE section uses bind off OR hold wording and alternate-techniques tip", () => {
     const r = generateSleevelessBackPattern(basePattern("round"));
     const armhole = armholeSectionParagraphs(r.displayRows);
-    expect(armhole.some((p) => /bind off \/ hold \d+ stitches at the armhole edge/i.test(p))).toBe(
+    expect(armhole.some((p) => /bind off \/ hold/i.test(p))).toBe(false);
+    expect(armhole.some((p) => /bind off OR hold \d+ stitches at the armhole edge/i.test(p))).toBe(
       true
     );
-    expect(armhole.some((p) => /bind off \/ hold \d+ stitches at the remaining armhole edge/i.test(p))).toBe(
+    expect(armhole.some((p) => /bind off OR hold \d+ stitches at the remaining armhole edge/i.test(p))).toBe(
       true
     );
     const first = firstArmholeBlock(r.displayRows);
@@ -195,7 +196,7 @@ describe("sleeveless armhole RC wording", () => {
     expect(
       armhole.some((p) =>
         new RegExp(
-          `At RC:000, bind off / hold ${bindOffSts} stitches at the armhole edge \\(carriage side\\)\\. Knit across\\.`,
+          `At RC:000, bind off OR hold ${bindOffSts} stitches at the armhole edge \\(carriage side\\)\\. Knit across\\.`,
           "i",
         ).test(p),
       ),

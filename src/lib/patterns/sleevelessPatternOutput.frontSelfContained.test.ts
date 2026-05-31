@@ -110,7 +110,7 @@ describe("sleeveless front is linear and self-contained", () => {
         const armhole = armholeSectionParagraphs(r.frontDisplayRows);
         expect(armhole.length).toBeGreaterThan(0);
         expect(
-          armhole.some((p) => /bind off \/ hold \d+ stitches at the armhole edge/i.test(p))
+          armhole.some((p) => /bind off OR hold \d+ stitches at the armhole edge/i.test(p))
         ).toBe(true);
       });
 
