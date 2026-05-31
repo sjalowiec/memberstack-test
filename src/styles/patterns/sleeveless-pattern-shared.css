@@ -518,6 +518,46 @@
     opacity: 0.95;
   }
 
+  /* Edit Pattern: calm outline action; sits beside Print in the actions row. */
+  .sleeveless-pattern-page .sleeveless-pattern-edit-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.85rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--kbm-green, #52682d);
+    text-decoration: none;
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 35%, #d1d5db);
+    border-radius: 8px;
+    cursor: pointer;
+    transition:
+      background-color 0.12s ease,
+      border-color 0.12s ease,
+      color 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-edit-action:hover {
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #fff);
+    border-color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #d1d5db);
+    color: var(--kbm-green-hover, #445626);
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-edit-action:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-edit-action .fa-pen {
+    font-size: 0.78rem;
+    opacity: 0.9;
+  }
+
   #pattern-content .pattern-section,
   #pattern-content .pattern-subsection {
     scroll-margin-top: calc(var(--site-header-offset, 7rem) + 3rem);

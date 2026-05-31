@@ -16,6 +16,10 @@ import "../../../../styles/pattern-help-card.css";
 
 import "../../../../styles/patterns/sleeveless-pattern-shared.css";
 
+// Reused measurement editor styling (same diagram/overlay as Custom Build → Measurements).
+import "../../../../styles/sleeveless-express-measurements-confirm.css";
+import "../../../../styles/sleeveless-custom-build-measurements.css";
+
 const customBuildHref = "/patterns/sleeveless/custom-build/";
 const expressHref = "/patterns/sleeveless-express/";
 const patternHref = "/patterns/sleeveless/pattern/";
@@ -71,7 +75,18 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
                 <div
                   class="sleeveless-pattern-actions no-print"
                   data-sleeveless-pattern-actions
-                ></div>
+                >
+                  <button
+                    type="button"
+                    class="sleeveless-pattern-edit-action no-print"
+                    data-sl-edit-open
+                    data-testid="button-edit-pattern"
+                    aria-haspopup="dialog"
+                    aria-controls="sl-edit-drawer-panel"
+                  >
+                    <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
+                  </button>
+                </div>
                 <div class="sleeveless-pattern-online-project-header no-print">
                   <div class="sleeveless-pattern-online-heading-row">
                     <p class="sleeveless-pattern-online-heading" data-sleeveless-pattern-online-heading>
@@ -137,6 +152,234 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
             <p>Turn on JavaScript to view this pattern.</p>
           </div>
         </noscript>
+      </div>
+    </div>
+
+    <!--
+      PROTOTYPE ONLY — pattern editing drawer (UX experiment).
+      Not wired to regeneration, save/update, DB, or Netlify Blob.
+    -->
+    <div class="sl-edit-drawer no-print" data-sl-edit-drawer aria-hidden="true">
+      <div class="sl-edit-drawer__backdrop" data-sl-edit-close aria-hidden="true"></div>
+      <aside
+        id="sl-edit-drawer-panel"
+        class="sl-edit-drawer__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sl-edit-drawer-title"
+        tabindex="-1"
+      >
+        <header class="sl-edit-drawer__header">
+          <div class="sl-edit-drawer__heading">
+            <h2 id="sl-edit-drawer-title" class="sl-edit-drawer__title">Edit Pattern</h2>
+            <p class="sl-edit-drawer__subtitle">Adjust your pattern details, then update.</p>
+          </div>
+          <button
+            type="button"
+            class="sl-edit-drawer__close"
+            data-sl-edit-close
+            data-testid="button-edit-close"
+            aria-label="Close editing panel"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M18 6L6 18M6 6l12 12"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"></path>
+            </svg>
+          </button>
+        </header>
+
+        <div class="sl-edit-drawer__body">
+          <div class="sl-edit-field">
+            <label class="sl-edit-label" for="sl-edit-title">Pattern title</label>
+            <input
+              type="text"
+              id="sl-edit-title"
+              class="sl-edit-input"
+              placeholder="Sleeveless sweater"
+              autocomplete="off"
+            />
+          </div>
+
+          <fieldset class="sl-edit-field sl-edit-fieldset">
+            <legend class="sl-edit-label">Neckline</legend>
+            <div class="sl-edit-segment" role="radiogroup" aria-label="Neckline">
+              <label class="sl-edit-segment__option">
+                <input type="radio" name="sl-edit-neckline" value="round" checked />
+                <span class="sl-edit-segment__pill">Round Neck</span>
+              </label>
+              <label class="sl-edit-segment__option">
+                <input type="radio" name="sl-edit-neckline" value="v" />
+                <span class="sl-edit-segment__pill">V-Neck</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="sl-edit-field sl-edit-fieldset">
+            <legend class="sl-edit-label">Gauge</legend>
+            <div class="sl-edit-grid">
+              <div class="sl-edit-subfield">
+                <label class="sl-edit-sublabel" for="sl-edit-spi">Stitches per inch</label>
+                <input
+                  type="number"
+                  id="sl-edit-spi"
+                  class="sl-edit-input"
+                  inputmode="decimal"
+                  min="0"
+                  step="0.1"
+                  placeholder="e.g. 5"
+                />
+              </div>
+              <div class="sl-edit-subfield">
+                <label class="sl-edit-sublabel" for="sl-edit-rpi">Rows per inch</label>
+                <input
+                  type="number"
+                  id="sl-edit-rpi"
+                  class="sl-edit-input"
+                  inputmode="decimal"
+                  min="0"
+                  step="0.1"
+                  placeholder="e.g. 7"
+                />
+              </div>
+              <div class="sl-edit-subfield">
+                <label class="sl-edit-sublabel" for="sl-edit-needles">Needles available</label>
+                <input
+                  type="number"
+                  id="sl-edit-needles"
+                  class="sl-edit-input"
+                  inputmode="numeric"
+                  min="0"
+                  step="1"
+                  placeholder="e.g. 200"
+                />
+              </div>
+            </div>
+          </fieldset>
+
+          <section class="sl-edit-field sl-edit-measure-cta" aria-label="Measurements">
+            <h3 class="sl-edit-label">Measurements</h3>
+            <p class="sl-edit-measure-cta__text">
+              Edit the sweater measurements on a larger diagram.
+            </p>
+            <button
+              type="button"
+              class="sl-edit-btn sl-edit-btn--secondary sl-edit-measure-cta__btn"
+              data-sl-measure-open
+              data-testid="button-edit-measurements"
+              aria-haspopup="dialog"
+              aria-controls="sl-measure-workspace-inner"
+            >
+              <i class="fas fa-ruler-combined" aria-hidden="true"></i> Edit Measurements
+            </button>
+          </section>
+        </div>
+
+        <footer class="sl-edit-drawer__footer">
+          <p class="sl-edit-prototype-note" data-sl-edit-note hidden>
+            Prototype only — this does not save or regenerate yet.
+          </p>
+          <div class="sl-edit-drawer__actions">
+            <button
+              type="button"
+              class="sl-edit-btn sl-edit-btn--ghost"
+              data-sl-edit-close
+              data-testid="button-edit-cancel"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="sl-edit-btn sl-edit-btn--primary"
+              data-sl-edit-update
+              data-testid="button-edit-update"
+            >
+              Update Pattern
+            </button>
+          </div>
+        </footer>
+      </aside>
+    </div>
+
+    <!--
+      PROTOTYPE ONLY — full-screen measurement editor workspace (UX experiment).
+      Not wired to regeneration, save/update, DB, or Netlify Blob.
+    -->
+    <div class="sl-measure-workspace no-print" data-sl-measure-workspace aria-hidden="true">
+      <div
+        id="sl-measure-workspace-inner"
+        class="sl-measure-workspace__inner"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sl-measure-title"
+        tabindex="-1"
+      >
+        <header class="sl-measure-workspace__header">
+          <h2 id="sl-measure-title" class="sl-measure-workspace__title">Edit Measurements</h2>
+          <button
+            type="button"
+            class="sl-edit-btn sl-edit-btn--ghost sl-measure-workspace__back"
+            data-sl-measure-back
+            data-testid="button-measure-back"
+          >
+            <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Pattern
+          </button>
+        </header>
+
+        <!--
+          Reuses the live Custom Build measurement editor (`initCustomBuildMeasurementsPage`):
+          same pattern_summary.svg, labels, field names, and overlay positions as the builder.
+          `data-sleeveless-review-managed` suppresses the editor's auto-init so the prototype
+          can initialise it lazily when the workspace opens.
+        -->
+        <div class="sl-measure-workspace__body cb-measure-page express-measurements-confirm-page">
+          <div
+            class="sl-measure-workspace__editor"
+            data-cb-measure-root
+            data-sleeveless-review-managed
+          >
+            <div class="sleeveless-measure-review-body">
+              <div
+                class="sleeveless-measure-project-summary"
+                data-cb-build-summary
+                aria-label="Current build summary"
+              ></div>
+              <p class="cb-measure-missing" data-cb-measure-missing hidden>
+                Complete Foundation and Style &amp; Shaping to load measurements.
+              </p>
+              <div
+                class="sleeveless-measure-diagram-host cb-measure-diagram-host"
+                data-cb-measure-diagram
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="sl-measure-workspace__footer">
+          <p class="sl-edit-prototype-note" data-sl-measure-note hidden>
+            Prototype only — measurements are not applied or regenerated yet.
+          </p>
+          <div class="sl-measure-workspace__actions">
+            <button
+              type="button"
+              class="sl-edit-btn sl-edit-btn--ghost"
+              data-sl-measure-cancel
+              data-testid="button-measure-cancel"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="sl-edit-btn sl-edit-btn--primary"
+              data-sl-measure-apply
+              data-testid="button-measure-apply"
+            >
+              Apply Measurements
+            </button>
+          </div>
+        </footer>
       </div>
     </div>
 
@@ -318,9 +561,509 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
       print-color-adjust: exact !important;
     }
   }
+
+  /*
+   * PROTOTYPE ONLY — Edit Pattern drawer (UX experiment).
+   * Desktop: right-side drawer. Mobile: full-screen panel.
+   * Calm, roomy spacing so the measurement editor has space to grow later.
+   */
+  .sl-edit-drawer {
+    position: fixed;
+    inset: 0;
+    z-index: 1450;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+  }
+
+  .sl-edit-drawer.is-open {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.2s ease;
+  }
+
+  .sl-edit-drawer__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.45);
+  }
+
+  .sl-edit-drawer__panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    width: clamp(360px, 34vw, 480px);
+    max-width: 100%;
+    background: #fff;
+    box-shadow: -10px 0 32px rgba(17, 24, 39, 0.18);
+    transform: translateX(100%);
+    transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sl-edit-drawer.is-open .sl-edit-drawer__panel {
+    transform: translateX(0);
+  }
+
+  .sl-edit-drawer__panel:focus {
+    outline: none;
+  }
+
+  .sl-edit-drawer__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.15rem 1.35rem 1rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 12%, #e5e7eb);
+  }
+
+  .sl-edit-drawer__title {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .sl-edit-drawer__subtitle {
+    margin: 0.3rem 0 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #6b7280;
+  }
+
+  .sl-edit-drawer__close {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    margin: -0.25rem -0.4rem 0 0;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: #6b7280;
+    cursor: pointer;
+    transition: background-color 0.12s ease, color 0.12s ease;
+  }
+
+  .sl-edit-drawer__close:hover {
+    background: rgba(17, 24, 39, 0.06);
+    color: #1f2937;
+  }
+
+  .sl-edit-drawer__close:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .sl-edit-drawer__body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .sl-edit-field {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .sl-edit-fieldset {
+    min-width: 0;
+  }
+
+  .sl-edit-label {
+    display: block;
+    margin: 0 0 0.5rem;
+    padding: 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #6b7280);
+  }
+
+  .sl-edit-sublabel {
+    display: block;
+    margin: 0 0 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #4b5563;
+  }
+
+  .sl-edit-input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.75rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: #1f2937;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  .sl-edit-input:focus {
+    outline: none;
+    border-color: var(--kbm-green, #52682d);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--kbm-green, #52682d) 18%, transparent);
+  }
+
+  .sl-edit-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.9rem;
+  }
+
+  @media (min-width: 420px) {
+    .sl-edit-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .sl-edit-subfield {
+    min-width: 0;
+  }
+
+  .sl-edit-segment {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .sl-edit-segment__option {
+    flex: 1 1 0;
+    min-width: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .sl-edit-segment__option input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .sl-edit-segment__pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #4b5563;
+    text-align: center;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  }
+
+  .sl-edit-segment__option:hover .sl-edit-segment__pill {
+    border-color: color-mix(in srgb, var(--kbm-green, #52682d) 45%, #d1d5db);
+  }
+
+  .sl-edit-segment__option input:checked + .sl-edit-segment__pill {
+    color: var(--kbm-green, #52682d);
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 10%, #fff);
+    border-color: var(--kbm-green, #52682d);
+  }
+
+  .sl-edit-segment__option input:focus-visible + .sl-edit-segment__pill {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  /* Quick-settings drawer CTA that hands off to the full-screen measurement editor. */
+  .sl-edit-measure-cta {
+    padding: 1.1rem 1.15rem 1.2rem;
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 16%, #e5e7eb);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 4%, #fdfdfb);
+  }
+
+  .sl-edit-measure-cta__text {
+    margin: 0 0 0.85rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: #4b5563;
+  }
+
+  .sl-edit-measure-cta__btn {
+    width: 100%;
+  }
+
+  .sl-edit-drawer__footer {
+    flex-shrink: 0;
+    padding: 1rem 1.35rem 1.2rem;
+    border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 12%, #e5e7eb);
+    background: #fff;
+  }
+
+  .sl-edit-prototype-note {
+    margin: 0 0 0.75rem;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: #6b4f2a;
+    background: rgba(251, 243, 219, 0.65);
+    border: 1px solid rgba(234, 179, 8, 0.35);
+    border-radius: 8px;
+  }
+
+  .sl-edit-prototype-note[hidden] {
+    display: none;
+  }
+
+  .sl-edit-drawer__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+  }
+
+  .sl-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.6rem;
+    padding: 0.55rem 1.1rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.2;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sl-edit-btn--ghost {
+    color: #4b5563;
+    background: #fff;
+    border: 1px solid #d1d5db;
+  }
+
+  .sl-edit-btn--ghost:hover {
+    background: #f3f4f6;
+    border-color: #c4c9d1;
+  }
+
+  .sl-edit-btn--primary {
+    color: #fff;
+    background: var(--kbm-green, #52682d);
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 85%, #000);
+  }
+
+  .sl-edit-btn--primary:hover {
+    background: var(--kbm-green-hover, #445626);
+  }
+
+  .sl-edit-btn--secondary {
+    gap: 0.45rem;
+    color: var(--kbm-green, #52682d);
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 40%, #d1d5db);
+  }
+
+  .sl-edit-btn--secondary:hover {
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #fff);
+    border-color: var(--kbm-green, #52682d);
+    color: var(--kbm-green-hover, #445626);
+  }
+
+  .sl-edit-btn--secondary .fa-ruler-combined {
+    font-size: 0.85rem;
+    opacity: 0.9;
+  }
+
+  .sl-edit-btn:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  /*
+   * PROTOTYPE ONLY — full-screen Measurement editor workspace.
+   * Takes over the whole viewport (not the narrow drawer) so the diagram has room.
+   * Cream/green workspace styling using project tokens.
+   */
+  .sl-measure-workspace {
+    position: fixed;
+    inset: 0;
+    z-index: 1500;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 4%, #fdfcf7);
+    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+  }
+
+  .sl-measure-workspace.is-open {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.2s ease;
+  }
+
+  .sl-measure-workspace__inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+  }
+
+  .sl-measure-workspace__inner:focus {
+    outline: none;
+  }
+
+  .sl-measure-workspace__header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem clamp(1rem, 4vw, 2.5rem);
+    background: #fff;
+    border-bottom: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #e5e7eb);
+  }
+
+  .sl-measure-workspace__title {
+    margin: 0;
+    font-size: clamp(1.15rem, 2.5vw, 1.5rem);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .sl-measure-workspace__back {
+    flex-shrink: 0;
+    gap: 0.45rem;
+  }
+
+  .sl-measure-workspace__body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: clamp(1rem, 3.5vw, 2.5rem);
+  }
+
+  /* Reused measurement editor fills the workspace; its own scoped CSS centers the diagram. */
+  .sl-measure-workspace__editor {
+    width: 100%;
+  }
+
+  /*
+   * Full-screen Edit Measurements workspace ONLY: simple width-driven sizing so the reused
+   * diagram is dramatically larger and centered. Scoped under `.sl-measure-workspace__body`,
+   * so the shared Custom Build fit page (/custom-build/fit) and unified review page are
+   * untouched. Overlay chips re-anchor to SVG targets via the editor's ResizeObserver, so the
+   * labels stay aligned at any size. `:global()` is required for the diagram nodes that
+   * initCustomBuildMeasurementsPage() injects at runtime.
+   */
+
+  /* Match the workspace art aspect ratio to the real SVG viewBox (210.2 × 210.2, square). */
+  .sl-measure-workspace__body.express-measurements-confirm-page {
+    --pattern-summary-aspect-ratio: 210.2 / 210.2;
+  }
+
+  @media (min-width: 700px) {
+    /* Lift the builder's narrow (52rem / ~550px) caps so the diagram can use the workspace. */
+    .sl-measure-workspace__body.express-measurements-confirm-page .sleeveless-measure-review-body {
+      max-width: min(96vw, 1160px);
+    }
+
+    .sl-measure-workspace__body.express-measurements-confirm-page :global(.cb-measure-diagram-wrap) {
+      max-width: min(96vw, 1160px);
+    }
+
+    .sl-measure-workspace__body.express-measurements-confirm-page
+      :global(.sleeveless-measure-diagram-host .express-mbp),
+    .sl-measure-workspace__body.express-measurements-confirm-page
+      :global(.sleeveless-measure-diagram-host .express-mbp-stage) {
+      width: min(92vw, 1100px);
+      max-width: 1100px;
+      margin-inline: auto;
+    }
+
+    /* SVG/art fills the stage; square ratio matches the viewBox (no letterboxing). */
+    .sl-measure-workspace__body.express-measurements-confirm-page :global(.express-mbp-art) {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 210.2 / 210.2;
+    }
+  }
+
+  .sl-measure-workspace__footer {
+    flex-shrink: 0;
+    padding: 0.9rem clamp(1rem, 4vw, 2.5rem) 1.1rem;
+    background: #fff;
+    border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #e5e7eb);
+  }
+
+  .sl-measure-workspace__footer .sl-edit-prototype-note {
+    max-width: 1100px;
+    margin: 0 auto 0.75rem;
+  }
+
+  .sl-measure-workspace__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* Mobile: full-screen panel, easy tap targets, full width. */
+  @media (max-width: 640px) {
+    .sl-edit-drawer__panel {
+      width: 100%;
+      left: 0;
+      right: 0;
+    }
+
+    .sl-edit-drawer__body {
+      padding: 1.15rem;
+    }
+
+    .sl-edit-drawer__actions .sl-edit-btn,
+    .sl-measure-workspace__actions .sl-edit-btn {
+      flex: 1 1 0;
+      min-height: 2.9rem;
+    }
+
+    .sl-measure-workspace__header {
+      flex-wrap: wrap;
+    }
+  }
 </style>
 
 <script>
   import "/src/scripts/sleevelessPatternOnlineProjectHeader.ts";
   import "/src/scripts/sleevelessPatternBuilderPage.ts";
+  import "/src/scripts/sleevelessPatternEditDrawerPrototype.ts";
 </script>
