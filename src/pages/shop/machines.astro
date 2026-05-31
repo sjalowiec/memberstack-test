@@ -3,6 +3,11 @@ import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
 import machinesData from "../../data/machines.json";
 
+// TODO (temporary): The machines shop page is disabled for production.
+// It redirects to /shop for now. Remove this redirect to re-enable the page.
+// The full page markup/logic is preserved below and is unaffected.
+return Astro.redirect("/shop");
+
 const title = "Knitting Machines | Knit it Now";
 const description = "Compare knitting machines and choose the one that fits your needs. Metal-bed machines, gauges, and key specs at a glance.";
 
