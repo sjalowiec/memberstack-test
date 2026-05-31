@@ -1465,11 +1465,21 @@ export function buildSleevelessBackDisplayRows(args: {
         (p) => p.length > 0,
       );
       const useTrusted = beforeChartLines.some(sleevelessAlineShapingLineNeedsTrustedHtml);
+      // Plain-text mirror of the shaping instruction (no glossary HTML). Carries the side/armhole
+      // edge scope so cardigan fronts read "at the armhole edge". Renderers prefer
+      // trustedParagraphs, so this stays hidden in the normal (glossary) path — present only as
+      // machine-readable structured text alongside the rendered glossary summary.
+      const plainEdgePhrase =
+        alineEdgeScope === "armholeEdgeOnly" ? "at the armhole edge" : "at each side edge";
+      const plainShapingVerb =
+        aline.shapingType === "decrease-to-bust" ? "Decrease" : "Increase";
+      const plainShapingTimes = aline.shapingRowNumbers.length;
+      const plainShapingLine = `${plainShapingVerb} 1 stitch ${plainEdgePhrase} ${plainShapingTimes} time${plainShapingTimes === 1 ? "" : "s"}.`;
       rows.push({
         kind: "block",
         rc: formatRcColon(aline.shapingBeginRc),
         ...(useTrusted
-          ? { trustedParagraphs: beforeChartLines, paragraphs: [] as string[] }
+          ? { trustedParagraphs: beforeChartLines, paragraphs: [plainShapingLine] }
           : { paragraphs: beforeChartLines }),
         ...(chartRows.length > 0 ? { bodyShapingChartRows: chartRows } : {}),
         stitchCount: A > 0 ? A : undefined,
