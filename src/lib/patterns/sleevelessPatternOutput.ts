@@ -1949,10 +1949,11 @@ export function buildSleevelessFrontDisplayRows(args: {
     kind: "block",
     paragraphs: args.introIsCardiganHalf
       ? [
-          "This piece is half the body width (one center-front edge). Cast-on and armhole counts below are for the left front only; total rows, armhole depth, and shoulder stitch counts follow the same schedule as the back.",
+          "This piece is half the body width (one center-front edge). Cast-on and armhole counts below are for the left front only. Work the front from the top — the cast-on, body, body shaping, and armhole steps are written out in full below, then continue into the front neckline shaping. Body/side shaping on the front is worked only on the armhole edge.",
+          "After the armhole reset, use Armhole RC — not the body row counter.",
         ]
       : [
-          "Front follows the same sequence as the back until neckline shaping begins.",
+          "The front is written out in full below — work the body, any body shaping, and armhole shaping from the top, then continue into the front neckline shaping.",
           "After the armhole reset, use Armhole RC — not the body row counter.",
         ],
   });
