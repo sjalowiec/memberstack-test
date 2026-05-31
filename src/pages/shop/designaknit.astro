@@ -1,0 +1,713 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+import CardRibbon from "../../components/ui/CardRibbon.astro";
+import allProducts from "../../data/designaknit-products.json";
+
+const pageTitle = "DesignaKnit Comparison & Buying Guide";
+const pageDescription =
+  "Compare DesignaKnit versions and choose the right option for your knitting goals.";
+
+const products = allProducts.filter(
+  (product) => product.active && product.category === "DesignaKnit"
+);
+
+type Product = (typeof products)[number];
+const versionOrder = [
+  "DesignaKnit Hand Knit",
+  "DesignaKnit Machine Standard",
+  "DesignaKnit Machine Pro",
+  "DesignaKnit Complete",
+ ] as const;
+type VersionTitle = (typeof versionOrder)[number];
+type StatusType = "included" | "notIncluded" | "limited";
+
+const orderedProducts: Product[] = versionOrder.flatMap((title) => {
+  const product = products.find((entry) => entry.title === title);
+  return product ? [product] : [];
+});
+
+const bestForById: Record<string, string> = {
+  "dak-hand-knit":
+    "Hand knitters who want dedicated tools for shaping and printable hand-knit patterns.",
+  "dak-machine-standard":
+    "Everyday machine knitters who need standard patterns and reliable cable-link support.",
+  "dak-machine-pro":
+    "Advanced machine knitters who want to draft completely custom, original patterns from scratch.",
+  "dak-complete":
+    "Power users who switch between hand and machine knitting and want zero limitations.",
+};
+
+const chooseIfById: Record<string, string[]> = {
+  "dak-hand-knit": [
+    "You mostly design and print hand knitting patterns.",
+    "You want a focused option without machine knitting modules.",
+    "You do not need machine cable-link tools.",
+  ],
+  "dak-machine-standard": [
+    "You want the core machine knitting modules.",
+    "You need optional cable links to supported knitting machines.",
+    "Supports standard cable design (up to 6 stitches wide).",
+    "You are not ready for full Original Pattern Drafting workflows.",
+  ],
+  "dak-machine-pro": [
+    "You want machine knitting tools plus Original Pattern Drafting.",
+    "Design and print custom templates for KnitLeader, punch cards, and mylar.",
+    "Supports standard cable design (up to 6 stitches wide).",
+    "You need a stronger pattern drafting workflow than Standard.",
+  ],
+  "dak-complete": [
+    "You want all machine knitting features and full hand knitting support.",
+    "You need advanced cable design features over six stitches wide.",
+    "You need to enter custom knitting instructions for stitch cables.",
+  ],
+};
+
+const statusAriaLabels = {
+  included: "Included",
+  notIncluded: "Not included",
+  limited: "Partial support",
+} as const;
+
+type ComparisonRow = {
+  feature: string;
+  values: Record<VersionTitle, StatusType>;
+  note?: string;
+  cellHints?: Partial<
+    Record<VersionTitle, { hint: string; ariaLabel?: string }>
+  >;
+};
+
+const comparisonGroups: { title: string; rows: ComparisonRow[] }[] = [
+  {
+    title: "Core DesignaKnit Modules",
+    rows: [
+      {
+        feature:
+          "Includes Standard Garment Styling, Stitch Designer, Interactive Knitting, and Graphics Studio",
+        values: {
+          "DesignaKnit Hand Knit": "notIncluded",
+          "DesignaKnit Machine Standard": "included",
+          "DesignaKnit Machine Pro": "included",
+          "DesignaKnit Complete": "included",
+        },
+      },
+      {
+        feature: "Includes Original Pattern Drafting",
+        values: {
+          "DesignaKnit Hand Knit": "notIncluded",
+          "DesignaKnit Machine Standard": "limited",
+          "DesignaKnit Machine Pro": "included",
+          "DesignaKnit Complete": "included",
+        },
+        cellHints: {
+          "DesignaKnit Machine Standard": {
+            hint: "Open & use only",
+            ariaLabel: "Partial support: open and use only",
+          },
+        },
+      },
+    ],
+  },
+  {
+    title: "Machine Knitting Features",
+    rows: [
+      {
+        feature: "Can use optional cable links to knitting machines",
+        values: {
+          "DesignaKnit Hand Knit": "notIncluded",
+          "DesignaKnit Machine Standard": "included",
+          "DesignaKnit Machine Pro": "included",
+          "DesignaKnit Complete": "included",
+        },
+      },
+      {
+        feature:
+          "Can design machine knitting patterns and print KnitLeader, KnitRadar, colour changes, punch card, and mylar templates",
+        values: {
+          "DesignaKnit Hand Knit": "notIncluded",
+          "DesignaKnit Machine Standard": "included",
+          "DesignaKnit Machine Pro": "included",
+          "DesignaKnit Complete": "included",
+        },
+      },
+    ],
+  },
+  {
+    title: "Hand Knitting Features",
+    rows: [
+      {
+        feature: "Can design and print hand knitting patterns",
+        values: {
+          "DesignaKnit Hand Knit": "included",
+          "DesignaKnit Machine Standard": "notIncluded",
+          "DesignaKnit Machine Pro": "notIncluded",
+          "DesignaKnit Complete": "included",
+        },
+      },
+      {
+        feature: "Can open hand knitting patterns as machine knitting patterns",
+        values: {
+          "DesignaKnit Hand Knit": "notIncluded",
+          "DesignaKnit Machine Standard": "notIncluded",
+          "DesignaKnit Machine Pro": "notIncluded",
+          "DesignaKnit Complete": "included",
+        },
+        note: "Pattern compatibility between hand and machine workflows is available in Complete.",
+      },
+    ],
+  },
+  {
+    title: "Advanced Stitch Features",
+    rows: [
+      {
+        feature: "Can design stitch cable crossings over 6 stitches wide",
+        values: {
+          "DesignaKnit Hand Knit": "notIncluded",
+          "DesignaKnit Machine Standard": "notIncluded",
+          "DesignaKnit Machine Pro": "notIncluded",
+          "DesignaKnit Complete": "included",
+        },
+      },
+      {
+        feature: "Can enter knitting instructions for custom stitch cables",
+        values: {
+          "DesignaKnit Hand Knit": "notIncluded",
+          "DesignaKnit Machine Standard": "notIncluded",
+          "DesignaKnit Machine Pro": "notIncluded",
+          "DesignaKnit Complete": "included",
+        },
+      },
+    ],
+  },
+];
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+  <PageHead title="DesignaKnit" />
+
+  <div class="designaknit-page">
+    <section
+      id="choose-version"
+      class="product-section"
+      aria-label="DesignaKnit versions"
+    >
+      <h2>Choose your version</h2>
+      <div class="product-grid">
+        {orderedProducts.map((product) => {
+          const isRecommended = Boolean(product.recommended);
+          const ribbonLabel =
+            product.id === "dak-machine-pro" || product.id === "dak-complete"
+              ? "★"
+              : null;
+          const recommendationLabel =
+            product.id === "dak-machine-pro"
+              ? "Most recommended product"
+              : product.id === "dak-complete"
+                ? "Recommended product"
+                : null;
+          return (
+            <article class="dak-card" id={product.id}>
+              {isRecommended && ribbonLabel && recommendationLabel && (
+                <span role="img" aria-label={recommendationLabel}>
+                  <CardRibbon
+                    label={ribbonLabel}
+                    variant="free"
+                    className="kbm-card-ribbon--dak-symbol"
+                  />
+                </span>
+              )}
+              <div class="dak-card-head">
+                <h3 class="dak-title">{product.title}</h3>
+              </div>
+              <p class="dak-short">{product.short}</p>
+              <p class="best-for-text">
+                <strong>Best for:</strong> {bestForById[product.id]}
+              </p>
+              <details class="dak-card-details">
+                <summary class="dak-help-trigger">Help me choose</summary>
+                <ul class="choose-list">
+                  {chooseIfById[product.id].map((point: string) => (
+                    <li>{point}</li>
+                  ))}
+                </ul>
+              </details>
+              <p class="dak-price">{product.price} USD</p>
+              <a
+                class="dak-buy-link kbm-btn kbm-btn-primary"
+                href={product.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Buy Now
+              </a>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+
+    <p class="dak-region-note" role="note">
+      At this time, DesignaKnit software sales are available only in the United
+      States and Canada.
+    </p>
+
+    <section class="comparison-section">
+      <details id="comparison-details" class="comparison-details">
+        <summary class="comparison-summary">View the full feature comparison</summary>
+        <div class="comparison-content">
+          <p class="comparison-intro">
+            All four editions at a glance, with clearer labels for what is
+            included.
+          </p>
+
+          {comparisonGroups.map((group) => (
+            <div class="comparison-group">
+              <h3>{group.title}</h3>
+              <div class="comparison-table-wrap">
+                <table class="comparison-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Feature</th>
+                      {versionOrder.map((version) => (
+                        <th scope="col">{version.replace("DesignaKnit ", "")}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {group.rows.map((row) => (
+                      <>
+                        <tr>
+                          <th scope="row">{row.feature}</th>
+                          {versionOrder.map((version) => {
+                            const status = row.values[version];
+                            const cellHint = row.cellHints?.[version];
+                            const ariaLabel =
+                              cellHint?.ariaLabel ?? statusAriaLabels[status];
+                            return (
+                              <td
+                                class:list={[
+                                  "status-cell",
+                                  cellHint && "status-cell--has-hint",
+                                ]}
+                              >
+                                <span class="status-cell-stack">
+                                  <span
+                                    class={`status-indicator status-${status}`}
+                                    aria-label={ariaLabel}
+                                  >
+                                    {status === "included" && (
+                                      <span
+                                        class="status-icon"
+                                        aria-hidden="true"
+                                      >
+                                        ✓
+                                      </span>
+                                    )}
+                                    {status === "notIncluded" && (
+                                      <span
+                                        class="status-icon"
+                                        aria-hidden="true"
+                                      >
+                                        —
+                                      </span>
+                                    )}
+                                    {status === "limited" && (
+                                      <span
+                                        class="status-partial-label"
+                                        aria-hidden="true"
+                                      >
+                                        Partial
+                                      </span>
+                                    )}
+                                  </span>
+                                  {cellHint && (
+                                    <span
+                                      class="status-cell-hint"
+                                      aria-hidden="true"
+                                    >
+                                      {cellHint.hint}
+                                    </span>
+                                  )}
+                                </span>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                        {row.note && (
+                          <tr class="comparison-note-row">
+                            <td colspan={5}>
+                              <strong>Note:</strong> {row.note}
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
+        </div>
+      </details>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .designaknit-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0.25rem 1rem 4rem;
+  }
+
+  .product-section,
+  .comparison-section {
+    margin-bottom: 2rem;
+  }
+
+  .dak-region-note {
+    margin: -0.5rem auto 1.25rem;
+    padding: 0 1rem;
+    max-width: 34rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    font-weight: 400;
+    text-align: center;
+    color: var(--text-muted, #6b7280);
+  }
+
+  .product-section h2 {
+    margin: 0 0 1rem;
+    color: var(--kbm-green);
+    font-size: clamp(1.5rem, 3.5vw, 1.85rem);
+    line-height: 1.25;
+    font-weight: 700;
+  }
+
+  .product-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+
+  .dak-card {
+    background: #fff;
+    border: 1px solid #e1e6db;
+    border-radius: 14px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dak-card-head {
+    text-align: center;
+  }
+
+  .dak-title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  .dak-price {
+    margin: auto 0 0;
+    padding-top: 0.5rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1f3d5a;
+    text-align: center;
+  }
+
+  .dak-short {
+    margin: 0;
+    color: #333;
+    line-height: 1.45;
+    text-align: left;
+  }
+
+  .best-for-text {
+    margin: 0;
+    color: #2f4122;
+    line-height: 1.5;
+    text-align: left;
+    min-height: 4.5em;
+  }
+
+  .dak-card-details {
+    margin: 0;
+  }
+
+  .dak-help-trigger {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0;
+    padding: 0.32rem 0.62rem;
+    border: 1px solid #cfdbc2;
+    border-radius: 8px;
+    background: #f6f9f2;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--kbm-green);
+    list-style: none;
+    text-decoration: none;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease;
+  }
+
+  .dak-help-trigger::-webkit-details-marker,
+  .dak-help-trigger::marker {
+    display: none;
+    content: "";
+  }
+
+  .dak-help-trigger::before {
+    content: "+";
+    font-weight: 700;
+    font-size: 0.95em;
+    line-height: 1;
+    color: var(--kbm-green-2, #738c52);
+  }
+
+  .dak-card-details[open] .dak-help-trigger::before {
+    content: "−";
+  }
+
+  .dak-help-trigger:hover {
+    background: #eef4e6;
+    border-color: #bdd1aa;
+    color: var(--kbm-green-hover);
+  }
+
+  .dak-help-trigger:focus {
+    outline: none;
+  }
+
+  .dak-help-trigger:focus-visible {
+    outline: 2px solid var(--kbm-green);
+    outline-offset: 2px;
+  }
+
+  .dak-card-details[open] .dak-help-trigger {
+    margin-bottom: 0.5rem;
+    background: #eef4e6;
+    border-color: #bdd1aa;
+  }
+
+  .dak-card-details[open] .choose-list {
+    padding-top: 0.5rem;
+    border-top: 1px solid #e6ebdf;
+  }
+
+  .choose-list {
+    margin: 0;
+    padding-left: 1.2rem;
+    line-height: 1.5;
+    color: #2d3b24;
+  }
+
+  .choose-list li + li {
+    margin-top: 0.3rem;
+  }
+
+  .dak-buy-link {
+    margin-top: 0.5rem;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  .dak-buy-link::after {
+    content: none;
+    display: none;
+  }
+
+  .comparison-details {
+    border: 1px solid #dde5d3;
+    border-radius: 12px;
+    background: #fff;
+    padding: 0.35rem 0.75rem 0.75rem;
+  }
+
+  .comparison-summary {
+    cursor: pointer;
+    font-weight: 700;
+    color: var(--kbm-green);
+    padding: 0.45rem 0.1rem;
+    list-style-position: outside;
+  }
+
+  .comparison-summary:hover {
+    color: var(--kbm-green-hover);
+  }
+
+  .comparison-content {
+    margin-top: 0.55rem;
+  }
+
+  .comparison-intro {
+    margin: 0 0 1rem;
+    color: #4f6140;
+  }
+
+  .comparison-group + .comparison-group {
+    margin-top: 1.2rem;
+  }
+
+  .comparison-group h3 {
+    margin: 0 0 0.6rem;
+    color: #2f4122;
+  }
+
+  .comparison-table-wrap {
+    overflow-x: auto;
+    border: 1px solid #dde5d3;
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .comparison-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+  }
+
+  .comparison-table th,
+  .comparison-table td {
+    border-bottom: 1px solid #edf1e7;
+    padding: 0.7rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .comparison-table th {
+    background: #f6f9f2;
+    color: #2c3e1f;
+    font-size: 0.95rem;
+  }
+
+  .comparison-table td {
+    color: #2d3b24;
+    font-size: 0.92rem;
+  }
+
+  .comparison-table thead th:not(:first-child),
+  .comparison-table tbody .status-cell {
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .status-cell {
+    width: 1%;
+    white-space: nowrap;
+  }
+
+  .status-cell--has-hint {
+    white-space: normal;
+    min-width: 5.5rem;
+  }
+
+  .status-cell-stack {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  .status-cell-hint {
+    font-size: 0.72rem;
+    line-height: 1.3;
+    font-weight: 500;
+    color: #6b7358;
+  }
+
+  .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    min-height: 1.5rem;
+    line-height: 1;
+  }
+
+  .status-included .status-icon {
+    color: #2d7a3f;
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  .status-notIncluded .status-icon {
+    color: #a8b0a0;
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+
+  .status-limited .status-partial-label {
+    color: #6b7358;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .comparison-note-row td {
+    background: #fcfdf9;
+    color: #556947;
+    font-size: 0.85rem;
+  }
+
+  :global(.dak-card .kbm-card-ribbon--dak-symbol) {
+    width: 78px !important;
+    height: 78px !important;
+  }
+
+  :global(.dak-card .kbm-card-ribbon--dak-symbol::after) {
+    top: 14px;
+    left: 19px;
+    font-size: 1.08rem;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: none;
+    transform: rotate(-50deg);
+    transform-origin: center;
+  }
+
+  @media (max-width: 640px) {
+    .designaknit-page {
+      padding-top: 0;
+    }
+
+    .best-for-text {
+      min-height: 0;
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    const section = document.getElementById("choose-version");
+    if (!section) return;
+
+    section.querySelectorAll(".dak-card-details").forEach((el) => {
+      if (!(el instanceof HTMLDetailsElement)) return;
+
+      el.addEventListener("toggle", () => {
+        if (!el.open) return;
+        section.querySelectorAll(".dak-card-details").forEach((other) => {
+          if (other instanceof HTMLDetailsElement && other !== el) {
+            other.open = false;
+          }
+        });
+      });
+    });
+  })();
+</script>
