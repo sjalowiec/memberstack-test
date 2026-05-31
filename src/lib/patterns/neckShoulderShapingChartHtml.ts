@@ -67,6 +67,30 @@ function escapeHtml(text: string): string {
     .replace(/"/g, "&quot;");
 }
 
+/**
+ * Wrap-safe HTML for a checklist **Action** cell in the narrow print/online column.
+ *
+ * The Action column has no fixed width and wraps freely, so a bare `Decrease 1 st` /
+ * `Bind off OR hold 3 sts` can break between the count and its unit — leaving a lone `1`
+ * (which thin-glyph rendering and OCR misread as `Il`, or drop entirely → `Decrease  st`)
+ * or a stranded `sts` on its own line. Gluing the count to its unit and keeping the
+ * multi-word verb phrase intact with non-breaking spaces removes those artifacts. Natural
+ * breaks are still allowed (e.g. before the count), so the column never forces the page wider.
+ *
+ * Display-only: the underlying {@link ActiveSideInstructionTableRow.action} keeps plain spaces
+ * so row IDs, aria labels, and tests stay stable.
+ */
+export function formatActionCellHtml(action: string): string {
+  const NBSP = "\u00A0";
+  let html = escapeHtml(String(action ?? ""));
+  // Glue the stitch count to its unit: "1 st" / "12 sts" → never split across lines.
+  html = html.replace(/(\d+)[ \t]+(sts?)\b/g, `$1${NBSP}$2`);
+  // Keep the multi-word verb phrases together so "OR hold"/"off" never strand.
+  html = html.replace(/Bind off OR hold/g, `Bind${NBSP}off${NBSP}OR${NBSP}hold`);
+  html = html.replace(/Bind off/g, `Bind${NBSP}off`);
+  return html;
+}
+
 function chartProgressRcAttrFromActiveRow(r: ActiveSideInstructionTableRow): string {
   const start = Math.max(0, Math.floor(Number(r.rc)));
   const endRaw = r.rcEnd !== undefined ? Math.max(0, Math.floor(Number(r.rcEnd))) : start;
@@ -479,7 +503,7 @@ function renderActiveSideInstructionRowsTrHtml(
       )} complete" /></label></td>`;
       return `<tr class="ns-shaping-chart__tr" data-row-id="${escapeHtml(rowId)}" data-rc="${escapeHtml(rcAttr)}">${doneCell}<td class="ns-shaping-chart__td-num">${escapeHtml(
         rcDisp
-      )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${escapeHtml(r.action      )}</td><td>${escapeHtml(
+      )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${formatActionCellHtml(r.action)}</td><td>${escapeHtml(
         r.edge
       )}</td><td class="ns-shaping-chart__td-num">${activeSideStsRemainingCellHtml(r)}</td></tr>`;
     })
@@ -807,7 +831,7 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
       const rcDisp = formatActiveSideRcDisplay(r);
       return `<tr class="ns-shaping-mini__row"><td class="ns-shaping-mini__rc">${escapeHtml(
         rcDisp
-      )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${escapeHtml(r.action)}</td><td>${escapeHtml(
+      )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${formatActionCellHtml(r.action)}</td><td>${escapeHtml(
         r.edge
       )}</td><td class="ns-shaping-mini__sts">${activeSideStsRemainingCellHtml(r)}</td></tr>`;
     })
@@ -817,7 +841,7 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
       const rcDisp = formatActiveSideRcDisplay(r);
       return `<tr class="ns-shaping-mini__row"><td class="ns-shaping-mini__rc">${escapeHtml(
         rcDisp
-      )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${escapeHtml(r.action)}</td><td>${escapeHtml(
+      )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${formatActionCellHtml(r.action)}</td><td>${escapeHtml(
         r.edge
       )}</td><td class="ns-shaping-mini__sts">${activeSideStsRemainingCellHtml(r)}</td></tr>`;
     })

@@ -5,6 +5,7 @@ import {
   buildActiveSideInstructionTableRows,
   buildSecondShoulderInstructionTableRows,
   compactActiveSideInstructionRowsForPrint,
+  formatActionCellHtml,
   neckShoulderChartHasCarriagePositionColumn,
   renderCarriagePositionPatternTipHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
@@ -159,6 +160,59 @@ describe("carriage position pattern tip", () => {
     expect(printHtml).toContain("Carriage Position</th>");
     expect(printHtml).not.toContain('data-tip-id="sleeveless-carriage-position"');
     expect(printHtml).not.toContain("pattern-help-card__details");
+  });
+});
+
+describe("formatActionCellHtml wrap-safe Action cells", () => {
+  const NBSP = "\u00A0";
+
+  it("glues a single-stitch decrease so the count can never wrap off (RC 079/081 regression)", () => {
+    const html = formatActionCellHtml("Decrease 1 st");
+    expect(html).toBe(`Decrease 1${NBSP}st`);
+    // The number is always present, glued to its unit — never "Decrease  st" or "Decrease st".
+    expect(html).toContain(`1${NBSP}st`);
+    expect(html).not.toMatch(/Decrease\s+st\b/);
+  });
+
+  it("glues plural decreases as 'X sts' on one unit", () => {
+    expect(formatActionCellHtml("Decrease 4 sts")).toBe(`Decrease 4${NBSP}sts`);
+    expect(formatActionCellHtml("Decrease 12 sts")).toBe(`Decrease 12${NBSP}sts`);
+  });
+
+  it("keeps 'Bind off OR hold X sts' on one readable run (RC 080 stranded 'sts' regression)", () => {
+    const html = formatActionCellHtml("Bind off OR hold 3 sts");
+    expect(html).toBe(`Bind${NBSP}off${NBSP}OR${NBSP}hold 3${NBSP}sts`);
+    // "sts" can never strand: it is glued to its count, and the verb phrase is intact.
+    expect(html).toContain(`3${NBSP}sts`);
+    expect(html).not.toMatch(/\d+ sts/); // no plain ASCII space between count and unit
+  });
+
+  it("glues a plain 'Bind off X sts' verb too", () => {
+    expect(formatActionCellHtml("Bind off 5 sts")).toBe(`Bind${NBSP}off 5${NBSP}sts`);
+  });
+
+  it("escapes HTML and tolerates empty/odd input", () => {
+    expect(formatActionCellHtml("Knit in pattern")).toBe("Knit in pattern");
+    expect(formatActionCellHtml("")).toBe("");
+    expect(formatActionCellHtml(undefined as unknown as string)).toBe("");
+    expect(formatActionCellHtml("<b>Decrease 1 st</b>")).toBe(`&lt;b&gt;Decrease 1${NBSP}st&lt;/b&gt;`);
+  });
+
+  it("every built checklist Decrease/Bind off action renders its number in the HTML cell", () => {
+    const r = generateSleevelessBackPattern(baseRoundNeckPattern());
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(
+      r.frontNeckShoulderShapingChart,
+      r.firstArmholeGarmentRc,
+    );
+    const rows = buildActiveSideInstructionTableRows(r.frontNeckShoulderShapingChart, rcStart);
+    const shapingRows = rows.filter((row) => /^(Decrease|Bind off)/.test(row.action));
+    expect(shapingRows.length).toBeGreaterThan(0);
+    for (const row of shapingRows) {
+      const cell = formatActionCellHtml(row.action);
+      // Number is present and glued to its unit; unit never separated by a plain ASCII space.
+      expect(cell).toMatch(new RegExp(`\\d+${NBSP}sts?\\b`));
+      expect(cell).not.toMatch(/\d+ sts?\b/u);
+    }
   });
 });
 
