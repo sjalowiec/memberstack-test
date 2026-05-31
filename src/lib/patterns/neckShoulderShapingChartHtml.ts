@@ -396,6 +396,16 @@ function formatActiveSideRc(rc: number): string {
 }
 
 /**
+ * Sts Remaining cell text for a checklist row — uses the optional divide/transition display string
+ * (e.g. `50 total / 20 active`) when present, otherwise the numeric active-shoulder count.
+ */
+function activeSideStsRemainingCellHtml(r: ActiveSideInstructionTableRow): string {
+  const override =
+    typeof r.stitchesRemainingDisplay === "string" ? r.stitchesRemainingDisplay.trim() : "";
+  return override ? escapeHtml(override) : String(r.stitchesRemaining);
+}
+
+/**
  * Merge consecutive “Knit in pattern” active-shoulder checklist rows when stitch counts stay the same and RCs are consecutive.
  * Used for on-screen pattern (`activeSideOnly`) and print mini-table except sleeveless-style V-neck charts (see {@link isFullWidthVNeckFrontStyleChart}).
  * Uses `plainKnitSpanCarriageEdgeDisplay` for alternating Side / Section labels.
@@ -469,9 +479,9 @@ function renderActiveSideInstructionRowsTrHtml(
       )} complete" /></label></td>`;
       return `<tr class="ns-shaping-chart__tr" data-row-id="${escapeHtml(rowId)}" data-rc="${escapeHtml(rcAttr)}">${doneCell}<td class="ns-shaping-chart__td-num">${escapeHtml(
         rcDisp
-      )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${escapeHtml(r.action)}</td><td>${escapeHtml(
+      )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${escapeHtml(r.action      )}</td><td>${escapeHtml(
         r.edge
-      )}</td><td class="ns-shaping-chart__td-num">${r.stitchesRemaining}</td></tr>`;
+      )}</td><td class="ns-shaping-chart__td-num">${activeSideStsRemainingCellHtml(r)}</td></tr>`;
     })
     .join("");
 }
@@ -799,7 +809,7 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
         rcDisp
       )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${escapeHtml(r.action)}</td><td>${escapeHtml(
         r.edge
-      )}</td><td class="ns-shaping-mini__sts">${r.stitchesRemaining}</td></tr>`;
+      )}</td><td class="ns-shaping-mini__sts">${activeSideStsRemainingCellHtml(r)}</td></tr>`;
     })
     .join("");
   const oppositeRowsHtml = oppositePrintRows
@@ -809,7 +819,7 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
         rcDisp
       )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${escapeHtml(r.action)}</td><td>${escapeHtml(
         r.edge
-      )}</td><td class="ns-shaping-mini__sts">${r.stitchesRemaining}</td></tr>`;
+      )}</td><td class="ns-shaping-mini__sts">${activeSideStsRemainingCellHtml(r)}</td></tr>`;
     })
     .join("");
   return `<section class="ns-shaping-mini" aria-labelledby="${escapeHtml(headingId)}">
