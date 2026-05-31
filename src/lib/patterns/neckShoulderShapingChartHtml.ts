@@ -113,10 +113,13 @@ function buildFullChartStableRowId(
 function renderNsChartProgressToolbarHtml(): string {
   return `<div class="ns-shaping-chart__progress-toolbar no-print">
     <div class="ns-shaping-chart__progress-toolbar-main" role="toolbar" aria-label="Chart checklist tracking">
-      <button type="button" class="ns-shaping-chart__progress-btn ns-shaping-chart__progress-toggle-hide" data-chart-progress-toggle-hide aria-pressed="false">Hide completed rows</button>
-      <button type="button" class="ns-shaping-chart__progress-btn ns-shaping-chart__progress-reset" data-chart-progress-reset>Reset checklist</button>
+      <button type="button" role="switch" aria-checked="true" class="pattern-tips-switch ns-shaping-chart__progress-show-completed" data-chart-progress-show-completed>
+        <span class="pattern-tips-switch__label">Show Completed Rows</span>
+        <span class="pattern-tips-switch__track" aria-hidden="true"><span class="pattern-tips-switch__thumb"></span></span>
+        <span class="pattern-tips-switch__state" data-chart-progress-show-state>Rows visible</span>
+      </button>
+      <button type="button" class="ns-shaping-chart__progress-btn ns-shaping-chart__progress-reset" data-chart-progress-reset>Reset Checklist</button>
     </div>
-    <p class="ns-shaping-chart__progress-hide-status" data-chart-progress-hide-status role="status" aria-live="polite"><span class="ns-shaping-chart__progress-hide-status-mark" aria-hidden="true"></span><span data-chart-progress-hide-status-text>Completed rows are visible.</span></p>
   </div>`;
 }
 

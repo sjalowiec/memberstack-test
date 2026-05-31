@@ -104,7 +104,7 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
   {
     workspaceNav ? (
         <div class="pattern-tab-nav">
-          <>
+          <div class="pattern-tab-nav__workflow">
           <a
             class:list={["tab-btn", "tab-btn--express", "tab-btn--workspace-brand", { active: expressTabActive }]}
             href={expressNavHref}
@@ -203,6 +203,8 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
               <i class="fa-solid fa-lightbulb tab-workspace-mobile-icon" aria-hidden="true"></i>
             </a>
           )}
+          </div>
+          <div class="pattern-tab-nav__actions">
           <button
             type="button"
             class="pattern-workspace-new-pattern-trigger"
@@ -225,7 +227,7 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
           >
             <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
           </button>
-          </>
+          </div>
         </div>
     ) : (
       <div class="pattern-tab-nav">
@@ -327,6 +329,25 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
   .pattern-workspace-tabs .pattern-tab-nav::-webkit-scrollbar {
     width: 0;
     height: 0;
+  }
+
+  /* Left section: primary workflow tabs. */
+  .pattern-workspace-tabs .pattern-tab-nav__workflow {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    align-items: flex-end;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  /* Right section: actions (New Pattern + Library), aligned right. */
+  .pattern-workspace-tabs .pattern-tab-nav__actions {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    align-items: flex-end;
+    margin-left: auto;
   }
 
   .pattern-workspace-tabs .pattern-tab-nav .tab-btn {
@@ -518,6 +539,10 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
       gap: 0.06rem;
       margin: 0 0 1rem;
       padding: 0.18rem 0 0.12rem;
+    }
+
+    .pattern-workspace-tabs .pattern-tab-nav__workflow {
+      gap: 0.06rem;
     }
 
     .pattern-workspace-tabs .pattern-tab-nav .tab-btn {

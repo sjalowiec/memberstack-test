@@ -86,6 +86,23 @@ describe("custom pattern project summary index", () => {
     expect(Object.keys(summary).sort()).toEqual([...SUMMARY_SHAPE_KEYS].sort());
   });
 
+  it("summaryFromProject derives display gauge from the saved yarnGauge", () => {
+    const summary = summaryFromProject(
+      sampleProject({
+        pattern: {
+          patternType: "sleeveless",
+          yarnGauge: { stitchGauge: "7", rowGauge: "11" },
+        },
+      }),
+    );
+    expect(summary.gauge).toEqual({ stitchesPerInch: 7, rowsPerInch: 11 });
+  });
+
+  it("summaryFromProject omits gauge when the pattern has none", () => {
+    const summary = summaryFromProject(sampleProject());
+    expect(summary).not.toHaveProperty("gauge");
+  });
+
   it("sortProjectSummaries orders newest updatedAt first", () => {
     const sorted = sortProjectSummaries([
       summaryFromProject(sampleProject({ id: "a", updatedAt: "2025-01-01T00:00:00.000Z" })),

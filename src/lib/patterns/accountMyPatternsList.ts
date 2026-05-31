@@ -2,9 +2,18 @@
  * Saved patterns list on /account — load, open, sort, and delete saved projects.
  */
 import { listCustomPatternProjects } from "./customPatternProjectClient";
-import type { CustomPatternProjectSummary } from "./customPatternProjectTypes";
+import type { CustomPatternProject, CustomPatternProjectSummary } from "./customPatternProjectTypes";
 import { deleteSavedCustomPatternProject } from "./deleteSavedCustomPatternProject";
 import { loadSavedCustomPatternProject } from "./loadSavedCustomPatternProject";
+import {
+  copySavedCustomPatternProjectById,
+  renameSavedCustomPatternProject,
+} from "./savedCustomPatternManageActions";
+import {
+  canCopySavedCustomPattern,
+  SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT,
+  syncSavedCustomPatternCopyAccess,
+} from "./savedCustomPatternCopyAccess";
 import {
   memberstackReadinessSnapshot,
   nextAccountListRender,
@@ -12,11 +21,30 @@ import {
   perfMark,
   perfStart,
 } from "./savedPatternsPerfLog";
+import {
+  extractSavedPatternGauge,
+  formatSavedPatternGauge,
+} from "./savedPatternGaugeDisplay";
 
 const SIGN_IN_REQUIRED_ERROR = "Sign in to save Custom Pattern projects.";
 const EMPTY_LIST_MESSAGE =
   "You do not have any saved patterns yet. Save a project from the sleeveless Custom Build design step.";
 export const DELETE_SAVED_PATTERN_CONFIRM_MESSAGE = "Delete this saved pattern?";
+export const RENAME_SAVED_PATTERN_PROMPT_MESSAGE = "Rename this saved pattern:";
+
+function toProjectSummary(project: CustomPatternProject): CustomPatternProjectSummary {
+  const gauge = extractSavedPatternGauge(project.pattern?.yarnGauge);
+  return {
+    id: project.id,
+    name: project.name,
+    family: project.family,
+    source: project.source,
+    createdAt: project.createdAt,
+    updatedAt: project.updatedAt,
+    version: project.version,
+    ...(gauge ? { gauge } : {}),
+  };
+}
 
 type SortColumn = "name" | "updatedAt";
 type SortDirection = "asc" | "desc";
@@ -54,17 +82,12 @@ function hideStatus(root: HTMLElement): void {
 }
 
 function formatProjectType(project: CustomPatternProjectSummary): string {
+  // User-facing pattern type only — internal workflow source (Express / Custom Build) is not shown.
   const familyLabels: Record<string, string> = {
     sleeveless: "Sleeveless",
   };
-  const sourceLabels: Record<string, string> = {
-    express: "Express",
-    "custom-build": "Custom Build",
-  };
   const family = project.family ? (familyLabels[project.family] ?? project.family) : "";
-  const source = project.source ? (sourceLabels[project.source] ?? project.source) : "";
-  if (family && source) return `${family} · ${source}`;
-  return family || source || "—";
+  return family || "—";
 }
 
 function compareProjects(
@@ -120,6 +143,13 @@ function updateSortHeaders(root: HTMLElement): void {
   });
 }
 
+const ROW_ACTION_SELECTORS = [
+  "[data-kbm-my-patterns-open]",
+  "[data-kbm-my-patterns-copy]",
+  "[data-kbm-my-patterns-rename]",
+  "[data-kbm-my-patterns-delete]",
+] as const;
+
 function lockMyPatternsListInteraction(root: HTMLElement): void {
   root.querySelectorAll<HTMLElement>("[data-kbm-my-patterns-row]").forEach((row) => {
     row.setAttribute("aria-disabled", "true");
@@ -128,9 +158,11 @@ function lockMyPatternsListInteraction(root: HTMLElement): void {
   root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-sort]").forEach((b) => {
     b.disabled = true;
   });
-  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-delete]").forEach((b) => {
-    b.disabled = true;
-  });
+  for (const selector of ROW_ACTION_SELECTORS) {
+    root.querySelectorAll<HTMLButtonElement>(selector).forEach((b) => {
+      b.disabled = true;
+    });
+  }
 }
 
 function releaseMyPatternsListInteraction(root: HTMLElement): void {
@@ -141,8 +173,18 @@ function releaseMyPatternsListInteraction(root: HTMLElement): void {
   root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-sort]").forEach((b) => {
     b.disabled = false;
   });
+  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-open]").forEach((b) => {
+    b.disabled = false;
+  });
+  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-rename]").forEach((b) => {
+    b.disabled = false;
+  });
   root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-delete]").forEach((b) => {
     b.disabled = false;
+  });
+  // Copy stays gated by entitlement even after the list unlocks.
+  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-copy]").forEach((b) => {
+    syncSavedCustomPatternCopyAccess(b);
   });
 }
 
@@ -250,6 +292,89 @@ async function onProjectDelete(
   }
 }
 
+async function onProjectCopy(
+  root: HTMLElement,
+  projectId: string,
+  label: string,
+): Promise<void> {
+  if (!canCopySavedCustomPattern()) {
+    setStatus(root, SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT, true);
+    return;
+  }
+
+  const actionStart = perfStart();
+  perfMark("6-account-list-action start", { action: "copy", projectId, label });
+  setStatus(root, `Copying “${label}”…`);
+  lockMyPatternsListInteraction(root);
+
+  try {
+    const result = await copySavedCustomPatternProjectById(projectId, "sleeveless");
+    if (!result.ok) {
+      setStatus(root, result.error, true);
+      perfEnd("6-account-list-action total", actionStart, { action: "copy", ok: false });
+      return;
+    }
+
+    const state = listStateByRoot.get(root);
+    if (state) {
+      state.projects = [...state.projects, toProjectSummary(result.project)];
+      renderProjectList(root);
+      setListVisible(root, true);
+    }
+    setStatus(root, `Created “${result.project.name}”.`);
+    perfEnd("6-account-list-action total", actionStart, { action: "copy", ok: true });
+  } catch (error) {
+    console.error("[kbm] Failed to copy saved pattern from My Patterns.", error);
+    setStatus(root, "Could not copy this saved pattern. Please try again.", true);
+    perfEnd("6-account-list-action total", actionStart, { action: "copy", ok: false, thrown: true });
+  } finally {
+    releaseMyPatternsListInteraction(root);
+  }
+}
+
+async function onProjectRename(
+  root: HTMLElement,
+  projectId: string,
+  label: string,
+): Promise<void> {
+  const next = window.prompt(RENAME_SAVED_PATTERN_PROMPT_MESSAGE, label);
+  if (next === null) return;
+  const name = next.trim();
+  if (!name || name === label) return;
+
+  const actionStart = perfStart();
+  perfMark("6-account-list-action start", { action: "rename", projectId, label });
+  setStatus(root, `Renaming “${label}”…`);
+  lockMyPatternsListInteraction(root);
+
+  try {
+    const result = await renameSavedCustomPatternProject(projectId, name, "sleeveless");
+    if (!result.ok) {
+      setStatus(root, result.error, true);
+      perfEnd("6-account-list-action total", actionStart, { action: "rename", ok: false });
+      return;
+    }
+
+    const state = listStateByRoot.get(root);
+    if (state) {
+      state.projects = state.projects.map((project) =>
+        project.id === projectId
+          ? { ...project, name: result.project.name, updatedAt: result.project.updatedAt }
+          : project,
+      );
+      renderProjectList(root);
+    }
+    setStatus(root, `Renamed to “${result.project.name}”.`);
+    perfEnd("6-account-list-action total", actionStart, { action: "rename", ok: true });
+  } catch (error) {
+    console.error("[kbm] Failed to rename saved pattern from My Patterns.", error);
+    setStatus(root, "Could not rename this saved pattern. Please try again.", true);
+    perfEnd("6-account-list-action total", actionStart, { action: "rename", ok: false, thrown: true });
+  } finally {
+    releaseMyPatternsListInteraction(root);
+  }
+}
+
 function wireProjectRow(
   root: HTMLElement,
   tr: HTMLTableRowElement,
@@ -295,6 +420,14 @@ function renderProjectRow(root: HTMLElement, project: CustomPatternProjectSummar
   typeCell.setAttribute("data-label", "Type");
   typeCell.textContent = formatProjectType(project);
 
+  const gaugeCell = document.createElement("td");
+  gaugeCell.className = "account-my-patterns__cell--gauge account-my-patterns__gauge";
+  gaugeCell.setAttribute("data-label", "Gauge");
+  gaugeCell.textContent = formatSavedPatternGauge(project.gauge);
+  if (!project.gauge) {
+    gaugeCell.classList.add("account-my-patterns__gauge--empty");
+  }
+
   const updatedCell = document.createElement("td");
   updatedCell.className = "account-my-patterns__cell--updated account-my-patterns__updated";
   updatedCell.setAttribute("data-label", "Last updated");
@@ -304,9 +437,54 @@ function renderProjectRow(root: HTMLElement, project: CustomPatternProjectSummar
   const actionsCell = document.createElement("td");
   actionsCell.className = "account-my-patterns__cell--actions";
   actionsCell.setAttribute("data-label", "Actions");
+
+  const actionsGroup = document.createElement("div");
+  actionsGroup.className = "account-my-patterns__actions";
+
+  const openBtn = document.createElement("button");
+  openBtn.type = "button";
+  openBtn.className = "account-my-patterns__action account-my-patterns__action--open";
+  openBtn.setAttribute("data-kbm-my-patterns-open", "");
+  openBtn.dataset.projectId = project.id;
+  openBtn.setAttribute("aria-label", `Open ${displayName}`);
+  openBtn.textContent = "Open";
+  openBtn.addEventListener("click", (event) => {
+    event?.stopPropagation?.();
+    if (openBtn.disabled) return;
+    void onProjectOpen(root, project.id, displayName);
+  });
+
+  const copyBtn = document.createElement("button");
+  copyBtn.type = "button";
+  copyBtn.className = "account-my-patterns__action account-my-patterns__action--copy";
+  copyBtn.setAttribute("data-kbm-my-patterns-copy", "");
+  copyBtn.dataset.projectId = project.id;
+  copyBtn.setAttribute("aria-label", `Copy ${displayName}`);
+  copyBtn.textContent = "Copy Pattern";
+  copyBtn.addEventListener("click", (event) => {
+    event?.stopPropagation?.();
+    if (copyBtn.disabled) return;
+    void onProjectCopy(root, project.id, displayName);
+  });
+  // Visible for everyone; disabled + grayed (with helper tooltip) for free / non-owner users.
+  syncSavedCustomPatternCopyAccess(copyBtn);
+
+  const renameBtn = document.createElement("button");
+  renameBtn.type = "button";
+  renameBtn.className = "account-my-patterns__action account-my-patterns__action--rename";
+  renameBtn.setAttribute("data-kbm-my-patterns-rename", "");
+  renameBtn.dataset.projectId = project.id;
+  renameBtn.setAttribute("aria-label", `Rename ${displayName}`);
+  renameBtn.textContent = "Rename";
+  renameBtn.addEventListener("click", (event) => {
+    event?.stopPropagation?.();
+    if (renameBtn.disabled) return;
+    void onProjectRename(root, project.id, displayName);
+  });
+
   const delBtn = document.createElement("button");
   delBtn.type = "button";
-  delBtn.className = "account-my-patterns__delete";
+  delBtn.className = "account-my-patterns__action account-my-patterns__action--delete account-my-patterns__delete";
   delBtn.setAttribute("data-kbm-my-patterns-delete", "");
   delBtn.dataset.projectId = project.id;
   delBtn.setAttribute("aria-label", `Delete ${displayName}`);
@@ -319,9 +497,11 @@ function renderProjectRow(root: HTMLElement, project: CustomPatternProjectSummar
     if (delBtn.disabled) return;
     void onProjectDelete(root, project.id, displayName);
   });
-  actionsCell.append(delBtn);
 
-  tr.append(nameCell, typeCell, updatedCell, actionsCell);
+  actionsGroup.append(openBtn, copyBtn, renameBtn, delBtn);
+  actionsCell.append(actionsGroup);
+
+  tr.append(nameCell, typeCell, gaugeCell, updatedCell, actionsCell);
   tbody.append(tr);
 }
 

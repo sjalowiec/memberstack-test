@@ -7,13 +7,17 @@ import {
   CUSTOM_PATTERN_EDITING_BANNER_BODY_TEXT,
   getCustomPatternEditingBannerState,
   isCustomPatternEditingBannerUpdateTarget,
+  performEditingBannerCopy,
   performEditingBannerUpdate,
+  renderCustomPatternEditingBanner,
   shouldMountCustomPatternEditingBannerHost,
 } from "./customPatternEditingBanner";
 import {
   CB_EDITING_BANNER_CANCEL_SELECTOR,
+  CB_EDITING_BANNER_COPY_SELECTOR,
   CB_EDITING_BANNER_UPDATE_SELECTOR,
   exitEditingSavedCustomPattern,
+  runCopyActiveSavedCustomPattern,
   runUpdateActiveSavedCustomPattern,
 } from "./customPatternEditingBannerActions";
 
@@ -22,6 +26,8 @@ vi.mock("./customPatternEditingBannerActions", async (importOriginal) => {
   return {
     ...actual,
     runUpdateActiveSavedCustomPattern: vi.fn(),
+    runCopyActiveSavedCustomPattern: vi.fn(),
+    syncEditingSavedPatternChrome: vi.fn(),
   };
 });
 
@@ -51,6 +57,83 @@ function makeBannerHostForUpdate(): HTMLElement {
     },
     querySelector: () => null,
   } as unknown as HTMLElement;
+}
+
+function makeBannerHostForCopy(): HTMLElement {
+  const triggers = [{ disabled: false } as HTMLButtonElement];
+  return {
+    ownerDocument: {} as Document,
+    querySelectorAll(sel: string) {
+      return sel === CB_EDITING_BANNER_COPY_SELECTOR ? triggers : [];
+    },
+    querySelector: () => null,
+  } as unknown as HTMLElement;
+}
+
+type RenderNode = {
+  tagName: string;
+  className: string;
+  title: string;
+  textContent: string;
+  innerHTML: string;
+  hidden: boolean;
+  disabled: boolean;
+  _attrs: Map<string, string>;
+  _children: RenderNode[];
+  classList: { add: (c: string) => void; remove: (c: string) => void; toggle: (c: string, on?: boolean) => boolean };
+  setAttribute: (k: string, v: string) => void;
+  getAttribute: (k: string) => string | null;
+  removeAttribute: (k: string) => void;
+  append: (...nodes: RenderNode[]) => void;
+  appendChild: (node: RenderNode) => RenderNode;
+  replaceChildren: () => void;
+};
+
+function makeRenderNode(tagName = "div"): RenderNode {
+  const attrs = new Map<string, string>();
+  const classes = new Set<string>();
+  const node: RenderNode = {
+    tagName: tagName.toUpperCase(),
+    className: "",
+    title: "",
+    textContent: "",
+    innerHTML: "",
+    hidden: false,
+    disabled: false,
+    _attrs: attrs,
+    _children: [],
+    classList: {
+      add: (c) => classes.add(c),
+      remove: (c) => classes.delete(c),
+      toggle: (c, on) => {
+        const next = on ?? !classes.has(c);
+        if (next) classes.add(c);
+        else classes.delete(c);
+        return next;
+      },
+    },
+    setAttribute: (k, v) => attrs.set(k, v),
+    getAttribute: (k) => attrs.get(k) ?? null,
+    removeAttribute: (k) => attrs.delete(k),
+    append: (...nodes) => node._children.push(...nodes.filter(Boolean)),
+    appendChild: (child) => {
+      node._children.push(child);
+      return child;
+    },
+    replaceChildren: () => {
+      node._children.length = 0;
+    },
+  };
+  return node;
+}
+
+function collectRenderNodes(nodes: RenderNode[], attr: string): RenderNode[] {
+  const out: RenderNode[] = [];
+  for (const node of nodes) {
+    if (node?._attrs?.has(attr)) out.push(node);
+    if (node?._children) out.push(...collectRenderNodes(node._children, attr));
+  }
+  return out;
 }
 
 describe("Custom Build editing banner", () => {
@@ -148,5 +231,52 @@ describe("Custom Build editing banner", () => {
     exitEditingSavedCustomPattern();
     expect(getCustomPatternEditingBannerState().show).toBe(false);
     expect(runUpdateActiveSavedCustomPattern).not.toHaveBeenCalled();
+  });
+
+  it("exposes a distinct Save a Copy selector for the banner bar", () => {
+    expect(CB_EDITING_BANNER_COPY_SELECTOR).toBe("[data-cb-editing-banner-copy]");
+    expect(CB_EDITING_BANNER_COPY_SELECTOR).not.toBe(CB_EDITING_BANNER_UPDATE_SELECTOR);
+  });
+
+  it("Save a Copy button triggers the copy handler, not the update handler", async () => {
+    vi.mocked(runCopyActiveSavedCustomPattern).mockResolvedValue({ ok: false, error: "stub" });
+
+    const host = makeBannerHostForCopy();
+    await performEditingBannerCopy(host);
+
+    expect(runCopyActiveSavedCustomPattern).toHaveBeenCalledTimes(1);
+    expect(runCopyActiveSavedCustomPattern).toHaveBeenCalledWith(host.ownerDocument, expect.any(Object));
+    expect(runUpdateActiveSavedCustomPattern).not.toHaveBeenCalled();
+  });
+
+  it("renders Save Changes and Save a Copy as first-class actions on the open pattern", () => {
+    writeActiveCustomPatternProjectId("proj-sue", SUES_PATTERN);
+    seedDraftTitle(SUES_PATTERN);
+
+    const created: RenderNode[] = [];
+    vi.stubGlobal("document", {
+      createElement: (tag: string) => {
+        const node = makeRenderNode(tag);
+        created.push(node);
+        return node;
+      },
+      createTextNode: (text: string) => ({ textContent: text }),
+    });
+
+    const host = makeRenderNode("div");
+    renderCustomPatternEditingBanner(host as unknown as HTMLElement);
+
+    const copyButtons = collectRenderNodes(host._children, "data-cb-editing-banner-copy");
+    expect(copyButtons.length).toBe(1);
+    expect(copyButtons[0].title).toBe("Save a Copy");
+    expect(copyButtons[0].getAttribute("aria-label")).toBe("Save a Copy");
+
+    const updateButtons = collectRenderNodes(host._children, "data-cb-editing-banner-update");
+    // Inline body "Save" link + the labeled Save Changes button.
+    expect(updateButtons.length).toBeGreaterThanOrEqual(1);
+    const saveChanges = updateButtons.find((b) => b.getAttribute("aria-label") === "Save Changes");
+    expect(saveChanges).toBeTruthy();
+
+    vi.unstubAllGlobals();
   });
 });

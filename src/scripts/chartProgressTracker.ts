@@ -20,10 +20,8 @@ export {
   sanitizeChartProgressKeyPart as sanitizeKeyPart,
 } from "../lib/patterns/chartProgressStorage";
 
-const CHART_PROGRESS_LABEL_FILTER_OFF = "Hide completed rows";
-const CHART_PROGRESS_LABEL_FILTER_ON = "Showing unfinished rows only";
-const CHART_PROGRESS_STATUS_FILTER_OFF = "Completed rows are visible.";
-const CHART_PROGRESS_STATUS_FILTER_ON = "Completed rows are hidden.";
+const CHART_PROGRESS_SHOW_STATE_ON = "Rows visible";
+const CHART_PROGRESS_SHOW_STATE_OFF = "Rows hidden";
 
 function readCheckedRows(key: string): Set<string> {
   return new Set(readChartProgressBlob(key).checkedRowIds);
@@ -66,20 +64,20 @@ function bindChartSection(
 
   const key = chartProgressStorageKey(patternId, chartId);
 
-  const hideBtn =
-    chartRoot.querySelector<HTMLButtonElement>("[data-chart-progress-toggle-hide]");
+  const showToggle =
+    chartRoot.querySelector<HTMLButtonElement>("[data-chart-progress-show-completed]");
   const resetBtn = chartRoot.querySelector<HTMLButtonElement>("[data-chart-progress-reset]");
-  const hideStatusTextEl = chartRoot.querySelector<HTMLElement>("[data-chart-progress-hide-status-text]");
+  const showStateEl = chartRoot.querySelector<HTMLElement>("[data-chart-progress-show-state]");
 
   const setCompletedHiddenUi = (active: boolean): void => {
     chartRoot.dataset.chartProgressHideCompleted = active ? "true" : "false";
     chartRoot.classList.toggle("ns-shaping-chart--completed-hidden", active);
-    if (hideBtn) {
-      hideBtn.setAttribute("aria-pressed", active ? "true" : "false");
-      hideBtn.textContent = active ? CHART_PROGRESS_LABEL_FILTER_ON : CHART_PROGRESS_LABEL_FILTER_OFF;
+    const showCompleted = !active;
+    if (showToggle) {
+      showToggle.setAttribute("aria-checked", showCompleted ? "true" : "false");
     }
-    if (hideStatusTextEl) {
-      hideStatusTextEl.textContent = active ? CHART_PROGRESS_STATUS_FILTER_ON : CHART_PROGRESS_STATUS_FILTER_OFF;
+    if (showStateEl) {
+      showStateEl.textContent = showCompleted ? CHART_PROGRESS_SHOW_STATE_ON : CHART_PROGRESS_SHOW_STATE_OFF;
     }
   };
 
@@ -153,7 +151,7 @@ function bindChartSection(
     persistFromDom();
   });
 
-  hideBtn?.addEventListener("click", () => {
+  showToggle?.addEventListener("click", () => {
     const nextActive = chartRoot.dataset.chartProgressHideCompleted !== "true";
     setCompletedHiddenUi(nextActive);
     const stored = readCheckedRows(key);

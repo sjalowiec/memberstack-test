@@ -6,6 +6,7 @@ import {
   writeActiveCustomPatternProjectId,
 } from "./customPatternProjectActiveId";
 import {
+  buildCustomPatternProjectMetaLine,
   closePatternWorkspaceLibraryDrawer,
   formatCustomPatternProjectType,
   formatCustomPatternProjectUpdatedAt,
@@ -18,6 +19,7 @@ import type { PatternWorkspaceLibraryDrawerBindings } from "./patternWorkspaceLi
 
 const listCustomPatternProjectsMock = vi.fn();
 const loadSavedCustomPatternProjectMock = vi.fn();
+const copyByIdMock = vi.fn();
 
 vi.mock("./customPatternProjectClient", () => ({
   listCustomPatternProjects: (...args: unknown[]) => listCustomPatternProjectsMock(...args),
@@ -25,6 +27,11 @@ vi.mock("./customPatternProjectClient", () => ({
 
 vi.mock("./loadSavedCustomPatternProject", () => ({
   loadSavedCustomPatternProject: (...args: unknown[]) => loadSavedCustomPatternProjectMock(...args),
+}));
+
+vi.mock("./savedCustomPatternManageActions", () => ({
+  copySavedCustomPatternProjectById: (...args: unknown[]) => copyByIdMock(...args),
+  renameSavedCustomPatternProject: vi.fn(),
 }));
 
 class MockHTMLElement {}
@@ -65,6 +72,9 @@ function makeEl(tag = "div"): MockEl {
     getAttribute(name: string) {
       return attrs.get(name) ?? null;
     },
+    removeAttribute(name: string) {
+      attrs.delete(name);
+    },
     append(...nodes: MockEl[]) {
       el._children.push(...nodes);
     },
@@ -87,6 +97,9 @@ function makeEl(tag = "div"): MockEl {
       }
       if (sel === "[data-pattern-workspace-library-item-card]") {
         return attrs.has("data-pattern-workspace-library-item-card");
+      }
+      if (sel === "[data-pattern-workspace-library-copy]") {
+        return attrs.has("data-pattern-workspace-library-copy");
       }
       return false;
     },
@@ -155,7 +168,7 @@ function makeDrawerBindings(): PatternWorkspaceLibraryDrawerBindings & {
 }
 
 describe("patternWorkspaceLibraryDrawer display helpers", () => {
-  it("formats project type and updated date", () => {
+  it("shows the pattern type without the internal Express / Custom Build source", () => {
     expect(
       formatCustomPatternProjectType({
         id: "p1",
@@ -163,8 +176,43 @@ describe("patternWorkspaceLibraryDrawer display helpers", () => {
         family: "sleeveless",
         source: "express",
       }),
-    ).toBe("Sleeveless · Express");
+    ).toBe("Sleeveless");
+    expect(
+      formatCustomPatternProjectType({
+        id: "p2",
+        name: "Test",
+        family: "sleeveless",
+        source: "custom-build",
+      }),
+    ).not.toMatch(/Express|Custom Build/);
     expect(formatCustomPatternProjectUpdatedAt("2026-01-15T12:00:00.000Z")).toMatch(/2026/);
+  });
+
+  it("builds a compact meta line with gauge and no Express", () => {
+    const line = buildCustomPatternProjectMetaLine({
+      id: "p1",
+      name: "Test",
+      family: "sleeveless",
+      source: "express",
+      updatedAt: "2026-05-31T12:00:00.000Z",
+      gauge: { stitchesPerInch: 7, rowsPerInch: 11 },
+    });
+    expect(line).toContain("Sleeveless");
+    expect(line).toContain("7 sts / 11 rows");
+    expect(line).toContain("•");
+    expect(line).not.toMatch(/Express/);
+  });
+
+  it("omits the gauge segment when gauge is missing", () => {
+    const line = buildCustomPatternProjectMetaLine({
+      id: "p1",
+      name: "Test",
+      family: "sleeveless",
+      source: "express",
+      updatedAt: "2026-05-31T12:00:00.000Z",
+    });
+    expect(line).not.toMatch(/sts|rows|Gauge not set/);
+    expect(line).toContain("Sleeveless");
   });
 });
 
@@ -230,6 +278,34 @@ describe("patternWorkspaceLibraryDrawer", () => {
     expect(bindings.status.hidden).toBe(true);
   });
 
+  it("renders gauge in the saved project meta and never shows Express", async () => {
+    const bindings = makeDrawerBindings();
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: [
+        {
+          id: "proj-a",
+          name: "Alpha pullover",
+          family: "sleeveless",
+          source: "express",
+          updatedAt: "2026-05-31T00:00:00.000Z",
+          gauge: { stitchesPerInch: 7, rowsPerInch: 11 },
+        },
+      ],
+    });
+
+    await refreshPatternWorkspaceLibraryList(bindings.drawer);
+
+    const cards = bindings.drawer.querySelectorAll("[data-pattern-workspace-library-item-card]");
+    // Drawer item structure: card > [btn > [name, meta], actions].
+    const card = Array.from(cards)[0] as unknown as MockEl;
+    const btn = card._children[0];
+    const metaEl = btn._children[1];
+    expect(metaEl.textContent).toContain("Sleeveless");
+    expect(metaEl.textContent).toContain("7 sts / 11 rows");
+    expect(metaEl.textContent).not.toMatch(/Express/);
+  });
+
   it("opens a saved project via redirect href", async () => {
     const bindings = makeDrawerBindings();
     const assign = vi.fn();
@@ -261,6 +337,68 @@ describe("patternWorkspaceLibraryDrawer", () => {
 
     expect(loadSavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "open");
     expect(assign).toHaveBeenCalledWith("/patterns/sleeveless/pattern/");
+  });
+
+  it("renders a Copy Pattern action for each saved project", async () => {
+    const bindings = makeDrawerBindings();
+    vi.stubGlobal("window", {});
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: [
+        { id: "proj-a", name: "Alpha pullover", family: "sleeveless", source: "express", updatedAt: "2026-01-01T00:00:00.000Z" },
+      ],
+    });
+
+    await refreshPatternWorkspaceLibraryList(bindings.drawer);
+
+    const copyBtns = collectMatches(bindings.list._children, "[data-pattern-workspace-library-copy]");
+    expect(copyBtns.length).toBe(1);
+    expect(copyBtns[0].textContent).toBe("Copy Pattern");
+    expect(copyBtns[0].disabled).toBe(false);
+  });
+
+  it("copies a saved project from the drawer", async () => {
+    const bindings = makeDrawerBindings();
+    vi.stubGlobal("window", {});
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: [
+        { id: "proj-a", name: "Alpha pullover", family: "sleeveless", source: "express", updatedAt: "2026-01-01T00:00:00.000Z" },
+      ],
+    });
+    copyByIdMock.mockResolvedValue({
+      ok: true,
+      project: { id: "proj-a-copy", name: "Alpha pullover - Copy" },
+    });
+
+    await refreshPatternWorkspaceLibraryList(bindings.drawer);
+    const copyBtn = collectMatches(bindings.list._children, "[data-pattern-workspace-library-copy]")[0];
+    await copyBtn?._click?.();
+
+    expect(copyByIdMock).toHaveBeenCalledWith("proj-a", "sleeveless");
+    expect(bindings.status.textContent).toMatch(/Created/i);
+  });
+
+  it("keeps the drawer Copy action visible but disabled for free / non-owner users", async () => {
+    const bindings = makeDrawerBindings();
+    vi.stubGlobal("window", {});
+    localStorage.setItem("kbm_sleeveless_advanced_pattern_access", "0");
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: [
+        { id: "proj-a", name: "Alpha pullover", family: "sleeveless", source: "express", updatedAt: "2026-01-01T00:00:00.000Z" },
+      ],
+    });
+
+    await refreshPatternWorkspaceLibraryList(bindings.drawer);
+    const copyBtn = collectMatches(bindings.list._children, "[data-pattern-workspace-library-copy]")[0];
+
+    expect(copyBtn.textContent).toBe("Copy Pattern");
+    expect(copyBtn.disabled).toBe(true);
+    expect(copyBtn.getAttribute("title")).toMatch(/purchase this pattern or become a member/i);
+
+    await copyBtn?._click?.();
+    expect(copyByIdMock).not.toHaveBeenCalled();
   });
 
   it("shows sign-in message when listing requires auth", async () => {

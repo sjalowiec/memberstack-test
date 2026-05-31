@@ -28,7 +28,9 @@ export async function loadSavedCustomPatternProject(
     return { ok: false, error: res.error };
   }
 
-  hydrateSavedCustomPatternProjectSession(res.project);
+  // Opening for edit unlocks and prefills every builder step (gauge included) so the knitter lands
+  // in the editable workspace, not the read-only pattern output or a blank build/start flow.
+  hydrateSavedCustomPatternProjectSession(res.project, { editChoicesReopen: action === "open" });
 
   const redirectHref =
     action === "open"

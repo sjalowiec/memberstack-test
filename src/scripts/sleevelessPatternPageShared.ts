@@ -282,23 +282,27 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     window.addEventListener("hashchange", schedule);
   }
 
-  function appendSleevelessInpageNavPrintPill(track) {
+  function mountSleevelessPrintAction() {
     if (!isSleevelessWorkspacePatternPage()) return;
-    const printBtn = document.createElement("button");
-    printBtn.type = "button";
-    printBtn.id = "print-btn";
-    printBtn.className =
-      "sleeveless-pattern-inpage-nav__pill sleeveless-pattern-inpage-nav__pill--print no-print";
-    printBtn.setAttribute("data-testid", "button-print");
-    printBtn.setAttribute("aria-label", "Print pattern");
-    printBtn.innerHTML = `<i class="fas fa-print" aria-hidden="true"></i> Print`;
+    const host = document.querySelector("[data-sleeveless-pattern-actions]");
+    if (!(host instanceof HTMLElement)) return;
+    let printBtn = host.querySelector("#print-btn");
+    if (!(printBtn instanceof HTMLButtonElement)) {
+      printBtn = document.createElement("button");
+      printBtn.type = "button";
+      printBtn.id = "print-btn";
+      printBtn.className = "sleeveless-pattern-print-action no-print";
+      printBtn.setAttribute("data-testid", "button-print");
+      printBtn.setAttribute("aria-label", "Print pattern");
+      printBtn.innerHTML = `<i class="fas fa-print" aria-hidden="true"></i> Print`;
+      host.appendChild(printBtn);
+    }
     if (printBtn.dataset.sleevelessPrintBound !== "true") {
       printBtn.dataset.sleevelessPrintBound = "true";
       printBtn.addEventListener("click", () => {
         triggerPatternPrint(printBtn, {});
       });
     }
-    track.appendChild(printBtn);
     printBtn.style.display = "inline-flex";
   }
 
@@ -2132,7 +2136,7 @@ table {
       count += 1;
     }
     if (count > 0) {
-      appendSleevelessInpageNavPrintPill(track);
+      mountSleevelessPrintAction();
     }
     nav.replaceChildren(track);
     nav.hidden = count === 0;

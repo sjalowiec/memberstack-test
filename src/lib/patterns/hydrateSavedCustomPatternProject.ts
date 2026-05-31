@@ -15,6 +15,7 @@ import {
   buildExpressValuesFromPattern,
   hasExpressChoicesToRestore,
   safeRestoreSleevelessExpressBuilderFromPattern,
+  type RestoreSleevelessExpressBuilderOptions,
 } from "./restoreSleevelessExpressBuilderFromPattern";
 import { loadExpressPersisted } from "./sleevelessExpressResume";
 import {
@@ -59,11 +60,14 @@ export function expressBuilderMatchesActiveSavedProject(): boolean {
 }
 
 /** Rebuild `kbm_sleeveless_express_builder` from the working draft (saved project is source of truth). */
-export function rehydrateExpressBuilderFromActiveSavedProject(): boolean {
+export function rehydrateExpressBuilderFromActiveSavedProject(
+  options: RestoreSleevelessExpressBuilderOptions = {},
+): boolean {
   if (!isEditingSavedCustomPatternProject()) return false;
   return safeRestoreSleevelessExpressBuilderFromPattern(
     getCurrentPattern(),
     getPatternData(),
+    options,
   );
 }
 
@@ -98,11 +102,17 @@ export function promoteExpressBuilderToCanonicalWhenDrifted(): boolean {
 /**
  * Copies the saved project into the working draft, restores Express wizard storage from it,
  * and records the dirty baseline. Use for library/account open and in-panel load.
+ *
+ * Pass `{ editChoicesReopen: true }` when opening for a full edit (My Patterns / library Open) so
+ * every builder step is unlocked and prefilled — including gauge — instead of resuming at step 1.
  */
-export function hydrateSavedCustomPatternProjectSession(project: CustomPatternProject): void {
+export function hydrateSavedCustomPatternProjectSession(
+  project: CustomPatternProject,
+  options: RestoreSleevelessExpressBuilderOptions = {},
+): void {
   loadProjectIntoWorkingDraft(project);
   writeActiveCustomPatternProjectId(project.id, project.name);
-  rehydrateExpressBuilderFromActiveSavedProject();
+  rehydrateExpressBuilderFromActiveSavedProject(options);
   captureSavedCustomPatternDirtyBaseline();
 }
 

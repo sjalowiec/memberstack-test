@@ -1,5 +1,6 @@
 import type { SleevelessPatternRecord } from "./patternStorage";
 import type { PatternReadingWorkflowState } from "./patternReadingWorkflow";
+import type { SavedPatternGauge } from "./savedPatternGaugeDisplay";
 
 /** Pattern family key — extend when adding cardigans, hats, etc. */
 export type CustomPatternFamily = "sleeveless";
@@ -33,7 +34,13 @@ export interface CustomPatternProject {
 export type CustomPatternProjectSummary = Pick<
   CustomPatternProject,
   "id" | "name" | "family" | "source" | "createdAt" | "updatedAt" | "version"
->;
+> & {
+  /**
+   * Display-only gauge (stitches/rows per inch) derived from the saved pattern's `yarnGauge`.
+   * Not part of the stored pattern data; populated for list/drawer surfaces. Absent when unknown.
+   */
+  gauge?: SavedPatternGauge;
+};
 
 export type SaveCustomPatternProjectRequest = {
   name: string;

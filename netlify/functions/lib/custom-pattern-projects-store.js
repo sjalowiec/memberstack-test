@@ -35,10 +35,52 @@ export function projectIndexKey(family, userId) {
   return `${userProjectsPrefix(family, userId)}index.json`;
 }
 
-export const PROJECT_SUMMARY_INDEX_VERSION = 1;
+// v2 adds a derived display `gauge` to summaries; bumping forces stale indexes to rebuild.
+export const PROJECT_SUMMARY_INDEX_VERSION = 2;
+
+/** @param {unknown} value */
+function gaugePositiveNumber(value) {
+  const n = typeof value === "number" ? value : parseFloat(String(value ?? "").trim());
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/**
+ * Derives display gauge (stitches/rows per inch) from a saved pattern's `yarnGauge` section.
+ * Prefers stored per-inch values; falls back to raw swatch counts (over 4" / 10 cm).
+ * Returns `null` when no usable gauge is present. Mirrors `savedPatternGaugeDisplay.ts`.
+ * @param {Record<string, unknown>} project
+ */
+export function gaugeFromProject(project) {
+  const pattern =
+    project && typeof project.pattern === "object" && project.pattern
+      ? /** @type {Record<string, unknown>} */ (project.pattern)
+      : null;
+  const yarnGauge =
+    pattern && typeof pattern.yarnGauge === "object" && pattern.yarnGauge
+      ? /** @type {Record<string, unknown>} */ (pattern.yarnGauge)
+      : null;
+  if (!yarnGauge) return null;
+
+  const perInchSts = gaugePositiveNumber(yarnGauge.stitchGauge);
+  const perInchRows = gaugePositiveNumber(yarnGauge.rowGauge);
+  if (perInchSts !== null && perInchRows !== null) {
+    return { stitchesPerInch: perInchSts, rowsPerInch: perInchRows };
+  }
+
+  const rawSts = gaugePositiveNumber(yarnGauge.gaugeStitchRaw);
+  const rawRows = gaugePositiveNumber(yarnGauge.gaugeRowRaw);
+  if (rawSts !== null && rawRows !== null) {
+    const unit = yarnGauge.gaugeRawUnit === "cm" ? "cm" : "in";
+    const perInch = (raw) => (unit === "cm" ? (raw / 10) * 2.54 : raw / 4);
+    return { stitchesPerInch: perInch(rawSts), rowsPerInch: perInch(rawRows) };
+  }
+
+  return null;
+}
 
 /** @param {Record<string, unknown>} project */
 export function summaryFromProject(project) {
+  const gauge = gaugeFromProject(project);
   return {
     id: project.id,
     name: project.name,
@@ -47,6 +89,7 @@ export function summaryFromProject(project) {
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,
     version: project.version,
+    ...(gauge ? { gauge } : {}),
   };
 }
 
@@ -68,6 +111,8 @@ function isValidProjectSummary(summary) {
 function parseProjectSummaryIndex(parsed) {
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
   const root = /** @type {Record<string, unknown>} */ (parsed);
+  // Reject stale-schema indexes so they rebuild from the full project blobs (backfills gauge).
+  if (root.version !== PROJECT_SUMMARY_INDEX_VERSION) return null;
   const raw = root.summaries;
   if (!Array.isArray(raw)) return null;
   const summaries = raw.filter(isValidProjectSummary);

@@ -67,37 +67,49 @@
     font-weight: 500;
   }
 
-  /* On-screen pattern header: stacked label/value rows (same <dl> model as print “At a glance”) */
+  /* On-screen pattern header: compact inline metadata (label/value pairs that flow and wrap). */
   .sg-pattern-intro-metadata {
     max-width: 52rem;
     margin: 0 auto 0.5rem;
     padding: 0;
-    font-size: 0.95rem;
-    line-height: 1.5;
+    font-size: 0.85rem;
+    line-height: 1.4;
     color: #374151;
   }
 
-  .sleeveless-pattern-intro__content .sg-pattern-intro-metadata .print-summary-dl {
+  .sleeveless-pattern-intro__content .sg-pattern-intro-metadata .print-summary-dl--inline {
     margin: 0;
-    display: grid;
-    grid-template-columns: minmax(5.75rem, max-content) minmax(0, 1fr);
-    column-gap: 0.65rem;
-    row-gap: 0.18rem;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
-    font-size: 0.95rem;
-    line-height: 1.45;
+    column-gap: 0.9rem;
+    row-gap: 0.2rem;
+    font-size: 0.85rem;
+    line-height: 1.4;
   }
 
-  .sleeveless-pattern-intro__content .sg-pattern-intro-metadata .print-summary-dl dt {
+  .sleeveless-pattern-intro__content .sg-pattern-intro-metadata .print-summary-dl__pair {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    min-width: 0;
+  }
+
+  .sleeveless-pattern-intro__content .sg-pattern-intro-metadata .print-summary-dl__pair dt {
     margin: 0;
     font-weight: 600;
-    color: #4b5563;
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #6b7280;
+    white-space: nowrap;
   }
 
-  .sleeveless-pattern-intro__content .sg-pattern-intro-metadata .print-summary-dl dd {
+  .sleeveless-pattern-intro__content .sg-pattern-intro-metadata .print-summary-dl__pair dd {
     margin: 0;
     min-width: 0;
-    font-weight: 500;
+    font-weight: 600;
     color: #1f2937;
   }
 
@@ -302,10 +314,10 @@
       margin-bottom: 0.75rem;
     }
 
-    .sleeveless-pattern-intro__content .sg-pattern-intro-metadata .print-summary-dl {
-      grid-template-columns: minmax(0, 42%) minmax(0, 1fr);
-      column-gap: 0.5rem;
-      font-size: 0.9rem;
+    .sleeveless-pattern-intro__content .sg-pattern-intro-metadata .print-summary-dl--inline {
+      column-gap: 0.7rem;
+      row-gap: 0.25rem;
+      font-size: 0.82rem;
     }
 
     .sleeveless-pattern-intro__image img {
@@ -345,22 +357,22 @@
     scroll-padding-top: calc(var(--site-header-offset, 7rem) + 3rem);
   }
 
+  /* Document-outline style section navigation (table of contents, not a button row). */
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav {
     position: sticky;
     top: calc(var(--site-header-offset, 7rem) + 4px);
     z-index: 8;
-    margin: 0 0 0.65rem;
-    padding: 0.5rem 0 0.55rem;
-    background: color-mix(in srgb, var(--page-bg, #f7f8f7) 78%, white);
-    border-bottom: 1px solid rgba(82, 104, 45, 0.16);
-    box-shadow: 0 2px 8px rgba(82, 104, 45, 0.07);
+    margin: 0 0 0.6rem;
+    padding: 0.2rem 0 0.3rem;
+    background: color-mix(in srgb, var(--page-bg, #f7f8f7) 90%, white);
+    border-bottom: 1px solid rgba(82, 104, 45, 0.12);
   }
 
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__track {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.35rem 0.45rem;
+    gap: 0.05rem 0.15rem;
     max-width: 52rem;
     margin: 0 auto;
     padding: 0 0.15rem;
@@ -379,66 +391,92 @@
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
     gap: 0.3rem;
-    padding: 0.28rem 0.65rem;
+    padding: 0.12rem 0.4rem;
     font-size: 0.78rem;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1.35;
-    letter-spacing: 0.01em;
-    color: #fff;
+    color: var(--kbm-green, #52682d);
     text-decoration: none;
-    background: var(--kbm-green, #52682d);
-    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 88%, #000);
-    border-radius: 999px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
     white-space: nowrap;
     cursor: pointer;
     transition:
       background-color 0.12s ease,
-      border-color 0.12s ease,
-      box-shadow 0.12s ease,
-      filter 0.12s ease;
+      color 0.12s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill:hover {
-    background: color-mix(in srgb, var(--kbm-green, #52682d) 82%, #000);
-    border-color: color-mix(in srgb, var(--kbm-green, #52682d) 72%, #000);
-    filter: brightness(0.97);
+    color: var(--kbm-green-hover, #445626);
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 9%, transparent);
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
   }
 
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill.is-active {
-    background: color-mix(in srgb, var(--kbm-green, #52682d) 72%, #000);
-    border-color: color-mix(in srgb, var(--kbm-green, #52682d) 60%, #000);
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--kbm-green, #52682d) 55%, #fff),
-      0 0 0 2px color-mix(in srgb, var(--kbm-green, #52682d) 35%, transparent);
+    font-weight: 700;
+    color: var(--kbm-green-hover, #445626);
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 13%, transparent);
   }
 
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill:focus-visible {
-    outline: 2px solid #fff;
-    outline-offset: 2px;
-    box-shadow: 0 0 0 2px var(--kbm-green, #52682d);
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 1px;
   }
 
-  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill--print {
-    background: var(--sg-accent, #c2614e);
-    border-color: color-mix(in srgb, var(--sg-accent, #c2614e) 88%, #000);
+  /* Pattern actions (e.g. Print): separate from section navigation, upper-right near the title. */
+  .sleeveless-pattern-page .sleeveless-pattern-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-actions:empty {
+    display: none;
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-print-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.85rem;
     font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #fff;
+    text-decoration: none;
+    background: var(--sg-accent, #c2614e);
+    border: 1px solid color-mix(in srgb, var(--sg-accent, #c2614e) 88%, #000);
+    border-radius: 8px;
+    cursor: pointer;
+    transition:
+      background-color 0.12s ease,
+      border-color 0.12s ease,
+      filter 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill--print:hover {
+  .sleeveless-pattern-page .sleeveless-pattern-print-action:hover {
     background: color-mix(in srgb, var(--sg-accent, #c2614e) 82%, #000);
     border-color: color-mix(in srgb, var(--sg-accent, #c2614e) 72%, #000);
     filter: brightness(0.97);
   }
 
-  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill--print:focus-visible {
-    box-shadow: 0 0 0 2px var(--sg-accent, #c2614e);
+  .sleeveless-pattern-page .sleeveless-pattern-print-action:focus-visible {
+    outline: 2px solid var(--sg-accent, #c2614e);
+    outline-offset: 2px;
   }
 
-  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__pill--print .fa-print {
-    font-size: 0.72rem;
+  .sleeveless-pattern-page .sleeveless-pattern-print-action .fa-print {
+    font-size: 0.78rem;
     opacity: 0.95;
   }
 

@@ -35,6 +35,12 @@
   outline: none;
 }
 
+/* Wrapper around the intro control box and generated tips */
+.pattern-tips-toggle-host {
+  display: block;
+  margin-top: 0.85rem;
+}
+
 /* Top control banner — always visible; compact; not hidden when global tips are off */
 .pattern-tips-control-box.pattern-tip {
   padding: 0.5rem 0.75rem;
@@ -129,6 +135,80 @@
 
 .tips-inline-toggle:hover {
   text-decoration: underline;
+}
+
+/* Compact, secondary visibility toggle for pattern tips */
+.pattern-tips-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.15rem 0.2rem;
+  margin: 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.pattern-tips-switch:hover {
+  text-decoration: none;
+}
+
+.pattern-tips-switch__label {
+  white-space: nowrap;
+}
+
+.pattern-tips-switch__track {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 1.05rem;
+  border-radius: 999px;
+  background: #cbd5e1;
+  transition: background 0.15s ease;
+}
+
+.pattern-tips-switch__thumb {
+  position: absolute;
+  top: 50%;
+  left: 0.15rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: left 0.15s ease;
+}
+
+.pattern-tips-switch__state {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.pattern-tips-switch[aria-checked="true"] {
+  color: #c2614e;
+}
+
+.pattern-tips-switch[aria-checked="true"] .pattern-tips-switch__track {
+  background: #c2614e;
+}
+
+.pattern-tips-switch[aria-checked="true"] .pattern-tips-switch__thumb {
+  left: calc(100% - 0.9rem);
+}
+
+.pattern-tips-switch:focus-visible {
+  outline: 2px solid #c2614e;
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
 .tips-icon {

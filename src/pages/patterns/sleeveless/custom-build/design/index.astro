@@ -172,11 +172,19 @@ const customWizardSteps = [
                     <button type="button" class="btn btn-sm btn-primary" data-cb-project-save>
                       Save New Project
                     </button>
-                    {/* Copy/duplicate is intentionally hidden until the workflow is fully stabilized. */}
                     <button type="button" class="btn btn-sm btn-outline-secondary" data-cb-project-update>
                       Update saved pattern
                     </button>
+                    {/* Copy stays visible for everyone; disabled for free / non-owner knitters. */}
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-cb-project-save-copy>
+                      Save a Copy
+                    </button>
                   </div>
+                  <p
+                    class="cb-saved-projects__copy-helper"
+                    data-cb-project-copy-helper
+                    hidden
+                  ></p>
                 </div>
 
                 <div class="cb-saved-projects__block cb-saved-projects__block--open">
@@ -601,6 +609,33 @@ const customWizardSteps = [
   .cb-saved-projects .btn-outline-secondary:hover {
     background: var(--kbm-surface-muted, #f6f8f6);
     border-color: var(--kbm-green-2, #738c52);
+  }
+
+  .cb-saved-projects .btn.is-disabled,
+  .cb-saved-projects .btn:disabled {
+    color: var(--text-muted, #9aa3a0);
+    background: var(--kbm-surface-muted, #f3f4f3);
+    border-color: var(--kbm-border-subtle, #e2e6e0);
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
+
+  .cb-saved-projects .btn.is-disabled:hover,
+  .cb-saved-projects .btn:disabled:hover {
+    background: var(--kbm-surface-muted, #f3f4f3);
+    border-color: var(--kbm-border-subtle, #e2e6e0);
+  }
+
+  .cb-saved-projects__copy-helper {
+    margin: 0.5rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: var(--text-muted, #6b7280);
+    max-width: 36rem;
+  }
+
+  .cb-saved-projects__copy-helper[hidden] {
+    display: none;
   }
 
   .cb-saved-projects__editing-status {
