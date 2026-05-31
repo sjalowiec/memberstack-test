@@ -73,15 +73,7 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
                   data-sleeveless-pattern-actions
                 ></div>
                 <div class="sleeveless-pattern-online-project-header no-print">
-                  <div class="sleeveless-pattern-edit-row sleeveless-pattern-online-heading-row">
-                    <button
-                      type="button"
-                      class="sleeveless-pattern-edit-shortcut"
-                      data-sleeveless-edit-customize="title"
-                      aria-label="Edit pattern name"
-                      title="Edit pattern name"
-                      hidden
-                    ></button>
+                  <div class="sleeveless-pattern-online-heading-row">
                     <p class="sleeveless-pattern-online-heading" data-sleeveless-pattern-online-heading>
                       Sleeveless sweater · Pattern instructions
                     </p>
@@ -91,15 +83,7 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
                     data-sleeveless-pattern-online-notes-wrap
                     hidden
                   >
-                    <div class="sleeveless-pattern-edit-row sleeveless-pattern-project-notes__head">
-                      <button
-                        type="button"
-                        class="sleeveless-pattern-edit-shortcut"
-                        data-sleeveless-edit-customize="notes"
-                        aria-label="Edit project notes"
-                        title="Edit project notes"
-                        hidden
-                      ></button>
+                    <div class="sleeveless-pattern-project-notes__head">
                       <p class="sleeveless-pattern-project-notes__label">Project notes</p>
                     </div>
                     <div
@@ -162,16 +146,7 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
 
 <style>
   .sleeveless-pattern-online-project-header {
-    --pattern-edit-icon-col: 1.25rem;
-    --pattern-edit-text-indent: calc(var(--pattern-edit-icon-col) + 0.35rem);
     margin: 0 0 0.75rem;
-  }
-
-  .sleeveless-pattern-edit-row {
-    display: grid;
-    grid-template-columns: var(--pattern-edit-icon-col) minmax(0, 1fr);
-    align-items: baseline;
-    column-gap: 0.35rem;
   }
 
   .sleeveless-pattern-online-heading-row {
@@ -188,38 +163,6 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
     word-break: break-word;
   }
 
-  :global(.sleeveless-pattern-edit-shortcut) {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    align-self: baseline;
-    margin: 0;
-    padding: 0.1rem;
-    border: none;
-    border-radius: 3px;
-    background: transparent;
-    color: color-mix(in srgb, var(--kbm-green, #52682d) 50%, #9ca3af);
-    cursor: pointer;
-    line-height: 1;
-    transition: color 0.15s ease, opacity 0.15s ease;
-  }
-
-  :global(.sleeveless-pattern-edit-shortcut:hover) {
-    color: var(--kbm-green, #52682d);
-  }
-
-  :global(.sleeveless-pattern-edit-shortcut:focus-visible) {
-    outline: 2px solid var(--kbm-green, #52682d);
-    outline-offset: 2px;
-  }
-
-  :global(.sleeveless-pattern-edit-shortcut__icon) {
-    display: block;
-    width: 14px;
-    height: 14px;
-  }
-
   .sleeveless-pattern-project-notes-wrap {
     margin: 0;
   }
@@ -229,7 +172,6 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
   }
 
   .sleeveless-pattern-project-notes {
-    margin-left: var(--pattern-edit-text-indent);
     padding: 0.45rem 0.6rem;
     border-radius: 8px;
     border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #e5e7eb);
