@@ -138,7 +138,13 @@ export function renderSleevelessPrintPieceHtml(
 }
 
 /**
- * Splits display rows so prelude fits page-one layout; continuation begins at neckline/shoulder chart mount.
+ * Splits display rows so prelude fits page-one layout; continuation begins at the
+ * neckline/shoulder setup section that immediately precedes the chart mount.
+ *
+ * The setup section heading (e.g. "BACK NECKLINE & SHOULDERS") and its summary block
+ * travel with the chart into the continuation so the setup instruction renders directly
+ * above its chart on the same page, instead of being orphaned on a near-empty page before
+ * the chart's continuation section.
  */
 export function splitRowsBeforeNeckShoulderChartMount(
   rows: readonly SleevelessPatternDisplayRow[],
@@ -147,12 +153,21 @@ export function splitRowsBeforeNeckShoulderChartMount(
   continuationRows: SleevelessPatternDisplayRow[];
 } {
   const list = Array.isArray(rows) ? rows : [];
-  const idx = list.findIndex((r) => r.kind === "neckShoulderChartTableMount");
-  if (idx < 0) {
+  const mountIdx = list.findIndex((r) => r.kind === "neckShoulderChartTableMount");
+  if (mountIdx < 0) {
     return { preludeRows: [...list], continuationRows: [] };
   }
+  // Keep the closest section heading before the mount (the neckline/shoulder setup
+  // instruction) grouped with the chart so they share one page.
+  let splitIdx = mountIdx;
+  for (let i = mountIdx - 1; i >= 0; i--) {
+    if (list[i]?.kind === "section") {
+      splitIdx = i;
+      break;
+    }
+  }
   return {
-    preludeRows: list.slice(0, idx),
-    continuationRows: list.slice(idx),
+    preludeRows: list.slice(0, splitIdx),
+    continuationRows: list.slice(splitIdx),
   };
 }
