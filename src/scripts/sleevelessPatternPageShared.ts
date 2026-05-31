@@ -2590,9 +2590,11 @@ table {
       armholeGarmentStartRc,
       backChecklistOptions,
     );
+    const frontChecklistOptions = { includeCenterNecklineSetupRow: true as const };
     const frontActiveSideRcStart = armholeLocalRcActiveShoulderChecklistStart(
       result.frontNeckShoulderShapingChart,
       armholeGarmentStartRc,
+      frontChecklistOptions,
     );
 
     // Active-shoulder checklist (RC / Side / Instruction / Section / Stitches). Plain-knit compaction: neckShoulderShapingChartHtml `chartBodyRowsHtml`.
@@ -2615,7 +2617,7 @@ table {
           result?.frontNeckShoulderShapingChart,
           "front"
         ),
-        { activeSideOnly: true, activeSideRcStart: frontActiveSideRcStart }
+        { activeSideOnly: true, activeSideRcStart: frontActiveSideRcStart, includeCenterNecklineSetupRow: true }
       );
     }
 
@@ -2639,7 +2641,7 @@ table {
           result?.frontNeckShoulderShapingChart,
           "front"
         ),
-        options: { activeSideOnly: true, activeSideRcStart: frontActiveSideRcStart },
+        options: { activeSideOnly: true, activeSideRcStart: frontActiveSideRcStart, includeCenterNecklineSetupRow: true },
       },
     };
     // Finishing HTML + chart table HTML (incl. glossary placeholders) are injected above.

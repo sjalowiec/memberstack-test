@@ -206,9 +206,11 @@ async function initSleevelessPrintPage(): Promise<void> {
     armholeGarmentStart,
     backChecklistOptions,
   );
+  const frontChecklistOptions = { includeCenterNecklineSetupRow: true as const };
   const frontChecklistArmholeStart = armholeLocalRcActiveShoulderChecklistStart(
     result.frontNeckShoulderShapingChart,
     armholeGarmentStart,
+    frontChecklistOptions,
   );
 
   const backChartHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
@@ -238,6 +240,7 @@ async function initSleevelessPrintPage(): Promise<void> {
     }),
     {
       activeSideRcStart: frontChecklistArmholeStart,
+      includeCenterNecklineSetupRow: true,
     },
   );
 
