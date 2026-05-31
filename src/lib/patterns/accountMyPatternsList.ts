@@ -3,8 +3,13 @@
  */
 import { listCustomPatternProjects } from "./customPatternProjectClient";
 import type { CustomPatternProjectSummary } from "./customPatternProjectTypes";
+import { copySavedCustomPatternProject } from "./copySavedCustomPatternProject";
 import { deleteSavedCustomPatternProject } from "./deleteSavedCustomPatternProject";
 import { loadSavedCustomPatternProject } from "./loadSavedCustomPatternProject";
+import {
+  canCopySavedCustomPatternProject,
+  SAVED_PATTERN_COPY_LOCKED_HELP_TEXT,
+} from "./savedCustomPatternCopyAccess";
 import {
   memberstackReadinessSnapshot,
   nextAccountListRender,
@@ -131,6 +136,9 @@ function lockMyPatternsListInteraction(root: HTMLElement): void {
   root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-delete]").forEach((b) => {
     b.disabled = true;
   });
+  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-copy]").forEach((b) => {
+    b.disabled = true;
+  });
 }
 
 function releaseMyPatternsListInteraction(root: HTMLElement): void {
@@ -143,6 +151,10 @@ function releaseMyPatternsListInteraction(root: HTMLElement): void {
   });
   root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-delete]").forEach((b) => {
     b.disabled = false;
+  });
+  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-copy]").forEach((b) => {
+    // Copy stays disabled for free / non-owner users regardless of in-flight locking.
+    b.disabled = b.dataset.kbmMyPatternsCopyLocked === "1";
   });
 }
 
@@ -250,6 +262,69 @@ async function onProjectDelete(
   }
 }
 
+async function onProjectCopy(
+  root: HTMLElement,
+  projectId: string,
+  label: string,
+): Promise<void> {
+  const actionStart = perfStart();
+  perfMark("6-account-list-action start", { action: "copy", projectId, label });
+  setStatus(root, `Copying “${label}”…`);
+  lockMyPatternsListInteraction(root);
+
+  try {
+    const state = listStateByRoot.get(root);
+    const existingNames = state ? state.projects.map((p) => p.name) : undefined;
+
+    const copyStart = perfStart();
+    const result = await copySavedCustomPatternProject(projectId, {
+      family: "sleeveless",
+      existingNames,
+    });
+    perfEnd("6-account-list-action copySavedCustomPatternProject", copyStart, {
+      action: "copy",
+      projectId,
+      ok: result.ok,
+    });
+    if (!result.ok) {
+      setStatus(root, result.error, true);
+      perfEnd("6-account-list-action total", actionStart, { action: "copy", ok: false });
+      return;
+    }
+
+    if (state) {
+      state.projects = [
+        {
+          id: result.project.id,
+          name: result.project.name,
+          family: result.project.family,
+          source: result.project.source,
+          createdAt: result.project.createdAt,
+          updatedAt: result.project.updatedAt,
+          version: result.project.version,
+        },
+        ...state.projects,
+      ];
+      hideStatus(root);
+      renderProjectList(root);
+      setListVisible(root, true);
+    }
+
+    setStatus(root, `Saved copy “${result.project.name}”.`);
+    perfEnd("6-account-list-action total", actionStart, {
+      action: "copy",
+      ok: true,
+      newProjectId: result.project.id,
+    });
+  } catch (error) {
+    console.error("[kbm] Failed to copy saved pattern from My Patterns.", error);
+    setStatus(root, "Could not copy this saved pattern. Please try again.", true);
+    perfEnd("6-account-list-action total", actionStart, { action: "copy", ok: false, thrown: true });
+  } finally {
+    releaseMyPatternsListInteraction(root);
+  }
+}
+
 function wireProjectRow(
   root: HTMLElement,
   tr: HTMLTableRowElement,
@@ -274,7 +349,11 @@ function wireProjectRow(
   });
 }
 
-function renderProjectRow(root: HTMLElement, project: CustomPatternProjectSummary): void {
+function renderProjectRow(
+  root: HTMLElement,
+  project: CustomPatternProjectSummary,
+  canCopy: boolean,
+): void {
   const tbody = root.querySelector("[data-kbm-my-patterns-list]");
   if (!(tbody instanceof HTMLElement)) return;
 
@@ -304,6 +383,36 @@ function renderProjectRow(root: HTMLElement, project: CustomPatternProjectSummar
   const actionsCell = document.createElement("td");
   actionsCell.className = "account-my-patterns__cell--actions";
   actionsCell.setAttribute("data-label", "Actions");
+
+  // Copy is always shown. Free / non-owner users see it disabled (never hidden) with
+  // helper text explaining how to unlock it.
+  const copyBtn = document.createElement("button");
+  copyBtn.type = "button";
+  copyBtn.className = "account-my-patterns__copy";
+  copyBtn.setAttribute("data-kbm-my-patterns-copy", "");
+  copyBtn.dataset.projectId = project.id;
+  if (canCopy) {
+    copyBtn.setAttribute("aria-label", `Copy ${displayName}`);
+    copyBtn.title = "Save a copy of this pattern";
+  } else {
+    copyBtn.disabled = true;
+    copyBtn.dataset.kbmMyPatternsCopyLocked = "1";
+    copyBtn.classList.add("account-my-patterns__copy--locked");
+    copyBtn.setAttribute("aria-disabled", "true");
+    copyBtn.setAttribute("aria-label", `Copy ${displayName}. ${SAVED_PATTERN_COPY_LOCKED_HELP_TEXT}`);
+    copyBtn.title = SAVED_PATTERN_COPY_LOCKED_HELP_TEXT;
+  }
+  const copyIcon = document.createElement("i");
+  copyIcon.className = "fa-solid fa-copy";
+  copyIcon.setAttribute("aria-hidden", "true");
+  copyBtn.append(copyIcon);
+  copyBtn.addEventListener("click", (event) => {
+    event?.stopPropagation?.();
+    if (copyBtn.disabled || copyBtn.dataset.kbmMyPatternsCopyLocked === "1") return;
+    void onProjectCopy(root, project.id, displayName);
+  });
+  actionsCell.append(copyBtn);
+
   const delBtn = document.createElement("button");
   delBtn.type = "button";
   delBtn.className = "account-my-patterns__delete";
@@ -330,9 +439,10 @@ export function renderProjectList(root: HTMLElement): void {
   const tbody = root.querySelector("[data-kbm-my-patterns-list]");
   if (!state || !(tbody instanceof HTMLElement)) return;
 
+  const canCopy = canCopySavedCustomPatternProject();
   tbody.replaceChildren();
   for (const project of sortedProjects(root, state.projects)) {
-    renderProjectRow(root, project);
+    renderProjectRow(root, project, canCopy);
   }
   updateSortHeaders(root);
 }

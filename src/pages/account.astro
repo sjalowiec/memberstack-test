@@ -472,7 +472,58 @@ const description =
     cursor: wait;
   }
 
-  :global(.account-my-patterns__table tbody tr.account-my-patterns__row[aria-disabled="true"] .account-my-patterns__delete) {
+  :global(.account-my-patterns__copy) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    margin-right: 0.25rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: #9ca3af;
+    cursor: pointer;
+    opacity: 0.85;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease,
+      opacity 0.15s ease;
+  }
+
+  :global(.account-my-patterns__copy:hover:not(:disabled)) {
+    background: rgba(82, 104, 45, 0.1);
+    color: #52682d;
+    opacity: 1;
+  }
+
+  :global(.account-my-patterns__copy:focus-visible) {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  :global(.account-my-patterns__copy:disabled) {
+    opacity: 0.55;
+    cursor: wait;
+  }
+
+  /* Free / non-owner state: visibly present but unavailable. */
+  :global(.account-my-patterns__copy--locked),
+  :global(.account-my-patterns__copy--locked:disabled) {
+    opacity: 0.4;
+    color: #9ca3af;
+    cursor: not-allowed;
+  }
+
+  :global(.account-my-patterns__copy--locked:hover) {
+    background: transparent;
+    color: #9ca3af;
+    opacity: 0.4;
+  }
+
+  :global(.account-my-patterns__table tbody tr.account-my-patterns__row[aria-disabled="true"] .account-my-patterns__delete),
+  :global(.account-my-patterns__table tbody tr.account-my-patterns__row[aria-disabled="true"] .account-my-patterns__copy) {
     pointer-events: none;
   }
 

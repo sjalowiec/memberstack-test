@@ -12,6 +12,8 @@ import {
 
 const listCustomPatternProjectsMock = vi.fn();
 const deleteCustomPatternProjectMock = vi.fn();
+const copySavedCustomPatternProjectMock = vi.fn();
+const copyAccessState = { canCopy: true };
 
 vi.mock("./customPatternProjectClient", () => ({
   listCustomPatternProjects: (...args: unknown[]) => listCustomPatternProjectsMock(...args),
@@ -20,6 +22,16 @@ vi.mock("./customPatternProjectClient", () => ({
 
 vi.mock("./loadSavedCustomPatternProject", () => ({
   loadSavedCustomPatternProject: vi.fn(),
+}));
+
+vi.mock("./copySavedCustomPatternProject", () => ({
+  copySavedCustomPatternProject: (...args: unknown[]) => copySavedCustomPatternProjectMock(...args),
+}));
+
+vi.mock("./savedCustomPatternCopyAccess", () => ({
+  canCopySavedCustomPatternProject: () => copyAccessState.canCopy,
+  SAVED_PATTERN_COPY_LOCKED_HELP_TEXT:
+    "Copy is available when you purchase this pattern or become a member.",
 }));
 
 class MockHTMLElement {}
@@ -86,6 +98,7 @@ function makeEl(tag = "div"): MockEl {
     matches(sel: string) {
       if (sel === "[data-kbm-my-patterns-row]") return attrs.has("data-kbm-my-patterns-row");
       if (sel === "[data-kbm-my-patterns-delete]") return attrs.has("data-kbm-my-patterns-delete");
+      if (sel === "[data-kbm-my-patterns-copy]") return attrs.has("data-kbm-my-patterns-copy");
       if (sel === "[data-kbm-my-patterns-sort]") return attrs.has("data-kbm-my-patterns-sort");
       return false;
     },
@@ -147,12 +160,16 @@ function makeAccountRoot() {
     if (sel === "[data-kbm-my-patterns-delete]") {
       return collectMatches(tbody._children, sel)[0] ?? null;
     }
+    if (sel === "[data-kbm-my-patterns-copy]") {
+      return collectMatches(tbody._children, sel)[0] ?? null;
+    }
     return null;
   };
   root.querySelectorAll = (sel: string) => {
     if (
       sel === "[data-kbm-my-patterns-row]" ||
       sel === "[data-kbm-my-patterns-delete]" ||
+      sel === "[data-kbm-my-patterns-copy]" ||
       sel === "[data-kbm-my-patterns-sort]"
     ) {
       if (sel === "[data-kbm-my-patterns-sort]") {
@@ -188,6 +205,7 @@ describe("accountMyPatternsList", () => {
     stubLocalStorage();
     localStorage.clear();
     vi.clearAllMocks();
+    copyAccessState.canCopy = true;
     listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: [] });
     deleteCustomPatternProjectMock.mockResolvedValue({ ok: true });
     vi.stubGlobal("document", {
@@ -282,6 +300,67 @@ describe("accountMyPatternsList", () => {
     expect(deleteCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "sleeveless");
     expect(readActiveCustomPatternProjectId()).toBe("");
     expect(collectMatches(tbody._children, "[data-kbm-my-patterns-row]").length).toBe(1);
+  });
+
+  it("renders an enabled copy action for members / paid owners", async () => {
+    const { root, tbody } = makeAccountRoot();
+    copyAccessState.canCopy = true;
+    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
+
+    await initAccountMyPatternsList(root);
+
+    const copyBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-copy]");
+    expect(copyBtns.length).toBe(2);
+    expect(copyBtns.every((b) => b.disabled === false)).toBe(true);
+  });
+
+  it("shows copy disabled but visible for free / non-owner users", async () => {
+    const { root, tbody } = makeAccountRoot();
+    copyAccessState.canCopy = false;
+    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
+
+    await initAccountMyPatternsList(root);
+
+    const copyBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-copy]");
+    // Still present (visible) — never hidden — but disabled with helper text.
+    expect(copyBtns.length).toBe(2);
+    expect(copyBtns.every((b) => b.disabled === true)).toBe(true);
+    expect(copyBtns[0].title).toMatch(/purchase this pattern or become a member/i);
+  });
+
+  it("copies a saved pattern and adds the copy to the list", async () => {
+    const { root, status, tbody } = makeAccountRoot();
+    copyAccessState.canCopy = true;
+    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
+    copySavedCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      project: {
+        id: "proj-a-copy",
+        name: "Alpha pullover - Copy",
+        family: "sleeveless",
+        source: "express",
+        createdAt: "2026-02-01T00:00:00.000Z",
+        updatedAt: "2026-02-01T00:00:00.000Z",
+        version: 1,
+      },
+    });
+
+    await initAccountMyPatternsList(root);
+
+    const copyA = collectMatches(tbody._children, "[data-kbm-my-patterns-copy]").find(
+      (b) => b.dataset.projectId === "proj-a",
+    );
+    expect(copyA).toBeTruthy();
+
+    await copyA?._click?.();
+
+    expect(copySavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", {
+      family: "sleeveless",
+      existingNames: ["Alpha pullover", "Beta vest"],
+    });
+    const rows = collectMatches(tbody._children, "[data-kbm-my-patterns-row]");
+    expect(rows.length).toBe(3);
+    expect(status.textContent).toMatch(/Saved copy “Alpha pullover - Copy”/);
   });
 
   it("shows empty state after deleting the last saved pattern", async () => {
