@@ -41,6 +41,11 @@ declare global {
       getCurrentMember?: () => Promise<unknown>;
       /** JWT for Authorization header when calling site APIs (if available). */
       getMemberCookie?: () => string | null | Promise<string | null>;
+      /** Account-tied free-form member metadata (`{ data }`). Used for the free-pattern claim. */
+      getMemberJSON?: () => Promise<unknown>;
+      updateMemberJSON?: (args: { json: Record<string, unknown> }) => Promise<unknown>;
+      /** Auth lifecycle events (`member.login`, `member.logout`, …). */
+      on?: (event: string, handler: (...args: unknown[]) => void) => void;
     };
     /** Inline scripts in `GlossaryTooltip.astro`; pages may call `closeAll` on tab change / rebuild. */
     __kbmGlossaryApi?: {

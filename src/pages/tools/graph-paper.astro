@@ -1,246 +1,527 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
+import Layout from "../../layouts/Layout.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
-import ToolActionBar from "../../components/wizards/ToolActionBar.astro";
-import GaugeInput from "../../components/wizards/GaugeInput.astro";
-import UnitToggle from "../../components/wizards/UnitToggle.astro";
-import "../../styles/wizard.css";
 
+const gaugeValues = [
+  12, 14, 16, 18, 20, 22, 24, 26, 28, 30,
+  32, 34, 36, 38, 40, 42, 44, 46, 48, 50,
+];
+
+const defaults = {
+  pageSize: "us",
+  stitch: 20,
+  row: 28,
+};
+
+const presets = [
+  { label: "Standard", sts: 28, rows: 40, hint: "28 sts / 40 rows" },
+  { label: "Mid-gauge", sts: 20, rows: 28, hint: "20 sts / 28 rows" },
+  { label: "Bulky", sts: 16, rows: 24, hint: "16 sts / 24 rows" },
+];
 ---
 
-<BaseLayout 
-  title="Graph Paper Tool | Knit by Machine" 
-  description="Create full-scale knitter's graph paper based on your stitch and row gauge. Download printable SVG graph paper for shaping, motifs, and intarsia."
-  toolPrintTitle="Graph Paper Tool"
+<Layout
+  title="Knitters Graph Paper | Knit it Now"
+  description="Download printable knitters graph paper based on your stitch and row gauge. Choose US Letter or Metric A4 and download a ready-made PDF."
+  toolPrintTitle="Knitters Graph Paper"
+  bodyClass="page--tight-header"
 >
+  <div class="gp-page">
+    <div class="gp-shell">
+      <WizardBackLink />
 
-<style>
-/* Tool-specific container (wider than default wizard-container) */
-.tool-container {
-  max-width: 900px;
-  margin: 0 auto;
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
+      <header class="gp-header">
+        <h1>Knitters Graph Paper</h1>
+        <p>
+          Create printable knitters graph paper based on your stitch and row
+          gauge. Use it for intarsia, motifs, stitch placement, or shaping notes.
+        </p>
+      </header>
 
-.form-section {
-  margin-bottom: 2rem;
-}
+      <div class="gp-card">
+        <!-- Step 1: Page size -->
+        <section class="gp-step">
+          <div class="gp-step-head">
+            <span class="gp-step-num">1</span>
+            <h2>Choose page size</h2>
+          </div>
+          <div class="gp-segmented" role="radiogroup" aria-label="Page size">
+            <button
+              type="button"
+              class="gp-segment is-active"
+              role="radio"
+              aria-checked="true"
+              data-page-size="us"
+            >
+              <span class="gp-segment-title">US Letter</span>
+              <span class="gp-segment-sub">8.5 × 11 in</span>
+            </button>
+            <button
+              type="button"
+              class="gp-segment"
+              role="radio"
+              aria-checked="false"
+              data-page-size="metric"
+            >
+              <span class="gp-segment-title">Metric A4</span>
+              <span class="gp-segment-sub">210 × 297 mm</span>
+            </button>
+          </div>
+        </section>
 
-.section-label {
-  color: var(--kbm-green);
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  display: block;
-}
+        <!-- Step 2: Gauge -->
+        <section class="gp-step">
+          <div class="gp-step-head">
+            <span class="gp-step-num">2</span>
+            <h2>Enter gauge</h2>
+          </div>
 
-.gauge-helper {
-  font-size: 0.9rem;
-  color: #6b7280;
-  margin-top: 0.5rem;
-  font-style: italic;
-}
+          <div class="gp-presets" aria-label="Common gauge presets">
+            {presets.map((preset) => (
+              <button
+                type="button"
+                class="gp-preset"
+                data-sts={preset.sts}
+                data-rows={preset.rows}
+              >
+                <span class="gp-preset-label">{preset.label}</span>
+                <span class="gp-preset-hint">{preset.hint}</span>
+              </button>
+            ))}
+          </div>
 
-.options-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-}
+          <div class="gp-inputs">
+            <div class="gp-field">
+              <label for="gp-stitch">Stitch gauge</label>
+              <div class="gp-select-wrap">
+                <select id="gp-stitch">
+                  {gaugeValues.map((value) => (
+                    <option value={value} selected={value === defaults.stitch}>
+                      {value} stitches
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
-.input-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
+            <div class="gp-field">
+              <label for="gp-row">Row gauge</label>
+              <div class="gp-select-wrap">
+                <select id="gp-row">
+                  {gaugeValues.map((value) => (
+                    <option value={value} selected={value === defaults.row}>
+                      {value} rows
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        </section>
 
-/* Print styles */
-@media print {
-  .wizard-page {
-    padding-top: 0 !important;
-    background: white !important;
-  }
-  
-  .page-header,
-  .back-link,
-  .form-section,
-  .actions-section,
-  .info-box,
-  .no-print {
-    display: none !important;
-  }
-  
-  .tool-container {
-    box-shadow: none !important;
-    padding: 0 !important;
-    background: white !important;
-    border: none !important;
-  }
-}
+        <!-- Step 3: Download -->
+        <section class="gp-step">
+          <div class="gp-step-head">
+            <span class="gp-step-num">3</span>
+            <h2>Download PDF</h2>
+          </div>
 
-@media (max-width: 640px) {
-  .options-row,
-  .input-grid {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
+          <p class="gp-preview" id="gp-preview">
+            Selected: 20 stitches × 28 rows, US Letter
+          </p>
 
-<div class="wizard-page">
-  <div style="max-width: 900px; margin: 0 auto; padding: 0 1rem;">
-    <WizardBackLink category="tool" />
-  </div>
+          <a
+            id="gp-download"
+            class="gp-download-btn"
+            href="#"
+            target="_blank"
+            rel="noopener"
+          >
+            <i class="fas fa-download" aria-hidden="true"></i>
+            Download Graph Paper PDF
+          </a>
 
-  <div class="page-header">
-    <div class="page-header-title">
-      <h1>Graph Paper Tool</h1>
-    </div>
-    <p>
-      Create full-scale knitter's graph paper based on your stitch and row gauge. Plan shaping, motifs, and intarsia on a grid that matches how your knitting grows.
-    </p>
-  </div>
+          <p class="gp-unavailable" id="gp-unavailable" hidden>
+            That graph paper PDF isn’t available yet.
+          </p>
 
-  <div class="tool-container">
-    <!-- Unit Toggle - left-aligned, above first input -->
-    <UnitToggle id="graph" />
-
-    <!-- Gauge Section -->
-    <div class="form-section">
-      <GaugeInput id="graph" showTitle={true} showToggle={false} />
-      <p class="gauge-error" id="gauge-error" style="display: none; color: #dc2626; font-size: 0.9rem; margin-top: 0.5rem;">Please enter whole numbers only.</p>
-    </div>
-
-    <!-- Paper Size -->
-    <div class="form-section">
-      <div class="input-group">
-        <label for="paper-size">Paper Size</label>
-        <select id="paper-size" data-testid="select-paper-size">
-          <option value="letter">Letter (8.5 × 11 in)</option>
-          <option value="a4">A4 (210 × 297 mm)</option>
-        </select>
+          <p class="gp-tip">
+            <strong>Tip:</strong> When printing, choose Actual Size / 100% (not
+            “Fit to page”) so the grid prints true to scale.
+          </p>
+        </section>
       </div>
     </div>
-
-    <!-- Actions -->
-    <ToolActionBar downloadId="download-btn" downloadFilename="knit-graph-paper.svg" showPrint={false} />
-    
-    <div class="info-box no-print">
-      <strong>Tip:</strong> For true-scale printing, print at Actual Size / 100% (not "Fit to page").
-    </div>
   </div>
-  
-</div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // State
-  let unit = localStorage.getItem('graphpaper.unit') || 'in';
-  let paperSize = localStorage.getItem('graphpaper.paper') || 'letter';
-
-  // DOM elements
-  const btnInches = document.getElementById('graph-btn-inches');
-  const btnCm = document.getElementById('graph-btn-cm');
-  const inputStitches = document.getElementById('graph-stitch-gauge') as HTMLInputElement;
-  const inputRows = document.getElementById('graph-row-gauge') as HTMLInputElement;
-  const selectPaper = document.getElementById('paper-size') as HTMLSelectElement;
-  const downloadBtn = document.getElementById('download-btn') as HTMLAnchorElement;
-
-  // Initialize paper size from localStorage (but NOT gauge inputs - they start blank)
-  if (selectPaper) selectPaper.value = paperSize;
-
-  // Update UI based on unit - labels are handled by GaugeInput component
-  function updateUnitsUI() {
-    if (unit === 'in') {
-      btnInches?.classList.add('active');
-      btnCm?.classList.remove('active');
-    } else {
-      btnCm?.classList.add('active');
-      btnInches?.classList.remove('active');
+  <style>
+    .gp-page {
+      padding: 0 1rem 3rem;
+      background: var(--page-bg, #f6f7f2);
+      min-height: 60vh;
     }
-  }
 
-  updateUnitsUI();
+    .gp-shell {
+      max-width: 720px;
+      margin: 0 auto;
+    }
 
-  // Build query string
-  function buildQueryString(): string {
-    const params = new URLSearchParams({
-      sts: inputStitches.value || '24',
-      rows: inputRows.value || '32',
-      unit: unit,
-      paper: selectPaper.value,
+    .gp-header {
+      margin: 0 0 1.5rem;
+    }
+
+    .gp-header h1 {
+      margin: 0 0 0.5rem;
+      color: var(--kbm-green, #52682d);
+    }
+
+    .gp-header p {
+      margin: 0;
+      max-width: 52ch;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+
+    .gp-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .gp-step-head {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      margin-bottom: 1rem;
+    }
+
+    .gp-step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.85rem;
+      height: 1.85rem;
+      border-radius: 50%;
+      background: var(--kbm-green, #52682d);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+
+    .gp-step-head h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      color: #243015;
+    }
+
+    /* Segmented page-size control */
+    .gp-segmented {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .gp-segment {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.15rem;
+      padding: 0.9rem 1.1rem;
+      border: 2px solid #d7e2c8;
+      border-radius: 12px;
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .gp-segment:hover {
+      border-color: var(--kbm-green, #52682d);
+    }
+
+    .gp-segment.is-active {
+      border-color: var(--kbm-green, #52682d);
+      background: #f1f6e8;
+      box-shadow: 0 0 0 1px var(--kbm-green, #52682d) inset;
+    }
+
+    .gp-segment-title {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #243015;
+    }
+
+    .gp-segment-sub {
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+
+    /* Preset helper buttons */
+    .gp-presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .gp-preset {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.1rem;
+      padding: 0.6rem 0.9rem;
+      border: 1px solid #d7e2c8;
+      border-radius: 999px;
+      background: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .gp-preset:hover {
+      border-color: var(--kbm-green, #52682d);
+      background: #f1f6e8;
+    }
+
+    .gp-preset-label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #243015;
+    }
+
+    .gp-preset-hint {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+
+    /* Gauge selects */
+    .gp-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .gp-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .gp-field label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #374151;
+    }
+
+    .gp-select-wrap {
+      position: relative;
+    }
+
+    .gp-select-wrap::after {
+      content: "";
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      width: 0.6rem;
+      height: 0.6rem;
+      border-right: 2px solid #6b7280;
+      border-bottom: 2px solid #6b7280;
+      transform: translateY(-65%) rotate(45deg);
+      pointer-events: none;
+    }
+
+    .gp-select-wrap select {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 100%;
+      padding: 0.85rem 2.25rem 0.85rem 1rem;
+      font-size: 1rem;
+      font-family: inherit;
+      color: #243015;
+      background: #fff;
+      border: 2px solid #d7e2c8;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .gp-select-wrap select:focus {
+      outline: none;
+      border-color: var(--kbm-green, #52682d);
+      box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.15);
+    }
+
+    /* Preview + download */
+    .gp-preview {
+      margin: 0 0 1rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #243015;
+    }
+
+    .gp-download-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      width: 100%;
+      padding: 1rem 1.5rem;
+      background: var(--kbm-green, #52682d);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.05rem;
+      border-radius: 12px;
+      transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .gp-download-btn:hover {
+      background: #3f5123;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(82, 104, 45, 0.25);
+    }
+
+    .gp-download-btn.is-disabled {
+      background: #c4c9bb;
+      pointer-events: none;
+      cursor: default;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .gp-unavailable {
+      margin: 0.85rem 0 0;
+      color: #b91c1c;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .gp-tip {
+      margin: 1.25rem 0 0;
+      font-size: 0.875rem;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 560px) {
+      .gp-card {
+        padding: 1.25rem;
+      }
+      .gp-segmented,
+      .gp-inputs {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const segments = Array.from(
+        document.querySelectorAll<HTMLButtonElement>("[data-page-size]")
+      );
+      const presetBtns = Array.from(
+        document.querySelectorAll<HTMLButtonElement>(".gp-preset")
+      );
+      const stitchSelect = document.getElementById(
+        "gp-stitch"
+      ) as HTMLSelectElement;
+      const rowSelect = document.getElementById("gp-row") as HTMLSelectElement;
+      const downloadBtn = document.getElementById(
+        "gp-download"
+      ) as HTMLAnchorElement;
+      const previewEl = document.getElementById("gp-preview") as HTMLElement;
+      const unavailableEl = document.getElementById(
+        "gp-unavailable"
+      ) as HTMLElement;
+
+      let pageSize: "us" | "metric" = "us";
+      let checkToken = 0;
+
+      function buildUrl(sts: string, rows: string): string {
+        if (pageSize === "metric") {
+          return `/downloads/graph-paper/metric/${sts}x${rows}UK.pdf`;
+        }
+        return `/downloads/graph-paper/us/${sts}x${rows}.pdf`;
+      }
+
+      function updatePreview(sts: string, rows: string) {
+        const sizeLabel = pageSize === "metric" ? "Metric A4" : "US Letter";
+        previewEl.textContent = `Selected: ${sts} stitches × ${rows} rows, ${sizeLabel}`;
+      }
+
+      function setAvailable(url: string) {
+        downloadBtn.href = url;
+        downloadBtn.classList.remove("is-disabled");
+        downloadBtn.removeAttribute("aria-disabled");
+        unavailableEl.hidden = true;
+      }
+
+      function setUnavailable() {
+        downloadBtn.href = "#";
+        downloadBtn.classList.add("is-disabled");
+        downloadBtn.setAttribute("aria-disabled", "true");
+        unavailableEl.hidden = false;
+      }
+
+      async function refresh() {
+        const sts = stitchSelect.value;
+        const rows = rowSelect.value;
+        updatePreview(sts, rows);
+
+        const url = buildUrl(sts, rows);
+        // Optimistically point at the URL so a download still works even if
+        // the availability check is blocked.
+        downloadBtn.href = url;
+
+        const token = ++checkToken;
+        try {
+          const res = await fetch(url, { method: "HEAD" });
+          if (token !== checkToken) return; // a newer selection superseded this
+          if (res.ok) {
+            setAvailable(url);
+          } else {
+            setUnavailable();
+          }
+        } catch (err) {
+          // Network/HEAD failure: fall back to allowing the link.
+          if (token !== checkToken) return;
+          setAvailable(url);
+        }
+      }
+
+      segments.forEach((segment) => {
+        segment.addEventListener("click", () => {
+          segments.forEach((s) => {
+            s.classList.remove("is-active");
+            s.setAttribute("aria-checked", "false");
+          });
+          segment.classList.add("is-active");
+          segment.setAttribute("aria-checked", "true");
+          pageSize = (segment.dataset.pageSize as "us" | "metric") || "us";
+          refresh();
+        });
+      });
+
+      presetBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const sts = btn.dataset.sts;
+          const rows = btn.dataset.rows;
+          if (sts) stitchSelect.value = sts;
+          if (rows) rowSelect.value = rows;
+          refresh();
+        });
+      });
+
+      stitchSelect.addEventListener("change", refresh);
+      rowSelect.addEventListener("change", refresh);
+
+      refresh();
     });
-    return params.toString();
-  }
-
-  // Update download link
-  function updateDownloadLink() {
-    const query = buildQueryString();
-    if (downloadBtn) downloadBtn.href = `/api/graph-paper.svg?${query}`;
-    
-    // Save to localStorage
-    localStorage.setItem('graphpaper.sts', inputStitches.value);
-    localStorage.setItem('graphpaper.rows', inputRows.value);
-    localStorage.setItem('graphpaper.unit', unit);
-    localStorage.setItem('graphpaper.paper', selectPaper.value);
-  }
-
-  // Unit toggle handlers
-  btnInches?.addEventListener('click', () => {
-    unit = 'in';
-    updateUnitsUI();
-    updateDownloadLink();
-  });
-
-  btnCm?.addEventListener('click', () => {
-    unit = 'cm';
-    updateUnitsUI();
-    updateDownloadLink();
-  });
-
-  // Listen for unit changes from UnitToggle component
-  window.addEventListener('kbm:units-change', (e: CustomEvent) => {
-    unit = e.detail.unit;
-    updateUnitsUI();
-    updateDownloadLink();
-  });
-
-  const gaugeError = document.getElementById('gauge-error');
-
-  // Check if value is a whole number
-  function hasDecimal(value: string): boolean {
-    return value.includes('.') || value.includes(',') || (parseFloat(value) % 1 !== 0);
-  }
-
-  // Validate inputs and show/hide error
-  function validateGauge(): boolean {
-    const stsVal = inputStitches?.value || '';
-    const rowsVal = inputRows?.value || '';
-    
-    if ((stsVal && hasDecimal(stsVal)) || (rowsVal && hasDecimal(rowsVal))) {
-      if (gaugeError) gaugeError.style.display = 'block';
-      return false;
-    } else {
-      if (gaugeError) gaugeError.style.display = 'none';
-      return true;
-    }
-  }
-
-  // Input change handlers - validate and update download link
-  inputStitches?.addEventListener('input', () => {
-    validateGauge();
-    updateDownloadLink();
-  });
-  inputRows?.addEventListener('input', () => {
-    validateGauge();
-    updateDownloadLink();
-  });
-  selectPaper?.addEventListener('change', updateDownloadLink);
-
-  // Initial download link update
-  updateDownloadLink();
-});
-</script>
-
-</BaseLayout>
+  </script>
+</Layout>

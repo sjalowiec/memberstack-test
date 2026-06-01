@@ -72,6 +72,28 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
           </div>
         </div>
 
+        <!--
+          Read-only notice for free/claimed (and downgraded) users. Revealed by the Edit Pattern
+          gate in sleevelessPatternEditDrawerPrototype.ts when settings editing is locked, i.e. the
+          same state that hides Edit Pattern / New Pattern. Intentionally has no unlock CTA or
+          upsell controls — the workspace stays a clean read-only viewer.
+        -->
+        <div
+          class="sleeveless-workspace-locked-banner no-print"
+          data-sleeveless-workspace-locked-banner
+          role="status"
+          hidden
+        >
+          <i class="fa-solid fa-lock sleeveless-workspace-locked-banner__icon" aria-hidden="true"></i>
+          <div class="sleeveless-workspace-locked-banner__content">
+            <p class="sleeveless-workspace-locked-banner__title">Read-Only Pattern</p>
+            <p class="sleeveless-workspace-locked-banner__body">
+              This free pattern can be viewed, printed, and renamed. Unlock the Sleeveless Pattern
+              System to change gauge, measurements, or style choices.
+            </p>
+          </div>
+        </div>
+
         <div id="sg-sleeveless-results" class="sg-sleeveless-results">
           <div id="sleeveless-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
             <SleevelessPatternPrintNotice />
@@ -422,6 +444,42 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
 </Layout>
 
 <style>
+  /* Read-only notice shown to free/claimed/downgraded users (see Edit Pattern gate). */
+  .sleeveless-workspace-locked-banner {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    margin: 0 0 1rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid color-mix(in srgb, var(--kbm-accent, #c2614e) 28%, #e5e7eb);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--kbm-accent, #c2614e) 8%, #fff);
+    color: #334155;
+  }
+
+  .sleeveless-workspace-locked-banner[hidden] {
+    display: none !important;
+  }
+
+  .sleeveless-workspace-locked-banner__icon {
+    margin-top: 0.15rem;
+    color: var(--kbm-accent, #c2614e);
+    font-size: 1rem;
+  }
+
+  .sleeveless-workspace-locked-banner__title {
+    margin: 0 0 0.15rem;
+    font-weight: 700;
+    font-size: 0.98rem;
+    color: #1f2937;
+  }
+
+  .sleeveless-workspace-locked-banner__body {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
   /*
    * Pattern workspace action bar — replaces the former tab navigation.
    * Single row above the pattern summary: primary actions (My Patterns, New Pattern)

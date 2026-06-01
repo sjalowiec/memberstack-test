@@ -16,10 +16,15 @@ const expressHref = "/patterns/sleeveless-express/";
 /** Placeholder until Sleeveless pattern-family checkout is wired. */
 const patternFamilyUnlockHref = "#";
 const membershipHref = "/join";
-const lockedBannerStripCopy = `Want more customization? Unlock the full ${SLEEVELESS_PATTERN_FAMILY_NAME} System`;
-const lockedBannerStripAriaLabel = `Unlock the full ${SLEEVELESS_PATTERN_FAMILY_NAME} System for more customization`;
-/** Temporary beta state: patterns are currently open to everyone until Memberstack gating is connected. */
-const SHOW_UPSELL = false;
+const sleevelessSystemName = `${SLEEVELESS_PATTERN_FAMILY_NAME} Pattern System`;
+const lockedBannerStripCopy = `Want more customization? Unlock the ${sleevelessSystemName}`;
+const lockedBannerStripAriaLabel = `Unlock the ${sleevelessSystemName} for more customization`;
+// DEV TOGGLE — LOCAL TESTING ONLY. Keep `false` in production.
+// When true, forces the free/non-member locked experience even for members/owners: shows the upsell
+// banner and locks member-only customization controls (measurements + change-choices). Pattern title
+// + project notes stay editable. Real gating is driven by Memberstack — see the inline script,
+// sleeveless-builder-review-page.ts, and sleevelessReviewProjectHeader.ts.
+const DEBUG_FORCE_FREE_USER = false;
 ---
 
 <Layout
@@ -39,18 +44,32 @@ const SHOW_UPSELL = false;
           data-express-href={builderHref}
         >
           {/*
-            TODO(access): Toggle locked upsell via SHOW_UPSELL and canCustomizePattern() once
-            Memberstack gating is wired. Temporary beta state: patterns are currently open to
-            everyone until Memberstack gating is connected.
+            Access banners: both are rendered hidden and toggled client-side by the resolved
+            Memberstack entitlement (see sleeveless-builder-review-page.ts → applyReviewAccessBanners).
+            Members / Sleeveless Pattern System owners see the "full access" banner; free users see
+            the locked upsell. The locked banner copy is swapped for claimed vs unclaimed free users.
           */}
           <div
             class="sleeveless-review-access-messages"
             data-sleeveless-review-access-messages
           >
+            {/* DEV ONLY: forces the free/locked view while DEBUG_FORCE_FREE_USER is true. */}
+            {DEBUG_FORCE_FREE_USER && (
+              <p class="sleeveless-review-dev-flag" role="note">
+                DEV TEST MODE: Free user view
+              </p>
+            )}
+            {DEBUG_FORCE_FREE_USER && (
+              <script is:inline>
+                window.__KBM_DEBUG_FORCE_FREE_USER__ = true;
+              </script>
+            )}
+
             <div
               class="sleeveless-review-access-banner sleeveless-review-access-banner--paid"
               data-sleeveless-review-access-paid
               role="status"
+              hidden
             >
               <div class="sleeveless-review-access-banner__layout">
                 <img
@@ -72,11 +91,11 @@ const SHOW_UPSELL = false;
               </div>
             </div>
 
-            {SHOW_UPSELL && (
             <div
               class="sleeveless-review-access-banner sleeveless-review-access-banner--locked"
               data-sleeveless-review-access-locked
               role="status"
+              hidden
             >
               <button
                 type="button"
@@ -97,12 +116,19 @@ const SHOW_UPSELL = false;
                   decoding="async"
                 />
                 <div class="sleeveless-review-access-banner__content">
-                  <h2 class="sleeveless-review-access-banner__title">
-                    Unlock the Sleeveless System
+                  <h2
+                    class="sleeveless-review-access-banner__title"
+                    data-sleeveless-review-access-locked-title
+                  >
+                    Unlock the Sleeveless Pattern System
                   </h2>
-                  <p class="sleeveless-review-access-banner__body">
-                    You’re viewing the measurements from your choices. Unlock the Sleeveless System to
-                    fully customize your fit, fine-tune shaping inputs, and update your pattern anytime.
+                  <p
+                    class="sleeveless-review-access-banner__body"
+                    data-sleeveless-review-access-locked-body
+                  >
+                    You’re viewing the measurements from your choices. Unlock the Sleeveless Pattern
+                    System to fully customize your fit, fine-tune shaping inputs, and update your
+                    pattern anytime.
                   </p>
                   <div class="sleeveless-review-access-locked-actions">
               <div class="sleeveless-review-access-cta sleeveless-review-access-cta--primary">
@@ -110,10 +136,10 @@ const SHOW_UPSELL = false;
                   href={patternFamilyUnlockHref}
                   class="kbm-btn kbm-btn-accent sleeveless-review-access-cta__btn"
                 >
-                  Unlock Sleeveless System · $24.95
+                  Unlock Sleeveless Pattern System · $24.95
                 </a>
                 <p class="sleeveless-review-access-cta__hint">
-                        Lifetime access to the Sleeveless System for Women, Men, Kids, &amp; Babies.
+                        Lifetime access to the Sleeveless Pattern System for Women, Men, Kids, &amp; Babies.
                 </p>
               </div>
                     <p class="sleeveless-review-access-member-line">
@@ -147,7 +173,6 @@ const SHOW_UPSELL = false;
                 →
               </span>
             </button>
-            )}
           </div>
 
           <p
@@ -497,6 +522,21 @@ const SHOW_UPSELL = false;
     flex-direction: column;
     gap: 0.75rem;
     margin: 0 0 0.85rem;
+  }
+
+  /* TEMP DEV: free-user test-mode label. Remove with DEBUG_FORCE_FREE_USER. */
+  .sleeveless-unified-review-page .sleeveless-review-dev-flag {
+    margin: 0;
+    padding: 0.3rem 0.6rem;
+    border: 1px dashed #b91c1c;
+    border-radius: 6px;
+    background: #fef2f2;
+    color: #b91c1c;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    align-self: flex-start;
   }
 
   .sleeveless-unified-review-page .sleeveless-review-access-preview-note {

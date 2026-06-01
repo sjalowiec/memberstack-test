@@ -8,8 +8,6 @@
 
 
 
-import { canCustomizePattern } from "../lib/patterns/sleevelessPatternAccessGate";
-
 import { initChangePatternChoicesLinks } from "../lib/patterns/restoreSleevelessExpressBuilderFromPattern";
 import { ensureSavedCustomPatternSessionHydratedOnPatternPage } from "../lib/patterns/hydrateSavedCustomPatternProject";
 
@@ -51,7 +49,9 @@ export function applySleevelessPatternOnlineProjectHeader(): void {
 
   const notes = getSleevelessPatternOnlineNotesText(meta);
 
-  const showCustomizeNotes = canCustomizePattern();
+  // Project notes are library management, not a paid feature — show them whenever the user has
+  // notes saved, regardless of system-access entitlement (free/downgraded users keep their notes).
+  const showCustomizeNotes = notes.trim().length > 0;
 
 
 

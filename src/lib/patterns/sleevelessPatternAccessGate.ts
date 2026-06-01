@@ -1,7 +1,13 @@
 /**
- * Temporary entitlement gate for the unified Sleeveless builder review page.
- * TODO: replace temporary gate with real Memberstack entitlement check.
+ * Entitlement gate for advanced Sleeveless customization (measurement fine-tuning) on the
+ * unified review page.
+ *
+ * Resolution order: explicit dev/test overrides (query param, then localStorage) win; otherwise
+ * the resolved Memberstack access snapshot decides (`hasSystemAccess`). Before the async snapshot
+ * resolves, callers that have not awaited resolution fall back to the open beta default. Review-page
+ * scripts await {@link resolveSleevelessUserAccess} first so the snapshot is primed before reading.
  */
+import { getCachedSleevelessUserAccess } from "./sleevelessPatternSystemAccessClient";
 
 /** localStorage key for dev/testing override (`"1"` = editable, `"0"` = read-only). */
 export const SLEEVELESS_PATTERN_ACCESS_LS_KEY = "kbm_sleeveless_advanced_pattern_access";
@@ -52,7 +58,10 @@ export function resolveHasAdvancedPatternAccess(pageUrl?: URL): boolean {
     }
   }
 
-  // TODO: replace temporary default with real Memberstack entitlement check.
+  const access = getCachedSleevelessUserAccess();
+  if (access) return access.hasSystemAccess;
+
+  // Snapshot not resolved yet — keep the open beta default to avoid flash-locking members.
   return true;
 }
 

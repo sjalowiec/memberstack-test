@@ -95,17 +95,12 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
               <h1 class="pattern-title">Sleeveless Sweater</h1>
               <SleevelessExpressEditingBar />
               <p class="pattern-subtext">
-                Don't know your gauge yet? You can still explore the pattern. Use 16sts/24 rows for a mid-gauge sample, or 28sts/44 rows for a standard-gauge sample.<br>When you're ready to knit, come back and enter your actual swatch gauge.
+                <strong>Just evaluating the pattern?</strong><br>Use 16 sts/24 rows for a mid-gauge sample or 28 sts/44 rows for a standard-gauge sample.
               </p>
             </header>
 
             <div class="express-panel">
               <div class="express-builder-root" data-express-builder>
-                <div class="express-builder-toolbar no-print">
-                  <button type="button" id="express-start-over-btn" class="btn btn-outline-secondary btn-sm">
-                    Start a New Pattern
-                  </button>
-                </div>
                 <div class="express-builder-units no-print">
                   <UnitToggle id="sleeveless-fit" />
                 </div>
@@ -135,6 +130,7 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
                 ▾
               </button>
               <div class="express-acc__header-main">
+                <span class="express-acc__step" aria-hidden="true">1</span>
                 <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
                 <h2 class="express-acc__title" id="express-step-1-title">Who & Size</h2>
                 <span class="express-acc__value" data-express-summary="who"></span>
@@ -280,6 +276,7 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
                 ▾
               </button>
               <div class="express-acc__header-main">
+                <span class="express-acc__step" aria-hidden="true">2</span>
                 <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
                 <h2 class="express-acc__title" id="express-step-2-title">Choose your front style</h2>
                 <span class="express-acc__value" data-express-summary="front"></span>
@@ -362,6 +359,7 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
                 ▾
               </button>
               <div class="express-acc__header-main">
+                <span class="express-acc__step" aria-hidden="true">3</span>
                 <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
                 <h2 class="express-acc__title" id="express-step-3-title">Choose your neckline</h2>
                 <span class="express-acc__value" data-express-summary="neckline"></span>
@@ -440,6 +438,7 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
                 ▾
               </button>
               <div class="express-acc__header-main">
+                <span class="express-acc__step" aria-hidden="true">4</span>
                 <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
                 <h2 class="express-acc__title" id="express-step-4-title">Choose your fit</h2>
                 <span class="express-acc__value" data-express-summary="fit"></span>
@@ -545,6 +544,7 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
                 ▾
               </button>
               <div class="express-acc__header-main">
+                <span class="express-acc__step" aria-hidden="true">5</span>
                 <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
                 <div class="express-acc__title-row express-acc__title-row--gauge">
                   <h2 class="express-acc__title" id="express-step-5-title">Enter your gauge</h2>
@@ -647,6 +647,25 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
 </Layout>
 
 <style>
+  /* Numbered step badge on accordion headers — mirrors the top stepper circle so
+     the accordion sections visually map to steps 1–5 in the stepper above. */
+  .express-acc__step {
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.85rem;
+    height: 1.85rem;
+    border: 2px solid #c5c9bd;
+    border-radius: 50%;
+    background: var(--page-bg, #fff);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--express-nav-green, #52682d);
+  }
+
   .express-gauge-intro-group {
     margin: 0 0 0.5rem;
   }

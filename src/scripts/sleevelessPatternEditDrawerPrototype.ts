@@ -59,6 +59,8 @@ import {
   swatchCountFromPerInchForDisplay,
   type GaugeSwatchBasis,
 } from "../lib/patterns/gaugeDisplayFormat";
+import { canEditSleevelessPatternSettings } from "../lib/patterns/sleevelessPatternSystemAccess";
+import { resolveSleevelessUserAccess } from "../lib/patterns/sleevelessPatternSystemAccessClient";
 
 /** localStorage keys the reused measurement editor may write to (snapshot/restore for discard). */
 const MEASURE_STORAGE_KEYS = [
@@ -275,6 +277,11 @@ function initSleevelessPatternEditDrawer(): void {
   let drawerSnapshot: FieldSnapshot | null = null;
   let chartsLoaded = false;
   let chartsLoadStarted = false;
+  // Entitlement gate: gauge / measurements / style edits + regeneration are only available to
+  // users with active Sleeveless Pattern System access. Resolved async below; defaults to
+  // unlocked so members aren't briefly blocked, then locks the drawer if access is absent.
+  // (Title/notes stay editable for everyone via the Pattern Setup tab → Customize page.)
+  let settingsEditingLocked = false;
 
   function radioValue(name: string): string {
     const el = drawer!.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`);
@@ -460,6 +467,7 @@ function initSleevelessPatternEditDrawer(): void {
   };
 
   function openDrawer(): void {
+    if (settingsEditingLocked) return;
     if (drawer!.classList.contains("is-open")) return;
     clearNotes();
     populateFromStorage();
@@ -654,6 +662,23 @@ function initSleevelessPatternEditDrawer(): void {
 
   openBtn.addEventListener("click", openDrawer);
   drawerCloseEls.forEach((el) => el.addEventListener("click", () => closeDrawer()));
+
+  // Lock the in-place editor (gauge, measurements, style choices, regeneration) when the user
+  // lacks active system access. The button is hidden rather than shown-disabled so the locked
+  // state reads as intentional; renaming/notes remain available on the Customize page.
+  void resolveSleevelessUserAccess().then((access) => {
+    settingsEditingLocked = !canEditSleevelessPatternSettings(access);
+    if (!settingsEditingLocked) return;
+    if (drawer.classList.contains("is-open")) closeDrawer();
+    openBtn.hidden = true;
+    openBtn.setAttribute("aria-hidden", "true");
+    openBtn.setAttribute("tabindex", "-1");
+    // Reveal the workspace read-only notice that explains why editing is unavailable.
+    const lockedBanner = document.querySelector<HTMLElement>(
+      "[data-sleeveless-workspace-locked-banner]",
+    );
+    if (lockedBanner) lockedBanner.hidden = false;
+  });
 
   drawer.querySelectorAll<HTMLInputElement>('input[name="sl-edit-fit"]').forEach((el) => {
     el.addEventListener("change", updateEaseReadout);
