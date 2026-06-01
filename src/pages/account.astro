@@ -449,17 +449,28 @@ const description =
   }
 
   :global(.account-my-patterns__actions) {
-    display: inline-flex;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     gap: 0.4rem;
-    flex-wrap: wrap;
-    justify-content: flex-end;
+    min-width: 11rem;
+  }
+
+  :global(.account-my-patterns__action-pair) {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  :global(.account-my-patterns__action-pair .account-my-patterns__action) {
+    flex: 1 1 0;
+    min-width: 0;
   }
 
   :global(.account-my-patterns__action) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
     min-height: 2rem;
     padding: 0.3rem 0.7rem;
     font: inherit;
@@ -488,13 +499,13 @@ const description =
     outline-offset: 2px;
   }
 
-  :global(.account-my-patterns__action--open) {
+  :global(.account-my-patterns__action--view) {
     color: #fff;
     background: var(--kbm-green, #52682d);
     border-color: var(--kbm-green, #52682d);
   }
 
-  :global(.account-my-patterns__action--open:hover:not(:disabled)) {
+  :global(.account-my-patterns__action--view:hover:not(:disabled)) {
     background: var(--kbm-green-hover, #445626);
     border-color: var(--kbm-green-hover, #445626);
     color: #fff;
@@ -517,27 +528,17 @@ const description =
   }
 
   :global(.account-my-patterns__delete) {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    padding: 0;
+    width: 100%;
     background: transparent;
-    border: none;
-    border-radius: 8px;
-    color: #9ca3af;
-    cursor: pointer;
+    border-color: transparent;
+    color: #b4453a;
     opacity: 0.85;
-    transition:
-      background 0.15s ease,
-      color 0.15s ease,
-      opacity 0.15s ease;
   }
 
   :global(.account-my-patterns__delete:hover:not(:disabled)) {
-    background: rgba(82, 104, 45, 0.1);
-    color: #52682d;
+    background: rgba(180, 69, 58, 0.08);
+    border-color: rgba(180, 69, 58, 0.35);
+    color: #99362d;
     opacity: 1;
   }
 
@@ -620,12 +621,17 @@ const description =
     }
 
     :global(.account-my-patterns__cell--actions) {
-      justify-content: flex-end;
+      justify-content: stretch;
       padding-top: 0.15rem;
     }
 
     :global(.account-my-patterns__cell--actions::before) {
       display: none;
+    }
+
+    :global(.account-my-patterns__cell--actions .account-my-patterns__actions) {
+      width: 100%;
+      min-width: 0;
     }
   }
 

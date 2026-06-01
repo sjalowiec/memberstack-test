@@ -2,14 +2,12 @@
 import Layout from "../../../../../layouts/Layout.astro";
 import SleevelessPatternMemberGate from "../../../../../components/patterns/SleevelessPatternMemberGate.astro";
 import WizardBackLink from "../../../../../components/wizards/WizardBackLink.astro";
-import PatternWorkspaceTabs from "../../../../../components/patterns/PatternWorkspaceTabs.astro";
 import UnitToggle from "../../../../../components/wizards/UnitToggle.astro";
 import "../../../../../styles/sleeveless-express-builder-cards.css";
 import "../../../../../styles/sleeveless-express-wizard-layout.css";
 import "../../../../../styles/express-size-selection.css";
 import "../../../../../styles/custom-pattern-editing-banner.css";
 
-const customBuildHref = "/patterns/sleeveless/custom-build/";
 const styleHref = "/patterns/sleeveless/custom-style";
 
 const customWizardSteps = [
@@ -32,16 +30,6 @@ const customWizardSteps = [
   >
     <div id="cb-design-top" class="wizard-container express-wizard scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
-        <PatternWorkspaceTabs
-          rootClass="pattern-tabs-scope"
-          activeTab="express"
-          expressHref="/patterns/sleeveless-express/"
-          customBuildHref={customBuildHref}
-          patternHref="/patterns/sleeveless/pattern/"
-          askShareHref="/patterns/sleeveless/ask-share/"
-          inspirationHref="/patterns/sleeveless/inspiration/"
-        />
-
         <WizardBackLink className="back-link no-print" fallback="/patterns" />
         <div data-cb-editing-banner-host hidden></div>
 
@@ -263,7 +251,7 @@ const customWizardSteps = [
                         aria-pressed="false"
                       >
                         <img
-                          src="/images/patterns/sleeveless/sleeveless_woman.png"
+                          src="/images/patterns/sleeveless/people/sleeveless-woman-pullover-round-neck.webp"
                           alt=""
                           class="hat-length-picker__img sg-picker-img express-who-card__img"
                           width="168"
@@ -282,7 +270,7 @@ const customWizardSteps = [
                         aria-pressed="false"
                       >
                         <img
-                          src="/images/patterns/sleeveless/sleeveless_man.png"
+                          src="/images/patterns/sleeveless/people/sleeveless-man-pullover-round-neck.webp"
                           alt=""
                           class="hat-length-picker__img sg-picker-img express-who-card__img"
                           width="168"
@@ -301,7 +289,7 @@ const customWizardSteps = [
                         aria-pressed="false"
                       >
                         <img
-                          src="/images/patterns/sleeveless/sleeveless_kids.png"
+                          src="/images/patterns/sleeveless/people/sleeveless-kids-pullover-round-neck.webp"
                           alt=""
                           class="hat-length-picker__img sg-picker-img express-who-card__img"
                           width="168"
@@ -320,7 +308,7 @@ const customWizardSteps = [
                         aria-pressed="false"
                       >
                         <img
-                          src="/images/patterns/sleeveless/sleeveless_baby.png"
+                          src="/images/patterns/sleeveless/people/sleeveless-baby-pullover-round-neck.webp"
                           alt=""
                           class="hat-length-picker__img sg-picker-img express-who-card__img"
                           width="168"

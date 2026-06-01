@@ -144,7 +144,8 @@ function updateSortHeaders(root: HTMLElement): void {
 }
 
 const ROW_ACTION_SELECTORS = [
-  "[data-kbm-my-patterns-open]",
+  "[data-kbm-my-patterns-view]",
+  "[data-kbm-my-patterns-edit]",
   "[data-kbm-my-patterns-copy]",
   "[data-kbm-my-patterns-rename]",
   "[data-kbm-my-patterns-delete]",
@@ -173,7 +174,10 @@ function releaseMyPatternsListInteraction(root: HTMLElement): void {
   root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-sort]").forEach((b) => {
     b.disabled = false;
   });
-  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-open]").forEach((b) => {
+  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-view]").forEach((b) => {
+    b.disabled = false;
+  });
+  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-edit]").forEach((b) => {
     b.disabled = false;
   });
   root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-rename]").forEach((b) => {
@@ -196,10 +200,46 @@ function showEmptyListState(root: HTMLElement): void {
   setStatus(root, EMPTY_LIST_MESSAGE);
 }
 
-async function onProjectOpen(root: HTMLElement, projectId: string, label: string): Promise<void> {
+async function onProjectView(root: HTMLElement, projectId: string, label: string): Promise<void> {
+  const actionStart = perfStart();
+  perfMark("6-account-list-action start", { action: "view", projectId, label });
+  setStatus(root, `Loading “${label}”…`);
+  lockMyPatternsListInteraction(root);
+
+  try {
+    const loadStart = perfStart();
+    const result = await loadSavedCustomPatternProject(projectId, "view");
+    perfEnd("6-account-list-action loadSavedCustomPatternProject", loadStart, {
+      action: "view",
+      projectId,
+      ok: result.ok,
+    });
+    if (!result.ok) {
+      setStatus(root, result.error, true);
+      perfEnd("6-account-list-action total", actionStart, { action: "view", ok: false });
+      return;
+    }
+
+    perfEnd("6-account-list-action total", actionStart, {
+      action: "view",
+      ok: true,
+      redirect: result.redirectHref,
+    });
+    setStatus(root, "");
+    window.location.assign(result.redirectHref);
+  } catch (error) {
+    console.error("[kbm] Failed to view saved pattern from My Patterns.", error);
+    setStatus(root, "Could not open this pattern. Please try again.", true);
+    perfEnd("6-account-list-action total", actionStart, { action: "view", ok: false, thrown: true });
+  } finally {
+    releaseMyPatternsListInteraction(root);
+  }
+}
+
+async function onProjectEdit(root: HTMLElement, projectId: string, label: string): Promise<void> {
   const actionStart = perfStart();
   perfMark("6-account-list-action start", { action: "open", projectId, label });
-  setStatus(root, `Loading “${label}”…`);
+  setStatus(root, `Opening “${label}” for editing…`);
   lockMyPatternsListInteraction(root);
 
   try {
@@ -224,8 +264,8 @@ async function onProjectOpen(root: HTMLElement, projectId: string, label: string
     setStatus(root, "");
     window.location.assign(result.redirectHref);
   } catch (error) {
-    console.error("[kbm] Failed to open saved pattern from My Patterns.", error);
-    setStatus(root, "Could not open this pattern. Please try again.", true);
+    console.error("[kbm] Failed to open saved pattern for editing from My Patterns.", error);
+    setStatus(root, "Could not open this pattern for editing. Please try again.", true);
     perfEnd("6-account-list-action total", actionStart, { action: "open", ok: false, thrown: true });
   } finally {
     releaseMyPatternsListInteraction(root);
@@ -384,18 +424,18 @@ function wireProjectRow(
   tr.className = "account-my-patterns__row";
   tr.setAttribute("data-kbm-my-patterns-row", "");
   tr.tabIndex = 0;
-  tr.setAttribute("aria-label", `Open ${displayName}`);
+  tr.setAttribute("aria-label", `View ${displayName}`);
 
-  const open = (): void => {
+  const view = (): void => {
     if (tr.getAttribute("aria-disabled") === "true") return;
-    void onProjectOpen(root, project.id, displayName);
+    void onProjectView(root, project.id, displayName);
   };
 
-  tr.addEventListener("click", open);
+  tr.addEventListener("click", view);
   tr.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
-    open();
+    view();
   });
 }
 
@@ -441,17 +481,30 @@ function renderProjectRow(root: HTMLElement, project: CustomPatternProjectSummar
   const actionsGroup = document.createElement("div");
   actionsGroup.className = "account-my-patterns__actions";
 
-  const openBtn = document.createElement("button");
-  openBtn.type = "button";
-  openBtn.className = "account-my-patterns__action account-my-patterns__action--open";
-  openBtn.setAttribute("data-kbm-my-patterns-open", "");
-  openBtn.dataset.projectId = project.id;
-  openBtn.setAttribute("aria-label", `Open ${displayName}`);
-  openBtn.textContent = "Open";
-  openBtn.addEventListener("click", (event) => {
+  const viewBtn = document.createElement("button");
+  viewBtn.type = "button";
+  viewBtn.className = "account-my-patterns__action account-my-patterns__action--view";
+  viewBtn.setAttribute("data-kbm-my-patterns-view", "");
+  viewBtn.dataset.projectId = project.id;
+  viewBtn.setAttribute("aria-label", `View ${displayName}`);
+  viewBtn.textContent = "View Pattern";
+  viewBtn.addEventListener("click", (event) => {
     event?.stopPropagation?.();
-    if (openBtn.disabled) return;
-    void onProjectOpen(root, project.id, displayName);
+    if (viewBtn.disabled) return;
+    void onProjectView(root, project.id, displayName);
+  });
+
+  const editBtn = document.createElement("button");
+  editBtn.type = "button";
+  editBtn.className = "account-my-patterns__action account-my-patterns__action--edit";
+  editBtn.setAttribute("data-kbm-my-patterns-edit", "");
+  editBtn.dataset.projectId = project.id;
+  editBtn.setAttribute("aria-label", `Edit ${displayName}`);
+  editBtn.textContent = "Edit";
+  editBtn.addEventListener("click", (event) => {
+    event?.stopPropagation?.();
+    if (editBtn.disabled) return;
+    void onProjectEdit(root, project.id, displayName);
   });
 
   const copyBtn = document.createElement("button");
@@ -460,7 +513,7 @@ function renderProjectRow(root: HTMLElement, project: CustomPatternProjectSummar
   copyBtn.setAttribute("data-kbm-my-patterns-copy", "");
   copyBtn.dataset.projectId = project.id;
   copyBtn.setAttribute("aria-label", `Copy ${displayName}`);
-  copyBtn.textContent = "Copy Pattern";
+  copyBtn.textContent = "Copy";
   copyBtn.addEventListener("click", (event) => {
     event?.stopPropagation?.();
     if (copyBtn.disabled) return;
@@ -468,6 +521,10 @@ function renderProjectRow(root: HTMLElement, project: CustomPatternProjectSummar
   });
   // Visible for everyone; disabled + grayed (with helper tooltip) for free / non-owner users.
   syncSavedCustomPatternCopyAccess(copyBtn);
+
+  const editCopyPair = document.createElement("div");
+  editCopyPair.className = "account-my-patterns__action-pair";
+  editCopyPair.append(editBtn, copyBtn);
 
   const renameBtn = document.createElement("button");
   renameBtn.type = "button";
@@ -488,17 +545,14 @@ function renderProjectRow(root: HTMLElement, project: CustomPatternProjectSummar
   delBtn.setAttribute("data-kbm-my-patterns-delete", "");
   delBtn.dataset.projectId = project.id;
   delBtn.setAttribute("aria-label", `Delete ${displayName}`);
-  const trash = document.createElement("i");
-  trash.className = "fa-solid fa-trash";
-  trash.setAttribute("aria-hidden", "true");
-  delBtn.append(trash);
+  delBtn.textContent = "Delete";
   delBtn.addEventListener("click", (event) => {
     event?.stopPropagation?.();
     if (delBtn.disabled) return;
     void onProjectDelete(root, project.id, displayName);
   });
 
-  actionsGroup.append(openBtn, copyBtn, renameBtn, delBtn);
+  actionsGroup.append(viewBtn, editCopyPair, renameBtn, delBtn);
   actionsCell.append(actionsGroup);
 
   tr.append(nameCell, typeCell, gaugeCell, updatedCell, actionsCell);
@@ -558,7 +612,7 @@ export async function initAccountMyPatternsList(root: HTMLElement): Promise<void
   if (!res.ok) {
     const message =
       res.error === SIGN_IN_REQUIRED_ERROR
-        ? "Sign in to view and open your saved patterns."
+        ? "Sign in to view your saved patterns."
         : res.error;
     setStatus(root, message, res.error !== SIGN_IN_REQUIRED_ERROR);
     perfEnd("1-account-page-init total", initStart, {

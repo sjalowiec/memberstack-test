@@ -1,21 +1,24 @@
 /**
- * Edit Pattern drawer + Measurement editor for the saved sleeveless pattern view.
+ * Edit Pattern — ONE combined editing workspace for the saved sleeveless pattern view.
  *
- * Two surfaces:
- *  1. Edit Pattern drawer (right-side desktop / full-screen mobile) — the primary place to edit
- *     pattern settings (Pattern Setup: size, garment, neckline, fit/ease; Gauge: stitch, row,
- *     needles). "Apply Changes" reuses the existing sleeveless build workflow end-to-end:
- *       - writes the same wizard storage keys (express builder `values`, `garmentType`,
- *         `necklineStyle`) and gauge sections used by Custom Build / Express,
- *       - runs `syncCustomBuildToPatternStorage()` (re-derives chart measurements),
- *       - validates with `validatePatternBuilderRequired` + `isValidExpressSizeForAudience`,
- *       - regenerates via `window.kbmRefreshSleevelessPattern()` (no second pipeline).
- *     "Who you are knitting for" (Women / Men / Kids / Babies) is shown locked — it fixes the
- *     drafting system / sizing chart and is never edited here.
- *  2. Full-screen Measurement editor workspace, reached from the drawer. This hosts the REAL
- *     Custom Build measurement editor (`initCustomBuildMeasurementsPage`). Its layout + behavior
- *     are intentionally left unchanged (the workspace snapshots/restores storage so its edits are
- *     applied there, not from this drawer).
+ * A single full-width overlay holds both halves at once (no extra "Edit Measurements" click):
+ *  - LEFT: quick edits (Size, Front style, Neckline, Fit, Gauge, Available needles).
+ *  - RIGHT: the REAL Custom Build measurement SVG editor (`initCustomBuildMeasurementsPage`),
+ *    reused as-is (same pattern_summary.svg, labels, field names, overlay positions). It is
+ *    initialised lazily the first time the workspace opens.
+ *
+ * "Update Pattern" reuses the existing sleeveless build workflow end-to-end:
+ *   - writes the same wizard storage keys (express builder `values`, `garmentType`,
+ *     `necklineStyle`) and gauge sections used by Custom Build / Express,
+ *   - runs `syncCustomBuildToPatternStorage()` — which already folds the measurement editor's
+ *     `cbMeasurementOverrides` into pattern data, so SVG edits flow through the same pipeline
+ *     (no new pattern math here),
+ *   - validates with `validatePatternBuilderRequired` + `isValidExpressSizeForAudience`,
+ *   - regenerates via `window.kbmRefreshSleevelessPattern()` (no second pipeline).
+ *
+ * Cancel/Esc discards both the quick-edit field changes and any measurement edits (storage
+ * baseline is snapshotted on open and restored on discard). Update keeps them.
+ * The recipient/audience ("Who") is intentionally NOT editable here — it fixes the sizing chart.
  */
 import { initCustomBuildMeasurementsPage } from "./sleeveless-custom-build-measurements-page";
 import { applySleevelessPatternOnlineProjectHeader } from "./sleevelessPatternOnlineProjectHeader";
@@ -36,9 +39,7 @@ import {
   validatePatternBuilderRequired,
 } from "../lib/patterns/patternBuilderValidation";
 import {
-  formatBustChestDisplay,
   getExpressChartRowsForAudience,
-  getExpressUiUnit,
   isValidExpressSizeForAudience,
   loadExpressSweaterCharts,
   normalizeChartRowSize,
@@ -52,6 +53,12 @@ import {
   writeSleevelessGarmentTypeLocalStorage,
   type SleevelessGarmentType,
 } from "../lib/patterns/writeSleevelessGarmentSelection";
+import { rawSwatchToPerInch } from "../lib/patterns/syncExpressWizardToPatternStorage";
+import {
+  formatSwatchCountForGaugeInput,
+  swatchCountFromPerInchForDisplay,
+  type GaugeSwatchBasis,
+} from "../lib/patterns/gaugeDisplayFormat";
 
 /** localStorage keys the reused measurement editor may write to (snapshot/restore for discard). */
 const MEASURE_STORAGE_KEYS = [
@@ -212,6 +219,24 @@ function escapeHtml(s: string): string {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+/**
+ * Swatch-basis gauge convention used throughout the sleeveless experience: machine knitters
+ * read gauge as stitches/rows over 4" (or 10 cm), never per-inch. The drawer therefore shows
+ * and collects swatch counts; per-inch values for the pattern engine are derived on save.
+ */
+function gaugeBasisLabelSuffix(basis: GaugeSwatchBasis): string {
+  return basis === "cm" ? 'per 10cm' : 'per 4"';
+}
+
+/** Swatch count to show in a gauge input: prefer the stored raw count, else derive from per-inch. */
+function swatchDisplayValue(raw: unknown, perInch: unknown, basis: GaugeSwatchBasis): string {
+  const r = parseFloat(String(raw ?? "").trim());
+  if (Number.isFinite(r) && r > 0) return formatSwatchCountForGaugeInput(r);
+  const p = parseFloat(String(perInch ?? "").trim());
+  if (Number.isFinite(p) && p > 0) return swatchCountFromPerInchForDisplay(p, basis);
+  return "";
+}
+
 function getRequestRefresh(): (() => unknown) | null {
   const fn = (window as unknown as { kbmRefreshSleevelessPattern?: () => unknown })
     .kbmRefreshSleevelessPattern;
@@ -231,24 +256,21 @@ function initSleevelessPatternEditDrawer(): void {
   const drawerCloseEls = Array.from(drawer.querySelectorAll<HTMLElement>("[data-sl-edit-close]"));
 
   const titleInput = drawer.querySelector<HTMLInputElement>("#sl-edit-title");
+  const notesInput = drawer.querySelector<HTMLTextAreaElement>("#sl-edit-notes");
   const audienceEl = drawer.querySelector<HTMLElement>("[data-sl-edit-audience]");
   const sizeSelect = drawer.querySelector<HTMLSelectElement>("[data-sl-edit-size]");
   const easeEl = drawer.querySelector<HTMLElement>("[data-sl-edit-ease]");
   const spiInput = drawer.querySelector<HTMLInputElement>("#sl-edit-spi");
   const rpiInput = drawer.querySelector<HTMLInputElement>("#sl-edit-rpi");
+  const spiLabel = drawer.querySelector<HTMLElement>("[data-sl-edit-spi-label]");
+  const rpiLabel = drawer.querySelector<HTMLElement>("[data-sl-edit-rpi-label]");
   const needlesInput = drawer.querySelector<HTMLInputElement>("#sl-edit-needles");
 
-  const measure = document.querySelector<HTMLElement>("[data-sl-measure-workspace]");
-  const measureInner = measure?.querySelector<HTMLElement>(".sl-measure-workspace__inner") ?? null;
-  const measureBody = measure?.querySelector<HTMLElement>(".sl-measure-workspace__body") ?? null;
-  const measureNote = measure?.querySelector<HTMLElement>("[data-sl-measure-note]") ?? null;
-  const measureOpenBtn = drawer.querySelector<HTMLElement>("[data-sl-measure-open]");
-  const measureApplyBtn = measure?.querySelector<HTMLElement>("[data-sl-measure-apply]") ?? null;
-  const measureCloseEls = measure
-    ? Array.from(
-        measure.querySelectorAll<HTMLElement>("[data-sl-measure-back], [data-sl-measure-cancel]"),
-      )
-    : [];
+  // Measurement SVG editor lives in the right column of the SAME workspace now
+  // (no separate full-screen surface). `.sl-measure-workspace__body` is kept so the
+  // existing scoped diagram-sizing CSS still applies.
+  const measurePane = drawer.querySelector<HTMLElement>("[data-sl-measure-pane]");
+  const measureBody = measurePane?.querySelector<HTMLElement>(".sl-measure-workspace__body") ?? null;
 
   let drawerSnapshot: FieldSnapshot | null = null;
   let chartsLoaded = false;
@@ -274,6 +296,19 @@ function initSleevelessPatternEditDrawer(): void {
     return getSleevelessChartAudience(getCurrentPattern()) || "misses";
   }
 
+  /** Swatch basis (4" vs 10 cm) the saved gauge was entered in — mirrors the pattern summary. */
+  function resolveGaugeBasis(): GaugeSwatchBasis {
+    const yg = section(getCurrentPattern().yarnGauge);
+    const ygm = section(getPatternData().yarnGaugeMachine);
+    return ygm.gaugeRawUnit === "cm" || yg.gaugeRawUnit === "cm" ? "cm" : "in";
+  }
+
+  function updateGaugeLabels(basis: GaugeSwatchBasis): void {
+    const suffix = gaugeBasisLabelSuffix(basis);
+    if (spiLabel) spiLabel.textContent = `Stitch gauge (${suffix})`;
+    if (rpiLabel) rpiLabel.textContent = `Row gauge (${suffix})`;
+  }
+
   function updateEaseReadout(): void {
     if (!easeEl) return;
     const fit = radioValue("sl-edit-fit") || "standard";
@@ -285,7 +320,6 @@ function initSleevelessPatternEditDrawer(): void {
   function populateSizeOptions(audience: string, currentSize: string): void {
     if (!sizeSelect) return;
     const rows = getExpressChartRowsForAudience(audience);
-    const unit = getExpressUiUnit();
     if (rows.length === 0) {
       sizeSelect.innerHTML = `<option value="">${escapeHtml(
         chartsLoaded ? "No sizes available" : "Loading sizes…",
@@ -296,8 +330,10 @@ function initSleevelessPatternEditDrawer(): void {
       .map((row) => {
         const sz = normalizeChartRowSize(row);
         if (!sz) return "";
-        const meas = formatBustChestDisplay(row, unit);
-        return `<option value="${escapeAttr(sz)}">${escapeHtml(`${sz} — ${meas}`)}</option>`;
+        // Show only the size label here. The finished garment measurements live on the
+        // SVG (the source of truth); displaying the chart bust/chest here too created a
+        // confusing "two sources of truth" alongside the SVG's Finished Bust Circ.
+        return `<option value="${escapeAttr(sz)}">${escapeHtml(`Size ${sz}`)}</option>`;
       })
       .join("");
     sizeSelect.innerHTML = `<option value="">${escapeHtml("Choose a size…")}</option>${opts}`;
@@ -321,6 +357,14 @@ function initSleevelessPatternEditDrawer(): void {
           ? pattern.patternProject.title
           : "";
       titleInput.value = title;
+    }
+
+    if (notesInput) {
+      const notes =
+        pattern.patternProject && typeof pattern.patternProject.notes === "string"
+          ? pattern.patternProject.notes
+          : "";
+      notesInput.value = notes;
     }
 
     const audience = resolveAudience();
@@ -348,11 +392,23 @@ function initSleevelessPatternEditDrawer(): void {
     setRadio("sl-edit-fit", fit);
     updateEaseReadout();
 
+    // Gauge is shown in the machine-knitting convention (sts/rows over 4" or 10 cm), matching
+    // the pattern summary. Per-inch values used by the engine are derived on save.
+    const gaugeBasis = resolveGaugeBasis();
+    updateGaugeLabels(gaugeBasis);
     if (spiInput) {
-      spiInput.value = String(yg.stitchGauge ?? ygm.gaugeStitchesPerInch ?? "");
+      spiInput.value = swatchDisplayValue(
+        yg.gaugeStitchRaw ?? ygm.gaugeStitchRaw,
+        yg.stitchGauge ?? ygm.gaugeStitchesPerInch,
+        gaugeBasis,
+      );
     }
     if (rpiInput) {
-      rpiInput.value = String(yg.rowGauge ?? ygm.gaugeRowsPerInch ?? "");
+      rpiInput.value = swatchDisplayValue(
+        yg.gaugeRowRaw ?? ygm.gaugeRowRaw,
+        yg.rowGauge ?? ygm.gaugeRowsPerInch,
+        gaugeBasis,
+      );
     }
     if (needlesInput) {
       needlesInput.value = String(machine.availableNeedles ?? ygm.availableNeedles ?? "");
@@ -410,24 +466,31 @@ function initSleevelessPatternEditDrawer(): void {
     ensureChartsLoaded();
     // Snapshot after populating so Cancel/Esc reverts to the freshly-loaded values.
     drawerSnapshot = snapshotFields(drawerBody);
+    // Snapshot measurement storage now (before any lazy init writes) so Cancel discards
+    // measurement edits made in this session, while Apply keeps them.
+    measureStorageBaseline = snapshotMeasureStorage();
     drawer!.classList.add("is-open");
     drawer!.setAttribute("aria-hidden", "false");
     lockScroll();
     window.requestAnimationFrame(() => {
+      // The measurement SVG editor is part of the workspace — initialise it lazily the
+      // first time the workspace opens (after layout so its overlay anchors measure correctly).
+      if (!measureInitialized && measurePane) {
+        measureInitialized = true;
+        initCustomBuildMeasurementsPage();
+      }
+      captureMeasureFieldBaseline();
       (drawerPanel ?? drawer!).focus();
     });
-  }
-
-  // Hide the drawer without discarding its values (used when stepping into measurements).
-  function hideDrawerForHandoff(): void {
-    drawer!.classList.remove("is-open");
-    drawer!.setAttribute("aria-hidden", "true");
   }
 
   function closeDrawer(opts: { discardEdits?: boolean } = {}): void {
     if (!drawer!.classList.contains("is-open")) return;
     if (opts.discardEdits !== false) {
       restoreFields(drawerSnapshot);
+      // Discard any measurement edits made while the workspace was open.
+      restoreMeasureFieldBaseline();
+      restoreMeasureStorage(measureStorageBaseline);
     }
     drawerSnapshot = null;
     drawer!.classList.remove("is-open");
@@ -444,16 +507,18 @@ function initSleevelessPatternEditDrawer(): void {
     const garment = (radioValue("sl-edit-garment") || "pullover") as SleevelessGarmentType;
     const neckline = radioValue("sl-edit-neckline") === "v-neck" ? "v-neck" : "round";
     const fit = radioValue("sl-edit-fit") || "standard";
-    const spi = spiInput?.value.trim() ?? "";
-    const rpi = rpiInput?.value.trim() ?? "";
+    // Inputs hold swatch counts (sts/rows over 4" or 10 cm); the engine consumes per-inch.
+    const gaugeBasis = resolveGaugeBasis();
+    const stitchSwatch = spiInput?.value.trim() ?? "";
+    const rowSwatch = rpiInput?.value.trim() ?? "";
     const needles = needlesInput?.value.trim() ?? "";
 
     const errors: string[] = [];
     if (!size || !isValidExpressSizeForAudience(audience, size)) {
       errors.push("Choose a size.");
     }
-    if (!isPositiveNumericMeasurement(spi)) errors.push("Enter a stitch gauge greater than 0.");
-    if (!isPositiveNumericMeasurement(rpi)) errors.push("Enter a row gauge greater than 0.");
+    if (!isPositiveNumericMeasurement(stitchSwatch)) errors.push("Enter a stitch gauge greater than 0.");
+    if (!isPositiveNumericMeasurement(rowSwatch)) errors.push("Enter a row gauge greater than 0.");
     if (!isPositiveNumericMeasurement(needles)) errors.push("Enter the number of needles.");
     if (errors.length > 0) {
       showErrors(errors);
@@ -478,10 +543,13 @@ function initSleevelessPatternEditDrawer(): void {
       writeLocalStorageString(CUSTOM_BUILD_NECKLINE_STYLE_KEY, neckline);
       writeLocalStorageString("bodyShape", bodyShape);
 
-      // Title (online project header) — reuses patternProject meta (preserve existing notes).
+      // Title + notes (online project header) — reuses patternProject meta. Notes come from the
+      // editable Notes textarea; fall back to any previously saved notes if the field is absent.
       if (titleInput) {
         const prevProject = getCurrentPattern().patternProject;
-        const notes = prevProject && typeof prevProject.notes === "string" ? prevProject.notes : "";
+        const prevNotes =
+          prevProject && typeof prevProject.notes === "string" ? prevProject.notes : "";
+        const notes = notesInput ? notesInput.value : prevNotes;
         saveCurrentPattern({
           patternProject: { title: titleInput.value.trim(), notes, titleCustomized: true },
         });
@@ -491,16 +559,40 @@ function initSleevelessPatternEditDrawer(): void {
       syncCustomBuildToPatternStorage({ awaitCharts: false });
 
       // 3) Gauge → same canonical + patternBuilderData sections the gauge step / Express write.
+      // Convert the swatch counts the user sees (28 / 44 over 4") into the per-inch values the
+      // engine expects (7 / 11), and persist the raw counts + basis so summaries stay in sync.
+      const { gaugeStitchesPerInch, gaugeRowsPerInch } = rawSwatchToPerInch(
+        stitchSwatch,
+        rowSwatch,
+        gaugeBasis,
+      );
       const prevYgm = section(getPatternData().yarnGaugeMachine);
       saveCurrentPattern({
-        yarnGauge: { stitchGauge: spi, rowGauge: rpi, gaugeUnits: "per_inch" },
+        yarnGauge: {
+          stitchGauge: gaugeStitchesPerInch,
+          rowGauge: gaugeRowsPerInch,
+          gaugeUnits: "per_inch",
+          gaugeStitchRaw: stitchSwatch,
+          gaugeRowRaw: rowSwatch,
+          gaugeRawUnit: gaugeBasis,
+        },
         machine: { availableNeedles: needles },
       });
-      savePatternData("yarnGauge", { stitchGauge: spi, rowGauge: rpi, gaugeUnits: "per_inch" });
+      savePatternData("yarnGauge", {
+        stitchGauge: gaugeStitchesPerInch,
+        rowGauge: gaugeRowsPerInch,
+        gaugeUnits: "per_inch",
+        gaugeStitchRaw: stitchSwatch,
+        gaugeRowRaw: rowSwatch,
+        gaugeRawUnit: gaugeBasis,
+      });
       savePatternData("yarnGaugeMachine", {
         ...prevYgm,
-        gaugeStitchesPerInch: spi,
-        gaugeRowsPerInch: rpi,
+        gaugeStitchesPerInch,
+        gaugeRowsPerInch,
+        gaugeStitchRaw: stitchSwatch,
+        gaugeRowRaw: rowSwatch,
+        gaugeRawUnit: gaugeBasis,
         availableNeedles: needles,
       });
 
@@ -528,44 +620,6 @@ function initSleevelessPatternEditDrawer(): void {
       showErrors(["We couldn't update the pattern. Please try again."]);
     } finally {
       applyBtn.disabled = false;
-    }
-  }
-
-  function openMeasure(): void {
-    if (!measure || measure.classList.contains("is-open")) return;
-    hideDrawerForHandoff();
-    if (measureNote) measureNote.hidden = true;
-    measure.classList.add("is-open");
-    measure.setAttribute("aria-hidden", "false");
-    lockScroll();
-
-    if (!measureInitialized) {
-      measureInitialized = true;
-      measureStorageBaseline = snapshotMeasureStorage();
-      window.requestAnimationFrame(() => {
-        initCustomBuildMeasurementsPage();
-        captureMeasureFieldBaseline();
-      });
-    }
-
-    window.requestAnimationFrame(() => {
-      (measureInner ?? measure).focus();
-    });
-  }
-
-  function closeMeasure(): void {
-    if (!measure || !measure.classList.contains("is-open")) return;
-    // Measurements are applied within the workspace itself; discard temporary edits here.
-    restoreMeasureFieldBaseline();
-    restoreMeasureStorage(measureStorageBaseline);
-    if (measureNote) measureNote.hidden = true;
-    measure.classList.remove("is-open");
-    measure.setAttribute("aria-hidden", "true");
-    unlockScroll();
-    if (measureOpenBtn && typeof measureOpenBtn.focus === "function") {
-      measureOpenBtn.focus();
-    } else if (openBtn && typeof openBtn.focus === "function") {
-      openBtn.focus();
     }
   }
 
@@ -605,14 +659,9 @@ function initSleevelessPatternEditDrawer(): void {
     el.addEventListener("change", updateEaseReadout);
   });
 
-  if (measureOpenBtn) measureOpenBtn.addEventListener("click", openMeasure);
-  measureCloseEls.forEach((el) => el.addEventListener("click", closeMeasure));
-
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
-    if (measure && measure.classList.contains("is-open")) {
-      closeMeasure();
-    } else if (drawer.classList.contains("is-open")) {
+    if (drawer.classList.contains("is-open")) {
       closeDrawer();
     }
   });
@@ -620,15 +669,6 @@ function initSleevelessPatternEditDrawer(): void {
   if (applyBtn) {
     applyBtn.addEventListener("click", () => {
       void applyChanges();
-    });
-  }
-
-  if (measureApplyBtn) {
-    measureApplyBtn.addEventListener("click", () => {
-      console.log(
-        "[Measurement editor] Apply Measurements clicked — measurement workspace handling is unchanged.",
-      );
-      if (measureNote) measureNote.hidden = false;
     });
   }
 }

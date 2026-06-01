@@ -97,7 +97,8 @@ function makeEl(tag = "div"): MockEl {
       if (sel === "[data-kbm-my-patterns-delete]") return attrs.has("data-kbm-my-patterns-delete");
       if (sel === "[data-kbm-my-patterns-sort]") return attrs.has("data-kbm-my-patterns-sort");
       if (sel === "[data-kbm-my-patterns-copy]") return attrs.has("data-kbm-my-patterns-copy");
-      if (sel === "[data-kbm-my-patterns-open]") return attrs.has("data-kbm-my-patterns-open");
+      if (sel === "[data-kbm-my-patterns-view]") return attrs.has("data-kbm-my-patterns-view");
+      if (sel === "[data-kbm-my-patterns-edit]") return attrs.has("data-kbm-my-patterns-edit");
       if (sel === "[data-kbm-my-patterns-rename]") return attrs.has("data-kbm-my-patterns-rename");
       return false;
     },
@@ -210,7 +211,7 @@ describe("accountMyPatternsList", () => {
     renameMock.mockResolvedValue({ ok: true, project: {} });
     loadSavedCustomPatternProjectMock.mockResolvedValue({
       ok: true,
-      redirectHref: "/patterns/sleeveless/custom-build/design?edit=choices",
+      redirectHref: "/patterns/sleeveless/pattern/",
     });
     vi.stubGlobal("document", {
       createElement: (tag: string) => makeEl(tag),
@@ -337,23 +338,32 @@ describe("accountMyPatternsList", () => {
     expect(collectMatches(tbody._children, "[data-kbm-my-patterns-row]").length).toBe(1);
   });
 
-  it("renders Open, Copy Pattern, Rename, and Delete actions for each saved pattern", async () => {
+  it("renders View Pattern, Edit, Copy, Rename, and Delete actions for each saved pattern", async () => {
     const { root, tbody } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
     vi.stubGlobal("window", {});
 
     await initAccountMyPatternsList(root);
 
+    const viewBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-view]");
+    const editBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-edit]");
     const copyBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-copy]");
     const renameBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-rename]");
-    const openBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-open]");
+    const deleteBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-delete]");
+    expect(viewBtns.length).toBe(2);
+    expect(editBtns.length).toBe(2);
     expect(copyBtns.length).toBe(2);
     expect(renameBtns.length).toBe(2);
-    expect(openBtns.length).toBe(2);
-    expect(copyBtns[0].textContent).toBe("Copy Pattern");
+    expect(deleteBtns.length).toBe(2);
+    expect(viewBtns[0].textContent).toBe("View Pattern");
+    expect(editBtns[0].textContent).toBe("Edit");
+    expect(copyBtns[0].textContent).toBe("Copy");
+    expect(renameBtns[0].textContent).toBe("Rename");
+    // Delete is a text-labeled action, not an unlabeled trash icon.
+    expect(deleteBtns[0].textContent).toBe("Delete");
   });
 
-  it("opens a saved pattern through the shared edit path and navigates to the returned workspace", async () => {
+  it("views a saved pattern and navigates directly to its pattern instructions page", async () => {
     const { root, tbody } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
     const assign = vi.fn();
@@ -361,16 +371,40 @@ describe("accountMyPatternsList", () => {
 
     await initAccountMyPatternsList(root);
 
-    const openA = collectMatches(tbody._children, "[data-kbm-my-patterns-open]").find(
+    const viewA = collectMatches(tbody._children, "[data-kbm-my-patterns-view]").find(
       (b) => b.dataset.projectId === "proj-a",
     );
-    expect(openA).toBeTruthy();
-    await openA?._click?.();
+    expect(viewA).toBeTruthy();
+    await viewA?._click?.();
     await flushAsync();
 
-    // Same shared entry point used by the library drawer (open, not a parallel editor).
+    // View opens the read-only pattern page, never the edit/build/setup workspace.
+    expect(loadSavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "view");
+    expect(assign).toHaveBeenCalledWith("/patterns/sleeveless/pattern/");
+  });
+
+  it("edits a saved pattern and opens the editable builder workspace", async () => {
+    const { root, tbody } = makeAccountRoot();
+    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
+    const assign = vi.fn();
+    vi.stubGlobal("window", { location: { assign } });
+    loadSavedCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      redirectHref: "/patterns/sleeveless/custom-build/design/?edit=choices",
+    });
+
+    await initAccountMyPatternsList(root);
+
+    const editA = collectMatches(tbody._children, "[data-kbm-my-patterns-edit]").find(
+      (b) => b.dataset.projectId === "proj-a",
+    );
+    expect(editA).toBeTruthy();
+    await editA?._click?.();
+    await flushAsync();
+
+    // Edit uses the "open" action (editable workspace), distinct from the read-only "view" action.
     expect(loadSavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "open");
-    expect(assign).toHaveBeenCalledWith("/patterns/sleeveless/custom-build/design?edit=choices");
+    expect(assign).toHaveBeenCalledWith("/patterns/sleeveless/custom-build/design/?edit=choices");
   });
 
   it("copies a saved pattern and adds the new copy to the list", async () => {
@@ -415,7 +449,7 @@ describe("accountMyPatternsList", () => {
     const copyBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-copy]");
     expect(copyBtns.length).toBe(2);
     // Button stays in the DOM (not hidden) but is disabled with the helper tooltip.
-    expect(copyBtns[0].textContent).toBe("Copy Pattern");
+    expect(copyBtns[0].textContent).toBe("Copy");
     expect(copyBtns[0].disabled).toBe(true);
     expect(copyBtns[0].getAttribute("aria-disabled")).toBe("true");
     expect(copyBtns[0].getAttribute("title")).toMatch(/purchase this pattern or become a member/i);

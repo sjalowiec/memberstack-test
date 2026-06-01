@@ -1,121 +1,116 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import PatternsFeaturesSection from '../../components/patterns/PatternsFeaturesSection.astro';
 import { buildSleevelessExpressNewPatternHref } from '../../lib/patterns/patternStorage';
 
+// NOTE: The previous sales-style hero and "Why These Patterns Are Different"
+// feature grid were moved off this catalog page (not deleted):
+//   - <PatternsMarketingHero />     (src/components/patterns/PatternsMarketingHero.astro)
+//   - <PatternsFeaturesSection />   (src/components/patterns/PatternsFeaturesSection.astro)
+// TODO(about-page): surface these on a future "About the Pattern Builders" page.
+
 const startNewPatternHref = buildSleevelessExpressNewPatternHref();
+
+const availablePatterns = [
+  {
+    title: 'Sleeveless Sweater',
+    href: '/patterns/sleeveless',
+    image: '/images/patterns/sleeveless/people/sleeveless-woman-pullover-round-neck.webp',
+    copy: 'Custom-fit sleeveless sweaters with pullover or cardigan fronts, round or V-neck styling, and printable row-by-row instructions.',
+    button: 'Create sleeveless sweater',
+  },
+  {
+    title: 'Hat Pattern Builder',
+    href: '/patterns/hat',
+    image: '/images/patterns/basic-hat.webp',
+    copy: 'Knit a hat that actually fits with brim choices, custom sizing, and machine-friendly instructions.',
+    button: 'Create your hat',
+  },
+  {
+    title: 'Blanket Pattern Builder',
+    // Existing working route preserved (no /patterns/blanket page exists).
+    href: '/patterns/diy-blanket',
+    image: '/images/hybrid-blanket1.webp',
+    copy: 'Build a custom blanket pattern for your yarn, your gauge, and your machine.',
+    button: 'Create your blanket',
+  },
+];
+
+const comingSoonPatterns = [
+  {
+    title: 'Drop Shoulder Sweater',
+    image: '/images/patterns/drop-shoulder/drop-shoulder-men-pullover-round-neck.webp',
+    copy: 'A relaxed sweater system with simple shaping and machine-friendly construction.',
+  },
+  {
+    title: 'Raglan Sweater',
+    image: '/images/patterns/raglan/raglan-woman-cardigan-v-neck.webp',
+    copy: 'A flexible raglan sweater system with custom fit and clear shaping guidance.',
+  },
+  {
+    title: 'Set-In Sleeve Sweater',
+    image: '/images/patterns/set-in-sleeve/set-in-kids-pullover-round-neck.webp',
+    copy: 'A classic sweater system designed for custom fit, sleeve shaping, and polished finishing.',
+  },
+];
 ---
 
-<Layout title="Patterns Catalog">
+<Layout title="Pattern Builders">
 
-    <div class="patterns-page">
+  <div class="patterns-page">
 
-        <nav class="patterns-action-bar" aria-label="Pattern workspace actions">
-          <a href={startNewPatternHref} class="patterns-action-bar__btn kbm-btn kbm-btn-accent">
-            Start a New Pattern
-          </a>
-          <a href="/account#my-patterns" class="patterns-action-bar__btn kbm-btn kbm-btn-outline">
-            My Patterns
-          </a>
-        </nav>
-
-        <!-- Sleeveless pattern hero -->
-        <section class="patterns-hero" aria-labelledby="patterns-hero-heading">
-          <div class="patterns-hero__grid">
-            <div class="patterns-hero__content">
-              <h1 id="patterns-hero-heading">Custom Sweater Patterns Designed for Machine Knitters</h1>
-              <p class="patterns-hero__intro">
-                The ultimate pattern generator for modern machine knitters. Easily map out your favorite silhouettes, unlock automated shaping math, and create knit-ready sweater patterns in just a few guided steps.
-              </p>
-            </div>
-            <div class="patterns-hero__media">
-              <img
-                class="patterns-hero__img"
-                src="/images/patterns/patterns-intro.webp"
-                alt="Sleeveless sweater pattern workspace showing size, fit, neckline, and gauge choices"
-                width="720"
-                height="540"
-                loading="eager"
-                decoding="async"
-              />
-            </div>
-          </div>
-        </section>
-
-        <PatternsFeaturesSection />
-
-        <section aria-label="Additional pattern builders">
-          <div class="patterns-featured-clean">
-            <a href="/patterns/hat" class="pattern-card patterns-featured-card">
-              <img class="patterns-featured-card-img" src="/images/patterns/basic-hat.webp" alt="Basic hat pattern" />
-              <h2>Hat Pattern Builder</h2>
-              <p class="promise">
-                Knit a hat that actually fits - your head, your gauge, your machine.
-              </p>
-              <div class="supporting">
-                <ul>
-                  <li><strong>Choose</strong> your brim style</li>
-                  <li><strong>Adjust</strong> sizing for the perfect fit</li>
-                  <li><strong>Generate</strong> instructions instantly</li>
-                </ul>
-              </div>
-              <span class="price-note">Free</span>
-              <span class="kbm-btn kbm-btn-accent">Create your hat</span>
-            </a>
-      
-            <a href="/patterns/diy-blanket" class="pattern-card patterns-featured-card">
-              <img class="patterns-featured-card-img" src="/images/hybrid-blanket1.webp" alt="Custom blanket builder" />
-              <h2>Blanket Pattern Builder</h2>
-              <p class="promise">
-                Create a custom blanket pattern for your yarn, your gauge, and your machine.
-              </p>
-              <div class="supporting">
-                <ul>
-                  <li><strong>Choose</strong> a standard size — or create your own</li>
-                  <li><strong>Plan</strong> panels for blankets wider than your machine</li>
-                  <li><strong>Estimate</strong> yarn from a swatch</li>
-                </ul>
-              </div>
-              <span class="price-note">Free</span>
-              <span class="kbm-btn kbm-btn-accent">Create your blanket</span>
-            </a>
-          </div>
-        </section>
-
-        <section class="patterns-coming-soon">
-      <h2 class="patterns-coming-title">More Patterns Coming</h2>
-      <p class="patterns-coming-subtitle">
-        Hat and blanket builders are live — more pattern types are on the way.
+    <header class="patterns-intro">
+      <h1 class="patterns-intro__title">Pattern Builders</h1>
+      <p class="patterns-intro__subtitle">
+        Choose a pattern system and create instructions for your machine, your yarn, and your gauge.
       </p>
+    </header>
 
-      <div class="patterns-coming-grid">
-        <div class="patterns-coming-card pattern-card coming-card">
-          <img src="/images/sweater.svg" alt="Sweater patterns" />
-          <h3>Sweaters</h3>
-          <p>Custom-fit garments with shaping guidance.</p>
-          <span class="coming-soon"><em>On the drawing board</em></span>
-        </div>
+    <nav class="patterns-action-bar" aria-label="Pattern workspace actions">
+      <a href={startNewPatternHref} class="patterns-action-bar__btn kbm-btn kbm-btn-accent">
+        Start a New Pattern
+      </a>
+      <a href="/account#my-patterns" class="patterns-action-bar__btn kbm-btn kbm-btn-outline">
+        My Patterns
+      </a>
+    </nav>
 
-        <div class="patterns-coming-card pattern-card coming-card">
-          <img src="/images/sock.svg" alt="Sock patterns" />
-          <h3>Socks</h3>
-          <p>Small projects with more precise fit and shaping.</p>
-          <span class="coming-soon"><em>On the drawing board</em></span>
-        </div>
-
-        <div class="patterns-coming-card pattern-card coming-card">
-          <img src="/images/mitten.svg" alt="Mitten patterns" />
-          <h3>Mittens</h3>
-          <p>Quick accessory patterns with practical shaping options.</p>
-          <span class="coming-soon"><em>On the drawing board</em></span>
-        </div>
+    <section class="patterns-catalog" aria-labelledby="patterns-available-heading">
+      <h2 id="patterns-available-heading" class="patterns-section-title">Available now</h2>
+      <div class="patterns-grid">
+        {availablePatterns.map((pattern) => (
+          <a href={pattern.href} class="catalog-card">
+            <div class="catalog-card__media">
+              <img src={pattern.image} alt={pattern.title} loading="lazy" decoding="async" />
+            </div>
+            <div class="catalog-card__body">
+              <span class="catalog-card__status catalog-card__status--available">Available now</span>
+              <h3 class="catalog-card__title">{pattern.title}</h3>
+              <p class="catalog-card__copy">{pattern.copy}</p>
+              <span class="catalog-card__cta kbm-btn kbm-btn-accent">{pattern.button}</span>
+            </div>
+          </a>
+        ))}
       </div>
+    </section>
 
-      <p class="drawing-board-feedback">
-        <a href="mailto:support@knititnow.com?subject=Pattern%20Request&body=Hi%20Sue,%0A%0AI%27d%20love%20a%20pattern%20for:%20%0A%0AType%20(e.g.%20hat,%20sweater,%20blanket):%20%0AStyle%20or%20details:%20%0A%0AThanks!">
-          Want something else? Tell us what to build next.
-        </a>
-      </p>
+    <section class="patterns-catalog" aria-labelledby="patterns-coming-heading">
+      <h2 id="patterns-coming-heading" class="patterns-section-title">Coming soon</h2>
+      <div class="patterns-grid">
+        {comingSoonPatterns.map((pattern) => (
+          <div class="catalog-card catalog-card--soon" aria-disabled="true">
+            <div class="catalog-card__media">
+              {pattern.image
+                ? <img src={pattern.image} alt={pattern.title} loading="lazy" decoding="async" />
+                : <div class="catalog-card__placeholder" aria-hidden="true"></div>}
+            </div>
+            <div class="catalog-card__body">
+              <span class="catalog-card__status catalog-card__status--soon">Coming soon</span>
+              <h3 class="catalog-card__title">{pattern.title}</h3>
+              <p class="catalog-card__copy">{pattern.copy}</p>
+            </div>
+          </div>
+        ))}
+      </div>
     </section>
 
   </div>
@@ -129,11 +124,33 @@ const startNewPatternHref = buildSleevelessExpressNewPatternHref();
   padding: 20px;
 }
 
+/* Intro */
+.patterns-intro {
+  margin: 0 0 20px;
+}
+
+.patterns-intro__title {
+  margin: 0 0 8px;
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  font-weight: 600;
+  color: #52682d;
+  line-height: 1.2;
+}
+
+.patterns-intro__subtitle {
+  margin: 0;
+  max-width: 42rem;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  color: #4d5a48;
+}
+
+/* Action bar */
 .patterns-action-bar {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin: 0 0 20px;
+  margin: 0 0 28px;
 }
 
 .patterns-action-bar__btn {
@@ -149,62 +166,140 @@ const startNewPatternHref = buildSleevelessExpressNewPatternHref();
   text-decoration: none;
 }
 
-/* Hero — sleeveless pattern experience */
-.patterns-hero {
-  margin: 0 0 12px;
-  padding: 32px 36px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #f9f9f6 0%, #fff 55%);
-  border: 1px solid #d6dbc9;
-  box-shadow: 0 4px 16px rgba(82, 104, 45, 0.1);
+/* Catalog sections */
+.patterns-catalog {
+  margin: 0 0 32px;
 }
 
-.patterns-hero__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
-  gap: 28px 40px;
-  align-items: center;
-}
-
-.patterns-hero__content {
-  min-width: 0;
-}
-
-.patterns-hero h1 {
-  margin: 0 0 14px;
-  font-size: clamp(1.45rem, 2.8vw, 1.85rem);
+.patterns-section-title {
+  margin: 0 0 16px;
+  font-size: 1.2rem;
   font-weight: 600;
   color: #52682d;
-  line-height: 1.25;
 }
 
-.patterns-hero__intro {
-  margin: 0;
-  font-size: 1.02rem;
-  font-weight: 500;
-  line-height: 1.55;
-  color: #333;
-  max-width: 34rem;
+.patterns-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
 }
 
-.patterns-hero__media {
+/* Catalog card */
+.catalog-card {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
+  flex-direction: column;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #d6dbc9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-.patterns-hero__img {
+a.catalog-card:hover,
+a.catalog-card:focus-visible {
+  border-color: #52682d;
+  box-shadow: 0 6px 16px rgba(82, 104, 45, 0.14);
+  transform: translateY(-2px);
+}
+
+a.catalog-card:focus-visible {
+  outline: 2px solid #52682d;
+  outline-offset: 2px;
+}
+
+.catalog-card__media {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #f9f9f6;
+  border-bottom: 1px solid #eef0e6;
+}
+
+.catalog-card__media img {
   display: block;
   width: 100%;
-  max-width: 100%;
-  height: auto;
-  object-fit: contain;
-  border-radius: 10px;
-  border: 1px solid rgba(82, 104, 45, 0.18);
-  box-shadow:
-    0 10px 28px rgba(0, 0, 0, 0.08),
-    0 2px 8px rgba(82, 104, 45, 0.12);
+  height: 100%;
+  object-fit: cover;
+}
+
+.catalog-card__placeholder {
+  width: 100%;
+  height: 100%;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      #f3f4ec,
+      #f3f4ec 14px,
+      #eceee2 14px,
+      #eceee2 28px
+    );
+}
+
+.catalog-card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 18px 18px 20px;
+}
+
+.catalog-card__status {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+
+.catalog-card__status--available {
+  color: #52682d;
+  background: #eef2e3;
+}
+
+.catalog-card__status--soon {
+  color: #6b7280;
+  background: #f0f1ee;
+}
+
+.catalog-card__title {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.catalog-card__copy {
+  margin: 0 0 16px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #555;
+  flex: 1;
+}
+
+.catalog-card__cta {
+  margin-top: auto;
+  text-align: center;
+}
+
+/* Coming soon variant */
+.catalog-card--soon {
+  cursor: default;
+}
+
+.catalog-card--soon .catalog-card__media {
+  opacity: 0.75;
+}
+
+/* Responsive: tablet 2-up, mobile 1-up */
+@media (max-width: 900px) {
+  .patterns-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 720px) {
@@ -212,202 +307,8 @@ const startNewPatternHref = buildSleevelessExpressNewPatternHref();
     grid-template-columns: 1fr;
   }
 
-  .patterns-hero {
-    padding: 24px 20px;
-  }
-
-  .patterns-hero__grid {
+  .patterns-grid {
     grid-template-columns: 1fr;
-    gap: 24px;
   }
-
-  .patterns-hero__content {
-    text-align: center;
-  }
-
-  .patterns-hero__intro {
-    max-width: none;
-  }
-
-  .patterns-hero__media {
-    max-width: min(100%, 440px);
-    margin: 0 auto;
-  }
-}
-
-/* Featured */
-.patterns-featured-clean {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-  margin-top: 20px;
-  margin-bottom: 28px;
-}
-
-.pattern-card {
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  padding: 20px;
-  border-radius: 12px;
-  background: #fff;
-  text-decoration: none;
-  color: inherit;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.patterns-featured-card-img {
-  width: 100%;
-  height: auto;
-  max-height: 180px;
-  object-fit: cover;
-  border-radius: 12px;
-  margin-bottom: 12px;
-}
-
-.pattern-card h2 {
-  margin: 8px 0;
-}
-
-.pattern-card .promise {
-  font-weight: 500;
-  margin-bottom: 6px;
-}
-
-.pattern-card .supporting {
-  font-size: 0.95rem;
-  margin-bottom: 0;
-}
-
-.patterns-featured-card p {
-  font-weight: 600;
-}
-
-.patterns-featured-card p.promise {
-  font-weight: 600;
-}
-
-.supporting ul {
-  list-style: none;
-  padding-left: 0;
-  margin: 0;
-  text-align: left;
-}
-
-.supporting li {
-  position: relative;
-  padding-left: 22px;
-  margin-bottom: 6px;
-  line-height: 1.4;
-  font-weight: 400;
-}
-
-.supporting li::before {
-  content: "✓";
-  position: absolute;
-  left: 0;
-  color: #52682d; /* kin-green */
-  font-weight: bold;
-}
-
-/* CTA: global .kbm-btn .kbm-btn-accent */
-.price-note {
-  display: block;
-  font-size: 0.85rem;
-  color: #52682d; /* kin-green */
-  font-weight: 600;
-  text-align: center;
-  margin: 14px 0 6px;
-}
-
-.pattern-card .kbm-btn {
-  margin-top: 0;
-}
-
-.patterns-coming-soon {
-  text-align: center;
-  margin-top: 30px;
-  border-top: 1px solid #eee;
-  padding-top: 20px;
-}
-
-.patterns-coming-title {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #666;
-  margin: 10px 0 10px;
-}
-
-.patterns-coming-subtitle {
-  color: #666;
-  max-width: 600px;
-  margin: 0 auto 30px;
-}
-
-.patterns-coming-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
-}
-
-.drawing-board-feedback {
-  text-align: center;
-  margin-top: 12px;
-  font-size: 0.9rem;
-}
-
-.drawing-board-feedback a {
-  color: #666;
-  text-decoration: underline;
-}
-
-.drawing-board-feedback a:hover {
-  color: #333;
-}
-
-.patterns-coming-card {
-  background: #f9f9f6;
-  border: 1px solid #d6dbc9;
-  border-radius: 12px;
-  padding: 24px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.patterns-coming-card img {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 10px;
-  display: block;
-  object-fit: contain;
-  opacity: 0.7;
-}
-
-.patterns-coming-card h3 {
-  margin: 10px 0 6px;
-  color: #52682d;
-}
-
-.patterns-coming-card p {
-  font-size: 0.9rem;
-  color: #555;
-  margin: 0 0 12px;
-}
-
-.coming-card {
-  opacity: 0.65;
-}
-
-.coming-card:hover {
-  opacity: 0.65;
-  transform: none;
-  cursor: default;
-}
-
-.coming-soon {
-  display: inline-block;
-  font-size: 0.8rem;
-  color: #666;
-  margin-top: 10px;
 }
 </style>

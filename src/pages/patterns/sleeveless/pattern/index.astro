@@ -4,7 +4,7 @@ import SleevelessPatternMemberGate from "../../../../components/patterns/Sleevel
 import PatternPrintFooter from "../../../../components/common/PatternPrintFooter.astro";
 import PatternPrintPersonalization from "../../../../components/common/PatternPrintPersonalization.astro";
 import PatternTipsToggle from "../../../../components/patterns/PatternTipsToggle.astro";
-import PatternWorkspaceTabs from "../../../../components/patterns/PatternWorkspaceTabs.astro";
+import PatternWorkspaceLibraryDrawer from "../../../../components/patterns/PatternWorkspaceLibraryDrawer.astro";
 import SleevelessPatternPrintNotice from "../../../../components/patterns/SleevelessPatternPrintNotice.astro";
 
 import "../../../../styles/ns-shaping-chart.css";
@@ -15,16 +15,11 @@ import "../../../../styles/pattern-quick-tip.css";
 import "../../../../styles/pattern-help-card.css";
 
 import "../../../../styles/patterns/sleeveless-pattern-shared.css";
+import "../../../../styles/patterns/pattern-app-shell.css";
 
 // Reused measurement editor styling (same diagram/overlay as Custom Build → Measurements).
 import "../../../../styles/sleeveless-express-measurements-confirm.css";
 import "../../../../styles/sleeveless-custom-build-measurements.css";
-
-const customBuildHref = "/patterns/sleeveless/custom-build/";
-const expressHref = "/patterns/sleeveless-express/";
-const patternHref = "/patterns/sleeveless/pattern/";
-const askShareHref = "/patterns/sleeveless/ask-share/";
-const inspirationHref = "/patterns/sleeveless/inspiration/";
 ---
 
 <Layout
@@ -34,18 +29,48 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
 >
   <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/sleeveless" />
   <SleevelessPatternMemberGate>
-  <main class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage" data-pattern-print-skip-modal>
+  <main class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage pattern-app-shell" data-pattern-print-skip-modal>
     <div id="sleeveless-pattern-top" class="wizard-container scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
-        <PatternWorkspaceTabs
-          rootClass="pattern-tabs-scope"
-          activeTab="pattern"
-          expressHref={expressHref}
-          customBuildHref={customBuildHref}
-          patternHref={patternHref}
-          askShareHref={askShareHref}
-          inspirationHref={inspirationHref}
-        />
+        <div class="pattern-action-bar no-print" data-pattern-action-bar>
+          <div class="pattern-action-bar__group pattern-action-bar__group--start">
+            <button
+              type="button"
+              class="sleeveless-pattern-edit-action no-print"
+              data-pattern-workspace-library-trigger
+              data-testid="pattern-workspace-library-trigger"
+              aria-haspopup="dialog"
+              aria-controls="pattern-workspace-library-drawer-panel"
+              aria-expanded="false"
+            >
+              <i class="fa-solid fa-folder-open" aria-hidden="true"></i> My Patterns
+            </button>
+            <button
+              type="button"
+              class="sleeveless-pattern-edit-action no-print"
+              data-pattern-workspace-new-pattern-trigger
+              data-testid="pattern-workspace-new-pattern-trigger"
+            >
+              <i class="fa-solid fa-plus" aria-hidden="true"></i> New Pattern
+            </button>
+          </div>
+          <div
+            class="pattern-action-bar__group pattern-action-bar__group--end"
+            data-sleeveless-pattern-actions
+          >
+            <button
+              type="button"
+              class="sleeveless-pattern-edit-action no-print"
+              data-sl-edit-open
+              data-testid="button-edit-pattern"
+              aria-haspopup="dialog"
+              aria-controls="sl-edit-drawer-panel"
+            >
+              <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
+            </button>
+            <!-- Print button (#print-btn) is injected here by mountSleevelessPrintAction(). -->
+          </div>
+        </div>
 
         <div id="sg-sleeveless-results" class="sg-sleeveless-results">
           <div id="sleeveless-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
@@ -72,21 +97,6 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
                 </div>
               </div>
               <div class="sleeveless-pattern-intro__content">
-                <div
-                  class="sleeveless-pattern-actions no-print"
-                  data-sleeveless-pattern-actions
-                >
-                  <button
-                    type="button"
-                    class="sleeveless-pattern-edit-action no-print"
-                    data-sl-edit-open
-                    data-testid="button-edit-pattern"
-                    aria-haspopup="dialog"
-                    aria-controls="sl-edit-drawer-panel"
-                  >
-                    <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
-                  </button>
-                </div>
                 <div class="sleeveless-pattern-online-project-header no-print">
                   <div class="sleeveless-pattern-online-heading-row">
                     <p class="sleeveless-pattern-online-heading" data-sleeveless-pattern-online-heading>
@@ -155,15 +165,22 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
       </div>
     </div>
 
+    <PatternWorkspaceLibraryDrawer />
+
     <!--
-      Edit Pattern drawer — primary surface for editing pattern settings (Pattern Setup + Gauge).
-      Applying changes reuses the sleeveless build workflow: it writes the same wizard storage keys,
-      runs syncCustomBuildToPatternStorage(), and regenerates via window.kbmRefreshSleevelessPattern().
-      Measurements are edited in the separate full-screen workspace below (unchanged).
+      Edit Pattern workspace — ONE combined editing surface (full-width app shell).
+      Left column: quick edits (Size, Front Style, Neckline, Fit, Gauge, Needles).
+      Right column: the reused Custom Build measurement editor SVG — visible immediately,
+      no separate "Edit Measurements" click.
+
+      Apply Changes reuses the sleeveless build workflow unchanged: it writes the same wizard
+      storage keys and runs syncCustomBuildToPatternStorage(), which already folds the
+      measurement editor's overrides (cbMeasurementOverrides) into pattern data, then
+      regenerates via window.kbmRefreshSleevelessPattern(). No new pattern math here.
     -->
-    <div class="sl-edit-drawer no-print" data-sl-edit-drawer aria-hidden="true">
+    <div class="sl-edit-drawer sl-edit-drawer--workspace no-print" data-sl-edit-drawer aria-hidden="true">
       <div class="sl-edit-drawer__backdrop" data-sl-edit-close aria-hidden="true"></div>
-      <aside
+      <section
         id="sl-edit-drawer-panel"
         class="sl-edit-drawer__panel"
         role="dialog"
@@ -174,14 +191,16 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
         <header class="sl-edit-drawer__header">
           <div class="sl-edit-drawer__heading">
             <h2 id="sl-edit-drawer-title" class="sl-edit-drawer__title">Edit Pattern</h2>
-            <p class="sl-edit-drawer__subtitle">Adjust your pattern details, then update.</p>
+            <p class="sl-edit-drawer__subtitle">
+              Adjust your quick choices and measurements, then update the pattern.
+            </p>
           </div>
           <button
             type="button"
             class="sl-edit-drawer__close"
             data-sl-edit-close
             data-testid="button-edit-close"
-            aria-label="Close editing panel"
+            aria-label="Close editing workspace"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path
@@ -193,250 +212,209 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
           </button>
         </header>
 
-        <div class="sl-edit-drawer__body">
-          <div class="sl-edit-field">
-            <label class="sl-edit-label" for="sl-edit-title">Pattern title</label>
-            <input
-              type="text"
-              id="sl-edit-title"
-              class="sl-edit-input"
-              placeholder="Sleeveless sweater"
-              autocomplete="off"
-            />
+        <div class="sl-edit-workspace__layout">
+          <!-- LEFT: quick edits panel (narrower). `.sl-edit-drawer__body` is the JS field scope. -->
+          <div class="sl-edit-workspace__quick">
+            <div class="sl-edit-drawer__body">
+              <div class="sl-edit-field">
+                <label class="sl-edit-label" for="sl-edit-title">Pattern title</label>
+                <input
+                  type="text"
+                  id="sl-edit-title"
+                  class="sl-edit-input"
+                  placeholder="Sleeveless sweater"
+                  autocomplete="off"
+                />
+              </div>
+
+              <div class="sl-edit-field">
+                <label class="sl-edit-label" for="sl-edit-notes">Notes</label>
+                <textarea
+                  id="sl-edit-notes"
+                  class="sl-edit-input sl-edit-textarea"
+                  rows="4"
+                  placeholder="Add your own notes — yarn, needles, tweaks to remember…"
+                ></textarea>
+              </div>
+
+              <section class="sl-edit-section" aria-labelledby="sl-edit-setup-heading">
+                <h3 class="sl-edit-section__title" id="sl-edit-setup-heading">Quick edits</h3>
+
+                <div class="sl-edit-field">
+                  <label class="sl-edit-sublabel" for="sl-edit-size">Size</label>
+                  <select id="sl-edit-size" class="sl-edit-input sl-edit-select" data-sl-edit-size>
+                    <option value="">Loading sizes…</option>
+                  </select>
+                </div>
+
+                <fieldset class="sl-edit-field sl-edit-fieldset">
+                  <legend class="sl-edit-sublabel">Front style</legend>
+                  <div class="sl-edit-segment" role="radiogroup" aria-label="Front style">
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-garment" value="pullover" checked />
+                      <span class="sl-edit-segment__pill">Pullover</span>
+                    </label>
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-garment" value="cardigan" />
+                      <span class="sl-edit-segment__pill">Cardigan</span>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <fieldset class="sl-edit-field sl-edit-fieldset">
+                  <legend class="sl-edit-sublabel">Neckline</legend>
+                  <div class="sl-edit-segment" role="radiogroup" aria-label="Neckline">
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-neckline" value="round" checked />
+                      <span class="sl-edit-segment__pill">Round Neck</span>
+                    </label>
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-neckline" value="v-neck" />
+                      <span class="sl-edit-segment__pill">V-Neck</span>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <fieldset class="sl-edit-field sl-edit-fieldset">
+                  <legend class="sl-edit-sublabel">Fit</legend>
+                  <div class="sl-edit-segment sl-edit-segment--three" role="radiogroup" aria-label="Fit">
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-fit" value="close" />
+                      <span class="sl-edit-segment__pill">Close</span>
+                    </label>
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-fit" value="standard" checked />
+                      <span class="sl-edit-segment__pill">Standard</span>
+                    </label>
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-fit" value="relaxed" />
+                      <span class="sl-edit-segment__pill">Relaxed</span>
+                    </label>
+                  </div>
+                  <p class="sl-edit-ease" data-sl-edit-ease aria-live="polite"></p>
+                </fieldset>
+              </section>
+
+              <section class="sl-edit-section" aria-labelledby="sl-edit-gauge-heading">
+                <h3 class="sl-edit-section__title" id="sl-edit-gauge-heading">Gauge</h3>
+                <div class="sl-edit-grid">
+                  <div class="sl-edit-subfield">
+                    <label class="sl-edit-sublabel" for="sl-edit-spi" data-sl-edit-spi-label>Stitch gauge (per 4")</label>
+                    <input
+                      type="number"
+                      id="sl-edit-spi"
+                      class="sl-edit-input"
+                      inputmode="decimal"
+                      min="0"
+                      step="1"
+                      placeholder="e.g. 28"
+                    />
+                  </div>
+                  <div class="sl-edit-subfield">
+                    <label class="sl-edit-sublabel" for="sl-edit-rpi" data-sl-edit-rpi-label>Row gauge (per 4")</label>
+                    <input
+                      type="number"
+                      id="sl-edit-rpi"
+                      class="sl-edit-input"
+                      inputmode="decimal"
+                      min="0"
+                      step="1"
+                      placeholder="e.g. 44"
+                    />
+                  </div>
+                  <div class="sl-edit-subfield">
+                    <label class="sl-edit-sublabel" for="sl-edit-needles">Available needles</label>
+                    <input
+                      type="number"
+                      id="sl-edit-needles"
+                      class="sl-edit-input"
+                      inputmode="numeric"
+                      min="0"
+                      step="1"
+                      placeholder="e.g. 200"
+                    />
+                  </div>
+                </div>
+              </section>
+            </div>
           </div>
 
-          <section class="sl-edit-section" aria-labelledby="sl-edit-setup-heading">
-            <h3 class="sl-edit-section__title" id="sl-edit-setup-heading">Pattern Setup</h3>
-
-            <div class="sl-edit-field sl-edit-locked" data-sl-edit-audience-wrap>
-              <span class="sl-edit-label">Knitting for</span>
-              <p class="sl-edit-locked__value" data-sl-edit-audience>—</p>
-              <p class="sl-edit-locked__note">
-                <i class="fas fa-lock" aria-hidden="true"></i>
-                This sets the sizing chart and can’t be changed after a pattern is created.
+          <!--
+            RIGHT: measurement SVG workspace. Reuses the live Custom Build measurement editor
+            (`initCustomBuildMeasurementsPage`): same pattern_summary.svg, labels, field names,
+            and overlay positions as the builder. `data-sleeveless-review-managed` suppresses the
+            editor's auto-init so this combined workspace initialises it when Edit Pattern opens.
+            The `.sl-measure-workspace__body … express-measurements-confirm-page` classes are kept
+            so the existing scoped diagram-enlargement CSS continues to apply.
+          -->
+          <div class="sl-edit-workspace__measure" data-sl-measure-pane>
+            <header class="sl-edit-workspace__measure-head">
+              <div class="sl-edit-workspace__measure-headrow">
+                <h3 class="sl-edit-workspace__measure-title">
+                  <i class="fa-thin fa-ruler sl-edit-workspace__measure-icon" aria-hidden="true"></i> Measurements
+                </h3>
+                <!--
+                  Primary edit actions live here (next to the Measurements heading) so they are
+                  obvious without scrolling to the bottom-right. The SAME buttons/notes are reused
+                  across breakpoints (single DOM = unchanged JS handlers): desktop shows them in
+                  this header row; mobile re-pins this same group as a sticky bottom action bar.
+                -->
+                <div class="sl-edit-workspace__measure-actions" data-sl-edit-actions>
+                  <div class="sl-edit-workspace__notes">
+                    <p class="sl-edit-error-note" data-sl-edit-errors hidden role="alert"></p>
+                    <p class="sl-edit-saved-note" data-sl-edit-note hidden role="status">
+                      Pattern updated.
+                    </p>
+                  </div>
+                  <div class="sl-edit-drawer__actions">
+                    <button
+                      type="button"
+                      class="sl-edit-btn sl-edit-btn--ghost"
+                      data-sl-edit-close
+                      data-testid="button-edit-cancel"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      class="sl-edit-btn sl-edit-btn--primary"
+                      data-sl-edit-apply
+                      data-testid="button-edit-apply"
+                    >
+                      Update Pattern
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <p class="sl-edit-workspace__measure-hint">
+                Tap a measurement to fine-tune it. Updates apply when you press Update Pattern.
               </p>
-            </div>
-
-            <div class="sl-edit-field">
-              <label class="sl-edit-sublabel" for="sl-edit-size">Size</label>
-              <select id="sl-edit-size" class="sl-edit-input sl-edit-select" data-sl-edit-size>
-                <option value="">Loading sizes…</option>
-              </select>
-            </div>
-
-            <fieldset class="sl-edit-field sl-edit-fieldset">
-              <legend class="sl-edit-sublabel">Garment</legend>
-              <div class="sl-edit-segment" role="radiogroup" aria-label="Garment type">
-                <label class="sl-edit-segment__option">
-                  <input type="radio" name="sl-edit-garment" value="pullover" checked />
-                  <span class="sl-edit-segment__pill">Pullover</span>
-                </label>
-                <label class="sl-edit-segment__option">
-                  <input type="radio" name="sl-edit-garment" value="cardigan" />
-                  <span class="sl-edit-segment__pill">Cardigan</span>
-                </label>
-              </div>
-            </fieldset>
-
-            <fieldset class="sl-edit-field sl-edit-fieldset">
-              <legend class="sl-edit-sublabel">Neckline</legend>
-              <div class="sl-edit-segment" role="radiogroup" aria-label="Neckline">
-                <label class="sl-edit-segment__option">
-                  <input type="radio" name="sl-edit-neckline" value="round" checked />
-                  <span class="sl-edit-segment__pill">Round Neck</span>
-                </label>
-                <label class="sl-edit-segment__option">
-                  <input type="radio" name="sl-edit-neckline" value="v-neck" />
-                  <span class="sl-edit-segment__pill">V-Neck</span>
-                </label>
-              </div>
-            </fieldset>
-
-            <fieldset class="sl-edit-field sl-edit-fieldset">
-              <legend class="sl-edit-sublabel">Fit</legend>
-              <div class="sl-edit-segment sl-edit-segment--three" role="radiogroup" aria-label="Fit">
-                <label class="sl-edit-segment__option">
-                  <input type="radio" name="sl-edit-fit" value="close" />
-                  <span class="sl-edit-segment__pill">Close</span>
-                </label>
-                <label class="sl-edit-segment__option">
-                  <input type="radio" name="sl-edit-fit" value="standard" checked />
-                  <span class="sl-edit-segment__pill">Standard</span>
-                </label>
-                <label class="sl-edit-segment__option">
-                  <input type="radio" name="sl-edit-fit" value="relaxed" />
-                  <span class="sl-edit-segment__pill">Relaxed</span>
-                </label>
-              </div>
-              <p class="sl-edit-ease" data-sl-edit-ease aria-live="polite"></p>
-            </fieldset>
-          </section>
-
-          <section class="sl-edit-section" aria-labelledby="sl-edit-gauge-heading">
-            <h3 class="sl-edit-section__title" id="sl-edit-gauge-heading">Gauge</h3>
-            <div class="sl-edit-grid">
-              <div class="sl-edit-subfield">
-                <label class="sl-edit-sublabel" for="sl-edit-spi">Stitch gauge (per inch)</label>
-                <input
-                  type="number"
-                  id="sl-edit-spi"
-                  class="sl-edit-input"
-                  inputmode="decimal"
-                  min="0"
-                  step="0.25"
-                  placeholder="e.g. 5"
-                />
-              </div>
-              <div class="sl-edit-subfield">
-                <label class="sl-edit-sublabel" for="sl-edit-rpi">Row gauge (per inch)</label>
-                <input
-                  type="number"
-                  id="sl-edit-rpi"
-                  class="sl-edit-input"
-                  inputmode="decimal"
-                  min="0"
-                  step="0.25"
-                  placeholder="e.g. 7"
-                />
-              </div>
-              <div class="sl-edit-subfield">
-                <label class="sl-edit-sublabel" for="sl-edit-needles">Number of needles</label>
-                <input
-                  type="number"
-                  id="sl-edit-needles"
-                  class="sl-edit-input"
-                  inputmode="numeric"
-                  min="0"
-                  step="1"
-                  placeholder="e.g. 200"
-                />
-              </div>
-            </div>
-          </section>
-
-          <section class="sl-edit-field sl-edit-measure-cta" aria-label="Measurements">
-            <h3 class="sl-edit-label">Measurements</h3>
-            <p class="sl-edit-measure-cta__text">
-              Edit the sweater measurements on a larger diagram.
-            </p>
-            <button
-              type="button"
-              class="sl-edit-btn sl-edit-btn--secondary sl-edit-measure-cta__btn"
-              data-sl-measure-open
-              data-testid="button-edit-measurements"
-              aria-haspopup="dialog"
-              aria-controls="sl-measure-workspace-inner"
-            >
-              <i class="fas fa-ruler-combined" aria-hidden="true"></i> Edit Measurements
-            </button>
-          </section>
-        </div>
-
-        <footer class="sl-edit-drawer__footer">
-          <p class="sl-edit-error-note" data-sl-edit-errors hidden role="alert"></p>
-          <p class="sl-edit-saved-note" data-sl-edit-note hidden role="status">
-            Pattern updated.
-          </p>
-          <div class="sl-edit-drawer__actions">
-            <button
-              type="button"
-              class="sl-edit-btn sl-edit-btn--ghost"
-              data-sl-edit-close
-              data-testid="button-edit-cancel"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              class="sl-edit-btn sl-edit-btn--primary"
-              data-sl-edit-apply
-              data-testid="button-edit-apply"
-            >
-              Apply Changes
-            </button>
-          </div>
-        </footer>
-      </aside>
-    </div>
-
-    <!--
-      PROTOTYPE ONLY — full-screen measurement editor workspace (UX experiment).
-      Not wired to regeneration, save/update, DB, or Netlify Blob.
-    -->
-    <div class="sl-measure-workspace no-print" data-sl-measure-workspace aria-hidden="true">
-      <div
-        id="sl-measure-workspace-inner"
-        class="sl-measure-workspace__inner"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="sl-measure-title"
-        tabindex="-1"
-      >
-        <header class="sl-measure-workspace__header">
-          <h2 id="sl-measure-title" class="sl-measure-workspace__title">Edit Measurements</h2>
-          <button
-            type="button"
-            class="sl-edit-btn sl-edit-btn--ghost sl-measure-workspace__back"
-            data-sl-measure-back
-            data-testid="button-measure-back"
-          >
-            <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Pattern
-          </button>
-        </header>
-
-        <!--
-          Reuses the live Custom Build measurement editor (`initCustomBuildMeasurementsPage`):
-          same pattern_summary.svg, labels, field names, and overlay positions as the builder.
-          `data-sleeveless-review-managed` suppresses the editor's auto-init so the prototype
-          can initialise it lazily when the workspace opens.
-        -->
-        <div class="sl-measure-workspace__body cb-measure-page express-measurements-confirm-page">
-          <div
-            class="sl-measure-workspace__editor"
-            data-cb-measure-root
-            data-sleeveless-review-managed
-          >
-            <div class="sleeveless-measure-review-body">
+            </header>
+            <div class="sl-measure-workspace__body cb-measure-page express-measurements-confirm-page">
               <div
-                class="sleeveless-measure-project-summary"
-                data-cb-build-summary
-                aria-label="Current build summary"
-              ></div>
-              <p class="cb-measure-missing" data-cb-measure-missing hidden>
-                Complete Foundation and Style &amp; Shaping to load measurements.
-              </p>
-              <div
-                class="sleeveless-measure-diagram-host cb-measure-diagram-host"
-                data-cb-measure-diagram
-              ></div>
+                class="sl-measure-workspace__editor"
+                data-cb-measure-root
+                data-sleeveless-review-managed
+              >
+                <div class="sleeveless-measure-review-body">
+                  <div
+                    class="sleeveless-measure-project-summary"
+                    data-cb-build-summary
+                    aria-label="Current build summary"
+                  ></div>
+                  <p class="cb-measure-missing" data-cb-measure-missing hidden>
+                    Complete Foundation and Style &amp; Shaping to load measurements.
+                  </p>
+                  <div
+                    class="sleeveless-measure-diagram-host cb-measure-diagram-host"
+                    data-cb-measure-diagram
+                  ></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
-        <footer class="sl-measure-workspace__footer">
-          <p class="sl-edit-prototype-note" data-sl-measure-note hidden>
-            Prototype only — measurements are not applied or regenerated yet.
-          </p>
-          <div class="sl-measure-workspace__actions">
-            <button
-              type="button"
-              class="sl-edit-btn sl-edit-btn--ghost"
-              data-sl-measure-cancel
-              data-testid="button-measure-cancel"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              class="sl-edit-btn sl-edit-btn--primary"
-              data-sl-measure-apply
-              data-testid="button-measure-apply"
-            >
-              Apply Measurements
-            </button>
-          </div>
-        </footer>
-      </div>
+      </section>
     </div>
 
   </main>
@@ -444,6 +422,35 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
 </Layout>
 
 <style>
+  /*
+   * Pattern workspace action bar — replaces the former tab navigation.
+   * Single row above the pattern summary: primary actions (My Patterns, New Pattern)
+   * on the left; pattern-specific actions (Edit Pattern, Print) on the right.
+   * Wraps naturally on narrow screens.
+   */
+  .pattern-action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin: 0 0 0.85rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(82, 104, 45, 0.12);
+  }
+
+  .pattern-action-bar__group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+  }
+
+  .pattern-action-bar__group--end {
+    justify-content: flex-end;
+  }
+
   .sleeveless-pattern-online-project-header {
     margin: 0 0 0.75rem;
   }
@@ -727,7 +734,7 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
     padding: 1.35rem;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.25rem;
   }
 
   .sl-edit-field {
@@ -740,10 +747,15 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
     min-width: 0;
   }
 
+  /*
+   * Each major group (Quick edits, Gauge) is separated by a single hairline rule above it,
+   * giving the panel rhythm without boxing sections in. Headings carry the weight/colour.
+   */
   .sl-edit-section {
     margin: 0;
-    padding: 0;
+    padding: 1.3rem 0 0;
     border: 0;
+    border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 10%, #e5e7eb);
     display: flex;
     flex-direction: column;
     gap: 1.05rem;
@@ -751,12 +763,12 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
 
   .sl-edit-section__title {
     margin: 0;
-    padding-bottom: 0.5rem;
-    font-size: 0.95rem;
+    padding: 0;
+    font-size: 1.05rem;
     font-weight: 700;
-    line-height: 1.25;
+    line-height: 1.2;
+    letter-spacing: -0.005em;
     color: var(--kbm-green, #52682d);
-    border-bottom: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 12%, #e5e7eb);
   }
 
   .sl-edit-locked {
@@ -800,10 +812,11 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
   }
 
   .sl-edit-ease {
-    margin: 0.6rem 0 0;
-    font-size: 0.82rem;
-    line-height: 1.4;
-    color: #6b7280;
+    margin: 0.5rem 0 0;
+    font-size: 0.78rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #9ca3af;
   }
 
   .sl-edit-error-note {
@@ -836,23 +849,26 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
     display: none;
   }
 
+  /* Eyebrow-style micro-label sitting above the prominent title input. */
   .sl-edit-label {
     display: block;
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.4rem;
     padding: 0;
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
     color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #6b7280);
   }
 
+  /* Field labels support the controls: smaller, medium weight, quietly muted. */
   .sl-edit-sublabel {
     display: block;
-    margin: 0 0 0.35rem;
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: #4b5563;
+    margin: 0 0 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: #6b7280;
   }
 
   .sl-edit-input {
@@ -868,6 +884,19 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
     border: 1px solid #d1d5db;
     border-radius: 8px;
     transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  /* Notes — same input chrome as the title, sized for a few lines of free text. */
+  .sl-edit-textarea {
+    min-height: 5.5rem;
+    resize: vertical;
+  }
+
+  /* The title is the headline input — make it read as the most important control. */
+  #sl-edit-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    padding-block: 0.7rem;
   }
 
   .sl-edit-input:focus {
@@ -947,45 +976,214 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
     outline-offset: 2px;
   }
 
-  /* Quick-settings drawer CTA that hands off to the full-screen measurement editor. */
-  .sl-edit-measure-cta {
-    padding: 1.1rem 1.15rem 1.2rem;
-    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 16%, #e5e7eb);
-    border-radius: 12px;
-    background: color-mix(in srgb, var(--kbm-green, #52682d) 4%, #fdfdfb);
+  /* ============================================================================
+   * Combined Edit Pattern workspace (full-width app shell).
+   * Desktop: [ quick edits (narrow) ] [ measurement SVG (majority) ] side by side.
+   * Mobile: stacked — quick edits, then measurement SVG. Single Update action bar.
+   * Scoped to .sl-edit-drawer--workspace so nothing else on the site is affected.
+   * ========================================================================== */
+  .sl-edit-drawer--workspace .sl-edit-drawer__panel {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    box-shadow: none;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 3%, #fdfcf7);
+    transform: translateY(14px);
+    transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .sl-edit-measure-cta__text {
-    margin: 0 0 0.85rem;
-    font-size: 0.9rem;
-    line-height: 1.45;
-    color: #4b5563;
+  .sl-edit-drawer--workspace.is-open .sl-edit-drawer__panel {
+    transform: translateY(0);
   }
 
-  .sl-edit-measure-cta__btn {
+  /* Header + footer bars span the viewport; their content aligns to the shell width. */
+  .sl-edit-drawer--workspace .sl-edit-drawer__header {
+    flex-shrink: 0;
+    background: #fff;
+    padding-inline: clamp(1rem, 4vw, 2.5rem);
+  }
+
+  /*
+   * Two-column body region; the shell-width inner keeps it from going edge-to-edge.
+   * Mobile-first: a single scrolling column (quick edits, then the measurement SVG).
+   * Desktop (>=1000px) switches to side-by-side with independently scrolling columns.
+   */
+  .sl-edit-workspace__layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    width: 100%;
+    max-width: min(var(--pattern-shell-max, 1480px), 100%);
+    margin: 0 auto;
+    padding: clamp(1rem, 2.5vw, 1.75rem) clamp(1rem, 4vw, 2.5rem);
+    box-sizing: border-box;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Quick edits column — stacks on mobile (full width), scrolls on desktop. */
+  .sl-edit-workspace__quick {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sl-edit-drawer--workspace .sl-edit-drawer__body {
+    flex: 1 1 auto;
+    padding: 0;
+  }
+
+  /* Measurement SVG column. */
+  .sl-edit-workspace__measure {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sl-edit-workspace__measure-head {
+    flex-shrink: 0;
+    margin: 0 0 0.5rem;
+  }
+
+  /* Heading on the left, edit actions on the right; hint text spans below. */
+  .sl-edit-workspace__measure-headrow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+  }
+
+  .sl-edit-workspace__measure-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.005em;
+    color: var(--kbm-green, #52682d);
+  }
+
+  /* Action group (notes + Cancel/Update) reused across breakpoints. */
+  .sl-edit-workspace__measure-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.4rem;
+  }
+
+  .sl-edit-workspace__measure-actions .sl-edit-workspace__notes {
     width: 100%;
   }
 
-  .sl-edit-drawer__footer {
-    flex-shrink: 0;
-    padding: 1rem 1.35rem 1.2rem;
-    border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 12%, #e5e7eb);
-    background: #fff;
+  .sl-edit-workspace__measure-actions .sl-edit-error-note,
+  .sl-edit-workspace__measure-actions .sl-edit-saved-note {
+    margin: 0;
   }
 
-  .sl-edit-prototype-note {
-    margin: 0 0 0.75rem;
-    padding: 0.5rem 0.7rem;
-    font-size: 0.82rem;
-    line-height: 1.4;
-    color: #6b4f2a;
-    background: rgba(251, 243, 219, 0.65);
-    border: 1px solid rgba(234, 179, 8, 0.35);
-    border-radius: 8px;
-  }
-
-  .sl-edit-prototype-note[hidden] {
+  .sl-edit-workspace__measure-actions .sl-edit-error-note[hidden],
+  .sl-edit-workspace__measure-actions .sl-edit-saved-note[hidden] {
     display: none;
+  }
+
+  /* Clean, subtle ruler — secondary to the "Measurements" heading (no rotation). */
+  .sl-edit-workspace__measure-icon {
+    flex-shrink: 0;
+    color: var(--kbm-green, #52682d);
+    font-size: 1.1em;
+  }
+
+  .sl-edit-workspace__measure-hint {
+    margin: 0.3rem 0 0;
+    font-size: 0.78rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #9ca3af;
+  }
+
+  /* On mobile the editor body flows in the page scroll (no nested scrollbar). */
+  .sl-edit-workspace__measure .sl-measure-workspace__body {
+    flex: 1 1 auto;
+    padding: 0;
+  }
+
+  .sl-measure-workspace__editor {
+    width: 100%;
+  }
+
+  /* Desktop: side-by-side. Quick panel narrow; SVG gets the remaining width. */
+  @media (min-width: 1000px) {
+    .sl-edit-workspace__layout {
+      flex-direction: row;
+      align-items: stretch;
+      gap: clamp(1.5rem, 2.5vw, 2.5rem);
+      overflow: hidden;
+      padding-block: clamp(0.85rem, 1.6vw, 1.35rem);
+    }
+
+    /*
+     * Quick edits column fits naturally on desktop — no internal scrollbar.
+     * The measurement SVG (right) keeps its own scroll, so the quick panel never
+     * needs to scroll; the spacing tweaks below keep all six controls in view.
+     */
+    .sl-edit-workspace__quick {
+      flex: 0 0 clamp(320px, 26vw, 380px);
+      max-width: 380px;
+      overflow: visible;
+    }
+
+    /* Tighten quick-edit spacing (desktop only) so the panel fits without scrolling. */
+    .sl-edit-drawer--workspace .sl-edit-drawer__body {
+      gap: 0.85rem;
+    }
+
+    .sl-edit-drawer--workspace .sl-edit-section {
+      gap: 0.7rem;
+      padding-top: 0.95rem;
+    }
+
+    .sl-edit-drawer--workspace .sl-edit-segment__pill {
+      min-height: 2.3rem;
+    }
+
+    .sl-edit-drawer--workspace .sl-edit-input {
+      padding-block: 0.45rem;
+    }
+
+    .sl-edit-drawer--workspace .sl-edit-ease {
+      margin-top: 0.3rem;
+    }
+
+    .sl-edit-drawer--workspace .sl-edit-grid {
+      gap: 0.6rem;
+    }
+
+    .sl-edit-drawer--workspace .sl-edit-label {
+      margin-bottom: 0.35rem;
+    }
+
+    .sl-edit-workspace__measure {
+      flex: 1 1 auto;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    /* Diagram is sized to fit the pane, so no inner scrollbar is needed. */
+    .sl-edit-workspace__measure .sl-measure-workspace__body {
+      min-height: 0;
+      overflow: visible;
+    }
+  }
+
+  .sl-edit-workspace__notes {
+    min-width: 0;
+  }
+
+  .sl-edit-workspace__notes .sl-edit-error-note,
+  .sl-edit-workspace__notes .sl-edit-saved-note {
+    margin: 0;
   }
 
   .sl-edit-drawer__actions {
@@ -1054,84 +1252,16 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
     outline-offset: 2px;
   }
 
-  /*
-   * PROTOTYPE ONLY — full-screen Measurement editor workspace.
-   * Takes over the whole viewport (not the narrow drawer) so the diagram has room.
-   * Cream/green workspace styling using project tokens.
-   */
-  .sl-measure-workspace {
-    position: fixed;
-    inset: 0;
-    z-index: 1500;
-    visibility: hidden;
-    opacity: 0;
-    pointer-events: none;
-    background: color-mix(in srgb, var(--kbm-green, #52682d) 4%, #fdfcf7);
-    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
-  }
-
-  .sl-measure-workspace.is-open {
-    visibility: visible;
-    opacity: 1;
-    pointer-events: auto;
-    transition: opacity 0.2s ease;
-  }
-
-  .sl-measure-workspace__inner {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-  }
-
-  .sl-measure-workspace__inner:focus {
-    outline: none;
-  }
-
-  .sl-measure-workspace__header {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.9rem clamp(1rem, 4vw, 2.5rem);
-    background: #fff;
-    border-bottom: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #e5e7eb);
-  }
-
-  .sl-measure-workspace__title {
-    margin: 0;
-    font-size: clamp(1.15rem, 2.5vw, 1.5rem);
-    font-weight: 700;
-    line-height: 1.2;
-    color: var(--kbm-green, #52682d);
-  }
-
-  .sl-measure-workspace__back {
-    flex-shrink: 0;
-    gap: 0.45rem;
-  }
-
+  /* Reused measurement editor body: vertical flow for summary + diagram host. */
   .sl-measure-workspace__body {
-    flex: 1 1 auto;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
-    padding: clamp(1rem, 3.5vw, 2.5rem);
-  }
-
-  /* Reused measurement editor fills the workspace; its own scoped CSS centers the diagram. */
-  .sl-measure-workspace__editor {
-    width: 100%;
   }
 
   /*
-   * Full-screen Edit Measurements workspace ONLY: simple width-driven sizing so the reused
-   * diagram is dramatically larger and centered. Scoped under `.sl-measure-workspace__body`,
+   * Measurement SVG sizing: width-driven so the reused diagram is large and centered.
+   * Scoped under `.sl-measure-workspace__body`,
    * so the shared Custom Build fit page (/custom-build/fit) and unified review page are
    * untouched. Overlay chips re-anchor to SVG targets via the editor's ResizeObserver, so the
    * labels stay aligned at any size. `:global()` is required for the diagram nodes that
@@ -1144,72 +1274,109 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
   }
 
   @media (min-width: 700px) {
-    /* Lift the builder's narrow (52rem / ~550px) caps so the diagram can use the workspace. */
+    /*
+     * Enlarge the reused measurement SVG inside the combined Edit Pattern workspace only.
+     * The builder caps the diagram at ~550–560px AND its host uses `align-items: center`,
+     * which makes `.cb-measure-diagram-wrap` (a flex item) shrink to the SVG's intrinsic
+     * size unless it has an explicit width. We therefore give the wrap + stage a definite
+     * `width: 100%` (capped at 1000px) so the diagram fills most of the right pane. The
+     * editor's ResizeObserver re-anchors the label/input overlays to the SVG targets, so
+     * they stay aligned at the larger size — no overlay/positioning logic changes.
+     */
     .sl-measure-workspace__body.express-measurements-confirm-page .sleeveless-measure-review-body {
-      max-width: min(96vw, 1160px);
+      max-width: 100%;
     }
 
-    .sl-measure-workspace__body.express-measurements-confirm-page :global(.cb-measure-diagram-wrap) {
-      max-width: min(96vw, 1160px);
-    }
-
+    /*
+     * Size the (near-square) diagram by BOTH the column width and the available viewport
+     * height, so the whole garment is visible at once with no horizontal/vertical scrollbar.
+     * `calc(100vh - 300px)` reserves room for the workspace header, footer, headings, and
+     * summary line; the SVG scales down on shorter screens rather than overflowing.
+     */
+    .sl-measure-workspace__body.express-measurements-confirm-page :global(.cb-measure-diagram-wrap),
     .sl-measure-workspace__body.express-measurements-confirm-page
       :global(.sleeveless-measure-diagram-host .express-mbp),
     .sl-measure-workspace__body.express-measurements-confirm-page
       :global(.sleeveless-measure-diagram-host .express-mbp-stage) {
-      width: min(92vw, 1100px);
-      max-width: 1100px;
+      width: 100%;
+      max-width: min(100%, 1000px, calc(100vh - 300px));
       margin-inline: auto;
     }
 
-    /* SVG/art fills the stage; square ratio matches the viewBox (no letterboxing). */
+    /* No inner scroll area — the diagram is sized to fit, so let it show in full. */
+    .sl-measure-workspace__body.express-measurements-confirm-page :global(.express-mbp-scroll) {
+      overflow: visible;
+      padding-bottom: 0;
+    }
+
+    /* SVG/art fills the stage; keep the existing (square) ratio so nothing is distorted. */
     .sl-measure-workspace__body.express-measurements-confirm-page :global(.express-mbp-art) {
       width: 100%;
       height: auto;
       aspect-ratio: 210.2 / 210.2;
     }
+
+    /*
+     * Larger, easier-to-tap measurement inputs/values in the combined workspace only.
+     * Labels keep their size, so overlap is not increased beyond the current layout.
+     */
+    .sl-measure-workspace__body.express-measurements-confirm-page :global(.measurement-chip) {
+      min-width: 4rem;
+      min-height: 2.25rem;
+      padding: 0.32rem 0.48rem;
+    }
+
+    .sl-measure-workspace__body.express-measurements-confirm-page :global(.measurement-input) {
+      font-size: 1.15rem;
+      min-width: 2rem;
+      max-width: 4rem;
+    }
+
+    .sl-measure-workspace__body.express-measurements-confirm-page :global(.measurement-unit) {
+      font-size: 0.74rem;
+    }
+
+    .sl-measure-workspace__body.express-measurements-confirm-page :global(.express-mbp-box__value) {
+      min-width: 4rem;
+      max-width: 6.5rem;
+      padding: 0.32rem 0.5rem;
+      font-size: 1.15rem;
+    }
   }
 
-  .sl-measure-workspace__footer {
-    flex-shrink: 0;
-    padding: 0.9rem clamp(1rem, 4vw, 2.5rem) 1.1rem;
-    background: #fff;
-    border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #e5e7eb);
-  }
-
-  .sl-measure-workspace__footer .sl-edit-prototype-note {
-    max-width: 1100px;
-    margin: 0 auto 0.75rem;
-  }
-
-  .sl-measure-workspace__actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.6rem;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-
-  /* Mobile: full-screen panel, easy tap targets, full width. */
+  /*
+   * Mobile: the same Measurements-header action group re-pins to the bottom as a sticky
+   * action bar so "Update Pattern" is always reachable without scrolling. Reusing the SAME
+   * element (not a duplicate) keeps the existing Cancel/Update handlers attached.
+   */
   @media (max-width: 640px) {
-    .sl-edit-drawer__panel {
-      width: 100%;
+    .sl-edit-workspace__measure-actions {
+      position: fixed;
       left: 0;
       right: 0;
+      bottom: 0;
+      z-index: 5;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.5rem;
+      padding: 0.75rem clamp(1rem, 4vw, 2.5rem);
+      background: #fff;
+      border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 12%, #e5e7eb);
+      box-shadow: 0 -4px 16px rgba(17, 24, 39, 0.12);
     }
 
-    .sl-edit-drawer__body {
-      padding: 1.15rem;
+    .sl-edit-workspace__measure-actions .sl-edit-drawer__actions {
+      width: 100%;
     }
 
-    .sl-edit-drawer__actions .sl-edit-btn,
-    .sl-measure-workspace__actions .sl-edit-btn {
+    .sl-edit-workspace__measure-actions .sl-edit-drawer__actions .sl-edit-btn {
       flex: 1 1 0;
       min-height: 2.9rem;
     }
 
-    .sl-measure-workspace__header {
-      flex-wrap: wrap;
+    /* Reserve room so the diagram/summary are never hidden behind the fixed bar. */
+    .sl-edit-workspace__layout {
+      padding-bottom: 6.5rem;
     }
   }
 </style>

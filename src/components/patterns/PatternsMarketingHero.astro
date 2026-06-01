@@ -1,0 +1,111 @@
+---
+// TODO(about-page): Sales/marketing hero moved off the main /patterns catalog page.
+// Preserved here for reuse on a future "About the Pattern Builders" / marketing page.
+// Pair this with <PatternsFeaturesSection /> ("Why These Patterns Are Different").
+---
+
+<section class="patterns-hero" aria-labelledby="patterns-hero-heading">
+  <div class="patterns-hero__grid">
+    <div class="patterns-hero__content">
+      <h1 id="patterns-hero-heading">Custom Sweater Patterns Designed for Machine Knitters</h1>
+      <p class="patterns-hero__intro">
+        The ultimate pattern generator for modern machine knitters. Easily map out your favorite silhouettes, unlock automated shaping math, and create knit-ready sweater patterns in just a few guided steps.
+      </p>
+    </div>
+    <div class="patterns-hero__media">
+      <img
+        class="patterns-hero__img"
+        src="/images/patterns/patterns-intro.webp"
+        alt="Sleeveless sweater pattern workspace showing size, fit, neckline, and gauge choices"
+        width="720"
+        height="540"
+        loading="eager"
+        decoding="async"
+      />
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Hero — sleeveless pattern experience */
+  .patterns-hero {
+    margin: 0 0 12px;
+    padding: 32px 36px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f9f9f6 0%, #fff 55%);
+    border: 1px solid #d6dbc9;
+    box-shadow: 0 4px 16px rgba(82, 104, 45, 0.1);
+  }
+
+  .patterns-hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: 28px 40px;
+    align-items: center;
+  }
+
+  .patterns-hero__content {
+    min-width: 0;
+  }
+
+  .patterns-hero h1 {
+    margin: 0 0 14px;
+    font-size: clamp(1.45rem, 2.8vw, 1.85rem);
+    font-weight: 600;
+    color: #52682d;
+    line-height: 1.25;
+  }
+
+  .patterns-hero__intro {
+    margin: 0;
+    font-size: 1.02rem;
+    font-weight: 500;
+    line-height: 1.55;
+    color: #333;
+    max-width: 34rem;
+  }
+
+  .patterns-hero__media {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .patterns-hero__img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    border-radius: 10px;
+    border: 1px solid rgba(82, 104, 45, 0.18);
+    box-shadow:
+      0 10px 28px rgba(0, 0, 0, 0.08),
+      0 2px 8px rgba(82, 104, 45, 0.12);
+  }
+
+  @media (max-width: 720px) {
+    .patterns-hero {
+      padding: 24px 20px;
+    }
+
+    .patterns-hero__grid {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .patterns-hero__content {
+      text-align: center;
+    }
+
+    .patterns-hero__intro {
+      max-width: none;
+    }
+
+    .patterns-hero__media {
+      max-width: min(100%, 440px);
+      margin: 0 auto;
+    }
+  }
+</style>

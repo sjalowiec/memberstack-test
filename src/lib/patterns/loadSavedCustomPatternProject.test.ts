@@ -93,6 +93,38 @@ describe("loadSavedCustomPatternProject", () => {
     expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toContain("For Aubrie");
   });
 
+  it("views a saved pattern by routing to the read-only pattern page, never the edit workspace", async () => {
+    loadCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      project: sampleProject(),
+    });
+
+    const result = await loadSavedCustomPatternProject(PROJECT_ID, "view");
+
+    expect(result).toEqual({ ok: true, redirectHref: OPEN_PATTERN_HREF });
+    if (result.ok) {
+      expect(result.redirectHref).not.toBe(EXPRESS_EDIT_WORKSPACE_HREF);
+      expect(result.redirectHref).not.toContain("edit=choices");
+    }
+    // Working draft is still hydrated so the pattern page can render the saved pattern.
+    expect(readActiveCustomPatternProjectId()).toBe(PROJECT_ID);
+    expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toContain("For Aubrie");
+  });
+
+  it("views a custom-build saved pattern on the same pattern page (source-independent)", async () => {
+    loadCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      project: sampleProject({ source: "custom-build" }),
+    });
+
+    const result = await loadSavedCustomPatternProject(PROJECT_ID, "view");
+
+    expect(result).toEqual({ ok: true, redirectHref: OPEN_PATTERN_HREF });
+    if (result.ok) {
+      expect(result.redirectHref).not.toBe(CUSTOM_BUILD_EDIT_WORKSPACE_HREF);
+    }
+  });
+
   it("opens custom-build projects in the editable Foundation workspace, not Customize/review", async () => {
     loadCustomPatternProjectMock.mockResolvedValue({
       ok: true,

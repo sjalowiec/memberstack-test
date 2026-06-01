@@ -42,6 +42,7 @@ function renderPrintBlockRow(
   row: Extract<SleevelessPatternDisplayRow, { kind: "block" }>,
   lastStitchRef: { value: number | undefined },
   pieceKey = "print",
+  keepWithNext = false,
 ): string {
   const showStitch =
     row.stitchCount !== undefined &&
@@ -92,12 +93,13 @@ function renderPrintBlockRow(
   if (!leftHtml && !rightHtml) {
     return "";
   }
+  const keepClass = keepWithNext ? " print-inst-row--keep-with-next" : "";
   if (!leftHtml && rightHtml) {
-    return `<div class="print-inst-row print-inst-row--full print-inst-row--sts-only">${rightHtml}</div>`;
+    return `<div class="print-inst-row print-inst-row--full print-inst-row--sts-only${keepClass}">${rightHtml}</div>`;
   }
 
   const rowClass = rightHtml ? "print-inst-row" : "print-inst-row print-inst-row--full";
-  return `<div class="${rowClass}">${leftHtml}${rightHtml}</div>`;
+  return `<div class="${rowClass}${keepClass}">${leftHtml}${rightHtml}</div>`;
 }
 
 /**
@@ -112,7 +114,8 @@ export function renderSleevelessPrintPieceHtml(
   const lastStitchRef = { value: undefined as number | undefined };
   const chunks: string[] = [];
 
-  for (const row of list) {
+  for (let idx = 0; idx < list.length; idx++) {
+    const row = list[idx]!;
     if (row.kind === "piece") {
       chunks.push(
         `<h2 class="print-piece-title print-heading-with-checkbox">${printHeadingCheckboxMarkup()}<span class="print-heading-label">${escapeHtml(row.title)}</span></h2>`,
@@ -130,7 +133,10 @@ export function renderSleevelessPrintPieceHtml(
       continue;
     }
     if (row.kind === "block") {
-      chunks.push(renderPrintBlockRow(row, lastStitchRef, pieceKey));
+      // Glue a setup instruction that sits directly above the shaping chart to the chart
+      // header so the heading/intro never strand alone at a page foot (the chart body flows).
+      const keepWithNext = list[idx + 1]?.kind === "neckShoulderChartTableMount";
+      chunks.push(renderPrintBlockRow(row, lastStitchRef, pieceKey, keepWithNext));
     }
   }
 

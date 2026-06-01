@@ -1,7 +1,6 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
-import PatternWorkspaceTabs from "../../../components/patterns/PatternWorkspaceTabs.astro";
 import UnitToggle from "../../../components/wizards/UnitToggle.astro";
 import YarnRequirement from "../../../components/tools/YarnRequirement.astro";
 import "../../../styles/wizard.css";
@@ -14,10 +13,6 @@ import { SLEEVELESS_PATTERN_FAMILY_NAME } from "../../../lib/patterns/sleeveless
 
 const builderHref = "/patterns/sleeveless/builder";
 const expressHref = "/patterns/sleeveless-express/";
-const customBuildHref = "/patterns/sleeveless/custom-build/";
-const patternHref = "/patterns/sleeveless/pattern/";
-const askShareHref = "/patterns/sleeveless/ask-share/";
-const inspirationHref = "/patterns/sleeveless/inspiration/";
 /** Placeholder until Sleeveless pattern-family checkout is wired. */
 const patternFamilyUnlockHref = "#";
 const membershipHref = "/join";
@@ -35,16 +30,6 @@ const SHOW_UPSELL = false;
   <main class="express-page wizard-page sleeveless-express-page express-measurements-confirm-page sleeveless-unified-review-page">
     <div class="wizard-container express-wizard scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
-        <PatternWorkspaceTabs
-          rootClass="pattern-tabs-scope"
-          activeTab="custom"
-          expressHref={expressHref}
-          customBuildHref={customBuildHref}
-          patternHref={patternHref}
-          askShareHref={askShareHref}
-          inspirationHref={inspirationHref}
-        />
-
         <div data-cb-editing-banner-host hidden></div>
         <div
           class="express-measurements-review"

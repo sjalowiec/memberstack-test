@@ -6,9 +6,16 @@ import type { CustomPatternFamily } from "./customPatternProjectTypes";
 import {
   getContinueEditingHref,
   getSavedCustomPatternOpenHref,
+  OPEN_PATTERN_HREF,
 } from "./customPatternProjectNavigation";
 
-export type SavedCustomPatternOpenAction = "open" | "continue";
+/**
+ * - `view`: read-only destination — the saved pattern's instructions page. Primary action from
+ *   My Patterns. Hydrates the working draft so the pattern renders, but does not unlock the builder.
+ * - `open`: editable builder workspace (every step unlocked + prefilled via `?edit=choices`).
+ * - `continue`: resume editing where the knitter left off.
+ */
+export type SavedCustomPatternOpenAction = "view" | "open" | "continue";
 
 export type LoadSavedCustomPatternResult =
   | { ok: true; redirectHref: string }
@@ -29,13 +36,19 @@ export async function loadSavedCustomPatternProject(
   }
 
   // Opening for edit unlocks and prefills every builder step (gauge included) so the knitter lands
-  // in the editable workspace, not the read-only pattern output or a blank build/start flow.
+  // in the editable workspace. Viewing/continuing only need the working draft hydrated so the
+  // pattern renders — they do not unlock the builder.
   hydrateSavedCustomPatternProjectSession(res.project, { editChoicesReopen: action === "open" });
 
-  const redirectHref =
-    action === "open"
-      ? getSavedCustomPatternOpenHref(res.project.source)
-      : getContinueEditingHref(res.project.source);
+  let redirectHref: string;
+  if (action === "view") {
+    // Saved pattern's instructions page — same destination regardless of how it was built.
+    redirectHref = OPEN_PATTERN_HREF;
+  } else if (action === "open") {
+    redirectHref = getSavedCustomPatternOpenHref(res.project.source);
+  } else {
+    redirectHref = getContinueEditingHref(res.project.source);
+  }
 
   return { ok: true, redirectHref };
 }

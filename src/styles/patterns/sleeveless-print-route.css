@@ -484,6 +484,17 @@
     flex: 1 1 100%;
   }
 
+  /*
+    Neckline/shoulder setup instruction that sits directly above its shaping chart: glue it to
+    the chart header so the heading + setup line + chart intro never strand at a page foot.
+    Combined with the chart's break-after/break-before chain, only this small group migrates
+    when it cannot fit; the chart body still flows across pages.
+  */
+  .sleeveless-print-root .print-inst-row--keep-with-next {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
   .sleeveless-print-root .print-inst-left {
     flex: 1 1 16rem;
     min-width: 0;
@@ -897,25 +908,32 @@
       page-break-inside: auto;
     }
 
-    /* Compact shaping tables (print route): keep chart block intact when it fits one page. */
+    /*
+      Compact shaping tables (print route): let the chart table FLOW across pages so a long
+      chart never forces a near-empty page. The heading + intro + table header + first row stay
+      glued together (break-after / break-before: avoid below + repeating thead), so the neckline
+      setup never lands alone at the foot of a page; the remaining rows spill onto the next page.
+    */
     .sleeveless-print-root .print-chart-wrap,
     .sleeveless-print-root .ns-shaping-mini {
-      break-inside: avoid;
-      page-break-inside: avoid;
+      break-inside: auto;
+      page-break-inside: auto;
     }
 
     .sleeveless-print-root .ns-shaping-mini__title,
     .sleeveless-print-root .print-chart-intro {
       break-after: avoid;
       page-break-after: avoid;
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
 
     .sleeveless-print-root .ns-shaping-mini__wrap,
     .sleeveless-print-root .ns-shaping-mini__table {
       break-before: avoid;
       page-break-before: avoid;
-      break-inside: avoid;
-      page-break-inside: avoid;
+      break-inside: auto;
+      page-break-inside: auto;
     }
 
     .sleeveless-print-root .ns-shaping-mini__table thead {
@@ -930,13 +948,16 @@
     }
 
     /*
-      Force the Front Neckline/Shoulder Shaping section (setup heading + chart, ~RC 037–082)
-      onto a fresh printed page so shoulder shaping never lands at a page flip. Print/PDF only;
-      the interactive screen layout is unaffected. Front-specific wrapper — the Back continuation
-      uses its own section and is not impacted.
+      Front Neckline/Shoulder Shaping section: flow naturally (no forced page break) so the page
+      before it is filled instead of leaving wasted white space. Widow/orphan protection keeps the
+      setup heading + intro + chart header with the first chart rows (the break-after / break-before
+      chain above), so only that small block migrates to the next page when it would otherwise be
+      stranded — the chart body still flows. Print/PDF only; interactive screen layout is unaffected.
     */
     .sleeveless-print-root .print-page-break-before-front-neckline {
-      break-before: page;
-      page-break-before: always;
+      break-before: auto;
+      page-break-before: auto;
+      break-inside: auto;
+      page-break-inside: auto;
     }
   }
