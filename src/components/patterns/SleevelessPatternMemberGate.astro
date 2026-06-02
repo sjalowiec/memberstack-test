@@ -54,6 +54,9 @@
 
 <script>
   import "/src/scripts/sleeveless-pattern-login-gate.ts";
+  // Localhost-only access-source debug badge. Self-gated behind import.meta.env.DEV + a
+  // localhost hostname check, so production builds dead-code-eliminate it.
+  import "/src/scripts/sleevelessAccessDebugBadge.ts";
 </script>
 
 <style>

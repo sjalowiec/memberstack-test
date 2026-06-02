@@ -21,13 +21,59 @@ import {
 
 type MemberstackDom = NonNullable<Window["$memberstackDom"]>;
 
+/**
+ * Where the resolved access decision came from. DEBUG/DIAGNOSTIC ONLY — this never feeds an access
+ * rule; it just labels which branch of {@link resolveAccessUncached} produced the snapshot so the
+ * localhost debug badge can show it. See `src/scripts/sleevelessAccessDebugBadge.ts`.
+ */
+export type SleevelessAccessSource =
+  | "dev-bypass"
+  | "memberstack-plan"
+  | "member-json-unlock"
+  | "free"
+  | "logged-out";
+
+/** DEBUG-only diagnostic snapshot describing how access was resolved. Not used by any rule. */
+export interface SleevelessAccessDebug {
+  source: SleevelessAccessSource;
+  loggedIn: boolean;
+  hasSystemAccess: boolean;
+  freeClaimed: boolean;
+  freeClaimedPatternId?: string;
+  memberId?: string;
+  planIds: string[];
+  unlockedViaJson: boolean;
+  /** Extra context for logged-out outcomes (e.g. why no member was found). */
+  reason?: string;
+  at: number;
+}
+
 declare global {
   interface Window {
     /** Last resolved Sleeveless access snapshot (sync read for access-gate fallbacks). */
     __KBM_SLEEVELESS_ACCESS__?: SleevelessUserAccess;
     /** In-flight resolution promise, memoized per page load. */
     __KBM_SLEEVELESS_ACCESS_PROMISE__?: Promise<SleevelessUserAccess>;
+    /** DEBUG-only: how the last access decision was reached (dev builds only). */
+    __KBM_SLEEVELESS_ACCESS_DEBUG__?: SleevelessAccessDebug;
   }
+}
+
+/**
+ * DEBUG-only: stash how the last access decision was reached so the localhost badge can show it.
+ * No-op outside the Astro dev server (`import.meta.env.DEV`) and during SSR, so production builds
+ * carry zero overhead and never expose this. This records observations only — it changes nothing.
+ */
+function recordAccessDebug(debug: SleevelessAccessDebug): void {
+  if (typeof window === "undefined") return;
+  if (!import.meta.env?.DEV) return;
+  window.__KBM_SLEEVELESS_ACCESS_DEBUG__ = debug;
+}
+
+/** DEBUG-only: read the last recorded access-source diagnostic, or null. */
+export function getSleevelessAccessDebug(): SleevelessAccessDebug | null {
+  if (typeof window === "undefined") return null;
+  return window.__KBM_SLEEVELESS_ACCESS_DEBUG__ ?? null;
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -65,32 +111,70 @@ async function readMemberJson(ms: MemberstackDom): Promise<unknown> {
 
 async function resolveAccessUncached(): Promise<SleevelessUserAccess> {
   if (devBypass) {
+    recordAccessDebug({
+      source: "dev-bypass",
+      loggedIn: true,
+      hasSystemAccess: true,
+      freeClaimed: false,
+      planIds: [],
+      unlockedViaJson: false,
+      at: Date.now(),
+    });
     return { loggedIn: true, hasSystemAccess: true, freeClaimed: false };
   }
   if (typeof window === "undefined") return LOGGED_OUT_SLEEVELESS_ACCESS;
 
+  const loggedOut = (reason: string): SleevelessUserAccess => {
+    recordAccessDebug({
+      source: "logged-out",
+      loggedIn: false,
+      hasSystemAccess: false,
+      freeClaimed: false,
+      planIds: [],
+      unlockedViaJson: false,
+      reason,
+      at: Date.now(),
+    });
+    return LOGGED_OUT_SLEEVELESS_ACCESS;
+  };
+
   const ms = window.$memberstackDom;
-  if (!ms?.getCurrentMember) return LOGGED_OUT_SLEEVELESS_ACCESS;
+  if (!ms?.getCurrentMember) return loggedOut("memberstack-dom-unavailable");
 
   let memberPayload: unknown;
   try {
     memberPayload = await ms.getCurrentMember();
   } catch {
-    return LOGGED_OUT_SLEEVELESS_ACCESS;
+    return loggedOut("getCurrentMember-error");
   }
 
   const memberId = memberIdFromMemberstackPayload(memberPayload);
-  if (!memberId) return LOGGED_OUT_SLEEVELESS_ACCESS;
+  if (!memberId) return loggedOut("no-member-id");
 
   const planIds = planIdsFromMemberstackPayload(memberPayload);
   const memberJson = await readMemberJson(ms);
   const unlockedViaJson = readSleevelessSystemUnlockFromMemberJson(memberJson);
   const claim = readFreeClaimFromMemberJson(memberJson);
 
+  const grantedByPlan = planIdsGrantSleevelessSystemAccess(planIds);
+  const hasSystemAccess = grantedByPlan || unlockedViaJson;
+
+  recordAccessDebug({
+    source: grantedByPlan ? "memberstack-plan" : unlockedViaJson ? "member-json-unlock" : "free",
+    loggedIn: true,
+    hasSystemAccess,
+    freeClaimed: claim.freeSleevelessPatternClaimed,
+    freeClaimedPatternId: claim.freeSleevelessPatternId,
+    memberId,
+    planIds,
+    unlockedViaJson,
+    at: Date.now(),
+  });
+
   return {
     loggedIn: true,
     memberId,
-    hasSystemAccess: planIdsGrantSleevelessSystemAccess(planIds) || unlockedViaJson,
+    hasSystemAccess,
     freeClaimed: claim.freeSleevelessPatternClaimed,
     freeClaimedPatternId: claim.freeSleevelessPatternId,
   };

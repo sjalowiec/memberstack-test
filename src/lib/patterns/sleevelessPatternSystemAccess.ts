@@ -23,6 +23,7 @@
 export const SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS = [
   "pln_kin-membership-annual-qf9g01et",
   "pln_kin-membership-monthly-a59701wy",
+  "pln_kin-beta-access-vyek0a38",
 ] as const;
 
 /**

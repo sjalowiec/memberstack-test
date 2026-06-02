@@ -127,6 +127,11 @@ describe("plan entitlement", () => {
     expect(planIdsGrantSleevelessSystemAccess([])).toBe(false);
   });
 
+  it("grants access for the Beta Access plan id", () => {
+    expect(SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS).toContain("pln_kin-beta-access-vyek0a38");
+    expect(planIdsGrantSleevelessSystemAccess(["pln_kin-beta-access-vyek0a38"])).toBe(true);
+  });
+
   it("reads the standalone unlock flag from member JSON", () => {
     expect(readSleevelessSystemUnlockFromMemberJson({ sleevelessPatternSystemUnlocked: true })).toBe(true);
     expect(readSleevelessSystemUnlockFromMemberJson({ sleevelessPatternSystemUnlocked: false })).toBe(false);
