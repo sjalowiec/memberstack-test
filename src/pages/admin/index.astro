@@ -110,6 +110,32 @@ const sections: DashSection[] = [
       </p>
     </header>
 
+    <section class="admin-dash__section" aria-labelledby="env-status-heading">
+      <h2 id="env-status-heading" class="admin-dash__section-title">
+        Environment Status
+      </h2>
+      <div class="admin-dash__env-card">
+        <dl class="admin-dash__env-list">
+          <div class="admin-dash__env-row">
+            <dt class="admin-dash__env-label">Environment</dt>
+            <dd class="admin-dash__env-value">
+              <span class="admin-dash__env-badge" data-env-environment>Detecting…</span>
+            </dd>
+          </div>
+          <div class="admin-dash__env-row">
+            <dt class="admin-dash__env-label">Memberstack Mode</dt>
+            <dd class="admin-dash__env-value">
+              <span class="admin-dash__env-badge" data-env-ms-mode>Detecting…</span>
+            </dd>
+          </div>
+          <div class="admin-dash__env-row">
+            <dt class="admin-dash__env-label">Logged In User</dt>
+            <dd class="admin-dash__env-value" data-env-user>Checking…</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
     {
       sections.map((section) => (
         <section
@@ -257,6 +283,66 @@ const sections: DashSection[] = [
       </div>
     </section>
   </main>
+
+  <script>
+    import {
+      detectMemberstackMode,
+      detectSiteEnvironment,
+      memberstackModeLabel,
+      siteEnvironmentLabel,
+    } from "../../lib/env/siteEnvironment";
+    import { memberEmailFromMemberstackPayload as envMemberEmail } from "../../lib/patterns/memberstackMember";
+
+    function applyEnvStatus(): void {
+      const envEl = document.querySelector("[data-env-environment]");
+      if (envEl instanceof HTMLElement) {
+        const env = detectSiteEnvironment(window.location.hostname, {
+          publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+          isViteDev: import.meta.env.DEV,
+        });
+        envEl.textContent = siteEnvironmentLabel(env);
+        envEl.dataset.envState = env;
+      }
+    }
+
+    function applyMemberstackMode(): void {
+      const modeEl = document.querySelector("[data-env-ms-mode]");
+      if (modeEl instanceof HTMLElement) {
+        const mode = detectMemberstackMode(window);
+        modeEl.textContent = memberstackModeLabel(mode);
+        modeEl.dataset.modeState = mode;
+      }
+    }
+
+    async function applyLoggedInUser(): Promise<void> {
+      const userEl = document.querySelector("[data-env-user]");
+      if (!(userEl instanceof HTMLElement)) return;
+      try {
+        const ms = window.$memberstackDom;
+        if (!ms?.getCurrentMember) {
+          userEl.textContent = "Memberstack unavailable";
+          return;
+        }
+        const payload = await ms.getCurrentMember();
+        const email = envMemberEmail(payload);
+        userEl.textContent = email || "Not signed in";
+      } catch {
+        userEl.textContent = "Unknown";
+      }
+    }
+
+    applyEnvStatus();
+    // Memberstack loads asynchronously; retry the mode + user reads briefly.
+    let envAttempts = 0;
+    const envTimer = window.setInterval(() => {
+      envAttempts += 1;
+      applyMemberstackMode();
+      void applyLoggedInUser();
+      if (window.$memberstackDom?.getCurrentMember || envAttempts >= 25) {
+        window.clearInterval(envTimer);
+      }
+    }, 200);
+  </script>
 
   <script>
     import {
@@ -617,6 +703,100 @@ const sections: DashSection[] = [
       border: 1px solid #e5e7eb;
       border-radius: 12px;
       box-sizing: border-box;
+    }
+
+    .admin-dash__env-card {
+      padding: 1.1rem 1.15rem;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      box-sizing: border-box;
+    }
+
+    .admin-dash__env-list {
+      margin: 0;
+      display: grid;
+      gap: 0.85rem;
+    }
+
+    .admin-dash__env-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem 1rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid #eef2f6;
+    }
+
+    .admin-dash__env-row:last-child {
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .admin-dash__env-label {
+      margin: 0;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #64748b;
+    }
+
+    .admin-dash__env-value {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1e293b;
+      word-break: break-word;
+    }
+
+    .admin-dash__env-badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      border-radius: 999px;
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+    }
+
+    .admin-dash__env-badge[data-env-state="localhost"] {
+      background: #dbeafe;
+      color: #1d4ed8;
+      border-color: #bfdbfe;
+    }
+
+    .admin-dash__env-badge[data-env-state="dev"] {
+      background: #fef3c7;
+      color: #b45309;
+      border-color: #fde68a;
+    }
+
+    .admin-dash__env-badge[data-env-state="production"] {
+      background: #dcfce7;
+      color: #15803d;
+      border-color: #bbf7d0;
+    }
+
+    .admin-dash__env-badge[data-mode-state="test"] {
+      background: #fef3c7;
+      color: #b45309;
+      border-color: #fde68a;
+    }
+
+    .admin-dash__env-badge[data-mode-state="live"] {
+      background: #dcfce7;
+      color: #15803d;
+      border-color: #bbf7d0;
+    }
+
+    .admin-dash__env-badge[data-mode-state="unknown"] {
+      background: #f1f5f9;
+      color: #64748b;
+      border-color: #e2e8f0;
     }
 
     .admin-dash__stats {

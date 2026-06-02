@@ -89,7 +89,7 @@ const {
     })();
   </script>
 
-  <main class="site-content" style="padding-top: calc(var(--header-offset, 150px) + var(--header-buffer, 24px));">
+  <main class="site-content" style="padding-top: calc(var(--header-offset, 150px) + var(--header-buffer, 24px) + var(--kbm-env-banner-h, 0px));">
     <slot />
     {toolPrintTitle && <ToolPrintFooter toolTitle={toolPrintTitle} />}
   </main>
@@ -137,23 +137,6 @@ const {
   .site-content > :first-child {
     margin-top: 0;
   }
-
-  .dev-banner {
-  position: fixed;
-  top: 0;
-  right: 0;
-  z-index: 9999;
-
-  background: #c0392b;
-  color: #fff;
-
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-
-  border-bottom-left-radius: 6px;
-}
 </style>
 <script is:inline>
 (function () {

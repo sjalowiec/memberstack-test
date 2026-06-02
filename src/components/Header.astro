@@ -467,6 +467,32 @@ const SHOW_BETA_BANNER = true;
   white-space: nowrap;
 }
 
+/* Subtle "Signed in as: email" indicator in the header members area */
+.kbm-signed-in-as {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  max-width: 240px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.kbm-signed-in-as__email {
+  font-weight: 700;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1199px) {
+  .kbm-signed-in-as {
+    display: none;
+  }
+}
+
 /* Sign Up — temporarily inactive until sign-up flow is finished (see header markup) */
 .kbm-nav-bar .kbm-header-signup--inactive,
 .kbm-nav-bar .kbm-header-auth .kbm-header-signup--inactive,
@@ -1670,6 +1696,15 @@ div[data-ms-modal-overlay] {
           </div>
 
           <div data-ms-content="members">
+            <span
+              class="kbm-signed-in-as"
+              data-kbm-signed-in
+              hidden
+              title="Currently signed-in account"
+            >
+              Signed in as
+              <span class="kbm-signed-in-as__email" data-kbm-signed-in-email></span>
+            </span>
             <a href="/account" class="kbm-btn kbm-btn-outline">My Account</a>
             <a
               href="#"
@@ -1797,10 +1832,25 @@ div[data-ms-modal-overlay] {
           member?.customFields?.firstName ||
           member?.email ||
           "";
-        return { ms: "ready", loggedIn, isMember, displayName, plansDebug, memberId: member?.id || null };
+        const email = member?.auth?.email || member?.email || "";
+        return { ms: "ready", loggedIn, isMember, displayName, email, plansDebug, memberId: member?.id || null };
       } catch (e) {
         window.__KBM_AUTH = { loggedIn: false, member: false, memberId: null };
-        return { ms: "error", loggedIn: false, isMember: false, displayName: "", memberId: null };
+        return { ms: "error", loggedIn: false, isMember: false, displayName: "", email: "", memberId: null };
+      }
+    }
+
+    function updateSignedInIndicator(state) {
+      const wrap = document.querySelector("[data-kbm-signed-in]");
+      const emailEl = document.querySelector("[data-kbm-signed-in-email]");
+      if (!wrap || !emailEl) return;
+      const email = (state && state.loggedIn && state.email) ? state.email : "";
+      if (email) {
+        emailEl.textContent = email;
+        wrap.hidden = false;
+      } else {
+        emailEl.textContent = "";
+        wrap.hidden = true;
       }
     }
 
@@ -1808,6 +1858,7 @@ div[data-ms-modal-overlay] {
       try {
         const state = await getAuthState();
         setPill(state);
+        updateSignedInIndicator(state);
         window.__AUTH = {
           loggedIn: Boolean(state.loggedIn),
           member: Boolean(state.isMember),

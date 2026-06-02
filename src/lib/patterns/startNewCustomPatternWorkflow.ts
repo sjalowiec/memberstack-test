@@ -6,6 +6,10 @@ import { dispatchCustomPatternEditingStateChanged } from "./customPatternEditing
 import { hasUnsavedCustomPatternChanges } from "./customPatternSavedProjectDirtyState";
 import { saveActiveCustomPatternBeforeNavigate } from "./saveActiveCustomPatternBeforeNavigate";
 import { startFreshSleevelessExpressPattern } from "./sleevelessExpressFreshStart";
+import {
+  resolveCanStartNewSleevelessPattern,
+  showSleevelessNewPatternLockedScreen,
+} from "./sleevelessNewPatternAccessGuard";
 
 export const PATTERN_WORKSPACE_NEW_PATTERN_UNSAVED_DIALOG_ID =
   "pattern-workspace-new-pattern-unsaved-dialog";
@@ -39,7 +43,17 @@ export type UnsavedChangesDialogCopy = {
   showFallbackHint: boolean;
 };
 
+export type StartNewCustomPatternOutcome = "started" | "cancelled" | "blocked";
+
 export type StartNewCustomPatternWorkflowDeps = {
+  /**
+   * Optional access gate, run BEFORE anything is cleared or shown. Resolve `false` to block the
+   * new-pattern start (e.g. a free user who already claimed their one-time free pattern). When
+   * omitted the flow is not gated (legacy callers / tests).
+   */
+  canStartNew?: () => Promise<boolean> | boolean;
+  /** Called when {@link canStartNew} resolves `false` — show the locked / upgrade UI. */
+  onBlocked?: () => void;
   hasUnsaved: () => boolean;
   promptUnsaved: () => Promise<NewPatternUnsavedChoice>;
   saveActiveProject: () => Promise<{ ok: true } | { ok: false }>;
@@ -63,7 +77,17 @@ export function navigateToFreshSleevelessPattern(href = buildSleevelessExpressNe
  */
 export async function runStartNewCustomPatternWorkflow(
   deps: StartNewCustomPatternWorkflowDeps,
-): Promise<"started" | "cancelled"> {
+): Promise<StartNewCustomPatternOutcome> {
+  // Earliest possible gate: block locked free users before any draft state is cleared or any
+  // setup question / title / notes field is shown.
+  if (deps.canStartNew) {
+    const allowed = await deps.canStartNew();
+    if (!allowed) {
+      deps.onBlocked?.();
+      return "blocked";
+    }
+  }
+
   if (!deps.hasUnsaved()) {
     deps.applyFreshSession();
     deps.navigate();
@@ -85,6 +109,8 @@ export async function runStartNewCustomPatternWorkflow(
 
 export function createStartNewCustomPatternWorkflowDeps(options: {
   onAfterFreshSession: () => void;
+  /** Override the locked-state handler; defaults to the Express locked / upgrade screen. */
+  onBlockedStartNew?: () => void;
   root?: ParentNode;
 }): StartNewCustomPatternWorkflowDeps {
   const root = options.root ?? (typeof document !== "undefined" ? document : undefined);
@@ -92,6 +118,8 @@ export function createStartNewCustomPatternWorkflowDeps(options: {
     throw new Error("document unavailable");
   }
   return {
+    canStartNew: resolveCanStartNewSleevelessPattern,
+    onBlocked: options.onBlockedStartNew ?? (() => showSleevelessNewPatternLockedScreen(root)),
     hasUnsaved: hasUnsavedCustomPatternChanges,
     promptUnsaved: () => promptNewPatternUnsavedChoice(root),
     saveActiveProject: async () => saveActiveCustomPatternBeforeNavigate(root),
@@ -102,7 +130,7 @@ export function createStartNewCustomPatternWorkflowDeps(options: {
 
 export async function startNewCustomPatternFromWorkspace(
   root: ParentNode = document,
-): Promise<"started" | "cancelled"> {
+): Promise<StartNewCustomPatternOutcome> {
   return runStartNewCustomPatternWorkflow(
     createStartNewCustomPatternWorkflowDeps({
       onAfterFreshSession: navigateToFreshSleevelessPattern,
@@ -118,7 +146,7 @@ export async function startNewCustomPatternFromWorkspace(
 export async function startNewCustomPatternFromExpress(
   onExpressUiReset: () => void,
   root: ParentNode = document,
-): Promise<"started" | "cancelled"> {
+): Promise<StartNewCustomPatternOutcome> {
   return runStartNewCustomPatternWorkflow(
     createStartNewCustomPatternWorkflowDeps({
       onAfterFreshSession: onExpressUiReset,

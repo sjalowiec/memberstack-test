@@ -8,7 +8,16 @@ import {
 } from "../lib/patterns/patternStorage";
 import { applySleevelessExpressEditChoicesFromUrl } from "../lib/patterns/restoreSleevelessExpressBuilderFromPattern";
 import { startNewCustomPatternFromExpress } from "../lib/patterns/startNewCustomPatternWorkflow";
-import { applySleevelessExpressNewSessionFromUrl } from "../lib/patterns/sleevelessExpressFreshStart";
+import {
+  applySleevelessExpressNewSessionFromUrl,
+  isSleevelessExpressNewSessionSearchParams,
+} from "../lib/patterns/sleevelessExpressFreshStart";
+import { resolveSleevelessUserAccess } from "../lib/patterns/sleevelessPatternSystemAccessClient";
+import {
+  canStartNewSleevelessPattern,
+  resolveSleevelessNewPatternBlockedCopy,
+  showSleevelessNewPatternLockedScreen,
+} from "../lib/patterns/sleevelessNewPatternAccessGuard";
 import {
   garmentTypeFromFront,
   writeSleevelessGarmentTypeLocalStorage,
@@ -1098,10 +1107,38 @@ function initExpressTopTabs(): void {
   }
 }
 
+/**
+ * `?new=1` is the "Start a New Pattern" deep link (Patterns landing, in-page Start Over navigation).
+ * A logged-in free user who already claimed their one-time free pattern must be blocked here —
+ * before {@link applySleevelessExpressNewSessionFromUrl} clears any draft and before the setup
+ * questions / title / notes are shown. Logged-out visitors are handled by the member gate, and
+ * members / free-unclaimed users proceed normally.
+ */
+async function blockExpressNewPatternStartIfLocked(): Promise<boolean> {
+  let isNewSessionIntent = false;
+  try {
+    isNewSessionIntent = isSleevelessExpressNewSessionSearchParams(
+      new URL(window.location.href).searchParams,
+    );
+  } catch {
+    isNewSessionIntent = false;
+  }
+  if (!isNewSessionIntent) return false;
+
+  const access = await resolveSleevelessUserAccess();
+  if (!access.loggedIn || canStartNewSleevelessPattern(access)) return false;
+
+  showSleevelessNewPatternLockedScreen(document, resolveSleevelessNewPatternBlockedCopy(access));
+  return true;
+}
+
 if (typeof document !== "undefined") {
   const boot = (): void => {
-    initExpressPage();
-    initExpressTopTabs();
+    void blockExpressNewPatternStartIfLocked().then((blocked) => {
+      if (blocked) return;
+      initExpressPage();
+      initExpressTopTabs();
+    });
   };
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
