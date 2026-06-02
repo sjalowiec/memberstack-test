@@ -6,6 +6,7 @@ import {
   hasSleevelessPatternSystemAccess,
   LOGGED_OUT_SLEEVELESS_ACCESS,
   mergeFreeClaimIntoMemberJson,
+  mergeFreeClaimResetIntoMemberJson,
   planIdsGrantSleevelessSystemAccess,
   readFreeClaimFromMemberJson,
   readSleevelessSystemUnlockFromMemberJson,
@@ -176,6 +177,27 @@ describe("free claim member JSON read/merge", () => {
     expect(readFreeClaimFromMemberJson(merged)).toEqual({
       freeSleevelessPatternClaimed: true,
       freeSleevelessPatternId: "pat_xyz",
+    });
+  });
+
+  it("resets the claim without clobbering unrelated keys", () => {
+    const existing = {
+      preferences: { theme: "dark" },
+      other: 1,
+      freeSleevelessPatternClaimed: true,
+      freeSleevelessPatternId: "pat_old",
+    };
+    const reset = mergeFreeClaimResetIntoMemberJson(existing);
+    expect(reset).toEqual({
+      preferences: { theme: "dark" },
+      other: 1,
+      freeSleevelessPatternClaimed: false,
+      freeSleevelessPatternId: null,
+    });
+    // reader treats the cleared state as unclaimed
+    expect(readFreeClaimFromMemberJson(reset)).toEqual({
+      freeSleevelessPatternClaimed: false,
+      freeSleevelessPatternId: undefined,
     });
   });
 });

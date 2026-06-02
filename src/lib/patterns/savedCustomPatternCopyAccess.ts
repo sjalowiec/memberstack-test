@@ -9,7 +9,11 @@
  * Reuses {@link canCustomizePattern} so the access source of truth stays in one place
  * (dev defaults editable unless `?customize=0` / `?advanced=0` / localStorage override).
  */
-import { canCustomizePattern } from "./sleevelessPatternAccessGate";
+import {
+  canCustomizePattern,
+  resolveHasAdvancedPatternAccessForAccess,
+} from "./sleevelessPatternAccessGate";
+import type { SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
 
 /** Tooltip / helper copy shown when Copy is disabled for free / non-owner knitters. */
 export const SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT =
@@ -18,6 +22,18 @@ export const SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT =
 /** True when the current knitter can copy a saved pattern (active member or paid owner). */
 export function canCopySavedCustomPattern(pageUrl?: URL): boolean {
   return canCustomizePattern(pageUrl);
+}
+
+/**
+ * Access-aware variant of {@link canCopySavedCustomPattern}: decides against an explicitly-resolved
+ * access snapshot instead of the shared cache. Use on pages (e.g. My Patterns) that resolve access
+ * without priming the cache, so Copy reflects the real entitlement rather than the open default.
+ */
+export function canCopySavedCustomPatternForAccess(
+  access: SleevelessUserAccess | null,
+  pageUrl?: URL,
+): boolean {
+  return resolveHasAdvancedPatternAccessForAccess(access, pageUrl);
 }
 
 function isElementLike(el: unknown): el is HTMLElement {
@@ -42,8 +58,31 @@ export function syncSavedCustomPatternCopyAccess(
   helperEl?: HTMLElement | null,
   pageUrl?: URL,
 ): boolean {
-  const hasAccess = canCopySavedCustomPattern(pageUrl);
+  return applyCopyAccessChrome(copyButton, helperEl, canCopySavedCustomPattern(pageUrl));
+}
 
+/**
+ * Access-aware variant of {@link syncSavedCustomPatternCopyAccess}: reflects an explicitly-resolved
+ * access snapshot onto the Copy button instead of reading the shared cache.
+ */
+export function syncSavedCustomPatternCopyAccessForAccess(
+  copyButton: HTMLButtonElement | null | undefined,
+  access: SleevelessUserAccess | null,
+  helperEl?: HTMLElement | null,
+  pageUrl?: URL,
+): boolean {
+  return applyCopyAccessChrome(
+    copyButton,
+    helperEl,
+    canCopySavedCustomPatternForAccess(access, pageUrl),
+  );
+}
+
+function applyCopyAccessChrome(
+  copyButton: HTMLButtonElement | null | undefined,
+  helperEl: HTMLElement | null | undefined,
+  hasAccess: boolean,
+): boolean {
   if (isElementLike(copyButton)) {
     const btn = copyButton as HTMLButtonElement;
     btn.disabled = !hasAccess;

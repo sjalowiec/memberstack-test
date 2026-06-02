@@ -2,8 +2,10 @@ import { describe, expect, it, beforeEach, afterEach } from "vitest";
 import {
   DEFAULT_DEV_PATTERN_USER_ID,
   isAllowDevPatternUser,
+  projectBlobKey,
   resolveDevPatternUserId,
   resolveProjectUserId,
+  userProjectsPrefix,
 } from "../../../netlify/functions/lib/custom-pattern-projects-store.js";
 
 function mockRequest(headers: Record<string, string> = {}): Request {
@@ -91,5 +93,32 @@ describe("isAllowDevPatternUser", () => {
 describe("resolveDevPatternUserId", () => {
   it("returns default when no header", () => {
     expect(resolveDevPatternUserId(mockRequest())).toBe(DEFAULT_DEV_PATTERN_USER_ID);
+  });
+});
+
+// Cloud reads must always be partitioned by owner id — there is no shared/global path and no
+// "latest pattern" fallback. Both the load (by id) and list functions build keys under the user's
+// own prefix, so one member can never address another member's blobs.
+describe("cloud pattern reads are owner-scoped (no global/latest fallback)", () => {
+  it("namespaces every project blob under the owner's id", () => {
+    const keyA = projectBlobKey("sleeveless", "ms_userA", "proj-1");
+    const keyB = projectBlobKey("sleeveless", "ms_userB", "proj-1");
+    expect(keyA).toBe("sleeveless/ms_userA/proj-1.json");
+    expect(keyB).toBe("sleeveless/ms_userB/proj-1.json");
+    // Same project id resolves to DIFFERENT blobs per owner — no cross-user collision.
+    expect(keyA).not.toBe(keyB);
+  });
+
+  it("scopes list prefixes to the owner's id", () => {
+    expect(userProjectsPrefix("sleeveless", "ms_userA")).toBe("sleeveless/ms_userA/");
+    expect(userProjectsPrefix("sleeveless", "ms_userB")).toBe("sleeveless/ms_userB/");
+  });
+
+  it("blocks reads entirely when no owner can be resolved (no anonymous/global fallback)", () => {
+    process.env.ALLOW_DEV_PATTERN_USER = "false";
+    process.env.NODE_ENV = "test";
+    const result = resolveProjectUserId(mockRequest());
+    expect("userId" in result).toBe(false);
+    expect(result).toMatchObject({ status: 401 });
   });
 });

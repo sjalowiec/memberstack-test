@@ -147,6 +147,35 @@ export async function writeProjectSummaryIndex(store, family, userId, summaries)
   return sorted;
 }
 
+/** Explanatory text returned when a free user's protected pattern delete is refused. */
+export const FREE_SLEEVELESS_PATTERN_DELETE_BLOCKED_MESSAGE =
+  "This is your free Sleeveless Pattern. To keep access to it, it can't be deleted unless you unlock the Sleeveless Pattern System.";
+
+/**
+ * Server mirror of the client free-pattern delete rule. Returns true when the deletion must be
+ * refused. The entitlement flags are client-asserted (same trust level as `X-KBM-Member-Id`), but
+ * `totalSavedCount` is computed server-side from the user's own blobs for the unknown-id fallback.
+ *
+ * - System access → never blocked.
+ * - Not freeClaimed → never blocked.
+ * - freeClaimed + known claimed id → block deleting exactly that id.
+ * - freeClaimed + unknown claimed id → block when it is the user's last remaining pattern.
+ *
+ * @param {{ hasSystemAccess?: boolean, freeClaimed?: boolean, freeClaimedPatternId?: string, projectId: string, totalSavedCount: number }} input
+ */
+export function isFreeSleevelessPatternDeleteBlocked(input) {
+  if (!input || typeof input !== "object") return false;
+  if (input.hasSystemAccess === true) return false;
+  if (input.freeClaimed !== true) return false;
+
+  const claimedId =
+    typeof input.freeClaimedPatternId === "string" ? input.freeClaimedPatternId.trim() : "";
+  if (claimedId) return String(input.projectId) === claimedId;
+
+  const count = Number(input.totalSavedCount);
+  return Number.isFinite(count) ? count <= 1 : true;
+}
+
 /**
  * Deletes a project blob and updates the lightweight summary index.
  * @param {import("@netlify/blobs").Store} store

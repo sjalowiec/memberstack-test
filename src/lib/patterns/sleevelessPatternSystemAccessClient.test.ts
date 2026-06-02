@@ -7,6 +7,7 @@ import {
   invalidateSleevelessUserAccessCache,
   markFreeSleevelessPatternClaimed,
   planIdsFromMemberstackPayload,
+  resetFreeSleevelessPatternClaimForCurrentMember,
   resolveSleevelessUserAccess,
 } from "./sleevelessPatternSystemAccessClient";
 import { SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS } from "./sleevelessPatternSystemAccess";
@@ -142,5 +143,60 @@ describe("markFreeSleevelessPatternClaimed", () => {
       getCurrentMember: vi.fn().mockResolvedValue({ data: { id: "ms_free" } }),
     });
     await expect(markFreeSleevelessPatternClaimed("pat_x")).resolves.toBe(false);
+  });
+});
+
+describe("resetFreeSleevelessPatternClaimForCurrentMember", () => {
+  it("clears the claim, preserves unrelated keys, and invalidates the cache", async () => {
+    const updateMemberJSON = vi.fn().mockResolvedValue({ data: { json: {} } });
+    stubMemberstack({
+      getCurrentMember: vi.fn().mockResolvedValue({ data: { id: "ms_free", planConnections: [] } }),
+      getMemberJSON: vi.fn().mockResolvedValue({
+        data: {
+          preferences: { theme: "dark" },
+          freeSleevelessPatternClaimed: true,
+          freeSleevelessPatternId: "pat_old",
+        },
+      }),
+      updateMemberJSON,
+    });
+
+    // Prime the cache so we can confirm the reset clears it.
+    await resolveSleevelessUserAccess();
+    expect(getCachedSleevelessUserAccess()).not.toBeNull();
+
+    const result = await resetFreeSleevelessPatternClaimForCurrentMember();
+
+    expect(result).toEqual({ ok: true, memberId: "ms_free" });
+    expect(updateMemberJSON).toHaveBeenCalledWith({
+      json: {
+        preferences: { theme: "dark" },
+        freeSleevelessPatternClaimed: false,
+        freeSleevelessPatternId: null,
+      },
+    });
+    expect(getCachedSleevelessUserAccess()).toBeNull();
+  });
+
+  it("returns a failure when member JSON APIs are unavailable", async () => {
+    stubMemberstack({
+      getCurrentMember: vi.fn().mockResolvedValue({ data: { id: "ms_free" } }),
+    });
+    await expect(resetFreeSleevelessPatternClaimForCurrentMember()).resolves.toMatchObject({
+      ok: false,
+      reason: "memberstack-json-unavailable",
+    });
+  });
+
+  it("returns a failure when no member is logged in", async () => {
+    stubMemberstack({
+      getCurrentMember: vi.fn().mockResolvedValue({ data: null }),
+      getMemberJSON: vi.fn().mockResolvedValue({ data: {} }),
+      updateMemberJSON: vi.fn().mockResolvedValue({ data: {} }),
+    });
+    await expect(resetFreeSleevelessPatternClaimForCurrentMember()).resolves.toMatchObject({
+      ok: false,
+      reason: "no-member-id",
+    });
   });
 });

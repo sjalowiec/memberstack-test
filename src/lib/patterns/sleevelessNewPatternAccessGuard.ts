@@ -60,9 +60,10 @@ function hideEl(el: unknown): void {
  * Replace the Express new-pattern setup UI with the locked / upgrade message.
  *
  * Hides every interactive part of the new-pattern flow (the 5 setup questions, the step nav, the
- * "Start over" toolbar, and the resume editing bar) so the blocked user can neither answer the
- * setup questions nor reach the title / notes fields. Safe no-op on pages without the Express
- * builder (e.g. the saved-pattern workspace, where the New Pattern trigger is already hidden).
+ * "Start over" toolbar, the resume editing bar, and the saved-pattern editing wrapper) so the
+ * blocked user can neither answer the setup questions nor reach the title / notes fields. Safe
+ * no-op on pages without the Express builder (e.g. the saved-pattern workspace, where the New
+ * Pattern trigger is already hidden).
  *
  * @returns the injected notice element, or null when there is no Express builder to gate.
  */
@@ -81,6 +82,9 @@ export function showSleevelessNewPatternLockedScreen(
   hideEl(root.querySelector(".sg-builder-nav-row"));
   hideEl(root.querySelector("[data-express-editing-bar]"));
   hideEl(root.querySelector(".pattern-subtext"));
+  // Also hide the saved-pattern editing wrapper (Editing saved pattern / Save Changes / Save a
+  // Copy / X). Creating/editing is locked here, so this wrapper must not frame the unlock gate.
+  hideEl(root.querySelector("[data-cb-editing-banner-host]"));
 
   const panel = root.querySelector(".express-panel");
   const host = isElementLike(panel) ? panel : builder.parentElement;
@@ -110,11 +114,32 @@ export function showSleevelessNewPatternLockedScreen(
 
   const actions = document.createElement("div");
   actions.className = "sleeveless-new-pattern-locked__actions";
+
+  // Primary path 1: become a Knit It Now member (members already have access).
+  const memberLink = document.createElement("a");
+  memberLink.className =
+    "kbm-btn kbm-btn-primary sleeveless-new-pattern-locked__btn sleeveless-new-pattern-locked__btn--primary";
+  memberLink.href = "/subscribe/plans.cfm";
+  memberLink.textContent = "Become a Member";
+  actions.appendChild(memberLink);
+
+  // Primary path 2: buy the Sleeveless Pattern System on its own.
+  // TODO: replace the placeholder href with the real Sleeveless Pattern System product URL once it exists.
+  const buyLink = document.createElement("a");
+  buyLink.className =
+    "kbm-btn kbm-btn-primary sleeveless-new-pattern-locked__btn sleeveless-new-pattern-locked__btn--primary";
+  buyLink.href = "#todo-sleeveless-purchase-link";
+  buyLink.textContent = "Buy the Sleeveless Pattern System";
+  actions.appendChild(buyLink);
+
+  // Secondary / alternate path: keep existing access to the already-saved pattern.
   const viewLink = document.createElement("a");
-  viewLink.className = "kbm-btn kbm-btn-outline sleeveless-new-pattern-locked__btn";
+  viewLink.className =
+    "kbm-btn sleeveless-new-pattern-locked__btn sleeveless-new-pattern-locked__btn--secondary";
   viewLink.href = "/account#my-patterns";
   viewLink.textContent = "Open your saved pattern";
   actions.appendChild(viewLink);
+
   notice.appendChild(actions);
 
   return notice;

@@ -282,6 +282,7 @@ describe("accountMyPatternsList", () => {
     expect(delA).toBeTruthy();
 
     await delA?._click?.();
+    await flushAsync();
 
     expect(confirm).toHaveBeenCalledWith(DELETE_SAVED_PATTERN_CONFIRM_MESSAGE);
     expect(deleteCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "sleeveless");
@@ -332,6 +333,7 @@ describe("accountMyPatternsList", () => {
       (b) => b.dataset.projectId === "proj-a",
     );
     await delA?._click?.();
+    await flushAsync();
 
     expect(deleteCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "sleeveless");
     expect(readActiveCustomPatternProjectId()).toBe("");
@@ -387,7 +389,16 @@ describe("accountMyPatternsList", () => {
     const { root, tbody } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
     const assign = vi.fn();
-    vi.stubGlobal("window", { location: { assign } });
+    // A member with Sleeveless Pattern System access — Edit is enabled and opens the builder.
+    vi.stubGlobal("window", {
+      location: { assign },
+      $memberstackDom: {
+        getCurrentMember: async () => ({
+          data: { id: "ms_member", planConnections: [{ planId: "pln_kin-membership-annual-qf9g01et" }] },
+        }),
+        getMemberJSON: async () => ({ data: {} }),
+      },
+    });
     loadSavedCustomPatternProjectMock.mockResolvedValue({
       ok: true,
       redirectHref: "/patterns/sleeveless/custom-build/design/?edit=choices",
@@ -410,7 +421,15 @@ describe("accountMyPatternsList", () => {
   it("copies a saved pattern and adds the new copy to the list", async () => {
     const { root, status, tbody } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
-    vi.stubGlobal("window", {});
+    // A member with Sleeveless Pattern System access — Copy is enabled.
+    vi.stubGlobal("window", {
+      $memberstackDom: {
+        getCurrentMember: async () => ({
+          data: { id: "ms_member", planConnections: [{ planId: "pln_kin-membership-annual-qf9g01et" }] },
+        }),
+        getMemberJSON: async () => ({ data: {} }),
+      },
+    });
     copyByIdMock.mockResolvedValue({
       ok: true,
       project: {
@@ -512,6 +531,73 @@ describe("accountMyPatternsList", () => {
     expect(renameMock).not.toHaveBeenCalled();
   });
 
+  it("disables Delete on the free user's protected pattern but keeps others deletable", async () => {
+    const { root, tbody } = makeAccountRoot();
+    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
+    // A logged-in free user who claimed proj-a as their one free pattern, no system access.
+    vi.stubGlobal("window", {
+      $memberstackDom: {
+        getCurrentMember: async () => ({ data: { id: "ms_free" } }),
+        getMemberJSON: async () => ({
+          data: { freeSleevelessPatternClaimed: true, freeSleevelessPatternId: "proj-a" },
+        }),
+      },
+    });
+
+    await initAccountMyPatternsList(root);
+
+    const deleteBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-delete]");
+    const delA = deleteBtns.find((b) => b.dataset.projectId === "proj-a");
+    const delB = deleteBtns.find((b) => b.dataset.projectId === "proj-b");
+
+    expect(delA?.disabled).toBe(true);
+    expect(delA?.getAttribute("aria-disabled")).toBe("true");
+    expect(delA?.getAttribute("title")).toMatch(/free Sleeveless Pattern/i);
+    expect(delB?.disabled).toBe(false);
+    expect(delB?.getAttribute("aria-disabled")).toBeNull();
+
+    // View-only: every Edit and Copy action is disabled with a helper tooltip (Fixes B + C).
+    const editBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-edit]");
+    const copyBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-copy]");
+    expect(editBtns.length).toBe(2);
+    expect(copyBtns.length).toBe(2);
+    expect(editBtns.every((b) => b.disabled === true)).toBe(true);
+    expect(editBtns[0].getAttribute("title")).toMatch(/purchase this pattern or become a member/i);
+    expect(copyBtns.every((b) => b.disabled === true)).toBe(true);
+
+    // Clicking the disabled Delete / Edit never reaches their APIs.
+    await delA?._click?.();
+    const editA = editBtns.find((b) => b.dataset.projectId === "proj-a");
+    await editA?._click?.();
+    await flushAsync();
+    expect(deleteCustomPatternProjectMock).not.toHaveBeenCalled();
+    expect(loadSavedCustomPatternProjectMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps Delete enabled for a member with system access", async () => {
+    const { root, tbody } = makeAccountRoot();
+    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
+    // A member whose plan grants Sleeveless Pattern System access (even though freeClaimed is set).
+    vi.stubGlobal("window", {
+      $memberstackDom: {
+        getCurrentMember: async () => ({
+          data: {
+            id: "ms_member",
+            planConnections: [{ planId: "pln_kin-membership-annual-qf9g01et" }],
+          },
+        }),
+        getMemberJSON: async () => ({
+          data: { freeSleevelessPatternClaimed: true, freeSleevelessPatternId: "proj-a" },
+        }),
+      },
+    });
+
+    await initAccountMyPatternsList(root);
+
+    const deleteBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-delete]");
+    expect(deleteBtns.every((b) => b.disabled === false)).toBe(true);
+  });
+
   it("shows empty state after deleting the last saved pattern", async () => {
     const { root, status, listWrap, tbody } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({
@@ -526,6 +612,7 @@ describe("accountMyPatternsList", () => {
 
     const delA = collectMatches(tbody._children, "[data-kbm-my-patterns-delete]")[0];
     await delA?._click?.();
+    await flushAsync();
 
     expect(listWrap.hidden).toBe(true);
     expect(status.hidden).toBe(false);

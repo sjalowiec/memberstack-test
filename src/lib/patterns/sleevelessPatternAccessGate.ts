@@ -8,6 +8,7 @@
  * scripts await {@link resolveSleevelessUserAccess} first so the snapshot is primed before reading.
  */
 import { getCachedSleevelessUserAccess } from "./sleevelessPatternSystemAccessClient";
+import type { SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
 
 /** localStorage key for dev/testing override (`"1"` = editable, `"0"` = read-only). */
 export const SLEEVELESS_PATTERN_ACCESS_LS_KEY = "kbm_sleeveless_advanced_pattern_access";
@@ -32,7 +33,11 @@ function parseAccessOverride(raw: string | null | undefined): boolean | null {
  * - `?advanced=0` or `?customize=0` on the review URL
  * - `localStorage.setItem('kbm_sleeveless_advanced_pattern_access', '0')`
  */
-export function resolveHasAdvancedPatternAccess(pageUrl?: URL): boolean {
+/**
+ * Explicit dev/test override (query param, then localStorage), or null when none is set.
+ * Shared by the cache-reading and access-aware resolvers so overrides behave identically.
+ */
+function readAdvancedPatternAccessOverride(pageUrl?: URL): boolean | null {
   let url: URL | null = pageUrl ?? null;
   if (!url && typeof window !== "undefined") {
     try {
@@ -58,11 +63,33 @@ export function resolveHasAdvancedPatternAccess(pageUrl?: URL): boolean {
     }
   }
 
+  return null;
+}
+
+export function resolveHasAdvancedPatternAccess(pageUrl?: URL): boolean {
+  const override = readAdvancedPatternAccessOverride(pageUrl);
+  if (override !== null) return override;
+
   const access = getCachedSleevelessUserAccess();
   if (access) return access.hasSystemAccess;
 
   // Snapshot not resolved yet — keep the open beta default to avoid flash-locking members.
   return true;
+}
+
+/**
+ * Same as {@link resolveHasAdvancedPatternAccess} but decided against an explicitly-resolved access
+ * snapshot rather than the shared cache. Use this on pages that resolve access without priming the
+ * cache (e.g. My Patterns), so the gate reflects the real entitlement instead of the open default.
+ */
+export function resolveHasAdvancedPatternAccessForAccess(
+  access: SleevelessUserAccess | null,
+  pageUrl?: URL,
+): boolean {
+  const override = readAdvancedPatternAccessOverride(pageUrl);
+  if (override !== null) return override;
+  if (access) return access.hasSystemAccess;
+  return resolveHasAdvancedPatternAccess(pageUrl);
 }
 
 /** When true, review-page title, notes, measurements, and save controls are editable. */

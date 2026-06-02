@@ -10,9 +10,9 @@ import {
   renameSavedCustomPatternProject,
 } from "./savedCustomPatternManageActions";
 import {
-  canCopySavedCustomPattern,
+  canCopySavedCustomPatternForAccess,
   SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT,
-  syncSavedCustomPatternCopyAccess,
+  syncSavedCustomPatternCopyAccessForAccess,
 } from "./savedCustomPatternCopyAccess";
 import {
   memberstackReadinessSnapshot,
@@ -25,10 +25,22 @@ import {
   extractSavedPatternGauge,
   formatSavedPatternGauge,
 } from "./savedPatternGaugeDisplay";
+import {
+  isSleevelessPatternDeleteProtected,
+  SLEEVELESS_FREE_PATTERN_DELETE_BLOCKED_TEXT,
+} from "./sleevelessPatternDeleteGuard";
+import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAccessClient";
+import {
+  canEditSleevelessPatternSettings,
+  type SleevelessUserAccess,
+} from "./sleevelessPatternSystemAccess";
 
 const SIGN_IN_REQUIRED_ERROR = "Sign in to save Custom Pattern projects.";
+/** Tooltip shown when Edit is disabled for a view-only (free claimed / downgraded) knitter. */
+export const SAVED_CUSTOM_PATTERN_EDIT_DISABLED_TEXT =
+  "Editing is available when you purchase this pattern or become a member. You can still view, print, and rename it.";
 const EMPTY_LIST_MESSAGE =
-  "You do not have any saved patterns yet. Save a project from the sleeveless Custom Build design step.";
+  "You do not have any saved patterns yet. Create your first pattern to get started.";
 export const DELETE_SAVED_PATTERN_CONFIRM_MESSAGE = "Delete this saved pattern?";
 export const RENAME_SAVED_PATTERN_PROMPT_MESSAGE = "Rename this saved pattern:";
 
@@ -53,6 +65,8 @@ type ListState = {
   projects: CustomPatternProjectSummary[];
   sortColumn: SortColumn;
   sortDirection: SortDirection;
+  /** Resolved Sleeveless access; gates which Delete buttons are protected. Null until resolved. */
+  access: SleevelessUserAccess | null;
 };
 
 const listStateByRoot = new WeakMap<HTMLElement, ListState>();
@@ -122,6 +136,12 @@ function setListVisible(root: HTMLElement, visible: boolean): void {
   if (wrap instanceof HTMLElement) wrap.hidden = !visible;
 }
 
+/** Shows/hides the empty-state "Create a Pattern" call to action. */
+function setEmptyCtaVisible(root: HTMLElement, visible: boolean): void {
+  const cta = root.querySelector("[data-kbm-my-patterns-empty-cta]");
+  if (cta instanceof HTMLElement) cta.hidden = !visible;
+}
+
 function updateSortHeaders(root: HTMLElement): void {
   const state = listStateByRoot.get(root);
   if (!state) return;
@@ -177,18 +197,92 @@ function releaseMyPatternsListInteraction(root: HTMLElement): void {
   root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-view]").forEach((b) => {
     b.disabled = false;
   });
-  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-edit]").forEach((b) => {
-    b.disabled = false;
-  });
   root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-rename]").forEach((b) => {
     b.disabled = false;
   });
-  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-delete]").forEach((b) => {
-    b.disabled = false;
+  // Delete stays gated: a free user's protected pattern must remain non-deletable after unlock.
+  syncMyPatternsDeleteAccess(root);
+  // Edit + Copy stay gated by entitlement even after the list unlocks (view-only users).
+  syncMyPatternsEditAccess(root);
+  syncMyPatternsCopyAccess(root);
+}
+
+/** Resolved access for this list, or null until it resolves (or if resolution failed). */
+function listAccess(root: HTMLElement): SleevelessUserAccess | null {
+  return listStateByRoot.get(root)?.access ?? null;
+}
+
+/**
+ * Whether the current knitter may edit a saved pattern's settings (Express Setup, measurements,
+ * gauge, regenerate). Until access resolves we default to allowed so members aren't briefly locked.
+ */
+function canEditSavedPatternFromList(root: HTMLElement): boolean {
+  const access = listAccess(root);
+  return access ? canEditSleevelessPatternSettings(access) : true;
+}
+
+/** Reflects edit-access onto a single Edit button: disabled + grayed + tooltip for view-only users. */
+function applyEditAccessToButton(
+  btn: HTMLButtonElement | null | undefined,
+  access: SleevelessUserAccess | null,
+): void {
+  if (!btn) return;
+  const canEdit = access ? canEditSleevelessPatternSettings(access) : true;
+  btn.disabled = !canEdit;
+  btn.classList.toggle("is-disabled", !canEdit);
+  if (canEdit) {
+    btn.removeAttribute("aria-disabled");
+    btn.removeAttribute("title");
+  } else {
+    btn.setAttribute("aria-disabled", "true");
+    btn.setAttribute("title", SAVED_CUSTOM_PATTERN_EDIT_DISABLED_TEXT);
+  }
+}
+
+/** Reflects edit-access onto every Edit button (used after the list unlocks post-action). */
+function syncMyPatternsEditAccess(root: HTMLElement): void {
+  const access = listAccess(root);
+  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-edit]").forEach((btn) => {
+    applyEditAccessToButton(btn, access);
   });
-  // Copy stays gated by entitlement even after the list unlocks.
-  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-copy]").forEach((b) => {
-    syncSavedCustomPatternCopyAccess(b);
+}
+
+/** Reflects copy-access (from resolved access) onto every Copy button. */
+function syncMyPatternsCopyAccess(root: HTMLElement): void {
+  const access = listAccess(root);
+  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-copy]").forEach((btn) => {
+    syncSavedCustomPatternCopyAccessForAccess(btn, access);
+  });
+}
+
+/** Returns true when the given project id is the free user's protected (non-deletable) pattern. */
+function isProtectedDeleteTarget(root: HTMLElement, projectId: string): boolean {
+  const state = listStateByRoot.get(root);
+  if (!state?.access) return false;
+  return isSleevelessPatternDeleteProtected({
+    access: state.access,
+    projectId,
+    totalSavedCount: state.projects.length,
+  });
+}
+
+/**
+ * Reflects free-pattern delete protection onto every Delete button: the protected pattern's button
+ * is disabled, grayed, and given an explanatory tooltip; all others are enabled. Never hides.
+ */
+function syncMyPatternsDeleteAccess(root: HTMLElement): void {
+  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-delete]").forEach((btn) => {
+    const projectId = btn.dataset.projectId ?? "";
+    const protectedTarget = isProtectedDeleteTarget(root, projectId);
+    btn.disabled = protectedTarget;
+    btn.classList.toggle("is-disabled", protectedTarget);
+    if (protectedTarget) {
+      btn.setAttribute("aria-disabled", "true");
+      btn.setAttribute("title", SLEEVELESS_FREE_PATTERN_DELETE_BLOCKED_TEXT);
+    } else {
+      btn.removeAttribute("aria-disabled");
+      btn.removeAttribute("title");
+    }
   });
 }
 
@@ -198,6 +292,7 @@ function showEmptyListState(root: HTMLElement): void {
   if (tbody instanceof HTMLElement) tbody.replaceChildren();
   setListVisible(root, false);
   setStatus(root, EMPTY_LIST_MESSAGE);
+  setEmptyCtaVisible(root, true);
 }
 
 async function onProjectView(root: HTMLElement, projectId: string, label: string): Promise<void> {
@@ -237,6 +332,13 @@ async function onProjectView(root: HTMLElement, projectId: string, label: string
 }
 
 async function onProjectEdit(root: HTMLElement, projectId: string, label: string): Promise<void> {
+  // Guard before loading: a view-only knitter (free claimed / downgraded) cannot open the editable
+  // builder. The Edit button is disabled for them, but guard the handler too for keyboard/programmatic paths.
+  if (!canEditSavedPatternFromList(root)) {
+    setStatus(root, SAVED_CUSTOM_PATTERN_EDIT_DISABLED_TEXT, true);
+    return;
+  }
+
   const actionStart = perfStart();
   perfMark("6-account-list-action start", { action: "open", projectId, label });
   setStatus(root, `Opening “${label}” for editing…`);
@@ -277,8 +379,16 @@ async function onProjectDelete(
   projectId: string,
   label: string,
 ): Promise<void> {
+  // Guard before the confirm dialog: a free user's protected pattern can never be deleted.
+  if (isProtectedDeleteTarget(root, projectId)) {
+    setStatus(root, SLEEVELESS_FREE_PATTERN_DELETE_BLOCKED_TEXT, true);
+    return;
+  }
+
   const confirmed = window.confirm(DELETE_SAVED_PATTERN_CONFIRM_MESSAGE);
   if (!confirmed) return;
+
+  const savedCountBeforeDelete = listStateByRoot.get(root)?.projects.length;
 
   const actionStart = perfStart();
   perfMark("6-account-list-action start", { action: "delete", projectId, label });
@@ -287,7 +397,9 @@ async function onProjectDelete(
 
   try {
     const deleteStart = perfStart();
-    const result = await deleteSavedCustomPatternProject(projectId, "sleeveless");
+    const result = await deleteSavedCustomPatternProject(projectId, "sleeveless", {
+      totalSavedCount: savedCountBeforeDelete,
+    });
     perfEnd("6-account-list-action deleteSavedCustomPatternProject", deleteStart, {
       action: "delete",
       projectId,
@@ -337,7 +449,7 @@ async function onProjectCopy(
   projectId: string,
   label: string,
 ): Promise<void> {
-  if (!canCopySavedCustomPattern()) {
+  if (!canCopySavedCustomPatternForAccess(listAccess(root))) {
     setStatus(root, SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT, true);
     return;
   }
@@ -519,8 +631,11 @@ function renderProjectRow(root: HTMLElement, project: CustomPatternProjectSummar
     if (copyBtn.disabled) return;
     void onProjectCopy(root, project.id, displayName);
   });
-  // Visible for everyone; disabled + grayed (with helper tooltip) for free / non-owner users.
-  syncSavedCustomPatternCopyAccess(copyBtn);
+  // Edit + Copy are visible for everyone; disabled + grayed (with tooltip) for view-only knitters
+  // (free user who already claimed, or downgraded member) based on the resolved access snapshot.
+  const rowAccess = listAccess(root);
+  applyEditAccessToButton(editBtn, rowAccess);
+  syncSavedCustomPatternCopyAccessForAccess(copyBtn, rowAccess);
 
   const editCopyPair = document.createElement("div");
   editCopyPair.className = "account-my-patterns__action-pair";
@@ -568,6 +683,7 @@ export function renderProjectList(root: HTMLElement): void {
   for (const project of sortedProjects(root, state.projects)) {
     renderProjectRow(root, project);
   }
+  syncMyPatternsDeleteAccess(root);
   updateSortHeaders(root);
 }
 
@@ -601,6 +717,7 @@ export async function initAccountMyPatternsList(root: HTMLElement): Promise<void
 
   setStatus(root, "Loading your saved patterns…");
   setListVisible(root, false);
+  setEmptyCtaVisible(root, false);
 
   const listStart = perfStart();
   const res = await listCustomPatternProjects("sleeveless");
@@ -625,6 +742,7 @@ export async function initAccountMyPatternsList(root: HTMLElement): Promise<void
   const domStart = perfStart();
   if (res.projects.length === 0) {
     setStatus(root, EMPTY_LIST_MESSAGE);
+    setEmptyCtaVisible(root, true);
     perfEnd("5-saved-patterns-dom-render", domStart, { renderNumber, projectCount: 0, fullRebuild: true });
     perfEnd("1-account-page-init total", initStart, { renderNumber, outcome: "empty-list" });
     return;
@@ -632,14 +750,26 @@ export async function initAccountMyPatternsList(root: HTMLElement): Promise<void
 
   hideStatus(root);
 
+  // Resolve entitlement so the free user's protected pattern renders with a disabled Delete button.
+  // Use the snapshot resolver so we do NOT prime the shared access cache (which would change the
+  // unrelated Copy gate's open-by-default behavior on this page).
+  let access: SleevelessUserAccess | null = null;
+  try {
+    access = await resolveSleevelessUserAccessSnapshot();
+  } catch {
+    access = null;
+  }
+
   listStateByRoot.set(root, {
     projects: res.projects,
     sortColumn: "updatedAt",
     sortDirection: "desc",
+    access,
   });
   wireSortHeaders(root);
   renderProjectList(root);
   setListVisible(root, true);
+  setEmptyCtaVisible(root, false);
   perfEnd("5-saved-patterns-dom-render", domStart, {
     renderNumber,
     projectCount: res.projects.length,

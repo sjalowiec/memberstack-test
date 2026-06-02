@@ -279,3 +279,45 @@ export async function logPatternActivity(
     return false;
   }
 }
+
+/**
+ * Pure interpreter for an admin-only pattern-activity GET probe response. Returns true ONLY for a
+ * clean `200 { ok: true }`; anything else (403, network/HTTP error, malformed body) is treated as
+ * "not admin" so callers fail closed / hidden-by-default. Used by {@link checkPatternActivityAdminAccess}.
+ */
+export function isPatternActivityAdminProbeOk(status: number, body: unknown): boolean {
+  if (status !== 200) return false;
+  return Boolean(body && typeof body === "object" && (body as { ok?: unknown }).ok === true);
+}
+
+/**
+ * Admin detection reused from the pattern-activity dashboard: probes the admin-only GET endpoint
+ * (server-side `isActivityAdmin` allowlist) and returns whether the current member is recognized as
+ * an admin. Fails CLOSED — any error, 403, or unauthenticated state resolves to `false` so admin-only
+ * UI stays hidden when admin status cannot be confirmed client-side.
+ */
+export async function checkPatternActivityAdminAccess(): Promise<boolean> {
+  try {
+    const auth = await resolveCustomPatternProjectAuth();
+    if (auth.mode === "none") return false;
+
+    const emailHeader: Record<string, string> = {};
+    const email = auth.mode === "member" ? await resolveCurrentMemberEmail() : undefined;
+    if (email) emailHeader["X-KBM-Member-Email"] = email;
+
+    const res = await fetch(`${PATTERN_ACTIVITY_LOG_ENDPOINT}?limit=1`, {
+      method: "GET",
+      headers: { ...authHeadersForCustomPatternProjects(auth), ...emailHeader },
+    });
+    if (res.status === 403) return false;
+    let body: unknown = null;
+    try {
+      body = await res.json();
+    } catch {
+      return false;
+    }
+    return isPatternActivityAdminProbeOk(res.status, body);
+  } catch {
+    return false;
+  }
+}

@@ -279,4 +279,34 @@ describe("Custom Build editing banner", () => {
 
     vi.unstubAllGlobals();
   });
+
+  // Regression: Patterns → Sleeveless Builder (?new=1) for a logged-in, no-plan, freeClaimed user.
+  // The new-pattern gate exits any leftover saved-pattern edit session, so the editing wrapper
+  // (Save Changes / Save a Copy / X) must not render around the unlock gate.
+  it("a claimed free user's leftover edit session is exited at the new-pattern gate", () => {
+    // Leftover active saved-project edit session from when they built their one free pattern.
+    writeActiveCustomPatternProjectId("proj-sue", SUES_PATTERN);
+    seedDraftTitle(SUES_PATTERN);
+    expect(getCustomPatternEditingBannerState().show).toBe(true);
+
+    // The gate path (blockExpressNewPatternStartIfLocked) exits the saved-pattern edit session.
+    exitEditingSavedCustomPattern();
+
+    // No edit wrapper, no Save Changes, no Save a Copy.
+    expect(getCustomPatternEditingBannerState()).toEqual({ show: false, projectName: "" });
+
+    vi.stubGlobal("document", {
+      createElement: (tag: string) => makeRenderNode(tag),
+      createTextNode: (text: string) => ({ textContent: text }),
+    });
+    const host = makeRenderNode("div");
+    renderCustomPatternEditingBanner(host as unknown as HTMLElement);
+
+    expect(host.getAttribute("hidden")).toBe("");
+    expect(host._children.length).toBe(0);
+    expect(collectRenderNodes(host._children, "data-cb-editing-banner-update").length).toBe(0);
+    expect(collectRenderNodes(host._children, "data-cb-editing-banner-copy").length).toBe(0);
+
+    vi.unstubAllGlobals();
+  });
 });

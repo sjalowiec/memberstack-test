@@ -282,6 +282,88 @@ const sections: DashSection[] = [
         </p>
       </div>
     </section>
+
+    <section
+      class="admin-dash__section"
+      aria-labelledby="sleeveless-reset-heading"
+      id="sleeveless-reset-section"
+      hidden
+    >
+      <h2 id="sleeveless-reset-heading" class="admin-dash__section-title">
+        Sleeveless Pattern Access Reset
+      </h2>
+      <div class="admin-dash__tool-card admin-dash__tool-card--danger">
+        <p class="admin-dash__tool-badge">
+          Support / admin utility — not a customer-facing feature
+        </p>
+        <p class="admin-dash__tool-hint">
+          Look up a member by email and reset their one-time free Sleeveless
+          Pattern build claim.
+        </p>
+
+        <form class="admin-dash__lookup" id="sleeveless-lookup-form">
+          <label class="admin-dash__tool-label" for="sleeveless-lookup-email">
+            Member email
+          </label>
+          <div class="admin-dash__lookup-row">
+            <input
+              type="email"
+              id="sleeveless-lookup-email"
+              class="admin-dash__tool-input"
+              placeholder="member@example.com"
+              autocomplete="off"
+              spellcheck="false"
+              required
+            />
+            <button type="submit" class="admin-dash__tool-btn" id="sleeveless-lookup-btn">
+              Look up
+            </button>
+          </div>
+        </form>
+
+        <div class="admin-dash__lookup-result" id="sleeveless-lookup-result" hidden>
+          <dl class="admin-dash__lookup-list">
+            <div class="admin-dash__lookup-item">
+              <dt class="admin-dash__lookup-key">Name</dt>
+              <dd class="admin-dash__lookup-val" data-result-name>—</dd>
+            </div>
+            <div class="admin-dash__lookup-item">
+              <dt class="admin-dash__lookup-key">Email</dt>
+              <dd class="admin-dash__lookup-val" data-result-email>—</dd>
+            </div>
+            <div class="admin-dash__lookup-item">
+              <dt class="admin-dash__lookup-key">Member ID</dt>
+              <dd class="admin-dash__lookup-val" data-result-id>—</dd>
+            </div>
+            <div class="admin-dash__lookup-item">
+              <dt class="admin-dash__lookup-key">Free claim used</dt>
+              <dd class="admin-dash__lookup-val" data-result-claimed>—</dd>
+            </div>
+            <div class="admin-dash__lookup-item">
+              <dt class="admin-dash__lookup-key">Free claim pattern ID</dt>
+              <dd class="admin-dash__lookup-val" data-result-pattern-id>—</dd>
+            </div>
+          </dl>
+          <div class="admin-dash__tool-actions">
+            <button
+              type="button"
+              class="admin-dash__tool-btn"
+              id="sleeveless-reset-btn"
+            >
+              Reset free Sleeveless claim
+            </button>
+          </div>
+        </div>
+
+        <p
+          class="admin-dash__tool-status"
+          id="sleeveless-reset-status"
+          role="status"
+          aria-live="polite"
+          hidden
+        ></p>
+      </div>
+    </section>
   </main>
 
   <script>
@@ -572,6 +654,196 @@ const sections: DashSection[] = [
     outputEl?.addEventListener("focus", () => {
       if (outputEl instanceof HTMLTextAreaElement) {
         outputEl.select();
+      }
+    });
+  </script>
+
+  <script>
+    import {
+      checkPatternActivityAdminAccess,
+    } from "../../lib/patterns/patternActivityLog";
+    import {
+      authHeadersForCustomPatternProjects,
+      resolveCustomPatternProjectAuth,
+    } from "../../lib/patterns/customPatternProjectAuth";
+    import { memberEmailFromMemberstackPayload } from "../../lib/patterns/memberstackMember";
+
+    const RESET_ENDPOINT =
+      "/.netlify/functions/admin-sleeveless-access-reset";
+    const LOOKUP_ERROR_MESSAGE =
+      "Could not look up that member. Check the email address and try again.";
+    const RESET_ERROR_MESSAGE =
+      "Could not reset the claim. Check the email address and try again.";
+
+    type SupportMember = {
+      memberId: string | null;
+      email: string | null;
+      name: string | null;
+      freeSleevelessPatternClaimed: boolean;
+      freeSleevelessPatternId: string | null;
+      hasMemberJson: boolean;
+    };
+
+    const resetSection = document.getElementById("sleeveless-reset-section");
+    const lookupForm = document.getElementById("sleeveless-lookup-form");
+    const emailInput = document.getElementById("sleeveless-lookup-email");
+    const lookupBtn = document.getElementById("sleeveless-lookup-btn");
+    const resultBox = document.getElementById("sleeveless-lookup-result");
+    const resetBtn = document.getElementById("sleeveless-reset-btn");
+    const statusEl = document.getElementById("sleeveless-reset-status");
+
+    let currentMember: SupportMember | null = null;
+
+    // Admin-only: stay hidden by default; reveal only once admin access is confirmed (fails closed).
+    void (async () => {
+      try {
+        if (await checkPatternActivityAdminAccess()) {
+          if (resetSection instanceof HTMLElement) resetSection.hidden = false;
+        }
+      } catch {
+        /* leave hidden */
+      }
+    })();
+
+    function setStatus(message: string, isError: boolean): void {
+      if (!(statusEl instanceof HTMLElement)) return;
+      statusEl.textContent = message;
+      statusEl.hidden = !message;
+      statusEl.classList.toggle("admin-dash__tool-status--error", isError);
+    }
+
+    function setResultText(selector: string, value: string): void {
+      const el = document.querySelector(`[${selector}]`);
+      if (el instanceof HTMLElement) el.textContent = value;
+    }
+
+    function renderMember(member: SupportMember | null): void {
+      currentMember = member;
+      if (!(resultBox instanceof HTMLElement)) return;
+      if (!member) {
+        resultBox.hidden = true;
+        return;
+      }
+      setResultText("data-result-name", member.name || "—");
+      setResultText("data-result-email", member.email || "—");
+      setResultText("data-result-id", member.memberId || "—");
+      setResultText(
+        "data-result-claimed",
+        member.freeSleevelessPatternClaimed ? "Yes" : "No",
+      );
+      setResultText(
+        "data-result-pattern-id",
+        member.freeSleevelessPatternId || "—",
+      );
+      resultBox.hidden = false;
+      if (resetBtn instanceof HTMLButtonElement) {
+        resetBtn.disabled = !member.memberId && !member.email;
+      }
+    }
+
+    // Reuse the same auth + member-email headers the activity dashboard sends; the Netlify function
+    // re-checks admin access server-side, so these are an identity hint only (never trusted alone).
+    async function adminHeaders(): Promise<Record<string, string> | null> {
+      const auth = await resolveCustomPatternProjectAuth();
+      if (auth.mode === "none") return null;
+      const headers: Record<string, string> = {
+        ...authHeadersForCustomPatternProjects(auth),
+      };
+      try {
+        const ms = window.$memberstackDom;
+        if (auth.mode === "member" && ms?.getCurrentMember) {
+          const email = memberEmailFromMemberstackPayload(await ms.getCurrentMember());
+          if (email) headers["X-KBM-Member-Email"] = email;
+        }
+      } catch {
+        /* identity hint only */
+      }
+      return headers;
+    }
+
+    async function lookupMember(email: string): Promise<void> {
+      setStatus("", false);
+      const headers = await adminHeaders();
+      if (!headers) {
+        setStatus(LOOKUP_ERROR_MESSAGE, true);
+        return;
+      }
+      const url = `${RESET_ENDPOINT}?email=${encodeURIComponent(email)}`;
+      const res = await fetch(url, { method: "GET", headers });
+      const data = (await res.json().catch(() => null)) as
+        | { ok?: boolean; member?: SupportMember }
+        | null;
+      if (!res.ok || !data?.ok || !data.member) {
+        renderMember(null);
+        setStatus(
+          res.status === 404
+            ? `No member found for ${email}.`
+            : LOOKUP_ERROR_MESSAGE,
+          true,
+        );
+        return;
+      }
+      renderMember(data.member);
+    }
+
+    async function resetMember(member: SupportMember): Promise<void> {
+      const headers = await adminHeaders();
+      if (!headers) {
+        setStatus(RESET_ERROR_MESSAGE, true);
+        return;
+      }
+      const res = await fetch(RESET_ENDPOINT, {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "reset",
+          memberId: member.memberId ?? undefined,
+          email: member.email ?? undefined,
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as
+        | { ok?: boolean; member?: SupportMember }
+        | null;
+      if (!res.ok || !data?.ok) {
+        setStatus(RESET_ERROR_MESSAGE, true);
+        return;
+      }
+      if (data.member) renderMember(data.member);
+      const label = member.email || member.memberId || "this member";
+      setStatus(`Free Sleeveless build claim reset for ${label}.`, false);
+    }
+
+    lookupForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!(emailInput instanceof HTMLInputElement)) return;
+      const email = emailInput.value.trim();
+      if (!email) return;
+      renderMember(null);
+      if (lookupBtn instanceof HTMLButtonElement) lookupBtn.disabled = true;
+      try {
+        await lookupMember(email);
+      } catch (err) {
+        console.error("Sleeveless lookup threw:", err);
+        setStatus(LOOKUP_ERROR_MESSAGE, true);
+      } finally {
+        if (lookupBtn instanceof HTMLButtonElement) lookupBtn.disabled = false;
+      }
+    });
+
+    resetBtn?.addEventListener("click", async () => {
+      if (!currentMember) return;
+      const label = currentMember.email || currentMember.memberId || "this member";
+      if (!window.confirm(`Reset the free Sleeveless build claim for ${label}?`)) {
+        return;
+      }
+      if (resetBtn instanceof HTMLButtonElement) resetBtn.disabled = true;
+      try {
+        await resetMember(currentMember);
+      } catch (err) {
+        console.error("Sleeveless free-claim reset threw:", err);
+        setStatus(RESET_ERROR_MESSAGE, true);
+      } finally {
+        if (resetBtn instanceof HTMLButtonElement) resetBtn.disabled = false;
       }
     });
   </script>
@@ -1035,6 +1307,115 @@ const sections: DashSection[] = [
       font-size: 0.85rem;
       font-weight: 600;
       color: #3f6212;
+    }
+
+    .admin-dash__tool-card--danger {
+      border-color: #fcd34d;
+      background: #fffbeb;
+    }
+
+    .admin-dash__tool-badge {
+      margin: 0 0 0.75rem 0;
+      display: inline-block;
+      align-self: flex-start;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #92400e;
+      background: #fde68a;
+      border: 1px solid #fcd34d;
+      border-radius: 999px;
+    }
+
+    .admin-dash__tool-status {
+      margin: 0.85rem 0 0;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #15803d;
+      line-height: 1.45;
+    }
+
+    .admin-dash__tool-status--error {
+      color: #b91c1c;
+    }
+
+    .admin-dash__lookup {
+      margin: 0 0 1rem 0;
+    }
+
+    .admin-dash__lookup-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      gap: 0.5rem;
+    }
+
+    .admin-dash__tool-input {
+      flex: 1 1 16rem;
+      min-width: 0;
+      padding: 0.55rem 0.75rem;
+      font-size: 0.95rem;
+      color: #1e293b;
+      background: #fff;
+      border: 1px solid #d6c276;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+
+    .admin-dash__tool-input:focus {
+      outline: 2px solid #3f6212;
+      outline-offset: 1px;
+      border-color: #3f6212;
+    }
+
+    .admin-dash__lookup-result {
+      margin: 0 0 0.5rem 0;
+      padding: 0.9rem 1rem;
+      background: #fff;
+      border: 1px solid #fcd34d;
+      border-radius: 10px;
+    }
+
+    .admin-dash__lookup-list {
+      margin: 0 0 0.9rem 0;
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .admin-dash__lookup-item {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.25rem 1rem;
+      padding-bottom: 0.55rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .admin-dash__lookup-item:last-child {
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .admin-dash__lookup-key {
+      margin: 0;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #64748b;
+    }
+
+    .admin-dash__lookup-val {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1e293b;
+      word-break: break-word;
+      text-align: right;
     }
   </style>
 </BaseLayout>

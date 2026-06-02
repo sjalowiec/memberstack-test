@@ -22,7 +22,7 @@ vi.mock("@netlify/blobs", () => {
   };
 });
 
-import handler from "./pattern-activity-log.js";
+import handler from "../pattern-activity-log.js";
 import * as blobs from "@netlify/blobs";
 
 const ADMIN_ID = "mem_admin";

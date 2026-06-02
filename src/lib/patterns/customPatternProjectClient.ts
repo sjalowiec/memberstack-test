@@ -240,13 +240,26 @@ export async function listCustomPatternProjects(
 export async function deleteCustomPatternProject(
   projectId: string,
   family: CustomPatternFamily = "sleeveless",
+  access?: { hasSystemAccess: boolean; freeClaimed: boolean; freeClaimedPatternId?: string },
 ): Promise<
   | { ok: true; authMode?: CustomPatternProjectAuthMode }
   | { ok: false; error: string }
 > {
+  // Forward the resolved entitlement snapshot so the delete endpoint can independently refuse to
+  // delete a free user's protected pattern (defense-in-depth; same trust level as X-KBM-Member-Id).
+  const freeClaim = access
+    ? {
+        hasSystemAccess: access.hasSystemAccess === true,
+        freeClaimed: access.freeClaimed === true,
+        ...(access.freeClaimedPatternId
+          ? { freeClaimedPatternId: access.freeClaimedPatternId }
+          : {}),
+      }
+    : undefined;
+
   const res = await projectFetch<{ deleted: true }>("custom-pattern-project-delete", {
     method: "DELETE",
-    body: JSON.stringify({ id: projectId, family }),
+    body: JSON.stringify({ id: projectId, family, ...(freeClaim ? { freeClaim } : {}) }),
   });
   if (!res.ok) return res;
   return { ok: true, authMode: res.authMode };

@@ -47,7 +47,10 @@ export function applySleevelessPatternOnlineProjectHeader(): void {
 
 
 
-  const notes = getSleevelessPatternOnlineNotesText(meta);
+  // `getSleevelessPatternOnlineNotesText` returns null when there are no saved notes, so coalesce to
+  // a string before trimming — otherwise a saved pattern with null/missing notes crashes the header
+  // (Cannot read properties of null) and the page stays stuck on "Loading pattern…".
+  const notes = getSleevelessPatternOnlineNotesText(meta) ?? "";
 
   // Project notes are library management, not a paid feature — show them whenever the user has
   // notes saved, regardless of system-access entitlement (free/downgraded users keep their notes).

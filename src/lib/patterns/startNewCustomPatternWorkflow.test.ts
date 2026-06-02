@@ -442,10 +442,18 @@ describe("sleeveless-express-page Start Over", () => {
     expect(src).toContain("blockExpressNewPatternStartIfLocked");
     expect(src).toContain("isSleevelessExpressNewSessionSearchParams");
     expect(src).toContain("showSleevelessNewPatternLockedScreen");
-    const gateIdx = src.indexOf("blockExpressNewPatternStartIfLocked().then");
+    // Anchor on the call sites (await …) so we measure boot order, not the function definitions.
+    const gateIdx = src.indexOf("await blockExpressNewPatternStartIfLocked()");
     const initIdx = src.indexOf("initExpressPage();");
     expect(gateIdx).toBeGreaterThan(-1);
     expect(initIdx).toBeGreaterThan(gateIdx);
+
+    // The draft-owner reconcile must run BEFORE the gate and BEFORE hydration, so a different
+    // member's working draft is cleared before it can be read/rendered (cross-user leak guard).
+    const reconcileIdx = src.indexOf("await reconcilePatternDraftOwner()");
+    expect(reconcileIdx).toBeGreaterThan(-1);
+    expect(gateIdx).toBeGreaterThan(reconcileIdx);
+    expect(initIdx).toBeGreaterThan(reconcileIdx);
   });
 });
 

@@ -2,6 +2,7 @@ import {
   loadCustomPatternProject,
 } from "./customPatternProjectClient";
 import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPatternProject";
+import { claimPatternDraftForCurrentMember } from "./patternDraftOwnerGuard";
 import { logSleevelessPatternActivity } from "./sleevelessPatternActivity";
 import type { CustomPatternFamily } from "./customPatternProjectTypes";
 import {
@@ -40,6 +41,10 @@ export async function loadSavedCustomPatternProject(
   // in the editable workspace. Viewing/continuing only need the working draft hydrated so the
   // pattern renders — they do not unlock the builder.
   hydrateSavedCustomPatternProjectSession(res.project, { editChoicesReopen: action === "open" });
+
+  // The cloud load was owner-scoped server-side (X-KBM-Member-Id), so this draft belongs to the
+  // current member. Tag it so the draft-owner guard on the next page keeps (not clears) it.
+  claimPatternDraftForCurrentMember();
 
   logSleevelessPatternActivity("pattern_opened", {
     patternId: res.project.id,

@@ -13,6 +13,7 @@ import {
   hasSleevelessPatternSystemAccess as hasSystemAccessRule,
   LOGGED_OUT_SLEEVELESS_ACCESS,
   mergeFreeClaimIntoMemberJson,
+  mergeFreeClaimResetIntoMemberJson,
   planIdsGrantSleevelessSystemAccess,
   readFreeClaimFromMemberJson,
   readSleevelessSystemUnlockFromMemberJson,
@@ -180,6 +181,18 @@ async function resolveAccessUncached(): Promise<SleevelessUserAccess> {
   };
 }
 
+/**
+ * Resolve the visitor's Sleeveless access WITHOUT priming the shared sync cache or memoized promise.
+ *
+ * Use this when you only need a one-off access read and must not change the cached snapshot that
+ * other cache-reading gates rely on (e.g. the saved-pattern Copy gate falls back to an open default
+ * until the cache is primed; priming it here would silently change unrelated UI). Each call performs
+ * a fresh Memberstack read, so prefer {@link resolveSleevelessUserAccess} on hot paths.
+ */
+export function resolveSleevelessUserAccessSnapshot(): Promise<SleevelessUserAccess> {
+  return resolveAccessUncached();
+}
+
 /** Resolve the visitor's Sleeveless access (memoized per page load). Primes the sync cache. */
 export function resolveSleevelessUserAccess(): Promise<SleevelessUserAccess> {
   if (typeof window === "undefined") return resolveAccessUncached();
@@ -237,6 +250,54 @@ export async function markFreeSleevelessPatternClaimed(patternId: string): Promi
     return true;
   } catch {
     return false;
+  }
+}
+
+/** Result of an admin/support free-claim reset attempt. */
+export interface ResetFreeSleevelessClaimResult {
+  ok: boolean;
+  /** Memberstack member id whose claim was reset (when resolvable). */
+  memberId?: string;
+  /** Why the reset could not be performed (failure only). */
+  reason?: string;
+}
+
+/**
+ * ADMIN/SUPPORT ONLY. Clears the one-time free Sleeveless Pattern claim for the CURRENTLY logged-in
+ * Memberstack member by writing `freeSleevelessPatternClaimed: false` / `freeSleevelessPatternId: null`
+ * back to member JSON (all other keys preserved). Invalidates the access cache so the next resolve
+ * re-reads Memberstack. This is a deliberately small, current-member-only reset for testing/support —
+ * it does NOT look up other members.
+ */
+export async function resetFreeSleevelessPatternClaimForCurrentMember(): Promise<ResetFreeSleevelessClaimResult> {
+  if (typeof window === "undefined") {
+    return { ok: false, reason: "no-window" };
+  }
+  const ms = window.$memberstackDom;
+  if (!ms || typeof ms.getMemberJSON !== "function" || typeof ms.updateMemberJSON !== "function") {
+    return { ok: false, reason: "memberstack-json-unavailable" };
+  }
+
+  let memberId: string | undefined;
+  try {
+    if (typeof ms.getCurrentMember === "function") {
+      memberId = memberIdFromMemberstackPayload(await ms.getCurrentMember());
+    }
+  } catch {
+    memberId = undefined;
+  }
+  if (!memberId) {
+    return { ok: false, reason: "no-member-id" };
+  }
+
+  try {
+    const current = await readMemberJson(ms);
+    const merged = mergeFreeClaimResetIntoMemberJson(current);
+    await ms.updateMemberJSON({ json: merged });
+    invalidateSleevelessUserAccessCache();
+    return { ok: true, memberId };
+  } catch {
+    return { ok: false, memberId, reason: "update-failed" };
   }
 }
 

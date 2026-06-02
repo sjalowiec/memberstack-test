@@ -17,9 +17,14 @@ import {
 export const SLEEVELESS_SAVE_LOGGED_OUT_COPY =
   "Log in to create your free Sleeveless Pattern.";
 
-/** Shown when a free user who already claimed their pattern tries to create another. */
+/**
+ * Shown when a free user who already claimed their pattern tries to create another.
+ * Paragraph breaks (\n\n) render as separate paragraphs on the locked card
+ * (see `.sleeveless-new-pattern-locked__body`); they collapse to spaces in the
+ * single-line inline save-status element, which is acceptable there.
+ */
 export const SLEEVELESS_SAVE_ALREADY_CLAIMED_COPY =
-  "You’ve already created your free Sleeveless Pattern. Unlock the Sleeveless Pattern System to create more versions or change gauge, measurements, and style choices.";
+  "You’ve already created your free Sleeveless Pattern.\n\nTo create additional versions, change your gauge or measurements, or explore different style choices, you’ll need access to the Sleeveless Pattern System.\n\nMembers already have access, or you can purchase the Sleeveless Pattern System separately.";
 
 export function setSleevelessPatternProjectCloudSaveStatus(
   root: HTMLElement,

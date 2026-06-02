@@ -37,13 +37,42 @@
   line-height: 1.55;
   color: #374151;
   font-size: 1rem;
+  /* Render the \n\n paragraph breaks in the shared copy as visual paragraphs. */
+  white-space: pre-line;
 }
 
 .sleeveless-new-pattern-locked__actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 0.65rem;
-  justify-content: center;
+  align-items: stretch;
+  max-width: 22rem;
+  margin: 0 auto;
+}
+
+/* The two unlock paths are the primary, prominent actions. */
+.sleeveless-new-pattern-locked__btn--primary {
+  width: 100%;
+  font-weight: 700;
+}
+
+/* Keep the saved-pattern link available, but visually secondary so it reads as
+   an alternate path rather than the main action. */
+.sleeveless-new-pattern-locked__btn--secondary {
+  width: 100%;
+  margin-top: 0.35rem;
+  background: transparent;
+  color: var(--kbm-green);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.sleeveless-new-pattern-locked__btn--secondary:hover,
+.sleeveless-new-pattern-locked__btn--secondary:focus,
+.sleeveless-new-pattern-locked__btn--secondary:focus-visible {
+  background: transparent;
+  color: var(--kbm-green-hover);
+  text-decoration: underline;
 }
 
 .express-page .hat-length-picker__grid {

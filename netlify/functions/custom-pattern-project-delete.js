@@ -4,8 +4,11 @@
  */
 import {
   deleteProjectAndUpdateIndex,
+  FREE_SLEEVELESS_PATTERN_DELETE_BLOCKED_MESSAGE,
   getProjectsStore,
+  isFreeSleevelessPatternDeleteBlocked,
   jsonResponse,
+  listProjectSummaries,
   parseJsonBody,
   projectBlobKey,
   resolveProjectUserId,
@@ -50,6 +53,45 @@ export default async (req) => {
     const meta = await store.getMetadata(key);
     if (!meta) {
       return withCors(jsonResponse({ ok: false, error: "Project not found." }, 404));
+    }
+
+    // Free-pattern delete protection (defense-in-depth; the client also gates the UI + delete call).
+    // TODO: verify these entitlement flags server-side via Memberstack once an admin read is wired;
+    // they are currently client-asserted, matching the existing X-KBM-Member-Id trust model.
+    const freeClaim =
+      body.data.freeClaim &&
+      typeof body.data.freeClaim === "object" &&
+      !Array.isArray(body.data.freeClaim)
+        ? body.data.freeClaim
+        : null;
+    if (freeClaim) {
+      const hasSystemAccess = freeClaim.hasSystemAccess === true;
+      const freeClaimed = freeClaim.freeClaimed === true;
+      const claimedId =
+        typeof freeClaim.freeClaimedPatternId === "string"
+          ? freeClaim.freeClaimedPatternId.trim()
+          : "";
+
+      // Only the unknown-id fallback needs the live count; compute it from the user's own blobs.
+      let totalSavedCount = Number.POSITIVE_INFINITY;
+      if (freeClaimed && !hasSystemAccess && !claimedId) {
+        const summaries = await listProjectSummaries(store, family, user.userId);
+        totalSavedCount = Array.isArray(summaries) ? summaries.length : 1;
+      }
+
+      if (
+        isFreeSleevelessPatternDeleteBlocked({
+          hasSystemAccess,
+          freeClaimed,
+          freeClaimedPatternId: claimedId,
+          projectId: id,
+          totalSavedCount,
+        })
+      ) {
+        return withCors(
+          jsonResponse({ ok: false, error: FREE_SLEEVELESS_PATTERN_DELETE_BLOCKED_MESSAGE }, 403),
+        );
+      }
     }
 
     await deleteProjectAndUpdateIndex(store, family, user.userId, id);

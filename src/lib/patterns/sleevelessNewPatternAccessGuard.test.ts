@@ -135,6 +135,8 @@ function buildExpressDomStub() {
   const editingBar = fakeEl();
   const subtext = fakeEl();
   const panel = fakeEl();
+  // Saved-pattern editing wrapper host (Editing saved pattern / Save Changes / Save a Copy / X).
+  const editingBannerHost = fakeEl();
   builder.parentElement = panel;
 
   const map: Record<string, FakeEl> = {
@@ -143,6 +145,7 @@ function buildExpressDomStub() {
     ".sg-builder-nav-row": sgNav,
     "[data-express-editing-bar]": editingBar,
     ".pattern-subtext": subtext,
+    "[data-cb-editing-banner-host]": editingBannerHost,
     ".express-panel": panel,
   };
 
@@ -150,7 +153,7 @@ function buildExpressDomStub() {
     querySelector: (sel: string) => map[sel] ?? null,
   };
 
-  return { root, builder, nav, sgNav, editingBar, subtext, panel };
+  return { root, builder, nav, sgNav, editingBar, subtext, editingBannerHost, panel };
 }
 
 describe("showSleevelessNewPatternLockedScreen", () => {
@@ -174,12 +177,22 @@ describe("showSleevelessNewPatternLockedScreen", () => {
     expect(dom.editingBar.hidden).toBe(true);
     expect(dom.subtext.hidden).toBe(true);
 
+    // The saved-pattern editing wrapper (Editing saved pattern / Save Changes / Save a Copy / X)
+    // must not frame the unlock gate for a claimed free user.
+    expect(dom.editingBannerHost.hidden).toBe(true);
+
     // The locked screen is mounted and visible with the existing upgrade copy.
     expect(notice).not.toBeNull();
     expect(notice!.hidden).toBe(false);
     expect(dom.panel.children[0]).toBe(notice);
     const body = notice!.children.find((c) => c.className.includes("__body"));
     expect(body?.textContent).toBe(SLEEVELESS_SAVE_ALREADY_CLAIMED_COPY);
+
+    // The "Open your saved pattern" link stays available on the gate.
+    const actions = notice!.children.find((c) => c.className.includes("__actions"));
+    const openSavedLink = actions?.children.find((c) => c.textContent === "Open your saved pattern");
+    expect(openSavedLink).toBeTruthy();
+    expect(openSavedLink?.href).toBe("/account#my-patterns");
   });
 
   it("is a safe no-op when the Express builder is absent (e.g. workspace page)", () => {

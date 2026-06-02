@@ -8,6 +8,7 @@ vi.mock("./customPatternProjectAuth", () => ({
 
 import {
   createPatternActivityEvent,
+  isPatternActivityAdminProbeOk,
   logPatternActivity,
   summarizePatternActivity,
   type PatternActivityEvent,
@@ -15,6 +16,20 @@ import {
 import { resolveCustomPatternProjectAuth } from "./customPatternProjectAuth";
 
 const resolveAuthMock = vi.mocked(resolveCustomPatternProjectAuth);
+
+describe("isPatternActivityAdminProbeOk", () => {
+  it("treats a clean 200 { ok: true } as admin", () => {
+    expect(isPatternActivityAdminProbeOk(200, { ok: true, events: [] })).toBe(true);
+  });
+
+  it("fails closed for 403, other statuses, and malformed/non-ok bodies", () => {
+    expect(isPatternActivityAdminProbeOk(403, { ok: false })).toBe(false);
+    expect(isPatternActivityAdminProbeOk(500, { ok: true })).toBe(false);
+    expect(isPatternActivityAdminProbeOk(200, { ok: false })).toBe(false);
+    expect(isPatternActivityAdminProbeOk(200, {})).toBe(false);
+    expect(isPatternActivityAdminProbeOk(200, null)).toBe(false);
+  });
+});
 
 describe("createPatternActivityEvent", () => {
   it("creates an event with all required fields", () => {

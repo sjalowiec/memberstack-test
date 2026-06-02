@@ -112,6 +112,21 @@ export function mergeFreeClaimIntoMemberJson(
   return merged;
 }
 
+/**
+ * Returns a new member-JSON object with the one-time free claim cleared:
+ * `freeSleevelessPatternClaimed: false` and `freeSleevelessPatternId: null`.
+ *
+ * Admin/support reset path only — see `resetFreeSleevelessPatternClaimForCurrentMember`. All other
+ * keys are preserved so we never clobber unrelated account metadata. The id is set to `null` (rather
+ * than deleted) so the cleared state is explicit in the stored JSON.
+ */
+export function mergeFreeClaimResetIntoMemberJson(json: unknown): Record<string, unknown> {
+  const merged: Record<string, unknown> = { ...asRecord(json) };
+  merged[FREE_SLEEVELESS_CLAIMED_JSON_KEY] = false;
+  merged[FREE_SLEEVELESS_CLAIMED_PATTERN_ID_JSON_KEY] = null;
+  return merged;
+}
+
 /** Member or owns/unlocks the Sleeveless Pattern System. */
 export function hasSleevelessPatternSystemAccess(user: SleevelessUserAccess): boolean {
   return Boolean(user?.hasSystemAccess);
