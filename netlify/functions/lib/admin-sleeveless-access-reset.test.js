@@ -10,7 +10,7 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
-vi.mock("./lib/memberstack-admin.js", () => {
+vi.mock("./memberstack-admin.js", () => {
   return {
     isLookupDebugEnabled: () => false,
     maskEmailForLog: (email) => String(email ?? "(no-email)"),
@@ -34,7 +34,7 @@ vi.mock("./lib/memberstack-admin.js", () => {
   };
 });
 
-import handler from "./admin-sleeveless-access-reset.js";
+import handler from "../admin-sleeveless-access-reset.js";
 
 const ADMIN_ID = "mem_admin";
 const ADMIN_EMAIL = "admin@knitbymachine.com";
