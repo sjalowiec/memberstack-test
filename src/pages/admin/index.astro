@@ -133,6 +133,54 @@ const sections: DashSection[] = [
 
     <section
       class="admin-dash__section"
+      aria-labelledby="pattern-activity-heading"
+    >
+      <h2 id="pattern-activity-heading" class="admin-dash__section-title">
+        Pattern Activity
+      </h2>
+      <div class="admin-dash__activity">
+        <div class="admin-dash__stats">
+          <div class="admin-dash__stat">
+            <span class="admin-dash__stat-value" data-activity-total>—</span>
+            <span class="admin-dash__stat-label">Total events</span>
+          </div>
+          <div class="admin-dash__stat">
+            <span class="admin-dash__stat-value" data-activity-users>—</span>
+            <span class="admin-dash__stat-label">Unique users</span>
+          </div>
+          <div class="admin-dash__stat">
+            <span class="admin-dash__stat-value" data-activity-generated>—</span>
+            <span class="admin-dash__stat-label">Generated patterns</span>
+          </div>
+          <div class="admin-dash__stat">
+            <span class="admin-dash__stat-value" data-activity-saved>—</span>
+            <span class="admin-dash__stat-label">Saved patterns</span>
+          </div>
+        </div>
+
+        <p class="admin-dash__activity-status" data-activity-status>
+          Loading recent activity…
+        </p>
+
+        <div class="admin-dash__table-wrap" data-activity-table-wrap hidden>
+          <table class="admin-dash__table">
+            <thead>
+              <tr>
+                <th scope="col">Created</th>
+                <th scope="col">User email</th>
+                <th scope="col">Event</th>
+                <th scope="col">System</th>
+                <th scope="col">Pattern title</th>
+              </tr>
+            </thead>
+            <tbody data-activity-rows></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section
+      class="admin-dash__section"
       aria-labelledby="video-jump-link-heading"
     >
       <h2 id="video-jump-link-heading" class="admin-dash__section-title">
@@ -209,6 +257,125 @@ const sections: DashSection[] = [
       </div>
     </section>
   </main>
+
+  <script>
+    import {
+      summarizePatternActivity,
+      PATTERN_ACTIVITY_LOG_ENDPOINT,
+      type PatternActivityEvent,
+    } from "../../lib/patterns/patternActivityLog";
+    import {
+      authHeadersForCustomPatternProjects,
+      resolveCustomPatternProjectAuth,
+    } from "../../lib/patterns/customPatternProjectAuth";
+    import { memberEmailFromMemberstackPayload } from "../../lib/patterns/memberstackMember";
+
+    const EVENT_LABELS: Record<string, string> = {
+      pattern_started: "Started",
+      pattern_generated: "Generated",
+      pattern_saved: "Saved",
+      pattern_updated: "Updated",
+      pattern_opened: "Opened",
+      pattern_printed: "Printed",
+    };
+
+    function setText(selector: string, value: string): void {
+      const el = document.querySelector(selector);
+      if (el instanceof HTMLElement) el.textContent = value;
+    }
+
+    function setStatus(message: string): void {
+      const el = document.querySelector("[data-activity-status]");
+      if (el instanceof HTMLElement) {
+        el.textContent = message;
+        el.hidden = !message;
+      }
+    }
+
+    function formatDate(iso: string): string {
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return iso;
+      return d.toLocaleString();
+    }
+
+    function renderRows(events: PatternActivityEvent[]): void {
+      const tbody = document.querySelector("[data-activity-rows]");
+      const wrap = document.querySelector("[data-activity-table-wrap]");
+      if (!(tbody instanceof HTMLElement) || !(wrap instanceof HTMLElement)) return;
+      tbody.replaceChildren();
+      for (const event of events) {
+        const tr = document.createElement("tr");
+        const cells = [
+          formatDate(event.createdAt),
+          event.userEmail ?? "—",
+          EVENT_LABELS[event.eventType] ?? event.eventType,
+          event.patternSystem ?? "—",
+          event.patternTitle ?? "—",
+        ];
+        for (const value of cells) {
+          const td = document.createElement("td");
+          td.textContent = value;
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+      wrap.hidden = events.length === 0;
+    }
+
+    async function resolveMemberEmailHeader(): Promise<Record<string, string>> {
+      try {
+        const ms = window.$memberstackDom;
+        if (!ms?.getCurrentMember) return {};
+        const payload = await ms.getCurrentMember();
+        const email = memberEmailFromMemberstackPayload(payload);
+        return email ? { "X-KBM-Member-Email": email } : {};
+      } catch {
+        return {};
+      }
+    }
+
+    async function loadPatternActivity(): Promise<void> {
+      try {
+        const auth = await resolveCustomPatternProjectAuth();
+        if (auth.mode === "none") {
+          setStatus("Sign in to view pattern activity.");
+          return;
+        }
+        const emailHeader = await resolveMemberEmailHeader();
+        const res = await fetch(`${PATTERN_ACTIVITY_LOG_ENDPOINT}?limit=500`, {
+          method: "GET",
+          headers: { ...authHeadersForCustomPatternProjects(auth), ...emailHeader },
+        });
+        if (res.status === 403) {
+          setStatus("You don't have admin access to view pattern activity.");
+          return;
+        }
+        const data = (await res.json()) as {
+          ok?: boolean;
+          events?: unknown[];
+          error?: string;
+        };
+        if (!res.ok || !data.ok || !Array.isArray(data.events)) {
+          setStatus("Unable to load pattern activity right now.");
+          return;
+        }
+
+        const summary = summarizePatternActivity(data.events, { recentLimit: 25 });
+        setText("[data-activity-total]", String(summary.totalEvents));
+        setText("[data-activity-users]", String(summary.uniqueUsers));
+        setText("[data-activity-generated]", String(summary.generatedCount));
+        setText("[data-activity-saved]", String(summary.savedCount));
+        renderRows(summary.recentEvents);
+        setStatus(
+          summary.totalEvents === 0 ? "No pattern activity recorded yet." : "",
+        );
+      } catch {
+        setStatus("Unable to load pattern activity right now.");
+      }
+    }
+
+    void loadPatternActivity();
+  </script>
 
   <script>
     const inputEl = document.getElementById("vjl-input");
@@ -442,6 +609,95 @@ const sections: DashSection[] = [
       border: 1px solid #e5e7eb;
       border-radius: 12px;
       box-sizing: border-box;
+    }
+
+    .admin-dash__activity {
+      padding: 1.1rem 1.15rem;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      box-sizing: border-box;
+    }
+
+    .admin-dash__stats {
+      display: grid;
+      gap: 0.85rem;
+      grid-template-columns: repeat(2, 1fr);
+      margin-bottom: 1rem;
+    }
+
+    @media (min-width: 640px) {
+      .admin-dash__stats {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .admin-dash__stat {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      padding: 0.85rem 0.9rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+    }
+
+    .admin-dash__stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #243015;
+      line-height: 1.1;
+    }
+
+    .admin-dash__stat-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .admin-dash__activity-status {
+      margin: 0 0 0.85rem 0;
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+
+    .admin-dash__activity-status:empty {
+      display: none;
+    }
+
+    .admin-dash__table-wrap {
+      overflow-x: auto;
+    }
+
+    .admin-dash__table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    .admin-dash__table th,
+    .admin-dash__table td {
+      padding: 0.55rem 0.65rem;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+
+    .admin-dash__table th {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #64748b;
+      white-space: nowrap;
+    }
+
+    .admin-dash__table td {
+      color: #334155;
+    }
+
+    .admin-dash__table tbody tr:last-child td {
+      border-bottom: none;
     }
 
     .admin-dash__tool-label {

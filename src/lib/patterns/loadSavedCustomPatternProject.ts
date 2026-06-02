@@ -2,6 +2,7 @@ import {
   loadCustomPatternProject,
 } from "./customPatternProjectClient";
 import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPatternProject";
+import { logSleevelessPatternActivity } from "./sleevelessPatternActivity";
 import type { CustomPatternFamily } from "./customPatternProjectTypes";
 import {
   getContinueEditingHref,
@@ -39,6 +40,12 @@ export async function loadSavedCustomPatternProject(
   // in the editable workspace. Viewing/continuing only need the working draft hydrated so the
   // pattern renders — they do not unlock the builder.
   hydrateSavedCustomPatternProjectSession(res.project, { editChoicesReopen: action === "open" });
+
+  logSleevelessPatternActivity("pattern_opened", {
+    patternId: res.project.id,
+    patternTitle: res.project.name,
+    metadata: { action },
+  });
 
   let redirectHref: string;
   if (action === "view") {

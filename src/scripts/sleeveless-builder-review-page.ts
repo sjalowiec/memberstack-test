@@ -27,6 +27,7 @@ import {
 } from "../lib/patterns/syncExpressWizardToPatternStorage";
 import { prepareCustomBuildPatternGeneration } from "../lib/patterns/prepareCustomBuildPatternGeneration";
 import { navigateToPatternWithUnsavedEditsGuard } from "../lib/patterns/savedCustomPatternUnsavedViewGuard";
+import { logSleevelessPatternActivity } from "../lib/patterns/sleevelessPatternActivity";
 
 const PATTERN_WORKSPACE_TAB_PATTERN_HREF = "/patterns/sleeveless/pattern/?tab=pattern";
 
@@ -107,6 +108,7 @@ function continueToPatternFromReview(): void {
     .then(async () => {
       prepareCustomBuildPatternGeneration({ root: document });
       flushExpressWizardToCanonicalPatternForReview();
+      logSleevelessPatternActivity("pattern_generated");
       if (canCustomizePattern()) {
         await navigateToPatternWithUnsavedEditsGuard({ href: PATTERN_WORKSPACE_TAB_PATTERN_HREF });
         return;

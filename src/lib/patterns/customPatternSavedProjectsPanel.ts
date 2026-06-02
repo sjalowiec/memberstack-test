@@ -37,6 +37,7 @@ import {
   syncSavedCustomPatternCopyAccess,
 } from "./savedCustomPatternCopyAccess";
 import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPatternProject";
+import { logSleevelessPatternActivity } from "./sleevelessPatternActivity";
 import { getPatternProjectMeta, savePatternProjectMeta } from "./sleevelessPatternProjectMeta";
 import { nextPanelListRefresh, perfEnd, perfMark, perfStart } from "./savedPatternsPerfLog";
 
@@ -290,6 +291,10 @@ export async function smartSaveCustomPatternProject(
     });
     captureSavedCustomPatternDirtyBaseline();
     notifySavedProjectLinkChanged(options.root ?? undefined);
+    logSleevelessPatternActivity("pattern_updated", {
+      patternId: res.project.id,
+      patternTitle: res.project.name,
+    });
     return { ok: true, project: res.project, created: false };
   }
 
@@ -299,6 +304,11 @@ export async function smartSaveCustomPatternProject(
   writeActiveCustomPatternProjectId(res.project.id, res.project.name);
   captureSavedCustomPatternDirtyBaseline();
   notifySavedProjectLinkChanged(options.root ?? undefined);
+  logSleevelessPatternActivity("pattern_saved", {
+    patternId: res.project.id,
+    patternTitle: res.project.name,
+    ...(mode === "copy" ? { metadata: { copy: true } } : {}),
+  });
   return { ok: true, project: res.project, created: true };
 }
 
@@ -541,6 +551,10 @@ export function initCustomPatternSavedProjectsPanel(
       return;
     }
     hydrateSavedCustomPatternProjectSession(res.project);
+    logSleevelessPatternActivity("pattern_opened", {
+      patternId: res.project.id,
+      patternTitle: res.project.name,
+    });
     if (typeof document !== "undefined") {
       document.documentElement.classList.toggle(
         "kbm-editing-saved-pattern",

@@ -207,7 +207,7 @@ export function corsHeaders() {
   return {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers":
-      "Content-Type, Authorization, X-KBM-Member-Id, X-KBM-Dev-User-Id",
+      "Content-Type, Authorization, X-KBM-Member-Id, X-KBM-Member-Email, X-KBM-Dev-User-Id",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   };
 }

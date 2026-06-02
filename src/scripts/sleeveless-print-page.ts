@@ -45,6 +45,7 @@ import {
   hydratePatternPrintPersonalizationSlotsFromSession,
   triggerPatternPrint,
 } from "./patternPrintPersonalization.ts";
+import { logSleevelessPatternActivity } from "../lib/patterns/sleevelessPatternActivity.ts";
 
 function section(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
@@ -120,7 +121,10 @@ function bindPrintButton(): void {
   const btn = document.querySelector("[data-sleeveless-print-action]");
   if (!(btn instanceof HTMLButtonElement)) return;
   sleevelessPrintBtnBound = true;
-  btn.addEventListener("click", () => triggerPatternPrint(btn));
+  btn.addEventListener("click", () => {
+    logSleevelessPatternActivity("pattern_printed", { sourcePage: "/patterns/sleeveless/print" });
+    triggerPatternPrint(btn);
+  });
 }
 
 let sleevelessPrintStorageBound = false;
