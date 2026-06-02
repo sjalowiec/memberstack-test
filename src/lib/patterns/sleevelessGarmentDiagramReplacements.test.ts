@@ -186,8 +186,10 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
       measurementPiece: "front",
     });
 
+    // Half-panel convention: HIP_STS and HIP_INCHES both derive from finished_hip (44in).
+    // 44 * (81/40) / 2 = 44.55 -> 45 sts, which matches 22in at gauge (45 / 2.025 ≈ 22.2in).
     expect(repl.HIP_INCHES).toBe("22");
-    expect(repl.HIP_STS).toBe("89");
+    expect(repl.HIP_STS).toBe("45");
     expect(repl.BUST_WIDTH).toBe("20");
   });
 

@@ -6,7 +6,10 @@ import {
   resolveCardiganHalfFrontWidths,
   type CardiganHalfFrontWidths,
 } from "./cardiganFrontBlock";
-import { resolveDiagramFinishedHipInches } from "./customBuildEffectiveFinishedHip";
+import {
+  resolveDiagramFinishedHipInches,
+  resolveEffectiveFinishedHipInches,
+} from "./customBuildEffectiveFinishedHip";
 import { resolveEffectiveHemDepthInches } from "./customBuildEffectiveHemDepth";
 import { calculateHemRowsFromInches } from "./hemDefaults";
 import { lengthFromRowsForDiagram, resolveTotalInstructionRows } from "./sleevelessRowAccounting";
@@ -138,11 +141,18 @@ function resolveHipFieldsForSleevelessDiagram(
 ): { HIP_STS: string; HIP_ROWS: string; HIP_INCHES: string } {
   const finishedBust = isFiniteNumber(d.finishedBustChest) ? d.finishedBustChest : undefined;
   const finishedHip = resolveDiagramFinishedHipInches(patternData, finishedBust);
+  // Explicit, stored hip (undefined when only the bust default would apply) so the hip stitch count
+  // tracks the hip — not the bust cast-on — whenever a real hip measurement is present.
+  const explicitHip = resolveEffectiveFinishedHipInches(patternData);
   const spi = d.stitchesPerInch;
 
   let hipSts: number | undefined;
   if (isFiniteNumber(d.hemCastOnStitches) && d.hemCastOnStitches > 0) {
+    // Generated patterns always provide this and it already reflects any hip shaping.
     hipSts = Math.round(d.hemCastOnStitches);
+  } else if (isFiniteNumber(explicitHip) && isFiniteNumber(spi) && spi > 0) {
+    // Half-panel hip stitches, derived from the same hip measurement HIP_INCHES uses.
+    hipSts = Math.round((explicitHip * spi) / 2);
   } else if (isFiniteNumber(d.backStitches) && d.backStitches > 0) {
     hipSts = Math.round(d.backStitches);
   } else if (isFiniteNumber(finishedHip) && isFiniteNumber(spi) && spi > 0) {
