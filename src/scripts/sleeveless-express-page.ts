@@ -36,7 +36,7 @@ import {
   isValidExpressSizeForAudience,
   SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID,
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
-import { scrollToBuilderSection } from "../lib/patterns/scrollToBuilderSection";
+import { scrollToSectionWithHeaderOffset } from "../lib/patterns/scrollToSectionWithHeaderOffset";
 import { focusFirstInputInSection } from "../lib/patterns/focusFirstInputInSection";
 import { resolveSleevelessAudienceHeroImageSrc } from "../lib/patterns/sleevelessAudienceHeroImage";
 import {
@@ -554,6 +554,9 @@ function initExpressPage() {
     clearAllLockedFeedback();
     openStep = step;
     refreshBuilderState();
+    // Reveal the just-opened section below the fixed site header (e.g. "Choose your front"),
+    // so a sibling-collapse layout shift never leaves its content hidden under the header.
+    scrollToSectionWithHeaderOffset(stepSection(step));
   }
 
   /** Deep-link from Measurement Blueprint “Change gauge” — opens Gauge accordion when prior steps are complete. */
@@ -567,7 +570,6 @@ function initExpressPage() {
     if (hash !== "express-gauge-section") return;
     if (maxReachableFromChoices(values) < STEPS) return;
     goToStep(STEPS);
-    scrollToBuilderSection(document.getElementById("express-gauge-section"));
   }
 
   function markChoiceSelected(sectionEl: HTMLElement, selectedEl: HTMLElement) {
@@ -801,7 +803,6 @@ function initExpressPage() {
     const step = parseInt(el.getAttribute("data-pill-step") ?? "0", 10);
     if (step >= 1 && step <= maxReachable) {
       goToStep(step);
-      scrollToBuilderSection(stepSection(step));
     }
   }
 
