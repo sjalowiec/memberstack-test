@@ -93,7 +93,7 @@ describe("A-line round cardigan front", () => {
     expect(repl.BUST_STS).toBe(String(result.debug.cardiganHalfLeftBustBodySts));
     expect(Number(repl.HIP_STS)).toBeLessThan(result.debug.hemCastOnStitches!);
     expect(Number(repl.BUST_STS)).toBeLessThan(result.debug.bustBodyStitches!);
-    expect(Number(repl.SHOULDER_STS)).toBe(result.debug.shoulderStitches);
+    expect(Number(repl.SHOULDER_STS)).toBe(result.debug.cardiganHalfLeftStitchesAfterArmhole);
     expect(repl.HIP_INCHES).toBe("12");
   });
 
