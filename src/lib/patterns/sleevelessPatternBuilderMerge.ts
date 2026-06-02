@@ -21,7 +21,10 @@ import {
 } from "./sleevelessCustomBuildWizardNeckline";
 import { mapExpressStyleKey } from "./syncSleevelessExpressDesignToStorage";
 import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "./patternStorage";
-import { reconcileStraightTorsoOverridesPreservingUserHip } from "./sleevelessCustomBuildBodyMeasurements";
+import {
+  reconcileStraightTorsoOverridesAfterChartSync,
+  reconcileStraightTorsoOverridesPreservingUserHip,
+} from "./sleevelessCustomBuildBodyMeasurements";
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 
 export function sectionPattern(obj: unknown): Record<string, unknown> {
@@ -306,7 +309,14 @@ export function applyCustomBuildMeasurementOverridesToGenerator(
       sectionPattern(sectionPattern(gen.fit).selectedMeasurements).finished_bust_chest;
     const bustIn = typeof bust === "number" && bust > 0 ? bust : undefined;
     if (bustIn !== undefined) {
-      overrides = reconcileStraightTorsoOverridesPreservingUserHip(bustIn, overrides);
+      const mode = String(sectionPattern(gen.style).patternMode ?? "").trim();
+      // Custom Build honors an intentionally wide hip the knitter set on a straight torso. Express
+      // has no such control, so a stale hip left over from another size (e.g. 43″ on a Men's Med
+      // close bust 37″) must drop to bust — otherwise the straight torso widens into an A-line cast-on.
+      overrides =
+        mode === "custom-build"
+          ? reconcileStraightTorsoOverridesPreservingUserHip(bustIn, overrides)
+          : reconcileStraightTorsoOverridesAfterChartSync(bustIn, overrides);
     }
   }
 
