@@ -117,10 +117,13 @@ export function resolveBodyBlockHipCircumferenceInches(
   if (isSleevelessExplicitCustomBuildStraight(patternData, finishedBust, finishedHip)) {
     return finishedBust;
   }
-  // Express (and any non–custom-build) straight torso: honor style, not stale review hip overrides.
+  // Express (and any non–custom-build) straight torso: ignore a stale WIDE hip (e.g. a leftover
+  // review override) that would widen a straight body into an A-line. A narrower hip still infers
+  // shaped (waist) tapering, so only clamp to bust when the hip exceeds it.
   if (
     storedBodyShapeKey(patternData) === "straight" &&
-    !isCustomBuildPatternMode(patternData)
+    !isCustomBuildPatternMode(patternData) &&
+    measurementsImplySleevelessAlineBody(finishedBust, finishedHip)
   ) {
     return finishedBust;
   }
