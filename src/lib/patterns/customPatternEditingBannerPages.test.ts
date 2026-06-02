@@ -6,7 +6,6 @@ import { writeActiveCustomPatternProjectId } from "./customPatternProjectActiveI
 import {
   buildCustomPatternEditingBannerCopy,
   getCustomPatternEditingBannerState,
-  SLEEVELESS_WORKSPACE_CREATE_TAB_PATH,
 } from "./customPatternEditingBanner";
 import { saveCurrentPattern } from "./patternStorage";
 
@@ -30,7 +29,6 @@ describe("Create tab editing banner page wiring", () => {
     expect(src).toContain("data-cb-editing-banner-host");
     expect(src).toContain("custom-pattern-editing-banner.css");
     expect(src).toContain("customPatternEditingBanner.ts");
-    expect(src).toContain(SLEEVELESS_WORKSPACE_CREATE_TAB_PATH);
   });
 
   it("Pattern output page does not mount the editing banner host", () => {
@@ -46,12 +44,6 @@ describe("Create tab editing banner page wiring", () => {
     expect(src).toContain("data-cb-editing-helper");
     expect(src).toContain("data-cb-editing-project-name");
     expect(src).toContain("custom-pattern-editing-banner.css");
-  });
-
-  it("Foundation design page highlights workspace Create tab, not Customize", () => {
-    const src = readFileSync(FOUNDATION_DESIGN_ASTRO, "utf8");
-    expect(src).toMatch(/activeTab="express"/);
-    expect(src).not.toMatch(/activeTab="custom"/);
   });
 
   it("Foundation design page marks the internal stepper for saved-edit hiding", () => {

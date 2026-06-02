@@ -28,9 +28,6 @@ export type CustomPatternEditingBannerState =
 /** Where the `[data-cb-editing-banner-host]` markup is mounted in the sleeveless workspace. */
 export type CustomPatternEditingBannerSurface = "pattern-output" | "editable-workspace";
 
-/** Workspace Create tab route (`PatternWorkspaceTabs` → expressHref). */
-export const SLEEVELESS_WORKSPACE_CREATE_TAB_PATH = "/patterns/sleeveless-express";
-
 /**
  * Finished Pattern instructions (`/patterns/sleeveless/pattern/`) omit the banner host.
  * Create, Customize, Foundation, Review, and other editable steps include it.

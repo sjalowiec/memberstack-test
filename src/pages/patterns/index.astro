@@ -1,14 +1,11 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { buildSleevelessExpressNewPatternHref } from '../../lib/patterns/patternStorage';
 
 // NOTE: The previous sales-style hero and "Why These Patterns Are Different"
 // feature grid were moved off this catalog page (not deleted):
 //   - <PatternsMarketingHero />     (src/components/patterns/PatternsMarketingHero.astro)
 //   - <PatternsFeaturesSection />   (src/components/patterns/PatternsFeaturesSection.astro)
 // TODO(about-page): surface these on a future "About the Pattern Builders" page.
-
-const startNewPatternHref = buildSleevelessExpressNewPatternHref();
 
 const availablePatterns = [
   {
@@ -58,21 +55,19 @@ const comingSoonPatterns = [
 
   <div class="patterns-page">
 
-    <header class="patterns-intro">
-      <h1 class="patterns-intro__title">Pattern Builders</h1>
-      <p class="patterns-intro__subtitle">
-        Choose a pattern builder and create a custom pattern for your machine, your size, and your gauge.
-      </p>
+    <header class="patterns-hero">
+      <div class="patterns-hero__text">
+        <h1 class="patterns-intro__title">Pattern Builders</h1>
+        <p class="patterns-intro__subtitle">
+          Choose a pattern builder and create a custom pattern for your machine, your size, and your gauge.
+        </p>
+      </div>
+      <div class="patterns-hero__actions">
+        <a href="/account#my-patterns" class="patterns-hero__btn kbm-btn kbm-btn-outline">
+          My Patterns
+        </a>
+      </div>
     </header>
-
-    <nav class="patterns-action-bar" aria-label="Pattern workspace actions">
-      <a href={startNewPatternHref} class="patterns-action-bar__btn kbm-btn kbm-btn-accent">
-        Start a New Pattern
-      </a>
-      <a href="/account#my-patterns" class="patterns-action-bar__btn kbm-btn kbm-btn-outline">
-        My Patterns
-      </a>
-    </nav>
 
     <section class="patterns-catalog" aria-labelledby="patterns-available-heading">
       <h2 id="patterns-available-heading" class="patterns-section-title">Available now</h2>
@@ -124,9 +119,18 @@ const comingSoonPatterns = [
   padding: 20px;
 }
 
-/* Intro */
-.patterns-intro {
-  margin: 0 0 20px;
+/* Hero / header */
+.patterns-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 0 28px;
+}
+
+.patterns-hero__text {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .patterns-intro__title {
@@ -145,25 +149,22 @@ const comingSoonPatterns = [
   color: #4d5a48;
 }
 
-/* Action bar */
-.patterns-action-bar {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin: 0 0 28px;
+.patterns-hero__actions {
+  flex: 0 0 auto;
 }
 
-.patterns-action-bar__btn {
+.patterns-hero__btn {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 3.25rem;
-  padding: 0.85rem 1.25rem;
+  padding: 0.85rem 1.5rem;
   margin: 0;
   font-size: 1.05rem;
   font-weight: 600;
   text-align: center;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 /* Catalog sections */
@@ -303,8 +304,18 @@ a.catalog-card:focus-visible {
 }
 
 @media (max-width: 720px) {
-  .patterns-action-bar {
-    grid-template-columns: 1fr;
+  .patterns-hero {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .patterns-hero__actions {
+    width: 100%;
+  }
+
+  .patterns-hero__btn {
+    width: 100%;
   }
 
   .patterns-grid {
