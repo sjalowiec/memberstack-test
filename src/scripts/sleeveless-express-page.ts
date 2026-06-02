@@ -37,6 +37,7 @@ import {
   SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID,
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
 import { scrollToBuilderSection } from "../lib/patterns/scrollToBuilderSection";
+import { focusFirstInputInSection } from "../lib/patterns/focusFirstInputInSection";
 import { resolveSleevelessAudienceHeroImageSrc } from "../lib/patterns/sleevelessAudienceHeroImage";
 import {
   getExpressEditingProjectLabel,
@@ -297,6 +298,13 @@ function initExpressPage() {
     ? Math.min(STEPS, Math.max(1, openStepCandidate || STEPS))
     : Math.min(maxReachable, Math.max(0, openStepCandidate));
 
+  /**
+   * Tracks the Gauge accordion's open state across `updateSections` runs so we only move focus
+   * on a genuine closed→open transition (not on every state refresh, gauge typing, or initial load).
+   * Seeded from the initial open state so a resumed session that lands on Gauge does not steal focus.
+   */
+  let gaugeAccordionWasOpen = openStep === STEPS;
+
   const sections = document.querySelectorAll("[data-express-step]");
   const pills = document.querySelectorAll("[data-pill-step]");
   const expressBuilderRoot = document.querySelector("[data-express-builder]");
@@ -523,6 +531,13 @@ function initExpressPage() {
           if (!open) inp.setAttribute("tabindex", "-1");
           else inp.removeAttribute("tabindex");
         });
+
+        // Focus the first gauge input only on a closed→open transition so the user can type
+        // immediately. Guarded so it never steals focus while closed or when another step opens.
+        if (open && !gaugeAccordionWasOpen) {
+          focusFirstInputInSection(sectionEl);
+        }
+        gaugeAccordionWasOpen = open;
       }
     });
 
