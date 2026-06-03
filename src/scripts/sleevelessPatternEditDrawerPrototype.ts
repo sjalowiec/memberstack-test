@@ -32,13 +32,19 @@ import {
   saveCurrentPattern,
   savePatternData,
 } from "../lib/patterns/patternStorage";
-import { LEGACY_STANDALONE_MEASUREMENTS_KEY } from "../lib/patterns/sleevelessCustomMeasurementStorage";
+import {
+  LEGACY_STANDALONE_MEASUREMENTS_KEY,
+  loadMeasurementOverrides,
+  persistMeasurementOverrides,
+} from "../lib/patterns/sleevelessCustomMeasurementStorage";
+import { computeFitDerivedMeasurementOverrides } from "../lib/patterns/sleevelessEditFitRecalc";
 import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
 import {
   isPositiveNumericMeasurement,
   validatePatternBuilderRequired,
 } from "../lib/patterns/patternBuilderValidation";
 import {
+  findExpressChartRow,
   getExpressChartRowsForAudience,
   isValidExpressSizeForAudience,
   loadExpressSweaterCharts,
@@ -322,6 +328,59 @@ function initSleevelessPatternEditDrawer(): void {
     const ease = EASE_INCHES_BY_FIT[fit] ?? EASE_INCHES_BY_FIT.standard;
     const label = fit.charAt(0).toUpperCase() + fit.slice(1);
     easeEl.textContent = `${label} fit · about +${ease}″ ease (applied to the chart measurements).`;
+  }
+
+  /** Write a recomputed inches value into a measurement diagram input (when it has rendered). */
+  function setMeasurementInputValue(key: string, displayInches: string): void {
+    if (!measureBody || !displayInches) return;
+    const input = measureBody.querySelector<HTMLInputElement>(`[data-cb-measure-input="${key}"]`);
+    if (input) input.value = displayInches;
+  }
+
+  /**
+   * Fit is a LIVE recalculation control: changing it must refresh the finished bust/chest and hip
+   * from the body chart row + new ease, both in the visible measurement diagram and in the stored
+   * `cbMeasurementOverrides` that the save/regeneration pipeline reads. Without this, the finished
+   * circumference stays at the value captured when the pattern was first built (e.g. Close 22″
+   * never moves to Standard 24″). Non-ease fields (shoulder, armhole, neck, length, hem) are left
+   * untouched.
+   */
+  function recalcFitDerivedMeasurements(): void {
+    if (typeof localStorage === "undefined") return;
+    if (!chartsLoaded) {
+      // Charts power the body row lookup; load once then retry so the first fit change still applies.
+      void loadExpressSweaterCharts()
+        .then(() => {
+          chartsLoaded = true;
+          recalcFitDerivedMeasurements();
+        })
+        .catch(() => {});
+      return;
+    }
+
+    const audience = resolveAudience();
+    const ft = section(getCurrentPattern().fit);
+    const size =
+      sizeSelect?.value.trim() ||
+      (typeof ft.selectedSize === "string" ? ft.selectedSize.trim() : "");
+    if (!size || !isValidExpressSizeForAudience(audience, size)) return;
+
+    const row = findExpressChartRow(audience, size);
+    if (!row) return;
+
+    const fit = radioValue("sl-edit-fit") || "standard";
+    const bodyShape = readCurrentBodyShape();
+    const overrides = computeFitDerivedMeasurementOverrides(row, fit, {
+      bodyShape,
+      existingOverrides: loadMeasurementOverrides(),
+    });
+
+    // Persist so the save/regeneration pipeline (and any re-render of the diagram) uses the new
+    // values even if the diagram inputs have not finished rendering yet. Restored on Cancel via
+    // the measurement-storage baseline snapshotted on open.
+    persistMeasurementOverrides(overrides);
+    setMeasurementInputValue("chestBust", overrides.chestBust ?? "");
+    setMeasurementInputValue("hip", overrides.hip ?? "");
   }
 
   function populateSizeOptions(audience: string, currentSize: string): void {
@@ -703,7 +762,10 @@ function initSleevelessPatternEditDrawer(): void {
   });
 
   drawer.querySelectorAll<HTMLInputElement>('input[name="sl-edit-fit"]').forEach((el) => {
-    el.addEventListener("change", updateEaseReadout);
+    el.addEventListener("change", () => {
+      updateEaseReadout();
+      recalcFitDerivedMeasurements();
+    });
   });
 
   document.addEventListener("keydown", (event) => {
