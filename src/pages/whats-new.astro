@@ -28,53 +28,68 @@ const sueHeadshot = "/images/sue.gif";
             </p>
            </div>
 
+          <section class="whats-new-video" aria-labelledby="whats-new-video-heading">
+            <h2 class="whats-new-video__heading" id="whats-new-video-heading">Watch the Pattern Update Walkthrough</h2>
+            <p class="whats-new-video__intro">
+              A lot has changed in the pattern system. This quick walkthrough shows how saving, editing, copying, and managing patterns now works.
+            </p>
+            <div class="whats-new-video__embed">
+              <iframe
+                src="https://player.vimeo.com/video/1198067821"
+                title="Pattern Update Walkthrough"
+                loading="lazy"
+                frameborder="0"
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowfullscreen
+              ></iframe>
+            </div>
+          </section>
+
           <section class="whats-new-features" aria-labelledby="whats-new-features-heading">
             <h2 class="whats-new-features__heading" id="whats-new-features-heading">Recent Improvements</h2>
             <ul class="whats-new-features__grid">
               <li class="whats-new-feature-card">
-                <h3 class="whats-new-feature-card__title">Cardigan Support</h3>
+                <h3 class="whats-new-feature-card__title">Save Your Patterns</h3>
                 <p class="whats-new-feature-card__lead">
-                  Choose pullover or cardigan and customize your pattern without rewriting it yourself.
+                  Build a pattern and save it to your account so you can come back to it later.
                 </p>
                 <ul class="whats-new-feature-card__points">
-                  <li>Pullover and cardigan support</li>
-                  <li>More flexibility without rewriting patterns manually</li>
-                  <li>Easier customization</li>
+                  <li>Save patterns to your account</li>
+                  <li>Return to them anytime</li>
+                  <li>Build your own pattern library</li>
                 </ul>
               </li>
               <li class="whats-new-feature-card">
-                <h3 class="whats-new-feature-card__title">Adjustable A-Line Shaping</h3>
+                <h3 class="whats-new-feature-card__title">Edit Existing Patterns</h3>
                 <p class="whats-new-feature-card__lead">
-                  Shape the silhouette to fit your project and your preferences.
+                  Open a saved pattern, make changes, and update it without starting over.
                 </p>
                 <ul class="whats-new-feature-card__points">
-                  <li>Adjustable shaping options</li>
-                  <li>Better fit flexibility</li>
-                  <li>More control over silhouette shaping</li>
+                  <li>Change pattern choices</li>
+                  <li>Adjust measurements</li>
+                  <li>Save updates to the same pattern</li>
                 </ul>
               </li>
               <li class="whats-new-feature-card">
-                <h3 class="whats-new-feature-card__title">Interactive Row-by-Row Tracking</h3>
+                <h3 class="whats-new-feature-card__title">Copy a Pattern</h3>
                 <p class="whats-new-feature-card__lead">
-                  Stay oriented through long shaping sections without losing your place.
+                  Duplicate a saved pattern so you can experiment with a new version while keeping the original.
                 </p>
                 <ul class="whats-new-feature-card__points">
-                  <li>Mark completed shaping rows</li>
-                  <li>Hide completed rows while knitting</li>
-                  <li>Stay oriented in long shaping sections</li>
-                  <li>Reset progress anytime</li>
+                  <li>Keep the original pattern</li>
+                  <li>Try a different fit or style</li>
+                  <li>Create variations more easily</li>
                 </ul>
               </li>
               <li class="whats-new-feature-card">
-                <h3 class="whats-new-feature-card__title">Visual Shaping Notation</h3>
+                <h3 class="whats-new-feature-card__title">Manage Everything in My Account</h3>
                 <p class="whats-new-feature-card__lead">
-                  See the full picture of your shaping before and while you knit.
+                  View your saved patterns from your account dashboard and keep your projects organized.
                 </p>
                 <ul class="whats-new-feature-card__points">
-                  <li>Full-piece shaping diagrams</li>
-                  <li>Visual row-by-row shaping guidance</li>
-                  <li>Toggle between views</li>
-                  <li>Easier shaping comprehension at a glance</li>
+                  <li>See saved patterns in one place</li>
+                  <li>Open, edit, copy, or delete</li>
+                  <li>Keep track of your projects</li>
                 </ul>
               </li>
             </ul>
@@ -160,11 +175,7 @@ const sueHeadshot = "/images/sue.gif";
         <p class="whats-new-beginning-callout__copy">
           These updates lay the groundwork for more garment styles, new shaping systems, additional interactive knitting tools, and ways to save and revisit your custom projects. We’re building this with you, one step at a time—and your feedback helps shape what comes next.
         </p>
-        <div class="whats-new-bottom-cta">
-          <a class="kbm-btn kbm-btn-primary whats-new-bottom-cta__btn" href="/beta/pattern-update">
-            See the Pattern Update
-          </a>
-        </div>
+       
       </section>
 
       <hr class="whats-new-divider" aria-label="Divider">
@@ -373,6 +384,46 @@ const sueHeadshot = "/images/sue.gif";
       border-radius: 10px;
       text-decoration: none;
       font-family: inherit;
+    }
+
+    .whats-new-video {
+      box-sizing: border-box;
+      background: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      padding: 1.2rem 1.3rem;
+    }
+
+    .whats-new-video__heading {
+      margin: 0 0 0.45rem 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--kbm-green);
+    }
+
+    .whats-new-video__intro {
+      margin: 0 0 1rem 0;
+      font-size: var(--text-base);
+      line-height: 1.55;
+      color: #3d4a2e;
+    }
+
+    .whats-new-video__embed {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .whats-new-video__embed iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
     }
 
     .whats-new-features {
