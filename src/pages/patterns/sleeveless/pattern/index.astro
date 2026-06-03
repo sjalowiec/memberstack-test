@@ -691,6 +691,13 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
   .sl-edit-drawer {
     position: fixed;
     inset: 0;
+    /*
+     * Sits just below the fixed site chrome (header + DEV/env banner + "What's New"
+     * beta strip). The chrome (.kbm-header-wrap, z 1500; .kbm-env-banner, z 4000) is
+     * left painting on top, and the drawer PANEL is offset below it (see the
+     * `--workspace` panel rule) so the header/close + action bar never land behind the
+     * banners. z-index keeps the drawer above the page content it overlays.
+     */
     z-index: 1450;
     visibility: hidden;
     opacity: 0;
@@ -1042,7 +1049,14 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
    * ========================================================================== */
   .sl-edit-drawer--workspace .sl-edit-drawer__panel {
     position: absolute;
-    inset: 0;
+    /*
+     * Start the panel BELOW the fixed site chrome (env/DEV banner + header + "What's New"
+     * beta strip). `--header-offset` already measures the full .kbm-header-wrap height
+     * (which contains the beta strip) and `--kbm-env-banner-h` adds the DEV banner — the
+     * same offset main.site-content uses. This keeps the panel header (Close) and the top
+     * action bar (Cancel / Update Pattern) in the visible area instead of behind the chrome.
+     */
+    inset: calc(var(--header-offset, 170px) + var(--kbm-env-banner-h, 0px)) 0 0 0;
     width: 100%;
     max-width: none;
     box-shadow: none;
@@ -1403,11 +1417,14 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
   }
 
   /*
-   * Mobile: the same Measurements-header action group re-pins to the bottom as a sticky
-   * action bar so "Update Pattern" is always reachable without scrolling. Reusing the SAME
-   * element (not a duplicate) keeps the existing Cancel/Update handlers attached.
+   * Below the desktop two-column breakpoint (mobile + tablet, <1000px) the layout is a
+   * single scrolling column, so the Measurements-header action group re-pins to the bottom
+   * as a fixed bar — "Update Pattern" / Cancel stay reachable without scrolling at any
+   * height. Reusing the SAME element (not a duplicate) keeps the existing handlers attached.
+   * Desktop (>=1000px) keeps the actions in the measurements header, where the right column
+   * does not scroll, so they are always visible there too.
    */
-  @media (max-width: 640px) {
+  @media (max-width: 999px) {
     .sl-edit-workspace__measure-actions {
       position: fixed;
       left: 0;
