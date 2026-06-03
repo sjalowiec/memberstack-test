@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
 import CardRibbon from "../../components/ui/CardRibbon.astro";
 import allProducts from "../../data/designaknit-products.json";
+import { withDesignaknitUtm } from "../../lib/shop/designaknitUtm";
 
 const pageTitle = "DesignaKnit Comparison & Buying Guide";
 const pageDescription =
@@ -236,7 +237,7 @@ const comparisonGroups: { title: string; rows: ComparisonRow[] }[] = [
               <p class="dak-price">{product.price} USD</p>
               <a
                 class="dak-buy-link kbm-btn kbm-btn-primary"
-                href={product.href}
+                href={withDesignaknitUtm(product.href, product.id)}
                 target="_blank"
                 rel="noopener noreferrer"
               >
