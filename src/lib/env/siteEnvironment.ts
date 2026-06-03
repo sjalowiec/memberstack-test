@@ -25,12 +25,14 @@ const LOCAL_HOSTNAMES = new Set([
   "[::1]",
 ]);
 
-/** Apex + www domains that are the live, member-facing production site. */
+/** Apex + www + app domains that are the live, member-facing production site. */
 const PRODUCTION_HOSTNAMES = new Set([
   "knititnow.com",
   "www.knititnow.com",
+  "app.knititnow.com",
   "knitbymachine.com",
   "www.knitbymachine.com",
+  "app.knitbymachine.com",
 ]);
 
 function normalizeHost(hostname: string | null | undefined): string {

@@ -37,7 +37,12 @@ describe("detectSiteEnvironment", () => {
   it("detects known production hostnames over PUBLIC_SITE_ENV", () => {
     expect(detectSiteEnvironment("knititnow.com")).toBe("production");
     expect(detectSiteEnvironment("www.knititnow.com")).toBe("production");
+    expect(detectSiteEnvironment("app.knititnow.com")).toBe("production");
+    expect(detectSiteEnvironment("app.knitbymachine.com")).toBe("production");
     expect(detectSiteEnvironment("WWW.KnitItNow.com")).toBe("production");
+    expect(
+      detectSiteEnvironment("app.knititnow.com", { publicSiteEnv: "dev" }),
+    ).toBe("production");
     expect(
       detectSiteEnvironment("www.knititnow.com", { publicSiteEnv: "dev" }),
     ).toBe("production");
