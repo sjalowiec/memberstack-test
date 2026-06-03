@@ -38,6 +38,7 @@ import {
   persistMeasurementOverrides,
 } from "../lib/patterns/sleevelessCustomMeasurementStorage";
 import { computeFitDerivedMeasurementOverrides } from "../lib/patterns/sleevelessEditFitRecalc";
+import { deriveSleevelessEditWorkspaceBodyShape } from "../lib/patterns/sleevelessEditWorkspaceBodyShape";
 import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
 import {
   isPositiveNumericMeasurement,
@@ -609,7 +610,14 @@ function initSleevelessPatternEditDrawer(): void {
 
     applyBtn.disabled = true;
     try {
-      const bodyShape = readCurrentBodyShape();
+      // The measurement editor lets the user set finished bust + hip directly. A manual hip edit
+      // that makes the hip wider than the bust means the body must flare (A-line), even when the
+      // pattern was previously straight. Reclassify from the edited finished measurements so the
+      // wide hip stops being treated as a stale override and drives A-line math + diagram routing.
+      const bodyShape = deriveSleevelessEditWorkspaceBodyShape(
+        loadMeasurementOverrides(),
+        readCurrentBodyShape(),
+      );
       const { front, style } = expressStyleKeyFor(bodyShape, garment);
 
       // 1) Pattern Setup → same wizard storage the Custom Build / Express steps write.
