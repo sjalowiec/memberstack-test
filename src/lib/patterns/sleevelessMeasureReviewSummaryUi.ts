@@ -30,7 +30,8 @@ function appendSegment(line: HTMLElement, segment: MeasureReviewSummarySegment):
   value.className = "sleeveless-measure-summary-line__value";
   value.textContent = segment.value;
 
-  wrap.append(label, value);
+  // Space between label and value so it reads "Recipient: Women", not "Recipient:Women".
+  wrap.append(label, document.createTextNode(" "), value);
   line.appendChild(wrap);
 }
 

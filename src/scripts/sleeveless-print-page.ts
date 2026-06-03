@@ -45,6 +45,7 @@ import {
   hydratePatternPrintPersonalizationSlotsFromSession,
   triggerPatternPrint,
 } from "./patternPrintPersonalization.ts";
+import { logSleevelessPatternActivity } from "../lib/patterns/sleevelessPatternActivity.ts";
 
 function section(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
@@ -120,7 +121,10 @@ function bindPrintButton(): void {
   const btn = document.querySelector("[data-sleeveless-print-action]");
   if (!(btn instanceof HTMLButtonElement)) return;
   sleevelessPrintBtnBound = true;
-  btn.addEventListener("click", () => triggerPatternPrint(btn));
+  btn.addEventListener("click", () => {
+    logSleevelessPatternActivity("pattern_printed", { sourcePage: "/patterns/sleeveless/print" });
+    triggerPatternPrint(btn);
+  });
 }
 
 let sleevelessPrintStorageBound = false;
@@ -191,11 +195,13 @@ async function initSleevelessPrintPage(): Promise<void> {
   const backLocalStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
     ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC ?? 0))
     : 0;
-  const frontLocalStartRc = Number.isFinite(result?.debug?.frontNecklineShapingBeginLocalRC)
-    ? Math.max(0, Math.floor(result.debug.frontNecklineShapingBeginLocalRC ?? 0))
-    : Number.isFinite(result?.debug?.frontNecklineStartLocalRC)
-      ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC ?? 0))
-      : 0;
+  const frontLocalStartRc = Number.isFinite(result?.debug?.frontNecklineCenterDivideLocalRC)
+    ? Math.max(0, Math.floor(result.debug.frontNecklineCenterDivideLocalRC ?? 0))
+    : Number.isFinite(result?.debug?.frontNecklineShapingBeginLocalRC)
+      ? Math.max(0, Math.floor(result.debug.frontNecklineShapingBeginLocalRC ?? 0))
+      : Number.isFinite(result?.debug?.frontNecklineStartLocalRC)
+        ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC ?? 0))
+        : 0;
   const backLocalStartLabel = `RC:${String(backLocalStartRc).padStart(3, "0")}`;
   const frontLocalStartLabel = `RC:${String(frontLocalStartRc).padStart(3, "0")}`;
 
@@ -206,9 +212,11 @@ async function initSleevelessPrintPage(): Promise<void> {
     armholeGarmentStart,
     backChecklistOptions,
   );
+  const frontChecklistOptions = { includeCenterNecklineSetupRow: true as const };
   const frontChecklistArmholeStart = armholeLocalRcActiveShoulderChecklistStart(
     result.frontNeckShoulderShapingChart,
     armholeGarmentStart,
+    frontChecklistOptions,
   );
 
   const backChartHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
@@ -238,14 +246,15 @@ async function initSleevelessPrintPage(): Promise<void> {
     }),
     {
       activeSideRcStart: frontChecklistArmholeStart,
+      includeCenterNecklineSetupRow: true,
     },
   );
 
   const { preludeRows, continuationRows } = splitRowsBeforeNeckShoulderChartMount(result.displayRows ?? []);
-  const openingBackHtml = renderSleevelessPrintPieceHtml(preludeRows, "");
+  const openingBackHtml = renderSleevelessPrintPieceHtml(preludeRows, "", "back");
   const continuationBackHtml =
     continuationRows.length > 0
-      ? renderSleevelessPrintPieceHtml(continuationRows, backChartHtml)
+      ? renderSleevelessPrintPieceHtml(continuationRows, backChartHtml, "back")
       : "";
 
   let diagramMarkup = `<p class="print-muted print-diagram-fallback">Loading back schematic…</p>`;
@@ -274,10 +283,10 @@ async function initSleevelessPrintPage(): Promise<void> {
     preludeRows: frontPreludeRows,
     continuationRows: frontContinuationRows,
   } = splitRowsBeforeNeckShoulderChartMount(result.frontDisplayRows ?? []);
-  const frontOpeningHtml = renderSleevelessPrintPieceHtml(frontPreludeRows, "");
+  const frontOpeningHtml = renderSleevelessPrintPieceHtml(frontPreludeRows, "", "front");
   const frontContinuationHtml =
     frontContinuationRows.length > 0
-      ? renderSleevelessPrintPieceHtml(frontContinuationRows, frontChartHtml)
+      ? renderSleevelessPrintPieceHtml(frontContinuationRows, frontChartHtml, "front")
       : "";
 
   const warningsFiltered = warningsForSleevelessPrintPrintout(result.warnings);
@@ -362,7 +371,11 @@ async function initSleevelessPrintPage(): Promise<void> {
         <p class="print-diagram-caption">${escapeHtml(frontPrintDiagramCaption)}</p>
       </aside>
     </div>
-    ${frontContinuationHtml}
+    ${
+      frontContinuationHtml
+        ? `<div class="print-page-break-before-front-neckline">${frontContinuationHtml}</div>`
+        : ""
+    }
   </section>
 
   ${printFinishingSectionHtml(patternMerged, result.debug)}

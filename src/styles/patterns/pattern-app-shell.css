@@ -1,0 +1,120 @@
+/*
+ * Pattern App Shell — full-width workspace foundation for the sleeveless pattern system.
+ *
+ * WHY: Every wizard/pattern page is wrapped in `.wizard-container`, which is
+ * capped to `max-width: 1000px` in `styles/wizard.css` (builder pages add a
+ * second cap via `.express-wizard { max-width: 1000px }`). That keeps the
+ * pattern workspace inside the standard site content column, so instructions,
+ * sticky diagrams, the measurement SVG, and the edit drawer feel cramped.
+ *
+ * WHAT: This file lifts that cap to an app-like workspace width, but ONLY for
+ * pages that opt in by adding `.pattern-app-shell` to their top-level <main>.
+ * The shared site header (Header.astro) and footer (Footer.astro) rendered by
+ * Layout.astro are NOT touched — only the workspace inside the page widens.
+ * Instruction prose is kept at the same comfortable reading measure the rest of
+ * the pattern UI already uses (~52rem), so longer lines never become unreadable.
+ *
+ * SCOPE: Opt-in only. Marketing / catalog / account / tool pages keep the
+ * standard 1000px column because they never carry `.pattern-app-shell`.
+ */
+
+.pattern-app-shell {
+  /* Practical app width — roomy, but not edge-to-edge on very large monitors. */
+  --pattern-shell-max: 1480px;
+  --pattern-shell-pad: clamp(1rem, 3vw, 2.75rem);
+  /* Readable line length for flowing instruction text (matches existing intro). */
+  --pattern-readable: 52rem;
+}
+
+/*
+ * PRIMARY CONSTRAINT: the global layout rule
+ *   main { max-width: var(--max-content-width) }  (= 1100px, styles/global.css)
+ * is a bare element selector, so it caps EVERY <main> — including BOTH the
+ * Layout.astro wrapper <main class="site-content"> and the page's own nested
+ * <main class="pattern-app-shell">. That parent cap is what kept the workspace
+ * trapped at ~1100px even after `.wizard-container` was widened. Lift the cap on
+ * both mains in this nesting only (`:has()` keeps every other page untouched).
+ */
+main.pattern-app-shell,
+main.site-content:has(.pattern-app-shell) {
+  max-width: min(var(--pattern-shell-max, 1480px), 100%);
+  width: 100%;
+}
+
+/*
+ * Lift the narrow wizard cap to the workspace width (scoped to the shell only).
+ * Covers both the base `.wizard-container` and the builder `.express-wizard`
+ * second cap so the whole workspace — tabs, header, content — shares one width.
+ */
+.pattern-app-shell .wizard-container,
+.pattern-app-shell .wizard-container.express-wizard,
+.pattern-app-shell .express-wizard {
+  max-width: min(var(--pattern-shell-max), 100%);
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--pattern-shell-pad);
+  padding-right: var(--pattern-shell-pad);
+  box-sizing: border-box;
+}
+
+/*
+ * Desktop-only refinements. Below this breakpoint the workspace is no wider than
+ * the old 1000px column, so layout/stacking behaviour is unchanged on tablets
+ * and phones (content stays stacked / toggleable exactly as before).
+ */
+@media (min-width: 1080px) {
+  /*
+   * Single-column instruction sections stay at a readable measure. Sections that
+   * actually contain the two-column garment layout or a full-width chart/diagram
+   * are released to the full workspace width via :has() (already used elsewhere
+   * in this codebase, e.g. `body:has(.sleeveless-pattern-page)`).
+   */
+  .pattern-app-shell #pattern-content .pattern-section > .pattern-section__content {
+    max-width: var(--pattern-readable);
+  }
+
+  .pattern-app-shell #pattern-content .pattern-section > .pattern-section__content:has(
+      .pattern-layout--garment-columns,
+      .sleeveless-piece-split,
+      .sleeveless-piece-chart-fullwidth,
+      .ns-shaping-chart,
+      .sg-neck-chart-print-block
+    ) {
+    max-width: none;
+  }
+
+  /*
+   * Garment two-column layout (instructions + sticky diagram): give the sticky
+   * diagram column more of the new room, and keep the prose column readable.
+   * This is a measured foundation bump only — deeper SVG/diagram enlargement is
+   * a follow-up (see report).
+   */
+  .pattern-app-shell #pattern-content .pattern-layout.pattern-layout--garment-columns,
+  .pattern-app-shell #pattern-content .sleeveless-piece-split {
+    grid-template-columns: minmax(0, 1fr) clamp(300px, 28vw, 420px);
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .pattern-app-shell #pattern-content .sleeveless-piece-split__diagram-inner {
+    max-width: 420px;
+  }
+
+  .pattern-app-shell #pattern-content .pattern-layout__content .sleeveless-pattern-instructions,
+  .pattern-app-shell #pattern-content .sleeveless-piece-split__text .sleeveless-pattern-instructions {
+    max-width: var(--pattern-readable);
+  }
+}
+
+/* Print: never let the wide shell affect printed output (print.css resets widths). */
+@media print {
+  main.pattern-app-shell,
+  main.site-content:has(.pattern-app-shell),
+  .pattern-app-shell .wizard-container,
+  .pattern-app-shell .wizard-container.express-wizard,
+  .pattern-app-shell .express-wizard {
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}

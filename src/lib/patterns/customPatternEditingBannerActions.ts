@@ -17,6 +17,7 @@ import { CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT } from "./customPatternEditi
 export { CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT };
 
 export const CB_EDITING_BANNER_UPDATE_SELECTOR = "[data-cb-editing-banner-update]";
+export const CB_EDITING_BANNER_COPY_SELECTOR = "[data-cb-editing-banner-copy]";
 export const CB_EDITING_BANNER_CANCEL_SELECTOR = "[data-cb-editing-banner-cancel]";
 export const CB_EDITING_BANNER_STATUS_SELECTOR = "[data-cb-editing-banner-status]";
 
@@ -88,6 +89,58 @@ export async function runUpdateActiveSavedCustomPattern(
 
   const res = await smartSaveCustomPatternProject({
     mode: "update",
+    resolveName: () => name,
+    onStatus: options?.onStatus,
+    root: measureRoot,
+  });
+
+  if (!res.ok) {
+    return { ok: false, error: res.error };
+  }
+
+  dispatchCustomPatternEditingStateChanged();
+  return { ok: true, projectName: res.project.name };
+}
+
+export type CopyActiveSavedCustomPatternResult =
+  | { ok: true; projectName: string }
+  | { ok: false; error: string };
+
+/**
+ * Saves the current working draft as a NEW saved project ("Save a Copy"), preserving
+ * the original's sizing chart (handled by the copy path). The new copy becomes the
+ * active/open project; the original saved project is left unchanged.
+ */
+export async function runCopyActiveSavedCustomPattern(
+  root?: ParentNode,
+  options?: {
+    onStatus?: (message: string, isError?: boolean) => void;
+  },
+): Promise<CopyActiveSavedCustomPatternResult> {
+  if (!readActiveCustomPatternProjectId()) {
+    const error = "Open a saved project before saving a copy.";
+    options?.onStatus?.(error, true);
+    return { ok: false, error };
+  }
+
+  const scope = root ?? (typeof document !== "undefined" ? document : undefined);
+  const measureRoot = resolveCustomBuildSaveMeasureFlushRoot(scope);
+  const name = scope
+    ? resolveProjectNameForEditingBannerUpdate(scope)
+    : getPatternProjectMeta().title.trim();
+  if (!name) {
+    const error = "Enter a pattern name before saving a copy.";
+    options?.onStatus?.(error, true);
+    return { ok: false, error };
+  }
+
+  prepareCustomBuildPatternGeneration({
+    root: measureRoot,
+    rehydrateSavedProject: false,
+  });
+
+  const res = await smartSaveCustomPatternProject({
+    mode: "copy",
     resolveName: () => name,
     onStatus: options?.onStatus,
     root: measureRoot,

@@ -2,7 +2,10 @@
  * Custom Build — Measurements step (`/patterns/sleeveless/custom-build/fit/`).
  * Sleeveless body diagram with editable inches; values in `cbMeasurementOverrides` only.
  */
-import { formatSwatchCountForGaugeInput } from "../lib/patterns/gaugeDisplayFormat";
+import {
+  formatSwatchCountForGaugeInput,
+  swatchCountFromPerInchForDisplay,
+} from "../lib/patterns/gaugeDisplayFormat";
 import { getDefaultHemLengthInches } from "../lib/patterns/hemDefaults";
 import {
   getCurrentPattern,
@@ -378,10 +381,14 @@ function gaugeSummary(pattern: ReturnType<typeof getCurrentPattern>): string | n
   const unit = String(yarnM?.gaugeRawUnit ?? yarnG?.gaugeRawUnit ?? "in").trim() === "cm" ? "cm" : "in";
   const over = unit === "cm" ? "10 cm" : '4"';
   if (stitchRaw && rowRaw) return `${stitchRaw} sts × ${rowRaw} rows / ${over}`;
-  const spi = yarnG?.stitchGauge ?? yarnM?.gaugeStitchesPerInch;
-  const rpi = yarnG?.rowGauge ?? yarnM?.gaugeRowsPerInch;
-  if (spi != null && rpi != null && String(spi).trim() && String(rpi).trim()) {
-    return `${spi} sts × ${rpi} rows / inch`;
+  // Fallback: derive the swatch counts (over 4" / 10 cm) from stored per-inch values so this
+  // summary never shows per-inch gauge, keeping it consistent with the Edit Pattern inputs.
+  const spi = parseFloat(String(yarnG?.stitchGauge ?? yarnM?.gaugeStitchesPerInch ?? "").trim());
+  const rpi = parseFloat(String(yarnG?.rowGauge ?? yarnM?.gaugeRowsPerInch ?? "").trim());
+  if (Number.isFinite(spi) && spi > 0 && Number.isFinite(rpi) && rpi > 0) {
+    const stitchSwatch = swatchCountFromPerInchForDisplay(spi, unit);
+    const rowSwatch = swatchCountFromPerInchForDisplay(rpi, unit);
+    if (stitchSwatch && rowSwatch) return `${stitchSwatch} sts × ${rowSwatch} rows / ${over}`;
   }
   return null;
 }

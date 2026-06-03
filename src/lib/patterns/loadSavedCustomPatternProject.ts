@@ -2,13 +2,24 @@ import {
   loadCustomPatternProject,
 } from "./customPatternProjectClient";
 import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPatternProject";
+import { claimPatternDraftForCurrentMember } from "./patternDraftOwnerGuard";
+import { logSleevelessPatternActivity } from "./sleevelessPatternActivity";
 import type { CustomPatternFamily } from "./customPatternProjectTypes";
 import {
   getContinueEditingHref,
   getSavedCustomPatternOpenHref,
+  OPEN_PATTERN_HREF,
 } from "./customPatternProjectNavigation";
 
-export type SavedCustomPatternOpenAction = "open" | "continue";
+/**
+ * - `view`: read-only destination — the saved pattern's instructions page. Primary action from
+ *   My Patterns. Hydrates the working draft so the pattern renders, but does not unlock the builder.
+ * - `open`: the editable edit surface for the saved project. Express opens the combined review
+ *   page (choices summary + measurements together); Custom Build opens its Foundation workspace.
+ *   Either way the saved values are prefilled and every step is unlocked.
+ * - `continue`: resume editing where the knitter left off.
+ */
+export type SavedCustomPatternOpenAction = "view" | "open" | "continue";
 
 export type LoadSavedCustomPatternResult =
   | { ok: true; redirectHref: string }
@@ -28,12 +39,30 @@ export async function loadSavedCustomPatternProject(
     return { ok: false, error: res.error };
   }
 
-  hydrateSavedCustomPatternProjectSession(res.project);
+  // Opening for edit unlocks and prefills every builder step (gauge included) so the knitter lands
+  // in the editable edit surface with all saved values restored. Viewing/continuing only need the
+  // working draft hydrated so the pattern renders — they do not unlock the builder.
+  hydrateSavedCustomPatternProjectSession(res.project, { editChoicesReopen: action === "open" });
 
-  const redirectHref =
-    action === "open"
-      ? getSavedCustomPatternOpenHref(res.project.source)
-      : getContinueEditingHref(res.project.source);
+  // The cloud load was owner-scoped server-side (X-KBM-Member-Id), so this draft belongs to the
+  // current member. Tag it so the draft-owner guard on the next page keeps (not clears) it.
+  claimPatternDraftForCurrentMember();
+
+  logSleevelessPatternActivity("pattern_opened", {
+    patternId: res.project.id,
+    patternTitle: res.project.name,
+    metadata: { action },
+  });
+
+  let redirectHref: string;
+  if (action === "view") {
+    // Saved pattern's instructions page — same destination regardless of how it was built.
+    redirectHref = OPEN_PATTERN_HREF;
+  } else if (action === "open") {
+    redirectHref = getSavedCustomPatternOpenHref(res.project.source);
+  } else {
+    redirectHref = getContinueEditingHref(res.project.source);
+  }
 
   return { ok: true, redirectHref };
 }

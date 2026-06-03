@@ -31,7 +31,13 @@ import {
   CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT,
 } from "./customPatternEditingEvents";
 import { captureSavedCustomPatternDirtyBaseline } from "./customPatternSavedProjectDirtyState";
+import {
+  canCopySavedCustomPattern,
+  SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT,
+  syncSavedCustomPatternCopyAccess,
+} from "./savedCustomPatternCopyAccess";
 import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPatternProject";
+import { logSleevelessPatternActivity } from "./sleevelessPatternActivity";
 import { getPatternProjectMeta, savePatternProjectMeta } from "./sleevelessPatternProjectMeta";
 import { nextPanelListRefresh, perfEnd, perfMark, perfStart } from "./savedPatternsPerfLog";
 
@@ -106,8 +112,13 @@ export function refreshCustomPatternSavedProjectsPanelUi(root: HTMLElement): voi
     saveBtn.classList.toggle("btn-primary", !editing);
     saveBtn.classList.toggle("btn-outline-secondary", editing);
   }
-  // Copy/duplicate is intentionally hidden until the workflow is fully stabilized (no [data-cb-project-save-copy] in UI).
-  if (copyBtn) copyBtn.textContent = "Save a Copy";
+  if (copyBtn) {
+    copyBtn.textContent = "Save a Copy";
+    copyBtn.classList.add("btn-outline-secondary");
+    // Copy is always visible; disabled + grayed for free / non-owner knitters.
+    const copyHelper = root.querySelector<HTMLElement>("[data-cb-project-copy-helper]");
+    syncSavedCustomPatternCopyAccess(copyBtn, copyHelper);
+  }
   if (updateBtn) {
     updateBtn.textContent = "Update saved pattern";
     updateBtn.classList.toggle("btn-primary", editing && !bannerHostOnPage);
@@ -132,25 +143,74 @@ export type SmartSaveCustomPatternProjectOptions = {
    * Omitted — update the active saved project when linked, otherwise create.
    * `create` — always a new saved project (e.g. after Start New Pattern).
    * `update` — overwrite the active saved project id only (explicit Update control).
-   * `copy` — new saved project; defaults title to “{linked name} Copy” when unchanged.
+   * `copy` — new saved project; title becomes “{original name} - Copy” (incrementing on collisions).
    */
   mode?: CustomPatternProjectSaveMode;
   /** Scope for diagram measurement inputs when flushing overrides before save. */
   root?: ParentNode;
 };
 
-/** Default duplicate title when the user has not renamed since load/link. */
-export function resolveSaveCopyProjectName(
-  requestedName: string,
-  linkedName: string = readActiveCustomPatternProjectLinkedName(),
-): string {
-  const trimmed = requestedName.trim();
-  if (!trimmed) return "";
-  const source = linkedName.trim();
-  if (source && trimmed.localeCompare(source, undefined, { sensitivity: "accent" }) === 0) {
-    return `${trimmed} Copy`;
+/** Suffix appended to a copied saved project's name: `"My Sweater" -> "My Sweater - Copy"`. */
+export const CUSTOM_PATTERN_COPY_NAME_SUFFIX = " - Copy";
+
+/** Matches a trailing copy suffix: ` - Copy`, ` - Copy 2`, ` - Copy 3`, … (case-insensitive). */
+const CUSTOM_PATTERN_COPY_SUFFIX_PATTERN = / - Copy(?: \d+)?$/i;
+
+/**
+ * Strips any trailing copy suffix so copy numbers always increment from the original base name.
+ *
+ * - `"test woman size 2"` -> `"test woman size 2"`
+ * - `"test woman size 2 - Copy"` -> `"test woman size 2"`
+ * - `"test woman size 2 - Copy 3"` -> `"test woman size 2"`
+ * - legacy stacked `"test woman size 2 - Copy - Copy"` -> `"test woman size 2"`
+ */
+export function stripCustomPatternCopySuffix(name: string): string {
+  let base = (name ?? "").trim();
+  while (CUSTOM_PATTERN_COPY_SUFFIX_PATTERN.test(base)) {
+    base = base.replace(CUSTOM_PATTERN_COPY_SUFFIX_PATTERN, "").trim();
   }
-  return trimmed;
+  return base;
+}
+
+/**
+ * Base copy title for a project name (no collision handling).
+ * The source name is first stripped of any copy suffix so we never produce `" - Copy - Copy"`.
+ */
+export function buildCopyBaseName(originalName: string): string {
+  const root = stripCustomPatternCopySuffix(originalName);
+  if (!root) return "";
+  return `${root}${CUSTOM_PATTERN_COPY_NAME_SUFFIX}`;
+}
+
+/**
+ * Resolves a unique copy title given the source name and the existing project names.
+ *
+ * The source name is reduced to its base (any trailing `" - Copy"` / `" - Copy N"` is stripped)
+ * before resolving the next available number:
+ *
+ * - `"My Sweater"` -> `"My Sweater - Copy"`
+ * - `"My Sweater - Copy"` -> `"My Sweater - Copy 2"`
+ * - `"My Sweater - Copy 2"` -> `"My Sweater - Copy 3"`
+ *
+ * Collisions are resolved case-insensitively against `existingNames`.
+ */
+export function resolveUniqueCopyName(
+  originalName: string,
+  existingNames: Iterable<string> = [],
+): string {
+  const base = buildCopyBaseName(originalName);
+  if (!base) return "";
+  const taken = new Set<string>();
+  for (const name of existingNames) {
+    const normalized = (name ?? "").trim().toLowerCase();
+    if (normalized) taken.add(normalized);
+  }
+  if (!taken.has(base.toLowerCase())) return base;
+  let suffix = 2;
+  while (taken.has(`${base} ${suffix}`.toLowerCase())) {
+    suffix += 1;
+  }
+  return `${base} ${suffix}`;
 }
 
 /** Ordinary save: update when a saved project is already linked, otherwise create. */
@@ -193,10 +253,24 @@ export async function smartSaveCustomPatternProject(
     return { ok: false, error: "Enter a pattern name before saving." };
   }
 
-  const name = mode === "copy" ? resolveSaveCopyProjectName(rawName) : rawName;
   const flushRoot = resolveCustomBuildSaveMeasureFlushRoot(
     options.root ?? (typeof document !== "undefined" ? document : undefined),
   );
+
+  let name = rawName;
+  if (mode === "copy") {
+    // A copy is always a duplicate of an original pattern; preserve its sizing chart
+    // and pattern data exactly (handled by buildSavePayloadFromWorkingDraft) and only
+    // change the title to "[Original Name] - Copy" (incrementing on collisions).
+    const originalName = readActiveCustomPatternProjectLinkedName().trim() || rawName;
+    let existingNames: string[] = [];
+    const list = await listCustomPatternProjects(family);
+    if (list.ok) {
+      existingNames = list.projects.map((project) => project.name);
+    }
+    name = resolveUniqueCopyName(originalName, existingNames);
+  }
+
   const base = buildSavePayloadFromWorkingDraft(name, { family, flushRoot });
 
   if (mode === "update") {
@@ -217,6 +291,10 @@ export async function smartSaveCustomPatternProject(
     });
     captureSavedCustomPatternDirtyBaseline();
     notifySavedProjectLinkChanged(options.root ?? undefined);
+    logSleevelessPatternActivity("pattern_updated", {
+      patternId: res.project.id,
+      patternTitle: res.project.name,
+    });
     return { ok: true, project: res.project, created: false };
   }
 
@@ -226,6 +304,11 @@ export async function smartSaveCustomPatternProject(
   writeActiveCustomPatternProjectId(res.project.id, res.project.name);
   captureSavedCustomPatternDirtyBaseline();
   notifySavedProjectLinkChanged(options.root ?? undefined);
+  logSleevelessPatternActivity("pattern_saved", {
+    patternId: res.project.id,
+    patternTitle: res.project.name,
+    ...(mode === "copy" ? { metadata: { copy: true } } : {}),
+  });
   return { ok: true, project: res.project, created: true };
 }
 
@@ -378,8 +461,11 @@ export function initCustomPatternSavedProjectsPanel(
     }
   });
 
-  // No-op when copy control is absent from markup; mode: "copy" remains for tests/future UI.
   copyBtn?.addEventListener("click", async () => {
+    if (!canCopySavedCustomPattern()) {
+      setStatus(root, SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT, true);
+      return;
+    }
     const name = resolveProjectNameForSave(nameInput);
     if (!name) {
       setStatus(root, "Enter a project name before saving a copy.", true);
@@ -465,6 +551,10 @@ export function initCustomPatternSavedProjectsPanel(
       return;
     }
     hydrateSavedCustomPatternProjectSession(res.project);
+    logSleevelessPatternActivity("pattern_opened", {
+      patternId: res.project.id,
+      patternTitle: res.project.name,
+    });
     if (typeof document !== "undefined") {
       document.documentElement.classList.toggle(
         "kbm-editing-saved-pattern",

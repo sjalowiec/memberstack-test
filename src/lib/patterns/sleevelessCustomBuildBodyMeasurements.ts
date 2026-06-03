@@ -6,10 +6,12 @@ import { SLEEVELESS_BODY_STRAIGHT_TOLERANCE_INCHES } from "./bodyBlock/sleeveles
 import { positiveMeasurementInches } from "./customBuildEffectiveArmholeDepth";
 import {
   getCurrentPattern,
+  getPatternData,
   saveCurrentPattern,
   savePatternData,
   type SleevelessPatternRecord,
 } from "./patternStorage";
+import { sectionPatchWouldChange } from "./patternSectionPatch";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 
 export const CUSTOM_BUILD_BODY_FINISHED_KEYS = [
@@ -197,8 +199,19 @@ export function persistCustomBuildBodyFinishedMeasurements(
     next[key] = incoming;
   }
 
-  saveCurrentPattern({ measurements: next });
-  savePatternData("measurements", next);
+  // Skip redundant writes so a repeat sync (e.g. Customize → review re-seed with the same
+  // chart row) does not re-stamp `updatedAt` and churn storage. Keeps the sync idempotent.
+  if (sectionPatchWouldChange(current.measurements, next)) {
+    saveCurrentPattern({ measurements: next });
+  }
+  const pbMeasurements = getPatternData().measurements;
+  const pbMeasurementsBase =
+    pbMeasurements && typeof pbMeasurements === "object" && !Array.isArray(pbMeasurements)
+      ? (pbMeasurements as Record<string, unknown>)
+      : {};
+  if (sectionPatchWouldChange(pbMeasurementsBase, next)) {
+    savePatternData("measurements", next);
+  }
   return getCurrentPattern();
 }
 

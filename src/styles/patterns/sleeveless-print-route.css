@@ -484,6 +484,17 @@
     flex: 1 1 100%;
   }
 
+  /*
+    Neckline/shoulder setup instruction that sits directly above its shaping chart: glue it to
+    the chart header so the heading + setup line + chart intro never strand at a page foot.
+    Combined with the chart's break-after/break-before chain, only this small group migrates
+    when it cannot fit; the chart body still flows across pages.
+  */
+  .sleeveless-print-root .print-inst-row--keep-with-next {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
   .sleeveless-print-root .print-inst-left {
     flex: 1 1 16rem;
     min-width: 0;
@@ -553,6 +564,40 @@
     margin: 0.15rem 0 0;
     font-size: inherit;
     line-height: 1.55;
+  }
+
+  /* Row Counter Reset — required action marker; keep border + accent in print. */
+  .sleeveless-print-root .row-counter-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.3rem 0 0.35rem;
+    padding: 0.25rem 0.55rem;
+    border: 2px solid #c2614e;
+    border-radius: 6px;
+    background: #f7f6f4;
+    color: #c2614e;
+    line-height: 1.2;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .sleeveless-print-root .row-counter-reset__icon {
+    display: inline-flex;
+    align-items: center;
+    color: #c2614e;
+  }
+
+  .sleeveless-print-root .row-counter-reset__icon svg {
+    display: block;
+  }
+
+  .sleeveless-print-root .row-counter-reset__text {
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #c2614e;
   }
 
   .sleeveless-print-root .print-inst-row--sts-only {
@@ -863,25 +908,32 @@
       page-break-inside: auto;
     }
 
-    /* Compact shaping tables (print route): keep chart block intact when it fits one page. */
+    /*
+      Compact shaping tables (print route): let the chart table FLOW across pages so a long
+      chart never forces a near-empty page. The heading + intro + table header + first row stay
+      glued together (break-after / break-before: avoid below + repeating thead), so the neckline
+      setup never lands alone at the foot of a page; the remaining rows spill onto the next page.
+    */
     .sleeveless-print-root .print-chart-wrap,
     .sleeveless-print-root .ns-shaping-mini {
-      break-inside: avoid;
-      page-break-inside: avoid;
+      break-inside: auto;
+      page-break-inside: auto;
     }
 
     .sleeveless-print-root .ns-shaping-mini__title,
     .sleeveless-print-root .print-chart-intro {
       break-after: avoid;
       page-break-after: avoid;
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
 
     .sleeveless-print-root .ns-shaping-mini__wrap,
     .sleeveless-print-root .ns-shaping-mini__table {
       break-before: avoid;
       page-break-before: avoid;
-      break-inside: avoid;
-      page-break-inside: avoid;
+      break-inside: auto;
+      page-break-inside: auto;
     }
 
     .sleeveless-print-root .ns-shaping-mini__table thead {
@@ -893,5 +945,19 @@
     .sleeveless-print-root .ns-shaping-mini__table tr {
       break-inside: avoid;
       page-break-inside: avoid;
+    }
+
+    /*
+      Front Neckline/Shoulder Shaping section: flow naturally (no forced page break) so the page
+      before it is filled instead of leaving wasted white space. Widow/orphan protection keeps the
+      setup heading + intro + chart header with the first chart rows (the break-after / break-before
+      chain above), so only that small block migrates to the next page when it would otherwise be
+      stranded — the chart body still flows. Print/PDF only; interactive screen layout is unaffected.
+    */
+    .sleeveless-print-root .print-page-break-before-front-neckline {
+      break-before: auto;
+      page-break-before: auto;
+      break-inside: auto;
+      page-break-inside: auto;
     }
   }

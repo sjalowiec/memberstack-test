@@ -10,8 +10,10 @@ import { armholeBindOffDecreaseFromEachSide } from "./sleevelessBackJapaneseNota
 import { buildFrontJapaneseNotationReplacements } from "./sleevelessFrontJapaneseNotation";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
+  armholeLocalRcCenterNecklineSetupRow,
   armholeLocalRcFirstActiveSideNecklineShapingAction,
   buildActiveSideInstructionTableRows,
+  isCenterNecklineSetupChecklistRow,
 } from "./neckShoulderActiveSideChecklist";
 import { NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL } from "./neckShoulderShapingChart";
 
@@ -95,14 +97,30 @@ function firstFrontNecklineShapingActionRc(
   return (firstNeck ?? shaping[0])?.rc;
 }
 
+/**
+ * Armhole RC of the center neckline divide/setup row exactly as rendered in the Front Neckline
+ * chart (built with the same `includeCenterNecklineSetupRow` option the page uses). This is the
+ * chart's "Scrap off center … to divide" row that the prose must match.
+ */
+function frontNecklineChartCenterDivideRc(
+  chart: Parameters<typeof buildActiveSideInstructionTableRows>[0],
+  armholeStart: number | undefined,
+): number | undefined {
+  const options = { includeCenterNecklineSetupRow: true as const };
+  const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, armholeStart, options);
+  const rows = buildActiveSideInstructionTableRows(chart, rcStart, options);
+  return rows.find((row) => isCenterNecklineSetupChecklistRow(row))?.rc;
+}
+
 describe("sleeveless armhole RC wording", () => {
-  it("back ARMHOLE section uses bind off / hold wording and alternate-techniques tip", () => {
+  it("back ARMHOLE section uses bind off OR hold wording and alternate-techniques tip", () => {
     const r = generateSleevelessBackPattern(basePattern("round"));
     const armhole = armholeSectionParagraphs(r.displayRows);
-    expect(armhole.some((p) => /bind off \/ hold \d+ stitches at the armhole edge/i.test(p))).toBe(
+    expect(armhole.some((p) => /bind off \/ hold/i.test(p))).toBe(false);
+    expect(armhole.some((p) => /bind off OR hold \d+ stitches at the armhole edge/i.test(p))).toBe(
       true
     );
-    expect(armhole.some((p) => /bind off \/ hold \d+ stitches at the remaining armhole edge/i.test(p))).toBe(
+    expect(armhole.some((p) => /bind off OR hold \d+ stitches at the remaining armhole edge/i.test(p))).toBe(
       true
     );
     const first = firstArmholeBlock(r.displayRows);
@@ -124,10 +142,10 @@ describe("sleeveless armhole RC wording", () => {
     expect(first?.tipHtml).toContain(`data-sleeveless-help-video="${ARMHOLE_BIND_OFF_TRICK_VIDEO_KEY}"`);
   });
 
-  it("back ARMHOLE section includes reset note and Armhole RC targets (not body RC)", () => {
+  it("back ARMHOLE section omits the reset explanatory note and uses Armhole RC targets (not body RC)", () => {
     const r = generateSleevelessBackPattern(basePattern("round"));
     const armhole = armholeSectionParagraphs(r.displayRows);
-    expect(armhole.some((p) => p.includes(ARMHOLE_RC_FROM_RESET_NOTE))).toBe(true);
+    expect(armhole.some((p) => p.includes(ARMHOLE_RC_FROM_RESET_NOTE))).toBe(false);
     expect(
       armhole.some(
         (p) =>
@@ -160,10 +178,10 @@ describe("sleeveless armhole RC wording", () => {
     ).toBe(true);
   });
 
-  it("round-neck front shares armhole reset note and Armhole RC targets", () => {
+  it("round-neck front omits the reset note and uses Armhole RC targets", () => {
     const r = generateSleevelessBackPattern(basePattern("round"));
     const armhole = armholeSectionParagraphs(r.frontDisplayRows);
-    expect(armhole.some((p) => p.includes(ARMHOLE_RC_FROM_RESET_NOTE))).toBe(true);
+    expect(armhole.some((p) => p.includes(ARMHOLE_RC_FROM_RESET_NOTE))).toBe(false);
     expect(armhole.some((p) => /Armhole RC:\d{3}/i.test(p))).toBe(true);
   });
 
@@ -195,7 +213,7 @@ describe("sleeveless armhole RC wording", () => {
     expect(
       armhole.some((p) =>
         new RegExp(
-          `At RC:000, bind off / hold ${bindOffSts} stitches at the armhole edge \\(carriage side\\)\\. Knit across\\.`,
+          `At RC:000, bind off OR hold ${bindOffSts} stitches at the armhole edge \\(carriage side\\)\\. Knit across\\.`,
           "i",
         ).test(p),
       ),
@@ -205,7 +223,7 @@ describe("sleeveless armhole RC wording", () => {
     expect(repl["jp-armhole-bo"]).toBe(`bo${bindOffSts}`);
   });
 
-  it("round-neck and cardigan front milestone RC matches first generated neckline shaping table row", () => {
+  it("front shaping-begin debug RC still tracks the first generated neckline shaping table row", () => {
     for (const pattern of [basePattern("round"), cardiganPattern()]) {
       const r = generateSleevelessBackPattern(pattern);
       const armholeStart = r.debug.armholeStartRow;
@@ -219,12 +237,61 @@ describe("sleeveless armhole RC wording", () => {
       );
       expect(helperRc).toBe(tableRc);
       expect(r.debug.frontNecklineShapingBeginLocalRC).toBe(tableRc);
-
-      const neckPadded = String(Math.max(0, Math.floor(tableRc ?? 0))).padStart(3, "0");
-      const frontParas = collectParagraphs(r.frontDisplayRows);
-      expect(
-        frontParas.some((p) => p.includes(`Front neckline shaping begins at Armhole RC ${neckPadded}`)),
-      ).toBe(true);
     }
+  });
+
+  it("cardigan front (no center divide) milestone RC matches first generated neckline shaping table row", () => {
+    const r = generateSleevelessBackPattern(cardiganPattern());
+    const armholeStart = r.debug.armholeStartRow;
+    // Cardigan front has no center scrap-off divide row, so the milestone keeps the shaping-action RC.
+    expect(
+      frontNecklineChartCenterDivideRc(r.frontNeckShoulderShapingChart, armholeStart),
+    ).toBeUndefined();
+    expect(r.debug.frontNecklineCenterDivideLocalRC).toBeUndefined();
+
+    const tableRc = firstFrontNecklineShapingActionRc(r.frontNeckShoulderShapingChart, armholeStart);
+    const neckPadded = String(Math.max(0, Math.floor(tableRc ?? 0))).padStart(3, "0");
+    const frontParas = collectParagraphs(r.frontDisplayRows);
+    expect(
+      frontParas.some((p) => p.includes(`Front neckline shaping begins at Armhole RC ${neckPadded}`)),
+    ).toBe(true);
+  });
+
+  it("round-neck front summary + instruction RC match the Front Neckline chart center divide row (no two-row drift)", () => {
+    const r = generateSleevelessBackPattern(basePattern("round"));
+    const armholeStart = r.debug.armholeStartRow;
+
+    // Source of truth: the chart's rendered "Scrap off center … to divide" setup row.
+    const divideRc = frontNecklineChartCenterDivideRc(r.frontNeckShoulderShapingChart, armholeStart);
+    expect(divideRc).toBeDefined();
+
+    // The debug field that both the page 8 summary and the page 9 instruction read from
+    // must equal the chart's center divide row RC (and the shared helper agrees).
+    expect(r.debug.frontNecklineCenterDivideLocalRC).toBe(divideRc);
+    expect(
+      armholeLocalRcCenterNecklineSetupRow(r.frontNeckShoulderShapingChart, armholeStart, {
+        includeCenterNecklineSetupRow: true,
+      }),
+    ).toBe(divideRc);
+
+    const dividePadded = String(Math.max(0, Math.floor(divideRc!))).padStart(3, "0");
+    const frontParas = collectParagraphs(r.frontDisplayRows);
+
+    // Page 8 summary milestone uses the chart's divide row RC.
+    expect(
+      frontParas.some((p) => p.includes(`Front neckline shaping begins at Armhole RC ${dividePadded}`)),
+    ).toBe(true);
+
+    // Regression guard: the divide row and the first shaping action differ for this pattern,
+    // and the summary must NOT report the (later) first-shaping-action RC as the start.
+    const shapingBeginRc = r.debug.frontNecklineShapingBeginLocalRC;
+    expect(shapingBeginRc).toBeDefined();
+    expect(shapingBeginRc).not.toBe(divideRc);
+    const shapingPadded = String(Math.max(0, Math.floor(shapingBeginRc!))).padStart(3, "0");
+    expect(
+      frontParas.some((p) =>
+        p.includes(`Front neckline shaping begins at Armhole RC ${shapingPadded}`),
+      ),
+    ).toBe(false);
   });
 });

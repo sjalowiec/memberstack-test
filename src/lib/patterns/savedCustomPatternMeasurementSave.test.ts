@@ -158,6 +158,12 @@ function stubDocumentMeasureRoot(measureRoot: ParentNode): () => void {
     },
   };
   vi.stubGlobal("document", doc);
+  // Node test env has no `HTMLElement`; production runs in the browser where it always exists.
+  // Provide a stub so `x instanceof HTMLElement` guards in the save path don't throw. Mock roots
+  // are plain objects, so `instanceof` stays false (the same branch a real non-element would take).
+  if (typeof (globalThis as { HTMLElement?: unknown }).HTMLElement === "undefined") {
+    vi.stubGlobal("HTMLElement", class MockHTMLElement {});
+  }
   return () => vi.unstubAllGlobals();
 }
 

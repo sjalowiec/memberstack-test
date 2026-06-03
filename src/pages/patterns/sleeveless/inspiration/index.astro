@@ -1,6 +1,5 @@
 ---
 import Layout from "../../../../layouts/Layout.astro";
-import PatternWorkspaceTabs from "../../../../components/patterns/PatternWorkspaceTabs.astro";
 import PinterestEmbed from "../../../../components/PinterestEmbed.astro";
 import "../../../../styles/wizard.css";
 import "../../../../styles/patterns/sleeveless-pattern-shared.css";
@@ -8,12 +7,6 @@ import "../../../../styles/patterns/sleeveless-pattern-shared.css";
 /** Board URL (corrected spelling: sleeveless sweater). */
 const pinterestBoardUrl = "https://www.pinterest.com/knititnow/sleeveless-sweater/";
 const pinterestShortUrl = "https://pin.it/6e1rQ1g5P";
-
-const customBuildHref = "/patterns/sleeveless/custom-build/";
-const expressHref = "/patterns/sleeveless-express/";
-const patternHref = "/patterns/sleeveless/pattern/";
-const askShareHref = "/patterns/sleeveless/ask-share/";
-const inspirationHref = "/patterns/sleeveless/inspiration/";
 ---
 
 <Layout
@@ -23,16 +16,6 @@ const inspirationHref = "/patterns/sleeveless/inspiration/";
   <main class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage">
     <div class="wizard-container scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
-        <PatternWorkspaceTabs
-          rootClass="pattern-tabs-scope"
-          activeTab="inspiration"
-          expressHref={expressHref}
-          customBuildHref={customBuildHref}
-          patternHref={patternHref}
-          askShareHref={askShareHref}
-          inspirationHref={inspirationHref}
-        />
-
         <section class="sleeveless-workspace-subpage__content" aria-labelledby="sleeveless-inspiration-heading">
           <h1 id="sleeveless-inspiration-heading" class="pattern-title">Inspiration</h1>
           <p class="pattern-subtext">

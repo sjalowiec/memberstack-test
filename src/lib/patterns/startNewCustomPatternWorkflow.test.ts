@@ -281,6 +281,85 @@ describe("runStartNewCustomPatternWorkflow", () => {
   });
 });
 
+describe("runStartNewCustomPatternWorkflow access gate", () => {
+  beforeEach(() => {
+    stubLocalStorage();
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it("blocks a locked free user before clearing draft state, prompting, or navigating", async () => {
+    writeActiveCustomPatternProjectId("proj-sue", savedProject.name);
+    saveCurrentPattern({
+      patternProject: { title: savedProject.name, notes: "", titleCustomized: true },
+    });
+
+    const onBlocked = vi.fn();
+    const hasUnsaved = vi.fn(() => false);
+    const promptUnsaved = vi.fn();
+    const applyFreshSession = vi.fn();
+    const navigate = vi.fn();
+
+    const result = await runStartNewCustomPatternWorkflow({
+      canStartNew: () => false,
+      onBlocked,
+      hasUnsaved,
+      promptUnsaved,
+      saveActiveProject: vi.fn(),
+      applyFreshSession,
+      navigate,
+    });
+
+    expect(result).toBe("blocked");
+    expect(onBlocked).toHaveBeenCalledTimes(1);
+    // The gate runs first: nothing downstream fires, so no setup questions are reached.
+    expect(hasUnsaved).not.toHaveBeenCalled();
+    expect(promptUnsaved).not.toHaveBeenCalled();
+    expect(applyFreshSession).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+    // The existing saved pattern stays linked, so it can still be opened / printed.
+    expect(readActiveCustomPatternProjectId()).toBe("proj-sue");
+  });
+
+  it("lets a free user start their one free pattern when the gate allows it", async () => {
+    writeActiveCustomPatternProjectId("proj-sue", savedProject.name);
+    const applyFreshSession = vi.fn(applyStartNewCustomPatternSession);
+    const navigate = vi.fn();
+
+    const result = await runStartNewCustomPatternWorkflow({
+      canStartNew: () => true,
+      onBlocked: vi.fn(),
+      hasUnsaved: () => false,
+      promptUnsaved: vi.fn(),
+      saveActiveProject: vi.fn(),
+      applyFreshSession,
+      navigate,
+    });
+
+    expect(result).toBe("started");
+    expect(applyFreshSession).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledTimes(1);
+    expect(readActiveCustomPatternProjectId()).toBe("");
+  });
+
+  it("lets a member start a new pattern (async gate resolves true)", async () => {
+    const applyFreshSession = vi.fn(applyStartNewCustomPatternSession);
+    const navigate = vi.fn();
+
+    const result = await runStartNewCustomPatternWorkflow({
+      canStartNew: async () => true,
+      hasUnsaved: () => false,
+      promptUnsaved: vi.fn(),
+      saveActiveProject: vi.fn(),
+      applyFreshSession,
+      navigate,
+    });
+
+    expect(result).toBe("started");
+    expect(navigate).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("Express Start Over (shared workflow)", () => {
   beforeEach(() => {
     stubLocalStorage();
@@ -350,6 +429,31 @@ describe("sleeveless-express-page Start Over", () => {
     expect(src).not.toContain("Start a new pattern? Your current sleeveless choices");
     expect(src).toContain("startNewCustomPatternFromExpress");
     expect(src).toContain("requestResetExpressBuilder");
+  });
+
+  it("gates the ?new=1 deep link before showing the setup questions", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { fileURLToPath } = await import("node:url");
+    const { dirname, join } = await import("node:path");
+    const dir = dirname(fileURLToPath(import.meta.url));
+    const src = readFileSync(join(dir, "../../scripts/sleeveless-express-page.ts"), "utf-8");
+
+    // The new-session gate must run before initExpressPage (which clears + renders the wizard).
+    expect(src).toContain("blockExpressNewPatternStartIfLocked");
+    expect(src).toContain("isSleevelessExpressNewSessionSearchParams");
+    expect(src).toContain("showSleevelessNewPatternLockedScreen");
+    // Anchor on the call sites (await …) so we measure boot order, not the function definitions.
+    const gateIdx = src.indexOf("await blockExpressNewPatternStartIfLocked()");
+    const initIdx = src.indexOf("initExpressPage();");
+    expect(gateIdx).toBeGreaterThan(-1);
+    expect(initIdx).toBeGreaterThan(gateIdx);
+
+    // The draft-owner reconcile must run BEFORE the gate and BEFORE hydration, so a different
+    // member's working draft is cleared before it can be read/rendered (cross-user leak guard).
+    const reconcileIdx = src.indexOf("await reconcilePatternDraftOwner()");
+    expect(reconcileIdx).toBeGreaterThan(-1);
+    expect(gateIdx).toBeGreaterThan(reconcileIdx);
+    expect(initIdx).toBeGreaterThan(reconcileIdx);
   });
 });
 

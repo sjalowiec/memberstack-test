@@ -182,4 +182,51 @@ describe("back active-shoulder checklist center neckline setup row", () => {
     expect(rows[0]).toBeDefined();
     expect(isCenterNecklineSetupChecklistRow(rows[0]!)).toBe(true);
   });
+
+  it("every shaping action renders an explicit stitch count, including single-stitch decreases", () => {
+    // Front neckline checklist: single-stitch neck decreases must read "Decrease 1 st",
+    // never "Decrease st" (no count suppression when amount === 1).
+    const r = generateSleevelessBackPattern(baseRoundNeckPattern());
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(
+      r.frontNeckShoulderShapingChart,
+      r.debug.armholeStartRow,
+    );
+    const rows = buildActiveSideInstructionTableRows(r.frontNeckShoulderShapingChart, rcStart);
+
+    const shapingRows = rows.filter(
+      (row) =>
+        row.action !== NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL &&
+        !isCenterNecklineSetupChecklistRow(row),
+    );
+    expect(shapingRows.length).toBeGreaterThan(0);
+
+    const singleDecrease = shapingRows.find((row) => row.edge === "Neck" && /^Decrease /.test(row.action));
+    expect(singleDecrease?.action).toBe("Decrease 1 st");
+
+    // No worked Decrease/Bind off action may omit its numeric stitch count.
+    for (const row of shapingRows) {
+      if (/^(Decrease|Bind off)/.test(row.action)) {
+        expect(row.action).toMatch(/^(Decrease|Bind off( OR hold)?) \d+ sts?$/);
+      }
+    }
+  });
+
+  it("armhole bind-off actions use explicit 'Bind off OR hold' wording (no slash notation)", () => {
+    const r = generateSleevelessBackPattern(cardiganPattern());
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(
+      r.neckShoulderShapingChart,
+      r.debug.armholeStartRow,
+      BACK_CHECKLIST_OPTIONS,
+    );
+    const rows = buildActiveSideInstructionTableRows(
+      r.neckShoulderShapingChart,
+      rcStart,
+      BACK_CHECKLIST_OPTIONS,
+    );
+    expect(rows.some((row) => /bind off \/ hold/i.test(row.action))).toBe(false);
+    const armholeBindOff = rows.filter(
+      (row) => row.edge === "Armhole" && /^Bind off OR hold /.test(row.action),
+    );
+    expect(armholeBindOff.length).toBeGreaterThan(0);
+  });
 });

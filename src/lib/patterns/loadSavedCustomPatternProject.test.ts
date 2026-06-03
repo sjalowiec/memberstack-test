@@ -7,8 +7,10 @@ import {
 import * as workflowModule from "./patternReadingWorkflow";
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import {
-  CUSTOM_BUILD_FIRST_EDIT_HREF,
+  CUSTOM_BUILD_EDIT_WORKSPACE_HREF,
   EXPRESS_CONTINUE_EDITING_HREF,
+  EXPRESS_EDIT_WORKSPACE_HREF,
+  OPEN_PATTERN_EDIT_WORKSPACE_HREF,
   OPEN_PATTERN_HREF,
 } from "./customPatternProjectNavigation";
 import {
@@ -75,7 +77,7 @@ describe("loadSavedCustomPatternProject", () => {
     loadCustomPatternProjectMock.mockReset();
   });
 
-  it("completes open action with pattern href and active project id", async () => {
+  it("opens express projects in the pattern page's auto-opened Edit Pattern Workspace and links the active project id", async () => {
     loadCustomPatternProjectMock.mockResolvedValue({
       ok: true,
       project: sampleProject(),
@@ -83,12 +85,52 @@ describe("loadSavedCustomPatternProject", () => {
 
     const result = await loadSavedCustomPatternProject(PROJECT_ID, "open");
 
-    expect(result).toEqual({ ok: true, redirectHref: OPEN_PATTERN_HREF });
+    // In-place split workspace on the pattern page (quick edits + measurements), auto-opened via
+    // the `?edit=1` flag — not the standalone review page, the step wizard, or read-only output.
+    expect(result).toEqual({ ok: true, redirectHref: OPEN_PATTERN_EDIT_WORKSPACE_HREF });
+    if (result.ok) {
+      expect(result.redirectHref).toContain(OPEN_PATTERN_HREF);
+      expect(result.redirectHref).not.toBe(OPEN_PATTERN_HREF);
+      expect(result.redirectHref).not.toBe(EXPRESS_CONTINUE_EDITING_HREF);
+      expect(result.redirectHref).not.toBe(EXPRESS_EDIT_WORKSPACE_HREF);
+    }
     expect(readActiveCustomPatternProjectId()).toBe(PROJECT_ID);
     expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toContain("For Aubrie");
   });
 
-  it("opens custom-build projects on the first Edit tab (Foundation), not Customize/review", async () => {
+  it("views a saved pattern by routing to the read-only pattern page, never the edit workspace", async () => {
+    loadCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      project: sampleProject(),
+    });
+
+    const result = await loadSavedCustomPatternProject(PROJECT_ID, "view");
+
+    expect(result).toEqual({ ok: true, redirectHref: OPEN_PATTERN_HREF });
+    if (result.ok) {
+      expect(result.redirectHref).not.toBe(EXPRESS_EDIT_WORKSPACE_HREF);
+      expect(result.redirectHref).not.toContain("edit=choices");
+    }
+    // Working draft is still hydrated so the pattern page can render the saved pattern.
+    expect(readActiveCustomPatternProjectId()).toBe(PROJECT_ID);
+    expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toContain("For Aubrie");
+  });
+
+  it("views a custom-build saved pattern on the same pattern page (source-independent)", async () => {
+    loadCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      project: sampleProject({ source: "custom-build" }),
+    });
+
+    const result = await loadSavedCustomPatternProject(PROJECT_ID, "view");
+
+    expect(result).toEqual({ ok: true, redirectHref: OPEN_PATTERN_HREF });
+    if (result.ok) {
+      expect(result.redirectHref).not.toBe(CUSTOM_BUILD_EDIT_WORKSPACE_HREF);
+    }
+  });
+
+  it("opens custom-build projects in the editable Foundation workspace, not Customize/review", async () => {
     loadCustomPatternProjectMock.mockResolvedValue({
       ok: true,
       project: sampleProject({
@@ -103,10 +145,11 @@ describe("loadSavedCustomPatternProject", () => {
 
     const result = await loadSavedCustomPatternProject(PROJECT_ID, "open");
 
-    expect(result).toEqual({ ok: true, redirectHref: CUSTOM_BUILD_FIRST_EDIT_HREF });
+    expect(result).toEqual({ ok: true, redirectHref: CUSTOM_BUILD_EDIT_WORKSPACE_HREF });
     if (result.ok) {
       expect(result.redirectHref).not.toBe(EXPRESS_CONTINUE_EDITING_HREF);
       expect(result.redirectHref).not.toContain("/custom-style");
+      expect(result.redirectHref).not.toBe(OPEN_PATTERN_HREF);
     }
     expect(readActiveCustomPatternProjectId()).toBe(PROJECT_ID);
     expect(readActiveCustomPatternProjectLinkedName()).toBe("Sue's test pattern");
@@ -125,6 +168,43 @@ describe("loadSavedCustomPatternProject", () => {
 
     expect(safeSpy).toHaveBeenCalled();
     safeSpy.mockRestore();
+  });
+
+  it("prefills saved values (including gauge) and unlocks every step when opening for edit", async () => {
+    loadCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      project: sampleProject(),
+    });
+
+    await loadSavedCustomPatternProject(PROJECT_ID, "open");
+
+    const raw = localStorage.getItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY);
+    expect(raw).toBeTruthy();
+    const snapshot = JSON.parse(raw ?? "{}");
+    // Gauge from the saved project is prefilled so it can be edited without rebuilding.
+    expect(snapshot.gaugeStitchRaw).toBe("22");
+    expect(snapshot.gaugeRowRaw).toBe("28");
+    // Saved sizing identity is restored into the wizard values.
+    expect(snapshot.values?.selectedSize).toBe("M");
+    expect(snapshot.values?.who).toBe("women");
+    // Opened for edit: all steps unlocked + reopened so gauge is reachable immediately.
+    expect(snapshot.editChoicesReopen).toBe(true);
+    expect(snapshot.maxReachable).toBe(5);
+  });
+
+  it("links the active project to the opened (copied) project id, not a previously opened one", async () => {
+    const original = sampleProject({ id: "proj-original", name: "Original" });
+    loadCustomPatternProjectMock.mockResolvedValueOnce({ ok: true, project: original });
+    await loadSavedCustomPatternProject("proj-original", "open");
+    expect(readActiveCustomPatternProjectId()).toBe("proj-original");
+
+    const copy = sampleProject({ id: "proj-original-copy", name: "Original - Copy" });
+    loadCustomPatternProjectMock.mockResolvedValueOnce({ ok: true, project: copy });
+    await loadSavedCustomPatternProject("proj-original-copy", "open");
+
+    expect(readActiveCustomPatternProjectId()).toBe("proj-original-copy");
+    expect(readActiveCustomPatternProjectLinkedName()).toBe("Original - Copy");
+    expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toContain("Original - Copy");
   });
 });
 

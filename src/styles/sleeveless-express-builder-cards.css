@@ -12,6 +12,69 @@
   --sg-accent: #c2614e;
 }
 
+/* Locked / upgrade screen shown when a free user who already claimed their one-time pattern
+   tries to start a new one (replaces the setup wizard — see sleevelessNewPatternAccessGuard.ts). */
+.sleeveless-new-pattern-locked {
+  max-width: 36rem;
+  margin: 1.5rem auto 2rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  text-align: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f9fafb;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.sleeveless-new-pattern-locked__title {
+  margin: 0 0 0.65rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #2c3a57;
+}
+
+.sleeveless-new-pattern-locked__body {
+  margin: 0 0 1.25rem;
+  line-height: 1.55;
+  color: #374151;
+  font-size: 1rem;
+  /* Render the \n\n paragraph breaks in the shared copy as visual paragraphs. */
+  white-space: pre-line;
+}
+
+.sleeveless-new-pattern-locked__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  align-items: stretch;
+  max-width: 22rem;
+  margin: 0 auto;
+}
+
+/* The two unlock paths are the primary, prominent actions. */
+.sleeveless-new-pattern-locked__btn--primary {
+  width: 100%;
+  font-weight: 700;
+}
+
+/* Keep the saved-pattern link available, but visually secondary so it reads as
+   an alternate path rather than the main action. */
+.sleeveless-new-pattern-locked__btn--secondary {
+  width: 100%;
+  margin-top: 0.35rem;
+  background: transparent;
+  color: var(--kbm-green);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.sleeveless-new-pattern-locked__btn--secondary:hover,
+.sleeveless-new-pattern-locked__btn--secondary:focus,
+.sleeveless-new-pattern-locked__btn--secondary:focus-visible {
+  background: transparent;
+  color: var(--kbm-green-hover);
+  text-decoration: underline;
+}
+
 .express-page .hat-length-picker__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

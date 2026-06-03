@@ -5,6 +5,7 @@ import "../styles/print.css";
 import ContactModal from "../components/ContactModal.astro";
 import KinCatalogVideoModal from "../components/common/KinCatalogVideoModal.astro";
 import ToolPrintFooter from "../components/tools/ToolPrintFooter.astro";
+import EnvBanner from "../components/EnvBanner.astro";
 
 interface Props {
   title?: string;
@@ -140,25 +141,9 @@ const isProduction =
 
     {import.meta.env.DEV && (
       <style>
-        .dev-banner {
-          position: fixed;
-          top: 0;
-          right: 0;
-          z-index: 9999;
-
-          background: #c0392b;
-          color: #fff;
-
-          padding: 6px 12px;
-          font-size: 12px;
-          font-weight: 700;
-
-          border-bottom-left-radius: 6px;
-        }
-
         .preview-banner {
           position: fixed;
-          top: 32px;
+          top: calc(var(--kbm-env-banner-h, 0px) + 2px);
           right: 0;
           z-index: 9998;
 
@@ -207,11 +192,9 @@ const isProduction =
   
 
   <body class={bodyClass}>
+    <EnvBanner />
     {import.meta.env.DEV && (
-      <>
-        <div class="dev-banner">DEV MODE</div>
-        <div class="preview-banner" id="preview-banner"></div>
-      </>
+      <div class="preview-banner" id="preview-banner"></div>
     )}
     <div id="msTopError" class="ms-top-error" role="alert" aria-live="polite" hidden>
       <div class="ms-top-error__bar" aria-hidden="true"></div>

@@ -2,14 +2,12 @@
 import Layout from "../../../../../layouts/Layout.astro";
 import SleevelessPatternMemberGate from "../../../../../components/patterns/SleevelessPatternMemberGate.astro";
 import WizardBackLink from "../../../../../components/wizards/WizardBackLink.astro";
-import PatternWorkspaceTabs from "../../../../../components/patterns/PatternWorkspaceTabs.astro";
 import UnitToggle from "../../../../../components/wizards/UnitToggle.astro";
 import "../../../../../styles/sleeveless-express-builder-cards.css";
 import "../../../../../styles/sleeveless-express-wizard-layout.css";
 import "../../../../../styles/express-size-selection.css";
 import "../../../../../styles/custom-pattern-editing-banner.css";
 
-const customBuildHref = "/patterns/sleeveless/custom-build/";
 const styleHref = "/patterns/sleeveless/custom-style";
 
 const customWizardSteps = [
@@ -32,16 +30,6 @@ const customWizardSteps = [
   >
     <div id="cb-design-top" class="wizard-container express-wizard scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
-        <PatternWorkspaceTabs
-          rootClass="pattern-tabs-scope"
-          activeTab="express"
-          expressHref="/patterns/sleeveless-express/"
-          customBuildHref={customBuildHref}
-          patternHref="/patterns/sleeveless/pattern/"
-          askShareHref="/patterns/sleeveless/ask-share/"
-          inspirationHref="/patterns/sleeveless/inspiration/"
-        />
-
         <WizardBackLink className="back-link no-print" fallback="/patterns" />
         <div data-cb-editing-banner-host hidden></div>
 
@@ -172,11 +160,19 @@ const customWizardSteps = [
                     <button type="button" class="btn btn-sm btn-primary" data-cb-project-save>
                       Save New Project
                     </button>
-                    {/* Copy/duplicate is intentionally hidden until the workflow is fully stabilized. */}
                     <button type="button" class="btn btn-sm btn-outline-secondary" data-cb-project-update>
                       Update saved pattern
                     </button>
+                    {/* Copy stays visible for everyone; disabled for free / non-owner knitters. */}
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-cb-project-save-copy>
+                      Save a Copy
+                    </button>
                   </div>
+                  <p
+                    class="cb-saved-projects__copy-helper"
+                    data-cb-project-copy-helper
+                    hidden
+                  ></p>
                 </div>
 
                 <div class="cb-saved-projects__block cb-saved-projects__block--open">
@@ -255,7 +251,7 @@ const customWizardSteps = [
                         aria-pressed="false"
                       >
                         <img
-                          src="/images/patterns/sleeveless/sleeveless_woman.png"
+                          src="/images/patterns/sleeveless/people/sleeveless-woman-pullover-round-neck.webp"
                           alt=""
                           class="hat-length-picker__img sg-picker-img express-who-card__img"
                           width="168"
@@ -274,7 +270,7 @@ const customWizardSteps = [
                         aria-pressed="false"
                       >
                         <img
-                          src="/images/patterns/sleeveless/sleeveless_man.png"
+                          src="/images/patterns/sleeveless/people/sleeveless-man-pullover-round-neck.webp"
                           alt=""
                           class="hat-length-picker__img sg-picker-img express-who-card__img"
                           width="168"
@@ -293,7 +289,7 @@ const customWizardSteps = [
                         aria-pressed="false"
                       >
                         <img
-                          src="/images/patterns/sleeveless/sleeveless_kids.png"
+                          src="/images/patterns/sleeveless/people/sleeveless-kids-pullover-round-neck.webp"
                           alt=""
                           class="hat-length-picker__img sg-picker-img express-who-card__img"
                           width="168"
@@ -312,7 +308,7 @@ const customWizardSteps = [
                         aria-pressed="false"
                       >
                         <img
-                          src="/images/patterns/sleeveless/sleeveless_baby.png"
+                          src="/images/patterns/sleeveless/people/sleeveless-baby-pullover-round-neck.webp"
                           alt=""
                           class="hat-length-picker__img sg-picker-img express-who-card__img"
                           width="168"
@@ -601,6 +597,33 @@ const customWizardSteps = [
   .cb-saved-projects .btn-outline-secondary:hover {
     background: var(--kbm-surface-muted, #f6f8f6);
     border-color: var(--kbm-green-2, #738c52);
+  }
+
+  .cb-saved-projects .btn.is-disabled,
+  .cb-saved-projects .btn:disabled {
+    color: var(--text-muted, #9aa3a0);
+    background: var(--kbm-surface-muted, #f3f4f3);
+    border-color: var(--kbm-border-subtle, #e2e6e0);
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
+
+  .cb-saved-projects .btn.is-disabled:hover,
+  .cb-saved-projects .btn:disabled:hover {
+    background: var(--kbm-surface-muted, #f3f4f3);
+    border-color: var(--kbm-border-subtle, #e2e6e0);
+  }
+
+  .cb-saved-projects__copy-helper {
+    margin: 0.5rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: var(--text-muted, #6b7280);
+    max-width: 36rem;
+  }
+
+  .cb-saved-projects__copy-helper[hidden] {
+    display: none;
   }
 
   .cb-saved-projects__editing-status {

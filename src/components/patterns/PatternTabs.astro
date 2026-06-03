@@ -76,13 +76,18 @@ const pathIsCustomBuildFoundationFlow =
   pathNow === customBuildFoundationRoot ||
   (customBuildFoundationRoot && pathNow.startsWith(`${customBuildFoundationRoot}/`));
 
-const expressTabActive =
+/**
+ * Pattern Setup (the former "custom"/Summary tab) is now the first workflow tab.
+ * The user-facing "Create"/express tab was removed (New Pattern button replaces it),
+ * so Pattern Setup absorbs the express + custom-build foundation route highlights to
+ * keep an active tab visible on those flows.
+ */
+const customTabActive =
   activeTab === "express" ||
+  activeTab === "custom" ||
+  pathIsSummaryFlow ||
   pathIsCustomBuildFoundationFlow ||
   (Boolean(ex) && pathMatchesHref(pathNow, ex));
-
-const customTabActive =
-  (activeTab === "custom" || pathIsSummaryFlow) && !pathIsCustomBuildFoundationFlow;
 
 const patternTabActive =
   activeTab === "pattern" || (!patternTabDisabled && pathMatchesHref(pathNow, patternHref));
@@ -90,7 +95,6 @@ const patternTabActive =
 const shareTabActive = activeTab === "share" || pathMatchesHref(pathNow, askShareHref);
 const inspirationTabActive = activeTab === "inspiration" || pathMatchesHref(pathNow, inspirationHref);
 
-const expressNavHref = ex || "#";
 const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
 ---
 
@@ -104,37 +108,14 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
   {
     workspaceNav ? (
         <div class="pattern-tab-nav">
-          <>
-          <a
-            class:list={["tab-btn", "tab-btn--express", "tab-btn--workspace-brand", { active: expressTabActive }]}
-            href={expressNavHref}
-            data-tab="express"
-            data-pattern-workspace-express-tab
-            aria-current={expressTabActive ? "page" : undefined}
-            aria-label="Create"
-            title="Create"
-          >
-            <img
-              class="tab-workspace-brand-icon"
-              src="/images/quick-icon.svg"
-              alt=""
-              width="18"
-              height="18"
-              decoding="async"
-            />
-            <span
-              class="pattern-workspace-tabs__visible-label"
-              data-pattern-workspace-express-tab-label
-              aria-hidden="true"
-            >Create</span>
-          </a>
+          <div class="pattern-tab-nav__workflow">
           <a
             class:list={["tab-btn", "tab-btn--custom", "tab-btn--workspace-brand", { active: customTabActive }]}
             href={summaryNavHref}
             data-tab="custom"
             aria-current={customTabActive ? "page" : undefined}
-            aria-label="Customize"
-            title="Customize"
+            aria-label="Pattern Setup"
+            title="Pattern Setup"
           >
             <svg
               class="tab-workspace-brand-icon tab-workspace-summary-pencil-icon"
@@ -151,7 +132,7 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
                 stroke-linecap="round"
                 stroke-linejoin="round"></path>
             </svg>
-            <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Customize</span>
+            <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Pattern Setup</span>
           </a>
           {!hidePattern &&
             (patternTabDisabled ? (
@@ -203,6 +184,8 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
               <i class="fa-solid fa-lightbulb tab-workspace-mobile-icon" aria-hidden="true"></i>
             </a>
           )}
+          </div>
+          <div class="pattern-tab-nav__actions">
           <button
             type="button"
             class="pattern-workspace-new-pattern-trigger"
@@ -225,7 +208,7 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
           >
             <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
           </button>
-          </>
+          </div>
         </div>
     ) : (
       <div class="pattern-tab-nav">
@@ -327,6 +310,25 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
   .pattern-workspace-tabs .pattern-tab-nav::-webkit-scrollbar {
     width: 0;
     height: 0;
+  }
+
+  /* Left section: primary workflow tabs. */
+  .pattern-workspace-tabs .pattern-tab-nav__workflow {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    align-items: flex-end;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  /* Right section: actions (New Pattern + Library), aligned right. */
+  .pattern-workspace-tabs .pattern-tab-nav__actions {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    align-items: flex-end;
+    margin-left: auto;
   }
 
   .pattern-workspace-tabs .pattern-tab-nav .tab-btn {
@@ -518,6 +520,10 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
       gap: 0.06rem;
       margin: 0 0 1rem;
       padding: 0.18rem 0 0.12rem;
+    }
+
+    .pattern-workspace-tabs .pattern-tab-nav__workflow {
+      gap: 0.06rem;
     }
 
     .pattern-workspace-tabs .pattern-tab-nav .tab-btn {

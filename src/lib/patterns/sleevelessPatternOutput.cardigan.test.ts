@@ -184,10 +184,8 @@ describe("diagram vs written cardigan left front", () => {
       expect(repl.BUST_STS).toBe(String(r.debug.cardiganHalfLeftBustBodySts));
       expect(repl.HIP_STS).toBe(String(r.debug.cardiganHalfLeftCastOnSts));
       expect(frontWritten).toBe(Number(repl.HIP_STS));
-      expect(repl.SHOULDER_STS).toBe(String(r.debug.shoulderStitches));
-      expect(Number(repl.SHOULDER_STS)).toBeLessThan(
-        r.debug.cardiganHalfLeftStitchesAfterArmhole ?? Number.MAX_SAFE_INTEGER,
-      );
+      // Cross-back label on a cardigan front shows that panel's post-armhole body width.
+      expect(repl.SHOULDER_STS).toBe(String(r.debug.cardiganHalfLeftStitchesAfterArmhole));
     },
   );
 });

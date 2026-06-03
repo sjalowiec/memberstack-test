@@ -47,11 +47,15 @@ const DISMISSABLE_TIP_SELECTOR =
 
 /** Top-of-pattern pink control banner (always visible; not affected by global tips hide). */
 export function patternTipsControlBoxHtml(tipsOn: boolean): string {
-  const toggleBtn = tipsOn
-    ? '<button type="button" class="pattern-tips-control-btn tips-inline-toggle" data-testid="link-tips-toggle"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span>Hide All</span></button>'
-    : '<button type="button" class="pattern-tips-control-btn tips-inline-toggle" data-testid="link-tips-toggle"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>Show All</span></button>';
-  const resetBtn =
-    '<button type="button" class="pattern-tips-control-btn pattern-tips-reset-dismissed" hidden><i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i><span>Reset All</span></button>';
+  const checked = tipsOn ? "true" : "false";
+  const stateLabel = tipsOn ? "Tips visible" : "Tips hidden";
+  const toggle =
+    `<button type="button" role="switch" aria-checked="${checked}" ` +
+    'class="pattern-tips-switch tips-inline-toggle" data-testid="link-tips-toggle">' +
+    '<span class="pattern-tips-switch__label">Show Tips</span>' +
+    '<span class="pattern-tips-switch__track" aria-hidden="true"><span class="pattern-tips-switch__thumb"></span></span>' +
+    `<span class="pattern-tips-switch__state">${stateLabel}</span>` +
+    "</button>";
   return (
     '<div class="pattern-tip pattern-tips-control-box pattern-tip-intro pattern-print-personalization-never-print" data-pattern-print-personalization-tip>' +
     '<div class="pattern-tips-control__layout">' +
@@ -59,7 +63,7 @@ export function patternTipsControlBoxHtml(tipsOn: boolean): string {
     '<i class="fa-solid fa-circle-info pattern-tips-control__info-icon" aria-hidden="true"></i>' +
     '<p class="pattern-tips-control__text">Pattern Tips give you quick, helpful reminders as you knit.</p>' +
     "</div>" +
-    `<div class="pattern-tips-control__actions">${toggleBtn}${resetBtn}</div>` +
+    `<div class="pattern-tips-control__actions">${toggle}</div>` +
     "</div>" +
     "</div>"
   );

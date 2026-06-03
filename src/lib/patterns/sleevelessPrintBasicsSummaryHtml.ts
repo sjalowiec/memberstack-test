@@ -151,6 +151,17 @@ function necklineBasicsLabel(st: Record<string, unknown>): string {
   return "";
 }
 
+/** Ease/fit choice label (Close / Standard / Relaxed) from the stored fit section. */
+function fitBasicsLabel(ft: Record<string, unknown>): string {
+  const raw = String(ft.fitChoice ?? ft.easeChoice ?? "")
+    .trim()
+    .toLowerCase();
+  if (raw === "close") return "Close";
+  if (raw === "standard") return "Standard";
+  if (raw === "relaxed") return "Relaxed";
+  return "";
+}
+
 type GaugeFormatter = (ygm: Record<string, unknown>, yg: Record<string, unknown>) => string;
 
 function collectSleevelessBasicsSummaryRows(
@@ -201,6 +212,11 @@ function collectSleevelessBasicsSummaryRows(
     rows.push({ term: "Neckline", def: neckLabel });
   }
 
+  const fitDef = fitBasicsLabel(ft);
+  if (fitDef) {
+    rows.push({ term: "Fit", def: fitDef });
+  }
+
   const gaugeStr = gaugeFormatter(ygm, yg);
   if (gaugeStr) {
     rows.push({ term: "Gauge", def: gaugeStr });
@@ -228,6 +244,20 @@ export function buildSleevelessPrintBasicsSummaryDlHtml(
   return basicsRowsToDlHtml(rows);
 }
 
+/**
+ * Compact inline metadata layout for the on-screen summary. Each term/definition pair is wrapped
+ * so the label stays attached to its value when the row wraps across lines.
+ */
+function basicsRowsToInlineDlHtml(rows: { term: string; def: string }[]): string {
+  const pairs = rows
+    .map(
+      (r) =>
+        `<div class="print-summary-dl__pair"><dt>${escapeHtml(r.term)}</dt><dd>${escapeHtml(r.def)}</dd></div>`,
+    )
+    .join("");
+  return `<dl class="print-summary-dl print-summary-dl--basics print-summary-dl--inline">${pairs}</dl>`;
+}
+
 /** Same row model as print, with on-screen gauge phrasing (rounded sts/rows, 4" vs 10 cm). */
 export function buildSleevelessScreenBasicsSummaryDlHtml(
   merged: Record<string, unknown>,
@@ -235,5 +265,5 @@ export function buildSleevelessScreenBasicsSummaryDlHtml(
 ): string {
   const rows = collectSleevelessBasicsSummaryRows(merged, patternData, formatGaugeIntroPhrase);
   if (rows.length === 0) return "";
-  return basicsRowsToDlHtml(rows);
+  return basicsRowsToInlineDlHtml(rows);
 }

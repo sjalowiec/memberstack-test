@@ -1,0 +1,154 @@
+---
+/**
+ * Environment orientation banner.
+ *
+ * Renders a highly visible, fixed bar at the very top of every page so it is
+ * obvious which environment is being used during testing:
+ *   - LOCALHOST  -> blue bar
+ *   - DEV        -> amber striped bar
+ *   - PRODUCTION -> nothing shown
+ *
+ * Detection runs in the BROWSER from `window.location.hostname` (always the
+ * real public host) plus existing env config (PUBLIC_SITE_ENV / DEV). We do not
+ * rely on SSR `Astro.url.hostname` because on Netlify the serverless function
+ * does not always see the public host (e.g. kin-dev.netlify.app), which would
+ * hide the banner. The element is rendered hidden and revealed by the script,
+ * so production never flashes a banner.
+ *
+ * NOTE: Astro always bundles <style> tags regardless of conditional markup, so
+ * the header/content offset is gated on `html[data-kbm-env-banner="on"]`, which
+ * the script only sets for non-production environments.
+ */
+---
+
+<div
+  class="kbm-env-banner"
+  role="status"
+  aria-live="polite"
+  data-kbm-env-banner-el
+  hidden
+>
+  <span class="kbm-env-banner__dot" aria-hidden="true"></span>
+  <span class="kbm-env-banner__label" data-kbm-env-banner-label></span>
+</div>
+
+<script>
+  import {
+    detectSiteEnvironment,
+    shouldShowEnvironmentBanner,
+    siteEnvironmentLabel,
+  } from "../lib/env/siteEnvironment";
+
+  function applyEnvBanner(): void {
+    const el = document.querySelector<HTMLElement>("[data-kbm-env-banner-el]");
+    if (!el) return;
+
+    const env = detectSiteEnvironment(window.location.hostname, {
+      publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+      isViteDev: import.meta.env.DEV,
+    });
+
+    // Expose for other scripts/debugging.
+    (window as unknown as { __KBM_ENV?: string }).__KBM_ENV = env;
+
+    if (!shouldShowEnvironmentBanner(env)) {
+      el.hidden = true;
+      el.classList.remove("is-visible");
+      document.documentElement.removeAttribute("data-kbm-env-banner");
+      return;
+    }
+
+    el.classList.remove(
+      "kbm-env-banner--localhost",
+      "kbm-env-banner--dev",
+    );
+    el.classList.add(`kbm-env-banner--${env}`, "is-visible");
+    el.dataset.kbmEnv = env;
+
+    const label = el.querySelector<HTMLElement>("[data-kbm-env-banner-label]");
+    if (label) label.textContent = siteEnvironmentLabel(env);
+
+    el.hidden = false;
+    document.documentElement.setAttribute("data-kbm-env-banner", "on");
+  }
+
+  applyEnvBanner();
+</script>
+
+<style is:global>
+  /* Only reserve space once the script confirms a non-production environment. */
+  html[data-kbm-env-banner="on"] {
+    --kbm-env-banner-h: 30px;
+  }
+
+  html[data-kbm-env-banner="on"] .kbm-header-wrap {
+    top: var(--kbm-env-banner-h, 0px) !important;
+  }
+</style>
+
+<style>
+  .kbm-env-banner {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 4000;
+
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    height: var(--kbm-env-banner-h, 30px);
+    padding: 0 12px;
+
+    font-family: "Poppins", system-ui, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    line-height: 1;
+
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .kbm-env-banner.is-visible {
+    display: flex;
+  }
+
+  .kbm-env-banner__dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
+  }
+
+  .kbm-env-banner__label {
+    white-space: nowrap;
+  }
+
+  .kbm-env-banner--localhost {
+    background: #1d4ed8;
+    color: #fff;
+  }
+
+  .kbm-env-banner--dev {
+    background: repeating-linear-gradient(
+      45deg,
+      #b45309,
+      #b45309 12px,
+      #d97706 12px,
+      #d97706 24px
+    );
+    color: #fff;
+  }
+
+  @media print {
+    .kbm-env-banner {
+      display: none !important;
+    }
+  }
+</style>

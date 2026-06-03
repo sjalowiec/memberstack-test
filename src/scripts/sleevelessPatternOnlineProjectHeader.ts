@@ -8,12 +8,8 @@
 
 
 
-import { canCustomizePattern } from "../lib/patterns/sleevelessPatternAccessGate";
-
 import { initChangePatternChoicesLinks } from "../lib/patterns/restoreSleevelessExpressBuilderFromPattern";
 import { ensureSavedCustomPatternSessionHydratedOnPatternPage } from "../lib/patterns/hydrateSavedCustomPatternProject";
-
-import { navigateToCustomizeProjectField } from "../lib/patterns/sleevelessCustomizeProjectFieldNav";
 
 import {
 
@@ -24,46 +20,6 @@ import {
   getSleevelessPatternOnlineNotesText,
 
 } from "../lib/patterns/sleevelessPatternProjectMeta";
-
-
-
-const PENCIL_ICON_SVG = `<svg class="sleeveless-pattern-edit-shortcut__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
-
-
-
-function bindEditShortcuts(): void {
-
-  if (!canCustomizePattern()) return;
-
-
-
-  document.querySelectorAll<HTMLButtonElement>("[data-sleeveless-edit-customize]").forEach((btn) => {
-
-    if (btn.dataset.sleevelessEditCustomizeBound === "1") return;
-
-    const target = btn.getAttribute("data-sleeveless-edit-customize");
-
-    if (target !== "title" && target !== "notes") return;
-
-    btn.dataset.sleevelessEditCustomizeBound = "1";
-
-    btn.hidden = false;
-
-    if (!btn.querySelector(".sleeveless-pattern-edit-shortcut__icon")) {
-
-      btn.insertAdjacentHTML("afterbegin", PENCIL_ICON_SVG);
-
-    }
-
-    btn.addEventListener("click", () => {
-
-      navigateToCustomizeProjectField(target);
-
-    });
-
-  });
-
-}
 
 
 
@@ -91,9 +47,14 @@ export function applySleevelessPatternOnlineProjectHeader(): void {
 
 
 
-  const notes = getSleevelessPatternOnlineNotesText(meta);
+  // `getSleevelessPatternOnlineNotesText` returns null when there are no saved notes, so coalesce to
+  // a string before trimming — otherwise a saved pattern with null/missing notes crashes the header
+  // (Cannot read properties of null) and the page stays stuck on "Loading pattern…".
+  const notes = getSleevelessPatternOnlineNotesText(meta) ?? "";
 
-  const showCustomizeNotes = canCustomizePattern();
+  // Project notes are library management, not a paid feature — show them whenever the user has
+  // notes saved, regardless of system-access entitlement (free/downgraded users keep their notes).
+  const showCustomizeNotes = notes.trim().length > 0;
 
 
 
@@ -130,10 +91,6 @@ export function applySleevelessPatternOnlineProjectHeader(): void {
     }
 
   }
-
-
-
-  bindEditShortcuts();
 
 }
 

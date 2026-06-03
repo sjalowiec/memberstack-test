@@ -7,13 +7,16 @@ import {
 } from "./customPatternEditingUx";
 import {
   CB_EDITING_BANNER_CANCEL_SELECTOR,
+  CB_EDITING_BANNER_COPY_SELECTOR,
   CB_EDITING_BANNER_STATUS_SELECTOR,
   CB_EDITING_BANNER_UPDATE_SELECTOR,
   CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT,
   exitEditingSavedCustomPattern,
+  runCopyActiveSavedCustomPattern,
   runUpdateActiveSavedCustomPattern,
   syncEditingSavedPatternChrome,
 } from "./customPatternEditingBannerActions";
+import { syncSavedCustomPatternCopyAccess } from "./savedCustomPatternCopyAccess";
 import { prepareCustomBuildPatternGeneration } from "./prepareCustomBuildPatternGeneration";
 import { hasUnsavedSavedCustomPatternChanges } from "./customPatternSavedProjectDirtyState";
 import { resolveCustomBuildMeasureFlushRoot } from "./sleevelessCustomMeasurementStorage";
@@ -24,9 +27,6 @@ export type CustomPatternEditingBannerState =
 
 /** Where the `[data-cb-editing-banner-host]` markup is mounted in the sleeveless workspace. */
 export type CustomPatternEditingBannerSurface = "pattern-output" | "editable-workspace";
-
-/** Workspace Create tab route (`PatternWorkspaceTabs` → expressHref). */
-export const SLEEVELESS_WORKSPACE_CREATE_TAB_PATH = "/patterns/sleeveless-express";
 
 /**
  * Finished Pattern instructions (`/patterns/sleeveless/pattern/`) omit the banner host.
@@ -115,11 +115,22 @@ export function renderCustomPatternEditingBanner(host: HTMLElement): void {
 
   const updateBtn = document.createElement("button");
   updateBtn.type = "button";
-  updateBtn.className = "cb-editing-banner__icon-btn cb-editing-banner__icon-btn--save";
+  updateBtn.className = "cb-editing-banner__btn cb-editing-banner__btn--save";
   updateBtn.setAttribute("data-cb-editing-banner-update", "");
-  updateBtn.title = "Update saved pattern";
-  updateBtn.setAttribute("aria-label", "Update saved pattern");
-  updateBtn.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>';
+  updateBtn.title = "Save changes to this saved pattern";
+  updateBtn.setAttribute("aria-label", "Save Changes");
+  updateBtn.innerHTML =
+    '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i><span>Save Changes</span>';
+
+  const copyBtn = document.createElement("button");
+  copyBtn.type = "button";
+  copyBtn.className = "cb-editing-banner__btn cb-editing-banner__btn--copy";
+  copyBtn.setAttribute("data-cb-editing-banner-copy", "");
+  copyBtn.title = "Save a Copy";
+  copyBtn.setAttribute("aria-label", "Save a Copy");
+  copyBtn.innerHTML = '<i class="fa-solid fa-copy" aria-hidden="true"></i><span>Save a Copy</span>';
+  // Visible for everyone; disabled + grayed (helper tooltip) for free / non-owner users.
+  syncSavedCustomPatternCopyAccess(copyBtn);
 
   const cancelBtn = document.createElement("button");
   cancelBtn.type = "button";
@@ -129,7 +140,7 @@ export function renderCustomPatternEditingBanner(host: HTMLElement): void {
   cancelBtn.setAttribute("aria-label", "Stop editing saved pattern");
   cancelBtn.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
 
-  actions.append(updateBtn, cancelBtn);
+  actions.append(updateBtn, copyBtn, cancelBtn);
   layout.append(content, actions);
   wrap.append(layout);
 
@@ -171,6 +182,29 @@ export async function performEditingBannerUpdate(host: HTMLElement): Promise<voi
   }
 }
 
+function setEditingBannerCopyTriggersDisabled(host: HTMLElement, disabled: boolean): void {
+  host.querySelectorAll(CB_EDITING_BANNER_COPY_SELECTOR).forEach((el) => {
+    if (!("disabled" in el)) return;
+    (el as HTMLButtonElement).disabled = disabled;
+  });
+}
+
+/** "Save a Copy" handler — duplicates the open pattern into a new saved project. */
+export async function performEditingBannerCopy(host: HTMLElement): Promise<void> {
+  setEditingBannerCopyTriggersDisabled(host, true);
+  try {
+    const res = await runCopyActiveSavedCustomPattern(host.ownerDocument, {
+      onStatus: (message, isError) => setBannerStatus(host, message, isError),
+    });
+    if (res.ok) {
+      setBannerStatus(host, `Saved copy “${res.projectName}”.`);
+      renderCustomPatternEditingBanner(host);
+    }
+  } finally {
+    setEditingBannerCopyTriggersDisabled(host, false);
+  }
+}
+
 let bannerHostClickBound = false;
 
 function bindBannerHostActions(host: HTMLElement): void {
@@ -186,6 +220,14 @@ function bindBannerHostActions(host: HTMLElement): void {
       setBannerStatus(host, "");
       exitEditingSavedCustomPattern();
       renderCustomPatternEditingBanner(host);
+      return;
+    }
+
+    const copyTrigger = t.closest(CB_EDITING_BANNER_COPY_SELECTOR);
+    if (copyTrigger) {
+      ev.preventDefault();
+      if (copyTrigger instanceof HTMLButtonElement && copyTrigger.disabled) return;
+      void performEditingBannerCopy(host);
       return;
     }
 

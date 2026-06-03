@@ -95,7 +95,7 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
     expect(repl.OPENING_STS).toBe("0");
   });
 
-  it("uses per-side shoulder stitch count on cardigan half and pullover schematics", () => {
+  it("cross-back label uses post-armhole body width (full pullover, half cardigan), not per-side shoulder", () => {
     const result = {
       debug: { ...baseDebug, shoulderStitches: 15 },
     } as unknown as SleevelessBackPatternResult;
@@ -110,9 +110,15 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
       measurementPiece: "front",
     });
 
-    expect(replCardigan.SHOULDER_STS).toBe("15");
-    expect(replPullover.SHOULDER_STS).toBe("15");
-    expect(replCardigan.SHOULDER_STS).not.toBe(String(baseDebug.stitchesAfterArmhole));
+    // Pullover/back cross-back = full post-armhole width (stitchesAfterArmhole), never per-side shoulder.
+    expect(replPullover.SHOULDER_STS).toBe(String(baseDebug.stitchesAfterArmhole));
+    expect(replPullover.SHOULDER_STS).not.toBe("15");
+    // Cardigan half front shows that panel's half of the post-armhole width (60 → 30).
+    expect(replCardigan.SHOULDER_STS).toBe("30");
+    // Both stitch count and inch label derive from the same post-armhole stitch count.
+    expect(replPullover.SHOULDER_WIDTH).toBe(
+      String(Math.round((baseDebug.stitchesAfterArmhole / baseDebug.stitchesPerInch) * 10) / 10),
+    );
   });
 
   it("halves neck tokens on cardigan half schematic only (CF split)", () => {
@@ -180,8 +186,10 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
       measurementPiece: "front",
     });
 
+    // Half-panel convention: HIP_STS and HIP_INCHES both derive from finished_hip (44in).
+    // 44 * (81/40) / 2 = 44.55 -> 45 sts, which matches 22in at gauge (45 / 2.025 ≈ 22.2in).
     expect(repl.HIP_INCHES).toBe("22");
-    expect(repl.HIP_STS).toBe("89");
+    expect(repl.HIP_STS).toBe("45");
     expect(repl.BUST_WIDTH).toBe("20");
   });
 

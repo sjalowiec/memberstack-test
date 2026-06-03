@@ -8,7 +8,7 @@ export const CUSTOM_BUILD_STYLE_STEP_LOCKED_TITLE =
   "Unlock this pattern to customize these details.";
 
 export const CUSTOM_BUILD_WORKSPACE_CUSTOMIZE_LOCKED_LABEL =
-  "Customize is available with this pattern.";
+  "Pattern Setup is available with this pattern.";
 
 const CUSTOM_BUILD_STYLE_STEP_MIN = 2;
 

@@ -35,10 +35,52 @@ export function projectIndexKey(family, userId) {
   return `${userProjectsPrefix(family, userId)}index.json`;
 }
 
-export const PROJECT_SUMMARY_INDEX_VERSION = 1;
+// v2 adds a derived display `gauge` to summaries; bumping forces stale indexes to rebuild.
+export const PROJECT_SUMMARY_INDEX_VERSION = 2;
+
+/** @param {unknown} value */
+function gaugePositiveNumber(value) {
+  const n = typeof value === "number" ? value : parseFloat(String(value ?? "").trim());
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/**
+ * Derives display gauge (stitches/rows per inch) from a saved pattern's `yarnGauge` section.
+ * Prefers stored per-inch values; falls back to raw swatch counts (over 4" / 10 cm).
+ * Returns `null` when no usable gauge is present. Mirrors `savedPatternGaugeDisplay.ts`.
+ * @param {Record<string, unknown>} project
+ */
+export function gaugeFromProject(project) {
+  const pattern =
+    project && typeof project.pattern === "object" && project.pattern
+      ? /** @type {Record<string, unknown>} */ (project.pattern)
+      : null;
+  const yarnGauge =
+    pattern && typeof pattern.yarnGauge === "object" && pattern.yarnGauge
+      ? /** @type {Record<string, unknown>} */ (pattern.yarnGauge)
+      : null;
+  if (!yarnGauge) return null;
+
+  const perInchSts = gaugePositiveNumber(yarnGauge.stitchGauge);
+  const perInchRows = gaugePositiveNumber(yarnGauge.rowGauge);
+  if (perInchSts !== null && perInchRows !== null) {
+    return { stitchesPerInch: perInchSts, rowsPerInch: perInchRows };
+  }
+
+  const rawSts = gaugePositiveNumber(yarnGauge.gaugeStitchRaw);
+  const rawRows = gaugePositiveNumber(yarnGauge.gaugeRowRaw);
+  if (rawSts !== null && rawRows !== null) {
+    const unit = yarnGauge.gaugeRawUnit === "cm" ? "cm" : "in";
+    const perInch = (raw) => (unit === "cm" ? (raw / 10) * 2.54 : raw / 4);
+    return { stitchesPerInch: perInch(rawSts), rowsPerInch: perInch(rawRows) };
+  }
+
+  return null;
+}
 
 /** @param {Record<string, unknown>} project */
 export function summaryFromProject(project) {
+  const gauge = gaugeFromProject(project);
   return {
     id: project.id,
     name: project.name,
@@ -47,6 +89,7 @@ export function summaryFromProject(project) {
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,
     version: project.version,
+    ...(gauge ? { gauge } : {}),
   };
 }
 
@@ -68,6 +111,8 @@ function isValidProjectSummary(summary) {
 function parseProjectSummaryIndex(parsed) {
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
   const root = /** @type {Record<string, unknown>} */ (parsed);
+  // Reject stale-schema indexes so they rebuild from the full project blobs (backfills gauge).
+  if (root.version !== PROJECT_SUMMARY_INDEX_VERSION) return null;
   const raw = root.summaries;
   if (!Array.isArray(raw)) return null;
   const summaries = raw.filter(isValidProjectSummary);
@@ -100,6 +145,35 @@ export async function writeProjectSummaryIndex(store, family, userId, summaries)
     },
   });
   return sorted;
+}
+
+/** Explanatory text returned when a free user's protected pattern delete is refused. */
+export const FREE_SLEEVELESS_PATTERN_DELETE_BLOCKED_MESSAGE =
+  "This is your free Sleeveless Pattern. To keep access to it, it can't be deleted unless you unlock the Sleeveless Pattern System.";
+
+/**
+ * Server mirror of the client free-pattern delete rule. Returns true when the deletion must be
+ * refused. The entitlement flags are client-asserted (same trust level as `X-KBM-Member-Id`), but
+ * `totalSavedCount` is computed server-side from the user's own blobs for the unknown-id fallback.
+ *
+ * - System access → never blocked.
+ * - Not freeClaimed → never blocked.
+ * - freeClaimed + known claimed id → block deleting exactly that id.
+ * - freeClaimed + unknown claimed id → block when it is the user's last remaining pattern.
+ *
+ * @param {{ hasSystemAccess?: boolean, freeClaimed?: boolean, freeClaimedPatternId?: string, projectId: string, totalSavedCount: number }} input
+ */
+export function isFreeSleevelessPatternDeleteBlocked(input) {
+  if (!input || typeof input !== "object") return false;
+  if (input.hasSystemAccess === true) return false;
+  if (input.freeClaimed !== true) return false;
+
+  const claimedId =
+    typeof input.freeClaimedPatternId === "string" ? input.freeClaimedPatternId.trim() : "";
+  if (claimedId) return String(input.projectId) === claimedId;
+
+  const count = Number(input.totalSavedCount);
+  return Number.isFinite(count) ? count <= 1 : true;
 }
 
 /**
@@ -162,7 +236,7 @@ export function corsHeaders() {
   return {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers":
-      "Content-Type, Authorization, X-KBM-Member-Id, X-KBM-Dev-User-Id",
+      "Content-Type, Authorization, X-KBM-Member-Id, X-KBM-Member-Email, X-KBM-Dev-User-Id",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   };
 }

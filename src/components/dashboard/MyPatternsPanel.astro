@@ -26,6 +26,12 @@
     Loading your saved patterns…
   </p>
 
+  <div class="account-my-patterns__empty-cta" data-kbm-my-patterns-empty-cta hidden>
+    <a href="/patterns" class="kbm-btn kbm-btn-accent account-my-patterns__create-btn">
+      Create a Pattern
+    </a>
+  </div>
+
   <div
     class="account-my-patterns__table-wrap"
     data-kbm-my-patterns-list-wrap
@@ -46,6 +52,7 @@
             </button>
           </th>
           <th scope="col">Type</th>
+          <th scope="col">Gauge</th>
           <th scope="col">
             <button
               type="button"
@@ -66,3 +73,15 @@
     </table>
   </div>
 </section>
+
+<style>
+  .account-my-patterns__empty-cta {
+    margin-top: 1rem;
+  }
+
+  .account-my-patterns__create-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>

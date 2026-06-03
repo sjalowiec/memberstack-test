@@ -163,8 +163,10 @@ describe("generateSleevelessBackPattern custom-build neck opening width override
       measurementPiece: "back",
     });
 
-    expect(repl.NECK_WIDTH).toBe("5");
-    expect(baselineRepl.NECK_WIDTH).toBe("3");
+    // NECK_WIDTH is re-derived from the knitted neck stitch count so sts and inches agree:
+    // override 5in -> round(5*5)=25 -> even 24 sts -> 24/5 = 4.8in; chart 3in -> 14 sts -> 14/5 = 2.8in.
+    expect(repl.NECK_WIDTH).toBe("4.8");
+    expect(baselineRepl.NECK_WIDTH).toBe("2.8");
     expect(Number(repl.NECK_STS)).toBeGreaterThan(Number(baselineRepl.NECK_STS));
   });
 });

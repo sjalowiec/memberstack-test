@@ -16,11 +16,11 @@
     </p>
     <div class="sleeveless-pattern-gate__signin" data-sleeveless-pattern-gate-signin hidden>
       <h2 id="sleeveless-pattern-gate-heading" class="sleeveless-pattern-gate__title">
-        Sign in to use pattern tools
+        Log in to create your free Sleeveless Pattern
       </h2>
       <p class="sleeveless-pattern-gate__lead">
-        Create and save sleeveless sweater patterns with your Knit It Now account. Log in or sign up
-        with your email to continue.
+        Create and save patterns with the Sleeveless Pattern System using your Knit It Now account.
+        Log in or sign up with your email to continue — your free pattern is saved to your account.
       </p>
       <div class="sleeveless-pattern-gate__actions">
         <a
@@ -54,6 +54,9 @@
 
 <script>
   import "/src/scripts/sleeveless-pattern-login-gate.ts";
+  // Localhost-only access-source debug badge. Self-gated behind import.meta.env.DEV + a
+  // localhost hostname check, so production builds dead-code-eliminate it.
+  import "/src/scripts/sleevelessAccessDebugBadge.ts";
 </script>
 
 <style>

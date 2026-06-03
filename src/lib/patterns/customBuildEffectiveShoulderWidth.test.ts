@@ -136,8 +136,10 @@ describe("generateSleevelessBackPattern custom-build shoulder width override", (
       measurementPiece: "back",
     });
 
-    expect(repl.SHOULDER_WIDTH).toBe("5.5");
-    expect(baselineRepl.SHOULDER_WIDTH).toBe("4.3");
+    // Cross-back width is re-derived from the post-armhole stitch count so sts and inches agree:
+    // override 5.5in -> round(5.5*5)=28 sts -> 28/5 = 5.6in; chart 4.25in -> 22 sts -> 22/5 = 4.4in.
+    expect(repl.SHOULDER_WIDTH).toBe("5.6");
+    expect(baselineRepl.SHOULDER_WIDTH).toBe("4.4");
     expect(Number(repl.SHOULDER_STS)).toBeGreaterThan(Number(baselineRepl.SHOULDER_STS));
   });
 });

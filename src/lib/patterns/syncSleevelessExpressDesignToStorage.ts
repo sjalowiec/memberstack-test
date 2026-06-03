@@ -5,6 +5,10 @@
 import { normalizeSleevelessAudience, getCurrentPattern, getPatternData, saveCurrentPattern, savePatternData } from "./patternStorage";
 import { seedCustomBuildBodyFinishedFromChartRow } from "./sleevelessCustomBuildBodyMeasurements";
 import { sectionPatchWouldChange } from "./patternSectionPatch";
+import {
+  collectGarmentStyleHandoffSources,
+  resolveSleevelessGarmentStyleForHandoff,
+} from "./sleevelessGarmentStyleHandoff";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 
 function section(obj: unknown): Record<string, unknown> {
@@ -131,20 +135,33 @@ export function syncSleevelessDesignBasicsToPatternStorage(
     stylePayload.length = "top";
     stylePayload.armholeStyle = "standard";
 
-    let front: "open" | "closed" = "closed";
-    if (params.frontStyle === "open" || params.frontStyle === "closed") {
-      front = params.frontStyle;
-    } else if (params.garmentStyle === "cardigan") {
-      front = "open";
-    } else if (params.garmentStyle === "pullover") {
-      front = "closed";
+    let front: "open" | "closed";
+    let garment: "pullover" | "cardigan";
+    if (explicitFront || explicitGarment) {
+      if (params.frontStyle === "open" || params.frontStyle === "closed") {
+        front = params.frontStyle;
+      } else {
+        front = params.garmentStyle === "cardigan" ? "open" : "closed";
+      }
+      garment = front === "open" ? "cardigan" : "pullover";
+      if (params.garmentStyle === "cardigan" || params.garmentStyle === "pullover") {
+        garment = params.garmentStyle;
+      }
+    } else {
+      // No explicit garment/front in incoming data — preserve existing selection from
+      // canonical pattern, patternBuilderData, express builder, or review handoff sources.
+      // Only fall back to pullover/closed when nothing indicates cardigan.
+      const sources = collectGarmentStyleHandoffSources();
+      const resolved = resolveSleevelessGarmentStyleForHandoff(
+        sources.canonicalStyle,
+        sources.patternBuilderStyle,
+        sources.expressValues,
+        sources.wizardGarmentType,
+      );
+      front = resolved.frontStyle;
+      garment = resolved.garmentStyle;
     }
     stylePayload.frontStyle = front;
-
-    let garment: "pullover" | "cardigan" = front === "open" ? "cardigan" : "pullover";
-    if (params.garmentStyle === "cardigan" || params.garmentStyle === "pullover") {
-      garment = params.garmentStyle;
-    }
     stylePayload.garmentStyle = garment;
 
     if (typeof params.patternMode === "string" && params.patternMode.trim() !== "") {

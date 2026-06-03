@@ -4,6 +4,7 @@
  */
 
 import { calculateArmholeShaping, type ArmholeResult } from "./legoBlocks/armholeBlock";
+import { RESET_ROW_COUNTER_TEXT } from "./rowCounterReset";
 import {
   generateNeckShoulderExecution,
   shapingActionsFromTimeline,
@@ -21,7 +22,7 @@ import {
 } from "./bodyBlock/sleevelessBodyBlock";
 import {
   bodyBlockPlanToAlineShapingPlan,
-  formatSleevelessAlineBodyShapingInstructionLines,
+  formatSleevelessAlineBodyShapingSummaryLine,
   resolveEffectiveSleevelessBodyShapeKind,
   scaleAlineBodyShapingPlanForCardiganHalf,
   sleevelessAlineShapingLineNeedsTrustedHtml,
@@ -30,6 +31,10 @@ import {
   shouldRunSleevelessBodyBlockForPullover,
   type SleevelessAlineBodyShapingPlan,
 } from "./sleevelessAlineShaping";
+import {
+  buildSleevelessBodyShapingChartRows,
+  type SleevelessBodyShapingChartRow,
+} from "./sleevelessBodyShapingChartHtml";
 import { resolveEffectiveFinishedLengthInches } from "./customBuildEffectiveFinishedLength";
 import {
   resolveEffectiveBackNeckDepthInches,
@@ -57,7 +62,10 @@ import {
   neckShoulderChartRowsFromTimeline,
   type NeckShoulderShapingPatternNumbers,
 } from "./neckShoulderShapingChartRows";
-import { armholeLocalRcFirstActiveSideNecklineShapingAction } from "./neckShoulderActiveSideChecklist";
+import {
+  armholeLocalRcFirstActiveSideNecklineShapingAction,
+  armholeLocalRcCenterNecklineSetupRow,
+} from "./neckShoulderActiveSideChecklist";
 import {
   isSleevelessCardiganGarmentStyle,
   isSleevelessVNeckChoice,
@@ -423,6 +431,12 @@ export type SleevelessBackPatternDebug = {
   frontNecklineStartLocalRC?: number;
   /** First front neckline shaping action RC on the active-shoulder checklist (matches print table). */
   frontNecklineShapingBeginLocalRC?: number;
+  /**
+   * Armhole RC of the front neckline center divide/setup row exactly as rendered in the Front
+   * Neckline chart (the "Scrap off center … to divide" row). Source of truth for the page 8
+   * summary + page 9 instruction so the prose can never drift from the chart's divide row.
+   */
+  frontNecklineCenterDivideLocalRC?: number;
   finalRC: number;
   /** Hem rows + body rows — identical on back, pullover front, and cardigan half front (canonical). */
   rowsFromCastOnToArmholeStart: number;
@@ -503,6 +517,16 @@ export type SleevelessPatternDisplayRow =
       tipPresentation?: PatternTipPresentation;
       /** Stable id for per-tip dismiss (`data-tip-id` on the rendered `.pattern-tip` wrapper). */
       tipId?: string;
+      /**
+       * Required-action marker: render the {@link rowCounterResetBlockHtml} block
+       * (after {@link rc}, before {@link paragraphs}). Not a tip — see `rowCounterReset.ts`.
+       */
+      rowCounterReset?: boolean;
+      /**
+       * Interactive body / A-line shaping chart rows (checkbox · RC · action). Rendered piece-aware
+       * (chart id derived from the rendering piece) after this block's paragraphs.
+       */
+      bodyShapingChartRows?: SleevelessBodyShapingChartRow[];
       /** Total stitches on the piece after this block; right column only when different from last shown */
       stitchCount?: number;
     };
@@ -628,6 +652,7 @@ function flattenDisplayRowsToLines(rows: readonly SleevelessPatternDisplayRow[])
       out.push("Neckline / shoulder shaping chart", "");
     } else {
       if (r.rc) out.push(r.rc);
+      if (r.rowCounterReset) out.push(RESET_ROW_COUNTER_TEXT);
       const plainParas =
         r.trustedParagraphs && r.trustedParagraphs.length > 0
           ? r.trustedParagraphs
@@ -638,6 +663,11 @@ function flattenDisplayRowsToLines(rows: readonly SleevelessPatternDisplayRow[])
             ? tipHtmlToPlainLine(p)
             : p;
         if (line.trim()) out.push(line);
+      }
+      if (r.bodyShapingChartRows && r.bodyShapingChartRows.length > 0) {
+        for (const cr of r.bodyShapingChartRows) {
+          out.push(`${formatRcColon(cr.rc)} ${cr.action}`);
+        }
       }
       if (r.tipHtml) out.push(tipHtmlToPlainLine(r.tipHtml));
       if (r.stitchCount !== undefined) out.push(`${r.stitchCount} sts`);
@@ -939,7 +969,8 @@ function replaceFrontArmholeCheckpointParagraphs(
   rows: readonly SleevelessPatternDisplayRow[],
   frontNecklineShapingBeginLocalRC: number | undefined,
   shoulderShapingBeginLocalRC: number | undefined,
-  isVNeck?: boolean
+  isVNeck?: boolean,
+  frontNecklineCenterDivideLocalRC?: number
 ): SleevelessPatternDisplayRow[] {
   if (
     frontNecklineShapingBeginLocalRC === undefined ||
@@ -950,7 +981,14 @@ function replaceFrontArmholeCheckpointParagraphs(
     return [...rows];
   }
 
-  const neckN = String(Math.max(0, Math.floor(frontNecklineShapingBeginLocalRC))).padStart(3, "0");
+  // Round-neck front begins with the center divide ("Scrap off center … to divide"); anchor the
+  // milestone to the chart's divide row RC so the prose matches the chart. The first-shaping-action
+  // RC remains the fallback (e.g. V-neck / charts without a center divide row).
+  const milestoneNeckLocalRC =
+    !isVNeck && Number.isFinite(frontNecklineCenterDivideLocalRC)
+      ? (frontNecklineCenterDivideLocalRC as number)
+      : frontNecklineShapingBeginLocalRC;
+  const neckN = String(Math.max(0, Math.floor(milestoneNeckLocalRC))).padStart(3, "0");
   const shoulderN = String(Math.max(0, Math.floor(shoulderShapingBeginLocalRC))).padStart(3, "0");
   const milestone = isVNeck
     ? `The row counter was reset at the beginning of armhole shaping. Front neckline (V-neck) shaping begins at Armhole RC ${neckN}; shoulder shaping at Armhole RC ${shoulderN}.`
@@ -1426,29 +1464,51 @@ export function buildSleevelessBackDisplayRows(args: {
         stitchCount: aline.bustBodySts > 0 ? aline.bustBodySts : A > 0 ? A : undefined,
       });
     } else {
-      const shapingLines = formatSleevelessAlineBodyShapingInstructionLines(
+      const summaryLine = formatSleevelessAlineBodyShapingSummaryLine(
         aline.shapingType,
-        aline.shapingRowNumbers,
+        aline.shapingRowNumbers.length,
         aline.availableShapingRows,
         alineEdgeScope,
       );
+      const chartRows = buildSleevelessBodyShapingChartRows(
+        aline.shapingType,
+        aline.shapingRowNumbers,
+        alineEdgeScope,
+      );
       const bustSts = aline.bustBodySts > 0 ? aline.bustBodySts : undefined;
-      const shapingContentLines = [
-        "Begin A-line shaping.",
-        ...shapingLines,
-        aline.shapingType !== "increase-to-bust" && bustSts !== undefined
-          ? `${bustSts} sts remain after shaping.`
-          : "",
-      ].filter((p) => p.length > 0);
-      const useTrusted = shapingContentLines.some(sleevelessAlineShapingLineNeedsTrustedHtml);
+      // Heading + summary sit ABOVE the chart; the per-row counters that were the
+      // "Work decreases on: RC:…" sentence are now the interactive chart rows below.
+      const beforeChartLines = ["Begin A-line shaping.", summaryLine].filter(
+        (p) => p.length > 0,
+      );
+      const useTrusted = beforeChartLines.some(sleevelessAlineShapingLineNeedsTrustedHtml);
+      // Plain-text mirror of the shaping instruction (no glossary HTML). Carries the side/armhole
+      // edge scope so cardigan fronts read "at the armhole edge". Renderers prefer
+      // trustedParagraphs, so this stays hidden in the normal (glossary) path — present only as
+      // machine-readable structured text alongside the rendered glossary summary.
+      const plainEdgePhrase =
+        alineEdgeScope === "armholeEdgeOnly" ? "at the armhole edge" : "at each side edge";
+      const plainShapingVerb =
+        aline.shapingType === "decrease-to-bust" ? "Decrease" : "Increase";
+      const plainShapingTimes = aline.shapingRowNumbers.length;
+      const plainShapingLine = `${plainShapingVerb} 1 stitch ${plainEdgePhrase} ${plainShapingTimes} time${plainShapingTimes === 1 ? "" : "s"}.`;
       rows.push({
         kind: "block",
         rc: formatRcColon(aline.shapingBeginRc),
         ...(useTrusted
-          ? { trustedParagraphs: shapingContentLines, paragraphs: [] as string[] }
-          : { paragraphs: shapingContentLines }),
+          ? { trustedParagraphs: beforeChartLines, paragraphs: [plainShapingLine] }
+          : { paragraphs: beforeChartLines }),
+        ...(chartRows.length > 0 ? { bodyShapingChartRows: chartRows } : {}),
         stitchCount: A > 0 ? A : undefined,
       });
+      // "N sts remain after shaping." stays AFTER the chart (decrease / waist-shaped only).
+      if (aline.shapingType !== "increase-to-bust" && bustSts !== undefined) {
+        rows.push({
+          kind: "block",
+          paragraphs: [`${bustSts} sts remain after shaping.`],
+          stitchCount: bustSts,
+        });
+      }
       const straightRows = aline.straightRowsBeforeArmhole;
       if (straightRows > 0) {
         rows.push({
@@ -1541,10 +1601,9 @@ export function buildSleevelessBackDisplayRows(args: {
     rows.push({
       kind: "block",
       rc: formatArmholeLocalRc(first, first),
+      rowCounterReset: true,
       paragraphs: [
-        "Reset Armhole RC to RC:000.",
-        ARMHOLE_RC_FROM_RESET_NOTE,
-        `At RC:000, bind off / hold ${bo} stitches at the armhole edge (carriage side). Knit across.`,
+        `At RC:000, bind off OR hold ${bo} stitches at the armhole edge (carriage side). Knit across.`,
       ],
       tipHtml: armholeAlternateTechniquesHelpCardInnerHtml(),
       tipHtmlIsFull: true,
@@ -1557,7 +1616,7 @@ export function buildSleevelessBackDisplayRows(args: {
         kind: "block",
         rc: formatArmholeLocalRc(first + 1, first),
         paragraphs: [
-          `At RC:001, bind off / hold ${bo} stitches at the remaining armhole edge (carriage side). Knit across.`,
+          `At RC:001, bind off OR hold ${bo} stitches at the remaining armhole edge (carriage side). Knit across.`,
         ],
         stitchCount: afterBo2 > 0 ? afterBo2 : undefined,
       });
@@ -1831,6 +1890,8 @@ export function buildSleevelessFrontDisplayRows(args: {
   frontNecklineStartLocalRC?: number;
   /** Armhole RC of the first generated front neckline shaping action (active-shoulder checklist). */
   frontNecklineShapingBeginLocalRC?: number;
+  /** Armhole RC of the Front Neckline chart's center divide/setup row ("Scrap off center … to divide"). */
+  frontNecklineCenterDivideLocalRC?: number;
   /** Armhole RC where shoulder shaping begins (same vertical line as back neckline / shoulders). */
   shoulderShapingBeginLocalRC?: number;
   sharedExecutionRows: readonly SleevelessPatternDisplayRow[];
@@ -1896,7 +1957,8 @@ export function buildSleevelessFrontDisplayRows(args: {
     sharedRowsClamped,
     args.frontNecklineShapingBeginLocalRC,
     args.shoulderShapingBeginLocalRC,
-    args.isVNeck
+    args.isVNeck,
+    args.frontNecklineCenterDivideLocalRC
   );
 
   const rows: SleevelessPatternDisplayRow[] = [];
@@ -1907,10 +1969,11 @@ export function buildSleevelessFrontDisplayRows(args: {
     kind: "block",
     paragraphs: args.introIsCardiganHalf
       ? [
-          "This piece is half the body width (one center-front edge). Cast-on and armhole counts below are for the left front only; total rows, armhole depth, and shoulder stitch counts follow the same schedule as the back.",
+          "This piece is half the body width (one center-front edge). Cast-on and armhole counts below are for the left front only. Work the front from the top — the cast-on, body, body shaping, and armhole steps are written out in full below, then continue into the front neckline shaping. Body/side shaping on the front is worked only on the armhole edge.",
+          "After the armhole reset, use Armhole RC — not the body row counter.",
         ]
       : [
-          "Front follows the same sequence as the back until neckline shaping begins.",
+          "The front is written out in full below — work the body, any body shaping, and armhole shaping from the top, then continue into the front neckline shaping.",
           "After the armhole reset, use Armhole RC — not the body row counter.",
         ],
   });
@@ -2798,6 +2861,16 @@ export function generateSleevelessBackPattern(
         armholeStartRC,
       )
     : undefined;
+  /**
+   * Armhole RC of the Front Neckline chart's center divide/setup row ("Scrap off center … to
+   * divide"). Derived from the same chart builder + options the rendered chart uses, so the
+   * page 8 summary and page 9 instruction stay locked to the chart's divide row.
+   */
+  const frontNecklineCenterDivideLocalRC = frontNeckShoulderChartUsesLiveRows
+    ? armholeLocalRcCenterNecklineSetupRow(frontNeckShoulderShapingChart, armholeStartRC, {
+        includeCenterNecklineSetupRow: true,
+      })
+    : undefined;
 
   /** Final piece RCs derived from the timeline (chart) when present, else from the scheduled span. */
   const backFinalRow =
@@ -2875,6 +2948,7 @@ export function generateSleevelessBackPattern(
     backNecklineStartLocalRC,
     frontNecklineStartLocalRC,
     frontNecklineShapingBeginLocalRC,
+    frontNecklineCenterDivideLocalRC,
     rowsFromCastOnToArmholeStart: canonicalRowsFromCastOnToArmholeStart,
     finalRC: rc,
     armholeStartRow: armholeStartRC,
@@ -3045,6 +3119,7 @@ export function generateSleevelessBackPattern(
       frontNecklineStartRC,
       frontNecklineStartLocalRC,
       frontNecklineShapingBeginLocalRC,
+      frontNecklineCenterDivideLocalRC,
       shoulderShapingBeginLocalRC: backNecklineStartLocalRC,
       sharedExecutionRows: frontSharedExecutionRows,
       useNeckChartRows: frontNeckShoulderChartUsesLiveRows,

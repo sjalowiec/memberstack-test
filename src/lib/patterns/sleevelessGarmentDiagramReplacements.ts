@@ -6,7 +6,10 @@ import {
   resolveCardiganHalfFrontWidths,
   type CardiganHalfFrontWidths,
 } from "./cardiganFrontBlock";
-import { resolveDiagramFinishedHipInches } from "./customBuildEffectiveFinishedHip";
+import {
+  resolveDiagramFinishedHipInches,
+  resolveEffectiveFinishedHipInches,
+} from "./customBuildEffectiveFinishedHip";
 import { resolveEffectiveHemDepthInches } from "./customBuildEffectiveHemDepth";
 import { calculateHemRowsFromInches } from "./hemDefaults";
 import { lengthFromRowsForDiagram, resolveTotalInstructionRows } from "./sleevelessRowAccounting";
@@ -29,8 +32,11 @@ function isFiniteNumber(n: unknown): n is number {
 }
 
 /**
- * Per-side shoulder stitch count for garment schematic `{{SHOULDER_STS}}` (not B = stitches after armhole).
- * Cardigan half front uses the same per-side target as the back (`debug.shoulderStitches`).
+ * Per-side shoulder stitch budget used by shoulder-shaping validation.
+ *
+ * NOTE: This is NOT the cross-back schematic label — that dimension line shows the full
+ * post-armhole body width (see {@link crossBackWidthForDiagram}). This per-side value is the
+ * shoulder bind-off target consumed by shoulder shaping notation/validation.
  */
 export function shoulderStitchesPerSideForDiagram(
   d: SleevelessBackPatternResult["debug"],
@@ -46,6 +52,45 @@ export function shoulderStitchesPerSideForDiagram(
     return Math.max(1, Math.floor((d.stitchesAfterArmhole - d.necklineStitches) / 2));
   }
   return undefined;
+}
+
+/**
+ * Horizontal dimension label whose stitch count and inch value are derived from the *same* stitch
+ * count, so the two never disagree (e.g. 76 sts → 76 / spi in, not the raw measurement input).
+ *
+ * Used for dimension lines where the knitted stitch count is the source of truth and the inch value
+ * is just its gauge conversion — the cross-back width above the armhole and the neck opening.
+ */
+function stitchWidthLabel(
+  stitches: number | undefined,
+  stitchesPerInch: number | undefined,
+  unit: "cm" | "in",
+): { sts: number | undefined; widthLabel: string } {
+  const sts =
+    isFiniteNumber(stitches) && stitches > 0 ? Math.round(stitches) : undefined;
+  const inches =
+    sts !== undefined && isFiniteNumber(stitchesPerInch) && stitchesPerInch > 0
+      ? sts / stitchesPerInch
+      : undefined;
+  return {
+    sts,
+    widthLabel: fmtNumber(inchesToUnit(inches, unit) ?? Number.NaN),
+  };
+}
+
+/**
+ * Cross-back (cross-shoulder) dimension line that sits above the armhole on the FRONT/BACK schematics.
+ *
+ * This is the body width *remaining after armhole shaping is complete* (`stitchesAfterArmhole`),
+ * i.e. the same source-of-truth value the written armhole instructions decrease down to — not a
+ * per-side shoulder count.
+ */
+function crossBackWidthForDiagram(
+  stitchesAfterArmhole: number | undefined,
+  stitchesPerInch: number | undefined,
+  unit: "cm" | "in",
+): { sts: number | undefined; widthLabel: string } {
+  return stitchWidthLabel(stitchesAfterArmhole, stitchesPerInch, unit);
 }
 
 function fmtNumber(n: number): string {
@@ -96,11 +141,18 @@ function resolveHipFieldsForSleevelessDiagram(
 ): { HIP_STS: string; HIP_ROWS: string; HIP_INCHES: string } {
   const finishedBust = isFiniteNumber(d.finishedBustChest) ? d.finishedBustChest : undefined;
   const finishedHip = resolveDiagramFinishedHipInches(patternData, finishedBust);
+  // Explicit, stored hip (undefined when only the bust default would apply) so the hip stitch count
+  // tracks the hip — not the bust cast-on — whenever a real hip measurement is present.
+  const explicitHip = resolveEffectiveFinishedHipInches(patternData);
   const spi = d.stitchesPerInch;
 
   let hipSts: number | undefined;
   if (isFiniteNumber(d.hemCastOnStitches) && d.hemCastOnStitches > 0) {
+    // Generated patterns always provide this and it already reflects any hip shaping.
     hipSts = Math.round(d.hemCastOnStitches);
+  } else if (isFiniteNumber(explicitHip) && isFiniteNumber(spi) && spi > 0) {
+    // Half-panel hip stitches, derived from the same hip measurement HIP_INCHES uses.
+    hipSts = Math.round((explicitHip * spi) / 2);
   } else if (isFiniteNumber(d.backStitches) && d.backStitches > 0) {
     hipSts = Math.round(d.backStitches);
   } else if (isFiniteNumber(finishedHip) && isFiniteNumber(spi) && spi > 0) {
@@ -229,22 +281,17 @@ function applyCardiganHalfFrontMeasurements(
   const hipWidthIn = hipCirc !== undefined ? hipCirc / 4 : undefined;
   repl.HIP_INCHES = fmtNumber(inchesToUnit(hipWidthIn, unit) ?? NaN);
 
-  const shoulderStsLabel = shoulderStitchesPerSideForDiagram(d);
-  repl.SHOULDER_STS = shoulderStsLabel !== undefined ? String(shoulderStsLabel) : "";
-  const shoulderWidthHalfIn =
-    isFiniteNumber(d.shoulderWidthInches) && d.shoulderWidthInches > 0
-      ? d.shoulderWidthInches / 2
-      : undefined;
-  repl.SHOULDER_WIDTH = fmtNumber(inchesToUnit(shoulderWidthHalfIn, unit) ?? NaN);
+  // Cross-back dimension for one cardigan front panel = that panel's post-armhole body width.
+  const crossBackHalf = crossBackWidthForDiagram(half.stitchesAfterArmhole, d.stitchesPerInch, unit);
+  repl.SHOULDER_STS = crossBackHalf.sts !== undefined ? String(crossBackHalf.sts) : "";
+  repl.SHOULDER_WIDTH = crossBackHalf.widthLabel;
 
   // Half-front diagram: neckline at CF is split — show half the neck stitches / width on this piece.
-  repl.NECK_STS =
-    halfStitchesRounded(d.necklineStitches) !== undefined
-      ? String(halfStitchesRounded(d.necklineStitches)!)
-      : "";
-  repl.NECK_WIDTH = fmtNumber(
-    inchesToUnit(isFiniteNumber(d.necklineWidthInches) ? d.necklineWidthInches / 2 : undefined, unit) ?? NaN,
-  );
+  // Inch value is derived from that half stitch count so the label stays internally consistent.
+  const halfNeckSts = halfStitchesRounded(d.necklineStitches);
+  const halfNeck = stitchWidthLabel(halfNeckSts, d.stitchesPerInch, unit);
+  repl.NECK_STS = halfNeck.sts !== undefined ? String(halfNeck.sts) : "";
+  repl.NECK_WIDTH = halfNeck.widthLabel;
 
   repl.OPENING_STS = "0";
   repl.PIECE_TITLE = side === "left" ? "LEFT FRONT" : "RIGHT FRONT";
@@ -307,7 +354,9 @@ export function buildSleevelessGarmentDiagramReplacements(
       ? lengthFromRowsForDiagram(armholeRowsForDiagram, rpiForDiagram, unit)
       : undefined;
 
-  const shoulderStsForDiagram = shoulderStitchesPerSideForDiagram(d);
+  const crossBack = crossBackWidthForDiagram(d.stitchesAfterArmhole, d.stitchesPerInch, unit);
+  // Neck opening label: derive inches from the knitted neck stitch count, not the raw measurement.
+  const neckOpening = stitchWidthLabel(d.necklineStitches, d.stitchesPerInch, unit);
 
   const repl: Record<string, string> = {
     UNIT: unitLabel,
@@ -318,11 +367,10 @@ export function buildSleevelessGarmentDiagramReplacements(
     ARMHOLE_ROWS: isFiniteNumber(d.armholeRows) ? String(Math.round(d.armholeRows)) : "",
     BUST_STS: isFiniteNumber(d.backStitches) ? String(Math.round(d.backStitches)) : "",
     BUST_WIDTH: fmtNumber(inchesToUnit(bustWidthIn, unit) ?? NaN),
-    SHOULDER_STS:
-      shoulderStsForDiagram !== undefined ? String(shoulderStsForDiagram) : "",
-    SHOULDER_WIDTH: fmtNumber(inchesToUnit(d.shoulderWidthInches, unit) ?? NaN),
-    NECK_STS: isFiniteNumber(d.necklineStitches) ? String(Math.round(d.necklineStitches)) : "",
-    NECK_WIDTH: fmtNumber(inchesToUnit(d.necklineWidthInches, unit) ?? NaN),
+    SHOULDER_STS: crossBack.sts !== undefined ? String(crossBack.sts) : "",
+    SHOULDER_WIDTH: crossBack.widthLabel,
+    NECK_STS: neckOpening.sts !== undefined ? String(neckOpening.sts) : "",
+    NECK_WIDTH: neckOpening.widthLabel,
     NECK_DEPTH_ROWS: neckDepth.NECK_DEPTH_ROWS,
     NECK_DEPTH: neckDepth.NECK_DEPTH,
     SIDE_LENGTH_ROWS: isFiniteNumber(sideSeamAboveHemRows)

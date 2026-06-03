@@ -2,7 +2,15 @@
  * Editable pattern name + project notes on unified sleeveless review (`/patterns/sleeveless/review`).
  */
 
-import { canCustomizePattern } from "../lib/patterns/sleevelessPatternAccessGate";
+import {
+  canEditSleevelessPatternNotes,
+  canEditSleevelessPatternSettings,
+  LOGGED_OUT_SLEEVELESS_ACCESS,
+} from "../lib/patterns/sleevelessPatternSystemAccess";
+import {
+  getCachedSleevelessUserAccess,
+  resolveSleevelessUserAccess,
+} from "../lib/patterns/sleevelessPatternSystemAccessClient";
 import { getCurrentPattern } from "../lib/patterns/patternStorage";
 import { bindSleevelessPatternProjectCloudSave } from "../lib/patterns/sleevelessPatternProjectCloudSave";
 import {
@@ -53,7 +61,8 @@ function flashCustomizeFieldHighlight(el: HTMLElement | null): void {
 /** Scroll to and focus title or notes on the Customize (review) page. */
 export function focusSleevelessCustomizeProjectField(target: "title" | "notes"): void {
   const root = getHeaderRoot();
-  if (!root || !canCustomizePattern()) return;
+  const access = getCachedSleevelessUserAccess() ?? LOGGED_OUT_SLEEVELESS_ACCESS;
+  if (!root || !canEditSleevelessPatternNotes(access)) return;
 
   if (target === "title") {
     const titleInput = root.querySelector<HTMLInputElement>("[data-sleeveless-pattern-project-title]");
@@ -327,6 +336,20 @@ function bindEditableHeader(root: HTMLElement): void {
   });
 }
 
+/** Hide the "Change Pattern Choices" controls when the user may not edit pattern settings. */
+function disableSleevelessReviewSettingsControls(): void {
+  const summaryRow = document.querySelector<HTMLElement>("[data-sleeveless-review-summary-edit]");
+  if (summaryRow) {
+    stripSectionHeadTrigger(summaryRow);
+    summaryRow.hidden = true;
+  }
+  document
+    .querySelectorAll<HTMLElement>("[data-sleeveless-change-pattern-choices]")
+    .forEach((el) => {
+      el.hidden = true;
+    });
+}
+
 function initSleevelessReviewSummaryEdit(): void {
   const row = document.querySelector<HTMLElement>("[data-sleeveless-review-summary-edit]");
   if (!row) return;
@@ -349,23 +372,35 @@ function applyCustomizeFieldFocusFromNavigation(): void {
   });
 }
 
-export function initSleevelessReviewProjectHeader(): void {
+export async function initSleevelessReviewProjectHeader(): Promise<void> {
   const root = getHeaderRoot();
   if (!root) return;
 
-  if (canCustomizePattern()) {
+  const access = await resolveSleevelessUserAccess();
+
+  // Title + project notes: editable for any logged-in user (including a free claimed pattern).
+  if (canEditSleevelessPatternNotes(access)) {
     bindEditableHeader(root);
   } else {
     applyReadOnlyProjectHeader(root);
   }
 
-  initSleevelessReviewSummaryEdit();
-  initChangePatternChoicesLinks();
+  // Pattern-building choices (who/size, front, neckline, fit, gauge) + regeneration: members /
+  // Sleeveless Pattern System owners, or free users still creating their one free pattern.
+  if (canEditSleevelessPatternSettings(access)) {
+    initSleevelessReviewSummaryEdit();
+    initChangePatternChoicesLinks();
+  } else {
+    disableSleevelessReviewSettingsControls();
+  }
+
   applyCustomizeFieldFocusFromNavigation();
 }
 
 if (typeof document !== "undefined") {
-  const boot = (): void => initSleevelessReviewProjectHeader();
+  const boot = (): void => {
+    void initSleevelessReviewProjectHeader();
+  };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
 }

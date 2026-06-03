@@ -6,9 +6,25 @@ import {
   getPatternData,
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
 } from "../lib/patterns/patternStorage";
-import { applySleevelessExpressEditChoicesFromUrl } from "../lib/patterns/restoreSleevelessExpressBuilderFromPattern";
+import {
+  applySleevelessExpressEditChoicesFromUrl,
+  isSleevelessExpressEditChoicesSearchParams,
+} from "../lib/patterns/restoreSleevelessExpressBuilderFromPattern";
 import { startNewCustomPatternFromExpress } from "../lib/patterns/startNewCustomPatternWorkflow";
-import { applySleevelessExpressNewSessionFromUrl } from "../lib/patterns/sleevelessExpressFreshStart";
+import {
+  applySleevelessExpressNewSessionFromUrl,
+  isSleevelessExpressNewSessionSearchParams,
+} from "../lib/patterns/sleevelessExpressFreshStart";
+import { resolveSleevelessUserAccess } from "../lib/patterns/sleevelessPatternSystemAccessClient";
+import { canEditSleevelessPatternSettings } from "../lib/patterns/sleevelessPatternSystemAccess";
+import { reconcilePatternDraftOwner } from "../lib/patterns/patternDraftOwnerGuard";
+import { exitEditingSavedCustomPattern } from "../lib/patterns/customPatternEditingBannerActions";
+import { OPEN_PATTERN_HREF } from "../lib/patterns/customPatternProjectNavigation";
+import {
+  canStartNewSleevelessPattern,
+  resolveSleevelessNewPatternBlockedCopy,
+  showSleevelessNewPatternLockedScreen,
+} from "../lib/patterns/sleevelessNewPatternAccessGuard";
 import {
   garmentTypeFromFront,
   writeSleevelessGarmentTypeLocalStorage,
@@ -27,7 +43,8 @@ import {
   isValidExpressSizeForAudience,
   SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID,
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
-import { scrollToBuilderSection } from "../lib/patterns/scrollToBuilderSection";
+import { scrollToSectionWithHeaderOffset } from "../lib/patterns/scrollToSectionWithHeaderOffset";
+import { focusFirstInputInSection } from "../lib/patterns/focusFirstInputInSection";
 import { resolveSleevelessAudienceHeroImageSrc } from "../lib/patterns/sleevelessAudienceHeroImage";
 import {
   getExpressEditingProjectLabel,
@@ -288,6 +305,13 @@ function initExpressPage() {
     ? Math.min(STEPS, Math.max(1, openStepCandidate || STEPS))
     : Math.min(maxReachable, Math.max(0, openStepCandidate));
 
+  /**
+   * Tracks the Gauge accordion's open state across `updateSections` runs so we only move focus
+   * on a genuine closed→open transition (not on every state refresh, gauge typing, or initial load).
+   * Seeded from the initial open state so a resumed session that lands on Gauge does not steal focus.
+   */
+  let gaugeAccordionWasOpen = openStep === STEPS;
+
   const sections = document.querySelectorAll("[data-express-step]");
   const pills = document.querySelectorAll("[data-pill-step]");
   const expressBuilderRoot = document.querySelector("[data-express-builder]");
@@ -514,6 +538,13 @@ function initExpressPage() {
           if (!open) inp.setAttribute("tabindex", "-1");
           else inp.removeAttribute("tabindex");
         });
+
+        // Focus the first gauge input only on a closed→open transition so the user can type
+        // immediately. Guarded so it never steals focus while closed or when another step opens.
+        if (open && !gaugeAccordionWasOpen) {
+          focusFirstInputInSection(sectionEl);
+        }
+        gaugeAccordionWasOpen = open;
       }
     });
 
@@ -530,6 +561,9 @@ function initExpressPage() {
     clearAllLockedFeedback();
     openStep = step;
     refreshBuilderState();
+    // Reveal the just-opened section below the fixed site header (e.g. "Choose your front"),
+    // so a sibling-collapse layout shift never leaves its content hidden under the header.
+    scrollToSectionWithHeaderOffset(stepSection(step));
   }
 
   /** Deep-link from Measurement Blueprint “Change gauge” — opens Gauge accordion when prior steps are complete. */
@@ -543,7 +577,6 @@ function initExpressPage() {
     if (hash !== "express-gauge-section") return;
     if (maxReachableFromChoices(values) < STEPS) return;
     goToStep(STEPS);
-    scrollToBuilderSection(document.getElementById("express-gauge-section"));
   }
 
   function markChoiceSelected(sectionEl: HTMLElement, selectedEl: HTMLElement) {
@@ -777,7 +810,6 @@ function initExpressPage() {
     const step = parseInt(el.getAttribute("data-pill-step") ?? "0", 10);
     if (step >= 1 && step <= maxReachable) {
       goToStep(step);
-      scrollToBuilderSection(stepSection(step));
     }
   }
 
@@ -1098,10 +1130,76 @@ function initExpressTopTabs(): void {
   }
 }
 
+/**
+ * `?new=1` is the "Start a New Pattern" deep link (Patterns landing, in-page Start Over navigation).
+ * A logged-in free user who already claimed their one-time free pattern must be blocked here —
+ * before {@link applySleevelessExpressNewSessionFromUrl} clears any draft and before the setup
+ * questions / title / notes are shown. Logged-out visitors are handled by the member gate, and
+ * members / free-unclaimed users proceed normally.
+ */
+async function blockExpressNewPatternStartIfLocked(): Promise<boolean> {
+  let isNewSessionIntent = false;
+  try {
+    isNewSessionIntent = isSleevelessExpressNewSessionSearchParams(
+      new URL(window.location.href).searchParams,
+    );
+  } catch {
+    isNewSessionIntent = false;
+  }
+  if (!isNewSessionIntent) return false;
+
+  const access = await resolveSleevelessUserAccess();
+  if (!access.loggedIn || canStartNewSleevelessPattern(access)) return false;
+
+  // `?new=1` means "start a new pattern". When creation is locked we still return early (skipping
+  // initExpressPage → applySleevelessExpressNewSessionFromUrl), so exit any leftover saved-pattern
+  // edit session here — otherwise the "Editing saved pattern" wrapper (Save Changes / Save a Copy /
+  // X) from customPatternEditingBanner.ts would frame the unlock gate for a claimed free user.
+  exitEditingSavedCustomPattern();
+  showSleevelessNewPatternLockedScreen(document, resolveSleevelessNewPatternBlockedCopy(access));
+  return true;
+}
+
+/**
+ * Editing a SAVED pattern (`?edit=choices`, or any session with an active saved-project id) opens
+ * the Express builder with every step unlocked and prefilled. A logged-in user who lacks settings-
+ * editing access (free user who already claimed their one pattern, or a downgraded member) must not
+ * land on that editable surface — their pattern is view-only. Send them to the read-only pattern
+ * view instead. This mirrors the workspace Edit Pattern gate and also protects direct-URL access.
+ */
+async function redirectSavedPatternEditIfLocked(): Promise<boolean> {
+  let isEditChoicesIntent = false;
+  try {
+    isEditChoicesIntent = isSleevelessExpressEditChoicesSearchParams(
+      new URL(window.location.href).searchParams,
+    );
+  } catch {
+    isEditChoicesIntent = false;
+  }
+  if (!isEditChoicesIntent && !isEditingSavedCustomPatternProject()) return false;
+
+  const access = await resolveSleevelessUserAccess();
+  if (!access.loggedIn || canEditSleevelessPatternSettings(access)) return false;
+
+  // `replace` so the browser back button does not bounce them onto the editable URL again.
+  window.location.replace(OPEN_PATTERN_HREF);
+  return true;
+}
+
 if (typeof document !== "undefined") {
   const boot = (): void => {
-    initExpressPage();
-    initExpressTopTabs();
+    void (async () => {
+      // Reconcile draft ownership against the authenticated member BEFORE any hydration so a
+      // different member never inherits the previous member's local working draft. Runs first;
+      // `?new=1` in initExpressPage clears again for the explicit "start new" path.
+      await reconcilePatternDraftOwner();
+      const blocked = await blockExpressNewPatternStartIfLocked();
+      if (blocked) return;
+      const redirected = await redirectSavedPatternEditIfLocked();
+      if (redirected) return;
+      initExpressPage();
+      initExpressTopTabs();
+    })();
   };
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);

@@ -117,10 +117,13 @@ export function resolveBodyBlockHipCircumferenceInches(
   if (isSleevelessExplicitCustomBuildStraight(patternData, finishedBust, finishedHip)) {
     return finishedBust;
   }
-  // Express (and any non–custom-build) straight torso: honor style, not stale review hip overrides.
+  // Express (and any non–custom-build) straight torso: ignore a stale WIDE hip (e.g. a leftover
+  // review override) that would widen a straight body into an A-line. A narrower hip still infers
+  // shaped (waist) tapering, so only clamp to bust when the hip exceeds it.
   if (
     storedBodyShapeKey(patternData) === "straight" &&
-    !isCustomBuildPatternMode(patternData)
+    !isCustomBuildPatternMode(patternData) &&
+    measurementsImplySleevelessAlineBody(finishedBust, finishedHip)
   ) {
     return finishedBust;
   }
@@ -315,6 +318,33 @@ export function formatSleevelessAlineBodyShapingInstructionLines(
   }
   lines.push(`Work ${workLabel} on: ${list}.`);
   return lines;
+}
+
+/**
+ * Summary sentence only (no row-counter list) for the body-shaping block heading.
+ * The per-row counters now live in the interactive body-shaping chart, so this keeps the
+ * glossary-tooltipped "Decrease/Increase 1 stitch … evenly across the next N rows." line
+ * without duplicating the RC list as prose.
+ */
+export function formatSleevelessAlineBodyShapingSummaryLine(
+  shapingType: SleevelessAlineShapingType,
+  times: number,
+  shapingSpanRows?: number,
+  edgeScope: SleevelessAlineShapingEdgeScope = "symmetricSides",
+): string {
+  if (shapingType === "straight" || times <= 0) return "";
+  const verb = shapingType === "decrease-to-bust" ? "Decrease" : "Increase";
+  const edgePhrase =
+    edgeScope === "armholeEdgeOnly" ? "at the armhole edge" : "at each side edge";
+  const span =
+    shapingSpanRows !== undefined && shapingSpanRows > 0 ? shapingSpanRows : undefined;
+  const line =
+    span !== undefined
+      ? `${verb} 1 stitch ${edgePhrase} ${times} time${times === 1 ? "" : "s"} evenly across the next ${span} row${span === 1 ? "" : "s"}.`
+      : `${verb} 1 stitch ${edgePhrase} ${times} time${times === 1 ? "" : "s"}.`;
+  return shapingType === "decrease-to-bust"
+    ? withDecreaseGlossaryTooltip(line)
+    : withIncreaseGlossaryTooltip(line);
 }
 
 /**

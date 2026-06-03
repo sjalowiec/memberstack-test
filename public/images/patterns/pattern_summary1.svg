@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" width="210.2" height="210.2" version="1.1" viewBox="0 0 210.2 210.2">
+  <!-- Generator: Adobe Illustrator 30.3.0, SVG Export Plug-In . SVG Version: 2.1.3 Build 182)  -->
+  <defs>
+    <style>
+      .st0 {
+        stroke-dasharray: 4 3;
+      }
+
+      .st0, .st1, .st2, .st3, .st4, .st5, .st6, .st7, .st8, .st9, .st10 {
+        fill: none;
+        stroke: #bcbec0;
+      }
+
+      .st0, .st1, .st3, .st4, .st5, .st6, .st7, .st8, .st9, .st10 {
+        stroke-miterlimit: 10;
+      }
+
+      .st0, .st2, .st3, .st4, .st5, .st7, .st8 {
+        stroke-width: .7px;
+      }
+
+      .st11 {
+        fill: #e4e521;
+      }
+
+      .st1 {
+        stroke-dasharray: 5.2 5.2;
+        stroke-width: .9px;
+      }
+
+      .st12 {
+        fill: #bcbec0;
+      }
+
+      .st2 {
+        stroke-linejoin: round;
+      }
+
+      .st3 {
+        stroke-dasharray: 2.1 2.1;
+      }
+
+      .st4 {
+        stroke-dasharray: 2 2;
+      }
+
+      .st6 {
+        stroke-dasharray: 4.4 4.4;
+        stroke-width: .8px;
+      }
+
+      .st7 {
+        stroke-dasharray: 3 2;
+      }
+
+      .st8 {
+        stroke-dasharray: 4 4;
+      }
+
+      .st9 {
+        stroke-dasharray: 5.5 5.5;
+        stroke-width: 1px;
+      }
+
+      .st10 {
+        stroke-dasharray: 1 2;
+        stroke-linecap: round;
+        stroke-width: .8px;
+      }
+    </style>
+  </defs>
+  <g id="body">
+    <line class="st5" x1="81.8" y1="23.3" x2="82.3" y2="24.1"/>
+    <line class="st3" x1="83.7" y1="25.7" x2="111.2" y2="60.4"/>
+    <polyline class="st5" points="111.8 61.2 112.3 62 113.1 61.2"/>
+    <line class="st3" x1="114.3" y1="59.6" x2="142.4" y2="25.2"/>
+    <line class="st5" x1="143.1" y1="24.4" x2="143.6" y2="23.7"/>
+    <path class="st5" d="M82.2,23.8c.2.3.4.5.6.8"/>
+    <path class="st4" d="M83.9,26.1c27,33,52.9,6.5,58.8-.5"/>
+    <path class="st5" d="M143.4,24.9c.4-.5.6-.8.6-.8"/>
+    <line class="st2" x1="48" y1="201.7" x2="177.6" y2="201.9"/>
+    <path class="st2" d="M48.7,102.4c.8,5.9-.4,99.7-.4,99.7"/>
+    <path class="st2" d="M177.4,102.4c-.8,5.9.1,99.5.1,99.5"/>
+    <path class="st2" d="M171.4,33.4s-7.6,49.3,6,69.6"/>
+    <path class="st2" d="M81.8,23.3s6.1,6.9,30.9,6.9,31-6.9,31-6.9l28.2,10.1"/>
+    <path class="st2" d="M54,33.4s8.5,49.4-5.2,69.8"/>
+    <line class="st2" x1="82.4" y1="23.3" x2="53.7" y2="33.6"/>
+  </g>
+  <line id="hem_indicator" class="st10" x1="48.9" y1="183.3" x2="177.2" y2="183.3"/>
+  <g id="line_hem">
+    <line class="st7" x1="43.7" y1="183.4" x2="43.7" y2="201"/>
+    <rect class="st12" x="41.5" y="182.8" width="4.9" height=".7"/>
+    <rect class="st12" x="41.3" y="200.6" width="4.9" height=".7"/>
+  </g>
+  <circle id="target_hem" class="st11" cx="20.9" cy="197.9" r="2.5"/>
+  <line class="st0" x1="112.4" y1="26.2" x2="112.2" y2="62.3"/>
+  <rect class="st8" x="110.2" y="26.1" width="4.9" height=".1"/>
+  <rect class="st8" x="110.4" y="62.7" width="4.9" height=".1"/>
+  <circle id="target_neck_depth" class="st11" cx="93.1" cy="45.8" r="2.5"/>
+  <g id="line-armhole_depth">
+    <line class="st8" x1="47.4" y1="35.2" x2="47.4" y2="100.5"/>
+    <rect class="st12" x="44.9" y="34.8" width="4.9" height=".7"/>
+    <rect class="st12" x="44.9" y="100.1" width="4.9" height=".7"/>
+  </g>
+  <circle id="target_armhole_depth" class="st11" cx="32.7" cy="63.5" r="2.5"/>
+  <ellipse id="line_bust" class="st9" cx="113.9" cy="106" rx="51.3" ry="12.1"/>
+  <circle id="target_bust" class="st11" cx="112.8" cy="107.6" r="2.5"/>
+  <ellipse id="line_hip" class="st1" cx="112.8" cy="187.9" rx="55.9" ry="10"/>
+  <circle id="target_hip" class="st11" cx="111.8" cy="183.4" r="2.5"/>
+  <g id="line_chest">
+    <line class="st8" x1="58.6" y1="71.6" x2="167.8" y2="71.5"/>
+    <rect class="st12" x="58.2" y="69.2" width=".7" height="4.9"/>
+    <rect class="st12" x="165.8" y="69.2" width=".7" height="4.9"/>
+  </g>
+  <circle id="target_chest" class="st11" cx="113" cy="75.5" r="2.5"/>
+  <g id="line_garment_length">
+    <line class="st8" x1="188.1" y1="27.1" x2="188.1" y2="201.9"/>
+    <rect class="st12" x="185.6" y="26.8" width="4.9" height=".7"/>
+    <rect class="st12" x="185.6" y="201.1" width="4.9" height=".7"/>
+  </g>
+  <circle id="target_garmemt_length" class="st11" cx="195.6" cy="133.5" r="2.5"/>
+  <g id="line-neck-opening">
+    <line class="st6" x1="87.7" y1="23.7" x2="139.1" y2="23.7"/>
+    <rect class="st12" x="87.2" y="21.3" width=".8" height="4.9"/>
+    <rect class="st12" x="138.6" y="21.3" width=".9" height="4.9"/>
+  </g>
+  <circle id="target_neck_opening" class="st11" cx="112.1" cy="10.9" r="2.5"/>
+</svg>

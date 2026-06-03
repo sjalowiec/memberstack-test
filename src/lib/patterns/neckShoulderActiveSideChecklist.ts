@@ -29,6 +29,12 @@ export type ActiveSideInstructionTableRow = {
   action: string;
   edge: string;
   stitchesRemaining: number;
+  /**
+   * When set, the Sts Remaining cell renders this string instead of the numeric
+   * {@link stitchesRemaining} (center neckline divide/transition row only, e.g. `50 total / 20 active`).
+   * `stitchesRemaining` still tracks the active-shoulder count so downstream rows and bind-off math are unaffected.
+   */
+  stitchesRemainingDisplay?: string;
 };
 
 /** Back neckline checklist: prepend center divide/setup row at the timeline center-bind-off RC. */
@@ -112,6 +118,20 @@ export function formatCenterNecklineSetupChecklistAction(info: CenterNecklineDiv
   return `Scrap off center ${n} neckline ${centerWord} to divide; ${shoulders} remaining. Place opposite shoulder in hold; ${stitchCountPhrase(R)} active shoulder.`;
 }
 
+/**
+ * Sts Remaining label for the center neckline divide row: full pre-divide count → active shoulder.
+ * "Total" is the whole back width before the center stitches are scrapped off
+ * (both shoulders + center); "active" is the working shoulder kept on the machine after the divide.
+ */
+export function formatCenterNecklineSetupStsRemainingDisplay(info: CenterNecklineDivideInfo): string {
+  const active = Math.max(0, Math.floor(info.stitchesRightAfter));
+  const total =
+    Math.max(0, Math.floor(info.stitchesLeftAfter)) +
+    Math.max(0, Math.floor(info.centerBindOff)) +
+    active;
+  return `${total} total / ${active} active`;
+}
+
 function buildCenterNecklineSetupChecklistRow(
   rc: number,
   info: CenterNecklineDivideInfo,
@@ -122,6 +142,7 @@ function buildCenterNecklineSetupChecklistRow(
     action: formatCenterNecklineSetupChecklistAction(info),
     edge: ACTIVE_SHOULDER_CENTER_NECKLINE_SETUP_EDGE,
     stitchesRemaining: Math.max(0, Math.floor(info.stitchesRightAfter)),
+    stitchesRemainingDisplay: formatCenterNecklineSetupStsRemainingDisplay(info),
   };
 }
 
@@ -188,14 +209,18 @@ function requiredParityForActiveSideEdge(edge: ActiveSideEdge): 0 | 1 {
 }
 
 function activeSideActionText(action: ActiveSideScheduledAction): string {
-  const noun = action.amount === 1 ? "st" : "sts";
+  // A shaping action always moves at least one stitch; coerce defensively so the count is
+  // always rendered explicitly (e.g. "Decrease 1 st"), never blank/"undefined" if the
+  // upstream amount is missing or non-finite.
+  const amount = Number.isFinite(action.amount) ? Math.max(1, Math.round(action.amount)) : 1;
+  const noun = amount === 1 ? "st" : "sts";
   let verb: string;
   if (action.kind === "bindOff") {
-    verb = action.edge === "Armhole" ? "Bind off / hold" : "Bind off";
+    verb = action.edge === "Armhole" ? "Bind off OR hold" : "Bind off";
   } else {
     verb = "Decrease";
   }
-  return `${verb} ${action.amount} ${noun}`;
+  return `${verb} ${amount} ${noun}`;
 }
 
 function addActiveSideKnitEvenRow(
@@ -415,6 +440,24 @@ export function armholeLocalRcFirstActiveSideNecklineShapingAction(
   const firstNeck = shapingRows.find((row) => row.edge === "Neck");
   const first = firstNeck ?? shapingRows[0];
   return first !== undefined ? first.rc : undefined;
+}
+
+/**
+ * Armhole-local RC of the center neckline divide/setup row exactly as rendered in the
+ * active-shoulder shaping chart (the round-neck "Scrap off center … to divide" row).
+ * Returns `undefined` when the chart has no center neckline setup row (e.g. V-neck or
+ * cardigan front). Single source of truth shared by the chart and the generated prose so
+ * the instructional RC can never drift from the chart's divide row.
+ */
+export function armholeLocalRcCenterNecklineSetupRow(
+  chart: NeckShoulderShapingChart,
+  firstArmholeGarmentRc: number | null | undefined,
+  options?: ActiveShoulderChecklistOptions,
+): number | undefined {
+  const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, firstArmholeGarmentRc, options);
+  const rows = buildActiveSideInstructionTableRows(chart, rcStart, options);
+  const setup = rows.find(isCenterNecklineSetupChecklistRow);
+  return setup?.rc;
 }
 
 function oppositeCarriagePosition(position: "Right" | "Left"): "Right" | "Left" {

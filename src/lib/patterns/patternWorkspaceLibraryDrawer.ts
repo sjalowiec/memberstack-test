@@ -6,23 +6,25 @@ import { listCustomPatternProjects } from "./customPatternProjectClient";
 import type { CustomPatternProjectSummary } from "./customPatternProjectTypes";
 import { readActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import { loadSavedCustomPatternProject } from "./loadSavedCustomPatternProject";
+import { copySavedCustomPatternProjectById } from "./savedCustomPatternManageActions";
+import {
+  canCopySavedCustomPattern,
+  SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT,
+  syncSavedCustomPatternCopyAccess,
+} from "./savedCustomPatternCopyAccess";
+import { formatSavedPatternGauge } from "./savedPatternGaugeDisplay";
 
 const SIGN_IN_REQUIRED_ERROR = "Sign in to save Custom Pattern projects.";
 export const PATTERN_WORKSPACE_LIBRARY_DRAWER_OPEN_CLASS =
   "pattern-workspace-library-drawer-open";
 
 export function formatCustomPatternProjectType(project: CustomPatternProjectSummary): string {
+  // User-facing pattern type only — internal workflow source (Express / Custom Build) is not shown.
   const familyLabels: Record<string, string> = {
     sleeveless: "Sleeveless",
   };
-  const sourceLabels: Record<string, string> = {
-    express: "Express",
-    "custom-build": "Custom Build",
-  };
   const family = project.family ? (familyLabels[project.family] ?? project.family) : "";
-  const source = project.source ? (sourceLabels[project.source] ?? project.source) : "";
-  if (family && source) return `${family} · ${source}`;
-  return family || source || "—";
+  return family || "—";
 }
 
 export function formatCustomPatternProjectUpdatedAt(iso: string | undefined): string {
@@ -32,6 +34,20 @@ export function formatCustomPatternProjectUpdatedAt(iso: string | undefined): st
   } catch {
     return iso;
   }
+}
+
+/**
+ * Compact drawer meta line, e.g. `"Sleeveless • 7 sts / 11 rows • May 31, 2026"`.
+ * Gauge is shown when available and omitted (rather than blanked) when missing.
+ */
+export function buildCustomPatternProjectMetaLine(project: CustomPatternProjectSummary): string {
+  const parts = [formatCustomPatternProjectType(project)];
+  if (project.gauge) {
+    parts.push(formatSavedPatternGauge(project.gauge));
+  }
+  const stamp = formatCustomPatternProjectUpdatedAt(project.updatedAt);
+  if (stamp) parts.push(stamp);
+  return parts.filter(Boolean).join(" • ");
 }
 
 function setDrawerStatus(root: HTMLElement, message: string, isError = false): void {
@@ -81,9 +97,7 @@ function renderLibraryItem(
 
   const metaEl = document.createElement("span");
   metaEl.className = "pattern-workspace-library__item-meta";
-  const type = formatCustomPatternProjectType(project);
-  const stamp = formatCustomPatternProjectUpdatedAt(project.updatedAt);
-  metaEl.textContent = stamp ? `${type} · ${stamp}` : type;
+  metaEl.textContent = buildCustomPatternProjectMetaLine(project);
 
   btn.append(nameEl, metaEl);
   btn.addEventListener("click", async () => {
@@ -91,9 +105,60 @@ function renderLibraryItem(
     await onLibraryProjectOpen(root, project.id, displayName, btn);
   });
 
-  card.append(btn);
+  const actions = document.createElement("div");
+  actions.className = "pattern-workspace-library__item-actions";
+
+  const copyBtn = document.createElement("button");
+  copyBtn.type = "button";
+  copyBtn.className = "pattern-workspace-library__item-action pattern-workspace-library__item-copy";
+  copyBtn.setAttribute("data-pattern-workspace-library-copy", "");
+  copyBtn.dataset.projectId = project.id;
+  copyBtn.setAttribute("aria-label", `Copy ${displayName}`);
+  copyBtn.textContent = "Copy Pattern";
+  copyBtn.addEventListener("click", async () => {
+    if (copyBtn.disabled) return;
+    await onLibraryProjectCopy(root, project.id, displayName);
+  });
+  // Visible for everyone; disabled + grayed (helper tooltip) for free / non-owner users.
+  syncSavedCustomPatternCopyAccess(copyBtn);
+
+  actions.append(copyBtn);
+  card.append(btn, actions);
   li.append(card);
   list.append(li);
+}
+
+async function onLibraryProjectCopy(
+  root: HTMLElement,
+  projectId: string,
+  label: string,
+): Promise<void> {
+  if (!canCopySavedCustomPattern()) {
+    setDrawerStatus(root, SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT, true);
+    return;
+  }
+
+  setDrawerStatus(root, `Copying “${label}”…`);
+  const copyButtons = root.querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-copy]");
+  copyButtons.forEach((b) => {
+    b.disabled = true;
+  });
+
+  try {
+    const result = await copySavedCustomPatternProjectById(projectId, "sleeveless");
+    if (!result.ok) {
+      setDrawerStatus(root, result.error, true);
+      return;
+    }
+    await refreshPatternWorkspaceLibraryList(root);
+    setDrawerStatus(root, `Created “${result.project.name}”.`);
+  } catch {
+    setDrawerStatus(root, "Could not copy this pattern. Please try again.", true);
+  } finally {
+    root
+      .querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-copy]")
+      .forEach((b) => syncSavedCustomPatternCopyAccess(b));
+  }
 }
 
 async function onLibraryProjectOpen(

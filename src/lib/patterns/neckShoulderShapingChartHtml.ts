@@ -67,6 +67,30 @@ function escapeHtml(text: string): string {
     .replace(/"/g, "&quot;");
 }
 
+/**
+ * Wrap-safe HTML for a checklist **Action** cell in the narrow print/online column.
+ *
+ * The Action column has no fixed width and wraps freely, so a bare `Decrease 1 st` /
+ * `Bind off OR hold 3 sts` can break between the count and its unit — leaving a lone `1`
+ * (which thin-glyph rendering and OCR misread as `Il`, or drop entirely → `Decrease  st`)
+ * or a stranded `sts` on its own line. Gluing the count to its unit and keeping the
+ * multi-word verb phrase intact with non-breaking spaces removes those artifacts. Natural
+ * breaks are still allowed (e.g. before the count), so the column never forces the page wider.
+ *
+ * Display-only: the underlying {@link ActiveSideInstructionTableRow.action} keeps plain spaces
+ * so row IDs, aria labels, and tests stay stable.
+ */
+export function formatActionCellHtml(action: string): string {
+  const NBSP = "\u00A0";
+  let html = escapeHtml(String(action ?? ""));
+  // Glue the stitch count to its unit: "1 st" / "12 sts" → never split across lines.
+  html = html.replace(/(\d+)[ \t]+(sts?)\b/g, `$1${NBSP}$2`);
+  // Keep the multi-word verb phrases together so "OR hold"/"off" never strand.
+  html = html.replace(/Bind off OR hold/g, `Bind${NBSP}off${NBSP}OR${NBSP}hold`);
+  html = html.replace(/Bind off/g, `Bind${NBSP}off`);
+  return html;
+}
+
 function chartProgressRcAttrFromActiveRow(r: ActiveSideInstructionTableRow): string {
   const start = Math.max(0, Math.floor(Number(r.rc)));
   const endRaw = r.rcEnd !== undefined ? Math.max(0, Math.floor(Number(r.rcEnd))) : start;
@@ -113,10 +137,13 @@ function buildFullChartStableRowId(
 function renderNsChartProgressToolbarHtml(): string {
   return `<div class="ns-shaping-chart__progress-toolbar no-print">
     <div class="ns-shaping-chart__progress-toolbar-main" role="toolbar" aria-label="Chart checklist tracking">
-      <button type="button" class="ns-shaping-chart__progress-btn ns-shaping-chart__progress-toggle-hide" data-chart-progress-toggle-hide aria-pressed="false">Hide completed rows</button>
-      <button type="button" class="ns-shaping-chart__progress-btn ns-shaping-chart__progress-reset" data-chart-progress-reset>Reset checklist</button>
+      <button type="button" role="switch" aria-checked="true" class="pattern-tips-switch ns-shaping-chart__progress-show-completed" data-chart-progress-show-completed>
+        <span class="pattern-tips-switch__label">Show Completed Rows</span>
+        <span class="pattern-tips-switch__track" aria-hidden="true"><span class="pattern-tips-switch__thumb"></span></span>
+        <span class="pattern-tips-switch__state" data-chart-progress-show-state>Rows visible</span>
+      </button>
+      <button type="button" class="ns-shaping-chart__progress-btn ns-shaping-chart__progress-reset" data-chart-progress-reset>Reset Checklist</button>
     </div>
-    <p class="ns-shaping-chart__progress-hide-status" data-chart-progress-hide-status role="status" aria-live="polite"><span class="ns-shaping-chart__progress-hide-status-mark" aria-hidden="true"></span><span data-chart-progress-hide-status-text>Completed rows are visible.</span></p>
   </div>`;
 }
 
@@ -393,6 +420,16 @@ function formatActiveSideRc(rc: number): string {
 }
 
 /**
+ * Sts Remaining cell text for a checklist row — uses the optional divide/transition display string
+ * (e.g. `50 total / 20 active`) when present, otherwise the numeric active-shoulder count.
+ */
+function activeSideStsRemainingCellHtml(r: ActiveSideInstructionTableRow): string {
+  const override =
+    typeof r.stitchesRemainingDisplay === "string" ? r.stitchesRemainingDisplay.trim() : "";
+  return override ? escapeHtml(override) : String(r.stitchesRemaining);
+}
+
+/**
  * Merge consecutive “Knit in pattern” active-shoulder checklist rows when stitch counts stay the same and RCs are consecutive.
  * Used for on-screen pattern (`activeSideOnly`) and print mini-table except sleeveless-style V-neck charts (see {@link isFullWidthVNeckFrontStyleChart}).
  * Uses `plainKnitSpanCarriageEdgeDisplay` for alternating Side / Section labels.
@@ -466,9 +503,9 @@ function renderActiveSideInstructionRowsTrHtml(
       )} complete" /></label></td>`;
       return `<tr class="ns-shaping-chart__tr" data-row-id="${escapeHtml(rowId)}" data-rc="${escapeHtml(rcAttr)}">${doneCell}<td class="ns-shaping-chart__td-num">${escapeHtml(
         rcDisp
-      )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${escapeHtml(r.action)}</td><td>${escapeHtml(
+      )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${formatActionCellHtml(r.action)}</td><td>${escapeHtml(
         r.edge
-      )}</td><td class="ns-shaping-chart__td-num">${r.stitchesRemaining}</td></tr>`;
+      )}</td><td class="ns-shaping-chart__td-num">${activeSideStsRemainingCellHtml(r)}</td></tr>`;
     })
     .join("");
 }
@@ -794,9 +831,9 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
       const rcDisp = formatActiveSideRcDisplay(r);
       return `<tr class="ns-shaping-mini__row"><td class="ns-shaping-mini__rc">${escapeHtml(
         rcDisp
-      )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${escapeHtml(r.action)}</td><td>${escapeHtml(
+      )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${formatActionCellHtml(r.action)}</td><td>${escapeHtml(
         r.edge
-      )}</td><td class="ns-shaping-mini__sts">${r.stitchesRemaining}</td></tr>`;
+      )}</td><td class="ns-shaping-mini__sts">${activeSideStsRemainingCellHtml(r)}</td></tr>`;
     })
     .join("");
   const oppositeRowsHtml = oppositePrintRows
@@ -804,9 +841,9 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
       const rcDisp = formatActiveSideRcDisplay(r);
       return `<tr class="ns-shaping-mini__row"><td class="ns-shaping-mini__rc">${escapeHtml(
         rcDisp
-      )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${escapeHtml(r.action)}</td><td>${escapeHtml(
+      )}</td><td>${escapeHtml(r.carriagePosition)}</td><td>${formatActionCellHtml(r.action)}</td><td>${escapeHtml(
         r.edge
-      )}</td><td class="ns-shaping-mini__sts">${r.stitchesRemaining}</td></tr>`;
+      )}</td><td class="ns-shaping-mini__sts">${activeSideStsRemainingCellHtml(r)}</td></tr>`;
     })
     .join("");
   return `<section class="ns-shaping-mini" aria-labelledby="${escapeHtml(headingId)}">

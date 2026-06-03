@@ -26,15 +26,18 @@ import {
   generateSleevelessBackPattern,
   patternTipWrapperHtml,
 } from "../lib/patterns/sleevelessPatternOutput.ts";
+import { rowCounterResetBlockHtml } from "../lib/patterns/rowCounterReset.ts";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
   renderActiveShoulderChartIntroHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
+import { renderSleevelessBodyShapingChartHtml } from "../lib/patterns/sleevelessBodyShapingChartHtml.ts";
 import { initChartProgressTracking } from "./chartProgressTracker.ts";
 import { scheduleReadingWorkflowSync } from "../lib/patterns/patternReadingWorkflowSync.ts";
 import { showResults, initializeActionBar } from "../components/wizards/utils/wizardBehavior.ts";
 import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
+import { logSleevelessPatternActivity } from "../lib/patterns/sleevelessPatternActivity.ts";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
 import { buildGlossaryTooltipPlaceholderHtml } from "../lib/glossary/glossaryTooltipPrint.ts";
 import { buildPatternHelpCardInnerHtml } from "../lib/patterns/patternHelpCard.ts";
@@ -282,23 +285,28 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     window.addEventListener("hashchange", schedule);
   }
 
-  function appendSleevelessInpageNavPrintPill(track) {
+  function mountSleevelessPrintAction() {
     if (!isSleevelessWorkspacePatternPage()) return;
-    const printBtn = document.createElement("button");
-    printBtn.type = "button";
-    printBtn.id = "print-btn";
-    printBtn.className =
-      "sleeveless-pattern-inpage-nav__pill sleeveless-pattern-inpage-nav__pill--print no-print";
-    printBtn.setAttribute("data-testid", "button-print");
-    printBtn.setAttribute("aria-label", "Print pattern");
-    printBtn.innerHTML = `<i class="fas fa-print" aria-hidden="true"></i> Print`;
+    const host = document.querySelector("[data-sleeveless-pattern-actions]");
+    if (!(host instanceof HTMLElement)) return;
+    let printBtn = host.querySelector("#print-btn");
+    if (!(printBtn instanceof HTMLButtonElement)) {
+      printBtn = document.createElement("button");
+      printBtn.type = "button";
+      printBtn.id = "print-btn";
+      printBtn.className = "sleeveless-pattern-print-action no-print";
+      printBtn.setAttribute("data-testid", "button-print");
+      printBtn.setAttribute("aria-label", "Print pattern");
+      printBtn.innerHTML = `<i class="fas fa-print" aria-hidden="true"></i> Print`;
+      host.appendChild(printBtn);
+    }
     if (printBtn.dataset.sleevelessPrintBound !== "true") {
       printBtn.dataset.sleevelessPrintBound = "true";
       printBtn.addEventListener("click", () => {
+        logSleevelessPatternActivity("pattern_printed");
         triggerPatternPrint(printBtn, {});
       });
     }
-    track.appendChild(printBtn);
     printBtn.style.display = "inline-flex";
   }
 
@@ -564,6 +572,9 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       if (row.rc) {
         leftBits.push(`<p class="sleeveless-pattern-rc">${escapeHtml(row.rc)}</p>`);
       }
+      if (row.rowCounterReset) {
+        leftBits.push(rowCounterResetBlockHtml());
+      }
       const trusted = row.trustedParagraphs;
       if (trusted && trusted.length > 0) {
         for (const p of trusted) {
@@ -575,6 +586,13 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
           const t = String(p).trim();
           if (t) leftBits.push(`<p class="sleeveless-pattern-line">${escapeHtml(t)}</p>`);
         }
+      }
+      if (row.bodyShapingChartRows && row.bodyShapingChartRows.length > 0) {
+        leftBits.push(
+          renderSleevelessBodyShapingChartHtml(row.bodyShapingChartRows, {
+            chartId: `sleeveless-body-shaping-chart-${pieceSectionId || "back"}`,
+          })
+        );
       }
       if (row.tipHtml) {
         leftBits.push(patternTipWrapperHtml(row));
@@ -2132,7 +2150,7 @@ table {
       count += 1;
     }
     if (count > 0) {
-      appendSleevelessInpageNavPrintPill(track);
+      mountSleevelessPrintAction();
     }
     nav.replaceChildren(track);
     nav.hidden = count === 0;
@@ -2561,11 +2579,13 @@ table {
     const backArmholeLocalChartStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
       ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC))
       : 0;
-    const frontArmholeLocalChartStartRc = Number.isFinite(result?.debug?.frontNecklineShapingBeginLocalRC)
-      ? Math.max(0, Math.floor(result.debug.frontNecklineShapingBeginLocalRC))
-      : Number.isFinite(result?.debug?.frontNecklineStartLocalRC)
-        ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC))
-        : 0;
+    const frontArmholeLocalChartStartRc = Number.isFinite(result?.debug?.frontNecklineCenterDivideLocalRC)
+      ? Math.max(0, Math.floor(result.debug.frontNecklineCenterDivideLocalRC))
+      : Number.isFinite(result?.debug?.frontNecklineShapingBeginLocalRC)
+        ? Math.max(0, Math.floor(result.debug.frontNecklineShapingBeginLocalRC))
+        : Number.isFinite(result?.debug?.frontNecklineStartLocalRC)
+          ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC))
+          : 0;
 
     const armholeGarmentStartRc = result?.debug?.armholeStartRow;
     const backChecklistOptions = { includeCenterNecklineSetupRow: true as const };
@@ -2574,9 +2594,11 @@ table {
       armholeGarmentStartRc,
       backChecklistOptions,
     );
+    const frontChecklistOptions = { includeCenterNecklineSetupRow: true as const };
     const frontActiveSideRcStart = armholeLocalRcActiveShoulderChecklistStart(
       result.frontNeckShoulderShapingChart,
       armholeGarmentStartRc,
+      frontChecklistOptions,
     );
 
     // Active-shoulder checklist (RC / Side / Instruction / Section / Stitches). Plain-knit compaction: neckShoulderShapingChartHtml `chartBodyRowsHtml`.
@@ -2599,7 +2621,7 @@ table {
           result?.frontNeckShoulderShapingChart,
           "front"
         ),
-        { activeSideOnly: true, activeSideRcStart: frontActiveSideRcStart }
+        { activeSideOnly: true, activeSideRcStart: frontActiveSideRcStart, includeCenterNecklineSetupRow: true }
       );
     }
 
@@ -2623,7 +2645,7 @@ table {
           result?.frontNeckShoulderShapingChart,
           "front"
         ),
-        options: { activeSideOnly: true, activeSideRcStart: frontActiveSideRcStart },
+        options: { activeSideOnly: true, activeSideRcStart: frontActiveSideRcStart, includeCenterNecklineSetupRow: true },
       },
     };
     // Finishing HTML + chart table HTML (incl. glossary placeholders) are injected above.

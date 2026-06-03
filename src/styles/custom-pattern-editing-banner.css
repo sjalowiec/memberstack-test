@@ -127,6 +127,71 @@
   outline-offset: 2px;
 }
 
+/* Labeled action buttons (Save Changes / Save a Copy) in the active-pattern banner. */
+.cb-editing-banner__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  box-sizing: border-box;
+  min-height: 2.25rem;
+  margin: 0;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 650;
+  line-height: 1.1;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.cb-editing-banner__btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--kbm-green, #52682d) 55%, #926d25);
+  outline-offset: 2px;
+}
+
+.cb-editing-banner__btn--save {
+  border: 1px solid var(--kbm-green, #52682d);
+  background: var(--kbm-green, #52682d);
+  color: #fff;
+}
+
+.cb-editing-banner__btn--save:hover:not(:disabled) {
+  background: var(--kbm-green-hover, #445626);
+  border-color: var(--kbm-green-hover, #445626);
+}
+
+.cb-editing-banner__btn--save:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.cb-editing-banner__btn--copy {
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 38%, #d1d5db);
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #fff);
+  color: var(--kbm-green, #52682d);
+}
+
+.cb-editing-banner__btn--copy:hover:not(:disabled):not(.is-disabled) {
+  border-color: color-mix(in srgb, var(--kbm-green, #52682d) 52%, #d1d5db);
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 14%, #fff);
+}
+
+/* Copy stays visible for free / non-owner users, but disabled + grayed. */
+.cb-editing-banner__btn--copy.is-disabled,
+.cb-editing-banner__btn--copy:disabled {
+  color: #9aa3a0;
+  background: #f3f4f3;
+  border-color: #e2e6e0;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 .cb-editing-banner__status {
   margin: 0.45rem 0 0;
   font-size: 0.88rem;

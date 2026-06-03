@@ -38,6 +38,17 @@
     "active": true
   },
   {
+    "id": 36,
+    "title": "Knitters Graph Paper",
+    "href": "/tools/graph-paper",
+    "icon": "FullScaleGraphPaper.svg",
+    "description": "Download printable graph paper sized to your stitch and row gauge.",
+    "membersonly": false,
+    "category": "Shaping and Charting",
+    "help_text": "Use this tool to download printable knitters graph paper that matches your gauge.\n\nChoose US Letter or Metric A4, then pick your stitch gauge and row gauge. The tool builds a link to a ready-made PDF you can print for intarsia, motifs, stitch placement, or shaping notes.\nFor true-scale printing, print at Actual Size / 100% (not 'Fit to page').",
+    "active": true
+  },
+  {
     "id": 4,
     "title": "Button Placements (horizontal)",
     "href": "buttonholes.cfm",

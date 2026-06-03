@@ -4,6 +4,8 @@
  */
 
 import { patternTipWrapperHtml, type SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
+import { rowCounterResetBlockHtml } from "./rowCounterReset";
+import { renderSleevelessBodyShapingChartHtml } from "./sleevelessBodyShapingChartHtml";
 
 function escapeHtml(s: string): string {
   return String(s)
@@ -39,6 +41,8 @@ function detailsOpenForPrint(html: string): string {
 function renderPrintBlockRow(
   row: Extract<SleevelessPatternDisplayRow, { kind: "block" }>,
   lastStitchRef: { value: number | undefined },
+  pieceKey = "print",
+  keepWithNext = false,
 ): string {
   const showStitch =
     row.stitchCount !== undefined &&
@@ -48,6 +52,9 @@ function renderPrintBlockRow(
   const leftBits: string[] = [];
   if (row.rc) {
     leftBits.push(`<p class="print-rc">${escapeHtml(row.rc)}</p>`);
+  }
+  if (row.rowCounterReset) {
+    leftBits.push(rowCounterResetBlockHtml());
   }
   const trusted = row.trustedParagraphs;
   if (trusted && trusted.length > 0) {
@@ -65,6 +72,13 @@ function renderPrintBlockRow(
       if (t) leftBits.push(`<p class="print-line">${escapeHtml(t)}</p>`);
     }
   }
+  if (row.bodyShapingChartRows && row.bodyShapingChartRows.length > 0) {
+    leftBits.push(
+      renderSleevelessBodyShapingChartHtml(row.bodyShapingChartRows, {
+        chartId: `sleeveless-body-shaping-chart-${pieceKey}`,
+      }),
+    );
+  }
   if (row.tipHtml) {
     leftBits.push(detailsOpenForPrint(patternTipWrapperHtml(row)));
   }
@@ -79,12 +93,13 @@ function renderPrintBlockRow(
   if (!leftHtml && !rightHtml) {
     return "";
   }
+  const keepClass = keepWithNext ? " print-inst-row--keep-with-next" : "";
   if (!leftHtml && rightHtml) {
-    return `<div class="print-inst-row print-inst-row--full print-inst-row--sts-only">${rightHtml}</div>`;
+    return `<div class="print-inst-row print-inst-row--full print-inst-row--sts-only${keepClass}">${rightHtml}</div>`;
   }
 
   const rowClass = rightHtml ? "print-inst-row" : "print-inst-row print-inst-row--full";
-  return `<div class="${rowClass}">${leftHtml}${rightHtml}</div>`;
+  return `<div class="${rowClass}${keepClass}">${leftHtml}${rightHtml}</div>`;
 }
 
 /**
@@ -93,12 +108,14 @@ function renderPrintBlockRow(
 export function renderSleevelessPrintPieceHtml(
   rows: readonly SleevelessPatternDisplayRow[],
   neckChartHtml: string,
+  pieceKey = "print",
 ): string {
   const list = Array.isArray(rows) ? rows : [];
   const lastStitchRef = { value: undefined as number | undefined };
   const chunks: string[] = [];
 
-  for (const row of list) {
+  for (let idx = 0; idx < list.length; idx++) {
+    const row = list[idx]!;
     if (row.kind === "piece") {
       chunks.push(
         `<h2 class="print-piece-title print-heading-with-checkbox">${printHeadingCheckboxMarkup()}<span class="print-heading-label">${escapeHtml(row.title)}</span></h2>`,
@@ -116,7 +133,10 @@ export function renderSleevelessPrintPieceHtml(
       continue;
     }
     if (row.kind === "block") {
-      chunks.push(renderPrintBlockRow(row, lastStitchRef));
+      // Glue a setup instruction that sits directly above the shaping chart to the chart
+      // header so the heading/intro never strand alone at a page foot (the chart body flows).
+      const keepWithNext = list[idx + 1]?.kind === "neckShoulderChartTableMount";
+      chunks.push(renderPrintBlockRow(row, lastStitchRef, pieceKey, keepWithNext));
     }
   }
 
@@ -124,7 +144,13 @@ export function renderSleevelessPrintPieceHtml(
 }
 
 /**
- * Splits display rows so prelude fits page-one layout; continuation begins at neckline/shoulder chart mount.
+ * Splits display rows so prelude fits page-one layout; continuation begins at the
+ * neckline/shoulder setup section that immediately precedes the chart mount.
+ *
+ * The setup section heading (e.g. "BACK NECKLINE & SHOULDERS") and its summary block
+ * travel with the chart into the continuation so the setup instruction renders directly
+ * above its chart on the same page, instead of being orphaned on a near-empty page before
+ * the chart's continuation section.
  */
 export function splitRowsBeforeNeckShoulderChartMount(
   rows: readonly SleevelessPatternDisplayRow[],
@@ -133,12 +159,21 @@ export function splitRowsBeforeNeckShoulderChartMount(
   continuationRows: SleevelessPatternDisplayRow[];
 } {
   const list = Array.isArray(rows) ? rows : [];
-  const idx = list.findIndex((r) => r.kind === "neckShoulderChartTableMount");
-  if (idx < 0) {
+  const mountIdx = list.findIndex((r) => r.kind === "neckShoulderChartTableMount");
+  if (mountIdx < 0) {
     return { preludeRows: [...list], continuationRows: [] };
   }
+  // Keep the closest section heading before the mount (the neckline/shoulder setup
+  // instruction) grouped with the chart so they share one page.
+  let splitIdx = mountIdx;
+  for (let i = mountIdx - 1; i >= 0; i--) {
+    if (list[i]?.kind === "section") {
+      splitIdx = i;
+      break;
+    }
+  }
   return {
-    preludeRows: list.slice(0, idx),
-    continuationRows: list.slice(idx),
+    preludeRows: list.slice(0, splitIdx),
+    continuationRows: list.slice(splitIdx),
   };
 }

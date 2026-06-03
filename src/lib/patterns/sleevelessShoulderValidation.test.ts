@@ -26,12 +26,17 @@ import {
 
 const SHOULDER_DIAGRAM_SIDE = "right" as const;
 
-function assertDiagramShoulderStitchLabels(
+function assertDiagramCrossBackStitchLabels(
   result: ReturnType<typeof generateSleevelessBackPattern>,
   scenario: SleevelessPatternScenario,
 ): void {
-  const perSide = shoulderStitchesPerSideForDiagram(result.debug);
-  expect(perSide, `${scenario.id}: shoulder stitch budget`).toBeDefined();
+  const isCardigan = scenario.id.startsWith("cardigan-");
+  const fullCrossBack = Math.round(result.debug.stitchesAfterArmhole ?? Number.NaN);
+  expect(Number.isFinite(fullCrossBack), `${scenario.id}: post-armhole width`).toBe(true);
+  // Cardigan fronts are drawn one panel at a time, so the front shows half the cross-back width.
+  const expectedFrontCrossBack = isCardigan
+    ? result.debug.cardiganHalfLeftStitchesAfterArmhole
+    : fullCrossBack;
 
   const replBack = buildSleevelessGarmentDiagramReplacements(result, "in", {
     patternData: scenario.patternData,
@@ -40,12 +45,20 @@ function assertDiagramShoulderStitchLabels(
   const replFront = buildSleevelessGarmentDiagramReplacements(result, "in", {
     patternData: scenario.patternData,
     measurementPiece: "front",
-    ...(scenario.id.startsWith("cardigan-") ? { cardiganHalfSide: "left" as const } : {}),
+    ...(isCardigan ? { cardiganHalfSide: "left" as const } : {}),
   });
 
-  expect(replBack.SHOULDER_STS, `${scenario.id}: back diagram shoulder sts`).toBe(String(perSide));
-  expect(replFront.SHOULDER_STS, `${scenario.id}: front diagram shoulder sts`).toBe(String(perSide));
-  expect(Number(replBack.SHOULDER_STS)).not.toBe(result.debug.stitchesAfterArmhole);
+  // The cross-back dimension line above the armhole = body width remaining after armhole shaping.
+  expect(replBack.SHOULDER_STS, `${scenario.id}: back diagram cross-back sts`).toBe(
+    String(fullCrossBack),
+  );
+  expect(replFront.SHOULDER_STS, `${scenario.id}: front diagram cross-back sts`).toBe(
+    String(expectedFrontCrossBack),
+  );
+  // It must NOT be the per-side shoulder bind-off budget (the original bug).
+  const perSide = shoulderStitchesPerSideForDiagram(result.debug);
+  expect(perSide, `${scenario.id}: shoulder stitch budget`).toBeDefined();
+  expect(Number(replBack.SHOULDER_STS)).not.toBe(perSide);
 }
 
 function assertShoulderShapingMatchesBudget(
@@ -73,8 +86,8 @@ describe("sleeveless shoulder validation", () => {
       expect(frontLines.join("\n")).toBe(backLines.join("\n"));
     });
 
-    it("stitches/rows diagram SHOULDER_STS labels match per-side shoulder count on back and front", () => {
-      assertDiagramShoulderStitchLabels(result, scenario);
+    it("stitches/rows diagram cross-back SHOULDER_STS labels match post-armhole body width on back and front", () => {
+      assertDiagramCrossBackStitchLabels(result, scenario);
     });
 
     it("shoulder shaping notation totals match displayed shoulder stitch count", () => {
