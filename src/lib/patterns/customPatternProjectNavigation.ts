@@ -2,6 +2,16 @@ import type { CustomPatternProjectSource } from "./customPatternProjectTypes";
 
 export const OPEN_PATTERN_HREF = "/patterns/sleeveless/pattern/";
 
+/**
+ * Query flag appended to {@link OPEN_PATTERN_HREF} when the knitter chose Edit (not View).
+ * The pattern page reads this on load and auto-opens the in-place Edit Pattern Workspace
+ * (quick edits + measurement editor). See `sleevelessPatternEditDrawerPrototype.ts`.
+ */
+export const PATTERN_WORKSPACE_EDIT_QUERY = "edit=1";
+
+/** Pattern page opened with the Edit Pattern Workspace auto-opened. */
+export const OPEN_PATTERN_EDIT_WORKSPACE_HREF = `${OPEN_PATTERN_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
+
 export const EXPRESS_CONTINUE_EDITING_HREF = "/patterns/sleeveless/review/";
 
 /** Custom Build Foundation — first Edit tab when opening a saved custom-build project. */
@@ -29,12 +39,19 @@ export function getContinueEditingHref(source: CustomPatternProjectSource): stri
 }
 
 /**
- * Landing page when opening a saved project from My Patterns / library.
+ * Landing page when opening a saved project for editing from My Patterns / library.
  *
- * Opens the editable builder workspace with every step unlocked and prefilled from the saved
- * project (via `?edit=choices`) so the knitter can change a single value such as gauge and save
- * back to the same project — never the read-only pattern output or a blank build/start flow.
+ * - Express: the saved pattern page with the in-place Edit Pattern Workspace auto-opened
+ *   ({@link OPEN_PATTERN_EDIT_WORKSPACE_HREF}) — the split "quick edits + measurement editor"
+ *   workspace with an Update Pattern button. The step-by-step Express wizard
+ *   ({@link EXPRESS_EDIT_WORKSPACE_HREF}) is still reachable from inside that workspace when the
+ *   knitter wants to revise choices one at a time.
+ * - Custom Build: the editable Foundation workspace with every step unlocked and prefilled
+ *   (via `?edit=choices`).
+ *
+ * In all cases the saved project is hydrated first, so it is never the read-only pattern output
+ * or a blank build/start flow. (Plain View — without auto-open — uses {@link OPEN_PATTERN_HREF}.)
  */
 export function getSavedCustomPatternOpenHref(source: CustomPatternProjectSource): string {
-  return source === "custom-build" ? CUSTOM_BUILD_EDIT_WORKSPACE_HREF : EXPRESS_EDIT_WORKSPACE_HREF;
+  return source === "custom-build" ? CUSTOM_BUILD_EDIT_WORKSPACE_HREF : OPEN_PATTERN_EDIT_WORKSPACE_HREF;
 }

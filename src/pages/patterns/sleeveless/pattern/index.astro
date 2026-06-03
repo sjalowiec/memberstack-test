@@ -207,33 +207,9 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
         class="sl-edit-drawer__panel"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="sl-edit-drawer-title"
+        aria-label="Edit pattern"
         tabindex="-1"
       >
-        <header class="sl-edit-drawer__header">
-          <div class="sl-edit-drawer__heading">
-            <h2 id="sl-edit-drawer-title" class="sl-edit-drawer__title">Edit Pattern</h2>
-            <p class="sl-edit-drawer__subtitle">
-              Adjust your quick choices and measurements, then update the pattern.
-            </p>
-          </div>
-          <button
-            type="button"
-            class="sl-edit-drawer__close"
-            data-sl-edit-close
-            data-testid="button-edit-close"
-            aria-label="Close editing workspace"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M18 6L6 18M6 6l12 12"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"></path>
-            </svg>
-          </button>
-        </header>
-
         <div class="sl-edit-workspace__layout">
           <!-- LEFT: quick edits panel (narrower). `.sl-edit-drawer__body` is the JS field scope. -->
           <div class="sl-edit-workspace__quick">
@@ -741,57 +717,6 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
     outline: none;
   }
 
-  .sl-edit-drawer__header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1.15rem 1.35rem 1rem;
-    border-bottom: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 12%, #e5e7eb);
-  }
-
-  .sl-edit-drawer__title {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 700;
-    line-height: 1.25;
-    color: var(--kbm-green, #52682d);
-  }
-
-  .sl-edit-drawer__subtitle {
-    margin: 0.3rem 0 0;
-    font-size: 0.85rem;
-    line-height: 1.4;
-    color: #6b7280;
-  }
-
-  .sl-edit-drawer__close {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    margin: -0.25rem -0.4rem 0 0;
-    padding: 0;
-    border: 0;
-    border-radius: 999px;
-    background: transparent;
-    color: #6b7280;
-    cursor: pointer;
-    transition: background-color 0.12s ease, color 0.12s ease;
-  }
-
-  .sl-edit-drawer__close:hover {
-    background: rgba(17, 24, 39, 0.06);
-    color: #1f2937;
-  }
-
-  .sl-edit-drawer__close:focus-visible {
-    outline: 2px solid var(--kbm-green, #52682d);
-    outline-offset: 2px;
-  }
-
   .sl-edit-drawer__body {
     flex: 1 1 auto;
     overflow-y: auto;
@@ -1056,7 +981,13 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
      * same offset main.site-content uses. This keeps the panel header (Close) and the top
      * action bar (Cancel / Update Pattern) in the visible area instead of behind the chrome.
      */
-    inset: calc(var(--header-offset, 170px) + var(--kbm-env-banner-h, 0px)) 0 0 0;
+    /*
+     * Prefer the LIVE bottom of the fixed chrome (set by the edit-drawer script from
+     * .kbm-header-wrap's measured rect). The calc() fallback uses --header-offset, which
+     * is floored at 170px, so on shorter headers the panel sat too low and exposed the dark
+     * backdrop as a grey strip. The measured value keeps the editor flush under the header.
+     */
+    inset: var(--sl-edit-panel-top, calc(var(--header-offset, 170px) + var(--kbm-env-banner-h, 0px))) 0 0 0;
     width: 100%;
     max-width: none;
     box-shadow: none;
@@ -1067,13 +998,6 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
 
   .sl-edit-drawer--workspace.is-open .sl-edit-drawer__panel {
     transform: translateY(0);
-  }
-
-  /* Header + footer bars span the viewport; their content aligns to the shell width. */
-  .sl-edit-drawer--workspace .sl-edit-drawer__header {
-    flex-shrink: 0;
-    background: #fff;
-    padding-inline: clamp(1rem, 4vw, 2.5rem);
   }
 
   /*

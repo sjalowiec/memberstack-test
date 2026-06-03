@@ -10,6 +10,7 @@ import {
   CUSTOM_BUILD_EDIT_WORKSPACE_HREF,
   EXPRESS_CONTINUE_EDITING_HREF,
   EXPRESS_EDIT_WORKSPACE_HREF,
+  OPEN_PATTERN_EDIT_WORKSPACE_HREF,
   OPEN_PATTERN_HREF,
 } from "./customPatternProjectNavigation";
 import {
@@ -76,7 +77,7 @@ describe("loadSavedCustomPatternProject", () => {
     loadCustomPatternProjectMock.mockReset();
   });
 
-  it("opens express projects in the editable wizard and links the active project id", async () => {
+  it("opens express projects in the pattern page's auto-opened Edit Pattern Workspace and links the active project id", async () => {
     loadCustomPatternProjectMock.mockResolvedValue({
       ok: true,
       project: sampleProject(),
@@ -84,10 +85,14 @@ describe("loadSavedCustomPatternProject", () => {
 
     const result = await loadSavedCustomPatternProject(PROJECT_ID, "open");
 
-    // Editable wizard (not the read-only pattern output) so the knitter can revise a value.
-    expect(result).toEqual({ ok: true, redirectHref: EXPRESS_EDIT_WORKSPACE_HREF });
+    // In-place split workspace on the pattern page (quick edits + measurements), auto-opened via
+    // the `?edit=1` flag — not the standalone review page, the step wizard, or read-only output.
+    expect(result).toEqual({ ok: true, redirectHref: OPEN_PATTERN_EDIT_WORKSPACE_HREF });
     if (result.ok) {
+      expect(result.redirectHref).toContain(OPEN_PATTERN_HREF);
       expect(result.redirectHref).not.toBe(OPEN_PATTERN_HREF);
+      expect(result.redirectHref).not.toBe(EXPRESS_CONTINUE_EDITING_HREF);
+      expect(result.redirectHref).not.toBe(EXPRESS_EDIT_WORKSPACE_HREF);
     }
     expect(readActiveCustomPatternProjectId()).toBe(PROJECT_ID);
     expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toContain("For Aubrie");

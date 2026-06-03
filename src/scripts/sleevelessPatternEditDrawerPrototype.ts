@@ -459,6 +459,18 @@ function initSleevelessPatternEditDrawer(): void {
     if (savedNote) savedNote.hidden = true;
   }
 
+  // Anchor the workspace panel directly below the REAL fixed site chrome (env banner +
+  // header + "What's New" beta strip). The CSS fallback uses --header-offset, which is
+  // floored at 170px, so when the live header is shorter the panel sat too low and the dark
+  // backdrop showed through as a grey strip. Measuring .kbm-header-wrap's rendered bottom
+  // keeps the editor as high as possible without sliding under the fixed header.
+  const syncPanelTop = (): void => {
+    const header = document.querySelector<HTMLElement>(".kbm-header-wrap");
+    if (!header) return;
+    const bottom = Math.max(0, Math.round(header.getBoundingClientRect().bottom));
+    drawer!.style.setProperty("--sl-edit-panel-top", `${bottom}px`);
+  };
+
   const lockScroll = (): void => {
     document.body.style.overflow = "hidden";
   };
@@ -477,10 +489,13 @@ function initSleevelessPatternEditDrawer(): void {
     // Snapshot measurement storage now (before any lazy init writes) so Cancel discards
     // measurement edits made in this session, while Apply keeps them.
     measureStorageBaseline = snapshotMeasureStorage();
+    syncPanelTop();
     drawer!.classList.add("is-open");
     drawer!.setAttribute("aria-hidden", "false");
     lockScroll();
     window.requestAnimationFrame(() => {
+      // Re-measure after layout/fonts settle so the panel stays flush with the header.
+      syncPanelTop();
       // The measurement SVG editor is part of the workspace — initialise it lazily the
       // first time the workspace opens (after layout so its overlay anchors measure correctly).
       if (!measureInitialized && measurePane) {
@@ -663,6 +678,13 @@ function initSleevelessPatternEditDrawer(): void {
   openBtn.addEventListener("click", openDrawer);
   drawerCloseEls.forEach((el) => el.addEventListener("click", () => closeDrawer()));
 
+  // Keep the panel flush with the header when the chrome height changes (resize, font load).
+  syncPanelTop();
+  window.addEventListener("resize", syncPanelTop);
+  if (document.fonts && document.fonts.ready) {
+    void document.fonts.ready.then(syncPanelTop).catch(() => {});
+  }
+
   // Lock the in-place editor (gauge, measurements, style choices, regeneration) when the user
   // lacks active system access. The button is hidden rather than shown-disabled so the locked
   // state reads as intentional; renaming/notes remain available on the Customize page.
@@ -696,6 +718,30 @@ function initSleevelessPatternEditDrawer(): void {
       void applyChanges();
     });
   }
+
+  // Auto-open the workspace when arrived via My Patterns → Edit (`?edit=1`). View opens the same
+  // page without the flag and stays read-only. The query is stripped so a refresh/back doesn't
+  // re-open the drawer, and `openDrawer()` already no-ops when settings editing is locked.
+  function maybeAutoOpenFromQuery(): void {
+    if (typeof window === "undefined") return;
+    let shouldOpen = false;
+    try {
+      shouldOpen = new URLSearchParams(window.location.search).get("edit") === "1";
+    } catch {
+      shouldOpen = false;
+    }
+    if (!shouldOpen) return;
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("edit");
+      window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+    } catch {
+      /* history unavailable — harmless */
+    }
+    openDrawer();
+  }
+
+  maybeAutoOpenFromQuery();
 }
 
 if (typeof document !== "undefined") {

@@ -151,6 +151,17 @@ function necklineBasicsLabel(st: Record<string, unknown>): string {
   return "";
 }
 
+/** Ease/fit choice label (Close / Standard / Relaxed) from the stored fit section. */
+function fitBasicsLabel(ft: Record<string, unknown>): string {
+  const raw = String(ft.fitChoice ?? ft.easeChoice ?? "")
+    .trim()
+    .toLowerCase();
+  if (raw === "close") return "Close";
+  if (raw === "standard") return "Standard";
+  if (raw === "relaxed") return "Relaxed";
+  return "";
+}
+
 type GaugeFormatter = (ygm: Record<string, unknown>, yg: Record<string, unknown>) => string;
 
 function collectSleevelessBasicsSummaryRows(
@@ -199,6 +210,11 @@ function collectSleevelessBasicsSummaryRows(
   const neckLabel = necklineBasicsLabel(st);
   if (neckLabel) {
     rows.push({ term: "Neckline", def: neckLabel });
+  }
+
+  const fitDef = fitBasicsLabel(ft);
+  if (fitDef) {
+    rows.push({ term: "Fit", def: fitDef });
   }
 
   const gaugeStr = gaugeFormatter(ygm, yg);
