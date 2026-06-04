@@ -440,7 +440,20 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
               <div class="express-acc__header-main">
                 <span class="express-acc__step" aria-hidden="true">4</span>
                 <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
-                <h2 class="express-acc__title" id="express-step-4-title">Choose your fit</h2>
+                <div class="express-acc__title-row express-acc__title-row--fit">
+                  <h2 class="express-acc__title" id="express-step-4-title">Choose your fit</h2>
+                  <button
+                    type="button"
+                    class="express-fit-help-btn"
+                    data-fit-help-open
+                    aria-haspopup="dialog"
+                    aria-controls="express-fit-help-dialog"
+                    aria-label="Learn about fit and ease"
+                    title="Not sure which fit to choose?"
+                  >
+                    <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+                  </button>
+                </div>
                 <span class="express-acc__value" data-express-summary="fit"></span>
               </div>
             </div>
@@ -642,6 +655,100 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
           </div>
       </div>
     </div>
+
+    <dialog
+      id="express-fit-help-dialog"
+      class="fit-help-dialog"
+      aria-labelledby="express-fit-help-title"
+    >
+      <div class="fit-help-dialog__shell">
+        <div class="fit-help-dialog__header">
+          <h2 id="express-fit-help-title" class="fit-help-dialog__title">
+            Not Sure Which Fit to Choose?
+          </h2>
+          <button
+            type="button"
+            class="fit-help-dialog__close"
+            data-fit-help-close
+            aria-label="Close fit help"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="fit-help-dialog__body">
+          <article class="fit-help-article">
+            <p class="fit-help-article__lede">
+              One of the most confusing terms in knitting patterns is <strong>ease</strong>.
+            </p>
+
+            <div class="fit-help-ease">
+              <div class="fit-help-ease__text">
+                <p>
+                  Ease is simply the difference between your body measurement and the finished
+                  measurement of the garment.
+                </p>
+                <p>
+                  For example, if your bust measures 40&quot; and the finished sweater measures
+                  44&quot;, the sweater has 4&quot; of positive ease.
+                </p>
+              </div>
+              <div class="fit-help-ease__media">
+                <img
+                  src="/images/references/ease_silhouette.jpg"
+                  alt="Illustration showing garment ease and body measurements"
+                  class="fit-help-ease__img"
+                  width="400"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            </div>
+
+            <h3 class="fit-help-article__heading">What Do the Fit Choices Mean?</h3>
+
+            <h4 class="fit-help-article__subheading">Close Fit</h4>
+            <p>About 1&quot; of ease.</p>
+            <p>Fits closer to the body.</p>
+
+            <h4 class="fit-help-article__subheading">Standard Fit</h4>
+            <p>About 3&quot; of ease.</p>
+            <p>Comfortable everyday fit.</p>
+
+            <h4 class="fit-help-article__subheading">Relaxed Fit</h4>
+            <p>About 6&quot; of ease.</p>
+            <p>More room and drape.</p>
+
+            <h3 class="fit-help-article__heading">Why Not Just Follow the Model?</h3>
+            <p>You have probably seen pattern descriptions that say things like:</p>
+            <p class="fit-help-article__quote">
+              &ldquo;Model is wearing size Medium with 4 inches of positive ease.&rdquo;
+            </p>
+            <p>
+              But unless you know the finished measurement of the sweater, that information does
+              not really help you decide what you will like.
+            </p>
+            <p>The same sweater can look completely different on two people.</p>
+
+            <h3 class="fit-help-article__heading">Ease Is Personal</h3>
+            <p>Some knitters like a close-fitting sweater that follows their shape.</p>
+            <p>Others prefer extra room for comfort, layering, or drape.</p>
+            <p>Neither choice is right or wrong.</p>
+
+            <h3 class="fit-help-article__heading">The Best Way to Choose</h3>
+            <p>
+              Instead of guessing, measure a sweater you already own and love to wear.
+            </p>
+            <p>
+              Compare its measurements to your body measurements and you will quickly discover the
+              amount of ease that feels best to you.
+            </p>
+            <p>
+              That is one of the easiest ways to create a sweater you will actually enjoy wearing.
+            </p>
+          </article>
+        </div>
+      </div>
+    </dialog>
   </main>
   </SleevelessPatternMemberGate>
 </Layout>
@@ -1001,9 +1108,240 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
       display: block !important;
     }
   }
+
+  /* Step 4 "Choose your fit" — help launcher beside the title */
+  .express-acc__title-row--fit {
+    gap: 0.4rem;
+  }
+
+  .express-fit-help-btn {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: var(--express-nav-green, #52682d);
+    font-size: 1.05rem;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+      color 0.15s,
+      background 0.15s;
+  }
+
+  .express-fit-help-btn:hover {
+    background: rgba(82, 104, 45, 0.1);
+    color: #3d4f22;
+  }
+
+  .express-fit-help-btn:focus-visible {
+    outline: 2px solid var(--express-nav-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  /* Fit help article modal — native <dialog> (matches gauge-calculator help modal) */
+  dialog.fit-help-dialog {
+    width: min(680px, 94vw);
+    max-width: 680px;
+    max-height: min(86vh, 760px);
+    margin: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+  }
+
+  dialog.fit-help-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .fit-help-dialog__shell {
+    display: flex;
+    flex-direction: column;
+    max-height: inherit;
+    min-height: 0;
+  }
+
+  .fit-help-dialog__header {
+    position: relative;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 1rem 3rem 0.85rem 1.4rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .fit-help-dialog__title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .fit-help-dialog__close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: #fff;
+    color: #374151;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+
+  .fit-help-dialog__close:hover {
+    background: #f3f4f6;
+  }
+
+  .fit-help-dialog__close:focus-visible {
+    outline: 2px solid var(--express-nav-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .fit-help-dialog__body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1.1rem 1.4rem 1.5rem;
+  }
+
+  .fit-help-article {
+    font-size: 0.975rem;
+    line-height: 1.6;
+    color: #374151;
+  }
+
+  .fit-help-article p {
+    margin: 0 0 0.75rem;
+  }
+
+  .fit-help-article__lede {
+    margin: 0 0 1rem;
+    font-size: 1.02rem;
+  }
+
+  .fit-help-article__heading {
+    margin: 1.6rem 0 0.6rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .fit-help-article__subheading {
+    margin: 1.1rem 0 0.35rem;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #2f3a25;
+  }
+
+  .fit-help-article__subheading + p {
+    margin-bottom: 0.25rem;
+  }
+
+  .fit-help-article__quote {
+    margin: 0 0 0.75rem;
+    padding: 0.55rem 0.85rem;
+    border-left: 3px solid rgba(82, 104, 45, 0.4);
+    background: rgba(82, 104, 45, 0.06);
+    border-radius: 0 8px 8px 0;
+    font-style: italic;
+    color: #4b5563;
+  }
+
+  /* Two-column ease section: text + image on desktop, stacked (text first) on mobile */
+  .fit-help-ease {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .fit-help-ease__text > :last-child {
+    margin-bottom: 0;
+  }
+
+  .fit-help-ease__media {
+    text-align: center;
+  }
+
+  .fit-help-ease__img {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    margin: 0.25rem auto 0;
+  }
+
+  @media (min-width: 600px) {
+    .fit-help-ease {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .fit-help-ease__media {
+      margin: 0;
+    }
+
+    .fit-help-ease__img {
+      margin: 0 auto;
+    }
+  }
 </style>
 
 <script>
     import "/src/scripts/sleeveless-express-page.ts";
     import "/src/scripts/customPatternEditingBanner.ts";
+</script>
+
+<script>
+  // Fit help article modal (Step 4). Native <dialog> handles Esc + focus trap; the open button
+  // lives inside the accordion header (role="button"), so stop propagation to avoid toggling the step.
+  const fitHelpDialog = document.getElementById("express-fit-help-dialog");
+  if (fitHelpDialog instanceof HTMLDialogElement) {
+    const openBtn = document.querySelector("[data-fit-help-open]");
+    const closeBtn = fitHelpDialog.querySelector("[data-fit-help-close]");
+    let lastFocused: HTMLElement | null = null;
+
+    openBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      lastFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      fitHelpDialog.showModal();
+      if (closeBtn instanceof HTMLElement) closeBtn.focus();
+    });
+
+    openBtn?.addEventListener("keydown", (e) => {
+      if (e instanceof KeyboardEvent && (e.key === "Enter" || e.key === " ")) {
+        e.stopPropagation();
+      }
+    });
+
+    closeBtn?.addEventListener("click", () => fitHelpDialog.close());
+
+    fitHelpDialog.addEventListener("click", (e) => {
+      if (e.target === fitHelpDialog) fitHelpDialog.close();
+    });
+
+    fitHelpDialog.addEventListener("close", () => {
+      if (lastFocused) lastFocused.focus();
+    });
+  }
 </script>
