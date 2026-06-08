@@ -107,6 +107,17 @@ function finishFrontEdgesBody(
   return finishFrontEdgesPickupBody(pickupSts, deps);
 }
 
+function necklineFinishingHelpBody(): string {
+  return `<aside class="pattern-finishing-neck-help pattern-finishing-video-help no-print" aria-label="Need help finishing the neckline?">
+      <p class="pattern-finishing-neck-help__title"><i class="fa-solid fa-circle-question"></i> Need help finishing the neckline?</p>
+      <p class="pattern-finishing-neck-help__lead">Watch the video that matches your pattern:</p>
+      <ul class="pattern-finishing-neck-help__links">
+        <li><a class="pattern-help-link__anchor" href="https://app.knititnow.com/videos/386/?q=v-neck" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-play"></i> V-Neck Finishing Instructions</a></li>
+        <li><a class="pattern-help-link__anchor" href="https://app.knititnow.com/videos/695/?q=band" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-play"></i> Round Neck Finishing Instructions</a></li>
+      </ul>
+    </aside>`;
+}
+
 function finishNecklineBody(deps: SleevelessFinishingHtmlDeps): string {
   return `<ul>
       <li>Work the neckline trim or neckband.</li>
@@ -121,7 +132,8 @@ function finishNecklineBody(deps: SleevelessFinishingHtmlDeps): string {
           deps.neckFinishingButtonLabel,
         )}</button>
       </span>
-    </p>`;
+    </p>
+    ${necklineFinishingHelpBody()}`;
 }
 
 function joinSideSeamsBody(): string {

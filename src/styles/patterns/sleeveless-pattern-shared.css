@@ -1750,6 +1750,48 @@
     margin-top: 0.55rem;
   }
 
+  #pattern-content .pattern-finishing-neck-help {
+    margin: 0.7rem 0 0;
+    padding: 0.6rem 0.75rem;
+    border-left: 4px solid var(--kbm-green, #52682d);
+    border-radius: 8px;
+    background: #f4f7ee;
+  }
+
+  #pattern-content .pattern-finishing-neck-help__title {
+    margin: 0 0 0.25rem;
+    font-weight: 700;
+    color: #374151;
+  }
+
+  #pattern-content .pattern-finishing-neck-help__lead {
+    margin: 0 0 0.4rem;
+    font-size: 0.9rem;
+    color: #4b5563;
+  }
+
+  #pattern-content .pattern-finishing-neck-help__links {
+    margin: 0;
+    padding-left: 1.1rem;
+    list-style: disc;
+  }
+
+  #pattern-content .pattern-finishing-neck-help__links li {
+    margin: 0.15rem 0;
+  }
+
+  #pattern-content .pattern-help-link__anchor {
+    color: var(--kbm-green, #52682d);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  #pattern-content .pattern-help-link__anchor:hover,
+  #pattern-content .pattern-help-link__anchor:focus-visible {
+    color: #3d4f22;
+  }
+
   #pattern-content .pattern-finishing-lead {
     margin: 0.35rem 0 0;
     font-size: 0.9rem;

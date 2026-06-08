@@ -57,6 +57,22 @@ declare global {
     __kbmHydrateGlossaryTooltips?: (root: ParentNode) => void;
     /** Glossary index: open or switch the term modal by slug (cross-links). */
     __kbmOpenGlossaryTermModal?: (slug: string) => void;
+    /** Bookshelf "My Library" client store (see components/bookshelf/LibraryStore.astro). */
+    KinBookshelf?: {
+      storageKey: string;
+      getIds: () => string[];
+      has: (id: string) => boolean;
+      add: (id: string) => boolean;
+      remove: (id: string) => boolean;
+      toggle: (id: string) => boolean;
+      count: () => number;
+    };
+    /** Snapshot of auth state set by Header.astro on auth refresh. */
+    __KBM_AUTH?: {
+      loggedIn?: boolean;
+      member?: unknown;
+      memberId?: string | null;
+    };
   }
 }
 

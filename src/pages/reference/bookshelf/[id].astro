@@ -41,7 +41,7 @@ const metaDescription =
     backLabel="Back to the Bookshelf"
     wide
   >
-    <article class="book-detail" data-book-id={resolved.id}>
+    <article class="book-detail" data-book-id={resolved.id} data-book-title={resolved.title}>
       <div class="book-detail__top">
         <div class="book-detail__cover">
           {resolved.image ? (
@@ -410,4 +410,9 @@ const metaDescription =
     window.addEventListener("kin-bookshelf-change", sync);
     sync();
   })();
+</script>
+
+<script>
+  import { initBookshelfDetailTracking } from "../../../lib/bookshelfTracking";
+  initBookshelfDetailTracking();
 </script>

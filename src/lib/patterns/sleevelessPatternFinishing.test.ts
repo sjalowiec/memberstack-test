@@ -205,6 +205,26 @@ describe("buildSleevelessFinishingStepsHtml", () => {
     expect(html).toMatch(/4\. Finish Neckline/);
     expect(html).toMatch(/5\. Join Side Seams/);
   });
+
+  it("includes neckline finishing help video links for pullover and cardigan", () => {
+    for (const isCardigan of [false, true]) {
+      const html = buildSleevelessFinishingStepsHtml({
+        isCardigan,
+        cardiganFrontEdgeFinishingMode: isCardigan ? "pickup" : undefined,
+        deps,
+      });
+      expect(html).toContain("Need help finishing the neckline?");
+      expect(html).toContain(
+        'href="https://app.knititnow.com/videos/386/?q=v-neck"',
+      );
+      expect(html).toContain("V-Neck Finishing Instructions");
+      expect(html).toContain(
+        'href="https://app.knititnow.com/videos/695/?q=band"',
+      );
+      expect(html).toContain("Round Neck Finishing Instructions");
+      expect(html).toContain('target="_blank"');
+    }
+  });
 });
 
 describe("buildSleevelessFinishingPrintListHtml", () => {
