@@ -1,0 +1,376 @@
+---
+export const prerender = true;
+
+import Layout from "../../../layouts/Layout.astro";
+import ReferencePageShell from "../../../components/ReferencePageShell.astro";
+import BookCard from "../../../components/bookshelf/BookCard.astro";
+import LibraryStore from "../../../components/bookshelf/LibraryStore.astro";
+import { getAllBooks, getAllTopics, getAllTags } from "../../../lib/bookshelf";
+
+const books = getAllBooks();
+const topics = getAllTopics();
+const tags = getAllTags();
+
+const introText =
+  "The Machine Knitter's Bookshelf is a reference library of vintage and currently available printed books useful for machine knitters.";
+---
+
+<Layout
+  title="Machine Knitter's Bookshelf | Knit it Now"
+  description={introText}
+  bodyClass="page--tight-header"
+>
+  <LibraryStore />
+
+  <ReferencePageShell
+    title="Machine Knitter's Bookshelf"
+    subhead={introText}
+    backHref="/reference"
+    backLabel="Back to Reference"
+    wide
+  >
+    <div class="bookshelf">
+      <!-- Controls -->
+      <div class="bookshelf__controls">
+        <div class="bookshelf__search">
+          <label class="sr-only" for="book-search">Search the bookshelf</label>
+          <input
+            id="book-search"
+            type="search"
+            placeholder="Search by title, author, topic, tag, or description…"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="bookshelf__filters">
+          <div class="bookshelf__filter">
+            <label for="topic-filter">Topic</label>
+            <select id="topic-filter">
+              <option value="">All topics</option>
+              {topics.map((t) => <option value={t.toLowerCase()}>{t}</option>)}
+            </select>
+          </div>
+
+          <div class="bookshelf__filter">
+            <label for="tag-filter">Tag</label>
+            <select id="tag-filter">
+              <option value="">All tags</option>
+              {tags.map((t) => <option value={t.toLowerCase()}>{t}</option>)}
+            </select>
+          </div>
+
+          <div class="bookshelf__scope" role="group" aria-label="Show which books">
+            <button type="button" class="scope-btn is-active" data-scope="all" aria-pressed="true">
+              All Books
+            </button>
+            <button type="button" class="scope-btn" data-scope="mine" aria-pressed="false">
+              My Books <span class="scope-btn__count" id="my-count">(0)</span>
+            </button>
+          </div>
+
+          <button type="button" id="clear-filters" class="bookshelf__clear">Clear</button>
+        </div>
+      </div>
+
+      <p class="bookshelf__resultcount" id="result-count" aria-live="polite"></p>
+
+      <!-- Grid -->
+      <div class="bookshelf__grid" id="book-grid">
+        {books.map((book) => <BookCard book={book} />)}
+      </div>
+
+      <!-- Empty states -->
+      <p class="bookshelf__empty" id="no-results" hidden>
+        No books match your search. Try a different word, topic, or tag.
+      </p>
+      <div class="bookshelf__empty" id="empty-library" hidden>
+        <p>You haven't added any books to your library yet.</p>
+        <p class="bookshelf__empty-sub">
+          Tap <strong>Add to My Library</strong> on any book to keep it here for quick reference.
+        </p>
+      </div>
+    </div>
+  </ReferencePageShell>
+</Layout>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .bookshelf {
+    margin-top: 0.5rem;
+  }
+
+  .bookshelf__controls {
+    position: sticky;
+    top: calc(var(--header-offset, 150px) - 8px);
+    z-index: 4;
+    background: var(--page-bg, #f7f8f7);
+    padding: 0.75rem 0 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #e6e6e6;
+  }
+
+  .bookshelf__search input {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 1.05rem;
+    padding: 0.8rem 1rem;
+    border: 2px solid #c7d8a4;
+    border-radius: 12px;
+    background: #fff;
+    color: #333;
+  }
+
+  .bookshelf__search input:focus {
+    outline: none;
+    border-color: var(--kbm-green, #52682d);
+    box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.15);
+  }
+
+  .bookshelf__filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem 1rem;
+    margin-top: 0.85rem;
+  }
+
+  .bookshelf__filter {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .bookshelf__filter label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #52682d;
+  }
+
+  .bookshelf__filter select {
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid #c7d8a4;
+    border-radius: 8px;
+    background: #fff;
+    color: #333;
+    min-width: 180px;
+    min-height: 44px;
+  }
+
+  .bookshelf__filter select:focus {
+    outline: none;
+    border-color: var(--kbm-green, #52682d);
+    box-shadow: 0 0 0 2px rgba(82, 104, 45, 0.18);
+  }
+
+  .bookshelf__scope {
+    display: inline-flex;
+    border: 2px solid #c7d8a4;
+    border-radius: 10px;
+    overflow: hidden;
+    align-self: flex-end;
+  }
+
+  .scope-btn {
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #52682d;
+    background: #fff;
+    border: none;
+    padding: 0.55rem 1rem;
+    cursor: pointer;
+    min-height: 44px;
+  }
+
+  .scope-btn + .scope-btn {
+    border-left: 2px solid #c7d8a4;
+  }
+
+  .scope-btn.is-active {
+    background: var(--kbm-green, #52682d);
+    color: #fff;
+  }
+
+  .bookshelf__clear {
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: #52682d;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.55rem 0.25rem;
+    text-decoration: underline;
+    align-self: flex-end;
+    min-height: 44px;
+  }
+
+  .bookshelf__resultcount {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin: 0 0 1rem;
+  }
+
+  .bookshelf__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .bookshelf__empty {
+    text-align: center;
+    color: #6b7280;
+    padding: 3rem 1rem;
+    font-size: 1.05rem;
+  }
+
+  .bookshelf__empty-sub {
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+  }
+
+  @media (max-width: 600px) {
+    .bookshelf__grid {
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+
+    .bookshelf__filter select {
+      min-width: 140px;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var grid = document.getElementById("book-grid");
+    if (!grid) return;
+
+    var cards = Array.prototype.slice.call(grid.querySelectorAll(".book-card"));
+    var searchInput = document.getElementById("book-search");
+    var topicFilter = document.getElementById("topic-filter");
+    var tagFilter = document.getElementById("tag-filter");
+    var clearBtn = document.getElementById("clear-filters");
+    var scopeBtns = Array.prototype.slice.call(document.querySelectorAll(".scope-btn"));
+    var noResults = document.getElementById("no-results");
+    var emptyLibrary = document.getElementById("empty-library");
+    var resultCount = document.getElementById("result-count");
+    var myCount = document.getElementById("my-count");
+
+    var scope = "all"; // "all" | "mine"
+
+    function lib() {
+      return window.KinBookshelf;
+    }
+
+    function applyFilters() {
+      var q = (searchInput && searchInput.value || "").trim().toLowerCase();
+      var topic = (topicFilter && topicFilter.value) || "";
+      var tag = (tagFilter && tagFilter.value) || "";
+      var savedIds = lib() ? lib().getIds() : [];
+
+      var visible = 0;
+      cards.forEach(function (card) {
+        var matchesSearch = !q || (card.getAttribute("data-search") || "").indexOf(q) !== -1;
+        var matchesTopic = !topic || (card.getAttribute("data-topic") || "") === topic;
+        var cardTags = (card.getAttribute("data-tags") || "").split("|");
+        var matchesTag = !tag || cardTags.indexOf(tag) !== -1;
+        var matchesScope = scope === "all" || savedIds.indexOf(card.getAttribute("data-book-id")) !== -1;
+
+        var show = matchesSearch && matchesTopic && matchesTag && matchesScope;
+        card.style.display = show ? "" : "none";
+        if (show) visible++;
+      });
+
+      // Empty states
+      var libraryEmpty = scope === "mine" && savedIds.length === 0;
+      if (emptyLibrary) emptyLibrary.hidden = !libraryEmpty;
+      if (noResults) noResults.hidden = !(visible === 0 && !libraryEmpty);
+      if (resultCount) {
+        resultCount.textContent =
+          visible + (visible === 1 ? " book" : " books") +
+          (scope === "mine" ? " in your library" : "");
+      }
+    }
+
+    function refreshSavedStates() {
+      var savedIds = lib() ? lib().getIds() : [];
+      // Toggle buttons
+      Array.prototype.forEach.call(
+        document.querySelectorAll(".js-library-toggle"),
+        function (btn) {
+          var id = btn.getAttribute("data-book-id");
+          var saved = savedIds.indexOf(id) !== -1;
+          setButtonState(btn, saved);
+          var card = btn.closest(".book-card");
+          if (card) card.classList.toggle("is-saved", saved);
+        }
+      );
+      if (myCount) myCount.textContent = "(" + savedIds.length + ")";
+    }
+
+    function setButtonState(btn, saved) {
+      btn.classList.toggle("is-saved", saved);
+      btn.setAttribute("aria-pressed", saved ? "true" : "false");
+      var label = btn.querySelector(".library-toggle__label");
+      var icon = btn.querySelector(".library-toggle__icon");
+      if (label) label.textContent = saved ? "In My Library" : "Add to My Library";
+      if (icon) icon.textContent = saved ? "\u2713" : "+";
+    }
+
+    // Add/remove from library (event delegation)
+    grid.addEventListener("click", function (e) {
+      var btn = e.target.closest && e.target.closest(".js-library-toggle");
+      if (!btn) return;
+      e.preventDefault();
+      if (!lib()) return;
+      lib().toggle(btn.getAttribute("data-book-id"));
+    });
+
+    // Scope toggle
+    scopeBtns.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        scope = btn.getAttribute("data-scope");
+        scopeBtns.forEach(function (b) {
+          var active = b === btn;
+          b.classList.toggle("is-active", active);
+          b.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+        applyFilters();
+      });
+    });
+
+    if (searchInput) searchInput.addEventListener("input", applyFilters);
+    if (topicFilter) topicFilter.addEventListener("change", applyFilters);
+    if (tagFilter) tagFilter.addEventListener("change", applyFilters);
+    if (clearBtn)
+      clearBtn.addEventListener("click", function () {
+        if (searchInput) searchInput.value = "";
+        if (topicFilter) topicFilter.value = "";
+        if (tagFilter) tagFilter.value = "";
+        applyFilters();
+      });
+
+    // React to library changes (this tab or another tab)
+    window.addEventListener("kin-bookshelf-change", function () {
+      refreshSavedStates();
+      applyFilters();
+    });
+
+    refreshSavedStates();
+    applyFilters();
+  })();
+</script>
