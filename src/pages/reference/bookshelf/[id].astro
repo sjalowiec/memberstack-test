@@ -4,7 +4,7 @@ export const prerender = true;
 import Layout from "../../../layouts/Layout.astro";
 import ReferencePageShell from "../../../components/ReferencePageShell.astro";
 import LibraryStore from "../../../components/bookshelf/LibraryStore.astro";
-import { getAllBooks, getBookById, hasRating } from "../../../lib/bookshelf";
+import { getAllBooks, getBookById, getBookComments, hasRating } from "../../../lib/bookshelf";
 
 export async function getStaticPaths() {
   return getAllBooks().map((book) => ({
@@ -23,6 +23,17 @@ if (!resolved) {
 
 const showRating = hasRating(resolved);
 const ratingRounded = Math.round(resolved.avgRating);
+
+const comments = getBookComments(resolved.id);
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  year: "numeric",
+  month: "long",
+  timeZone: "UTC",
+});
+function formatCommentDate(date: string): string {
+  const parsed = new Date(`${date}T00:00:00Z`);
+  return Number.isNaN(parsed.getTime()) ? "" : dateFormatter.format(parsed);
+}
 const metaDescription =
   resolved.descriptionText?.slice(0, 155) ||
   `${resolved.title} — a machine knitting reference book.`;
@@ -125,15 +136,37 @@ const metaDescription =
         </section>
       )}
 
-      <!-- Community Notes (placeholder for a future feature) -->
+      <!-- Community Notes: imported member comments, rendered as plain text. -->
       <section class="book-detail__section community-notes" aria-labelledby="community-notes-title">
-        <h2 id="community-notes-title">Community Notes</h2>
-        <div class="community-notes__placeholder">
-          <p>
-            Community notes will allow knitters to share helpful tips, page references,
-            corrections, and recommendations for this book.
-          </p>
-        </div>
+        <h2 id="community-notes-title">
+          Community Notes
+          {comments.length > 0 && (
+            <span class="community-notes__count">({comments.length})</span>
+          )}
+        </h2>
+
+        {comments.length > 0 ? (
+          <ul class="community-notes__list">
+            {comments.map((comment) => (
+              <li class="community-note">
+                <p class="community-note__message">{comment.message}</p>
+                <p class="community-note__byline">
+                  <span class="community-note__author">Knit it Now member</span>
+                  {formatCommentDate(comment.date) && (
+                    <>
+                      <span class="community-note__sep" aria-hidden="true">·</span>
+                      <span class="community-note__date">{formatCommentDate(comment.date)}</span>
+                    </>
+                  )}
+                </p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div class="community-notes__placeholder">
+            <p>No community notes yet for this book.</p>
+          </div>
+        )}
       </section>
     </article>
   </ReferencePageShell>
@@ -374,6 +407,51 @@ const metaDescription =
 
   .community-notes__placeholder p {
     margin: 0;
+  }
+
+  .community-notes__count {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #8a8a8a;
+  }
+
+  .community-notes__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .community-note {
+    border: 1px solid #dbe6c5;
+    background: #f7f8f5;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+  }
+
+  .community-note__message {
+    margin: 0 0 0.5rem;
+    font-size: 1.02rem;
+    line-height: 1.6;
+    color: #333;
+    white-space: pre-line;
+  }
+
+  .community-note__byline {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: #8a8a8a;
+  }
+
+  .community-note__author {
+    font-weight: 600;
+    color: #6b7a58;
   }
 </style>
 

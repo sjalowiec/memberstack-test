@@ -11,6 +11,20 @@
  * to change — pages and components consume these helpers, not the JSON.
  */
 import booksData from "../data/bookshelf.json";
+import commentsData from "../data/bookshelf-comments.json";
+
+/**
+ * A community comment imported from the legacy book-comments data.
+ * Attribution is intentionally anonymous (only the date is kept); the message
+ * is plain text and MUST be rendered escaped (never via set:html).
+ */
+export interface BookComment {
+  /** Legacy commentID (may be null if it could not be parsed). */
+  id: number | null;
+  /** Comment date, `YYYY-MM-DD`. */
+  date: string;
+  message: string;
+}
 
 export interface Book {
   /** Stable identifier (legacy BookID). Used in the detail route /reference/bookshelf/{id}. */
@@ -36,8 +50,20 @@ export interface Book {
 
 const books: Book[] = booksData as Book[];
 
+const commentsByBookId: Record<string, BookComment[]> =
+  commentsData as Record<string, BookComment[]>;
+
 export function getAllBooks(): Book[] {
   return books;
+}
+
+/**
+ * Community comments for a book, newest first. Returns an empty array when the
+ * book has none. Keyed by `Book.id` (the legacy BookID).
+ */
+export function getBookComments(id: string | undefined): BookComment[] {
+  if (!id) return [];
+  return commentsByBookId[id] ?? [];
 }
 
 export function getBookById(id: string | undefined): Book | undefined {
