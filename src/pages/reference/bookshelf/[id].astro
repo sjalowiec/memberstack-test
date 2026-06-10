@@ -3,7 +3,6 @@ export const prerender = true;
 
 import Layout from "../../../layouts/Layout.astro";
 import ReferencePageShell from "../../../components/ReferencePageShell.astro";
-import LibraryStore from "../../../components/bookshelf/LibraryStore.astro";
 import { getAllBooks, getBookById, getBookComments, hasRating } from "../../../lib/bookshelf";
 
 export async function getStaticPaths() {
@@ -44,8 +43,6 @@ const metaDescription =
   description={metaDescription}
   bodyClass="page--tight-header"
 >
-  <LibraryStore />
-
   <ReferencePageShell
     title={resolved.title}
     backHref="/reference/bookshelf"
@@ -104,16 +101,6 @@ const metaDescription =
           )}
 
           <div class="book-detail__actions">
-            <button
-              type="button"
-              class="library-toggle js-library-toggle"
-              data-book-id={resolved.id}
-              aria-pressed="false"
-            >
-              <span class="library-toggle__icon" aria-hidden="true">+</span>
-              <span class="library-toggle__label">Add to My Library</span>
-            </button>
-
             {resolved.url && (
               <a
                 class="book-detail__findlink"
@@ -311,43 +298,6 @@ const metaDescription =
     gap: 0.75rem;
   }
 
-  .book-detail__actions .library-toggle {
-    width: auto;
-    min-width: 220px;
-  }
-
-  /* Shared library-toggle look (kept local so the component is self-contained) */
-  .library-toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    font-family: inherit;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--kbm-green, #52682d);
-    background: #ffffff;
-    border: 2px solid var(--kbm-green, #52682d);
-    border-radius: 10px;
-    padding: 0.7rem 1.25rem;
-    cursor: pointer;
-    transition: background 0.18s ease, color 0.18s ease;
-    min-height: 48px;
-  }
-
-  .library-toggle:hover {
-    background: #f0f4e7;
-  }
-
-  .library-toggle.is-saved {
-    background: var(--kbm-green, #52682d);
-    color: #ffffff;
-  }
-
-  .library-toggle.is-saved:hover {
-    background: #445626;
-  }
-
   .book-detail__findlink {
     display: inline-flex;
     align-items: center;
@@ -454,41 +404,6 @@ const metaDescription =
     color: #6b7a58;
   }
 </style>
-
-<script is:inline>
-  (function () {
-    var root = document.querySelector(".book-detail");
-    if (!root) return;
-    var btn = root.querySelector(".js-library-toggle");
-    if (!btn) return;
-
-    function lib() {
-      return window.KinBookshelf;
-    }
-
-    function setState(saved) {
-      btn.classList.toggle("is-saved", saved);
-      btn.setAttribute("aria-pressed", saved ? "true" : "false");
-      var label = btn.querySelector(".library-toggle__label");
-      var icon = btn.querySelector(".library-toggle__icon");
-      if (label) label.textContent = saved ? "In My Library" : "Add to My Library";
-      if (icon) icon.textContent = saved ? "\u2713" : "+";
-    }
-
-    function sync() {
-      if (!lib()) return;
-      setState(lib().has(btn.getAttribute("data-book-id")));
-    }
-
-    btn.addEventListener("click", function () {
-      if (!lib()) return;
-      lib().toggle(btn.getAttribute("data-book-id"));
-    });
-
-    window.addEventListener("kin-bookshelf-change", sync);
-    sync();
-  })();
-</script>
 
 <script>
   import { initBookshelfDetailTracking } from "../../../lib/bookshelfTracking";

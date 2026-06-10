@@ -4,7 +4,6 @@ export const prerender = true;
 import Layout from "../../../layouts/Layout.astro";
 import ReferencePageShell from "../../../components/ReferencePageShell.astro";
 import BookCard from "../../../components/bookshelf/BookCard.astro";
-import LibraryStore from "../../../components/bookshelf/LibraryStore.astro";
 import { getAllBooks, getAllTopics, getAllTags } from "../../../lib/bookshelf";
 
 const books = getAllBooks();
@@ -12,7 +11,7 @@ const topics = getAllTopics();
 const tags = getAllTags();
 
 const introText =
-  "The Machine Knitter's Bookshelf is a reference library of vintage and currently available printed books useful for machine knitters.";
+  "This bookshelf is a growing reference. For now, you can browse the collection by title, author, topic, or tag.";
 ---
 
 <Layout
@@ -20,8 +19,6 @@ const introText =
   description={introText}
   bodyClass="page--tight-header"
 >
-  <LibraryStore />
-
   <ReferencePageShell
     title="Machine Knitter's Bookshelf"
     subhead={introText}
@@ -59,15 +56,6 @@ const introText =
             </select>
           </div>
 
-          <div class="bookshelf__scope" role="group" aria-label="Show which books">
-            <button type="button" class="scope-btn is-active" data-scope="all" aria-pressed="true">
-              All Books
-            </button>
-            <button type="button" class="scope-btn" data-scope="mine" aria-pressed="false">
-              My Books <span class="scope-btn__count" id="my-count">(0)</span>
-            </button>
-          </div>
-
           <button type="button" id="clear-filters" class="bookshelf__clear">Clear</button>
         </div>
       </div>
@@ -79,16 +67,10 @@ const introText =
         {books.map((book) => <BookCard book={book} />)}
       </div>
 
-      <!-- Empty states -->
+      <!-- Empty state -->
       <p class="bookshelf__empty" id="no-results" hidden>
         No books match your search. Try a different word, topic, or tag.
       </p>
-      <div class="bookshelf__empty" id="empty-library" hidden>
-        <p>You haven't added any books to your library yet.</p>
-        <p class="bookshelf__empty-sub">
-          Tap <strong>Add to My Library</strong> on any book to keep it here for quick reference.
-        </p>
-      </div>
     </div>
   </ReferencePageShell>
 </Layout>
@@ -176,35 +158,6 @@ const introText =
     box-shadow: 0 0 0 2px rgba(82, 104, 45, 0.18);
   }
 
-  .bookshelf__scope {
-    display: inline-flex;
-    border: 2px solid #c7d8a4;
-    border-radius: 10px;
-    overflow: hidden;
-    align-self: flex-end;
-  }
-
-  .scope-btn {
-    font-family: inherit;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #52682d;
-    background: #fff;
-    border: none;
-    padding: 0.55rem 1rem;
-    cursor: pointer;
-    min-height: 44px;
-  }
-
-  .scope-btn + .scope-btn {
-    border-left: 2px solid #c7d8a4;
-  }
-
-  .scope-btn.is-active {
-    background: var(--kbm-green, #52682d);
-    color: #fff;
-  }
-
   .bookshelf__clear {
     font-family: inherit;
     font-size: 0.95rem;
@@ -226,8 +179,8 @@ const introText =
 
   .bookshelf__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 1.25rem;
   }
 
   .bookshelf__empty {
@@ -235,11 +188,6 @@ const introText =
     color: #6b7280;
     padding: 3rem 1rem;
     font-size: 1.05rem;
-  }
-
-  .bookshelf__empty-sub {
-    font-size: 0.95rem;
-    margin-top: 0.5rem;
   }
 
   @media (max-width: 600px) {
@@ -259,99 +207,39 @@ const introText =
     var grid = document.getElementById("book-grid");
     if (!grid) return;
 
-    var cards = Array.prototype.slice.call(grid.querySelectorAll(".book-card"));
+    // Queried live so books injected later (published submissions) are included.
+    function getCards() {
+      return Array.prototype.slice.call(grid.querySelectorAll(".book-card"));
+    }
     var searchInput = document.getElementById("book-search");
     var topicFilter = document.getElementById("topic-filter");
     var tagFilter = document.getElementById("tag-filter");
     var clearBtn = document.getElementById("clear-filters");
-    var scopeBtns = Array.prototype.slice.call(document.querySelectorAll(".scope-btn"));
     var noResults = document.getElementById("no-results");
-    var emptyLibrary = document.getElementById("empty-library");
     var resultCount = document.getElementById("result-count");
-    var myCount = document.getElementById("my-count");
-
-    var scope = "all"; // "all" | "mine"
-
-    function lib() {
-      return window.KinBookshelf;
-    }
 
     function applyFilters() {
       var q = (searchInput && searchInput.value || "").trim().toLowerCase();
       var topic = (topicFilter && topicFilter.value) || "";
       var tag = (tagFilter && tagFilter.value) || "";
-      var savedIds = lib() ? lib().getIds() : [];
 
       var visible = 0;
-      cards.forEach(function (card) {
+      getCards().forEach(function (card) {
         var matchesSearch = !q || (card.getAttribute("data-search") || "").indexOf(q) !== -1;
         var matchesTopic = !topic || (card.getAttribute("data-topic") || "") === topic;
         var cardTags = (card.getAttribute("data-tags") || "").split("|");
         var matchesTag = !tag || cardTags.indexOf(tag) !== -1;
-        var matchesScope = scope === "all" || savedIds.indexOf(card.getAttribute("data-book-id")) !== -1;
 
-        var show = matchesSearch && matchesTopic && matchesTag && matchesScope;
+        var show = matchesSearch && matchesTopic && matchesTag;
         card.style.display = show ? "" : "none";
         if (show) visible++;
       });
 
-      // Empty states
-      var libraryEmpty = scope === "mine" && savedIds.length === 0;
-      if (emptyLibrary) emptyLibrary.hidden = !libraryEmpty;
-      if (noResults) noResults.hidden = !(visible === 0 && !libraryEmpty);
+      if (noResults) noResults.hidden = visible !== 0;
       if (resultCount) {
-        resultCount.textContent =
-          visible + (visible === 1 ? " book" : " books") +
-          (scope === "mine" ? " in your library" : "");
+        resultCount.textContent = visible + (visible === 1 ? " book" : " books");
       }
     }
-
-    function refreshSavedStates() {
-      var savedIds = lib() ? lib().getIds() : [];
-      // Toggle buttons
-      Array.prototype.forEach.call(
-        document.querySelectorAll(".js-library-toggle"),
-        function (btn) {
-          var id = btn.getAttribute("data-book-id");
-          var saved = savedIds.indexOf(id) !== -1;
-          setButtonState(btn, saved);
-          var card = btn.closest(".book-card");
-          if (card) card.classList.toggle("is-saved", saved);
-        }
-      );
-      if (myCount) myCount.textContent = "(" + savedIds.length + ")";
-    }
-
-    function setButtonState(btn, saved) {
-      btn.classList.toggle("is-saved", saved);
-      btn.setAttribute("aria-pressed", saved ? "true" : "false");
-      var label = btn.querySelector(".library-toggle__label");
-      var icon = btn.querySelector(".library-toggle__icon");
-      if (label) label.textContent = saved ? "In My Library" : "Add to My Library";
-      if (icon) icon.textContent = saved ? "\u2713" : "+";
-    }
-
-    // Add/remove from library (event delegation)
-    grid.addEventListener("click", function (e) {
-      var btn = e.target.closest && e.target.closest(".js-library-toggle");
-      if (!btn) return;
-      e.preventDefault();
-      if (!lib()) return;
-      lib().toggle(btn.getAttribute("data-book-id"));
-    });
-
-    // Scope toggle
-    scopeBtns.forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        scope = btn.getAttribute("data-scope");
-        scopeBtns.forEach(function (b) {
-          var active = b === btn;
-          b.classList.toggle("is-active", active);
-          b.setAttribute("aria-pressed", active ? "true" : "false");
-        });
-        applyFilters();
-      });
-    });
 
     if (searchInput) searchInput.addEventListener("input", applyFilters);
     if (topicFilter) topicFilter.addEventListener("change", applyFilters);
@@ -364,13 +252,11 @@ const introText =
         applyFilters();
       });
 
-    // React to library changes (this tab or another tab)
-    window.addEventListener("kin-bookshelf-change", function () {
-      refreshSavedStates();
+    // Allow late-injected cards (published submissions) to re-run the filter.
+    window.KinBookshelfRefresh = function () {
       applyFilters();
-    });
+    };
 
-    refreshSavedStates();
     applyFilters();
   })();
 </script>
@@ -378,4 +264,44 @@ const introText =
 <script>
   import { initBookshelfIndexTracking } from "../../../lib/bookshelfTracking";
   initBookshelfIndexTracking();
+</script>
+
+<script>
+  import {
+    createSubmittedCard,
+    fetchPublishedBooks,
+  } from "../../../lib/bookshelfPublished";
+
+  // Merge admin-published reader submissions on top of the static catalog.
+  async function mergePublishedSubmissions(): Promise<void> {
+    const grid = document.getElementById("book-grid");
+    if (!grid) return;
+
+    const books = await fetchPublishedBooks();
+    if (books.length === 0) return;
+
+    const existing = new Set(
+      Array.prototype.map
+        .call(grid.querySelectorAll(".book-card"), (el) =>
+          el instanceof HTMLElement ? el.dataset.bookId : null,
+        )
+        .filter(Boolean),
+    );
+
+    const fragment = document.createDocumentFragment();
+    for (const book of books) {
+      if (existing.has(book.id)) continue; // never duplicate an already-present id
+      fragment.appendChild(createSubmittedCard(book));
+    }
+    if (!fragment.childNodes.length) return;
+
+    // Show submitted books first so they're easy to spot.
+    grid.insertBefore(fragment, grid.firstChild);
+
+    const refresh = (window as unknown as { KinBookshelfRefresh?: () => void })
+      .KinBookshelfRefresh;
+    if (typeof refresh === "function") refresh();
+  }
+
+  void mergePublishedSubmissions();
 </script>
