@@ -42,7 +42,7 @@ function notifySleevelessReadingWorkflowIfSaved(storageKey: string): void {
   }
 }
 
-const DISMISSABLE_TIP_SELECTOR =
+export const DISMISSABLE_TIP_SELECTOR =
   ".pattern-tip[data-tip-id]:not(.pattern-tip-intro):not(.pattern-tips-control-box):not([data-pattern-print-personalization-tip])";
 
 /** Top-of-pattern pink control banner (always visible; not affected by global tips hide). */
@@ -56,6 +56,15 @@ export function patternTipsControlBoxHtml(tipsOn: boolean): string {
     '<span class="pattern-tips-switch__track" aria-hidden="true"><span class="pattern-tips-switch__thumb"></span></span>' +
     `<span class="pattern-tips-switch__state">${stateLabel}</span>` +
     "</button>";
+  // Hidden until at least one tip is dismissed; revealed by updateTipsResetLinkVisibility().
+  // Lives in the always-visible control box so users can restore tips even while global tips are hidden.
+  const restore =
+    '<button type="button" ' +
+    'class="pattern-tips-control-btn pattern-tips-reset-dismissed" ' +
+    'data-testid="link-tips-restore-dismissed" hidden>' +
+    '<i class="fa-solid fa-rotate-left" aria-hidden="true"></i>' +
+    "<span>Restore hidden tips</span>" +
+    "</button>";
   return (
     '<div class="pattern-tip pattern-tips-control-box pattern-tip-intro pattern-print-personalization-never-print" data-pattern-print-personalization-tip>' +
     '<div class="pattern-tips-control__layout">' +
@@ -63,7 +72,7 @@ export function patternTipsControlBoxHtml(tipsOn: boolean): string {
     '<i class="fa-solid fa-circle-info pattern-tips-control__info-icon" aria-hidden="true"></i>' +
     '<p class="pattern-tips-control__text">Pattern Tips give you quick, helpful reminders as you knit.</p>' +
     "</div>" +
-    `<div class="pattern-tips-control__actions">${toggle}</div>` +
+    `<div class="pattern-tips-control__actions">${toggle}${restore}</div>` +
     "</div>" +
     "</div>"
   );

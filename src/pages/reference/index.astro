@@ -9,6 +9,13 @@ const description = "Quick look-up resources for machine knitters: glossary, abb
 /** Reference categories and links. Use real hrefs where pages exist; placeholders otherwise. Easy to move to JSON later. */
 const referenceCategories = [
   {
+    id: "library",
+    title: "Library & Books",
+    items: [
+      { title: "Machine Knitter's Bookshelf", href: "/reference/bookshelf", description: "A searchable reference library of vintage and currently available printed books for machine knitters." },
+    ],
+  },
+  {
     id: "glossary-terms",
     title: "Glossary & Terms",
     items: [
@@ -60,6 +67,7 @@ const referenceCategories = [
       <p class="reference-quick-links__label">Popular References</p>
 
       <div class="reference-quick-links__list">
+        <a href="/reference/bookshelf" class="reference-quick-links__item">Bookshelf</a>
         <a href="/glossary" class="reference-quick-links__item">Glossary</a>
         <a href="/reference/abbreviations" class="reference-quick-links__item">Abbreviations</a>
         <a href="/reference/repairs" class="reference-quick-links__item">Machine Repairs</a>

@@ -1,0 +1,94 @@
+---
+/**
+ * Bookshelf "My Library" client store.
+ *
+ * Defines a single global, `window.KinBookshelf`, used by the catalog and
+ * detail pages to track which books a member has saved. Include this component
+ * ONCE per page that needs library functionality.
+ *
+ * VERSION 1: persistence is localStorage under the key `kin_bookshelf_library`
+ * (an array of book id strings).
+ *
+ * FUTURE EXPANSION: To move saved books to Memberstack custom fields or
+ * Supabase, replace ONLY the read()/write() implementations below (and make
+ * the public methods await a backend). The method signatures already return /
+ * accept the same shapes and emit the same `kin-bookshelf-change` event, so no
+ * page or component code needs to change.
+ */
+---
+
+<script is:inline>
+  (function () {
+    var STORAGE_KEY = "kin_bookshelf_library";
+
+    function read() {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        var parsed = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(parsed)) return [];
+        return parsed.map(String);
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function write(ids) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+      } catch (e) {
+        /* storage unavailable (private mode / quota) — fail quietly */
+      }
+    }
+
+    function emit() {
+      try {
+        window.dispatchEvent(
+          new CustomEvent("kin-bookshelf-change", { detail: { ids: read() } })
+        );
+      } catch (e) {}
+    }
+
+    var api = {
+      storageKey: STORAGE_KEY,
+      getIds: function () {
+        return read();
+      },
+      has: function (id) {
+        return read().indexOf(String(id)) !== -1;
+      },
+      add: function (id) {
+        id = String(id);
+        var ids = read();
+        if (ids.indexOf(id) === -1) {
+          ids.push(id);
+          write(ids);
+          emit();
+        }
+        return true;
+      },
+      remove: function (id) {
+        id = String(id);
+        var ids = read().filter(function (x) {
+          return x !== id;
+        });
+        write(ids);
+        emit();
+        return false;
+      },
+      /** Returns the new saved-state (true = now in library). */
+      toggle: function (id) {
+        return api.has(id) ? api.remove(id) : api.add(id);
+      },
+      count: function () {
+        return read().length;
+      },
+    };
+
+    // Keep multiple tabs in sync.
+    window.addEventListener("storage", function (e) {
+      if (e.key === STORAGE_KEY) emit();
+    });
+
+    window.KinBookshelf = api;
+  })();
+</script>

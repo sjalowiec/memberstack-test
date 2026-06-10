@@ -1,0 +1,411 @@
+---
+export const prerender = true;
+
+import Layout from "../../../layouts/Layout.astro";
+import ReferencePageShell from "../../../components/ReferencePageShell.astro";
+import { getAllBooks, getBookById, getBookComments, hasRating } from "../../../lib/bookshelf";
+
+export async function getStaticPaths() {
+  return getAllBooks().map((book) => ({
+    params: { id: book.id },
+    props: { book },
+  }));
+}
+
+const { book } = Astro.props;
+
+// Fallback for any direct hit that bypasses getStaticPaths.
+const resolved = book ?? getBookById(Astro.params.id);
+if (!resolved) {
+  return Astro.redirect("/reference/bookshelf");
+}
+
+const showRating = hasRating(resolved);
+const ratingRounded = Math.round(resolved.avgRating);
+
+const comments = getBookComments(resolved.id);
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  year: "numeric",
+  month: "long",
+  timeZone: "UTC",
+});
+function formatCommentDate(date: string): string {
+  const parsed = new Date(`${date}T00:00:00Z`);
+  return Number.isNaN(parsed.getTime()) ? "" : dateFormatter.format(parsed);
+}
+const metaDescription =
+  resolved.descriptionText?.slice(0, 155) ||
+  `${resolved.title} — a machine knitting reference book.`;
+---
+
+<Layout
+  title={`${resolved.title} | Machine Knitter's Bookshelf | Knit it Now`}
+  description={metaDescription}
+  bodyClass="page--tight-header"
+>
+  <ReferencePageShell
+    title={resolved.title}
+    backHref="/reference/bookshelf"
+    backLabel="Back to the Bookshelf"
+    wide
+  >
+    <article class="book-detail" data-book-id={resolved.id} data-book-title={resolved.title}>
+      <div class="book-detail__top">
+        <div class="book-detail__cover">
+          {resolved.image ? (
+            <img
+              class="book-detail__img"
+              src={resolved.image}
+              alt={`Cover of ${resolved.title}`}
+              loading="lazy"
+              decoding="async"
+              onerror="this.style.display='none';this.closest('.book-detail__cover').classList.add('is-missing');"
+            />
+          ) : null}
+          <div class="book-detail__placeholder" aria-hidden="true">
+            <span>No cover image</span>
+          </div>
+        </div>
+
+        <div class="book-detail__meta">
+          {resolved.topic && <span class="book-detail__topic">{resolved.topic}</span>}
+
+          {resolved.author && (
+            <p class="book-detail__author">by {resolved.author}</p>
+          )}
+
+          <p class="book-detail__rating">
+            {showRating ? (
+              <>
+                <span class="book-detail__stars" aria-hidden="true">
+                  {"★".repeat(ratingRounded)}{"☆".repeat(5 - ratingRounded)}
+                </span>
+                <span class="book-detail__rating-num">
+                  {resolved.avgRating.toFixed(1)} out of 5
+                </span>
+                <span class="book-detail__rating-count">
+                  ({resolved.ratingCount} {resolved.ratingCount === 1 ? "rating" : "ratings"})
+                </span>
+              </>
+            ) : (
+              <span class="book-detail__rating-empty">Not yet rated</span>
+            )}
+          </p>
+
+          {resolved.tags.length > 0 && (
+            <ul class="book-detail__tags">
+              {resolved.tags.map((tag) => (
+                <li class="book-detail__tag">{tag}</li>
+              ))}
+            </ul>
+          )}
+
+          <div class="book-detail__actions">
+            {resolved.url && (
+              <a
+                class="book-detail__findlink"
+                href={resolved.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Find this book
+                <span aria-hidden="true">↗</span>
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {resolved.description && (
+        <section class="book-detail__section">
+          <h2>About this book</h2>
+          <div class="book-detail__desc" set:html={resolved.description}></div>
+        </section>
+      )}
+
+      <!-- Community Notes: imported member comments, rendered as plain text. -->
+      <section class="book-detail__section community-notes" aria-labelledby="community-notes-title">
+        <h2 id="community-notes-title">
+          Community Notes
+          {comments.length > 0 && (
+            <span class="community-notes__count">({comments.length})</span>
+          )}
+        </h2>
+
+        {comments.length > 0 ? (
+          <ul class="community-notes__list">
+            {comments.map((comment) => (
+              <li class="community-note">
+                <p class="community-note__message">{comment.message}</p>
+                <p class="community-note__byline">
+                  <span class="community-note__author">Knit it Now member</span>
+                  {formatCommentDate(comment.date) && (
+                    <>
+                      <span class="community-note__sep" aria-hidden="true">·</span>
+                      <span class="community-note__date">{formatCommentDate(comment.date)}</span>
+                    </>
+                  )}
+                </p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div class="community-notes__placeholder">
+            <p>No community notes yet for this book.</p>
+          </div>
+        )}
+      </section>
+    </article>
+  </ReferencePageShell>
+</Layout>
+
+<style>
+  .book-detail {
+    margin-top: 0.5rem;
+  }
+
+  .book-detail__top {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (min-width: 700px) {
+    .book-detail__top {
+      grid-template-columns: minmax(220px, 300px) 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+  }
+
+  .book-detail__cover {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    max-width: 300px;
+    width: 100%;
+    margin: 0 auto;
+    background: #eef1e7;
+    border: 1px solid #dbe6c5;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .book-detail__img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #f7f8f5;
+  }
+
+  .book-detail__placeholder {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    text-align: center;
+    color: #8a9a72;
+    font-weight: 600;
+    background: repeating-linear-gradient(
+      45deg,
+      #eef1e7,
+      #eef1e7 12px,
+      #e6ebdb 12px,
+      #e6ebdb 24px
+    );
+  }
+
+  .book-detail__cover.is-missing .book-detail__placeholder,
+  .book-detail__cover:not(:has(.book-detail__img)) .book-detail__placeholder {
+    display: flex;
+  }
+
+  .book-detail__topic {
+    display: inline-block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #6b7a58;
+    background: rgba(82, 104, 45, 0.08);
+    border-radius: 999px;
+    padding: 0.25rem 0.7rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .book-detail__author {
+    font-size: 1.15rem;
+    color: #444;
+    margin: 0 0 0.5rem;
+  }
+
+  .book-detail__rating {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0 0 1rem;
+    font-size: 1rem;
+  }
+
+  .book-detail__stars {
+    color: #d8a200;
+    font-size: 1.15rem;
+    letter-spacing: 2px;
+  }
+
+  .book-detail__rating-num {
+    font-weight: 600;
+    color: #444;
+  }
+
+  .book-detail__rating-count {
+    color: #8a8a8a;
+  }
+
+  .book-detail__rating-empty {
+    color: #8a8a8a;
+    font-style: italic;
+  }
+
+  .book-detail__tags {
+    list-style: none;
+    margin: 0 0 1.25rem;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .book-detail__tag {
+    font-size: 0.85rem;
+    color: #52682d;
+    background: #f0f4e7;
+    border: 1px solid #dbe6c5;
+    border-radius: 6px;
+    padding: 0.2rem 0.6rem;
+  }
+
+  .book-detail__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .book-detail__findlink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 600;
+    color: #52682d;
+    text-decoration: underline;
+    text-decoration-color: #c7d8a4;
+    text-underline-offset: 3px;
+    min-height: 48px;
+  }
+
+  .book-detail__findlink:hover {
+    text-decoration-color: #52682d;
+  }
+
+  .book-detail__section {
+    margin-bottom: 2rem;
+  }
+
+  .book-detail__section h2 {
+    font-size: 1.4rem;
+    color: var(--kbm-green, #52682d);
+    border-bottom: 2px solid #c7d8a4;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .book-detail__desc {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #333;
+  }
+
+  .book-detail__desc :global(a) {
+    color: #52682d;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .book-detail__desc :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
+  /* Community Notes placeholder */
+  .community-notes__placeholder {
+    border: 1px dashed #c7d8a4;
+    background: rgba(199, 216, 164, 0.16);
+    border-radius: 12px;
+    padding: 1.5rem;
+    color: #5a6b3f;
+    font-size: 1.02rem;
+    line-height: 1.6;
+  }
+
+  .community-notes__placeholder p {
+    margin: 0;
+  }
+
+  .community-notes__count {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #8a8a8a;
+  }
+
+  .community-notes__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .community-note {
+    border: 1px solid #dbe6c5;
+    background: #f7f8f5;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+  }
+
+  .community-note__message {
+    margin: 0 0 0.5rem;
+    font-size: 1.02rem;
+    line-height: 1.6;
+    color: #333;
+    white-space: pre-line;
+  }
+
+  .community-note__byline {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: #8a8a8a;
+  }
+
+  .community-note__author {
+    font-weight: 600;
+    color: #6b7a58;
+  }
+</style>
+
+<script>
+  import { initBookshelfDetailTracking } from "../../../lib/bookshelfTracking";
+  initBookshelfDetailTracking();
+</script>

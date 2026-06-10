@@ -107,6 +107,11 @@
   opacity: 0.9;
 }
 
+/* display: inline-flex above beats the UA [hidden] rule, so hide explicitly */
+.pattern-tips-control-btn[hidden] {
+  display: none !important;
+}
+
 .pattern-tips-control-btn:hover,
 .pattern-tips-control-btn:focus-visible {
   color: #c2614e;

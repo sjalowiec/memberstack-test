@@ -1,0 +1,488 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const STAT_CARDS: { key: string; label: string }[] = [
+  { key: "totalEvents", label: "Total events" },
+  { key: "uniqueVisitors", label: "Unique visitors" },
+  { key: "bookshelfViewed", label: "Bookshelf views" },
+  { key: "bookDetailViews", label: "Book detail views" },
+  { key: "searchesUsed", label: "Searches used" },
+  { key: "filtersUsed", label: "Filters used" },
+  { key: "libraryAdds", label: "Library adds" },
+  { key: "libraryRemoves", label: "Library removes" },
+];
+---
+
+<BaseLayout
+  title="Bookshelf Activity | Knit it Now"
+  description="Admin dashboard for Machine Knitter's Bookshelf usage."
+  skipGlobalHyvor={true}
+  bodyClass="admin-dash-body"
+>
+  <main class="bk-admin">
+    <header class="bk-admin__head">
+      <h1 class="bk-admin__title">Bookshelf Activity</h1>
+      <p class="bk-admin__intro">
+        Usage of the public Machine Knitter's Bookshelf — views, searches,
+        filters, and My Library adds. Anonymous, aggregate counts only; no search
+        terms are stored.
+      </p>
+      <div class="bk-admin__controls">
+        <label class="bk-admin__control-label" for="bk-days">Time range</label>
+        <select id="bk-days" class="bk-admin__select">
+          <option value="7">Last 7 days</option>
+          <option value="30" selected>Last 30 days</option>
+          <option value="90">Last 90 days</option>
+        </select>
+      </div>
+    </header>
+
+    <p class="bk-admin__status" data-status>Loading bookshelf activity…</p>
+
+    <section class="bk-admin__section" data-report hidden>
+      <div class="bk-admin__stats">
+        {
+          STAT_CARDS.map((card) => (
+            <div class="bk-admin__stat">
+              <span class="bk-admin__stat-value" data-stat={card.key}>
+                —
+              </span>
+              <span class="bk-admin__stat-label">{card.label}</span>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="bk-admin__tables">
+        <div class="bk-admin__table-card">
+          <h2 class="bk-admin__section-title">Most Viewed Books</h2>
+          <div class="bk-admin__table-wrap">
+            <table class="bk-admin__table">
+              <thead>
+                <tr>
+                  <th scope="col">Book</th>
+                  <th scope="col">Views</th>
+                </tr>
+              </thead>
+              <tbody data-most-viewed>
+                <tr><td colspan="2">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="bk-admin__table-card">
+          <h2 class="bk-admin__section-title">Most Added Books</h2>
+          <div class="bk-admin__table-wrap">
+            <table class="bk-admin__table">
+              <thead>
+                <tr>
+                  <th scope="col">Book</th>
+                  <th scope="col">Adds</th>
+                </tr>
+              </thead>
+              <tbody data-most-added>
+                <tr><td colspan="2">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="bk-admin__table-card">
+        <h2 class="bk-admin__section-title">Recent Activity</h2>
+        <div class="bk-admin__table-wrap">
+          <table class="bk-admin__table">
+            <thead>
+              <tr>
+                <th scope="col">When</th>
+                <th scope="col">Event</th>
+                <th scope="col">Book</th>
+                <th scope="col">Results</th>
+              </tr>
+            </thead>
+            <tbody data-recent>
+              <tr><td colspan="4">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    import {
+      authHeadersForCustomPatternProjects,
+      resolveCustomPatternProjectAuth,
+    } from "../../lib/patterns/customPatternProjectAuth";
+    import { memberEmailFromMemberstackPayload } from "../../lib/patterns/memberstackMember";
+
+    const ENDPOINT = "/.netlify/functions/admin-bookshelf-activity";
+
+    const EVENT_LABELS: Record<string, string> = {
+      bookshelf_viewed: "Bookshelf viewed",
+      bookshelf_book_viewed: "Book viewed",
+      bookshelf_search_used: "Search used",
+      bookshelf_filter_used: "Filter used",
+      bookshelf_library_add: "Library add",
+      bookshelf_library_remove: "Library remove",
+    };
+
+    type BookTally = { bookId: string; bookTitle: string; count: number };
+    type RecentEvent = {
+      eventType: string;
+      createdAt: string;
+      bookTitle?: string;
+      resultCount?: number;
+      filterType?: string;
+    };
+    type Summary = {
+      totalEvents: number;
+      bookshelfViewed: number;
+      uniqueVisitors: number;
+      bookDetailViews: number;
+      searchesUsed: number;
+      filtersUsed: number;
+      libraryAdds: number;
+      libraryRemoves: number;
+      mostViewedBooks: BookTally[];
+      mostAddedBooks: BookTally[];
+      recentEvents: RecentEvent[];
+    };
+
+    function setStatus(message: string): void {
+      const el = document.querySelector("[data-status]");
+      if (el instanceof HTMLElement) {
+        el.textContent = message;
+        el.hidden = !message;
+      }
+    }
+
+    function showReport(show: boolean): void {
+      const el = document.querySelector("[data-report]");
+      if (el instanceof HTMLElement) el.hidden = !show;
+    }
+
+    function formatDate(iso: string): string {
+      const d = new Date(iso);
+      return Number.isNaN(d.getTime()) ? iso : d.toLocaleString();
+    }
+
+    function renderTallies(selector: string, rows: BookTally[]): void {
+      const tbody = document.querySelector(selector);
+      if (!(tbody instanceof HTMLElement)) return;
+      tbody.replaceChildren();
+      if (!rows.length) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 2;
+        td.textContent = "No data yet.";
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        return;
+      }
+      for (const row of rows) {
+        const tr = document.createElement("tr");
+        const titleTd = document.createElement("td");
+        titleTd.textContent = row.bookTitle || row.bookId;
+        const countTd = document.createElement("td");
+        countTd.textContent = String(row.count);
+        tr.append(titleTd, countTd);
+        tbody.appendChild(tr);
+      }
+    }
+
+    function renderRecent(rows: RecentEvent[]): void {
+      const tbody = document.querySelector("[data-recent]");
+      if (!(tbody instanceof HTMLElement)) return;
+      tbody.replaceChildren();
+      if (!rows.length) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 4;
+        td.textContent = "No recent activity.";
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        return;
+      }
+      for (const row of rows) {
+        const tr = document.createElement("tr");
+        const label = EVENT_LABELS[row.eventType] ?? row.eventType;
+        const eventText =
+          row.eventType === "bookshelf_filter_used" && row.filterType
+            ? `${label} (${row.filterType})`
+            : label;
+        const cells = [
+          formatDate(row.createdAt),
+          eventText,
+          row.bookTitle ?? "—",
+          typeof row.resultCount === "number" ? String(row.resultCount) : "—",
+        ];
+        for (const value of cells) {
+          const td = document.createElement("td");
+          td.textContent = value;
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+    }
+
+    function renderSummary(summary: Summary): void {
+      const statKeys: (keyof Summary)[] = [
+        "totalEvents",
+        "uniqueVisitors",
+        "bookshelfViewed",
+        "bookDetailViews",
+        "searchesUsed",
+        "filtersUsed",
+        "libraryAdds",
+        "libraryRemoves",
+      ];
+      for (const key of statKeys) {
+        const el = document.querySelector(`[data-stat="${key}"]`);
+        if (el instanceof HTMLElement) el.textContent = String(summary[key] ?? 0);
+      }
+      renderTallies("[data-most-viewed]", summary.mostViewedBooks ?? []);
+      renderTallies("[data-most-added]", summary.mostAddedBooks ?? []);
+      renderRecent(summary.recentEvents ?? []);
+    }
+
+    async function resolveMemberEmailHeader(): Promise<Record<string, string>> {
+      try {
+        const ms = window.$memberstackDom;
+        if (!ms?.getCurrentMember) return {};
+        const email = memberEmailFromMemberstackPayload(await ms.getCurrentMember());
+        return email ? { "X-KBM-Member-Email": email } : {};
+      } catch {
+        return {};
+      }
+    }
+
+    async function loadActivity(days: number): Promise<void> {
+      setStatus("Loading bookshelf activity…");
+      showReport(false);
+      try {
+        const auth = await resolveCustomPatternProjectAuth();
+        if (auth.mode === "none") {
+          setStatus("Sign in with an admin account to view bookshelf activity.");
+          return;
+        }
+        const emailHeader = await resolveMemberEmailHeader();
+        const res = await fetch(`${ENDPOINT}?days=${days}`, {
+          method: "GET",
+          headers: { ...authHeadersForCustomPatternProjects(auth), ...emailHeader },
+        });
+        if (res.status === 403) {
+          setStatus("You don't have admin access to view bookshelf activity.");
+          return;
+        }
+        const data = (await res.json().catch(() => null)) as
+          | { ok?: boolean; summary?: Summary }
+          | null;
+        if (!res.ok || !data?.ok || !data.summary) {
+          setStatus("Unable to load bookshelf activity right now.");
+          return;
+        }
+        renderSummary(data.summary);
+        showReport(true);
+        setStatus(
+          data.summary.totalEvents === 0
+            ? "No bookshelf activity recorded in this range yet."
+            : "",
+        );
+      } catch {
+        setStatus("Unable to load bookshelf activity right now.");
+      }
+    }
+
+    function currentDays(): number {
+      const select = document.getElementById("bk-days");
+      const value = select instanceof HTMLSelectElement ? parseInt(select.value, 10) : 30;
+      return [7, 30, 90].includes(value) ? value : 30;
+    }
+
+    const daysSelect = document.getElementById("bk-days");
+    daysSelect?.addEventListener("change", () => {
+      void loadActivity(currentDays());
+    });
+
+    void loadActivity(currentDays());
+  </script>
+
+  <style>
+    :global(body.admin-dash-body) {
+      margin: 0;
+    }
+
+    .bk-admin {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: calc(var(--header-height, 7rem) + 1.5rem) 1.25rem 3rem;
+      box-sizing: border-box;
+    }
+
+    .bk-admin__head {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .bk-admin__title {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #243015;
+      line-height: 1.2;
+    }
+
+    .bk-admin__intro {
+      margin: 0 0 1rem 0;
+      font-size: 1rem;
+      color: #475569;
+      line-height: 1.5;
+      max-width: 42rem;
+    }
+
+    .bk-admin__controls {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .bk-admin__control-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .bk-admin__select {
+      padding: 0.4rem 0.65rem;
+      font-size: 0.9rem;
+      color: #1e293b;
+      background: #fff;
+      border: 1px solid #d6c276;
+      border-radius: 8px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .bk-admin__select:focus {
+      outline: 2px solid #3f6212;
+      outline-offset: 1px;
+      border-color: #3f6212;
+    }
+
+    .bk-admin__status {
+      margin: 0 0 1.5rem 0;
+      font-size: 0.95rem;
+      color: #64748b;
+    }
+
+    .bk-admin__status:empty {
+      display: none;
+    }
+
+    .bk-admin__section {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .bk-admin__stats {
+      display: grid;
+      gap: 0.85rem;
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (min-width: 640px) {
+      .bk-admin__stats {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .bk-admin__stat {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      padding: 0.85rem 0.9rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+    }
+
+    .bk-admin__stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #243015;
+      line-height: 1.1;
+    }
+
+    .bk-admin__stat-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .bk-admin__tables {
+      display: grid;
+      gap: 1.5rem;
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 760px) {
+      .bk-admin__tables {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .bk-admin__table-card {
+      padding: 1.1rem 1.15rem;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      box-sizing: border-box;
+    }
+
+    .bk-admin__section-title {
+      margin: 0 0 0.85rem 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #243015;
+    }
+
+    .bk-admin__table-wrap {
+      overflow-x: auto;
+    }
+
+    .bk-admin__table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    .bk-admin__table th,
+    .bk-admin__table td {
+      padding: 0.55rem 0.65rem;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+
+    .bk-admin__table th {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #64748b;
+      white-space: nowrap;
+    }
+
+    .bk-admin__table td {
+      color: #334155;
+    }
+
+    .bk-admin__table tbody tr:last-child td {
+      border-bottom: none;
+    }
+  </style>
+</BaseLayout>
