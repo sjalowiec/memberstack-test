@@ -190,6 +190,31 @@ const introText =
     font-size: 1.05rem;
   }
 
+  @media (max-width: 700px) {
+    /* Compact the search/filter area so the book grid is visible quickly. */
+    .bookshelf__controls {
+      position: static;
+      top: auto;
+      max-height: none;
+      padding: 1rem 0;
+      margin-bottom: 1rem;
+    }
+
+    .bookshelf__search input {
+      font-size: 1rem;
+      padding: 0.55rem 0.75rem;
+    }
+
+    .bookshelf__filters {
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .bookshelf__resultcount {
+      margin-bottom: 0.75rem;
+    }
+  }
+
   @media (max-width: 600px) {
     .bookshelf__grid {
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));

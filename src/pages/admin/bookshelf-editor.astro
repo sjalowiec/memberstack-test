@@ -1,0 +1,1051 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { BOOK_FIELDS } from "../../lib/bookshelfFields";
+---
+
+<BaseLayout
+  title="Bookshelf Editor | Knit it Now"
+  description="Edit the Machine Knitter's Bookshelf catalog (bookshelf.json)"
+  skipGlobalHyvor={true}
+  bodyClass="videos-admin-body help-hub-admin-body"
+>
+  <main class="help-hub-admin bookshelf-editor">
+    <header class="help-hub-admin__head">
+      <h1 class="help-hub-admin__title">Bookshelf Editor</h1>
+      <p class="help-hub-admin__sub">
+        Edit the book catalog in <code>src/data/bookshelf.json</code> via
+        <code>/api/admin/bookshelf</code>. Search for a book and click it, or use
+        <strong>Add New Book</strong> to create one. Community Notes
+        (<code>bookshelf-comments.json</code>) for an existing book can be edited
+        in their own section below.
+      </p>
+    </header>
+
+    <p id="bookshelf-status" class="help-hub-admin__status" aria-live="polite"></p>
+
+    <div class="bookshelf-editor__layout">
+      <!-- List + search -->
+      <section class="admin-panel bookshelf-editor__list-panel" aria-labelledby="list-heading">
+        <div class="bookshelf-editor__list-head">
+          <h2 id="list-heading" class="bookshelf-editor__panel-title">Books</h2>
+          <button type="button" id="btn-add-new-book" class="kbm-btn kbm-btn-primary">
+            + Add New Book
+          </button>
+        </div>
+        <label class="bookshelf-editor__search-label">
+          <span class="sr-only">Search books</span>
+          <input
+            type="search"
+            id="book-search"
+            placeholder="Search by title, author, id, or tag…"
+            autocomplete="off"
+          />
+        </label>
+        <p id="book-count" class="bookshelf-editor__count"></p>
+        <ul id="book-list" class="bookshelf-editor__list"></ul>
+      </section>
+
+      <!-- Edit form -->
+      <section class="admin-panel bookshelf-editor__form-panel" aria-labelledby="form-heading">
+        <h2 id="form-heading" class="bookshelf-editor__panel-title">Edit book</h2>
+        <p id="bookshelf-edit-mode" class="help-hub-admin__mode">
+          Select a book from the list to edit, or add a new book.
+        </p>
+
+        <form id="bookshelf-edit-form" class="help-hub-admin__form" autocomplete="off" hidden>
+          <div class="field-grid">
+            <label>
+              <span>id (read-only, auto-generated)</span>
+              <input type="text" name="id" id="field-id" readonly />
+              <span class="field-hint">
+                Stable key — used by the public book page URL and to link Community
+                Notes. Auto-generated for new books; never edited by hand.
+              </span>
+            </label>
+
+            {
+              BOOK_FIELDS.map((f) => (
+                <label class={f.full ? "field-full" : undefined}>
+                  <span>
+                    {f.label}
+                    {f.required && <em class="req"> *</em>}
+                  </span>
+                  {f.kind === "textarea" || f.kind === "tags" ? (
+                    <textarea
+                      name={f.key}
+                      id={`field-${f.key}`}
+                      rows={f.rows ?? 3}
+                      placeholder={f.placeholder}
+                    />
+                  ) : f.kind === "number" ? (
+                    <input
+                      type="number"
+                      name={f.key}
+                      id={`field-${f.key}`}
+                      min={f.min}
+                      max={f.max}
+                      step={f.step}
+                      placeholder={f.placeholder}
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      name={f.key}
+                      id={`field-${f.key}`}
+                      placeholder={f.placeholder}
+                    />
+                  )}
+                  {f.copyFromKey ? (
+                    <span class="field-hint">
+                      <button
+                        type="button"
+                        class="bookshelf-editor__inline-btn"
+                        data-copy-from={f.copyFromKey}
+                        data-copy-to={f.key}
+                      >
+                        Copy from {f.copyFromKey}
+                      </button>
+                      {f.hint ? ` — ${f.hint}` : null}
+                    </span>
+                  ) : (
+                    f.hint && <span class="field-hint">{f.hint}</span>
+                  )}
+                </label>
+              ))
+            }
+          </div>
+
+          <div class="help-hub-admin__form-actions help-hub-admin__form-actions--sticky">
+            <button type="button" id="btn-save-book" class="kbm-btn kbm-btn-primary">Save</button>
+            <button type="button" id="btn-cancel-book" class="kbm-btn kbm-btn-outline">Cancel</button>
+            <button type="button" id="btn-cancel-new-book" class="kbm-btn kbm-btn-outline" hidden>
+              Cancel New Book
+            </button>
+            <button type="button" id="btn-duplicate-book" class="kbm-btn kbm-btn-outline">
+              Duplicate Book
+            </button>
+            <button type="button" id="btn-refresh-preview" class="kbm-btn kbm-btn-outline">
+              Refresh JSON preview
+            </button>
+          </div>
+        </form>
+
+        <section id="community-notes-editor" class="bookshelf-editor__notes" aria-labelledby="notes-heading" hidden>
+          <div class="bookshelf-editor__notes-head">
+            <h3 id="notes-heading" class="bookshelf-editor__panel-title">Community Notes</h3>
+            <p id="notes-status" class="bookshelf-editor__notes-status" aria-live="polite"></p>
+          </div>
+          <p class="field-hint">
+            Member notes shown on the public book page. Stored separately in
+            <code>bookshelf-comments.json</code> and saved with their own button below.
+            Empty notes are dropped on save.
+          </p>
+          <div id="notes-list" class="bookshelf-editor__notes-list"></div>
+          <div class="help-hub-admin__form-actions">
+            <button type="button" id="btn-add-note" class="kbm-btn kbm-btn-outline">Add note</button>
+            <button type="button" id="btn-save-notes" class="kbm-btn kbm-btn-primary">Save Community Notes</button>
+          </div>
+        </section>
+
+        <div class="help-hub-admin__preview-wrap">
+          <h3 class="help-hub-admin__preview-title">Current record (preview)</h3>
+          <pre id="bookshelf-json-preview" class="help-hub-admin__preview" aria-live="polite"></pre>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <style>
+    :global(body.help-hub-admin-body) {
+      margin: 0;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .help-hub-admin {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 1.25rem 2rem;
+      box-sizing: border-box;
+    }
+    .help-hub-admin__head {
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .help-hub-admin__title {
+      margin: 0 0 0.35rem 0;
+      font-size: 1.65rem;
+      color: #243015;
+    }
+    .help-hub-admin__sub {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #475569;
+      max-width: 60rem;
+    }
+    .help-hub-admin__sub code {
+      font-size: 0.88em;
+      background: #f1f5f9;
+      padding: 0.12rem 0.35rem;
+      border-radius: 4px;
+    }
+    .help-hub-admin__status {
+      min-height: 1.4em;
+      margin: 0 0 0.75rem 0;
+      font-size: 0.95rem;
+      color: #374151;
+    }
+    .help-hub-admin__status.is-error {
+      color: #b91c1c;
+      font-weight: 600;
+    }
+    .help-hub-admin__status.is-ok {
+      color: #166534;
+    }
+    .admin-panel {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 0.85rem;
+    }
+
+    .bookshelf-editor__layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    @media (min-width: 900px) {
+      .bookshelf-editor__layout {
+        grid-template-columns: minmax(280px, 360px) 1fr;
+        align-items: start;
+      }
+    }
+
+    .bookshelf-editor__panel-title {
+      margin: 0 0 0.65rem 0;
+      font-size: 1.05rem;
+      color: #243015;
+    }
+
+    .bookshelf-editor__list-panel {
+      position: sticky;
+      top: 0.5rem;
+      max-height: calc(100vh - 1.5rem);
+      display: flex;
+      flex-direction: column;
+    }
+    .bookshelf-editor__list-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .bookshelf-editor__list-head .bookshelf-editor__panel-title {
+      margin: 0;
+    }
+    .bookshelf-editor__search-label input {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.55rem 0.65rem;
+      font: inherit;
+      box-sizing: border-box;
+    }
+    .bookshelf-editor__count {
+      margin: 0.5rem 0;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+    .bookshelf-editor__list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      overflow-y: auto;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    .bookshelf-editor__item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      border: 1px solid transparent;
+      border-bottom: 1px solid #eef2f6;
+      background: none;
+      padding: 0.5rem 0.55rem;
+      cursor: pointer;
+      font: inherit;
+      border-radius: 6px;
+    }
+    .bookshelf-editor__item:hover {
+      background: #f8fafc;
+    }
+    .bookshelf-editor__item.is-active {
+      background: #f7fee7;
+      border-color: #c7d8a4;
+    }
+    .bookshelf-editor__item-title {
+      display: block;
+      font-weight: 600;
+      color: #1e293b;
+      font-size: 0.92rem;
+      line-height: 1.3;
+    }
+    .bookshelf-editor__item-meta {
+      display: block;
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 0.1rem;
+    }
+
+    .help-hub-admin__mode {
+      margin: 0 0 0.75rem 0;
+      padding: 0.5rem 0.65rem;
+      border-radius: 8px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      font-weight: 600;
+      color: #243015;
+      font-size: 0.95rem;
+    }
+    .help-hub-admin__mode.is-new {
+      background: #fef3c7;
+      border-color: #fcd34d;
+      color: #92400e;
+    }
+    .help-hub-admin__form .field-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.65rem;
+    }
+    @media (min-width: 720px) {
+      .help-hub-admin__form .field-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .field-full {
+      grid-column: 1 / -1;
+    }
+    .help-hub-admin__form label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .help-hub-admin__form label > span:first-of-type {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #2e3a18;
+    }
+    .req {
+      color: #b91c1c;
+      font-style: normal;
+    }
+    .field-hint {
+      font-size: 0.82rem;
+      font-weight: 400;
+      color: #64748b;
+      line-height: 1.45;
+    }
+    .help-hub-admin__form input,
+    .help-hub-admin__form select,
+    .help-hub-admin__form textarea {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.55rem 0.65rem;
+      font: inherit;
+      color: #111827;
+      background: #fff;
+      box-sizing: border-box;
+    }
+    .help-hub-admin__form input[readonly] {
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .help-hub-admin__form textarea {
+      resize: vertical;
+      min-height: 72px;
+    }
+    .bookshelf-editor__inline-btn {
+      font: inherit;
+      font-size: 0.82rem;
+      color: #3f6212;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .help-hub-admin__form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.1rem;
+    }
+    .help-hub-admin__form-actions--sticky {
+      position: sticky;
+      bottom: 0;
+      z-index: 8;
+      padding: 0.6rem 0;
+      margin-top: 1rem;
+      background: linear-gradient(to top, #fff 78%, rgba(255, 255, 255, 0));
+      border-top: 1px solid #e5e7eb;
+    }
+    .help-hub-admin__preview-wrap {
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #e5e7eb;
+    }
+    .help-hub-admin__preview-title {
+      margin: 0 0 0.5rem 0;
+      font-size: 1rem;
+      color: #243015;
+    }
+    .help-hub-admin__preview {
+      margin: 0;
+      padding: 0.85rem;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #e2e8f0;
+      overflow: auto;
+      font-size: 0.78rem;
+      line-height: 1.45;
+      max-height: 360px;
+    }
+
+    .bookshelf-editor__notes {
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e7eb;
+    }
+    .bookshelf-editor__notes-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.5rem 1rem;
+    }
+    .bookshelf-editor__notes-head .bookshelf-editor__panel-title {
+      margin: 0;
+    }
+    .bookshelf-editor__notes-status {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #374151;
+    }
+    .bookshelf-editor__notes-status.is-error {
+      color: #b91c1c;
+      font-weight: 600;
+    }
+    .bookshelf-editor__notes-status.is-ok {
+      color: #166534;
+    }
+    .bookshelf-editor__notes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin: 0.75rem 0;
+    }
+    .bookshelf-editor__note {
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 0.7rem;
+      background: #f8fafc;
+    }
+    .bookshelf-editor__note-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.5rem;
+    }
+    .bookshelf-editor__note-head strong {
+      color: #334155;
+      font-size: 0.9rem;
+    }
+    .bookshelf-editor__note label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      margin-bottom: 0.5rem;
+    }
+    .bookshelf-editor__note label > span {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #2e3a18;
+    }
+    .bookshelf-editor__note input,
+    .bookshelf-editor__note textarea {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.5rem 0.6rem;
+      font: inherit;
+      color: #111827;
+      background: #fff;
+      box-sizing: border-box;
+    }
+    .bookshelf-editor__note textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    .bookshelf-editor__notes-empty {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+  </style>
+
+  <script>
+    import {
+      BOOK_FIELDS,
+      asString,
+      normalizeFieldValue,
+      nextBookId,
+      type BookFieldDef,
+    } from "../../lib/bookshelfFields";
+
+    const API_BASE = "/api/admin/bookshelf";
+    const COMMENTS_API_BASE = "/api/admin/bookshelf-comments";
+
+    type BookRow = Record<string, unknown>;
+    type CommentRow = { id: number | null; date: string; message: string };
+    type CommentsMap = Record<string, CommentRow[]>;
+    type EditorMode = "none" | "edit" | "new";
+
+    let books: BookRow[] = [];
+    let commentsMap: CommentsMap = {};
+    let notesDraft: CommentRow[] = [];
+
+    let mode: EditorMode = "none";
+    /** id of the existing book loaded into the form (edit mode). */
+    let editingId: string | null = null;
+    /** generated id while creating a new book. */
+    let newId: string | null = null;
+    /** book id to return to when cancelling a new book. */
+    let previousId: string | null = null;
+
+    const statusEl = document.getElementById("bookshelf-status");
+    const modeEl = document.getElementById("bookshelf-edit-mode");
+    const form = document.getElementById("bookshelf-edit-form") as HTMLFormElement | null;
+    const searchEl = document.getElementById("book-search") as HTMLInputElement | null;
+    const listEl = document.getElementById("book-list");
+    const countEl = document.getElementById("book-count");
+    const jsonPreviewEl = document.getElementById("bookshelf-json-preview");
+    const notesEditorEl = document.getElementById("community-notes-editor");
+    const notesListEl = document.getElementById("notes-list");
+    const notesStatusEl = document.getElementById("notes-status");
+    const btnCancel = document.getElementById("btn-cancel-book") as HTMLButtonElement | null;
+    const btnCancelNew = document.getElementById("btn-cancel-new-book") as HTMLButtonElement | null;
+    const btnDuplicate = document.getElementById("btn-duplicate-book") as HTMLButtonElement | null;
+
+    function setStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral") {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.classList.toggle("is-error", kind === "err");
+      statusEl.classList.toggle("is-ok", kind === "ok");
+    }
+
+    function deepClone<T>(x: T): T {
+      return JSON.parse(JSON.stringify(x)) as T;
+    }
+
+    function bookId(b: BookRow): string {
+      return asString(b.id).trim();
+    }
+
+    /** Convert a stored value into a form-control string for the given field. */
+    function valueToInput(field: BookFieldDef, value: unknown): string {
+      if (field.kind === "tags") {
+        return Array.isArray(value) ? value.map((t) => String(t)).join("\n") : asString(value);
+      }
+      if (value === null || value === undefined) return "";
+      return String(value);
+    }
+
+    function textVal(name: string): string {
+      const el = form?.elements?.namedItem(name);
+      return el instanceof HTMLInputElement ||
+        el instanceof HTMLTextAreaElement ||
+        el instanceof HTMLSelectElement
+        ? el.value
+        : "";
+    }
+
+    function setField(name: string, value: string) {
+      const el = form?.elements?.namedItem(name);
+      if (
+        el instanceof HTMLInputElement ||
+        el instanceof HTMLTextAreaElement ||
+        el instanceof HTMLSelectElement
+      ) {
+        el.value = value;
+      }
+    }
+
+    /** Build a normalized book object from the form, sharing the field schema. */
+    function buildBookFromForm(options?: { silent?: boolean }): BookRow | null {
+      const silent = options?.silent === true;
+      if (mode === "none") return null;
+
+      // Preserve unknown fields on existing books; start fresh for new ones.
+      let row: BookRow = {};
+      if (mode === "edit") {
+        const original = books.find((b) => bookId(b) === editingId);
+        if (!original) {
+          if (!silent) setStatus("Original book not found; reload the page.", "err");
+          return null;
+        }
+        row = deepClone(original);
+      }
+
+      const id = textVal("id").trim();
+      row.id = id;
+      for (const f of BOOK_FIELDS) {
+        row[f.key] = normalizeFieldValue(f, textVal(f.key));
+      }
+
+      for (const f of BOOK_FIELDS) {
+        if (!f.required) continue;
+        const v = row[f.key];
+        const s = typeof v === "string" ? v.trim() : asString(v).trim();
+        if (!s) {
+          if (!silent) setStatus(`${f.key} is required and cannot be blank.`, "err");
+          return null;
+        }
+      }
+
+      if (!id) {
+        if (!silent) setStatus("Could not determine book id.", "err");
+        return null;
+      }
+
+      return row;
+    }
+
+    function refreshJsonPreview() {
+      if (!jsonPreviewEl) return;
+      const row = buildBookFromForm({ silent: true });
+      jsonPreviewEl.textContent = row
+        ? JSON.stringify(row, null, 2)
+        : "// Select a book or add a new one to see its JSON.";
+    }
+
+    function applyModeUI(text: string, isNew = false) {
+      if (modeEl) {
+        modeEl.textContent = text;
+        modeEl.classList.toggle("is-new", isNew);
+      }
+      const editingExisting = mode === "edit";
+      if (btnCancel) btnCancel.hidden = !editingExisting;
+      if (btnDuplicate) btnDuplicate.hidden = !editingExisting;
+      if (btnCancelNew) btnCancelNew.hidden = mode !== "new";
+    }
+
+    function loadBookToForm(id: string) {
+      const book = books.find((b) => bookId(b) === id);
+      if (!book || !form) return;
+      mode = "edit";
+      editingId = id;
+      newId = null;
+      form.hidden = false;
+
+      setField("id", asString(book.id));
+      for (const f of BOOK_FIELDS) setField(f.key, valueToInput(f, book[f.key]));
+
+      applyModeUI(`Editing: ${asString(book.title)} (id ${id})`);
+      markActive(id);
+      refreshJsonPreview();
+      loadNotesForBook(id);
+    }
+
+    function startNewBook(prefill?: BookRow | null) {
+      if (!form) return;
+      previousId = mode === "edit" ? editingId : null;
+      mode = "new";
+      editingId = null;
+      newId = nextBookId(books);
+      form.hidden = false;
+
+      setField("id", newId);
+      for (const f of BOOK_FIELDS) {
+        setField(f.key, prefill ? valueToInput(f, prefill[f.key]) : "");
+      }
+      if (prefill) {
+        const t = asString(prefill.title).trim();
+        setField("title", t ? `${t} (Copy)` : "");
+      }
+
+      // A brand-new book has no community notes yet.
+      notesDraft = [];
+      if (notesEditorEl) notesEditorEl.hidden = true;
+
+      const label = prefill
+        ? `Duplicating into a new book (id ${newId}) — review the fields and Save.`
+        : `Creating new book (id ${newId}) — fill in the fields and Save.`;
+      applyModeUI(label, true);
+      markActive(null);
+      refreshJsonPreview();
+      (form.elements.namedItem("title") as HTMLInputElement | null)?.focus();
+    }
+
+    function markActive(id: string | null) {
+      if (!listEl) return;
+      for (const li of Array.from(listEl.querySelectorAll(".bookshelf-editor__item"))) {
+        li.classList.toggle("is-active", li.getAttribute("data-id") === id);
+      }
+    }
+
+    function escapeHtml(s: string) {
+      return s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function matchesQuery(b: BookRow, q: string): boolean {
+      if (!q) return true;
+      const tags = Array.isArray(b.tags) ? b.tags.map((t) => String(t)) : [];
+      const haystack = [asString(b.title), asString(b.author), asString(b.id), tags.join(" ")]
+        .join(" ")
+        .toLowerCase();
+      return haystack.indexOf(q) !== -1;
+    }
+
+    function renderList() {
+      if (!listEl || !countEl) return;
+      const q = (searchEl?.value || "").trim().toLowerCase();
+      const activeId = mode === "edit" ? editingId : null;
+      const filtered = books
+        .filter((b) => matchesQuery(b, q))
+        .slice()
+        .sort((a, b) =>
+          asString(a.title).localeCompare(asString(b.title), undefined, { sensitivity: "base" })
+        );
+
+      countEl.textContent = `${filtered.length} of ${books.length} book(s)`;
+      listEl.innerHTML = filtered
+        .map((b) => {
+          const id = bookId(b);
+          const tags = Array.isArray(b.tags) ? b.tags.map((t) => String(t)) : [];
+          const meta = [asString(b.author), `id ${id}`, tags.slice(0, 3).join(", ")]
+            .filter((x) => x && x !== "id ")
+            .join(" · ");
+          return `<li>
+            <button type="button" class="bookshelf-editor__item${id === activeId ? " is-active" : ""}" data-id="${escapeHtml(id)}">
+              <span class="bookshelf-editor__item-title">${escapeHtml(asString(b.title) || "(untitled)")}</span>
+              <span class="bookshelf-editor__item-meta">${escapeHtml(meta)}</span>
+            </button>
+          </li>`;
+        })
+        .join("");
+    }
+
+    function setNotesStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral") {
+      if (!notesStatusEl) return;
+      notesStatusEl.textContent = message;
+      notesStatusEl.classList.toggle("is-error", kind === "err");
+      notesStatusEl.classList.toggle("is-ok", kind === "ok");
+    }
+
+    function notesFromUnknown(value: unknown): CommentRow[] {
+      if (!Array.isArray(value)) return [];
+      const out: CommentRow[] = [];
+      for (const item of value) {
+        if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+        const rec = item as Record<string, unknown>;
+        const idRaw = rec.id;
+        const id =
+          idRaw === null || idRaw === undefined || idRaw === ""
+            ? null
+            : Number.isFinite(Number(idRaw))
+              ? Number(idRaw)
+              : null;
+        out.push({ id, date: asString(rec.date), message: asString(rec.message) });
+      }
+      return out;
+    }
+
+    function syncNotesDraftFromDom() {
+      if (!notesListEl) return;
+      notesDraft = notesDraft.map((entry, idx) => {
+        const dateEl = notesListEl.querySelector(`[data-note-date="${idx}"]`);
+        const msgEl = notesListEl.querySelector(`[data-note-message="${idx}"]`);
+        const date = dateEl instanceof HTMLInputElement ? dateEl.value.trim() : entry.date;
+        const message = msgEl instanceof HTMLTextAreaElement ? msgEl.value : entry.message;
+        return { id: entry.id, date, message };
+      });
+    }
+
+    function renderNotes() {
+      if (!notesListEl) return;
+      notesListEl.innerHTML = "";
+      if (!notesDraft.length) {
+        const empty = document.createElement("p");
+        empty.className = "bookshelf-editor__notes-empty";
+        empty.textContent = "No community notes yet for this book.";
+        notesListEl.appendChild(empty);
+        return;
+      }
+
+      notesDraft.forEach((entry, idx) => {
+        const card = document.createElement("article");
+        card.className = "bookshelf-editor__note";
+
+        const head = document.createElement("div");
+        head.className = "bookshelf-editor__note-head";
+        const title = document.createElement("strong");
+        title.textContent = `Note ${idx + 1}`;
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "kbm-btn kbm-btn-accent";
+        removeBtn.setAttribute("data-remove-note", String(idx));
+        removeBtn.textContent = "Remove";
+        head.append(title, removeBtn);
+
+        const dateLabel = document.createElement("label");
+        const dateSpan = document.createElement("span");
+        dateSpan.textContent = "Date";
+        const dateInput = document.createElement("input");
+        dateInput.type = "date";
+        dateInput.setAttribute("data-note-date", String(idx));
+        dateInput.value = entry.date;
+        dateLabel.append(dateSpan, dateInput);
+
+        const msgLabel = document.createElement("label");
+        const msgSpan = document.createElement("span");
+        msgSpan.textContent = "Message";
+        const msgInput = document.createElement("textarea");
+        msgInput.setAttribute("data-note-message", String(idx));
+        msgInput.rows = 3;
+        msgInput.value = entry.message;
+        msgLabel.append(msgSpan, msgInput);
+
+        card.append(head, dateLabel, msgLabel);
+        notesListEl.appendChild(card);
+      });
+    }
+
+    function loadNotesForBook(id: string) {
+      notesDraft = notesFromUnknown(commentsMap[id]);
+      renderNotes();
+      setNotesStatus("");
+      if (notesEditorEl) notesEditorEl.hidden = false;
+    }
+
+    async function saveNotes() {
+      // Only existing books have community notes; new books must be saved first.
+      if (mode !== "edit" || editingId === null) return;
+      syncNotesDraftFromDom();
+
+      const cleaned: CommentRow[] = notesDraft
+        .map((n) => ({ id: n.id, date: n.date.trim(), message: n.message.trim() }))
+        .filter((n) => n.message.length > 0);
+
+      const nextMap: CommentsMap = { ...commentsMap };
+      if (cleaned.length > 0) nextMap[editingId] = cleaned;
+      else delete nextMap[editingId];
+
+      setNotesStatus("Saving notes…");
+      try {
+        const res = await fetch(COMMENTS_API_BASE, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(nextMap),
+        });
+        const data = await res.json();
+        if (!res.ok || !data?.ok || !data.comments || typeof data.comments !== "object") {
+          setNotesStatus(data?.error || `Save failed (${res.status})`, "err");
+          return;
+        }
+        commentsMap = data.comments as CommentsMap;
+        setNotesStatus(`Saved ${cleaned.length} note(s).`, "ok");
+        loadNotesForBook(editingId);
+      } catch {
+        setNotesStatus("Network error while saving notes.", "err");
+      }
+    }
+
+    async function save() {
+      const wasNew = mode === "new";
+      const row = buildBookFromForm();
+      if (!row) return;
+      const id = bookId(row);
+
+      let next: BookRow[];
+      if (mode === "new") {
+        if (books.some((b) => bookId(b) === id)) {
+          setStatus(`A book with id "${id}" already exists. Reload and try again.`, "err");
+          return;
+        }
+        next = [...books, row];
+      } else if (mode === "edit") {
+        const idx = books.findIndex((b) => bookId(b) === editingId);
+        if (idx < 0) {
+          setStatus("Original book not found; reload the page.", "err");
+          return;
+        }
+        next = books.slice();
+        next[idx] = row;
+      } else {
+        return;
+      }
+
+      setStatus("Saving…");
+      try {
+        const res = await fetch(API_BASE, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(next),
+        });
+        const data = await res.json();
+        if (!res.ok || !data?.ok || !Array.isArray(data.books)) {
+          setStatus(data?.error || `Save failed (${res.status})`, "err");
+          return;
+        }
+        books = data.books as BookRow[];
+        previousId = null;
+        setStatus(
+          wasNew ? `Created "${asString(row.title)}" (id ${id}).` : `Saved "${asString(row.title)}".`,
+          "ok"
+        );
+        // Make sure the saved/new book is findable and selected.
+        if (wasNew && searchEl) searchEl.value = "";
+        renderList();
+        loadBookToForm(id);
+      } catch {
+        setStatus("Network error while saving.", "err");
+      }
+    }
+
+    function cancel() {
+      mode = "none";
+      editingId = null;
+      newId = null;
+      previousId = null;
+      notesDraft = [];
+      if (form) form.hidden = true;
+      if (notesEditorEl) notesEditorEl.hidden = true;
+      if (modeEl) {
+        modeEl.textContent = "Select a book from the list to edit, or add a new book.";
+        modeEl.classList.remove("is-new");
+      }
+      markActive(null);
+      refreshJsonPreview();
+    }
+
+    function cancelNewBook() {
+      const prev = previousId;
+      previousId = null;
+      mode = "none";
+      newId = null;
+      setStatus("Discarded the new book.", "neutral");
+      if (prev && books.some((b) => bookId(b) === prev)) {
+        loadBookToForm(prev);
+      } else {
+        cancel();
+      }
+    }
+
+    async function loadCommentsMap() {
+      try {
+        const res = await fetch(COMMENTS_API_BASE);
+        const data = await res.json();
+        if (res.ok && data?.ok && data.comments && typeof data.comments === "object") {
+          commentsMap = data.comments as CommentsMap;
+        } else {
+          setNotesStatus(data?.error || "Could not load community notes.", "err");
+        }
+      } catch {
+        setNotesStatus("Network error loading community notes.", "err");
+      }
+    }
+
+    async function init() {
+      setStatus("Loading catalog…");
+      try {
+        const res = await fetch(API_BASE);
+        const data = await res.json();
+        if (!res.ok || !data?.ok || !Array.isArray(data.books)) {
+          setStatus(data?.error || `Load failed (${res.status})`, "err");
+          return;
+        }
+        books = data.books as BookRow[];
+        setStatus(`${books.length} book(s) loaded.`, "ok");
+        renderList();
+      } catch {
+        setStatus("Network error loading the catalog.", "err");
+        return;
+      }
+
+      await loadCommentsMap();
+
+      searchEl?.addEventListener("input", renderList);
+      listEl?.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const btn = target.closest(".bookshelf-editor__item");
+        if (!btn) return;
+        const id = btn.getAttribute("data-id");
+        if (id) loadBookToForm(id);
+      });
+
+      document.getElementById("btn-add-new-book")?.addEventListener("click", () => startNewBook());
+      document.getElementById("btn-save-book")?.addEventListener("click", () => void save());
+      btnCancel?.addEventListener("click", cancel);
+      btnCancelNew?.addEventListener("click", cancelNewBook);
+      btnDuplicate?.addEventListener("click", () => {
+        if (mode !== "edit" || editingId === null) return;
+        const source = books.find((b) => bookId(b) === editingId);
+        if (source) startNewBook(deepClone(source));
+      });
+      document.getElementById("btn-refresh-preview")?.addEventListener("click", refreshJsonPreview);
+
+      // Generic "Copy from <field>" buttons (data-driven from BOOK_FIELDS).
+      form?.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const from = target.getAttribute("data-copy-from");
+        const to = target.getAttribute("data-copy-to");
+        if (from && to) {
+          setField(to, textVal(from).trim());
+          refreshJsonPreview();
+        }
+      });
+      form?.addEventListener("input", refreshJsonPreview);
+      form?.addEventListener("change", refreshJsonPreview);
+
+      document.getElementById("btn-add-note")?.addEventListener("click", () => {
+        syncNotesDraftFromDom();
+        const today = new Date().toISOString().slice(0, 10);
+        notesDraft.push({ id: null, date: today, message: "" });
+        renderNotes();
+      });
+      document.getElementById("btn-save-notes")?.addEventListener("click", () => void saveNotes());
+      notesListEl?.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const removeIdxRaw = target.getAttribute("data-remove-note");
+        if (removeIdxRaw === null) return;
+        const idx = Number.parseInt(removeIdxRaw, 10);
+        if (!Number.isFinite(idx)) return;
+        syncNotesDraftFromDom();
+        notesDraft = notesDraft.filter((_, i) => i !== idx);
+        renderNotes();
+      });
+    }
+
+    init();
+  </script>
+</BaseLayout>
