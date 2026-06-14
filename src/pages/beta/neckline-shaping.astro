@@ -1,0 +1,448 @@
+---
+export const prerender = true;
+import Layout from "../../layouts/Layout.astro";
+
+const pageTitle = "Help Me Improve Neckline Shaping Instructions";
+const description =
+  "Help test the new Knit It Now pattern system by reviewing neckline shaping instructions and sharing your feedback.";
+const imageSrc = "/images/neckline_shaping.png";
+const imageAlt = "Neckline shaping instructions for machine knitters";
+
+const vimeoId = "1201238817";
+const videoTitle = "Neckline shaping instructions";
+const vimeoEmbedSrc = vimeoId
+  ? `https://player.vimeo.com/video/${vimeoId}?title=0&byline=0&portrait=0`
+  : "";
+---
+
+<Layout
+  title={`${pageTitle} | Knit it Now`}
+  description={description}
+  skipGlobalHyvor={true}
+>
+  <article class="neckline-beta">
+    <div class="neckline-beta__hero">
+      <header class="neckline-beta__header">
+        <h1 class="neckline-beta__title">{pageTitle}</h1>
+        <p class="neckline-beta__intro">
+          Thank you for helping test the new Knit It Now pattern system.
+        </p>
+        <p class="neckline-beta__intro">
+          Neckline shaping is one of the most challenging techniques for machine knitters, and it is
+          also one of the hardest parts of a pattern to explain clearly.
+        </p>
+        <p class="neckline-beta__intro">Please review the instructions below and ask yourself:</p>
+        <ul class="neckline-beta__list">
+          <li>Would I know what to do next?</li>
+          <li>Is anything confusing or unclear?</li>
+          <li>What questions would I have before I started knitting?</li>
+        </ul>
+      </header>
+
+      <aside class="neckline-beta__video" aria-label="Neckline shaping video">
+        <div class="neckline-beta__video-frame">
+          {vimeoEmbedSrc ? (
+            <iframe
+              class="neckline-beta__video-iframe"
+              src={vimeoEmbedSrc}
+              title={videoTitle}
+              frameborder="0"
+              allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
+              allowfullscreen
+            ></iframe>
+          ) : (
+            <div class="neckline-beta__video-placeholder" aria-hidden="true">
+              <span class="neckline-beta__video-placeholder-icon"></span>
+              <span class="neckline-beta__video-placeholder-text">Video coming soon</span>
+            </div>
+          )}
+        </div>
+      </aside>
+    </div>
+
+    <p class="neckline-beta__tip">Tip: Click or tap the image to zoom in.</p>
+
+    <section class="neckline-beta__figure" aria-label="Neckline shaping instructions">
+      <button
+        type="button"
+        class="neckline-beta__image-btn"
+        data-neckline-image-open
+        aria-label="Zoom in on neckline shaping instructions"
+      >
+        <img
+          class="neckline-beta__image"
+          src={imageSrc}
+          alt={imageAlt}
+          decoding="async"
+          loading="eager"
+        />
+      </button>
+    </section>
+
+    <section class="neckline-beta__feedback" aria-labelledby="neckline-beta-feedback-heading">
+      <h2 id="neckline-beta-feedback-heading" class="neckline-beta__subtitle">
+        How to Send Feedback
+      </h2>
+      <p class="neckline-beta__copy">
+        Simply reply to the email you received and tell me:
+      </p>
+      <ul class="neckline-beta__list">
+        <li>What makes sense</li>
+        <li>What does not make sense</li>
+        <li>Anything you would explain differently</li>
+      </ul>
+      <p class="neckline-beta__copy">
+        Thank you for helping make these instructions easier for machine knitters to follow.
+      </p>
+      <p class="neckline-beta__signoff">Sue</p>
+    </section>
+  </article>
+
+  <div class="neckline-beta__modal" id="neckline-beta-modal" hidden aria-hidden="true">
+    <button
+      type="button"
+      class="neckline-beta__modal-backdrop"
+      data-neckline-image-close
+      tabindex="-1"
+      aria-label="Close zoomed image"
+    ></button>
+    <div
+      class="neckline-beta__modal-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Neckline shaping instructions, zoomed in"
+    >
+      <button
+        type="button"
+        class="neckline-beta__modal-close"
+        data-neckline-image-close
+        aria-label="Close zoomed image"
+      >
+        <span aria-hidden="true">×</span>
+      </button>
+      <img class="neckline-beta__modal-image" src={imageSrc} alt={imageAlt} decoding="async" />
+    </div>
+  </div>
+</Layout>
+
+<script>
+  (function () {
+    var openBtn = document.querySelector("[data-neckline-image-open]");
+    var modal = document.getElementById("neckline-beta-modal");
+    var closeBtns = document.querySelectorAll("[data-neckline-image-close]");
+    var lastActive: HTMLElement | null = null;
+
+    function openModal() {
+      if (!modal) return;
+      lastActive = document.activeElement as HTMLElement | null;
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      var closeEl = modal.querySelector(
+        ".neckline-beta__modal-close"
+      ) as HTMLElement | null;
+      if (closeEl && typeof closeEl.focus === "function") {
+        closeEl.focus();
+      }
+    }
+
+    function closeModal() {
+      if (!modal) return;
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+      if (lastActive && typeof lastActive.focus === "function") {
+        lastActive.focus();
+      }
+    }
+
+    if (openBtn) {
+      openBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        openModal();
+      });
+    }
+
+    closeBtns.forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        closeModal();
+      });
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      if (!modal || modal.hidden) return;
+      e.preventDefault();
+      closeModal();
+    });
+  })();
+</script>
+
+<style>
+  .neckline-beta {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 3rem;
+    color: var(--kbm-text, #1f2d3d);
+  }
+
+  .neckline-beta__hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+    align-items: start;
+    margin: 0 0 1.75rem;
+  }
+
+  .neckline-beta__header {
+    margin: 0;
+  }
+
+  .neckline-beta__video {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .neckline-beta__video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #1a2412;
+    box-shadow: 0 4px 18px rgba(26, 36, 18, 0.14);
+  }
+
+  .neckline-beta__video-iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .neckline-beta__video-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    background: linear-gradient(145deg, #3a4a38 0%, #1a2412 100%);
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .neckline-beta__video-placeholder-icon {
+    display: block;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    position: relative;
+  }
+
+  .neckline-beta__video-placeholder-icon::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 54%;
+    transform: translate(-50%, -50%);
+    border-style: solid;
+    border-width: 0.65rem 0 0.65rem 1.05rem;
+    border-color: transparent transparent transparent var(--kbm-green, #52682d);
+  }
+
+  .neckline-beta__video-placeholder-text {
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+  }
+
+  .neckline-beta__title {
+    margin: 0 0 1.25rem;
+    font-size: var(--text-xxl, 1.75rem);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .neckline-beta__intro {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #3a4a38;
+  }
+
+  .neckline-beta__list {
+    margin: 0 0 1rem;
+    padding-left: 1.4rem;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: #3a4a38;
+  }
+
+  .neckline-beta__list li {
+    margin: 0 0 0.4rem;
+  }
+
+  .neckline-beta__tip {
+    margin: 0 0 0.85rem;
+    font-size: 0.95rem;
+    font-style: italic;
+    color: #4a5638;
+  }
+
+  .neckline-beta__figure {
+    margin: 0 0 2.5rem;
+  }
+
+  .neckline-beta__image-btn {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: zoom-in;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(26, 36, 18, 0.14);
+  }
+
+  .neckline-beta__image-btn:focus-visible {
+    outline: 3px solid var(--kbm-green, #52682d);
+    outline-offset: 3px;
+  }
+
+  .neckline-beta__image {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .neckline-beta__subtitle {
+    margin: 0 0 0.85rem;
+    font-size: var(--text-xl, 1.4rem);
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .neckline-beta__copy {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: #3a4a38;
+  }
+
+  .neckline-beta__signoff {
+    margin: 1.25rem 0 0;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: #3a4a38;
+  }
+
+  .neckline-beta__modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    box-sizing: border-box;
+  }
+
+  .neckline-beta__modal[hidden],
+  .neckline-beta__modal[aria-hidden="true"] {
+    display: none !important;
+  }
+
+  .neckline-beta__modal-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: rgba(20, 28, 14, 0.78);
+    cursor: zoom-out;
+  }
+
+  .neckline-beta__modal-panel {
+    position: relative;
+    z-index: 1;
+    width: min(1200px, 96vw);
+    max-height: 92vh;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .neckline-beta__modal-close {
+    position: absolute;
+    top: 0.65rem;
+    right: 0.65rem;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    color: #1a2412;
+    font-size: 1.65rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .neckline-beta__modal-close:hover,
+  .neckline-beta__modal-close:focus-visible {
+    background: #fff;
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .neckline-beta__modal-image {
+    display: block;
+    max-width: 100%;
+    max-height: 92vh;
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+  }
+
+  @media (min-width: 768px) {
+    .neckline-beta__hero {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 2.5rem;
+    }
+
+    .neckline-beta__video {
+      align-self: start;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .neckline-beta {
+      padding-top: 2rem;
+      padding-bottom: 2.5rem;
+    }
+
+    .neckline-beta__title {
+      font-size: 1.5rem;
+    }
+
+    .neckline-beta__intro,
+    .neckline-beta__copy {
+      font-size: 1rem;
+    }
+  }
+</style>

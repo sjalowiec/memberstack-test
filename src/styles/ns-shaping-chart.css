@@ -99,6 +99,16 @@
   border-bottom: 1px solid rgba(55, 65, 81, 0.15);
 }
 
+/* Numeric column header (e.g. Sts Remaining) sits right-aligned directly above its values. */
+.ns-shaping-chart__th-num {
+  text-align: right;
+  vertical-align: bottom;
+  font-weight: 700;
+  font-size: 0.75rem;
+  background: rgba(82, 104, 45, 0.06);
+  border-bottom: 1px solid rgba(55, 65, 81, 0.15);
+}
+
 .ns-shaping-chart__th-complete {
   text-align: center;
   vertical-align: bottom;
@@ -116,6 +126,23 @@
 .ns-shaping-chart__td-num {
   text-align: right;
   white-space: nowrap;
+}
+
+/* Row Counter cell: left-aligned so values sit directly under the left-aligned RC header. */
+.ns-shaping-chart__td-rc {
+  text-align: left;
+  white-space: nowrap;
+}
+
+.ns-shaping-chart__row-counter-number {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Carriage side reads as a quieter parenthetical next to the row counter number. */
+.ns-shaping-chart__row-counter-side {
+  font-size: 0.85em;
+  font-style: italic;
+  color: #6b7280;
 }
 
 .ns-shaping-chart__td-center {
@@ -207,6 +234,16 @@
 .ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__table tbody tr.ns-shaping-chart__tr--progress-complete,
 .ns-shaping-chart__progress-section.ns-shaping-chart--completed-hidden .ns-shaping-chart__table tbody tr:has(.ns-shaping-chart__row-check:checked) {
   display: none !important;
+}
+
+/*
+ * Zebra striping for the online First / Second Shoulder checklists only (full-grid chart keeps its
+ * own row highlight colors). Subtle green tint, consistent with the site palette. Uses nth-child so
+ * it never depends on row IDs, checkbox state, or completed/hidden behavior — when completed rows are
+ * shown or hidden the remaining stripes stay subtle and readable.
+ */
+.ns-shaping-chart__table--checklist tbody tr:nth-child(even) td {
+  background: rgba(82, 104, 45, 0.04);
 }
 
 .ns-shaping-chart__tr--neck-both td {

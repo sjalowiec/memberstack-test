@@ -477,6 +477,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       chart,
       wrapperClass: "pattern-shaping-intro",
       layout: "labeled",
+      includeWorkflowSteps: true,
     });
     const necklineTipVideoButtons = `<div class="pattern-finishing-video-help__links sleeveless-neckline-tip__video-links">
   <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="roundNeckShaping" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Round neck shaping</button>
@@ -2608,7 +2609,13 @@ table {
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
         neckShoulderChartHelpRowHtml(`RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`, result?.neckShoulderShapingChart, "back"),
-        { activeSideOnly: true, activeSideRcStart: backActiveSideRcStart, includeCenterNecklineSetupRow: true }
+        {
+          activeSideOnly: true,
+          activeSideRcStart: backActiveSideRcStart,
+          includeCenterNecklineSetupRow: true,
+          hideCenterNecklineSetupRow: true,
+          tableHeading: "First Shoulder Checklist",
+        }
       );
     }
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
@@ -2621,7 +2628,13 @@ table {
           result?.frontNeckShoulderShapingChart,
           "front"
         ),
-        { activeSideOnly: true, activeSideRcStart: frontActiveSideRcStart, includeCenterNecklineSetupRow: true }
+        {
+          activeSideOnly: true,
+          activeSideRcStart: frontActiveSideRcStart,
+          includeCenterNecklineSetupRow: true,
+          hideCenterNecklineSetupRow: true,
+          tableHeading: "First Shoulder Checklist",
+        }
       );
     }
 
@@ -2635,7 +2648,13 @@ table {
           result?.neckShoulderShapingChart,
           "back"
         ),
-        options: { activeSideOnly: true, activeSideRcStart: backActiveSideRcStart, includeCenterNecklineSetupRow: true },
+        options: {
+          activeSideOnly: true,
+          activeSideRcStart: backActiveSideRcStart,
+          includeCenterNecklineSetupRow: true,
+          hideCenterNecklineSetupRow: true,
+          tableHeading: "First Shoulder Checklist",
+        },
       },
       front: {
         chart: result.frontNeckShoulderShapingChart,
@@ -2645,7 +2664,13 @@ table {
           result?.frontNeckShoulderShapingChart,
           "front"
         ),
-        options: { activeSideOnly: true, activeSideRcStart: frontActiveSideRcStart, includeCenterNecklineSetupRow: true },
+        options: {
+          activeSideOnly: true,
+          activeSideRcStart: frontActiveSideRcStart,
+          includeCenterNecklineSetupRow: true,
+          hideCenterNecklineSetupRow: true,
+          tableHeading: "First Shoulder Checklist",
+        },
       },
     };
     // Finishing HTML + chart table HTML (incl. glossary placeholders) are injected above.

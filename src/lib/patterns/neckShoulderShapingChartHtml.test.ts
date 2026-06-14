@@ -7,11 +7,15 @@ import {
   compactActiveSideInstructionRowsForPrint,
   formatActionCellHtml,
   neckShoulderChartHasCarriagePositionColumn,
+  renderActiveShoulderChartIntroHtml,
   renderCarriagePositionPatternTipHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
   renderNeckShoulderShapingPrintInstructionTableHtml,
 } from "./neckShoulderShapingChartHtml";
-import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
+import {
+  centerBindOffStitchesFromNeckShoulderChart,
+  generateSleevelessBackPattern,
+} from "./sleevelessPatternOutput";
 
 type ChecklistRow = {
   rc: number;
@@ -51,8 +55,10 @@ function parseSecondShoulderChecklistFromHtml(html: string): Map<number, string>
   const block =
     html.match(/Second Shoulder Checklist[\s\S]*?<tbody>([\s\S]*?)<\/tbody>/i)?.[1] ?? "";
   const map = new Map<number, string>();
+  // Carriage position now lives inside the Row Counter cell as structured spans, e.g.
+  // `<span class="...row-counter-number">037</span> <span class="...row-counter-side">(Left)</span>`.
   for (const match of block.matchAll(
-    /<td class="ns-shaping-chart__td-num">(\d{3})(?:\u2013(\d{3}))?<\/td><td>(Right|Left|Alternating Left\/Right)<\/td>/g,
+    /<span class="ns-shaping-chart__row-counter-number">(\d{3})(?:\u2013(\d{3}))?<\/span> <span class="ns-shaping-chart__row-counter-side">\((Right|Left|Alternating Left\/Right)\)<\/span>/g,
   )) {
     const start = parseInt(match[1]!, 10);
     const end = match[2] ? parseInt(match[2], 10) : start;
@@ -160,6 +166,219 @@ describe("carriage position pattern tip", () => {
     expect(printHtml).toContain("Carriage Position</th>");
     expect(printHtml).not.toContain('data-tip-id="sleeveless-carriage-position"');
     expect(printHtml).not.toContain("pattern-help-card__details");
+  });
+});
+
+describe("online checklist combines Row Counter + Carriage Position", () => {
+  function onlineActiveSideHtml(): string {
+    const r = generateSleevelessBackPattern(baseRoundNeckPattern());
+    const chart = r.neckShoulderShapingChart;
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, r.firstArmholeGarmentRc);
+    return renderNeckShoulderShapingChartTableOnlyHtml(chart, "test-combined-rc", undefined, {
+      activeSideOnly: true,
+      activeSideRcStart: rcStart,
+    });
+  }
+
+  function primaryTbody(html: string): string {
+    return html.match(/<tbody>([\s\S]*?)<\/tbody>/)?.[1] ?? "";
+  }
+
+  it("no longer renders a separate Carriage Position column header in the online table", () => {
+    const html = onlineActiveSideHtml();
+    // The dedicated column header is gone (the collapsible help-card title may still say it).
+    expect(html).not.toContain(">Carriage Position</th>");
+    // The Row Counter / RC header is still present.
+    expect(html).toContain('class="ns-shaping-chart__th-row">RC</th>');
+  });
+
+  it("shows row counter + carriage side using full words via distinguishable number/side markup", () => {
+    const tbody = primaryTbody(onlineActiveSideHtml());
+    const cells = [
+      ...tbody.matchAll(
+        /<td class="ns-shaping-chart__td-rc"><span class="ns-shaping-chart__row-counter-number">(\d{3})<\/span> <span class="ns-shaping-chart__row-counter-side">\((Left|Right)\)<\/span><\/td>/g,
+      ),
+    ];
+    expect(cells.length).toBeGreaterThan(0);
+    // Full words only — never abbreviated to L/R.
+    expect(tbody).not.toMatch(/row-counter-side">\([LR]\)</);
+    for (const cell of cells) {
+      expect(["Left", "Right"]).toContain(cell[2]);
+    }
+    // The number and the parenthetical side use separate, distinguishable classes.
+    expect(tbody).toContain('class="ns-shaping-chart__row-counter-number"');
+    expect(tbody).toContain('class="ns-shaping-chart__row-counter-side"');
+  });
+
+  it("applies a zebra-striping checklist class to the online checklist table", () => {
+    const html = onlineActiveSideHtml();
+    expect(html).toContain("ns-shaping-chart__table--checklist");
+  });
+
+  it("keeps the formal PDF/print mini-table on its separate renderer with its own Carriage Position column", () => {
+    const r = generateSleevelessBackPattern(baseRoundNeckPattern());
+    const chart = r.neckShoulderShapingChart;
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, r.firstArmholeGarmentRc);
+    const printHtml = renderNeckShoulderShapingPrintInstructionTableHtml(chart, "test-print-combined", "", {
+      activeSideRcStart: rcStart,
+    });
+    // Print output is unchanged: dedicated Carriage Position column header remains...
+    expect(printHtml).toContain("Carriage Position</th>");
+    // ...and carriage lives in its own cell, not merged into the RC cell or styled spans.
+    expect(printHtml).not.toContain("ns-shaping-chart__row-counter-number");
+    expect(printHtml).not.toContain("ns-shaping-chart__table--checklist");
+    expect(printHtml).toMatch(/<td>(Left|Right|Alternating Left\/Right)<\/td>/);
+  });
+});
+
+describe("center neckline divide/setup row moved out of the online checklist", () => {
+  function vNeckPattern(): Record<string, unknown> {
+    return {
+      ...baseRoundNeckPattern(),
+      style: { recipientCategory: "misses", neckline: "v-neck" },
+    };
+  }
+
+  function firstPrimaryTbody(html: string): string {
+    return html.match(/<tbody>([\s\S]*?)<\/tbody>/)?.[1] ?? "";
+  }
+
+  function firstPrimaryTbodyRow(html: string): string {
+    return firstPrimaryTbody(html).match(/<tr[\s\S]*?<\/tr>/)?.[0] ?? "";
+  }
+
+  function buildIntro(chart: Parameters<typeof renderActiveShoulderChartIntroHtml>[0]["chart"], rcLabel: string) {
+    return renderActiveShoulderChartIntroHtml({
+      localStartRcLabel: rcLabel,
+      centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(chart),
+      chart,
+      wrapperClass: "pattern-shaping-intro",
+      layout: "labeled",
+      includeWorkflowSteps: true,
+    });
+  }
+
+  it("round back: divide is shown above the table; first table row is real shaping, not the divide/setup row", () => {
+    const r = generateSleevelessBackPattern(baseRoundNeckPattern());
+    const chart = r.neckShoulderShapingChart;
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, r.firstArmholeGarmentRc, {
+      includeCenterNecklineSetupRow: true,
+    });
+    const intro = buildIntro(chart, "RC:050");
+
+    // Sanity: this round-neck back actually has a center divide/setup row in the raw checklist.
+    const builtRows = buildActiveSideInstructionTableRows(chart, rcStart, {
+      includeCenterNecklineSetupRow: true,
+    });
+    expect(builtRows.some((row) => row.edge === "Center")).toBe(true);
+    const firstShapingRc = builtRows.find((row) => row.edge !== "Center")?.rc;
+
+    const tableHidden = renderNeckShoulderShapingChartTableOnlyHtml(chart, "test-hide-back", intro, {
+      activeSideOnly: true,
+      activeSideRcStart: rcStart,
+      includeCenterNecklineSetupRow: true,
+      hideCenterNecklineSetupRow: true,
+      tableHeading: "First Shoulder Checklist",
+    });
+
+    // 1. The divide/setup instruction is present (in the intro above the table)...
+    expect(intro).toContain("Divide the Neckline");
+    expect(intro).toMatch(/scrap off/i);
+    const introIdx = tableHidden.indexOf("Divide the Neckline");
+    const tableIdx = tableHidden.indexOf("ns-shaping-chart__table");
+    expect(introIdx).toBeGreaterThanOrEqual(0);
+    expect(tableIdx).toBeGreaterThan(introIdx);
+
+    // 2. ...but the divide/setup row is gone from the table body itself.
+    const tbody = firstPrimaryTbody(tableHidden);
+    expect(tbody).not.toContain(">Center</td>");
+    expect(tbody).not.toMatch(/to divide/i);
+
+    // 3. The first visible table row is the first actual shaping/knit row (RC preserved).
+    //    Carriage position is shown inside the Row Counter cell via structured spans, e.g.
+    //    `<span class="...row-counter-number">001</span> <span class="...row-counter-side">(Left)</span>`.
+    const firstRow = firstPrimaryTbodyRow(tableHidden);
+    expect(firstRow).not.toContain(">Center</td>");
+    expect(firstRow).toMatch(/>(Armhole|Neck)<\/td>/);
+    expect(firstRow).toMatch(
+      new RegExp(
+        `<span class="ns-shaping-chart__row-counter-number">${String(firstShapingRc).padStart(
+          3,
+          "0",
+        )}</span> <span class="ns-shaping-chart__row-counter-side">\\((Left|Right)\\)</span>`,
+      ),
+    );
+
+    // Heading renamed online.
+    expect(tableHidden).toContain("First Shoulder Checklist");
+  });
+
+  it("round back: hiding the setup row never changes the remaining rows' RC / stitch counts", () => {
+    const r = generateSleevelessBackPattern(baseRoundNeckPattern());
+    const chart = r.neckShoulderShapingChart;
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, r.firstArmholeGarmentRc, {
+      includeCenterNecklineSetupRow: true,
+    });
+    // The render layer simply filters the divide/setup row out of the built rows; every other
+    // row (rc, carriage, action, edge, stitchesRemaining) is untouched. Validate that invariant
+    // directly on the shared builder so the shaping math can never drift.
+    const built = buildActiveSideInstructionTableRows(chart, rcStart, {
+      includeCenterNecklineSetupRow: true,
+    });
+    const setupRows = built.filter((row) => row.edge === "Center");
+    const remaining = built.filter((row) => row.edge !== "Center");
+    expect(setupRows.length).toBe(1);
+    // Setup row is the first row; dropping it leaves the rest byte-for-byte identical.
+    expect(remaining).toEqual(built.slice(1));
+  });
+
+  it("V-neck front: no center divide/setup row exists, so the first table row is already real shaping", () => {
+    const r = generateSleevelessBackPattern(vNeckPattern());
+    const chart = r.frontNeckShoulderShapingChart;
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, r.firstArmholeGarmentRc, {
+      includeCenterNecklineSetupRow: true,
+    });
+    const builtRows = buildActiveSideInstructionTableRows(chart, rcStart, {
+      includeCenterNecklineSetupRow: true,
+    });
+    expect(builtRows.some((row) => row.edge === "Center")).toBe(false);
+
+    const intro = buildIntro(chart, "RC:100");
+    const tableHidden = renderNeckShoulderShapingChartTableOnlyHtml(chart, "test-hide-front", intro, {
+      activeSideOnly: true,
+      activeSideRcStart: rcStart,
+      includeCenterNecklineSetupRow: true,
+      hideCenterNecklineSetupRow: true,
+      tableHeading: "First Shoulder Checklist",
+    });
+
+    expect(intro).toContain("Divide the Neckline");
+    expect(tableHidden).not.toContain(">Center</td>");
+    const firstRow = firstPrimaryTbodyRow(tableHidden);
+    expect(firstRow).not.toContain(">Center</td>");
+    expect(firstRow).toMatch(/>(Armhole|Neck)<\/td>/);
+  });
+
+  it("keeps the default heading when tableHeading is not provided (print mini-table unaffected)", () => {
+    const r = generateSleevelessBackPattern(baseRoundNeckPattern());
+    const chart = r.neckShoulderShapingChart;
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, r.firstArmholeGarmentRc, {
+      includeCenterNecklineSetupRow: true,
+    });
+    const defaultHeading = renderNeckShoulderShapingChartTableOnlyHtml(chart, "test-default", undefined, {
+      activeSideOnly: true,
+      activeSideRcStart: rcStart,
+      includeCenterNecklineSetupRow: true,
+    });
+    expect(defaultHeading).toContain("Neckline / Shoulder Shaping Chart");
+    expect(defaultHeading).not.toContain("First Shoulder Checklist");
+
+    // The formal PDF mini-table still includes the divide/setup row (print output unchanged).
+    const printMini = renderNeckShoulderShapingPrintInstructionTableHtml(chart, "test-print-mini", "", {
+      activeSideRcStart: rcStart,
+      includeCenterNecklineSetupRow: true,
+    });
+    expect(printMini).toMatch(/to divide/i);
   });
 });
 

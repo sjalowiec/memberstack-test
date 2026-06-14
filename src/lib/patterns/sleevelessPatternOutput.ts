@@ -1808,14 +1808,9 @@ export function buildSleevelessBackDisplayRows(args: {
     }
   }
 
-  rows.push({
-    kind: "block",
-    paragraphs: [],
-    tipHtml: lifelineBeforeNeckShoulderQuickTipInnerHtml(),
-    tipHtmlIsFull: true,
-    tipPresentation: "quick-tip",
-    tipId: "sleeveless-lifeline-neck-shoulder",
-  });
+  // The standalone "Lifeline before neckline shaping" quick-tip panel was removed: the lifeline
+  // guidance (with the glossary popup) now lives in the chart's "Before Shaping" checklist
+  // ("Optional: Add a lifeline before dividing the neckline."), making this panel redundant.
 
   if (args.useNeckChartRows && args.neckChartRows.length > 0) {
     rows.push({ kind: "section", title: "BACK NECKLINE & SHOULDERS" });
