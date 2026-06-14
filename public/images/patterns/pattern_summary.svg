@@ -1,129 +1,352 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" width="2.9in" height="2.9in" version="1.1" viewBox="0 0 210.2 210.2">
-  <!-- Generator: Adobe Illustrator 30.3.0, SVG Export Plug-In . SVG Version: 2.1.3 Build 182)  -->
+<svg xmlns="http://www.w3.org/2000/svg" width="16.4in" height="13.8in" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1183.1 991.2">
+  <!-- Generator: Adobe Illustrator 30.5.1, SVG Export Plug-In . SVG Version: 2.1.4 Build 3)  -->
   <defs>
     <style>
       .st0 {
-        stroke-dasharray: 4 3;
+        stroke-width: 1.3px;
       }
 
-      .st0, .st1, .st2, .st3, .st4, .st5, .st6, .st7, .st8, .st9, .st10, .st11 {
+      .st0, .st1, .st2, .st3, .st4, .st5, .st6, .st7, .st8, .st9, .st10, .st11, .st12, .st13, .st14, .st15, .st16, .st17, .st18, .st19, .st20, .st21, .st22, .st23, .st24, .st25, .st26 {
         fill: none;
       }
 
-      .st0, .st1, .st2, .st3, .st5, .st6, .st7, .st8, .st9, .st10, .st11 {
-        stroke: #bcbec0;
+      .st0, .st1, .st4, .st5, .st6, .st7, .st10, .st11, .st13, .st15, .st16, .st19, .st20, .st21, .st24, .st26 {
+        stroke-linejoin: round;
       }
 
-      .st0, .st1, .st2, .st3, .st6, .st7, .st8, .st9, .st10, .st11 {
-        stroke-miterlimit: 10;
-      }
-
-      .st0, .st5, .st6, .st7, .st8, .st9, .st10 {
-        stroke-width: .7px;
+      .st0, .st1, .st4, .st5, .st6, .st7, .st10, .st11, .st13, .st15, .st16, .st19, .st21, .st24, .st26 {
+        stroke: #010101;
       }
 
       .st1 {
-        stroke-dasharray: 1 2;
-        stroke-linecap: round;
-      }
-
-      .st1, .st11 {
-        stroke-width: .8px;
+        stroke-dasharray: .3 1.7;
+        stroke-width: 10px;
       }
 
       .st2 {
-        stroke-dasharray: 5.2 5.2;
-        stroke-width: .9px;
+        stroke-dasharray: 3 2;
+      }
+
+      .st2, .st3, .st9, .st12, .st14, .st17, .st18, .st20, .st22, .st23, .st25 {
+        stroke: #bcbec0;
+      }
+
+      .st2, .st3, .st9, .st12, .st14, .st17, .st18, .st22, .st23, .st25 {
+        stroke-miterlimit: 9.9;
+      }
+
+      .st2, .st9, .st14, .st18, .st20, .st22, .st23 {
+        stroke-width: .7px;
       }
 
       .st3 {
         stroke-dasharray: 5.5 5.5;
+        stroke-width: 1px;
       }
 
-      .st12 {
-        fill: #bcbec0;
+      .st4 {
+        stroke-dasharray: .3 1.5;
+        stroke-width: 9.2px;
       }
 
       .st5 {
-        stroke-linejoin: round;
+        stroke-width: 1.3px;
       }
 
       .st6 {
-        stroke-dasharray: 2.1 2.1;
+        stroke-width: 1.3px;
       }
 
       .st7 {
-        stroke-dasharray: 2 2;
+        stroke-width: 1.5px;
       }
 
       .st9 {
-        stroke-dasharray: 3 2;
+        stroke-dasharray: 2 2;
       }
 
       .st10 {
-        stroke-dasharray: 4 4;
+        stroke-width: 1.5px;
       }
 
       .st11 {
+        stroke-width: 1.2px;
+      }
+
+      .st27 {
+        fill: #bcbec0;
+      }
+
+      .st28 {
+        font-family: ArialMT, Arial;
+        font-size: 12px;
+      }
+
+      .st12 {
         stroke-dasharray: 4.4 4.4;
+      }
+
+      .st12, .st25 {
+        stroke-width: .8px;
+      }
+
+      .st13 {
+        stroke-width: 1.4px;
+      }
+
+      .st15 {
+        stroke-dasharray: 2.5 1.3;
+        stroke-width: .6px;
+      }
+
+      .st16 {
+        stroke-dasharray: .3 1.5;
+        stroke-width: 8.9px;
+      }
+
+      .st17 {
+        stroke-dasharray: 5.2 5.2;
+        stroke-width: .9px;
+      }
+
+      .st18 {
+        stroke-dasharray: 2.1 2.1;
+      }
+
+      .st29 {
+        display: none;
+      }
+
+      .st30 {
+        stroke-width: 0px;
+      }
+
+      .st30, .st31 {
+        fill: #141111;
+        stroke: #141111;
+      }
+
+      .st19 {
+        stroke-width: 1.3px;
+      }
+
+      .st21 {
+        stroke-width: .7px;
+      }
+
+      .st22 {
+        stroke-dasharray: 4 4;
+      }
+
+      .st31 {
+        stroke-width: 0px;
+      }
+
+      .st23 {
+        stroke-dasharray: 4 3;
+      }
+
+      .st24 {
+        stroke-width: .8px;
+      }
+
+      .st25 {
+        stroke-dasharray: 1 2;
+        stroke-linecap: round;
+      }
+
+      .st26 {
+        stroke-width: .8px;
       }
     </style>
   </defs>
-  <g id="body">
-    <line class="st8" x1="81.8" y1="23.3" x2="82.3" y2="24.1"/>
-    <line class="st6" x1="83.7" y1="25.7" x2="111.2" y2="60.4"/>
-    <polyline class="st8" points="111.8 61.2 112.3 62 113.1 61.2"/>
-    <line class="st6" x1="114.3" y1="59.6" x2="142.4" y2="25.2"/>
-    <line class="st8" x1="143.1" y1="24.4" x2="143.6" y2="23.7"/>
-    <path class="st8" d="M82.2,23.8c.2.3.4.5.6.8"/>
-    <path class="st7" d="M83.9,26.1c27,33,52.9,6.5,58.8-.5"/>
-    <path class="st8" d="M143.4,24.9c.4-.5.6-.8.6-.8"/>
-    <line class="st5" x1="48" y1="201.7" x2="177.6" y2="201.9"/>
-    <path class="st5" d="M48.7,102.4c.8,5.9-.4,99.7-.4,99.7"/>
-    <path class="st5" d="M177.4,102.4c-.8,5.9.1,99.5.1,99.5"/>
-    <path class="st5" d="M171.4,33.4s-7.6,49.3,6,69.6"/>
-    <path class="st5" d="M81.8,23.3s6.1,6.9,30.9,6.9,31-6.9,31-6.9l28.2,10.1"/>
-    <path class="st5" d="M54,33.4s8.5,49.4-5.2,69.8"/>
-    <line class="st5" x1="82.4" y1="23.3" x2="53.7" y2="33.6"/>
+  <g id="Layer_1">
+    <g id="body">
+      <line class="st14" x1="397.2" y1="813.5" x2="397.7" y2="814.3"/>
+      <line class="st18" x1="399.1" y1="815.8" x2="426.4" y2="850.3"/>
+      <polyline class="st14" points="427 851.1 427.5 851.9 428.3 851.1"/>
+      <line class="st18" x1="429.5" y1="849.5" x2="457.4" y2="815.4"/>
+      <line class="st14" x1="458.1" y1="814.6" x2="458.6" y2="813.9"/>
+      <path class="st14" d="M397.6,814c.2.3.4.5.6.8"/>
+      <path class="st9" d="M399.3,816.2c26.8,32.8,52.5,6.5,58.4-.5"/>
+      <path class="st14" d="M458.4,815.1c.4-.5.6-.8.6-.8"/>
+      <line class="st20" x1="363.6" y1="990.7" x2="492.4" y2="990.9"/>
+      <path class="st20" d="M364.3,892c.8,5.9-.4,99-.4,99"/>
+      <path class="st20" d="M492.2,892c-.8,5.9,0,98.8,0,98.8"/>
+      <path class="st20" d="M486.2,823.5s-7.5,49,6,69.1"/>
+      <path class="st20" d="M397.2,813.5s6.1,6.9,30.7,6.9,30.8-6.9,30.8-6.9l28,10"/>
+      <path class="st20" d="M369.6,823.5s8.4,49.1-5.2,69.3"/>
+      <line class="st20" x1="397.8" y1="813.5" x2="369.3" y2="823.7"/>
+    </g>
+    <line id="hem_indicator" class="st25" x1="364.5" y1="972.4" x2="492" y2="972.4"/>
+    <g id="line_hem">
+      <line class="st2" x1="359.3" y1="972.5" x2="359.3" y2="990"/>
+      <rect class="st27" x="357.2" y="971.9" width="4.9" height=".7"/>
+      <rect class="st27" x="357" y="989.6" width="4.9" height=".7"/>
+    </g>
+    <line class="st23" x1="427.6" y1="816.3" x2="427.4" y2="852.2"/>
+    <rect class="st22" x="425.4" y="816.2" width="4.9" height="0"/>
+    <polygon class="st22" points="425.6 852.6 430.5 852.6 430.5 852.6 425.6 852.6"/>
+    <g id="line-armhole_depth">
+      <line class="st22" x1="363" y1="825.3" x2="363" y2="890.1"/>
+      <rect class="st27" x="360.5" y="824.9" width="4.9" height=".7"/>
+      <rect class="st27" x="360.5" y="889.8" width="4.9" height=".7"/>
+    </g>
+    <ellipse id="line_bust" class="st3" cx="429.1" cy="895.6" rx="51" ry="12"/>
+    <ellipse id="line_hip" class="st17" cx="428" cy="977" rx="55.5" ry="9.9"/>
+    <g id="line_chest">
+      <line class="st22" x1="374.1" y1="861.4" x2="482.6" y2="861.3"/>
+      <rect class="st27" x="373.7" y="859.1" width=".7" height="4.9"/>
+      <rect class="st27" x="480.6" y="859.1" width=".7" height="4.9"/>
+    </g>
+    <g id="line_garment_length">
+      <line class="st22" x1="502.8" y1="817.2" x2="502.8" y2="990.9"/>
+      <rect class="st27" x="500.3" y="816.9" width="4.9" height=".7"/>
+      <rect class="st27" x="500.3" y="990.1" width="4.9" height=".7"/>
+    </g>
+    <g id="line-neck-opening">
+      <line class="st12" x1="403.1" y1="813.9" x2="454.1" y2="813.9"/>
+      <rect class="st27" x="402.6" y="811.5" width=".8" height="4.9"/>
+      <rect class="st27" x="453.6" y="811.5" width=".9" height="4.9"/>
+    </g>
+    <circle id="target_hem" class="st8" cx="352" cy="986.3" r="2.5"/>
+    <circle id="target_neck_depth" class="st8" cx="446" cy="832" r="2.5"/>
+    <circle id="target_armhole_depth" class="st8" cx="351.6" cy="856" r="2.5"/>
+    <circle id="target_bust" class="st8" cx="423.4" cy="894.1" r="2.5"/>
+    <circle id="target_hip" class="st8" cx="426.7" cy="973.3" r="2.5"/>
+    <circle id="target_chest" class="st8" cx="426.8" cy="860.2" r="2.5"/>
+    <circle id="target_garmemt_length" class="st8" cx="509.2" cy="913.9" r="2.5"/>
+    <circle id="target_neck_opening" class="st8" cx="427.3" cy="803.7" r="2.5"/>
+    <image width="433" height="469" xlink:href="pattern_summary-1.png"/>
+    <path class="st19" d="M699.9,841"/>
+    <path class="st19" d="M664.8,826.1"/>
   </g>
-  <line id="hem_indicator" class="st1" x1="48.9" y1="183.3" x2="177.2" y2="183.3"/>
-  <g id="line_hem">
-    <line class="st9" x1="43.7" y1="183.4" x2="43.7" y2="201"/>
-    <rect class="st12" x="41.5" y="182.8" width="4.9" height=".7"/>
-    <rect class="st12" x="41.3" y="200.6" width="4.9" height=".7"/>
+  <g id="sleeves">
+    <g>
+      <g id="Elbow">
+        <line class="st26" x1="1107" y1="823.7" x2="1104.2" y2="831"/>
+        <line class="st26" x1="1109.8" y1="824.3" x2="1107" y2="831.7"/>
+        <line class="st26" x1="1112.6" y1="824.9" x2="1109.7" y2="832.3"/>
+        <line class="st26" x1="1115.4" y1="825.5" x2="1112.5" y2="832.9"/>
+        <line class="st26" x1="1118" y1="826.5" x2="1115.1" y2="833.8"/>
+        <g>
+          <path class="st19" d="M1137.3,845.9l4.6-7.5c15-12.8,15.3-22,17.6-29"/>
+          <path class="st19" d="M1135.2,850.1"/>
+          <path class="st19" d="M1162.8,706.4c-6.7,2.8-61.8,92-56.9,115.5,0,0-2.6,6.3-3.8,9.1"/>
+          <path class="st0" d="M1102.2,831.1c-1,3.1,33.1,18.5,34.6,15"/>
+          <path class="st6" d="M1102.1,831.3c2.1-3.6,36.5,11.4,35,14.9"/>
+          <path class="st5" d="M1105.6,823.7c2.1-3.6,36.8,12.5,35.3,16"/>
+          <path class="st4" d="M1135.9,839.9"/>
+          <line class="st26" x1="1120.6" y1="827.7" x2="1117.4" y2="834.9"/>
+          <line class="st26" x1="1123.3" y1="828.7" x2="1119.9" y2="835.8"/>
+          <line class="st26" x1="1125.9" y1="829.7" x2="1122.5" y2="836.8"/>
+          <line class="st26" x1="1135.9" y1="835.9" x2="1132.8" y2="842"/>
+          <line class="st26" x1="1138.6" y1="837.4" x2="1135.1" y2="843.9"/>
+          <line class="st26" x1="1132.9" y1="834" x2="1129.5" y2="840.3"/>
+          <line class="st26" x1="1130.6" y1="832.5" x2="1127" y2="839.2"/>
+          <line class="st26" x1="1128.4" y1="830.6" x2="1124.5" y2="838.1"/>
+        </g>
+        <text class="st28" transform="translate(1150.4409 742.3881)"><tspan x="0" y="0">Elbow</tspan></text>
+      </g>
+      <g id="_x33_-4" class="st29">
+        <g>
+          <path class="st11" d="M1139.5,899.6l-.7-9c4.5-5.7-4-51.4-4-51.4,4.2-2.6,2.4-4.1,3-6.5,0,0,12.7-21.7,24.2-38.2"/>
+          <path class="st11" d="M1165.3,698c-9,3.5-66.8,126.8-67.3,133.9-.7,9.3-4.8,50.8,6.8,63.3,0,0,1.6,8.3,1.2,8.1"/>
+          <path class="st11" d="M1106,903.2c.6,2.9,34-.8,33.6-4.3"/>
+          <path class="st30" d="M1127.7,840.7c-2,.7-3.5,1.5-4.4,2.2-.5.3-.8.6-1,.8-.2.2-.3.3-.3.3,0,0,.1,0,.3-.2.2-.1.5-.3.8-.5.6-.4,1.4-.7,1.7-.9,1.2-.6,2.7-1.1,3.2-1.2,2.2-.8,4.6-1.4,6.9-1.8v-.6c-2.5.4-4.8,1-7.1,1.8Z"/>
+          <path class="st30" d="M1133.9,828.6c-.3-.4-.5-.8-.7-1.1-.2-.4-.2-.7,0-.8.2-.2.6-.2.9-.2.3,0,.6,0,.9,0,1,.1,1.6.2,1.6.2,0,0-2.1-.7-3-.6-.2,0-.4,0-.5.2-.2.1-.3.3-.4.6,0,.4.1.7.2,1,.3.6.5.9.7,1.1,1.3,1.8,2.9,3.4,4.1,5.2l.5-.3c-1.3-1.9-2.9-3.5-4.1-5.3Z"/>
+          <path class="st30" d="M1127.9,834.7c-.3.3-.5.9-.3,1.3.2.4.5.6.8.8.6.3,1.2.5,1.8.6,1.1.2,2.1.2,2.9.2.8,0,1.4,0,1.8-.1.4,0,.6,0,.6,0,0,0-.8,0-1.8,0-1,0-2.1-.2-2.7-.3-.9-.2-1.9-.4-2.5-.9-.3-.2-.5-.5-.4-.7,0-.2.2-.3.3-.4.5-.4,1.4-.5,2.1-.5.8,0,1.6.1,2.3.3,1.6.4,3,1.1,4.4,1.9l.3-.5c-1.4-.8-3-1.5-4.6-1.9-.8-.2-1.7-.3-2.5-.3-.8,0-1.8.1-2.5.7Z"/>
+          <path class="st11" d="M1106.3,903.7c0-3.9,33-7.2,33.4-3.7"/>
+          <path class="st11" d="M1104.9,896.3c0-3.9,33.7-7.8,34.2-4.3"/>
+          <path class="st16" d="M1139.8,894.4"/>
+          <line class="st21" x1="1106.7" y1="895.2" x2="1108" y2="902.4"/>
+          <line class="st21" x1="1109.4" y1="894.3" x2="1110.7" y2="901.6"/>
+          <line class="st21" x1="1112.1" y1="893.5" x2="1113.4" y2="900.8"/>
+          <line class="st21" x1="1114.8" y1="892.7" x2="1116.1" y2="899.9"/>
+          <line class="st21" x1="1117.5" y1="892.2" x2="1118.8" y2="899.4"/>
+          <line class="st21" x1="1120.4" y1="891.9" x2="1121.4" y2="899.2"/>
+          <line class="st21" x1="1123.3" y1="891.4" x2="1123.9" y2="898.8"/>
+          <line class="st21" x1="1126" y1="890.9" x2="1126.6" y2="898.3"/>
+          <line class="st21" x1="1136.9" y1="891" x2="1137.3" y2="898.9"/>
+          <line class="st21" x1="1134.2" y1="891.1" x2="1134.6" y2="899"/>
+          <line class="st21" x1="1131.5" y1="891" x2="1131.9" y2="898.9"/>
+          <line class="st21" x1="1128.8" y1="891.1" x2="1129.2" y2="899"/>
+        </g>
+        <g>
+          <path class="st15" d="M1145.1,952.5"/>
+          <path class="st15" d="M1111.5,957.1"/>
+          <path class="st15" d="M1144.8,950.1"/>
+          <path class="st15" d="M1110.9,954.9"/>
+        </g>
+        <text class="st28" transform="translate(1153.6236 738.5598)"><tspan x="0" y="0">3/4</tspan></text>
+      </g>
+      <g id="long" class="st29">
+        <g>
+          <g>
+            <g>
+              <path class="st19" d="M1144.2,953.4l-1-10.4c9.4-5.3-9.6-97.6-9.6-97.6,4.2-2.8,2.4-4.4,3-6.9,0,0,12.7-23.2,24.2-40.7"/>
+              <path class="st19" d="M1164.1,694.8c-9,3.8-66.8,135.3-67.3,142.9-.7,10.4-.2,111.1,12.4,109.8l1.4,10.5"/>
+              <g>
+                <path class="st31" d="M1126.4,847.1c-2,.8-3.5,1.6-4.4,2.4-.5.4-.8.6-1,.9-.2.2-.3.3-.3.3,0,0,.1,0,.3-.2.2-.1.5-.3.8-.5.6-.4,1.4-.7,1.7-.9,1.2-.6,2.7-1.1,3.2-1.3,2.2-.8,4.6-1.5,6.9-1.9v-.6c-2.5.5-4.9,1.1-7.2,2Z"/>
+                <path class="st31" d="M1132.7,834.3c-.3-.4-.5-.8-.7-1.2-.2-.4-.3-.8-.1-.9.2-.2.5-.2.8-.2.3,0,.6,0,.9,0,1.1.1,1.7.2,1.7.2,0,0-2.2-.8-3.1-.6-.2,0-.4.1-.6.3-.2.2-.3.4-.2.6,0,.4.1.7.3,1,.3.6.5,1,.7,1.2,1.3,1.9,2.8,3.6,4.1,5.5l.5-.3c-1.3-2-2.8-3.7-4.1-5.6Z"/>
+                <path class="st31" d="M1126.6,840.7c-.3.3-.5.9-.3,1.3.2.4.5.7.8.9.6.4,1.2.5,1.8.7,1.1.2,2.1.3,2.9.2.8,0,1.4,0,1.8-.1.4,0,.6,0,.6,0,0,0-.8,0-1.8,0-1,0-2.1-.2-2.7-.3-.9-.2-1.9-.5-2.5-1-.7-.5-.3-1-.1-1.1.5-.4,1.4-.6,2.1-.6.8,0,1.6.1,2.4.3,1.6.4,3,1.1,4.4,2l.3-.5c-1.4-.9-3-1.6-4.6-2.1-.8-.2-1.7-.4-2.5-.3-.9,0-1.8.1-2.5.8Z"/>
+              </g>
+            </g>
+            <g>
+              <path class="st15" d="M1143.9,949.3"/>
+              <path class="st15" d="M1110.2,953.9"/>
+              <path class="st15" d="M1143.5,946.9"/>
+              <path class="st15" d="M1109.6,951.7"/>
+            </g>
+          </g>
+          <g>
+            <path class="st19" d="M1110.4,957c.6,3.1,34-.8,33.6-4.6"/>
+            <path class="st19" d="M1110.6,957.5c0-4.2,33-7.7,33.4-4"/>
+            <path class="st19" d="M1109.2,949.6c0-4.2,33.7-8.4,34.2-4.6"/>
+            <path class="st4" d="M1144.2,947.6"/>
+            <line class="st26" x1="1111" y1="948.4" x2="1112.3" y2="956.2"/>
+            <line class="st26" x1="1113.7" y1="947.5" x2="1115" y2="955.3"/>
+            <line class="st26" x1="1116.4" y1="946.6" x2="1117.7" y2="954.4"/>
+            <line class="st26" x1="1119.1" y1="945.7" x2="1120.5" y2="953.5"/>
+            <line class="st26" x1="1121.9" y1="945.2" x2="1123.2" y2="953"/>
+            <line class="st26" x1="1124.7" y1="944.9" x2="1125.7" y2="952.7"/>
+            <line class="st26" x1="1127.6" y1="944.4" x2="1128.3" y2="952.3"/>
+            <line class="st26" x1="1130.3" y1="943.9" x2="1131" y2="951.8"/>
+            <line class="st26" x1="1141.2" y1="944" x2="1141.7" y2="952.4"/>
+            <line class="st26" x1="1138.5" y1="944" x2="1139" y2="952.5"/>
+            <line class="st26" x1="1135.8" y1="944" x2="1136.3" y2="952.4"/>
+            <line class="st26" x1="1133.1" y1="944" x2="1133.6" y2="952.5"/>
+          </g>
+        </g>
+        <text class="st28" transform="translate(1150.384 739.5168)"><tspan x="0" y="0">Long</tspan></text>
+      </g>
+      <g id="short" class="st29">
+        <g>
+          <path class="st19" d="M1168.1,788.6c2.2-3.8,4-7.1,4.5-8.9"/>
+          <path class="st19" d="M1154.2,791.5"/>
+          <path class="st19" d="M1165.2,700.4c-4.2,1.7-32.7,36-31.1,59.9,0,0-2.5,5.4-3.7,8.2"/>
+          <path class="st13" d="M1130,768.9c-1.3,3.1,35.8,22.9,37.7,19.4"/>
+          <path class="st10" d="M1129.8,769.2c2.6-3.6,40,15.7,38.1,19.2"/>
+          <path class="st7" d="M1133.6,761.5c2.8-4,40.5,15.9,38.4,19.8"/>
+          <path class="st1" d="M1166.5,781"/>
+          <line class="st24" x1="1135.9" y1="761.4" x2="1132.2" y2="769.1"/>
+          <line class="st24" x1="1138.9" y1="762.3" x2="1135.2" y2="769.9"/>
+          <line class="st24" x1="1142" y1="763.2" x2="1138.2" y2="770.8"/>
+          <line class="st24" x1="1145" y1="764" x2="1141.3" y2="771.7"/>
+          <line class="st24" x1="1147.8" y1="765.2" x2="1144.1" y2="772.9"/>
+          <line class="st24" x1="1150.6" y1="766.7" x2="1146.5" y2="774.2"/>
+          <line class="st24" x1="1153.5" y1="768.1" x2="1149.1" y2="775.4"/>
+          <line class="st24" x1="1156.3" y1="769.3" x2="1151.9" y2="776.6"/>
+          <line class="st24" x1="1166.8" y1="776.7" x2="1162.9" y2="783"/>
+          <line class="st24" x1="1169.6" y1="778.5" x2="1165.3" y2="785.2"/>
+          <line class="st24" x1="1163.6" y1="774.4" x2="1159.4" y2="780.9"/>
+          <line class="st24" x1="1161.2" y1="772.7" x2="1156.7" y2="779.6"/>
+          <line class="st24" x1="1159" y1="770.5" x2="1154" y2="778.2"/>
+          <line class="st24" x1="1171.4" y1="780.4" x2="1167.1" y2="787"/>
+        </g>
+        <text class="st28" transform="translate(1148.877 738.4622)"><tspan x="0" y="0">Short</tspan></text>
+      </g>
+    </g>
   </g>
-  <line class="st0" x1="112.4" y1="26.2" x2="112.2" y2="62.3"/>
-  <rect class="st10" x="110.2" y="26.1" width="4.9" height=".1"/>
-  <rect class="st10" x="110.4" y="62.7" width="4.9" height="0"/>
-  <g id="line-armhole_depth">
-    <line class="st10" x1="47.4" y1="35.2" x2="47.4" y2="100.5"/>
-    <rect class="st12" x="44.9" y="34.8" width="4.9" height=".7"/>
-    <rect class="st12" x="44.9" y="100.1" width="4.9" height=".7"/>
-  </g>
-  <ellipse id="line_bust" class="st3" cx="113.9" cy="106" rx="51.3" ry="12.1"/>
-  <ellipse id="line_hip" class="st2" cx="112.8" cy="187.9" rx="55.9" ry="10"/>
-  <g id="line_chest">
-    <line class="st10" x1="58.6" y1="71.6" x2="167.8" y2="71.5"/>
-    <rect class="st12" x="58.2" y="69.2" width=".7" height="4.9"/>
-    <rect class="st12" x="165.8" y="69.2" width=".7" height="4.9"/>
-  </g>
-  <g id="line_garment_length">
-    <line class="st10" x1="188.1" y1="27.1" x2="188.1" y2="201.9"/>
-    <rect class="st12" x="185.6" y="26.8" width="4.9" height=".7"/>
-    <rect class="st12" x="185.6" y="201.1" width="4.9" height=".7"/>
-  </g>
-  <g id="line-neck-opening">
-    <line class="st11" x1="87.7" y1="23.7" x2="139.1" y2="23.7"/>
-    <rect class="st12" x="87.2" y="21.3" width=".8" height="4.9"/>
-    <rect class="st12" x="138.6" y="21.3" width=".9" height="4.9"/>
-  </g>
-  <circle id="target_hem" class="st4" cx="36.3" cy="197.3" r="2.5"/>
-  <circle id="target_neck_depth" class="st4" cx="130.9" cy="42" r="2.5"/>
-  <circle id="target_armhole_depth" class="st4" cx="35.9" cy="66.1" r="2.5"/>
-  <circle id="target_bust" class="st4" cx="108.2" cy="104.5" r="2.5"/>
-  <circle id="target_hip" class="st4" cx="111.5" cy="184.2" r="2.5"/>
-  <circle id="target_chest" class="st4" cx="111.6" cy="70.3" r="2.5"/>
-  <circle id="target_garmemt_length" class="st4" cx="194.6" cy="124.4" r="2.5"/>
-  <circle id="target_neck_opening" class="st4" cx="112.1" cy="13.5" r="2.5"/>
 </svg>

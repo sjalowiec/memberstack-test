@@ -493,11 +493,11 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
 
     // Columns to exclude from sweater charts
     const EXCLUDED_COLUMNS = {
-      sweaters_men: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'garment_back_length', 'hip', 'sleeve_length'],
-      sweaters_misses: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'garment_back_length', 'hip', 'sleeve_length'],
-      sweaters_plus: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'garment_back_length', 'hip', 'sleeve_length'],
-      sweaters_kids: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'garment_back_length', 'hip', 'sleeve_length'],
-      sweaters_baby: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'garment_back_length', 'hip', 'sleeve_length']
+      sweaters_men: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'hip', 'sleeve_length'],
+      sweaters_misses: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'hip', 'sleeve_length'],
+      sweaters_plus: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'hip', 'sleeve_length'],
+      sweaters_kids: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'hip', 'sleeve_length'],
+      sweaters_baby: ['head_circumference', 'head circumference', 'foot_circumference', 'foot circumference', 'foot_length', 'sleeve_cap', 'raglan_depth', 'raglan_sleeve_top', 'waist', 'hip', 'sleeve_length']
     };
 
     // Custom header mappings for specific chart types
@@ -522,6 +522,11 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
 
     // Format label for display
     function formatLabel(key, chartType = null) {
+      // Finished garment length (stored as garment_back_length) shown to knitters as "Back neck to hem".
+      if (key === 'garment_back_length') {
+        return 'Back neck to hem';
+      }
+
       // Check if there's a custom header for this chart type and key
       if (chartType && customHeaders[chartType] && customHeaders[chartType][key]) {
         return customHeaders[chartType][key];

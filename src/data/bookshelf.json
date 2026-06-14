@@ -9,7 +9,7 @@
     "descriptionText": "A collection of bands, edges, trims, starts and finishes for all Japanese machines. 29 single bed and 21 double bed treatments, lots of techniques!",
     "thumbnail": "/images/books/50 ways.jpg",
     "image": "/images/books/50 ways.jpg",
-    "url": "http://www.knitwords.com/home.html",
+    "url": "",
     "tags": [
       "Fabric/Surface Design",
       "General Reference",
@@ -30,7 +30,7 @@
     "image": "/images/books/image16.jpg",
     "url": "https://amzn.to/3NmluTL",
     "tags": [
-      "charting",
+      "Charting",
       "Finishing",
       "Patterns",
       "Techniques"
@@ -137,7 +137,7 @@
     "image": "/images/books/abc.jpg",
     "url": "1",
     "tags": [
-      "charting",
+      "Charting",
       "General Reference"
     ],
     "avgRating": 4.5,
@@ -154,9 +154,7 @@
     "thumbnail": "/images/books/hood.jpg",
     "image": "/images/books/hood.jpg",
     "url": "https://www.knititnow.com/store/product/728/add-a-hood-to-any-knitting-pattern/digitialdownload",
-    "tags": [
-      "NULL"
-    ],
+    "tags": [],
     "avgRating": 5,
     "ratingCount": 2
   },
@@ -171,9 +169,7 @@
     "thumbnail": "/images/books/adventures-with-color-helen-griffiths.jpg",
     "image": "/images/books/adventures-with-color-helen-griffiths.jpg",
     "url": "",
-    "tags": [
-      "NULL"
-    ],
+    "tags": [],
     "avgRating": 0,
     "ratingCount": 0
   },
@@ -207,7 +203,7 @@
     "url": "",
     "tags": [
       "Fabric/Surface Design",
-      "charting",
+      "Charting",
       "Patterns"
     ],
     "avgRating": 0,
@@ -399,11 +395,12 @@
     "topic": "",
     "description": "",
     "descriptionText": "",
-    "thumbnail": "",
-    "image": "",
+    "thumbnail": "/images/books/cardigan_renaissance.jpg",
+    "image": "/images/books/cardigan_renaissance.jpg",
     "url": "",
     "tags": [
-      "NULL"
+      "Patterns",
+      "Garter Carriage"
     ],
     "avgRating": 0,
     "ratingCount": 0
@@ -437,7 +434,7 @@
     "image": "/images/books/chart_rite_jpg.jpg",
     "url": "https://amzn.to/3OUDk1L",
     "tags": [
-      "charting"
+      "Charting"
     ],
     "avgRating": 0,
     "ratingCount": 0
@@ -471,7 +468,7 @@
     "image": "/images/books/image15.jpg",
     "url": "",
     "tags": [
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Patterns",
@@ -596,7 +593,7 @@
     "url": "",
     "tags": [
       "Fabric/Surface Design",
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Patterns",
@@ -616,9 +613,7 @@
     "thumbnail": "/images/books/pencil_skirt.jpg",
     "image": "/images/books/pencil_skirt.jpg",
     "url": "https://www.knititnow.com/store/product/524/designer-pencil-skirts-for-machine-knitters/digitialdownload",
-    "tags": [
-      "NULL"
-    ],
+    "tags": [],
     "avgRating": 0,
     "ratingCount": 0
   },
@@ -634,7 +629,7 @@
     "image": "/images/books/Designing Garments on the Knitting machine.jpg",
     "url": "https://amzn.to/3vJ30cD",
     "tags": [
-      "charting",
+      "Charting",
       "General Reference",
       "Patterns",
       "Techniques"
@@ -744,7 +739,7 @@
     "url": "",
     "tags": [
       "Fabric/Surface Design",
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Machine Manual",
@@ -821,7 +816,7 @@
     "url": "https://amzn.to/3wsHEhx",
     "tags": [
       "Fabric/Surface Design",
-      "charting",
+      "Charting",
       "Patterns",
       "Techniques"
     ],
@@ -893,7 +888,7 @@
     "image": "/images/books/image14.jpg",
     "url": "",
     "tags": [
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Machine Manual",
@@ -915,7 +910,7 @@
     "image": "/images/books/image13.jpg",
     "url": "",
     "tags": [
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Machine Manual",
@@ -937,7 +932,7 @@
     "image": "/images/books/image5.jpg",
     "url": "",
     "tags": [
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Machine Manual",
@@ -959,7 +954,7 @@
     "image": "/images/books/image25.jpg",
     "url": "",
     "tags": [
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Patterns",
@@ -1067,7 +1062,7 @@
     "url": "https://amzn.to/3LuIVc4",
     "tags": [
       "Fabric/Surface Design",
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Patterns",
@@ -1123,7 +1118,7 @@
     "image": "/images/books/how_to_chart.jpg",
     "url": "",
     "tags": [
-      "charting"
+      "Charting"
     ],
     "avgRating": 0,
     "ratingCount": 0
@@ -1369,12 +1364,8 @@
     "descriptionText": "This compilation of 26 single bed and 24 double bed bands, edges, trims starts and finishes has been put together in a workbook style presentation just as they were in 50 Ways To Love Your Knitter. The majority of trims in this collection, like its cousin (50 Ways) can be used in virtually any yarn and on any gauge machine. While Mary Anne doesn't claim total originality with all the edges, the majority of them are the result of her own experiments. Many are brand new and several are the result of working with Passap patterns with Knitwords magazine.",
     "thumbnail": "/images/books/knitting_on_the_edge.jpg",
     "image": "/images/books/knitting_on_the_edge.jpg",
-    "url": "http://www.knitwords.com/home.html",
-    "tags": [
-      "Fabric/Surface Design",
-      "General Reference",
-      "Techniques"
-    ],
+    "url": "",
+    "tags": [],
     "avgRating": 0,
     "ratingCount": 0
   },
@@ -1462,7 +1453,7 @@
     "image": "/images/books/image42.jpg",
     "url": "",
     "tags": [
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Patterns"
@@ -1499,7 +1490,7 @@
     "image": "/images/books/image32.jpg",
     "url": "https://amzn.to/3PIakeg",
     "tags": [
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Patterns",
@@ -1520,7 +1511,7 @@
     "image": "/images/books/image.jpg",
     "url": "https://amzn.to/38AzJ8H",
     "tags": [
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Machine Manual",
@@ -1561,9 +1552,7 @@
     "thumbnail": "/images/books/needs_image6.jpg",
     "image": "/images/books/needs_image6.jpg",
     "url": "",
-    "tags": [
-      "NULL"
-    ],
+    "tags": [],
     "avgRating": 0,
     "ratingCount": 0
   },
@@ -1578,9 +1567,7 @@
     "thumbnail": "/images/books/trims_edges2.jpg",
     "image": "/images/books/trims_edges2.jpg",
     "url": "https://www.knititnow.com/store/product/502/machine-knitting-trims-and-edges-double-bed/digitialdownload",
-    "tags": [
-      "NULL"
-    ],
+    "tags": [],
     "avgRating": 4,
     "ratingCount": 1
   },
@@ -1595,9 +1582,7 @@
     "thumbnail": "/images/books/trims_edges.jpg",
     "image": "/images/books/trims_edges.jpg",
     "url": "https://www.knititnow.com/store/product/505/machine-knitting-trims-and-edges-single-bed/digitialdownload",
-    "tags": [
-      "NULL"
-    ],
+    "tags": [],
     "avgRating": 4.5,
     "ratingCount": 2
   },
@@ -1612,9 +1597,7 @@
     "thumbnail": "/images/books/BookMakeYourKMSing.jpg",
     "image": "/images/books/BookMakeYourKMSing.jpg",
     "url": "https://store.dknits.com/pd-make-your-knitting-machine-sing.cfm",
-    "tags": [
-      "NULL"
-    ],
+    "tags": [],
     "avgRating": 5,
     "ratingCount": 1
   },
@@ -1699,7 +1682,7 @@
     "image": "/images/books/image20.jpg",
     "url": "",
     "tags": [
-      "charting",
+      "Charting",
       "Patterns",
       "Techniques"
     ],
@@ -1718,7 +1701,7 @@
     "image": "/images/books/image51.jpg",
     "url": "",
     "tags": [
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Patterns",
@@ -1808,9 +1791,7 @@
     "thumbnail": "/images/books/PassapBandsCover.jpg",
     "image": "/images/books/PassapBandsCover.jpg",
     "url": "https://store.dknits.com/pd_passap_neckline_book.cfm",
-    "tags": [
-      "NULL"
-    ],
+    "tags": [],
     "avgRating": 5,
     "ratingCount": 1
   },
@@ -1946,7 +1927,7 @@
     "url": "",
     "tags": [
       "Fabric/Surface Design",
-      "charting",
+      "Charting",
       "Finishing",
       "Patterns"
     ],
@@ -2107,7 +2088,7 @@
     "image": "/images/books/image26.jpg",
     "url": "",
     "tags": [
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Patterns",
@@ -2145,7 +2126,7 @@
     "image": "/images/books/5C18FA5E-C9BD-4407-BE4D-B724B4AC5AA0.jpeg",
     "url": "https://amzn.to/38zIG2e",
     "tags": [
-      "charting",
+      "Charting",
       "Patterns",
       "Techniques"
     ],
@@ -2164,7 +2145,7 @@
     "image": "/images/books/image36.jpg",
     "url": "",
     "tags": [
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Machine Manual",
@@ -2187,7 +2168,7 @@
     "url": "",
     "tags": [
       "Fabric/Surface Design",
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Patterns",
@@ -2293,7 +2274,7 @@
     "image": "/images/books/D861D9C4-760F-41DD-AE73-6B4CE79CBA36.jpeg",
     "url": "",
     "tags": [
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Patterns",
@@ -2314,7 +2295,7 @@
     "image": "/images/books/8C8D2B45-5CB8-4083-86B8-05E237BDA8D5.jpeg",
     "url": "",
     "tags": [
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Patterns",
@@ -2335,7 +2316,7 @@
     "image": "/images/books/7D591AB9-778F-4181-A71A-846A5267D8A7.jpeg",
     "url": "",
     "tags": [
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Patterns",
@@ -2356,7 +2337,7 @@
     "image": "/images/books/arachitect2.jpg",
     "url": "https://amzn.to/3kA4z3V",
     "tags": [
-      "charting"
+      "Charting"
     ],
     "avgRating": 5,
     "ratingCount": 1
@@ -2406,9 +2387,7 @@
     "thumbnail": "/images/books/the-double-bed.jpg",
     "image": "/images/books/the-double-bed.jpg",
     "url": "",
-    "tags": [
-      "NULL"
-    ],
+    "tags": [],
     "avgRating": 0,
     "ratingCount": 0
   },
@@ -2442,7 +2421,7 @@
     "image": "/images/books/image31.jpg",
     "url": "",
     "tags": [
-      "charting",
+      "Charting",
       "Patterns",
       "Techniques"
     ],
@@ -2460,9 +2439,7 @@
     "thumbnail": "/images/books/the garter bar.jpg",
     "image": "/images/books/the garter bar.jpg",
     "url": "",
-    "tags": [
-      "NULL"
-    ],
+    "tags": [],
     "avgRating": 0,
     "ratingCount": 0
   },
@@ -2535,7 +2512,7 @@
     "url": "https://amzn.to/3MBMGOE",
     "tags": [
       "Fabric/Surface Design",
-      "charting",
+      "Charting",
       "Techniques"
     ],
     "avgRating": 5,
@@ -2552,9 +2529,7 @@
     "thumbnail": "/images/books/965.jpg",
     "image": "/images/books/965.jpg",
     "url": "",
-    "tags": [
-      "NULL"
-    ],
+    "tags": [],
     "avgRating": 0,
     "ratingCount": 0
   },
@@ -2587,7 +2562,7 @@
     "image": "/images/books/knitters guide.jpg",
     "url": "https://amzn.to/3kOPtHH",
     "tags": [
-      "charting"
+      "Charting"
     ],
     "avgRating": 5,
     "ratingCount": 2
@@ -2621,7 +2596,7 @@
     "image": "/images/books/architect1.jpg",
     "url": "https://amzn.to/3vEIPtV",
     "tags": [
-      "charting"
+      "Charting"
     ],
     "avgRating": 4,
     "ratingCount": 1
@@ -2744,7 +2719,7 @@
     "url": "https://amzn.to/3NilzrJ",
     "tags": [
       "Fabric/Surface Design",
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Patterns",
@@ -2890,7 +2865,7 @@
     "url": "https://amzn.to/3yJ02UR",
     "tags": [
       "Fabric/Surface Design",
-      "charting",
+      "Charting",
       "Finishing",
       "Patterns",
       "Techniques"
@@ -2947,7 +2922,7 @@
     "image": "/images/books/download.jpeg",
     "url": "https://amzn.to/3lmyGfA",
     "tags": [
-      "charting",
+      "Charting",
       "General Reference",
       "Techniques"
     ],
@@ -2966,7 +2941,7 @@
     "image": "/images/books/image37.jpg",
     "url": "",
     "tags": [
-      "charting",
+      "Charting",
       "Patterns"
     ],
     "avgRating": 4,
@@ -3001,7 +2976,7 @@
     "image": "/images/books/image4.jpg",
     "url": "https://amzn.to/3a0PAxH",
     "tags": [
-      "charting",
+      "Charting",
       "Finishing",
       "General Reference",
       "Techniques"
@@ -3020,9 +2995,7 @@
     "thumbnail": "/images/books/tones and shades.jpeg",
     "image": "/images/books/tones and shades.jpeg",
     "url": "",
-    "tags": [
-      "NULL"
-    ],
+    "tags": [],
     "avgRating": 0,
     "ratingCount": 0
   },
@@ -3039,7 +3012,7 @@
     "url": "",
     "tags": [
       "Fabric/Surface Design",
-      "charting",
+      "Charting",
       "Finishing",
       "Patterns",
       "Techniques"
@@ -3077,7 +3050,7 @@
     "url": "https://amzn.to/3SnJqeW",
     "tags": [
       "Fabric/Surface Design",
-      "charting",
+      "Charting",
       "General Reference",
       "Patterns",
       "Techniques"
