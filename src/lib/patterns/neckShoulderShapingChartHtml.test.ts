@@ -553,3 +553,48 @@ describe("second shoulder checklist carriage", () => {
     expectStrictAlternatingCarriage(parseSecondShoulderChecklistFromHtml(html), 29, 43);
   });
 });
+
+describe("Japanese Notation Quick Reference preview (renderActiveShoulderChartIntroHtml)", () => {
+  const baseOpts = {
+    wrapperClass: "pattern-shaping-intro",
+    layout: "labeled" as const,
+    localStartRcLabel: "RC:050",
+    centerBindOffStitches: 6,
+    includeWorkflowSteps: true,
+  };
+
+  it("omits the preview card by default (print/PDF unaffected)", () => {
+    const html = renderActiveShoulderChartIntroHtml(baseOpts);
+    expect(html).not.toContain("ns-jp-preview");
+    expect(html).not.toContain("data-neckline-notation-preview-trigger");
+    expect(html).not.toContain("ns-shaping-intro--with-preview");
+  });
+
+  it("renders the front preview card wired to the front piece", () => {
+    const html = renderActiveShoulderChartIntroHtml({ ...baseOpts, notationPreview: "front" });
+    expect(html).toContain("ns-shaping-intro--with-preview");
+    expect(html).toContain('data-neckline-notation-preview-trigger="front"');
+    expect(html).toContain("diagram-jp-front-preview.svg");
+    expect(html).toContain("Japanese Notation Quick Reference");
+    expect(html).toContain("Click to enlarge");
+    // Keyboard-accessible button + aria label + magnifying-glass overlay + excluded from print.
+    expect(html).toMatch(/<button[^>]*data-neckline-notation-preview-trigger="front"/);
+    expect(html).toContain('aria-label="Open Japanese notation quick reference"');
+    expect(html).toContain("fa-magnifying-glass");
+    expect(html).toContain('class="ns-jp-preview no-print"');
+    // Existing instructions still present alongside the preview.
+    expect(html).toContain("Before Shaping");
+    expect(html).toContain("Divide the Neckline");
+  });
+
+  it("renders the back preview card wired to the back piece (back asset, not front)", () => {
+    const html = renderActiveShoulderChartIntroHtml({ ...baseOpts, notationPreview: "back" });
+    expect(html).toContain("ns-shaping-intro--with-preview");
+    expect(html).toContain('data-neckline-notation-preview-trigger="back"');
+    expect(html).toContain("diagram-jp-back-preview.svg");
+    expect(html).not.toContain("diagram-jp-front-preview.svg");
+    expect(html).toContain('aria-label="Open Japanese notation quick reference"');
+    expect(html).toContain("fa-magnifying-glass");
+    expect(html).toContain('class="ns-jp-preview no-print"');
+  });
+});

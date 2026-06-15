@@ -92,7 +92,7 @@ describe("neckShoulderActiveIntroCopy", () => {
   it("omits round-neck center divide when center bind-off is zero and chart is not V-neck front", () => {
     expect(activeShoulderCenterDivideIntroApplies(0)).toBe(false);
     expect(activeShoulderIntroPlainParagraphs({ centerBindOffStitches: 0 })).toEqual([
-      "Follow the chart row by row for the active shoulder. Then return the held stitches to the machine and repeat the shaping sequence for the second shoulder.",
+      "Follow the checklist row by row for the first shoulder. Then return the held stitches to the machine and repeat the shaping sequence for the second shoulder.",
     ]);
   });
 
@@ -262,7 +262,7 @@ describe("renderActiveShoulderChartIntroHtml", () => {
     expect(html).toMatch(/decreases along the neck edge/i);
     expect(html).not.toMatch(/scrap off the center/i);
     expect(html).not.toMatch(/bind off the center/i);
-    expect(html).toContain("Follow the chart row by row");
+    expect(html).toContain("Follow the checklist row by row");
     expect(html).toContain("work one shoulder at a time");
   });
 

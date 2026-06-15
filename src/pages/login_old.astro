@@ -7,12 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login</title>
 
-    <!-- Memberstack v2 -->
-    <script
-      data-memberstack-app="app_cmfh3d1n802vb0wy706205810"
-      src="https://static.memberstack.com/scripts/v2/memberstack.js"
-      type="text/javascript">
-    </script>
+    <!--
+      Legacy page (not in the live nav). The Memberstack script was removed here so
+      the live app id lives ONLY in src/layouts/BaseLayout.astro and can't be
+      accidentally reused. This page's data-ms-* forms are inert without it.
+    -->
 
     <style>
       body { font-family: system-ui, sans-serif; padding: 40px; background: #f7f7f7; }

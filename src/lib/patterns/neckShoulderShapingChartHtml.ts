@@ -226,7 +226,60 @@ export type ActiveShoulderChartIntroOptions = {
    * rendering are unchanged (no calculations, row/stitch counts, or table behavior change).
    */
   includeWorkflowSteps?: boolean;
+  /**
+   * Online front/back chart only. When set to `"front"` or `"back"`, a quiet "Japanese Notation
+   * Quick Reference" preview card is placed beside the intro instructions. Clicking it opens that
+   * piece's existing Shaping Notation diagram modal (handled in the page script). Off by default so
+   * print/PDF are unchanged.
+   */
+  notationPreview?: NotationPreviewPiece;
 };
+
+export type NotationPreviewPiece = "front" | "back";
+
+/** Static, token-free cropped teaser of each piece's shaping notation chart (decorative preview only). */
+export const JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC = {
+  front: "/images/patterns/sleeveless/diagrams/diagram-jp-front-preview.svg",
+  back: "/images/patterns/sleeveless/diagrams/diagram-jp-back-preview.svg",
+} as const;
+
+/**
+ * Quiet, keyboard-accessible preview card. Carries `data-neckline-notation-preview-trigger="<piece>"`
+ * so the page script opens that piece's existing Shaping Notation diagram modal (no second modal
+ * system).
+ */
+function necklineNotationPreviewCardHtml(piece: NotationPreviewPiece): string {
+  const previewSrc = JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC[piece];
+  return `<aside class="ns-jp-preview no-print">
+  <button type="button" class="ns-jp-preview__btn" data-neckline-notation-preview-trigger="${escapeHtml(piece)}" aria-label="Open Japanese notation quick reference">
+    <span class="ns-jp-preview__title">Japanese Notation Quick Reference</span>
+    <span class="ns-jp-preview__crop">
+      <img class="ns-jp-preview__img" src="${escapeHtml(previewSrc)}" alt="" loading="lazy" aria-hidden="true" />
+      <span class="ns-jp-preview__zoom" aria-hidden="true"><i class="fa-solid fa-magnifying-glass"></i></span>
+    </span>
+    <span class="ns-jp-preview__caption">Click to enlarge</span>
+  </button>
+</aside>`;
+}
+
+/** Wraps the intro content, adding the right-side notation preview for the given piece when set. */
+function wrapActiveShoulderChartIntroHtml(
+  wrappedClass: string,
+  innerHtml: string,
+  notationPreview: NotationPreviewPiece | undefined,
+): string {
+  if (notationPreview === "front" || notationPreview === "back") {
+    return `<div class="${escapeHtml(wrappedClass)} ns-shaping-intro--with-preview">
+  <div class="ns-shaping-intro__main">
+  ${innerHtml}
+  </div>
+  ${necklineNotationPreviewCardHtml(notationPreview)}
+</div>`;
+  }
+  return `<div class="${escapeHtml(wrappedClass)}">
+  ${innerHtml}
+</div>`;
+}
 
 function scrapOffGlossaryPlaceholderHtml(): string {
   return buildGlossaryTooltipPlaceholderHtml(
@@ -346,9 +399,11 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
       );
     }
     innerParts.push(`<p>${escapeHtml(CARDIGAN_FRONT_SHAPING_TOGETHER_SENTENCE)}</p>`);
-    return `<div class="${escapeHtml(wrappedClass)}">
-  ${innerParts.join("\n  ")}
-</div>`;
+    return wrapActiveShoulderChartIntroHtml(
+      wrappedClass,
+      innerParts.join("\n  "),
+      options.notationPreview,
+    );
   }
 
   const vNeckDivide = activeShoulderIntroUsesVNeckDivideCopy(options.chart);
@@ -392,9 +447,7 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
   innerParts.push(`<p>${escapeHtml(ACTIVE_SHOULDER_CHART_INTRO_SENTENCE)}</p>`);
   const inner = innerParts.join("\n  ");
 
-  return `<div class="${escapeHtml(wrappedClass)}">
-  ${inner}
-</div>`;
+  return wrapActiveShoulderChartIntroHtml(wrappedClass, inner, options.notationPreview);
 }
 
 /**

@@ -469,8 +469,15 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
    * @param {string | undefined} startRowLabel Armhole RC at center bind-off (chart row 0), e.g. `RC:117`.
    * @param {import("../lib/patterns/neckShoulderShapingChart").NeckShoulderShapingChart | undefined} chart
    * @param {'back' | 'front'} _piece Reserved for callers (back vs front); shared tip markup for both.
+   * @param {boolean} [showNotationPreview] When true (front/back + notation supported), adds the
+   *   quiet "Japanese Notation Quick Reference" preview card beside the intro for that piece (opens
+   *   the existing per-piece Shaping Notation modal).
    */
-  function neckShoulderChartHelpRowHtml(startRowLabel, chart, _piece) {
+  function neckShoulderChartHelpRowHtml(startRowLabel, chart, _piece, showNotationPreview) {
+    const notationPreviewPiece =
+      showNotationPreview === true && (_piece === "front" || _piece === "back")
+        ? _piece
+        : undefined;
     const intro = renderActiveShoulderChartIntroHtml({
       localStartRcLabel: String(startRowLabel ?? "").trim(),
       centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(chart),
@@ -478,6 +485,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       wrapperClass: "pattern-shaping-intro",
       layout: "labeled",
       includeWorkflowSteps: true,
+      notationPreview: notationPreviewPiece,
     });
     const necklineTipVideoButtons = `<div class="pattern-finishing-video-help__links sleeveless-neckline-tip__video-links">
   <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="roundNeckShaping" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Round neck shaping</button>
@@ -1722,6 +1730,76 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     });
   }
 
+  /**
+   * Opens the existing Shaping Notation diagram modal for the given piece ("front" or "back") from
+   * the neckline checklist preview card. Reuses that piece's sidebar diagram + modal (no second
+   * modal system): switches it to Shaping Notation mode if needed, then opens the already-bound
+   * enlarge trigger once the notation SVG has inlined. Fails silently if the diagram/trigger is
+   * unavailable.
+   * @param {ParentNode | null} root
+   * @param {'front' | 'back'} piece
+   */
+  function openShapingNotationFromPreview(root, piece) {
+    if (!root) return;
+    const sectionId = piece === "back" ? "#sg-back" : "#sg-front";
+    const modeBtnAttr =
+      piece === "back"
+        ? "data-sleeveless-back-diagram-mode-btn"
+        : "data-sleeveless-front-diagram-mode-btn";
+    const hostAttr =
+      piece === "back" ? "data-sleeveless-back-diagram" : "data-sleeveless-front-diagram";
+    const hostModeKey =
+      piece === "back" ? "sleevelessBackDiagramMode" : "sleevelessFrontDiagramMode";
+
+    const section = root.querySelector(sectionId);
+    if (!section) return;
+    const trigger = section.querySelector("[data-sleeveless-diagram-trigger]");
+    if (!(trigger instanceof HTMLElement)) return;
+
+    const host = section.querySelector(`[${hostAttr}]`);
+    const alreadyNotation =
+      host instanceof HTMLElement && host.dataset[hostModeKey] === "shaping-notation";
+    if (!alreadyNotation) {
+      const modeBtn = section.querySelector(`[${modeBtnAttr}="shaping-notation"]`);
+      if (modeBtn instanceof HTMLElement) {
+        modeBtn.click();
+      }
+    }
+
+    let attempts = 0;
+    const maxAttempts = 60;
+    const waitAndOpen = () => {
+      const svg = trigger.querySelector(".sleeveless-piece-split__diagram-inline");
+      const isNotation =
+        svg instanceof SVGElement &&
+        /shaping\s+notation/i.test(svg.getAttribute("aria-label") || "");
+      if (isNotation) {
+        openSleevelessDiagramModal(trigger);
+        return;
+      }
+      if (++attempts > maxAttempts) return;
+      window.setTimeout(waitAndOpen, 50);
+    };
+    waitAndOpen();
+  }
+
+  function bindNecklineNotationPreview(root) {
+    if (!root || root.dataset.necklineNotationPreviewBound === "true") return;
+    root.dataset.necklineNotationPreviewBound = "true";
+    root.addEventListener("click", (e) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      const card = target.closest("[data-neckline-notation-preview-trigger]");
+      if (!(card instanceof HTMLElement)) return;
+      e.preventDefault();
+      const piece =
+        card.getAttribute("data-neckline-notation-preview-trigger") === "back"
+          ? "back"
+          : "front";
+      openShapingNotationFromPreview(root, piece);
+    });
+  }
+
   function bindSleevelessVideoHelp(root) {
     if (!root || root.dataset.sleevelessVideoHelpBound === "true") return;
     root.dataset.sleevelessVideoHelpBound = "true";
@@ -2608,7 +2686,7 @@ table {
       backChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
-        neckShoulderChartHelpRowHtml(`RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`, result?.neckShoulderShapingChart, "back"),
+        neckShoulderChartHelpRowHtml(`RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`, result?.neckShoulderShapingChart, "back", backNotationSupported),
         {
           activeSideOnly: true,
           activeSideRcStart: backActiveSideRcStart,
@@ -2626,7 +2704,8 @@ table {
         neckShoulderChartHelpRowHtml(
           `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
           result?.frontNeckShoulderShapingChart,
-          "front"
+          "front",
+          frontNotationSupported
         ),
         {
           activeSideOnly: true,
@@ -2713,6 +2792,7 @@ table {
     bindSleevelessDiagramZoom(mount);
     bindSleevelessBackDiagramMode(mount);
     bindSleevelessFrontDiagramMode(mount);
+    bindNecklineNotationPreview(mount);
     ensureSleevelessVideoModal();
     const videoHelpRoot =
       document.getElementById("sleeveless-pattern-tips-scope") || mount;
