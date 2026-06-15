@@ -10,12 +10,11 @@ const count = glossary.length;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MemberStack Test</title>
 
-    <!-- MemberStack Script -->
-	<script
-	
-	src="https://static.memberstack.com/scripts/v1/memberstack.js"
-	data-memberstack-app="app_cmfh3d1n802vb0wy706205810">
-  </script>
+    <!--
+      Legacy proof-of-concept page (not in the live nav). The Memberstack v1 script
+      was removed here so the live app id lives ONLY in src/layouts/BaseLayout.astro
+      and can't be accidentally reused. This page's data-ms-* blocks are inert without it.
+    -->
 
     <style>
       body {

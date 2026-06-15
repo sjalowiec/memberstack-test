@@ -92,24 +92,25 @@ describe("sleeveless pattern output copy (print-safe)", () => {
     });
   }
 
-  it("includes lifeline or waste yarn row guidance", () => {
+  it("no longer renders the standalone lifeline-before-neckline-shaping panel (now redundant)", () => {
     const plain = collectSleevelessOutputPlainText(pulloverPattern());
-    expect(plain).toContain(
-      "Before starting the neckline and shoulder shaping, consider adding a lifeline or waste yarn row. It gives you a safe place to rip back to if you make a mistake during shaping.",
+    // The redundant standalone panel text is gone; the lifeline guidance now lives in the
+    // chart's "Before Shaping" checklist ("Optional: Add a lifeline before dividing the neckline.").
+    expect(plain).not.toContain(
+      "Before starting the neckline and shoulder shaping, consider adding a lifeline or waste yarn row.",
     );
-  });
-
-  it("lifeline tip uses glossary placeholder on lifeline only", () => {
-    expect(lifelineBeforeNeckShoulderQuickTipBodyHtml()).toContain(
-      `data-glossary-id="${LIFELINE_GLOSSARY_ID}"`,
-    );
-    expect(lifelineBeforeNeckShoulderQuickTipBodyHtml()).toContain('data-term="lifeline"');
     const result = generateSleevelessBackPattern(pulloverPattern());
     const lifelineRow = [...result.displayRows, ...result.frontDisplayRows].find(
       (r) => r.kind === "block" && r.tipId === "sleeveless-lifeline-neck-shoulder",
     );
-    expect(lifelineRow?.tipPresentation).toBe("quick-tip");
-    expect(lifelineRow?.tipHtml).toContain(`data-glossary-id="${LIFELINE_GLOSSARY_ID}"`);
+    expect(lifelineRow).toBeUndefined();
+  });
+
+  it("lifeline glossary placeholder builder still links lifeline only (popup behavior preserved)", () => {
+    expect(lifelineBeforeNeckShoulderQuickTipBodyHtml()).toContain(
+      `data-glossary-id="${LIFELINE_GLOSSARY_ID}"`,
+    );
+    expect(lifelineBeforeNeckShoulderQuickTipBodyHtml()).toContain('data-term="lifeline"');
   });
 
   it("round-neck cardigan includes fold band on turning row instruction", () => {

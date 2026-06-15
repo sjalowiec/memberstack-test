@@ -14,7 +14,11 @@ import {
   renderNeckShoulderChartIntroBlockHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
 } from "./neckShoulderShapingChartHtml";
-import { centerBindOffStitchesFromNeckShoulderChart, generateSleevelessBackPattern } from "./sleevelessPatternOutput";
+import {
+  centerBindOffStitchesFromNeckShoulderChart,
+  generateSleevelessBackPattern,
+  LIFELINE_GLOSSARY_ID,
+} from "./sleevelessPatternOutput";
 
 function baseRoundNeckMeasurements() {
   return {
@@ -88,7 +92,7 @@ describe("neckShoulderActiveIntroCopy", () => {
   it("omits round-neck center divide when center bind-off is zero and chart is not V-neck front", () => {
     expect(activeShoulderCenterDivideIntroApplies(0)).toBe(false);
     expect(activeShoulderIntroPlainParagraphs({ centerBindOffStitches: 0 })).toEqual([
-      "Follow the chart row by row for the active shoulder, then repeat for the second shoulder, reversing the edge landmarks.",
+      "Follow the checklist row by row for the first shoulder. Then return the held stitches to the machine and repeat the shaping sequence for the second shoulder.",
     ]);
   });
 
@@ -172,6 +176,74 @@ describe("renderActiveShoulderChartIntroHtml", () => {
     expect(html).toContain("work one shoulder at a time");
   });
 
+  it("renders Before Shaping / Divide the Neckline workflow steps online for round-neck divide", () => {
+    const html = renderActiveShoulderChartIntroHtml({
+      ...baseOpts,
+      localStartRcLabel: "RC:050",
+      centerBindOffStitches: 10,
+      includeWorkflowSteps: true,
+    });
+    expect(html).toContain("Before Shaping");
+    // "Optional: Add a lifeline before dividing the neckline." with a glossary popup on "lifeline".
+    expect(html).toContain(`data-glossary-id="${LIFELINE_GLOSSARY_ID}"`);
+    expect(html).toContain("Optional: Add a <span");
+    expect(html).toContain(">lifeline</span> before dividing the neckline.");
+    // Lifeline comes first, then the "Knit until Armhole RC reaches {divideRc}." milestone.
+    const lifelineIdx = html.indexOf("before dividing the neckline.");
+    const knitUntilIdx = html.indexOf("Knit until Armhole RC reaches 050.");
+    expect(lifelineIdx).toBeGreaterThanOrEqual(0);
+    expect(knitUntilIdx).toBeGreaterThan(lifelineIdx);
+    expect(html).toContain("Divide the Neckline");
+    expect(html).toContain("Place one shoulder on hold.");
+    expect(html).toContain("Work one shoulder at a time.");
+    // Preserves the calculated, glossary-linked center scrap-off line (no calc change), now anchored "At RC".
+    expect(html).toContain(
+      "At RC 050, <span",
+    );
+    expect(html).toContain("Scrap off</span> the center 10 neckline stitches to divide the neckline");
+    // The Divide the Neckline section no longer uses the "When Armhole RC reaches" milestone wording.
+    expect(html).not.toMatch(/When Armhole RC reaches/i);
+    // Workflow layout replaces the compact paragraph labels online.
+    expect(html).not.toContain("Center Neckline:");
+    expect(html).not.toContain("Divide:</strong>");
+    // Jargon removed from the second-shoulder sentence.
+    expect(html).not.toMatch(/reversing the edge landmarks/i);
+    expect(html).toContain("repeat the shaping sequence for the second shoulder");
+  });
+
+  it("renders the same workflow steps online for the V-neck front chart", () => {
+    const r = vNeckPattern();
+    const front = r.frontNeckShoulderShapingChart;
+    expect(activeShoulderIntroUsesVNeckDivideCopy(front)).toBe(true);
+    const html = renderActiveShoulderChartIntroHtml({
+      ...baseOpts,
+      localStartRcLabel: "RC:100",
+      centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(front),
+      chart: front,
+      includeWorkflowSteps: true,
+    });
+    expect(html).toContain("Before Shaping");
+    // "Optional: Add a lifeline before dividing the neckline." with a glossary popup on "lifeline".
+    expect(html).toContain(`data-glossary-id="${LIFELINE_GLOSSARY_ID}"`);
+    expect(html).toContain("Optional: Add a <span");
+    expect(html).toContain(">lifeline</span> before dividing the neckline.");
+    // Lifeline first, then the "Knit until Armhole RC reaches {divideRc}." milestone.
+    const lifelineIdx = html.indexOf("before dividing the neckline.");
+    const knitUntilIdx = html.indexOf("Knit until Armhole RC reaches 100.");
+    expect(lifelineIdx).toBeGreaterThanOrEqual(0);
+    expect(knitUntilIdx).toBeGreaterThan(lifelineIdx);
+    expect(html).toContain("Divide the Neckline");
+    expect(html).toContain("Place one shoulder on hold.");
+    expect(html).toContain("Work one shoulder at a time.");
+    // V-neck keeps its own divide-at-center wording (no round-neck scrap-off / bind-off), now anchored "At RC".
+    expect(html).toMatch(/At RC 100, divide the piece at the center/i);
+    expect(html).not.toMatch(/scrap off the center/i);
+    expect(html).not.toMatch(/When Armhole RC reaches/i);
+    expect(html).not.toContain("Center Neckline:");
+    expect(html).not.toContain("Divide:</strong>");
+    expect(html).toContain("repeat the shaping sequence for the second shoulder");
+  });
+
   it("uses V-neck divide copy for front chart (not round-neck center scrap-off)", () => {
     const r = vNeckPattern();
     const frontCenter = centerBindOffStitchesFromNeckShoulderChart(r.frontNeckShoulderShapingChart);
@@ -190,7 +262,7 @@ describe("renderActiveShoulderChartIntroHtml", () => {
     expect(html).toMatch(/decreases along the neck edge/i);
     expect(html).not.toMatch(/scrap off the center/i);
     expect(html).not.toMatch(/bind off the center/i);
-    expect(html).toContain("Follow the chart row by row");
+    expect(html).toContain("Follow the checklist row by row");
     expect(html).toContain("work one shoulder at a time");
   });
 
@@ -260,7 +332,7 @@ describe("cardigan front neckline / shoulder chart copy", () => {
 
     expect(combined).toMatch(/divide the neckline/i);
     expect(combined).toMatch(/work one shoulder at a time/i);
-    expect(combined).toMatch(/second side/i);
+    expect(combined).toMatch(/second shoulder/i);
     expect(combined).toContain("Center Neckline:");
     expect(combined).toContain("Divide:");
   });

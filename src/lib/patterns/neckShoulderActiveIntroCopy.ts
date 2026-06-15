@@ -14,7 +14,7 @@ import {
 export const SCRAP_OFF_GLOSSARY_ID = 311;
 
 export const ACTIVE_SHOULDER_CHART_INTRO_SENTENCE =
-  "Follow the chart row by row for the active shoulder, then repeat for the second shoulder, reversing the edge landmarks.";
+  "Follow the checklist row by row for the first shoulder. Then return the held stitches to the machine and repeat the shaping sequence for the second shoulder.";
 
 export const ACTIVE_SHOULDER_DIVIDE_SENTENCE =
   "Place the opposite shoulder into hold position and work one shoulder at a time.";
