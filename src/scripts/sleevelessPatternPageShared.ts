@@ -26,6 +26,7 @@ import {
   generateSleevelessBackPattern,
   patternTipWrapperHtml,
 } from "../lib/patterns/sleevelessPatternOutput.ts";
+import { generateDropShoulderPattern } from "../lib/patterns/dropShoulderPatternOutput.ts";
 import { rowCounterResetBlockHtml } from "../lib/patterns/rowCounterReset.ts";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
@@ -325,6 +326,11 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   function buildGeneratorPatternData(merged) {
     void merged;
     return buildCustomBuildEffectivePatternInput();
+  }
+
+  /** True when the saved draft is a drop-shoulder construction (uses the drop-shoulder generator + layout). */
+  function isDropShoulderGeneratorInput(genInput) {
+    return String(section(genInput?.style).construction || "").trim() === "drop-shoulder";
   }
 
   function audienceLabelFromPattern(st, ft) {
@@ -2545,7 +2551,121 @@ table {
     return false;
   }
 
+  /** Static drop-shoulder schematic SVGs (straight sides + armhole markers only — no curved armholes). */
+  const DROP_SHOULDER_BODY_BASE = "/images/patterns/drop-shoulder/body/";
+  const DROP_SHOULDER_DIAGRAMS = {
+    straight: {
+      back: `${DROP_SHOULDER_BODY_BASE}drop-body-back.svg`,
+      front: `${DROP_SHOULDER_BODY_BASE}drop_body_front.svg`,
+      cardigan: `${DROP_SHOULDER_BODY_BASE}drop_body_cardigan.svg`,
+    },
+    aline: {
+      back: `${DROP_SHOULDER_BODY_BASE}drop-A-body-back.svg`,
+      front: `${DROP_SHOULDER_BODY_BASE}drop-A-body-front.svg`,
+      cardigan: `${DROP_SHOULDER_BODY_BASE}drop-A-body-cardigan.svg`,
+    },
+    sleeve: `${DROP_SHOULDER_BODY_BASE}drop-body-sleeve.svg`,
+  };
+
+  /** Drop shoulder body shape: A-line files when the body tapers; straight files otherwise. */
+  function isDropShoulderAlineBody(generatorPatternData) {
+    const shape = String(section(generatorPatternData?.style).bodyShape || "").toLowerCase();
+    return /a-?line|tapered|fitted|waist/.test(shape);
+  }
+
+  /** Plain two-column split (instructions + static SVG image) — no sleeveless diagram hydration. */
+  function wrapDropShoulderPieceSplit(innerHtml, diagramSrc, diagramAlt, postSplitHtml) {
+    const src = escapeHtml(diagramSrc);
+    const alt = escapeHtml(diagramAlt);
+    const post = postSplitHtml || "";
+    return `<div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split">
+  <div class="pattern-layout__content sleeveless-piece-split__text">${innerHtml}</div>
+  <aside class="pattern-layout__sidebar sleeveless-piece-split__diagram" aria-label="Garment diagram">
+    <div class="sleeveless-piece-split__diagram-inner">
+      <div class="sleeveless-piece-split__diagram-card">
+        <img class="sleeveless-piece-split__diagram-svg drop-shoulder-diagram-img" src="${src}" alt="${alt}" loading="lazy" decoding="async" />
+      </div>
+    </div>
+  </aside>
+</div>${post}`;
+  }
+
+  /**
+   * Drop-shoulder layout: Back / Front / Sleeve pieces each in a two-column split with the
+   * drop-shoulder schematic SVGs (straight sides + armhole markers only — no curved armholes and
+   * no neck/shoulder shaping charts, which drop shoulder does not have). Reuses the shared
+   * display-row renderer, finishing block, glossary hydration, collapse persistence, and nav.
+   */
+  async function renderDropShoulderMount(patternMerged, result, unit, generatorPatternData) {
+    void unit;
+    const mount = document.querySelector("[data-sleeveless-mount]");
+    if (!mount) return;
+    if (tryExpressNeedleFailSafeBlock(result, patternMerged, generatorPatternData)) return;
+
+    const patternIntroSentence = buildPatternIntroSentence(patternMerged, generatorPatternData);
+    const isCardigan = String(section(generatorPatternData?.style).frontStyle || "") === "open";
+    const bodySet = isDropShoulderAlineBody(generatorPatternData)
+      ? DROP_SHOULDER_DIAGRAMS.aline
+      : DROP_SHOULDER_DIAGRAMS.straight;
+
+    const renderPiece = (rows, pieceId) =>
+      renderSleevelessDisplayHtml(rows ?? [], "", pieceId, patternIntroSentence, undefined, {
+        omitPieceBanner: true,
+      });
+
+    const back = renderPiece(result.displayRows, "back");
+    const front = renderPiece(result.frontDisplayRows, "front");
+    const sleeve = renderPiece(result.sleeveDisplayRows, "sleeve");
+
+    const frontSrc = isCardigan ? bodySet.cardigan : bodySet.front;
+    const frontLabel = isCardigan ? "FRONT" : "FRONT";
+    const frontAlt = isCardigan
+      ? "Drop shoulder cardigan front schematic"
+      : "Drop shoulder front schematic";
+
+    mount.innerHTML =
+      wrapPatternSection(
+        "sg-back",
+        "BACK",
+        wrapDropShoulderPieceSplit(back.splitInner, bodySet.back, "Drop shoulder back schematic", back.postSplit),
+        { defaultCollapsed: false, sectionClassName: "pattern-section--garment-piece" },
+      ) +
+      wrapPatternSection(
+        "sg-front",
+        frontLabel,
+        wrapDropShoulderPieceSplit(front.splitInner, frontSrc, frontAlt, front.postSplit),
+        { defaultCollapsed: false, sectionClassName: "pattern-section--garment-piece" },
+      ) +
+      wrapPatternSection(
+        "sg-sleeve",
+        "SLEEVE",
+        wrapDropShoulderPieceSplit(
+          sleeve.splitInner,
+          DROP_SHOULDER_DIAGRAMS.sleeve,
+          "Drop shoulder sleeve schematic",
+          sleeve.postSplit,
+        ),
+        { defaultCollapsed: false, sectionClassName: "pattern-section--garment-piece" },
+      ) +
+      wrapPatternSection("sg-finishing", "Finishing", buildFinishingHtml(patternMerged, result.debug), {
+        defaultCollapsed: true,
+      });
+
+    hydrateGlossaryTooltipPlaceholders(mount);
+    ensureSleevelessVideoModal();
+    const videoHelpRoot = document.getElementById("sleeveless-pattern-tips-scope") || mount;
+    bindSleevelessVideoHelp(videoHelpRoot);
+    initChartProgressTracking({ patternId: getCurrentPattern().id, root: mount });
+    applyPatternSectionCollapseState(mount);
+    bindPatternSectionCollapsePersistence(mount);
+    syncSleevelessPatternInpageNav();
+  }
+
   async function renderMount(patternMerged, result, unit, generatorPatternData) {
+    if (result && result.isDropShoulder) {
+      await renderDropShoulderMount(patternMerged, result, unit, generatorPatternData);
+      return;
+    }
     const mount = document.querySelector("[data-sleeveless-mount]");
     if (!mount) return;
 
@@ -2893,13 +3013,17 @@ table {
 
     try {
       genInput = buildGeneratorPatternData(effectivePatternMerged);
-      result = generateSleevelessBackPattern(genInput);
+      result = isDropShoulderGeneratorInput(genInput)
+        ? generateDropShoulderPattern(genInput)
+        : generateSleevelessBackPattern(genInput);
     } catch (err) {
       if (!allowSavedDraftFallback) throw err;
       // Fallback: ignore `patternBuilderData` entirely; render from canonical draft only.
       effectivePatternMerged = mergedPatternForDisplayFromSources(getCurrentPattern(), {});
       genInput = buildCustomBuildEffectivePatternInput({ patternBuilderData: {} });
-      result = generateSleevelessBackPattern(genInput);
+      result = isDropShoulderGeneratorInput(genInput)
+        ? generateDropShoulderPattern(genInput)
+        : generateSleevelessBackPattern(genInput);
     }
 
     setPatternTabsReadiness(tabsRoot, true);

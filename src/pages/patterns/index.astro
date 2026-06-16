@@ -26,6 +26,15 @@ const availablePatterns = [
     button: 'Create your hat',
   },
   {
+    title: 'Drop Shoulder Sweater',
+    // `?new=1` clears any active draft on boot so this card always starts fresh
+    // (mirrors the sleeveless builder). Drop shoulder reuses the same review/pattern flow.
+    href: '/patterns/drop-shoulder/builder?new=1',
+    image: '/images/patterns/drop-shoulder/drop-man-pullover-round.webp',
+    copy: 'A relaxed sweater with drop-shoulder sleeves (cuff-up or top-down), pullover or cardigan fronts, round or V-neck, and printable row-by-row instructions.',
+    button: 'Create drop shoulder sweater',
+  },
+  {
     title: 'Blanket Pattern Builder',
     // Existing working route preserved (no /patterns/blanket page exists).
     href: '/patterns/diy-blanket',
@@ -36,11 +45,6 @@ const availablePatterns = [
 ];
 
 const comingSoonPatterns = [
-  {
-    title: 'Drop Shoulder Sweater',
-    image: '/images/patterns/drop-shoulder/drop-shoulder-men-pullover-round-neck.webp',
-    copy: 'A relaxed sweater system with simple shaping and machine-friendly construction.',
-  },
   {
     title: 'Raglan Sweater',
     image: '/images/patterns/raglan/raglan-woman-cardigan-v-neck.webp',

@@ -29,7 +29,21 @@ import { prepareCustomBuildPatternGeneration } from "../lib/patterns/prepareCust
 import { navigateToPatternWithUnsavedEditsGuard } from "../lib/patterns/savedCustomPatternUnsavedViewGuard";
 import { logSleevelessPatternActivity } from "../lib/patterns/sleevelessPatternActivity";
 
-const PATTERN_WORKSPACE_TAB_PATTERN_HREF = "/patterns/sleeveless/pattern/?tab=pattern";
+const DEFAULT_PATTERN_WORKSPACE_TAB_PATTERN_HREF = "/patterns/sleeveless/pattern/?tab=pattern";
+
+/**
+ * Where "Build My Pattern" navigates. Configurable so construction variants (e.g. drop shoulder)
+ * can route to their own dedicated pattern workspace via `data-pattern-workspace-href` on the
+ * review root. Falls back to the shared sleeveless workspace.
+ */
+function resolvePatternWorkspaceHref(): string {
+  if (typeof document === "undefined") return DEFAULT_PATTERN_WORKSPACE_TAB_PATTERN_HREF;
+  const root = document.querySelector<HTMLElement>("[data-express-measurements-root]");
+  const href = root?.getAttribute("data-pattern-workspace-href")?.trim();
+  return href || DEFAULT_PATTERN_WORKSPACE_TAB_PATTERN_HREF;
+}
+
+const PATTERN_WORKSPACE_TAB_PATTERN_HREF = resolvePatternWorkspaceHref();
 
 function readExpressValues(): Record<string, string> {
   if (typeof localStorage === "undefined") return {};

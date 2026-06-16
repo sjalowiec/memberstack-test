@@ -174,6 +174,30 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
   },
 ];
 
+/** True when the active pattern is a drop-shoulder construction (armhole depth is derived, not edited). */
+function isDropShoulderConstruction(): boolean {
+  try {
+    const canon = (getCurrentPattern().style as Record<string, unknown> | undefined)?.construction;
+    if (canon === "drop-shoulder") return true;
+    const pb = (getPatternData().style as Record<string, unknown> | undefined)?.construction;
+    return pb === "drop-shoulder";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Diagram fields for the active construction. Drop shoulder hides the editable Armhole Depth
+ * field — that measurement is derived (finished upper arm ÷ 2) at generation time, never edited
+ * or stored as a user value here.
+ */
+function getActiveDiagramFields(): DiagramFieldDef[] {
+  if (isDropShoulderConstruction()) {
+    return DIAGRAM_FIELDS.filter((field) => field.key !== "armholeDepth");
+  }
+  return DIAGRAM_FIELDS;
+}
+
 function toFinite(v: unknown): number | undefined {
   if (v === undefined || v === null) return undefined;
   const n = typeof v === "number" ? v : parseFloat(String(v).replace(/[^\d.-]/g, ""));
@@ -732,7 +756,7 @@ function applyDiagramUnitDisplay(
   let suffixesUpdated = 0;
   let valuesUpdated = 0;
 
-  for (const field of DIAGRAM_FIELDS) {
+  for (const field of getActiveDiagramFields()) {
     const inchesRaw = inchesByKey[field.key] ?? "";
     const box = scope.querySelector(`.express-mbp-box--${field.positionMod}`);
     if (!(box instanceof HTMLElement)) continue;
@@ -834,7 +858,7 @@ async function renderDiagram(
   const overlay = document.createElement("div");
   overlay.className = "express-mbp-overlay";
 
-  for (const field of DIAGRAM_FIELDS) {
+  for (const field of getActiveDiagramFields()) {
     const boxOpts = { axis: field.axis, labelLines: field.labelLines };
     overlay.appendChild(
       readOnly

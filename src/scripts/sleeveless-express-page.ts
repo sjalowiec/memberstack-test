@@ -94,16 +94,28 @@ function getExpressGaugeUnit(): "cm" | "in" {
   return getExpressUiUnit();
 }
 
+/** Page construction flag (`drop-shoulder`) so hero images stay in the right pattern family. */
+function expressPageConstruction(): string {
+  return (
+    document
+      .querySelector<HTMLElement>("[data-express-construction]")
+      ?.getAttribute("data-express-construction")
+      ?.trim() || ""
+  );
+}
+
 /** Minimal merged-style shape for {@link resolveSleevelessAudienceHeroImageSrc} from live Express wizard values. */
 function expressPatternDataForAudienceHeroImages(values: Record<string, string>): Record<string, unknown> {
   const sm = mapExpressStyle(values.style ?? "");
   const neckRaw = String(values.neckline ?? "").trim();
   const neckline = neckRaw ? (mapExpressNeckline(neckRaw) === "v" ? "v" : "round") : "round";
+  const construction = expressPageConstruction();
   return {
     style: {
       garmentStyle: sm.frontStyle === "open" ? "cardigan" : "pullover",
       frontStyle: sm.frontStyle,
       neckline,
+      ...(construction ? { construction } : {}),
     },
   };
 }
@@ -235,16 +247,6 @@ function formatGaugeSummary(): string {
   return `${Math.round(s)} sts × ${Math.round(r)} rows over ${over}`;
 }
 
-/** Furthest step the user can open from accumulated Express choices (steps 1–5). */
-function maxReachableFromChoices(v: Record<string, string>): number {
-  let m = 1;
-  if (v.who && nonEmptyTrimmed(v.selectedSize)) m = 2;
-  if (v.who && nonEmptyTrimmed(v.selectedSize) && nonEmptyTrimmed(v.front)) m = 3;
-  if (v.who && nonEmptyTrimmed(v.selectedSize) && nonEmptyTrimmed(v.front) && v.neckline) m = 4;
-  if (v.who && nonEmptyTrimmed(v.selectedSize) && nonEmptyTrimmed(v.front) && v.neckline && v.fit) m = 5;
-  return m;
-}
-
 function initExpressPage() {
   const startedFreshSession = applySleevelessExpressNewSessionFromUrl();
   if (!startedFreshSession) {
@@ -300,7 +302,7 @@ function initExpressPage() {
     else openStepCandidate -= 1;
   }
 
-  let maxReachable = editChoicesReopen ? STEPS : maxReachableFromChoices(values);
+  let maxReachable = editChoicesReopen ? STEPS : maxReachableFromChoices();
   let openStep = editChoicesReopen
     ? Math.min(STEPS, Math.max(1, openStepCandidate || STEPS))
     : Math.min(maxReachable, Math.max(0, openStepCandidate));
@@ -380,6 +382,11 @@ function initExpressPage() {
       const g = formatGaugeSummary();
       return g || "";
     }
+    if (field === "frontNeckline") {
+      const f = values.front ? LABELS.front[values.front] ?? values.front : "";
+      const n = values.neckline ? LABELS.neckline[values.neckline] ?? values.neckline : "";
+      return [f, n].filter(Boolean).join(" • ");
+    }
     if (field === "who") {
       const whoKey = values.who;
       const whoLabel =
@@ -395,15 +402,45 @@ function initExpressPage() {
     return map && map[v] ? map[v] : v;
   }
 
-  function isStepComplete(step: number): boolean {
-    if (step === 1) return !!values.who && nonEmptyTrimmed(values.selectedSize);
-    if (step === 2) return nonEmptyTrimmed(values.front);
-    if (step === 3) return !!values.neckline;
-    if (step === 4) return !!values.fit;
+  /**
+   * Completion for a single declared field. Drives both the per-step checkmarks and the
+   * furthest-reachable calc, so it must stay layout-agnostic (the drop-shoulder builder reuses
+   * this client with a different section order and a combined "front neckline" step).
+   */
+  function fieldComplete(field: string): boolean {
+    if (field === "who") return !!values.who && nonEmptyTrimmed(values.selectedSize);
+    if (field === "front") return nonEmptyTrimmed(values.front);
+    if (field === "gauge") return gaugeStepOk();
+    // Sleeve length always carries a valid default (drop-shoulder only), so it never blocks.
+    if (field === "sleeveLength") {
+      return !!document.querySelector(
+        "[data-ds-sleeve-length-option].is-selected, [data-ds-sleeve-length-option][aria-pressed='true']",
+      );
+    }
+    return !!values[field];
+  }
+
+  /** Fields a section requires, read from its space-separated `data-express-field`. */
+  function stepRequiredFields(step: number): string[] {
     const sec = stepSection(step);
-    const f = sec?.getAttribute("data-express-field");
-    if (f === "gauge") return gaugeStepOk();
-    return !!(f && values[f]);
+    const raw = sec?.getAttribute("data-express-field") ?? "";
+    return raw.split(/\s+/).filter(Boolean);
+  }
+
+  function isStepComplete(step: number): boolean {
+    const fields = stepRequiredFields(step);
+    if (fields.length === 0) return false;
+    return fields.every(fieldComplete);
+  }
+
+  /** Furthest step the user can open: 1 + the count of leading complete steps. */
+  function maxReachableFromChoices(): number {
+    let m = 1;
+    for (let step = 1; step < STEPS; step += 1) {
+      if (isStepComplete(step)) m = step + 1;
+      else break;
+    }
+    return m;
   }
 
   function clearAllLockedFeedback() {
@@ -494,7 +531,7 @@ function initExpressPage() {
   }
 
   function refreshBuilderState(persist = true): void {
-    maxReachable = editChoicesReopen ? STEPS : maxReachableFromChoices(values);
+    maxReachable = editChoicesReopen ? STEPS : maxReachableFromChoices();
     if (openStep > maxReachable) openStep = maxReachable;
     if (openStep < 0) openStep = 0;
     updatePills();
@@ -575,7 +612,7 @@ function initExpressPage() {
       return;
     }
     if (hash !== "express-gauge-section") return;
-    if (maxReachableFromChoices(values) < STEPS) return;
+    if (maxReachableFromChoices() < STEPS) return;
     goToStep(STEPS);
   }
 
@@ -657,19 +694,14 @@ function initExpressPage() {
 
   function applySelectionUI() {
     refreshExpressWhoSizePanel();
-    const pairs: { step: number; field: keyof typeof LABELS; sel: string }[] = [
-      { step: 1, field: "who", sel: ".express-options--who" },
-      { step: 2, field: "front", sel: ".express-front-cards" },
-      { step: 3, field: "neckline", sel: ".express-neck-cards" },
-      { step: 4, field: "fit", sel: ".express-fit-cards" },
-    ];
-    pairs.forEach(({ step, field, sel }) => {
-      const sec = stepSection(step);
-      if (!sec || !values[field]) return;
-      const c = sec.querySelector(sel);
-      if (!c || !(c instanceof HTMLElement)) return;
-      const hit = c.querySelector(`[data-choice][data-value="${values[field]}"]`);
-      if (hit instanceof HTMLElement) markChoiceSelected(sec, hit);
+    const root = expressBuilderRoot instanceof HTMLElement ? expressBuilderRoot : document;
+    (["who", "front", "neckline", "fit"] as const).forEach((field) => {
+      const value = values[field];
+      if (!value) return;
+      const hit = root.querySelector(`[data-choice][data-field="${field}"][data-value="${value}"]`);
+      if (!(hit instanceof HTMLElement)) return;
+      const sec = hit.closest("[data-express-step]");
+      if (sec instanceof HTMLElement) markChoiceSelected(sec, hit);
     });
   }
 

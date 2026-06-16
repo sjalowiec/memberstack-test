@@ -38,6 +38,21 @@ export type SleevelessPatternTitleContext = {
 /** Leading family name in auto-generated pattern titles (e.g. Sleeveless, Set-In Sleeve). */
 export const SLEEVELESS_PATTERN_FAMILY_NAME = "Sleeveless";
 
+/** Family name used for drop-shoulder construction patterns. */
+export const DROP_SHOULDER_PATTERN_FAMILY_NAME = "Drop Shoulder";
+
+/** True when the pattern's style is a drop-shoulder construction. */
+function isDropShoulderPattern(pattern: SleevelessPatternRecord = getCurrentPattern()): boolean {
+  return (pattern.style as Record<string, unknown> | undefined)?.construction === "drop-shoulder";
+}
+
+/** Family name for auto-titles, by construction. */
+function patternFamilyNameForPattern(pattern: SleevelessPatternRecord = getCurrentPattern()): string {
+  return isDropShoulderPattern(pattern)
+    ? DROP_SHOULDER_PATTERN_FAMILY_NAME
+    : SLEEVELESS_PATTERN_FAMILY_NAME;
+}
+
 function truncateNotes(notes: string): string {
   return notes.length <= PROJECT_NOTES_MAX_LENGTH
     ? notes
@@ -183,7 +198,7 @@ export function refreshAutoPatternProjectTitle(
 ): SleevelessPatternProjectMeta {
   const current = getPatternProjectMeta();
   if (current.titleCustomized) return current;
-  const title = buildDefaultSleevelessPatternTitle(ctx);
+  const title = buildDefaultSleevelessPatternTitle(ctx, patternFamilyNameForPattern());
   return savePatternProjectMeta({ title, titleCustomized: false });
 }
 
@@ -195,13 +210,20 @@ export function getPatternProjectPrintFields(): { title: string; notes: string }
 export const SLEEVELESS_PATTERN_ONLINE_HEADING_FALLBACK =
   "Sleeveless sweater · Pattern instructions";
 
-/** Online pattern tab heading from saved project title, or generic fallback. */
+export const DROP_SHOULDER_PATTERN_ONLINE_HEADING_FALLBACK =
+  "Drop shoulder sweater · Pattern instructions";
+
+/** Online pattern tab heading from saved project title, or construction-aware generic fallback. */
 export function getSleevelessPatternOnlineHeading(
   meta: SleevelessPatternProjectMeta,
-  fallback: string = SLEEVELESS_PATTERN_ONLINE_HEADING_FALLBACK,
+  fallback?: string,
 ): string {
   const title = meta.title.trim();
-  return title || fallback;
+  if (title) return title;
+  if (fallback !== undefined) return fallback;
+  return isDropShoulderPattern()
+    ? DROP_SHOULDER_PATTERN_ONLINE_HEADING_FALLBACK
+    : SLEEVELESS_PATTERN_ONLINE_HEADING_FALLBACK;
 }
 
 /**

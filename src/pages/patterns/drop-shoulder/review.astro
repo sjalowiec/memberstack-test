@@ -1,0 +1,804 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
+import UnitToggle from "../../../components/wizards/UnitToggle.astro";
+import YarnRequirement from "../../../components/tools/YarnRequirement.astro";
+import "../../../styles/wizard.css";
+import "../../../styles/sleeveless-express-wizard-layout.css";
+import "../../../styles/sleeveless-express-measurements-confirm.css";
+import "../../../styles/sleeveless-review-measurements.css";
+import "../../../styles/sleeveless-pattern-project-cloud-save.css";
+import "../../../styles/custom-pattern-editing-banner.css";
+import { SLEEVELESS_PATTERN_FAMILY_NAME } from "../../../lib/patterns/sleevelessPatternProjectMeta";
+
+// Drop Shoulder construction variant: dedicated review route. Reuses the shared review pipeline
+// (scripts/styles) but with Drop Shoulder branding and a workspace href that points to the
+// dedicated Drop Shoulder pattern page.
+const builderHref = "/patterns/drop-shoulder/builder";
+const expressHref = "/patterns/drop-shoulder/builder";
+const changeChoicesHref = "/patterns/drop-shoulder/builder?edit=choices";
+const patternWorkspaceHref = "/patterns/drop-shoulder/pattern/?tab=pattern";
+/** Points to the upgrade explanation page (checkout itself is wired elsewhere). */
+const patternFamilyUnlockHref = "/patterns/sleeveless/unlock";
+const membershipHref = "/join";
+const sleevelessSystemName = `${SLEEVELESS_PATTERN_FAMILY_NAME} Pattern System`;
+const lockedBannerStripCopy = `Want more customization? Unlock the ${sleevelessSystemName}`;
+const lockedBannerStripAriaLabel = `Unlock the ${sleevelessSystemName} for more customization`;
+// DEV TOGGLE — LOCAL TESTING ONLY. Keep `false` in production.
+const DEBUG_FORCE_FREE_USER = false;
+---
+
+<Layout
+  title="Review Measurements | Drop Shoulder Sweater"
+  description="Review sizing and measurements, then generate your drop shoulder sweater pattern."
+>
+  <SleevelessPatternMemberGate>
+  <main class="express-page wizard-page sleeveless-express-page express-measurements-confirm-page sleeveless-unified-review-page">
+    <div class="wizard-container express-wizard scroll-mt-[96px]">
+      <div class="calculator-card hat-builder-inputs">
+        <div data-cb-editing-banner-host hidden></div>
+        <div
+          class="express-measurements-review"
+          data-express-measurements-root
+          data-cb-measure-root
+          data-sleeveless-review-managed
+          data-express-href={builderHref}
+          data-pattern-workspace-href={patternWorkspaceHref}
+        >
+          {/*
+            Access banners: both are rendered hidden and toggled client-side by the resolved
+            Memberstack entitlement (see sleeveless-builder-review-page.ts → applyReviewAccessBanners).
+          */}
+          <div
+            class="sleeveless-review-access-messages"
+            data-sleeveless-review-access-messages
+          >
+            {/* DEV ONLY: forces the free/locked view while DEBUG_FORCE_FREE_USER is true. */}
+            {DEBUG_FORCE_FREE_USER && (
+              <p class="sleeveless-review-dev-flag" role="note">
+                DEV TEST MODE: Free user view
+              </p>
+            )}
+            {DEBUG_FORCE_FREE_USER && (
+              <script is:inline>
+                window.__KBM_DEBUG_FORCE_FREE_USER__ = true;
+              </script>
+            )}
+
+            <div
+              class="sleeveless-review-access-banner sleeveless-review-access-banner--paid"
+              data-sleeveless-review-access-paid
+              role="status"
+              hidden
+            >
+              <div class="sleeveless-review-access-banner__layout">
+                <img
+                  class="sleeveless-review-access-banner__logo"
+                  src="/images/KINlogo.svg"
+                  alt="Knit It Now"
+                  width="48"
+                  height="48"
+                  decoding="async"
+                />
+                <div class="sleeveless-review-access-banner__content">
+                  <h2 class="sleeveless-review-access-banner__title">
+                    You have full customization access
+                  </h2>
+                  <p class="sleeveless-review-access-banner__body">
+                    Customize your measurements below, then update your pattern anytime.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="sleeveless-review-access-banner sleeveless-review-access-banner--locked"
+              data-sleeveless-review-access-locked
+              role="status"
+              hidden
+            >
+              <button
+                type="button"
+                class="sleeveless-review-access-banner__dismiss"
+                data-sleeveless-locked-banner-dismiss
+                aria-label="Dismiss unlock banner"
+                title="Dismiss"
+              >
+                <span aria-hidden="true">×</span>
+              </button>
+              <div class="sleeveless-review-access-banner__layout">
+                <img
+                  class="sleeveless-review-access-banner__logo"
+                  src="/images/KINlogo.svg"
+                  alt="Knit It Now"
+                  width="48"
+                  height="48"
+                  decoding="async"
+                />
+                <div class="sleeveless-review-access-banner__content">
+                  <h2
+                    class="sleeveless-review-access-banner__title"
+                    data-sleeveless-review-access-locked-title
+                  >
+                    Unlock the Sleeveless Pattern System
+                  </h2>
+                  <p
+                    class="sleeveless-review-access-banner__body"
+                    data-sleeveless-review-access-locked-body
+                  >
+                    You’re viewing the measurements from your choices. Unlock the Sleeveless Pattern
+                    System to fully customize your fit, fine-tune shaping inputs, and update your
+                    pattern anytime.
+                  </p>
+                  <div class="sleeveless-review-access-locked-actions">
+              <div class="sleeveless-review-access-cta sleeveless-review-access-cta--primary">
+                <a
+                  href={patternFamilyUnlockHref}
+                  class="kbm-btn kbm-btn-accent sleeveless-review-access-cta__btn"
+                >
+                  Unlock Sleeveless Pattern System · $24.95
+                </a>
+                <p class="sleeveless-review-access-cta__hint">
+                        Lifetime access to the Sleeveless Pattern System for Women, Men, Kids, &amp; Babies.
+                </p>
+              </div>
+                    <p class="sleeveless-review-access-member-line">
+                      <span class="sleeveless-review-access-member-line__or">or</span>
+                    </p>
+                    <p class="sleeveless-review-access-member-cta">
+                      <a
+                        href={membershipHref}
+                        class="sleeveless-review-access-member-cta__link"
+                      >
+                        Become a Member
+                      </a>
+                    </p>
+                    <p class="sleeveless-review-access-member-hint">
+                      Unlimited access to every pattern system for all sizes and recipients.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="sleeveless-review-access-locked-strip"
+              data-sleeveless-locked-banner-expand
+              hidden
+              aria-label={lockedBannerStripAriaLabel}
+            >
+              {lockedBannerStripCopy}
+              <span class="sleeveless-review-access-locked-strip__arrow" aria-hidden="true">
+                →
+              </span>
+            </button>
+          </div>
+
+          <p
+            class="express-measurements-status pattern-subtext"
+            data-express-measurements-status
+            hidden
+            aria-live="polite"
+          ></p>
+
+          <header
+            class="sleeveless-review-project-header"
+            data-sleeveless-review-project-header
+            aria-label="Pattern project"
+          >
+            <div class="sleeveless-review-project-header__name">
+              <label class="sleeveless-review-project-header__label" for="sleeveless-pattern-name">
+                Pattern name
+              </label>
+              <p
+                class="sleeveless-review-project-header__title-display"
+                data-sleeveless-pattern-project-title-display
+              ></p>
+              <div
+                class="sleeveless-review-project-header__title-field"
+                data-sleeveless-pattern-project-title-field
+              >
+                <div
+                  class="sleeveless-review-project-header__title-input-wrap sleeveless-review-project-header__editable-field"
+                >
+                  <input
+                    id="sleeveless-pattern-name"
+                    class="sleeveless-review-project-header__title-input"
+                    type="text"
+                    data-sleeveless-pattern-project-title
+                    maxlength="120"
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                  <span
+                    class="sleeveless-review-project-header__field-pencil"
+                    aria-hidden="true"
+                  >
+                    <svg
+                      class="sleeveless-review-project-header__pencil-icon sleeveless-review-project-header__pencil-icon--inline"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"></path>
+                    </svg>
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  class="sleeveless-review-project-header__notes-icon-btn sleeveless-review-project-header__notes-icon-btn--save sleeveless-review-project-header__title-save-btn"
+                  data-sleeveless-pattern-project-cloud-save
+                  title="Save pattern"
+                  aria-label="Save pattern"
+                >
+                  <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                </button>
+              </div>
+              <p
+                class="sleeveless-review-project-header__save-status cb-project-status"
+                data-cb-project-status
+                role="status"
+                aria-live="polite"
+              ></p>
+            </div>
+            <div class="sleeveless-review-project-header__notes">
+              <div
+                class="sleeveless-review-project-header__notes-readonly"
+                data-sleeveless-pattern-project-notes-readonly
+                hidden
+              >
+                <p class="sleeveless-review-project-header__label">Project notes</p>
+                <p
+                  class="sleeveless-review-project-header__notes-display"
+                  data-sleeveless-pattern-project-notes-display
+                ></p>
+              </div>
+              <label
+                class="sleeveless-review-project-header__label sleeveless-review-project-header__notes-label"
+                for="sleeveless-pattern-notes"
+              >
+                Project notes
+              </label>
+              <div
+                class="sleeveless-review-project-header__section-head sleeveless-review-project-header__editable-field sleeveless-review-project-header__notes-trigger"
+                data-sleeveless-pattern-project-notes-header
+                data-sleeveless-pattern-project-notes-edit
+                role="button"
+                tabindex="0"
+                title="Add project notes"
+                aria-label="Add project notes"
+              >
+                <span class="sleeveless-review-project-header__section-pencil" aria-hidden="true">
+                  <svg
+                    class="sleeveless-review-project-header__pencil-icon"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"></path>
+                  </svg>
+                </span>
+                <span class="sleeveless-review-project-header__notes-empty-hint">
+                  Add project notes…
+                </span>
+              </div>
+              <div
+                class="sleeveless-review-project-header__notes-view sleeveless-review-project-header__editable-field"
+                data-sleeveless-pattern-project-notes-view
+                hidden
+              >
+                <p
+                  class="sleeveless-review-project-header__notes-display"
+                  data-sleeveless-pattern-project-notes-static
+                ></p>
+              </div>
+              <div
+                class="sleeveless-review-project-header__notes-panel"
+                data-sleeveless-pattern-project-notes-panel
+                hidden
+              >
+                <textarea
+                  id="sleeveless-pattern-notes"
+                  class="sleeveless-review-project-header__notes-input"
+                  data-sleeveless-pattern-project-notes
+                  rows={3}
+                  maxlength={300}
+                  autocomplete="off"
+                  placeholder="Add project notes…"
+                  aria-label="Project notes"
+                ></textarea>
+                <div class="sleeveless-review-project-header__notes-footer">
+                  <div
+                    class="sleeveless-review-project-header__notes-toolbar"
+                    role="group"
+                    aria-label="Project notes actions"
+                  >
+                    <button
+                      type="button"
+                      class="sleeveless-review-project-header__notes-icon-btn sleeveless-review-project-header__notes-icon-btn--save"
+                      data-sleeveless-pattern-project-notes-save
+                      title="Save notes"
+                      aria-label="Save notes"
+                    >
+                      <i class="fa-solid fa-check" aria-hidden="true"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="sleeveless-review-project-header__notes-icon-btn sleeveless-review-project-header__notes-icon-btn--close"
+                      data-sleeveless-pattern-project-notes-cancel
+                      title="Close"
+                      aria-label="Close"
+                    >
+                      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="sleeveless-review-project-header__notes-icon-btn sleeveless-review-project-header__notes-icon-btn--delete"
+                      data-sleeveless-pattern-project-notes-delete
+                      title="Delete notes"
+                      aria-label="Delete notes"
+                    >
+                      <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                  <div class="sleeveless-review-project-header__notes-footer-end">
+                    <span
+                      class="sleeveless-review-project-header__notes-saved pattern-subtext"
+                      data-sleeveless-pattern-project-notes-saved
+                      hidden
+                      aria-live="polite"
+                    >
+                      Notes saved
+                    </span>
+                    <span
+                      class="sleeveless-review-project-header__notes-count pattern-subtext"
+                      data-sleeveless-pattern-project-notes-count
+                    >
+                      0 / 300
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div
+            class="sleeveless-measure-project-summary sleeveless-measure-project-summary--below-header"
+            data-express-measurements-project-summary
+            data-cb-build-summary
+            aria-label="Project summary"
+          >
+            <div
+              class="sleeveless-measure-summary-edit-row"
+              data-sleeveless-review-summary-edit
+              data-href={expressHref}
+              role="button"
+              tabindex="0"
+              title="Edit pattern"
+              aria-label="Edit pattern"
+            >
+              <span class="sleeveless-review-project-header__section-pencil" aria-hidden="true">
+                <svg
+                  class="sleeveless-review-project-header__pencil-icon"
+                  width="21"
+                  height="21"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"></path>
+                </svg>
+              </span>
+              <div
+                class="sleeveless-measure-summary-edit-row__content"
+                data-sleeveless-review-summary-line-slot
+              ></div>
+            </div>
+            <div
+              class="express-builder-units no-print express-measurements-intro-units"
+              data-express-measurements-units-host
+            >
+              <UnitToggle id="sleeveless-fit" />
+            </div>
+          </div>
+
+          <section class="sleeveless-review-diagram-section" aria-label="Body measurements diagram">
+            <p class="cb-measure-missing" data-cb-measure-missing hidden>
+              Complete the pattern builder steps to load measurements.
+            </p>
+
+            <div
+              class="sleeveless-measure-diagram-host express-measurements-summary sleeveless-review-diagram-host"
+              data-express-measurements-summary
+              data-cb-measure-diagram
+            >
+              <p class="pattern-subtext">Loading measurements…</p>
+            </div>
+          </section>
+
+          <div class="sleeveless-measure-actions express-measurements-actions no-print">
+            <a
+              href={changeChoicesHref}
+              class="kbm-btn kbm-btn-outline"
+              data-sleeveless-change-pattern-choices
+            >
+              Change Pattern Choices
+            </a>
+            <button type="button" id="express-yarn-drawer-open" class="kbm-btn kbm-btn-outline">
+              Check Yarn Needed
+            </button>
+            <button
+              type="button"
+              class="kbm-btn kbm-btn-accent"
+              data-cb-measure-continue
+              data-cb-measure-continue-default="Build My Pattern"
+            >
+              Build My Pattern
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="express-yarn-drawer"
+      class="hat-yarn-drawer no-print"
+      aria-hidden="true"
+    >
+      <div
+        id="express-yarn-drawer-panel"
+        class="hat-yarn-drawer-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="express-yarn-drawer-title"
+        aria-describedby="express-yarn-drawer-desc express-yarn-drawer-note"
+      >
+        <header class="hat-yarn-drawer-header">
+          <div class="hat-yarn-drawer-header-text">
+            <h2 id="express-yarn-drawer-title" class="hat-yarn-drawer-title">Check your yarn</h2>
+            <p id="express-yarn-drawer-desc" class="hat-yarn-drawer-lede">
+              Quick estimate from a weighed swatch using this sweater’s finished size.
+            </p>
+            <p id="express-yarn-drawer-note" class="hat-yarn-drawer-note">
+              This is an estimate. Actual yarn use may vary with stitch pattern, ribbing, bands, shaping, and finishing.
+            </p>
+          </div>
+          <button type="button" class="hat-yarn-drawer-close" id="express-yarn-drawer-close" aria-label="Close">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M18 6L6 18M6 6l12 12"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </header>
+        <div class="hat-yarn-drawer-body">
+          <YarnRequirement
+            variant="garment"
+            layout="panel"
+            presentation="drawer"
+            projectWidth={0}
+            projectLength={0}
+            lengthUnit="in"
+            source="custom"
+          />
+        </div>
+      </div>
+      <div
+        id="express-yarn-drawer-backdrop"
+        class="hat-yarn-drawer-backdrop"
+        aria-hidden="true"
+      ></div>
+    </div>
+  </main>
+  </SleevelessPatternMemberGate>
+</Layout>
+
+<style>
+  .sleeveless-unified-review-page .sleeveless-review-access-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 0 0 0.85rem;
+  }
+
+  /* TEMP DEV: free-user test-mode label. Remove with DEBUG_FORCE_FREE_USER. */
+  .sleeveless-unified-review-page .sleeveless-review-dev-flag {
+    margin: 0;
+    padding: 0.3rem 0.6rem;
+    border: 1px dashed #b91c1c;
+    border-radius: 6px;
+    background: #fef2f2;
+    color: #b91c1c;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    align-self: flex-start;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-preview-note {
+    margin: 0;
+    padding: 0.35rem 0.55rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    line-height: 1.35;
+    color: #6b7280;
+    background: #f3f4f6;
+    border: 1px dashed #d1d5db;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner {
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    color: #374151;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--paid {
+    padding: 0.65rem 0.85rem;
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 18%, #e5e7eb);
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 5%, var(--page-bg, #fff));
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--paid .sleeveless-review-access-banner__layout {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem 0.75rem;
+    min-width: 0;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner__logo {
+    flex: 0 0 auto;
+    width: 3rem;
+    height: 3rem;
+    object-fit: contain;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner__content {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked {
+    position: relative;
+    padding: 0.65rem 2rem 0.65rem 0.85rem;
+    border: 1px solid color-mix(in srgb, var(--kbm-accent, #c2614e) 20%, #e8e4df);
+    background: color-mix(in srgb, var(--kbm-accent, #c2614e) 5%, var(--page-bg, #fff));
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-banner__dismiss {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.3rem;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1;
+    color: #9ca3af;
+    background: transparent;
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-banner__dismiss:hover {
+    color: #6b7280;
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-banner__dismiss:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--kbm-accent, #c2614e) 55%, #6b7280);
+    outline-offset: 1px;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-banner__layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem 0.75rem;
+    min-width: 0;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-banner__logo {
+    margin-top: 0.1rem;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-banner__title {
+    margin-bottom: 0.2rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-banner__body {
+    margin-bottom: 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-locked-actions {
+    margin-top: 0.75rem;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner__title {
+    margin: 0 0 0.35rem;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #1f2937;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--paid .sleeveless-review-access-banner__title {
+    margin-bottom: 0.2rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--kbm-green, #52682d) 72%, #1f2937);
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--paid .sleeveless-review-access-banner__body {
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner__body {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-cta--primary {
+    margin-bottom: 0;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-cta__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    text-align: center;
+    white-space: normal;
+    line-height: 1.3;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-cta__hint {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: #6b7280;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-member-line {
+    margin: 0.5rem 0 0.35rem;
+    font-size: 0.88rem;
+    line-height: 1.4;
+    text-align: center;
+    color: #6b7280;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-member-cta {
+    margin: 0 0 0.25rem;
+    text-align: center;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-member-cta__link {
+    font-size: 0.88rem;
+    line-height: 1.4;
+    font-weight: 500;
+    color: #6b7280;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-member-cta__link:hover {
+    color: #4b5563;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked .sleeveless-review-access-member-hint {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    text-align: center;
+    color: #6b7280;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-banner--locked[hidden],
+  .sleeveless-unified-review-page .sleeveless-review-access-locked-strip[hidden] {
+    display: none !important;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-locked-strip {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--kbm-accent, #c2614e) 22%, #e8e4df);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--kbm-accent, #c2614e) 7%, var(--page-bg, #fff));
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    font-family: inherit;
+    font-size: 0.84rem;
+    line-height: 1.35;
+    font-weight: 500;
+    text-align: center;
+    color: color-mix(in srgb, var(--kbm-accent, #c2614e) 72%, #374151);
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-locked-strip:hover {
+    border-color: color-mix(in srgb, var(--kbm-accent, #c2614e) 32%, #d1d5db);
+    background: color-mix(in srgb, var(--kbm-accent, #c2614e) 11%, var(--page-bg, #fff));
+    color: color-mix(in srgb, var(--kbm-accent, #c2614e) 82%, #1f2937);
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-locked-strip:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--kbm-accent, #c2614e) 55%, #6b7280);
+    outline-offset: 2px;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-locked-strip__arrow {
+    margin-left: 0.15em;
+    font-size: 1.7em;
+    line-height: 1;
+    font-weight: 400;
+    vertical-align: -0.08em;
+    opacity: 0.72;
+  }
+
+  .sleeveless-unified-review-page .sleeveless-review-access-locked-strip:hover .sleeveless-review-access-locked-strip__arrow {
+    opacity: 0.9;
+  }
+
+  @media (max-width: 480px) {
+    .sleeveless-unified-review-page .sleeveless-review-access-locked-strip {
+      padding: 0.5rem 0.65rem;
+      font-size: 0.82rem;
+    }
+  }
+
+</style>
+
+<script>
+  import "/src/scripts/sleevelessReviewProjectHeader.ts";
+  import "/src/scripts/sleeveless-builder-review-page.ts";
+  import "/src/scripts/customPatternEditingBanner.ts";
+</script>

@@ -80,6 +80,12 @@ export function computeDefaultMeasurementsFromChartRow(
     neck_width: roundQuarter(toFiniteNumber(row.neck_opening)),
     front_neck_depth: roundQuarter(toFiniteNumber(row.front_neck_depth)),
     back_neck_depth: roundQuarter(toFiniteNumber(row.back_neck_depth)),
+    // Sleeve measurements — only meaningful for sleeved constructions (drop shoulder);
+    // harmless extra keys for sleeveless. Armhole depth for drop shoulder is derived
+    // from upper_arm at generation time (upper_arm ÷ 2), not stored here.
+    upper_arm: roundQuarter(toFiniteNumber(row.upper_arm)),
+    wrist: roundQuarter(toFiniteNumber(row.wrist)),
+    sleeve_length: roundQuarter(toFiniteNumber(row.sleeve_length)),
   };
 }
 
