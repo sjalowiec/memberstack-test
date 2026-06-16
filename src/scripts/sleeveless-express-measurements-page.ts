@@ -29,6 +29,7 @@ import {
   collectOverlayAnchors,
   PATTERN_SUMMARY_MEASUREMENT_TARGETS,
 } from "../lib/patterns/patternSummaryMeasurementOverlay";
+import { resolveMeasurementBlueprintSvgUrl } from "../lib/patterns/measurementBlueprintSvgUrl";
 
 const LOG_PREFIX = "[express-measurements]";
 
@@ -193,8 +194,6 @@ function mergeContextFromUrlStorageAndPattern(pageUrl: URL): MergedMeasureContex
 
 const PATTERN_WORKSPACE_TAB_PATTERN_HREF = "/patterns/sleeveless/pattern/?tab=pattern";
 
-const MEASUREMENT_BLUEPRINT_SVG_URL = "/images/patterns/pattern_summary.svg";
-
 /** Inline SVG is required to toggle measurement-line groups by id (external raster/img cannot be styled). */
 function applyExpressMeasurementBlueprintSvgDisplay(svg: SVGElement): void {
   svg.querySelector("#line-waist-width")?.setAttribute("visibility", "hidden");
@@ -208,8 +207,9 @@ function applyExpressMeasurementBlueprintSvgDisplay(svg: SVGElement): void {
 }
 
 async function createMeasurementBlueprintArt(): Promise<SVGElement | HTMLImageElement> {
+  const svgUrl = resolveMeasurementBlueprintSvgUrl();
   try {
-    const res = await fetch(MEASUREMENT_BLUEPRINT_SVG_URL);
+    const res = await fetch(svgUrl);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const svgText = await res.text();
     const parsed = new DOMParser().parseFromString(svgText, "image/svg+xml");
@@ -227,7 +227,7 @@ async function createMeasurementBlueprintArt(): Promise<SVGElement | HTMLImageEl
     warn("could not load inline measurement blueprint SVG; using img fallback", err);
     const img = document.createElement("img");
     img.className = "express-mbp-art";
-    img.src = MEASUREMENT_BLUEPRINT_SVG_URL;
+    img.src = svgUrl;
     img.width = 142;
     img.height = 195;
     img.alt = "Measurement diagram for sleeveless garment";

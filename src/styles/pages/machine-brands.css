@@ -38,6 +38,44 @@
   margin-top: 2px;
 }
 
+.machine-brands-crosslink {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  background: #f5f7f2;
+  border: 1px solid #d6dcc8;
+  border-left: 4px solid #52682d;
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin: 2rem 0 0;
+}
+
+.machine-brands-crosslink__body {
+  flex: 1 1 320px;
+}
+
+.machine-brands-crosslink__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--kbm-green, #52682d);
+  line-height: 1.3;
+}
+
+.machine-brands-crosslink__text {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: #374151;
+}
+
+.machine-brands-crosslink__btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .machine-brands-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;

@@ -1,0 +1,442 @@
+---
+export const prerender = true;
+
+import Layout from "../../../layouts/Layout.astro";
+import ReferencePageShell from "../../../components/ReferencePageShell.astro";
+import {
+  getAllMachines,
+  getMachineBySlug,
+  machineImageUrl,
+  primaryImageUrl,
+  formatPitch,
+  isBrandOnly,
+  machineTitle,
+  type Machine,
+} from "../../../lib/machines/referenceCatalog";
+
+export function getStaticPaths() {
+  return getAllMachines().map((machine) => ({
+    params: { slug: machine.slug },
+    props: { machine },
+  }));
+}
+
+const { machine } = Astro.props as { machine: Machine };
+
+// Fallback for any direct hit that bypasses getStaticPaths.
+const resolved = machine ?? getMachineBySlug(Astro.params.slug);
+if (!resolved) {
+  return Astro.redirect("/reference/machines");
+}
+
+const title = machineTitle(resolved);
+const brandOnly = isBrandOnly(resolved);
+
+const heroImage = primaryImageUrl(resolved);
+const gallery = resolved.images
+  .map((img) => machineImageUrl(img.url))
+  .filter((url): url is string => !!url);
+const extraImages = gallery.filter((url) => url !== heroImage);
+const altText = `${title} knitting machine`;
+const missingLabel = `Photo needed for ${title}`;
+const pitch = formatPitch(resolved);
+
+const hasImage = !!heroImage;
+const photoMailSubject = `Machine Photo Submission - ${title}`;
+const photoMailBody = `I have a photo of the ${title} machine to contribute to the Machine Database.`;
+const photoMailHref = `mailto:contact@knititnow.com?subject=${encodeURIComponent(
+  photoMailSubject
+)}&body=${encodeURIComponent(photoMailBody)}`;
+
+const specs: { label: string; value: string | number }[] = [
+  { label: "Brand", value: resolved.brand },
+];
+if (!brandOnly) specs.push({ label: "Model", value: resolved.model });
+specs.push({ label: "Gauge", value: resolved.gauge });
+if (pitch) specs.push({ label: "Pitch", value: pitch });
+if (resolved.machineStyle) specs.push({ label: "Machine style", value: resolved.machineStyle });
+if (resolved.needleCount != null)
+  specs.push({ label: "Number of needles", value: resolved.needleCount });
+if (resolved.year != null) specs.push({ label: "Year", value: resolved.year });
+
+const metaDescription = `${title} — ${resolved.gauge} knitting machine reference.`;
+---
+
+<Layout
+  title={`${title} | Machine Library | Knit it Now`}
+  description={metaDescription}
+  bodyClass="page--tight-header"
+>
+  <ReferencePageShell
+    title={title}
+    backHref="/reference/machines"
+    backLabel="Back to the Machine Library"
+    wide
+  >
+    <article class="machine-detail" data-machine-slug={resolved.slug}>
+      <div class="machine-detail__top">
+        <div class="machine-detail__media">
+          <div class="machine-detail__cover">
+            {heroImage ? (
+              <img
+                class="machine-detail__img"
+                src={heroImage}
+                alt={altText}
+                loading="lazy"
+                decoding="async"
+                onerror="this.style.display='none';this.closest('.machine-detail__cover').classList.add('is-missing');"
+              />
+            ) : null}
+            <div class="machine-detail__placeholder" role="img" aria-label={missingLabel}>
+              <svg
+                class="machine-detail__placeholder-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M4 7h3l1.5-2h7L17 7h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z" />
+                <circle cx="12" cy="13" r="3.2" />
+              </svg>
+              <span class="machine-detail__placeholder-title">Photo Needed</span>
+              <span class="machine-detail__placeholder-text">Help Us Build This Database</span>
+            </div>
+          </div>
+
+          {extraImages.length > 0 && (
+            <ul class="machine-detail__thumbs">
+              {extraImages.map((url) => (
+                <li class="machine-detail__thumb">
+                  <img src={url} alt={altText} loading="lazy" decoding="async" />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div class="machine-detail__meta">
+          <span class="machine-detail__brand">{resolved.brand}</span>
+
+          <dl class="machine-detail__specs">
+            {specs.map((spec) => (
+              <div class="machine-detail__spec">
+                <dt>{spec.label}</dt>
+                <dd>{spec.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </div>
+
+      {resolved.techniques.length > 0 && (
+        <section class="machine-detail__section">
+          <h2>Supported Techniques</h2>
+          <ul class="machine-detail__techniques">
+            {resolved.techniques.map((technique) => (
+              <li class="machine-detail__technique">{technique}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {resolved.notes && (
+        <section class="machine-detail__section">
+          <h2>Notes</h2>
+          <p class="machine-detail__notes">{resolved.notes}</p>
+        </section>
+      )}
+
+      {!hasImage && (
+        <section class="machine-detail__contribute" aria-labelledby="contribute-heading">
+          <h2 id="contribute-heading">Help Us Build This Database</h2>
+          <p>
+            Do you own this machine? We'd love to add a photo to help other
+            machine knitters.
+          </p>
+          <a class="machine-detail__contribute-btn" href={photoMailHref}>
+            Submit a Photo
+          </a>
+        </section>
+      )}
+
+      <section class="machine-detail__section">
+        <h2>Looking for a manual?</h2>
+        <p class="machine-detail__manual">
+          Machine manuals for many brands and models are available from MKManuals,
+          an independent third-party archive.
+        </p>
+        <a
+          class="machine-detail__manuallink"
+          href="https://mkmanuals.com"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Browse manuals at mkmanuals.com
+          <span aria-hidden="true">↗</span>
+        </a>
+      </section>
+    </article>
+  </ReferencePageShell>
+</Layout>
+
+<style>
+  .machine-detail {
+    margin-top: 0.5rem;
+  }
+
+  .machine-detail__top {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (min-width: 700px) {
+    .machine-detail__top {
+      grid-template-columns: minmax(240px, 360px) 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+  }
+
+  .machine-detail__cover {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    width: 100%;
+    background: #eef1e7;
+    border: 1px solid #dbe6c5;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .machine-detail__img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #f7f8f5;
+  }
+
+  .machine-detail__placeholder {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 1rem;
+    text-align: center;
+    color: #6b7a58;
+    font-weight: 600;
+    background: repeating-linear-gradient(
+      45deg,
+      #eef1e7,
+      #eef1e7 12px,
+      #e6ebdb 12px,
+      #e6ebdb 24px
+    );
+  }
+
+  .machine-detail__placeholder-icon {
+    width: 38px;
+    height: 38px;
+    color: var(--kbm-green, #52682d);
+    opacity: 0.8;
+    margin-bottom: 0.1rem;
+  }
+
+  .machine-detail__placeholder-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .machine-detail__placeholder-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #6b7a58;
+  }
+
+  .machine-detail__cover.is-missing .machine-detail__placeholder,
+  .machine-detail__cover:not(:has(.machine-detail__img)) .machine-detail__placeholder {
+    display: flex;
+  }
+
+  .machine-detail__thumbs {
+    list-style: none;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .machine-detail__thumb {
+    width: 72px;
+    height: 72px;
+    border: 1px solid #dbe6c5;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f7f8f5;
+  }
+
+  .machine-detail__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .machine-detail__brand {
+    display: inline-block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #6b7a58;
+    background: rgba(82, 104, 45, 0.08);
+    border-radius: 999px;
+    padding: 0.25rem 0.7rem;
+    margin-bottom: 1rem;
+  }
+
+  .machine-detail__specs {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    border: 1px solid #dbe6c5;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .machine-detail__spec {
+    display: grid;
+    grid-template-columns: minmax(140px, 38%) 1fr;
+    gap: 0.5rem;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid #eef1e7;
+  }
+
+  .machine-detail__spec:last-child {
+    border-bottom: none;
+  }
+
+  .machine-detail__spec:nth-child(odd) {
+    background: #f7f8f5;
+  }
+
+  .machine-detail__spec dt {
+    font-weight: 600;
+    color: #6b7a58;
+  }
+
+  .machine-detail__spec dd {
+    margin: 0;
+    color: #333;
+  }
+
+  .machine-detail__section {
+    margin-bottom: 2rem;
+  }
+
+  .machine-detail__section h2 {
+    font-size: 1.4rem;
+    color: var(--kbm-green, #52682d);
+    border-bottom: 2px solid #c7d8a4;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .machine-detail__techniques {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .machine-detail__technique {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #52682d;
+    background: #f0f4e7;
+    border: 1px solid #dbe6c5;
+    border-radius: 999px;
+    padding: 0.35rem 0.85rem;
+  }
+
+  .machine-detail__notes {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #333;
+    margin: 0;
+  }
+
+  .machine-detail__contribute {
+    margin-bottom: 2rem;
+    padding: 1.25rem 1.5rem;
+    background: #f0f4e7;
+    border: 1px solid #c7d8a4;
+    border-radius: 12px;
+  }
+
+  .machine-detail__contribute h2 {
+    font-size: 1.2rem;
+    color: var(--kbm-green, #52682d);
+    margin: 0 0 0.5rem;
+  }
+
+  .machine-detail__contribute p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #333;
+    margin: 0 0 1rem;
+  }
+
+  .machine-detail__contribute-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #fff;
+    background: var(--kbm-green, #52682d);
+    border-radius: 8px;
+    padding: 0.65rem 1.25rem;
+    text-decoration: none;
+    min-height: 48px;
+    transition: background 0.2s ease;
+  }
+
+  .machine-detail__contribute-btn:hover {
+    background: #45591f;
+  }
+
+  .machine-detail__manual {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #333;
+    margin: 0 0 0.75rem;
+  }
+
+  .machine-detail__manuallink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 600;
+    color: #52682d;
+    text-decoration: underline;
+    text-decoration-color: #c7d8a4;
+    text-underline-offset: 3px;
+    min-height: 48px;
+  }
+
+  .machine-detail__manuallink:hover {
+    text-decoration-color: #52682d;
+  }
+</style>

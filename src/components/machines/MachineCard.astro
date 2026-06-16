@@ -1,7 +1,11 @@
 ---
-import AvailabilityBadge from './AvailabilityBadge.astro';
-import type { Machine } from '../../lib/machines/getMachineById';
-import { formatPrice } from '../../lib/machines/getMachineById';
+import type { Machine } from "../../lib/machines/referenceCatalog";
+import {
+  buildSearchIndex,
+  primaryImageUrl,
+  isBrandOnly,
+  machineTitle,
+} from "../../lib/machines/referenceCatalog";
 
 interface Props {
   machine: Machine;
@@ -9,180 +13,210 @@ interface Props {
 
 const { machine } = Astro.props;
 
-const typeLabels: Record<string, string> = {
-  'machine': 'Machine',
-  'bundle': 'Bundle',
-  'ribber': 'Ribber'
-};
+const search = buildSearchIndex(machine);
+const detailHref = `/reference/machines/${machine.slug}`;
+const image = primaryImageUrl(machine);
+const brandOnly = isBrandOnly(machine);
+const title = machineTitle(machine);
+const altText = `${title} knitting machine`;
+const missingLabel = `Photo needed for ${machine.brand} ${machine.model}`;
 ---
 
-<article 
+<article
   class="machine-card"
-  data-gauge={machine.gauge}
-  data-type={machine.productType}
-  data-availability={machine.availability}
+  data-model={machine.model.toLowerCase()}
+  data-brand={machine.brand.toLowerCase()}
+  data-gauge={machine.pitchAlpha.toLowerCase()}
+  data-style={(machine.machineStyle ?? "").toLowerCase()}
+  data-search={search}
 >
-  <a href={`/machines/${machine.id}`}>
-    <div class="card-image">
-      {machine.primaryImage ? (
-        <img 
-          src={machine.primaryImage} 
-          alt={machine.model}
+  <a class="machine-card__link" href={detailHref}>
+    <div class="machine-card__media">
+      {image ? (
+        <img
+          class="machine-card__img"
+          src={image}
+          alt={altText}
           loading="lazy"
+          decoding="async"
+          onerror="this.style.display='none';this.closest('.machine-card__media').classList.add('is-missing');"
         />
-      ) : (
-        <div class="image-placeholder">
-          <span>Image coming soon</span>
-        </div>
-      )}
-      {machine.isBundle && (
-        <span class="bundle-badge">Bundle</span>
-      )}
+      ) : null}
+      <div class="machine-card__placeholder" role="img" aria-label={missingLabel}>
+        <svg
+          class="machine-card__placeholder-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M4 7h3l1.5-2h7L17 7h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z" />
+          <circle cx="12" cy="13" r="3.2" />
+        </svg>
+        <span class="machine-card__placeholder-title">Photo Needed</span>
+        <span class="machine-card__placeholder-text">Help Us Build This Database</span>
+        <span class="machine-card__placeholder-sub">Own this machine?</span>
+      </div>
     </div>
-    
-    <div class="card-content">
-      <div class="card-badges">
-        <span class="gauge-badge">
-          {machine.gaugeLabel} {machine.gauge.replace('-Gauge', '').replace(' Gauge', '')}
-        </span>
-        <AvailabilityBadge status={machine.availability} size="sm" />
-      </div>
-      
-      <h3>{machine.model}</h3>
-      
-      <p class="card-description">{machine.shortDescription}</p>
-      
-      <div class="card-footer">
-        <span class="price">{formatPrice(machine.priceUSD)}</span>
-        <span class="view-link">
-          View details
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 5l7 7-7 7" />
-          </svg>
-        </span>
-      </div>
+
+    <div class="machine-card__body">
+      {!brandOnly && <span class="machine-card__brand">{machine.brand}</span>}
+      <h3 class="machine-card__title">{brandOnly ? machine.brand : machine.model}</h3>
+
+      <ul class="machine-card__meta">
+        <li class="machine-card__chip">{machine.gauge}</li>
+        {machine.machineStyle && (
+          <li class="machine-card__chip">{machine.machineStyle}</li>
+        )}
+        {machine.year && <li class="machine-card__chip">{machine.year}</li>}
+      </ul>
     </div>
   </a>
 </article>
 
 <style>
   .machine-card {
-    background: white;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border: 2px solid #c7d8a4;
+    border-radius: 14px;
     overflow: hidden;
-    transition: box-shadow 0.2s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   }
 
   .machine-card:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 22px rgba(82, 104, 45, 0.14);
+    border-color: var(--kbm-green, #52682d);
   }
 
-  .machine-card a {
+  .machine-card__link {
     text-decoration: none;
-    display: block;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
   }
 
-  .card-image {
-    aspect-ratio: 1;
-    background: #f3f4f6;
-    overflow: hidden;
+  .machine-card__media {
     position: relative;
-  }
-
-  .card-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .image-placeholder {
-    width: 100%;
-    height: 100%;
+    aspect-ratio: 4 / 3;
+    background: #eef1e7;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #e5e7eb;
-    color: #9ca3af;
-    font-size: 0.875rem;
-  }
-
-  .bundle-badge {
-    position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    background: var(--kbm-green);
-    color: white;
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-  }
-
-  .card-content {
-    padding: 1rem;
-  }
-
-  .card-badges {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-    flex-wrap: wrap;
-  }
-
-  .gauge-badge {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: #6b7280;
-    background: #f3f4f6;
-    padding: 0.125rem 0.5rem;
-    border-radius: 4px;
-  }
-
-  .card-content h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--kbm-green);
-    margin: 0 0 0.5rem 0;
-  }
-
-  .card-description {
-    font-size: 0.875rem;
-    color: #6b7280;
-    margin: 0 0 1rem 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  .card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  .machine-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #f7f8f5;
   }
 
-  .price {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--kbm-green);
-  }
-
-  .view-link {
-    display: inline-flex;
+  /* Contribution prompt: shown when there is no image OR the image fails. */
+  .machine-card__placeholder {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 0.25rem;
-    font-size: 0.875rem;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    color: #6b7a58;
+    background: repeating-linear-gradient(
+      45deg,
+      #eef1e7,
+      #eef1e7 12px,
+      #e6ebdb 12px,
+      #e6ebdb 24px
+    );
+  }
+
+  .machine-card__placeholder-icon {
+    width: 30px;
+    height: 30px;
+    color: var(--kbm-green, #52682d);
+    opacity: 0.8;
+    margin-bottom: 0.15rem;
+  }
+
+  .machine-card__placeholder-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+    letter-spacing: 0.01em;
+  }
+
+  .machine-card__placeholder-text {
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #6b7a58;
+  }
+
+  .machine-card__placeholder-sub {
+    font-size: 0.74rem;
     font-weight: 500;
-    color: var(--kbm-green);
+    color: #8a9a72;
   }
 
-  .machine-card:hover .view-link {
-    text-decoration: underline;
+  .machine-card__media.is-missing .machine-card__placeholder,
+  .machine-card__media:not(:has(.machine-card__img)) .machine-card__placeholder {
+    display: flex;
   }
 
-  .view-link svg {
-    flex-shrink: 0;
+  .machine-card__body {
+    padding: 0.75rem 1.1rem 0.95rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    flex: 1;
+  }
+
+  .machine-card__brand {
+    align-self: flex-start;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #6b7a58;
+    background: rgba(82, 104, 45, 0.08);
+    border-radius: 999px;
+    padding: 0.2rem 0.6rem;
+  }
+
+  .machine-card__title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--kbm-green, #52682d);
+    margin: 0.15rem 0 0;
+  }
+
+  .machine-card__meta {
+    list-style: none;
+    margin: 0.4rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .machine-card__chip {
+    font-size: 0.78rem;
+    color: #52682d;
+    background: #f0f4e7;
+    border: 1px solid #dbe6c5;
+    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
   }
 </style>

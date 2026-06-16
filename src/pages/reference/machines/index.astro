@@ -1,0 +1,381 @@
+---
+export const prerender = true;
+
+import Layout from "../../../layouts/Layout.astro";
+import ReferencePageShell from "../../../components/ReferencePageShell.astro";
+import MachineCard from "../../../components/machines/MachineCard.astro";
+import {
+  getAllMachines,
+  getAllBrands,
+  getAllGauges,
+  getAllMachineStyles,
+} from "../../../lib/machines/referenceCatalog";
+
+const machines = getAllMachines();
+const brands = getAllBrands();
+const gauges = getAllGauges();
+const styles = getAllMachineStyles();
+
+const introText =
+  "";
+---
+
+<Layout
+  title="Machine Database | Knit it Now"
+  description={introText}
+  bodyClass="page--tight-header"
+>
+  <ReferencePageShell
+    title="Machine Database"
+    subhead={introText}
+    backHref="/reference"
+    backLabel="Back to Reference"
+    wide
+  >
+    <div class="machine-library">
+      <aside class="machine-library__crosslink">
+        <div class="machine-library__crosslink-body">
+          <h2 class="machine-library__crosslink-title">Why are there so many machine names?</h2>
+          <p class="machine-library__crosslink-text">
+            Many knitting machines were sold under different brand names depending on where they
+            were marketed. As a result, the same machine may be known by several different names
+            around the world.
+          </p>
+        </div>
+        <a class="kbm-btn kbm-btn-primary machine-library__crosslink-btn" href="/reference/machine-brands">
+          Machines Around the World →
+        </a>
+      </aside>
+
+      <!-- Controls -->
+      <div class="machine-library__controls">
+        <div class="machine-library__search">
+          <label class="sr-only" for="machine-search">Search the machine library</label>
+          <input
+            id="machine-search"
+            type="search"
+            placeholder="Search by model…"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="machine-library__filters">
+          <div class="machine-library__filter">
+            <label for="brand-filter">Brand</label>
+            <select id="brand-filter">
+              <option value="">All brands</option>
+              {brands.map((b) => <option value={b.toLowerCase()}>{b}</option>)}
+            </select>
+          </div>
+
+          <div class="machine-library__filter">
+            <label for="gauge-filter">Gauge</label>
+            <select id="gauge-filter">
+              <option value="">All gauges</option>
+              {gauges.map((g) => <option value={g.toLowerCase()}>{g}</option>)}
+            </select>
+          </div>
+
+          <div class="machine-library__filter">
+            <label for="type-filter">Machine type</label>
+            <select id="type-filter">
+              <option value="">All types</option>
+              {styles.map((s) => <option value={s.toLowerCase()}>{s}</option>)}
+            </select>
+          </div>
+
+          <div class="machine-library__filter">
+            <label for="sort-order">Sort</label>
+            <select id="sort-order">
+              <option value="model-asc">Model (A–Z)</option>
+              <option value="model-desc">Model (Z–A)</option>
+            </select>
+          </div>
+
+          <button type="button" id="clear-filters" class="machine-library__clear">Clear</button>
+        </div>
+      </div>
+
+      <p class="machine-library__resultcount" id="result-count" aria-live="polite"></p>
+
+      <!-- Grid -->
+      <div class="machine-library__grid" id="machine-grid">
+        {machines.map((machine) => <MachineCard machine={machine} />)}
+      </div>
+
+      <!-- Empty state -->
+      <p class="machine-library__empty" id="no-results" hidden>
+        No machines match your search. Try a different model, brand, gauge, or type.
+      </p>
+    </div>
+  </ReferencePageShell>
+</Layout>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .machine-library {
+    margin-top: 0.5rem;
+  }
+
+  .machine-library__crosslink {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1.25rem;
+    background: #f5f7f2;
+    border: 1px solid #d6dcc8;
+    border-left: 4px solid #52682d;
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin: 0 0 1.25rem;
+  }
+
+  .machine-library__crosslink-body {
+    flex: 1 1 320px;
+  }
+
+  .machine-library__crosslink-title {
+    margin: 0 0 0.35rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #52682d;
+    line-height: 1.3;
+  }
+
+  .machine-library__crosslink-text {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    color: #374151;
+  }
+
+  .machine-library__crosslink-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .machine-library__controls {
+    position: sticky;
+    top: calc(var(--header-offset, 150px) - 8px);
+    z-index: 4;
+    background: var(--page-bg, #f7f8f7);
+    padding: 0.75rem 0 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #e6e6e6;
+  }
+
+  .machine-library__search input {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 1.05rem;
+    padding: 0.8rem 1rem;
+    border: 2px solid #c7d8a4;
+    border-radius: 12px;
+    background: #fff;
+    color: #333;
+  }
+
+  .machine-library__search input:focus {
+    outline: none;
+    border-color: var(--kbm-green, #52682d);
+    box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.15);
+  }
+
+  .machine-library__filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem 1rem;
+    margin-top: 0.85rem;
+  }
+
+  .machine-library__filter {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .machine-library__filter label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #52682d;
+  }
+
+  .machine-library__filter select {
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid #c7d8a4;
+    border-radius: 8px;
+    background: #fff;
+    color: #333;
+    min-width: 180px;
+    min-height: 44px;
+  }
+
+  .machine-library__filter select:focus {
+    outline: none;
+    border-color: var(--kbm-green, #52682d);
+    box-shadow: 0 0 0 2px rgba(82, 104, 45, 0.18);
+  }
+
+  .machine-library__clear {
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: #52682d;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.55rem 0.25rem;
+    text-decoration: underline;
+    align-self: flex-end;
+    min-height: 44px;
+  }
+
+  .machine-library__resultcount {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin: 0 0 1rem;
+  }
+
+  .machine-library__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .machine-library__empty {
+    text-align: center;
+    color: #6b7280;
+    padding: 3rem 1rem;
+    font-size: 1.05rem;
+  }
+
+  @media (max-width: 700px) {
+    .machine-library__controls {
+      position: static;
+      top: auto;
+      max-height: none;
+      padding: 1rem 0;
+      margin-bottom: 1rem;
+    }
+
+    .machine-library__search input {
+      font-size: 1rem;
+      padding: 0.55rem 0.75rem;
+    }
+
+    .machine-library__filters {
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .machine-library__resultcount {
+      margin-bottom: 0.75rem;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .machine-library__grid {
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+
+    .machine-library__filter select {
+      min-width: 140px;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var grid = document.getElementById("machine-grid");
+    if (!grid) return;
+
+    function getCards() {
+      return Array.prototype.slice.call(grid.querySelectorAll(".machine-card"));
+    }
+    var searchInput = document.getElementById("machine-search");
+    var brandFilter = document.getElementById("brand-filter");
+    var gaugeFilter = document.getElementById("gauge-filter");
+    var typeFilter = document.getElementById("type-filter");
+    var sortOrder = document.getElementById("sort-order");
+    var clearBtn = document.getElementById("clear-filters");
+    var noResults = document.getElementById("no-results");
+    var resultCount = document.getElementById("result-count");
+
+    function applySort() {
+      var order = (sortOrder && sortOrder.value) || "model-asc";
+      var cards = getCards();
+      cards.sort(function (a, b) {
+        var ma = a.getAttribute("data-model") || "";
+        var mb = b.getAttribute("data-model") || "";
+        var cmp = ma.localeCompare(mb, "en", { numeric: true, sensitivity: "base" });
+        return order === "model-desc" ? -cmp : cmp;
+      });
+      cards.forEach(function (card) {
+        grid.appendChild(card);
+      });
+    }
+
+    function applyFilters() {
+      var q = ((searchInput && searchInput.value) || "").trim().toLowerCase();
+      var brand = (brandFilter && brandFilter.value) || "";
+      var gauge = (gaugeFilter && gaugeFilter.value) || "";
+      var type = (typeFilter && typeFilter.value) || "";
+
+      var visible = 0;
+      getCards().forEach(function (card) {
+        var matchesSearch =
+          !q || (card.getAttribute("data-search") || "").indexOf(q) !== -1;
+        var matchesBrand = !brand || (card.getAttribute("data-brand") || "") === brand;
+        var matchesGauge = !gauge || (card.getAttribute("data-gauge") || "") === gauge;
+        var matchesType = !type || (card.getAttribute("data-style") || "") === type;
+
+        var show = matchesSearch && matchesBrand && matchesGauge && matchesType;
+        card.style.display = show ? "" : "none";
+        if (show) visible++;
+      });
+
+      if (noResults) noResults.hidden = visible !== 0;
+      if (resultCount) {
+        resultCount.textContent = visible + (visible === 1 ? " machine" : " machines");
+      }
+    }
+
+    if (searchInput) searchInput.addEventListener("input", applyFilters);
+    if (brandFilter) brandFilter.addEventListener("change", applyFilters);
+    if (gaugeFilter) gaugeFilter.addEventListener("change", applyFilters);
+    if (typeFilter) typeFilter.addEventListener("change", applyFilters);
+    if (sortOrder)
+      sortOrder.addEventListener("change", function () {
+        applySort();
+      });
+    if (clearBtn)
+      clearBtn.addEventListener("click", function () {
+        if (searchInput) searchInput.value = "";
+        if (brandFilter) brandFilter.value = "";
+        if (gaugeFilter) gaugeFilter.value = "";
+        if (typeFilter) typeFilter.value = "";
+        if (sortOrder) sortOrder.value = "model-asc";
+        applySort();
+        applyFilters();
+      });
+
+    applySort();
+    applyFilters();
+  })();
+</script>

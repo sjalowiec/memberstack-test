@@ -3644,7 +3644,7 @@
   {
     "machineId": 271,
     "brand": "Prazisa",
-    "model": NaN,
+    "model": "Prazisa",
     "bed": "Metal",
     "gauge": "Standard Gauge",
     "needleCount": NaN,
@@ -3727,7 +3727,7 @@
       {
         "model": "LW-1",
         "title": "Weaving Attachement",
-        "category": "Weaving Attachment"
+        "category": "Weaving Attachmentxx"
       }
     ],
     "manuals": [
@@ -6318,8 +6318,8 @@
   },
   {
     "machineId": 354,
-    "brand": "White Knitter Mod 7",
-    "model": NaN,
+    "brand": "White Knitter",
+    "model": "Mod 7",
     "bed": "Plastic",
     "gauge": "Standard Gauge",
     "needleCount": 163.0,

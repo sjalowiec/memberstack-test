@@ -51,8 +51,11 @@ import {
   collectOverlayAnchors,
   PATTERN_SUMMARY_MEASUREMENT_TARGETS,
 } from "../lib/patterns/patternSummaryMeasurementOverlay";
+import {
+  isDropShoulderConstruction,
+  resolveMeasurementBlueprintSvgUrl,
+} from "../lib/patterns/measurementBlueprintSvgUrl";
 
-const MEASUREMENT_BLUEPRINT_SVG_URL = "/images/patterns/pattern_summary.svg";
 const YARN_GAUGE_HREF = "/patterns/sleeveless/custom-build/yarn-gauge";
 const PATTERN_WORKSPACE_TAB_PATTERN_HREF = "/patterns/sleeveless/pattern/?tab=pattern";
 
@@ -67,7 +70,11 @@ export type CustomBuildMeasurementsInitOptions = {
   preserveUnitsHost?: boolean;
 };
 
-/** Sleeveless body fields shown on the diagram (inches, stored as decimal strings). */
+/**
+ * Diagram fields (inches, stored as decimal strings). The first 8 are the shared sleeveless body
+ * fields; the trailing 3 are Drop Shoulder–only sleeve fields (rendered only when the active
+ * construction is drop-shoulder — see {@link getActiveDiagramFields}).
+ */
 const DIAGRAM_FIELD_KEYS = [
   "finishedNeckOpeningWidth",
   "neckDepth",
@@ -77,6 +84,9 @@ const DIAGRAM_FIELD_KEYS = [
   "hip",
   "finishedLength",
   "hemDepth",
+  "upperArm",
+  "wrist",
+  "sleeveLength",
 ] as const;
 
 type DiagramFieldKey = (typeof DIAGRAM_FIELD_KEYS)[number];
@@ -90,6 +100,10 @@ type DiagramFieldDef = {
   label: string;
   labelLines?: string[];
   axis?: "horizontal" | "vertical";
+  /** Rendered only for drop-shoulder construction (sleeve measurements). */
+  dropShoulderOnly?: boolean;
+  /** When true, an empty value is allowed (no "Required" error) — sleeve fields fall back to chart. */
+  optional?: boolean;
   defaultInches: (row: ChartRow, computed: Record<string, number>, audience: string) => number | undefined;
 };
 
@@ -172,30 +186,59 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
     axis: "vertical",
     defaultInches: (_row, _computed, audience) => getDefaultHemLengthInches(audience),
   },
+  // --- Drop Shoulder–only sleeve fields (chart keys: upper_arm / wrist / sleeve_length) ---
+  {
+    key: "upperArm",
+    positionMod: "upper-arm",
+    targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.upperArm,
+    label: "Upper arm circ",
+    labelLines: ["Upper arm", "circ"],
+    axis: "horizontal",
+    dropShoulderOnly: true,
+    optional: true,
+    defaultInches: (row) => toFinite(row.upper_arm),
+  },
+  {
+    key: "sleeveLength",
+    positionMod: "arm-length",
+    targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.armLength,
+    label: "Sleeve length",
+    axis: "vertical",
+    dropShoulderOnly: true,
+    optional: true,
+    defaultInches: (row) => toFinite(row.sleeve_length),
+  },
+  {
+    key: "wrist",
+    positionMod: "cuff-circumference",
+    targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.cuffCircumference,
+    label: "Cuff circ",
+    labelLines: ["Cuff", "circ"],
+    axis: "horizontal",
+    dropShoulderOnly: true,
+    optional: true,
+    defaultInches: (row) => toFinite(row.wrist),
+  },
 ];
 
-/** True when the active pattern is a drop-shoulder construction (armhole depth is derived, not edited). */
-function isDropShoulderConstruction(): boolean {
-  try {
-    const canon = (getCurrentPattern().style as Record<string, unknown> | undefined)?.construction;
-    if (canon === "drop-shoulder") return true;
-    const pb = (getPatternData().style as Record<string, unknown> | undefined)?.construction;
-    return pb === "drop-shoulder";
-  } catch {
-    return false;
-  }
-}
-
 /**
- * Diagram fields for the active construction. Drop shoulder hides the editable Armhole Depth
- * field — that measurement is derived (finished upper arm ÷ 2) at generation time, never edited
- * or stored as a user value here.
+ * Diagram fields for the active construction:
+ * - Sleeveless: the 8 body fields (sleeve fields are excluded).
+ * - Drop shoulder: body fields minus Armhole Depth (derived = finished upper arm ÷ 2), plus the
+ *   three sleeve fields (upper arm, sleeve length, cuff).
  */
 function getActiveDiagramFields(): DiagramFieldDef[] {
-  if (isDropShoulderConstruction()) {
-    return DIAGRAM_FIELDS.filter((field) => field.key !== "armholeDepth");
-  }
-  return DIAGRAM_FIELDS;
+  const dropShoulder = isDropShoulderConstruction();
+  return DIAGRAM_FIELDS.filter((field) => {
+    if (field.dropShoulderOnly && !dropShoulder) return false;
+    if (dropShoulder && field.key === "armholeDepth") return false;
+    return true;
+  });
+}
+
+/** Field keys rendered for the active construction (validation / collect / persist gate). */
+function activeFieldKeys(): DiagramFieldKey[] {
+  return getActiveDiagramFields().map((field) => field.key);
 }
 
 function toFinite(v: unknown): number | undefined {
@@ -333,8 +376,12 @@ function applyExpressMeasurementBlueprintSvgDisplay(svg: SVGElement): void {
 }
 
 async function createMeasurementBlueprintArt(): Promise<SVGElement | HTMLImageElement> {
+  const svgUrl = resolveMeasurementBlueprintSvgUrl();
+  const ariaLabel = isDropShoulderConstruction()
+    ? "Drop shoulder sweater measurement diagram"
+    : "Sleeveless sweater body measurement diagram";
   try {
-    const res = await fetch(MEASUREMENT_BLUEPRINT_SVG_URL);
+    const res = await fetch(svgUrl);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const svgText = await res.text();
     const parsed = new DOMParser().parseFromString(svgText, "image/svg+xml");
@@ -345,16 +392,16 @@ async function createMeasurementBlueprintArt(): Promise<SVGElement | HTMLImageEl
     if (!(svg instanceof SVGSVGElement)) throw new Error("import failed");
     svg.classList.add("express-mbp-art");
     svg.setAttribute("role", "img");
-    svg.setAttribute("aria-label", "Sleeveless sweater body measurement diagram");
+    svg.setAttribute("aria-label", ariaLabel);
     svg.setAttribute("focusable", "false");
     return svg;
   } catch {
     const img = document.createElement("img");
     img.className = "express-mbp-art";
-    img.src = MEASUREMENT_BLUEPRINT_SVG_URL;
+    img.src = svgUrl;
     img.width = 142;
     img.height = 195;
-    img.alt = "Sleeveless sweater body measurement diagram";
+    img.alt = ariaLabel;
     img.decoding = "async";
     return img;
   }
@@ -599,7 +646,7 @@ function collectValues(
 ): Record<DiagramFieldKey, string> {
   const displayUnit = options?.displayUnit;
   const out = {} as Record<DiagramFieldKey, string>;
-  for (const key of DIAGRAM_FIELD_KEYS) {
+  for (const key of activeFieldKeys()) {
     const input = root.querySelector<HTMLInputElement>(`[data-cb-measure-input="${key}"]`);
     const raw = input?.value.trim() ?? "";
     if (displayUnit == null) {
@@ -630,22 +677,24 @@ function setFieldError(root: HTMLElement, key: DiagramFieldKey, message: string 
 }
 
 function clearAllFieldErrors(root: HTMLElement): void {
-  for (const key of DIAGRAM_FIELD_KEYS) setFieldError(root, key, null);
+  for (const key of activeFieldKeys()) setFieldError(root, key, null);
 }
 
 function validateFields(root: HTMLElement, displayUnit: UiLengthUnit | null): boolean {
   clearAllFieldErrors(root);
   let ok = true;
   const values = collectValues(root, { displayUnit });
-  for (const key of DIAGRAM_FIELD_KEYS) {
-    const raw = values[key];
+  for (const field of getActiveDiagramFields()) {
+    const raw = values[field.key];
     if (!raw) {
-      setFieldError(root, key, "Required");
+      // Sleeve fields are optional — empty just falls back to the chart value at generation.
+      if (field.optional) continue;
+      setFieldError(root, field.key, "Required");
       ok = false;
       continue;
     }
     if (parseInchesInput(raw) === undefined) {
-      setFieldError(root, key, "Enter a positive number");
+      setFieldError(root, field.key, "Enter a positive number");
       ok = false;
     }
   }
@@ -655,7 +704,7 @@ function validateFields(root: HTMLElement, displayUnit: UiLengthUnit | null): bo
 function persistFromRoot(root: HTMLElement, displayUnit: UiLengthUnit | null): void {
   const values = collectValues(root, { displayUnit });
   const toStore: Record<string, string> = { ...loadMeasurementOverrides() };
-  for (const key of DIAGRAM_FIELD_KEYS) {
+  for (const key of activeFieldKeys()) {
     const n = parseInchesInput(values[key]);
     if (n !== undefined) toStore[key] = formatInchesInput(n);
   }
@@ -668,7 +717,7 @@ function buildValidationInputFromRoot(
 ): ReturnType<typeof buildSleevelessCustomBuildValidationInput> {
   const values = collectValues(root, { displayUnit });
   const overrides: Record<string, string> = {};
-  for (const key of DIAGRAM_FIELD_KEYS) {
+  for (const key of activeFieldKeys()) {
     if (values[key]) overrides[key] = values[key];
   }
   return buildSleevelessCustomBuildValidationInput(overrides);

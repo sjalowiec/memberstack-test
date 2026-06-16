@@ -64,8 +64,14 @@ export function glossaryInternalVideoIdList(entry: GlossaryEntryWithVideos): str
 export function resolveGlossaryCatalogVideos(
   entry: GlossaryEntryWithVideos,
   catalog: PublicVideoRow[],
+  excludeIds: Iterable<string> = [],
 ): ResolvedGlossaryCatalogVideo[] {
-  const ids = glossaryInternalVideoIdList(entry);
+  const excluded = new Set<string>();
+  for (const id of excludeIds) {
+    const s = String(id ?? "").trim();
+    if (s) excluded.add(s);
+  }
+  const ids = glossaryInternalVideoIdList(entry).filter((id) => !excluded.has(id));
   const rows: ResolvedGlossaryCatalogVideo[] = [];
   for (const id of ids) {
     const v = catalog.find((x) => String(x.content_id ?? "").trim() === id);
@@ -89,8 +95,9 @@ export function resolveGlossaryCatalogVideos(
 export function buildGlossaryRelatedVideosHtml(
   entry: GlossaryEntryWithVideos,
   catalog: PublicVideoRow[],
+  excludeIds: Iterable<string> = [],
 ): string {
-  const resolved = resolveGlossaryCatalogVideos(entry, catalog);
+  const resolved = resolveGlossaryCatalogVideos(entry, catalog, excludeIds);
   if (resolved.length === 0) return "";
 
   const heading = resolved.length === 1 ? "Related video" : "Related videos";

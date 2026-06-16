@@ -1,0 +1,489 @@
+---
+export const prerender = true;
+
+import Layout from "../../layouts/Layout.astro";
+import ReferencePageShell from "../../components/ReferencePageShell.astro";
+import {
+  getAllClubs,
+  getClubCountries,
+  getClubStates,
+} from "../../lib/clubs/clubsCatalog";
+
+const clubs = getAllClubs();
+const countries = getClubCountries();
+const states = getClubStates();
+
+const introText = "Find machine knitting clubs and groups around the world.";
+
+const submitEmail = "sue@knititnow.com";
+const submitSubject = "Machine Knitting Club Update";
+const submitBody = [
+  "Club name:",
+  "City:",
+  "State/Province:",
+  "Country:",
+  "Website:",
+  "Email:",
+  "Phone:",
+  "Contact name:",
+  "Meeting details or description:",
+  "Updates or corrections:",
+].join("\n");
+const submitMailto = `mailto:${submitEmail}?subject=${encodeURIComponent(
+  submitSubject,
+)}&body=${encodeURIComponent(submitBody)}`;
+---
+
+<Layout
+  title="Machine Knitting Clubs & Groups | Knit it Now"
+  description={introText}
+  bodyClass="page--tight-header"
+>
+  <ReferencePageShell
+    title="Machine Knitting Clubs & Groups"
+    subhead={introText}
+    backHref="/reference"
+    backLabel="Back to Reference"
+    wide
+  >
+    <div class="clubs-directory">
+      <aside class="clubs-submit">
+        <h2 class="clubs-submit__heading">Submit or Update a Club</h2>
+        <p class="clubs-submit__text">
+          Know of a machine knitting club or group that should be listed here?
+          Send us the details and we&rsquo;ll update the directory.
+        </p>
+        <a class="clubs-submit__button" href={submitMailto}>
+          Email Club Details
+        </a>
+      </aside>
+
+      <div class="clubs-directory__controls">
+        <label class="sr-only" for="club-search">Search clubs and groups</label>
+        <input
+          id="club-search"
+          type="search"
+          placeholder="Search by club name, city, state, country…"
+          autocomplete="off"
+        />
+
+        <div class="clubs-directory__filters">
+          <div class="clubs-directory__filter">
+            <label for="country-filter">Country</label>
+            <select id="country-filter">
+              <option value="">All countries</option>
+              {countries.map((c) => <option value={c}>{c}</option>)}
+            </select>
+          </div>
+
+          <div class="clubs-directory__filter">
+            <label for="state-filter">State / Province</label>
+            <select id="state-filter">
+              <option value="">All states / provinces</option>
+              {states.map((s) => <option value={s}>{s}</option>)}
+            </select>
+          </div>
+
+          <button type="button" id="clear-filters" class="clubs-directory__clear">Clear</button>
+        </div>
+      </div>
+
+      <p class="clubs-directory__resultcount" id="result-count" aria-live="polite"></p>
+
+      <div class="clubs-directory__grid" id="clubs-grid">
+        {clubs.map((club) => (
+          <article
+            class="club-card"
+            data-search={club.search}
+            data-country={club.countryName}
+            data-state={club.stateName}
+          >
+            <h2 class="club-card__name">{club.name}</h2>
+
+            {club.location && (
+              <p class="club-card__location">{club.location}</p>
+            )}
+
+            {club.contactName && (
+              <p class="club-card__row">
+                <span class="club-card__label">Contact:</span> {club.contactName}
+              </p>
+            )}
+
+            {club.details && (
+              <p class="club-card__details">{club.details}</p>
+            )}
+
+            <div class="club-card__links">
+              {club.website && (
+                <a
+                  class="club-card__link"
+                  href={club.website.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {club.website.label}
+                </a>
+              )}
+              {club.email && (
+                <a class="club-card__link" href={`mailto:${club.email}`}>
+                  {club.email}
+                </a>
+              )}
+              {club.phone && (
+                <a class="club-card__link" href={`tel:${club.phone.replace(/[^0-9+]/g, "")}`}>
+                  {club.phone}
+                </a>
+              )}
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <p class="clubs-directory__empty" id="no-results" hidden>
+        No clubs match your search. Try a different name, city, state, or country.
+      </p>
+    </div>
+  </ReferencePageShell>
+</Layout>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .clubs-directory {
+    margin-top: 0.5rem;
+  }
+
+  .clubs-submit {
+    background-color: #ffffff;
+    border: 2px solid #c7d8a4;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    margin-bottom: 1.25rem;
+  }
+
+  .clubs-submit__heading {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #52682d;
+    margin: 0 0 0.4rem;
+    line-height: 1.3;
+  }
+
+  .clubs-submit__text {
+    font-size: 0.95rem;
+    color: #374151;
+    line-height: 1.5;
+    margin: 0 0 1rem;
+  }
+
+  .clubs-submit__button {
+    display: inline-block;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fff;
+    background: var(--kbm-green, #52682d);
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    text-decoration: none;
+    min-height: 44px;
+    line-height: 1.6;
+    box-sizing: border-box;
+  }
+
+  .clubs-submit__button:hover,
+  .clubs-submit__button:focus {
+    background: #44551f;
+  }
+
+  .clubs-directory__controls {
+    position: sticky;
+    top: calc(var(--header-offset, 150px) - 8px);
+    z-index: 4;
+    background: var(--page-bg, #f7f8f7);
+    padding: 0.75rem 0 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #e6e6e6;
+  }
+
+  .clubs-directory__controls input {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 1.05rem;
+    padding: 0.8rem 1rem;
+    border: 2px solid #c7d8a4;
+    border-radius: 12px;
+    background: #fff;
+    color: #333;
+  }
+
+  .clubs-directory__controls input:focus {
+    outline: none;
+    border-color: var(--kbm-green, #52682d);
+    box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.15);
+  }
+
+  .clubs-directory__filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem 1rem;
+    margin-top: 0.85rem;
+  }
+
+  .clubs-directory__filter {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .clubs-directory__filter label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #52682d;
+  }
+
+  .clubs-directory__filter select {
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid #c7d8a4;
+    border-radius: 8px;
+    background: #fff;
+    color: #333;
+    min-width: 200px;
+    min-height: 44px;
+  }
+
+  .clubs-directory__filter select:focus {
+    outline: none;
+    border-color: var(--kbm-green, #52682d);
+    box-shadow: 0 0 0 2px rgba(82, 104, 45, 0.18);
+  }
+
+  .clubs-directory__clear {
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: #52682d;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.55rem 0.25rem;
+    text-decoration: underline;
+    align-self: flex-end;
+    min-height: 44px;
+  }
+
+  .clubs-directory__resultcount {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin: 0 0 1rem;
+  }
+
+  .clubs-directory__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  .club-card {
+    background-color: #ffffff;
+    border: 2px solid #c7d8a4;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .club-card__name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #52682d;
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .club-card__location {
+    font-size: 0.92rem;
+    color: #374151;
+    margin: 0;
+  }
+
+  .club-card__row {
+    font-size: 0.9rem;
+    color: #374151;
+    margin: 0;
+  }
+
+  .club-card__label {
+    font-weight: 600;
+    color: #52682d;
+  }
+
+  .club-card__details {
+    font-size: 0.9rem;
+    color: #6b7280;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .club-card__links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-top: 0.25rem;
+    word-break: break-word;
+  }
+
+  .club-card__link {
+    font-size: 0.9rem;
+    color: var(--kbm-green, #52682d);
+    text-decoration: underline;
+    text-decoration-color: #c7d8a4;
+    text-underline-offset: 3px;
+  }
+
+  .club-card__link:hover {
+    text-decoration-color: #52682d;
+  }
+
+  .clubs-directory__empty {
+    text-align: center;
+    color: #6b7280;
+    padding: 3rem 1rem;
+    font-size: 1.05rem;
+  }
+
+  @media (max-width: 700px) {
+    .clubs-directory__controls {
+      position: static;
+      top: auto;
+      padding: 1rem 0;
+      margin-bottom: 1rem;
+    }
+
+    .clubs-directory__controls input {
+      font-size: 1rem;
+      padding: 0.55rem 0.75rem;
+    }
+
+    .clubs-directory__filters {
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .clubs-directory__grid {
+      grid-template-columns: 1fr;
+    }
+
+    .clubs-directory__filter {
+      flex: 1 1 100%;
+    }
+
+    .clubs-directory__filter select {
+      min-width: 0;
+      width: 100%;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var grid = document.getElementById("clubs-grid");
+    if (!grid) return;
+
+    var searchInput = document.getElementById("club-search");
+    var countryFilter = document.getElementById("country-filter");
+    var stateFilter = document.getElementById("state-filter");
+    var clearBtn = document.getElementById("clear-filters");
+    var noResults = document.getElementById("no-results");
+    var resultCount = document.getElementById("result-count");
+
+    function getCards() {
+      return Array.prototype.slice.call(grid.querySelectorAll(".club-card"));
+    }
+
+    // Lowercase, strip punctuation, split into words.
+    function normalizeQuery(value) {
+      return (value || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim()
+        .split(" ")
+        .filter(Boolean);
+    }
+
+    // A club matches when every query token matches one of its tokens.
+    // Short tokens (1-2 chars, e.g. "CA", "ON") must match a whole word so
+    // abbreviations stay precise; longer tokens also match as a prefix/substring
+    // so partial typing ("calif", "ontar") still works.
+    function matchesSearch(card, queryTokens) {
+      if (!queryTokens.length) return true;
+      var tokens = (card.getAttribute("data-search") || "").split(" ");
+      for (var i = 0; i < queryTokens.length; i++) {
+        var q = queryTokens[i];
+        var ok = false;
+        for (var j = 0; j < tokens.length; j++) {
+          var t = tokens[j];
+          if (t === q || (q.length >= 3 && t.indexOf(q) !== -1)) {
+            ok = true;
+            break;
+          }
+        }
+        if (!ok) return false;
+      }
+      return true;
+    }
+
+    function applyFilters() {
+      var queryTokens = normalizeQuery(searchInput && searchInput.value);
+      var country = (countryFilter && countryFilter.value) || "";
+      var state = (stateFilter && stateFilter.value) || "";
+
+      var visible = 0;
+      getCards().forEach(function (card) {
+        var match =
+          matchesSearch(card, queryTokens) &&
+          (!country || (card.getAttribute("data-country") || "") === country) &&
+          (!state || (card.getAttribute("data-state") || "") === state);
+        card.style.display = match ? "" : "none";
+        if (match) visible++;
+      });
+
+      if (noResults) noResults.hidden = visible !== 0;
+      if (resultCount) {
+        resultCount.textContent = visible + (visible === 1 ? " club" : " clubs");
+      }
+    }
+
+    if (searchInput) searchInput.addEventListener("input", applyFilters);
+    if (countryFilter) countryFilter.addEventListener("change", applyFilters);
+    if (stateFilter) stateFilter.addEventListener("change", applyFilters);
+    if (clearBtn)
+      clearBtn.addEventListener("click", function () {
+        if (searchInput) searchInput.value = "";
+        if (countryFilter) countryFilter.value = "";
+        if (stateFilter) stateFilter.value = "";
+        applyFilters();
+      });
+
+    applyFilters();
+  })();
+</script>

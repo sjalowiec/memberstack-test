@@ -44,7 +44,10 @@ html {
 .tab-panel.active {
   display: block;
 }
-
+.zoom {
+  transition: transform 0.7s ease-in-out;
+  transform-origin: center center;
+}
 /* SOFT LAUNCH: hide homepage “Where are you right now?” block. Remove .kbm-hidden-softlaunch from #where-are-you when re-enabling. */
 .kbm-hidden-softlaunch {
   display: none !important;

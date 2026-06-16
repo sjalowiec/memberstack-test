@@ -5966,21 +5966,7 @@
     "active": true,
     "vimeoIds": []
   },
-  {
-    "glossaryId": 901,
-    "english": "Easter Egg",
-    "example": "<p class=\"easter-egg-text\">🥚 You found it. Click the egg to uncover a hidden resource.</p>",
-    "helpinfo": "",
-    "image": "/images/easter-egg.png",
-    "image_alt": "Colorful striped Easter egg",
-    "image_description": "A bright striped Easter egg representing a hidden surprise",
-    "metaTitle": "Easter Egg | Hidden Surprise at Knit It Now",
-    "metaDescription": "Discover a hidden Easter egg inside the Knit It Now glossary—click to uncover a helpful guide to knitting machine brands.",
-    "active": true,
-    "vimeoIds": [],
-    "link": "/reference/machine-brands",
-    "linkText": "Take a closer look"
-  },
+  
   {
     "glossaryId": 887,
     "english": "Zero Needle",

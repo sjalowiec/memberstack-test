@@ -23,6 +23,10 @@ import {
   resolveEffectiveFrontNeckDepthInches,
 } from "./customBuildEffectiveNeckDepth";
 import { resolveEffectiveHemDepthInches } from "./customBuildEffectiveHemDepth";
+import {
+  isCustomBuildPatternMode,
+  positiveMeasurementInches,
+} from "./customBuildEffectiveArmholeDepth";
 import { calculateRoundNecklineShaping } from "./legoBlocks/roundNeckline";
 import { neckDecreaseStitchesPerSideFromOpening } from "./legoBlocks/vNeckline";
 import {
@@ -70,6 +74,21 @@ function selectedMeasurements(patternData: Record<string, unknown>): Record<stri
     return sm as Record<string, unknown>;
   }
   return {};
+}
+
+/**
+ * Custom-build sleeve override (inches) from `fit.cbMeasurementOverrides`, mirroring the body
+ * fields' resolveEffective* pattern. Express / non–custom-build modes always use the chart value,
+ * so this returns undefined and the caller falls back to `selectedMeasurements`.
+ */
+function sleeveOverrideInches(
+  patternData: Record<string, unknown>,
+  camelKey: string,
+): number | undefined {
+  if (!isCustomBuildPatternMode(patternData)) return undefined;
+  const fit = section(patternData.fit);
+  const overrides = section(fit.cbMeasurementOverrides);
+  return positiveMeasurementInches(overrides[camelKey]);
 }
 
 function measurementInches(sm: Record<string, unknown>, key: string): number | undefined {
@@ -566,9 +585,12 @@ export function generateDropShoulderPattern(
   const hemDepthIn = resolveEffectiveHemDepthInches(patternData, audience);
 
   const sm = selectedMeasurements(patternData);
-  const upperArmIn = measurementInches(sm, "upper_arm");
-  const wristIn = measurementInches(sm, "wrist");
-  const sleeveLengthIn = measurementInches(sm, "sleeve_length");
+  // Custom-build edits (sleeve chips on the measurement blueprint) override the chart values.
+  const upperArmIn =
+    sleeveOverrideInches(patternData, "upperArm") ?? measurementInches(sm, "upper_arm");
+  const wristIn = sleeveOverrideInches(patternData, "wrist") ?? measurementInches(sm, "wrist");
+  const sleeveLengthIn =
+    sleeveOverrideInches(patternData, "sleeveLength") ?? measurementInches(sm, "sleeve_length");
 
   // Drop-shoulder armhole depth is derived, not a user input.
   const armholeDepthIn = upperArmIn !== undefined ? upperArmIn / 2 : undefined;

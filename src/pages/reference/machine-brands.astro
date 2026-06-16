@@ -14,11 +14,11 @@ import PageBackLink from "../../components/common/PageBackLink.astro";
     />
   
     <div class="easter-egg-callout">
-      <span class="easter-egg-icon">🥚</span>
+      <span class="easter-egg-icon"></span>
       <div>
-        <strong>You found it!</strong><br />
+        
         Many knitting machines were sold under different brand names depending on where they were sold - which is why the same machine might go by completely different names around the world.<br /><br />
-        <em>This matters when you're searching for parts, patterns, or help - the name you’re using might not be the only one.</em>
+        <em>This matters when you're searching for parts, patterns, or help - <strong>the name you’re using might not be the only one.</strong></em>
       </div>
     </div>
 
@@ -214,5 +214,18 @@ import PageBackLink from "../../components/common/PageBackLink.astro";
         </section>
       </div>
     </div>
+
+    <aside class="machine-brands-crosslink">
+      <div class="machine-brands-crosslink__body">
+        <h2 class="machine-brands-crosslink__title">Looking for a specific machine?</h2>
+        <p class="machine-brands-crosslink__text">
+          The Machine Database includes machine specifications, photos, gauge information, and
+          supported techniques for more than 150 knitting machines.
+        </p>
+      </div>
+      <a class="kbm-btn kbm-btn-primary machine-brands-crosslink__btn" href="/reference/machines">
+        Browse the Machine Database →
+      </a>
+    </aside>
   </div>
 </Layout>

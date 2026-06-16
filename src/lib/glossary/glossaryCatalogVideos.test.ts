@@ -110,6 +110,23 @@ describe("buildGlossaryRelatedVideosHtml", () => {
     expect(html).toContain("15");
   });
 
+  it("excludes ids that are embedded directly", () => {
+    const catalog: PublicVideoRow[] = [
+      { content_id: 811, title: "Embedded", vimeo_id: 251895484, access_level: "open" },
+      { content_id: 812, title: "Related only", vimeo_id: 252258022, access_level: "open" },
+    ];
+    const html = buildGlossaryRelatedVideosHtml({ videoIds: ["811", "812"] }, catalog, ["811"]);
+    expect(html).not.toContain('data-vimeo-id="251895484"');
+    expect(html).toContain('data-vimeo-id="252258022"');
+  });
+
+  it("renders nothing when the only id is embedded directly", () => {
+    const catalog: PublicVideoRow[] = [
+      { content_id: 811, title: "Embedded", vimeo_id: 251895484, access_level: "open" },
+    ];
+    expect(buildGlossaryRelatedVideosHtml({ vimeoIds: ["811"] }, catalog, ["811"])).toBe("");
+  });
+
   it("links member catalog rows to /videos/{id}", () => {
     const catalog: PublicVideoRow[] = [
       { content_id: 812, title: "Member clip", vimeo_id: 252258022, access_level: "member" },

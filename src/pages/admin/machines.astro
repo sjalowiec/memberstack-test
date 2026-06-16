@@ -1,0 +1,873 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+
+// Build a machineId -> technique names map from the technique catalog CSV
+// (read-only join data; technique assignments are not edited here).
+function loadTechniquesByMachineId(): Record<string, string[]> {
+  const map: Record<string, string[]> = {};
+  try {
+    const csvPath = path.join(process.cwd(), "src", "data", "machine_techniques.csv");
+    const text = readFileSync(csvPath, "utf8").replace(/^\uFEFF/, "");
+    const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "");
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(",");
+      const id = (cols[0] ?? "").trim();
+      const technique = (cols[1] ?? "").trim();
+      if (!id || !technique) continue;
+      if (!map[id]) map[id] = [];
+      if (!map[id].includes(technique)) map[id].push(technique);
+    }
+  } catch {
+    /* CSV optional — table just shows 0 techniques. */
+  }
+  return map;
+}
+
+const techniquesByMachineId = loadTechniquesByMachineId();
+---
+
+<BaseLayout
+  title="Machine Database | Knit it Now"
+  description="Admin: add, edit, and review knitting machine records."
+  skipGlobalHyvor={true}
+  bodyClass="admin-machines-body"
+>
+  <main class="am">
+    <header class="am__head">
+      <h1 class="am__title">Machine Database</h1>
+      <p class="am__sub">
+        Add, edit, and review machine records in <code>data/machines.json</code>
+        via <code>/api/admin/machines</code>. Search the table, then click
+        <strong>View / Edit</strong> on a row, or use <strong>Add New Machine</strong>.
+        Technique assignments are sourced from the technique catalog and shown
+        read-only.
+      </p>
+    </header>
+
+    <p id="am-status" class="am__status" aria-live="polite"></p>
+
+    <section class="am__panel" aria-labelledby="am-list-heading">
+      <div class="am__toolbar">
+        <h2 id="am-list-heading" class="am__panel-title">Machines</h2>
+        <label class="am__search-label">
+          <span class="sr-only">Search machines</span>
+          <input
+            type="search"
+            id="am-search"
+            placeholder="Search brand, model, gauge, style, punchcard, year, technique…"
+            autocomplete="off"
+          />
+        </label>
+        <button type="button" id="am-add" class="am__btn am__btn--primary">
+          + Add New Machine
+        </button>
+      </div>
+      <p id="am-count" class="am__count"></p>
+
+      <div class="am__table-wrap">
+        <table class="am__table">
+          <thead>
+            <tr>
+              <th scope="col">Brand</th>
+              <th scope="col">Model</th>
+              <th scope="col">Gauge</th>
+              <th scope="col">Style</th>
+              <th scope="col">Punchcard</th>
+              <th scope="col">Year</th>
+              <th scope="col" class="am__num">Img</th>
+              <th scope="col" class="am__num">Man</th>
+              <th scope="col" class="am__num">Acc</th>
+              <th scope="col" class="am__num">Tech</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="am-rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section
+      class="am__panel am__form-panel"
+      id="am-form-panel"
+      aria-labelledby="am-form-heading"
+      hidden
+    >
+      <h2 id="am-form-heading" class="am__panel-title">Edit machine</h2>
+      <p id="am-mode" class="am__mode"></p>
+
+      <form id="am-form" class="am__form" autocomplete="off">
+        <div class="am__grid">
+          <label>
+            <span>machineId (read-only)</span>
+            <input type="text" name="machineId" id="am-field-machineId" readonly />
+          </label>
+          <label>
+            <span>Brand <em class="req">*</em></span>
+            <input type="text" name="brand" id="am-field-brand" />
+          </label>
+          <label>
+            <span>Model <em class="req">*</em></span>
+            <input type="text" name="model" id="am-field-model" />
+          </label>
+          <label>
+            <span>Bed</span>
+            <input type="text" name="bed" id="am-field-bed" placeholder="Metal / Plastic" />
+          </label>
+          <label>
+            <span>Gauge</span>
+            <input
+              type="text"
+              name="gauge"
+              id="am-field-gauge"
+              placeholder="4.5 / Standard Gauge / Bulky/Chunky"
+            />
+          </label>
+          <label>
+            <span>Needle count</span>
+            <input type="number" name="needleCount" id="am-field-needleCount" step="1" />
+          </label>
+          <label>
+            <span>Machine style</span>
+            <input
+              type="text"
+              name="machineStyle"
+              id="am-field-machineStyle"
+              placeholder="Punchcard / Button / Electronic"
+            />
+          </label>
+          <label>
+            <span>Punchcard width</span>
+            <input type="number" name="punchcardWidth" id="am-field-punchcardWidth" step="1" />
+          </label>
+          <label>
+            <span>Year</span>
+            <input type="number" name="year" id="am-field-year" step="1" />
+          </label>
+
+          <label class="am__full">
+            <span>Description</span>
+            <textarea name="notes" id="am-field-notes" rows="4"></textarea>
+            <span class="am__hint">
+              Public description shown under the “Notes” heading on the machine’s
+              detail page. Stored as the <code>notes</code> field.
+            </span>
+          </label>
+
+          <label class="am__full">
+            <span>Images</span>
+            <textarea name="images" id="am-field-images" rows="3"></textarea>
+            <span class="am__hint">
+              One image per line. Use just the file/URL, or add <code>| main</code>
+              to mark the primary image. Example: <code>kh864.jpg | main</code>
+            </span>
+          </label>
+
+          <label class="am__full">
+            <span>Accessories</span>
+            <textarea name="accessories" id="am-field-accessories" rows="3"></textarea>
+            <span class="am__hint">
+              One accessory per line as <code>model | title | category</code>.
+              Example: <code>KL-116 | Knit Leader | Charting Device</code>
+            </span>
+          </label>
+
+          <label class="am__full">
+            <span>Manuals</span>
+            <textarea name="manuals" id="am-field-manuals" rows="3"></textarea>
+            <span class="am__hint">
+              One manual per line as <code>title | type | url</code>. Example:
+              <code>KH864 User Guide | Machine Manuals | https://…</code>
+            </span>
+          </label>
+
+          <div class="am__full am__techniques">
+            <span class="am__techniques-label">Techniques (read-only)</span>
+            <p id="am-techniques" class="am__techniques-list">—</p>
+          </div>
+        </div>
+
+        <div class="am__form-actions">
+          <button type="button" id="am-save" class="am__btn am__btn--primary">Save</button>
+          <button type="button" id="am-cancel" class="am__btn am__btn--outline">Cancel</button>
+        </div>
+      </form>
+
+      <div class="am__preview-wrap">
+        <h3 class="am__preview-title">Current record (preview)</h3>
+        <pre id="am-preview" class="am__preview" aria-live="polite"></pre>
+      </div>
+    </section>
+  </main>
+
+  <script
+    type="application/json"
+    id="am-techniques-data"
+    set:html={JSON.stringify(techniquesByMachineId)}
+  ></script>
+
+  <script>
+    import {
+      asString,
+      numberOrNull,
+      stringOrNull,
+      machineId as readMachineId,
+      nextMachineId,
+      brandModelKey,
+      parseImages,
+      serializeImages,
+      parseAccessories,
+      serializeAccessories,
+      parseManuals,
+      serializeManuals,
+      normalizeImages,
+      normalizeAccessories,
+      normalizeManuals,
+      type MachineRecord,
+    } from "../../lib/machines/machineAdminFields";
+
+    const API_BASE = "/api/admin/machines";
+
+    type EditorMode = "none" | "edit" | "new";
+
+    let machines: MachineRecord[] = [];
+    let techniquesByMachineId: Record<string, string[]> = {};
+    let mode: EditorMode = "none";
+    /** machineId of the record loaded in the form (edit mode). */
+    let editingId: number | null = null;
+
+    const statusEl = document.getElementById("am-status");
+    const countEl = document.getElementById("am-count");
+    const searchEl = document.getElementById("am-search") as HTMLInputElement | null;
+    const rowsEl = document.getElementById("am-rows");
+    const formPanel = document.getElementById("am-form-panel");
+    const form = document.getElementById("am-form") as HTMLFormElement | null;
+    const modeEl = document.getElementById("am-mode");
+    const previewEl = document.getElementById("am-preview");
+    const techniquesEl = document.getElementById("am-techniques");
+
+    function setStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral") {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.classList.toggle("is-error", kind === "err");
+      statusEl.classList.toggle("is-ok", kind === "ok");
+    }
+
+    function deepClone<T>(x: T): T {
+      return JSON.parse(JSON.stringify(x)) as T;
+    }
+
+    function escapeHtml(s: string): string {
+      return s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function techNames(id: number | null): string[] {
+      if (id === null) return [];
+      return techniquesByMachineId[String(id)] ?? [];
+    }
+
+    function fieldEl(name: string): HTMLInputElement | HTMLTextAreaElement | null {
+      const el = form?.elements?.namedItem(name);
+      return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement ? el : null;
+    }
+
+    function textVal(name: string): string {
+      return fieldEl(name)?.value ?? "";
+    }
+
+    function setField(name: string, value: string) {
+      const el = fieldEl(name);
+      if (el) el.value = value;
+    }
+
+    // ----- search + table ---------------------------------------------------
+
+    function matchesQuery(m: MachineRecord, q: string): boolean {
+      if (!q) return true;
+      const id = readMachineId(m);
+      const haystack = [
+        asString(m.brand),
+        asString(m.model),
+        asString(m.gauge),
+        asString(m.machineStyle),
+        asString(m.punchcardWidth),
+        asString(m.year),
+        techNames(id).join(" "),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.indexOf(q) !== -1;
+    }
+
+    function countOf(value: unknown): number {
+      return Array.isArray(value) ? value.length : 0;
+    }
+
+    function cell(value: string): string {
+      const v = value.trim();
+      return `<td>${v ? escapeHtml(v) : "—"}</td>`;
+    }
+
+    function renderTable() {
+      if (!rowsEl || !countEl) return;
+      const q = (searchEl?.value || "").trim().toLowerCase();
+      const filtered = machines
+        .filter((m) => matchesQuery(m, q))
+        .slice()
+        .sort((a, b) => {
+          const byBrand = asString(a.brand).localeCompare(asString(b.brand), undefined, {
+            sensitivity: "base",
+          });
+          if (byBrand !== 0) return byBrand;
+          return asString(a.model).localeCompare(asString(b.model), undefined, {
+            numeric: true,
+            sensitivity: "base",
+          });
+        });
+
+      countEl.textContent = `${filtered.length} of ${machines.length} machine(s)`;
+      rowsEl.innerHTML = filtered
+        .map((m) => {
+          const id = readMachineId(m);
+          const active = id !== null && id === editingId ? " is-active" : "";
+          const tech = techNames(id).length;
+          return `<tr class="am__row${active}" data-id="${id ?? ""}">
+            ${cell(asString(m.brand))}
+            ${cell(asString(m.model))}
+            ${cell(asString(m.gauge))}
+            ${cell(asString(m.machineStyle))}
+            ${cell(asString(m.punchcardWidth))}
+            ${cell(asString(m.year))}
+            <td class="am__num">${countOf(m.images)}</td>
+            <td class="am__num">${countOf(m.manuals)}</td>
+            <td class="am__num">${countOf(m.accessories)}</td>
+            <td class="am__num">${tech}</td>
+            <td class="am__row-action">
+              <button type="button" class="am__btn am__btn--small" data-edit="${id ?? ""}">
+                View / Edit
+              </button>
+            </td>
+          </tr>`;
+        })
+        .join("");
+    }
+
+    // ----- form <-> record ---------------------------------------------------
+
+    function findById(id: number | null): MachineRecord | undefined {
+      if (id === null) return undefined;
+      return machines.find((m) => readMachineId(m) === id);
+    }
+
+    function loadToForm(id: number) {
+      const m = findById(id);
+      if (!m || !form || !formPanel) return;
+      mode = "edit";
+      editingId = id;
+      formPanel.hidden = false;
+
+      setField("machineId", asString(m.machineId));
+      setField("brand", asString(m.brand));
+      setField("model", asString(m.model));
+      setField("bed", asString(m.bed));
+      setField("gauge", asString(m.gauge));
+      setField("needleCount", asString(m.needleCount));
+      setField("machineStyle", asString(m.machineStyle));
+      setField("punchcardWidth", asString(m.punchcardWidth));
+      setField("year", asString(m.year));
+      setField("notes", asString(m.notes));
+      setField("images", serializeImages(m.images));
+      setField("accessories", serializeAccessories(m.accessories));
+      setField("manuals", serializeManuals(m.manuals));
+
+      const names = techNames(id);
+      if (techniquesEl) techniquesEl.textContent = names.length ? names.join(", ") : "None assigned";
+
+      if (modeEl) {
+        modeEl.textContent = `Editing: ${asString(m.brand)} ${asString(m.model)} (machineId ${id})`;
+        modeEl.classList.remove("is-new");
+      }
+      renderTable();
+      refreshPreview();
+      formPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function startNew() {
+      if (!form || !formPanel) return;
+      mode = "new";
+      editingId = null;
+      formPanel.hidden = false;
+      form.reset();
+
+      const newId = nextMachineId(machines);
+      setField("machineId", String(newId));
+      if (techniquesEl) techniquesEl.textContent = "None assigned";
+      if (modeEl) {
+        modeEl.textContent = `Creating new machine (machineId ${newId}) — fill in brand and model, then Save.`;
+        modeEl.classList.add("is-new");
+      }
+      renderTable();
+      refreshPreview();
+      formPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+      fieldEl("brand")?.focus();
+    }
+
+    function buildFromForm(): MachineRecord | null {
+      if (mode === "none") return null;
+
+      // Preserve unknown fields on existing records; start fresh for new ones.
+      let row: MachineRecord = {};
+      if (mode === "edit") {
+        const original = findById(editingId);
+        if (!original) return null;
+        row = deepClone(original);
+      }
+
+      row.machineId = numberOrNull(textVal("machineId"));
+      row.brand = textVal("brand").trim();
+      row.model = textVal("model").trim();
+      row.bed = stringOrNull(textVal("bed"));
+      row.gauge = stringOrNull(textVal("gauge"));
+      row.needleCount = numberOrNull(textVal("needleCount"));
+      row.machineStyle = stringOrNull(textVal("machineStyle"));
+      row.punchcardWidth = numberOrNull(textVal("punchcardWidth"));
+      row.year = numberOrNull(textVal("year"));
+
+      const notes = stringOrNull(textVal("notes"));
+      if (notes === null) delete row.notes;
+      else row.notes = notes;
+
+      row.images = normalizeImages(parseImages(textVal("images")));
+      row.accessories = normalizeAccessories(parseAccessories(textVal("accessories")));
+      row.manuals = normalizeManuals(parseManuals(textVal("manuals")));
+
+      return row;
+    }
+
+    function refreshPreview() {
+      if (!previewEl) return;
+      const row = buildFromForm();
+      previewEl.textContent = row
+        ? JSON.stringify(row, null, 2)
+        : "// Select a machine or add a new one to see its JSON.";
+    }
+
+    async function save() {
+      const row = buildFromForm();
+      if (!row) return;
+
+      const id = readMachineId(row);
+      if (!asString(row.brand).trim()) return setStatus("Brand is required.", "err");
+      if (!asString(row.model).trim()) return setStatus("Model is required.", "err");
+      if (id === null) return setStatus("Could not determine machineId.", "err");
+
+      // Prevent creating NEW duplicate brand + model combinations.
+      const key = brandModelKey(row);
+      const clash = machines.find((m) => readMachineId(m) !== id && brandModelKey(m) === key);
+      if (clash) {
+        setStatus(
+          `A machine with brand "${asString(row.brand)}" and model "${asString(row.model)}" already exists (machineId ${readMachineId(clash)}).`,
+          "err"
+        );
+        return;
+      }
+
+      let next: MachineRecord[];
+      const wasNew = mode === "new";
+      if (mode === "new") {
+        if (machines.some((m) => readMachineId(m) === id)) {
+          return setStatus(`machineId ${id} already exists. Reload and try again.`, "err");
+        }
+        next = [...machines, row];
+      } else {
+        const idx = machines.findIndex((m) => readMachineId(m) === editingId);
+        if (idx < 0) return setStatus("Original machine not found; reload the page.", "err");
+        next = machines.slice();
+        next[idx] = row;
+      }
+
+      setStatus("Saving…");
+      try {
+        const res = await fetch(API_BASE, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(next),
+        });
+        const data = await res.json();
+        if (!res.ok || !data?.ok || !Array.isArray(data.machines)) {
+          setStatus(data?.error || `Save failed (${res.status})`, "err");
+          return;
+        }
+        machines = data.machines as MachineRecord[];
+        setStatus(
+          wasNew
+            ? `Created "${asString(row.brand)} ${asString(row.model)}" (machineId ${id}).`
+            : `Saved "${asString(row.brand)} ${asString(row.model)}".`,
+          "ok"
+        );
+        if (wasNew && searchEl) searchEl.value = "";
+        renderTable();
+        loadToForm(id);
+      } catch {
+        setStatus("Network error while saving.", "err");
+      }
+    }
+
+    function cancel() {
+      mode = "none";
+      editingId = null;
+      if (form) form.reset();
+      if (formPanel) formPanel.hidden = true;
+      renderTable();
+    }
+
+    async function init() {
+      const dataEl = document.getElementById("am-techniques-data");
+      if (dataEl?.textContent) {
+        try {
+          techniquesByMachineId = JSON.parse(dataEl.textContent) as Record<string, string[]>;
+        } catch {
+          techniquesByMachineId = {};
+        }
+      }
+
+      setStatus("Loading machines…");
+      try {
+        const res = await fetch(API_BASE);
+        const data = await res.json();
+        if (!res.ok || !data?.ok || !Array.isArray(data.machines)) {
+          setStatus(data?.error || `Load failed (${res.status})`, "err");
+          return;
+        }
+        machines = data.machines as MachineRecord[];
+        setStatus(`${machines.length} machine(s) loaded.`, "ok");
+        renderTable();
+      } catch {
+        setStatus("Network error loading machines.", "err");
+        return;
+      }
+
+      searchEl?.addEventListener("input", renderTable);
+      document.getElementById("am-add")?.addEventListener("click", startNew);
+      document.getElementById("am-save")?.addEventListener("click", () => void save());
+      document.getElementById("am-cancel")?.addEventListener("click", cancel);
+
+      rowsEl?.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const btn = target.closest("[data-edit]");
+        if (!(btn instanceof HTMLElement)) return;
+        const id = Number.parseInt(btn.getAttribute("data-edit") || "", 10);
+        if (Number.isFinite(id)) loadToForm(id);
+      });
+
+      form?.addEventListener("input", refreshPreview);
+      form?.addEventListener("change", refreshPreview);
+    }
+
+    void init();
+  </script>
+
+  <style>
+    :global(body.admin-machines-body) {
+      margin: 0;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .am {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: calc(var(--header-height, 7rem) + 1rem) 1.25rem 3rem;
+      box-sizing: border-box;
+    }
+    .am__head {
+      margin-bottom: 1rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .am__title {
+      margin: 0 0 0.4rem 0;
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #243015;
+    }
+    .am__sub {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #475569;
+      max-width: 62rem;
+      line-height: 1.5;
+    }
+    .am__sub code {
+      font-size: 0.88em;
+      background: #f1f5f9;
+      padding: 0.12rem 0.35rem;
+      border-radius: 4px;
+    }
+    .am__status {
+      min-height: 1.4em;
+      margin: 0 0 0.85rem 0;
+      font-size: 0.95rem;
+      color: #374151;
+    }
+    .am__status.is-error {
+      color: #b91c1c;
+      font-weight: 600;
+    }
+    .am__status.is-ok {
+      color: #166534;
+    }
+    .am__panel {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .am__panel-title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #243015;
+    }
+    .am__toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.5rem;
+    }
+    .am__search-label {
+      flex: 1 1 18rem;
+      min-width: 0;
+    }
+    .am__search-label input {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.55rem 0.65rem;
+      font: inherit;
+      box-sizing: border-box;
+    }
+    .am__count {
+      margin: 0 0 0.6rem 0;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+    .am__table-wrap {
+      overflow-x: auto;
+    }
+    .am__table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    .am__table th,
+    .am__table td {
+      padding: 0.5rem 0.6rem;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: middle;
+    }
+    .am__table th {
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #64748b;
+      white-space: nowrap;
+    }
+    .am__table td {
+      color: #334155;
+    }
+    .am__num {
+      text-align: right;
+      width: 3rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .am__row.is-active {
+      background: #f7fee7;
+    }
+    .am__row-action {
+      white-space: nowrap;
+      text-align: right;
+    }
+
+    .am__form-panel[hidden] {
+      display: none;
+    }
+    .am__mode {
+      margin: 0.65rem 0 0.85rem 0;
+      padding: 0.5rem 0.65rem;
+      border-radius: 8px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      font-weight: 600;
+      color: #243015;
+      font-size: 0.95rem;
+    }
+    .am__mode.is-new {
+      background: #fef3c7;
+      border-color: #fcd34d;
+      color: #92400e;
+    }
+    .am__grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.7rem;
+    }
+    @media (min-width: 640px) {
+      .am__grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    @media (min-width: 960px) {
+      .am__grid {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+    }
+    .am__full {
+      grid-column: 1 / -1;
+    }
+    .am__form label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .am__form label > span:first-child {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #2e3a18;
+    }
+    .req {
+      color: #b91c1c;
+      font-style: normal;
+    }
+    .am__form input,
+    .am__form textarea {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.5rem 0.65rem;
+      font: inherit;
+      color: #111827;
+      background: #fff;
+      box-sizing: border-box;
+    }
+    .am__form input[readonly] {
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .am__form textarea {
+      resize: vertical;
+      min-height: 60px;
+      font-family: ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+      font-size: 0.85rem;
+    }
+    .am__hint {
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: #64748b;
+      line-height: 1.45;
+    }
+    .am__hint code {
+      background: #f1f5f9;
+      padding: 0.05rem 0.3rem;
+      border-radius: 4px;
+      font-size: 0.92em;
+    }
+    .am__techniques {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .am__techniques-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #2e3a18;
+    }
+    .am__techniques-list {
+      margin: 0;
+      padding: 0.5rem 0.65rem;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      font-size: 0.88rem;
+      color: #475569;
+    }
+    .am__form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.1rem;
+    }
+    .am__btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+      background: #3f6212;
+      border: 1px solid #3f6212;
+      border-radius: 8px;
+      cursor: pointer;
+      transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+    }
+    .am__btn:hover:not(:disabled) {
+      background: #365314;
+      border-color: #365314;
+    }
+    .am__btn:focus-visible {
+      outline: 2px solid #3f6212;
+      outline-offset: 2px;
+    }
+    .am__btn--outline {
+      color: #3f6212;
+      background: #fff;
+    }
+    .am__btn--outline:hover:not(:disabled) {
+      background: #f7fee7;
+    }
+    .am__btn--small {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.8rem;
+    }
+    .am__preview-wrap {
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #e5e7eb;
+    }
+    .am__preview-title {
+      margin: 0 0 0.5rem 0;
+      font-size: 1rem;
+      color: #243015;
+    }
+    .am__preview {
+      margin: 0;
+      padding: 0.85rem;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #e2e8f0;
+      overflow: auto;
+      font-size: 0.78rem;
+      line-height: 1.45;
+      max-height: 360px;
+    }
+  </style>
+</BaseLayout>

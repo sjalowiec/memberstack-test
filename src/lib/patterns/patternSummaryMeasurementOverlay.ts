@@ -12,6 +12,11 @@ export const PATTERN_SUMMARY_MEASUREMENT_TARGETS = {
   hip: "target_hip",
   armholeDepth: "target_armhole_depth",
   hem: "target_hem",
+  // Drop Shoulder sleeve targets (present only in drop-shoulder-summary.svg). Underscore ids
+  // for consistency with the body targets above.
+  upperArm: "target_upper_arm",
+  cuffCircumference: "target_cuff_circumference",
+  armLength: "target_arm_length",
 } as const;
 
 /** SVG typo alias for garment-length target (`target_garmemt_length`). */
