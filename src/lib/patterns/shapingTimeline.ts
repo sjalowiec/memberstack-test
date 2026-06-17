@@ -722,6 +722,49 @@ export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTime
 }
 
 /**
+ * When the back neck row budget is shorter than the front, outer shoulder chunks can match
+ * but inner-neck consumption leaves extra stitches on the back active side. Trim the back
+ * final row to the front final per-side counts via inner-neck decreases so checklists match.
+ */
+export function alignBackNeckShoulderTimelineFinalCountsToFront(
+  backTimeline: readonly RowEntry[],
+  frontTimeline: readonly RowEntry[],
+): RowEntry[] {
+  if (backTimeline.length === 0 || frontTimeline.length === 0) {
+    return [...backTimeline];
+  }
+  const frontLast = frontTimeline[frontTimeline.length - 1];
+  const backLast = backTimeline[backTimeline.length - 1];
+  if (!frontLast || !backLast) return [...backTimeline];
+
+  const deltaR = Math.max(0, Math.floor(backLast.stitchesR) - Math.floor(frontLast.stitchesR));
+  const deltaL = Math.max(0, Math.floor(backLast.stitchesL) - Math.floor(frontLast.stitchesL));
+  if (deltaR === 0 && deltaL === 0) return [...backTimeline];
+
+  const rows = backTimeline.map((row) => ({ ...row, events: [...row.events] }));
+  const lastIdx = rows.length - 1;
+  const last = rows[lastIdx]!;
+  const events = [...last.events];
+  if (deltaL > 0) {
+    events.push({ kind: "decrease", side: "left", edge: "inner", amount: deltaL });
+  }
+  if (deltaR > 0) {
+    events.push({ kind: "decrease", side: "right", edge: "inner", amount: deltaR });
+  }
+  rows[lastIdx] = {
+    ...last,
+    events,
+    stitchesL: last.stitchesL - deltaL,
+    stitchesR: last.stitchesR - deltaR,
+    netChangeL: last.netChangeL + deltaL,
+    netChangeR: last.netChangeR + deltaR,
+    leftInnerEdge: last.leftInnerEdge - deltaL,
+    rightInnerEdge: last.rightInnerEdge + deltaR,
+  };
+  return rows;
+}
+
+/**
  * Post-center rows used by the **back** round-neck plan (stair bind-offs + singles phase).
  * Shoulder shaping may also occur on these same row indices when using {@link buildTimeline}.
  */

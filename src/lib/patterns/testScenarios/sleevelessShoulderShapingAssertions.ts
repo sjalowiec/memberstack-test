@@ -88,7 +88,9 @@ export function shoulderNotationLinesForPiece(
 ): string[] {
   const timeline = timelineForPiece(result, piece);
   expect(timeline.length, `${piece} neck/shoulder timeline`).toBeGreaterThan(0);
-  return shoulderShapingNotationLinesFromTimeline(timeline, SHOULDER_NOTATION_SIDE);
+  return shoulderShapingNotationLinesFromTimeline(timeline, SHOULDER_NOTATION_SIDE, undefined, {
+    shoulderStitchesBudget: expectedShoulderStitchesPerSideForPiece(result, piece),
+  });
 }
 
 export function assertShoulderNotationReconciles(

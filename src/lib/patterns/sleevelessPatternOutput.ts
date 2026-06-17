@@ -77,10 +77,16 @@ import {
 } from "./sleevelessPatternFinishing";
 import { buildVNeckFrontFullWidthTimeline } from "./vNeckFrontFullWidthTimeline";
 import {
+  collectOuterShoulderBindOffPoints,
   shoulderShapingNotationLinesFromTimeline,
   totalStitchesFromShapingNotationLines,
 } from "./shoulderShapingNotation";
-import { computeShoulderBindoffSchedule, type RowEntry } from "./shapingTimeline";
+import {
+  computeShoulderBindoffSchedule,
+  alignBackNeckShoulderTimelineFinalCountsToFront,
+  type RowEntry,
+  type ShoulderBindoffSchedule,
+} from "./shapingTimeline";
 import {
   initialCenterNeckStitches,
   neckEdgeDecreasesPerSide,
@@ -2455,13 +2461,14 @@ export function generateSleevelessBackPattern(
     frontNeckDepthRows > 0 ? frontNeckDepthRows : backNeckDepthRows;
   const frontNecklineStartRC =
     armholeStartRC !== undefined && armholeDepthRows > 0 && effectiveFrontNeckDepthRows > 0
-      ? Math.max(0, armholeStartRC + armholeDepthRows - effectiveFrontNeckDepthRows)
+      ? Math.max(0, armholeStartRC + armholeDepthRows - effectiveFrontNeckDepthRows - 1)
       : shoulderEndRC !== undefined && effectiveFrontNeckDepthRows > 0
-        ? Math.max(0, shoulderEndRC - effectiveFrontNeckDepthRows)
+        ? Math.max(0, shoulderEndRC - effectiveFrontNeckDepthRows - 1)
         : Math.max(0, rc - Math.max(0, frontNeckDepthRows) + 1);
   /**
-   * Front scoop starts one row earlier than `shoulderEndRC − F` but must still end at the same
-   * shoulder line; extend the timeline by the extra RC so chart / execution hit `shoulderEndRC − 1`.
+   * Front scoop begins one armhole-local row earlier than the naive `shoulderEndRC − F` anchor
+   * so the live timeline / text chart align with `rc-neckline-start` on the JP schematic
+   * (e.g. rc014). Extend depth so the piece still ends at the same shoulder line.
    */
   const frontNeckTimelineDepthRows =
     shoulderEndRC !== undefined
@@ -2602,15 +2609,151 @@ export function generateSleevelessBackPattern(
     /** Shoulder bind-off chunks from **back** neck depth / opening math only — never from the front neckline choice. */
     const shoulderSchedule = computeShoulderBindoffSchedule(patternNumbers);
     const shoulderTimelineOpts = shoulderSchedule !== null ? { shoulderSchedule } : undefined;
-    const { timeline, chartRows: liveRows } = buildNeckShoulderTimelineAndChartRows(
-      patternNumbers,
-      {
-        ...shoulderTimelineOpts,
-      }
+
+    /**
+     * Provisional back pass (no minFinal) seeds minFinal for the front pass; the front's final
+     * per-side remainder is authoritative when rebuilding the aligned back timeline.
+     */
+    const provisionalBack = buildNeckShoulderTimelineAndChartRows(patternNumbers, {
+      ...shoulderTimelineOpts,
+    });
+    const provisionalMinFinalPerSide = Math.max(
+      0,
+      Math.min(
+        Math.floor(
+          Number(
+            provisionalBack.chartRows[provisionalBack.chartRows.length - 1]?.leftStitchCount ?? 0,
+          ),
+        ),
+        Math.floor(
+          Number(
+            provisionalBack.chartRows[provisionalBack.chartRows.length - 1]?.rightStitchCount ?? 0,
+          ),
+        ),
+      ),
     );
+    const provisionalMinFinalOpts =
+      provisionalMinFinalPerSide > 0
+        ? { minFinalStitchesPerSide: provisionalMinFinalPerSide }
+        : {};
+
+    /** Full-width closed front reference for back shoulder alignment (cardigan half-front uses pullover-equivalent math). */
+    const fullWidthFrontPatternNumbers: NeckShoulderShapingPatternNumbers = {
+      firstShapingRow: frontNecklineStartRC,
+      shoulderStitchesPerSide: shoulderStitches,
+      centerNeckBindOff: necklineStitches!,
+      neckDepthRows:
+        frontNeckDepthRows > 0 ? frontNeckTimelineDepthRows : backNeckDepthRows,
+      neckProfile: "front",
+      stitchesAfterArmhole: stitchesAfterArmhole!,
+      shoulderBindoffRows,
+    };
+    const fullWidthFrontShoulderReference =
+      isCardiganRoundHalfFront && !isFrontVNeck
+        ? buildNeckShoulderTimelineAndChartRows(fullWidthFrontPatternNumbers, {
+            ...shoulderTimelineOpts,
+            ...provisionalMinFinalOpts,
+          })
+        : null;
 
     let frontTimeline: RowEntry[] = [];
     let frontLiveRows: NeckShoulderShapingChartRow[] = [];
+
+    /** Front first — long neck depth is the authoritative shoulder execution context. */
+    const builtFront = isFrontVNeck
+      ? (() => {
+          const vFront = buildVNeckFrontFullWidthTimeline(frontPatternNumbers, {
+            ...shoulderTimelineOpts,
+            ...(isCardiganRoundHalfFront ? {} : provisionalMinFinalOpts),
+          });
+          warnings.push(...vFront.vNeckPlanWarnings);
+          return {
+            timeline: vFront.timeline,
+            chartRows: neckShoulderChartRowsFromTimeline(vFront.timeline),
+          };
+        })()
+      : buildNeckShoulderTimelineAndChartRows(frontPatternNumbers, {
+          ...shoulderTimelineOpts,
+          ...(isCardiganRoundHalfFront ? {} : provisionalMinFinalOpts),
+        });
+    frontTimeline = builtFront.timeline;
+    frontLiveRows = builtFront.chartRows;
+
+    const shoulderReferenceFrontTimeline =
+      fullWidthFrontShoulderReference?.timeline ?? frontTimeline;
+    const shoulderReferenceFrontRows =
+      fullWidthFrontShoulderReference?.chartRows ?? frontLiveRows;
+
+    const shoulderMinFinalPerSide = isCardiganRoundHalfFront
+      ? 0
+      : Math.max(
+          0,
+          Math.min(
+            Math.floor(Number(frontLiveRows[frontLiveRows.length - 1]?.leftStitchCount ?? 0)),
+            Math.floor(Number(frontLiveRows[frontLiveRows.length - 1]?.rightStitchCount ?? 0)),
+          ),
+        );
+    const shoulderMinFinalPerSideFromReference = Math.max(
+      0,
+      Math.min(
+        Math.floor(
+          Number(shoulderReferenceFrontRows[shoulderReferenceFrontRows.length - 1]?.leftStitchCount ?? 0),
+        ),
+        Math.floor(
+          Number(
+            shoulderReferenceFrontRows[shoulderReferenceFrontRows.length - 1]?.rightStitchCount ?? 0,
+          ),
+        ),
+      ),
+    );
+    const effectiveShoulderMinFinalPerSide = isCardiganRoundHalfFront
+      ? shoulderMinFinalPerSideFromReference
+      : shoulderMinFinalPerSide;
+    const shoulderMinFinalOpts =
+      effectiveShoulderMinFinalPerSide > 0
+        ? { minFinalStitchesPerSide: effectiveShoulderMinFinalPerSide }
+        : {};
+
+    /** Align back shoulder chunks to front-executed outer bind-offs (short back row budget overlaps inner neck). */
+    let alignedShoulderTimelineOpts = shoulderTimelineOpts;
+    if (shoulderSchedule !== null && shoulderReferenceFrontTimeline.length > 0) {
+      const frontLeftChunks = collectOuterShoulderBindOffPoints(
+        shoulderReferenceFrontTimeline,
+        "left",
+      ).map((p) => p.amount);
+      const frontRightChunks = collectOuterShoulderBindOffPoints(
+        shoulderReferenceFrontTimeline,
+        "right",
+      ).map((p) => p.amount);
+      if (frontLeftChunks.length > 0 || frontRightChunks.length > 0) {
+        const alignedSchedule: ShoulderBindoffSchedule = {
+          leftChunks: frontLeftChunks.length > 0 ? frontLeftChunks : shoulderSchedule.leftChunks,
+          rightChunks:
+            frontRightChunks.length > 0 ? frontRightChunks : shoulderSchedule.rightChunks,
+          placementRows: shoulderSchedule.placementRows,
+        };
+        alignedShoulderTimelineOpts = { shoulderSchedule: alignedSchedule };
+      }
+    }
+
+    const { timeline: rawBackTimeline, chartRows: rawLiveRows } = buildNeckShoulderTimelineAndChartRows(
+      patternNumbers,
+      {
+        ...alignedShoulderTimelineOpts,
+        ...shoulderMinFinalOpts,
+      },
+    );
+    const timeline =
+      shoulderReferenceFrontTimeline.length > 0 && rawBackTimeline.length > 0
+        ? alignBackNeckShoulderTimelineFinalCountsToFront(
+            rawBackTimeline,
+            shoulderReferenceFrontTimeline,
+          )
+        : rawBackTimeline;
+    const liveRows =
+      timeline === rawBackTimeline
+        ? rawLiveRows
+        : neckShoulderChartRowsFromTimeline(timeline);
 
     if (liveRows.length > 0) {
       backNeckShoulderTimeline = timeline;
@@ -2634,37 +2777,6 @@ export function generateSleevelessBackPattern(
         centerBindOffExecutionText: backCenterExec,
       });
     }
-
-    const backFinalShoulderRemainderPerSide = Math.max(
-      0,
-      Math.min(
-        Math.floor(Number(liveRows[liveRows.length - 1]?.leftStitchCount ?? 0)),
-        Math.floor(Number(liveRows[liveRows.length - 1]?.rightStitchCount ?? 0))
-      )
-    );
-
-    const builtFront = isFrontVNeck
-      ? (() => {
-          const vFront = buildVNeckFrontFullWidthTimeline(frontPatternNumbers, {
-            ...shoulderTimelineOpts,
-            minFinalStitchesPerSide: isCardiganRoundHalfFront
-              ? 0
-              : backFinalShoulderRemainderPerSide,
-          });
-          warnings.push(...vFront.vNeckPlanWarnings);
-          return {
-            timeline: vFront.timeline,
-            chartRows: neckShoulderChartRowsFromTimeline(vFront.timeline),
-          };
-        })()
-      : buildNeckShoulderTimelineAndChartRows(frontPatternNumbers, {
-          ...shoulderTimelineOpts,
-          minFinalStitchesPerSide: isCardiganRoundHalfFront
-            ? 0
-            : backFinalShoulderRemainderPerSide,
-        });
-    frontTimeline = builtFront.timeline;
-    frontLiveRows = builtFront.chartRows;
 
     if (frontLiveRows.length > 0) {
       frontNeckShoulderTimeline = frontTimeline;
@@ -2793,19 +2905,6 @@ export function generateSleevelessBackPattern(
       shoulderStitches > 0
     ) {
       const shoulderNotationSide = "right" as const;
-      const backShoulderLines = shoulderShapingNotationLinesFromTimeline(
-        backNeckShoulderTimeline,
-        shoulderNotationSide,
-      );
-      const frontShoulderLines = shoulderShapingNotationLinesFromTimeline(
-        frontNeckShoulderTimeline,
-        shoulderNotationSide,
-      );
-      if (backShoulderLines.join("\n") !== frontShoulderLines.join("\n")) {
-        warnings.push(
-          "Front shoulder shaping notation does not match the back — shoulder bind-off schedule should be identical on both pieces."
-        );
-      }
       const frontShoulderBudget = isCardiganRoundHalfFront
         ? Math.max(
             1,
@@ -2815,6 +2914,23 @@ export function generateSleevelessBackPattern(
               0) - (necklineStitches !== undefined ? Math.max(1, Math.round(necklineStitches / 2)) : 0),
           )
         : shoulderStitches;
+      const backShoulderLines = shoulderShapingNotationLinesFromTimeline(
+        backNeckShoulderTimeline,
+        shoulderNotationSide,
+        undefined,
+        { shoulderStitchesBudget: shoulderStitches },
+      );
+      const frontShoulderLines = shoulderShapingNotationLinesFromTimeline(
+        frontNeckShoulderTimeline,
+        shoulderNotationSide,
+        undefined,
+        { shoulderStitchesBudget: frontShoulderBudget },
+      );
+      if (backShoulderLines.join("\n") !== frontShoulderLines.join("\n")) {
+        warnings.push(
+          "Front shoulder shaping notation does not match the back — shoulder bind-off schedule should be identical on both pieces."
+        );
+      }
       if (totalStitchesFromShapingNotationLines(backShoulderLines) !== shoulderStitches) {
         warnings.push(
           "Back shoulder shaping notation does not total the calculated shoulder stitch count — check neck opening vs shoulder width."

@@ -10,10 +10,11 @@ import {
   formatDecreaseNotationLines,
   formatRcNotation,
   formatRcResetNotation,
+  formatShoulderStitchCountLabel,
   garmentRcAtArmholeStart,
   JP_BACK_NOTATION_SVG_TOKEN_KEYS,
-  type JpBackNotationSvgTokenKey,
 } from "./sleevelessBackJapaneseNotation";
+import { shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
 import { isSleevelessCardiganFrontNeckShoulderChart } from "./neckShoulderShapingChart";
 import {
   cardiganFrontInitialNeckBindOffStitches,
@@ -147,10 +148,13 @@ export function resolveSleevelessFrontDiagramSrc(
   return applySleevelessDiagramBodyShapeSuffix(straightBase, bodyShapeKind);
 }
 
-/** Token names in `diagram-jp-front-round.svg` (same keys as back notation). */
-export const JP_FRONT_NOTATION_SVG_TOKEN_KEYS = JP_BACK_NOTATION_SVG_TOKEN_KEYS;
+/** Token names in pullover front Japanese notation SVGs (back keys plus front-only labels). */
+export const JP_FRONT_NOTATION_SVG_TOKEN_KEYS = [
+  ...JP_BACK_NOTATION_SVG_TOKEN_KEYS,
+  "jp-shoulder-stitches",
+] as const;
 
-export type JpFrontNotationSvgTokenKey = JpBackNotationSvgTokenKey;
+export type JpFrontNotationSvgTokenKey = (typeof JP_FRONT_NOTATION_SVG_TOKEN_KEYS)[number];
 
 const FRONT_NOTATION_DIAGRAM_SIDE: "left" | "right" = "right";
 
@@ -227,15 +231,29 @@ function cardiganRoundFrontNeckEdgeNotationLines(
   return pulloverRoundFrontNeckEdgeNotationLines(merged, side);
 }
 
-/** Back / closed pullover front shoulder bind-off schedule (not cardigan half-front timeline). */
+/** Closed pullover front shoulder bind-off schedule from the front timeline; cardigan half-front uses back. */
 function canonicalShoulderShapingNotationLines(
   result: SleevelessBackPatternResult,
+  patternData: unknown,
   side: RoundNeckNotationSide = FRONT_NOTATION_DIAGRAM_SIDE,
 ): string[] {
-  const timeline =
-    result.backNeckShoulderTimeline ?? result.neckShoulderShapingChart.timeline ?? [];
+  const frontChart = result.frontNeckShoulderShapingChart;
+  const isCardiganRoundHalfFront =
+    isSleevelessCardiganGarmentStyle(patternData) &&
+    isSleevelessCardiganFrontNeckShoulderChart(frontChart) &&
+    !isSleevelessVNeckChoice(patternData);
+
+  const timeline = isCardiganRoundHalfFront
+    ? (result.backNeckShoulderTimeline ?? result.neckShoulderShapingChart.timeline ?? [])
+    : (result.frontNeckShoulderTimeline ??
+      result.backNeckShoulderTimeline ??
+      result.neckShoulderShapingChart.timeline ??
+      []);
   if (timeline.length === 0) return [];
-  return shoulderShapingNotationLinesFromTimeline(timeline, side);
+  const budget = shoulderStitchesPerSideForDiagram(result.debug);
+  return shoulderShapingNotationLinesFromTimeline(timeline, side, undefined, {
+    shoulderStitchesBudget: budget,
+  });
 }
 
 function joinNotationLines(lines: readonly string[]): string {
@@ -335,12 +353,14 @@ export function buildFrontJapaneseNotationReplacements(
   /** Back / closed-pullover shoulder schedule — not cardigan half-front timeline compression. */
   const shoulderShapingLines = canonicalShoulderShapingNotationLines(
     result,
+    patternData ?? {},
     FRONT_NOTATION_DIAGRAM_SIDE,
   );
 
   const hemRows = d.hemRows;
   const necklineLocalRc = d.frontNecklineStartLocalRC;
   const armholeStartGarmentRc = garmentRcAtArmholeStart(d);
+  const shoulderStitchCount = shoulderStitchesPerSideForDiagram(d);
 
   return {
     "jp-caston": formatCastOnNotation(castOnSts),
@@ -350,6 +370,10 @@ export function buildFrontJapaneseNotationReplacements(
     "jp-neckline-bo": isVNeckFront ? "" : formatBindOffNotation(centerNeckBindOff ?? 0),
     "jp-neckline-shaping": joinNotationLines(necklineShapingLines),
     "jp-shoulder-shaping": joinNotationLines(shoulderShapingLines),
+    "jp-shoulder-stitches":
+      shoulderStitchCount !== undefined
+        ? formatShoulderStitchCountLabel(shoulderStitchCount)
+        : "",
     "rc-caston": formatRcNotation(0),
     "rc-hem": formatRcNotation(hemRows),
     "rc-armhole-bo":

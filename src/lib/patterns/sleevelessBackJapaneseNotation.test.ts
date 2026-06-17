@@ -7,6 +7,7 @@ import {
   buildBackJapaneseNotationReplacements,
   formatBindOffNotation,
   formatCastOnNotation,
+  formatShoulderStitchCountLabel,
   formatRcNotation,
   formatRcResetNotation,
   formatShapingSegment,
@@ -33,6 +34,8 @@ describe("sleevelessBackJapaneseNotation formatters", () => {
     expect(formatCastOnNotation(128)).toBe("co128");
     expect(formatBindOffNotation(10)).toBe("bo10");
     expect(formatShapingSegment(1, 2, 10)).toBe("1s-2r-10x");
+    expect(formatShoulderStitchCountLabel(12)).toBe("shoulder 12 sts");
+    expect(formatShoulderStitchCountLabel(0)).toBe("");
   });
 
   it("splits armhole stitches per side like armhole shaping block", () => {

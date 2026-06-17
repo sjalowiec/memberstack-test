@@ -9,12 +9,34 @@ import {
   compressStitchDecreasePointsToNotationLines,
   type StitchDecreasePoint,
 } from "./shapingNotationCompress";
+import type { NeckShoulderShapingChart } from "./neckShoulderShapingChart";
 import type { RowEntry } from "./shapingTimeline";
 
 export type ShoulderNotationSide = "left" | "right";
 
 function sortTimelineByRow(timeline: readonly RowEntry[]): RowEntry[] {
   return [...timeline].sort((a, b) => a.row - b.row);
+}
+
+function timelineHasCenterBindOffRow(timeline: readonly RowEntry[]): boolean {
+  const first = timeline[0];
+  if (!first) return false;
+  return first.events.some((e) => e.side === "center" && e.kind === "bindOff" && e.amount > 0);
+}
+
+/**
+ * Active-shoulder stitch count at the start of shaping — same source as
+ * {@link buildActiveSideActionsFromTimeline} in `neckShoulderActiveSideChecklist.ts`.
+ */
+export function initialActiveShoulderStitchesFromTimeline(timeline: readonly RowEntry[]): number {
+  const sorted = sortTimelineByRow(timeline);
+  const first = sorted[0];
+  if (!first) return 0;
+  const hasCenterDivide = timelineHasCenterBindOffRow(timeline);
+  if (hasCenterDivide) {
+    return Math.max(0, Math.floor(first.stitchesR));
+  }
+  return Math.max(0, Math.floor(first.stitchesR - first.netChangeR));
 }
 
 /** Outer-edge shoulder bind-off amounts per timeline row for one diagram side. */
@@ -46,6 +68,11 @@ export function finalShoulderRemainderStitches(
   return Math.max(0, Math.floor(side === "left" ? last.stitchesL : last.stitchesR));
 }
 
+export type ShoulderShapingNotationOptions = {
+  /** Per-side shoulder bind-off budget; caps synthetic remainder append to avoid over-counting. */
+  shoulderStitchesBudget?: number;
+};
+
 /**
  * Complete shoulder shaping points: scheduled outer bind-offs plus final remainder on the
  * last row when those stitches are not already removed by timeline events.
@@ -53,10 +80,37 @@ export function finalShoulderRemainderStitches(
 export function collectCompleteShoulderShapingPoints(
   timeline: readonly RowEntry[],
   side: ShoulderNotationSide,
+  _chart?: NeckShoulderShapingChart,
+  options?: ShoulderShapingNotationOptions,
 ): StitchDecreasePoint[] {
   const points = collectOuterShoulderBindOffPoints(timeline, side);
   const remainder = finalShoulderRemainderStitches(timeline, side);
   if (remainder <= 0) return points;
+
+  const outerSum = points.reduce((sum, p) => sum + p.amount, 0);
+  const budget = options?.shoulderStitchesBudget;
+  if (budget !== undefined && budget > 0) {
+    if (outerSum >= budget) return points;
+    const appendAmount = Math.min(remainder, budget - outerSum);
+    if (appendAmount <= 0) return points;
+    const lastBindRow = points.length > 0 ? points[points.length - 1]!.row : undefined;
+    const sorted = sortTimelineByRow(timeline);
+    const lastTimelineRow = sorted[sorted.length - 1]?.row ?? 0;
+    const gap =
+      points.length >= 2
+        ? Math.max(1, points[points.length - 1]!.row - points[points.length - 2]!.row)
+        : 2;
+    const finalRow = lastBindRow !== undefined ? lastBindRow + gap : lastTimelineRow;
+    return [...points, { row: finalRow, amount: appendAmount }];
+  }
+
+  const initialActiveShoulder = initialActiveShoulderStitchesFromTimeline(timeline);
+  // Timeline outer bind-offs already account for the full active-shoulder width; stitches
+  // still on the needle are protected (minFinal) after the last scheduled pass — not a
+  // second chunk for Japanese notation (matches the checklist row budget).
+  if (initialActiveShoulder > 0 && outerSum >= initialActiveShoulder) {
+    return points;
+  }
 
   const lastBindRow = points.length > 0 ? points[points.length - 1]!.row : undefined;
   const sorted = sortTimelineByRow(timeline);
@@ -74,8 +128,12 @@ export function collectCompleteShoulderShapingPoints(
 export function shoulderShapingNotationLinesFromTimeline(
   timeline: readonly RowEntry[],
   side: ShoulderNotationSide,
+  chart?: NeckShoulderShapingChart,
+  options?: ShoulderShapingNotationOptions,
 ): string[] {
-  return compressStitchDecreasePointsToNotationLines(collectCompleteShoulderShapingPoints(timeline, side));
+  return compressStitchDecreasePointsToNotationLines(
+    collectCompleteShoulderShapingPoints(timeline, side, chart, options),
+  );
 }
 
 /** Sum stitch counts encoded in `Ns-Mr-Kx` notation lines (ignores optional `bo` prefix). */

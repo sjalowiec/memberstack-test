@@ -47,7 +47,7 @@ describe("innerNeckDecreaseNotationLinesFromTimeline", () => {
 });
 
 describe("neckEdgeNotationLinesFromNeckShoulderChart", () => {
-  it("groups chart neck-edge cells into multiple summary lines (not timeline-only compaction)", () => {
+  it("round-neck neckline: BO 3 twice, BO 2 once, dec 1 eight times (chart row order)", () => {
     const base = {
       action: "Neck" as const,
       leftSide: "-",

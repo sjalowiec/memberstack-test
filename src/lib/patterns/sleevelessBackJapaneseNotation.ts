@@ -6,6 +6,7 @@
 import type { ArmholeResult } from "./legoBlocks/armholeShaping";
 import { collectInnerNeckDecreasePointsFromTimeline } from "./notationOverlaySvg";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
+import { shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
 import {
   compressStitchDecreasePointsToNotationLines,
   type StitchDecreasePoint,
@@ -77,6 +78,12 @@ export function garmentRcAtArmholeStart(debug: SleevelessBackPatternResult["debu
 }
 
 /** Per-edge bind-off label (e.g. `bo10` — one working edge, not summed across both sides). */
+/** Shoulder width label for Japanese notation diagrams (per-side stitch count). */
+export function formatShoulderStitchCountLabel(stitches: number): string {
+  const n = Math.max(0, Math.round(stitches));
+  return n > 0 ? `shoulder ${n} sts` : "";
+}
+
 export function formatBindOffNotation(totalStitches: number): string {
   const n = Math.max(0, Math.round(totalStitches));
   return n > 0 ? `bo${n}` : "";
@@ -186,7 +193,9 @@ export function buildBackJapaneseNotationReplacements(
   const necklineShapingLines = formatDecreaseNotationLines(necklineDecreasePoints);
   const shoulderShapingLines =
     timeline.length > 0
-      ? shoulderShapingNotationLinesFromTimeline(timeline, BACK_NOTATION_DIAGRAM_SIDE)
+      ? shoulderShapingNotationLinesFromTimeline(timeline, BACK_NOTATION_DIAGRAM_SIDE, undefined, {
+          shoulderStitchesBudget: shoulderStitchesPerSideForDiagram(d),
+        })
       : [];
 
   const hemRows = d.hemRows;
