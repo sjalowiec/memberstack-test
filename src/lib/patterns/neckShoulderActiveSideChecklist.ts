@@ -4,6 +4,7 @@
  * can read the same RC values as the rendered table without an import cycle.
  */
 
+import { ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE } from "./neckShoulderActiveIntroCopy";
 import type { NeckShoulderShapingChart, NeckShoulderShapingChartRow } from "./neckShoulderShapingChart";
 import {
   NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
@@ -115,7 +116,7 @@ export function formatCenterNecklineSetupChecklistAction(info: CenterNecklineDiv
     L === R
       ? `${stitchCountPhrase(L)} on each shoulder`
       : `${stitchCountPhrase(L)} left, ${stitchCountPhrase(R)} right`;
-  return `Scrap off center ${n} neckline ${centerWord} to divide; ${shoulders} remaining. Place opposite shoulder in hold; ${stitchCountPhrase(R)} active shoulder.`;
+  return `Scrap off center ${n} neckline ${centerWord} to divide; ${shoulders} remaining. ${ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE} ${stitchCountPhrase(R)} active shoulder.`;
 }
 
 /**

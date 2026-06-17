@@ -46,7 +46,14 @@ declare global {
       updateMemberJSON?: (args: { json: Record<string, unknown> }) => Promise<unknown>;
       /** Auth lifecycle events (`member.login`, `member.logout`, …). */
       on?: (event: string, handler: (...args: unknown[]) => void) => void;
+      openModal?: (type: string, opts?: Record<string, unknown>) => Promise<unknown>;
+      hideModal?: () => void;
+      init?: () => void;
+      onReady?: Promise<unknown>;
     };
+    /** Two-step password reset modal (see AccountPasswordResetModal.astro). */
+    kbmOpenAccountPasswordResetModal?: (prefillEmail?: string) => void;
+    kbmCloseAccountPasswordResetModal?: () => void;
     /** Inline scripts in `GlossaryTooltip.astro`; pages may call `closeAll` on tab change / rebuild. */
     __kbmGlossaryApi?: {
       closeAll: () => void;

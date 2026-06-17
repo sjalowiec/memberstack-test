@@ -837,6 +837,68 @@ const glossaryJson = JSON.stringify(
       height: auto;
     }
 
+    /* Video embed: modal injects main HTML only — GlossaryEntry scoped CSS is
+       not in the page, so size the 16:9 player + "Watch Larger" button here. */
+    .glossaryModal .glossaryModal__body .glossary-entry-videos {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      width: 100%;
+      max-width: 100%;
+      margin: 1.25rem 0 1.5rem;
+    }
+
+    .glossaryModal .glossaryModal__body .glossary-video-block {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    /* padding-top hack (not aspect-ratio): gives a definite containing-block
+       height so the absolutely-positioned iframe reliably fills 16:9 in the
+       injected modal context. */
+    .glossaryModal .glossaryModal__body .glossary-video {
+      position: relative;
+      width: 100%;
+      height: 0;
+      padding-top: 56.25%;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e2e6df;
+      background: #000;
+    }
+
+    .glossaryModal .glossaryModal__body .glossary-video iframe {
+      position: absolute;
+      inset: 0;
+      width: 100% !important;
+      height: 100% !important;
+      border: 0;
+    }
+
+    .glossaryModal .glossaryModal__body .glossary-video-enlarge {
+      align-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1.1rem;
+      border-radius: 999px;
+      border: 1px solid var(--kbm-green, #52682d);
+      background: var(--kbm-green, #52682d);
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      font-size: 0.95rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .glossaryModal .glossaryModal__body .glossary-video-enlarge:hover,
+    .glossaryModal .glossaryModal__body .glossary-video-enlarge:focus-visible {
+      background: #3f5323;
+      outline: none;
+    }
+
     .glossaryModal .glossaryModal__body .glossary-entry-helpinfo {
       margin: 0 0 1.25rem;
       line-height: 1.6;

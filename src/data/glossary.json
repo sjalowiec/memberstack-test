@@ -2160,14 +2160,16 @@
     "glossaryId": 354,
     "english": "Japanese Notation",
     "example": "Example: 1-2-9 = 1 stitch every 2 rows 9 times",
-    "helpinfo": ".Japanese Notation (Garment Notation) displays abbreviated knitting instructions on a visual diagram of your garment piece. It can be used for increases, decreases or short row shaping.  \tAn instruction of 1-2-9 means (decrease, increase or hold) 1 stitch every 2 rows 9 times. If the drawing doesn't say increase, decrease or hold, how do you know what to do? Study the schematic.   \t ",
-    "image": "/images/glossary/japanese-knitting-notation-symbols-diagram.jpg",
-    "image_alt": "Diagram of Japanese knitting notation symbols",
-    "image_description": "Illustration showcasing Japanese notation symbols used in machine knitting patterns",
+    "helpinfo": "Japanese Notation is a compact way to show shaping instructions directly on a garment diagram.<br>\n\nIn Knit It Now patterns, the notation is read as:<br>\n\nstitches - rows - times<br>\n\nExample:<br>\n1-2-9 means work 1 stitch every 2 rows, 9 times.<br>\n\nDepending on the shaping area, that may mean decrease, increase, bind off, or hold stitches. The diagram and section heading tell you what action to take.<br>\n\nUse the notation as a quick visual summary. If you prefer step-by-step directions, use the written checklist instead. ",
+    "image": "",
+    "image_alt": "",
+    "image_description": "",
     "metaTitle": "Japanese Notation in Machine Knitting",
     "metaDescription": "Unlock the secrets of Japanese notation in machine knitting. Learn to interpret these symbols to enhance your knitting projects with precision and creativity.",
     "active": true,
-    "vimeoIds": []
+    "vimeoIds": [
+      "1195771788"
+    ]
   },
   {
     "glossaryId": 355,
@@ -5054,7 +5056,7 @@
     "english": "Bind off / Cast Off",
     "example": "Securing stitches at the ends of the knitting.",
     "helpinfo": "Due to the nature of their formation, knitting stitches will unravel or \"run\" if left unfinished.Binding off (also known as casting off) is the process of creating a finished, secure edge to prevent the knitting from unraveling.Many Binding off or Casting off techniques and methods are available for machine knitters.   ",
-    "image": "/images/glossary/bind off.jpg",
+    "image": "",
     "image_alt": "",
     "image_description": "",
     "metaTitle": "",
@@ -5966,7 +5968,6 @@
     "active": true,
     "vimeoIds": []
   },
-  
   {
     "glossaryId": 887,
     "english": "Zero Needle",
@@ -6024,13 +6025,15 @@
     "english": "Shaping Notation (Knit It Now)",
     "example": "Visual shorthand on the schematic, with row-by-row instructions in plain knitting language.",
     "helpinfo": "Knit It Now shaping notation is based on traditional Japanese garment notation, using the same visual shorthand directly on the garment schematic.<br><br>The chart shows where shaping happens, while the row-by-row instructions below explain the same shaping in plain knitting language.<br><br>See: <a href=\"#\" data-glossary-id=\"1779400000001\">Japanese Notation (Traditional)</a>",
-    "image": "/images/glossary/shaping-notation.jpg",
-    "image_alt": "Knit it Now Shaping Notation",
-    "image_description": "example of shaping notation similar to tradiational Japanese notation knitting instruciton",
+    "image": "",
+    "image_alt": "",
+    "image_description": "",
     "metaTitle": "Shaping Notation (Knit It Now) | Machine Knitting Glossary",
     "metaDescription": "Knit It Now shaping notation charts combine visual Japanese-style diagrams with row-by-row knitting instructions in plain language.",
     "active": true,
-    "vimeoIds": []
+    "vimeoIds": [
+      "1195771788"
+    ]
   },
   {
     "glossaryId": 1779296723857,

@@ -131,7 +131,7 @@ describe("diagram-jp-front-round.svg multiline shaping", () => {
     const out = applyJapaneseNotationSvgReplacements(rawSvg, SAMPLE_JP_BACK_NOTATION_REPLACEMENTS);
 
     expect(out).toMatch(
-      /<text transform="translate\(86\.22 151\.8\)"[^>]*>\s*<tspan x="0" y="0">3s-2r-2x<\/tspan>\s*<tspan x="0" dy="14\.4">2s-1r-1x<\/tspan>\s*<tspan x="0" dy="14\.4">1s-2r-4x<\/tspan>\s*<\/text>/,
+      /<text transform="translate\(33\.92 90\.69\)"[^>]*>\s*<tspan x="0" y="0">3s-2r-2x<\/tspan>\s*<tspan x="0" dy="14\.4">2s-1r-1x<\/tspan>\s*<tspan x="0" dy="14\.4">1s-2r-4x<\/tspan>\s*<\/text>/,
     );
     expect(findUnreplacedJapaneseNotationPlaceholders(out)).toEqual([]);
   });

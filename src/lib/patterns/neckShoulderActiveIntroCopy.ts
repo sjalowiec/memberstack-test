@@ -13,11 +13,22 @@ import {
 /** Glossary id for “Scrap off” (lifeline / remove-from-bed technique). */
 export const SCRAP_OFF_GLOSSARY_ID = 311;
 
+/** Glossary id for “bind off”. */
+export const BIND_OFF_GLOSSARY_ID = 804;
+
+/** Phrase given bold emphasis in HTML renderings of {@link ACTIVE_SHOULDER_CHART_INTRO_SENTENCE}. */
+export const ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS =
+  "reversing the neckline and shoulder shaping";
+
 export const ACTIVE_SHOULDER_CHART_INTRO_SENTENCE =
-  "Follow the checklist row by row for the first shoulder. Then return the held stitches to the machine and repeat the shaping sequence for the second shoulder.";
+  `Follow the checklist row by row for the first shoulder. Then return the held stitches to the machine and work the second shoulder, ${ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS} so that neckline shaping remains on the neck edge and shoulder shaping remains on the shoulder edge.`;
+
+/** Park the non-working shoulder before shaping one side at a time (online + print). */
+export const ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE =
+  "Place the remaining stitches on hold, or transfer them to scrap yarn if preferred.";
 
 export const ACTIVE_SHOULDER_DIVIDE_SENTENCE =
-  "Place the opposite shoulder into hold position and work one shoulder at a time.";
+  `${ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE} work one shoulder at a time.`;
 
 /** Plain tail for sleeveless full-width V-neck front chart intros (no center bind-off). */
 export const ACTIVE_VNECK_CENTER_DIVIDE_TAIL =
@@ -85,10 +96,10 @@ export function formatActiveShoulderCenterNecklinePlainSentence(args: {
   const centerCount = Number(args.centerBindOffStitches);
   const centerCountLabel =
     Number.isFinite(centerCount) && centerCount > 0 ? String(Math.round(centerCount)) : "";
-  const scrapOffTail = centerCountLabel
-    ? `scrap off the center ${centerCountLabel} neckline stitches to divide the neckline`
-    : "scrap off the center neckline stitches to divide the neckline";
-  return formatArmholeRcAnchoredSentence(args.localStartRcLabel, scrapOffTail);
+  const divideTail = centerCountLabel
+    ? `divide the neckline by removing the center ${centerCountLabel} neckline stitches from work. Scrap off, bind off, or place these stitches on hold according to your preferred method`
+    : "divide the neckline by removing the center neckline stitches from work. Scrap off, bind off, or place these stitches on hold according to your preferred method";
+  return formatArmholeRcAnchoredSentence(args.localStartRcLabel, divideTail);
 }
 
 /** Cardigan front: neckline begins at the open center-front edge (no pullover divide language). */

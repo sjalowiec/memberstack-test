@@ -5,6 +5,7 @@ import {
   activeShoulderIntroUsesVNeckDivideCopy,
   formatActiveShoulderCenterNecklinePlainSentence,
   formatActiveShoulderVNeckCenterPlainSentence,
+  BIND_OFF_GLOSSARY_ID,
   SCRAP_OFF_GLOSSARY_ID,
 } from "./neckShoulderActiveIntroCopy";
 import {
@@ -70,14 +71,14 @@ function vNeckPattern() {
 }
 
 describe("neckShoulderActiveIntroCopy", () => {
-  it("uses scrap-off divide wording with stitch count for round neck", () => {
+  it("uses divide wording with stitch count for round neck", () => {
     expect(
       formatActiveShoulderCenterNecklinePlainSentence({
         localStartRcLabel: "RC:117",
         centerBindOffStitches: 14,
       }),
     ).toBe(
-      "When Armhole RC reaches 117, scrap off the center 14 neckline stitches to divide the neckline.",
+      "When Armhole RC reaches 117, divide the neckline by removing the center 14 neckline stitches from work. Scrap off, bind off, or place these stitches on hold according to your preferred method.",
     );
   });
 
@@ -92,7 +93,7 @@ describe("neckShoulderActiveIntroCopy", () => {
   it("omits round-neck center divide when center bind-off is zero and chart is not V-neck front", () => {
     expect(activeShoulderCenterDivideIntroApplies(0)).toBe(false);
     expect(activeShoulderIntroPlainParagraphs({ centerBindOffStitches: 0 })).toEqual([
-      "Follow the checklist row by row for the first shoulder. Then return the held stitches to the machine and repeat the shaping sequence for the second shoulder.",
+      "Follow the checklist row by row for the first shoulder. Then return the held stitches to the machine and work the second shoulder, reversing the neckline and shoulder shaping so that neckline shaping remains on the neck edge and shoulder shaping remains on the shoulder edge.",
     ]);
   });
 
@@ -162,15 +163,20 @@ describe("renderActiveShoulderChartIntroHtml", () => {
     layout: "compact" as const,
   };
 
-  it("links Scrap off to glossary id 311 for divided round necklines", () => {
+  it("links Scrap off and bind off to glossary ids for divided round necklines", () => {
     const html = renderActiveShoulderChartIntroHtml({
       ...baseOpts,
       localStartRcLabel: "RC:050",
       centerBindOffStitches: 10,
     });
     expect(html).toContain(`data-glossary-id="${SCRAP_OFF_GLOSSARY_ID}"`);
+    expect(html).toContain(`data-glossary-id="${BIND_OFF_GLOSSARY_ID}"`);
     expect(html).toContain("glossary-tooltip-placeholder");
-    expect(html).toContain("Scrap off</span> the center 10 neckline stitches to divide the neckline");
+    expect(html).toContain(
+      "divide the neckline by removing the center 10 neckline stitches from work.",
+    );
+    expect(html).toContain("Scrap off</span>, <span");
+    expect(html).toContain(">bind off</span>, or place these stitches on hold according to your preferred method");
     expect(html).not.toMatch(/bind off the center/i);
     expect(html).toContain("Divide:");
     expect(html).toContain("work one shoulder at a time");
@@ -194,13 +200,16 @@ describe("renderActiveShoulderChartIntroHtml", () => {
     expect(lifelineIdx).toBeGreaterThanOrEqual(0);
     expect(knitUntilIdx).toBeGreaterThan(lifelineIdx);
     expect(html).toContain("Divide the Neckline");
-    expect(html).toContain("Place one shoulder on hold.");
-    expect(html).toContain("Work one shoulder at a time.");
-    // Preserves the calculated, glossary-linked center scrap-off line (no calc change), now anchored "At RC".
     expect(html).toContain(
-      "At RC 050, <span",
+      "Place the remaining stitches on hold, or transfer them to scrap yarn if preferred.",
     );
-    expect(html).toContain("Scrap off</span> the center 10 neckline stitches to divide the neckline");
+    expect(html).toContain("Work one shoulder at a time.");
+    // Preserves the calculated, glossary-linked center divide line (no calc change), now anchored "At RC".
+    expect(html).toContain(
+      "At RC 050, divide the neckline by removing the center 10 neckline stitches from work.",
+    );
+    expect(html).toContain("Scrap off</span>, <span");
+    expect(html).toContain(">bind off</span>, or place these stitches on hold according to your preferred method");
     // The Divide the Neckline section no longer uses the "When Armhole RC reaches" milestone wording.
     expect(html).not.toMatch(/When Armhole RC reaches/i);
     // Workflow layout replaces the compact paragraph labels online.
@@ -208,7 +217,10 @@ describe("renderActiveShoulderChartIntroHtml", () => {
     expect(html).not.toContain("Divide:</strong>");
     // Jargon removed from the second-shoulder sentence.
     expect(html).not.toMatch(/reversing the edge landmarks/i);
-    expect(html).toContain("repeat the shaping sequence for the second shoulder");
+    expect(html).toContain("work the second shoulder");
+    expect(html).toContain(
+      "<strong>reversing the neckline and shoulder shaping</strong>",
+    );
   });
 
   it("renders the same workflow steps online for the V-neck front chart", () => {
@@ -233,7 +245,9 @@ describe("renderActiveShoulderChartIntroHtml", () => {
     expect(lifelineIdx).toBeGreaterThanOrEqual(0);
     expect(knitUntilIdx).toBeGreaterThan(lifelineIdx);
     expect(html).toContain("Divide the Neckline");
-    expect(html).toContain("Place one shoulder on hold.");
+    expect(html).toContain(
+      "Place the remaining stitches on hold, or transfer them to scrap yarn if preferred.",
+    );
     expect(html).toContain("Work one shoulder at a time.");
     // V-neck keeps its own divide-at-center wording (no round-neck scrap-off / bind-off), now anchored "At RC".
     expect(html).toMatch(/At RC 100, divide the piece at the center/i);
@@ -241,7 +255,10 @@ describe("renderActiveShoulderChartIntroHtml", () => {
     expect(html).not.toMatch(/When Armhole RC reaches/i);
     expect(html).not.toContain("Center Neckline:");
     expect(html).not.toContain("Divide:</strong>");
-    expect(html).toContain("repeat the shaping sequence for the second shoulder");
+    expect(html).toContain("work the second shoulder");
+    expect(html).toContain(
+      "<strong>reversing the neckline and shoulder shaping</strong>",
+    );
   });
 
   it("uses V-neck divide copy for front chart (not round-neck center scrap-off)", () => {

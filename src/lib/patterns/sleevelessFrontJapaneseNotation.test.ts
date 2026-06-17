@@ -349,7 +349,7 @@ describe("buildFrontJapaneseNotationReplacements", () => {
       SAMPLE_JP_BACK_NOTATION_REPLACEMENTS,
     );
 
-    const neckBlock = out.match(/translate\(86\.22 151\.8\)[\s\S]*?<\/text>/)?.[0] ?? "";
+    const neckBlock = out.match(/translate\(33\.92 90\.69\)[\s\S]*?<\/text>/)?.[0] ?? "";
     const tspans = [...neckBlock.matchAll(/<tspan[^>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]);
     const lines = SAMPLE_JP_BACK_NOTATION_REPLACEMENTS["jp-neckline-shaping"].split("\n");
 
@@ -394,7 +394,7 @@ describe("buildFrontJapaneseNotationReplacements", () => {
     expect(repl["jp-neckline-shaping"].split("\n").length).toBeGreaterThan(1);
 
     const out = applyJapaneseNotationSvgReplacements(JP_FRONT_SVG, repl);
-    const tspans = tspanTextsFromSvgBlock(out, "translate\\(86\\.22 151\\.8\\)");
+    const tspans = tspanTextsFromSvgBlock(out, "translate\\(33\\.92 90\\.69\\)");
     const lines = repl["jp-neckline-shaping"].split("\n").filter((l) => l.length > 0);
     expect(tspans).toEqual([...lines].reverse());
     expect(tspans[tspans.length - 1]).toBe(lines[0]);
@@ -413,7 +413,7 @@ describe("buildFrontJapaneseNotationReplacements", () => {
     expect(repl["jp-shoulder-shaping"].split("\n").length).toBeGreaterThan(1);
 
     const out = applyJapaneseNotationSvgReplacements(JP_FRONT_SVG, repl);
-    const tspans = tspanTextsFromSvgBlock(out, "translate\\(175\\.17 94\\.74\\)");
+    const tspans = tspanTextsFromSvgBlock(out, "translate\\(175\\.12 94\\.71\\)");
     const lines = repl["jp-shoulder-shaping"].split("\n").filter((l) => l.length > 0);
     expect(tspans).toEqual([...lines].reverse());
   });

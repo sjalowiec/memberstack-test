@@ -3,6 +3,7 @@ import "../styles/global.css";
 
 import "../styles/print.css";
 import ContactModal from "../components/ContactModal.astro";
+import AccountPasswordResetModal from "../components/auth/AccountPasswordResetModal.astro";
 import KinCatalogVideoModal from "../components/common/KinCatalogVideoModal.astro";
 import ToolPrintFooter from "../components/tools/ToolPrintFooter.astro";
 import EnvBanner from "../components/EnvBanner.astro";
@@ -205,7 +206,12 @@ const isProduction =
     {toolPrintTitle && <ToolPrintFooter toolTitle={toolPrintTitle} />}
 
     <ContactModal />
+    <AccountPasswordResetModal />
     <KinCatalogVideoModal />
+
+    <script>
+      import "../scripts/accountPasswordResetModal.ts";
+    </script>
 
     {!skipGlobalHyvor && (
       <script
@@ -275,6 +281,101 @@ const isProduction =
       window.$memberstackDom.openModal("LOGIN");
     }
   });
+</script>
+    <!--
+      Inject a "Forgot Password?" link into MemberStack's prebuilt LOGIN modal.
+      The prebuilt modal renders inside <memberstack-prebuilt-ui>'s shadow root and
+      ships without a forgot-password link in this app's dashboard config, so we add
+      one and wire it to MemberStack's own forgot-password flow. Login-only detection:
+      a "current-password" field with no "new-password" field uniquely identifies the
+      login modal among MemberStack's prebuilt modals (signup / reset / change-password
+      all use "new-password"), so signup and other flows are left untouched.
+    -->
+    <script is:inline>
+  (function () {
+    var LINK_ID = "kbm-forgot-password-link";
+
+    function openForgotPassword(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof window.kbmOpenAccountPasswordResetModal === "function") {
+        window.kbmOpenAccountPasswordResetModal();
+      }
+    }
+
+    function findLoginPasswordInput(root) {
+      // Only the login modal has a current-password field with no new-password field.
+      if (root.querySelector('input[autocomplete="new-password"], input[data-ms-member="new-password"]')) {
+        return null;
+      }
+      return root.querySelector('input[autocomplete="current-password"]');
+    }
+
+    function injectLink(shadowRoot) {
+      if (!shadowRoot) return;
+      var existing = shadowRoot.getElementById ? shadowRoot.getElementById(LINK_ID) : null;
+      var pwInput = findLoginPasswordInput(shadowRoot);
+
+      // Not the login modal (e.g. switched to signup) — drop any stale link.
+      if (!pwInput) {
+        if (existing) existing.remove();
+        return;
+      }
+      if (existing) return;
+
+      var field = pwInput.closest("div") || pwInput.parentElement;
+      if (!field) return;
+
+      var link = document.createElement("a");
+      link.id = LINK_ID;
+      link.href = "#";
+      link.textContent = "Forgot Password?";
+
+      // Match the modal's own link color (e.g. the "Create one" link) when available.
+      var sampleLink = shadowRoot.querySelector('a[data-ms-modal], a, [role="link"]');
+      var accent = "";
+      if (sampleLink) {
+        try { accent = getComputedStyle(sampleLink).color; } catch (err) {}
+      }
+      link.style.display = "block";
+      link.style.marginTop = "8px";
+      link.style.textAlign = "right";
+      link.style.fontSize = "0.85rem";
+      link.style.fontWeight = "600";
+      link.style.textDecoration = "underline";
+      link.style.cursor = "pointer";
+      if (accent) link.style.color = accent;
+
+      link.addEventListener("click", openForgotPassword);
+      field.insertAdjacentElement("afterend", link);
+    }
+
+    var observedHosts = new WeakSet();
+    function observeHost(host) {
+      if (!host || !host.shadowRoot || observedHosts.has(host)) return;
+      observedHosts.add(host);
+      var mo = new MutationObserver(function () { injectLink(host.shadowRoot); });
+      mo.observe(host.shadowRoot, { childList: true, subtree: true });
+      injectLink(host.shadowRoot);
+    }
+
+    function scanHosts() {
+      var hosts = document.querySelectorAll("memberstack-prebuilt-ui");
+      for (var i = 0; i < hosts.length; i++) observeHost(hosts[i]);
+    }
+
+    function start() {
+      var bodyObserver = new MutationObserver(scanHosts);
+      bodyObserver.observe(document.body, { childList: true, subtree: true });
+      scanHosts();
+    }
+
+    if (document.body) {
+      start();
+    } else {
+      document.addEventListener("DOMContentLoaded", start);
+    }
+  })();
 </script>
 
     {import.meta.env.DEV && (

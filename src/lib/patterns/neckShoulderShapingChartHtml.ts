@@ -19,6 +19,8 @@ import {
 import {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
   ACTIVE_SHOULDER_DIVIDE_SENTENCE,
+  ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE,
+  ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS,
   ACTIVE_VNECK_CENTER_DIVIDE_TAIL,
   activeShoulderCenterDivideIntroApplies,
   activeShoulderIntroIsCardiganFront,
@@ -26,6 +28,7 @@ import {
   CARDIGAN_FRONT_NECKLINE_START_TAIL,
   CARDIGAN_FRONT_OPPOSITE_FRONT_SENTENCE,
   CARDIGAN_FRONT_SHAPING_TOGETHER_SENTENCE,
+  BIND_OFF_GLOSSARY_ID,
   SCRAP_OFF_GLOSSARY_ID,
 } from "./neckShoulderActiveIntroCopy";
 import {
@@ -67,6 +70,26 @@ function escapeHtml(text: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+/** Escape `text` for HTML, wrapping the first occurrence of `phrase` (if present) in `<strong>`. */
+function escapeHtmlWithEmphasis(text: string, phrase: string): string {
+  const idx = phrase ? text.indexOf(phrase) : -1;
+  if (idx < 0) return escapeHtml(text);
+  const before = text.slice(0, idx);
+  const after = text.slice(idx + phrase.length);
+  return `${escapeHtml(before)}<strong>${escapeHtml(phrase)}</strong>${escapeHtml(after)}`;
+}
+
+/**
+ * Escaped intro sentence with the reverse-shaping phrase emphasized in `<strong>`.
+ * The plain-text constant is unchanged for print/non-HTML consumers.
+ */
+function activeShoulderChartIntroSentenceHtml(): string {
+  return escapeHtmlWithEmphasis(
+    ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
+    ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS,
+  );
 }
 
 /**
@@ -201,7 +224,7 @@ function stitchRemainingCompact(left: number, right: number): string {
 }
 
 const SECOND_SIDE_INSTRUCTION_SUFFIX =
-  "Repeat the shaping sequence for the second shoulder.";
+  `Work the second shoulder, ${ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS} so that neckline shaping remains on the neck edge and shoulder shaping remains on the shoulder edge.`;
 const SECOND_SIDE_CHECKLIST_INSTRUCTION_SUFFIX = "Follow the second shoulder checklist below.";
 
 export type ActiveShoulderChartIntroLayout = "compact" | "labeled";
@@ -290,6 +313,15 @@ function scrapOffGlossaryPlaceholderHtml(): string {
   );
 }
 
+function bindOffGlossaryPlaceholderHtml(): string {
+  return buildGlossaryTooltipPlaceholderHtml(
+    BIND_OFF_GLOSSARY_ID,
+    "bind off",
+    (s) => s.replace(/"/g, "&quot;"),
+    (s) => s,
+  );
+}
+
 function lifelineGlossaryPlaceholderHtml(): string {
   return buildGlossaryTooltipPlaceholderHtml(
     LIFELINE_GLOSSARY_ID,
@@ -312,7 +344,7 @@ function divideRcDisplayLabel(localStartRcLabel?: string | undefined): string {
   return localStartLabel;
 }
 
-/** HTML center-neckline divide line with glossary on “Scrap off” (plain-text twin in intro copy module). */
+/** HTML center-neckline divide line with glossary on “Scrap off” and “bind off” (plain-text twin in intro copy module). */
 function formatActiveShoulderCenterNecklineHtml(args: {
   localStartRcLabel?: string | undefined;
   centerBindOffStitches?: number | undefined;
@@ -324,21 +356,22 @@ function formatActiveShoulderCenterNecklineHtml(args: {
   const centerCountLabel =
     Number.isFinite(centerCount) && centerCount > 0 ? String(Math.round(centerCount)) : "";
   const scrapOff = scrapOffGlossaryPlaceholderHtml();
-  const scrapOffTail = centerCountLabel
-    ? `${scrapOff} the center ${escapeHtml(centerCountLabel)} neckline stitches to divide the neckline`
-    : `${scrapOff} the center neckline stitches to divide the neckline`;
+  const bindOff = bindOffGlossaryPlaceholderHtml();
+  const divideTail = centerCountLabel
+    ? `divide the neckline by removing the center ${escapeHtml(centerCountLabel)} neckline stitches from work. ${scrapOff}, ${bindOff}, or place these stitches on hold according to your preferred method`
+    : `divide the neckline by removing the center neckline stitches from work. ${scrapOff}, ${bindOff}, or place these stitches on hold according to your preferred method`;
   const rcColon = localStartLabel.match(/^RC:(\d{1,4})$/i);
   if (rcColon) {
     const n = String(Math.max(0, parseInt(rcColon[1], 10))).padStart(3, "0");
     if (args.atRcPrefix) {
-      return `At RC ${escapeHtml(n)}, ${scrapOffTail}.`;
+      return `At RC ${escapeHtml(n)}, ${divideTail}.`;
     }
-    return `When Armhole RC reaches ${escapeHtml(n)}, ${scrapOffTail}.`;
+    return `When Armhole RC reaches ${escapeHtml(n)}, ${divideTail}.`;
   }
   if (localStartLabel) {
-    return `At ${escapeHtml(localStartLabel)}, ${scrapOffTail}.`;
+    return `At ${escapeHtml(localStartLabel)}, ${divideTail}.`;
   }
-  return `${scrapOffTail.charAt(0).toUpperCase()}${scrapOffTail.slice(1)}.`;
+  return `${divideTail.charAt(0).toUpperCase()}${divideTail.slice(1)}.`;
 }
 
 /** HTML V-neck center divide line (no scrap-off / bind-off wording). */
@@ -436,7 +469,7 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
       `<p class="pattern-shaping-step-title"><strong>Before Shaping</strong></p>`,
       `<ul class="pattern-shaping-step-list"><li>Optional: Add a ${lifelineGlossaryPlaceholderHtml()} before dividing the neckline.</li><li>${knitUntilBullet}</li></ul>`,
       `<p class="pattern-shaping-step-title"><strong>Divide the Neckline</strong></p>`,
-      `<ul class="pattern-shaping-step-list"><li>${centerHtml}</li><li>Place one shoulder on hold.</li><li>Work one shoulder at a time.</li></ul>`,
+      `<ul class="pattern-shaping-step-list"><li>${centerHtml}</li><li>${escapeHtml(ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE)}</li><li>Work one shoulder at a time.</li></ul>`,
     );
   } else if (showCenterDivide && centerHtml) {
     innerParts.push(`<p><strong>Center Neckline:</strong><br>${centerHtml}</p>`);
@@ -444,7 +477,7 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
       `<p><strong>Divide:</strong><br>${escapeHtml(ACTIVE_SHOULDER_DIVIDE_SENTENCE)}</p>`,
     );
   }
-  innerParts.push(`<p>${escapeHtml(ACTIVE_SHOULDER_CHART_INTRO_SENTENCE)}</p>`);
+  innerParts.push(`<p>${activeShoulderChartIntroSentenceHtml()}</p>`);
   const inner = innerParts.join("\n  ");
 
   return wrapActiveShoulderChartIntroHtml(wrappedClass, inner, options.notationPreview);
@@ -507,7 +540,23 @@ function instructionWithHeldStitches(
   }
   const held = Math.max(0, Math.floor(heldShoulderStitches));
   const suffix = showChecklist ? SECOND_SIDE_CHECKLIST_INSTRUCTION_SUFFIX : SECOND_SIDE_INSTRUCTION_SUFFIX;
-  return `Once this side is complete, cut yarn and rehang the remaining ${held} stitches. ${suffix}`;
+  return `Once this side is complete, cut yarn and return the ${held} held stitches for the opposite shoulder to working position. ${suffix}`;
+}
+
+/**
+ * HTML form of {@link instructionWithHeldStitches}: escaped, with the reverse-shaping phrase
+ * emphasized in `<strong>` when the second-shoulder (non-checklist) suffix is used. Cardigan and
+ * checklist variants contain no emphasis phrase, so they escape unchanged.
+ */
+function instructionWithHeldStitchesHtml(
+  heldShoulderStitches: number,
+  showChecklist: boolean,
+  isCardiganFront: boolean,
+): string {
+  return escapeHtmlWithEmphasis(
+    instructionWithHeldStitches(heldShoulderStitches, showChecklist, isCardiganFront),
+    ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS,
+  );
 }
 
 /**
@@ -885,14 +934,14 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
   ${
     activeSideOnly
       ? isCardiganFront
-        ? `<p class="ns-shaping-chart__active-side-note">${escapeHtml(
-            instructionWithHeldStitches(heldShoulderStitches, false, true),
+        ? `<p class="ns-shaping-chart__active-side-note">${instructionWithHeldStitchesHtml(
+            heldShoulderStitches, false, true,
           )}</p>`
-        : `<p class="ns-shaping-chart__active-side-note ns-shaping-chart__active-side-note--collapsed" data-second-shoulder-default-instruction>${escapeHtml(
-          instructionWithHeldStitches(heldShoulderStitches, false, false)
+        : `<p class="ns-shaping-chart__active-side-note ns-shaping-chart__active-side-note--collapsed" data-second-shoulder-default-instruction>${instructionWithHeldStitchesHtml(
+          heldShoulderStitches, false, false
         )}</p>
-<p class="ns-shaping-chart__active-side-note ns-shaping-chart__active-side-note--expanded" data-second-shoulder-checked-instruction hidden>${escapeHtml(
-          instructionWithHeldStitches(heldShoulderStitches, true, false)
+<p class="ns-shaping-chart__active-side-note ns-shaping-chart__active-side-note--expanded" data-second-shoulder-checked-instruction hidden>${instructionWithHeldStitchesHtml(
+          heldShoulderStitches, true, false
         )}</p>
 <div class="ns-shaping-chart__second-shoulder-toggle no-print">
   <p class="ns-shaping-chart__second-shoulder-toggle-copy">Want less mental reversing? Show a second checklist for the opposite shoulder.</p>
@@ -1008,7 +1057,7 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
   </div>
   ${renderActiveSideBindoffRemainingHtml(printRowsRaw, "ns-shaping-mini__bindoff-remaining")}
   <p class="ns-shaping-mini__sts-note">Sts Remaining is for this side only.</p>
-  <p class="ns-shaping-mini__sts-note">${escapeHtml(instructionWithHeldStitches(heldShoulderStitches, false, isCardiganFront))}</p>
+  <p class="ns-shaping-mini__sts-note">${instructionWithHeldStitchesHtml(heldShoulderStitches, false, isCardiganFront)}</p>
   ${
     showSecondShoulderChecklist
       ? `<section class="ns-shaping-mini__second-shoulder">
@@ -1027,7 +1076,7 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
         <tbody>${oppositeRowsHtml}</tbody>
       </table>
     </div>
-    <p class="ns-shaping-mini__sts-note">${escapeHtml(instructionWithHeldStitches(heldShoulderStitches, true, isCardiganFront))}</p>
+    <p class="ns-shaping-mini__sts-note">${instructionWithHeldStitchesHtml(heldShoulderStitches, true, isCardiganFront)}</p>
   </section>`
       : ""
   }

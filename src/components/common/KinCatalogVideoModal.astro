@@ -78,7 +78,8 @@
   .kbm-kin-catalog-video-modal__panel {
     position: relative;
     z-index: 1;
-    width: min(960px, 100%);
+    width: min(94vw, 1200px);
+    max-width: 1200px;
     max-height: calc(100vh - 2rem);
     background: #0f172a;
     border-radius: 12px;
@@ -329,6 +330,38 @@
       return p.destroy().catch(function () {});
     }
 
+    // Rebuild a clean iframe inside the frame container on every open. Vimeo's
+    // Player can detach/replace the element and its async destroy() resets whatever
+    // iframe it still holds — starting fresh guarantees the new src survives reopen.
+    function resetIframeElement() {
+      var frame = document.querySelector(".kbm-kin-catalog-video-modal__frame");
+      if (!frame) return iframe;
+      var existing = frame.querySelectorAll("iframe");
+      for (var i = 0; i < existing.length; i++) {
+        if (existing[i].parentNode) existing[i].parentNode.removeChild(existing[i]);
+      }
+      var fresh = document.createElement("iframe");
+      fresh.id = IFRAME_PLAYER_ID;
+      fresh.setAttribute("title", "Video");
+      fresh.setAttribute("loading", "lazy");
+      fresh.setAttribute("frameborder", "0");
+      fresh.setAttribute("allow", "autoplay; fullscreen; picture-in-picture");
+      fresh.setAttribute("allowfullscreen", "");
+      // Inline fill styles: a JS-created element lacks the Astro scoped-style
+      // attribute, so the scoped ".__frame iframe" rule won't match it. Inline
+      // styles guarantee it fills the 16:9 frame regardless of CSS scoping.
+      fresh.style.position = "absolute";
+      fresh.style.top = "0";
+      fresh.style.left = "0";
+      fresh.style.width = "100%";
+      fresh.style.height = "100%";
+      fresh.style.display = "block";
+      fresh.style.border = "0";
+      frame.appendChild(fresh);
+      iframe = fresh;
+      return iframe;
+    }
+
     function closeModal() {
       openGeneration++;
       clearActiveJumpState();
@@ -439,21 +472,22 @@
       var videoTitle = (trigger.getAttribute("data-video-title") || "").trim();
       lastFocus = document.activeElement;
       var label = videoTitle || "Video";
-      iframe.title = label;
       if (titleEl) titleEl.textContent = label;
       clearActiveJumpState();
       renderModalChaptersFromTrigger(trigger);
 
-      destroyVimeoPlayer().then(function () {
-        if (myGen !== openGeneration) return;
-        iframe.src = buildVimeoSrc(vimeoId);
-        modal.hidden = false;
-        modal.setAttribute("aria-hidden", "false");
-        document.body.style.overflow = "hidden";
-        if (closeBtn && typeof closeBtn.focus === "function") closeBtn.focus();
+      // Tear down any previous player in the background, then start from a fresh
+      // iframe so its late async teardown cannot clobber the new src on reopen.
+      destroyVimeoPlayer();
+      resetIframeElement();
+      iframe.title = label;
+      iframe.src = buildVimeoSrc(vimeoId);
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      if (closeBtn && typeof closeBtn.focus === "function") closeBtn.focus();
 
-        return ensureVimeoApi();
-      }).then(function () {
+      ensureVimeoApi().then(function () {
         if (myGen !== openGeneration || modal.hidden) return;
         try {
           vimeoPlayer = new window.Vimeo.Player(iframe);
