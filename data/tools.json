@@ -114,16 +114,15 @@
   },
   {
     "id": 34,
-    "title": "Gauge Comparison",
-    "href": "GaugeComparision.cfm",
+    "title": "Gauge Comparison Chart",
+    "href": "/tools/gauge-comparison",
     "icon": "gauge_compare.svg",
-    "description": "Compare gauges to see how they affect finished size.",
+    "description": "See how small gauge differences can change the finished size of your knitting.",
     "membersonly": false,
     "helpID": "NULL",
     "category": "Swatching and Gauge",
     "help_text": "Use this tool to see how differences in gauge affect the finished size of your knitting.",
-    "active": false,
-    "status": "coming-soon"
+    "active": true
   },
   {
     "id": 18,

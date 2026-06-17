@@ -11,7 +11,8 @@ export async function getStaticPaths() {
   const wizards = await getCollection('wizards');
   
   // Exclude wizards that have dedicated page files (to avoid route conflicts)
-  const excludedSlugs = ['hand-machine-blanket', 'gauge-calculator'];
+  // gauge-difference is retired and redirects to gauge-comparison via its dedicated page file
+  const excludedSlugs = ['hand-machine-blanket', 'gauge-calculator', 'gauge-difference'];
   
   return wizards
     .filter((wizard) => !excludedSlugs.includes(wizard.data.slug))

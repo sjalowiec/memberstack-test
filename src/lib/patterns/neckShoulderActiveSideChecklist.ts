@@ -417,6 +417,32 @@ export function buildActiveSideInstructionTableRows(
     checklistIdx += 1;
   }
 
+  // Invariant: a completed shoulder sequence must leave 0 stitches on the active side.
+  // The timeline path always schedules a final remainder bind-off, but the chart-rows-only
+  // path can strand stitches when the last row's armhole bind-off cell is >= the leftover
+  // stitch count (so its `lastArmhole < remainder` guard skips the final bind-off). Emit an
+  // explicit final bind-off from the actual running count so the checklist always ends at 0.
+  // This is a no-op whenever an upstream path already drove the count to 0.
+  if (stitchesRemaining > 0) {
+    let displayRc = rcBase + checklistIdx;
+    while (displayRc % 2 !== requiredParityForActiveSideEdge("Armhole")) {
+      addActiveSideKnitEvenRow(out, displayRc, stitchesRemaining);
+      checklistIdx += 1;
+      displayRc = rcBase + checklistIdx;
+    }
+    const amount = stitchesRemaining;
+    const noun = amount === 1 ? "st" : "sts";
+    stitchesRemaining = 0;
+    out.push({
+      rc: displayRc,
+      carriagePosition: carriagePositionForActiveSideRc(displayRc),
+      action: `Bind off remaining ${amount} ${noun}`,
+      edge: "Armhole",
+      stitchesRemaining,
+    });
+    checklistIdx += 1;
+  }
+
   return out;
 }
 

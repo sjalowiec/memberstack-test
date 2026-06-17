@@ -1,0 +1,459 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import UnitToggle from "../../components/wizards/UnitToggle.astro";
+import GlossaryTooltip from "../../components/common/GlossaryTooltip.astro";
+
+const STITCH_COUNTS = [100, 120, 140, 160, 180, 200];
+---
+
+<Layout
+  title="Gauge Comparison Chart | Knit it Now"
+  description="See how even a small difference in gauge can dramatically change the finished size of your knitting across a range of stitch counts."
+  toolPrintTitle="Gauge Comparison Chart"
+>
+
+<style>
+.wizard-page {
+  padding-top: 0;
+  padding-bottom: 3rem;
+  min-height: 100vh;
+  background: var(--page-bg);
+}
+
+.page-header {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  padding: 0 1rem;
+}
+
+.page-header h1 {
+  color: var(--kbm-green);
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+  text-align: center;
+}
+
+.page-header .lede {
+  color: var(--kbm-green);
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 1rem;
+}
+
+.page-header p {
+  color: #6b7280;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.wizard-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.presets {
+  margin-top: 1.5rem;
+}
+
+.presets-label {
+  display: block;
+  font-weight: 700;
+  color: var(--kbm-green);
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+.presets-help {
+  margin: 0 0 0.6rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.preset-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.preset-btn {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid #9aa38f;
+  background: #f3f4ef;
+  color: #38412f;
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.preset-btn:hover {
+  background: #e7eadf;
+  border-color: #8f987f;
+}
+
+.preset-btn.active {
+  background: var(--kbm-green);
+  color: #fff;
+  border-color: var(--kbm-green);
+}
+
+.preset-btn:focus-visible {
+  outline: 2px solid var(--kbm-green);
+  outline-offset: 2px;
+}
+
+.table-wrap {
+  margin-top: 1.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Gauge inputs live in the table head, directly above the column each one drives. */
+.comparison-table .gauge-input-row th {
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.85rem 1rem 1rem;
+  text-align: center;
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+
+.gauge-input-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--kbm-green);
+  text-align: center;
+}
+
+.gauge-input {
+  display: block;
+  width: 100%;
+  max-width: 120px;
+  min-width: 72px;
+  margin: 0 auto;
+  padding: 0.55rem 0.5rem;
+  border: 2px solid #9aa38f;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-align: center;
+  color: #1f2937;
+  cursor: text;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.gauge-input:hover {
+  border-color: var(--kbm-green);
+}
+
+.gauge-input:focus {
+  outline: none;
+  border-color: var(--kbm-green);
+  box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.2);
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.comparison-table thead {
+  background: var(--kbm-green);
+  color: white;
+}
+
+.comparison-table th {
+  padding: 0.85rem 1rem;
+  font-weight: 700;
+  text-align: right;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.comparison-table :global(td) {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.comparison-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.comparison-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.comparison-table .stitches-col {
+  font-weight: 700;
+  color: var(--kbm-green);
+}
+
+.comparison-table .difference-col {
+  font-weight: 700;
+}
+
+.comparison-table tr.is-significant {
+  background: #fef2f2;
+}
+
+.comparison-table tr.is-significant:hover {
+  background: #fee2e2;
+}
+
+.comparison-table tr.is-significant .difference-col {
+  color: #dc2626;
+}
+
+.note {
+  margin-top: 1.5rem;
+  padding: 0.9rem 1.1rem;
+  background: #f9fafb;
+  border-left: 4px solid var(--kbm-green);
+  border-radius: 6px;
+  color: #4b5563;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .page-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .wizard-container {
+    padding: 1.25rem;
+  }
+
+  .gauge-input {
+    max-width: 96px;
+    font-size: 1rem;
+  }
+
+  .comparison-table {
+    font-size: 0.85rem;
+  }
+
+  .comparison-table th,
+  .comparison-table :global(td) {
+    padding: 0.55rem 0.6rem;
+  }
+}
+
+/* Print styles - hide input sections */
+@media print {
+  .wizard-page {
+    padding-top: 0 !important;
+    background: white !important;
+  }
+
+  .back-link,
+  .units-toggle,
+  .presets,
+  .gauge-input-row,
+  .no-print {
+    display: none !important;
+  }
+
+  .wizard-container {
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: white !important;
+    border: none !important;
+  }
+}
+</style>
+
+  <div class="wizard-page">
+    <div style="max-width: 800px; margin: 0 auto; padding: 0 1rem;">
+      <WizardBackLink fallback="/tools" />
+    </div>
+
+    <div class="page-header">
+      <h1>Gauge Comparison Chart</h1>
+      <p class="lede">Small Difference, Big Impact</p>
+      <p id="lede-description">
+        See how a small gauge difference can add or subtract inches from your project.
+      </p>
+    </div>
+
+    <div class="wizard-container">
+      <UnitToggle id="gaugecompare" defaultUnit="in" />
+
+      <div class="presets">
+        <span class="presets-label">Set Difference</span>
+        <p class="presets-help">Quickly compare gauges with common stitch differences.</p>
+        <div class="preset-buttons" id="preset-buttons">
+          <button type="button" class="preset-btn" data-g1="24" data-g2="24.5">+½ Stitch Difference</button>
+          <button type="button" class="preset-btn" data-g1="24" data-g2="25">+1 Stitch Difference</button>
+          <button type="button" class="preset-btn" data-g1="24" data-g2="26">+2 Stitch Difference</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="comparison-table">
+          <thead>
+            <tr class="gauge-input-row">
+              <th class="gauge-input-spacer" scope="col"></th>
+              <th class="gauge-input-cell" scope="col">
+                <label class="gauge-input-label" for="gauge1">Gauge 1</label>
+                <input type="number" id="gauge1" class="gauge-input" min="1" step="0.1" value="24" inputmode="decimal" />
+              </th>
+              <th class="gauge-input-cell" scope="col">
+                <label class="gauge-input-label" for="gauge2">Gauge 2</label>
+                <input type="number" id="gauge2" class="gauge-input" min="1" step="0.1" value="25" inputmode="decimal" />
+              </th>
+              <th class="gauge-input-spacer" scope="col"></th>
+            </tr>
+            <tr>
+              <th scope="col">Stitches</th>
+              <th scope="col" id="g1-header">24 sts/4"</th>
+              <th scope="col" id="g2-header">25 sts/4"</th>
+              <th scope="col">Difference</th>
+            </tr>
+          </thead>
+          <tbody id="comparison-rows"></tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        Always knit and measure a <GlossaryTooltip id={843}>proper swatch</GlossaryTooltip> before starting your project.
+      </div>
+    </div>
+  </div>
+
+<script define:vars={{ STITCH_COUNTS }}>
+  let units = 'in';
+
+  const inputs = {
+    gauge1: document.getElementById('gauge1'),
+    gauge2: document.getElementById('gauge2'),
+  };
+
+  const ledeDescriptionEl = document.getElementById('lede-description');
+  const rowsEl = document.getElementById('comparison-rows');
+  const presetButtons = document.querySelectorAll('#preset-buttons .preset-btn');
+  const headers = {
+    gauge1: document.getElementById('g1-header'),
+    gauge2: document.getElementById('g2-header'),
+  };
+
+  function gaugeColLabel(rawValue, fallback) {
+    const value = String(rawValue ?? '').trim();
+    if (!value) return fallback;
+    const unitPart = units === 'in' ? '4"' : '10 cm';
+    return `${value} sts/${unitPart}`;
+  }
+
+  // Each width-column header mirrors the gauge typed into the input above it.
+  function updateHeaders() {
+    if (headers.gauge1) headers.gauge1.textContent = gaugeColLabel(inputs.gauge1.value, 'Gauge 1');
+    if (headers.gauge2) headers.gauge2.textContent = gaugeColLabel(inputs.gauge2.value, 'Gauge 2');
+  }
+
+  function updateUnitLabels() {
+    if (ledeDescriptionEl) {
+      const measure = units === 'in' ? 'inches' : 'centimeters';
+      ledeDescriptionEl.textContent =
+        `See how a small gauge difference can add or subtract ${measure} from your project.`;
+    }
+  }
+
+  function calculate() {
+    const g1 = parseFloat(inputs.gauge1.value);
+    const g2 = parseFloat(inputs.gauge2.value);
+
+    // Inches use gauge per 4"; cm uses gauge per 10cm
+    const factor = units === 'in' ? 4 : 10;
+    const unitLabel = units === 'in' ? 'inches' : 'cm';
+    const threshold = units === 'in' ? 1 : 2.5;
+
+    const valid =
+      Number.isFinite(g1) && g1 > 0 &&
+      Number.isFinite(g2) && g2 > 0;
+
+    if (!valid) {
+      rowsEl.innerHTML = '';
+      return;
+    }
+
+    let rowsHTML = '';
+    for (const stitches of STITCH_COUNTS) {
+      const width1 = stitches / (g1 / factor);
+      const width2 = stitches / (g2 / factor);
+      const diff = Math.abs(width1 - width2);
+      const significant = diff >= threshold;
+
+      rowsHTML += `
+        <tr class="${significant ? 'is-significant' : ''}">
+          <td class="stitches-col">${stitches}</td>
+          <td>${width1.toFixed(2)} ${unitLabel}</td>
+          <td>${width2.toFixed(2)} ${unitLabel}</td>
+          <td class="difference-col">${diff.toFixed(1)} ${unitLabel}</td>
+        </tr>
+      `;
+    }
+
+    rowsEl.innerHTML = rowsHTML;
+  }
+
+  // React to input changes (clears any active preset highlight)
+  Object.values(inputs).forEach((el) => {
+    el.addEventListener('input', () => {
+      presetButtons.forEach((b) => b.classList.remove('active'));
+      updateHeaders();
+      calculate();
+    });
+  });
+
+  // Preset buttons set both gauges, then recalculate
+  presetButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const g1 = btn.dataset.g1;
+      const g2 = btn.dataset.g2;
+      if (g1) inputs.gauge1.value = g1;
+      if (g2) inputs.gauge2.value = g2;
+      presetButtons.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      updateHeaders();
+      calculate();
+    });
+  });
+
+  // Sync with the shared UnitToggle component
+  window.addEventListener('kbm:units-change', (e) => {
+    const detail = e.detail;
+    if (detail?.toggleId && detail.toggleId !== 'gaugecompare') return;
+    units = detail?.unit === 'cm' ? 'cm' : 'in';
+    updateUnitLabels();
+    updateHeaders();
+    calculate();
+  });
+
+  updateUnitLabels();
+  updateHeaders();
+  calculate();
+</script>
+
+</Layout>
