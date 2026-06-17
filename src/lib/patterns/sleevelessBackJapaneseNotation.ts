@@ -78,12 +78,6 @@ export function garmentRcAtArmholeStart(debug: SleevelessBackPatternResult["debu
 }
 
 /** Per-edge bind-off label (e.g. `bo10` — one working edge, not summed across both sides). */
-/** Shoulder width label for Japanese notation diagrams (per-side stitch count). */
-export function formatShoulderStitchCountLabel(stitches: number): string {
-  const n = Math.max(0, Math.round(stitches));
-  return n > 0 ? `shoulder ${n} sts` : "";
-}
-
 export function formatBindOffNotation(totalStitches: number): string {
   const n = Math.max(0, Math.round(totalStitches));
   return n > 0 ? `bo${n}` : "";

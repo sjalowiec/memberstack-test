@@ -10,9 +10,9 @@ import {
   formatDecreaseNotationLines,
   formatRcNotation,
   formatRcResetNotation,
-  formatShoulderStitchCountLabel,
   garmentRcAtArmholeStart,
   JP_BACK_NOTATION_SVG_TOKEN_KEYS,
+  type JpBackNotationSvgTokenKey,
 } from "./sleevelessBackJapaneseNotation";
 import { shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
 import { isSleevelessCardiganFrontNeckShoulderChart } from "./neckShoulderShapingChart";
@@ -148,13 +148,10 @@ export function resolveSleevelessFrontDiagramSrc(
   return applySleevelessDiagramBodyShapeSuffix(straightBase, bodyShapeKind);
 }
 
-/** Token names in pullover front Japanese notation SVGs (back keys plus front-only labels). */
-export const JP_FRONT_NOTATION_SVG_TOKEN_KEYS = [
-  ...JP_BACK_NOTATION_SVG_TOKEN_KEYS,
-  "jp-shoulder-stitches",
-] as const;
+/** Token names in pullover front Japanese notation SVGs (same set as back). */
+export const JP_FRONT_NOTATION_SVG_TOKEN_KEYS = JP_BACK_NOTATION_SVG_TOKEN_KEYS;
 
-export type JpFrontNotationSvgTokenKey = (typeof JP_FRONT_NOTATION_SVG_TOKEN_KEYS)[number];
+export type JpFrontNotationSvgTokenKey = JpBackNotationSvgTokenKey;
 
 const FRONT_NOTATION_DIAGRAM_SIDE: "left" | "right" = "right";
 
@@ -360,7 +357,6 @@ export function buildFrontJapaneseNotationReplacements(
   const hemRows = d.hemRows;
   const necklineLocalRc = d.frontNecklineStartLocalRC;
   const armholeStartGarmentRc = garmentRcAtArmholeStart(d);
-  const shoulderStitchCount = shoulderStitchesPerSideForDiagram(d);
 
   return {
     "jp-caston": formatCastOnNotation(castOnSts),
@@ -370,10 +366,6 @@ export function buildFrontJapaneseNotationReplacements(
     "jp-neckline-bo": isVNeckFront ? "" : formatBindOffNotation(centerNeckBindOff ?? 0),
     "jp-neckline-shaping": joinNotationLines(necklineShapingLines),
     "jp-shoulder-shaping": joinNotationLines(shoulderShapingLines),
-    "jp-shoulder-stitches":
-      shoulderStitchCount !== undefined
-        ? formatShoulderStitchCountLabel(shoulderStitchCount)
-        : "",
     "rc-caston": formatRcNotation(0),
     "rc-hem": formatRcNotation(hemRows),
     "rc-armhole-bo":

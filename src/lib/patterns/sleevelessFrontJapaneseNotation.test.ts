@@ -59,7 +59,7 @@ import {
   cardiganFrontInitialNeckBindOffStitches,
   roundNeckOneSideNeckEdgeNotationLines,
 } from "./roundNeckNotation";
-import { buildSleevelessGarmentDiagramReplacements, shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
+import { buildSleevelessGarmentDiagramReplacements } from "./sleevelessGarmentDiagramReplacements";
 import { pulloverRoundFrontNeckEdgeNotationLines } from "./sleevelessFrontJapaneseNotation";
 import { SLEEVELESS_QA_SCENARIOS } from "./testScenarios/sleevelessPatternQaMatrix";
 import {
@@ -416,19 +416,6 @@ describe("buildFrontJapaneseNotationReplacements", () => {
     const tspans = tspanTextsFromSvgBlock(out, "translate\\(175\\.12 94\\.71\\)");
     const lines = repl["jp-shoulder-shaping"].split("\n").filter((l) => l.length > 0);
     expect(tspans).toEqual([...lines].reverse());
-  });
-
-  it("jp-shoulder-stitches matches per-side shoulder stitch budget from debug", () => {
-    const result = demoSleevelessBackPattern();
-    const repl = buildFrontJapaneseNotationReplacements(result, {});
-    const perSide = shoulderStitchesPerSideForDiagram(result.debug);
-
-    expect(perSide).toBeDefined();
-    expect(repl["jp-shoulder-stitches"]).toBe(`shoulder ${perSide} sts`);
-
-    const out = applyJapaneseNotationSvgReplacements(JP_FRONT_SVG, repl);
-    expect(out).toContain(repl["jp-shoulder-stitches"]);
-    expect(out).not.toMatch(/\{\{jp-shoulder-stitches\}\}/);
   });
 
   it("builds live front tokens from demo pullover round neck", () => {
