@@ -533,6 +533,16 @@ export type SleevelessPatternDisplayRow =
        * (chart id derived from the rendering piece) after this block's paragraphs.
        */
       bodyShapingChartRows?: SleevelessBodyShapingChartRow[];
+      /**
+       * Drop-shoulder sleeve shaping checklist (Done · RC · Action · Edge · Sts Remaining).
+       * Generated from the same schedule as sleeve JP notation.
+       */
+      sleeveShapingChartRows?: {
+        rc: number;
+        action: string;
+        edge: string;
+        stitchesRemaining: number;
+      }[];
       /** Total stitches on the piece after this block; right column only when different from last shown */
       stitchCount?: number;
     };

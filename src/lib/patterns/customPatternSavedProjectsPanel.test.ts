@@ -14,19 +14,23 @@ import {
   stripCustomPatternCopySuffix,
 } from "./customPatternSavedProjectsPanel";
 
-vi.mock("./customPatternProjectClient", () => ({
-  buildSavePayloadFromWorkingDraft: vi.fn((name: string) => ({
-    name,
-    notes: "",
-    family: "sleeveless",
-    source: "express",
-    pattern: {},
-    customOverrides: {},
-  })),
-  createCustomPatternProject: vi.fn(),
-  updateCustomPatternProject: vi.fn(),
-  listCustomPatternProjects: vi.fn(async () => ({ ok: true, projects: [] })),
-}));
+vi.mock("./customPatternProjectClient", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./customPatternProjectClient")>();
+  return {
+    ...actual,
+    buildSavePayloadFromWorkingDraft: vi.fn((name: string) => ({
+      name,
+      notes: "",
+      family: "sleeveless",
+      source: "express",
+      pattern: {},
+      customOverrides: {},
+    })),
+    createCustomPatternProject: vi.fn(),
+    updateCustomPatternProject: vi.fn(),
+    listCustomPatternProjects: vi.fn(async () => ({ ok: true, projects: [] })),
+  };
+});
 
 import {
   buildSavePayloadFromWorkingDraft,

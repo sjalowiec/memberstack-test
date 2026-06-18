@@ -809,6 +809,37 @@
     box-shadow: 0 1px 2px rgba(17, 24, 39, 0.05);
   }
 
+  #pattern-content .drop-shoulder-sleeve-construction {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin: 0 0 1rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #d1d5db);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 4%, #fff);
+  }
+
+  #pattern-content .drop-shoulder-sleeve-construction__label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  #pattern-content .drop-shoulder-sleeve-construction__options {
+    flex: 1 1 auto;
+    min-width: 10rem;
+    border-radius: 6px;
+    padding: 0.15rem;
+  }
+
+  #pattern-content .drop-shoulder-sleeve-construction__options .sleeveless-back-diagram-mode__btn {
+    font-size: 0.6875rem;
+    min-height: 1.75rem;
+    border-radius: 5px;
+  }
+
   #pattern-content .sleeveless-back-diagram-mode {
     display: flex;
     gap: 1px;

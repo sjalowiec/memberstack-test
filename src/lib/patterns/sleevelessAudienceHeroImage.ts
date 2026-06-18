@@ -1,3 +1,4 @@
+import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
 import {
   resolvePatternFamilyPeopleHeroImageSrc,
   normalizePatternPeopleHeroAudience,
@@ -43,7 +44,7 @@ function isDropShoulderPatternData(patternData: unknown): boolean {
   if (!patternData || typeof patternData !== "object") return false;
   const style = (patternData as { style?: unknown }).style;
   if (!style || typeof style !== "object") return false;
-  return (style as { construction?: unknown }).construction === "drop-shoulder";
+  return hasAuthoritativeDropShoulderConstruction(style as Record<string, unknown>);
 }
 
 function resolveDropShoulderHeroImageSrc(patternData: unknown, audienceRaw: string): string {

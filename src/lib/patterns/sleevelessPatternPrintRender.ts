@@ -6,6 +6,7 @@
 import { patternTipWrapperHtml, type SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
 import { rowCounterResetBlockHtml } from "./rowCounterReset";
 import { renderSleevelessBodyShapingChartHtml } from "./sleevelessBodyShapingChartHtml";
+import { renderDropShoulderSleeveShapingChartHtml } from "./dropShoulderSleeveShapingChart";
 
 function escapeHtml(s: string): string {
   return String(s)
@@ -76,6 +77,14 @@ function renderPrintBlockRow(
     leftBits.push(
       renderSleevelessBodyShapingChartHtml(row.bodyShapingChartRows, {
         chartId: `sleeveless-body-shaping-chart-${pieceKey}`,
+      }),
+    );
+  }
+  if (row.sleeveShapingChartRows && row.sleeveShapingChartRows.length > 0) {
+    leftBits.push(
+      renderDropShoulderSleeveShapingChartHtml(row.sleeveShapingChartRows, {
+        chartId: `drop-shoulder-sleeve-shaping-chart-${pieceKey}`,
+        showTitle: false,
       }),
     );
   }

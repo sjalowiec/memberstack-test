@@ -6,6 +6,7 @@ import MyPatternsPanel from "../components/dashboard/MyPatternsPanel.astro";
 import TagsPlaceholder from "../components/dashboard/TagsPlaceholder.astro";
 import WorkspaceToolsGrid from "../components/dashboard/WorkspaceToolsGrid.astro";
 import AccountSettingsPanel from "../components/dashboard/AccountSettingsPanel.astro";
+import AccountWelcomeBlock from "../components/dashboard/AccountWelcomeBlock.astro";
 
 const title = "My Workspace | Knit it Now";
 const description =
@@ -73,6 +74,7 @@ const description =
 
     <div data-ms-content="members">
       <DashboardShell>
+        <AccountWelcomeBlock />
         <MyPatternsPanel />
         <TagsPlaceholder />
         <WorkspaceToolsGrid />
@@ -84,6 +86,7 @@ const description =
 
 <script>
   import "/src/scripts/account-my-patterns.ts";
+  import "/src/scripts/account-welcome.ts";
 </script>
 
 <style>

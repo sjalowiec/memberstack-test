@@ -13,7 +13,6 @@
  */
 
 import { calculateBasicPatternNumbers } from "./patternCalculator";
-import { evenShapingSchedule, sleeveShapingPerSide } from "./evenShapingSchedule";
 import {
   calculateHemRowsFromInches,
   calculateCuffRows,
@@ -45,13 +44,41 @@ import {
   type SleevelessBackPatternDebug,
 } from "./sleevelessPatternOutput";
 import type { NeckShoulderShapingChart } from "./neckShoulderShapingChart";
+import {
+  DROP_SHOULDER_SLEEVE_NO_SHAPING_NOTE_LINES,
+  buildDropShoulderSleeveShapingChartRows,
+  dropShoulderSleeveNeedsShapingChart,
+} from "./dropShoulderSleeveShapingChart";
+import {
+  dropShoulderSleeveShapingPlanForDirection,
+  formatDropShoulderSleeveShapingWrittenLines,
+} from "./dropShoulderSleeveShaping";
+import type { DropShoulderSleeveDirection } from "./dropShoulderSleeveConstruction";
+import { DROP_SHOULDER_SLEEVE_DIRECTION_DEFAULT } from "./dropShoulderSleeveConstruction";
+import { buildGlossaryTooltipPlaceholderHtml, PLACE_MARKER_GLOSSARY_ID } from "../glossary/glossaryTooltipPrint";
+import { SCRAP_OFF_GLOSSARY_ID } from "./neckShoulderActiveIntroCopy";
 
 /** Drop shoulder result reuses the sleeveless contract and adds the sleeve piece. */
 export type DropShoulderPatternResult = SleevelessBackPatternResult & {
-  /** Structured sleeve instructions (cuff-up or top-down per builder choice). */
+  /** Structured sleeve instructions (bottom-up or top-down per pattern-view choice). */
   sleeveDisplayRows: SleevelessPatternDisplayRow[];
   /** Marker so the renderer uses the drop-shoulder (sleeved, no-diagram) layout. */
   isDropShoulder: true;
+};
+
+export type GenerateDropShoulderPatternOptions = {
+  /** Pattern-view sleeve construction; defaults to bottom-up (cuff-up). Not read from builder style. */
+  sleeveDirection?: DropShoulderSleeveDirection;
+};
+
+export type BuildDropShoulderSleeveRowsArgs = {
+  topSts: number;
+  wristSts: number;
+  cuffRows: number;
+  sleeveBodyRows: number;
+  sleeveTotalRows: number;
+  direction: DropShoulderSleeveDirection;
+  valid: boolean;
 };
 
 type Block = Extract<SleevelessPatternDisplayRow, { kind: "block" }>;
@@ -118,27 +145,99 @@ function knitEvenLine(rows: number, endRc?: number): string {
   return endRc !== undefined ? `${base} (Counter reads ${formatRcColon(endRc)} at the end.)` : base;
 }
 
+/** Sleeve body remainder after shaping — work in pattern to length. */
+function knitInPatternLine(rows: number): string {
+  if (rows <= 0) return "";
+  return rows === 1 ? "Knit 1 row in pattern." : `Knit ${rows} rows in pattern.`;
+}
+
+function glossaryAttrEscape(s: string): string {
+  return s.replace(/"/g, "&quot;");
+}
+
+function scrapOffGlossaryPlaceholderHtml(): string {
+  return buildGlossaryTooltipPlaceholderHtml(
+    SCRAP_OFF_GLOSSARY_ID,
+    "scrap off",
+    glossaryAttrEscape,
+    (s) => s,
+  );
+}
+
+/** Bind-off line with glossary tooltip on “scrap off” (glossary id 311). */
+function bindOffLooselyOrScrapOffTrustedParagraph(edgeLabel?: string): string {
+  const scrap = scrapOffGlossaryPlaceholderHtml();
+  if (edgeLabel) {
+    return `Bind off loosely or ${scrap} at the ${edgeLabel}.`;
+  }
+  return `Bind off loosely or ${scrap}.`;
+}
+
+/** No-shaping sleeve note with glossary tooltip on “scrap off”. */
+function dropShoulderSleeveNoShapingNoteTrustedParagraphs(): string[] {
+  return DROP_SHOULDER_SLEEVE_NO_SHAPING_NOTE_LINES.map((line) => {
+    const scrapIdx = line.indexOf("scrap off");
+    if (scrapIdx < 0) return line;
+    return (
+      line.slice(0, scrapIdx) +
+      scrapOffGlossaryPlaceholderHtml() +
+      line.slice(scrapIdx + "scrap off".length)
+    );
+  });
+}
+
+function placeMarkerGlossaryPlaceholderHtml(): string {
+  return buildGlossaryTooltipPlaceholderHtml(
+    PLACE_MARKER_GLOSSARY_ID,
+    "Place a marker",
+    glossaryAttrEscape,
+    (s) => s,
+  );
+}
+
+/** Inline glossary link on “Place a marker” within a marker-placement instruction line. */
+function withPlaceMarkerGlossaryLink(line: string): string {
+  const phrase = "Place a marker";
+  const idx = line.indexOf(phrase);
+  if (idx < 0) return line;
+  return line.slice(0, idx) + placeMarkerGlossaryPlaceholderHtml() + line.slice(idx + phrase.length);
+}
+
+/** Trusted paragraphs for an armhole-marker block (glossary on “Place a marker” in the first line). */
+function armholeMarkerBlockParagraphs(markerLine: string, followUpLines: string[]): {
+  paragraphs: string[];
+  trustedParagraphs: string[];
+} {
+  return {
+    paragraphs: [markerLine, ...followUpLines],
+    trustedParagraphs: [withPlaceMarkerGlossaryLink(markerLine), ...followUpLines],
+  };
+}
+
 /** "every row" (1) vs "every N rows". */
 function intervalPhrase(interval: number): string {
   return interval <= 1 ? "every row" : `every ${interval} rows`;
 }
 
-function castOnBlock(sts: number, label: string): Block {
+function castOnBlock(sts: number, label?: string): Block {
+  const castOnLine =
+    sts > 0 && label
+      ? `Cast on ${sts} stitches for ${label}.`
+      : sts > 0
+        ? `Cast on ${sts} stitches.`
+        : "Cast-on stitch count could not be calculated from your measurements. Add finished bust or chest and stitch gauge in the builder, then open this tab again.";
   return {
     kind: "block",
     rc: formatRcColon(0),
-    paragraphs:
-      sts > 0
-        ? [`Cast on ${sts} stitches for ${label}.`]
-        : [
-            "Cast-on stitch count could not be calculated from your measurements. Add finished bust or chest and stitch gauge in the builder, then open this tab again.",
-          ],
+    paragraphs: [castOnLine],
     ...(sts > 0
       ? {
           tipHtml: castOnMethodQuickTipInnerHtml(),
           tipHtmlIsFull: true,
           tipPresentation: "quick-tip" as const,
-          tipId: `drop-shoulder-cast-on-${label.replace(/[^a-z]+/gi, "-").toLowerCase()}`,
+          ...(label
+            ? { tipId: `drop-shoulder-cast-on-${label.replace(/[^a-z]+/gi, "-").toLowerCase()}` }
+            : {}),
         }
       : {}),
     stitchCount: sts > 0 ? sts : undefined,
@@ -216,14 +315,18 @@ function buildBackRows(args: {
   });
 
   rows.push({ kind: "section", title: "ABOVE ARMHOLE MARKERS" });
-  rows.push({
-    kind: "block",
-    rc: formatRcColon(args.armholeMarkerRc),
-    paragraphs: [
-      "Place a marker at each end of this row to mark the base of the armhole.",
+  const backAboveMarker = armholeMarkerBlockParagraphs(
+    "Place a marker at each end of this row to mark the base of the armhole.",
+    [
       "This is a drop-shoulder sweater: work straight above the markers. There is no armhole shaping.",
       knitEvenLine(args.armholeDepthRows, args.totalRows),
     ],
+  );
+  rows.push({
+    kind: "block",
+    rc: formatRcColon(args.armholeMarkerRc),
+    paragraphs: backAboveMarker.paragraphs,
+    trustedParagraphs: backAboveMarker.trustedParagraphs,
     stitchCount: A > 0 ? A : undefined,
   });
 
@@ -288,14 +391,18 @@ function buildPulloverFrontRows(args: {
   });
 
   rows.push({ kind: "section", title: "ABOVE ARMHOLE MARKERS" });
-  rows.push({
-    kind: "block",
-    rc: formatRcColon(args.armholeMarkerRc),
-    paragraphs: [
-      "Place a marker at each end of this row to mark the base of the armhole.",
+  const pulloverFrontAboveMarker = armholeMarkerBlockParagraphs(
+    "Place a marker at each end of this row to mark the base of the armhole.",
+    [
       "Work straight above the markers (no armhole shaping).",
       knitEvenLine(straightAboveMarkerRows, neckStartRc),
     ],
+  );
+  rows.push({
+    kind: "block",
+    rc: formatRcColon(args.armholeMarkerRc),
+    paragraphs: pulloverFrontAboveMarker.paragraphs,
+    trustedParagraphs: pulloverFrontAboveMarker.trustedParagraphs,
     stitchCount: A > 0 ? A : undefined,
   });
 
@@ -380,14 +487,18 @@ function buildCardiganFrontRows(args: {
   });
 
   rows.push({ kind: "section", title: "ABOVE ARMHOLE MARKERS" });
-  rows.push({
-    kind: "block",
-    rc: formatRcColon(args.armholeMarkerRc),
-    paragraphs: [
-      "Place a marker at the side edge to mark the base of the armhole.",
+  const cardiganFrontAboveMarker = armholeMarkerBlockParagraphs(
+    "Place a marker at the side edge to mark the base of the armhole.",
+    [
       "Work straight above the marker (no armhole shaping).",
       knitEvenLine(straightAboveMarkerRows, neckStartRc),
     ],
+  );
+  rows.push({
+    kind: "block",
+    rc: formatRcColon(args.armholeMarkerRc),
+    paragraphs: cardiganFrontAboveMarker.paragraphs,
+    trustedParagraphs: cardiganFrontAboveMarker.trustedParagraphs,
     stitchCount: A > 0 ? A : undefined,
   });
 
@@ -441,15 +552,9 @@ function buildCardiganFrontRows(args: {
 }
 
 /** SLEEVE piece (make 2): tapered trapezoid between wrist and upper arm, cuff-up or top-down. */
-function buildSleeveRows(args: {
-  topSts: number;
-  wristSts: number;
-  cuffRows: number;
-  sleeveBodyRows: number;
-  sleeveTotalRows: number;
-  direction: "cuff-up" | "top-down";
-  valid: boolean;
-}): SleevelessPatternDisplayRow[] {
+export function buildDropShoulderSleeveDisplayRows(
+  args: BuildDropShoulderSleeveRowsArgs,
+): SleevelessPatternDisplayRow[] {
   const rows: SleevelessPatternDisplayRow[] = [];
   rows.push({ kind: "piece", title: "SLEEVE" });
 
@@ -463,50 +568,91 @@ function buildSleeveRows(args: {
     return rows;
   }
 
-  const shapingPerSide = sleeveShapingPerSide(args.topSts, args.wristSts);
-  const sched = evenShapingSchedule(shapingPerSide, args.sleeveBodyRows);
+  const shapingPlan = dropShoulderSleeveShapingPlanForDirection(
+    {
+      topSts: args.topSts,
+      wristSts: args.wristSts,
+      sleeveBodyRows: args.sleeveBodyRows,
+    },
+    args.direction,
+  );
+  const chartInput = {
+    topSts: args.topSts,
+    wristSts: args.wristSts,
+    cuffRows: args.cuffRows,
+    sleeveBodyRows: args.sleeveBodyRows,
+    sleeveTotalRows: args.sleeveTotalRows,
+    direction: args.direction,
+  };
+  const sleeveShapingChartRows = buildDropShoulderSleeveShapingChartRows(chartInput);
+  const showSleeveShapingChart = dropShoulderSleeveNeedsShapingChart(chartInput);
+  const shapingWrittenLines = formatDropShoulderSleeveShapingWrittenLines(
+    shapingPlan.shapingDirection,
+    shapingPlan.steps,
+  );
+
+  function appendSleeveShapingChartSection(): void {
+    rows.push({ kind: "section", title: "SLEEVE SHAPING CHART" });
+    if (showSleeveShapingChart) {
+      rows.push({
+        kind: "block",
+        paragraphs: [],
+        sleeveShapingChartRows,
+      });
+    } else {
+      rows.push({
+        kind: "block",
+        trustedParagraphs: dropShoulderSleeveNoShapingNoteTrustedParagraphs(),
+      });
+    }
+  }
 
   if (args.direction === "top-down") {
     rows.push({
       kind: "block",
-      paragraphs: [
-        "Worked top-down. Make 2 sleeves.",
-        `The sleeve top edge matches the armhole opening (upper arm width).`,
-      ],
+      paragraphs: ["Make 2 sleeves."],
     });
-    rows.push(castOnBlock(args.topSts, "the sleeve top (pick up evenly along the armhole edge, or cast on)"));
+    rows.push({
+      kind: "block",
+      rc: formatRcColon(0),
+      paragraphs: [`Cast on or pick up ${args.topSts} stitches.`],
+      ...(args.topSts > 0
+        ? {
+            tipHtml: castOnMethodQuickTipInnerHtml(),
+            tipHtmlIsFull: true,
+            tipPresentation: "quick-tip" as const,
+          }
+        : {}),
+      stitchCount: args.topSts > 0 ? args.topSts : undefined,
+    });
     rows.push({ kind: "section", title: "SLEEVE BODY" });
     rows.push({
       kind: "block",
       rc: formatRcColon(0),
       paragraphs: [
-        sched.count > 0
-          ? `Decrease 1 stitch at each end ${intervalPhrase(sched.interval)} ${sched.count} time${sched.count === 1 ? "" : "s"}.`
-          : "Work straight (no taper needed for this size/gauge).",
-        sched.remainderRows > 0 ? knitEvenLine(sched.remainderRows, args.sleeveBodyRows) : "",
-        `${args.wristSts} stitches remain at the wrist.`,
+        ...shapingWrittenLines,
+        shapingPlan.remainderRows > 0 ? knitInPatternLine(shapingPlan.remainderRows) : "",
       ].filter((p) => p.length > 0),
-      stitchCount: args.wristSts,
+      stitchCount: args.wristSts > 0 ? args.wristSts : undefined,
     });
+    appendSleeveShapingChartSection();
     rows.push({ kind: "section", title: "CUFF" });
     rows.push({
       kind: "block",
       rc: formatRcColon(args.sleeveBodyRows),
-      paragraphs: [knitEvenLine(args.cuffRows, args.sleeveTotalRows), `Bind off all ${args.wristSts} stitches loosely.`],
+      paragraphs: [knitEvenLine(args.cuffRows, args.sleeveTotalRows)],
+      trustedParagraphs: [bindOffLooselyOrScrapOffTrustedParagraph("cuff/wrist edge")],
       stitchCount: args.wristSts,
     });
     return rows;
   }
 
-  // cuff-up (default)
+  // cuff-up (bottom-up, default)
   rows.push({
     kind: "block",
-    paragraphs: [
-      "Worked cuff-up. Make 2 sleeves.",
-      "The sleeve top edge matches the armhole opening (upper arm width).",
-    ],
+    paragraphs: ["Make 2 sleeves."],
   });
-  rows.push(castOnBlock(args.wristSts, "the sleeve (wrist)"));
+  rows.push(castOnBlock(args.wristSts));
   rows.push({ kind: "section", title: "CUFF" });
   rows.push({
     kind: "block",
@@ -519,19 +665,17 @@ function buildSleeveRows(args: {
     kind: "block",
     rc: formatRcColon(args.cuffRows),
     paragraphs: [
-      sched.count > 0
-        ? `Increase 1 stitch at each end ${intervalPhrase(sched.interval)} ${sched.count} time${sched.count === 1 ? "" : "s"}.`
-        : "Work straight (no taper needed for this size/gauge).",
-      sched.remainderRows > 0 ? knitEvenLine(sched.remainderRows, args.sleeveTotalRows) : "",
-      `${args.topSts} stitches when shaping is complete.`,
+      ...shapingWrittenLines,
+      shapingPlan.remainderRows > 0 ? knitInPatternLine(shapingPlan.remainderRows) : "",
     ].filter((p) => p.length > 0),
     stitchCount: args.topSts,
   });
+  appendSleeveShapingChartSection();
   rows.push({ kind: "section", title: "BIND OFF" });
   rows.push({
     kind: "block",
     rc: formatRcColon(args.sleeveTotalRows),
-    paragraphs: [`Bind off all ${args.topSts} stitches loosely.`],
+    trustedParagraphs: [bindOffLooselyOrScrapOffTrustedParagraph("upper-arm/top edge")],
     stitchCount: args.topSts,
   });
   return rows;
@@ -544,6 +688,7 @@ const EMPTY_CHART = { rows: [] } as unknown as NeckShoulderShapingChart;
  */
 export function generateDropShoulderPattern(
   patternData: Record<string, unknown>,
+  options?: GenerateDropShoulderPatternOptions,
 ): DropShoulderPatternResult {
   const warnings: string[] = [];
   const basic = calculateBasicPatternNumbers(patternData);
@@ -561,8 +706,8 @@ export function generateDropShoulderPattern(
   const style = section(patternData.style);
   const isCardigan = String(style.frontStyle) === "open";
   const isVNeck = String(style.neckline) === "v";
-  const sleeveDirection: "cuff-up" | "top-down" =
-    String(style.sleeveDirection) === "top-down" ? "top-down" : "cuff-up";
+  const sleeveDirection: DropShoulderSleeveDirection =
+    options?.sleeveDirection ?? DROP_SHOULDER_SLEEVE_DIRECTION_DEFAULT;
 
   const finishedBust = resolveEffectiveFinishedBustInches(patternData) ?? basic.finishedBustChest;
   const backNeckToHem = resolveEffectiveFinishedLengthInches(patternData);
@@ -660,7 +805,7 @@ export function generateDropShoulderPattern(
         isVNeck,
       });
 
-  const sleeveDisplayRows = buildSleeveRows({
+  const sleeveDisplayRows = buildDropShoulderSleeveDisplayRows({
     topSts,
     wristSts,
     cuffRows,

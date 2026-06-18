@@ -1,0 +1,164 @@
+/**
+ * Drop-shoulder vs sleeveless construction identity for saved projects and the working draft.
+ *
+ * `style.construction` alone is not trusted — it is only honored when explicitly authored
+ * (Drop Shoulder builder) or stamped on the saved project (`customOverrides.constructionFamily`).
+ */
+import type { CustomPatternProject } from "./customPatternProjectTypes";
+import { getCurrentPattern, getPatternData, type SleevelessPatternRecord } from "./patternStorage";
+
+export const DROP_SHOULDER_CONSTRUCTION = "drop-shoulder";
+export const CONSTRUCTION_AUTHORED_KEY = "constructionAuthored";
+export const CONSTRUCTION_FAMILY_OVERRIDE_KEY = "constructionFamily";
+
+export const DROP_SHOULDER_STYLE_KEYS = [
+  "construction",
+  CONSTRUCTION_AUTHORED_KEY,
+  "sleeveDirection",
+  "sleeveLength",
+] as const;
+
+const DROP_SHOULDER_SLEEVE_DIRECTIONS = new Set(["cuff-up", "top-down"]);
+const DROP_SHOULDER_SLEEVE_LENGTHS = new Set(["long", "three-quarter", "elbow", "short"]);
+
+function section(obj: unknown): Record<string, unknown> {
+  return obj && typeof obj === "object" && !Array.isArray(obj) ? { ...(obj as Record<string, unknown>) } : {};
+}
+
+/** Removes drop-shoulder-only style keys (does not touch unrelated style fields). */
+export function stripDropShoulderStyleFields(
+  style: Record<string, unknown> | undefined,
+): Record<string, unknown> {
+  const next = { ...section(style) };
+  for (const key of DROP_SHOULDER_STYLE_KEYS) {
+    delete next[key];
+  }
+  return next;
+}
+
+/** Marks style as an intentional drop-shoulder construction (builder + save pipeline). */
+export function withDropShoulderConstructionAuthored(
+  style: Record<string, unknown>,
+  sleeveLength: string,
+): Record<string, unknown> {
+  return {
+    ...style,
+    construction: DROP_SHOULDER_CONSTRUCTION,
+    [CONSTRUCTION_AUTHORED_KEY]: DROP_SHOULDER_CONSTRUCTION,
+    sleeveLength,
+  };
+}
+
+export function isDropShoulderConstructionFamily(
+  customOverrides: Record<string, unknown> | undefined,
+): boolean {
+  return section(customOverrides)[CONSTRUCTION_FAMILY_OVERRIDE_KEY] === DROP_SHOULDER_CONSTRUCTION;
+}
+
+export function withDropShoulderConstructionFamily(
+  customOverrides: Record<string, unknown> | undefined,
+): Record<string, unknown> {
+  return {
+    ...section(customOverrides),
+    [CONSTRUCTION_FAMILY_OVERRIDE_KEY]: DROP_SHOULDER_CONSTRUCTION,
+  };
+}
+
+/** True when a saved project or draft intentionally represents drop-shoulder construction. */
+export function hasAuthoritativeDropShoulderConstruction(
+  style: Record<string, unknown> | undefined,
+  customOverrides?: Record<string, unknown>,
+): boolean {
+  const st = section(style);
+  if (st.construction !== DROP_SHOULDER_CONSTRUCTION) return false;
+  if (st[CONSTRUCTION_AUTHORED_KEY] === DROP_SHOULDER_CONSTRUCTION) return true;
+  if (isDropShoulderConstructionFamily(customOverrides)) return true;
+  return false;
+}
+
+/** Bare `construction` without authored/family markers — legacy sleeveless corruption. */
+export function isCorruptedSleevelessConstruction(
+  pattern: SleevelessPatternRecord,
+  customOverrides?: Record<string, unknown>,
+): boolean {
+  const style = section(pattern.style);
+  if (style.construction !== DROP_SHOULDER_CONSTRUCTION) return false;
+  return !hasAuthoritativeDropShoulderConstruction(style, customOverrides);
+}
+
+/** Strip accidental drop-shoulder style keys from a saved project before hydration. */
+export function sanitizeSavedProjectForHydration(project: CustomPatternProject): CustomPatternProject {
+  if (isCorruptedSleevelessConstruction(project.pattern, project.customOverrides)) {
+    return {
+      ...project,
+      pattern: {
+        ...project.pattern,
+        style: stripDropShoulderStyleFields(project.pattern.style),
+      },
+    };
+  }
+  if (isDropShoulderConstructionFamily(project.customOverrides)) {
+    const style = section(project.pattern.style);
+    if (
+      style.construction === DROP_SHOULDER_CONSTRUCTION &&
+      style[CONSTRUCTION_AUTHORED_KEY] !== DROP_SHOULDER_CONSTRUCTION
+    ) {
+      return {
+        ...project,
+        pattern: {
+          ...project.pattern,
+          style: {
+            ...style,
+            [CONSTRUCTION_AUTHORED_KEY]: DROP_SHOULDER_CONSTRUCTION,
+          },
+        },
+      };
+    }
+  }
+  return project;
+}
+
+/** Active working draft — merged canonical + patternBuilderData style. */
+export function isActiveDropShoulderConstruction(): boolean {
+  try {
+    const style = {
+      ...section(getCurrentPattern().style),
+      ...section(getPatternData().style),
+    };
+    return hasAuthoritativeDropShoulderConstruction(style);
+  } catch {
+    return false;
+  }
+}
+
+/** Pattern record style only (saved blob / generator input). */
+export function isDropShoulderPatternRecord(
+  pattern: SleevelessPatternRecord,
+  customOverrides?: Record<string, unknown>,
+): boolean {
+  return hasAuthoritativeDropShoulderConstruction(section(pattern.style), customOverrides);
+}
+
+/** Ensure save payloads do not persist accidental drop-shoulder keys on sleeveless projects. */
+export function preparePatternRecordForSave(
+  pattern: SleevelessPatternRecord,
+  options: {
+    customOverrides?: Record<string, unknown>;
+    allowDropShoulder?: boolean;
+  } = {},
+): SleevelessPatternRecord {
+  const style = section(pattern.style);
+  if (style.construction !== DROP_SHOULDER_CONSTRUCTION) {
+    return pattern;
+  }
+  if (
+    options.allowDropShoulder &&
+    hasAuthoritativeDropShoulderConstruction(style, options.customOverrides)
+  ) {
+    return pattern;
+  }
+  return {
+    ...pattern,
+    style: stripDropShoulderStyleFields(style),
+  };
+}

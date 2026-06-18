@@ -79,6 +79,24 @@ describe("applyJapaneseNotationSvgReplacements", () => {
     expect(out).toContain('transform="translate(86.22 151.8)"');
   });
 
+  it("keeps multiline tokens on their own text transform when a prior sibling was cleared", () => {
+    const adjacentSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<text transform="translate(190.38 113.64)"><tspan>{{jp-armhole-shaping}}</tspan></text>
+<text transform="translate(40.6 28.83)"><tspan>{{jp-neckline-shaping}}</tspan></text>
+</svg>`;
+    const out = applyJapaneseNotationSvgReplacements(adjacentSvg, {
+      "jp-armhole-shaping": "",
+      "jp-neckline-shaping": "1s-2r-6x\n3s-2r-2x",
+    });
+
+    expect(out).toContain('transform="translate(40.6 28.83)"');
+    expect(out).toContain("1s-2r-6x");
+    const armholeText = out.match(
+      /<text transform="translate\(190\.38 113\.64\)"[^>]*>([\s\S]*?)<\/text>/,
+    )?.[1];
+    expect(armholeText ?? "").not.toMatch(/1s-2r|3s-2r/);
+  });
+
   it("places single-line replacement at the placeholder text element transform", () => {
     const textRe = /<text(\s[^>]*)?>([\s\S]*?)<\/text>/gi;
     let castonBlock: string | undefined;

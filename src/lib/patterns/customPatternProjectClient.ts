@@ -5,9 +5,21 @@
  * browser session. Blob storage holds named saved projects; loading a project copies it into the draft.
  */
 import {
+  draftHasUnsavedDropShoulderConstructionDrift,
+  writeHydratedConstructionBaseline,
+} from "./customPatternProjectConstructionBaseline";
+import { readActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
+import {
+  hasAuthoritativeDropShoulderConstruction,
+  isActiveDropShoulderConstruction,
+  isCorruptedSleevelessConstruction,
+  preparePatternRecordForSave,
+  sanitizeSavedProjectForHydration,
+  withDropShoulderConstructionFamily,
+} from "./patternConstructionIdentity";
+import {
   getCurrentPattern,
-  saveCurrentPattern,
-  savePatternData,
+  replaceWorkingDraftFromSavedPattern,
   type SleevelessPatternRecord,
 } from "./patternStorage";
 import {
@@ -133,7 +145,7 @@ export function buildSavePayloadFromWorkingDraft(
     flushCustomBuildMeasurementOverridesToCanonical({ root: flushRoot ?? undefined });
   }
 
-  const pattern = getCurrentPattern();
+  let pattern = getCurrentPattern();
   const meta = getPatternProjectMeta(pattern);
   const resolvedName = (name ?? meta.title).trim() || "Untitled pattern";
   const measurementOverrides = loadMeasurementOverrides();
@@ -144,12 +156,14 @@ export function buildSavePayloadFromWorkingDraft(
       ? { ...fitWithoutCb, cbMeasurementOverrides: { ...measurementOverrides } }
       : fitWithoutCb;
 
-  return {
-    name: resolvedName,
-    notes: meta.notes,
-    family: options.family ?? "sleeveless",
-    source: options.source ?? inferCustomPatternProjectSource(pattern),
-    pattern: {
+  const allowDropShoulder = isActiveDropShoulderConstruction();
+  let customOverrides = options.customOverrides ?? {};
+  if (allowDropShoulder) {
+    customOverrides = withDropShoulderConstructionFamily(customOverrides);
+  }
+
+  pattern = preparePatternRecordForSave(
+    {
       ...pattern,
       fit: fitForSave,
       patternProject: {
@@ -157,7 +171,16 @@ export function buildSavePayloadFromWorkingDraft(
         title: resolvedName,
       },
     },
-    customOverrides: options.customOverrides ?? {},
+    { customOverrides, allowDropShoulder },
+  );
+
+  return {
+    name: resolvedName,
+    notes: meta.notes,
+    family: options.family ?? "sleeveless",
+    source: options.source ?? inferCustomPatternProjectSource(pattern),
+    pattern,
+    customOverrides,
   };
 }
 
@@ -278,37 +301,49 @@ function patternSectionRecord(section: unknown): Record<string, unknown> {
  * Does not prefill the Express wizard — use Change Pattern Choices for that.
  */
 export function loadProjectIntoWorkingDraft(project: CustomPatternProject): SleevelessPatternRecord {
-  const pattern = project.pattern;
+  const sanitized = sanitizeSavedProjectForHydration(project);
+  const pattern = sanitized.pattern;
   const notes =
-    typeof project.notes === "string"
-      ? project.notes
+    typeof sanitized.notes === "string"
+      ? sanitized.notes
       : typeof pattern.patternProject?.notes === "string"
         ? pattern.patternProject.notes
         : "";
-  saveCurrentPattern({
-    style: patternSectionRecord(pattern.style),
-    fit: patternSectionRecord(pattern.fit),
-    yarnGauge: patternSectionRecord(pattern.yarnGauge),
-    measurements: patternSectionRecord(pattern.measurements),
-    machine: patternSectionRecord(pattern.machine),
-    calculations: patternSectionRecord(pattern.calculations),
-    instructions: patternSectionRecord(pattern.instructions),
-    version: pattern.version,
-    patternProject: {
-      title: project.name,
-      notes,
-      titleCustomized: true,
-    },
+
+  const record = replaceWorkingDraftFromSavedPattern(pattern, {
+    title: sanitized.name,
+    notes,
+    titleCustomized: true,
   });
-  savePatternData("style", patternSectionRecord(pattern.style));
-  savePatternData("fit", patternSectionRecord(pattern.fit));
-  savePatternData("yarnGauge", patternSectionRecord(pattern.yarnGauge));
-  savePatternData("measurements", patternSectionRecord(pattern.measurements));
-  savePatternData("machine", patternSectionRecord(pattern.machine));
+
+  writeHydratedConstructionBaseline(sanitized);
+
   try {
-    applySleevelessReadingWorkflow(project.readingWorkflow, pattern.id);
+    applySleevelessReadingWorkflow(sanitized.readingWorkflow, pattern.id);
   } catch (error) {
     console.error("[kbm] Reading workflow restore failed; continuing.", error);
   }
-  return getCurrentPattern();
+  return record;
+}
+
+/** Exported for tests — block update when drop-shoulder draft drift would corrupt a sleeveless id. */
+export function shouldBlockDropShoulderConstructionSaveToActiveProject(): boolean {
+  const activeId = readActiveCustomPatternProjectId();
+  if (!activeId) return false;
+  return draftHasUnsavedDropShoulderConstructionDrift(isActiveDropShoulderConstruction(), activeId);
+}
+
+/** Exported for tests — detect corrupted sleeveless blobs before hydration sanitize. */
+export function savedProjectHasCorruptedSleevelessConstruction(project: CustomPatternProject): boolean {
+  return isCorruptedSleevelessConstruction(project.pattern, project.customOverrides);
+}
+
+/** Exported for tests — authoritative drop-shoulder stamp on a saved project. */
+export function savedProjectHasAuthoritativeDropShoulderConstruction(
+  project: CustomPatternProject,
+): boolean {
+  return hasAuthoritativeDropShoulderConstruction(
+    patternSectionRecord(project.pattern.style),
+    project.customOverrides,
+  );
 }

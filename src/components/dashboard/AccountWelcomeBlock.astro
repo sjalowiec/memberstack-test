@@ -1,0 +1,30 @@
+---
+/** Signed-in member welcome — populated client-side from Memberstack. */
+---
+
+<div class="account-welcome" data-kbm-account-welcome aria-live="polite">
+  <p class="account-welcome__greeting" data-kbm-account-welcome-greeting>Welcome back</p>
+  <p class="account-welcome__email" data-kbm-account-welcome-email hidden></p>
+</div>
+
+<style>
+  .account-welcome {
+    margin: 0;
+    padding: 0.15rem 0 0.35rem;
+  }
+
+  .account-welcome__greeting {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #2c3a57;
+  }
+
+  .account-welcome__email {
+    margin: 0.2rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.4;
+    color: #6b7280;
+  }
+</style>

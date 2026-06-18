@@ -18,11 +18,14 @@ import {
   resolveEffectiveFrontNeckDepthInches,
 } from "./customBuildEffectiveNeckDepth";
 import { isSleevelessCardiganGarmentStyle } from "./sleevelessFrontDiagramSrc";
-import { sleeveEvenShapingSchedule } from "./evenShapingSchedule";
+import {
+  dropShoulderSleeveShapingPlan,
+  formatDropShoulderSleeveShapingNotation,
+} from "./dropShoulderSleeveShaping";
+import type { DropShoulderSleeveDirection } from "./dropShoulderSleeveConstruction";
 import {
   formatBodyRowsNotation,
   formatCastOnNotation,
-  formatShapingSegment,
 } from "./sleevelessBackJapaneseNotation";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
@@ -460,6 +463,7 @@ type DropShoulderSleeveDiagramDebug = {
 export function buildDropShoulderSleeveDiagramReplacements(
   result: SleevelessBackPatternResult,
   unit: "cm" | "in",
+  sleeveDirection: DropShoulderSleeveDirection = "cuff-up",
 ): Record<string, string> {
   const d = (result?.debug ?? {}) as DropShoulderSleeveDiagramDebug;
   const rpi = d.rowsPerInch;
@@ -508,6 +512,13 @@ export function buildDropShoulderSleeveDiagramReplacements(
       ? lengthFromRowsForDiagram(sleeveBodyRows, rpi, unit)
       : undefined;
 
+  // Top-down measurement artwork flips vertical positions but keeps the same token ids.
+  const isTopDown = sleeveDirection === "top-down";
+  const sleeveCapStsToken = isTopDown ? wristSts : topSts;
+  const wristStsToken = isTopDown ? topSts : wristSts;
+  const sleeveCapWidthToken = isTopDown ? wristInches : upperArmInches;
+  const wristWidthToken = isTopDown ? upperArmInches : wristInches;
+
   return {
     UNIT: unitLabel,
     // Legacy tokens (prior drop-shoulder sleeve schematic).
@@ -517,11 +528,11 @@ export function buildDropShoulderSleeveDiagramReplacements(
     UPPER_ARM_INCHES: fmtNumber(inchesToUnit(upperArmInches, unit) ?? Number.NaN),
     CUFF_ROWS: isFiniteNumber(cuffRows) ? String(cuffRows) : "",
     CUFF_INCHES: cuffDepthLabel,
-    // New measurement schematic (`drop-body-sleeve.svg`).
-    SLEEVE_CAP_STS: isFiniteNumber(topSts) ? String(topSts) : "",
-    SLEEVE_CAP_WIDTH: fmtNumber(inchesToUnit(upperArmInches, unit) ?? Number.NaN),
-    WRIST_STS: isFiniteNumber(wristSts) ? String(wristSts) : "",
-    WRIST_WIDTH: fmtNumber(inchesToUnit(wristInches, unit) ?? Number.NaN),
+    // Measurement schematics (`drop-body-sleeve.svg` / `drop-body-sleeve-top-down.svg`).
+    SLEEVE_CAP_STS: isFiniteNumber(sleeveCapStsToken) ? String(sleeveCapStsToken) : "",
+    SLEEVE_CAP_WIDTH: fmtNumber(inchesToUnit(sleeveCapWidthToken, unit) ?? Number.NaN),
+    WRIST_STS: isFiniteNumber(wristStsToken) ? String(wristStsToken) : "",
+    WRIST_WIDTH: fmtNumber(inchesToUnit(wristWidthToken, unit) ?? Number.NaN),
     SLEEVE_LENGTH_ROWS: isFiniteNumber(sleeveBodyRows) ? String(sleeveBodyRows) : "",
     SIDE_LENGTH: fmtNumber(sideLengthFromBodyRows ?? inchesToUnit(armLengthInches, unit) ?? Number.NaN),
     CUFF_DEPTH: cuffDepthLabel,
@@ -533,6 +544,7 @@ export function buildDropShoulderSleeveDiagramReplacements(
  */
 export function buildDropShoulderSleeveJapaneseNotationReplacements(
   result: SleevelessBackPatternResult,
+  sleeveDirection: DropShoulderSleeveDirection = "cuff-up",
 ): Record<string, string> {
   const d = (result?.debug ?? {}) as DropShoulderSleeveDiagramDebug;
   const wristSts = isFiniteNumber(d.dropShoulderSleeveWristStitches)
@@ -548,24 +560,36 @@ export function buildDropShoulderSleeveJapaneseNotationReplacements(
     ? Math.round(d.dropShoulderSleeveCuffRows)
     : undefined;
 
-  const sched =
+  const shapingPlan =
     isFiniteNumber(topSts) && isFiniteNumber(wristSts) && isFiniteNumber(bodyRows) && bodyRows > 0
-      ? sleeveEvenShapingSchedule(topSts, wristSts, bodyRows)
-      : { interval: 0, count: 0, remainderRows: bodyRows ?? 0 };
+      ? dropShoulderSleeveShapingPlan({ topSts, wristSts, sleeveBodyRows: bodyRows })
+      : {
+          steps: [],
+          remainderRows: bodyRows ?? 0,
+          noShaping: true,
+          shapingDirection: "increase" as const,
+          schedule: { interval: 0, count: 0, remainderRows: bodyRows ?? 0 },
+        };
 
-  const sleeveEvenRows =
-    sched.count > 0
-      ? sched.remainderRows
-      : isFiniteNumber(bodyRows) && bodyRows > 0
-        ? bodyRows
-        : 0;
+  const sleeveShapingNotation = formatDropShoulderSleeveShapingNotation(shapingPlan.steps);
+
+  const isTopDown = sleeveDirection === "top-down";
+  const castOnSts = isTopDown ? topSts : wristSts;
+  // Bottom-up: label at upper arm. Top-down: same token sits at the cuff/wrist edge.
+  const jpSleeveCapEdgeSts = isTopDown ? wristSts : topSts;
 
   return {
-    "jp-caston": isFiniteNumber(wristSts) && wristSts > 0 ? formatCastOnNotation(wristSts) : "",
-    "jp-cuff": isFiniteNumber(cuffRows) && cuffRows > 0 ? formatBodyRowsNotation(cuffRows) : "",
-    "jp-sleeve-shaping":
-      sched.count > 0 ? formatShapingSegment(1, sched.interval, sched.count) : "",
-    "jp-sleeve_cap_sts": isFiniteNumber(topSts) && topSts > 0 ? String(topSts) : "",
-    "jp-sleeve": sleeveEvenRows > 0 ? formatBodyRowsNotation(sleeveEvenRows) : "",
+    "jp-caston":
+      isFiniteNumber(castOnSts) && castOnSts > 0 ? `${formatCastOnNotation(castOnSts)} sts` : "",
+    "jp-cuff":
+      isFiniteNumber(cuffRows) && cuffRows > 0
+        ? `${formatBodyRowsNotation(cuffRows)} rows`
+        : "",
+    "jp-sleeve-shaping": sleeveShapingNotation,
+    "jp-sleeve_cap_sts":
+      isFiniteNumber(jpSleeveCapEdgeSts) && jpSleeveCapEdgeSts > 0 ? `${jpSleeveCapEdgeSts} sts` : "",
+    "jp-sleeve":
+      sleeveShapingNotation ||
+      (isFiniteNumber(bodyRows) && bodyRows > 0 ? formatBodyRowsNotation(bodyRows) : ""),
   };
 }

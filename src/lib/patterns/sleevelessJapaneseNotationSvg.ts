@@ -379,12 +379,21 @@ export function applyJapaneseNotationSvgReplacements(
   let out = normalizeSvgMarkupInput(svgText);
   const classFontSizes = parseSvgClassFontSizes(out);
 
-  for (const [key, rawValue] of Object.entries(replacements)) {
-    const value = rawValue == null ? "" : String(rawValue);
-    // Split-token exports (front jp-diagram) before single-<text> replacement (back + front).
-    out = replacePlaceholderInIsolateGroups(out, key, value, classFontSizes);
-    out = replacePlaceholderInAdjacentTextRuns(out, key, value, classFontSizes);
-    out = replacePlaceholderInTextElements(out, key, value, classFontSizes);
+  const entries = Object.entries(replacements);
+  // Apply non-empty values before clearing unused tokens. When an adjacent sibling
+  // `<text>` was already cleared, the adjacent-text replacer can otherwise anchor a
+  // multiline value on the wrong transform (drop-shoulder front jp-neckline-shaping).
+  const nonEmpty = entries.filter(([, rawValue]) => rawValue != null && String(rawValue).length > 0);
+  const empty = entries.filter(([, rawValue]) => rawValue == null || String(rawValue).length === 0);
+
+  for (const batch of [nonEmpty, empty]) {
+    for (const [key, rawValue] of batch) {
+      const value = rawValue == null ? "" : String(rawValue);
+      // Split-token exports (front jp-diagram) before single-<text> replacement (back + front).
+      out = replacePlaceholderInIsolateGroups(out, key, value, classFontSizes);
+      out = replacePlaceholderInAdjacentTextRuns(out, key, value, classFontSizes);
+      out = replacePlaceholderInTextElements(out, key, value, classFontSizes);
+    }
   }
 
   return out;

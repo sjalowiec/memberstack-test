@@ -6,6 +6,7 @@ import {
   createCustomPatternProject,
   listCustomPatternProjects,
   loadCustomPatternProject,
+  shouldBlockDropShoulderConstructionSaveToActiveProject,
   updateCustomPatternProject,
 } from "./customPatternProjectClient";
 import type {
@@ -37,6 +38,7 @@ import {
   syncSavedCustomPatternCopyAccess,
 } from "./savedCustomPatternCopyAccess";
 import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPatternProject";
+import { writeHydratedConstructionBaseline } from "./customPatternProjectConstructionBaseline";
 import { logSleevelessPatternActivity } from "./sleevelessPatternActivity";
 import { getPatternProjectMeta, savePatternProjectMeta } from "./sleevelessPatternProjectMeta";
 import { nextPanelListRefresh, perfEnd, perfMark, perfStart } from "./savedPatternsPerfLog";
@@ -281,10 +283,18 @@ export async function smartSaveCustomPatternProject(
         error: "Open a saved project or use Save New Project before updating.",
       };
     }
+    if (shouldBlockDropShoulderConstructionSaveToActiveProject()) {
+      return {
+        ok: false,
+        error:
+          "This session has drop-shoulder settings, but the open saved project is sleeveless. Use Save New Project instead.",
+      };
+    }
     options.onStatus?.("Updating…");
     const res = await updateCustomPatternProject({ ...base, id: activeId });
     if (!res.ok) return { ok: false, error: res.error };
     writeActiveCustomPatternProjectId(res.project.id, res.project.name);
+    writeHydratedConstructionBaseline(res.project);
     prepareCustomBuildPatternGeneration({
       root: resolveCustomBuildSaveMeasureFlushRoot(flushRoot),
       rehydrateSavedProject: false,
@@ -302,6 +312,7 @@ export async function smartSaveCustomPatternProject(
   const res = await createCustomPatternProject(base);
   if (!res.ok) return { ok: false, error: res.error };
   writeActiveCustomPatternProjectId(res.project.id, res.project.name);
+  writeHydratedConstructionBaseline(res.project);
   captureSavedCustomPatternDirtyBaseline();
   notifySavedProjectLinkChanged(options.root ?? undefined);
   logSleevelessPatternActivity("pattern_saved", {

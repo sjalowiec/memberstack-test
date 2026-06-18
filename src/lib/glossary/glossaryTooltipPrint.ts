@@ -29,3 +29,6 @@ export function buildGlossaryTooltipPlaceholderHtml(
   const label = (visibleText ?? "").trim();
   return `<span class="glossary-tooltip-placeholder" data-glossary-id="${glossaryId}" data-term="${escapeAttr(label)}">${escapeText(label)}</span>`;
 }
+
+/** Glossary entry for placing markers on the needlebed (machine knitting). */
+export const PLACE_MARKER_GLOSSARY_ID = 310;

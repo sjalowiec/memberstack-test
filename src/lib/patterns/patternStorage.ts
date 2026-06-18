@@ -119,6 +119,84 @@ export function savePatternData(section: string, data: Record<string, unknown>):
   }
 }
 
+function savedPatternSection(section: unknown): Record<string, unknown> {
+  return section && typeof section === "object" && !Array.isArray(section)
+    ? { ...(section as Record<string, unknown>) }
+    : {};
+}
+
+function yarnGaugeMachineFromSavedPattern(pattern: SleevelessPatternRecord): Record<string, unknown> {
+  const yarnGauge = savedPatternSection(pattern.yarnGauge);
+  const machine = savedPatternSection(pattern.machine);
+  const payload: Record<string, unknown> = {};
+  if (yarnGauge.stitchGauge !== undefined) payload.gaugeStitchesPerInch = yarnGauge.stitchGauge;
+  if (yarnGauge.rowGauge !== undefined) payload.gaugeRowsPerInch = yarnGauge.rowGauge;
+  if (yarnGauge.gaugeStitchRaw !== undefined) payload.gaugeStitchRaw = yarnGauge.gaugeStitchRaw;
+  if (yarnGauge.gaugeRowRaw !== undefined) payload.gaugeRowRaw = yarnGauge.gaugeRowRaw;
+  if (yarnGauge.gaugeRawUnit === "cm" || yarnGauge.gaugeRawUnit === "in") {
+    payload.gaugeRawUnit = yarnGauge.gaugeRawUnit;
+  }
+  if (machine.availableNeedles !== undefined) payload.availableNeedles = machine.availableNeedles;
+  return payload;
+}
+
+/**
+ * Replaces the working draft from a saved project without merging prior session sections.
+ * Used when hydrating saved Custom Pattern projects so stale construction cannot persist.
+ */
+export function replaceWorkingDraftFromSavedPattern(
+  pattern: SleevelessPatternRecord,
+  projectMeta: SleevelessPatternProjectMeta,
+): SleevelessPatternRecord {
+  const current = getCurrentPattern();
+  const prevPb = getPatternData();
+  const yarnGaugeMachine = yarnGaugeMachineFromSavedPattern(pattern);
+
+  const next: SleevelessPatternRecord = {
+    ...current,
+    id: pattern.id,
+    patternType: pattern.patternType ?? "sleeveless",
+    status: pattern.status ?? current.status,
+    version: pattern.version ?? current.version,
+    createdAt: pattern.createdAt ?? current.createdAt,
+    updatedAt: new Date().toISOString(),
+    patternProject: projectMeta,
+    style: savedPatternSection(pattern.style),
+    fit: savedPatternSection(pattern.fit),
+    yarnGauge: savedPatternSection(pattern.yarnGauge),
+    measurements: savedPatternSection(pattern.measurements),
+    machine: savedPatternSection(pattern.machine),
+    calculations: savedPatternSection(pattern.calculations),
+    instructions: savedPatternSection(pattern.instructions),
+  };
+
+  persistCanonical(next);
+  mirrorLegacyGarmentConfigFlat(next);
+
+  if (typeof localStorage !== "undefined") {
+    const builderPayload: Record<string, unknown> = {
+      createdAt:
+        typeof prevPb.createdAt === "string" && prevPb.createdAt.length > 0
+          ? prevPb.createdAt
+          : pattern.createdAt ?? new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      style: savedPatternSection(pattern.style),
+      fit: savedPatternSection(pattern.fit),
+      yarnGauge: savedPatternSection(pattern.yarnGauge),
+      measurements: savedPatternSection(pattern.measurements),
+      machine: savedPatternSection(pattern.machine),
+      ...(Object.keys(yarnGaugeMachine).length > 0 ? { yarnGaugeMachine } : {}),
+    };
+    try {
+      localStorage.setItem(PATTERN_BUILDER_DATA_KEY, JSON.stringify(builderPayload));
+    } catch {
+      /* quota */
+    }
+  }
+
+  return next;
+}
+
 export function generatePatternId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();

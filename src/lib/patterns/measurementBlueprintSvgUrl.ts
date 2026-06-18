@@ -6,7 +6,7 @@
  * positioning system in {@link patternSummaryMeasurementOverlay} — only the artwork differs.
  */
 
-import { getCurrentPattern, getPatternData } from "./patternStorage";
+import { isActiveDropShoulderConstruction } from "./patternConstructionIdentity";
 
 export const SLEEVELESS_MEASUREMENT_BLUEPRINT_SVG_URL = "/images/patterns/pattern_summary.svg";
 export const DROP_SHOULDER_MEASUREMENT_BLUEPRINT_SVG_URL =
@@ -14,14 +14,7 @@ export const DROP_SHOULDER_MEASUREMENT_BLUEPRINT_SVG_URL =
 
 /** True when the active working pattern is a drop-shoulder construction. */
 export function isDropShoulderConstruction(): boolean {
-  try {
-    const canon = (getCurrentPattern().style as Record<string, unknown> | undefined)?.construction;
-    if (canon === "drop-shoulder") return true;
-    const pb = (getPatternData().style as Record<string, unknown> | undefined)?.construction;
-    return pb === "drop-shoulder";
-  } catch {
-    return false;
-  }
+  return isActiveDropShoulderConstruction();
 }
 
 /** Blueprint artwork URL for the active construction (Drop Shoulder gets the sleeved diagram). */

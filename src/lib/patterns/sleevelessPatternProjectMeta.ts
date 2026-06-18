@@ -9,6 +9,7 @@ import {
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
   type SleevelessPatternRecord,
 } from "./patternStorage";
+import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
 import { resolveSleevelessGarmentKind } from "./resolveSleevelessGarmentKind";
 import { readCustomBuildWizardGarmentType } from "./sleevelessCustomBuildWizardNeckline";
 
@@ -43,7 +44,9 @@ export const DROP_SHOULDER_PATTERN_FAMILY_NAME = "Drop Shoulder";
 
 /** True when the pattern's style is a drop-shoulder construction. */
 function isDropShoulderPattern(pattern: SleevelessPatternRecord = getCurrentPattern()): boolean {
-  return (pattern.style as Record<string, unknown> | undefined)?.construction === "drop-shoulder";
+  return hasAuthoritativeDropShoulderConstruction(
+    pattern.style as Record<string, unknown> | undefined,
+  );
 }
 
 /** Family name for auto-titles, by construction. */

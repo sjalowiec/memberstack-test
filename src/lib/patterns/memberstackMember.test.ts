@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { isMemberstackLoggedInPayload, memberIdFromMemberstackPayload } from "./memberstackMember";
+import {
+  accountWelcomeGreetingFromMemberstackPayload,
+  isMemberstackLoggedInPayload,
+  memberDisplayFirstNameFromMemberstackPayload,
+  memberEmailFromMemberstackPayload,
+  memberFirstNameFromMemberstackPayload,
+  memberIdFromMemberstackPayload,
+} from "./memberstackMember";
 
 describe("memberstackMember", () => {
   it("reads member id from nested data", () => {
@@ -13,5 +20,38 @@ describe("memberstackMember", () => {
   it("returns undefined for empty payload", () => {
     expect(memberIdFromMemberstackPayload(null)).toBeUndefined();
     expect(isMemberstackLoggedInPayload(null)).toBe(false);
+  });
+
+  it("reads first name from custom fields", () => {
+    expect(
+      memberFirstNameFromMemberstackPayload({
+        data: { customFields: { "first-name": " Sue " } },
+      }),
+    ).toBe("Sue");
+  });
+
+  it("falls back to email local part when first name is missing", () => {
+    expect(
+      memberDisplayFirstNameFromMemberstackPayload({
+        data: { auth: { email: "knitter@example.com" } },
+      }),
+    ).toBe("knitter");
+  });
+
+  it("builds welcome greeting with and without a display name", () => {
+    expect(
+      accountWelcomeGreetingFromMemberstackPayload({
+        data: { customFields: { "first-name": "Pat" } },
+      }),
+    ).toBe("Welcome back, Pat");
+    expect(accountWelcomeGreetingFromMemberstackPayload({ data: {} })).toBe("Welcome back");
+  });
+
+  it("reads member email from auth", () => {
+    expect(
+      memberEmailFromMemberstackPayload({
+        data: { auth: { email: "member@example.com" } },
+      }),
+    ).toBe("member@example.com");
   });
 });

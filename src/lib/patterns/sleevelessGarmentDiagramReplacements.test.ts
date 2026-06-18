@@ -350,10 +350,38 @@ describe("buildDropShoulderSleeveDiagramReplacements", () => {
     expect(repl.SLEEVE_LENGTH_ROWS).toBe("100");
     expect(repl.CUFF_DEPTH).toBe("2");
   });
+
+  it("swaps wrist and sleeve-cap tokens for top-down measurement artwork", async () => {
+    const { buildDropShoulderSleeveDiagramReplacements } = await import(
+      "./sleevelessGarmentDiagramReplacements"
+    );
+    const result = {
+      debug: {
+        rowsPerInch: 10,
+        dropShoulderSleeveTotalRows: 120,
+        dropShoulderSleeveBodyRows: 100,
+        dropShoulderSleeveCuffRows: 20,
+        dropShoulderSleeveLengthInches: 12,
+        dropShoulderSleeveTopStitches: 80,
+        dropShoulderSleeveWristStitches: 40,
+        dropShoulderWristInches: 8,
+        dropShoulderUpperArmInches: 16,
+        dropShoulderUpperArmRows: 40,
+        dropShoulderCuffDepthInches: 2,
+      },
+    } as import("./sleevelessPatternOutput").SleevelessBackPatternResult;
+
+    const repl = buildDropShoulderSleeveDiagramReplacements(result, "in", "top-down");
+
+    expect(repl.SLEEVE_CAP_STS).toBe("40");
+    expect(repl.SLEEVE_CAP_WIDTH).toBe("8");
+    expect(repl.WRIST_STS).toBe("80");
+    expect(repl.WRIST_WIDTH).toBe("16");
+  });
 });
 
 describe("buildDropShoulderSleeveJapaneseNotationReplacements", () => {
-  it("fills shaping schedule and post-shaping even rows from the same math as written sleeve", async () => {
+  it("fills sleeve shaping notation from the same schedule as written sleeve instructions", async () => {
     const { buildDropShoulderSleeveJapaneseNotationReplacements } = await import(
       "./sleevelessGarmentDiagramReplacements"
     );
@@ -368,11 +396,11 @@ describe("buildDropShoulderSleeveJapaneseNotationReplacements", () => {
 
     const repl = buildDropShoulderSleeveJapaneseNotationReplacements(result);
 
-    expect(repl["jp-caston"]).toBe("co40");
-    expect(repl["jp-cuff"]).toBe("20r");
+    expect(repl["jp-caston"]).toBe("co40 sts");
+    expect(repl["jp-cuff"]).toBe("20r rows");
     expect(repl["jp-sleeve-shaping"]).toBe("1s-4r-20x");
-    expect(repl["jp-sleeve"]).toBe("20r");
-    expect(repl["jp-sleeve_cap_sts"]).toBe("80");
+    expect(repl["jp-sleeve"]).toBe("1s-4r-20x");
+    expect(repl["jp-sleeve_cap_sts"]).toBe("80 sts");
   });
 
   it("leaves shaping blank and uses full body rows when there is no taper", async () => {
@@ -414,13 +442,7 @@ describe("buildDropShoulderSleeveJapaneseNotationReplacements", () => {
     const tokens = listJapaneseNotationPlaceholdersInSvg(svgText);
 
     expect(tokens.sort()).toEqual(
-      [
-        "jp-caston",
-        "jp-cuff",
-        "jp-sleeve",
-        "jp-sleeve-shaping",
-        "jp-sleeve_cap_sts",
-      ].sort(),
+      ["jp-caston", "jp-cuff", "jp-sleeve", "jp-sleeve_cap_sts"].sort(),
     );
 
     const result = {
@@ -435,7 +457,50 @@ describe("buildDropShoulderSleeveJapaneseNotationReplacements", () => {
     const repl = buildDropShoulderSleeveJapaneseNotationReplacements(result);
     expect(() => assertJapaneseNotationSvgFullyReplaced(svgText, repl)).not.toThrow();
     const out = applyJapaneseNotationSvgReplacements(svgText, repl);
-    expect(out).toContain("1s-4r-20x");
+    expect(out).toContain("co40 sts");
+    expect(out).toContain("20r rows");
+    expect(out).toContain("80 sts");
+    expect(out).not.toMatch(/\{\{\s*jp-/i);
+  });
+
+  it("replaces every jp token in jp-drop-body-sleeve-top-down.svg", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { resolve } = await import("node:path");
+    const { buildDropShoulderSleeveJapaneseNotationReplacements } = await import(
+      "./sleevelessGarmentDiagramReplacements"
+    );
+    const {
+      applyJapaneseNotationSvgReplacements,
+      assertJapaneseNotationSvgFullyReplaced,
+      listJapaneseNotationPlaceholdersInSvg,
+    } = await import("./sleevelessJapaneseNotationSvg");
+    const { DROP_SHOULDER_SLEEVE_NOTATION_TOP_DOWN_SRC } = await import(
+      "./dropShoulderSleeveNotationSvg"
+    );
+
+    const svgPath = resolve(process.cwd(), "public" + DROP_SHOULDER_SLEEVE_NOTATION_TOP_DOWN_SRC);
+    const svgText = readFileSync(svgPath, "utf8");
+    const tokens = listJapaneseNotationPlaceholdersInSvg(svgText);
+
+    expect(tokens.sort()).toEqual(
+      ["jp-caston", "jp-cuff", "jp-sleeve", "jp-sleeve_cap_sts"].sort(),
+    );
+
+    const result = {
+      debug: {
+        dropShoulderSleeveBodyRows: 100,
+        dropShoulderSleeveCuffRows: 20,
+        dropShoulderSleeveTopStitches: 80,
+        dropShoulderSleeveWristStitches: 40,
+      },
+    } as import("./sleevelessPatternOutput").SleevelessBackPatternResult;
+
+    const repl = buildDropShoulderSleeveJapaneseNotationReplacements(result, "top-down");
+    expect(() => assertJapaneseNotationSvgFullyReplaced(svgText, repl)).not.toThrow();
+    const out = applyJapaneseNotationSvgReplacements(svgText, repl);
+    expect(out).toContain("co80 sts");
+    expect(out).toContain("20r rows");
+    expect(out).toContain("40 sts");
     expect(out).not.toMatch(/\{\{\s*jp-/i);
   });
 });

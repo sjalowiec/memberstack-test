@@ -2,28 +2,30 @@
  * Drop Shoulder builder page boot.
  *
  * Reuses the sleeveless Express wizard client (steps, size charts, persistence, review nav) and
- * layers on the two drop-shoulder-specific pieces of state:
+ * layers on drop-shoulder-specific state:
  *   - `style.construction = "drop-shoulder"` so the pattern workspace uses the drop-shoulder
  *     generator + layout (see dropShoulderPatternOutput.ts / sleevelessPatternPageShared.ts).
- *   - `style.sleeveDirection` ("cuff-up" default | "top-down") from the in-wizard chooser.
  *   - `style.sleeveLength` ("long" default | "three-quarter" | "elbow" | "short") from the picker.
  *     NOTE: the length selection is captured/persisted now for the UI, but is intentionally NOT
  *     yet applied to the generator math (deferred until the length→inches mapping is defined).
+ *
+ * Sleeve construction (bottom-up vs top-down) is chosen on the pattern view, not in the builder.
  *
  * Both are written to the canonical draft AND the patternBuilderData mirror so they survive the
  * generator's style merge. We (re)assert after the wizard boots (incl. the `?new=1` fresh start,
  * which clears storage) and again on `pagehide` just before navigating to review.
  */
 import "/src/scripts/sleeveless-builder-page.ts";
+import { clearActiveCustomPatternProjectId, readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
+import { readHydratedConstructionBaseline } from "../lib/patterns/customPatternProjectConstructionBaseline";
 import {
   saveCurrentPattern,
   savePatternData,
   getCurrentPattern,
   getPatternData,
 } from "../lib/patterns/patternStorage";
+import { withDropShoulderConstructionAuthored } from "../lib/patterns/patternConstructionIdentity";
 
-const CONSTRUCTION = "drop-shoulder";
-type SleeveDirection = "cuff-up" | "top-down";
 type SleeveLength = "long" | "three-quarter" | "elbow" | "short";
 
 const SLEEVE_LENGTHS: readonly SleeveLength[] = ["long", "three-quarter", "elbow", "short"];
@@ -46,31 +48,32 @@ function readStyleValue(key: string): unknown {
   }
 }
 
-function readStoredSleeveDirection(): SleeveDirection {
-  const v = readStyleValue("sleeveDirection");
-  return v === "top-down" ? "top-down" : "cuff-up";
-}
-
 function readStoredSleeveLength(): SleeveLength {
   const v = readStyleValue("sleeveLength");
   return SLEEVE_LENGTHS.includes(v as SleeveLength) ? (v as SleeveLength) : "long";
 }
 
-function persist(sleeveDirection: SleeveDirection, sleeveLength: SleeveLength): void {
+function persist(sleeveLength: SleeveLength): void {
   try {
-    saveCurrentPattern({ style: { construction: CONSTRUCTION, sleeveDirection, sleeveLength } });
-    savePatternData("style", { construction: CONSTRUCTION, sleeveDirection, sleeveLength });
+    const canonicalStyle =
+      (getCurrentPattern().style as Record<string, unknown> | undefined) ?? {};
+    const pbStyle = (getPatternData().style as Record<string, unknown> | undefined) ?? {};
+    const style = withDropShoulderConstructionAuthored({ ...canonicalStyle, ...pbStyle }, sleeveLength);
+    saveCurrentPattern({ style });
+    savePatternData("style", style);
   } catch {
     /* ignore */
   }
 }
 
-function reflectRadios(dir: SleeveDirection): void {
-  document
-    .querySelectorAll<HTMLInputElement>('[data-ds-sleeve-direction] input[name="dsSleeveDirection"]')
-    .forEach((radio) => {
-      radio.checked = radio.value === dir;
-    });
+/** Drop-shoulder builder must not update a sleeveless saved project id left from a prior session. */
+function clearStaleSleevelessActiveProjectLink(): void {
+  const activeId = readActiveCustomPatternProjectId();
+  if (!activeId) return;
+  const baseline = readHydratedConstructionBaseline();
+  if (!baseline || baseline.projectId !== activeId || !baseline.hadAuthoritativeDropShoulder) {
+    clearActiveCustomPatternProjectId();
+  }
 }
 
 function reflectLengthButtons(length: SleeveLength): void {
@@ -94,17 +97,6 @@ function reflectLengthSummary(length: SleeveLength): void {
 }
 
 function wireControls(): void {
-  const dirRoot = document.querySelector("[data-ds-sleeve-direction]");
-  if (dirRoot) {
-    dirRoot.addEventListener("change", (event) => {
-      const target = event.target;
-      if (target instanceof HTMLInputElement && target.name === "dsSleeveDirection") {
-        const dir: SleeveDirection = target.value === "top-down" ? "top-down" : "cuff-up";
-        persist(dir, readStoredSleeveLength());
-      }
-    });
-  }
-
   const lengthRoot = document.querySelector("[data-ds-sleeve-length]");
   if (lengthRoot) {
     lengthRoot.addEventListener("click", (event) => {
@@ -117,16 +109,15 @@ function wireControls(): void {
         ? (raw as SleeveLength)
         : "long";
       reflectLengthButtons(length);
-      persist(readStoredSleeveDirection(), length);
+      persist(length);
     });
   }
 }
 
 function init(): void {
-  const dir = readStoredSleeveDirection();
+  clearStaleSleevelessActiveProjectLink();
   const length = readStoredSleeveLength();
-  persist(dir, length);
-  reflectRadios(dir);
+  persist(length);
   reflectLengthButtons(length);
   wireControls();
 }
@@ -140,5 +131,5 @@ if (document.readyState === "complete") {
 
 // Belt-and-suspenders: re-assert just before leaving for the review page.
 window.addEventListener("pagehide", () => {
-  persist(readStoredSleeveDirection(), readStoredSleeveLength());
+  persist(readStoredSleeveLength());
 });

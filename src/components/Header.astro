@@ -473,6 +473,20 @@ const SHOW_BETA_BANNER = true;
   white-space: nowrap;
 }
 
+.kbm-header-signed-in {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+@media (max-width: 1180px) {
+  .kbm-header-signed-in {
+    display: none;
+  }
+}
+
 /* Sign Up — temporarily inactive until sign-up flow is finished (see header markup) */
 .kbm-nav-bar .kbm-header-signup--inactive,
 .kbm-nav-bar .kbm-header-auth .kbm-header-signup--inactive,
@@ -1676,6 +1690,7 @@ div[data-ms-modal-overlay] {
           </div>
 
           <div data-ms-content="members">
+            <span class="kbm-header-signed-in" id="kbm-header-signed-in" hidden></span>
             <a href="/account" class="kbm-btn kbm-btn-outline">My Account</a>
             <a
               href="#"
@@ -1778,6 +1793,41 @@ div[data-ms-modal-overlay] {
       return false;
     }
 
+    function displayFirstNameFromMember(member) {
+      if (!member) return "";
+      const cf = member.customFields || {};
+      const firstName =
+        (typeof cf["first-name"] === "string" ? cf["first-name"].trim() : "") ||
+        (typeof cf.firstName === "string" ? cf.firstName.trim() : "") ||
+        "";
+      if (firstName) return firstName;
+      const email = member.auth?.email || member.email || "";
+      if (email) {
+        const localPart = String(email).split("@")[0]?.trim();
+        if (localPart) return localPart;
+      }
+      return "";
+    }
+
+    function updateSignedInLabel(state) {
+      const signedInEl = document.getElementById("kbm-header-signed-in");
+      if (!signedInEl) return;
+      if (!state?.loggedIn) {
+        signedInEl.hidden = true;
+        signedInEl.textContent = "";
+        return;
+      }
+      const res = state._member;
+      const firstName = displayFirstNameFromMember(res);
+      if (firstName) {
+        signedInEl.textContent = "Signed in as " + firstName;
+        signedInEl.hidden = false;
+      } else {
+        signedInEl.hidden = true;
+        signedInEl.textContent = "";
+      }
+    }
+
     async function getAuthState() {
       const ms = window.$memberstackDom;
       if (!ms?.getCurrentMember) {
@@ -1804,10 +1854,19 @@ div[data-ms-modal-overlay] {
           member?.email ||
           "";
         const email = member?.auth?.email || member?.email || "";
-        return { ms: "ready", loggedIn, isMember, displayName, email, plansDebug, memberId: member?.id || null };
+        return {
+          ms: "ready",
+          loggedIn,
+          isMember,
+          displayName,
+          email,
+          plansDebug,
+          memberId: member?.id || null,
+          _member: member,
+        };
       } catch (e) {
         window.__KBM_AUTH = { loggedIn: false, member: false, memberId: null };
-        return { ms: "error", loggedIn: false, isMember: false, displayName: "", email: "", memberId: null };
+        return { ms: "error", loggedIn: false, isMember: false, displayName: "", email: "", memberId: null, _member: null };
       }
     }
 
@@ -1815,6 +1874,7 @@ div[data-ms-modal-overlay] {
       try {
         const state = await getAuthState();
         setPill(state);
+        updateSignedInLabel(state);
         window.__AUTH = {
           loggedIn: Boolean(state.loggedIn),
           member: Boolean(state.isMember),
