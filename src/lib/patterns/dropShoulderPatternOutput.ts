@@ -13,7 +13,13 @@
  */
 
 import { calculateBasicPatternNumbers } from "./patternCalculator";
-import { calculateHemRowsFromInches, calculateCuffRows, roundUpToEvenRows } from "./hemDefaults";
+import { evenShapingSchedule, sleeveShapingPerSide } from "./evenShapingSchedule";
+import {
+  calculateHemRowsFromInches,
+  calculateCuffRows,
+  getDefaultCuffLengthInches,
+  roundUpToEvenRows,
+} from "./hemDefaults";
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 import { resolveEffectiveFinishedLengthInches } from "./customBuildEffectiveFinishedLength";
 import { resolveEffectiveShoulderWidthInches } from "./customBuildEffectiveShoulderWidth";
@@ -110,24 +116,6 @@ function knitEvenLine(rows: number, endRc?: number): string {
   if (rows <= 0) return "";
   const base = rows === 1 ? "Knit 1 row even." : `Knit ${rows} rows even.`;
   return endRc !== undefined ? `${base} (Counter reads ${formatRcColon(endRc)} at the end.)` : base;
-}
-
-/**
- * Even shaping schedule: shape every `interval` rows, `count` times, fitting inside `rows`
- * (any leftover is knit even). `interval` is the largest spacing that still fits; an even
- * spacing is preferred (same carriage side) but a 1-row spacing is used for steep shaping.
- */
-function evenShapingSchedule(
-  count: number,
-  rows: number,
-): { interval: number; count: number; remainderRows: number } {
-  if (count <= 0 || rows <= 0) return { interval: 0, count: 0, remainderRows: Math.max(0, rows) };
-  // Largest spacing that keeps interval*count within the available rows.
-  let interval = Math.max(1, Math.floor(rows / count));
-  // Prefer an even spacing when there is room for it.
-  if (interval >= 2 && interval % 2 !== 0) interval -= 1;
-  const remainderRows = Math.max(0, rows - interval * count);
-  return { interval, count, remainderRows };
 }
 
 /** "every row" (1) vs "every N rows". */
@@ -475,7 +463,7 @@ function buildSleeveRows(args: {
     return rows;
   }
 
-  const shapingPerSide = Math.max(0, (args.topSts - args.wristSts) / 2);
+  const shapingPerSide = sleeveShapingPerSide(args.topSts, args.wristSts);
   const sched = evenShapingSchedule(shapingPerSide, args.sleeveBodyRows);
 
   if (args.direction === "top-down") {
@@ -682,17 +670,25 @@ export function generateDropShoulderPattern(
     valid: sleeveValid,
   });
 
+  const rowsFromCastOnToArmholeStart = hemRows + bodyToArmholeRows;
+  const cuffDepthIn = getDefaultCuffLengthInches(audience);
+
   const debug = {
     finishedBustChest: finishedBust || undefined,
     stitchesPerInch: spi,
     rowsPerInch: rpi,
     backStitches: bodyWidthSts,
+    bustBodyStitches: bodyWidthSts || undefined,
+    hemCastOnStitches: bodyWidthSts || undefined,
     shoulderWidthInches: shoulderWidthIn,
     stitchesAfterArmhole: bodyWidthSts || undefined,
     hemRows,
     bodyRows: bodyToArmholeRows,
+    rowsFromCastOnToArmholeStart,
     armholeRows: armholeDepthRows,
     necklineShoulderRows: frontNeckDepthRows,
+    reservedNecklineShoulderInches: backNeckDepthIn,
+    reservedNecklineShoulderRows: backNeckDepthRows,
     totalCalculatedRows: totalRows,
     expectedGarmentRows: totalRows,
     backNeckToHem,
@@ -707,6 +703,17 @@ export function generateDropShoulderPattern(
     frontNecklineStartRC: Math.max(armholeMarkerRc, totalRows - frontNeckDepthRows),
     finalRC: totalRows,
     isCardigan,
+    // Drop-shoulder sleeve schematic (`drop-body-sleeve.svg`) — consumed by buildDropShoulderSleeveDiagramReplacements.
+    dropShoulderSleeveTotalRows: sleeveTotalRows > 0 ? sleeveTotalRows : undefined,
+    dropShoulderSleeveBodyRows: sleeveBodyRows > 0 ? sleeveBodyRows : undefined,
+    dropShoulderSleeveCuffRows: cuffRows > 0 ? cuffRows : undefined,
+    dropShoulderSleeveLengthInches: sleeveLengthIn,
+    dropShoulderSleeveTopStitches: topSts > 0 ? topSts : undefined,
+    dropShoulderSleeveWristStitches: wristSts > 0 ? wristSts : undefined,
+    dropShoulderWristInches: wristIn,
+    dropShoulderUpperArmInches: upperArmIn,
+    dropShoulderUpperArmRows: armholeDepthRows > 0 ? armholeDepthRows : undefined,
+    dropShoulderCuffDepthInches: cuffDepthIn,
   } as unknown as SleevelessBackPatternDebug;
 
   const lines: string[] = [];

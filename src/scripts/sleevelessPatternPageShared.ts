@@ -57,7 +57,7 @@ import {
   injectBodyShapeGuidesIntoGarmentSvg,
   scaleDiagramGuidesForCardiganHalf,
 } from "../lib/patterns/sleevelessBodyShapeDiagramGuides.ts";
-import { buildSleevelessGarmentDiagramReplacements } from "../lib/patterns/sleevelessGarmentDiagramReplacements.ts";
+import { buildSleevelessGarmentDiagramReplacements, buildDropShoulderSleeveDiagramReplacements, buildDropShoulderSleeveJapaneseNotationReplacements } from "../lib/patterns/sleevelessGarmentDiagramReplacements.ts";
 import {
   resolveSleevelessBackDiagramSrc,
 } from "../lib/patterns/sleevelessBackDiagramSrc.ts";
@@ -781,6 +781,8 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     if (
       s.includes("diagram-jp-back") ||
       s.includes("diagram-back") ||
+      s.includes("drop-body-back") ||
+      s.includes("drop-a-body-back") ||
       a.includes(" back ")
     ) {
       return "back";
@@ -800,9 +802,15 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       s.includes("diagram-jp-front") ||
       s.includes("jp-diagram-front") ||
       s.includes("diagram-front") ||
+      s.includes("drop_body_front") ||
+      s.includes("drop-a-body-front") ||
+      s.includes("drop_body_cardigan") ||
+      s.includes("drop-a-body-cardigan") ||
       a.includes(" front ")
     )
       return "front";
+    if (s.includes("drop-body-sleeve") || s.includes("body-sleeve.svg") || a.includes(" sleeve "))
+      return "sleeve";
     return "shared";
   }
 
@@ -2213,6 +2221,7 @@ table {
       ids: ["sg-front-front-neckline-amp-shoulders", "sg-front-front-neckline-shoulders"],
       discoverNecklinePiece: "front",
     },
+    { label: "Sleeve", ids: ["sg-sleeve"] },
     { label: "Finishing", ids: ["sg-finishing"] },
   ];
 
@@ -2553,6 +2562,7 @@ table {
 
   /** Static drop-shoulder schematic SVGs (straight sides + armhole markers only — no curved armholes). */
   const DROP_SHOULDER_BODY_BASE = "/images/patterns/drop-shoulder/body/";
+  const DROP_SHOULDER_SLEEVE_BASE = "/images/patterns/drop-shoulder/";
   const DROP_SHOULDER_DIAGRAMS = {
     straight: {
       back: `${DROP_SHOULDER_BODY_BASE}drop-body-back.svg`,
@@ -2564,7 +2574,8 @@ table {
       front: `${DROP_SHOULDER_BODY_BASE}drop-A-body-front.svg`,
       cardigan: `${DROP_SHOULDER_BODY_BASE}drop-A-body-cardigan.svg`,
     },
-    sleeve: `${DROP_SHOULDER_BODY_BASE}drop-body-sleeve.svg`,
+    sleeve: `${DROP_SHOULDER_SLEEVE_BASE}drop-body-sleeve.svg`,
+    sleeveNotation: `${DROP_SHOULDER_SLEEVE_BASE}JP-drop-body-sleeve.svg`,
   };
 
   /** Drop shoulder body shape: A-line files when the body tapers; straight files otherwise. */
@@ -2573,21 +2584,239 @@ table {
     return /a-?line|tapered|fitted|waist/.test(shape);
   }
 
-  /** Plain two-column split (instructions + static SVG image) — no sleeveless diagram hydration. */
-  function wrapDropShoulderPieceSplit(innerHtml, diagramSrc, diagramAlt, postSplitHtml) {
+  /** Two-column split with inline SVG hydration (same host as sleeveless sts-rows diagrams). */
+  function wrapDropShoulderPieceSplit(innerHtml, diagramSrc, diagramAlt, postSplitHtml, diagramOpts) {
     const src = escapeHtml(diagramSrc);
     const alt = escapeHtml(diagramAlt);
     const post = postSplitHtml || "";
+    const half = diagramOpts?.cardiganHalfSide;
+    const halfAttr =
+      half === "left" || half === "right" ? ` data-sleeveless-cardigan-half="${half}"` : "";
+    const piece = diagramOpts?.diagramPiece;
+    const pieceAttr =
+      piece === "back" || piece === "front" || piece === "sleeve"
+        ? ` data-sleeveless-diagram-piece="${piece}"`
+        : "";
+    const sleeveModeToggle = diagramOpts?.sleeveDiagramModeToggle === true;
+    const sleeveDiagramAttrs = sleeveModeToggle
+      ? ' data-sleeveless-sleeve-diagram data-sleeveless-sleeve-diagram-mode="sts-rows"'
+      : "";
+    const modeToggleHtml = sleeveModeToggle
+      ? `<div class="sleeveless-back-diagram-mode no-print" role="group" aria-label="Sleeve diagram view">
+        <button type="button" class="sleeveless-back-diagram-mode__btn is-active" data-sleeveless-sleeve-diagram-mode-btn="sts-rows" aria-pressed="true">Stitches &amp; Rows</button>
+        <button type="button" class="sleeveless-back-diagram-mode__btn" data-sleeveless-sleeve-diagram-mode-btn="shaping-notation" aria-pressed="false">Shaping Notation</button>
+      </div>`
+      : "";
+    const diagramTriggerHtml = `<button type="button" class="sleeveless-piece-split__diagram-trigger" data-sleeveless-diagram-trigger aria-label="Open larger diagram: ${alt}">
+        <div class="sleeveless-piece-split__diagram-svg" data-sleeveless-diagram data-src="${src}" data-alt="${alt}"${halfAttr}${pieceAttr}${sleeveDiagramAttrs}>
+          <p class="sleeveless-pattern-boot-msg">Loading diagram…</p>
+        </div>
+      </button>`;
+    const diagramCardHtml = `<div class="sleeveless-piece-split__diagram-card">
+        ${diagramTriggerHtml}
+      </div>`;
+    const diagramAsideInner = sleeveModeToggle
+      ? `<div class="sleeveless-back-diagram-panel">
+      ${modeToggleHtml}
+      <div class="sleeveless-back-diagram-well">
+        ${diagramCardHtml}
+      </div>
+    </div>`
+      : diagramCardHtml;
     return `<div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split">
   <div class="pattern-layout__content sleeveless-piece-split__text">${innerHtml}</div>
   <aside class="pattern-layout__sidebar sleeveless-piece-split__diagram" aria-label="Garment diagram">
-    <div class="sleeveless-piece-split__diagram-inner">
-      <div class="sleeveless-piece-split__diagram-card">
-        <img class="sleeveless-piece-split__diagram-svg drop-shoulder-diagram-img" src="${src}" alt="${alt}" loading="lazy" decoding="async" />
-      </div>
+    <div class="sleeveless-piece-split__diagram-inner${sleeveModeToggle ? " sleeveless-piece-split__diagram-inner--back-panel" : ""}">
+      ${diagramAsideInner}
     </div>
   </aside>
 </div>${post}`;
+  }
+
+  /** @type {{ result: import("../lib/patterns/sleevelessPatternOutput").SleevelessBackPatternResult; unit: string; hydrateGeneration: number } | null} */
+  let dropShoulderSleeveDiagramHydrateContext = null;
+
+  const DROP_SHOULDER_SLEEVE_DIAGRAM_STS_ROWS_ALT = "Drop shoulder sleeve schematic";
+  const DROP_SHOULDER_SLEEVE_DIAGRAM_NOTATION_ALT = "Drop shoulder sleeve shaping notation diagram";
+
+  function dropShoulderSleeveDiagramAltForMode(mode) {
+    return mode === "shaping-notation"
+      ? DROP_SHOULDER_SLEEVE_DIAGRAM_NOTATION_ALT
+      : DROP_SHOULDER_SLEEVE_DIAGRAM_STS_ROWS_ALT;
+  }
+
+  function updateDropShoulderSleeveDiagramModeUi(root, mode) {
+    if (!root) return;
+    const sleeveSection = root.querySelector("#sg-sleeve");
+    if (!sleeveSection) return;
+    sleeveSection.querySelectorAll("[data-sleeveless-sleeve-diagram-mode-btn]").forEach((btn) => {
+      if (!(btn instanceof HTMLButtonElement)) return;
+      const btnMode = btn.getAttribute("data-sleeveless-sleeve-diagram-mode-btn");
+      const active = btnMode === mode;
+      btn.classList.toggle("is-active", active);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+    const trigger = sleeveSection.querySelector("[data-sleeveless-diagram-trigger]");
+    if (trigger instanceof HTMLElement) {
+      trigger.setAttribute("aria-label", `Open larger diagram: ${dropShoulderSleeveDiagramAltForMode(mode)}`);
+    }
+  }
+
+  async function inlineDropShoulderSleeveNotationSvg(hostEl, result, hydrateGeneration) {
+    if (!(hostEl instanceof HTMLElement)) return;
+    const hydrateGen =
+      hydrateGeneration === undefined || hydrateGeneration === null
+        ? null
+        : String(hydrateGeneration);
+    if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
+    try {
+      const notationSrc = DROP_SHOULDER_DIAGRAMS.sleeveNotation;
+      const res = await fetch(notationSrc, { credentials: "same-origin" });
+      if (!res.ok) throw new Error(`Failed to load SVG: ${notationSrc} (${res.status})`);
+      const jpReplacements = buildDropShoulderSleeveJapaneseNotationReplacements(result);
+      const svgText = applyJapaneseNotationSvgReplacements(await res.text(), jpReplacements);
+
+      const parser = new DOMParser();
+      let doc = parser.parseFromString(svgText, "image/svg+xml");
+      let svg = doc.documentElement;
+      if (!svg || svg.nodeName.toLowerCase() !== "svg" || doc.querySelector("parsererror")) {
+        doc = parser.parseFromString(svgText, "text/xml");
+        svg = doc.documentElement;
+      }
+      if (!svg || svg.nodeName.toLowerCase() !== "svg") {
+        const pe = doc.querySelector("parsererror");
+        throw new Error(pe ? pe.textContent || "SVG parse error" : "SVG parse error");
+      }
+
+      svg.setAttribute("role", "img");
+      svg.setAttribute("aria-label", DROP_SHOULDER_SLEEVE_DIAGRAM_NOTATION_ALT);
+      svg.classList.add("sleeveless-piece-split__diagram-inline");
+
+      if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
+      hostEl.innerHTML = svg.outerHTML;
+    } catch (err) {
+      console.warn("[sleeveless] Drop shoulder sleeve shaping notation diagram failed:", err);
+      if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
+      hostEl.innerHTML = `<p class="sleeveless-pattern-boot-msg">Diagram unavailable.</p>`;
+    }
+  }
+
+  async function hydrateDropShoulderSleeveDiagram(
+    el,
+    mode,
+    result,
+    unit,
+    hydrateGeneration,
+  ) {
+    if (!(el instanceof HTMLElement)) return;
+    const measurementSrc = DROP_SHOULDER_DIAGRAMS.sleeve;
+    el.dataset.src = mode === "shaping-notation" ? DROP_SHOULDER_DIAGRAMS.sleeveNotation : measurementSrc;
+    if (mode === "shaping-notation") {
+      await inlineDropShoulderSleeveNotationSvg(el, result, hydrateGeneration);
+      return;
+    }
+    const replacements = buildDropShoulderSleeveDiagramReplacements(result, unit);
+    await inlineSvgWithReplacements(
+      el,
+      measurementSrc,
+      DROP_SHOULDER_SLEEVE_DIAGRAM_STS_ROWS_ALT,
+      replacements,
+      hydrateGeneration,
+      undefined,
+    );
+  }
+
+  function bindDropShoulderSleeveDiagramMode(root) {
+    if (!root || root.dataset.dropShoulderSleeveDiagramModeBound === "true") return;
+    root.dataset.dropShoulderSleeveDiagramModeBound = "true";
+    root.addEventListener("click", (e) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      const btn = target.closest("[data-sleeveless-sleeve-diagram-mode-btn]");
+      if (!(btn instanceof HTMLButtonElement)) return;
+      const mode = btn.getAttribute("data-sleeveless-sleeve-diagram-mode-btn");
+      if (mode !== "sts-rows" && mode !== "shaping-notation") return;
+      const sleeveHost = root.querySelector("[data-sleeveless-sleeve-diagram]");
+      if (!(sleeveHost instanceof HTMLElement)) return;
+      if (sleeveHost.dataset.sleevelessSleeveDiagramMode === mode) return;
+      const ctx = dropShoulderSleeveDiagramHydrateContext;
+      if (!ctx || ctx.hydrateGeneration !== sleevelessRenderMountSeq) return;
+      sleeveHost.dataset.sleevelessSleeveDiagramMode = mode;
+      sleeveHost.innerHTML = '<p class="sleeveless-pattern-boot-msg">Loading diagram…</p>';
+      updateDropShoulderSleeveDiagramModeUi(root, mode);
+      void hydrateDropShoulderSleeveDiagram(
+        sleeveHost,
+        mode,
+        ctx.result,
+        ctx.unit,
+        sleevelessRenderMountSeq,
+      );
+    });
+  }
+
+  async function hydrateDropShoulderDiagrams(
+    root,
+    result,
+    unit,
+    patternMerged,
+    generatorPatternData,
+    hydrateGeneration,
+  ) {
+    if (!root) return;
+    const diagramPatternData = buildSleevelessGarmentDiagramPatternData(
+      patternMerged,
+      generatorPatternData,
+    );
+    const jobs = [];
+    root.querySelectorAll("[data-sleeveless-diagram]").forEach((el) => {
+      if (!(el instanceof HTMLElement)) return;
+      const src =
+        el.getAttribute("data-src") || (typeof el.dataset.src === "string" ? el.dataset.src : "") || "";
+      const alt = el.getAttribute("data-alt") || el.dataset.alt || "";
+      if (!src) return;
+
+      const pieceAttr = el.dataset.sleevelessDiagramPiece || "";
+      const inferredPiece = inferSleevelessDiagramPiece(src, alt);
+      const piece =
+        pieceAttr === "back" || pieceAttr === "front" || pieceAttr === "sleeve"
+          ? pieceAttr
+          : inferredPiece;
+
+      if (el.hasAttribute("data-sleeveless-sleeve-diagram")) {
+        const mode =
+          el.dataset.sleevelessSleeveDiagramMode === "shaping-notation"
+            ? "shaping-notation"
+            : "sts-rows";
+        jobs.push(
+          hydrateDropShoulderSleeveDiagram(el, mode, result, unit, hydrateGeneration),
+        );
+        return;
+      }
+
+      let replacements;
+      if (piece === "sleeve") {
+        replacements = buildDropShoulderSleeveDiagramReplacements(result, unit);
+      } else {
+        const dsHalf = el.dataset.sleevelessCardiganHalf || "";
+        const cardiganHalfSide =
+          dsHalf === "left" || dsHalf === "right"
+            ? dsHalf
+            : piece === "front" && isSleevelessCardiganGarmentStyle(diagramPatternData)
+              ? "left"
+              : undefined;
+        const measurementPiece = piece === "back" || piece === "front" ? piece : "shared";
+        replacements = buildSleevelessDiagramReplacements(result, unit, {
+          piece: measurementPiece,
+          patternData: diagramPatternData,
+          cardiganHalfSide,
+        });
+      }
+
+      jobs.push(
+        inlineSvgWithReplacements(el, src, alt, replacements, hydrateGeneration, undefined),
+      );
+    });
+    await Promise.all(jobs);
   }
 
   /**
@@ -2597,11 +2826,11 @@ table {
    * display-row renderer, finishing block, glossary hydration, collapse persistence, and nav.
    */
   async function renderDropShoulderMount(patternMerged, result, unit, generatorPatternData) {
-    void unit;
     const mount = document.querySelector("[data-sleeveless-mount]");
     if (!mount) return;
     if (tryExpressNeedleFailSafeBlock(result, patternMerged, generatorPatternData)) return;
 
+    const renderSeq = ++sleevelessRenderMountSeq;
     const patternIntroSentence = buildPatternIntroSentence(patternMerged, generatorPatternData);
     const isCardigan = String(section(generatorPatternData?.style).frontStyle || "") === "open";
     const bodySet = isDropShoulderAlineBody(generatorPatternData)
@@ -2622,18 +2851,27 @@ table {
     const frontAlt = isCardigan
       ? "Drop shoulder cardigan front schematic"
       : "Drop shoulder front schematic";
+    const frontDiagramOpts = isCardigan
+      ? { diagramPiece: "front", cardiganHalfSide: "left" }
+      : { diagramPiece: "front" };
 
     mount.innerHTML =
       wrapPatternSection(
         "sg-back",
         "BACK",
-        wrapDropShoulderPieceSplit(back.splitInner, bodySet.back, "Drop shoulder back schematic", back.postSplit),
+        wrapDropShoulderPieceSplit(
+          back.splitInner,
+          bodySet.back,
+          "Drop shoulder back schematic",
+          back.postSplit,
+          { diagramPiece: "back" },
+        ),
         { defaultCollapsed: false, sectionClassName: "pattern-section--garment-piece" },
       ) +
       wrapPatternSection(
         "sg-front",
         frontLabel,
-        wrapDropShoulderPieceSplit(front.splitInner, frontSrc, frontAlt, front.postSplit),
+        wrapDropShoulderPieceSplit(front.splitInner, frontSrc, frontAlt, front.postSplit, frontDiagramOpts),
         { defaultCollapsed: false, sectionClassName: "pattern-section--garment-piece" },
       ) +
       wrapPatternSection(
@@ -2644,6 +2882,7 @@ table {
           DROP_SHOULDER_DIAGRAMS.sleeve,
           "Drop shoulder sleeve schematic",
           sleeve.postSplit,
+          { diagramPiece: "sleeve", sleeveDiagramModeToggle: true },
         ),
         { defaultCollapsed: false, sectionClassName: "pattern-section--garment-piece" },
       ) +
@@ -2651,7 +2890,26 @@ table {
         defaultCollapsed: true,
       });
 
+    await hydrateDropShoulderDiagrams(
+      mount,
+      result,
+      unit,
+      patternMerged,
+      generatorPatternData,
+      renderSeq,
+    );
+    if (renderSeq !== sleevelessRenderMountSeq) return;
+
+    dropShoulderSleeveDiagramHydrateContext = {
+      result,
+      unit,
+      hydrateGeneration: renderSeq,
+    };
+
     hydrateGlossaryTooltipPlaceholders(mount);
+    ensureSleevelessDiagramModal();
+    bindSleevelessDiagramZoom(mount);
+    bindDropShoulderSleeveDiagramMode(mount);
     ensureSleevelessVideoModal();
     const videoHelpRoot = document.getElementById("sleeveless-pattern-tips-scope") || mount;
     bindSleevelessVideoHelp(videoHelpRoot);

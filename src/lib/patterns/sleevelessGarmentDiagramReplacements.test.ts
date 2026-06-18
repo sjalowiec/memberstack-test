@@ -290,3 +290,152 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
     expect(Number(left.BUST_STS) + Number(right.BUST_STS)).toBe(81);
   });
 });
+
+describe("buildDropShoulderSleeveDiagramReplacements", () => {
+  it("fills drop-shoulder sleeve schematic tokens from debug", async () => {
+    const { buildDropShoulderSleeveDiagramReplacements } = await import(
+      "./sleevelessGarmentDiagramReplacements"
+    );
+    const result = {
+      debug: {
+        rowsPerInch: 10,
+        dropShoulderSleeveTotalRows: 120,
+        dropShoulderSleeveCuffRows: 20,
+        dropShoulderSleeveLengthInches: 12,
+        dropShoulderUpperArmInches: 16,
+        dropShoulderUpperArmRows: 40,
+        dropShoulderCuffDepthInches: 2,
+      },
+    } as import("./sleevelessPatternOutput").SleevelessBackPatternResult;
+
+    const repl = buildDropShoulderSleeveDiagramReplacements(result, "in");
+
+    expect(repl.UNIT).toBe("in");
+    expect(repl.ARM_LENGTH_ROWS).toBe("120");
+    expect(repl.ARM_LENGTH).toBe("12");
+    expect(repl.UPPER_ARM_ROWS).toBe("40");
+    expect(repl.UPPER_ARM_INCHES).toBe("16");
+    expect(repl.CUFF_ROWS).toBe("20");
+    expect(repl.CUFF_INCHES).toBe("2");
+    expect(repl.SLEEVE_CAP_STS).toBe("");
+    expect(repl.WRIST_STS).toBe("");
+  });
+
+  it("fills new drop-body-sleeve.svg measurement tokens from extended debug", async () => {
+    const { buildDropShoulderSleeveDiagramReplacements } = await import(
+      "./sleevelessGarmentDiagramReplacements"
+    );
+    const result = {
+      debug: {
+        rowsPerInch: 10,
+        dropShoulderSleeveTotalRows: 120,
+        dropShoulderSleeveBodyRows: 100,
+        dropShoulderSleeveCuffRows: 20,
+        dropShoulderSleeveLengthInches: 12,
+        dropShoulderSleeveTopStitches: 80,
+        dropShoulderSleeveWristStitches: 40,
+        dropShoulderWristInches: 8,
+        dropShoulderUpperArmInches: 16,
+        dropShoulderUpperArmRows: 40,
+        dropShoulderCuffDepthInches: 2,
+      },
+    } as import("./sleevelessPatternOutput").SleevelessBackPatternResult;
+
+    const repl = buildDropShoulderSleeveDiagramReplacements(result, "in");
+
+    expect(repl.SLEEVE_CAP_STS).toBe("80");
+    expect(repl.SLEEVE_CAP_WIDTH).toBe("16");
+    expect(repl.WRIST_STS).toBe("40");
+    expect(repl.WRIST_WIDTH).toBe("8");
+    expect(repl.SLEEVE_LENGTH_ROWS).toBe("100");
+    expect(repl.CUFF_DEPTH).toBe("2");
+  });
+});
+
+describe("buildDropShoulderSleeveJapaneseNotationReplacements", () => {
+  it("fills shaping schedule and post-shaping even rows from the same math as written sleeve", async () => {
+    const { buildDropShoulderSleeveJapaneseNotationReplacements } = await import(
+      "./sleevelessGarmentDiagramReplacements"
+    );
+    const result = {
+      debug: {
+        dropShoulderSleeveBodyRows: 100,
+        dropShoulderSleeveCuffRows: 20,
+        dropShoulderSleeveTopStitches: 80,
+        dropShoulderSleeveWristStitches: 40,
+      },
+    } as import("./sleevelessPatternOutput").SleevelessBackPatternResult;
+
+    const repl = buildDropShoulderSleeveJapaneseNotationReplacements(result);
+
+    expect(repl["jp-caston"]).toBe("co40");
+    expect(repl["jp-cuff"]).toBe("20r");
+    expect(repl["jp-sleeve-shaping"]).toBe("1s-4r-20x");
+    expect(repl["jp-sleeve"]).toBe("20r");
+    expect(repl["jp-sleeve_cap_sts"]).toBe("80");
+  });
+
+  it("leaves shaping blank and uses full body rows when there is no taper", async () => {
+    const { buildDropShoulderSleeveJapaneseNotationReplacements } = await import(
+      "./sleevelessGarmentDiagramReplacements"
+    );
+    const result = {
+      debug: {
+        dropShoulderSleeveBodyRows: 100,
+        dropShoulderSleeveCuffRows: 20,
+        dropShoulderSleeveTopStitches: 40,
+        dropShoulderSleeveWristStitches: 40,
+      },
+    } as import("./sleevelessPatternOutput").SleevelessBackPatternResult;
+
+    const repl = buildDropShoulderSleeveJapaneseNotationReplacements(result);
+
+    expect(repl["jp-sleeve-shaping"]).toBe("");
+    expect(repl["jp-sleeve"]).toBe("100r");
+  });
+
+  it("replaces every jp token in JP-drop-body-sleeve.svg", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { resolve } = await import("node:path");
+    const { buildDropShoulderSleeveJapaneseNotationReplacements } = await import(
+      "./sleevelessGarmentDiagramReplacements"
+    );
+    const {
+      applyJapaneseNotationSvgReplacements,
+      assertJapaneseNotationSvgFullyReplaced,
+      listJapaneseNotationPlaceholdersInSvg,
+    } = await import("./sleevelessJapaneseNotationSvg");
+
+    const svgPath = resolve(
+      process.cwd(),
+      "public/images/patterns/drop-shoulder/JP-drop-body-sleeve.svg",
+    );
+    const svgText = readFileSync(svgPath, "utf8");
+    const tokens = listJapaneseNotationPlaceholdersInSvg(svgText);
+
+    expect(tokens.sort()).toEqual(
+      [
+        "jp-caston",
+        "jp-cuff",
+        "jp-sleeve",
+        "jp-sleeve-shaping",
+        "jp-sleeve_cap_sts",
+      ].sort(),
+    );
+
+    const result = {
+      debug: {
+        dropShoulderSleeveBodyRows: 100,
+        dropShoulderSleeveCuffRows: 20,
+        dropShoulderSleeveTopStitches: 80,
+        dropShoulderSleeveWristStitches: 40,
+      },
+    } as import("./sleevelessPatternOutput").SleevelessBackPatternResult;
+
+    const repl = buildDropShoulderSleeveJapaneseNotationReplacements(result);
+    expect(() => assertJapaneseNotationSvgFullyReplaced(svgText, repl)).not.toThrow();
+    const out = applyJapaneseNotationSvgReplacements(svgText, repl);
+    expect(out).toContain("1s-4r-20x");
+    expect(out).not.toMatch(/\{\{\s*jp-/i);
+  });
+});

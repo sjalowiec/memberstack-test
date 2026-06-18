@@ -16,7 +16,7 @@ export { JP_BACK_NOTATION_SVG_SRC } from "./sleevelessBackDiagramSrc";
 
 /** Matches `{{jp-*}}`, `{{rc-*}}`, and `{{rc_reset}}` in concatenated SVG text. */
 export const JAPANESE_NOTATION_SVG_PLACEHOLDER_RE =
-  /\{\{\s*(jp-[a-z0-9-]+|rc-[a-z0-9-]+|rc_reset)\s*\}\}/gi;
+  /\{\{\s*(jp-[a-z0-9_-]+|rc-[a-z0-9-]+|rc_reset)\s*\}\}/gi;
 
 /** Concatenate text across all `<text>` elements in a markup fragment. */
 function concatAllTextInMarkup(markup: string): string {

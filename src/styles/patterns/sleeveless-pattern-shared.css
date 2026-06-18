@@ -1,5 +1,7 @@
 ﻿  .sleeveless-pattern-page {
     --sg-accent: #c2614e;
+    /* Sticky in-page nav bar height (single-row mobile; ~two rows when pills wrap on desktop). */
+    --pattern-inpage-nav-height: 3.35rem;
     padding-bottom: 2rem;
   }
 
@@ -390,20 +392,27 @@
     margin: 0 0 0.5rem;
   }
 
-  /* In-page section jumps: offset fixed site header + sticky nav */
+  /*
+   * In-page section jumps: offset fixed site chrome (DEV env banner + measured header wrap
+   * incl. beta strip) plus the sticky pattern nav. Uses --header-offset from Layout.astro
+   * (full .kbm-header-wrap height) — not --site-header-offset (7rem static fallback).
+   */
   .sleeveless-pattern-page #pattern-content {
-    scroll-padding-top: calc(var(--site-header-offset, 7rem) + 3rem);
+    scroll-padding-top: calc(
+      var(--kbm-env-banner-h, 0px) + var(--header-offset, 170px) + var(--pattern-inpage-nav-height, 3.35rem)
+    );
   }
 
   /* Document-outline style section navigation (table of contents, not a button row). */
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav {
     position: sticky;
-    top: calc(var(--site-header-offset, 7rem) + 4px);
-    z-index: 8;
-    margin: 0 0 0.6rem;
-    padding: 0.2rem 0 0.3rem;
-    background: color-mix(in srgb, var(--page-bg, #f7f8f7) 90%, white);
-    border-bottom: 1px solid rgba(82, 104, 45, 0.12);
+    top: calc(var(--kbm-env-banner-h, 0px) + var(--header-offset, 170px) + 4px);
+    z-index: 24;
+    margin: 0 0 0.75rem;
+    padding: 0.38rem 0 0.42rem;
+    background: #fff;
+    border-bottom: 1px solid rgba(82, 104, 45, 0.2);
+    box-shadow: 0 4px 14px rgba(17, 24, 39, 0.07);
   }
 
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__track {
@@ -560,7 +569,9 @@
 
   #pattern-content .pattern-section,
   #pattern-content .pattern-subsection {
-    scroll-margin-top: calc(var(--site-header-offset, 7rem) + 3rem);
+    scroll-margin-top: calc(
+      var(--kbm-env-banner-h, 0px) + var(--header-offset, 170px) + var(--pattern-inpage-nav-height, 3.35rem)
+    );
   }
 
   /* Expandable garment sections */

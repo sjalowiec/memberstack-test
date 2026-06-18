@@ -18,6 +18,12 @@ import {
   resolveEffectiveFrontNeckDepthInches,
 } from "./customBuildEffectiveNeckDepth";
 import { isSleevelessCardiganGarmentStyle } from "./sleevelessFrontDiagramSrc";
+import { sleeveEvenShapingSchedule } from "./evenShapingSchedule";
+import {
+  formatBodyRowsNotation,
+  formatCastOnNotation,
+  formatShapingSegment,
+} from "./sleevelessBackJapaneseNotation";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
 function section(obj: unknown): Record<string, unknown> {
@@ -430,4 +436,136 @@ export function buildSleevelessGarmentDiagramReplacements(
   }
 
   return repl;
+}
+
+/** Debug slice written by {@link generateDropShoulderPattern} for the sleeve schematic. */
+type DropShoulderSleeveDiagramDebug = {
+  rowsPerInch?: number;
+  dropShoulderSleeveTotalRows?: number;
+  dropShoulderSleeveBodyRows?: number;
+  dropShoulderSleeveCuffRows?: number;
+  dropShoulderSleeveLengthInches?: number;
+  dropShoulderSleeveTopStitches?: number;
+  dropShoulderSleeveWristStitches?: number;
+  dropShoulderWristInches?: number;
+  dropShoulderUpperArmInches?: number;
+  dropShoulderUpperArmRows?: number;
+  dropShoulderCuffDepthInches?: number;
+};
+
+/**
+ * Replacement map for `public/images/patterns/drop-shoulder/drop-body-sleeve.svg`.
+ * Reuses the same fetch/replace pipeline as body schematics; values come from drop-shoulder debug only.
+ */
+export function buildDropShoulderSleeveDiagramReplacements(
+  result: SleevelessBackPatternResult,
+  unit: "cm" | "in",
+): Record<string, string> {
+  const d = (result?.debug ?? {}) as DropShoulderSleeveDiagramDebug;
+  const rpi = d.rowsPerInch;
+  const unitLabel = unit === "cm" ? "cm" : "in";
+
+  const armLengthRows = isFiniteNumber(d.dropShoulderSleeveTotalRows)
+    ? Math.round(d.dropShoulderSleeveTotalRows)
+    : undefined;
+  const sleeveBodyRows = isFiniteNumber(d.dropShoulderSleeveBodyRows)
+    ? Math.round(d.dropShoulderSleeveBodyRows)
+    : undefined;
+  const armLengthInches = isFiniteNumber(d.dropShoulderSleeveLengthInches)
+    ? d.dropShoulderSleeveLengthInches
+    : undefined;
+  const upperArmRows = isFiniteNumber(d.dropShoulderUpperArmRows)
+    ? Math.round(d.dropShoulderUpperArmRows)
+    : undefined;
+  const upperArmInches = isFiniteNumber(d.dropShoulderUpperArmInches)
+    ? d.dropShoulderUpperArmInches
+    : undefined;
+  const cuffRows = isFiniteNumber(d.dropShoulderSleeveCuffRows)
+    ? Math.round(d.dropShoulderSleeveCuffRows)
+    : undefined;
+  const topSts = isFiniteNumber(d.dropShoulderSleeveTopStitches)
+    ? Math.round(d.dropShoulderSleeveTopStitches)
+    : undefined;
+  const wristSts = isFiniteNumber(d.dropShoulderSleeveWristStitches)
+    ? Math.round(d.dropShoulderSleeveWristStitches)
+    : undefined;
+  const wristInches = isFiniteNumber(d.dropShoulderWristInches)
+    ? d.dropShoulderWristInches
+    : undefined;
+
+  const cuffInchesFromRows =
+    isFiniteNumber(cuffRows) && isFiniteNumber(rpi) && rpi > 0
+      ? lengthFromRowsForDiagram(cuffRows, rpi, unit)
+      : undefined;
+  const cuffInchesFallback = isFiniteNumber(d.dropShoulderCuffDepthInches)
+    ? d.dropShoulderCuffDepthInches
+    : undefined;
+  const cuffDepthLabel = fmtNumber(
+    cuffInchesFromRows ?? inchesToUnit(cuffInchesFallback, unit) ?? Number.NaN,
+  );
+  const sideLengthFromBodyRows =
+    isFiniteNumber(sleeveBodyRows) && isFiniteNumber(rpi) && rpi > 0
+      ? lengthFromRowsForDiagram(sleeveBodyRows, rpi, unit)
+      : undefined;
+
+  return {
+    UNIT: unitLabel,
+    // Legacy tokens (prior drop-shoulder sleeve schematic).
+    ARM_LENGTH_ROWS: isFiniteNumber(armLengthRows) ? String(armLengthRows) : "",
+    ARM_LENGTH: fmtNumber(inchesToUnit(armLengthInches, unit) ?? Number.NaN),
+    UPPER_ARM_ROWS: isFiniteNumber(upperArmRows) ? String(upperArmRows) : "",
+    UPPER_ARM_INCHES: fmtNumber(inchesToUnit(upperArmInches, unit) ?? Number.NaN),
+    CUFF_ROWS: isFiniteNumber(cuffRows) ? String(cuffRows) : "",
+    CUFF_INCHES: cuffDepthLabel,
+    // New measurement schematic (`drop-body-sleeve.svg`).
+    SLEEVE_CAP_STS: isFiniteNumber(topSts) ? String(topSts) : "",
+    SLEEVE_CAP_WIDTH: fmtNumber(inchesToUnit(upperArmInches, unit) ?? Number.NaN),
+    WRIST_STS: isFiniteNumber(wristSts) ? String(wristSts) : "",
+    WRIST_WIDTH: fmtNumber(inchesToUnit(wristInches, unit) ?? Number.NaN),
+    SLEEVE_LENGTH_ROWS: isFiniteNumber(sleeveBodyRows) ? String(sleeveBodyRows) : "",
+    SIDE_LENGTH: fmtNumber(sideLengthFromBodyRows ?? inchesToUnit(armLengthInches, unit) ?? Number.NaN),
+    CUFF_DEPTH: cuffDepthLabel,
+  };
+}
+
+/**
+ * Japanese notation tokens for `public/images/patterns/drop-shoulder/JP-drop-body-sleeve.svg`.
+ */
+export function buildDropShoulderSleeveJapaneseNotationReplacements(
+  result: SleevelessBackPatternResult,
+): Record<string, string> {
+  const d = (result?.debug ?? {}) as DropShoulderSleeveDiagramDebug;
+  const wristSts = isFiniteNumber(d.dropShoulderSleeveWristStitches)
+    ? Math.round(d.dropShoulderSleeveWristStitches)
+    : undefined;
+  const topSts = isFiniteNumber(d.dropShoulderSleeveTopStitches)
+    ? Math.round(d.dropShoulderSleeveTopStitches)
+    : undefined;
+  const bodyRows = isFiniteNumber(d.dropShoulderSleeveBodyRows)
+    ? Math.round(d.dropShoulderSleeveBodyRows)
+    : undefined;
+  const cuffRows = isFiniteNumber(d.dropShoulderSleeveCuffRows)
+    ? Math.round(d.dropShoulderSleeveCuffRows)
+    : undefined;
+
+  const sched =
+    isFiniteNumber(topSts) && isFiniteNumber(wristSts) && isFiniteNumber(bodyRows) && bodyRows > 0
+      ? sleeveEvenShapingSchedule(topSts, wristSts, bodyRows)
+      : { interval: 0, count: 0, remainderRows: bodyRows ?? 0 };
+
+  const sleeveEvenRows =
+    sched.count > 0
+      ? sched.remainderRows
+      : isFiniteNumber(bodyRows) && bodyRows > 0
+        ? bodyRows
+        : 0;
+
+  return {
+    "jp-caston": isFiniteNumber(wristSts) && wristSts > 0 ? formatCastOnNotation(wristSts) : "",
+    "jp-cuff": isFiniteNumber(cuffRows) && cuffRows > 0 ? formatBodyRowsNotation(cuffRows) : "",
+    "jp-sleeve-shaping":
+      sched.count > 0 ? formatShapingSegment(1, sched.interval, sched.count) : "",
+    "jp-sleeve_cap_sts": isFiniteNumber(topSts) && topSts > 0 ? String(topSts) : "",
+    "jp-sleeve": sleeveEvenRows > 0 ? formatBodyRowsNotation(sleeveEvenRows) : "",
+  };
 }
