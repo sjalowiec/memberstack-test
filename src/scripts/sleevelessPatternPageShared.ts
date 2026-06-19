@@ -54,6 +54,7 @@ import { rowCounterResetBlockHtml } from "../lib/patterns/rowCounterReset.ts";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
   renderActiveShoulderChartIntroHtml,
+  renderNecklineInstructionsWithNotationPreviewHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
 import { renderSleevelessBodyShapingChartHtml } from "../lib/patterns/sleevelessBodyShapingChartHtml.ts";
@@ -516,6 +517,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       layout: "labeled",
       includeWorkflowSteps: true,
       notationPreview: notationPreviewPiece,
+      notationPreviewConstruction: "sleeveless",
     });
     const necklineTipVideoButtons = `<div class="pattern-finishing-video-help__links sleeveless-neckline-tip__video-links">
   <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="roundNeckShaping" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Round neck shaping</button>
@@ -555,6 +557,10 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     displayOpts
   ) {
     const omitPieceBanner = displayOpts && displayOpts.omitPieceBanner === true;
+    const neckNotationPreview =
+      displayOpts && displayOpts.neckNotationPreview && displayOpts.neckNotationPreview.enabled === true
+        ? displayOpts.neckNotationPreview
+        : undefined;
     const list = Array.isArray(rows) ? rows : [];
     let lastShownStitch;
     let currentPiece = "";
@@ -579,11 +585,23 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         .replace(/(^-|-$)/g, "");
       const headingHtml = openSectionDisplayHeading ?? openSectionSlugSource;
       const targetParts = openSectionIsPost ? postParts : splitParts;
+      let sectionInner = openSectionParts.join("");
+      if (
+        openSectionIsPost &&
+        neckNotationPreview &&
+        (pieceSectionId === "back" || pieceSectionId === "front")
+      ) {
+        sectionInner = renderNecklineInstructionsWithNotationPreviewHtml(
+          sectionInner,
+          pieceSectionId,
+          neckNotationPreview.construction ?? "drop-shoulder",
+        );
+      }
       targetParts.push(
         wrapPatternSection(
           `sg-${pieceSectionId}-${sectionSlug || "section"}`,
           headingHtml,
-          openSectionParts.join(""),
+          sectionInner,
           {
             defaultCollapsed: false,
             sectionClassName: openSectionIsPost
@@ -3294,6 +3312,9 @@ table {
     const renderPiece = (rows, pieceId) =>
       renderSleevelessDisplayHtml(rows ?? [], "", pieceId, patternIntroSentence, undefined, {
         omitPieceBanner: true,
+        neckNotationPreview: bodyNotationSupported
+          ? { enabled: true, construction: "drop-shoulder" }
+          : undefined,
       });
 
     const back = renderPiece(result.displayRows, "back");
@@ -3399,6 +3420,7 @@ table {
     bindDropShoulderSleeveDiagramMode(mount);
     bindDropShoulderBodyDiagramMode(mount);
     bindDropShoulderSleeveConstructionToggle(mount);
+    bindNecklineNotationPreview(mount);
     ensureSleevelessVideoModal();
     const videoHelpRoot = document.getElementById("sleeveless-pattern-tips-scope") || mount;
     bindSleevelessVideoHelp(videoHelpRoot);

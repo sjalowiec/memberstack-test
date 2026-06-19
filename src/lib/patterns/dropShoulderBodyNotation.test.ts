@@ -38,6 +38,46 @@ function inlineSvgReplacements(
   return out;
 }
 
+/** Net open `<g>` depth after a full scan — must be 0 for well-formed SVG group nesting. */
+function countSvgGroupTagDepth(svgText: string): number {
+  let depth = 0;
+  const re = /<\/?g[\s>]/g;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(svgText)) !== null) {
+    if (match[0].startsWith("</")) depth -= 1;
+    else depth += 1;
+  }
+  return depth;
+}
+
+/** Structural checks mirrored from browser `DOMParser` rejection in notation diagram hydration. */
+function assertParseableSvgMarkup(svgText: string): void {
+  expect(countSvgGroupTagDepth(svgText)).toBe(0);
+  const normalized = svgText.replace(/^\uFEFF/, "").replace(/^<\?xml[\s\S]*?\?>\s*/, "");
+  expect(normalized.trimStart().startsWith("<svg")).toBe(true);
+  const openText = (normalized.match(/<text\b/gi) || []).length;
+  const closeText = (normalized.match(/<\/text>/gi) || []).length;
+  expect(openText).toBe(closeText);
+}
+
+const DROP_SHOULDER_BODY_BACK_NOTATION_TOKENS = [
+  "jp-caston",
+  "jp-body-rows",
+  "jp-neckline-bo",
+  "jp-neckline-shaping",
+  "jp-armhole-bo",
+  "rc-caston",
+  "rc-hem",
+  "rc-armhole-bo",
+  "rc-neckline-start",
+  "rc_reset",
+] as const;
+
+const DROP_SHOULDER_BODY_FRONT_NOTATION_TOKENS = [
+  ...DROP_SHOULDER_BODY_BACK_NOTATION_TOKENS,
+  "jp-armhole-shaping",
+] as const;
+
 const DROP_SHOULDER_PATTERN = {
   fit: {
     sizingChart: "women",
@@ -98,6 +138,46 @@ describe("dropShoulderBodyNotationSvg", () => {
 
     expect(SLEEVELESS_BACK_JP_NOTATION_DIAGRAM_SRC).not.toBe(DROP_SHOULDER_BODY_BACK_NOTATION_SRC);
     expect(SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC).not.toBe(DROP_SHOULDER_BODY_FRONT_NOTATION_SRC);
+  });
+
+  it("lists expected notation tokens in each drop-shoulder body notation SVG", () => {
+    const backSvg = readFileSync(
+      resolve(process.cwd(), "public" + DROP_SHOULDER_BODY_BACK_NOTATION_SRC),
+      "utf8",
+    );
+    const frontSvg = readFileSync(
+      resolve(process.cwd(), "public" + DROP_SHOULDER_BODY_FRONT_NOTATION_SRC),
+      "utf8",
+    );
+    const backTokens = listJapaneseNotationPlaceholdersInSvg(backSvg);
+    const frontTokens = listJapaneseNotationPlaceholdersInSvg(frontSvg);
+
+    for (const token of DROP_SHOULDER_BODY_BACK_NOTATION_TOKENS) {
+      expect(backTokens, `back SVG missing ${token}`).toContain(token);
+    }
+    for (const token of DROP_SHOULDER_BODY_FRONT_NOTATION_TOKENS) {
+      expect(frontTokens, `front SVG missing ${token}`).toContain(token);
+    }
+  });
+
+  it("processed drop-shoulder body notation SVG markup is structurally parseable", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
+    for (const [rel, buildRepl] of [
+      [
+        DROP_SHOULDER_BODY_BACK_NOTATION_SRC,
+        () => buildDropShoulderBackJapaneseNotationReplacements(result, DROP_SHOULDER_PATTERN),
+      ],
+      [
+        DROP_SHOULDER_BODY_FRONT_NOTATION_SRC,
+        () => buildDropShoulderFrontJapaneseNotationReplacements(result, DROP_SHOULDER_PATTERN),
+      ],
+    ] as const) {
+      const svgText = readFileSync(resolve(process.cwd(), "public" + rel), "utf8");
+      assertParseableSvgMarkup(svgText);
+      const out = applyJapaneseNotationSvgReplacements(svgText, buildRepl());
+      assertParseableSvgMarkup(out);
+      expect(listJapaneseNotationPlaceholdersInSvg(out)).toEqual([]);
+    }
   });
 });
 
@@ -395,4 +475,22 @@ describe("dropShoulderBodyDiagramReplacements", () => {
       String(Math.round((result.debug.backStitches! - result.debug.necklineStitches!) / 2)),
     );
   });
+});
+
+describe("drop-shoulder Japanese notation quick reference preview SVGs", () => {
+  const previewPaths = [
+    "public/images/patterns/drop-shoulder/jp-drop-body-back-preview.svg",
+    "public/images/patterns/drop-shoulder/jp-drop-body-front-preview.svg",
+  ] as const;
+
+  for (const rel of previewPaths) {
+    it(`${rel} exists, is token-free, and parses as SVG`, () => {
+      const abs = resolve(process.cwd(), rel);
+      expect(() => readFileSync(abs, "utf8")).not.toThrow();
+      const svg = readFileSync(abs, "utf8");
+      expect(svg).toMatch(/<svg[\s>]/);
+      expect(svg).not.toMatch(/\{\{/);
+      expect(assertParseableSvgMarkup(svg)).toBeUndefined();
+    });
+  }
 });

@@ -114,10 +114,10 @@
   },
   {
     "id": 34,
-    "title": "Gauge Comparison Chart",
+    "title": "Gauge Difference",
     "href": "/tools/gauge-comparison",
     "icon": "gauge_compare.svg",
-    "description": "See how small gauge differences can change the finished size of your knitting.",
+    "description": "See how a gauge difference changes the finished size of your project.",
     "membersonly": false,
     "helpID": "NULL",
     "category": "Swatching and Gauge",
@@ -129,7 +129,7 @@
     "title": "Gauge Calculator",
     "href": "/tools/gauge-calculator",
     "icon": "gauge-calculator.svg",
-    "description": "Calculate stitch and row gauge from a measured swatch in inches or centimeters.",
+    "description": "Calculate your stitch and row gauge from a swatch.",
     "membersonly": false,
     "helpID": null,
     "category": "Swatching and Gauge",
@@ -138,16 +138,15 @@
   },
   {
     "id": 33,
-    "title": "Gauge Conversion",
-    "href": "GaugeConversion.cfm",
+    "title": "Pattern Conversion",
+    "href": "/tools/pattern-conversion",
     "icon": "gaugeconversion.svg",
-    "description": "Convert stitch and row counts when using a different yarn gauge.",
+    "description": "Convert pattern stitch and row counts to match your gauge.",
     "membersonly": false,
     "helpID": 4133,
     "category": "Swatching and Gauge",
-    "help_text": "Use this tool when you want to substitute a different yarn than the pattern calls for.\n\nEnter the gauge from the original pattern and the gauge from your swatch. The tool calculates the stitch and row counts needed so your finished piece matches the pattern measurements using your yarn.Here's an easy conversion tool that can help.",
-    "active": false,
-    "status": "coming-soon"
+    "help_text": "Use this tool when you want to substitute a different yarn than the pattern calls for.\n\nEnter the gauge from the original pattern and the gauge from your swatch. The tool calculates the stitch and row counts needed so your finished piece matches the pattern measurements using your yarn.",
+    "active": true
   },
   {
     "id": 16,

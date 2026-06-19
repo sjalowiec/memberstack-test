@@ -1,0 +1,582 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
+import FloatingInput from "../../components/tools/FloatingInput.astro";
+import toolsData from "../../../data/tools.json";
+
+const tools = toolsData as Array<{
+  href?: string;
+  title?: string;
+  icon?: string;
+}>;
+const tool = tools.find((entry) => entry.href === Astro.url.pathname) ?? null;
+---
+
+<Layout
+  title="Pattern Conversion | Knit it Now"
+  description="Convert pattern stitch and row counts to match your gauge."
+  toolPrintTitle="Pattern Conversion"
+>
+  <main class="wizard-page">
+    <div class="wizard-shell">
+      <WizardBackLink className="back-link" />
+
+      <section class="page-header">
+        <ToolPageHeader tool={tool} fallbackTitle="Pattern Conversion" />
+        <p class="page-subtitle">
+          Convert pattern stitch and row counts to match your gauge.
+        </p>
+        <p class="page-helper">
+          Measure both gauges over the same distance (for example, 4" or 10 cm).
+        </p>
+      </section>
+
+      <div class="wizard-container">
+        <form id="pattern-conversion-form" class="pattern-conversion-form" novalidate>
+          <div class="gauge-sections">
+            <div class="gauge-card">
+              <h2 class="gauge-card-title">Pattern Gauge</h2>
+              <div class="gauge-card-inputs">
+                <FloatingInput
+                  id="patternStitches"
+                  name="patternStitches"
+                  label="Pattern stitches"
+                  type="number"
+                  min={0}
+                  step={0.1}
+                  inputmode="decimal"
+                />
+                <FloatingInput
+                  id="patternRows"
+                  name="patternRows"
+                  label="Pattern rows"
+                  type="number"
+                  min={0}
+                  step={0.1}
+                  inputmode="decimal"
+                />
+              </div>
+            </div>
+
+            <div class="gauge-card">
+              <h2 class="gauge-card-title">My Gauge</h2>
+              <div class="gauge-card-inputs">
+                <FloatingInput
+                  id="myStitches"
+                  name="myStitches"
+                  label="My stitches"
+                  type="number"
+                  min={0}
+                  step={0.1}
+                  inputmode="decimal"
+                />
+                <FloatingInput
+                  id="myRows"
+                  name="myRows"
+                  label="My rows"
+                  type="number"
+                  min={0}
+                  step={0.1}
+                  inputmode="decimal"
+                />
+              </div>
+            </div>
+          </div>
+
+          <section class="pattern-numbers">
+            <h2 class="section-title">What does your pattern say?</h2>
+            <div class="input-grid">
+              <FloatingInput
+                id="patternStitchCount"
+                name="patternStitchCount"
+                label="Pattern says: Stitches"
+                type="number"
+                min={0}
+                step={1}
+                inputmode="numeric"
+              />
+              <FloatingInput
+                id="patternRowCount"
+                name="patternRowCount"
+                label="Pattern says: Rows"
+                type="number"
+                min={0}
+                step={1}
+                inputmode="numeric"
+              />
+            </div>
+
+            <div id="converted-results" class="converted-results" hidden aria-live="polite">
+              <div id="converted-results-body"></div>
+              <details id="conversion-math" class="conversion-math" hidden>
+                <summary class="show-math-summary">Show Math</summary>
+                <div id="conversion-math-body" class="conversion-math-body"></div>
+              </details>
+            </div>
+          </section>
+
+          <div class="pattern-conversion-help faq-accordion">
+            <details class="faq-item">
+              <summary>What about shaping?</summary>
+              <div class="pattern-conversion-help-body">
+                <p>
+                  This tool converts the numbers. Shaping techniques help you convert the shape.
+                </p>
+                <p>
+                  When converting a pattern to a different gauge, necklines, armholes, sleeve caps,
+                  and other shaped areas may require additional calculations.
+                </p>
+                <p>For curved shaping, such as round necklines and sleeve caps:</p>
+                <ul>
+                  <li>
+                    Use the <a href="/tools/graph-paper">Graph Paper</a> tool to redraw the shape at
+                    your gauge.
+                  </li>
+                  <li>
+                    Use the <a href="/tools/magic-formula">Magic Formula</a> tool to calculate
+                    shaping instructions.
+                  </li>
+                </ul>
+              </div>
+            </details>
+          </div>
+
+          <div class="form-actions">
+            <button type="reset" class="reset-btn">Reset</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    import {
+      calculatePatternConversion,
+      formatConversionFormula,
+      formatRatio,
+      parsePositiveNumber,
+    } from "../../lib/tools/patternConversion.ts";
+    import { renderConversionResults } from "../../lib/tools/patternConversionResults.ts";
+
+    const form = document.getElementById("pattern-conversion-form");
+    const convertedResultsEl = document.getElementById("converted-results");
+    const convertedResultsBodyEl = document.getElementById("converted-results-body");
+    const conversionMathEl = document.getElementById("conversion-math");
+    const conversionMathBodyEl = document.getElementById("conversion-math-body");
+
+    const fieldIds = [
+      "patternStitches",
+      "patternRows",
+      "myStitches",
+      "myRows",
+      "patternStitchCount",
+      "patternRowCount",
+    ] as const;
+
+    function getFieldValue(id: (typeof fieldIds)[number]): string {
+      const input = document.getElementById(id);
+      return input instanceof HTMLInputElement ? input.value : "";
+    }
+
+    function renderMathDetails(
+      stitchRatio: number,
+      rowRatio: number,
+      stitchConversion: { patternValue: number; convertedValue: number; ratio: number } | null,
+      rowConversion: { patternValue: number; convertedValue: number; ratio: number } | null,
+    ): string {
+      const parts: string[] = [];
+
+      parts.push(`<p>Stitch ratio: ${formatRatio(stitchRatio)}</p>`);
+
+      if (stitchConversion) {
+        parts.push(
+          `<p class="conversion-math-original">${stitchConversion.patternValue} stitches → ${stitchConversion.convertedValue} stitches</p>`,
+        );
+        parts.push(
+          `<p class="conversion-math-formula">${formatConversionFormula(
+            stitchConversion.patternValue,
+            stitchConversion.ratio,
+            stitchConversion.convertedValue,
+          )}</p>`,
+        );
+      }
+
+      parts.push(`<p class="conversion-math-row-ratio">Row ratio: ${formatRatio(rowRatio)}</p>`);
+
+      if (rowConversion) {
+        parts.push(
+          `<p class="conversion-math-original">${rowConversion.patternValue} rows → ${rowConversion.convertedValue} rows</p>`,
+        );
+        parts.push(
+          `<p class="conversion-math-formula">${formatConversionFormula(
+            rowConversion.patternValue,
+            rowConversion.ratio,
+            rowConversion.convertedValue,
+          )}</p>`,
+        );
+      }
+
+      return parts.join("");
+    }
+
+    function updateResults(): void {
+      if (
+        !form ||
+        !convertedResultsEl ||
+        !convertedResultsBodyEl ||
+        !conversionMathEl ||
+        !conversionMathBodyEl
+      ) {
+        return;
+      }
+
+      const patternStitches = parsePositiveNumber(getFieldValue("patternStitches"));
+      const patternRows = parsePositiveNumber(getFieldValue("patternRows"));
+      const myStitches = parsePositiveNumber(getFieldValue("myStitches"));
+      const myRows = parsePositiveNumber(getFieldValue("myRows"));
+      const patternStitchCount = parsePositiveNumber(getFieldValue("patternStitchCount"));
+      const patternRowCount = parsePositiveNumber(getFieldValue("patternRowCount"));
+
+      if (
+        patternStitches === null ||
+        patternRows === null ||
+        myStitches === null ||
+        myRows === null
+      ) {
+        convertedResultsEl.hidden = true;
+        convertedResultsBodyEl.replaceChildren();
+        conversionMathEl.hidden = true;
+        conversionMathBodyEl.innerHTML = "";
+        conversionMathEl.open = false;
+        return;
+      }
+
+      const result = calculatePatternConversion({
+        patternGauge: { stitches: patternStitches, rows: patternRows },
+        myGauge: { stitches: myStitches, rows: myRows },
+        patternStitchCount,
+        patternRowCount,
+      });
+
+      if (!result.ratios) {
+        convertedResultsEl.hidden = true;
+        convertedResultsBodyEl.replaceChildren();
+        conversionMathEl.hidden = true;
+        conversionMathBodyEl.innerHTML = "";
+        conversionMathEl.open = false;
+        return;
+      }
+
+      const hasConversion = result.stitchConversion || result.rowConversion;
+
+      if (hasConversion) {
+        convertedResultsEl.hidden = false;
+        convertedResultsBodyEl.innerHTML = renderConversionResults(
+          result.stitchConversion,
+          result.rowConversion,
+        );
+        conversionMathEl.hidden = false;
+        conversionMathBodyEl.innerHTML = renderMathDetails(
+          result.ratios.stitchRatio,
+          result.ratios.rowRatio,
+          result.stitchConversion,
+          result.rowConversion,
+        );
+      } else {
+        convertedResultsEl.hidden = true;
+        convertedResultsBodyEl.replaceChildren();
+        conversionMathEl.hidden = true;
+        conversionMathBodyEl.innerHTML = "";
+        conversionMathEl.open = false;
+      }
+    }
+
+    fieldIds.forEach((id) => {
+      const input = document.getElementById(id);
+      if (input instanceof HTMLInputElement) {
+        input.addEventListener("input", updateResults);
+      }
+    });
+
+    form.addEventListener("reset", () => {
+      window.requestAnimationFrame(() => {
+        updateResults();
+      });
+    });
+
+    updateResults();
+  </script>
+</Layout>
+
+<style>
+  .wizard-page {
+    padding-top: 0;
+    padding-bottom: 3rem;
+    min-height: 100vh;
+    background: var(--page-bg);
+  }
+
+  .wizard-shell {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  .page-header {
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .page-header :global(.tool-title) {
+    justify-content: center;
+  }
+
+  .page-subtitle {
+    margin: 0.5rem 0 0;
+    color: #6b7280;
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .page-helper {
+    margin: 0.35rem 0 0;
+    color: #9ca3af;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .wizard-container {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .gauge-sections {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  @media (min-width: 640px) {
+    .gauge-sections {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+
+  .gauge-card {
+    display: flex;
+    flex-direction: column;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+
+  .gauge-card-title {
+    margin: 0 0 1rem;
+    color: var(--kbm-green);
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .gauge-card-inputs {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .pattern-numbers {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #eef0ea;
+  }
+
+  .section-title {
+    color: var(--kbm-green);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 0.75rem;
+  }
+
+  .input-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (min-width: 480px) {
+    .input-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .form-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .reset-btn {
+    padding: 0.75rem 1.5rem;
+    background: white;
+    color: #6b7280;
+    font-size: 1rem;
+    font-weight: 600;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .reset-btn:hover {
+    border-color: #d1d5db;
+    background: #f9fafb;
+  }
+
+  .converted-results {
+    margin-top: 1.75rem;
+  }
+
+  .converted-results :global(.conversion-result-card) {
+    background: #f7faf3;
+    border: 2px solid #c8d4b8;
+    border-radius: 14px;
+    padding: 1.5rem 1.25rem 1.75rem;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(82, 104, 45, 0.1);
+  }
+
+  .converted-results :global(.conversion-result-card__heading) {
+    margin: 0 0 1.25rem;
+    color: var(--kbm-green, #52682d);
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .converted-results :global(.conversion-result-card__values) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.75rem;
+  }
+
+  @media (min-width: 480px) {
+    .converted-results :global(.conversion-result-card__values:not(.conversion-result-card__values--single)) {
+      flex-direction: row;
+      gap: 3.5rem;
+    }
+  }
+
+  .converted-results :global(.conversion-result-item) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .converted-results :global(.conversion-result-item__value) {
+    font-size: clamp(2.5rem, 9vw, 3.25rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .converted-results :global(.conversion-result-item__label) {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #6b7280;
+  }
+
+  .conversion-math {
+    margin-top: 1rem;
+    color: #6b7280;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .show-math-summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #6b7280;
+    list-style: none;
+  }
+
+  .show-math-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .show-math-summary::before {
+    content: "▶ ";
+  }
+
+  .conversion-math[open] .show-math-summary::before {
+    content: "▼ ";
+  }
+
+  .conversion-math-body p {
+    margin: 0.35rem 0 0;
+  }
+
+  .conversion-math-formula {
+    margin-top: 0.15rem !important;
+  }
+
+  .conversion-math-original {
+    margin-top: 0.15rem !important;
+    font-weight: 600;
+    color: #4b5563;
+  }
+
+  .conversion-math-row-ratio {
+    margin-top: 0.75rem !important;
+  }
+
+  .pattern-conversion-help {
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #eef0ea;
+  }
+
+  .pattern-conversion-help-body {
+    margin-top: 0.75rem;
+    color: #4b5563;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .pattern-conversion-help-body p {
+    margin: 0 0 0.75rem;
+  }
+
+  .pattern-conversion-help-body p:last-of-type {
+    margin-bottom: 0.5rem;
+  }
+
+  .pattern-conversion-help-body ul {
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+
+  .pattern-conversion-help-body li + li {
+    margin-top: 0.35rem;
+  }
+
+  .pattern-conversion-help-body a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+  }
+
+  .pattern-conversion-help-body a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 640px) {
+    .wizard-container {
+      padding: 1.25rem;
+    }
+  }
+</style>

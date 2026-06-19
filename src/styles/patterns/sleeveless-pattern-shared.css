@@ -1677,6 +1677,47 @@
     }
   }
 
+  /*
+   * Drop-shoulder (and other non-chart) neckline sections: reuse the garment two-column grid so
+   * instructions stay in the left column and the JP preview card fills the right sidebar slot.
+   */
+  #pattern-content .sleeveless-neckline-preview-split {
+    margin: 0;
+  }
+
+  #pattern-content .sleeveless-neckline-preview-split .sleeveless-pattern-instructions {
+    max-width: none;
+    margin: 0;
+  }
+
+  #pattern-content .sleeveless-neckline-preview-split__aside {
+    align-self: start;
+  }
+
+  #pattern-content .sleeveless-neckline-preview-split__aside .ns-jp-preview {
+    flex: none;
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+  }
+
+  @media (max-width: 767px) {
+    #pattern-content .sleeveless-neckline-preview-split .pattern-layout__sidebar {
+      order: 1;
+    }
+
+    #pattern-content .sleeveless-neckline-preview-split .pattern-layout__content {
+      order: 0;
+    }
+  }
+
+  @media (min-width: 768px) {
+    #pattern-content .pattern-subsection .sleeveless-neckline-preview-split .pattern-layout__sidebar {
+      position: static;
+      top: auto;
+    }
+  }
+
   #pattern-content a.pattern-video-modal-link {
     color: var(--kbm-green, #52682d);
     font-weight: 700;

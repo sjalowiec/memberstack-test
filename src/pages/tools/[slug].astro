@@ -12,7 +12,8 @@ export async function getStaticPaths() {
   
   // Exclude wizards that have dedicated page files (to avoid route conflicts)
   // gauge-difference is retired and redirects to gauge-comparison via its dedicated page file
-  const excludedSlugs = ['hand-machine-blanket', 'gauge-calculator', 'gauge-difference'];
+  // gauge-conversion-calculator is retired and redirects to pattern-conversion via its dedicated page file
+  const excludedSlugs = ['hand-machine-blanket', 'gauge-calculator', 'gauge-difference', 'gauge-conversion-calculator'];
   
   return wizards
     .filter((wizard) => !excludedSlugs.includes(wizard.data.slug))

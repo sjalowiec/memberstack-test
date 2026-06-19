@@ -9,8 +9,12 @@ import {
   neckShoulderChartHasCarriagePositionColumn,
   renderActiveShoulderChartIntroHtml,
   renderCarriagePositionPatternTipHtml,
+  renderNecklineInstructionsWithNotationPreviewHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
   renderNeckShoulderShapingPrintInstructionTableHtml,
+  resolveJapaneseNotationQuickReferencePreviewSrc,
+  SLEEVELESS_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC,
+  DROP_SHOULDER_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC,
 } from "./neckShoulderShapingChartHtml";
 import {
   centerBindOffStitchesFromNeckShoulderChart,
@@ -596,5 +600,72 @@ describe("Japanese Notation Quick Reference preview (renderActiveShoulderChartIn
     expect(html).toContain('aria-label="Open Japanese notation quick reference"');
     expect(html).toContain("fa-magnifying-glass");
     expect(html).toContain('class="ns-jp-preview no-print"');
+  });
+});
+
+describe("resolveJapaneseNotationQuickReferencePreviewSrc", () => {
+  it("resolves sleeveless back and front preview assets by default", () => {
+    expect(resolveJapaneseNotationQuickReferencePreviewSrc("back")).toBe(
+      SLEEVELESS_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC.back,
+    );
+    expect(resolveJapaneseNotationQuickReferencePreviewSrc("front")).toBe(
+      SLEEVELESS_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC.front,
+    );
+    expect(resolveJapaneseNotationQuickReferencePreviewSrc("back", "sleeveless")).toContain(
+      "/sleeveless/diagrams/diagram-jp-back-preview.svg",
+    );
+  });
+
+  it("resolves drop-shoulder back and front preview assets when construction is drop-shoulder", () => {
+    expect(resolveJapaneseNotationQuickReferencePreviewSrc("back", "drop-shoulder")).toBe(
+      DROP_SHOULDER_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC.back,
+    );
+    expect(resolveJapaneseNotationQuickReferencePreviewSrc("front", "drop-shoulder")).toBe(
+      DROP_SHOULDER_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC.front,
+    );
+    expect(resolveJapaneseNotationQuickReferencePreviewSrc("back", "drop-shoulder")).toContain(
+      "/drop-shoulder/jp-drop-body-back-preview.svg",
+    );
+    expect(resolveJapaneseNotationQuickReferencePreviewSrc("front", "drop-shoulder")).toContain(
+      "/drop-shoulder/jp-drop-body-front-preview.svg",
+    );
+  });
+});
+
+describe("renderNecklineInstructionsWithNotationPreviewHtml (drop shoulder)", () => {
+  it("places instructions in the left column and preview in the right sidebar column", () => {
+    const html = renderNecklineInstructionsWithNotationPreviewHtml(
+      '<div class="sleeveless-pattern-row">Bind off shoulders.</div>',
+      "back",
+      "drop-shoulder",
+    );
+    expect(html).toContain("sleeveless-neckline-preview-split");
+    expect(html).toContain("pattern-layout__content");
+    expect(html).toContain("pattern-layout__sidebar");
+    expect(html).toContain("sleeveless-pattern-instructions");
+    expect(html).not.toContain("ns-shaping-intro--with-preview");
+    expect(html).not.toContain("ns-shaping-intro__main");
+    expect(html).toContain("jp-drop-body-back-preview.svg");
+    expect(html).not.toContain("diagram-jp-back-preview.svg");
+    expect(html).toContain('data-neckline-notation-preview-trigger="back"');
+    expect(html).toContain("Bind off shoulders.");
+    const contentIdx = html.indexOf("pattern-layout__content");
+    const sidebarIdx = html.indexOf("pattern-layout__sidebar");
+    const previewIdx = html.indexOf("ns-jp-preview");
+    expect(contentIdx).toBeGreaterThan(-1);
+    expect(sidebarIdx).toBeGreaterThan(contentIdx);
+    expect(previewIdx).toBeGreaterThan(sidebarIdx);
+    expect(html.indexOf("Bind off shoulders.")).toBeLessThan(sidebarIdx);
+  });
+
+  it("uses front drop-shoulder preview asset for front piece", () => {
+    const html = renderNecklineInstructionsWithNotationPreviewHtml(
+      "<p>Front neck bind-off.</p>",
+      "front",
+      "drop-shoulder",
+    );
+    expect(html).toContain("jp-drop-body-front-preview.svg");
+    expect(html).toContain('data-neckline-notation-preview-trigger="front"');
+    expect(html).toContain("pattern-layout__sidebar");
   });
 });

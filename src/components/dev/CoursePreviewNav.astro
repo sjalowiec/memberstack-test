@@ -1,0 +1,80 @@
+---
+import {
+  COURSE_PREVIEW_BASE,
+  getLessonNeighbors,
+  getSortedLessons,
+  lessonPreviewHref,
+} from "../../lib/legacy_kin/coursePreviewPoc";
+
+interface Props {
+  currentSlug: string;
+}
+
+const { currentSlug } = Astro.props;
+const lessons = getSortedLessons();
+const { index, prev, next } = getLessonNeighbors(currentSlug);
+const current = lessons[index];
+---
+
+<nav class="course-preview__nav" aria-label="Lesson navigation">
+  {
+    prev ? (
+      <a class="course-preview__nav-link" href={lessonPreviewHref(prev.slug)}>
+        ← Previous
+      </a>
+    ) : (
+      <span class="course-preview__nav-link course-preview__nav-link--disabled">← Previous</span>
+    )
+  }
+
+  <label class="course-preview__nav-select-wrap">
+    <span class="course-preview__nav-select-label">Lesson</span>
+    <select
+      class="course-preview__nav-select"
+      id="course-preview-lesson-select"
+      aria-label="Select lesson"
+      data-course-preview-select
+    >
+      {
+        lessons.map((lesson, lessonIndex) => (
+          <option
+            value={lessonPreviewHref(lesson.slug)}
+            selected={lesson.slug === currentSlug}
+          >
+            {lessonIndex + 1}. {lesson.title}
+          </option>
+        ))
+      }
+    </select>
+  </label>
+
+  {
+    next ? (
+      <a class="course-preview__nav-link" href={lessonPreviewHref(next.slug)}>
+        Next →
+      </a>
+    ) : (
+      <span class="course-preview__nav-link course-preview__nav-link--disabled">Next →</span>
+    )
+  }
+</nav>
+
+<p class="course-preview__nav-position">
+  Lesson {index + 1} of {lessons.length}
+  {current ? `: ${current.title}` : ""}
+</p>
+
+<p class="course-preview__back-overview">
+  <a href={COURSE_PREVIEW_BASE}>← Course overview</a>
+</p>
+
+<script>
+  document.querySelectorAll("[data-course-preview-select]").forEach((select) => {
+    select.addEventListener("change", (event) => {
+      const target = event.currentTarget;
+      if (!(target instanceof HTMLSelectElement)) return;
+      const url = target.value;
+      if (url) window.location.href = url;
+    });
+  });
+</script>

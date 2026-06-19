@@ -1,0 +1,53 @@
+---
+/**
+ * Dev-only course overview for legacy KIN course POC JSON.
+ * Route: /dev/course-preview
+ */
+import Layout from "../../../layouts/Layout.astro";
+import {
+  coursePreviewCourse,
+  getSortedLessons,
+  lessonPreviewHref,
+} from "../../../lib/legacy_kin/coursePreviewPoc";
+import "../../../styles/course-preview.css";
+
+export const prerender = true;
+
+const course = coursePreviewCourse;
+const lessons = getSortedLessons();
+const pageTitle = `DEV Preview: ${course.title}`;
+---
+
+<Layout title={pageTitle} description="Internal dev preview of legacy KIN course POC JSON." skipGlobalHyvor>
+  <main class="course-preview">
+    <p class="course-preview__banner" role="status">
+      <strong>Dev preview</strong> — legacy KIN course POC JSON. Not production content.
+    </p>
+
+    <header class="course-preview__header">
+      <h1 class="course-preview__title">{course.title}</h1>
+      <p class="course-preview__meta">
+        Challenge {course.legacyChallengeId} · {lessons.length} lessons · slug: {course.slug}
+      </p>
+    </header>
+
+    <section aria-labelledby="course-preview-lessons-heading">
+      <h2 id="course-preview-lessons-heading">Lessons</h2>
+      <ol class="course-preview__lesson-list">
+        {
+          lessons.map((lesson, index) => (
+            <li>
+              <a href={lessonPreviewHref(lesson.slug)}>
+                {index + 1}. {lesson.title}
+              </a>
+              <span class="course-preview__meta">
+                {" "}
+                · {lesson.blocks.length} block{lesson.blocks.length === 1 ? "" : "s"}
+              </span>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+  </main>
+</Layout>

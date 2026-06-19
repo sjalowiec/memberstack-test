@@ -256,23 +256,50 @@ export type ActiveShoulderChartIntroOptions = {
    * print/PDF are unchanged.
    */
   notationPreview?: NotationPreviewPiece;
+  /** Which garment construction's static preview assets to use. Defaults to sleeveless. */
+  notationPreviewConstruction?: NotationPreviewConstruction;
 };
 
 export type NotationPreviewPiece = "front" | "back";
 
-/** Static, token-free cropped teaser of each piece's shaping notation chart (decorative preview only). */
-export const JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC = {
+export type NotationPreviewConstruction = "sleeveless" | "drop-shoulder";
+
+/** Static, token-free cropped teaser — sleeveless shaping notation (decorative preview only). */
+export const SLEEVELESS_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC = {
   front: "/images/patterns/sleeveless/diagrams/diagram-jp-front-preview.svg",
   back: "/images/patterns/sleeveless/diagrams/diagram-jp-back-preview.svg",
 } as const;
+
+/** Static, token-free cropped teaser — drop-shoulder body shaping notation. */
+export const DROP_SHOULDER_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC = {
+  front: "/images/patterns/drop-shoulder/jp-drop-body-front-preview.svg",
+  back: "/images/patterns/drop-shoulder/jp-drop-body-back-preview.svg",
+} as const;
+
+/** @deprecated Use {@link SLEEVELESS_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC} or {@link resolveJapaneseNotationQuickReferencePreviewSrc}. */
+export const JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC = SLEEVELESS_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC;
+
+export function resolveJapaneseNotationQuickReferencePreviewSrc(
+  piece: NotationPreviewPiece,
+  construction: NotationPreviewConstruction = "sleeveless",
+): string {
+  const map =
+    construction === "drop-shoulder"
+      ? DROP_SHOULDER_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC
+      : SLEEVELESS_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC;
+  return map[piece];
+}
 
 /**
  * Quiet, keyboard-accessible preview card. Carries `data-neckline-notation-preview-trigger="<piece>"`
  * so the page script opens that piece's existing Shaping Notation diagram modal (no second modal
  * system).
  */
-function necklineNotationPreviewCardHtml(piece: NotationPreviewPiece): string {
-  const previewSrc = JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC[piece];
+function necklineNotationPreviewCardHtml(
+  piece: NotationPreviewPiece,
+  construction: NotationPreviewConstruction = "sleeveless",
+): string {
+  const previewSrc = resolveJapaneseNotationQuickReferencePreviewSrc(piece, construction);
   return `<aside class="ns-jp-preview no-print">
   <button type="button" class="ns-jp-preview__btn" data-neckline-notation-preview-trigger="${escapeHtml(piece)}" aria-label="Open Japanese notation quick reference">
     <span class="ns-jp-preview__title">Japanese Notation Quick Reference</span>
@@ -290,17 +317,40 @@ function wrapActiveShoulderChartIntroHtml(
   wrappedClass: string,
   innerHtml: string,
   notationPreview: NotationPreviewPiece | undefined,
+  notationPreviewConstruction: NotationPreviewConstruction = "sleeveless",
 ): string {
   if (notationPreview === "front" || notationPreview === "back") {
     return `<div class="${escapeHtml(wrappedClass)} ns-shaping-intro--with-preview">
   <div class="ns-shaping-intro__main">
   ${innerHtml}
   </div>
-  ${necklineNotationPreviewCardHtml(notationPreview)}
+  ${necklineNotationPreviewCardHtml(notationPreview, notationPreviewConstruction)}
 </div>`;
   }
   return `<div class="${escapeHtml(wrappedClass)}">
   ${innerHtml}
+</div>`;
+}
+
+/**
+ * Drop-shoulder neckline sections: instructions in the left column, preview card in the right
+ * sidebar column (same grid shell as the garment diagram split — not inside the intro flex wrapper).
+ */
+export function renderNecklineInstructionsWithNotationPreviewHtml(
+  innerHtml: string,
+  piece: NotationPreviewPiece,
+  construction: NotationPreviewConstruction = "drop-shoulder",
+): string {
+  const previewAside = necklineNotationPreviewCardHtml(piece, construction);
+  return `<div class="pattern-layout pattern-layout--garment-columns sleeveless-neckline-preview-split">
+  <div class="pattern-layout__content">
+    <div class="sleeveless-pattern-instructions">
+  ${innerHtml}
+    </div>
+  </div>
+  <aside class="pattern-layout__sidebar sleeveless-neckline-preview-split__aside" aria-label="Japanese notation quick reference">
+  ${previewAside}
+  </aside>
 </div>`;
 }
 
@@ -436,6 +486,7 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
       wrappedClass,
       innerParts.join("\n  "),
       options.notationPreview,
+      options.notationPreviewConstruction,
     );
   }
 
@@ -480,7 +531,12 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
   innerParts.push(`<p>${activeShoulderChartIntroSentenceHtml()}</p>`);
   const inner = innerParts.join("\n  ");
 
-  return wrapActiveShoulderChartIntroHtml(wrappedClass, inner, options.notationPreview);
+  return wrapActiveShoulderChartIntroHtml(
+    wrappedClass,
+    inner,
+    options.notationPreview,
+    options.notationPreviewConstruction,
+  );
 }
 
 /**

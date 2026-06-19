@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="22 0 200 135" role="img" aria-label="Drop shoulder front Japanese notation preview">
+  <g id="jp-preview-dimension-lines">
+    <line x1="29.1" y1="130.42" x2="30.6" y2="130.42" fill="none" stroke="#bdbec0" stroke-miterlimit="10"/>
+    <line x1="33.51" y1="130.42" x2="67.02" y2="130.42" fill="none" stroke="#bdbec0" stroke-dasharray="2.91 2.91" stroke-miterlimit="10"/>
+    <line x1="68.47" y1="130.42" x2="69.97" y2="130.42" fill="none" stroke="#bdbec0" stroke-miterlimit="10"/>
+    <line x1="48.6" y1="77.56" x2="131.33" y2="77.56" fill="none" stroke="#bdbec0" stroke-dasharray="2.91 2.91" stroke-miterlimit="10"/>
+    <line x1="47.33" y1="64.69" x2="47.33" y2="115.77" fill="none" stroke="#565656"/>
+    <circle cx="47.33" cy="64.78" r="1.88" fill="#565656"/>
+    <path d="M45.45,115.68c0,1.04.84,1.88,1.88,1.88s1.88-.84,1.88-1.88-.84-1.88-1.88-1.88-1.88.84-1.88,1.88Z" fill="#565656"/>
+    <line x1="48.28" y1="118.53" x2="48.28" y2="132.19" fill="none" stroke="#565656"/>
+    <circle cx="48.28" cy="118.62" r="1.88" fill="#565656"/>
+  </g>
+  <g id="jp-preview-body">
+    <path d="M67.52,51.56l-.47,74.87" fill="none" stroke="#020202" stroke-linejoin="round"/>
+    <path d="M195.66,52.27l.39,74.16" fill="none" stroke="#020202" stroke-linejoin="round"/>
+    <path d="M101.21,51.56s5.15,26.08,30.05,26.08,29.12-25.9,29.12-25.9l35.82.36" fill="none" stroke="#020202" stroke-linejoin="round"/>
+    <line x1="67.88" y1="51.56" x2="101.55" y2="51.82" fill="none" stroke="#020202" stroke-linejoin="round"/>
+    <path d="M67.16,125.93c.8,8.9,4.5,35.3,3.4,50.2-1,14.9-2.1,76.3-1.4,81.9" fill="none" stroke="#020202"/>
+    <path d="M196.16,125.93c-.8,8.9-4.5,35.3-3.4,50.2,1,14.9,2.1,76.3,1.4,81.9" fill="none" stroke="#020202"/>
+    <path d="M80,34.63c-2.75,10.66-4.51,32.27,20.99,25.45" fill="none" stroke="#bdbec0" stroke-dasharray="2.91 2.91" stroke-miterlimit="10"/>
+    <path d="M103.88,59.22c-1.23.88-2.69,2.22-3.49,3.42l.2-2.52-1.46-2.06c1.31.63,3.24,1.03,4.75,1.16Z" fill="#bdbec0"/>
+    <polygon points="62.06 119.4 67.1 124.44 62.06 129.48 62.06 119.4" fill="#53682f"/>
+    <polygon points="200.85 130.2 195.81 125.15 200.85 120.11 200.85 130.2" fill="#53682f"/>
+  </g>
+  <text transform="translate(40.6 28.83)" fill="#231f20" font-family="ArialMT, Arial" font-size="14"><tspan x="0" y="0">1-1-1</tspan></text>
+  <text transform="translate(115.21 71.75)" fill="#231f20" font-family="ArialMT, Arial" font-size="14"><tspan x="0" y="0">24</tspan></text>
+  <text transform="translate(100.66 126.03)" fill="#010101" font-family="Arial-BoldMT, Arial" font-size="15" font-weight="700"><tspan x="0" y="0">FRONT</tspan></text>
+</svg>

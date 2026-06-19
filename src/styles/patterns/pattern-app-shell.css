@@ -78,6 +78,7 @@ main.site-content:has(.pattern-app-shell) {
       .pattern-layout--garment-columns,
       .sleeveless-piece-split,
       .sleeveless-piece-chart-fullwidth,
+      .sleeveless-neckline-preview-split,
       .ns-shaping-chart,
       .sg-neck-chart-print-block
     ) {

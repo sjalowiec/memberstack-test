@@ -1,0 +1,50 @@
+---
+/**
+ * Dev-only single-lesson preview for legacy KIN course POC JSON.
+ * Route: /dev/course-preview/[lesson]
+ */
+import Layout from "../../../layouts/Layout.astro";
+import CoursePreviewLessonBody from "../../../components/dev/CoursePreviewLessonBody.astro";
+import CoursePreviewNav from "../../../components/dev/CoursePreviewNav.astro";
+import {
+  coursePreviewCourse,
+  getSortedLessons,
+  type CourseLesson,
+} from "../../../lib/legacy_kin/coursePreviewPoc";
+import "../../../styles/course-preview.css";
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  return getSortedLessons().map((lesson) => ({
+    params: { lesson: lesson.slug },
+    props: { lesson },
+  }));
+}
+
+interface Props {
+  lesson: CourseLesson;
+}
+
+const { lesson } = Astro.props;
+const course = coursePreviewCourse;
+const pageTitle = `DEV Preview: ${course.title} — ${lesson.title}`;
+---
+
+<Layout title={pageTitle} description="Internal dev preview of legacy KIN course POC JSON." skipGlobalHyvor>
+  <main class="course-preview">
+    <p class="course-preview__banner" role="status">
+      <strong>Dev preview</strong> — legacy KIN course POC JSON. Not production content.
+    </p>
+
+    <header class="course-preview__header">
+      <h1 class="course-preview__title">{course.title}</h1>
+      <p class="course-preview__meta">
+        Challenge {course.legacyChallengeId} · slug: {course.slug}
+      </p>
+    </header>
+
+    <CoursePreviewNav currentSlug={lesson.slug} />
+    <CoursePreviewLessonBody lesson={lesson} />
+  </main>
+</Layout>
