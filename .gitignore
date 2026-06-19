@@ -37,8 +37,9 @@ glossary_rows_with_missing_images.csv
 # Local API experiments / build artifacts
 public/api/
 
-# Local data scratch files
+# Local data scratch files (machine_techniques.csv is required at build time)
 src/data/*.csv
+!src/data/machine_techniques.csv
 
 # Backup files
 *.backup
