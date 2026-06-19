@@ -114,7 +114,7 @@
   },
   {
     "id": 34,
-    "title": "Gauge Difference",
+    "title": "Gauge Comparison",
     "href": "/tools/gauge-comparison",
     "icon": "gauge_compare.svg",
     "description": "See how a gauge difference changes the finished size of your project.",
