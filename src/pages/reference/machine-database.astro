@@ -1,21 +1,4 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import ReferencePageShell from "../../components/ReferencePageShell.astro";
+// Retired stub: Machine Database lives at /reference/machines.
+return Astro.redirect("/reference/machines", 301);
 ---
-
-<Layout
-  title="Knitting Machine Reference | Knit it Now"
-  description="A growing reference of knitting machine models, features, and practical notes."
->
-  <ReferencePageShell
-    title="Knitting Machine Reference"
-    subhead="A growing reference of knitting machine models, features, and practical notes."
-    backHref="/reference"
-    backLabel="Back to Reference"
-  >
-    <div class="kbm-intro-callout">
-      <p>Coming soon:
-        A growing database of knitting machine models, features, and practical notes.</p>
-    </div>
-  </ReferencePageShell>
-</Layout>
