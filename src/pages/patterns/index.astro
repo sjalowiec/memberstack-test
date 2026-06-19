@@ -1,11 +1,27 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { isDropShoulderProductionBlocked } from '../../lib/patterns/dropShoulderProductionAccess';
 
 // NOTE: The previous sales-style hero and "Why These Patterns Are Different"
 // feature grid were moved off this catalog page (not deleted):
 //   - <PatternsMarketingHero />     (src/components/patterns/PatternsMarketingHero.astro)
 //   - <PatternsFeaturesSection />   (src/components/patterns/PatternsFeaturesSection.astro)
 // TODO(about-page): surface these on a future "About the Pattern Builders" page.
+
+const hideDropShoulderInCatalog = isDropShoulderProductionBlocked(Astro.url.hostname, {
+  isViteDev: import.meta.env.DEV,
+  publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+});
+
+const dropShoulderPattern = {
+  title: 'Drop Shoulder Sweater',
+  // `?new=1` clears any active draft on boot so this card always starts fresh
+  // (mirrors the sleeveless builder). Drop shoulder reuses the same review/pattern flow.
+  href: '/patterns/drop-shoulder/builder?new=1',
+  image: '/images/patterns/drop-shoulder/drop-man-pullover-round.webp',
+  copy: 'A relaxed sweater with drop-shoulder sleeves (cuff-up or top-down), pullover or cardigan fronts, round or V-neck, and printable row-by-row instructions.',
+  button: 'Create drop shoulder sweater',
+};
 
 const availablePatterns = [
   {
@@ -25,15 +41,7 @@ const availablePatterns = [
     copy: 'Knit a hat that actually fits with brim choices, custom sizing, and machine-friendly instructions.',
     button: 'Create your hat',
   },
-  {
-    title: 'Drop Shoulder Sweater',
-    // `?new=1` clears any active draft on boot so this card always starts fresh
-    // (mirrors the sleeveless builder). Drop shoulder reuses the same review/pattern flow.
-    href: '/patterns/drop-shoulder/builder?new=1',
-    image: '/images/patterns/drop-shoulder/drop-man-pullover-round.webp',
-    copy: 'A relaxed sweater with drop-shoulder sleeves (cuff-up or top-down), pullover or cardigan fronts, round or V-neck, and printable row-by-row instructions.',
-    button: 'Create drop shoulder sweater',
-  },
+  ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
   {
     title: 'Blanket Pattern Builder',
     // Existing working route preserved (no /patterns/blanket page exists).
