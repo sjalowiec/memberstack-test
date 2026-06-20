@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 import { buildSleevelessGarmentDiagramReplacements } from "./sleevelessGarmentDiagramReplacements";
 import { resolveEffectiveShoulderWidthInches } from "./customBuildEffectiveShoulderWidth";
+import { withDropShoulderConstructionAuthored } from "./patternConstructionIdentity";
 
 const baseMeasurements = {
   finished_bust_chest: 40,
@@ -79,6 +80,15 @@ describe("resolveEffectiveShoulderWidthInches", () => {
         patternData({ patternMode: "custom-build", shoulderWidthOverride: "bad" }),
       ),
     ).toBe(4.25);
+  });
+
+  it("ignores override for drop-shoulder construction", () => {
+    const data = patternData({ patternMode: "custom-build", shoulderWidthOverride: "5.5" });
+    data.style = withDropShoulderConstructionAuthored(
+      { ...(data.style as Record<string, unknown>), patternMode: "custom-build" },
+      "long",
+    );
+    expect(resolveEffectiveShoulderWidthInches(data)).toBe(4.25);
   });
 });
 

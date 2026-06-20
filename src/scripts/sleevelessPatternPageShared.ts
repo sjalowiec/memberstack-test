@@ -13,8 +13,16 @@ import {
   mergedPatternForDisplayFromSources,
 } from "../lib/patterns/sleevelessPatternBuilderMerge.ts";
 import { buildCustomBuildEffectivePatternInput } from "../lib/patterns/buildCustomBuildEffectivePatternInput.ts";
-import { prepareCustomBuildPatternGeneration, isDedicatedSleevelessPatternWorkspacePage } from "../lib/patterns/prepareCustomBuildPatternGeneration.ts";
-import { ensureSavedCustomPatternSessionHydratedOnPatternPage } from "../lib/patterns/hydrateSavedCustomPatternProject.ts";
+import {
+  isDedicatedSleevelessPatternWorkspacePage,
+  prepareCustomBuildPatternGeneration,
+} from "../lib/patterns/prepareCustomBuildPatternGeneration.ts";
+import {
+  ensureSavedCustomPatternSessionHydratedOnPatternPage,
+} from "../lib/patterns/hydrateSavedCustomPatternProject.ts";
+import {
+  syncAvailableNeedlesMirrorsFromAllSources,
+} from "../lib/patterns/availableNeedlesMirrors";
 import {
   getSleevelessGoldenBetaCanonicalPattern,
   getSleevelessGoldenBetaPatternBuilderData,
@@ -3750,6 +3758,8 @@ table {
     try {
     if (!isDedicatedSleevelessPatternWorkspacePage()) {
       prepareCustomBuildPatternGeneration({ awaitCharts: false });
+    } else if (isEditingSavedCustomPatternProject()) {
+      syncAvailableNeedlesMirrorsFromAllSources();
     }
     const patternMerged = mergedPatternForDisplay(getCurrentPattern());
     const patternData = getPatternData();

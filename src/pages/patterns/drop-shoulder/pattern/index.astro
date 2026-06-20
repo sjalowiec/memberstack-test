@@ -334,9 +334,9 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
 
           <!--
             RIGHT: measurement SVG workspace. Reuses the live Custom Build measurement editor
-            (`initCustomBuildMeasurementsPage`): same pattern_summary.svg, labels, field names,
-            and overlay positions as the builder. `data-sleeveless-review-managed` suppresses the
-            editor's auto-init so this combined workspace initialises it when Edit Pattern opens.
+            (`initCustomBuildMeasurementsPage`): Drop Shoulder summary diagram, labels, field names,
+            and overlay positions. `data-sleeveless-review-managed` suppresses the editor's auto-init
+            so this combined workspace initialises it when Edit Pattern opens.
           -->
           <div class="sl-edit-workspace__measure" data-sl-measure-pane>
             <header class="sl-edit-workspace__measure-head">
@@ -380,6 +380,8 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
                 class="sl-measure-workspace__editor"
                 data-cb-measure-root
                 data-sleeveless-review-managed
+                data-express-construction="drop-shoulder"
+                data-drop-shoulder-workspace-measure-summary
               >
                 <div class="sleeveless-measure-review-body">
                   <div

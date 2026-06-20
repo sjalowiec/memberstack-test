@@ -1,4 +1,5 @@
 import { positiveMeasurementInches } from "./customBuildEffectiveArmholeDepth";
+import { isDropShoulderPatternRecord } from "./patternConstructionIdentity";
 import { readCustomBuildBodyFinishedMeasurements } from "./sleevelessCustomBuildBodyMeasurements";
 import type { SleevelessCustomBuildMeasurements } from "./sleevelessPatternValidation";
 import { getCurrentPattern, getSleevelessChartAudience } from "./patternStorage";
@@ -45,6 +46,7 @@ export function buildSleevelessCustomBuildValidationInput(
   };
 
   for (const key of MEASUREMENT_OVERRIDE_KEYS) {
+    if (key === "shoulderWidth" && isDropShoulderPatternRecord(pattern)) continue;
     const fromArg = overrides[key];
     const fromSaved = saved[key];
     const value = fromArg !== undefined && fromArg !== null && String(fromArg).trim() !== ""

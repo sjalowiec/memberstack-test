@@ -39,6 +39,10 @@ export const CUSTOM_BUILD_DIAGRAM_OVERRIDE_KEYS = [
   "hip",
   "finishedLength",
   "hemDepth",
+  /** Drop Shoulder review diagram — ignored when inputs are absent (sleeveless pages). */
+  "upperArm",
+  "sleeveLength",
+  "wrist",
 ] as const;
 
 function roundQuarter(n: number): number {

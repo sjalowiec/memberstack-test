@@ -1,0 +1,125 @@
+/**
+ * Drop Shoulder — explicit user-edit tracking for chart-owned sleeve measurement fields.
+ *
+ * Stale `cbMeasurementOverrides` must not be treated as user edits after a size change.
+ * Only manual review input sets these flags.
+ */
+import { SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "./patternStorage";
+
+export const DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY = "dropShoulderUserEditedSleeveFields";
+
+export const DROP_SHOULDER_USER_EDITED_SLEEVE_FIELD_KEYS = [
+  "upperArm",
+  "sleeveLength",
+  "cuffCircumference",
+] as const;
+
+export type DropShoulderUserEditedSleeveFieldKey =
+  (typeof DROP_SHOULDER_USER_EDITED_SLEEVE_FIELD_KEYS)[number];
+
+export type DropShoulderUserEditedSleeveFields = Record<
+  DropShoulderUserEditedSleeveFieldKey,
+  boolean
+>;
+
+/** Diagram override storage keys (`wrist` is the cuff field on the review diagram). */
+export const DROP_SHOULDER_SLEEVE_OVERRIDE_KEY_BY_USER_EDITED_FIELD: Record<
+  DropShoulderUserEditedSleeveFieldKey,
+  string
+> = {
+  upperArm: "upperArm",
+  sleeveLength: "sleeveLength",
+  cuffCircumference: "wrist",
+};
+
+export const DROP_SHOULDER_USER_EDITED_FIELD_BY_OVERRIDE_KEY: Record<
+  string,
+  DropShoulderUserEditedSleeveFieldKey
+> = {
+  upperArm: "upperArm",
+  sleeveLength: "sleeveLength",
+  wrist: "cuffCircumference",
+};
+
+function emptyFlags(): DropShoulderUserEditedSleeveFields {
+  return {
+    upperArm: false,
+    sleeveLength: false,
+    cuffCircumference: false,
+  };
+}
+
+function readExpressBlob(): Record<string, unknown> {
+  if (typeof localStorage === "undefined") return {};
+  try {
+    const raw = localStorage.getItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return parsed as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+}
+
+function writeExpressBlobPatch(patch: Record<string, unknown>): void {
+  if (typeof localStorage === "undefined") return;
+  try {
+    const prev = readExpressBlob();
+    localStorage.setItem(
+      SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+      JSON.stringify({ ...prev, ...patch }),
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+function normalizeFlags(raw: unknown): DropShoulderUserEditedSleeveFields {
+  const out = emptyFlags();
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return out;
+  for (const key of DROP_SHOULDER_USER_EDITED_SLEEVE_FIELD_KEYS) {
+    out[key] = (raw as DropShoulderUserEditedSleeveFields)[key] === true;
+  }
+  return out;
+}
+
+export function readDropShoulderUserEditedSleeveFields(): DropShoulderUserEditedSleeveFields {
+  return normalizeFlags(readExpressBlob()[DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY]);
+}
+
+export function writeDropShoulderUserEditedSleeveFields(
+  flags: DropShoulderUserEditedSleeveFields,
+): void {
+  writeExpressBlobPatch({ [DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY]: normalizeFlags(flags) });
+}
+
+export function clearDropShoulderUserEditedSleeveFields(): void {
+  const prev = readExpressBlob();
+  delete prev[DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY];
+  try {
+    localStorage.setItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY, JSON.stringify(prev));
+  } catch {
+    /* ignore */
+  }
+}
+
+export function markDropShoulderSleeveFieldUserEdited(
+  field: DropShoulderUserEditedSleeveFieldKey,
+): void {
+  const flags = readDropShoulderUserEditedSleeveFields();
+  if (flags[field] === true) return;
+  writeDropShoulderUserEditedSleeveFields({ ...flags, [field]: true });
+}
+
+export function isDropShoulderSleeveFieldUserEdited(
+  field: DropShoulderUserEditedSleeveFieldKey,
+): boolean {
+  return readDropShoulderUserEditedSleeveFields()[field] === true;
+}
+
+/** Mark user-edited from a diagram override key (`upperArm`, `sleeveLength`, `wrist`). */
+export function markDropShoulderSleeveOverrideKeyUserEdited(overrideKey: string): void {
+  const field = DROP_SHOULDER_USER_EDITED_FIELD_BY_OVERRIDE_KEY[overrideKey];
+  if (field) markDropShoulderSleeveFieldUserEdited(field);
+}

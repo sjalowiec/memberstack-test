@@ -26,6 +26,11 @@ export type PrepareCustomBuildPatternGenerationOptions = {
    * before navigation from Customize; re-syncing on every render caused refresh loops).
    */
   syncToPatternStorage?: boolean;
+  /**
+   * When true, do not merge visible diagram inputs into overrides before sync (unified review
+   * re-hydrates the diagram from storage after sync; stale bfcache DOM must not win).
+   */
+  skipDomFlush?: boolean;
 };
 
 /** Dedicated workspace My Pattern route (`/patterns/sleeveless/pattern/`), not in-page builder tabs. */
@@ -73,6 +78,7 @@ export function prepareCustomBuildPatternGeneration(
     syncCustomBuildToPatternStorage({ awaitCharts: options.awaitCharts ?? false });
   }
 
-  // After sync so diagram overrides (e.g. hip on straight torso) are not reconciled away.
-  flushCustomBuildMeasurementOverridesToCanonical({ root: root ?? undefined });
+  if (options.skipDomFlush !== true) {
+    flushCustomBuildMeasurementOverridesToCanonical({ root: root ?? undefined });
+  }
 }

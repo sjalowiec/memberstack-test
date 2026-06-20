@@ -6,7 +6,11 @@ import {
   DROP_SHOULDER_CONSTRUCTION,
   withDropShoulderConstructionAuthored,
 } from "./patternConstructionIdentity";
-import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPatternProject";
+import {
+  ensureSavedCustomPatternSessionHydratedOnPatternPage,
+  hydrateSavedCustomPatternProjectSession,
+} from "./hydrateSavedCustomPatternProject";
+import { OPEN_PATTERN_HREF } from "./customPatternProjectNavigation";
 import { validatePatternBuilderRequired } from "./patternBuilderValidation";
 import { prepareCustomBuildPatternGeneration } from "./prepareCustomBuildPatternGeneration";
 import { getCurrentPattern, getPatternData } from "./patternStorage";
@@ -129,5 +133,39 @@ describe("saved drop-shoulder hydration — availableNeedles mirrors", () => {
     expect(
       validatePatternBuilderRequired(getPatternData()).missingItems.some((i) => i.id === "availableNeedles"),
     ).toBe(false);
+  });
+
+  it("re-mirrors needles on shared /patterns/sleeveless/pattern/ workspace after stale builder mirrors", () => {
+    hydrateSavedCustomPatternProjectSession(dropShoulderSavedProject("214"), { editChoicesReopen: true });
+
+    const pb = getPatternData();
+    localStorage.setItem(
+      "patternBuilderData",
+      JSON.stringify({
+        ...pb,
+        machine: { ...(pb.machine as Record<string, unknown>), availableNeedles: "" },
+        yarnGaugeMachine: { ...(pb.yarnGaugeMachine as Record<string, unknown>), availableNeedles: "" },
+      }),
+    );
+    localStorage.setItem(
+      "kbm_sleeveless_express_builder",
+      JSON.stringify({
+        ...(JSON.parse(localStorage.getItem("kbm_sleeveless_express_builder") ?? "{}") as object),
+        availableNeedles: "",
+      }),
+    );
+
+    ensureSavedCustomPatternSessionHydratedOnPatternPage();
+
+    expect(String(getCurrentPattern().machine.availableNeedles)).toBe("214");
+    expect(String((getPatternData().machine as Record<string, unknown>).availableNeedles)).toBe("214");
+    expect(String((getPatternData().yarnGaugeMachine as Record<string, unknown>).availableNeedles)).toBe(
+      "214",
+    );
+    expect(loadExpressPersisted()?.availableNeedles).toBe("214");
+    expect(
+      validatePatternBuilderRequired(getPatternData()).missingItems.some((i) => i.id === "availableNeedles"),
+    ).toBe(false);
+    expect(OPEN_PATTERN_HREF).toBe("/patterns/sleeveless/pattern/");
   });
 });

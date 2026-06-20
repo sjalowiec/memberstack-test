@@ -6,7 +6,16 @@
  * positioning system in {@link patternSummaryMeasurementOverlay} — only the artwork differs.
  */
 
-import { isActiveDropShoulderConstruction } from "./patternConstructionIdentity";
+import {
+  isActiveDropShoulderConstruction,
+  isDropShoulderWorkspaceMeasurementSummaryPage,
+} from "./patternConstructionIdentity";
+
+export {
+  isDropShoulderWorkspaceMeasurementSummaryPage,
+  /** @deprecated Use isDropShoulderWorkspaceMeasurementSummaryPage. */
+  isDropShoulderReviewPage,
+} from "./patternConstructionIdentity";
 
 export const SLEEVELESS_MEASUREMENT_BLUEPRINT_SVG_URL = "/images/patterns/pattern_summary.svg";
 export const DROP_SHOULDER_MEASUREMENT_BLUEPRINT_SVG_URL =
@@ -14,6 +23,7 @@ export const DROP_SHOULDER_MEASUREMENT_BLUEPRINT_SVG_URL =
 
 /** True when the active working pattern is a drop-shoulder construction. */
 export function isDropShoulderConstruction(): boolean {
+  if (isDropShoulderWorkspaceMeasurementSummaryPage()) return true;
   return isActiveDropShoulderConstruction();
 }
 

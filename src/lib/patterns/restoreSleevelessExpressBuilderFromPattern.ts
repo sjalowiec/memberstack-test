@@ -17,12 +17,16 @@ import {
 } from "./patternStorage";
 import {
   deriveExpressStyleKey,
+  expressWhoToChartAudience,
   mapExpressStyleKey,
 } from "./syncSleevelessExpressDesignToStorage";
+import { writeOverrideSeedSizingIdentity } from "./customBuildMeasurementOverrideReconcile";
+import { buildSizingIdentityFromExpressValues } from "./savedCustomPatternSessionIdentity";
 import { mergeCbMeasurementOverridesFromFitSources } from "./sleevelessCustomMeasurementStorage";
 import {
   EXPRESS_FLOW_STEPS,
   isExpressEditChoicesReopenSession,
+  loadExpressPersisted,
   type ExpressPersistedV1,
 } from "./sleevelessExpressResume";
 import { syncExpressWizardToPatternStorage } from "./syncExpressWizardToPatternStorage";
@@ -108,6 +112,7 @@ function resolveGaugeFields(
   }
 
   const needles = resolveAvailableNeedlesFromSources(
+    loadExpressPersisted()?.availableNeedles,
     ygm.availableNeedles,
     machinePb.availableNeedles,
     machine.availableNeedles,
@@ -272,8 +277,20 @@ export function restoreSleevelessExpressBuilderFromPattern(
     ...(Object.keys(cbMeasurementOverrides).length > 0 ? { cbMeasurementOverrides } : {}),
   };
 
+  const sizingIdentity =
+    values.who && values.selectedSize
+      ? {
+          chartAudience: expressWhoToChartAudience(values.who),
+          selectedSize: values.selectedSize.trim(),
+        }
+      : buildSizingIdentityFromExpressValues(values);
+  if (sizingIdentity && Object.keys(cbMeasurementOverrides).length > 0) {
+    (snapshot as Record<string, unknown>).cbMeasurementOverridesSizingIdentity = sizingIdentity;
+  }
+
   try {
     localStorage.setItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY, JSON.stringify(snapshot));
+    if (sizingIdentity) writeOverrideSeedSizingIdentity(sizingIdentity);
   } catch {
     return false;
   }

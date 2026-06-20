@@ -2,14 +2,16 @@
  * Custom Build — effective shoulder width for sleeveless pattern generation.
  *
  * Chart-derived `fit.selectedMeasurements.shoulder_width` is the fallback.
- * Override: `fit.cbMeasurementOverrides.shoulderWidth` when `style.patternMode` is `custom-build`.
- * Express and non–custom-build modes always use the chart value.
+ * Override: `fit.cbMeasurementOverrides.shoulderWidth` when `style.patternMode` is `custom-build`
+ * (sleeveless only — drop-shoulder always uses the chart value).
  */
 
 import {
   isCustomBuildPatternMode,
   positiveMeasurementInches,
 } from "./customBuildEffectiveArmholeDepth";
+import { isDropShoulderPatternRecord } from "./patternConstructionIdentity";
+import type { SleevelessPatternRecord } from "./patternStorage";
 
 function section(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
@@ -40,6 +42,11 @@ export function resolveEffectiveShoulderWidthInches(
 ): number | undefined {
   const chartInches = chartShoulderWidthInches(patternData);
   if (!isCustomBuildPatternMode(patternData)) {
+    return chartInches;
+  }
+  if (
+    isDropShoulderPatternRecord({ style: section(patternData.style) } as SleevelessPatternRecord)
+  ) {
     return chartInches;
   }
   const overrideInches = customBuildShoulderWidthOverrideInches(patternData);

@@ -16,6 +16,7 @@ import {
 } from "./sleevelessPatternProjectMeta";
 import { logSleevelessPatternActivity } from "./sleevelessPatternActivity";
 import { stampDropShoulderWorkingDraftFromPage } from "./patternConstructionIdentity";
+import { clearDropShoulderUserEditedSleeveFields } from "./dropShoulderUserEditedSleeveFields";
 
 export { SLEEVELESS_EXPRESS_NEW_SESSION_PARAM, SLEEVELESS_EXPRESS_NEW_SESSION_VALUE };
 
@@ -24,6 +25,7 @@ export function startFreshSleevelessExpressPattern(): void {
   clearPatternProjectPrintSession();
   resetPatternProjectMetaForNewDraft();
   clearMeasurementOverridesOnWorkingDraft();
+  clearDropShoulderUserEditedSleeveFields();
   clearSavedCustomPatternDirtyBaseline();
   // Mark the fresh session as Express via the builder-data hint only (canonical stays an empty
   // draft so cross-user/start-new guards still see a blank pattern). Without this, a later

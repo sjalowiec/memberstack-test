@@ -20,7 +20,16 @@
  * baseline is snapshotted on open and restored on discard). Update keeps them.
  * The recipient/audience ("Who") is intentionally NOT editable here — it fixes the sizing chart.
  */
-import { initCustomBuildMeasurementsPage } from "./sleeveless-custom-build-measurements-page";
+import {
+  initCustomBuildMeasurementsPage,
+  readDropShoulderWorkspaceQuickEditSizingFromDom,
+  rehydrateDropShoulderWorkspaceMeasurementDiagramFromQuickEdit,
+} from "./sleeveless-custom-build-measurements-page";
+import {
+  readAvailableNeedlesFromAllSources,
+  syncAvailableNeedlesMirrorsFromAllSources,
+} from "../lib/patterns/availableNeedlesMirrors";
+import { isDropShoulderWorkspaceMeasurementSummaryPage } from "../lib/patterns/measurementBlueprintSvgUrl";
 import { applySleevelessPatternOnlineProjectHeader } from "./sleevelessPatternOnlineProjectHeader";
 import {
   PATTERN_BUILDER_DATA_KEY,
@@ -438,6 +447,7 @@ function initSleevelessPatternEditDrawer(): void {
     if (audienceEl) audienceEl.textContent = AUDIENCE_DISPLAY_LABELS[audience] ?? "Women";
 
     populateSizeOptions(audience, typeof ft.selectedSize === "string" ? ft.selectedSize : "");
+    lastQuickEditSize = sizeSelect?.value.trim() ?? "";
 
     const garment =
       readCustomBuildWizardGarmentType() ||
@@ -478,7 +488,7 @@ function initSleevelessPatternEditDrawer(): void {
       );
     }
     if (needlesInput) {
-      needlesInput.value = String(machine.availableNeedles ?? ygm.availableNeedles ?? "");
+      needlesInput.value = readAvailableNeedlesFromAllSources().value;
     }
   }
 
@@ -542,6 +552,7 @@ function initSleevelessPatternEditDrawer(): void {
     if (settingsEditingLocked) return;
     if (drawer!.classList.contains("is-open")) return;
     clearNotes();
+    syncAvailableNeedlesMirrorsFromAllSources();
     populateFromStorage();
     ensureChartsLoaded();
     // Snapshot after populating so Cancel/Esc reverts to the freshly-loaded values.
@@ -562,6 +573,7 @@ function initSleevelessPatternEditDrawer(): void {
         measureInitialized = true;
         initCustomBuildMeasurementsPage();
       }
+      ensureDropShoulderMeasurementEditorReady();
       captureMeasureFieldBaseline();
       (drawerPanel ?? drawer!).focus();
     });
@@ -717,6 +729,43 @@ function initSleevelessPatternEditDrawer(): void {
   let measureInitialized = false;
   let measureStorageBaseline: StorageSnapshot | null = null;
   let measureFieldBaseline: Map<string, string> | null = null;
+  let lastQuickEditSize = "";
+
+  function ensureDropShoulderMeasurementEditorReady(): void {
+    if (!isDropShoulderWorkspaceMeasurementSummaryPage() || !measurePane || measureInitialized) return;
+    measureInitialized = true;
+    initCustomBuildMeasurementsPage();
+  }
+
+  async function handleDropShoulderQuickEditSizeChanged(oldSize: string): Promise<void> {
+    if (!isDropShoulderWorkspaceMeasurementSummaryPage()) return;
+    ensureDropShoulderMeasurementEditorReady();
+    const sizing = readDropShoulderWorkspaceQuickEditSizingFromDom();
+    if (!sizing) {
+      return;
+    }
+    patchExpressValues({
+      selectedSize: sizing.selectedSize,
+      fit: sizing.fitPreference,
+    });
+    const refreshed = await rehydrateDropShoulderWorkspaceMeasurementDiagramFromQuickEdit(sizing, {
+      oldSize,
+    });
+    if (refreshed) lastQuickEditSize = sizing.selectedSize;
+  }
+
+  function wireQuickEditSizeChangeHandler(): void {
+    if (!sizeSelect || sizeSelect.dataset.slQuickEditSizeWired === "1") return;
+    sizeSelect.dataset.slQuickEditSizeWired = "1";
+    sizeSelect.addEventListener("change", () => {
+      if (!isDropShoulderWorkspaceMeasurementSummaryPage()) {
+        return;
+      }
+      const oldSize = lastQuickEditSize;
+      ensureDropShoulderMeasurementEditorReady();
+      void handleDropShoulderQuickEditSizeChanged(oldSize);
+    });
+  }
 
   function captureMeasureFieldBaseline(attempts = 0): void {
     if (!measureBody) return;
@@ -812,6 +861,7 @@ function initSleevelessPatternEditDrawer(): void {
   }
 
   maybeAutoOpenFromQuery();
+  wireQuickEditSizeChangeHandler();
 }
 
 if (typeof document !== "undefined") {

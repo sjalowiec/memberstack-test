@@ -17,12 +17,12 @@ import {
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
 } from "./patternStorage";
 import { resolveAvailableNeedlesFromSources } from "./availableNeedlesMirrors";
-import { resolveGeneratorPatternMode } from "./sleevelessPatternBuilderMerge";
 import {
   computeDefaultMeasurementsFromChartRow,
   findExpressChartRow,
   loadExpressSweaterCharts,
   nonEmptyTrimmed,
+  normalizeChartRowSize,
   resolveExpressChartFit,
 } from "./sleevelessExpressSizeChartClient";
 import {
@@ -31,6 +31,16 @@ import {
   mapExpressNecklineToStorage,
   syncSleevelessDesignBasicsToPatternStorage,
 } from "./syncSleevelessExpressDesignToStorage";
+import {
+  buildDropShoulderReviewDisplayIdentity,
+  markDropShoulderReviewDiagramDirtyIfDisplayIdentityChanged,
+} from "./dropShoulderReviewDiagramRefresh";
+import {
+  reconcileCustomBuildOverridesForSizingIdentityChange,
+  resolveDropShoulderOverrideReconcileFlag,
+  writeOverrideSeedSizingIdentity,
+} from "./customBuildMeasurementOverrideReconcile";
+import { isActiveDropShoulderConstruction } from "./patternConstructionIdentity";
 import {
   reconcileStraightTorsoChartMeasurements,
   reconcileStraightTorsoOverridesPreservingUserHip,
@@ -50,6 +60,10 @@ import {
   buildSizingIdentityFromExpressValues,
   detachActiveSavedProjectWhenChartAudienceDrifts,
 } from "./savedCustomPatternSessionIdentity";
+import {
+  overrideRecordsEqual,
+  sectionPatchWouldChange,
+} from "./patternSectionPatch";
 
 export { CUSTOM_BUILD_STYLE_STORAGE_KEYS };
 
@@ -135,7 +149,14 @@ function ensureYarnGaugeMachineDefaults(): void {
       : {};
 
   let changed = false;
-  const resolved = resolveAvailableNeedlesFromSources(ygm.availableNeedles, machine.availableNeedles);
+  const persisted = readExpressPersisted();
+  const canonMachine = section(getCurrentPattern().machine);
+  const resolved = resolveAvailableNeedlesFromSources(
+    ygm.availableNeedles,
+    machine.availableNeedles,
+    canonMachine.availableNeedles,
+    persisted?.availableNeedles,
+  );
   if (resolved) {
     if (String(ygm.availableNeedles ?? "").trim() !== resolved) {
       ygm.availableNeedles = resolved;
@@ -204,6 +225,8 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
         ? resolveExpressChartFit(aud, size, fit, { bodyShape: bodyShapeForChart })
         : null;
     const chartRow = chartFit ? findExpressChartRow(aud, chartFit.selectedSize) : null;
+    const currentSizingIdentity =
+      aud && size ? { chartAudience: aud, selectedSize: size } : buildSizingIdentityFromExpressValues(ev);
 
     let selectedMeasurements = chartFit?.selectedMeasurements;
     if (!selectedMeasurements && chartRow) {
@@ -211,27 +234,49 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
         bodyShape: bodyShapeForChart,
       });
     }
+    let reconciledOverrides = loadMeasurementOverrides();
     if (selectedMeasurements && bodyShapeForChart === "straight") {
       selectedMeasurements = reconcileStraightTorsoChartMeasurements(selectedMeasurements);
       const bust = selectedMeasurements.finished_bust_chest;
       if (bust !== undefined && bust > 0) {
-        const reconciledOverrides = reconcileStraightTorsoOverridesPreservingUserHip(
+        reconciledOverrides = reconcileStraightTorsoOverridesPreservingUserHip(
           bust,
-          loadMeasurementOverrides(),
+          reconciledOverrides,
         );
-        const canonicalOverrides = readCanonicalMeasurementOverrides();
-        if (!overrideRecordsEqual(reconciledOverrides, canonicalOverrides)) {
-          persistMeasurementOverrides(reconciledOverrides);
-          const pbFit = section(getPatternData().fit);
-          const fitPatch = { ...pbFit, cbMeasurementOverrides: reconciledOverrides };
-          if (sectionPatchWouldChange(pbFit, fitPatch)) {
-            savePatternData("fit", fitPatch);
-          }
-          const canonFit = section(getCurrentPattern().fit);
-          const canonFitPatch = { cbMeasurementOverrides: reconciledOverrides };
-          if (sectionPatchWouldChange(canonFit, canonFitPatch)) {
-            saveCurrentPattern({ fit: canonFitPatch });
-          }
+      }
+    }
+    if (chartRow && currentSizingIdentity) {
+      if (isActiveDropShoulderConstruction() && aud && size) {
+        markDropShoulderReviewDiagramDirtyIfDisplayIdentityChanged(
+          buildDropShoulderReviewDisplayIdentity(
+            aud,
+            chartRow ? normalizeChartRowSize(chartRow) || size : size,
+            fit,
+          ),
+        );
+      }
+      reconciledOverrides = reconcileCustomBuildOverridesForSizingIdentityChange({
+        currentIdentity: currentSizingIdentity,
+        currentRow: chartRow,
+        fitPreference: fit,
+        overrides: reconciledOverrides,
+        bodyShape: bodyShapeForChart,
+        dropShoulder: resolveDropShoulderOverrideReconcileFlag(),
+      });
+    }
+    if (Object.keys(reconciledOverrides).length > 0) {
+      const canonicalOverrides = readCanonicalMeasurementOverrides();
+      if (!overrideRecordsEqual(reconciledOverrides, canonicalOverrides)) {
+        persistMeasurementOverrides(reconciledOverrides);
+        const pbFit = section(getPatternData().fit);
+        const fitPatch = { ...pbFit, cbMeasurementOverrides: reconciledOverrides };
+        if (sectionPatchWouldChange(pbFit, fitPatch)) {
+          savePatternData("fit", fitPatch);
+        }
+        const canonFit = section(getCurrentPattern().fit);
+        const canonFitPatch = { cbMeasurementOverrides: reconciledOverrides };
+        if (sectionPatchWouldChange(canonFit, canonFitPatch)) {
+          saveCurrentPattern({ fit: canonFitPatch });
         }
       }
     }
@@ -280,7 +325,7 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
       });
     }
 
-    const overrides = loadMeasurementOverrides();
+    const overrides = reconciledOverrides;
     if (Object.keys(overrides).length > 0) {
       const pbFit = section(getPatternData().fit);
       const fitPatch = { ...pbFit, cbMeasurementOverrides: overrides };
@@ -292,6 +337,10 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
       if (sectionPatchWouldChange(canonFit, canonFitPatch)) {
         saveCurrentPattern({ fit: canonFitPatch });
       }
+    }
+
+    if (currentSizingIdentity && !isActiveDropShoulderConstruction()) {
+      writeOverrideSeedSizingIdentity(currentSizingIdentity);
     }
 
     ensureYarnGaugeMachineDefaults();
@@ -314,8 +363,3 @@ function section(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) return obj as Record<string, unknown>;
   return {};
 }
-
-import {
-  overrideRecordsEqual,
-  sectionPatchWouldChange,
-} from "./patternSectionPatch";

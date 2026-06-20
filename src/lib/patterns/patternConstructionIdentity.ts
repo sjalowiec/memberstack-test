@@ -53,6 +53,33 @@ export function readDropShoulderBuilderPageConstruction(): string {
   );
 }
 
+/** Drop Shoulder workspace measurement summary (Edit Pattern → Measurements). */
+export function isDropShoulderWorkspaceMeasurementSummaryPage(doc?: Document): boolean {
+  if (typeof document === "undefined" && doc === undefined) return false;
+  const scope = doc ?? document;
+  const measureRoot = scope.querySelector<HTMLElement>("[data-cb-measure-root]");
+  if (measureRoot?.hasAttribute("data-drop-shoulder-workspace-measure-summary")) {
+    return true;
+  }
+  const pathname = scope.defaultView?.location?.pathname ?? "";
+  if (/\/patterns\/drop-shoulder\/pattern(?:\/|$)/.test(pathname)) {
+    return true;
+  }
+  // Saved Drop Shoulder projects open on the sleeveless pattern workspace template.
+  if (
+    measureRoot?.hasAttribute("data-sleeveless-review-managed") &&
+    isActiveDropShoulderConstruction()
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/** @deprecated Use {@link isDropShoulderWorkspaceMeasurementSummaryPage}. */
+export function isDropShoulderReviewPage(doc?: Document): boolean {
+  return isDropShoulderWorkspaceMeasurementSummaryPage(doc);
+}
+
 /** Stamp drop-shoulder construction on the working draft when the active page is the Drop Shoulder builder. */
 export function stampDropShoulderWorkingDraftFromPage(sleeveLength = "long"): void {
   if (readDropShoulderBuilderPageConstruction() !== DROP_SHOULDER_CONSTRUCTION) return;

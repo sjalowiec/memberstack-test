@@ -32,6 +32,9 @@ import {
   isCustomBuildPatternMode,
   positiveMeasurementInches,
 } from "./customBuildEffectiveArmholeDepth";
+import { isDropShoulderPatternData } from "./dropShoulderSleeveMeasurementOverrides";
+import { resolveDropShoulderSleeveInches } from "./dropShoulderSleeveMeasurementOverrides";
+import { findExpressChartRow } from "./sleevelessExpressSizeChartClient";
 import { calculateRoundNecklineShaping } from "./legoBlocks/roundNeckline";
 import { neckDecreaseStitchesPerSideFromOpening } from "./legoBlocks/vNeckline";
 import { evenShapingSchedule } from "./evenShapingSchedule";
@@ -119,10 +122,14 @@ function sleeveOverrideInches(
   patternData: Record<string, unknown>,
   camelKey: string,
 ): number | undefined {
-  if (!isCustomBuildPatternMode(patternData)) return undefined;
   const fit = section(patternData.fit);
   const overrides = section(fit.cbMeasurementOverrides);
-  return positiveMeasurementInches(overrides[camelKey]);
+  const override = positiveMeasurementInches(overrides[camelKey]);
+  if (override === undefined) return undefined;
+  if (isCustomBuildPatternMode(patternData) || isDropShoulderPatternData(patternData)) {
+    return override;
+  }
+  return undefined;
 }
 
 function measurementInches(sm: Record<string, unknown>, key: string): number | undefined {
@@ -719,12 +726,41 @@ export function generateDropShoulderPattern(
   const hemDepthIn = resolveEffectiveHemDepthInches(patternData, audience);
 
   const sm = selectedMeasurements(patternData);
-  // Custom-build edits (sleeve chips on the measurement blueprint) override the chart values.
+  const fitSection = section(patternData.fit);
+  const overrideMap = section(fitSection.cbMeasurementOverrides);
+  const overrideStrings = Object.fromEntries(
+    Object.entries(overrideMap).filter(
+      ([, v]) => typeof v === "string" && String(v).trim() !== "",
+    ) as [string, string][],
+  );
+  const chartAudience = pickAudience(patternData);
+  const selectedSize = String(fitSection.selectedSize ?? "").trim();
+  const fitPreference = String(
+    fitSection.easeChoice ?? fitSection.fitChoice ?? "standard",
+  ).trim();
+  const chartRow =
+    chartAudience && selectedSize ? findExpressChartRow(chartAudience, selectedSize) : null;
+  const sleeveResolved = isDropShoulderPatternData(patternData)
+    ? resolveDropShoulderSleeveInches({
+        overrides: overrideStrings,
+        chartRow,
+        fitPreference,
+        selectedMeasurements: sm,
+        bodyShape: String(style.bodyShape ?? "straight"),
+      })
+    : {};
   const upperArmIn =
-    sleeveOverrideInches(patternData, "upperArm") ?? measurementInches(sm, "upper_arm");
-  const wristIn = sleeveOverrideInches(patternData, "wrist") ?? measurementInches(sm, "wrist");
+    sleeveResolved.upperArmIn ??
+    sleeveOverrideInches(patternData, "upperArm") ??
+    measurementInches(sm, "upper_arm");
+  const wristIn =
+    sleeveResolved.wristIn ??
+    sleeveOverrideInches(patternData, "wrist") ??
+    measurementInches(sm, "wrist");
   const sleeveLengthIn =
-    sleeveOverrideInches(patternData, "sleeveLength") ?? measurementInches(sm, "sleeve_length");
+    sleeveResolved.sleeveLengthIn ??
+    sleeveOverrideInches(patternData, "sleeveLength") ??
+    measurementInches(sm, "sleeve_length");
 
   // Drop-shoulder armhole depth is derived, not a user input.
   const armholeDepthIn = upperArmIn !== undefined ? upperArmIn / 2 : undefined;

@@ -75,6 +75,10 @@ import {
   DROP_SHOULDER_CONSTRUCTION,
   withDropShoulderConstructionAuthored,
 } from "../lib/patterns/patternConstructionIdentity";
+import {
+  buildDropShoulderReviewDisplayIdentity,
+  markDropShoulderReviewDiagramDirtyIfDisplayIdentityChanged,
+} from "../lib/patterns/dropShoulderReviewDiagramRefresh";
 
 const STEPS = 5;
 const LOCKED_STEP_NAV_TITLE = "Finish the previous step to continue.";
@@ -778,6 +782,12 @@ function initExpressPage() {
     if (!isValidExpressSizeForAudience(aud, trimmed)) return;
 
     values.selectedSize = trimmed;
+
+    if (expressPageConstruction() === DROP_SHOULDER_CONSTRUCTION) {
+      markDropShoulderReviewDiagramDirtyIfDisplayIdentityChanged(
+        buildDropShoulderReviewDisplayIdentity(aud, trimmed, values.fit || "standard"),
+      );
+    }
 
     refreshExpressWhoSizePanel();
     clearAllLockedFeedback();

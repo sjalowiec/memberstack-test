@@ -225,13 +225,35 @@ export function formatExpressSelectedSizeSummary(values: Record<string, string>)
 }
 
 /** Confirmation line shown below the size chart after the user picks a row. */
-export function formatExpressSizeBodyConfirmation(values: Record<string, string>): string {
+export function formatExpressSizeBodyConfirmation(
+  values: Record<string, string>,
+  options?: { includeDropShoulderSleeveMeasurements?: boolean },
+): string {
   const sz = values.selectedSize?.trim();
   if (!sz) return "";
   const aud = expressWhoToChartAudience(values.who);
   const row = findExpressChartRow(aud, sz);
   const meas = row ? formatBustChestDisplay(row, getExpressUiUnit()) : "";
-  return meas ? `Selected: Size ${sz}, ${meas} bust/chest` : `Selected: Size ${sz}`;
+  let line = meas ? `Selected: Size ${sz}, ${meas} bust/chest` : `Selected: Size ${sz}`;
+  if (options?.includeDropShoulderSleeveMeasurements && row) {
+    const sleeveLength = toFiniteNumber(row.sleeve_length);
+    if (Number.isFinite(sleeveLength) && sleeveLength > 0) {
+      const unit = getExpressUiUnit();
+      const sleeveDisplay =
+        unit === "cm"
+          ? `${Math.round(sleeveLength * 2.54 * 10) / 10} cm sleeve length`
+          : `${formatSwatchCountForGaugeInput(sleeveLength)}" sleeve length`;
+      line += ` • ${sleeveDisplay}`;
+    }
+  }
+  return line;
+}
+
+function isDropShoulderExpressBuilderPage(): boolean {
+  if (typeof document === "undefined") return false;
+  return (
+    document.querySelector('[data-express-construction="drop-shoulder"]') instanceof HTMLElement
+  );
 }
 
 /**
@@ -251,7 +273,11 @@ export function patchExpressSizeBodyConfirmation(scope: ParentNode, values: Reco
     if (wrap instanceof HTMLElement) wrap.after(el);
     else nested.appendChild(el);
   }
-  const t = nonEmptyTrimmed(values.selectedSize) ? formatExpressSizeBodyConfirmation(values) : "";
+  const t = nonEmptyTrimmed(values.selectedSize)
+    ? formatExpressSizeBodyConfirmation(values, {
+        includeDropShoulderSleeveMeasurements: isDropShoulderExpressBuilderPage(),
+      })
+    : "";
   el.textContent = t;
   if (t) el.removeAttribute("hidden");
   else el.setAttribute("hidden", "");

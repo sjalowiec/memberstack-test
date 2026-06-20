@@ -3,6 +3,9 @@
  * Call after loading a project from Blob storage so stale Express keys cannot overwrite another pattern.
  */
 import { writeActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
+import {
+  syncAvailableNeedlesMirrorsFromAllSources,
+} from "./availableNeedlesMirrors";
 import { loadProjectIntoWorkingDraft } from "./customPatternProjectClient";
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import {
@@ -113,6 +116,7 @@ export function hydrateSavedCustomPatternProjectSession(
   loadProjectIntoWorkingDraft(project);
   writeActiveCustomPatternProjectId(project.id, project.name);
   rehydrateExpressBuilderFromActiveSavedProject(options);
+  syncAvailableNeedlesMirrorsFromAllSources();
   captureSavedCustomPatternDirtyBaseline();
 }
 
@@ -122,10 +126,14 @@ export function hydrateSavedCustomPatternProjectSession(
  */
 export function ensureSavedCustomPatternSessionHydratedOnPatternPage(): void {
   if (!isEditingSavedCustomPatternProject()) return;
-  if (promoteExpressBuilderToCanonicalWhenDrifted()) return;
+  if (promoteExpressBuilderToCanonicalWhenDrifted()) {
+    syncAvailableNeedlesMirrorsFromAllSources();
+    return;
+  }
   if (!expressBuilderMatchesActiveSavedProject()) {
     rehydrateExpressBuilderFromActiveSavedProject();
   }
+  syncAvailableNeedlesMirrorsFromAllSources();
 }
 
 /**

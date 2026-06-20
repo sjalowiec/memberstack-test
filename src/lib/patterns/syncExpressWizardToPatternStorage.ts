@@ -7,7 +7,23 @@ import {
   getExpressUiUnit,
   nonEmptyTrimmed,
 } from "./sleevelessExpressSizeChartClient";
+import {
+  reconcileCustomBuildOverridesForSizingIdentityChange,
+  resolveDropShoulderOverrideReconcileFlag,
+  writeOverrideSeedSizingIdentity,
+} from "./customBuildMeasurementOverrideReconcile";
+import {
+  buildDropShoulderReviewDisplayIdentity,
+  markDropShoulderReviewDiagramDirtyIfDisplayIdentityChanged,
+} from "./dropShoulderReviewDiagramRefresh";
+import { isActiveDropShoulderConstruction } from "./patternConstructionIdentity";
+import { overrideRecordsEqual } from "./patternSectionPatch";
 import { seedCustomBuildBodyFinishedFromChartRow } from "./sleevelessCustomBuildBodyMeasurements";
+import {
+  loadMeasurementOverrides,
+  persistMeasurementOverrides,
+} from "./sleevelessCustomMeasurementStorage";
+import { resolveAvailableNeedlesFromSources } from "./availableNeedlesMirrors";
 import {
   EXPRESS_AVAILABLE_NEEDLES_INPUT_ID,
   resolveExpressAvailableNeedles,
@@ -113,15 +129,25 @@ export function readExpressGaugeInputSnapshot(
         : "";
   }
 
-  const unitStored = String(yarnM.gaugeRawUnit ?? yarnG.gaugeRawUnit ?? "").trim();
-  let unit: "in" | "cm" = unitStored === "cm" ? "cm" : "in";
-  if (unitStored !== "cm" && typeof document !== "undefined") {
-    unit = getExpressUiUnit();
+  const pbMachine = section(getPatternData().machine);
+  const canonMachine = section(getCurrentPattern().machine);
+  if (!availableNeedles) {
+    availableNeedles = resolveAvailableNeedlesFromSources(
+      yarnM.availableNeedles,
+      pbMachine.availableNeedles,
+      canonMachine.availableNeedles,
+    );
   }
 
   const prevMachine = section(pb.yarnGaugeMachine);
   if (!availableNeedles) {
     availableNeedles = resolveExpressAvailableNeedles(prevMachine, "");
+  }
+
+  const unitStored = String(yarnM.gaugeRawUnit ?? yarnG.gaugeRawUnit ?? "").trim();
+  let unit: "in" | "cm" = unitStored === "cm" ? "cm" : "in";
+  if (unitStored !== "cm" && typeof document !== "undefined") {
+    unit = getExpressUiUnit();
   }
 
   return { gaugeStitchRaw, gaugeRowRaw, availableNeedles, unit };
@@ -299,6 +325,34 @@ export function syncExpressWizardToPatternStorage(
   const hasYarn = Object.keys(yarnGaugeCanonical).length > 0;
 
   if (!hasStyle && !hasFit && !hasYarn && !availableNeedles) return;
+
+  if (chartFit && values.fit && values.who) {
+    const aud = expressWhoToChartAudience(values.who);
+    const row = findExpressChartRow(aud, chartFit.selectedSize);
+    const currentIdentity = { chartAudience: aud, selectedSize: chartFit.selectedSize };
+    if (row) {
+      if (isActiveDropShoulderConstruction()) {
+        markDropShoulderReviewDiagramDirtyIfDisplayIdentityChanged(
+          buildDropShoulderReviewDisplayIdentity(aud, chartFit.selectedSize, values.fit),
+        );
+      }
+      const reconciled = reconcileCustomBuildOverridesForSizingIdentityChange({
+        currentIdentity,
+        currentRow: row,
+        fitPreference: values.fit,
+        overrides: loadMeasurementOverrides(),
+        bodyShape: sm.bodyShape,
+        dropShoulder: resolveDropShoulderOverrideReconcileFlag(),
+      });
+      if (!overrideRecordsEqual(reconciled, loadMeasurementOverrides())) {
+        persistMeasurementOverrides(reconciled);
+        fitPayload.cbMeasurementOverrides = reconciled;
+      }
+      if (!isActiveDropShoulderConstruction()) {
+        writeOverrideSeedSizingIdentity(currentIdentity);
+      }
+    }
+  }
 
   saveCurrentPattern({
     ...(hasStyle ? { style: stylePayload } : {}),
