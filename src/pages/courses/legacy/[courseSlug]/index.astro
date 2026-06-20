@@ -1,0 +1,95 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+import LegacyCourseShell from "../../../../components/courses/legacy/LegacyCourseShell.astro";
+import {
+  getLegacyCourseBySlug,
+  getSortedLessonsForCourse,
+  legacyLessonHref,
+} from "../../../../lib/legacy_kin/legacyCourseLoader";
+
+const courseSlug = Astro.params.courseSlug ?? "";
+const course = getLegacyCourseBySlug(courseSlug);
+
+if (!course) {
+  return new Response("Course not found", { status: 404 });
+}
+
+const lessons = getSortedLessonsForCourse(course);
+const description =
+  "description" in course.course &&
+  typeof course.course.description === "string"
+    ? course.course.description
+    : undefined;
+const pageTitle = `${course.course.title} | Knit it Now`;
+const firstLesson = lessons[0];
+---
+
+<Layout title={pageTitle} {description} skipGlobalHyvor>
+  <LegacyCourseShell courseSlug={courseSlug}>
+    <article class="course-preview__content legacy-course__overview">
+      <header class="course-preview__section-header">
+        <h1 class="course-preview__content-title">{course.course.title}</h1>
+        {
+          description ? (
+            <p class="legacy-course__description">{description}</p>
+          ) : null
+        }
+        <p class="course-preview__content-meta">
+          {lessons.length} lesson{lessons.length === 1 ? "" : "s"}
+        </p>
+      </header>
+
+      {
+        firstLesson ? (
+          <p class="legacy-course__start-link">
+            <a class="kbm-btn kbm-btn-accent" href={legacyLessonHref(courseSlug, firstLesson.slug)}>
+              Start with lesson 1
+            </a>
+          </p>
+        ) : null
+      }
+
+      <section aria-labelledby="legacy-course-lessons-heading">
+        <h2 id="legacy-course-lessons-heading">Lessons</h2>
+        <ol class="course-preview__lesson-list legacy-course__lesson-list">
+          {
+            lessons.map((lesson) => (
+              <li>
+                <a href={legacyLessonHref(courseSlug, lesson.slug)}>
+                  <span class="legacy-course__lesson-order">{lesson.displayOrder}.</span>
+                  {lesson.title}
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+      </section>
+    </article>
+  </LegacyCourseShell>
+</Layout>
+
+<style>
+  .legacy-course__description {
+    margin: 0.5rem 0 0;
+    line-height: 1.6;
+    color: #444;
+  }
+
+  .legacy-course__start-link {
+    margin: 0 0 1.25rem;
+  }
+
+  .legacy-course__lesson-list a {
+    color: var(--kbm-green, #52682d);
+    text-decoration: none;
+  }
+
+  .legacy-course__lesson-list a:hover {
+    text-decoration: underline;
+  }
+
+  .legacy-course__lesson-order {
+    font-variant-numeric: tabular-nums;
+    margin-right: 0.35rem;
+  }
+</style>

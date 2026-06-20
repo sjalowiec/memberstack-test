@@ -1,0 +1,953 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { isCourseContentAdminAllowed } from "../../lib/legacy_kin/courseContentAdmin";
+import "../../styles/course-preview.css";
+
+export const prerender = false;
+
+if (
+  !isCourseContentAdminAllowed(Astro.url.hostname, {
+    isViteDev: import.meta.env.DEV,
+    publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+  })
+) {
+  return Astro.redirect("/admin/");
+}
+---
+
+<BaseLayout
+  title="Course Content Editor | Admin"
+  description="Edit legacy KIN course POC richText HTML"
+  skipGlobalHyvor={true}
+  bodyClass="course-content-admin-body help-hub-admin-body"
+>
+  <main class="help-hub-admin course-content-admin">
+    <header class="help-hub-admin__head">
+      <h1 class="help-hub-admin__title">Legacy course content</h1>
+      <p class="help-hub-admin__sub">
+        Edit richText HTML in <code>src/data/legacy_kin/cleaned/</code>. Saves create a timestamped backup in{" "}
+        <code>cleaned/backups/</code>. Preview changes at{" "}
+        <a href="/dev/course-preview" target="_blank" rel="noopener noreferrer">/dev/course-preview</a>.
+      </p>
+    </header>
+
+    <div class="help-hub-admin__toolbar course-content-admin__toolbar">
+      <a href="/admin" class="kbm-btn kbm-btn-outline">Back to Admin</a>
+      <a id="course-content-preview-link" class="kbm-btn kbm-btn-outline" href="/dev/course-preview" target="_blank" rel="noopener noreferrer">
+        Open course preview
+      </a>
+      <button type="button" id="course-content-save-all" class="kbm-btn kbm-btn-accent" disabled>
+        Save changed blocks
+      </button>
+    </div>
+
+    <p id="course-content-status" class="help-hub-admin__status" aria-live="polite"></p>
+
+    <section class="course-content-admin__selectors admin-panel">
+      <div class="course-content-admin__field">
+        <label for="course-content-course" class="help-hub-edit__label">Course</label>
+        <select id="course-content-course" class="help-hub-edit__input">
+          <option value="">Loading courses…</option>
+        </select>
+      </div>
+      <div class="course-content-admin__field">
+        <label for="course-content-lesson" class="help-hub-edit__label">Lesson</label>
+        <select id="course-content-lesson" class="help-hub-edit__input" disabled>
+          <option value="">Select a course first</option>
+        </select>
+      </div>
+    </section>
+
+    <p id="course-content-loading" class="help-hub-admin__loading">Loading course data…</p>
+
+    <div id="course-content-lesson-panel" class="course-content-admin__lesson-panel" hidden>
+      <header class="course-content-admin__lesson-head">
+        <h2 id="course-content-lesson-title" class="course-content-admin__lesson-title"></h2>
+        <p id="course-content-lesson-meta" class="course-content-admin__lesson-meta"></p>
+      </header>
+      <div id="course-content-blocks" class="course-content-admin__blocks"></div>
+    </div>
+  </main>
+
+  <style>
+    :global(body.course-content-admin-body) {
+      margin: 0;
+    }
+
+    .course-content-admin {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 1.25rem 1.5rem 3rem;
+      box-sizing: border-box;
+    }
+
+    .course-content-admin__toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .course-content-admin__selectors {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+      padding: 1rem;
+    }
+
+    .course-content-admin__field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .course-content-admin__lesson-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .course-content-admin__lesson-head {
+      margin: 0;
+    }
+
+    .course-content-admin__lesson-title {
+      margin: 0 0 0.25rem;
+      font-size: 1.35rem;
+    }
+
+    .course-content-admin__lesson-meta {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.92rem;
+    }
+
+    .course-content-admin__blocks {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .course-content-block {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+    }
+
+    .course-content-block.is-dirty {
+      border-color: #f59e0b;
+      box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.25);
+    }
+
+    .course-content-block.is-saved {
+      border-color: #22c55e;
+    }
+
+    .course-content-block__head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .course-content-block__title {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .course-content-block__meta {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+
+    .course-content-block__grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 1rem;
+    }
+
+    @media (max-width: 960px) {
+      .course-content-block__grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .course-content-block__panel-title {
+      margin: 0 0 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #475569;
+    }
+
+    .course-content-block__preview {
+      min-height: 6rem;
+      padding: 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #fafafa;
+      overflow: auto;
+    }
+
+    .course-content-block__editor-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .course-content-block__toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      padding: 0.45rem 0.5rem;
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+
+    .course-content-block__toolbar-btn {
+      margin: 0;
+      padding: 0.2rem 0.45rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      background: #fff;
+      color: #334155;
+      font-size: 0.75rem;
+      line-height: 1.2;
+      cursor: pointer;
+    }
+
+    .course-content-block__toolbar-btn:hover {
+      background: #eef2ff;
+      border-color: #a5b4fc;
+    }
+
+    .course-content-block__toolbar-btn:focus-visible {
+      outline: 2px solid #6366f1;
+      outline-offset: 1px;
+    }
+
+    .course-content-block__textarea {
+      width: 100%;
+      min-height: 14rem;
+      padding: 0.65rem 0.75rem;
+      border: 0;
+      border-radius: 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+
+    .course-content-block__editor-wrap:focus-within {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.25);
+    }
+
+    .course-content-block__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.75rem;
+    }
+
+    .course-content-block__cleanup {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-top: 0.5rem;
+    }
+
+    .course-content-block__cleanup .kbm-btn {
+      font-size: 0.78rem;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .course-content-block__readonly {
+      margin: 0;
+      padding: 0.65rem 0.75rem;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    .course-content-admin__status.is-error {
+      color: #b91c1c;
+    }
+
+    .course-content-admin__status.is-success {
+      color: #15803d;
+    }
+  </style>
+
+  <script>
+    const LEGACY_ASSET_ORIGIN = "https://www.knititnow.com";
+    const API_URL = "/api/admin/course-content";
+
+    const CLEANUP_ACTIONS = [
+      { id: "emptyParagraphs", label: "Remove empty paragraphs" },
+      { id: "duplicateBreaks", label: "Remove duplicate line breaks" },
+      { id: "fontFamily", label: "Remove inline font-family styles" },
+      { id: "legacyNav", label: "Remove old nav/button remnants" },
+      { id: "vimeoSpacing", label: "Normalize Vimeo iframe spacing" },
+      { id: "boxWrappers", label: "Remove boxtop/boxbottom wrappers" },
+    ];
+
+    const HTML_TOOLBAR_ACTIONS = [
+      { id: "bold", label: "Bold", title: "Wrap with <strong>" },
+      { id: "italic", label: "Italic", title: "Wrap with <em>" },
+      { id: "underline", label: "Underline", title: "Wrap with <u>" },
+      { id: "paragraph", label: "P", title: "Wrap with <p>" },
+      { id: "h2", label: "H2", title: "Wrap with <h2>" },
+      { id: "h3", label: "H3", title: "Wrap with <h3>" },
+      { id: "ul", label: "UL", title: "Insert bulleted list" },
+      { id: "ol", label: "OL", title: "Insert numbered list" },
+      { id: "link", label: "Link", title: "Insert link" },
+      { id: "br", label: "BR", title: "Insert line break" },
+      { id: "hr", label: "HR", title: "Insert horizontal rule" },
+      { id: "accordion", label: "Accordion", title: "Insert accordion template" },
+      { id: "download", label: "Download", title: "Insert download link template" },
+      {
+        id: "textVideoRight",
+        label: "Text + Video Right",
+        title: "Insert two-column row: text left, Vimeo right",
+      },
+      {
+        id: "threeVideosRow",
+        label: "3 Videos Row",
+        title: "Insert three-column row with Vimeo embeds",
+      },
+    ];
+
+    const TEXT_VIDEO_RIGHT_HTML = `<div class="row">
+  <div class="col-sm-6 col-xs-12">
+    <p>Text here</p>
+  </div>
+
+  <div class="col-sm-6 col-xs-12">
+    <div class="vimeo-embed-wrapper">
+      <div class="vimeo-embed-container" style="padding-bottom: 56.25%">
+        <iframe
+          src="https://player.vimeo.com/video/347816973"
+          title="Lesson video"
+          allowfullscreen
+          loading="lazy">
+        </iframe>
+      </div>
+    </div>
+  </div>
+</div>`;
+
+    const THREE_VIDEOS_ROW_HTML = `<div class="row">
+  <div class="col-sm-4 col-xs-12">
+    <div class="vimeo-embed-wrapper">
+      <div class="vimeo-embed-container" style="padding-bottom:56.25%">
+        <iframe src="https://player.vimeo.com/video/111111111" loading="lazy" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-4 col-xs-12">
+    <div class="vimeo-embed-wrapper">
+      <div class="vimeo-embed-container" style="padding-bottom:56.25%">
+        <iframe src="https://player.vimeo.com/video/222222222" loading="lazy" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-4 col-xs-12">
+    <div class="vimeo-embed-wrapper">
+      <div class="vimeo-embed-container" style="padding-bottom:56.25%">
+        <iframe src="https://player.vimeo.com/video/333333333" loading="lazy" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+</div>`;
+
+    /** @type {HTMLSelectElement | null} */
+    const courseSelect = document.getElementById("course-content-course");
+    /** @type {HTMLSelectElement | null} */
+    const lessonSelect = document.getElementById("course-content-lesson");
+    /** @type {HTMLElement | null} */
+    const statusEl = document.getElementById("course-content-status");
+    /** @type {HTMLElement | null} */
+    const loadingEl = document.getElementById("course-content-loading");
+    /** @type {HTMLElement | null} */
+    const lessonPanel = document.getElementById("course-content-lesson-panel");
+    /** @type {HTMLElement | null} */
+    const lessonTitleEl = document.getElementById("course-content-lesson-title");
+    /** @type {HTMLElement | null} */
+    const lessonMetaEl = document.getElementById("course-content-lesson-meta");
+    /** @type {HTMLElement | null} */
+    const blocksEl = document.getElementById("course-content-blocks");
+    /** @type {HTMLButtonElement | null} */
+    const saveAllBtn = document.getElementById("course-content-save-all");
+    /** @type {HTMLAnchorElement | null} */
+    const previewLink = document.getElementById("course-content-preview-link");
+
+    /** @type {{ id: number; title: string }[]} */
+    let courseCatalog = [];
+    /** @type {Record<string, unknown> | null} */
+    let currentCourse = null;
+    /** @type {number | null} */
+    let currentCourseId = null;
+
+    function setStatus(message, kind = "") {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.classList.remove("is-error", "is-success");
+      if (kind) statusEl.classList.add(kind);
+    }
+
+    function rewriteLegacyHtml(html) {
+      return html
+        .replace(/src="(\/[^"]+)"/g, (_, path) => `src="${LEGACY_ASSET_ORIGIN}${path}"`)
+        .replace(/src='(\/[^']+)'/g, (_, path) => `src='${LEGACY_ASSET_ORIGIN}${path}'`)
+        .replace(/href="(\/[^"]+\.pdf)"/gi, (_, path) => `href="${LEGACY_ASSET_ORIGIN}${path}"`);
+    }
+
+    function applyHtmlCleanup(html, action) {
+      switch (action) {
+        case "emptyParagraphs":
+          return html.replace(/<p\b[^>]*>(?:\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, "");
+        case "duplicateBreaks":
+          return html.replace(/(<br\s*\/?>\s*){2,}/gi, "<br>");
+        case "fontFamily":
+          return html
+            .replace(/\s*font-family\s*:\s*[^;}"']+;?/gi, "")
+            .replace(/\s*style="\s*"/gi, "")
+            .replace(/\s*style=''/gi, "");
+        case "legacyNav":
+          return html
+            .replace(/<a\b[^>]*class="[^"]*\bbtn\b[^"]*"[^>]*>[\s\S]*?<\/a>/gi, "")
+            .replace(
+              /<div\b[^>]*class="[^"]*\b(?:nav|navigation|pager|pagination)\b[^"]*"[^>]*>[\s\S]*?<\/div>/gi,
+              "",
+            );
+        case "vimeoSpacing":
+          return html
+            .replace(/\s*(<iframe\b[^>]*(?:vimeo|player\.vimeo)[^>]*><\/iframe>)\s*/gi, "\n$1\n")
+            .replace(/(<\/iframe>)\s+(<iframe\b)/gi, "$1\n$2");
+        case "boxWrappers":
+          return html
+            .replace(/<\/?div\b[^>]*class="[^"]*\bboxtop\b[^"]*"[^>]*>/gi, "")
+            .replace(/<\/?div\b[^>]*class="[^"]*\bboxbottom\b[^"]*"[^>]*>/gi, "");
+        default:
+          return html;
+      }
+    }
+
+    function sortedComponents(block) {
+      const components = Array.isArray(block?.components) ? [...block.components] : [];
+      return components.sort((a, b) => {
+        if (a.order !== b.order) return a.order - b.order;
+        const slotA = a.legacySlot ?? 0;
+        const slotB = b.legacySlot ?? 0;
+        if (slotA !== slotB) return slotA - slotB;
+        return String(a.type).localeCompare(String(b.type));
+      });
+    }
+
+    function sortedBlocks(lesson) {
+      const blocks = Array.isArray(lesson?.blocks) ? [...lesson.blocks] : [];
+      return blocks.sort((a, b) => a.order - b.order);
+    }
+
+    function sortedLessons(course) {
+      const lessons = Array.isArray(course?.lessons) ? [...course.lessons] : [];
+      return lessons.sort((a, b) => a.displayOrder - b.displayOrder);
+    }
+
+    function updatePreview(previewEl, html) {
+      previewEl.innerHTML = rewriteLegacyHtml(html);
+    }
+
+    /**
+     * @param {HTMLTextAreaElement} textarea
+     * @param {number} start
+     * @param {number} end
+     */
+    function setTextareaSelection(textarea, start, end) {
+      textarea.focus();
+      textarea.setSelectionRange(start, end);
+    }
+
+    /**
+     * @param {HTMLTextAreaElement} textarea
+     * @param {string} action
+     */
+    function applyHtmlToolbarAction(textarea, action) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const value = textarea.value;
+      const selected = value.slice(start, end);
+      let insert = "";
+      /** @type {number | null} */
+      let cursor = null;
+      /** @type {number | null} */
+      let selectionEnd = null;
+
+      switch (action) {
+        case "bold":
+          insert = selected
+            ? `<strong>${selected}</strong>`
+            : "<strong></strong>";
+          cursor = selected ? start + insert.length : start + "<strong>".length;
+          break;
+        case "italic":
+          insert = selected ? `<em>${selected}</em>` : "<em></em>";
+          cursor = selected ? start + insert.length : start + "<em>".length;
+          break;
+        case "underline":
+          insert = selected ? `<u>${selected}</u>` : "<u></u>";
+          cursor = selected ? start + insert.length : start + "<u>".length;
+          break;
+        case "paragraph":
+          insert = selected ? `<p>${selected}</p>` : "<p></p>";
+          cursor = selected ? start + insert.length : start + "<p>".length;
+          break;
+        case "h2":
+          insert = selected ? `<h2>${selected}</h2>` : "<h2></h2>";
+          cursor = selected ? start + insert.length : start + "<h2>".length;
+          break;
+        case "h3":
+          insert = selected ? `<h3>${selected}</h3>` : "<h3></h3>";
+          cursor = selected ? start + insert.length : start + "<h3>".length;
+          break;
+        case "ul":
+          insert = selected
+            ? `<ul><li>${selected}</li></ul>`
+            : "<ul><li></li></ul>";
+          cursor = selected
+            ? start + insert.length
+            : start + "<ul><li>".length;
+          break;
+        case "ol":
+          insert = selected
+            ? `<ol><li>${selected}</li></ol>`
+            : "<ol><li></li></ol>";
+          cursor = selected
+            ? start + insert.length
+            : start + "<ol><li>".length;
+          break;
+        case "link": {
+          const open = '<a href="">';
+          const close = "</a>";
+          insert = selected ? `${open}${selected}${close}` : `${open}${close}`;
+          cursor = start + open.length;
+          if (selected) {
+            selectionEnd = cursor;
+          }
+          break;
+        }
+        case "br":
+          insert = "<br>";
+          cursor = start + insert.length;
+          break;
+        case "hr":
+          insert = "<hr>";
+          cursor = start + insert.length;
+          break;
+        case "accordion": {
+          const open = "<details>\n  <summary>";
+          const mid = "</summary>\n  <p>";
+          const close = "</p>\n</details>";
+          insert = selected
+            ? `${open}${selected}${mid}Content${close}`
+            : `${open}Heading${mid}Content${close}`;
+          cursor = start + open.length;
+          selectionEnd = cursor + (selected ? selected.length : "Heading".length);
+          break;
+        }
+        case "download": {
+          insert = '<a href="/downloads/file.pdf" download>Download PDF</a>';
+          cursor = start + '<a href="'.length;
+          selectionEnd = cursor + "/downloads/file.pdf".length;
+          break;
+        }
+        case "textVideoRight": {
+          const prefix = start > 0 && value[start - 1] !== "\n" ? "\n" : "";
+          const suffix = end < value.length && value[end] !== "\n" ? "\n" : "";
+          insert = `${prefix}${TEXT_VIDEO_RIGHT_HTML}${suffix}`;
+          cursor =
+            start +
+            prefix.length +
+            '<div class="row">\n  <div class="col-sm-6 col-xs-12">\n    <p>'.length;
+          selectionEnd = cursor + "Text here".length;
+          break;
+        }
+        case "threeVideosRow": {
+          const prefix = start > 0 && value[start - 1] !== "\n" ? "\n" : "";
+          const suffix = end < value.length && value[end] !== "\n" ? "\n" : "";
+          insert = `${prefix}${THREE_VIDEOS_ROW_HTML}${suffix}`;
+          cursor =
+            start +
+            prefix.length +
+            '<div class="row">\n  <div class="col-sm-4 col-xs-12">\n    <div class="vimeo-embed-wrapper">\n      <div class="vimeo-embed-container" style="padding-bottom:56.25%">\n        <iframe src="https://player.vimeo.com/video/'.length;
+          selectionEnd = cursor + "111111111".length;
+          break;
+        }
+        default:
+          return;
+      }
+
+      textarea.value = value.slice(0, start) + insert + value.slice(end);
+      if (cursor == null) return;
+      setTextareaSelection(
+        textarea,
+        cursor,
+        selectionEnd == null ? cursor : selectionEnd,
+      );
+    }
+
+    function renderHtmlToolbar() {
+      return `
+        <div class="course-content-block__toolbar" role="toolbar" aria-label="HTML formatting">
+          ${HTML_TOOLBAR_ACTIONS.map(
+            (action) =>
+              `<button type="button" class="course-content-block__toolbar-btn" data-html-action="${action.id}" title="${action.title}">${action.label}</button>`,
+          ).join("")}
+        </div>
+      `;
+    }
+
+    function updateDirtyState() {
+      const dirtyCount = document.querySelectorAll(".course-content-block.is-dirty").length;
+      if (saveAllBtn) saveAllBtn.disabled = dirtyCount === 0;
+    }
+
+    function renderReadonlyBlock(block, components) {
+      const types = components.map((c) => c.type).join(", ");
+      return `
+        <article class="course-content-block">
+          <div class="course-content-block__head">
+            <h3 class="course-content-block__title">${block.title || "(untitled block)"}</h3>
+            <p class="course-content-block__meta">${block.legacy?.blockType || "unknown"} · ${types}</p>
+          </div>
+          <p class="course-content-block__readonly">No richText editor for this block (${types}).</p>
+        </article>
+      `;
+    }
+
+    function renderRichTextBlock(block, component, lessonSlug) {
+      const blockKey = `${lessonSlug}::${block.slug}::${component.legacyComponentId}`;
+      const cleanupButtons = CLEANUP_ACTIONS.map(
+        (action) =>
+          `<button type="button" class="kbm-btn kbm-btn-outline" data-cleanup="${action.id}">${action.label}</button>`,
+      ).join("");
+
+      return `
+        <article class="course-content-block" data-block-key="${blockKey}">
+          <div class="course-content-block__head">
+            <h3 class="course-content-block__title">${block.title || "(untitled block)"}</h3>
+            <p class="course-content-block__meta">
+              ${block.legacy?.blockType || "HTML"} · richText · component ${component.legacyComponentId}
+            </p>
+          </div>
+          <div class="course-content-block__grid">
+            <div>
+              <p class="course-content-block__panel-title">Rendered preview</p>
+              <div class="course-content-block__preview course-preview__richtext" data-preview></div>
+            </div>
+            <div>
+              <p class="course-content-block__panel-title" id="editor-label-${blockKey}">HTML source</p>
+              <div class="course-content-block__editor-wrap">
+                ${renderHtmlToolbar()}
+                <textarea
+                  id="editor-${blockKey}"
+                  class="course-content-block__textarea"
+                  data-editor
+                  aria-labelledby="editor-label-${blockKey}"
+                  data-original-html="${encodeURIComponent(component.html || "")}"
+                  spellcheck="false"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="course-content-block__cleanup">${cleanupButtons}</div>
+          <div class="course-content-block__actions">
+            <button type="button" class="kbm-btn kbm-btn-accent" data-save-block>Save this block</button>
+            <button type="button" class="kbm-btn kbm-btn-outline" data-reset-block>Reset</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function wireBlockEditors(lessonSlug) {
+      if (!blocksEl) return;
+
+      blocksEl.querySelectorAll(".course-content-block[data-block-key]").forEach((article) => {
+        const textarea = article.querySelector("[data-editor]");
+        const preview = article.querySelector("[data-preview]");
+        if (!(textarea instanceof HTMLTextAreaElement) || !(preview instanceof HTMLElement)) return;
+
+        const original = decodeURIComponent(textarea.dataset.originalHtml || "");
+        textarea.value = original;
+        updatePreview(preview, original);
+
+        const syncEditorState = () => {
+          updatePreview(preview, textarea.value);
+          const dirty = textarea.value !== original;
+          article.classList.toggle("is-dirty", dirty);
+          article.classList.remove("is-saved");
+          updateDirtyState();
+        };
+
+        textarea.addEventListener("input", syncEditorState);
+
+        article.querySelectorAll("[data-html-action]").forEach((btn) => {
+          btn.addEventListener("mousedown", (event) => {
+            event.preventDefault();
+          });
+          btn.addEventListener("click", () => {
+            const action = btn.getAttribute("data-html-action");
+            if (!action) return;
+            applyHtmlToolbarAction(textarea, action);
+            syncEditorState();
+          });
+        });
+
+        article.querySelectorAll("[data-cleanup]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const action = btn.getAttribute("data-cleanup");
+            if (!action) return;
+            textarea.value = applyHtmlCleanup(textarea.value, action);
+            syncEditorState();
+          });
+        });
+
+        const resetBtn = article.querySelector("[data-reset-block]");
+        resetBtn?.addEventListener("click", () => {
+          textarea.value = original;
+          updatePreview(preview, original);
+          article.classList.remove("is-dirty", "is-saved");
+          updateDirtyState();
+        });
+
+        const saveBtn = article.querySelector("[data-save-block]");
+        saveBtn?.addEventListener("click", () => {
+          saveBlocks([article], lessonSlug);
+        });
+      });
+
+      updateDirtyState();
+    }
+
+    function renderLesson(lesson) {
+      if (!lessonPanel || !lessonTitleEl || !lessonMetaEl || !blocksEl) return;
+
+      lessonTitleEl.textContent = lesson.title;
+      lessonMetaEl.textContent = `Slug: ${lesson.slug} · ${sortedBlocks(lesson).length} blocks`;
+
+      const parts = [];
+      for (const block of sortedBlocks(lesson)) {
+        const richTextComponents = sortedComponents(block).filter((c) => c.type === "richText");
+        if (richTextComponents.length === 0) {
+          parts.push(renderReadonlyBlock(block, sortedComponents(block)));
+          continue;
+        }
+        for (const component of richTextComponents) {
+          parts.push(renderRichTextBlock(block, component, lesson.slug));
+        }
+      }
+
+      blocksEl.innerHTML = parts.join("");
+      wireBlockEditors(lesson.slug);
+      lessonPanel.hidden = false;
+
+      if (previewLink && currentCourseId != null) {
+        previewLink.href = `/dev/course-preview/${currentCourseId}/${lesson.slug}`;
+      }
+    }
+
+    function populateLessonSelect(course) {
+      if (!lessonSelect) return;
+      const lessons = sortedLessons(course);
+      lessonSelect.innerHTML = lessons
+        .map(
+          (lesson, index) =>
+            `<option value="${lesson.slug}">${index + 1}. ${lesson.title}</option>`,
+        )
+        .join("");
+      lessonSelect.disabled = lessons.length === 0;
+      if (lessons.length > 0) {
+        lessonSelect.value = lessons[0].slug;
+        renderLesson(lessons[0]);
+      }
+    }
+
+    async function loadCourse(courseId) {
+      if (!courseSelect || !lessonSelect || !loadingEl) return;
+
+      currentCourseId = courseId;
+      loadingEl.hidden = false;
+      if (lessonPanel) lessonPanel.hidden = true;
+      setStatus("");
+
+      try {
+        const res = await fetch(`${API_URL}?courseId=${courseId}`);
+        const payload = await res.json();
+        if (!res.ok || !payload.ok) {
+          throw new Error(payload.error || "Could not load course.");
+        }
+
+        currentCourse = payload.course;
+        populateLessonSelect(payload.course);
+        loadingEl.hidden = true;
+
+        if (previewLink) {
+          previewLink.href = `/dev/course-preview/${courseId}`;
+        }
+      } catch (err) {
+        loadingEl.hidden = true;
+        setStatus(err instanceof Error ? err.message : "Could not load course.", "is-error");
+      }
+    }
+
+    function collectUpdates(articles, lessonSlug) {
+      /** @type {{ lessonSlug: string; blockSlug: string; legacyComponentId: number; html: string }[]} */
+      const updates = [];
+
+      articles.forEach((article) => {
+        const blockKey = article.getAttribute("data-block-key");
+        const textarea = article.querySelector("[data-editor]");
+        if (!blockKey || !(textarea instanceof HTMLTextAreaElement)) return;
+
+        const parts = blockKey.split("::");
+        if (parts.length !== 3) return;
+
+        const [, blockSlug, componentIdRaw] = parts;
+        const legacyComponentId = Number.parseInt(componentIdRaw, 10);
+        if (!Number.isFinite(legacyComponentId)) return;
+
+        updates.push({
+          lessonSlug,
+          blockSlug,
+          legacyComponentId,
+          html: textarea.value,
+        });
+      });
+
+      return updates;
+    }
+
+    async function saveBlocks(articles, lessonSlug) {
+      if (currentCourseId == null) return;
+
+      const dirtyArticles = articles.filter((article) => article.classList.contains("is-dirty"));
+      if (dirtyArticles.length === 0) {
+        setStatus("No changes to save.", "is-error");
+        return;
+      }
+
+      const savedValues = new Map();
+      dirtyArticles.forEach((article) => {
+        const textarea = article.querySelector("[data-editor]");
+        if (textarea instanceof HTMLTextAreaElement) {
+          savedValues.set(article, textarea.value);
+        }
+      });
+
+      setStatus("Saving…");
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            courseId: currentCourseId,
+            updates: collectUpdates(dirtyArticles, lessonSlug),
+          }),
+        });
+        const payload = await res.json();
+
+        if (!res.ok || !payload.ok) {
+          throw new Error(payload.error || "Save failed.");
+        }
+
+        dirtyArticles.forEach((article) => {
+          const textarea = article.querySelector("[data-editor]");
+          const value = savedValues.get(article);
+          if (textarea instanceof HTMLTextAreaElement && value != null) {
+            textarea.dataset.originalHtml = encodeURIComponent(value);
+            article.classList.remove("is-dirty");
+            article.classList.add("is-saved");
+          }
+        });
+
+        updateDirtyState();
+        const backupName = payload.backupPath ? String(payload.backupPath).split(/[/\\]/).pop() : "";
+        setStatus(
+          `Saved ${payload.applied} block(s). Backup: ${backupName || "created"}.`,
+          "is-success",
+        );
+      } catch (err) {
+        setStatus(err instanceof Error ? err.message : "Save failed.", "is-error");
+      }
+    }
+
+    async function init() {
+      if (!courseSelect) return;
+
+      try {
+        const res = await fetch(API_URL);
+        const payload = await res.json();
+        if (!res.ok || !payload.ok) {
+          throw new Error(payload.error || "Could not load course list.");
+        }
+
+        courseCatalog = payload.courses || [];
+        courseSelect.innerHTML = courseCatalog
+          .map(
+            (course) =>
+              `<option value="${course.id}">${course.title} (course ${course.id})</option>`,
+          )
+          .join("");
+
+        if (courseCatalog.length > 0) {
+          courseSelect.value = String(courseCatalog[0].id);
+          await loadCourse(courseCatalog[0].id);
+        }
+      } catch (err) {
+        if (loadingEl) loadingEl.hidden = true;
+        setStatus(err instanceof Error ? err.message : "Could not initialize.", "is-error");
+      }
+    }
+
+    courseSelect?.addEventListener("change", () => {
+      const courseId = Number.parseInt(courseSelect.value, 10);
+      if (Number.isFinite(courseId)) loadCourse(courseId);
+    });
+
+    lessonSelect?.addEventListener("change", () => {
+      if (!currentCourse || !lessonSelect.value) return;
+      const lesson = sortedLessons(currentCourse).find((item) => item.slug === lessonSelect.value);
+      if (lesson) renderLesson(lesson);
+    });
+
+    saveAllBtn?.addEventListener("click", () => {
+      if (!lessonSelect?.value) return;
+      const articles = Array.from(document.querySelectorAll(".course-content-block.is-dirty"));
+      saveBlocks(articles, lessonSelect.value);
+    });
+
+    init();
+  </script>
+</BaseLayout>

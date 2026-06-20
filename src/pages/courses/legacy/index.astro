@@ -1,0 +1,118 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import {
+  getLegacyCourses,
+  legacyCourseHref,
+} from "../../../lib/legacy_kin/legacyCourseLoader";
+
+const courses = getLegacyCourses();
+const pageTitle = "Legacy Course Preview | Knit it Now";
+---
+
+<Layout
+  title={pageTitle}
+  description="Local preview index for cleaned legacy KIN course JSON."
+  skipGlobalHyvor
+>
+  <section class="legacy-course-index">
+    <header class="legacy-course-index__header">
+      <h1>Legacy Course Preview</h1>
+      <p>
+        Cleaned course JSON from <code>src/data/legacy_kin/cleaned/</code>. Edit a
+        file, save, and refresh to preview.
+      </p>
+    </header>
+
+    {
+      courses.length === 0 ? (
+        <p class="legacy-course-index__empty">No cleaned course JSON files found.</p>
+      ) : (
+        <ul class="legacy-course-index__list">
+          {
+            courses.map((course) => (
+              <li class="legacy-course-index__item">
+                <h2>
+                  <a href={legacyCourseHref(course.slug)}>{course.title}</a>
+                </h2>
+                <p class="legacy-course-index__meta">
+                  <span>Slug: <code>{course.slug}</code></span>
+                  <span>
+                    {course.lessonCount} lesson{course.lessonCount === 1 ? "" : "s"}
+                  </span>
+                  <span>Legacy id {course.legacyChallengeId}</span>
+                </p>
+                {course.description ? (
+                  <p class="legacy-course-index__description">{course.description}</p>
+                ) : null}
+              </li>
+            ))
+          }
+        </ul>
+      )
+    }
+  </section>
+</Layout>
+
+<style>
+  .legacy-course-index {
+    max-width: 48rem;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+  }
+
+  .legacy-course-index__header h1 {
+    margin-top: 0;
+  }
+
+  .legacy-course-index__header p {
+    color: #555;
+    line-height: 1.5;
+  }
+
+  .legacy-course-index__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .legacy-course-index__item {
+    border: 1px solid #e0e6d8;
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    background: #fff;
+  }
+
+  .legacy-course-index__item h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1.15rem;
+  }
+
+  .legacy-course-index__item a {
+    color: var(--kbm-green, #52682d);
+    text-decoration: none;
+  }
+
+  .legacy-course-index__item a:hover {
+    text-decoration: underline;
+  }
+
+  .legacy-course-index__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    margin: 0;
+    font-size: 0.875rem;
+    color: #666;
+  }
+
+  .legacy-course-index__description {
+    margin: 0.65rem 0 0;
+    line-height: 1.5;
+  }
+
+  .legacy-course-index__empty {
+    color: #666;
+  }
+</style>

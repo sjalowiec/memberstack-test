@@ -1,0 +1,111 @@
+---
+import VimeoEmbed from "../../media/VimeoEmbed.astro";
+import type { CourseComponent } from "../../../lib/legacy_kin/coursePreviewPoc";
+import {
+  downloadUrl,
+  legacyAssetUrl,
+  rewriteLegacyHtml,
+} from "../../../lib/legacy_kin/coursePreviewPoc";
+
+interface Props {
+  component: CourseComponent;
+}
+
+const { component } = Astro.props;
+---
+
+{
+  component.type === "richText" ? (
+    <div
+      class="course-preview__richtext legacy-course__richtext"
+      set:html={rewriteLegacyHtml(component.html)}
+      data-legacy-component={component.legacyComponentId}
+    />
+  ) : component.type === "video" ? (
+    <figure
+      class="course-preview__video legacy-course__video"
+      data-legacy-component={component.legacyComponentId}
+    >
+      {component.title ? (
+        <figcaption class="course-preview__video-title">{component.title}</figcaption>
+      ) : null}
+      <VimeoEmbed
+        vimeoId={component.vimeoId}
+        title={component.title ?? "Course video"}
+      />
+    </figure>
+  ) : component.type === "download" ? (
+    <p
+      class="course-preview__download legacy-course__download"
+      data-legacy-component={component.legacyComponentId}
+    >
+      <a
+        class="kbm-btn kbm-btn-accent legacy-course__download-btn"
+        href={downloadUrl(component.filename)}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {component.label}
+      </a>
+      {component.showInline ? (
+        <span class="course-preview__download-note"> — inline viewer on legacy site</span>
+      ) : null}
+    </p>
+  ) : component.type === "imageGallery" ? (
+    <div
+      class="course-preview__gallery legacy-course__gallery"
+      data-legacy-component={component.legacyComponentId}
+    >
+      {component.slides.map((slide) => (
+        <figure class="course-preview__gallery-slide">
+          <img
+            src={legacyAssetUrl(slide.src)}
+            alt={slide.caption ?? ""}
+            loading="lazy"
+          />
+          {slide.caption ? <figcaption>{slide.caption}</figcaption> : null}
+        </figure>
+      ))}
+    </div>
+  ) : component.type === "exerciseAccordion" ? (
+    <div
+      class="course-preview__exercise legacy-course__exercise"
+      data-legacy-component={component.legacyComponentId}
+    >
+      {component.sections.map((section) => (
+        <details class="course-preview__exercise-section">
+          <summary set:html={section.title} />
+          {section.iconSrc ? (
+            <img
+              class="course-preview__exercise-icon"
+              src={legacyAssetUrl(section.iconSrc)}
+              alt=""
+              loading="lazy"
+            />
+          ) : null}
+          {section.bodyHtml ? (
+            <div
+              class="course-preview__richtext"
+              set:html={rewriteLegacyHtml(section.bodyHtml)}
+            />
+          ) : null}
+        </details>
+      ))}
+    </div>
+  ) : component.type === "migrationPending" ? (
+    <aside
+      class="course-preview__migration legacy-course__migration"
+      role="alert"
+      data-legacy-component={component.legacyComponentId}
+    >
+      <p class="course-preview__migration-heading">
+        Migration pending: <code>{component.legacyType}</code>
+      </p>
+      <ul class="course-preview__migration-notes">
+        {component.notes.map((note) => (
+          <li>{note}</li>
+        ))}
+      </ul>
+    </aside>
+  ) : null
+}

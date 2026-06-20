@@ -2256,6 +2256,19 @@ p {
   margin-bottom: 0.75rem;
 }
 
+/* Legacy KIN content: handwriting callout (courses, glossary, etc.) */
+.handwriting {
+  font-family: "Handlee", "Shadows Into Light Two", cursive;
+  color: var(--kbm-green);
+  font-weight: 600;
+  font-size: 1.5em;
+}
+
+.handwriting-lg,
+.handwriting.handwriting-lg {
+  font-size: 2em;
+}
+
 /* Optional: blockquotes (safe, subtle) */
 .prose blockquote {
   margin: 1rem 0;

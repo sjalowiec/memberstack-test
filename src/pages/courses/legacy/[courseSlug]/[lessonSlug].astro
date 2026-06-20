@@ -1,0 +1,105 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+import LegacyCourseShell from "../../../../components/courses/legacy/LegacyCourseShell.astro";
+import LegacyCourseRenderer from "../../../../components/courses/legacy/LegacyCourseRenderer.astro";
+import {
+  getLegacyCourseBySlug,
+  getLegacyLessonBySlug,
+  getLegacyLessonNeighbors,
+  legacyLessonHref,
+} from "../../../../lib/legacy_kin/legacyCourseLoader";
+import {
+  sortedBlocks,
+} from "../../../../lib/legacy_kin/coursePreviewPoc";
+
+const courseSlug = Astro.params.courseSlug ?? "";
+const lessonSlug = Astro.params.lessonSlug ?? "";
+const course = getLegacyCourseBySlug(courseSlug);
+const lesson = getLegacyLessonBySlug(courseSlug, lessonSlug);
+
+if (!course || !lesson) {
+  return new Response("Lesson not found", { status: 404 });
+}
+
+const blocks = sortedBlocks(lesson);
+const { prev, next } = getLegacyLessonNeighbors(courseSlug, lesson.slug);
+const pageTitle = `${lesson.title} · ${course.course.title} | Knit it Now`;
+---
+
+<Layout
+  title={pageTitle}
+  description={`${course.course.title} — ${lesson.title}`}
+  skipGlobalHyvor
+>
+  <LegacyCourseShell
+    courseSlug={courseSlug}
+    currentLessonSlug={lesson.slug}
+  >
+    <article class="course-preview__content legacy-course__lesson">
+      <header class="course-preview__section-header">
+        <p class="course-preview__content-lesson">
+          Lesson {lesson.displayOrder}
+        </p>
+        <h1 class="course-preview__content-title">{lesson.title}</h1>
+      </header>
+
+      <LegacyCourseRenderer blocks={blocks} lessonSlug={lesson.slug} />
+
+      {
+        prev || next ? (
+          <nav class="legacy-course__lesson-nav" aria-label="Lesson navigation">
+            {
+              prev ? (
+                <a
+                  class="legacy-course__lesson-nav-link legacy-course__lesson-nav-link--prev"
+                  href={legacyLessonHref(courseSlug, prev.slug)}
+                >
+                  ← {prev.title}
+                </a>
+              ) : (
+                <span />
+              )
+            }
+            {
+              next ? (
+                <a
+                  class="legacy-course__lesson-nav-link legacy-course__lesson-nav-link--next"
+                  href={legacyLessonHref(courseSlug, next.slug)}
+                >
+                  {next.title} →
+                </a>
+              ) : null
+            }
+          </nav>
+        ) : null
+      }
+    </article>
+  </LegacyCourseShell>
+</Layout>
+
+<style>
+  .legacy-course__lesson-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e0e6d8;
+  }
+
+  .legacy-course__lesson-nav-link {
+    color: var(--kbm-green, #52682d);
+    text-decoration: none;
+    max-width: 46%;
+    line-height: 1.4;
+  }
+
+  .legacy-course__lesson-nav-link:hover {
+    text-decoration: underline;
+  }
+
+  .legacy-course__lesson-nav-link--next {
+    text-align: right;
+    margin-left: auto;
+  }
+</style>

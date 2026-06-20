@@ -1,0 +1,45 @@
+---
+import LegacyCourseSidebar from "./LegacyCourseSidebar.astro";
+import "../../../styles/course-preview.css";
+
+interface Props {
+  courseSlug: string;
+  currentLessonSlug?: string;
+}
+
+const { courseSlug, currentLessonSlug } = Astro.props;
+---
+
+<div class="course-preview course-preview--reader legacy-course">
+  <p class="legacy-course__dev-note" role="status">
+    Preview from cleaned JSON in <code>src/data/legacy_kin/cleaned/</code> — refresh
+    after edits.
+  </p>
+
+  <div class="course-preview__layout">
+    <LegacyCourseSidebar {courseSlug} {currentLessonSlug} />
+
+    <div class="course-preview__main legacy-course__main">
+      <slot />
+    </div>
+  </div>
+</div>
+
+<style>
+  .legacy-course__dev-note {
+    margin: 0;
+    padding: 0.35rem 1rem;
+    font-size: 0.75rem;
+    color: #5a6450;
+    background: #eef2e8;
+    border-bottom: 1px solid #dde3d4;
+  }
+
+  .legacy-course__dev-note code {
+    font-size: 0.72rem;
+  }
+
+  .legacy-course__main {
+    padding: 1.25rem clamp(1rem, 3vw, 2rem) 2.5rem;
+  }
+</style>

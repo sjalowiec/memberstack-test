@@ -1,0 +1,34 @@
+---
+import LegacyCourseBlock from "./LegacyCourseBlock.astro";
+import type { CourseBlock } from "../../../lib/legacy_kin/coursePreviewPoc";
+import { sortedComponents } from "../../../lib/legacy_kin/coursePreviewPoc";
+
+interface Props {
+  blocks: CourseBlock[];
+  lessonSlug: string;
+  showBlockTitles?: boolean;
+}
+
+const { blocks, lessonSlug, showBlockTitles = true } = Astro.props;
+---
+
+{
+  blocks.map((block) => (
+    <article
+      class="course-preview__block legacy-course__block"
+      id={`${lessonSlug}--${block.slug}`}
+    >
+      {showBlockTitles && block.title?.trim() ? (
+        <h2 class="course-preview__block-title legacy-course__block-title">
+          {block.title}
+        </h2>
+      ) : null}
+
+      <div class="course-preview__components legacy-course__components">
+        {sortedComponents(block).map((component) => (
+          <LegacyCourseBlock component={component} />
+        ))}
+      </div>
+    </article>
+  ))
+}
