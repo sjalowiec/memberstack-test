@@ -7,6 +7,7 @@
  */
 
 import { clearActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
+import { resolveAvailableNeedlesFromSources } from "./availableNeedlesMirrors";
 import { swatchCountFromPerInchForDisplay } from "./gaugeDisplayFormat";
 import type { SleevelessPatternProjectMeta } from "./sleevelessPatternProjectMeta";
 
@@ -140,6 +141,38 @@ function yarnGaugeMachineFromSavedPattern(pattern: SleevelessPatternRecord): Rec
   return payload;
 }
 
+/** After loading a saved project, mirror needle count into every active store the builder validates. */
+function normalizeAvailableNeedlesMirrorsForHydration(
+  record: SleevelessPatternRecord,
+  builderPayload: Record<string, unknown>,
+): { record: SleevelessPatternRecord; builderPayload: Record<string, unknown> } {
+  const canonMachine = savedPatternSection(record.machine);
+  const pbMachine = savedPatternSection(builderPayload.machine);
+  const pbYgm = savedPatternSection(builderPayload.yarnGaugeMachine);
+
+  const resolved = resolveAvailableNeedlesFromSources(
+    pbYgm.availableNeedles,
+    pbMachine.availableNeedles,
+    canonMachine.availableNeedles,
+  );
+  if (!resolved) {
+    return { record, builderPayload };
+  }
+
+  const machineNext = { ...canonMachine, availableNeedles: resolved };
+  const ygmFromGauge = yarnGaugeMachineFromSavedPattern({ ...record, machine: machineNext });
+  const ygmNext = { ...ygmFromGauge, ...pbYgm, availableNeedles: resolved };
+
+  return {
+    record: { ...record, machine: machineNext },
+    builderPayload: {
+      ...builderPayload,
+      machine: { ...pbMachine, availableNeedles: resolved },
+      yarnGaugeMachine: ygmNext,
+    },
+  };
+}
+
 /**
  * Replaces the working draft from a saved project without merging prior session sections.
  * Used when hydrating saved Custom Pattern projects so stale construction cannot persist.
@@ -152,7 +185,7 @@ export function replaceWorkingDraftFromSavedPattern(
   const prevPb = getPatternData();
   const yarnGaugeMachine = yarnGaugeMachineFromSavedPattern(pattern);
 
-  const next: SleevelessPatternRecord = {
+  let next: SleevelessPatternRecord = {
     ...current,
     id: pattern.id,
     patternType: pattern.patternType ?? "sleeveless",
@@ -170,23 +203,28 @@ export function replaceWorkingDraftFromSavedPattern(
     instructions: savedPatternSection(pattern.instructions),
   };
 
+  let builderPayload: Record<string, unknown> = {
+    createdAt:
+      typeof prevPb.createdAt === "string" && prevPb.createdAt.length > 0
+        ? prevPb.createdAt
+        : pattern.createdAt ?? new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    style: savedPatternSection(pattern.style),
+    fit: savedPatternSection(pattern.fit),
+    yarnGauge: savedPatternSection(pattern.yarnGauge),
+    measurements: savedPatternSection(pattern.measurements),
+    machine: savedPatternSection(pattern.machine),
+    ...(Object.keys(yarnGaugeMachine).length > 0 ? { yarnGaugeMachine } : {}),
+  };
+
+  const normalized = normalizeAvailableNeedlesMirrorsForHydration(next, builderPayload);
+  next = normalized.record;
+  builderPayload = normalized.builderPayload;
+
   persistCanonical(next);
   mirrorLegacyGarmentConfigFlat(next);
 
   if (typeof localStorage !== "undefined") {
-    const builderPayload: Record<string, unknown> = {
-      createdAt:
-        typeof prevPb.createdAt === "string" && prevPb.createdAt.length > 0
-          ? prevPb.createdAt
-          : pattern.createdAt ?? new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      style: savedPatternSection(pattern.style),
-      fit: savedPatternSection(pattern.fit),
-      yarnGauge: savedPatternSection(pattern.yarnGauge),
-      measurements: savedPatternSection(pattern.measurements),
-      machine: savedPatternSection(pattern.machine),
-      ...(Object.keys(yarnGaugeMachine).length > 0 ? { yarnGaugeMachine } : {}),
-    };
     try {
       localStorage.setItem(PATTERN_BUILDER_DATA_KEY, JSON.stringify(builderPayload));
     } catch {

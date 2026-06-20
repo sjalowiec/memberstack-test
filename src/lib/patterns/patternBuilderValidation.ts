@@ -1,4 +1,5 @@
 import { getPatternData, normalizeSleevelessAudience } from "./patternStorage";
+import { patternBuilderAvailableNeedlesRaw } from "./availableNeedlesMirrors";
 
 /** Stable id per required check; extend when adding new rules. */
 export type PatternBuilderRequiredCheckId =
@@ -131,8 +132,7 @@ export function isSleevelessExpressFlowComplete(
   const rowRaw = patternBuilderRowGaugeRaw(patternData);
   if (!isPositiveNumericMeasurement(stitchRaw) || !isPositiveNumericMeasurement(rowRaw)) return false;
 
-  const ygm = yarnGaugeMachineSection(patternData);
-  if (!isPositiveNumericMeasurement(ygm.availableNeedles)) return false;
+  if (!isPositiveNumericMeasurement(patternBuilderAvailableNeedlesRaw(patternData))) return false;
 
   return true;
 }
@@ -161,8 +161,7 @@ export function isSleevelessCustomBuildFlowComplete(
   const rowRaw = patternBuilderRowGaugeRaw(patternData);
   if (!isPositiveNumericMeasurement(stitchRaw) || !isPositiveNumericMeasurement(rowRaw)) return false;
 
-  const ygm = yarnGaugeMachineSection(patternData);
-  if (!isPositiveNumericMeasurement(ygm.availableNeedles)) return false;
+  if (!isPositiveNumericMeasurement(patternBuilderAvailableNeedlesRaw(patternData))) return false;
 
   return true;
 }
@@ -192,7 +191,6 @@ export function validatePatternBuilderRequired(
 ): PatternBuilderRequiredValidation {
   const fit = fitSection(patternData);
   const sm = selectedMeasurements(fit);
-  const ygm = yarnGaugeMachineSection(patternData);
   const stitchRaw = patternBuilderStitchGaugeRaw(patternData);
   const rowRaw = patternBuilderRowGaugeRaw(patternData);
 
@@ -245,7 +243,7 @@ export function validatePatternBuilderRequired(
       id: "availableNeedles",
       label: "Enter available needles",
       href: PATTERN_BUILDER_YARN_NEEDLES_HREF,
-      complete: isPositiveNumericMeasurement(ygm.availableNeedles),
+      complete: isPositiveNumericMeasurement(patternBuilderAvailableNeedlesRaw(patternData)),
     },
   ];
 

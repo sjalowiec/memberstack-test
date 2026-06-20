@@ -34,6 +34,7 @@ import {
 } from "./customBuildEffectiveArmholeDepth";
 import { calculateRoundNecklineShaping } from "./legoBlocks/roundNeckline";
 import { neckDecreaseStitchesPerSideFromOpening } from "./legoBlocks/vNeckline";
+import { evenShapingSchedule } from "./evenShapingSchedule";
 import {
   castOnMethodQuickTipInnerHtml,
   ribbedHemTipDisplayRow,

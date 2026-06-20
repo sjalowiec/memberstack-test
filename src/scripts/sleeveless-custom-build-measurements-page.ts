@@ -51,6 +51,7 @@ import {
   collectOverlayAnchors,
   PATTERN_SUMMARY_MEASUREMENT_TARGETS,
 } from "../lib/patterns/patternSummaryMeasurementOverlay";
+import { computeDropShoulderArmholeDepthInches } from "../lib/patterns/dropShoulderArmholeDepth";
 import {
   isDropShoulderConstruction,
   resolveMeasurementBlueprintSvgUrl,
@@ -234,6 +235,14 @@ function getActiveDiagramFields(): DiagramFieldDef[] {
     if (dropShoulder && field.key === "armholeDepth") return false;
     return true;
   });
+}
+
+function dropShoulderArmholeDepthInchesFromMerged(
+  merged: Record<DiagramFieldKey, string>,
+): string {
+  const upperArm = parseInchesInput(merged.upperArm ?? "");
+  const depth = computeDropShoulderArmholeDepthInches(upperArm);
+  return depth !== undefined ? formatInchesInput(depth) : "";
 }
 
 /** Field keys rendered for the active construction (validation / collect / persist gate). */
@@ -758,6 +767,27 @@ function resetCbMeasureWarningDismissal(): void {
   cbMeasureWarningsDismissed = false;
 }
 
+function refreshDropShoulderArmholeDisplay(
+  root: HTMLElement,
+  inchesByKey: Record<DiagramFieldKey, string>,
+  unit: UiLengthUnit,
+): void {
+  if (!isDropShoulderConstruction()) return;
+  const diagramHost = root.querySelector("[data-cb-measure-diagram]");
+  if (!(diagramHost instanceof HTMLElement)) return;
+  const scope = findReviewDiagramOverlay(diagramHost);
+  if (!scope) return;
+  const box = scope.querySelector(".express-mbp-box--armhole");
+  if (!(box instanceof HTMLElement)) return;
+  const valEl =
+    box.querySelector("[data-cb-measure-readonly-value]") ?? box.querySelector(".express-mbp-box__value");
+  if (!(valEl instanceof HTMLElement)) return;
+  valEl.textContent = formatReadonlyMeasurementDisplay(
+    dropShoulderArmholeDepthInchesFromMerged(inchesByKey),
+    unit,
+  );
+}
+
 function wireFieldPersistence(root: HTMLElement, getDisplayUnit: () => UiLengthUnit | null): void {
   root.querySelectorAll("[data-cb-measure-input]").forEach((el) => {
     if (!(el instanceof HTMLInputElement)) return;
@@ -779,12 +809,23 @@ function wireFieldPersistence(root: HTMLElement, getDisplayUnit: () => UiLengthU
       el.closest(".express-mbp-box")?.classList.remove("express-mbp-box--invalid");
       persistFromRoot(root, displayUnit);
       refreshPatternValidationUi(root, displayUnit);
+      if (key === "upperArm") {
+        refreshDropShoulderArmholeDisplay(root, collectValues(root, { displayUnit }), displayUnit ?? "in");
+      }
     };
     el.addEventListener("change", save);
     el.addEventListener("blur", save);
     el.addEventListener("input", () => {
       resetCbMeasureWarningDismissal();
       refreshPatternValidationUi(root, getDisplayUnit());
+      if (el.getAttribute("data-cb-measure-input") === "upperArm") {
+        const displayUnit = getDisplayUnit();
+        refreshDropShoulderArmholeDisplay(
+          root,
+          collectValues(root, { displayUnit: displayUnit ?? undefined }),
+          displayUnit ?? "in",
+        );
+      }
     });
   });
 }
@@ -837,6 +878,23 @@ function applyDiagramUnitDisplay(
     if (unitEl instanceof HTMLElement) {
       unitEl.textContent = unit;
       suffixesUpdated += 1;
+    }
+  }
+
+  if (isDropShoulderConstruction()) {
+    const box = scope.querySelector(".express-mbp-box--armhole");
+    if (box instanceof HTMLElement) {
+      boxesFound += 1;
+      const valEl =
+        box.querySelector("[data-cb-measure-readonly-value]") ??
+        box.querySelector(".express-mbp-box__value");
+      if (valEl instanceof HTMLElement) {
+        valEl.textContent = formatReadonlyMeasurementDisplay(
+          dropShoulderArmholeDepthInchesFromMerged(inchesByKey),
+          unit,
+        );
+        valuesUpdated += 1;
+      }
     }
   }
 
@@ -907,7 +965,23 @@ async function renderDiagram(
   const overlay = document.createElement("div");
   overlay.className = "express-mbp-overlay";
 
-  for (const field of getActiveDiagramFields()) {
+  for (const field of DIAGRAM_FIELDS) {
+    if (field.dropShoulderOnly && !isDropShoulderConstruction()) continue;
+
+    if (isDropShoulderConstruction() && field.key === "armholeDepth") {
+      overlay.appendChild(
+        createDiagramReadonlyFieldBox(
+          field,
+          dropShoulderArmholeDepthInchesFromMerged(merged),
+          unitForBoxes,
+          { axis: field.axis },
+        ),
+      );
+      continue;
+    }
+
+    if (!getActiveDiagramFields().some((active) => active.key === field.key)) continue;
+
     const boxOpts = { axis: field.axis, labelLines: field.labelLines };
     overlay.appendChild(
       readOnly

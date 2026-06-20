@@ -2,7 +2,9 @@
  * Rehydrate Express wizard localStorage (`kbm_sleeveless_express_builder`) from the canonical
  * working pattern — used when reopening a saved project to revise gauge, size, style, etc.
  */
-import { formatSwatchCountForGaugeInput } from "./gaugeDisplayFormat";
+import {
+  resolveAvailableNeedlesFromSources,
+} from "./availableNeedlesMirrors";
 import {
   CUSTOM_PATTERN_ACTIVE_PROJECT_ID_KEY,
   readActiveCustomPatternProjectId,
@@ -70,6 +72,7 @@ function resolveGaugeFields(
 ): Pick<ExpressPersistedV1, "gaugeStitchRaw" | "gaugeRowRaw" | "availableNeedles"> {
   const yarnGauge = section(pattern.yarnGauge);
   const ygm = section(patternData.yarnGaugeMachine);
+  const machinePb = section(patternData.machine);
   const machine = section(pattern.machine);
 
   let gaugeStitchRaw =
@@ -104,16 +107,11 @@ function resolveGaugeFields(
     }
   }
 
-  const needles =
-    typeof ygm.availableNeedles === "string"
-      ? ygm.availableNeedles.trim()
-      : typeof machine.availableNeedles === "string"
-        ? machine.availableNeedles.trim()
-        : ygm.availableNeedles != null
-          ? String(ygm.availableNeedles).trim()
-          : machine.availableNeedles != null
-            ? String(machine.availableNeedles).trim()
-            : "";
+  const needles = resolveAvailableNeedlesFromSources(
+    ygm.availableNeedles,
+    machinePb.availableNeedles,
+    machine.availableNeedles,
+  );
 
   return {
     gaugeStitchRaw,

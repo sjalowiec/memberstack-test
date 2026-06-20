@@ -80,6 +80,8 @@ describe("syncExpressWizardToPatternStorage", () => {
     expect(String(pattern.yarnGauge.stitchGauge)).toBe("6");
     expect(ygm.availableNeedles).toBe("180");
     expect(ygm.gaugeStitchRaw).toBe("24");
+    expect(String(pattern.machine.availableNeedles)).toBe("180");
+    expect(String((pb.machine as Record<string, unknown>).availableNeedles)).toBe("180");
   });
 
   it("uses builder snapshot when DOM is absent (review Build My Pattern path)", () => {
@@ -126,6 +128,8 @@ describe("syncExpressWizardToPatternStorage", () => {
     expect(String((getPatternData().yarnGaugeMachine as Record<string, unknown>).availableNeedles)).toBe(
       "180",
     );
+    expect(String(getCurrentPattern().machine.availableNeedles)).toBe("180");
+    expect(String((getPatternData().machine as Record<string, unknown>).availableNeedles)).toBe("180");
     expect(readActiveCustomPatternProjectId()).toBe("proj-test");
   });
 
@@ -175,6 +179,8 @@ describe("syncExpressWizardToPatternStorage", () => {
     expect(String((getPatternData().yarnGaugeMachine as Record<string, unknown>).availableNeedles)).toBe(
       "180",
     );
+    expect(String(getCurrentPattern().machine.availableNeedles)).toBe("180");
+    expect(String((getPatternData().machine as Record<string, unknown>).availableNeedles)).toBe("180");
   });
 
   it("readExpressGaugeInputSnapshot prefers DOM over stale canonical pattern", () => {

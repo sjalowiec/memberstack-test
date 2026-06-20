@@ -234,6 +234,8 @@ export function syncExpressWizardToPatternStorage(
     : { gaugeStitchesPerInch: "", gaugeRowsPerInch: "" };
 
   const prevMachine = section(getPatternData().yarnGaugeMachine);
+  const prevCanonMachine = section(getCurrentPattern().machine);
+  const prevPbMachine = section(getPatternData().machine);
   const stylePayload: Record<string, string> = {};
   const fitPayload: Record<string, unknown> = {};
   const sm = mapExpressStyleKey(values.style ?? "");
@@ -279,10 +281,12 @@ export function syncExpressWizardToPatternStorage(
     yarnGaugeCanonical.gaugeRawUnit = unit;
   }
 
+  const resolvedNeedles = resolveExpressAvailableNeedles(prevMachine, availableNeedles);
+
   const yarnMachinePayload: Record<string, unknown> = {
     yarnNotes: "",
     yarnWeight: "",
-    availableNeedles: resolveExpressAvailableNeedles(prevMachine, availableNeedles),
+    availableNeedles: resolvedNeedles,
     gaugeStitchRaw,
     gaugeRowRaw,
     gaugeRawUnit: unit,
@@ -300,11 +304,13 @@ export function syncExpressWizardToPatternStorage(
     ...(hasStyle ? { style: stylePayload } : {}),
     ...(hasFit ? { fit: fitPayload } : {}),
     ...(hasYarn ? { yarnGauge: yarnGaugeCanonical } : {}),
+    machine: { ...prevCanonMachine, availableNeedles: resolvedNeedles },
   });
 
   if (hasStyle) savePatternData("style", stylePayload);
   if (hasFit) savePatternData("fit", fitPayload);
   if (hasYarn) savePatternData("yarnGauge", yarnGaugeCanonical);
+  savePatternData("machine", { ...prevPbMachine, availableNeedles: resolvedNeedles });
   if (hasYarn || gaugeStitchRaw || gaugeRowRaw || availableNeedles) {
     savePatternData("yarnGaugeMachine", { ...prevMachine, ...yarnMachinePayload });
   }

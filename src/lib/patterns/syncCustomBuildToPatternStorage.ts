@@ -16,6 +16,7 @@ import {
   savePatternData,
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
 } from "./patternStorage";
+import { resolveAvailableNeedlesFromSources } from "./availableNeedlesMirrors";
 import { resolveGeneratorPatternMode } from "./sleevelessPatternBuilderMerge";
 import {
   computeDefaultMeasurementsFromChartRow,
@@ -134,18 +135,24 @@ function ensureYarnGaugeMachineDefaults(): void {
       : {};
 
   let changed = false;
-  const needles = ygm.availableNeedles ?? machine.availableNeedles;
-  if (needles == null || String(needles).trim() === "") {
+  const resolved = resolveAvailableNeedlesFromSources(ygm.availableNeedles, machine.availableNeedles);
+  if (resolved) {
+    if (String(ygm.availableNeedles ?? "").trim() !== resolved) {
+      ygm.availableNeedles = resolved;
+      changed = true;
+    }
+    if (String(machine.availableNeedles ?? "").trim() !== resolved) {
+      machine.availableNeedles = resolved;
+      changed = true;
+    }
+  } else {
     ygm.availableNeedles = DEFAULT_AVAILABLE_NEEDLES;
     machine.availableNeedles = DEFAULT_AVAILABLE_NEEDLES;
     changed = true;
   }
 
   if (changed) {
-    saveCurrentPattern({
-      yarnGaugeMachine: ygm,
-      machine,
-    });
+    saveCurrentPattern({ machine });
     savePatternData("yarnGaugeMachine", ygm);
     savePatternData("machine", machine);
   }
