@@ -105,18 +105,10 @@ const toolPrintTitle = tool?.title ?? "Yarn Estimator";
                     loading="lazy"
                     decoding="async"
                   />
-                  <img
-                    src="/images/tools/swatch_weigh.png"
-                    alt="Swatch on a scale for weight in grams"
-                    class="ye-reference-image"
-                    width="340"
-                    height="243"
-                    loading="lazy"
-                    decoding="async"
-                  />
                 </div>
               </aside>
             </div>
+            <p class="ye-step-continue" aria-hidden="true">Next: Enter your project dimensions ↓</p>
           </section>
 
           <section class="ye-step-card" aria-labelledby="ye-step-2-title">
@@ -304,9 +296,17 @@ const toolPrintTitle = tool?.title ?? "Yarn Estimator";
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
 
+    .ye-step-card:first-of-type {
+      padding-bottom: 1.25rem;
+    }
+
     @media (max-width: 640px) {
       .ye-step-card {
         padding: 1.25rem;
+      }
+
+      .ye-step-card:first-of-type {
+        padding-bottom: 1rem;
       }
     }
 
@@ -316,6 +316,18 @@ const toolPrintTitle = tool?.title ?? "Yarn Estimator";
       font-weight: 700;
       color: var(--kbm-green, #52682d);
       line-height: 1.3;
+    }
+
+    .ye-step-card:first-of-type .ye-step-title {
+      margin-bottom: 1rem;
+    }
+
+    .ye-step-card:first-of-type .ye-step-layout {
+      gap: 1rem 1.5rem;
+    }
+
+    .ye-step-card:first-of-type .ye-units-block {
+      margin-bottom: 0.75rem;
     }
 
     .ye-step-layout {
@@ -404,6 +416,17 @@ const toolPrintTitle = tool?.title ?? "Yarn Estimator";
       }
     }
 
+    .ye-step-continue {
+      margin: 0.875rem 0 0;
+      padding-top: 0.75rem;
+      border-top: 1px dashed #e5e7eb;
+      text-align: center;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #9ca3af;
+      letter-spacing: 0.01em;
+    }
+
     .ye-piece-diagram {
       margin: 0;
     }
@@ -479,6 +502,10 @@ const toolPrintTitle = tool?.title ?? "Yarn Estimator";
       .ye-field-stack--compact .ye-field--wide {
         grid-column: auto;
       }
+    }
+
+    .ye-step-card:first-of-type .ye-step-hints {
+      margin-top: 0.75rem;
     }
 
     .ye-step-hints {
