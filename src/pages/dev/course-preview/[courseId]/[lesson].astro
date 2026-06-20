@@ -1,0 +1,179 @@
+---
+/**
+ * Dev-only single-lesson preview for legacy KIN course POC JSON.
+ * Route: /dev/course-preview/[courseId]/[lesson]
+ */
+import Layout from "../../../../layouts/Layout.astro";
+import CoursePreviewBlockList from "../../../../components/dev/CoursePreviewBlockList.astro";
+import Lk150CourseSidebar from "../../../../components/dev/Lk150CourseSidebar.astro";
+import {
+  DEFAULT_PREVIEW_COURSE_ID,
+  formatSectionQueryIndex,
+  getCoursePreviewData,
+  getPreviewCourseIds,
+  getSortedLessons,
+  groupBlocksBySection,
+  parseCourseId,
+  sectionAnchorId,
+  sortedBlocks,
+  type CourseLesson,
+} from "../../../../lib/legacy_kin/coursePreviewPoc";
+import "../../../../styles/course-preview.css";
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  return getPreviewCourseIds().flatMap((courseId) =>
+    getSortedLessons(courseId).map((lesson) => ({
+      params: {
+        courseId: String(courseId),
+        lesson: lesson.slug,
+      },
+      props: { courseId, lesson },
+    })),
+  );
+}
+
+interface Props {
+  courseId: number;
+  lesson: CourseLesson;
+}
+
+const { courseId: rawCourseId, lesson } = Astro.props;
+const courseId = parseCourseId(rawCourseId);
+const course = getCoursePreviewData(courseId)!.course;
+const blocks = sortedBlocks(lesson);
+const sections = groupBlocksBySection(blocks);
+
+const sectionsWithOffsets = sections.map((section) => ({
+  section,
+  anchorId: sectionAnchorId(lesson.slug, section),
+}));
+
+const sidebarSections = sectionsWithOffsets.map(({ section }, sectionIndex) => ({
+  title: section.title,
+  oneBasedIndex: sectionIndex + 1,
+}));
+
+const showSectionPicker = sections.length > 1;
+const pageTitle = `DEV Preview: ${course.title} — ${lesson.title}`;
+---
+
+<Layout title={pageTitle} description="Internal dev preview of legacy KIN course POC JSON." skipGlobalHyvor>
+  <div class="course-preview course-preview--reader">
+    <p class="course-preview__banner course-preview__banner--compact" role="status">
+      <strong>Dev preview</strong> — legacy KIN course POC JSON. Not production content.
+    </p>
+
+    <div class="course-preview__layout">
+      <Lk150CourseSidebar
+        courseId={courseId}
+        currentLessonSlug={lesson.slug}
+        currentSections={sidebarSections}
+      />
+
+      <div class="course-preview__main">
+        {
+          showSectionPicker ? (
+            <div
+              class="course-preview__section-picker"
+              data-lk150-section-picker
+              data-section-count={sections.length}
+            >
+              <article class="course-preview__content" data-lk150-section-content>
+                <div class="course-preview__section-panels">
+                  {sectionsWithOffsets.map(({ section, anchorId }, sectionIndex) => (
+                    <section
+                      class="course-preview__section"
+                      id={anchorId}
+                      data-lk150-section-panel
+                      data-section-index={formatSectionQueryIndex(sectionIndex)}
+                      hidden={sectionIndex !== 0}
+                      aria-labelledby={`${anchorId}-title`}
+                    >
+                      <header class="course-preview__section-header">
+                        <p class="course-preview__content-lesson">
+                          Lesson {lesson.displayOrder}: {lesson.title}
+                        </p>
+                        <h1 class="course-preview__content-title" id={`${anchorId}-title`}>
+                          {section.title}
+                        </h1>
+                      </header>
+
+                      <div class="course-preview__section-blocks">
+                        <CoursePreviewBlockList
+                          blocks={section.blocks}
+                          lessonSlug={lesson.slug}
+                          compact
+                        />
+                      </div>
+                    </section>
+                  ))}
+                </div>
+              </article>
+
+              <script is:inline define:vars={{ sectionCount: sections.length }}>
+                (function () {
+                  const picker = document.querySelector("[data-lk150-section-picker]");
+                  if (!picker) return;
+
+                  const params = new URLSearchParams(window.location.search);
+                  let raw = Number.parseInt(params.get("section") ?? "1", 10);
+                  if (Number.isNaN(raw)) raw = 1;
+                  const index = Math.min(Math.max(raw, 1), sectionCount) - 1;
+
+                  picker.querySelectorAll("[data-lk150-section-panel]").forEach((panel, panelIndex) => {
+                    if (panel instanceof HTMLElement) {
+                      panel.hidden = panelIndex !== index;
+                    }
+                  });
+
+                  document.querySelectorAll("[data-lk150-section-link]").forEach((link) => {
+                    if (!(link instanceof HTMLElement)) return;
+                    const linkIndex = Number.parseInt(link.dataset.sectionIndex ?? "1", 10) - 1;
+                    const isActive = linkIndex === index;
+                    link.classList.toggle("course-preview__sidebar-section-link--active", isActive);
+                    if (link instanceof HTMLAnchorElement) {
+                      link.setAttribute("aria-current", isActive ? "location" : "false");
+                    }
+                  });
+                })();
+              </script>
+            </div>
+          ) : (
+            <article class="course-preview__content">
+              {sectionsWithOffsets.map(({ section, anchorId }) => (
+                <section
+                  class="course-preview__section"
+                  id={anchorId}
+                  aria-labelledby={`${anchorId}-title`}
+                >
+                  <header class="course-preview__section-header">
+                    <p class="course-preview__content-lesson">
+                      Lesson {lesson.displayOrder}: {lesson.title}
+                    </p>
+                    <h1 class="course-preview__content-title" id={`${anchorId}-title`}>
+                      {section.title}
+                    </h1>
+                  </header>
+
+                  <div class="course-preview__section-blocks">
+                    <CoursePreviewBlockList
+                      blocks={section.blocks}
+                      lessonSlug={lesson.slug}
+                      compact
+                    />
+                  </div>
+                </section>
+              ))}
+            </article>
+          )
+        }
+      </div>
+    </div>
+  </div>
+
+  {showSectionPicker ? (
+    <script type="module" src="../../../../scripts/lk150LessonSectionPreview.ts" />
+  ) : null}
+</Layout>

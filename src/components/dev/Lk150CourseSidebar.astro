@@ -1,0 +1,129 @@
+---
+import {
+  coursePreviewHref,
+  getCoursePreviewData,
+  getPreviewCourseIds,
+  getSortedLessons,
+  lessonPreviewHref,
+  lessonPreviewSectionHref,
+  parseCourseId,
+} from "../../lib/legacy_kin/coursePreviewPoc";
+
+interface SidebarSection {
+  title: string;
+  oneBasedIndex: number;
+}
+
+interface Props {
+  courseId: number;
+  currentLessonSlug?: string;
+  currentSections?: SidebarSection[];
+}
+
+const { courseId: rawCourseId, currentLessonSlug, currentSections = [] } =
+  Astro.props;
+const courseId = parseCourseId(rawCourseId);
+const course = getCoursePreviewData(courseId)!.course;
+const lessons = getSortedLessons(courseId);
+const previewCourses = getPreviewCourseIds()
+  .map((id) => getCoursePreviewData(id)!)
+  .map((data) => data.course);
+const showSectionList = currentSections.length > 1;
+---
+
+<aside class="course-preview__sidebar" aria-label="Course navigation">
+  <header class="course-preview__sidebar-header">
+    <label class="course-preview__course-select-wrap">
+      <span class="course-preview__course-select-label">Course</span>
+      <select
+        class="course-preview__course-select"
+        id="lk150-course-select"
+        aria-label="Select LK-150 course"
+        data-lk150-course-select
+      >
+        {
+          previewCourses.map((previewCourse) => (
+            <option
+              value={coursePreviewHref(previewCourse.legacyChallengeId)}
+              selected={previewCourse.legacyChallengeId === courseId}
+            >
+              {previewCourse.legacyChallengeId}. {previewCourse.title}
+            </option>
+          ))
+        }
+      </select>
+    </label>
+
+    <h2 class="course-preview__sidebar-title">
+      <a href={coursePreviewHref(courseId)}>{course.title}</a>
+    </h2>
+    <p class="course-preview__sidebar-meta">Legacy course {courseId}</p>
+  </header>
+
+  <nav class="course-preview__sidebar-nav" aria-label="Lessons">
+    <ol class="course-preview__sidebar-lessons">
+      {
+        lessons.map((lessonItem) => {
+          const isActiveLesson = lessonItem.slug === currentLessonSlug;
+
+          return (
+            <li
+              class:list={[
+                "course-preview__sidebar-lesson",
+                isActiveLesson && "course-preview__sidebar-lesson--active",
+              ]}
+            >
+              <a
+                class="course-preview__sidebar-lesson-link"
+                href={lessonPreviewHref(courseId, lessonItem.slug)}
+                aria-current={isActiveLesson ? "page" : undefined}
+              >
+                <span class="course-preview__sidebar-lesson-order">
+                  {lessonItem.displayOrder}.
+                </span>
+                {lessonItem.title}
+              </a>
+
+              {
+                isActiveLesson && showSectionList ? (
+                  <ol class="course-preview__sidebar-sections">
+                    {currentSections.map((section) => (
+                      <li class="course-preview__sidebar-section">
+                        <a
+                          class="course-preview__sidebar-section-link"
+                          href={lessonPreviewSectionHref(
+                            courseId,
+                            lessonItem.slug,
+                            section.oneBasedIndex,
+                          )}
+                          data-lk150-section-link
+                          data-section-index={section.oneBasedIndex}
+                          aria-current={
+                            section.oneBasedIndex === 1 ? "location" : "false"
+                          }
+                        >
+                          {section.title}
+                        </a>
+                      </li>
+                    ))}
+                  </ol>
+                ) : null
+              }
+            </li>
+          );
+        })
+      }
+    </ol>
+  </nav>
+</aside>
+
+<script>
+  document.querySelectorAll("[data-lk150-course-select]").forEach((select) => {
+    select.addEventListener("change", (event) => {
+      const target = event.currentTarget;
+      if (!(target instanceof HTMLSelectElement)) return;
+      const url = target.value;
+      if (url) window.location.href = url;
+    });
+  });
+</script>

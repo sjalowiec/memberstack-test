@@ -1,21 +1,34 @@
 ---
 /**
- * Dev-only course overview for legacy KIN course POC JSON.
+ * Dev-only course preview landing.
  * Route: /dev/course-preview
+ * Optional query: ?course=50 or ?course=51 redirects to the course overview.
  */
 import Layout from "../../../layouts/Layout.astro";
 import {
-  coursePreviewCourse,
+  coursePreviewHref,
+  getCoursePreviewData,
+  getPreviewCourseIds,
   getSortedLessons,
-  lessonPreviewHref,
 } from "../../../lib/legacy_kin/coursePreviewPoc";
 import "../../../styles/course-preview.css";
 
 export const prerender = true;
 
-const course = coursePreviewCourse;
-const lessons = getSortedLessons();
-const pageTitle = `DEV Preview: ${course.title}`;
+const courses = getPreviewCourseIds().map((courseId) => {
+  const data = getCoursePreviewData(courseId)!;
+  const lessons = getSortedLessons(courseId);
+  return {
+    courseId,
+    title: data.course.title,
+    slug: data.course.slug,
+    lessonCount: lessons.length,
+    blockCount: lessons.reduce((total, lesson) => total + lesson.blocks.length, 0),
+    href: coursePreviewHref(courseId),
+  };
+});
+
+const pageTitle = "DEV Preview: LK-150 Courses";
 ---
 
 <Layout title={pageTitle} description="Internal dev preview of legacy KIN course POC JSON." skipGlobalHyvor>
@@ -25,24 +38,26 @@ const pageTitle = `DEV Preview: ${course.title}`;
     </p>
 
     <header class="course-preview__header">
-      <h1 class="course-preview__title">{course.title}</h1>
+      <h1 class="course-preview__title">LK-150 Course Preview</h1>
       <p class="course-preview__meta">
-        Challenge {course.legacyChallengeId} · {lessons.length} lessons · slug: {course.slug}
+        Choose a course below, or open a course directly with <code>?course=50</code> or{" "}
+        <code>?course=51</code>.
       </p>
     </header>
 
-    <section aria-labelledby="course-preview-lessons-heading">
-      <h2 id="course-preview-lessons-heading">Lessons</h2>
+    <section aria-labelledby="course-preview-courses-heading">
+      <h2 id="course-preview-courses-heading">Courses</h2>
       <ol class="course-preview__lesson-list">
         {
-          lessons.map((lesson, index) => (
+          courses.map((course) => (
             <li>
-              <a href={lessonPreviewHref(lesson.slug)}>
-                {index + 1}. {lesson.title}
+              <a href={course.href}>
+                {course.title}
               </a>
               <span class="course-preview__meta">
                 {" "}
-                · {lesson.blocks.length} block{lesson.blocks.length === 1 ? "" : "s"}
+                · course {course.courseId} · {course.lessonCount} lessons ·{" "}
+                {course.blockCount} blocks
               </span>
             </li>
           ))
@@ -50,4 +65,12 @@ const pageTitle = `DEV Preview: ${course.title}`;
       </ol>
     </section>
   </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const course = params.get("course");
+    if (course === "50" || course === "51") {
+      window.location.replace(`/dev/course-preview/${course}`);
+    }
+  </script>
 </Layout>

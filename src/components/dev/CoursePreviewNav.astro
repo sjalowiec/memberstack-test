@@ -1,6 +1,7 @@
 ---
 import {
-  COURSE_PREVIEW_BASE,
+  DEFAULT_PREVIEW_COURSE_ID,
+  coursePreviewHref,
   getLessonNeighbors,
   getSortedLessons,
   lessonPreviewHref,
@@ -8,18 +9,19 @@ import {
 
 interface Props {
   currentSlug: string;
+  courseId?: number;
 }
 
-const { currentSlug } = Astro.props;
-const lessons = getSortedLessons();
-const { index, prev, next } = getLessonNeighbors(currentSlug);
+const { currentSlug, courseId = DEFAULT_PREVIEW_COURSE_ID } = Astro.props;
+const lessons = getSortedLessons(courseId);
+const { index, prev, next } = getLessonNeighbors(courseId, currentSlug);
 const current = lessons[index];
 ---
 
 <nav class="course-preview__nav" aria-label="Lesson navigation">
   {
     prev ? (
-      <a class="course-preview__nav-link" href={lessonPreviewHref(prev.slug)}>
+      <a class="course-preview__nav-link" href={lessonPreviewHref(courseId, prev.slug)}>
         ← Previous
       </a>
     ) : (
@@ -38,7 +40,7 @@ const current = lessons[index];
       {
         lessons.map((lesson, lessonIndex) => (
           <option
-            value={lessonPreviewHref(lesson.slug)}
+            value={lessonPreviewHref(courseId, lesson.slug)}
             selected={lesson.slug === currentSlug}
           >
             {lessonIndex + 1}. {lesson.title}
@@ -50,7 +52,7 @@ const current = lessons[index];
 
   {
     next ? (
-      <a class="course-preview__nav-link" href={lessonPreviewHref(next.slug)}>
+      <a class="course-preview__nav-link" href={lessonPreviewHref(courseId, next.slug)}>
         Next →
       </a>
     ) : (
@@ -65,7 +67,7 @@ const current = lessons[index];
 </p>
 
 <p class="course-preview__back-overview">
-  <a href={COURSE_PREVIEW_BASE}>← Course overview</a>
+  <a href={coursePreviewHref(courseId)}>← Course overview</a>
 </p>
 
 <script>

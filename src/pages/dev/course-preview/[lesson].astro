@@ -1,50 +1,34 @@
 ---
 /**
- * Dev-only single-lesson preview for legacy KIN course POC JSON.
- * Route: /dev/course-preview/[lesson]
+ * Legacy redirect: /dev/course-preview/[lesson] → course 50 lesson URLs.
  */
-import Layout from "../../../layouts/Layout.astro";
-import CoursePreviewLessonBody from "../../../components/dev/CoursePreviewLessonBody.astro";
-import CoursePreviewNav from "../../../components/dev/CoursePreviewNav.astro";
 import {
-  coursePreviewCourse,
+  DEFAULT_PREVIEW_COURSE_ID,
   getSortedLessons,
-  type CourseLesson,
 } from "../../../lib/legacy_kin/coursePreviewPoc";
-import "../../../styles/course-preview.css";
 
 export const prerender = true;
 
 export function getStaticPaths() {
-  return getSortedLessons().map((lesson) => ({
+  return getSortedLessons(DEFAULT_PREVIEW_COURSE_ID).map((lesson) => ({
     params: { lesson: lesson.slug },
-    props: { lesson },
   }));
 }
 
-interface Props {
-  lesson: CourseLesson;
-}
-
-const { lesson } = Astro.props;
-const course = coursePreviewCourse;
-const pageTitle = `DEV Preview: ${course.title} — ${lesson.title}`;
+const target = `/dev/course-preview/${DEFAULT_PREVIEW_COURSE_ID}/${Astro.params.lesson}`;
 ---
 
-<Layout title={pageTitle} description="Internal dev preview of legacy KIN course POC JSON." skipGlobalHyvor>
-  <main class="course-preview">
-    <p class="course-preview__banner" role="status">
-      <strong>Dev preview</strong> — legacy KIN course POC JSON. Not production content.
-    </p>
-
-    <header class="course-preview__header">
-      <h1 class="course-preview__title">{course.title}</h1>
-      <p class="course-preview__meta">
-        Challenge {course.legacyChallengeId} · slug: {course.slug}
-      </p>
-    </header>
-
-    <CoursePreviewNav currentSlug={lesson.slug} />
-    <CoursePreviewLessonBody lesson={lesson} />
-  </main>
-</Layout>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content={`0;url=${target}`} />
+    <title>Redirecting…</title>
+    <script define:vars={{ target }}>
+      window.location.replace(target);
+    </script>
+  </head>
+  <body>
+    <p><a href={target}>Continue to course preview</a></p>
+  </body>
+</html>

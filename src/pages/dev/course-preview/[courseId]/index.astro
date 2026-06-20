@@ -1,0 +1,68 @@
+---
+/**
+ * Dev-only course overview for legacy KIN course POC JSON.
+ * Route: /dev/course-preview/[courseId]
+ */
+import Layout from "../../../../layouts/Layout.astro";
+import Lk150CourseSidebar from "../../../../components/dev/Lk150CourseSidebar.astro";
+import {
+  getCoursePreviewData,
+  getPreviewCourseIds,
+  getSortedLessons,
+  lessonPreviewHref,
+  parseCourseId,
+} from "../../../../lib/legacy_kin/coursePreviewPoc";
+import "../../../../styles/course-preview.css";
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  return getPreviewCourseIds().map((courseId) => ({
+    params: { courseId: String(courseId) },
+  }));
+}
+
+const courseId = parseCourseId(Astro.params.courseId);
+const data = getCoursePreviewData(courseId)!;
+const course = data.course;
+const lessons = getSortedLessons(courseId);
+const pageTitle = `DEV Preview: ${course.title}`;
+---
+
+<Layout title={pageTitle} description="Internal dev preview of legacy KIN course POC JSON." skipGlobalHyvor>
+  <div class="course-preview course-preview--reader">
+    <p class="course-preview__banner course-preview__banner--compact" role="status">
+      <strong>Dev preview</strong> — legacy KIN course POC JSON. Not production content.
+    </p>
+
+    <div class="course-preview__layout">
+      <Lk150CourseSidebar courseId={courseId} />
+
+      <div class="course-preview__main">
+        <article class="course-preview__content">
+          <header class="course-preview__section-header">
+            <h1 class="course-preview__content-title">Course overview</h1>
+            <p class="course-preview__content-meta">
+              Legacy course {courseId} · {lessons.length} lessons
+            </p>
+          </header>
+
+          <section aria-labelledby="course-preview-lessons-heading">
+            <h2 id="course-preview-lessons-heading">Lessons</h2>
+            <ol class="course-preview__lesson-list">
+              {
+                lessons.map((lesson, index) => (
+                  <li>
+                    <a href={lessonPreviewHref(courseId, lesson.slug)}>
+                      {index + 1}. {lesson.title}
+                    </a>
+                  </li>
+                ))
+              }
+            </ol>
+          </section>
+        </article>
+      </div>
+    </div>
+  </div>
+</Layout>
