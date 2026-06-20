@@ -5,7 +5,13 @@
  * (Drop Shoulder builder) or stamped on the saved project (`customOverrides.constructionFamily`).
  */
 import type { CustomPatternProject } from "./customPatternProjectTypes";
-import { getCurrentPattern, getPatternData, type SleevelessPatternRecord } from "./patternStorage";
+import {
+  getCurrentPattern,
+  getPatternData,
+  saveCurrentPattern,
+  savePatternData,
+  type SleevelessPatternRecord,
+} from "./patternStorage";
 
 export const DROP_SHOULDER_CONSTRUCTION = "drop-shoulder";
 export const CONSTRUCTION_AUTHORED_KEY = "constructionAuthored";
@@ -34,6 +40,32 @@ export function stripDropShoulderStyleFields(
     delete next[key];
   }
   return next;
+}
+
+/** Drop Shoulder builder page marker (`data-express-construction` on the Express shell). */
+export function readDropShoulderBuilderPageConstruction(): string {
+  if (typeof document === "undefined") return "";
+  return (
+    document
+      .querySelector<HTMLElement>("[data-express-construction]")
+      ?.getAttribute("data-express-construction")
+      ?.trim() || ""
+  );
+}
+
+/** Stamp drop-shoulder construction on the working draft when the active page is the Drop Shoulder builder. */
+export function stampDropShoulderWorkingDraftFromPage(sleeveLength = "long"): void {
+  if (readDropShoulderBuilderPageConstruction() !== DROP_SHOULDER_CONSTRUCTION) return;
+  try {
+    const style = withDropShoulderConstructionAuthored(
+      { ...section(getCurrentPattern().style), ...section(getPatternData().style) },
+      sleeveLength,
+    );
+    saveCurrentPattern({ style });
+    savePatternData("style", style);
+  } catch {
+    /* ignore */
+  }
 }
 
 /** Marks style as an intentional drop-shoulder construction (builder + save pipeline). */

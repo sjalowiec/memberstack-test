@@ -15,6 +15,7 @@ import {
   resetPatternProjectMetaForNewDraft,
 } from "./sleevelessPatternProjectMeta";
 import { logSleevelessPatternActivity } from "./sleevelessPatternActivity";
+import { stampDropShoulderWorkingDraftFromPage } from "./patternConstructionIdentity";
 
 export { SLEEVELESS_EXPRESS_NEW_SESSION_PARAM, SLEEVELESS_EXPRESS_NEW_SESSION_VALUE };
 
@@ -29,6 +30,7 @@ export function startFreshSleevelessExpressPattern(): void {
   // Customize/review sync (syncCustomBuildToPatternStorage) defaults to custom-build; resolving from
   // the builder-data mode keeps a fresh Express start truly express, and the sync writes it through.
   savePatternData("style", { patternMode: "express" });
+  stampDropShoulderWorkingDraftFromPage();
   // Best-effort: record that a logged-in knitter started a fresh pattern. The session was just
   // cleared, so no id/title/mode context is available — that is expected for a new draft.
   logSleevelessPatternActivity("pattern_started", { mode: "express" });

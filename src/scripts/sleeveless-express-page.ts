@@ -71,6 +71,10 @@ import {
   resolveExpressGaugeFieldsForPersist,
   syncExpressWizardToPatternStorage,
 } from "../lib/patterns/syncExpressWizardToPatternStorage";
+import {
+  DROP_SHOULDER_CONSTRUCTION,
+  withDropShoulderConstructionAuthored,
+} from "../lib/patterns/patternConstructionIdentity";
 
 const STEPS = 5;
 const LOCKED_STEP_NAV_TITLE = "Finish the previous step to continue.";
@@ -110,14 +114,17 @@ function expressPatternDataForAudienceHeroImages(values: Record<string, string>)
   const neckRaw = String(values.neckline ?? "").trim();
   const neckline = neckRaw ? (mapExpressNeckline(neckRaw) === "v" ? "v" : "round") : "round";
   const construction = expressPageConstruction();
-  return {
-    style: {
-      garmentStyle: sm.frontStyle === "open" ? "cardigan" : "pullover",
-      frontStyle: sm.frontStyle,
-      neckline,
-      ...(construction ? { construction } : {}),
-    },
+  let style: Record<string, unknown> = {
+    garmentStyle: sm.frontStyle === "open" ? "cardigan" : "pullover",
+    frontStyle: sm.frontStyle,
+    neckline,
   };
+  if (construction === DROP_SHOULDER_CONSTRUCTION) {
+    style = withDropShoulderConstructionAuthored(style, "long");
+  } else if (construction) {
+    style.construction = construction;
+  }
+  return { style };
 }
 
 function refreshExpressWhoCardHeroImages(values: Record<string, string>): void {

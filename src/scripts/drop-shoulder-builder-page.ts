@@ -24,7 +24,10 @@ import {
   getCurrentPattern,
   getPatternData,
 } from "../lib/patterns/patternStorage";
-import { withDropShoulderConstructionAuthored } from "../lib/patterns/patternConstructionIdentity";
+import {
+  stampDropShoulderWorkingDraftFromPage,
+  withDropShoulderConstructionAuthored,
+} from "../lib/patterns/patternConstructionIdentity";
 
 type SleeveLength = "long" | "three-quarter" | "elbow" | "short";
 
@@ -117,16 +120,18 @@ function wireControls(): void {
 function init(): void {
   clearStaleSleevelessActiveProjectLink();
   const length = readStoredSleeveLength();
+  stampDropShoulderWorkingDraftFromPage(length);
   persist(length);
   reflectLengthButtons(length);
   wireControls();
 }
 
-// `load` fires after the wizard's DOMContentLoaded boot + any `?new=1` reset, so our flags win.
-if (document.readyState === "complete") {
-  init();
+// Run after the shared Express wizard boot (DOMContentLoaded + async guards) so `?new=1` reset
+// completes before we re-stamp construction and sleeve length on the working draft.
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init, { once: true });
 } else {
-  window.addEventListener("load", init, { once: true });
+  queueMicrotask(init);
 }
 
 // Belt-and-suspenders: re-assert just before leaving for the review page.

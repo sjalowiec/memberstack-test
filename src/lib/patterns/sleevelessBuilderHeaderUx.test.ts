@@ -10,7 +10,11 @@ import { loadProjectIntoWorkingDraft } from "./customPatternProjectClient";
 import {
   EXPRESS_EDITING_FALLBACK_LABEL,
 } from "./sleevelessExpressResume";
-import { syncSleevelessBuilderHeaderTitle, resolveSleevelessBuilderHeaderTitle } from "./sleevelessBuilderHeaderUx";
+import {
+  DROP_SHOULDER_BUILDER_FALLBACK_LABEL,
+  syncSleevelessBuilderHeaderTitle,
+  resolveSleevelessBuilderHeaderTitle,
+} from "./sleevelessBuilderHeaderUx";
 
 const SUES_PATTERN = "Sue's test pattern";
 
@@ -94,7 +98,11 @@ describe("sleevelessBuilderHeaderUx", () => {
   it("brand-new unsaved draft uses the generic fallback title", () => {
     const headerEl = makeHeaderEl("Some other title");
     vi.stubGlobal("document", {
-      querySelector: () => headerEl,
+      querySelector: (selector: string) => {
+        if (selector === "[data-express-construction]") return null;
+        if (selector === ".sleeveless-express-page .pattern-title") return headerEl;
+        return null;
+      },
     });
 
     clearActiveCustomPatternProjectId();
@@ -102,6 +110,28 @@ describe("sleevelessBuilderHeaderUx", () => {
 
     syncSleevelessBuilderHeaderTitle();
     expect(headerEl.textContent).toBe(EXPRESS_EDITING_FALLBACK_LABEL);
+  });
+
+  it("brand-new drop-shoulder builder draft keeps the drop-shoulder fallback title", () => {
+    const headerEl = makeHeaderEl("Drop Shoulder Sweater");
+    vi.stubGlobal("document", {
+      querySelector: (selector: string) => {
+        if (selector === "[data-express-construction]") {
+          return { getAttribute: () => "drop-shoulder" };
+        }
+        if (selector === ".sleeveless-express-page .pattern-title") {
+          return headerEl;
+        }
+        return null;
+      },
+    });
+
+    clearActiveCustomPatternProjectId();
+    saveCurrentPattern({ patternProject: { title: "", notes: "" } });
+
+    syncSleevelessBuilderHeaderTitle();
+    expect(headerEl.textContent).toBe(DROP_SHOULDER_BUILDER_FALLBACK_LABEL);
+    expect(resolveSleevelessBuilderHeaderTitle()).toBe(DROP_SHOULDER_BUILDER_FALLBACK_LABEL);
   });
 
   it("falls back to kbm_custom_pattern_active_project_name when the draft title is empty", () => {
