@@ -255,15 +255,14 @@
   {
     "id": 14,
     "title": "Yarn Estimator",
-    "href": "yarnusage.cfm",
+    "href": "/tools/yarn-estimator",
     "icon": "yarn_usage_icon1.svg",
     "description": "Estimate whether you have enough yarn to finish a project.",
-    "membersonly": true,
+    "membersonly": false,
     "helpID": 4138,
     "category": "Project Planning",
-    "help_text": "Use this tool to estimate whether you have enough yarn to finish your project.\n\nEnter the gauge and the amount of knitting completed along with the yarn used so far. The tool estimates the total yarn required and helps you determine if you have enough yarn to complete the project.\nA swatch, a scale and a few measurements and you'll never worry about running out again!",
-    "active": false,
-    "status": "coming-soon"
+    "help_text": "Use this tool to estimate whether you have enough yarn to finish your project.\n\nWeigh and measure a swatch, then enter the finished dimensions of one pattern piece. The tool estimates grams needed for that piece. Repeat for each piece and add the totals together.",
+    "active": true
   },
   {
     "id": 19,
