@@ -8,6 +8,7 @@ import {
   isSleevelessCardiganGarmentStyle,
   isSleevelessDevCardiganExpressPreview,
   resolveSleevelessFrontDiagram,
+  resolveCardiganHalfSideForGarmentDiagram,
   SLEEVELESS_CARDIGAN_ROUND_ALINE_FRONT_DIAGRAM_SRC,
   SLEEVELESS_CARDIGAN_V_ALINE_FRONT_DIAGRAM_SRC,
   SLEEVELESS_PULLOVER_ROUND_ALINE_FRONT_DIAGRAM_SRC,
@@ -187,6 +188,7 @@ describe("resolveSleevelessFrontDiagram", () => {
     expect(r.diagramType).toBe("cardiganFullFrontRound");
     expect(r.frontPieceType).toBe("fullFront");
     expect(r.src).toBe("/images/patterns/sleeveless/diagrams/diagram-cardigan-round.svg");
+    expect(resolveCardiganHalfSideForGarmentDiagram(r)).toBe("left");
   });
 
   it("routes v-neck cardigan style to full-width V schematic", () => {

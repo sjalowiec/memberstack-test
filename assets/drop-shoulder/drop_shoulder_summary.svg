@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" width="2.6in" height="5.4in" version="1.1" viewBox="0 0 184.5 385.8">
+  <!-- Generator: Adobe Illustrator 30.5.1, SVG Export Plug-In . SVG Version: 2.1.4 Build 3)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: #f79520;
+      }
+
+      .st1 {
+        stroke-dasharray: 3.4 3.4;
+      }
+
+      .st1, .st2, .st3, .st4, .st5, .st6, .st7, .st8, .st9, .st10 {
+        fill: none;
+        stroke: #bcbec0;
+      }
+
+      .st1, .st2, .st3, .st4, .st8, .st9, .st10 {
+        stroke-width: 1px;
+      }
+
+      .st1, .st3, .st4, .st5, .st6, .st7, .st9, .st10 {
+        stroke-miterlimit: 10;
+      }
+
+      .st2 {
+        stroke-dasharray: 3 4;
+      }
+
+      .st2, .st8 {
+        stroke-linejoin: round;
+      }
+
+      .st3, .st5 {
+        stroke-dasharray: 4 4;
+      }
+
+      .st11 {
+        fill: #bcbec0;
+      }
+
+      .st4 {
+        stroke-dasharray: 2.5 2.5;
+      }
+
+      .st5 {
+        stroke-width: .7px;
+      }
+
+      .st6 {
+        stroke-dasharray: 5.1 5.1;
+        stroke-width: .9px;
+      }
+
+      .st7 {
+        stroke-dasharray: 2.1 2.1;
+        stroke-width: 1px;
+      }
+
+      .st9 {
+        stroke-dasharray: 2.1 2.1;
+      }
+    </style>
+  </defs>
+  <g id="body">
+    <line class="st10" x1="53.2" y1="21.2" x2="53.8" y2="22"/>
+    <line class="st10" x1="114.5" y1="22.3" x2="115.1" y2="21.6"/>
+    <path class="st10" d="M53.6,21.7c.2.3.4.5.6.8"/>
+    <line class="st8" x1="19.5" y1="199.6" x2="149.1" y2="199.8"/>
+    <path class="st8" d="M20.1,100.3c.8,5.9-.4,99.7-.4,99.7"/>
+    <path class="st8" d="M148.4,20.7l.5,80.2v98.9"/>
+    <path class="st8" d="M54.6,22.7c1.8-.4,5,5.3,29.5,5.4,24.8,0,31-6.9,31-6.9h33.3"/>
+    <path class="st9" d="M53.9,21.5c30.5,87.7,61.3.2,61.3.2"/>
+    <path class="st8" d="M20.3,21.2v79.9"/>
+    <line class="st8" x1="53.9" y1="21.2" x2="20.6" y2="21.2"/>
+    <g id="v_neck">
+      <line class="st7" x1="53.5" y1="20.7" x2="83.8" y2="58.2"/>
+      <line class="st7" x1="115.6" y1="21.1" x2="83.8" y2="59.1"/>
+    </g>
+    <g id="body_length">
+      <line class="st3" x1="158.9" y1="23.4" x2="158.9" y2="197.9"/>
+      <rect class="st11" x="156.6" y="23.1" width="4.6" height=".7"/>
+      <rect class="st11" x="156.6" y="197.5" width="4.6" height=".7"/>
+    </g>
+    <circle id="target_bust_circ" class="st0" cx="84.3" cy="92.6" r="2.5"/>
+    <circle id="target_hem_depth" class="st0" cx="182" cy="194.5" r="2.5"/>
+    <circle id="target_hem_width" class="st0" cx="82.7" cy="193.4" r="2.5"/>
+    <circle id="target_neck_width" class="st0" cx="83.3" cy="2.5" r="2.5"/>
+    <circle id="target_neck_depth" class="st0" cx="2.5" cy="41.3" r="2.5"/>
+    <circle id="target_armhole_depth" class="st0" cx="173.3" cy="60.1" r="2.5"/>
+    <circle id="target_body_length" class="st0" cx="181.8" cy="112.4" r="2.5"/>
+    <ellipse class="st6" cx="85" cy="108.7" rx="57" ry="11"/>
+    <ellipse class="st6" cx="84.8" cy="185" rx="57" ry="11"/>
+    <g id="hem_depth">
+      <line class="st5" x1="152.6" y1="179.2" x2="152.6" y2="198.5"/>
+      <rect class="st11" x="151" y="179" width="3.2" height=".5"/>
+      <rect class="st11" x="151" y="198.2" width="3.2" height=".5"/>
+    </g>
+    <g id="armhole_depth">
+      <line class="st3" x1="153.1" y1="24.1" x2="153.1" y2="100.1"/>
+      <rect class="st11" x="150.8" y="23.8" width="4.6" height=".7"/>
+      <rect class="st11" x="150.8" y="99.7" width="4.6" height=".7"/>
+    </g>
+    <g id="neck_opening">
+      <line class="st3" x1="113.4" y1="15.5" x2="55.2" y2="15.3"/>
+      <rect class="st11" x="111.1" y="15.1" width="4.6" height=".7" transform="translate(97.6 128.8) rotate(-89.8)"/>
+      <rect class="st11" x="52.9" y="14.9" width="4.6" height=".7" transform="translate(39.7 70.4) rotate(-89.8)"/>
+    </g>
+    <line id="hem" class="st2" x1="148.9" y1="179.2" x2="20.6" y2="179.2"/>
+    <g id="neck_depth">
+      <line class="st3" x1="16.7" y1="59.8" x2="16.9" y2="21.2"/>
+      <rect class="st11" x="16.3" y="57.5" width=".7" height="4.6" transform="translate(-43.2 76.2) rotate(-89.7)"/>
+      <rect class="st11" x="16.5" y="18.9" width=".7" height="4.6" transform="translate(-4.4 38) rotate(-89.7)"/>
+    </g>
+  </g>
+  <g id="sleeve">
+    <circle id="target_cuff_depth" class="st0" cx="32.3" cy="360.6" r="2.5"/>
+    <circle id="target_arm_length" class="st0" cx="22.2" cy="281.8" r="2.5"/>
+    <g id="sleeve_length">
+      <line class="st3" x1="156.9" y1="247.3" x2="156.9" y2="378.8"/>
+      <rect class="st11" x="154.6" y="247" width="4.6" height=".7"/>
+      <rect class="st11" x="154.6" y="378.5" width="4.6" height=".7"/>
+    </g>
+    <g id="cuff_depth">
+      <line class="st3" x1="143.8" y1="358.6" x2="143.8" y2="377.6"/>
+      <rect class="st11" x="141.5" y="358.3" width="4.6" height=".7"/>
+      <rect class="st11" x="141.5" y="377.3" width="4.6" height=".7"/>
+    </g>
+    <polygon class="st8" points="117.7 374.3 52.4 374.3 52.2 361.4 35.6 245 136.8 245 117.7 362.8 117.7 374.3"/>
+    <ellipse class="st1" cx="85.1" cy="255.6" rx="34.8" ry="8"/>
+    <ellipse class="st4" cx="85" cy="376.5" rx="25.5" ry="6"/>
+    <line class="st2" x1="117.7" y1="362.8" x2="51.7" y2="362.8"/>
+    <circle id="target_upper_arm" class="st0" cx="84.4" cy="235.5" r="2.5"/>
+    <circle id="target_wrist" class="st0" cx="82.8" cy="383.3" r="2.5"/>
+  </g>
+</svg>

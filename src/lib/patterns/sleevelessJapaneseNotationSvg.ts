@@ -120,6 +120,7 @@ const MULTILINE_LINE_HEIGHT_EM = 1.2;
 export const SAMPLE_JP_BACK_NOTATION_REPLACEMENTS: Record<string, string> = {
   "jp-caston": "co199",
   "jp-body-rows": "146r",
+  "jp-body-shaping": "",
   "jp-armhole-bo": "bo10",
   "jp-armhole-shaping": "1s-2r-10x",
   "jp-neckline-bo": "bo14",
@@ -128,6 +129,7 @@ export const SAMPLE_JP_BACK_NOTATION_REPLACEMENTS: Record<string, string> = {
   "rc-caston": "rc000",
   "rc-hem": "rc020",
   "rc-neckline-start": "rc014",
+  "rc-shoulder-start": "rc018",
   "rc-armhole-bo": "rc187",
   rc_reset: "↺ rc000",
 };

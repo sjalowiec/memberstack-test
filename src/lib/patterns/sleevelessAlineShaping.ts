@@ -13,6 +13,10 @@ import {
 } from "./bodyBlock/sleevelessBodyBlock";
 import { isCustomBuildPatternMode } from "./customBuildEffectiveArmholeDepth";
 import { buildGlossaryTooltipPlaceholderHtml } from "../glossary/glossaryTooltipPrint";
+import {
+  compressStitchDecreasePointsToNotationLines,
+  type StitchDecreasePoint,
+} from "./shapingNotationCompress";
 
 function section(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
@@ -345,6 +349,22 @@ export function formatSleevelessAlineBodyShapingSummaryLine(
   return shapingType === "decrease-to-bust"
     ? withDecreaseGlossaryTooltip(line)
     : withIncreaseGlossaryTooltip(line);
+}
+
+/** Japanese notation lines (e.g. `1s-2r-11x`) for side shaping from hem to armhole on A-line / shaped bodies. */
+export function alineBodyShapingJapaneseNotationLines(
+  plan: SleevelessAlineBodyShapingPlan | null | undefined,
+): string[] {
+  if (!plan || plan.shapingType === "straight" || plan.shapingRowNumbers.length === 0) {
+    return [];
+  }
+  const sorted = [...plan.shapingRowNumbers].sort((a, b) => a - b);
+  const firstRow = sorted[0]!;
+  const points: StitchDecreasePoint[] = sorted.map((row) => ({
+    row: row - firstRow,
+    amount: 1,
+  }));
+  return compressStitchDecreasePointsToNotationLines(points);
 }
 
 /**

@@ -302,6 +302,10 @@ function applyCardiganHalfFrontMeasurements(
   repl.NECK_STS = halfNeck.sts !== undefined ? String(halfNeck.sts) : "";
   repl.NECK_WIDTH = halfNeck.widthLabel;
 
+  const shoulderBindOffSts = shoulderStitchesPerSideForDiagram(d);
+  repl.SHOULDER_BINDOFF_STS =
+    shoulderBindOffSts !== undefined ? String(shoulderBindOffSts) : "";
+
   repl.OPENING_STS = "0";
   repl.PIECE_TITLE = side === "left" ? "LEFT FRONT" : "RIGHT FRONT";
   /** Reserved token for future CF annotations; empty until bands/overlap UI exists. */
@@ -366,6 +370,7 @@ export function buildSleevelessGarmentDiagramReplacements(
   const crossBack = crossBackWidthForDiagram(d.stitchesAfterArmhole, d.stitchesPerInch, unit);
   // Neck opening label: derive inches from the knitted neck stitch count, not the raw measurement.
   const neckOpening = stitchWidthLabel(d.necklineStitches, d.stitchesPerInch, unit);
+  const shoulderBindOffSts = shoulderStitchesPerSideForDiagram(d);
 
   const repl: Record<string, string> = {
     UNIT: unitLabel,
@@ -378,6 +383,8 @@ export function buildSleevelessGarmentDiagramReplacements(
     BUST_WIDTH: fmtNumber(inchesToUnit(bustWidthIn, unit) ?? NaN),
     SHOULDER_STS: crossBack.sts !== undefined ? String(crossBack.sts) : "",
     SHOULDER_WIDTH: crossBack.widthLabel,
+    SHOULDER_BINDOFF_STS:
+      shoulderBindOffSts !== undefined ? String(shoulderBindOffSts) : "",
     NECK_STS: neckOpening.sts !== undefined ? String(neckOpening.sts) : "",
     NECK_WIDTH: neckOpening.widthLabel,
     NECK_DEPTH_ROWS: neckDepth.NECK_DEPTH_ROWS,

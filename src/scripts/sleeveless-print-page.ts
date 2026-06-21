@@ -86,6 +86,7 @@ function printFinishingSectionHtml(
   const finishing = sleevelessFinishingFromPattern(patternMerged, debug);
   const listItems = buildSleevelessFinishingPrintListHtml({
     isCardigan: finishing.isCardigan,
+    isDropShoulder: finishing.isDropShoulder,
     cardiganFrontEdgeFinishingMode: finishing.cardiganFrontEdgeFinishingMode,
     frontEdgePickupSts: finishing.frontEdgePickupSts,
   });

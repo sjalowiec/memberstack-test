@@ -10,10 +10,12 @@ import {
   type SleevelessGarmentDiagramLayout,
 } from "./sleevelessBodyShapeDiagramGuides";
 import { buildSleevelessGarmentDiagramReplacements } from "./sleevelessGarmentDiagramReplacements";
+import { applyGarmentDiagramSvgReplacements } from "./sleevelessGarmentDiagramSvg";
 import { buildSleevelessGarmentDiagramPatternData } from "./sleevelessPatternBuilderMerge";
 import { resolveSleevelessBackDiagramSrc } from "./sleevelessBackDiagramSrc";
 import {
   isSleevelessCardiganHalfFrontDiagramType,
+  resolveCardiganHalfSideForGarmentDiagram,
   resolveSleevelessFrontDiagram,
 } from "./sleevelessFrontDiagramSrc";
 
@@ -23,15 +25,8 @@ async function fetchSvgWithReplacements(src: string, replacements: Record<string
   }
   const res = await fetch(src, { credentials: "same-origin" });
   if (!res.ok) throw new Error(`Failed to load SVG: ${src} (${res.status})`);
-  let svgText = await res.text();
-
-  for (const [k, v] of Object.entries(replacements)) {
-    const safeKey = String(k).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const re = new RegExp(`\\{\\{\\s*${safeKey}\\s*\\}\\}`, "g");
-    svgText = svgText.replace(re, v == null ? "" : String(v));
-  }
-
-  return svgText;
+  const svgText = await res.text();
+  return applyGarmentDiagramSvgReplacements(svgText, replacements);
 }
 
 /** Returns SVG markup (single root `<svg>`) ready for `innerHTML`, with placeholders filled from `result.debug`. */
@@ -86,15 +81,7 @@ async function loadSleevelessPieceDiagramSvgMarkup(
     const frontRes = resolveSleevelessFrontDiagram(diagramPatternData, {
       devForceCardiganHalfLeft: frontOpts?.devForceCardiganHalfLeft,
     });
-    cardiganHalfSide =
-      isSleevelessCardiganHalfFrontDiagramType(frontRes.diagramType) &&
-      frontRes.diagramType !== "cardiganHalfFrontV" &&
-      frontRes.frontPieceType === "leftFront"
-        ? "left"
-        : isSleevelessCardiganHalfFrontDiagramType(frontRes.diagramType) &&
-            frontRes.frontPieceType === "rightFront"
-          ? "right"
-          : undefined;
+    cardiganHalfSide = resolveCardiganHalfSideForGarmentDiagram(frontRes, diagramPatternData);
     replacements = buildSleevelessGarmentDiagramReplacements(result, unit, {
       patternData: diagramPatternData,
       measurementPiece: "front",

@@ -495,6 +495,10 @@ export type SleevelessBackPatternDebug = {
   hemCastOnStitches?: number;
   /** Rows from hem/cast-on edge to hip line on schematic (`HIP_ROWS`; 0 when hip is at cast-on). */
   hipRowsFromHem?: number;
+  /** A-line / shaped side-shaping row RCs (hem → armhole); drives `{{jp-body-shaping}}` notation. */
+  alineBodyShapingRowNumbers?: number[];
+  /** `decrease-to-bust` | `increase-to-bust` | `straight` from body block when A-line ran. */
+  alineBodyShapingType?: "decrease-to-bust" | "increase-to-bust" | "straight";
   /** Body-block diagram overlay hints for A-line side guides on garment schematics. */
   diagramGuides?: SleevelessBodyDiagramGuides;
 };
@@ -3025,6 +3029,12 @@ export function generateSleevelessBackPattern(
     bustBodyStitches: bustBodySts,
     hemCastOnStitches: castOnSts,
     hipRowsFromHem: alineBodyShaping !== null ? alineBodyShaping.hipRowsFromHem : undefined,
+    alineBodyShapingRowNumbers:
+      alineBodyShaping !== null && alineBodyShaping.shapingType !== "straight"
+        ? [...alineBodyShaping.shapingRowNumbers]
+        : undefined,
+    alineBodyShapingType:
+      alineBodyShaping !== null ? alineBodyShaping.shapingType : undefined,
     diagramGuides: bodyDiagramGuides,
     shoulderWidthInches: shoulderWidthIn,
     stitchesAfterArmhole,

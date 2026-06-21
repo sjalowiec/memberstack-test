@@ -79,6 +79,14 @@ const JP_FRONT_V_SVG = readFileSync(
   "utf8",
 );
 
+const JP_FRONT_ALINE_SVG = readFileSync(
+  resolve(
+    process.cwd(),
+    "public/images/patterns/sleeveless/diagrams/diagram-jp-front-round-aline.svg",
+  ),
+  "utf8",
+);
+
 const JP_CARDIGAN_ROUND_SVG = readFileSync(
   resolve(process.cwd(), "public/images/patterns/sleeveless/diagrams/diagram-jp-cardigan-round.svg"),
   "utf8",
@@ -310,7 +318,7 @@ describe("v-neck pullover front diagram routing", () => {
 describe("buildFrontJapaneseNotationReplacements", () => {
   it("lists every jp/rc token name present in diagram-jp-front-round.svg", () => {
     const svgTokens = listJapaneseNotationPlaceholdersInSvg(JP_FRONT_SVG);
-    expect(svgTokens).toEqual([...JP_FRONT_NOTATION_SVG_TOKEN_KEYS].sort());
+    expect(svgTokens.every((t) => JP_FRONT_NOTATION_SVG_TOKEN_KEYS.includes(t as never))).toBe(true);
   });
 
   it("replaces all jp/rc placeholders in diagram-jp-front-round.svg for demo pattern", () => {
@@ -318,6 +326,87 @@ describe("buildFrontJapaneseNotationReplacements", () => {
     const repl = buildFrontJapaneseNotationReplacements(result, {});
     expect(() => assertJapaneseNotationSvgFullyReplaced(JP_FRONT_SVG, repl)).not.toThrow();
     expect(Object.keys(repl).sort()).toEqual([...JP_FRONT_NOTATION_SVG_TOKEN_KEYS].sort());
+  });
+
+  it("replaces all jp/rc placeholders in diagram-jp-front-round-aline.svg for demo pattern", () => {
+    const result = demoSleevelessBackPattern();
+    const repl = buildFrontJapaneseNotationReplacements(result, {});
+    expect(() => assertJapaneseNotationSvgFullyReplaced(JP_FRONT_ALINE_SVG, repl)).not.toThrow();
+    const svgTokens = listJapaneseNotationPlaceholdersInSvg(JP_FRONT_ALINE_SVG);
+    expect(svgTokens.every((t) => JP_FRONT_NOTATION_SVG_TOKEN_KEYS.includes(t as never))).toBe(true);
+    expect(svgTokens).toContain("rc-shoulder-start");
+    expect(svgTokens).toContain("jp-body-shaping");
+    expect(svgTokens).toContain("jp-armhole-shaping");
+    expect(repl["jp-body-shaping"]).toBe("");
+    expect(repl["jp-armhole-shaping"].length).toBeGreaterThan(0);
+    const out = applyJapaneseNotationSvgReplacements(JP_FRONT_ALINE_SVG, repl);
+    expect(findUnreplacedJapaneseNotationPlaceholders(out)).toEqual([]);
+    expect(out).toContain(repl["jp-caston"]);
+    for (const line of repl["jp-neckline-shaping"].split("\n").filter(Boolean)) {
+      expect(out).toContain(line);
+    }
+    expect(out).toContain(repl["rc-shoulder-start"]);
+    expect(out).toContain("(neck)");
+    expect(out).toContain("(shoulder)");
+  });
+
+  it("jp-body-shaping encodes A-line side shaping from hem to armhole", () => {
+    const fullPattern = {
+      fit: {
+        sizingChart: "misses",
+        selectedMeasurements: {
+          finished_bust_chest: 38,
+          finished_hip: 44,
+          back_neck_to_hem: 22,
+          armhole_depth: 8,
+          neck_opening: 3,
+          shoulder_width: 4.25,
+          front_neck_depth: 3,
+          back_neck_depth: 1,
+        },
+      },
+      style: { garmentStyle: "pullover", bodyShape: "aline", recipientCategory: "misses" },
+      yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
+    };
+    const result = generateSleevelessBackPattern(fullPattern);
+    const repl = buildFrontJapaneseNotationReplacements(result, {
+      style: { bodyShape: "aline" },
+      fit: { selectedMeasurements: { finished_bust_chest: 38, finished_hip: 44 } },
+    });
+    expect(repl["jp-body-shaping"].length).toBeGreaterThan(0);
+    expect(
+      repl["jp-body-shaping"]
+        .split("\n")
+        .every((line) => /^\d+s-\d+r-\d+x$/.test(line)),
+    ).toBe(true);
+    expect(() => assertJapaneseNotationSvgFullyReplaced(JP_FRONT_ALINE_SVG, repl)).not.toThrow();
+  });
+
+  it("jp-body-shaping uses stored cast-on when patternData is style-only (pattern tab path)", () => {
+    const fullPattern = {
+      fit: {
+        sizingChart: "misses",
+        selectedMeasurements: {
+          finished_bust_chest: 38,
+          finished_hip: 44,
+          back_neck_to_hem: 22,
+          armhole_depth: 8,
+          neck_opening: 3,
+          shoulder_width: 4.25,
+          front_neck_depth: 3,
+          back_neck_depth: 1,
+        },
+      },
+      style: { garmentStyle: "pullover", bodyShape: "aline", recipientCategory: "misses" },
+      yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
+    };
+    const result = generateSleevelessBackPattern(fullPattern);
+    const withFullData = buildFrontJapaneseNotationReplacements(result, fullPattern);
+    const styleOnly = buildFrontJapaneseNotationReplacements(result, {
+      style: { garmentStyle: "pullover", bodyShape: "aline", neckline: "round" },
+    });
+    expect(withFullData["jp-body-shaping"].length).toBeGreaterThan(0);
+    expect(styleOnly["jp-body-shaping"]).toBe(withFullData["jp-body-shaping"]);
   });
 
   it("replaces all jp/rc placeholders in diagram-jp-front-v.svg for V-neck pullover", () => {

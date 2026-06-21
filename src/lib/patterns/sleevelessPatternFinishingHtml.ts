@@ -136,11 +136,12 @@ function finishNecklineBody(deps: SleevelessFinishingHtmlDeps): string {
     ${necklineFinishingHelpBody()}`;
 }
 
-function joinSideSeamsBody(): string {
+function joinSideSeamsBody(isDropShoulder: boolean): string {
+  const seamDirection = isDropShoulder ? "Seam from cuff to hem." : "Seam from hem to underarm.";
   return `<ul>
       <li>Match armhole edges and hem.</li>
       <li>Match markers (if added).</li>
-      <li>Seam from hem to underarm.</li>
+      <li>${seamDirection}</li>
     </ul>
     <p class="pattern-finishing-video-help pattern-help-link no-print">
       <span class="pattern-finishing-video-help__lead"><i class="fa-solid fa-play"></i> Helpful video for seaming:</span>
@@ -163,6 +164,7 @@ function stepBodyHtml(
   deps: SleevelessFinishingHtmlDeps,
   cardiganFrontEdgeFinishingMode: SleevelessCardiganFrontEdgeFinishingMode | undefined,
   frontEdgePickupSts: number | undefined,
+  isDropShoulder: boolean,
 ): string {
   switch (id) {
     case "blockPieces":
@@ -180,7 +182,7 @@ function stepBodyHtml(
     case "finishNeckline":
       return finishNecklineBody(deps);
     case "joinSideSeams":
-      return joinSideSeamsBody();
+      return joinSideSeamsBody(isDropShoulder);
     case "finalPressing":
       return finalPressingBody();
     default:
@@ -190,11 +192,13 @@ function stepBodyHtml(
 
 export function buildSleevelessFinishingStepsHtml(options: {
   isCardigan: boolean;
+  isDropShoulder?: boolean;
   cardiganFrontEdgeFinishingMode?: SleevelessCardiganFrontEdgeFinishingMode;
   frontEdgePickupSts?: number;
   deps: SleevelessFinishingHtmlDeps;
 }): string {
-  const ids = buildSleevelessFinishingStepIds({ isCardigan: options.isCardigan });
+  const isDropShoulder = options.isDropShoulder === true;
+  const ids = buildSleevelessFinishingStepIds({ isCardigan: options.isCardigan, isDropShoulder });
   const frontEdgeMode =
     options.isCardigan ? (options.cardiganFrontEdgeFinishingMode ?? "pickup") : undefined;
   const sections = ids.map((id, index) =>
@@ -202,7 +206,7 @@ export function buildSleevelessFinishingStepsHtml(options: {
       index + 1,
       id,
       SLEEVELESS_FINISHING_STEP_TITLES[id],
-      stepBodyHtml(id, options.deps, frontEdgeMode, options.frontEdgePickupSts),
+      stepBodyHtml(id, options.deps, frontEdgeMode, options.frontEdgePickupSts, isDropShoulder),
     ),
   );
   const inner = sections.join("\n\n");
@@ -228,10 +232,12 @@ function finishFrontEdgesPrintLine(
 
 export function buildSleevelessFinishingPrintListHtml(options: {
   isCardigan: boolean;
+  isDropShoulder?: boolean;
   cardiganFrontEdgeFinishingMode?: SleevelessCardiganFrontEdgeFinishingMode;
   frontEdgePickupSts?: number;
 }): string {
-  const ids = buildSleevelessFinishingStepIds({ isCardigan: options.isCardigan });
+  const isDropShoulder = options.isDropShoulder === true;
+  const ids = buildSleevelessFinishingStepIds({ isCardigan: options.isCardigan, isDropShoulder });
   const items: string[] = [];
 
   for (let i = 0; i < ids.length; i++) {
@@ -264,7 +270,11 @@ export function buildSleevelessFinishingPrintListHtml(options: {
         );
         break;
       case "joinSideSeams":
-        items.push(`${n}. Join side seams from hem toward underarm, matching edges.`);
+        items.push(
+          isDropShoulder
+            ? `${n}. Join side seams: match armhole edges and hem; match markers (if added); seam from cuff to hem.`
+            : `${n}. Join side seams from hem toward underarm, matching edges.`,
+        );
         break;
       case "finalPressing":
         items.push(`${n}. Weave in ends; lightly steam if needed; allow the garment to rest before wearing.`);

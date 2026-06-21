@@ -12,8 +12,12 @@ import {
   formatRcResetNotation,
   garmentRcAtArmholeStart,
   JP_BACK_NOTATION_SVG_TOKEN_KEYS,
+  bodyShapingJapaneseNotationFromAlinePlan,
+  resolveAlineBodyShapingPlanForNotation,
+  shoulderShapingBeginLocalRCForDiagram,
   type JpBackNotationSvgTokenKey,
 } from "./sleevelessBackJapaneseNotation";
+import { scaleAlineBodyShapingPlanForCardiganHalf } from "./sleevelessAlineShaping";
 import { shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
 import { isSleevelessCardiganFrontNeckShoulderChart } from "./neckShoulderShapingChart";
 import {
@@ -357,10 +361,35 @@ export function buildFrontJapaneseNotationReplacements(
   const hemRows = d.hemRows;
   const necklineLocalRc = d.frontNecklineStartLocalRC;
   const armholeStartGarmentRc = garmentRcAtArmholeStart(d);
+  const shoulderStartLocalRc = shoulderShapingBeginLocalRCForDiagram(d);
+
+  let alineBodyPlan = resolveAlineBodyShapingPlanForNotation(result, patternData ?? {});
+  if (alineBodyPlan && isSleevelessCardiganGarmentStyle(patternData ?? {})) {
+    const hemBase =
+      d.hemCastOnStitches !== undefined && d.hemCastOnStitches > 0
+        ? d.hemCastOnStitches
+        : (d.backStitches ?? 0);
+    const bustBase =
+      d.bustBodyStitches !== undefined && d.bustBodyStitches > 0 ? d.bustBodyStitches : hemBase;
+    const halfWidths = resolveCardiganHalfFrontWidths(
+      {
+        hemCastOnSts: hemBase,
+        bustBodySts: bustBase,
+        stitchesAfterArmhole: d.stitchesAfterArmhole ?? 0,
+      },
+      "left",
+    );
+    alineBodyPlan = scaleAlineBodyShapingPlanForCardiganHalf(
+      alineBodyPlan,
+      castOnSts,
+      halfWidths.bustBodySts,
+    );
+  }
 
   return {
     "jp-caston": formatCastOnNotation(castOnSts),
     "jp-body-rows": formatBodyRowsNotation(bodyRows),
+    "jp-body-shaping": bodyShapingJapaneseNotationFromAlinePlan(alineBodyPlan),
     "jp-armhole-bo": formatBindOffNotation(bindOffSts),
     "jp-armhole-shaping": joinNotationLines(formatDecreaseNotationLines(armholeDecreasePoints)),
     "jp-neckline-bo": isVNeckFront ? "" : formatBindOffNotation(centerNeckBindOff ?? 0),
@@ -375,5 +404,7 @@ export function buildFrontJapaneseNotationReplacements(
       necklineLocalRc !== undefined && Number.isFinite(necklineLocalRc)
         ? formatRcNotation(necklineLocalRc)
         : "",
+    "rc-shoulder-start":
+      shoulderStartLocalRc !== undefined ? formatRcNotation(shoulderStartLocalRc) : "",
   };
 }

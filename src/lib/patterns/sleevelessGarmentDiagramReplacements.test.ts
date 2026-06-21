@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildSleevelessGarmentDiagramReplacements } from "./sleevelessGarmentDiagramReplacements";
+import { applyGarmentDiagramSvgReplacements } from "./sleevelessGarmentDiagramSvg";
 import { calculateHemRows, getDefaultHemLengthInches } from "./hemDefaults";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
@@ -93,6 +94,74 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
     expect(repl.BUST_STS).toBe("41");
     expect(repl.PIECE_TITLE).toBe("LEFT FRONT");
     expect(repl.OPENING_STS).toBe("0");
+  });
+
+  it("SHOULDER_BINDOFF_STS is per-side shoulder budget; NECK_* is neck opening on back schematic", () => {
+    const result = {
+      debug: { ...baseDebug, shoulderStitches: 15 },
+    } as unknown as SleevelessBackPatternResult;
+
+    const repl = buildSleevelessGarmentDiagramReplacements(result, "in", {
+      patternData: {},
+      measurementPiece: "back",
+    });
+
+    expect(repl.SHOULDER_BINDOFF_STS).toBe("15");
+    expect(repl.SHOULDER_STS).toBe(String(baseDebug.stitchesAfterArmhole));
+    expect(repl.SHOULDER_BINDOFF_STS).not.toBe(repl.SHOULDER_STS);
+    expect(repl.NECK_STS).toBe(String(baseDebug.necklineStitches));
+    expect(repl.NECK_WIDTH).toBe(
+      String(Math.round((baseDebug.necklineStitches / baseDebug.stitchesPerInch) * 10) / 10),
+    );
+  });
+
+  it("replaces every token in diagram-back.svg including SHOULDER_BINDOFF_STS and NECK_WIDTH", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { resolve } = await import("node:path");
+    const result = {
+      debug: { ...baseDebug, shoulderStitches: 15 },
+    } as unknown as SleevelessBackPatternResult;
+    const repl = buildSleevelessGarmentDiagramReplacements(result, "in", {
+      patternData: {},
+      measurementPiece: "back",
+    });
+    const svg = applyGarmentDiagramSvgReplacements(
+      readFileSync(
+        resolve("public/images/patterns/sleeveless/diagrams/diagram-back.svg"),
+        "utf8",
+      ),
+      repl,
+    );
+    expect(svg).not.toMatch(/\{\{\s*[A-Z0-9_]+\s*\}\}/);
+    expect(svg).toContain("15 sts");
+    expect(svg).toContain("30 sts");
+  });
+
+  it("replaces every token in diagram-cardigan-round.svg with half-panel cardigan values", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { resolve } = await import("node:path");
+    const result = {
+      debug: { ...baseDebug, shoulderStitches: 6 },
+    } as unknown as SleevelessBackPatternResult;
+    const repl = buildSleevelessGarmentDiagramReplacements(result, "in", {
+      patternData: { style: { garmentStyle: "cardigan", neckline: "round" } },
+      measurementPiece: "front",
+      cardiganHalfSide: "left",
+    });
+    const svg = applyGarmentDiagramSvgReplacements(
+      readFileSync(
+        resolve("public/images/patterns/sleeveless/diagrams/diagram-cardigan-round.svg"),
+        "utf8",
+      ),
+      repl,
+    );
+    expect(svg).not.toMatch(/\{\{\s*[A-Z0-9_]+\s*\}\}/);
+    expect(repl.BUST_STS).toBe("41");
+    expect(repl.NECK_STS).toBe("15");
+    expect(repl.SHOULDER_BINDOFF_STS).toBe("6");
+    expect(repl.PIECE_TITLE).toBe("LEFT FRONT");
+    expect(svg).toContain("41sts");
+    expect(svg).toContain("6");
   });
 
   it("cross-back label uses post-armhole body width (full pullover, half cardigan), not per-side shoulder", () => {

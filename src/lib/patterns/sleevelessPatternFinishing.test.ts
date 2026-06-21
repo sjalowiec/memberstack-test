@@ -56,6 +56,19 @@ function vNeckCardiganPattern(): Record<string, unknown> {
   };
 }
 
+function dropShoulderPulloverPattern(): Record<string, unknown> {
+  return {
+    fit: { selectedMeasurements: baseMeasurements() },
+    style: {
+      neckline: "round",
+      frontStyle: "closed",
+      construction: "drop-shoulder",
+      constructionAuthored: "drop-shoulder",
+    },
+    yarnGaugeMachine: gauge(),
+  };
+}
+
 describe("buildSleevelessFinishingStepIds", () => {
   it("pullover core order: shoulders, armholes, neckline, side seams", () => {
     expect(coreAssemblyFinishingStepIds({ isCardigan: false })).toEqual([
@@ -82,6 +95,17 @@ describe("buildSleevelessFinishingStepIds", () => {
 
   it("cardigan includes finishFrontEdges", () => {
     expect(buildSleevelessFinishingStepIds({ isCardigan: true })).toContain("finishFrontEdges");
+  });
+
+  it("drop-shoulder pullover omits finishArmholes", () => {
+    expect(buildSleevelessFinishingStepIds({ isCardigan: false, isDropShoulder: true })).not.toContain(
+      "finishArmholes",
+    );
+    expect(coreAssemblyFinishingStepIds({ isCardigan: false, isDropShoulder: true })).toEqual([
+      "joinShoulders",
+      "finishNeckline",
+      "joinSideSeams",
+    ]);
   });
 });
 
@@ -204,6 +228,26 @@ describe("buildSleevelessFinishingStepsHtml", () => {
     expect(html).toMatch(/3\. Finish Armholes/);
     expect(html).toMatch(/4\. Finish Neckline/);
     expect(html).toMatch(/5\. Join Side Seams/);
+  });
+
+  it("drop-shoulder pullover html omits Finish Armholes and uses cuff-to-hem side seams", () => {
+    const html = buildSleevelessFinishingStepsHtml({
+      isCardigan: false,
+      isDropShoulder: true,
+      deps,
+    });
+    expect(html).not.toContain("Finish Armholes");
+    expect(html).toMatch(/3\. Finish Neckline/);
+    expect(html).toMatch(/4\. Join Side Seams/);
+    expect(html).toContain("Seam from cuff to hem.");
+    expect(html).not.toContain("Seam from hem to underarm.");
+  });
+
+  it("drop-shoulder pullover finishing from pattern omits armhole step", () => {
+    const finishing = sleevelessFinishingFromPattern(dropShoulderPulloverPattern(), {});
+    expect(finishing.isDropShoulder).toBe(true);
+    expect(finishing.steps.some((s) => s.id === "finishArmholes")).toBe(false);
+    expect(finishing.steps.find((s) => s.id === "joinSideSeams")?.stepNumber).toBe(4);
   });
 
   it("includes neckline finishing help video links for pullover and cardigan", () => {

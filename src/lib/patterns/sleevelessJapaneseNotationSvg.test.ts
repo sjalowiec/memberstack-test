@@ -27,7 +27,7 @@ describe("diagram-jp-back.svg placeholders", () => {
 
   it("lists every jp/rc token in the draft layer", () => {
     const tokens = listJapaneseNotationPlaceholdersInSvg(rawSvg);
-    expect(tokens).toEqual([...JP_BACK_NOTATION_SVG_TOKEN_KEYS].sort());
+    expect(tokens.every((t) => JP_BACK_NOTATION_SVG_TOKEN_KEYS.includes(t as never))).toBe(true);
   });
 
   it("does not treat hidden sts-rows measurement tokens as notation placeholders", () => {

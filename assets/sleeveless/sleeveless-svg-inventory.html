@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sleeveless SVG Inventory</title>
+  <style>
+    :root {
+      --ink: #1a1a1a;
+      --muted: #555;
+      --border: #d4d4d4;
+      --bg: #fafafa;
+      --card: #fff;
+      --accent: #52682d;
+      --accent-light: #eef2e6;
+      --warn-bg: #fff8e6;
+      --warn-border: #e6c200;
+      --code-bg: #f3f3f3;
+      --orphan-bg: #fef2f2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--ink);
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+    }
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem;
+      color: var(--accent);
+    }
+    .subtitle {
+      color: var(--muted);
+      margin: 0 0 2rem;
+      font-size: 0.95rem;
+    }
+    nav.toc {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    nav.toc h2 {
+      margin: 0 0 0.75rem;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+    nav.toc ol {
+      margin: 0;
+      padding-left: 1.25rem;
+      columns: 2;
+      column-gap: 2rem;
+    }
+    @media (max-width: 600px) { nav.toc ol { columns: 1; } }
+    nav.toc a { color: var(--accent); text-decoration: none; }
+    nav.toc a:hover { text-decoration: underline; }
+    section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    section h2 {
+      font-size: 1.35rem;
+      margin: 0 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--accent-light);
+      color: var(--accent);
+    }
+    section h3 {
+      font-size: 1.1rem;
+      margin: 1.5rem 0 0.75rem;
+      color: var(--ink);
+    }
+    section h4 { font-size: 1rem; margin: 1.25rem 0 0.5rem; }
+    p { margin: 0 0 1rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin: 0.75rem 0 1.25rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.65rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--accent-light);
+      font-weight: 600;
+    }
+    tr:nth-child(even) td { background: #fafafa; }
+    code, .path {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.85em;
+      background: var(--code-bg);
+      padding: 0.1em 0.35em;
+      border-radius: 3px;
+      word-break: break-all;
+    }
+    .callout {
+      background: var(--warn-bg);
+      border-left: 4px solid var(--warn-border);
+      padding: 0.75rem 1rem;
+      margin: 1rem 0;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.95rem;
+    }
+    .callout strong { display: block; margin-bottom: 0.25rem; }
+    .tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.15em 0.5em;
+      border-radius: 4px;
+      background: var(--accent-light);
+      color: var(--accent);
+      margin-right: 0.25rem;
+    }
+    .tag-orphan { background: #fde8e8; color: #9b2c2c; }
+    .tag-yes { background: #e6f4ea; color: #1e6b3a; }
+    .tag-no { background: #eee; color: #666; }
+    ol.steps { padding-left: 1.25rem; }
+    ol.steps li { margin-bottom: 0.5rem; }
+    .flow {
+      font-family: Consolas, monospace;
+      font-size: 0.8rem;
+      background: var(--code-bg);
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.4;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat {
+      background: var(--accent-light);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      text-align: center;
+    }
+    .stat .num { font-size: 1.75rem; font-weight: 700; color: var(--accent); }
+    .stat .label { font-size: 0.8rem; color: var(--muted); }
+    @media print {
+      body { background: #fff; }
+      section, nav.toc { break-inside: avoid; box-shadow: none; }
+      nav.toc { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Sleeveless SVG Inventory</h1>
+    <p class="subtitle">
+      Reference for SVG assets used by the Sleeveless pattern system — measurement blueprints,
+      pattern-tab schematics, Japanese notation, builder pickers, and print.
+      Source: <code>public/images/patterns/</code> and <code>src/lib/patterns/</code>.
+    </p>
+
+    <div class="stats">
+      <div class="stat"><div class="num">64</div><div class="label">SVGs documented</div></div>
+      <div class="stat"><div class="num">17</div><div class="label">Orphan SVGs</div></div>
+      <div class="stat"><div class="num">1</div><div class="label">Blueprint (target_*)</div></div>
+      <div class="stat"><div class="num">42</div><div class="label">Diagram folder files</div></div>
+    </div>
+
+    <nav class="toc">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#legends">Legends</a></li>
+        <li><a href="#blueprint">Summary / Review Blueprint</a></li>
+        <li><a href="#workspace">Pattern Workspace Diagrams</a></li>
+        <li><a href="#print">Print Diagrams</a></li>
+        <li><a href="#jp">Shaping / JP Notation</a></li>
+        <li><a href="#cardigan">Cardigan-Specific</a></li>
+        <li><a href="#aline">A-Line / Shaped / Builder</a></li>
+        <li><a href="#preview">Preview / Thumbnails</a></li>
+        <li><a href="#orphans">Orphan SVGs</a></li>
+        <li><a href="#wiring">Key Wiring</a></li>
+        <li><a href="#howto">How To Add Labels</a></li>
+      </ol>
+    </nav>
+
+    <!-- LEGENDS -->
+    <section id="legends">
+      <h2>Legends</h2>
+      <h3>Surfaces (where SVGs appear)</h3>
+      <table>
+        <tr><th>Surface</th><th>Meaning</th></tr>
+        <tr><td><strong>Review</strong></td><td><code>/patterns/sleeveless/review/</code> unified measurement review</td></tr>
+        <tr><td><strong>Workspace</strong></td><td><code>/patterns/sleeveless/pattern/</code> pattern tab (diagram modal + inline)</td></tr>
+        <tr><td><strong>Builder</strong></td><td>Express/unified builder, custom-style, legacy garment builder pickers</td></tr>
+        <tr><td><strong>Measurements</strong></td><td>Express measurements confirm, custom-build fit, workspace fit tab</td></tr>
+        <tr><td><strong>Print page</strong></td><td><code>/patterns/sleeveless/print/</code> dedicated print route</td></tr>
+        <tr><td><strong>Browser print</strong></td><td><code>@media print</code> styles in workspace pattern tab</td></tr>
+      </table>
+      <h3>Overlay types</h3>
+      <table>
+        <tr><th>Type</th><th>Meaning</th></tr>
+        <tr><td><strong>target_*</strong></td><td>Green anchor circles in SVG; HTML measurement chips snap to these element ids</td></tr>
+        <tr><td><strong>{{…}}</strong></td><td>Text placeholders in SVG; replaced at runtime via fetch + regex</td></tr>
+      </table>
+    </section>
+
+    <!-- BLUEPRINT -->
+    <section id="blueprint">
+      <h2>Summary / Review / Workspace Measurement Blueprint</h2>
+      <h3><span class="path">public/images/patterns/pattern_summary.svg</span></h3>
+      <table>
+        <tr><th style="width:28%">Field</th><th>Value</th></tr>
+        <tr><td>Feature</td><td>Interactive body measurement editor (chips over artwork)</td></tr>
+        <tr><td>Surfaces</td><td><span class="tag">Review</span><span class="tag">Measurements</span><span class="tag">Builder</span> (indirect when editing fit)</td></tr>
+        <tr><td>Uses target_*</td><td><span class="tag tag-yes">Yes</span></td></tr>
+        <tr><td>target_* ids</td><td>
+          <code>target_neck_opening</code>, <code>target_neck_depth</code>, <code>target_chest</code>,
+          <code>target_bust</code>, <code>target_garmemt_length</code> (typo alias for garment length),
+          <code>target_hip</code>, <code>target_armhole_depth</code>, <code>target_hem</code>
+        </td></tr>
+        <tr><td>Uses {{…}}</td><td><span class="tag tag-no">No</span></td></tr>
+        <tr><td>Code references</td><td>
+          <code>measurementBlueprintSvgUrl.ts</code>,
+          <code>patternSummaryMeasurementOverlay.ts</code>,
+          <code>sleeveless-custom-build-measurements-page.ts</code>,
+          <code>sleeveless-express-measurements-page.ts</code>,
+          <code>sleeveless-builder-review-page.ts</code>
+        </td></tr>
+        <tr><td>Notes</td><td>ViewBox ≈ 195.14 × 210.19. Drop-shoulder uses <code>drop_shoulder_summary.svg</code> via <code>resolveMeasurementBlueprintSvgUrl()</code>.</td></tr>
+      </table>
+    </section>
+
+    <!-- WORKSPACE -->
+    <section id="workspace">
+      <h2>Pattern Workspace Diagrams</h2>
+      <p>Same SVG files are used in the workspace and on the print page — not separate print assets.</p>
+
+      <h3>Routing</h3>
+      <table>
+        <tr><th>Piece</th><th>Mode</th><th>Router</th><th>Body suffix</th></tr>
+        <tr><td>Back</td><td>Stitches &amp; Rows</td><td><code>sleevelessBackDiagramSrc.ts</code></td><td><code>-aline</code> / <code>-shaped</code></td></tr>
+        <tr><td>Back</td><td>Shaping notation</td><td>same (JP src)</td><td>same</td></tr>
+        <tr><td>Front</td><td>Either</td><td><code>sleevelessFrontDiagramSrc.ts</code>, <code>sleevelessFrontJapaneseNotation.ts</code></td><td>same</td></tr>
+        <tr><td>Cardigan half</td><td>DEV only</td><td><code>resolveSleevelessFrontDiagram</code> + <code>devForceCardiganHalfLeft</code></td><td>—</td></tr>
+      </table>
+
+      <h3>Shared Stitches &amp; Rows tokens</h3>
+      <p>All <code>diagram-*</code> measurement schematics use <code>{{…}}</code> via <code>buildSleevelessGarmentDiagramReplacements()</code>. No <code>target_*</code>.</p>
+      <p><code>{{UNIT}}</code>, <code>{{HEIGHT}}</code>, <code>{{ARMHOLE_DEPTH}}</code>, <code>{{ARMHOLE_ROWS}}</code>, <code>{{BUST_STS}}</code>, <code>{{BUST_WIDTH}}</code>, <code>{{SHOULDER_STS}}</code>, <code>{{SHOULDER_WIDTH}}</code>, <code>{{NECK_STS}}</code>, <code>{{NECK_WIDTH}}</code>, <code>{{NECK_DEPTH_ROWS}}</code>, <code>{{NECK_DEPTH}}</code>, <code>{{SIDE_LENGTH_ROWS}}</code>, <code>{{SIDE_LENGTH}}</code>, <code>{{HEM_ROWS}}</code>, <code>{{HEM_INCHES}}</code>, <code>{{HIP_STS}}</code>, <code>{{HIP_ROWS}}</code>, <code>{{HIP_INCHES}}</code></p>
+      <div class="callout">
+        <strong>Important: SHOULDER_STS is cross-back width</strong>
+        <code>{{SHOULDER_STS}}</code> / <code>{{SHOULDER_WIDTH}}</code> label post-armhole body width (<code>stitchesAfterArmhole</code>), not per-side shoulder bind-off. Per-side shoulder count is used in JP notation only.
+      </div>
+
+      <h3>Back — Stitches &amp; Rows</h3>
+      <table>
+        <tr><th>SVG path</th><th>Variant</th><th>Constant / module</th></tr>
+        <tr><td><code>…/diagrams/diagram-back.svg</code></td><td>Straight</td><td><code>SLEEVELESS_BACK_DIAGRAM_STS_ROWS_SRC</code></td></tr>
+        <tr><td><code>…/diagram-back-aline.svg</code></td><td>A-line</td><td><code>SLEEVELESS_BACK_ALINE_DIAGRAM_STS_ROWS_SRC</code></td></tr>
+        <tr><td><code>…/diagram-back-shaped.svg</code></td><td>Shaped</td><td><code>SLEEVELESS_BACK_SHAPED_DIAGRAM_STS_ROWS_SRC</code></td></tr>
+      </table>
+
+      <h3>Front pullover — Stitches &amp; Rows</h3>
+      <table>
+        <tr><th>SVG path</th><th>Neck / shape</th></tr>
+        <tr><td><code>…/diagram-front-round.svg</code></td><td>Round, straight</td></tr>
+        <tr><td><code>…/diagram-front-round-aline.svg</code></td><td>Round, A-line</td></tr>
+        <tr><td><code>…/diagram-front-round-shaped.svg</code></td><td>Round, shaped</td></tr>
+        <tr><td><code>…/diagram-front-v.svg</code></td><td>V-neck, straight</td></tr>
+        <tr><td><code>…/diagram-front-v-aline.svg</code></td><td>V-neck, A-line</td></tr>
+        <tr><td><code>…/diagram-front-v-shaped.svg</code></td><td>V-neck, shaped</td></tr>
+      </table>
+
+      <h3>Cardigan front — Stitches &amp; Rows</h3>
+      <table>
+        <tr><th>SVG path</th><th>Neck / shape</th></tr>
+        <tr><td><code>…/diagram-cardigan-round.svg</code></td><td>Round, straight</td></tr>
+        <tr><td><code>…/diagram-cardigan-round-aline.svg</code></td><td>Round, A-line</td></tr>
+        <tr><td><code>…/diagram-cardigan-round-shaped.svg</code></td><td>Round, shaped</td></tr>
+        <tr><td><code>…/diagram-cardigan-v.svg</code></td><td>V-neck, straight</td></tr>
+        <tr><td><code>…/diagram-cardigan-v-aline.svg</code></td><td>V-neck, A-line</td></tr>
+        <tr><td><code>…/diagram-cardigan-v-shaped.svg</code></td><td>V-neck, shaped</td></tr>
+      </table>
+
+      <h3>DEV cardigan half-front</h3>
+      <table>
+        <tr><th>SVG path</th><th>Extra tokens</th></tr>
+        <tr>
+          <td><code>…/cardigan-half-front-round.svg</code></td>
+          <td><code>{{OPENING_STS}}</code>, <code>{{PIECE_TITLE}}</code>, <code>{{CF_EDGE_NOTE}}</code></td>
+        </tr>
+      </table>
+      <p>Surfaces: <span class="tag">Workspace</span> (DEV only). Module: <code>sleevelessFrontDiagramSrc.ts</code>.</p>
+    </section>
+
+    <!-- PRINT -->
+    <section id="print">
+      <h2>Print Diagrams</h2>
+      <p><strong>No print-only body SVGs.</strong> Print reuses workspace diagram URLs.</p>
+      <table>
+        <tr><th>Module</th><th>Role</th></tr>
+        <tr><td><code>sleevelessPrintDiagramSvg.ts</code></td><td>Fetch SVG, apply replacements, inject guides → inline markup</td></tr>
+        <tr><td><code>sleeveless-print-page.ts</code></td><td>Renders on <code>/patterns/sleeveless/print/</code></td></tr>
+        <tr><td><code>kin-print-header.svg</code></td><td>Site print header (not sleeveless-specific)</td></tr>
+      </table>
+      <p>Browser print from workspace uses the same hydrated DOM (<code>sleevelessPatternPageShared.ts</code>).</p>
+    </section>
+
+    <!-- JP -->
+    <section id="jp">
+      <h2>Shaping / JP Notation Diagrams</h2>
+      <p>Parallel <code>diagram-jp-*</code> assets. Tokens from <code>JP_BACK_NOTATION_SVG_TOKEN_KEYS</code> (front uses same set).</p>
+      <table>
+        <tr><th>Token</th><th>Purpose</th></tr>
+        <tr><td><code>{{jp-caston}}</code></td><td>Cast-on notation</td></tr>
+        <tr><td><code>{{jp-body-rows}}</code></td><td>Body row count</td></tr>
+        <tr><td><code>{{jp-armhole-bo}}</code></td><td>Armhole bind-off</td></tr>
+        <tr><td><code>{{jp-armhole-shaping}}</code></td><td>Armhole decreases</td></tr>
+        <tr><td><code>{{jp-neckline-bo}}</code></td><td>Neck bind-off</td></tr>
+        <tr><td><code>{{jp-neckline-shaping}}</code></td><td>Neck shaping lines</td></tr>
+        <tr><td><code>{{jp-shoulder-shaping}}</code></td><td>Shoulder bind-off schedule</td></tr>
+        <tr><td><code>{{rc-caston}}</code></td><td>Row counter at cast-on</td></tr>
+        <tr><td><code>{{rc-hem}}</code></td><td>Row counter at hem</td></tr>
+        <tr><td><code>{{rc-neckline-start}}</code></td><td>Row counter at neckline start</td></tr>
+        <tr><td><code>{{rc-armhole-bo}}</code></td><td>Row counter at armhole BO</td></tr>
+        <tr><td><code>{{rc_reset}}</code></td><td>Armhole RC reset marker</td></tr>
+      </table>
+      <p>Surfaces: <span class="tag">Workspace</span> (Shaping notation toggle), <span class="tag">Browser print</span>. Not on dedicated print page.</p>
+
+      <h3>Back JP (3 variants)</h3>
+      <p><code>diagram-jp-back.svg</code>, <code>diagram-jp-back-aline.svg</code>, <code>diagram-jp-back-shaped.svg</code></p>
+
+      <h3>Front pullover JP (6 variants)</h3>
+      <p><code>diagram-jp-front-round</code>, <code>-round-aline</code>, <code>-round-shaped</code>, <code>diagram-jp-front-v</code>, <code>-v-aline</code>, <code>-v-shaped</code></p>
+
+      <h3>Cardigan JP (6 variants)</h3>
+      <p><code>diagram-jp-cardigan-round</code>, <code>-round-aline</code>, <code>-round-shaped</code>, <code>diagram-jp-cardigan-v</code>, <code>-v-aline</code>, <code>-v-shaped</code></p>
+
+      <h3>Shoulder icon underlays (wired, not rendered yet)</h3>
+      <table>
+        <tr><th>SVG</th><th>Module</th></tr>
+        <tr><td><code>shoulder-round-icon.svg</code></td><td><code>getSleevelessShoulderNotationIconSrc</code> in <code>sleevelessFrontDiagramSrc.ts</code></td></tr>
+        <tr><td><code>shoulder-front-icon-V.svg</code></td><td>same (V-neck front only)</td></tr>
+      </table>
+    </section>
+
+    <!-- CARDIGAN -->
+    <section id="cardigan">
+      <h2>Cardigan-Specific Diagrams</h2>
+      <p>Runtime uses <code>diagrams/diagram-cardigan-*</code>, not root-level legacy art.</p>
+      <table>
+        <tr><th>SVG</th><th>Status</th></tr>
+        <tr><td><code>cardigan-half-front-round.svg</code></td><td><span class="tag tag-yes">Active (DEV)</span></td></tr>
+        <tr><td><code>cardigan-round.svg</code> (root)</td><td><span class="tag tag-orphan">Orphan</span></td></tr>
+        <tr><td><code>cardigan-v.svg</code> (root)</td><td><span class="tag tag-orphan">Orphan</span></td></tr>
+      </table>
+      <p>Half-front values: <code>applyCardiganHalfFrontMeasurements()</code> in <code>sleevelessGarmentDiagramReplacements.ts</code>.</p>
+    </section>
+
+    <!-- ALINE -->
+    <section id="aline">
+      <h2>A-Line / Shaped Body Diagrams</h2>
+      <p>Suffix routing: <code>applySleevelessDiagramBodyShapeSuffix()</code> in <code>sleevelessDiagramBodyShapeSrc.ts</code>.</p>
+      <p>Straight body may get dotted side guides via <code>sleevelessBodyShapeDiagramGuides.ts</code> instead of file swap.</p>
+      <h3>Builder shape picker (static art)</h3>
+      <table>
+        <tr><th>SVG</th><th>Page</th></tr>
+        <tr><td><code>shape-straight.svg</code></td><td>custom-style.astro, sleeveless-garment.astro</td></tr>
+        <tr><td><code>shape-aline.svg</code></td><td>same</td></tr>
+        <tr><td><code>shape-gathered.svg</code></td><td>custom-style.astro (disabled option)</td></tr>
+      </table>
+    </section>
+
+    <!-- PREVIEW -->
+    <section id="preview">
+      <h2>Preview / Thumbnail Diagrams</h2>
+      <h3>JP quick-reference teasers (token-free)</h3>
+      <table>
+        <tr><th>SVG</th><th>Module</th><th>Surface</th></tr>
+        <tr><td><code>diagram-jp-front-preview.svg</code></td><td><code>neckShoulderShapingChartHtml.ts</code></td><td>Workspace instructions</td></tr>
+        <tr><td><code>diagram-jp-back-preview.svg</code></td><td>same</td><td>Workspace instructions</td></tr>
+      </table>
+
+      <h3>Builder length / front thumbnails</h3>
+      <table>
+        <tr><th>SVG</th><th>How loaded</th></tr>
+        <tr><td><code>length-straight-top/tunic/dress.svg</code></td><td>sleeveless-garment.astro</td></tr>
+        <tr><td><code>length-aline-top/tunic/dress.svg</code></td><td><code>lengthSrc("aline", …)</code> JS</td></tr>
+        <tr><td><code>a-line-top-closed/open.svg</code></td><td><code>frontSrc("aline", …)</code> JS</td></tr>
+      </table>
+      <p>Straight pullover/cardigan front uses PNG, not SVG.</p>
+    </section>
+
+    <!-- ORPHANS -->
+    <section id="orphans">
+      <h2>Orphan / Unreferenced Sleeveless SVGs</h2>
+      <p>Not loaded by runtime routing (no URL constant, page src, or active builder path).</p>
+      <table>
+        <tr><th>SVG path</th><th>target_*</th><th>{{…}}</th><th>Notes</th></tr>
+        <tr><td><code>pattern_summary1.svg</code></td><td>No</td><td>No</td><td>Superseded by pattern_summary.svg</td></tr>
+        <tr><td><code>measurement-blueprint.svg</code></td><td>No</td><td>No</td><td>Legacy CSS comments only</td></tr>
+        <tr><td><code>place-markers.svg</code></td><td>No</td><td>No</td><td>No sleeveless refs</td></tr>
+        <tr><td><code>sleeveless/cardigan-round.svg</code></td><td>No</td><td>Yes</td><td>Legacy duplicate</td></tr>
+        <tr><td><code>sleeveless/cardigan-v.svg</code></td><td>No</td><td>Yes</td><td>Legacy duplicate</td></tr>
+        <tr><td><code>neck-round.svg</code>, <code>neck-v.svg</code></td><td>No</td><td>No</td><td>Unused builder art</td></tr>
+        <tr><td><code>shoulder-slope.svg</code>, <code>shoulder-straight.svg</code></td><td>No</td><td>No</td><td>Unused</td></tr>
+        <tr><td><code>sleeveless_diagram.svg</code></td><td>No</td><td>Yes</td><td>Early monolithic schematic</td></tr>
+        <tr><td><code>straight-top-closed/open.svg</code></td><td>No</td><td>No</td><td>Unused</td></tr>
+        <tr><td><code>gathered-top-closed/open.svg</code></td><td>No</td><td>No</td><td>Unused</td></tr>
+        <tr><td><code>length-gathered-top/tunic/dress.svg</code></td><td>No</td><td>No</td><td>No gathered shape in UI</td></tr>
+      </table>
+    </section>
+
+    <!-- WIRING -->
+    <section id="wiring">
+      <h2>Key Wiring Summary</h2>
+      <div class="flow">pattern_summary.svg
+  → patternSummaryMeasurementOverlay.ts
+  → measurementBlueprintSvgUrl.ts
+  → sleeveless-custom-build-measurements-page.ts
+
+diagram-*.svg routing
+  → sleevelessFrontDiagramSrc.ts / sleevelessBackDiagramSrc.ts
+  → sleevelessDiagramBodyShapeSrc.ts (-aline / -shaped)
+  → sleevelessGarmentDiagramReplacements.ts ({{…}} values)
+  → sleevelessPatternPageShared.ts (workspace)
+  → sleevelessPrintDiagramSvg.ts (print page)
+
+diagram-jp-*.svg
+  → sleevelessBackJapaneseNotation.ts / sleevelessFrontJapaneseNotation.ts
+  → sleevelessJapaneseNotationSvg.ts
+  → sleevelessPatternPageShared.ts
+
+Preview teasers
+  → neckShoulderShapingChartHtml.ts</div>
+      <table>
+        <tr><th>Concern</th><th>Primary file(s)</th></tr>
+        <tr><td>Blueprint URL</td><td><code>measurementBlueprintSvgUrl.ts</code></td></tr>
+        <tr><td>Blueprint chip positions</td><td><code>patternSummaryMeasurementOverlay.ts</code>, measurements page scripts</td></tr>
+        <tr><td>Back / front diagram URL</td><td><code>sleevelessBackDiagramSrc.ts</code>, <code>sleevelessFrontDiagramSrc.ts</code></td></tr>
+        <tr><td>Body shape suffix</td><td><code>sleevelessDiagramBodyShapeSrc.ts</code></td></tr>
+        <tr><td>Stitches/rows values</td><td><code>sleevelessGarmentDiagramReplacements.ts</code></td></tr>
+        <tr><td>JP notation values</td><td><code>sleevelessBackJapaneseNotation.ts</code>, <code>sleevelessFrontJapaneseNotation.ts</code></td></tr>
+        <tr><td>Workspace hydrate</td><td><code>sleevelessPatternPageShared.ts</code></td></tr>
+        <tr><td>Print hydrate</td><td><code>sleevelessPrintDiagramSvg.ts</code>, <code>sleeveless-print-page.ts</code></td></tr>
+        <tr><td>Review measurements</td><td><code>sleeveless-builder-review-page.ts</code></td></tr>
+      </table>
+    </section>
+
+    <!-- HOW TO -->
+    <section id="howto">
+      <h2>How To Add New Measurement Labels Later</h2>
+
+      <h3>A. Summary blueprint (pattern_summary.svg)</h3>
+      <ol class="steps">
+        <li>Add <code>target_&lt;name&gt;</code> anchor in the SVG (green circle).</li>
+        <li>Register in <code>PATTERN_SUMMARY_MEASUREMENT_TARGETS</code> (<code>patternSummaryMeasurementOverlay.ts</code>).</li>
+        <li>Wire HTML chip with <code>data-measurement-target</code> in measurements page scripts.</li>
+        <li>Use <code>bindPatternSummaryOverlayPositioning()</code> — avoid hard-coded CSS coordinates on desktop.</li>
+      </ol>
+
+      <h3>B. Pattern tab / print schematics (diagram-*.svg)</h3>
+      <ol class="steps">
+        <li>Add <code>{{NEW_TOKEN}}</code> in the SVG at the label position.</li>
+        <li>Map value in <code>buildSleevelessGarmentDiagramReplacements()</code>.</li>
+        <li>For <strong>shoulder bind-off stitches</strong>, use a new token — do not reuse <code>{{SHOULDER_STS}}</code> (cross-back width).</li>
+        <li>Add tests in <code>sleevelessGarmentDiagramReplacements.test.ts</code>.</li>
+      </ol>
+
+      <h3>C. Japanese notation (diagram-jp-*.svg)</h3>
+      <ol class="steps">
+        <li>Add <code>{{jp-…}}</code> or <code>{{rc-…}}</code> placeholder (keep contiguous in Illustrator).</li>
+        <li>Register in <code>JP_BACK_NOTATION_SVG_TOKEN_KEYS</code> if new.</li>
+        <li>Populate in back/front Japanese notation builders.</li>
+        <li>Extend notation tests for full SVG token coverage.</li>
+      </ol>
+
+      <h3>D. New diagram variant</h3>
+      <ol class="steps">
+        <li>Add paired <code>diagram-*</code> and <code>diagram-jp-*</code> files.</li>
+        <li>Add URL constants and routing in diagram src modules.</li>
+        <li>Update routing tests.</li>
+      </ol>
+
+      <div class="callout">
+        <strong>General rules</strong>
+        Use <code>target_*</code> for blueprint overlays; <code>{{…}}</code> for schematic text.
+        Never guess coordinates for shoulder stitch labels — add explicit placeholders in the SVG.
+      </div>
+
+      <h3>Top files for shoulder stitch labels</h3>
+      <ol class="steps">
+        <li><code>public/images/patterns/sleeveless/diagrams/diagram-*.svg</code> — add placeholder</li>
+        <li><code>sleevelessGarmentDiagramReplacements.ts</code> — wire value (<code>shoulderStitchesPerSideForDiagram()</code>)</li>
+        <li><code>sleevelessBackJapaneseNotation.ts</code> / <code>sleevelessFrontJapaneseNotation.ts</code> — if JP notation</li>
+        <li><code>sleevelessGarmentDiagramReplacements.test.ts</code> — tests</li>
+      </ol>
+    </section>
+
+    <p style="color:var(--muted); font-size:0.85rem; margin-top:2rem;">
+      Generated inventory · Open this file in any web browser ·
+      Markdown source also at <code>docs/sleeveless-svg-inventory.md</code>
+    </p>
+  </div>
+</body>
+</html>

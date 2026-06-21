@@ -165,6 +165,35 @@ export function isSleevelessCardiganHalfFrontDiagramType(
   return diagramType === "cardiganHalfFrontRound" || diagramType === "cardiganHalfFrontV";
 }
 
+/**
+ * Which cardigan half-panel stitch math applies to a front schematic.
+ * Production `diagram-cardigan-*.svg` shows one front panel — defaults to `left`.
+ */
+export function resolveCardiganHalfSideForGarmentDiagram(
+  resolution:
+    | Pick<SleevelessFrontDiagramResolution, "diagramType" | "frontPieceType" | "garmentStyle">
+    | undefined,
+  patternData?: unknown,
+): "left" | "right" | undefined {
+  if (
+    isSleevelessCardiganHalfFrontDiagramType(resolution?.diagramType) &&
+    resolution?.diagramType !== "cardiganHalfFrontV" &&
+    resolution?.frontPieceType === "leftFront"
+  ) {
+    return "left";
+  }
+  if (
+    isSleevelessCardiganHalfFrontDiagramType(resolution?.diagramType) &&
+    resolution?.frontPieceType === "rightFront"
+  ) {
+    return "right";
+  }
+  if (resolution?.garmentStyle === "cardigan" || isSleevelessCardiganGarmentStyle(patternData)) {
+    return "left";
+  }
+  return undefined;
+}
+
 /** DEV + cardigan preview from Express / stored style (for UI banner). */
 export function isSleevelessDevCardiganExpressPreview(patternData: unknown): boolean {
   return import.meta.env.DEV && isSleevelessCardiganGarmentStyle(patternData);

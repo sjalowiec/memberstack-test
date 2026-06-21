@@ -16,6 +16,15 @@ import {
   shoulderShapingNotationLinesFromTimeline,
 } from "./shoulderShapingNotation";
 import type { RowEntry } from "./shapingTimeline";
+import {
+  resolveDiagramFinishedHipInches,
+  resolveEffectiveFinishedHipInches,
+} from "./customBuildEffectiveFinishedHip";
+import {
+  alineBodyShapingJapaneseNotationLines,
+  computeSleevelessAlineBodyShaping,
+  type SleevelessAlineBodyShapingPlan,
+} from "./sleevelessAlineShaping";
 
 /** Diagram side for back neckline/shoulder notation (matches shoulder overlay convention). */
 const BACK_NOTATION_DIAGRAM_SIDE: "left" | "right" = "right";
@@ -28,6 +37,7 @@ const BACK_NOTATION_DIAGRAM_SIDE: "left" | "right" = "right";
 export const JP_BACK_NOTATION_SVG_TOKEN_KEYS = [
   "jp-caston",
   "jp-body-rows",
+  "jp-body-shaping",
   "jp-armhole-bo",
   "jp-armhole-shaping",
   "jp-neckline-bo",
@@ -36,6 +46,7 @@ export const JP_BACK_NOTATION_SVG_TOKEN_KEYS = [
   "rc-caston",
   "rc-hem",
   "rc-neckline-start",
+  "rc-shoulder-start",
   "rc-armhole-bo",
   "rc_reset",
 ] as const;
@@ -77,6 +88,21 @@ export function garmentRcAtArmholeStart(debug: SleevelessBackPatternResult["debu
   return undefined;
 }
 
+/** Armhole RC where outer shoulder shaping begins (first bind-off / decrease on the timeline). */
+export function shoulderShapingBeginLocalRCForDiagram(
+  debug: SleevelessBackPatternResult["debug"],
+): number | undefined {
+  if (
+    debug.shoulderStartRow !== undefined &&
+    debug.armholeStartRow !== undefined &&
+    Number.isFinite(debug.shoulderStartRow) &&
+    Number.isFinite(debug.armholeStartRow)
+  ) {
+    return Math.max(0, Math.floor(debug.shoulderStartRow - debug.armholeStartRow));
+  }
+  return undefined;
+}
+
 /** Per-edge bind-off label (e.g. `bo10` — one working edge, not summed across both sides). */
 export function formatBindOffNotation(totalStitches: number): string {
   const n = Math.max(0, Math.round(totalStitches));
@@ -111,6 +137,113 @@ export function armholeBindOffDecreaseFromEachSide(stitchesPerSide: number): Pic
 
 function joinNotationLines(lines: readonly string[]): string {
   return lines.filter((line) => line.length > 0).join("\n");
+}
+
+function isFiniteNumber(n: unknown): n is number {
+  return typeof n === "number" && Number.isFinite(n);
+}
+
+/**
+ * Hip circumference for recomputing A-line body shaping in notation.
+ * Prefer stored measurements; when the generator already widened cast-on (A-line), infer from debug
+ * so style-only patternData (pattern tab) still fills `{{jp-body-shaping}}`.
+ */
+export function resolveFinishedHipInchesForAlineBodyNotation(
+  d: SleevelessBackPatternResult["debug"],
+  patternData: Record<string, unknown>,
+  finishedBust: number,
+): number | undefined {
+  const explicitHip = resolveEffectiveFinishedHipInches(patternData);
+  if (explicitHip !== undefined && explicitHip > 0 && explicitHip !== finishedBust) {
+    return explicitHip;
+  }
+
+  const hemCastOn = d.hemCastOnStitches;
+  const bustBodySts = d.bustBodyStitches ?? d.backStitches;
+  const spi = d.stitchesPerInch;
+  if (
+    isFiniteNumber(hemCastOn) &&
+    isFiniteNumber(bustBodySts) &&
+    isFiniteNumber(spi) &&
+    spi > 0 &&
+    hemCastOn > bustBodySts
+  ) {
+    return (hemCastOn * 2) / spi;
+  }
+
+  return resolveDiagramFinishedHipInches(patternData, finishedBust);
+}
+
+/** Recompute A-line body shaping plan from live pattern debug (when generator ran body block). */
+export function resolveAlineBodyShapingPlanForNotation(
+  result: SleevelessBackPatternResult,
+  patternData?: unknown,
+): SleevelessAlineBodyShapingPlan | null {
+  const d = result.debug;
+
+  if (
+    d.alineBodyShapingRowNumbers !== undefined &&
+    d.alineBodyShapingRowNumbers.length > 0 &&
+    d.alineBodyShapingType !== undefined &&
+    d.alineBodyShapingType !== "straight"
+  ) {
+    return {
+      bustBodySts: d.bustBodyStitches ?? d.backStitches ?? 0,
+      hemCastOnSts: d.hemCastOnStitches ?? d.backStitches ?? 0,
+      totalStitchDifference: Math.max(
+        0,
+        (d.hemCastOnStitches ?? 0) - (d.bustBodyStitches ?? d.backStitches ?? 0),
+      ),
+      shapingType: d.alineBodyShapingType,
+      pairedShapingRows: d.alineBodyShapingRowNumbers.length,
+      shapingRowNumbers: [...d.alineBodyShapingRowNumbers],
+      shapingStartRow: d.alineBodyShapingRowNumbers[0] ?? 0,
+      shapingEndRow: d.alineBodyShapingRowNumbers[d.alineBodyShapingRowNumbers.length - 1] ?? 0,
+      availableShapingRows: 0,
+      straightRowsBeforeArmhole: 0,
+      shapingBeginRc: 0,
+      straightBeforeArmholeBeginRc: 0,
+      armholeBeginRc: 0,
+      hipRowsFromHem: d.hipRowsFromHem ?? 0,
+      bodyFirstHalf: { rows: 0, endSts: d.bustBodyStitches ?? 0, instructionLines: [] },
+      bodySecondHalf: { rows: 0, endSts: d.bustBodyStitches ?? 0, instructionLines: [] },
+      warnings: [],
+    };
+  }
+
+  const hemCastOn = d.hemCastOnStitches;
+  const bustBodySts = d.bustBodyStitches ?? d.backStitches ?? 0;
+  const hasAlineBody =
+    d.hipRowsFromHem !== undefined ||
+    (isFiniteNumber(hemCastOn) && isFiniteNumber(bustBodySts) && hemCastOn > bustBodySts);
+  if (!hasAlineBody) return null;
+
+  const finishedBust = d.finishedBustChest;
+  if (finishedBust === undefined || finishedBust <= 0) return null;
+
+  const pd =
+    patternData && typeof patternData === "object" && !Array.isArray(patternData)
+      ? (patternData as Record<string, unknown>)
+      : {};
+  if (bustBodySts <= 0) return null;
+
+  const finishedHipInches = resolveFinishedHipInchesForAlineBodyNotation(d, pd, finishedBust);
+
+  return computeSleevelessAlineBodyShaping({
+    bustBodySts,
+    finishedHipInches,
+    finishedBustInches: finishedBust,
+    stitchesPerInch: d.stitchesPerInch,
+    rowsPerInch: d.rowsPerInch,
+    bodyToArmholeRows: d.bodyRows ?? 0,
+    hemRows: d.hemRows ?? 0,
+  });
+}
+
+export function bodyShapingJapaneseNotationFromAlinePlan(
+  plan: SleevelessAlineBodyShapingPlan | null | undefined,
+): string {
+  return joinNotationLines(alineBodyShapingJapaneseNotationLines(plan));
 }
 
 export function isBackJapaneseNotationSupported(
@@ -204,10 +337,18 @@ export function buildBackJapaneseNotationReplacements(
     necklineLocalRc !== undefined && Number.isFinite(necklineLocalRc)
       ? formatRcNotation(necklineLocalRc)
       : "";
+  const shoulderStartLocalRc = shoulderShapingBeginLocalRCForDiagram(d);
+  const rcShoulderStart =
+    shoulderStartLocalRc !== undefined ? formatRcNotation(shoulderStartLocalRc) : "";
+
+  const bodyShapingLines = bodyShapingJapaneseNotationFromAlinePlan(
+    resolveAlineBodyShapingPlanForNotation(result, patternData),
+  );
 
   const replacements: Record<string, string> = {
     "jp-caston": formatCastOnNotation(castOnSts),
     "jp-body-rows": formatBodyRowsNotation(bodyRows),
+    "jp-body-shaping": bodyShapingLines,
     "jp-armhole-bo": formatBindOffNotation(bindOffSts),
     "jp-armhole-shaping": joinNotationLines(armholeShapingLines),
     "jp-neckline-bo": formatBindOffNotation(centerNeckBindOff ?? 0),
@@ -218,6 +359,7 @@ export function buildBackJapaneseNotationReplacements(
     "rc-armhole-bo": rcArmholeBo,
     rc_reset: rcReset,
     "rc-neckline-start": rcNecklineStart,
+    "rc-shoulder-start": rcShoulderStart,
   };
 
   if (typeof import.meta !== "undefined" && import.meta.env?.DEV) {

@@ -93,6 +93,7 @@ import {
   scaleDiagramGuidesForCardiganHalf,
 } from "../lib/patterns/sleevelessBodyShapeDiagramGuides.ts";
 import { buildSleevelessGarmentDiagramReplacements, buildDropShoulderSleeveDiagramReplacements, buildDropShoulderSleeveJapaneseNotationReplacements } from "../lib/patterns/sleevelessGarmentDiagramReplacements.ts";
+import { applyGarmentDiagramSvgReplacements } from "../lib/patterns/sleevelessGarmentDiagramSvg.ts";
 import {
   resolveSleevelessBackDiagramSrc,
 } from "../lib/patterns/sleevelessBackDiagramSrc.ts";
@@ -902,15 +903,10 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       }
       const res = await fetch(src, { credentials: "same-origin" });
       if (!res.ok) throw new Error(`Failed to load SVG: ${src} (${res.status})`);
-      let svgText = await res.text();
-      svgText = svgText.replace(/^\uFEFF/, "").replace(/^<\?xml[\s\S]*?\?>\s*/, "");
-
-      // Replace known placeholders.
-      for (const [k, v] of Object.entries(replacements || {})) {
-        const safeKey = String(k).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        const re = new RegExp(`\\{\\{\\s*${safeKey}\\s*\\}\\}`, "g");
-        svgText = svgText.replace(re, v == null ? "" : String(v));
-      }
+      let svgText = applyGarmentDiagramSvgReplacements(
+        await res.text(),
+        replacements || {},
+      );
 
       // If any placeholders remain, leave them as-is but log for visibility.
       if (/\{\{\s*[A-Z0-9_]+\s*\}\}/.test(svgText)) {
@@ -2441,6 +2437,7 @@ table {
 
     return buildSleevelessFinishingStepsHtml({
       isCardigan: finishing.isCardigan,
+      isDropShoulder: finishing.isDropShoulder,
       cardiganFrontEdgeFinishingMode: finishing.cardiganFrontEdgeFinishingMode,
       frontEdgePickupSts: finishing.frontEdgePickupSts,
       deps: {
