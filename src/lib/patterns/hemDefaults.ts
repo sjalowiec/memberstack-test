@@ -99,3 +99,13 @@ export function calculateHemRowsFromInches(rowGauge: number, hemDepthInches: num
 export function calculateCuffRows(rowGauge: number, audience: PatternAudience): number {
   return calculateBandRows(rowGauge, audience, getDefaultCuffLengthInches);
 }
+
+/**
+ * Cuff rows from an explicit finished depth in inches (e.g. Custom Build override).
+ * Uses the same even-row rounding as {@link calculateCuffRows}.
+ */
+export function calculateCuffRowsFromInches(rowGauge: number, cuffDepthInches: number): number {
+  if (!Number.isFinite(rowGauge) || rowGauge <= 0) return 0;
+  if (!Number.isFinite(cuffDepthInches) || cuffDepthInches <= 0) return 0;
+  return roundUpToEvenRows(cuffDepthInches * rowGauge);
+}

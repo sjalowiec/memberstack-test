@@ -546,6 +546,10 @@
   --pattern-summary-aspect-ratio: 195.14 / 210.19;
 }
 
+.express-measurements-confirm-page[data-express-construction="drop-shoulder"] {
+  --pattern-summary-aspect-ratio: 228.87 / 423.24;
+}
+
 .express-measurements-confirm-page .express-mbp {
   box-sizing: border-box;
 }

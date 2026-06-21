@@ -19,7 +19,16 @@ export {
 
 export const SLEEVELESS_MEASUREMENT_BLUEPRINT_SVG_URL = "/images/patterns/pattern_summary.svg";
 export const DROP_SHOULDER_MEASUREMENT_BLUEPRINT_SVG_URL =
-  "/images/patterns/drop-shoulder-summary.svg";
+  "/images/patterns/drop-shoulder/drop_shoulder_summary.svg";
+
+/** Keep in sync with `drop_shoulder_summary.svg` viewBox (SSR/CSS fallback before JS hydrates). */
+export const DROP_SHOULDER_SUMMARY_SVG_VIEWBOX = {
+  width: 228.87,
+  height: 423.24,
+} as const;
+
+export const DROP_SHOULDER_SUMMARY_ASPECT_RATIO_CSS =
+  `${DROP_SHOULDER_SUMMARY_SVG_VIEWBOX.width} / ${DROP_SHOULDER_SUMMARY_SVG_VIEWBOX.height}`;
 
 /** True when the active working pattern is a drop-shoulder construction. */
 export function isDropShoulderConstruction(): boolean {

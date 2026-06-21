@@ -15,10 +15,10 @@
 import { calculateBasicPatternNumbers } from "./patternCalculator";
 import {
   calculateHemRowsFromInches,
-  calculateCuffRows,
-  getDefaultCuffLengthInches,
+  calculateCuffRowsFromInches,
   roundUpToEvenRows,
 } from "./hemDefaults";
+import { resolveEffectiveCuffDepthInches } from "./customBuildEffectiveCuffDepth";
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 import { resolveEffectiveFinishedLengthInches } from "./customBuildEffectiveFinishedLength";
 import { resolveEffectiveShoulderWidthInches } from "./customBuildEffectiveShoulderWidth";
@@ -724,6 +724,7 @@ export function generateDropShoulderPattern(
   const backNeckDepthIn = resolveEffectiveBackNeckDepthInches(patternData);
   const frontNeckDepthIn = resolveEffectiveFrontNeckDepthInches(patternData);
   const hemDepthIn = resolveEffectiveHemDepthInches(patternData, audience);
+  const cuffDepthIn = resolveEffectiveCuffDepthInches(patternData, audience);
 
   const sm = selectedMeasurements(patternData);
   const fitSection = section(patternData.fit);
@@ -793,7 +794,7 @@ export function generateDropShoulderPattern(
   // ---- Sleeve math (flat piece width = circumference; top edge = upper arm) ----
   const topSts = upperArmIn !== undefined && spi > 0 ? forceEven(upperArmIn * spi) : 0;
   const wristSts = wristIn !== undefined && spi > 0 ? forceEven(wristIn * spi) : 0;
-  const cuffRows = calculateCuffRows(rpi, audience);
+  const cuffRows = calculateCuffRowsFromInches(rpi, cuffDepthIn);
   const sleeveTotalRows = sleeveLengthIn && rpi > 0 ? Math.max(cuffRows + 2, Math.round(sleeveLengthIn * rpi)) : 0;
   const sleeveBodyRows = Math.max(0, sleeveTotalRows - cuffRows);
   const sleeveValid = topSts > 0 && wristSts > 0 && sleeveTotalRows > 0;
@@ -853,7 +854,6 @@ export function generateDropShoulderPattern(
   });
 
   const rowsFromCastOnToArmholeStart = hemRows + bodyToArmholeRows;
-  const cuffDepthIn = getDefaultCuffLengthInches(audience);
 
   const debug = {
     finishedBustChest: finishedBust || undefined,

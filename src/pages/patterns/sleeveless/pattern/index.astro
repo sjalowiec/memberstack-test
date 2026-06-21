@@ -988,6 +988,10 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
      * backdrop as a grey strip. The measured value keeps the editor flush under the header.
      */
     inset: var(--sl-edit-panel-top, calc(var(--header-offset, 170px) + var(--kbm-env-banner-h, 0px))) 0 0 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
     width: 100%;
     max-width: none;
     box-shadow: none;
@@ -1102,11 +1106,13 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
   /* On mobile the editor body flows in the page scroll (no nested scrollbar). */
   .sl-edit-workspace__measure .sl-measure-workspace__body {
     flex: 1 1 auto;
+    min-height: 0;
     padding: 0;
   }
 
   .sl-measure-workspace__editor {
     width: 100%;
+    min-height: 0;
   }
 
   /* Desktop: side-by-side. Quick panel narrow; SVG gets the remaining width. */
@@ -1115,6 +1121,9 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
       flex-direction: row;
       align-items: stretch;
       gap: clamp(1.5rem, 2.5vw, 2.5rem);
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: 100%;
       overflow: hidden;
       padding-block: clamp(0.85rem, 1.6vw, 1.35rem);
     }
@@ -1161,15 +1170,98 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
     }
 
     .sl-edit-workspace__measure {
-      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 0;
       min-width: 0;
       min-height: 0;
+      max-height: 100%;
+      overflow: hidden;
     }
 
-    /* Diagram is sized to fit the pane, so no inner scrollbar is needed. */
+    /* Near-square sleeveless diagram: sized to fit the pane (no inner scroll). */
     .sl-edit-workspace__measure .sl-measure-workspace__body {
       min-height: 0;
       overflow: visible;
+    }
+
+    /*
+     * Drop-shoulder summary SVG is ~2× taller than sleeveless. Flex chain + scroll on
+     * `.express-mbp-scroll` (stage + overlay) so chips stay aligned while scrolling.
+     * `data-express-construction` is stamped when the editor initializes.
+     */
+    .sl-edit-workspace__measure
+      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"] {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .sl-edit-workspace__measure
+      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+      .sl-measure-workspace__editor {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .sl-edit-workspace__measure
+      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+      .sl-measure-workspace__editor
+      :global(.sleeveless-measure-review-body) {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .sl-edit-workspace__measure
+      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+      .sl-measure-workspace__editor
+      :global(.sleeveless-measure-review-body > .sleeveless-measure-project-summary),
+    .sl-edit-workspace__measure
+      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+      .sl-measure-workspace__editor
+      :global(.sleeveless-measure-review-body > .cb-measure-missing) {
+      flex-shrink: 0;
+    }
+
+    .sl-edit-workspace__measure
+      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+      .sl-measure-workspace__editor
+      :global(.sleeveless-measure-diagram-host) {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .sl-edit-workspace__measure
+      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+      .sl-measure-workspace__editor
+      :global(.cb-measure-diagram-wrap) {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .sl-edit-workspace__measure
+      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+      .sl-measure-workspace__editor
+      :global(.express-mbp) {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
     }
   }
 
@@ -1269,6 +1361,14 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
     --pattern-summary-aspect-ratio: 210.2 / 210.2;
   }
 
+  /* Drop-shoulder summary scrollport height (stamped via data-express-construction at init). */
+  .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"] {
+    --sl-measure-workspace-scroll-max-height: calc(
+      100dvh - var(--sl-edit-panel-top, calc(var(--header-offset, 170px) + var(--kbm-env-banner-h, 0px))) -
+        14rem
+    );
+  }
+
   @media (min-width: 700px) {
     /*
      * Enlarge the reused measurement SVG inside the combined Edit Pattern workspace only.
@@ -1305,11 +1405,11 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
       padding-bottom: 0;
     }
 
-    /* SVG/art fills the stage; keep the existing (square) ratio so nothing is distorted. */
+    /* SVG/art fills the stage; aspect ratio comes from --pattern-summary-aspect-ratio (sleeveless default on shell; drop-shoulder stamped at init). */
     .sl-measure-workspace__body.express-measurements-confirm-page :global(.express-mbp-art) {
       width: 100%;
       height: auto;
-      aspect-ratio: 210.2 / 210.2;
+      aspect-ratio: var(--pattern-summary-aspect-ratio);
     }
 
     /*
@@ -1337,6 +1437,34 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
       max-width: 6.5rem;
       padding: 0.32rem 0.5rem;
       font-size: 1.15rem;
+    }
+
+    /*
+     * Drop-shoulder: do not cap diagram width by viewport height (that rule fits the
+     * near-square sleeveless art). Scroll inside `.express-mbp-scroll` instead.
+     */
+    .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+      :global(.cb-measure-diagram-wrap),
+    .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+      :global(.sleeveless-measure-diagram-host .express-mbp),
+    .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+      :global(.sleeveless-measure-diagram-host .express-mbp-stage) {
+      width: 100%;
+      max-width: min(100%, 1000px);
+      margin-inline: auto;
+    }
+
+    .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+      :global(.express-mbp-scroll) {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      scrollbar-gutter: stable;
+      max-height: var(--sl-measure-workspace-scroll-max-height);
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 0;
     }
   }
 

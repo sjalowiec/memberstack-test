@@ -12,15 +12,73 @@ export const PATTERN_SUMMARY_MEASUREMENT_TARGETS = {
   hip: "target_hip",
   armholeDepth: "target_armhole_depth",
   hem: "target_hem",
-  // Drop Shoulder sleeve targets (present only in drop-shoulder-summary.svg). Underscore ids
-  // for consistency with the body targets above.
+  // Legacy drop-shoulder-summary.svg sleeve targets (superseded by drop_shoulder_summary.svg).
   upperArm: "target_upper_arm",
   cuffCircumference: "target_cuff_circumference",
   armLength: "target_arm_length",
 } as const;
 
+/** Drop Shoulder summary blueprint (`drop_shoulder_summary.svg`) — orange target_* anchors only. */
+export const DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS = {
+  neckOpening: "target_neck_width",
+  neckDepth: "target_neck_depth",
+  bust: "target_bust_circ",
+  garmentLength: "target_body_length",
+  hip: "target_hem_width",
+  hem: "target_hem_depth",
+  armholeDepth: "target_armhole_depth",
+  upperArm: "target_upper_arm",
+  armLength: "target_arm_length",
+  cuffCircumference: "target_wrist",
+  cuffDepth: "target_cuff_depth",
+} as const;
+
 /** SVG typo alias for garment-length target (`target_garmemt_length`). */
 const GARMENT_LENGTH_TARGET_TYPO_ID = "target_garmemt_length";
+
+export type SvgViewBoxSize = { width: number; height: number };
+
+/** Parse an SVG viewBox attribute into width/height (user units). */
+export function parseSvgViewBoxSize(svg: Pick<SVGElement, "getAttribute">): SvgViewBoxSize | null {
+  const viewBox = svg.getAttribute("viewBox")?.trim();
+  if (!viewBox) return null;
+  const parts = viewBox.split(/[\s,]+/).map((part) => parseFloat(part));
+  if (parts.length !== 4) return null;
+  const width = parts[2];
+  const height = parts[3];
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    return null;
+  }
+  return { width, height };
+}
+
+export function svgViewBoxAspectRatioCss(size: SvgViewBoxSize): string {
+  return `${size.width} / ${size.height}`;
+}
+
+/** Sync diagram container aspect ratio with the loaded blueprint SVG viewBox. */
+export function applyMeasurementBlueprintViewBoxAspect(
+  svg: SVGSVGElement,
+  container?: HTMLElement | null,
+): SvgViewBoxSize | null {
+  const size = parseSvgViewBoxSize(svg);
+  if (!size) return null;
+  const ratio = svgViewBoxAspectRatioCss(size);
+  if (svg.style.aspectRatio !== ratio) {
+    svg.style.aspectRatio = ratio;
+  }
+  const host =
+    container ??
+    svg.closest(".express-mbp-stage__inner") ??
+    svg.closest(".cb-measure-diagram-wrap");
+  if (host instanceof HTMLElement) {
+    const prev = host.style.getPropertyValue("--pattern-summary-aspect-ratio");
+    if (prev !== ratio) {
+      host.style.setProperty("--pattern-summary-aspect-ratio", ratio);
+    }
+  }
+  return size;
+}
 
 export const DESKTOP_MEASUREMENT_OVERLAY_MQ = "(min-width: 700px)";
 
@@ -122,32 +180,68 @@ export function bindPatternSummaryOverlayPositioning(
   anchors: MeasurementOverlayAnchor[],
 ): () => void {
   const mq = window.matchMedia(DESKTOP_MEASUREMENT_OVERLAY_MQ);
+  let repositionFrame: number | null = null;
+  let lastStageWidth = -1;
+  let lastStageHeight = -1;
 
-  const reposition = (): void => {
+  const runReposition = (): void => {
     if (!mq.matches) {
       for (const anchor of anchors) clearMeasurementBoxPosition(anchor.box);
+      lastStageWidth = -1;
+      lastStageHeight = -1;
       return;
     }
     for (const anchor of anchors) {
-      positionMeasurementBox(anchor.box, svg, overlay, anchor.targetId, anchor);
+      const placed = positionMeasurementBox(anchor.box, svg, overlay, anchor.targetId, anchor);
+      if (!placed && import.meta.env.DEV) {
+        console.warn(
+          `[pattern-summary-overlay] Missing SVG target: #${anchor.targetId}`,
+        );
+      }
     }
   };
 
-  reposition();
+  const scheduleReposition = (force = false): void => {
+    if (repositionFrame !== null) return;
+    repositionFrame = window.requestAnimationFrame(() => {
+      repositionFrame = null;
+      const width = stageInner.clientWidth;
+      const height = stageInner.clientHeight;
+      if (
+        !force &&
+        width === lastStageWidth &&
+        height === lastStageHeight &&
+        lastStageWidth >= 0
+      ) {
+        return;
+      }
+      lastStageWidth = width;
+      lastStageHeight = height;
+      runReposition();
+    });
+  };
 
-  const ro = new ResizeObserver(() => reposition());
-  ro.observe(stageInner);
-  if (svg.parentElement instanceof HTMLElement) {
-    ro.observe(svg.parentElement);
-  }
+  // Wait for aspect-ratio / font layout to settle (avoid scrollbar width oscillation).
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => scheduleReposition(true));
+  });
 
-  mq.addEventListener("change", reposition);
-  window.addEventListener("orientationchange", reposition);
+  const onWindowResize = (): void => scheduleReposition();
+  const onMqChange = (): void => scheduleReposition(true);
+  const onOrientationChange = (): void => scheduleReposition(true);
+
+  window.addEventListener("resize", onWindowResize, { passive: true });
+  mq.addEventListener("change", onMqChange);
+  window.addEventListener("orientationchange", onOrientationChange);
 
   return () => {
-    ro.disconnect();
-    mq.removeEventListener("change", reposition);
-    window.removeEventListener("orientationchange", reposition);
+    if (repositionFrame !== null) {
+      window.cancelAnimationFrame(repositionFrame);
+      repositionFrame = null;
+    }
+    window.removeEventListener("resize", onWindowResize);
+    mq.removeEventListener("change", onMqChange);
+    window.removeEventListener("orientationchange", onOrientationChange);
     for (const anchor of anchors) clearMeasurementBoxPosition(anchor.box);
   };
 }

@@ -809,16 +809,44 @@
     box-shadow: 0 1px 2px rgba(17, 24, 39, 0.05);
   }
 
+  #pattern-content .drop-shoulder-sleeve-construction-wrap {
+    margin: 0 0 1rem;
+  }
+
   #pattern-content .drop-shoulder-sleeve-construction {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem 0.75rem;
-    margin: 0 0 1rem;
+    margin: 0 0 0.35rem;
     padding: 0.65rem 0.75rem;
     border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #d1d5db);
     border-radius: 8px;
     background: color-mix(in srgb, var(--kbm-green, #52682d) 4%, #fff);
+  }
+
+  #pattern-content .drop-shoulder-sleeve-construction-wrap .pattern-tip.pattern-quick-tip {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  #pattern-content .drop-shoulder-sleeve-construction-tip-body__columns {
+    display: grid;
+    gap: 0.55rem 1rem;
+  }
+
+  @media (min-width: 520px) {
+    #pattern-content .drop-shoulder-sleeve-construction-tip-body__columns {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  #pattern-content .drop-shoulder-sleeve-construction-tip-body__columns p {
+    margin: 0;
+  }
+
+  #pattern-content .drop-shoulder-sleeve-construction-tip-body__summary {
+    margin: 0.65rem 0 0;
   }
 
   #pattern-content .drop-shoulder-sleeve-construction__label {

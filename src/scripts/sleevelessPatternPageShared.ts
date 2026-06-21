@@ -36,6 +36,8 @@ import {
 } from "../lib/patterns/sleevelessPatternOutput.ts";
 import { generateDropShoulderPattern } from "../lib/patterns/dropShoulderPatternOutput.ts";
 import {
+  DROP_SHOULDER_SLEEVE_CONSTRUCTION_CHOICE_TIP_ID,
+  dropShoulderSleeveConstructionChoiceQuickTipInnerHtml,
   readDropShoulderSleeveConstruction,
   writeDropShoulderSleeveConstruction,
   type DropShoulderSleeveDirection,
@@ -3032,12 +3034,21 @@ table {
 
   function renderDropShoulderSleeveConstructionToggleHtml(direction) {
     const cuffUpActive = direction !== "top-down";
-    return `<div class="drop-shoulder-sleeve-construction no-print" role="group" aria-label="Sleeve construction">
-      <span class="drop-shoulder-sleeve-construction__label">Sleeve construction</span>
-      <div class="sleeveless-back-diagram-mode drop-shoulder-sleeve-construction__options">
-        <button type="button" class="sleeveless-back-diagram-mode__btn${cuffUpActive ? " is-active" : ""}" data-drop-shoulder-sleeve-construction="cuff-up" aria-pressed="${cuffUpActive ? "true" : "false"}">Bottom-up</button>
-        <button type="button" class="sleeveless-back-diagram-mode__btn${!cuffUpActive ? " is-active" : ""}" data-drop-shoulder-sleeve-construction="top-down" aria-pressed="${!cuffUpActive ? "true" : "false"}">Top-down</button>
+    const constructionTipHtml = patternTipWrapperHtml({
+      tipHtml: dropShoulderSleeveConstructionChoiceQuickTipInnerHtml(),
+      tipHtmlIsFull: true,
+      tipPresentation: "quick-tip",
+      tipId: DROP_SHOULDER_SLEEVE_CONSTRUCTION_CHOICE_TIP_ID,
+    });
+    return `<div class="drop-shoulder-sleeve-construction-wrap no-print">
+      <div class="drop-shoulder-sleeve-construction" role="group" aria-label="Sleeve construction">
+        <span class="drop-shoulder-sleeve-construction__label">Sleeve construction</span>
+        <div class="sleeveless-back-diagram-mode drop-shoulder-sleeve-construction__options">
+          <button type="button" class="sleeveless-back-diagram-mode__btn${cuffUpActive ? " is-active" : ""}" data-drop-shoulder-sleeve-construction="cuff-up" aria-pressed="${cuffUpActive ? "true" : "false"}">Bottom-up</button>
+          <button type="button" class="sleeveless-back-diagram-mode__btn${!cuffUpActive ? " is-active" : ""}" data-drop-shoulder-sleeve-construction="top-down" aria-pressed="${!cuffUpActive ? "true" : "false"}">Top-down</button>
+        </div>
       </div>
+      ${constructionTipHtml}
     </div>`;
   }
 

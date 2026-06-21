@@ -1185,3 +1185,34 @@
       clamp(0.2rem, 1.15%, 0.45rem);
   }
 }
+
+/*
+ * Drop-shoulder summary SVG is ~2× taller than sleeveless. Allow vertical scroll inside
+ * `.express-mbp-scroll` (wraps stage + overlay) so chips stay aligned with the artwork.
+ */
+@media (max-width: 699.98px) {
+  .express-measurements-confirm-page.sleeveless-unified-review-page[data-express-construction="drop-shoulder"]
+    .sleeveless-review-diagram-section
+    .cb-measure-diagram-wrap {
+    overflow: visible;
+  }
+}
+
+@media (min-width: 700px) {
+  .express-measurements-confirm-page.sleeveless-unified-review-page[data-express-construction="drop-shoulder"]
+    .sleeveless-review-diagram-section
+    .cb-measure-diagram-wrap {
+    overflow: visible;
+  }
+
+  .express-measurements-confirm-page.sleeveless-unified-review-page[data-express-construction="drop-shoulder"]
+    .sleeveless-review-diagram-section
+    .express-mbp-scroll {
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: min(78dvh, calc(100dvh - var(--header-offset, 170px) - 16rem));
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable;
+  }
+}

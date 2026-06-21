@@ -74,6 +74,7 @@ describe("diagramOverrideDefaultsFromChartRow", () => {
     expect(defaults.upperArm).toBe("12.5");
     expect(defaults.sleeveLength).toBe("17");
     expect(defaults.wrist).toBe("6.25");
+    expect(defaults.cuffDepth).toBe("2");
   });
 
   it("omits drop-shoulder sleeve fields for sleeveless reconcile", () => {

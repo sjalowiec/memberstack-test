@@ -939,6 +939,10 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
   .sl-edit-drawer--workspace .sl-edit-drawer__panel {
     position: absolute;
     inset: var(--sl-edit-panel-top, calc(var(--header-offset, 170px) + var(--kbm-env-banner-h, 0px))) 0 0 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
     width: 100%;
     max-width: none;
     box-shadow: none;
@@ -1042,11 +1046,13 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
 
   .sl-edit-workspace__measure .sl-measure-workspace__body {
     flex: 1 1 auto;
+    min-height: 0;
     padding: 0;
   }
 
   .sl-measure-workspace__editor {
     width: 100%;
+    min-height: 0;
   }
 
   @media (min-width: 1000px) {
@@ -1054,6 +1060,9 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
       flex-direction: row;
       align-items: stretch;
       gap: clamp(1.5rem, 2.5vw, 2.5rem);
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: 100%;
       overflow: hidden;
       padding-block: clamp(0.85rem, 1.6vw, 1.35rem);
     }
@@ -1094,14 +1103,70 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
     }
 
     .sl-edit-workspace__measure {
-      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 0;
       min-width: 0;
       min-height: 0;
+      max-height: 100%;
+      overflow: hidden;
     }
 
     .sl-edit-workspace__measure .sl-measure-workspace__body {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
       min-height: 0;
-      overflow: visible;
+      overflow: hidden;
+    }
+
+    .sl-edit-workspace__measure .sl-measure-workspace__editor {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .sl-edit-workspace__measure .sl-measure-workspace__editor :global(.sleeveless-measure-review-body) {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .sl-edit-workspace__measure
+      .sl-measure-workspace__editor
+      :global(.sleeveless-measure-review-body > .sleeveless-measure-project-summary),
+    .sl-edit-workspace__measure
+      .sl-measure-workspace__editor
+      :global(.sleeveless-measure-review-body > .cb-measure-missing) {
+      flex-shrink: 0;
+    }
+
+    .sl-edit-workspace__measure .sl-measure-workspace__editor :global(.sleeveless-measure-diagram-host) {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .sl-edit-workspace__measure .sl-measure-workspace__editor :global(.cb-measure-diagram-wrap) {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .sl-edit-workspace__measure .sl-measure-workspace__editor :global(.express-mbp) {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
     }
   }
 
@@ -1187,7 +1252,11 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
   }
 
   .sl-measure-workspace__body.express-measurements-confirm-page {
-    --pattern-summary-aspect-ratio: 210.2 / 210.2;
+    --pattern-summary-aspect-ratio: 228.87 / 423.24;
+    --sl-measure-workspace-scroll-max-height: calc(
+      100dvh - var(--sl-edit-panel-top, calc(var(--header-offset, 170px) + var(--kbm-env-banner-h, 0px))) -
+        14rem
+    );
   }
 
   @media (min-width: 700px) {
@@ -1201,19 +1270,26 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
     .sl-measure-workspace__body.express-measurements-confirm-page
       :global(.sleeveless-measure-diagram-host .express-mbp-stage) {
       width: 100%;
-      max-width: min(100%, 1000px, calc(100vh - 300px));
+      max-width: min(100%, 1000px);
       margin-inline: auto;
     }
 
     .sl-measure-workspace__body.express-measurements-confirm-page :global(.express-mbp-scroll) {
-      overflow: visible;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      scrollbar-gutter: stable;
+      max-height: var(--sl-measure-workspace-scroll-max-height);
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
       padding-bottom: 0;
     }
 
     .sl-measure-workspace__body.express-measurements-confirm-page :global(.express-mbp-art) {
       width: 100%;
       height: auto;
-      aspect-ratio: 210.2 / 210.2;
+      aspect-ratio: var(--pattern-summary-aspect-ratio);
     }
 
     .sl-measure-workspace__body.express-measurements-confirm-page :global(.measurement-chip) {

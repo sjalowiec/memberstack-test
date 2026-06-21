@@ -6,7 +6,7 @@ import {
   formatSwatchCountForGaugeInput,
   swatchCountFromPerInchForDisplay,
 } from "../lib/patterns/gaugeDisplayFormat";
-import { getDefaultHemLengthInches } from "../lib/patterns/hemDefaults";
+import { getDefaultHemLengthInches, getDefaultCuffLengthInches } from "../lib/patterns/hemDefaults";
 import {
   getCurrentPattern,
   getPatternData,
@@ -48,8 +48,10 @@ import { resolveSleevelessGarmentKind } from "../lib/patterns/resolveSleevelessG
 import { readCustomBuildWizardGarmentType } from "../lib/patterns/sleevelessCustomBuildWizardNeckline";
 import {
   applyMeasurementTargetToBox,
+  applyMeasurementBlueprintViewBoxAspect,
   bindPatternSummaryOverlayPositioning,
   collectOverlayAnchors,
+  DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS,
   PATTERN_SUMMARY_MEASUREMENT_TARGETS,
 } from "../lib/patterns/patternSummaryMeasurementOverlay";
 import {
@@ -72,6 +74,8 @@ import {
   isDropShoulderConstruction,
   isDropShoulderWorkspaceMeasurementSummaryPage,
   resolveMeasurementBlueprintSvgUrl,
+  DROP_SHOULDER_SUMMARY_ASPECT_RATIO_CSS,
+  SLEEVELESS_MEASUREMENT_BLUEPRINT_SVG_URL,
 } from "../lib/patterns/measurementBlueprintSvgUrl";
 import { mapExpressStyleKey } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
 import { markDropShoulderSleeveOverrideKeyUserEdited } from "../lib/patterns/dropShoulderUserEditedSleeveFields";
@@ -197,6 +201,7 @@ const DIAGRAM_FIELD_KEYS = [
   "upperArm",
   "wrist",
   "sleeveLength",
+  "cuffDepth",
 ] as const;
 
 type DiagramFieldKey = (typeof DIAGRAM_FIELD_KEYS)[number];
@@ -205,6 +210,8 @@ type DiagramFieldDef = {
   key: DiagramFieldKey;
   positionMod: string;
   targetId: string;
+  /** Drop Shoulder summary SVG target (drop_shoulder_summary.svg). */
+  dropShoulderTargetId?: string;
   /** Optional CSS transform for anchor alignment (e.g. hem chip above target). */
   anchorTransform?: string;
   label: string;
@@ -222,6 +229,7 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
     key: "finishedNeckOpeningWidth",
     positionMod: "neck-opening",
     targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.neckOpening,
+    dropShoulderTargetId: DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.neckOpening,
     label: "Neck opening",
     axis: "horizontal",
     defaultInches: (row, computed) =>
@@ -231,6 +239,7 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
     key: "neckDepth",
     positionMod: "neckline-depth",
     targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.neckDepth,
+    dropShoulderTargetId: DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.neckDepth,
     label: "Neck depth",
     axis: "vertical",
     defaultInches: (row, computed) =>
@@ -249,6 +258,7 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
     key: "armholeDepth",
     positionMod: "armhole",
     targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.armholeDepth,
+    dropShoulderTargetId: DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.armholeDepth,
     label: "Armhole depth",
     axis: "vertical",
     defaultInches: (row, computed) =>
@@ -258,6 +268,7 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
     key: "chestBust",
     positionMod: "finished-bust",
     targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.bust,
+    dropShoulderTargetId: DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.bust,
     label: "Finished bust circ",
     labelLines: ["Finished", "bust circ"],
     axis: "horizontal",
@@ -268,6 +279,7 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
     key: "hip",
     positionMod: "hip-width",
     targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.hip,
+    dropShoulderTargetId: DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.hip,
     label: "Hip circ",
     axis: "horizontal",
     defaultInches: (row, computed) =>
@@ -282,6 +294,7 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
     key: "finishedLength",
     positionMod: "back-length",
     targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.garmentLength,
+    dropShoulderTargetId: DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.garmentLength,
     label: "Garment length",
     axis: "vertical",
     defaultInches: (row, computed) =>
@@ -291,6 +304,7 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
     key: "hemDepth",
     positionMod: "ribbed-hem-depth",
     targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.hem,
+    dropShoulderTargetId: DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.hem,
     anchorTransform: "translate(-50%, -100%)",
     label: "Hem depth",
     axis: "vertical",
@@ -301,6 +315,7 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
     key: "upperArm",
     positionMod: "upper-arm",
     targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.upperArm,
+    dropShoulderTargetId: DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.upperArm,
     label: "Upper arm circ",
     labelLines: ["Upper arm", "circ"],
     axis: "horizontal",
@@ -313,6 +328,7 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
     key: "sleeveLength",
     positionMod: "arm-length",
     targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.armLength,
+    dropShoulderTargetId: DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.armLength,
     label: "Sleeve length",
     axis: "vertical",
     dropShoulderOnly: true,
@@ -324,6 +340,7 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
     key: "wrist",
     positionMod: "cuff-circumference",
     targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.cuffCircumference,
+    dropShoulderTargetId: DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.cuffCircumference,
     label: "Cuff circ",
     labelLines: ["Cuff", "circ"],
     axis: "horizontal",
@@ -331,7 +348,24 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
     optional: true,
     defaultInches: (row, computed) => pickPositive(computed.wrist, toFinite(row.wrist)),
   },
+  {
+    key: "cuffDepth",
+    positionMod: "cuff-length",
+    targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.armLength,
+    dropShoulderTargetId: DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.cuffDepth,
+    label: "Cuff length",
+    axis: "vertical",
+    dropShoulderOnly: true,
+    defaultInches: (_row, _computed, audience) => getDefaultCuffLengthInches(audience),
+  },
 ];
+
+function resolveDiagramFieldTargetId(field: DiagramFieldDef): string {
+  if (isDropShoulderConstruction() && field.dropShoulderTargetId) {
+    return field.dropShoulderTargetId;
+  }
+  return field.targetId;
+}
 
 /**
  * Diagram fields for the active construction:
@@ -501,15 +535,22 @@ async function createMeasurementBlueprintArt(): Promise<SVGElement | HTMLImageEl
     ? "Drop shoulder sweater measurement diagram"
     : "Sleeveless sweater body measurement diagram";
   try {
-    const res = await fetch(svgUrl);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const svgText = await res.text();
-    const parsed = new DOMParser().parseFromString(svgText, "image/svg+xml");
-    const root = parsed.documentElement;
-    if (!(root instanceof SVGSVGElement)) throw new Error("not an SVG root");
-    applyExpressMeasurementBlueprintSvgDisplay(root);
+    let root: SVGSVGElement;
+    if (cachedBlueprintSvgTemplate?.url === svgUrl) {
+      root = cachedBlueprintSvgTemplate.template;
+    } else {
+      const res = await fetch(svgUrl);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const svgText = await res.text();
+      const parsed = new DOMParser().parseFromString(svgText, "image/svg+xml");
+      const parsedRoot = parsed.documentElement;
+      if (!(parsedRoot instanceof SVGSVGElement)) throw new Error("not an SVG root");
+      cachedBlueprintSvgTemplate = { url: svgUrl, template: parsedRoot };
+      root = parsedRoot;
+    }
     const svg = document.importNode(root, true);
     if (!(svg instanceof SVGSVGElement)) throw new Error("import failed");
+    applyExpressMeasurementBlueprintSvgDisplay(svg);
     svg.classList.add("express-mbp-art");
     svg.setAttribute("role", "img");
     svg.setAttribute("aria-label", ariaLabel);
@@ -519,8 +560,13 @@ async function createMeasurementBlueprintArt(): Promise<SVGElement | HTMLImageEl
     const img = document.createElement("img");
     img.className = "express-mbp-art";
     img.src = svgUrl;
-    img.width = 142;
-    img.height = 195;
+    if (svgUrl === SLEEVELESS_MEASUREMENT_BLUEPRINT_SVG_URL) {
+      img.width = 142;
+      img.height = 195;
+    } else {
+      img.width = 229;
+      img.height = 423;
+    }
     img.alt = ariaLabel;
     img.decoding = "async";
     return img;
@@ -692,7 +738,7 @@ function createDiagramFieldBox(
   err.hidden = true;
 
   box.append(lab, fieldRow, err);
-  applyMeasurementTargetToBox(box, field.targetId, {
+  applyMeasurementTargetToBox(box, resolveDiagramFieldTargetId(field), {
     transform: field.anchorTransform,
   });
   return box;
@@ -752,13 +798,31 @@ function createDiagramReadonlyFieldBox(
   valEl.textContent = formatReadonlyMeasurementDisplay(valueInches, unit);
 
   box.append(lab, valEl);
-  applyMeasurementTargetToBox(box, field.targetId, {
+  applyMeasurementTargetToBox(box, resolveDiagramFieldTargetId(field), {
     transform: field.anchorTransform,
   });
   return box;
 }
 
 let diagramOverlayPositionCleanup: (() => void) | null = null;
+let cachedBlueprintSvgTemplate: { url: string; template: SVGSVGElement } | null = null;
+let lastSummaryDiagramRenderKey = "";
+
+function stampDropShoulderMeasurementPageShell(root: HTMLElement): void {
+  if (!isDropShoulderConstruction()) return;
+  root.setAttribute("data-express-construction", "drop-shoulder");
+  if (isDropShoulderWorkspaceMeasurementSummaryPage()) {
+    root.setAttribute("data-drop-shoulder-workspace-measure-summary", "");
+  }
+  const pageShell = root.closest(".express-measurements-confirm-page");
+  if (pageShell instanceof HTMLElement) {
+    pageShell.setAttribute("data-express-construction", "drop-shoulder");
+    pageShell.style.setProperty(
+      "--pattern-summary-aspect-ratio",
+      DROP_SHOULDER_SUMMARY_ASPECT_RATIO_CSS,
+    );
+  }
+}
 
 function collectValues(
   root: HTMLElement,
@@ -920,53 +984,74 @@ function refreshDropShoulderArmholeDisplay(
   );
 }
 
+let measureFieldPersistenceCleanup: (() => void) | null = null;
+
 function wireFieldPersistence(root: HTMLElement, getDisplayUnit: () => UiLengthUnit | null): void {
-  root.querySelectorAll("[data-cb-measure-input]").forEach((el) => {
-    if (!(el instanceof HTMLInputElement)) return;
-    const save = (): void => {
-      resetCbMeasureWarningDismissal();
-      const key = el.getAttribute("data-cb-measure-input") as DiagramFieldKey | null;
-      if (!key) return;
-      const displayUnit = getDisplayUnit();
-      const n =
-        displayUnit == null
-          ? parseInchesInput(el.value)
-          : parseMeasurementInputToInches(el.value, displayUnit);
-      if (el.value.trim() && n === undefined) {
-        setFieldError(root, key, "Enter a positive number");
-        refreshPatternValidationUi(root, displayUnit);
-        return;
-      }
-      setFieldError(root, key, null);
-      el.closest(".express-mbp-box")?.classList.remove("express-mbp-box--invalid");
-      if (
-        isDropShoulderConstruction() &&
-        !suppressDropShoulderSleeveUserEditTracking &&
-        (key === "upperArm" || key === "sleeveLength" || key === "wrist")
-      ) {
-        markDropShoulderSleeveOverrideKeyUserEdited(key);
-      }
-      persistFromRoot(root, displayUnit);
+  measureFieldPersistenceCleanup?.();
+  measureFieldPersistenceCleanup = null;
+
+  const saveFromInput = (el: HTMLInputElement): void => {
+    resetCbMeasureWarningDismissal();
+    const key = el.getAttribute("data-cb-measure-input") as DiagramFieldKey | null;
+    if (!key) return;
+    const displayUnit = getDisplayUnit();
+    const n =
+      displayUnit == null
+        ? parseInchesInput(el.value)
+        : parseMeasurementInputToInches(el.value, displayUnit);
+    if (el.value.trim() && n === undefined) {
+      setFieldError(root, key, "Enter a positive number");
       refreshPatternValidationUi(root, displayUnit);
-      if (key === "upperArm") {
-        refreshDropShoulderArmholeDisplay(root, collectValues(root, { displayUnit }), displayUnit ?? "in");
-      }
-    };
-    el.addEventListener("change", save);
-    el.addEventListener("blur", save);
-    el.addEventListener("input", () => {
-      resetCbMeasureWarningDismissal();
-      refreshPatternValidationUi(root, getDisplayUnit());
-      if (el.getAttribute("data-cb-measure-input") === "upperArm") {
-        const displayUnit = getDisplayUnit();
-        refreshDropShoulderArmholeDisplay(
-          root,
-          collectValues(root, { displayUnit: displayUnit ?? undefined }),
-          displayUnit ?? "in",
-        );
-      }
-    });
-  });
+      return;
+    }
+    setFieldError(root, key, null);
+    el.closest(".express-mbp-box")?.classList.remove("express-mbp-box--invalid");
+    if (
+      isDropShoulderConstruction() &&
+      !suppressDropShoulderSleeveUserEditTracking &&
+      (key === "upperArm" || key === "sleeveLength" || key === "wrist")
+    ) {
+      markDropShoulderSleeveOverrideKeyUserEdited(key);
+    }
+    persistFromRoot(root, displayUnit);
+    refreshPatternValidationUi(root, displayUnit);
+    if (key === "upperArm") {
+      refreshDropShoulderArmholeDisplay(root, collectValues(root, { displayUnit }), displayUnit ?? "in");
+    }
+  };
+
+  const onChange = (ev: Event): void => {
+    const target = ev.target;
+    if (!(target instanceof HTMLInputElement)) return;
+    if (!target.matches("[data-cb-measure-input]")) return;
+    saveFromInput(target);
+  };
+
+  const onInput = (ev: Event): void => {
+    const target = ev.target;
+    if (!(target instanceof HTMLInputElement)) return;
+    if (!target.matches("[data-cb-measure-input]")) return;
+    resetCbMeasureWarningDismissal();
+    refreshPatternValidationUi(root, getDisplayUnit());
+    if (target.getAttribute("data-cb-measure-input") === "upperArm") {
+      const displayUnit = getDisplayUnit();
+      refreshDropShoulderArmholeDisplay(
+        root,
+        collectValues(root, { displayUnit: displayUnit ?? undefined }),
+        displayUnit ?? "in",
+      );
+    }
+  };
+
+  root.addEventListener("change", onChange);
+  root.addEventListener("blur", onChange, true);
+  root.addEventListener("input", onInput);
+
+  measureFieldPersistenceCleanup = () => {
+    root.removeEventListener("change", onChange);
+    root.removeEventListener("blur", onChange, true);
+    root.removeEventListener("input", onInput);
+  };
 }
 
 function findReviewDiagramOverlay(diagramHost: HTMLElement): HTMLElement | null {
@@ -1144,6 +1229,7 @@ async function renderDiagram(
   diagramHost.appendChild(wrap);
 
   if (art instanceof SVGSVGElement) {
+    applyMeasurementBlueprintViewBoxAspect(art, inner);
     const anchors = collectOverlayAnchors(overlay);
     diagramOverlayPositionCleanup = bindPatternSummaryOverlayPositioning(
       inner,
@@ -1152,13 +1238,14 @@ async function renderDiagram(
       anchors,
     );
   }
-
-  if (!readOnly) wireFieldPersistence(pageRoot, getDisplayUnit);
 }
 
 export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurementsInitOptions): void {
   const root = document.querySelector("[data-cb-measure-root]");
   if (!(root instanceof HTMLElement)) return;
+  if (root.dataset.cbMeasurePageInit === "true") return;
+  root.dataset.cbMeasurePageInit = "true";
+  stampDropShoulderMeasurementPageShell(root);
 
   const readOnly = options?.readOnly === true;
   const useUiUnitDisplay = options?.preserveUnitsHost === true;
@@ -1236,6 +1323,10 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
 
   wirePatternWorkspacePatternTabPreGeneration();
 
+  if (!readOnly) {
+    wireFieldPersistence(root, getDisplayUnit);
+  }
+
   let workspaceSummaryDiagramHydrateInFlight = false;
   let dropShoulderAutoForceRefreshDone = false;
   let dropShoulderWorkspaceQuickEditRevision = 0;
@@ -1243,6 +1334,19 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
   const renderSummaryDiagramFromMerged = async (merged: Record<DiagramFieldKey, string>): Promise<void> => {
     diagramInches = merged;
     if (!(diagramHost instanceof HTMLElement)) return;
+
+    const renderKey = `${JSON.stringify(merged)}|${useUiUnitDisplay ? getExpressUiUnit() : "in"}|${readOnly}`;
+    const hasDiagram = !!diagramHost.querySelector(".express-mbp--diagram");
+    if (renderKey === lastSummaryDiagramRenderKey && hasDiagram) {
+      diagramUnitDisplayReady = true;
+      if (useUiUnitDisplay) {
+        applyDiagramUnitDisplay(diagramHost, diagramInches, readOnly, lastDisplayUnit);
+      }
+      if (!readOnly) refreshPatternValidationUi(root, getDisplayUnit());
+      return;
+    }
+    lastSummaryDiagramRenderKey = renderKey;
+
     suppressDropShoulderSleeveUserEditTracking = true;
     try {
       lastDisplayUnit = useUiUnitDisplay ? getExpressUiUnit() : "in";
@@ -1288,6 +1392,7 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
     if (diagramHost instanceof HTMLElement) {
       diagramHost.replaceChildren();
       diagramUnitDisplayReady = false;
+      lastSummaryDiagramRenderKey = "";
     }
 
     const forced = forceRefreshDropShoulderSummaryMeasurementsForQuickEditSizing(quickEditSizing);
@@ -1323,7 +1428,6 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
     workspaceSummaryDiagramHydrateInFlight = true;
     const hydrateRevisionAtStart = dropShoulderWorkspaceQuickEditRevision;
     try {
-      prepareCustomBuildPatternGeneration({ root, awaitCharts: false, skipDomFlush: true });
       const pattern = getCurrentPattern();
       const expressValues = readExpressValues();
       const fit = pattern.fit ?? {};
@@ -1354,7 +1458,10 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
 
       if (!row || !audience) {
         if (missingEl instanceof HTMLElement) missingEl.removeAttribute("hidden");
-        if (diagramHost instanceof HTMLElement) diagramHost.replaceChildren();
+        if (diagramHost instanceof HTMLElement) {
+          diagramHost.replaceChildren();
+          lastSummaryDiagramRenderKey = "";
+        }
         if (continueBtn instanceof HTMLButtonElement) continueBtn.disabled = true;
         diagramUnitDisplayReady = false;
         return;
@@ -1432,6 +1539,7 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
         if (diagramHost instanceof HTMLElement) {
           diagramHost.replaceChildren();
           diagramUnitDisplayReady = false;
+          lastSummaryDiagramRenderKey = "";
         }
         const forced = quickEditSizing
           ? forceRefreshDropShoulderSummaryMeasurementsForQuickEditSizing(quickEditSizing)

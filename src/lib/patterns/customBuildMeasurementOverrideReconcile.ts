@@ -5,7 +5,7 @@
  * works when `fit.selectedMeasurements` was already updated before the review page renders.
  */
 import { formatSwatchCountForGaugeInput } from "./gaugeDisplayFormat";
-import { getDefaultHemLengthInches } from "./hemDefaults";
+import { getDefaultHemLengthInches, getDefaultCuffLengthInches } from "./hemDefaults";
 import { isActiveDropShoulderConstruction } from "./patternConstructionIdentity";
 import {
   computeDefaultMeasurementsFromChartRow,
@@ -127,6 +127,7 @@ export function diagramOverrideDefaultsFromChartRow(
   set("hemDepth", getDefaultHemLengthInches(audience));
 
   if (options?.dropShoulder) {
+    set("cuffDepth", getDefaultCuffLengthInches(audience));
     Object.assign(
       out,
       dropShoulderSleeveDefaultsFromChartRow(row, fitPreference, {
@@ -165,6 +166,7 @@ export function reconcileCustomBuildDiagramOverridesAfterSizingChange(args: {
   const keys = new Set<string>(CUSTOM_BUILD_BODY_DIAGRAM_OVERRIDE_KEYS);
   if (args.dropShoulder) {
     for (const key of DROP_SHOULDER_SLEEVE_OVERRIDE_KEYS) keys.add(key);
+    keys.add("cuffDepth");
   }
 
   const next = { ...args.overrides };

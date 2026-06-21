@@ -43,6 +43,7 @@ export const CUSTOM_BUILD_DIAGRAM_OVERRIDE_KEYS = [
   "upperArm",
   "sleeveLength",
   "wrist",
+  "cuffDepth",
 ] as const;
 
 function roundQuarter(n: number): number {
