@@ -159,6 +159,26 @@ function knitInPatternLine(rows: number): string {
   return rows === 1 ? "Knit 1 row in pattern." : `Knit ${rows} rows in pattern.`;
 }
 
+/** Cuff-up sleeve: even rows after the last side increase, then bind off at total RC. */
+function knitEvenAfterFinalIncreaseLine(remainderRows: number, bindOffRc: number): string {
+  if (remainderRows <= 0) return "";
+  const rowWord = remainderRows === 1 ? "1 row even" : `${remainderRows} rows even`;
+  return `After the final increase, knit ${rowWord} in pattern, then bind off at ${formatRcColon(bindOffRc)}.`;
+}
+
+function sleeveBodyRemainderLine(
+  plan: { remainderRows: number; steps: readonly { times: number }[] },
+  direction: DropShoulderSleeveDirection,
+  sleeveTotalRows: number,
+): string {
+  if (plan.remainderRows <= 0) return "";
+  const hadShaping = plan.steps.some((s) => s.times > 0);
+  if (hadShaping && direction === "cuff-up") {
+    return knitEvenAfterFinalIncreaseLine(plan.remainderRows, sleeveTotalRows);
+  }
+  return knitInPatternLine(plan.remainderRows);
+}
+
 function glossaryAttrEscape(s: string): string {
   return s.replace(/"/g, "&quot;");
 }
@@ -285,6 +305,33 @@ function roundNeckEdgeLines(neckSts: number): { centerBindOff: number; lines: st
     );
   }
   return { centerBindOff: plan.centerBindOff, lines };
+}
+
+/** Pullover front (round or V-neck): park the non-working shoulder before shaping one side. */
+function dropShoulderPulloverFrontShoulderDivideParagraphs(): string[] {
+  return ["Place the opposite shoulder stitches on hold. Work one shoulder at a time."];
+}
+
+const DROP_SHOULDER_PULLOVER_ROUND_NECK_SECOND_SHOULDER_SENTENCE =
+  "Return the held shoulder stitches to the needles and repeat the neckline and shoulder shaping for the second shoulder, matching the first side.";
+
+const DROP_SHOULDER_PULLOVER_V_NECK_SECOND_SHOULDER_SENTENCE =
+  "Return the held shoulder stitches to the needles and repeat the V-neck shaping for the second shoulder, mirroring the first side.";
+
+/**
+ * Pullover front: after neck-edge shaping on the first shoulder, knit even to the shoulder bind-off
+ * RC when needed, bind off, then repeat for the held shoulder.
+ */
+function dropShoulderPulloverFirstShoulderFinishParagraphs(
+  shoulderStsEach: number,
+  totalRows: number,
+  secondShoulderSentence: string,
+): string[] {
+  return [
+    `When neckline shaping is complete and ${shoulderStsEach} stitches remain on the working shoulder, knit even to ${formatRcColon(totalRows)} (no further neck-edge decreases).`,
+    `Bind off the ${shoulderStsEach} shoulder stitches.`,
+    secondShoulderSentence,
+  ];
 }
 
 /**
@@ -423,12 +470,16 @@ function buildPulloverFrontRows(args: {
         kind: "block",
         rc: formatRcColon(neckStartRc),
         paragraphs: [
-          `At ${formatRcColon(neckStartRc)}, divide for the V-neck at the center. Work each side separately.`,
+          `At ${formatRcColon(neckStartRc)}, divide for the V-neck at the center.`,
+          ...dropShoulderPulloverFrontShoulderDivideParagraphs(),
           sched.count > 0
             ? `At the neck edge, decrease 1 stitch ${intervalPhrase(sched.interval)} ${sched.count} time${sched.count === 1 ? "" : "s"} (${perSide} stitches removed per side).`
             : "Work straight to the shoulder.",
-          `When ${args.shoulderStsEach} stitches remain on the side, knit even to ${formatRcColon(args.totalRows)}, then bind off ${args.shoulderStsEach} stitches for the shoulder.`,
-          "Work the second side to match, reversing the neck-edge shaping. Shoulders are worked straight.",
+          ...dropShoulderPulloverFirstShoulderFinishParagraphs(
+            args.shoulderStsEach,
+            args.totalRows,
+            DROP_SHOULDER_PULLOVER_V_NECK_SECOND_SHOULDER_SENTENCE,
+          ),
         ],
         stitchCount: args.shoulderStsEach,
       });
@@ -438,10 +489,14 @@ function buildPulloverFrontRows(args: {
         kind: "block",
         rc: formatRcColon(neckStartRc),
         paragraphs: [
-          `At ${formatRcColon(neckStartRc)}, bind off the center ${centerBindOff} stitches for the neck. Work each side separately.`,
+          `At ${formatRcColon(neckStartRc)}, bind off the center ${centerBindOff} stitches for the neck.`,
+          ...dropShoulderPulloverFrontShoulderDivideParagraphs(),
           ...lines,
-          `When ${args.shoulderStsEach} stitches remain on the side, knit even to ${formatRcColon(args.totalRows)}, then bind off ${args.shoulderStsEach} stitches for the shoulder.`,
-          "Work the second side to match, reversing the neck-edge shaping. Shoulders are worked straight.",
+          ...dropShoulderPulloverFirstShoulderFinishParagraphs(
+            args.shoulderStsEach,
+            args.totalRows,
+            DROP_SHOULDER_PULLOVER_ROUND_NECK_SECOND_SHOULDER_SENTENCE,
+          ),
         ],
         stitchCount: args.shoulderStsEach,
       });
@@ -639,7 +694,7 @@ export function buildDropShoulderSleeveDisplayRows(
       rc: formatRcColon(0),
       paragraphs: [
         ...shapingWrittenLines,
-        shapingPlan.remainderRows > 0 ? knitInPatternLine(shapingPlan.remainderRows) : "",
+        sleeveBodyRemainderLine(shapingPlan, args.direction, args.sleeveTotalRows),
       ].filter((p) => p.length > 0),
       stitchCount: args.wristSts > 0 ? args.wristSts : undefined,
     });
@@ -674,7 +729,7 @@ export function buildDropShoulderSleeveDisplayRows(
     rc: formatRcColon(args.cuffRows),
     paragraphs: [
       ...shapingWrittenLines,
-      shapingPlan.remainderRows > 0 ? knitInPatternLine(shapingPlan.remainderRows) : "",
+      sleeveBodyRemainderLine(shapingPlan, args.direction, args.sleeveTotalRows),
     ].filter((p) => p.length > 0),
     stitchCount: args.topSts,
   });

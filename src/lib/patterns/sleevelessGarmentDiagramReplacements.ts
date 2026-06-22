@@ -464,6 +464,28 @@ type DropShoulderSleeveDiagramDebug = {
 };
 
 /**
+ * Sleeve body rows on the measurement schematic (above cuff, through bind-off RC).
+ * Prefer total − cuff so shaping remainder rows are always included in the label.
+ */
+export function resolveDropShoulderSleeveBodyRowsForDiagram(
+  d: DropShoulderSleeveDiagramDebug,
+): number | undefined {
+  const total = isFiniteNumber(d.dropShoulderSleeveTotalRows)
+    ? Math.round(d.dropShoulderSleeveTotalRows)
+    : undefined;
+  const cuff = isFiniteNumber(d.dropShoulderSleeveCuffRows)
+    ? Math.round(d.dropShoulderSleeveCuffRows)
+    : undefined;
+  if (total !== undefined && cuff !== undefined) {
+    return Math.max(0, total - cuff);
+  }
+  if (isFiniteNumber(d.dropShoulderSleeveBodyRows) && d.dropShoulderSleeveBodyRows > 0) {
+    return Math.round(d.dropShoulderSleeveBodyRows);
+  }
+  return undefined;
+}
+
+/**
  * Replacement map for `public/images/patterns/drop-shoulder/drop-body-sleeve.svg`.
  * Reuses the same fetch/replace pipeline as body schematics; values come from drop-shoulder debug only.
  */
@@ -479,9 +501,7 @@ export function buildDropShoulderSleeveDiagramReplacements(
   const armLengthRows = isFiniteNumber(d.dropShoulderSleeveTotalRows)
     ? Math.round(d.dropShoulderSleeveTotalRows)
     : undefined;
-  const sleeveBodyRows = isFiniteNumber(d.dropShoulderSleeveBodyRows)
-    ? Math.round(d.dropShoulderSleeveBodyRows)
-    : undefined;
+  const sleeveBodyRows = resolveDropShoulderSleeveBodyRowsForDiagram(d);
   const armLengthInches = isFiniteNumber(d.dropShoulderSleeveLengthInches)
     ? d.dropShoulderSleeveLengthInches
     : undefined;
@@ -518,6 +538,10 @@ export function buildDropShoulderSleeveDiagramReplacements(
     isFiniteNumber(sleeveBodyRows) && isFiniteNumber(rpi) && rpi > 0
       ? lengthFromRowsForDiagram(sleeveBodyRows, rpi, unit)
       : undefined;
+  const armLengthFromTotalRows =
+    isFiniteNumber(armLengthRows) && isFiniteNumber(rpi) && rpi > 0
+      ? lengthFromRowsForDiagram(armLengthRows, rpi, unit)
+      : undefined;
 
   // Top-down measurement artwork flips vertical positions but keeps the same token ids.
   const isTopDown = sleeveDirection === "top-down";
@@ -530,7 +554,7 @@ export function buildDropShoulderSleeveDiagramReplacements(
     UNIT: unitLabel,
     // Legacy tokens (prior drop-shoulder sleeve schematic).
     ARM_LENGTH_ROWS: isFiniteNumber(armLengthRows) ? String(armLengthRows) : "",
-    ARM_LENGTH: fmtNumber(inchesToUnit(armLengthInches, unit) ?? Number.NaN),
+    ARM_LENGTH: fmtNumber(armLengthFromTotalRows ?? inchesToUnit(armLengthInches, unit) ?? Number.NaN),
     UPPER_ARM_ROWS: isFiniteNumber(upperArmRows) ? String(upperArmRows) : "",
     UPPER_ARM_INCHES: fmtNumber(inchesToUnit(upperArmInches, unit) ?? Number.NaN),
     CUFF_ROWS: isFiniteNumber(cuffRows) ? String(cuffRows) : "",
@@ -541,7 +565,8 @@ export function buildDropShoulderSleeveDiagramReplacements(
     WRIST_STS: isFiniteNumber(wristStsToken) ? String(wristStsToken) : "",
     WRIST_WIDTH: fmtNumber(inchesToUnit(wristWidthToken, unit) ?? Number.NaN),
     SLEEVE_LENGTH_ROWS: isFiniteNumber(sleeveBodyRows) ? String(sleeveBodyRows) : "",
-    SIDE_LENGTH: fmtNumber(sideLengthFromBodyRows ?? inchesToUnit(armLengthInches, unit) ?? Number.NaN),
+    // Body line only (excludes cuff) — derive inches from the same row count, never full sleeve length.
+    SIDE_LENGTH: fmtNumber(sideLengthFromBodyRows ?? Number.NaN),
     CUFF_DEPTH: cuffDepthLabel,
   };
 }
@@ -560,9 +585,7 @@ export function buildDropShoulderSleeveJapaneseNotationReplacements(
   const topSts = isFiniteNumber(d.dropShoulderSleeveTopStitches)
     ? Math.round(d.dropShoulderSleeveTopStitches)
     : undefined;
-  const bodyRows = isFiniteNumber(d.dropShoulderSleeveBodyRows)
-    ? Math.round(d.dropShoulderSleeveBodyRows)
-    : undefined;
+  const bodyRows = resolveDropShoulderSleeveBodyRowsForDiagram(d);
   const cuffRows = isFiniteNumber(d.dropShoulderSleeveCuffRows)
     ? Math.round(d.dropShoulderSleeveCuffRows)
     : undefined;

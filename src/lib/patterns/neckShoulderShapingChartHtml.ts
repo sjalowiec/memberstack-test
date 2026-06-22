@@ -54,6 +54,7 @@ import {
   formatShoulderBindoffRemainingInstruction,
   LIFELINE_GLOSSARY_ID,
 } from "./sleevelessPatternOutput";
+import { isDropShoulderCardiganGarmentStyle } from "./dropShoulderBodyNotationSvg";
 
 /** Registry key in `SLEEVELESS_HELP_VIDEOS` (Vimeo 252565241 — shallow round neck shaping). */
 export const NECKLINE_SHAPING_HELP_VIDEO_KEY = "shallowBackNeck";
@@ -276,18 +277,25 @@ export const DROP_SHOULDER_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC = {
   back: "/images/patterns/drop-shoulder/jp-drop-body-back-preview.svg",
 } as const;
 
+/** Cardigan front teaser — uses pullover preview until a dedicated cardigan crop exists. */
+export const DROP_SHOULDER_JP_NOTATION_CARDIGAN_QUICK_REFERENCE_PREVIEW_SRC =
+  "/images/patterns/drop-shoulder/jp-drop-body-front-preview.svg";
+
 /** @deprecated Use {@link SLEEVELESS_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC} or {@link resolveJapaneseNotationQuickReferencePreviewSrc}. */
 export const JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC = SLEEVELESS_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC;
 
 export function resolveJapaneseNotationQuickReferencePreviewSrc(
   piece: NotationPreviewPiece,
   construction: NotationPreviewConstruction = "sleeveless",
+  patternData?: unknown,
 ): string {
-  const map =
-    construction === "drop-shoulder"
-      ? DROP_SHOULDER_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC
-      : SLEEVELESS_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC;
-  return map[piece];
+  if (construction === "drop-shoulder") {
+    if (piece === "front" && isDropShoulderCardiganGarmentStyle(patternData)) {
+      return DROP_SHOULDER_JP_NOTATION_CARDIGAN_QUICK_REFERENCE_PREVIEW_SRC;
+    }
+    return DROP_SHOULDER_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC[piece];
+  }
+  return SLEEVELESS_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC[piece];
 }
 
 /**
@@ -298,8 +306,13 @@ export function resolveJapaneseNotationQuickReferencePreviewSrc(
 function necklineNotationPreviewCardHtml(
   piece: NotationPreviewPiece,
   construction: NotationPreviewConstruction = "sleeveless",
+  patternData?: unknown,
 ): string {
-  const previewSrc = resolveJapaneseNotationQuickReferencePreviewSrc(piece, construction);
+  const previewSrc = resolveJapaneseNotationQuickReferencePreviewSrc(
+    piece,
+    construction,
+    patternData,
+  );
   return `<aside class="ns-jp-preview no-print">
   <button type="button" class="ns-jp-preview__btn" data-neckline-notation-preview-trigger="${escapeHtml(piece)}" aria-label="Open Japanese notation quick reference">
     <span class="ns-jp-preview__title">Japanese Notation Quick Reference</span>
@@ -318,13 +331,18 @@ function wrapActiveShoulderChartIntroHtml(
   innerHtml: string,
   notationPreview: NotationPreviewPiece | undefined,
   notationPreviewConstruction: NotationPreviewConstruction = "sleeveless",
+  notationPreviewPatternData?: unknown,
 ): string {
   if (notationPreview === "front" || notationPreview === "back") {
     return `<div class="${escapeHtml(wrappedClass)} ns-shaping-intro--with-preview">
   <div class="ns-shaping-intro__main">
   ${innerHtml}
   </div>
-  ${necklineNotationPreviewCardHtml(notationPreview, notationPreviewConstruction)}
+  ${necklineNotationPreviewCardHtml(
+    notationPreview,
+    notationPreviewConstruction,
+    notationPreviewPatternData,
+  )}
 </div>`;
   }
   return `<div class="${escapeHtml(wrappedClass)}">
@@ -340,8 +358,9 @@ export function renderNecklineInstructionsWithNotationPreviewHtml(
   innerHtml: string,
   piece: NotationPreviewPiece,
   construction: NotationPreviewConstruction = "drop-shoulder",
+  patternData?: unknown,
 ): string {
-  const previewAside = necklineNotationPreviewCardHtml(piece, construction);
+  const previewAside = necklineNotationPreviewCardHtml(piece, construction, patternData);
   return `<div class="pattern-layout pattern-layout--garment-columns sleeveless-neckline-preview-split">
   <div class="pattern-layout__content">
     <div class="sleeveless-pattern-instructions">

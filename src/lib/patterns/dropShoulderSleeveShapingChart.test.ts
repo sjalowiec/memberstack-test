@@ -326,13 +326,14 @@ describe("generateDropShoulderPattern sleeve shaping chart", () => {
 });
 
 describe("generateDropShoulderPattern sleeve instruction copy", () => {
-  it("uses in-pattern remainder rows for bottom-up sleeves", () => {
+  it("uses clear even-row wording after the final increase for bottom-up sleeves", () => {
     const result = generateDropShoulderPattern(DROP_SHOULDER_CUFF_UP_PATTERN);
     const text = sleeveInstructionText(result.sleeveDisplayRows);
     const d = result.debug as {
       dropShoulderSleeveTopStitches?: number;
       dropShoulderSleeveWristStitches?: number;
       dropShoulderSleeveBodyRows?: number;
+      dropShoulderSleeveTotalRows?: number;
     };
     const sched = sleeveEvenShapingSchedule(
       d.dropShoulderSleeveTopStitches ?? 0,
@@ -341,7 +342,9 @@ describe("generateDropShoulderPattern sleeve instruction copy", () => {
     );
 
     expect(text).not.toContain("The sleeve top edge matches the armhole opening");
-    expect(text).toContain(`Knit ${sched.remainderRows} rows in pattern.`);
+    expect(text).toContain(
+      `After the final increase, knit ${sched.remainderRows} rows even in pattern, then bind off at RC:${String(d.dropShoulderSleeveTotalRows ?? 0).padStart(3, "0")}.`,
+    );
   });
 
   it("links scrap off to glossary id 311 on bind-off lines", () => {

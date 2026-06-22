@@ -49,7 +49,6 @@ import {
 } from "../lib/patterns/dropShoulderSleeveNotationSvg.ts";
 import {
   DROP_SHOULDER_BODY_BACK_STS_ROWS_SRC,
-  DROP_SHOULDER_BODY_FRONT_STS_ROWS_SRC,
   resolveDropShoulderBackDiagramSrc,
   resolveDropShoulderFrontDiagramSrc,
   buildDropShoulderBodyDiagramReplacements,
@@ -606,6 +605,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
           sectionInner,
           pieceSectionId,
           neckNotationPreview.construction ?? "drop-shoulder",
+          neckNotationPreview.patternData,
         );
       }
       targetParts.push(
@@ -865,7 +865,9 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       s.includes("jp-diagram-front") ||
       s.includes("diagram-front") ||
       s.includes("drop-body-front") ||
+      s.includes("drop_body_cardigan") ||
       s.includes("jp-drop-body-front") ||
+      s.includes("jp-drop-body-cardigan") ||
       a.includes(" front ")
     )
       return "front";
@@ -2831,7 +2833,7 @@ table {
         : String(hydrateGeneration);
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
     try {
-      const notationSrc = resolveDropShoulderFrontDiagramSrc("shaping-notation");
+      const notationSrc = resolveDropShoulderFrontDiagramSrc("shaping-notation", patternData);
       const res = await fetch(notationSrc, { credentials: "same-origin" });
       if (!res.ok) throw new Error(`Failed to load SVG: ${notationSrc} (${res.status})`);
       const jpReplacements = buildDropShoulderFrontJapaneseNotationReplacements(
@@ -2913,7 +2915,7 @@ table {
     generatorPatternData,
   ) {
     if (!(el instanceof HTMLElement)) return;
-    el.dataset.src = resolveDropShoulderFrontDiagramSrc(mode);
+    el.dataset.src = resolveDropShoulderFrontDiagramSrc(mode, patternData);
     if (mode === "shaping-notation") {
       await inlineDropShoulderFrontNotationSvg(
         el,
@@ -2939,7 +2941,7 @@ table {
     });
     await inlineSvgWithReplacements(
       el,
-      resolveDropShoulderFrontDiagramSrc("sts-rows"),
+      resolveDropShoulderFrontDiagramSrc("sts-rows", patternData),
       dropShoulderFrontDiagramAltForMode("sts-rows", isCardigan),
       replacements,
       hydrateGeneration,
@@ -3324,12 +3326,20 @@ table {
     const patternIntroSentence = buildPatternIntroSentence(patternMerged, generatorPatternData);
     const isCardigan = String(section(generatorPatternData?.style).frontStyle || "") === "open";
     const bodyNotationSupported = isDropShoulderBodyJapaneseNotationSupported(result);
+    const dropShoulderDiagramPatternData = buildSleevelessGarmentDiagramPatternData(
+      patternMerged,
+      generatorPatternData,
+    );
 
     const renderPiece = (rows, pieceId) =>
       renderSleevelessDisplayHtml(rows ?? [], "", pieceId, patternIntroSentence, undefined, {
         omitPieceBanner: true,
         neckNotationPreview: bodyNotationSupported
-          ? { enabled: true, construction: "drop-shoulder" }
+          ? {
+              enabled: true,
+              construction: "drop-shoulder",
+              patternData: dropShoulderDiagramPatternData,
+            }
           : undefined,
       });
 
@@ -3359,14 +3369,16 @@ table {
       ? {
           result,
           unit,
-          diagramPatternData: buildSleevelessGarmentDiagramPatternData(
-            patternMerged,
-            generatorPatternData,
-          ),
+          diagramPatternData: dropShoulderDiagramPatternData,
           generatorPatternData,
           hydrateGeneration: renderSeq,
         }
       : null;
+
+    const frontDiagramSrc = resolveDropShoulderFrontDiagramSrc(
+      "sts-rows",
+      dropShoulderDiagramPatternData,
+    );
 
     mount.innerHTML =
       wrapPatternSection(
@@ -3389,7 +3401,7 @@ table {
         frontLabel,
         wrapDropShoulderPieceSplit(
           front.splitInner,
-          DROP_SHOULDER_BODY_FRONT_STS_ROWS_SRC,
+          frontDiagramSrc,
           frontAlt,
           front.postSplit,
           frontDiagramOpts,

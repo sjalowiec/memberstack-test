@@ -420,6 +420,54 @@ describe("buildDropShoulderSleeveDiagramReplacements", () => {
     expect(repl.CUFF_DEPTH).toBe("2");
   });
 
+  it("derives sleeve body rows from total − cuff so remainder rows match bind-off RC", async () => {
+    const { buildDropShoulderSleeveDiagramReplacements } = await import(
+      "./sleevelessGarmentDiagramReplacements"
+    );
+    const result = {
+      debug: {
+        rowsPerInch: 11,
+        dropShoulderSleeveTotalRows: 94,
+        dropShoulderSleeveBodyRows: 70,
+        dropShoulderSleeveCuffRows: 22,
+        dropShoulderSleeveLengthInches: 8.5,
+        dropShoulderSleeveTopStitches: 42,
+        dropShoulderSleeveWristStitches: 32,
+        dropShoulderWristInches: 4.5,
+        dropShoulderUpperArmInches: 6,
+      },
+    } as import("./sleevelessPatternOutput").SleevelessBackPatternResult;
+
+    const repl = buildDropShoulderSleeveDiagramReplacements(result, "in");
+
+    expect(repl.SLEEVE_LENGTH_ROWS).toBe("72");
+    expect(repl.SIDE_LENGTH).toBe("6.5");
+    expect(repl.CUFF_ROWS).toBe("22");
+    expect(repl.ARM_LENGTH_ROWS).toBe("94");
+    expect(repl.ARM_LENGTH).toBe("8.5");
+    expect(Number(repl.SLEEVE_LENGTH_ROWS) + Number(repl.CUFF_ROWS)).toBe(94);
+  });
+
+  it("does not fall back to full sleeve length inches on the body dimension line", async () => {
+    const { buildDropShoulderSleeveDiagramReplacements } = await import(
+      "./sleevelessGarmentDiagramReplacements"
+    );
+    const result = {
+      debug: {
+        dropShoulderSleeveTotalRows: 94,
+        dropShoulderSleeveBodyRows: 72,
+        dropShoulderSleeveCuffRows: 22,
+        dropShoulderSleeveLengthInches: 8.5,
+      },
+    } as import("./sleevelessPatternOutput").SleevelessBackPatternResult;
+
+    const repl = buildDropShoulderSleeveDiagramReplacements(result, "in");
+
+    expect(repl.SLEEVE_LENGTH_ROWS).toBe("72");
+    expect(repl.SIDE_LENGTH).toBe("");
+    expect(repl.ARM_LENGTH).toBe("8.5");
+  });
+
   it("swaps wrist and sleeve-cap tokens for top-down measurement artwork", async () => {
     const { buildDropShoulderSleeveDiagramReplacements } = await import(
       "./sleevelessGarmentDiagramReplacements"

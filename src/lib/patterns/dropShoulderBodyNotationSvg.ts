@@ -1,8 +1,9 @@
 /**
  * Drop-shoulder body diagram SVG paths — sole source of truth for back/front diagrams.
  *
- * One fixed SVG per piece and display mode. No body-shape variants, alternate filenames,
- * legacy body-folder paths, or sleeveless fallbacks.
+ * Pullover vs cardigan front schematics and Japanese notation assets are selected from
+ * `patternData` style (same cardigan detection as sleeveless). Back assets are shared.
+ * No body-shape variants or sleeveless fallbacks.
  */
 
 import {
@@ -10,6 +11,7 @@ import {
   shoulderStitchesPerSideForDiagram,
   type BuildSleevelessGarmentDiagramReplacementsOptions,
 } from "./sleevelessGarmentDiagramReplacements";
+import { isSleevelessCardiganGarmentStyle } from "./sleevelessFrontDiagramSrc";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
 function isFiniteNumber(n: unknown): n is number {
@@ -65,10 +67,19 @@ export function resolveDropShoulderShoulderStitchesForDiagram(
 /** @deprecated Use {@link resolveDropShoulderShoulderStitchesForDiagram}. */
 export const resolveDropShoulderShoulderStsForDiagram = resolveDropShoulderShoulderStitchesForDiagram;
 
-/** Full cross-shoulder / body width in stitches (`{{cross-shoulder-width}}`). */
+/**
+ * Cross-shoulder stitch count (`{{cross-shoulder-width}}`) — post-armhole body width for the
+ * piece being diagrammed (full back width on back/pullover front; half-panel width on cardigan front).
+ */
 export function resolveDropShoulderCrossShoulderWidthForDiagram(
   result: SleevelessBackPatternResult,
+  unit: "cm" | "in" = "in",
+  options?: BuildSleevelessGarmentDiagramReplacementsOptions,
 ): string {
+  if (options) {
+    const base = buildSleevelessGarmentDiagramReplacements(result, unit, options);
+    if (base.SHOULDER_STS) return base.SHOULDER_STS;
+  }
   const bodyWidthSts = resolveDropShoulderBodyWidthSts(result?.debug ?? {});
   return bodyWidthSts > 0 ? String(bodyWidthSts) : "";
 }
@@ -89,10 +100,11 @@ export function resolveDropShoulderShoulderMeasurementReplacements(
   unit: "cm" | "in",
   options: BuildSleevelessGarmentDiagramReplacementsOptions,
 ): Record<string, string> {
+  const crossShoulder = buildSleevelessGarmentDiagramReplacements(result, unit, options);
   return {
     "shoulder-stitches": resolveDropShoulderShoulderStitchesForDiagram(result, options),
-    "cross-shoulder-width": resolveDropShoulderCrossShoulderWidthForDiagram(result),
-    "cross-shoulder": resolveDropShoulderCrossShoulderForDiagram(result, unit, options),
+    "cross-shoulder-width": crossShoulder.SHOULDER_STS,
+    "cross-shoulder": crossShoulder.SHOULDER_WIDTH,
   };
 }
 
@@ -151,22 +163,44 @@ export const DROP_SHOULDER_BODY_BACK_STS_ROWS_SRC =
 export const DROP_SHOULDER_BODY_FRONT_STS_ROWS_SRC =
   "/images/patterns/drop-shoulder/drop-body-front.svg";
 
+export const DROP_SHOULDER_BODY_CARDIGAN_STS_ROWS_SRC =
+  "/images/patterns/drop-shoulder/body/drop_body_cardigan.svg";
+
 export const DROP_SHOULDER_BODY_BACK_NOTATION_SRC =
   "/images/patterns/drop-shoulder/jp-drop-body-back.svg";
 
 export const DROP_SHOULDER_BODY_FRONT_NOTATION_SRC =
   "/images/patterns/drop-shoulder/jp-drop-body-front.svg";
 
+export const DROP_SHOULDER_BODY_CARDIGAN_NOTATION_SRC =
+  "/images/patterns/drop-shoulder/japanese/jp-drop-body-cardigan.svg";
+
 export type DropShoulderBodyDiagramViewMode = "sts-rows" | "shaping-notation";
 
-export function resolveDropShoulderBackDiagramSrc(mode: DropShoulderBodyDiagramViewMode): string {
+export function isDropShoulderCardiganGarmentStyle(patternData: unknown): boolean {
+  return isSleevelessCardiganGarmentStyle(patternData);
+}
+
+export function resolveDropShoulderBackDiagramSrc(
+  mode: DropShoulderBodyDiagramViewMode,
+  _patternData?: unknown,
+): string {
   return mode === "shaping-notation"
     ? DROP_SHOULDER_BODY_BACK_NOTATION_SRC
     : DROP_SHOULDER_BODY_BACK_STS_ROWS_SRC;
 }
 
-export function resolveDropShoulderFrontDiagramSrc(mode: DropShoulderBodyDiagramViewMode): string {
-  return mode === "shaping-notation"
-    ? DROP_SHOULDER_BODY_FRONT_NOTATION_SRC
+export function resolveDropShoulderFrontDiagramSrc(
+  mode: DropShoulderBodyDiagramViewMode,
+  patternData?: unknown,
+): string {
+  const isCardigan = isDropShoulderCardiganGarmentStyle(patternData);
+  if (mode === "shaping-notation") {
+    return isCardigan
+      ? DROP_SHOULDER_BODY_CARDIGAN_NOTATION_SRC
+      : DROP_SHOULDER_BODY_FRONT_NOTATION_SRC;
+  }
+  return isCardigan
+    ? DROP_SHOULDER_BODY_CARDIGAN_STS_ROWS_SRC
     : DROP_SHOULDER_BODY_FRONT_STS_ROWS_SRC;
 }

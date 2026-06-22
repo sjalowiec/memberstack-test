@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
+import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeChartClient";
 import {
   buildDropShoulderBackJapaneseNotationReplacements,
   buildDropShoulderFrontJapaneseNotationReplacements,
@@ -10,6 +11,8 @@ import {
 import {
   DROP_SHOULDER_BODY_BACK_NOTATION_SRC,
   DROP_SHOULDER_BODY_BACK_STS_ROWS_SRC,
+  DROP_SHOULDER_BODY_CARDIGAN_NOTATION_SRC,
+  DROP_SHOULDER_BODY_CARDIGAN_STS_ROWS_SRC,
   DROP_SHOULDER_BODY_FRONT_NOTATION_SRC,
   DROP_SHOULDER_BODY_FRONT_STS_ROWS_SRC,
   buildDropShoulderBodyDiagramReplacements,
@@ -105,13 +108,25 @@ const DROP_SHOULDER_PATTERN = {
   },
 };
 
+const DROP_SHOULDER_CARDIGAN_PATTERN = {
+  ...DROP_SHOULDER_PATTERN,
+  style: {
+    ...DROP_SHOULDER_PATTERN.style,
+    frontStyle: "open",
+    garmentStyle: "cardigan",
+  },
+};
+
 describe("dropShoulderBodyNotationSvg", () => {
-  it("uses the four canonical drop-shoulder body diagram paths only", () => {
+  it("defines canonical drop-shoulder body diagram asset paths", () => {
     expect(DROP_SHOULDER_BODY_BACK_STS_ROWS_SRC).toBe(
       "/images/patterns/drop-shoulder/drop-body-back.svg",
     );
     expect(DROP_SHOULDER_BODY_FRONT_STS_ROWS_SRC).toBe(
       "/images/patterns/drop-shoulder/drop-body-front.svg",
+    );
+    expect(DROP_SHOULDER_BODY_CARDIGAN_STS_ROWS_SRC).toBe(
+      "/images/patterns/drop-shoulder/body/drop_body_cardigan.svg",
     );
     expect(DROP_SHOULDER_BODY_BACK_NOTATION_SRC).toBe(
       "/images/patterns/drop-shoulder/jp-drop-body-back.svg",
@@ -119,25 +134,37 @@ describe("dropShoulderBodyNotationSvg", () => {
     expect(DROP_SHOULDER_BODY_FRONT_NOTATION_SRC).toBe(
       "/images/patterns/drop-shoulder/jp-drop-body-front.svg",
     );
+    expect(DROP_SHOULDER_BODY_CARDIGAN_NOTATION_SRC).toBe(
+      "/images/patterns/drop-shoulder/japanese/jp-drop-body-cardigan.svg",
+    );
 
-    expect(DROP_SHOULDER_BODY_BACK_STS_ROWS_SRC).not.toContain("/body/");
-    expect(DROP_SHOULDER_BODY_FRONT_STS_ROWS_SRC).not.toContain("/body/");
     expect(DROP_SHOULDER_BODY_BACK_NOTATION_SRC).not.toContain("sleeveless");
     expect(DROP_SHOULDER_BODY_FRONT_NOTATION_SRC).not.toContain("sleeveless");
-
-    expect(resolveDropShoulderBackDiagramSrc("shaping-notation")).toBe(
-      DROP_SHOULDER_BODY_BACK_NOTATION_SRC,
-    );
-    expect(resolveDropShoulderFrontDiagramSrc("shaping-notation")).toBe(
-      DROP_SHOULDER_BODY_FRONT_NOTATION_SRC,
-    );
-    expect(resolveDropShoulderBackDiagramSrc("sts-rows")).toBe(DROP_SHOULDER_BODY_BACK_STS_ROWS_SRC);
-    expect(resolveDropShoulderFrontDiagramSrc("sts-rows")).toBe(
-      DROP_SHOULDER_BODY_FRONT_STS_ROWS_SRC,
-    );
+    expect(DROP_SHOULDER_BODY_CARDIGAN_NOTATION_SRC).not.toContain("sleeveless");
 
     expect(SLEEVELESS_BACK_JP_NOTATION_DIAGRAM_SRC).not.toBe(DROP_SHOULDER_BODY_BACK_NOTATION_SRC);
     expect(SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC).not.toBe(DROP_SHOULDER_BODY_FRONT_NOTATION_SRC);
+  });
+
+  it("resolves pullover, cardigan, and back diagram SVGs from pattern style", () => {
+    expect(resolveDropShoulderBackDiagramSrc("sts-rows")).toBe(DROP_SHOULDER_BODY_BACK_STS_ROWS_SRC);
+    expect(resolveDropShoulderBackDiagramSrc("shaping-notation")).toBe(
+      DROP_SHOULDER_BODY_BACK_NOTATION_SRC,
+    );
+
+    expect(resolveDropShoulderFrontDiagramSrc("sts-rows", DROP_SHOULDER_PATTERN)).toBe(
+      DROP_SHOULDER_BODY_FRONT_STS_ROWS_SRC,
+    );
+    expect(resolveDropShoulderFrontDiagramSrc("shaping-notation", DROP_SHOULDER_PATTERN)).toBe(
+      DROP_SHOULDER_BODY_FRONT_NOTATION_SRC,
+    );
+
+    expect(resolveDropShoulderFrontDiagramSrc("sts-rows", DROP_SHOULDER_CARDIGAN_PATTERN)).toBe(
+      DROP_SHOULDER_BODY_CARDIGAN_STS_ROWS_SRC,
+    );
+    expect(
+      resolveDropShoulderFrontDiagramSrc("shaping-notation", DROP_SHOULDER_CARDIGAN_PATTERN),
+    ).toBe(DROP_SHOULDER_BODY_CARDIGAN_NOTATION_SRC);
   });
 
   it("lists expected notation tokens in each drop-shoulder body notation SVG", () => {
@@ -145,31 +172,47 @@ describe("dropShoulderBodyNotationSvg", () => {
       resolve(process.cwd(), "public" + DROP_SHOULDER_BODY_BACK_NOTATION_SRC),
       "utf8",
     );
-    const frontSvg = readFileSync(
+    const pulloverFrontSvg = readFileSync(
       resolve(process.cwd(), "public" + DROP_SHOULDER_BODY_FRONT_NOTATION_SRC),
       "utf8",
     );
+    const cardiganFrontSvg = readFileSync(
+      resolve(process.cwd(), "public" + DROP_SHOULDER_BODY_CARDIGAN_NOTATION_SRC),
+      "utf8",
+    );
     const backTokens = listJapaneseNotationPlaceholdersInSvg(backSvg);
-    const frontTokens = listJapaneseNotationPlaceholdersInSvg(frontSvg);
+    const pulloverFrontTokens = listJapaneseNotationPlaceholdersInSvg(pulloverFrontSvg);
+    const cardiganFrontTokens = listJapaneseNotationPlaceholdersInSvg(cardiganFrontSvg);
 
     for (const token of DROP_SHOULDER_BODY_BACK_NOTATION_TOKENS) {
       expect(backTokens, `back SVG missing ${token}`).toContain(token);
     }
     for (const token of DROP_SHOULDER_BODY_FRONT_NOTATION_TOKENS) {
-      expect(frontTokens, `front SVG missing ${token}`).toContain(token);
+      expect(pulloverFrontTokens, `pullover front SVG missing ${token}`).toContain(token);
+      expect(cardiganFrontTokens, `cardigan front SVG missing ${token}`).toContain(token);
     }
   });
 
   it("processed drop-shoulder body notation SVG markup is structurally parseable", () => {
-    const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
+    const pulloverResult = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
+    const cardiganResult = generateDropShoulderPattern(DROP_SHOULDER_CARDIGAN_PATTERN);
     for (const [rel, buildRepl] of [
       [
         DROP_SHOULDER_BODY_BACK_NOTATION_SRC,
-        () => buildDropShoulderBackJapaneseNotationReplacements(result, DROP_SHOULDER_PATTERN),
+        () => buildDropShoulderBackJapaneseNotationReplacements(pulloverResult, DROP_SHOULDER_PATTERN),
       ],
       [
         DROP_SHOULDER_BODY_FRONT_NOTATION_SRC,
-        () => buildDropShoulderFrontJapaneseNotationReplacements(result, DROP_SHOULDER_PATTERN),
+        () =>
+          buildDropShoulderFrontJapaneseNotationReplacements(pulloverResult, DROP_SHOULDER_PATTERN),
+      ],
+      [
+        DROP_SHOULDER_BODY_CARDIGAN_NOTATION_SRC,
+        () =>
+          buildDropShoulderFrontJapaneseNotationReplacements(
+            cardiganResult,
+            DROP_SHOULDER_CARDIGAN_PATTERN,
+          ),
       ],
     ] as const) {
       const svgText = readFileSync(resolve(process.cwd(), "public" + rel), "utf8");
@@ -473,6 +516,85 @@ describe("dropShoulderBodyDiagramReplacements", () => {
     expect(frontShoulder).toBe(backShoulder);
     expect(frontShoulder).toBe(
       String(Math.round((result.debug.backStitches! - result.debug.necklineStitches!) / 2)),
+    );
+  });
+
+  it("cardigan front schematic uses half-panel cross-shoulder width, not full back width", () => {
+    const KIDS_2YR_CHART_ROW = {
+      size: "2 yr",
+      bust_or_chest: 21,
+      waist: 21,
+      hip: "",
+      garment_back_length: 18,
+      armhole_depth: 4.25,
+      shoulder_width: 9.25,
+      neck_opening: 4,
+      front_neck_depth: 2,
+      back_neck_depth: 1,
+      upper_arm: 6,
+      wrist: 4.5,
+      sleeve_length: 8.5,
+    };
+    const cardiganPattern = {
+      fit: {
+        sizingChart: "kids",
+        selectedSize: "2 yr",
+        easeChoice: "standard",
+        selectedMeasurements: computeDefaultMeasurementsFromChartRow(
+          KIDS_2YR_CHART_ROW,
+          "standard",
+          { bodyShape: "straight" },
+        ),
+      },
+      style: {
+        construction: "drop-shoulder",
+        constructionAuthored: "drop-shoulder",
+        recipientCategory: "kids",
+        neckline: "round",
+        bodyShape: "straight",
+        frontStyle: "open",
+        garmentStyle: "cardigan",
+      },
+      yarnGaugeMachine: {
+        gaugeStitchesPerInch: 7,
+        gaugeRowsPerInch: 11,
+        availableNeedles: 200,
+      },
+    };
+
+    const result = generateDropShoulderPattern(cardiganPattern);
+    expect(result.debug.backStitches).toBe(84);
+    expect(result.debug.isCardigan).toBe(true);
+
+    const backRepl = buildDropShoulderBodyDiagramReplacements(result, "in", {
+      patternData: cardiganPattern,
+      measurementPiece: "back",
+    });
+    const frontRepl = buildDropShoulderBodyDiagramReplacements(result, "in", {
+      patternData: cardiganPattern,
+      measurementPiece: "front",
+      cardiganHalfSide: "left",
+    });
+
+    // Full back width on back schematic; single front panel on cardigan front schematic.
+    expect(backRepl["cross-shoulder-width"]).toBe("84");
+    expect(backRepl["cross-shoulder"]).toBe("12");
+    expect(frontRepl["cross-shoulder-width"]).toBe("42");
+    expect(frontRepl["cross-shoulder"]).toBe("6");
+    expect(frontRepl.BUST_STS).toBe("42");
+    expect(frontRepl.HIP_STS).toBe("42");
+
+    const svgPath = resolve(process.cwd(), "public" + DROP_SHOULDER_BODY_CARDIGAN_STS_ROWS_SRC);
+    const svgText = readFileSync(svgPath, "utf8");
+    const out = inlineSvgReplacements(svgText, frontRepl);
+    expect(out).toMatch(
+      /translate\(77\.82 88\.33\)"[^>]*>[\s\S]*?>\s*42sts\s*</,
+    );
+    expect(out).toMatch(
+      /translate\(86\.38 99\.61\)"[^>]*>[\s\S]*?>\s*\(6 in\)\s*</,
+    );
+    expect(out).not.toMatch(
+      /translate\(77\.82 88\.33\)"[^>]*>[\s\S]*?>\s*84sts\s*</,
     );
   });
 });

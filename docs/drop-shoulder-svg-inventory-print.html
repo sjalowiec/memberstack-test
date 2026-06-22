@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drop Shoulder SVG Inventory — Knit it Now</title>
+  <style>
+    :root {
+      --ink: #1a1a1a;
+      --muted: #555;
+      --border: #ccc;
+      --header-bg: #f4f4f4;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", Calibri, Arial, sans-serif;
+      font-size: 10pt;
+      line-height: 1.4;
+      color: var(--ink);
+      max-width: 8.5in;
+      margin: 0 auto;
+      padding: 0.5in 0.6in;
+    }
+
+    h1 {
+      font-size: 18pt;
+      margin: 0 0 0.25em;
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      font-size: 13pt;
+      margin: 1.4em 0 0.5em;
+      page-break-after: avoid;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.15em;
+    }
+
+    h3 {
+      font-size: 11pt;
+      margin: 1em 0 0.4em;
+      page-break-after: avoid;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 9pt;
+      margin-bottom: 1.2em;
+    }
+
+    p, li { margin: 0.4em 0; }
+
+    ul { padding-left: 1.4em; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.6em 0 1em;
+      font-size: 8.5pt;
+      page-break-inside: auto;
+    }
+
+    thead { display: table-header-group; }
+
+    tr { page-break-inside: avoid; page-break-after: auto; }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 4px 6px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--header-bg);
+      font-weight: 600;
+    }
+
+    code, .mono {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 8pt;
+      word-break: break-all;
+    }
+
+    .flag-yes { color: #a00; font-weight: 600; }
+    .flag-no { color: #060; }
+
+    .summary-box {
+      border: 1px solid var(--border);
+      padding: 0.6em 0.8em;
+      margin: 0.8em 0;
+      background: #fafafa;
+    }
+
+    .page-break { page-break-before: always; }
+
+    @media print {
+      body { padding: 0; max-width: none; }
+      a { color: inherit; text-decoration: none; }
+      .no-print { display: none; }
+    }
+
+    @page {
+      size: letter;
+      margin: 0.6in;
+    }
+  </style>
+</head>
+<body>
+
+  <p class="no-print" style="background:#eef;padding:8px 12px;border-radius:4px;">
+    <strong>Print:</strong> Ctrl+P (or Cmd+P) &rarr; enable &ldquo;Background graphics&rdquo; for shaded table headers.
+  </p>
+
+  <h1>Drop Shoulder SVG Inventory Report</h1>
+  <p class="meta">
+    Knit it Now staging &bull; Audit date: 22 June 2025<br />
+    Scope: <code>public/images/patterns/drop-shoulder/</code> (including <code>body/</code> and <code>japanese/</code>)<br />
+    Canonical constants: <code>dropShoulderBodyNotationSvg.ts</code>, <code>dropShoulderSleeveNotationSvg.ts</code><br />
+    Runtime loader: <code>sleevelessPatternPageShared.ts</code>
+  </p>
+
+  <div class="summary-box">
+    <strong>At a glance:</strong> 21 SVG files on disk &bull; 13 referenced by code &bull; 8 unreferenced orphans/drafts<br />
+    <strong>Critical gap:</strong> <code>japanese/jp-drop-body-cardigan.svg</code> is a byte-identical copy of pullover front JP notation.
+  </div>
+
+  <!-- SECTION 1 -->
+  <h2>1. Actually Used by the Application</h2>
+  <p><strong>13 files</strong> (12 unique artworks; cardigan JP notation duplicates pullover front JP).</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Filename</th>
+        <th>Full path</th>
+        <th>Purpose</th>
+        <th>Garment</th>
+        <th>Type</th>
+        <th>Shoulder labels</th>
+        <th>Placeholder?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>drop-body-back.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/drop-body-back.svg</code></td>
+        <td>Back body sts/rows measurement (shared pullover + cardigan)</td>
+        <td>Both (back)</td>
+        <td>Measurement</td>
+        <td class="flag-no">Yes — cross-shoulder + shoulder-stitches tokens</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td><code>drop-body-front.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/drop-body-front.svg</code></td>
+        <td>Pullover front sts/rows measurement</td>
+        <td>Pullover</td>
+        <td>Measurement</td>
+        <td class="flag-no">Yes</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td><code>drop_body_cardigan.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/body/drop_body_cardigan.svg</code></td>
+        <td>Cardigan front half-panel sts/rows measurement</td>
+        <td>Cardigan</td>
+        <td>Measurement</td>
+        <td class="flag-no">Yes — SHOULDER_STS / SHOULDER_WIDTH (half panel)</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td><code>jp-drop-body-back.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/jp-drop-body-back.svg</code></td>
+        <td>Back Japanese shaping notation (live tokens)</td>
+        <td>Both (back)</td>
+        <td>Notation</td>
+        <td>No — label layer intentionally empty</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td><code>jp-drop-body-front.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/jp-drop-body-front.svg</code></td>
+        <td>Pullover front Japanese shaping notation</td>
+        <td>Pullover</td>
+        <td>Notation</td>
+        <td>No — empty shoulder label layer</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td><code>jp-drop-body-cardigan.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/japanese/jp-drop-body-cardigan.svg</code></td>
+        <td>Cardigan front Japanese notation (runtime)</td>
+        <td>Cardigan</td>
+        <td>Notation</td>
+        <td>No</td>
+        <td class="flag-yes">YES — identical to jp-drop-body-front.svg</td>
+      </tr>
+      <tr>
+        <td><code>drop-body-sleeve.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/drop-body-sleeve.svg</code></td>
+        <td>Sleeve measurement diagram, cuff-up</td>
+        <td>Both</td>
+        <td>Measurement (sleeve)</td>
+        <td>No</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td><code>drop-body-sleeve-top-down.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/drop-body-sleeve-top-down.svg</code></td>
+        <td>Sleeve measurement diagram, top-down</td>
+        <td>Both</td>
+        <td>Measurement (sleeve)</td>
+        <td>No</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td><code>JP-drop-body-sleeve.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/JP-drop-body-sleeve.svg</code></td>
+        <td>Sleeve Japanese notation, cuff-up</td>
+        <td>Both</td>
+        <td>Notation (sleeve)</td>
+        <td>No</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td><code>jp-drop-body-sleeve-top-down.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/jp-drop-body-sleeve-top-down.svg</code></td>
+        <td>Sleeve Japanese notation, top-down</td>
+        <td>Both</td>
+        <td>Notation (sleeve)</td>
+        <td>No</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td><code>drop_shoulder_summary.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/drop_shoulder_summary.svg</code></td>
+        <td>Interactive measurement summary blueprint</td>
+        <td>Both</td>
+        <td>Summary</td>
+        <td>No (target_* anchors only)</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td><code>jp-drop-body-back-preview.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/jp-drop-body-back-preview.svg</code></td>
+        <td>Static token-free JP notation teaser (back)</td>
+        <td>Both (back)</td>
+        <td>Notation preview</td>
+        <td>No (hard-coded samples)</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td><code>jp-drop-body-front-preview.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/jp-drop-body-front-preview.svg</code></td>
+        <td>Static JP teaser (front); also used for cardigan</td>
+        <td>Pullover + cardigan (temp.)</td>
+        <td>Notation preview</td>
+        <td>No</td>
+        <td class="flag-yes">Cardigan reuses pullover crop</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Code references:</strong></p>
+  <ul>
+    <li><code>src/lib/patterns/dropShoulderBodyNotationSvg.ts</code> — body diagram paths</li>
+    <li><code>src/lib/patterns/dropShoulderSleeveNotationSvg.ts</code> — sleeve diagram paths</li>
+    <li><code>src/lib/patterns/measurementBlueprintSvgUrl.ts</code> — summary blueprint</li>
+    <li><code>src/lib/patterns/neckShoulderShapingChartHtml.ts</code> — preview teasers</li>
+    <li><code>src/scripts/sleevelessPatternPageShared.ts</code> — runtime SVG loading</li>
+  </ul>
+
+  <!-- SECTION 2 -->
+  <h2 class="page-break">2. Exists on Disk but Not Referenced</h2>
+  <p><strong>8 files</strong></p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Filename</th>
+        <th>Full path</th>
+        <th>Inferred purpose</th>
+        <th>Garment</th>
+        <th>Type</th>
+        <th>Shoulder labels</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>drop_body_cardigan.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/drop_body_cardigan.svg</code></td>
+        <td>Duplicate of canonical cardigan measurement</td>
+        <td>Cardigan</td>
+        <td>Measurement</td>
+        <td>Yes</td>
+        <td class="flag-yes">Orphan — identical to body/ copy</td>
+      </tr>
+      <tr>
+        <td><code>drop-A-body-back.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/drop-A-body-back.svg</code></td>
+        <td>Draft &ldquo;A&rdquo; body-shape back measurement</td>
+        <td>Both (back)</td>
+        <td>Measurement</td>
+        <td>Yes (SHOULDER_STS)</td>
+        <td>Older token scheme</td>
+      </tr>
+      <tr>
+        <td><code>drop-A-body-front.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/drop-A-body-front.svg</code></td>
+        <td>Draft &ldquo;A&rdquo; pullover front measurement</td>
+        <td>Pullover</td>
+        <td>Measurement</td>
+        <td>Yes</td>
+        <td>Distinct artwork</td>
+      </tr>
+      <tr>
+        <td><code>drop-A-body-cardigan.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/drop-A-body-cardigan.svg</code></td>
+        <td>Draft &ldquo;A&rdquo; cardigan front measurement</td>
+        <td>Cardigan</td>
+        <td>Measurement</td>
+        <td>Yes</td>
+        <td>Distinct artwork</td>
+      </tr>
+      <tr>
+        <td><code>sleeves_long.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/sleeves_long.svg</code></td>
+        <td>Decorative sleeve-length picker</td>
+        <td>Both</td>
+        <td>Sleeve picker</td>
+        <td>No</td>
+        <td>Builder uses WebP instead</td>
+      </tr>
+      <tr>
+        <td><code>sleeves_3-4.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/sleeves_3-4.svg</code></td>
+        <td>Same</td>
+        <td>Both</td>
+        <td>Sleeve picker</td>
+        <td>No</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td><code>sleeves_elbow.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/sleeves_elbow.svg</code></td>
+        <td>Same</td>
+        <td>Both</td>
+        <td>Sleeve picker</td>
+        <td>No</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td><code>sleeves_short.svg</code></td>
+        <td><code>public/images/patterns/drop-shoulder/sleeves_short.svg</code></td>
+        <td>Same</td>
+        <td>Both</td>
+        <td>Sleeve picker</td>
+        <td>No</td>
+        <td>—</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 3 -->
+  <h2>3. Missing or Placeholder Files</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Status</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>japanese/jp-drop-body-cardigan.svg</code></td>
+        <td class="flag-yes">Exists but placeholder</td>
+        <td>Byte-identical to <code>jp-drop-body-front.svg</code>; shows full pullover front, not cardigan half-panel</td>
+      </tr>
+      <tr>
+        <td>Cardigan JP quick-reference preview</td>
+        <td class="flag-yes">Missing dedicated asset</td>
+        <td>Code falls back to <code>jp-drop-body-front-preview.svg</code></td>
+      </tr>
+      <tr>
+        <td><code>drop_body_cardigan.svg</code> (root)</td>
+        <td class="flag-yes">Orphan duplicate</td>
+        <td>Not referenced; canonical is <code>body/drop_body_cardigan.svg</code></td>
+      </tr>
+      <tr>
+        <td><code>drop-shoulder-summary.svg</code></td>
+        <td>Missing (legacy)</td>
+        <td>Superseded by <code>drop_shoulder_summary.svg</code>; not in live code</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><strong>No referenced production SVG is missing from disk.</strong></p>
+
+  <!-- MATRIX -->
+  <h2 class="page-break">4. Asset Purpose Matrix</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Asset purpose</th>
+        <th>Pullover</th>
+        <th>Cardigan</th>
+        <th>Exists</th>
+        <th>Referenced</th>
+        <th>Needs artwork update</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Front measurement diagram</td>
+        <td><code>drop-body-front.svg</code></td>
+        <td><code>body/drop_body_cardigan.svg</code></td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td>Back measurement diagram</td>
+        <td><code>drop-body-back.svg</code></td>
+        <td>same (shared)</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td>Cardigan measurement diagram</td>
+        <td>—</td>
+        <td><code>body/drop_body_cardigan.svg</code></td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td>Front Japanese notation</td>
+        <td><code>jp-drop-body-front.svg</code></td>
+        <td><code>japanese/jp-drop-body-cardigan.svg</code></td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td class="flag-yes">Cardigan: Yes</td>
+      </tr>
+      <tr>
+        <td>Back Japanese notation</td>
+        <td><code>jp-drop-body-back.svg</code></td>
+        <td>same (shared)</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td>Cardigan Japanese notation</td>
+        <td>—</td>
+        <td><code>japanese/jp-drop-body-cardigan.svg</code></td>
+        <td>Yes (duplicate)</td>
+        <td>Yes</td>
+        <td class="flag-yes">Yes</td>
+      </tr>
+      <tr>
+        <td>Sleeve diagrams (measurement)</td>
+        <td><code>drop-body-sleeve.svg</code> / <code>…-top-down.svg</code></td>
+        <td>same</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td>Sleeve diagrams (notation)</td>
+        <td><code>JP-drop-body-sleeve.svg</code> / <code>jp-…-top-down.svg</code></td>
+        <td>same</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td>Summary diagram</td>
+        <td><code>drop_shoulder_summary.svg</code></td>
+        <td>same</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td class="flag-no">No</td>
+      </tr>
+      <tr>
+        <td>JP notation preview teasers</td>
+        <td>back + front preview SVGs</td>
+        <td>front preview reused</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td class="flag-yes">Cardigan preview: Yes</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ANSWERS -->
+  <h2 class="page-break">5. Action Summary</h2>
+
+  <h3>5.1 Files needing manual Illustrator work</h3>
+  <table>
+    <thead>
+      <tr><th>Priority</th><th>File</th><th>Why</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>High</strong></td>
+        <td><code>japanese/jp-drop-body-cardigan.svg</code></td>
+        <td>Duplicate of pullover front; needs cardigan half-panel artwork and notation layout</td>
+      </tr>
+      <tr>
+        <td><strong>Medium</strong></td>
+        <td>Dedicated cardigan JP preview (new file)</td>
+        <td><code>neckShoulderShapingChartHtml.ts</code> reuses pullover front preview</td>
+      </tr>
+      <tr>
+        <td><strong>Low</strong></td>
+        <td><code>drop-A-body-*.svg</code> (3 files)</td>
+        <td>Unreferenced drafts; only if &ldquo;A&rdquo; body shape is still planned</td>
+      </tr>
+      <tr>
+        <td><strong>Low</strong></td>
+        <td><code>sleeves_*.svg</code> (4 files)</td>
+        <td>Unreferenced; builder uses WebP — clarify if still wanted</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>5.2 Safe and finished (production-ready)</h3>
+  <ul>
+    <li><code>drop-body-back.svg</code>, <code>drop-body-front.svg</code></li>
+    <li><code>body/drop_body_cardigan.svg</code></li>
+    <li><code>jp-drop-body-back.svg</code>, <code>jp-drop-body-front.svg</code></li>
+    <li><code>drop-body-sleeve.svg</code>, <code>drop-body-sleeve-top-down.svg</code></li>
+    <li><code>JP-drop-body-sleeve.svg</code>, <code>jp-drop-body-sleeve-top-down.svg</code></li>
+    <li><code>drop_shoulder_summary.svg</code></li>
+    <li><code>jp-drop-body-back-preview.svg</code>, <code>jp-drop-body-front-preview.svg</code> (pullover)</li>
+  </ul>
+
+  <h3>5.3 Placeholders to replace</h3>
+  <ul>
+    <li><code>japanese/jp-drop-body-cardigan.svg</code> — MD5 match with <code>jp-drop-body-front.svg</code></li>
+    <li><code>drop_body_cardigan.svg</code> (root) — MD5 match with <code>body/</code> copy; not referenced</li>
+    <li>Cardigan JP preview — code points cardigan at pullover front preview</li>
+  </ul>
+
+  <h3>5.4 Filename standardization recommendations</h3>
+  <table>
+    <thead>
+      <tr><th>Current inconsistency</th><th>Recommended convention</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>drop-body-*</code> (hyphens) vs <code>drop_body_cardigan</code> (underscores)</td>
+        <td>One separator everywhere, e.g. <code>drop-body-cardigan.svg</code></td>
+      </tr>
+      <tr>
+        <td>Cardigan measurement in <code>body/</code>; pullover at root</td>
+        <td>All body diagrams in same folder</td>
+      </tr>
+      <tr>
+        <td>Cardigan JP only in <code>japanese/</code> subfolder</td>
+        <td>Mirror: all JP body files under <code>japanese/</code></td>
+      </tr>
+      <tr>
+        <td><code>JP-drop-body-sleeve.svg</code> (capital JP) vs lowercase <code>jp-</code></td>
+        <td>Standardize on lowercase <code>jp-</code></td>
+      </tr>
+      <tr>
+        <td><code>drop-A-body-*</code> draft prefix</td>
+        <td>Rename to <code>draft-</code> or move out of production folder</td>
+      </tr>
+      <tr>
+        <td>Root orphan <code>drop_body_cardigan.svg</code></td>
+        <td>Remove after confirming no external links</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>5.5 Path resolution logic</h3>
+  <ul>
+    <li><strong>Back:</strong> always <code>drop-body-back.svg</code> / <code>jp-drop-body-back.svg</code> (pullover and cardigan)</li>
+    <li><strong>Front pullover:</strong> <code>drop-body-front.svg</code> / <code>jp-drop-body-front.svg</code></li>
+    <li><strong>Front cardigan:</strong> <code>body/drop_body_cardigan.svg</code> / <code>japanese/jp-drop-body-cardigan.svg</code></li>
+  </ul>
+
+  <h3>5.6 Shoulder label token split</h3>
+  <ul>
+    <li><strong>Pullover measurement:</strong> <code>{{cross-shoulder-width}}</code>, <code>{{cross-shoulder}}</code>, <code>{{shoulder-stitches}}</code></li>
+    <li><strong>Cardigan measurement:</strong> <code>{{SHOULDER_STS}}</code>, <code>{{SHOULDER_WIDTH}}</code> (mapped correctly at runtime)</li>
+    <li><strong>Japanese notation:</strong> shoulder stitch text layer intentionally empty</li>
+  </ul>
+
+  <p class="meta" style="margin-top:2em;border-top:1px solid var(--border);padding-top:0.5em;">
+    End of report — generated from codebase audit, 22 June 2025
+  </p>
+
+</body>
+</html>
