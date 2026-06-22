@@ -3,8 +3,6 @@ import Layout from "../../layouts/Layout.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import GlossaryTooltip from "../../components/common/GlossaryTooltip.astro";
-
-const STITCH_COUNTS = [100, 120, 140, 160, 180, 200];
 ---
 
 <Layout
@@ -59,74 +57,18 @@ const STITCH_COUNTS = [100, 120, 140, 160, 180, 200];
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.presets {
-  margin-top: 1.5rem;
+.input-section {
+  margin-top: 0.75rem;
 }
 
-.presets-label {
-  display: block;
-  font-weight: 700;
-  color: var(--kbm-green);
-  font-size: 0.95rem;
-  margin-bottom: 0.25rem;
+.input-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem 1.25rem;
 }
 
-.presets-help {
-  margin: 0 0 0.6rem;
-  color: #6b7280;
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
-.preset-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.preset-btn {
-  padding: 0.5rem 0.9rem;
-  border: 1px solid #9aa38f;
-  background: #f3f4ef;
-  color: #38412f;
-  font-weight: 600;
-  font-size: 0.9rem;
-  line-height: 1.2;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-}
-
-.preset-btn:hover {
-  background: #e7eadf;
-  border-color: #8f987f;
-}
-
-.preset-btn.active {
-  background: var(--kbm-green);
-  color: #fff;
-  border-color: var(--kbm-green);
-}
-
-.preset-btn:focus-visible {
-  outline: 2px solid var(--kbm-green);
-  outline-offset: 2px;
-}
-
-.table-wrap {
-  margin-top: 1.5rem;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Gauge inputs live in the table head, directly above the column each one drives. */
-.comparison-table .gauge-input-row th {
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 0.85rem 1rem 1rem;
-  text-align: center;
-  vertical-align: bottom;
-  white-space: nowrap;
+.field {
+  min-width: 0;
 }
 
 .gauge-input-label {
@@ -137,16 +79,20 @@ const STITCH_COUNTS = [100, 120, 140, 160, 180, 200];
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--kbm-green);
-  text-align: center;
+}
+
+.field-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: #6b7280;
 }
 
 .gauge-input {
   display: block;
   width: 100%;
-  max-width: 120px;
-  min-width: 72px;
-  margin: 0 auto;
-  padding: 0.55rem 0.5rem;
+  max-width: 160px;
+  padding: 0.55rem 0.65rem;
   border: 2px solid #9aa38f;
   border-radius: 8px;
   background: #fff;
@@ -168,62 +114,134 @@ const STITCH_COUNTS = [100, 120, 140, 160, 180, 200];
   box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.2);
 }
 
-.comparison-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+.result-block {
+  margin-top: 1.5rem;
+  padding: 1.75rem 1.5rem 1.5rem;
+  background: linear-gradient(180deg, #f6f8f2 0%, #f9fafb 100%);
+  border: 2px solid rgba(82, 104, 45, 0.18);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  color: #374151;
+  line-height: 1.5;
 }
 
-.comparison-table thead {
-  background: var(--kbm-green);
-  color: white;
-}
-
-.comparison-table th {
-  padding: 0.85rem 1rem;
+.result-block :global(.result-summary) {
+  margin: 0 0 1.35rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
   font-weight: 700;
-  text-align: right;
-  font-size: 0.85rem;
-  white-space: nowrap;
-}
-
-.comparison-table :global(td) {
-  padding: 0.7rem 1rem;
-  border-bottom: 1px solid #e5e7eb;
-  text-align: right;
-  white-space: nowrap;
-}
-
-.comparison-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.comparison-table tbody tr:hover {
-  background: #f9fafb;
-}
-
-.comparison-table .stitches-col {
-  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  letter-spacing: -0.01em;
   color: var(--kbm-green);
 }
 
-.comparison-table .difference-col {
+.result-block :global(.result-metrics) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin: 0;
+}
+
+.result-block :global(.result-metric) {
+  min-width: 0;
+  padding: 0.85rem 0.75rem;
+  text-align: center;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.result-block :global(.result-metric__label) {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.68rem;
   font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b7280;
 }
 
-.comparison-table tr.is-significant {
-  background: #fef2f2;
+.result-block :global(.result-metric__value) {
+  display: block;
+  font-size: clamp(1.15rem, 2vw, 1.35rem);
+  font-weight: 700;
+  line-height: 1.25;
+  color: #1f2937;
 }
 
-.comparison-table tr.is-significant:hover {
-  background: #fee2e2;
+.result-block :global(.result-placeholder) {
+  margin: 0;
+  padding: 0.75rem 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  text-align: center;
+  color: #6b7280;
 }
 
-.comparison-table tr.is-significant .difference-col {
-  color: #dc2626;
+.tension-guide {
+  margin-top: 1.25rem;
+}
+
+.tension-guide img {
+  display: block;
+  width: 100%;
+  max-width: 728px;
+  height: auto;
+  margin: 0 auto;
+  border-radius: 6px;
+}
+
+.gauge-help {
+  margin-top: 1rem;
+}
+
+.gauge-help__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--kbm-green);
+  list-style: none;
+}
+
+.gauge-help__summary::-webkit-details-marker {
+  display: none;
+}
+
+.gauge-help__summary::marker {
+  content: "";
+}
+
+.gauge-help__summary::after {
+  content: "+";
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1;
+  color: #6b7280;
+  transition: transform 0.2s ease;
+}
+
+.gauge-help[open] .gauge-help__summary::after {
+  transform: rotate(45deg);
+}
+
+.gauge-help__body {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.gauge-help__tips {
+  margin: 0.75rem 0 0;
+  padding-left: 1.15rem;
+}
+
+.gauge-help__tips li + li {
+  margin-top: 0.65rem;
 }
 
 .note {
@@ -237,6 +255,23 @@ const STITCH_COUNTS = [100, 120, 140, 160, 180, 200];
   line-height: 1.6;
 }
 
+.note + .note {
+  margin-top: 1rem;
+}
+
+.note p {
+  margin: 0;
+}
+
+.note p + p {
+  margin-top: 0.75rem;
+}
+
+.note-title {
+  font-weight: 700;
+  color: var(--kbm-green);
+}
+
 @media (max-width: 640px) {
   .page-header h1 {
     font-size: 1.6rem;
@@ -246,18 +281,23 @@ const STITCH_COUNTS = [100, 120, 140, 160, 180, 200];
     padding: 1.25rem;
   }
 
+  .input-grid {
+    grid-template-columns: 1fr;
+  }
+
   .gauge-input {
-    max-width: 96px;
+    max-width: 100%;
     font-size: 1rem;
   }
 
-  .comparison-table {
-    font-size: 0.85rem;
+  .result-block :global(.result-metrics) {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
 
-  .comparison-table th,
-  .comparison-table :global(td) {
-    padding: 0.55rem 0.6rem;
+  .result-block :global(.result-metric) {
+    text-align: left;
+    padding: 0.9rem 1rem;
   }
 }
 
@@ -270,8 +310,7 @@ const STITCH_COUNTS = [100, 120, 140, 160, 180, 200];
 
   .back-link,
   .units-toggle,
-  .presets,
-  .gauge-input-row,
+  .input-section,
   .no-print {
     display: none !important;
   }
@@ -281,6 +320,22 @@ const STITCH_COUNTS = [100, 120, 140, 160, 180, 200];
     padding: 0 !important;
     background: white !important;
     border: none !important;
+  }
+
+  .result-block {
+    border: none !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  .gauge-help__summary {
+    display: none;
+  }
+
+  .gauge-help__body {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
   }
 }
 </style>
@@ -301,41 +356,47 @@ const STITCH_COUNTS = [100, 120, 140, 160, 180, 200];
     <div class="wizard-container">
       <UnitToggle id="gaugecompare" defaultUnit="in" />
 
-      <div class="presets">
-        <span class="presets-label">Set Difference</span>
-        <p class="presets-help">Quickly compare gauges with common stitch differences.</p>
-        <div class="preset-buttons" id="preset-buttons">
-          <button type="button" class="preset-btn" data-g1="24" data-g2="24.5">+½ Stitch Difference</button>
-          <button type="button" class="preset-btn" data-g1="24" data-g2="25">+1 Stitch Difference</button>
-          <button type="button" class="preset-btn" data-g1="24" data-g2="26">+2 Stitch Difference</button>
+      <div class="input-section no-print">
+        <div class="input-grid">
+          <div class="field">
+            <label class="gauge-input-label" id="gauge1-label" for="gauge1">Pattern Gauge (sts/4")</label>
+            <input type="number" id="gauge1" class="gauge-input" min="0.1" step="0.1" value="24" inputmode="decimal" />
+          </div>
+          <div class="field">
+            <label class="gauge-input-label" id="gauge2-label" for="gauge2">Your Gauge (sts/4")</label>
+            <input type="number" id="gauge2" class="gauge-input" min="0.1" step="0.1" value="25" inputmode="decimal" />
+          </div>
+          <div class="field">
+            <label class="gauge-input-label" for="totalStitches">Total Stitches in Your Pattern</label>
+            <input type="number" id="totalStitches" class="gauge-input" min="1" step="1" value="200" inputmode="numeric" />
+            <p class="field-hint">e.g., cast-on stitches or chest width stitches</p>
+          </div>
         </div>
       </div>
 
-      <div class="table-wrap">
-        <table class="comparison-table">
-          <thead>
-            <tr class="gauge-input-row">
-              <th class="gauge-input-spacer" scope="col"></th>
-              <th class="gauge-input-cell" scope="col">
-                <label class="gauge-input-label" for="gauge1">Gauge 1</label>
-                <input type="number" id="gauge1" class="gauge-input" min="1" step="0.1" value="24" inputmode="decimal" />
-              </th>
-              <th class="gauge-input-cell" scope="col">
-                <label class="gauge-input-label" for="gauge2">Gauge 2</label>
-                <input type="number" id="gauge2" class="gauge-input" min="1" step="0.1" value="25" inputmode="decimal" />
-              </th>
-              <th class="gauge-input-spacer" scope="col"></th>
-            </tr>
-            <tr>
-              <th scope="col">Stitches</th>
-              <th scope="col" id="g1-header">24 sts/4"</th>
-              <th scope="col" id="g2-header">25 sts/4"</th>
-              <th scope="col">Difference</th>
-            </tr>
-          </thead>
-          <tbody id="comparison-rows"></tbody>
-        </table>
+      <div class="result-block" id="gauge-result" aria-live="polite"></div>
+
+      <div class="tension-guide">
+        <img
+          src="/images/reference/tension-guide.webp"
+          alt="Knitting machine tension dial guide showing that smaller tension numbers create tighter fabric and larger tension numbers create looser fabric."
+          width="728"
+          height="381"
+          loading="lazy"
+          decoding="async"
+        />
       </div>
+
+      <details class="note gauge-help">
+        <summary class="gauge-help__summary">Need help adjusting your tension?</summary>
+        <div class="gauge-help__body">
+          <p class="note-title">Gauge doesn't match?</p>
+          <ul class="gauge-help__tips">
+            <li>Too many stitches? Your fabric is too tight. Turn the tension dial to a higher number.</li>
+            <li>Too few stitches? Your fabric is too loose. Turn the tension dial to a lower number.</li>
+          </ul>
+        </div>
+      </details>
 
       <div class="note">
         Always knit and measure a <GlossaryTooltip id={843}>proper swatch</GlossaryTooltip> before starting your project.
@@ -343,36 +404,58 @@ const STITCH_COUNTS = [100, 120, 140, 160, 180, 200];
     </div>
   </div>
 
-<script define:vars={{ STITCH_COUNTS }}>
+<script>
   let units = 'in';
 
   const inputs = {
     gauge1: document.getElementById('gauge1'),
     gauge2: document.getElementById('gauge2'),
+    totalStitches: document.getElementById('totalStitches'),
   };
 
   const ledeDescriptionEl = document.getElementById('lede-description');
-  const rowsEl = document.getElementById('comparison-rows');
-  const presetButtons = document.querySelectorAll('#preset-buttons .preset-btn');
-  const headers = {
-    gauge1: document.getElementById('g1-header'),
-    gauge2: document.getElementById('g2-header'),
+  const resultEl = document.getElementById('gauge-result');
+  const inputLabels = {
+    gauge1: document.getElementById('gauge1-label'),
+    gauge2: document.getElementById('gauge2-label'),
   };
 
-  function gaugeColLabel(rawValue, fallback) {
-    const value = String(rawValue ?? '').trim();
-    if (!value) return fallback;
-    const unitPart = units === 'in' ? '4"' : '10 cm';
-    return `${value} sts/${unitPart}`;
+  const PLACEHOLDER_MESSAGE = 'Enter your gauges and stitch count to compare the finished width.';
+
+  function inputValue(el) {
+    return el instanceof HTMLInputElement ? el.value : '';
   }
 
-  // Each width-column header mirrors the gauge typed into the input above it.
-  function updateHeaders() {
-    if (headers.gauge1) headers.gauge1.textContent = gaugeColLabel(inputs.gauge1.value, 'Gauge 1');
-    if (headers.gauge2) headers.gauge2.textContent = gaugeColLabel(inputs.gauge2.value, 'Gauge 2');
+  function getGaugeUnitLabel() {
+    return units === 'cm' ? 'sts/10 cm' : 'sts/4"';
+  }
+
+  function getPatternGaugeLabel() {
+    return `Pattern Gauge (${getGaugeUnitLabel()})`;
+  }
+
+  function getYourGaugeLabel() {
+    return `Your Gauge (${getGaugeUnitLabel()})`;
+  }
+
+  function getWidthUnitLabel() {
+    return units === 'cm' ? 'cm' : 'inches';
+  }
+
+  function formatWidth(value) {
+    return value.toFixed(1);
+  }
+
+  function formatSignedDifference(diff) {
+    const rounded = Number(diff.toFixed(1));
+    if (rounded === 0) return `0.0 ${getWidthUnitLabel()}`;
+    const sign = rounded > 0 ? '+' : '';
+    return `${sign}${rounded.toFixed(1)} ${getWidthUnitLabel()}`;
   }
 
   function updateUnitLabels() {
+    if (inputLabels.gauge1) inputLabels.gauge1.textContent = getPatternGaugeLabel();
+    if (inputLabels.gauge2) inputLabels.gauge2.textContent = getYourGaugeLabel();
     if (ledeDescriptionEl) {
       const measure = units === 'in' ? 'inches' : 'centimeters';
       ledeDescriptionEl.textContent =
@@ -380,79 +463,85 @@ const STITCH_COUNTS = [100, 120, 140, 160, 180, 200];
     }
   }
 
-  function calculate() {
-    const g1 = parseFloat(inputs.gauge1.value);
-    const g2 = parseFloat(inputs.gauge2.value);
+  function showPlaceholder() {
+    if (!resultEl) return;
+    resultEl.innerHTML = `<p class="result-placeholder">${PLACEHOLDER_MESSAGE}</p>`;
+  }
 
-    // Inches use gauge per 4"; cm uses gauge per 10cm
-    const factor = units === 'in' ? 4 : 10;
-    const unitLabel = units === 'in' ? 'inches' : 'cm';
-    const threshold = units === 'in' ? 1 : 2.5;
+  function calculate() {
+    const patternGauge = parseFloat(inputValue(inputs.gauge1));
+    const yourGauge = parseFloat(inputValue(inputs.gauge2));
+    const totalStitches = parseFloat(inputValue(inputs.totalStitches));
 
     const valid =
-      Number.isFinite(g1) && g1 > 0 &&
-      Number.isFinite(g2) && g2 > 0;
+      Number.isFinite(patternGauge) && patternGauge > 0 &&
+      Number.isFinite(yourGauge) && yourGauge > 0 &&
+      Number.isFinite(totalStitches) && totalStitches > 0;
 
-    if (!valid) {
-      rowsEl.innerHTML = '';
+    if (!valid || !resultEl) {
+      showPlaceholder();
       return;
     }
 
-    let rowsHTML = '';
-    for (const stitches of STITCH_COUNTS) {
-      const width1 = stitches / (g1 / factor);
-      const width2 = stitches / (g2 / factor);
-      const diff = Math.abs(width1 - width2);
-      const significant = diff >= threshold;
+    const factor = units === 'in' ? 4 : 10;
+    const expectedWidth = (totalStitches / patternGauge) * factor;
+    const yourWidth = (totalStitches / yourGauge) * factor;
+    const difference = yourWidth - expectedWidth;
 
-      rowsHTML += `
-        <tr class="${significant ? 'is-significant' : ''}">
-          <td class="stitches-col">${stitches}</td>
-          <td>${width1.toFixed(2)} ${unitLabel}</td>
-          <td>${width2.toFixed(2)} ${unitLabel}</td>
-          <td class="difference-col">${diff.toFixed(1)} ${unitLabel}</td>
-        </tr>
-      `;
+    if (
+      !Number.isFinite(expectedWidth) ||
+      !Number.isFinite(yourWidth) ||
+      !Number.isFinite(difference)
+    ) {
+      showPlaceholder();
+      return;
     }
 
-    rowsEl.innerHTML = rowsHTML;
+    const unitLabel = getWidthUnitLabel();
+    const absDiff = Math.abs(Number(difference.toFixed(1)));
+    let summary;
+
+    if (absDiff === 0) {
+      summary = 'Your project should match the expected width.';
+    } else if (difference < 0) {
+      summary = `Your project will be ${formatWidth(absDiff)} ${unitLabel} too small.`;
+    } else {
+      summary = `Your project will be ${formatWidth(absDiff)} ${unitLabel} too large.`;
+    }
+
+    resultEl.innerHTML = `
+      <p class="result-summary">${summary}</p>
+      <div class="result-metrics">
+        <div class="result-metric">
+          <span class="result-metric__label">Expected Width</span>
+          <span class="result-metric__value">${formatWidth(expectedWidth)} ${unitLabel}</span>
+        </div>
+        <div class="result-metric">
+          <span class="result-metric__label">Your Width</span>
+          <span class="result-metric__value">${formatWidth(yourWidth)} ${unitLabel}</span>
+        </div>
+        <div class="result-metric">
+          <span class="result-metric__label">Difference</span>
+          <span class="result-metric__value">${formatSignedDifference(difference)}</span>
+        </div>
+      </div>
+    `;
   }
 
-  // React to input changes (clears any active preset highlight)
   Object.values(inputs).forEach((el) => {
-    el.addEventListener('input', () => {
-      presetButtons.forEach((b) => b.classList.remove('active'));
-      updateHeaders();
-      calculate();
-    });
+    if (!el) return;
+    el.addEventListener('input', calculate);
   });
 
-  // Preset buttons set both gauges, then recalculate
-  presetButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const g1 = btn.dataset.g1;
-      const g2 = btn.dataset.g2;
-      if (g1) inputs.gauge1.value = g1;
-      if (g2) inputs.gauge2.value = g2;
-      presetButtons.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      updateHeaders();
-      calculate();
-    });
-  });
-
-  // Sync with the shared UnitToggle component
   window.addEventListener('kbm:units-change', (e) => {
-    const detail = e.detail;
+    const detail = /** @type {CustomEvent<{ unit?: string; toggleId?: string }>} */ (e).detail;
     if (detail?.toggleId && detail.toggleId !== 'gaugecompare') return;
     units = detail?.unit === 'cm' ? 'cm' : 'in';
     updateUnitLabels();
-    updateHeaders();
     calculate();
   });
 
   updateUnitLabels();
-  updateHeaders();
   calculate();
 </script>
 
