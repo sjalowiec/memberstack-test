@@ -1075,6 +1075,124 @@ const patternPersistWarning =
   .diy-blanket-builder-inputs #needle-check-trigger-wrap .needle-check__header {
     min-height: 44px;
   }
+
+  /* Yarn estimate: inline accordion on mobile instead of side drawer */
+  .needle-check--yarn-drawer .hat-yarn-drawer {
+    position: static;
+    inset: auto;
+    z-index: auto;
+    pointer-events: auto;
+    visibility: visible;
+  }
+
+  .needle-check--yarn-drawer .hat-yarn-drawer:not(.is-open) .hat-yarn-drawer-panel {
+    display: none;
+  }
+
+  .needle-check--yarn-drawer .hat-yarn-drawer-backdrop {
+    display: none;
+  }
+
+  .needle-check--yarn-drawer .hat-yarn-drawer-panel {
+    position: static;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+    background: #fff;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .needle-check--yarn-drawer .hat-yarn-drawer-header {
+    padding: 1rem 1.15rem 0.75rem;
+  }
+
+  .needle-check--yarn-drawer .hat-yarn-drawer-title {
+    display: none;
+  }
+
+  .needle-check--yarn-drawer .hat-yarn-drawer-close--header {
+    display: none;
+  }
+
+  .needle-check--yarn-drawer .hat-yarn-drawer-body {
+    overflow: visible;
+    min-height: 0;
+    padding: 0 1.15rem 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .needle-check--yarn-drawer .yarn-drawer-presentation .yarn-results-section--drawer,
+  .needle-check--yarn-drawer .yarn-drawer-presentation .yarn-message {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .needle-check--yarn-drawer .yarn-drawer-presentation .yarn-field .floating-input label {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    max-width: none;
+  }
+
+  .needle-check--yarn-drawer .yarn-drawer-presentation .yarn-weight-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .needle-check--yarn-drawer .yarn-drawer-presentation .yarn-weight-row .unit-toggle {
+    align-self: flex-start;
+  }
+
+  .needle-check--yarn-drawer .hat-yarn-drawer-panel {
+    overflow-x: hidden;
+  }
+
+  .needle-check--yarn-drawer .yarn-drawer-presentation .yarn-drawer-section-title {
+    font-size: 0.75rem;
+  }
+
+  .needle-check--yarn-drawer .yarn-drawer-presentation .yarn-drawer-section-hint {
+    font-size: 0.9375rem;
+  }
+
+  .needle-check--yarn-drawer .hat-yarn-drawer-hide {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(100% - 2.3rem);
+    min-height: 48px;
+    margin: 0.75rem 1.15rem 1.15rem;
+    padding: 0.75rem 1rem;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--kbm-green, #52682d);
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #fff);
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 22%, transparent);
+    border-radius: 10px;
+    cursor: pointer;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease;
+  }
+
+  .needle-check--yarn-drawer .hat-yarn-drawer-hide:hover {
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 12%, #fff);
+  }
+
+  .needle-check--yarn-drawer .hat-yarn-drawer-hide:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+}
+
+@media (min-width: 641px) {
+  .needle-check--yarn-drawer .hat-yarn-drawer-hide {
+    display: none;
+  }
 }
 
 </style>
@@ -1202,6 +1320,67 @@ const patternPersistWarning =
             <span class="needle-check__summary">Estimate your yarn based on your size and gauge.</span>
           </span>
         </button>
+
+        <div
+          id="hat-yarn-drawer"
+          class="hat-yarn-drawer no-print"
+          aria-hidden="true"
+        >
+          <div
+            id="hat-yarn-drawer-panel"
+            class="hat-yarn-drawer-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="hat-yarn-drawer-title"
+            aria-describedby="hat-yarn-drawer-desc yarn-drawer-selected-size"
+          >
+            <header class="hat-yarn-drawer-header">
+              <div class="hat-yarn-drawer-header-text">
+                <h2 id="hat-yarn-drawer-title" class="hat-yarn-drawer-title">How much yarn will you need?</h2>
+                <p id="hat-yarn-drawer-desc" class="hat-yarn-drawer-lede">
+                  Weigh a swatch in this yarn, then enter its width, length, and weight below.
+                </p>
+              </div>
+              <button type="button" class="hat-yarn-drawer-close hat-yarn-drawer-close--header" id="hat-yarn-drawer-close" aria-label="Close">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M18 6L6 18M6 6l12 12"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </button>
+            </header>
+            <div class="hat-yarn-drawer-body">
+              <div id="yarn-calculator-section" class="yarn-drawer-presentation">
+                <p
+                  id="yarn-drawer-selected-size"
+                  class="yarn-project-context yarn-project-context--drawer"
+                  aria-live="polite"
+                ></p>
+
+                <YarnRequirement
+                  variant="blanket"
+                  layout="panel"
+                  presentation="drawer"
+                  projectWidth={0}
+                  projectLength={0}
+                  lengthUnit="in"
+                  source="sample"
+                />
+              </div>
+            </div>
+            <button type="button" class="hat-yarn-drawer-hide" id="hat-yarn-drawer-hide">
+              Hide estimate
+            </button>
+          </div>
+          <div
+            id="hat-yarn-drawer-backdrop"
+            class="hat-yarn-drawer-backdrop"
+            aria-hidden="true"
+          ></div>
+        </div>
       </div>
 
             <div id="build-pattern-cta" style="display:block; text-align:center; margin-top: 24px;">
@@ -1339,64 +1518,6 @@ const patternPersistWarning =
         </div>
       </div>
     </div>
-  </div>
-
-  <div
-    id="hat-yarn-drawer"
-    class="hat-yarn-drawer no-print"
-    aria-hidden="true"
-  >
-    <div
-      id="hat-yarn-drawer-panel"
-      class="hat-yarn-drawer-panel"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="hat-yarn-drawer-title"
-      aria-describedby="hat-yarn-drawer-desc yarn-drawer-selected-size"
-    >
-      <header class="hat-yarn-drawer-header">
-        <div class="hat-yarn-drawer-header-text">
-          <h2 id="hat-yarn-drawer-title" class="hat-yarn-drawer-title">How much yarn will you need?</h2>
-          <p id="hat-yarn-drawer-desc" class="hat-yarn-drawer-lede">
-            Weigh a swatch in this yarn, then enter its width, length, and weight below.
-          </p>
-        </div>
-        <button type="button" class="hat-yarn-drawer-close" id="hat-yarn-drawer-close" aria-label="Close">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M18 6L6 18M6 6l12 12"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-            />
-          </svg>
-        </button>
-      </header>
-      <div class="hat-yarn-drawer-body">
-        <div id="yarn-calculator-section" class="yarn-drawer-presentation">
-          <p
-            id="yarn-drawer-selected-size"
-            class="yarn-project-context yarn-project-context--drawer"
-            aria-live="polite"
-          ></p>
-
-          <YarnRequirement
-            variant="blanket"
-            layout="panel"
-            presentation="drawer"
-            projectWidth={0}
-            projectLength={0}
-            lengthUnit="in"
-            source="sample"
-          />
-        </div>
-      </div>
-    </div>
-    <div
-      id="hat-yarn-drawer-backdrop"
-      class="hat-yarn-drawer-backdrop"
-      aria-hidden="true"
-    ></div>
   </div>
 
   <div
@@ -1639,19 +1760,58 @@ document.addEventListener('DOMContentLoaded', function() {
   const printBtn = document.getElementById('print-btn');
 
   const hatYarnDrawerRoot = document.getElementById('hat-yarn-drawer');
+  const hatYarnDrawerPanel = document.getElementById('hat-yarn-drawer-panel');
   const hatYarnDrawerToggle = document.getElementById('hat-yarn-drawer-toggle');
   const hatYarnDrawerTriggerWrap = document.getElementById('hat-yarn-drawer-trigger-wrap');
   const hatYarnDrawerCloseBtn = document.getElementById('hat-yarn-drawer-close');
+  const hatYarnDrawerHideBtn = document.getElementById('hat-yarn-drawer-hide');
   const hatYarnDrawerBackdrop = document.getElementById('hat-yarn-drawer-backdrop');
+  const yarnDrawerMobileMq = window.matchMedia('(max-width: 640px)');
+  /** @type {HTMLElement | null} */
+  let hatYarnDrawerLastFocus = null;
+  /** @type {HTMLElement | null} */
+  let widthDrawerLastFocus = null;
+
+  function isYarnDrawerMobile() {
+    return yarnDrawerMobileMq.matches;
+  }
+
+  function syncYarnDrawerPresentation(isOpen) {
+    if (!(hatYarnDrawerPanel instanceof HTMLElement)) return;
+    if (isYarnDrawerMobile()) {
+      hatYarnDrawerPanel.setAttribute('role', 'region');
+      hatYarnDrawerPanel.removeAttribute('aria-modal');
+      if (hatYarnDrawerToggle instanceof HTMLButtonElement) {
+        hatYarnDrawerToggle.setAttribute('aria-haspopup', 'false');
+      }
+      if (isOpen) {
+        document.body.classList.remove('hat-yarn-drawer-open');
+      }
+    } else {
+      hatYarnDrawerPanel.setAttribute('role', 'dialog');
+      hatYarnDrawerPanel.setAttribute('aria-modal', 'true');
+      if (hatYarnDrawerToggle instanceof HTMLButtonElement) {
+        hatYarnDrawerToggle.setAttribute('aria-haspopup', 'dialog');
+      }
+      if (isOpen) {
+        document.body.classList.add('hat-yarn-drawer-open');
+      }
+    }
+  }
+
+  yarnDrawerMobileMq.addEventListener('change', () => {
+    if (hatYarnDrawerRoot?.classList.contains('is-open')) {
+      syncYarnDrawerPresentation(true);
+    } else {
+      syncYarnDrawerPresentation(false);
+    }
+  });
+
   const widthDrawerRoot = document.getElementById('diy-blanket-width-drawer');
   const widthDrawerToggle = document.getElementById('needle-check-toggle');
   const widthDrawerTriggerWrap = document.getElementById('needle-check-trigger-wrap');
   const widthDrawerCloseBtn = document.getElementById('diy-blanket-width-drawer-close');
   const widthDrawerBackdrop = document.getElementById('diy-blanket-width-drawer-backdrop');
-  /** @type {HTMLElement | null} */
-  let hatYarnDrawerLastFocus = null;
-  /** @type {HTMLElement | null} */
-  let widthDrawerLastFocus = null;
 
   function openWidthDrawer() {
     if (!widthDrawerRoot) return;
@@ -1709,20 +1869,25 @@ document.addEventListener('DOMContentLoaded', function() {
       document.activeElement instanceof HTMLElement ? document.activeElement : null;
     hatYarnDrawerRoot.classList.add('is-open');
     hatYarnDrawerRoot.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('hat-yarn-drawer-open');
+    hatYarnDrawerTriggerWrap?.classList.add('is-yarn-expanded');
     hatYarnDrawerToggle?.classList.add('is-open');
     hatYarnDrawerToggle?.setAttribute('aria-expanded', 'true');
+    syncYarnDrawerPresentation(true);
     syncBlanketYarnCalculator();
-    hatYarnDrawerCloseBtn?.focus();
+    if (!isYarnDrawerMobile()) {
+      hatYarnDrawerCloseBtn?.focus();
+    }
   }
 
   function closeHatYarnDrawer() {
     if (!hatYarnDrawerRoot?.classList.contains('is-open')) return;
     hatYarnDrawerRoot.classList.remove('is-open');
     hatYarnDrawerRoot.setAttribute('aria-hidden', 'true');
+    hatYarnDrawerTriggerWrap?.classList.remove('is-yarn-expanded');
     document.body.classList.remove('hat-yarn-drawer-open');
     hatYarnDrawerToggle?.classList.remove('is-open');
     hatYarnDrawerToggle?.setAttribute('aria-expanded', 'false');
+    syncYarnDrawerPresentation(false);
     const restore = hatYarnDrawerLastFocus;
     if (restore instanceof HTMLElement) {
       restore.focus();
@@ -1740,8 +1905,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   hatYarnDrawerBackdrop?.addEventListener('click', () => closeHatYarnDrawer());
   hatYarnDrawerCloseBtn?.addEventListener('click', () => closeHatYarnDrawer());
+  hatYarnDrawerHideBtn?.addEventListener('click', () => closeHatYarnDrawer());
   widthDrawerBackdrop?.addEventListener('click', () => closeWidthDrawer());
   widthDrawerCloseBtn?.addEventListener('click', () => closeWidthDrawer());
+
+  syncYarnDrawerPresentation(false);
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;

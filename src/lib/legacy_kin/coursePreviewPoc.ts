@@ -1,17 +1,24 @@
 import course50Poc from "../../data/legacy_kin/cleaned/course_50_lk150_quick.poc.json";
 import course51Poc from "../../data/legacy_kin/cleaned/course_51_lk150_fun.poc.json";
+import { getLayoutHeader, isTextImageLayoutBlock } from "./courseTextImageLayout";
 
 export const COURSE_PREVIEW_BASE = "/dev/course-preview";
 export const COURSE_QUERY_PARAM = "course";
 export const DEFAULT_PREVIEW_COURSE_ID = 50;
-export const LEGACY_ASSET_ORIGIN = "https://www.knititnow.com";
-export const LEGACY_DOWNLOAD_BASE = `${LEGACY_ASSET_ORIGIN}/KIN_Images/Challenges`;
+export {
+  LEGACY_ASSET_ORIGIN,
+  LEGACY_DOWNLOAD_BASE,
+  downloadUrl,
+  legacyAssetUrl,
+  rewriteLegacyHtml,
+} from "./legacyCourseAssetUrls";
 
 export type RichTextComponent = {
   type: "richText";
   html: string;
   legacyComponentId: number;
   order: number;
+  layoutRole?: string;
 };
 
 export type VideoComponent = {
@@ -33,11 +40,43 @@ export type DownloadComponent = {
   order: number;
 };
 
+export type ImageGallerySlide = {
+  src: string;
+  caption?: string | null;
+  linkUrl?: string;
+};
+
 export type ImageGalleryComponent = {
   type: "imageGallery";
-  slides: { src: string; caption?: string | null }[];
+  slides: ImageGallerySlide[];
   legacyComponentId: number;
   order: number;
+};
+
+export type ImageCarouselSlide = {
+  src: string;
+  alt?: string | null;
+  caption?: string | null;
+  linkUrl?: string;
+};
+
+export type ImageCarouselComponent = {
+  type: "imageCarousel";
+  title?: string | null;
+  slides: ImageCarouselSlide[];
+  legacyComponentId: number;
+  order: number;
+};
+
+export type ImageComponent = {
+  type: "image";
+  src: string;
+  alt?: string;
+  caption?: string | null;
+  linkUrl?: string;
+  legacyComponentId: number;
+  order: number;
+  layoutRole?: string;
 };
 
 export type ExerciseAccordionComponent = {
@@ -61,6 +100,8 @@ export type CourseComponent =
   | VideoComponent
   | DownloadComponent
   | ImageGalleryComponent
+  | ImageCarouselComponent
+  | ImageComponent
   | ExerciseAccordionComponent
   | MigrationPendingComponent;
 
@@ -68,7 +109,8 @@ export type CourseBlock = {
   title: string;
   slug: string;
   order: number;
-  legacy: { assignId: number; blockType: string };
+  legacy: { assignId: number; blockType: string; editorLayout?: string };
+  layoutOptions?: { imagePosition?: "left" | "right"; header?: string | null };
   components: CourseComponent[];
 };
 
@@ -169,26 +211,6 @@ export function getLessonNeighbors(
   };
 }
 
-export function legacyAssetUrl(src: string): string {
-  const trimmed = src.trim();
-  if (!trimmed) return trimmed;
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  if (trimmed.startsWith("//")) return `https:${trimmed}`;
-  if (trimmed.startsWith("/")) return `${LEGACY_ASSET_ORIGIN}${trimmed}`;
-  return `${LEGACY_ASSET_ORIGIN}/${trimmed.replace(/^\//, "")}`;
-}
-
-export function downloadUrl(filename: string): string {
-  return `${LEGACY_DOWNLOAD_BASE}/${filename.replace(/^\//, "")}`;
-}
-
-export function rewriteLegacyHtml(html: string): string {
-  return html
-    .replace(/src="(\/[^"]+)"/g, (_, path: string) => `src="${LEGACY_ASSET_ORIGIN}${path}"`)
-    .replace(/src='(\/[^']+)'/g, (_, path: string) => `src='${LEGACY_ASSET_ORIGIN}${path}'`)
-    .replace(/href="(\/[^"]+\.pdf)"/gi, (_, path: string) => `href="${LEGACY_ASSET_ORIGIN}${path}"`);
-}
-
 export function sortedBlocks(lesson: CourseLesson): CourseBlock[] {
   return [...lesson.blocks].sort((a, b) => a.order - b.order);
 }
@@ -219,8 +241,51 @@ export function sectionTitlesMatch(a: string, b: string): boolean {
 }
 
 export function sectionDisplayTitle(block: CourseBlock): string {
+  if (isTextImageLayoutBlock(block)) {
+    const header = getLayoutHeader(block);
+    if (header) return header;
+  }
+
   const trimmed = block.title?.trim();
   return trimmed || `(untitled assign ${block.legacy.assignId})`;
+}
+
+export const INTERNAL_SECTION_PLACEHOLDER_RE = /^\(untitled assign \d+\)$/i;
+
+export function isInternalSectionPlaceholderTitle(title: string): boolean {
+  return INTERNAL_SECTION_PLACEHOLDER_RE.test(title.trim());
+}
+
+/**
+ * Public-facing section heading. Returns null when the title is an internal
+ * placeholder, empty, or duplicates the lesson title (avoids redundant h1).
+ */
+export function sectionTitleForDisplay(
+  sectionTitle: string,
+  lessonTitle?: string,
+): string | null {
+  let trimmed = sectionTitle.trim();
+  if (isInternalSectionPlaceholderTitle(trimmed)) {
+    trimmed = "";
+  }
+  if (!trimmed) {
+    return null;
+  }
+  const lesson = lessonTitle?.trim() ?? "";
+  if (lesson && sectionTitlesMatch(trimmed, lesson)) {
+    return null;
+  }
+  return trimmed;
+}
+
+/** Friendly label for section sub-nav when the raw title is internal or empty. */
+export function sectionTitleForNav(
+  sectionTitle: string,
+  lessonTitle?: string,
+): string {
+  const display = sectionTitleForDisplay(sectionTitle, lessonTitle);
+  if (display) return display;
+  return "Untitled Section";
 }
 
 export function isSectionAuxiliaryBlock(block: CourseBlock): boolean {

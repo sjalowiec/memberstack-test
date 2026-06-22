@@ -512,6 +512,106 @@ main.site-content:has(.course-preview--reader) {
   max-width: 100%;
 }
 
+/* Text + video side-by-side layout (editor + legacy HTML class names) */
+.lesson-media-row,
+.course-preview__media-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+  margin: 0.75rem 0 1rem;
+}
+
+.lesson-media-row .lesson-text,
+.course-preview__media-row .lesson-text {
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+}
+
+/*
+ * Legacy left-column HTML often still wraps content in .lesson-media-row (or .lesson-text
+ * inside that). Those classes apply the same side-by-side grid as the outer row, so text
+ * ends up in the first grid track (~50% of the cell) instead of filling the column.
+ */
+.course-preview__media-row > .lesson-text .lesson-media-row,
+.course-preview__media-row > .course-preview__richtext .lesson-media-row,
+.lesson-media-row > .lesson-text .lesson-media-row {
+  display: block;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.course-preview__media-row > .lesson-text .lesson-text,
+.course-preview__media-row > .course-preview__richtext .lesson-text,
+.lesson-media-row > .lesson-text .lesson-text {
+  width: 100%;
+  max-width: none;
+}
+
+.lesson-media-row .lesson-video,
+.course-preview__media-row .lesson-video {
+  min-width: 0;
+}
+
+.lesson-media-row .lesson-video .vimeo-embed-wrapper,
+.course-preview__media-row .lesson-video .vimeo-embed-wrapper {
+  margin: 0;
+}
+
+.lesson-media-row-bottom,
+.course-preview__media-row-bottom {
+  margin-top: 1.25rem;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .lesson-media-row,
+  .course-preview__media-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* Text + image side-by-side layout with configurable column order */
+.text-image-layout__row {
+  display: grid;
+}
+
+.text-image-layout__text,
+.text-image-layout__image {
+  min-width: 0;
+}
+
+.text-image-layout__img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.text-image-layout__caption {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+  color: #555;
+}
+
+.text-image-layout--image-right .text-image-layout__text {
+  order: 1;
+}
+
+.text-image-layout--image-right .text-image-layout__image {
+  order: 2;
+}
+
+.text-image-layout--image-left .text-image-layout__text {
+  order: 2;
+}
+
+.text-image-layout--image-left .text-image-layout__image {
+  order: 1;
+}
+
 .course-preview__video-title {
   margin: 0 0 0.5rem;
   font-weight: 600;
@@ -550,10 +650,132 @@ main.site-content:has(.course-preview--reader) {
   color: #444;
 }
 
+.course-preview__carousel,
+.legacy-course__carousel {
+  max-width: 42rem;
+  margin: 1rem auto;
+}
+
+.course-preview__carousel-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
+
+.course-preview__carousel-empty {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666;
+  text-align: center;
+}
+
+.course-preview__carousel-viewport {
+  position: relative;
+}
+
+.course-preview__carousel-slide {
+  margin: 0;
+}
+
+.course-preview__carousel-slide[hidden] {
+  display: none;
+}
+
+.course-preview__carousel-media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-height: 360px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.gallery-image,
+.course-gallery-image,
+.course-preview__carousel-slide img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: 360px;
+  margin: 0 auto;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.course-preview__carousel-slide figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #444;
+  text-align: center;
+}
+
+.course-preview__carousel-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .course-preview__carousel,
+  .legacy-course__carousel {
+    max-width: 100%;
+  }
+
+  .course-preview__carousel-media {
+    max-height: 240px;
+  }
+
+  .gallery-image,
+  .course-gallery-image,
+  .course-preview__carousel-slide img {
+    max-height: 240px;
+  }
+}
+
+.course-preview__carousel-btn {
+  min-width: 5.5rem;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  color: #333;
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.course-preview__carousel-btn:hover:not(:disabled) {
+  border-color: #999;
+  background: #f7f7f7;
+}
+
+.course-preview__carousel-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.course-preview__carousel-count {
+  min-width: 3.5rem;
+  font-size: 0.875rem;
+  color: #555;
+  text-align: center;
+}
+
 .course-preview__exercise {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.course-preview__accordion-intro {
+  margin-bottom: 1rem;
 }
 
 .course-preview__exercise-section {
@@ -625,5 +847,95 @@ main.site-content:has(.course-preview--reader) {
 
   .course-preview__nav-link {
     text-align: center;
+  }
+}
+
+/* What's Next? — next-step card grid (LK-150 Quick Start finale) */
+.course-whats-next__intro {
+  margin: 0 0 1.5rem;
+  max-width: 42rem;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: #374151;
+}
+
+.course-whats-next__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-top: 0.5rem;
+}
+
+.course-whats-next__card {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  margin: 0;
+  padding: 1.35rem 1.35rem 1.25rem;
+  border: 1px solid #d8dfd0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.course-whats-next__badge {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.course-whats-next__badge--free {
+  color: #52682d;
+}
+
+.course-whats-next__badge--paid {
+  color: #6b7280;
+}
+
+.course-whats-next__card-heading {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  line-height: 1.35;
+  color: var(--kbm-green, #52682d);
+}
+
+.course-whats-next__card-name {
+  margin: 0 0 0.65rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #1f2937;
+}
+
+.course-whats-next__card-text {
+  margin: 0;
+  flex: 1;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+.course-whats-next__card-meta {
+  margin: 0.75rem 0 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #738c52;
+}
+
+.course-whats-next__card-action {
+  margin: 1.1rem 0 0;
+}
+
+.course-whats-next__card-action .kbm-btn {
+  display: inline-block;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .course-whats-next__grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

@@ -1,0 +1,55 @@
+---
+import VimeoEmbed from "../../media/VimeoEmbed.astro";
+import type { CourseBlock } from "../../../lib/legacy_kin/coursePreviewPoc";
+import { rewriteLegacyHtml } from "../../../lib/legacy_kin/coursePreviewPoc";
+import {
+  getTextVideoLayoutParts,
+  richTextHasVisibleContent,
+  unwrapTextVideoColumnHtml,
+} from "../../../lib/legacy_kin/courseTextVideoLayout";
+
+interface Props {
+  block: CourseBlock;
+}
+
+const { block } = Astro.props;
+const parts = getTextVideoLayoutParts(block);
+---
+
+{
+  parts ? (
+    <div class="course-preview__text-video-layout legacy-course__text-video-layout">
+      <div class="lesson-media-row course-preview__media-row legacy-course__media-row">
+        <div
+          class="lesson-text course-preview__richtext legacy-course__richtext"
+          set:html={rewriteLegacyHtml(
+            unwrapTextVideoColumnHtml(String(parts.leftText.html ?? "")),
+          )}
+          data-legacy-component={parts.leftText.legacyComponentId}
+        />
+        <div
+          class="lesson-video legacy-course__media-video"
+          data-legacy-component={parts.video.legacyComponentId}
+        >
+          {parts.video.title ? (
+            <p class="course-preview__video-title">{String(parts.video.title)}</p>
+          ) : null}
+          {String(parts.video.vimeoId ?? "") ? (
+            <VimeoEmbed
+              vimeoId={String(parts.video.vimeoId)}
+              title={parts.video.title ? String(parts.video.title) : "Course video"}
+            />
+          ) : null}
+        </div>
+      </div>
+      {parts.bottomText &&
+      richTextHasVisibleContent(String(parts.bottomText.html ?? "")) ? (
+        <div
+          class="lesson-media-row-bottom course-preview__media-row-bottom course-preview__richtext legacy-course__richtext"
+          set:html={rewriteLegacyHtml(String(parts.bottomText.html ?? ""))}
+          data-legacy-component={parts.bottomText.legacyComponentId}
+        />
+      ) : null}
+    </div>
+  ) : null
+}

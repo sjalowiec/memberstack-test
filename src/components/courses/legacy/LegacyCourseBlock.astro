@@ -1,5 +1,7 @@
 ---
 import VimeoEmbed from "../../media/VimeoEmbed.astro";
+import LegacyCourseImageCarousel from "./LegacyCourseImageCarousel.astro";
+import LegacyCourseImage from "./LegacyCourseImage.astro";
 import type { CourseComponent } from "../../../lib/legacy_kin/coursePreviewPoc";
 import {
   downloadUrl,
@@ -52,21 +54,23 @@ const { component } = Astro.props;
       ) : null}
     </p>
   ) : component.type === "imageGallery" ? (
-    <div
-      class="course-preview__gallery legacy-course__gallery"
-      data-legacy-component={component.legacyComponentId}
-    >
-      {component.slides.map((slide) => (
-        <figure class="course-preview__gallery-slide">
-          <img
-            src={legacyAssetUrl(slide.src)}
-            alt={slide.caption ?? ""}
-            loading="lazy"
-          />
-          {slide.caption ? <figcaption>{slide.caption}</figcaption> : null}
-        </figure>
-      ))}
-    </div>
+    <LegacyCourseImageCarousel
+      legacyComponentId={component.legacyComponentId}
+      slides={component.slides.map((slide) => ({
+        src: slide.src,
+        alt: slide.caption ?? "",
+        caption: slide.caption ?? null,
+        linkUrl: slide.linkUrl,
+      }))}
+    />
+  ) : component.type === "image" ? (
+    <LegacyCourseImage component={component} />
+  ) : component.type === "imageCarousel" ? (
+    <LegacyCourseImageCarousel
+      legacyComponentId={component.legacyComponentId}
+      title={component.title}
+      slides={component.slides}
+    />
   ) : component.type === "exerciseAccordion" ? (
     <div
       class="course-preview__exercise legacy-course__exercise"

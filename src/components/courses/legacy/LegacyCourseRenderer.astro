@@ -1,7 +1,13 @@
 ---
 import LegacyCourseBlock from "./LegacyCourseBlock.astro";
+import LegacyCourseTextVideoLayout from "./LegacyCourseTextVideoLayout.astro";
+import LegacyCourseTextImageLayout from "./LegacyCourseTextImageLayout.astro";
+import LegacyCourseAccordionLayout from "./LegacyCourseAccordionLayout.astro";
 import type { CourseBlock } from "../../../lib/legacy_kin/coursePreviewPoc";
 import { sortedComponents } from "../../../lib/legacy_kin/coursePreviewPoc";
+import { isAccordionLayoutBlock } from "../../../lib/legacy_kin/courseAccordionLayout";
+import { isTextVideoLayoutBlock } from "../../../lib/legacy_kin/courseTextVideoLayout";
+import { isTextImageLayoutBlock } from "../../../lib/legacy_kin/courseTextImageLayout";
 
 interface Props {
   blocks: CourseBlock[];
@@ -18,17 +24,25 @@ const { blocks, lessonSlug, showBlockTitles = true } = Astro.props;
       class="course-preview__block legacy-course__block"
       id={`${lessonSlug}--${block.slug}`}
     >
-      {showBlockTitles && block.title?.trim() ? (
+      {showBlockTitles && block.title?.trim() && !isTextImageLayoutBlock(block) ? (
         <h2 class="course-preview__block-title legacy-course__block-title">
           {block.title}
         </h2>
       ) : null}
 
-      <div class="course-preview__components legacy-course__components">
-        {sortedComponents(block).map((component) => (
-          <LegacyCourseBlock component={component} />
-        ))}
-      </div>
+      {isTextVideoLayoutBlock(block) ? (
+        <LegacyCourseTextVideoLayout block={block} />
+      ) : isTextImageLayoutBlock(block) ? (
+        <LegacyCourseTextImageLayout block={block} />
+      ) : isAccordionLayoutBlock(block) ? (
+        <LegacyCourseAccordionLayout block={block} />
+      ) : (
+        <div class="course-preview__components legacy-course__components">
+          {sortedComponents(block).map((component) => (
+            <LegacyCourseBlock component={component} />
+          ))}
+        </div>
+      )}
     </article>
   ))
 }

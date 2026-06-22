@@ -43,6 +43,9 @@ src/data/*.csv
 
 # Backup files
 *.backup
+*.bak.json
 #course images
 public/images/courses/
+public/challenge/images/v2/
+public/images/v2/
 

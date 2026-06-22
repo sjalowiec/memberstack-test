@@ -18,10 +18,15 @@ interface Props {
   courseId: number;
   currentLessonSlug?: string;
   currentSections?: SidebarSection[];
+  activeSectionIndex?: number;
 }
 
-const { courseId: rawCourseId, currentLessonSlug, currentSections = [] } =
-  Astro.props;
+const {
+  courseId: rawCourseId,
+  currentLessonSlug,
+  currentSections = [],
+  activeSectionIndex = 0,
+} = Astro.props;
 const courseId = parseCourseId(rawCourseId);
 const course = getCoursePreviewData(courseId)!.course;
 const lessons = getSortedLessons(courseId);
@@ -99,7 +104,7 @@ const showSectionList = currentSections.length > 1;
                           data-lk150-section-link
                           data-section-index={section.oneBasedIndex}
                           aria-current={
-                            section.oneBasedIndex === 1 ? "location" : "false"
+                            section.oneBasedIndex === activeSectionIndex + 1 ? "location" : "false"
                           }
                         >
                           {section.title}

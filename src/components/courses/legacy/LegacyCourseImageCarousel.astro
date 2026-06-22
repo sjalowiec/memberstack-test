@@ -1,0 +1,111 @@
+---
+import type { ImageCarouselSlide } from "../../../lib/legacy_kin/coursePreviewPoc";
+import LegacyCourseLinkedImage from "./LegacyCourseLinkedImage.astro";
+
+interface Props {
+  legacyComponentId: number;
+  slides: ImageCarouselSlide[];
+  title?: string | null;
+}
+
+const { legacyComponentId, slides, title = null } = Astro.props;
+---
+
+<div
+  class="course-preview__carousel legacy-course__carousel"
+  data-legacy-component={legacyComponentId}
+  data-carousel
+>
+  {title ? <h4 class="course-preview__carousel-title">{title}</h4> : null}
+
+  {
+    slides.length === 0 ? (
+      <p class="course-preview__carousel-empty">No slides yet.</p>
+    ) : (
+      <>
+        <div class="course-preview__carousel-viewport">
+          {slides.map((slide, index) => (
+            <figure
+              class="course-preview__carousel-slide"
+              data-slide-index={index}
+              hidden={index !== 0}
+            >
+              <div class="course-preview__carousel-media">
+                <LegacyCourseLinkedImage
+                  class="course-gallery-image"
+                  src={slide.src}
+                  alt={slide.alt ?? slide.caption ?? ""}
+                  linkUrl={slide.linkUrl}
+                  loading={index === 0 ? "eager" : "lazy"}
+                />
+              </div>
+              {slide.caption ? <figcaption>{slide.caption}</figcaption> : null}
+            </figure>
+          ))}
+        </div>
+
+        <div class="course-preview__carousel-controls">
+          <button
+            type="button"
+            class="course-preview__carousel-btn"
+            data-carousel-prev
+            aria-label="Previous slide"
+            disabled={slides.length <= 1}
+          >
+            Previous
+          </button>
+          <span class="course-preview__carousel-count" data-carousel-count aria-live="polite">
+            1 / {slides.length}
+          </span>
+          <button
+            type="button"
+            class="course-preview__carousel-btn"
+            data-carousel-next
+            aria-label="Next slide"
+            disabled={slides.length <= 1}
+          >
+            Next
+          </button>
+        </div>
+      </>
+    )
+  }
+</div>
+
+<script>
+  function initImageCarousels() {
+    document.querySelectorAll("[data-carousel]").forEach((root) => {
+      if (!(root instanceof HTMLElement) || root.dataset.carouselReady === "true") return;
+      root.dataset.carouselReady = "true";
+
+      const slideEls = Array.from(
+        root.querySelectorAll<HTMLElement>("[data-slide-index]"),
+      );
+      if (slideEls.length === 0) return;
+
+      let current = 0;
+      const prevBtn = root.querySelector<HTMLButtonElement>("[data-carousel-prev]");
+      const nextBtn = root.querySelector<HTMLButtonElement>("[data-carousel-next]");
+      const countEl = root.querySelector<HTMLElement>("[data-carousel-count]");
+
+      const show = (index: number) => {
+        current = (index + slideEls.length) % slideEls.length;
+        slideEls.forEach((slide, i) => {
+          slide.hidden = i !== current;
+        });
+        if (countEl) {
+          countEl.textContent = `${current + 1} / ${slideEls.length}`;
+        }
+        const single = slideEls.length <= 1;
+        if (prevBtn) prevBtn.disabled = single;
+        if (nextBtn) nextBtn.disabled = single;
+      };
+
+      prevBtn?.addEventListener("click", () => show(current - 1));
+      nextBtn?.addEventListener("click", () => show(current + 1));
+    });
+  }
+
+  initImageCarousels();
+  document.addEventListener("astro:page-load", initImageCarousels);
+</script>

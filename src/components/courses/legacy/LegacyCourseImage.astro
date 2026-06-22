@@ -1,0 +1,47 @@
+---
+import type { ImageComponent } from "../../../lib/legacy_kin/coursePreviewPoc";
+import { imageCaptionHasContent } from "../../../lib/legacy_kin/courseTextImageLayout";
+import LegacyCourseLinkedImage from "./LegacyCourseLinkedImage.astro";
+
+interface Props {
+  component: ImageComponent;
+}
+
+const { component } = Astro.props;
+const src = String(component.src ?? "").trim();
+const caption = component.caption;
+const hasCaption = imageCaptionHasContent(caption);
+---
+
+{
+  src ? (
+    hasCaption ? (
+      <figure
+        class="course-preview__image legacy-course__image"
+        data-legacy-component={component.legacyComponentId}
+      >
+        <LegacyCourseLinkedImage
+          class="course-preview__image-img legacy-course__image-img"
+          src={src}
+          alt={component.alt ?? ""}
+          linkUrl={component.linkUrl}
+        />
+        <figcaption class="course-preview__image-caption legacy-course__image-caption">
+          {String(caption)}
+        </figcaption>
+      </figure>
+    ) : (
+      <div
+        class="course-preview__image legacy-course__image"
+        data-legacy-component={component.legacyComponentId}
+      >
+        <LegacyCourseLinkedImage
+          class="course-preview__image-img legacy-course__image-img"
+          src={src}
+          alt={component.alt ?? ""}
+          linkUrl={component.linkUrl}
+        />
+      </div>
+    )
+  ) : null
+}

@@ -1,6 +1,6 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { CoursePreviewData } from "./coursePreviewPoc";
+import type { CoursePreviewData, CourseLesson } from "./coursePreviewPoc";
 import { isCoursePreviewProductionBlocked } from "./coursePreviewProductionAccess";
 import type { DetectSiteEnvironmentOptions } from "../env/siteEnvironment";
 
@@ -35,10 +35,36 @@ export type RichTextUpdate = {
   html: string;
 };
 
+export type ComponentRemoval = {
+  lessonSlug: string;
+  blockSlug: string;
+  legacyComponentId: number;
+  type: string;
+};
+
+export type CourseContentSavePayload = {
+  richTextUpdates?: RichTextUpdate[];
+  removals?: ComponentRemoval[];
+};
+
 export type SaveRichTextResult = {
   backupPath: string;
   applied: number;
   missing: string[];
+};
+
+export type SaveCourseContentResult = {
+  backupPath: string;
+  appliedRichText: number;
+  appliedRemovals: number;
+  missingRichText: string[];
+  missingRemovals: string[];
+};
+
+export type SaveLessonResult = {
+  backupPath: string;
+  lessonSlug: string;
+  removedEmptyBlocks: string[];
 };
 
 export function isCourseContentAdminAllowed(
@@ -139,6 +165,173 @@ export function applyRichTextUpdates(
   return { applied, missing };
 }
 
+export function applyComponentRemovals(
+  data: CoursePreviewData,
+  removals: ComponentRemoval[],
+): { applied: number; missing: string[] } {
+  const missing: string[] = [];
+  let applied = 0;
+
+  for (const removal of removals) {
+    const key = `${removal.lessonSlug}/${removal.blockSlug}#${removal.type}:${removal.legacyComponentId}`;
+    const lesson = data.lessons.find((item) => item.slug === removal.lessonSlug);
+    if (!lesson) {
+      missing.push(key);
+      continue;
+    }
+
+    const blockIndex = lesson.blocks.findIndex((item) => item.slug === removal.blockSlug);
+    if (blockIndex === -1) {
+      missing.push(key);
+      continue;
+    }
+
+    const block = lesson.blocks[blockIndex]!;
+    const componentIndex = block.components.findIndex(
+      (item) =>
+        item.legacyComponentId === removal.legacyComponentId &&
+        item.type === removal.type,
+    );
+
+    if (componentIndex === -1) {
+      missing.push(key);
+      continue;
+    }
+
+    block.components.splice(componentIndex, 1);
+    if (block.components.length === 0) {
+      lesson.blocks.splice(blockIndex, 1);
+    }
+    applied++;
+  }
+
+  return { applied, missing };
+}
+
+export function validateLessonInput(raw: unknown): CourseLesson | { error: string } {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return { error: "Lesson must be a JSON object." };
+  }
+
+  const lesson = raw as Record<string, unknown>;
+
+  if (typeof lesson.title !== "string" || !lesson.title.trim()) {
+    return { error: "Lesson requires a non-empty title string." };
+  }
+  if (typeof lesson.slug !== "string" || !lesson.slug.trim()) {
+    return { error: "Lesson requires a non-empty slug string." };
+  }
+  if (!Number.isFinite(Number(lesson.displayOrder))) {
+    return { error: "Lesson requires a numeric displayOrder." };
+  }
+  if (!Array.isArray(lesson.blocks)) {
+    return { error: "Lesson blocks must be an array." };
+  }
+
+  for (let blockIndex = 0; blockIndex < lesson.blocks.length; blockIndex++) {
+    const block = lesson.blocks[blockIndex];
+    if (!block || typeof block !== "object" || Array.isArray(block)) {
+      return { error: `blocks[${blockIndex}] must be an object.` };
+    }
+
+    const blockObj = block as Record<string, unknown>;
+    if (typeof blockObj.title !== "string") {
+      return { error: `blocks[${blockIndex}] requires a title string.` };
+    }
+    if (typeof blockObj.slug !== "string" || !blockObj.slug.trim()) {
+      return { error: `blocks[${blockIndex}] requires a slug string.` };
+    }
+    if (!Number.isFinite(Number(blockObj.order))) {
+      return { error: `blocks[${blockIndex}] requires a numeric order.` };
+    }
+    if (!Array.isArray(blockObj.components)) {
+      return { error: `blocks[${blockIndex}].components must be an array.` };
+    }
+
+    for (let componentIndex = 0; componentIndex < blockObj.components.length; componentIndex++) {
+      const component = blockObj.components[componentIndex];
+      if (!component || typeof component !== "object" || Array.isArray(component)) {
+        return { error: `blocks[${blockIndex}].components[${componentIndex}] must be an object.` };
+      }
+
+      const componentObj = component as Record<string, unknown>;
+      if (typeof componentObj.type !== "string" || !componentObj.type.trim()) {
+        return {
+          error: `blocks[${blockIndex}].components[${componentIndex}] requires a type string.`,
+        };
+      }
+      if (!Number.isFinite(Number(componentObj.legacyComponentId))) {
+        return {
+          error: `blocks[${blockIndex}].components[${componentIndex}] requires legacyComponentId.`,
+        };
+      }
+      if (!Number.isFinite(Number(componentObj.order))) {
+        return {
+          error: `blocks[${blockIndex}].components[${componentIndex}] requires order.`,
+        };
+      }
+    }
+  }
+
+  return lesson as unknown as CourseLesson;
+}
+
+export function findEmptyBlockSlugs(lesson: CourseLesson): string[] {
+  return lesson.blocks
+    .filter((block) => !Array.isArray(block.components) || block.components.length === 0)
+    .map((block) => block.slug);
+}
+
+export function removeEmptyBlocksFromLesson(lesson: CourseLesson): {
+  lesson: CourseLesson;
+  removedBlockSlugs: string[];
+} {
+  const removedBlockSlugs = findEmptyBlockSlugs(lesson);
+  const blocks = lesson.blocks.filter(
+    (block) => Array.isArray(block.components) && block.components.length > 0,
+  );
+  return {
+    lesson: { ...lesson, blocks },
+    removedBlockSlugs,
+  };
+}
+
+export function saveLessonUpdate(
+  courseId: number,
+  lessonSlug: string,
+  lessonInput: unknown,
+  options: { removeEmptyBlocks?: boolean } = {},
+): SaveLessonResult {
+  const validated = validateLessonInput(lessonInput);
+  if ("error" in validated) {
+    throw new Error(validated.error);
+  }
+
+  const data = readCourseContentFile(courseId);
+  const lessonIndex = data.lessons.findIndex((item) => item.slug === lessonSlug);
+  if (lessonIndex === -1) {
+    throw new Error(`Lesson not found: ${lessonSlug}`);
+  }
+
+  let lesson = { ...validated, slug: lessonSlug };
+  let removedEmptyBlocks: string[] = [];
+
+  if (options.removeEmptyBlocks) {
+    const cleaned = removeEmptyBlocksFromLesson(lesson);
+    lesson = cleaned.lesson;
+    removedEmptyBlocks = cleaned.removedBlockSlugs;
+  }
+
+  data.lessons[lessonIndex] = lesson;
+  const backupPath = writeCourseContentFile(courseId, data);
+
+  return {
+    backupPath,
+    lessonSlug,
+    removedEmptyBlocks,
+  };
+}
+
 export function writeCourseContentFile(
   courseId: number,
   data: CoursePreviewData,
@@ -166,6 +359,45 @@ export function saveRichTextUpdates(
 
   const backupPath = writeCourseContentFile(courseId, data);
   return { backupPath, applied, missing };
+}
+
+export function saveCourseContentUpdates(
+  courseId: number,
+  payload: CourseContentSavePayload,
+): SaveCourseContentResult {
+  const richTextUpdates = payload.richTextUpdates ?? [];
+  const removals = payload.removals ?? [];
+
+  if (richTextUpdates.length === 0 && removals.length === 0) {
+    throw new Error("No updates to save.");
+  }
+
+  const data = readCourseContentFile(courseId);
+  const richTextResult = applyRichTextUpdates(data, richTextUpdates);
+  const removalResult = applyComponentRemovals(data, removals);
+  const appliedRichText = richTextResult.applied;
+  const appliedRemovals = removalResult.applied;
+
+  if (appliedRichText === 0 && appliedRemovals === 0) {
+    const missingParts = [
+      ...richTextResult.missing,
+      ...removalResult.missing,
+    ];
+    throw new Error(
+      missingParts.length > 0
+        ? `No matching components found: ${missingParts.join(", ")}`
+        : "No updates to save.",
+    );
+  }
+
+  const backupPath = writeCourseContentFile(courseId, data);
+  return {
+    backupPath,
+    appliedRichText,
+    appliedRemovals,
+    missingRichText: richTextResult.missing,
+    missingRemovals: removalResult.missing,
+  };
 }
 
 export function applyHtmlCleanup(html: string, action: HtmlCleanupAction): string {

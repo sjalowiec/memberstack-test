@@ -1,0 +1,26 @@
+---
+import { legacyAssetUrl } from "../../../lib/legacy_kin/coursePreviewPoc";
+import { courseImageLinkAttrs } from "../../../lib/legacy_kin/courseImageLink";
+
+interface Props {
+  src: string;
+  alt?: string;
+  linkUrl?: string | null;
+  class?: string;
+  loading?: "lazy" | "eager";
+}
+
+const { src, alt = "", linkUrl = null, class: className, loading = "lazy" } = Astro.props;
+const link = courseImageLinkAttrs(linkUrl);
+const imgSrc = legacyAssetUrl(src);
+---
+
+{
+  link ? (
+    <a href={link.href} target={link.target} rel={link.rel}>
+      <img class={className} src={imgSrc} alt={alt} loading={loading} />
+    </a>
+  ) : (
+    <img class={className} src={imgSrc} alt={alt} loading={loading} />
+  )
+}

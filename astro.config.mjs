@@ -11,5 +11,14 @@ export default defineConfig({
     port: 4321,
     strictPort: true,
     open: "/videos" // or "/tips" or true
-  }
+  },
+
+  vite: {
+    server: {
+      watch: {
+        // Course editor backups should not trigger dev-server reloads.
+        ignored: ["**/src/data/legacy_kin/cleaned/backups/**"],
+      },
+    },
+  },
 });

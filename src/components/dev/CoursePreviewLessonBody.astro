@@ -1,5 +1,10 @@
 ---
 import VimeoEmbed from "../media/VimeoEmbed.astro";
+import LegacyCourseImageCarousel from "../courses/legacy/LegacyCourseImageCarousel.astro";
+import LegacyCourseImage from "../courses/legacy/LegacyCourseImage.astro";
+import LegacyCourseAccordionLayout from "../courses/legacy/LegacyCourseAccordionLayout.astro";
+import LegacyCourseTextVideoLayout from "../courses/legacy/LegacyCourseTextVideoLayout.astro";
+import LegacyCourseTextImageLayout from "../courses/legacy/LegacyCourseTextImageLayout.astro";
 import type { CourseLesson } from "../../lib/legacy_kin/coursePreviewPoc";
 import {
   downloadUrl,
@@ -8,6 +13,9 @@ import {
   sortedBlocks,
   sortedComponents,
 } from "../../lib/legacy_kin/coursePreviewPoc";
+import { isAccordionLayoutBlock } from "../../lib/legacy_kin/courseAccordionLayout";
+import { isTextVideoLayoutBlock } from "../../lib/legacy_kin/courseTextVideoLayout";
+import { isTextImageLayoutBlock } from "../../lib/legacy_kin/courseTextImageLayout";
 
 interface Props {
   lesson: CourseLesson;
@@ -32,7 +40,14 @@ const { lesson } = Astro.props;
         </p>
 
         <div class="course-preview__components">
-          {sortedComponents(block).map((component) => {
+          {isTextVideoLayoutBlock(block) ? (
+            <LegacyCourseTextVideoLayout block={block} />
+          ) : isTextImageLayoutBlock(block) ? (
+            <LegacyCourseTextImageLayout block={block} />
+          ) : isAccordionLayoutBlock(block) ? (
+            <LegacyCourseAccordionLayout block={block} />
+          ) : (
+            sortedComponents(block).map((component) => {
             if (component.type === "richText") {
               return (
                 <div
@@ -74,18 +89,29 @@ const { lesson } = Astro.props;
 
             if (component.type === "imageGallery") {
               return (
-                <div class="course-preview__gallery" data-legacy-component={component.legacyComponentId}>
-                  {component.slides.map((slide) => (
-                    <figure class="course-preview__gallery-slide">
-                      <img
-                        src={legacyAssetUrl(slide.src)}
-                        alt={slide.caption ?? ""}
-                        loading="lazy"
-                      />
-                      {slide.caption ? <figcaption>{slide.caption}</figcaption> : null}
-                    </figure>
-                  ))}
-                </div>
+                <LegacyCourseImageCarousel
+                  legacyComponentId={component.legacyComponentId}
+                  slides={component.slides.map((slide) => ({
+                    src: slide.src,
+                    alt: slide.caption ?? "",
+                    caption: slide.caption ?? null,
+                    linkUrl: slide.linkUrl,
+                  }))}
+                />
+              );
+            }
+
+            if (component.type === "image") {
+              return <LegacyCourseImage component={component} />;
+            }
+
+            if (component.type === "imageCarousel") {
+              return (
+                <LegacyCourseImageCarousel
+                  legacyComponentId={component.legacyComponentId}
+                  title={component.title}
+                  slides={component.slides}
+                />
               );
             }
 
@@ -135,7 +161,8 @@ const { lesson } = Astro.props;
             }
 
             return null;
-          })}
+          })
+          )}
         </div>
       </article>
     ))

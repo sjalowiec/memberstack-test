@@ -14,7 +14,10 @@ import {
   getSortedLessons,
   groupBlocksBySection,
   parseCourseId,
+  parseSectionQueryIndex,
   sectionAnchorId,
+  sectionTitleForDisplay,
+  sectionTitleForNav,
   sortedBlocks,
   type CourseLesson,
 } from "../../../../lib/legacy_kin/coursePreviewPoc";
@@ -48,14 +51,20 @@ const sections = groupBlocksBySection(blocks);
 const sectionsWithOffsets = sections.map((section) => ({
   section,
   anchorId: sectionAnchorId(lesson.slug, section),
+  heading: sectionTitleForDisplay(section.title, lesson.title),
+  navTitle: sectionTitleForNav(section.title, lesson.title),
 }));
 
-const sidebarSections = sectionsWithOffsets.map(({ section }, sectionIndex) => ({
-  title: section.title,
+const sidebarSections = sectionsWithOffsets.map(({ navTitle }, sectionIndex) => ({
+  title: navTitle,
   oneBasedIndex: sectionIndex + 1,
 }));
 
 const showSectionPicker = sections.length > 1;
+const initialSectionIndex = parseSectionQueryIndex(
+  Astro.url.searchParams.get("section"),
+  sections.length,
+);
 const pageTitle = `DEV Preview: ${course.title} — ${lesson.title}`;
 ---
 
@@ -70,6 +79,7 @@ const pageTitle = `DEV Preview: ${course.title} — ${lesson.title}`;
         courseId={courseId}
         currentLessonSlug={lesson.slug}
         currentSections={sidebarSections}
+        activeSectionIndex={initialSectionIndex}
       />
 
       <div class="course-preview__main">
@@ -82,22 +92,26 @@ const pageTitle = `DEV Preview: ${course.title} — ${lesson.title}`;
             >
               <article class="course-preview__content" data-lk150-section-content>
                 <div class="course-preview__section-panels">
-                  {sectionsWithOffsets.map(({ section, anchorId }, sectionIndex) => (
+                  {sectionsWithOffsets.map(({ section, anchorId, heading }, sectionIndex) => (
                     <section
                       class="course-preview__section"
                       id={anchorId}
                       data-lk150-section-panel
                       data-section-index={formatSectionQueryIndex(sectionIndex)}
-                      hidden={sectionIndex !== 0}
-                      aria-labelledby={`${anchorId}-title`}
+                      hidden={sectionIndex !== initialSectionIndex}
+                      aria-labelledby={heading ? `${anchorId}-title` : `${anchorId}-label`}
                     >
                       <header class="course-preview__section-header">
-                        <p class="course-preview__content-lesson">
+                        <p class="course-preview__content-lesson" id={`${anchorId}-label`}>
                           Lesson {lesson.displayOrder}: {lesson.title}
                         </p>
-                        <h1 class="course-preview__content-title" id={`${anchorId}-title`}>
-                          {section.title}
-                        </h1>
+                        {
+                          heading ? (
+                            <h1 class="course-preview__content-title" id={`${anchorId}-title`}>
+                              {heading}
+                            </h1>
+                          ) : null
+                        }
                       </header>
 
                       <div class="course-preview__section-blocks">
@@ -112,49 +126,26 @@ const pageTitle = `DEV Preview: ${course.title} — ${lesson.title}`;
                 </div>
               </article>
 
-              <script is:inline define:vars={{ sectionCount: sections.length }}>
-                (function () {
-                  const picker = document.querySelector("[data-lk150-section-picker]");
-                  if (!picker) return;
-
-                  const params = new URLSearchParams(window.location.search);
-                  let raw = Number.parseInt(params.get("section") ?? "1", 10);
-                  if (Number.isNaN(raw)) raw = 1;
-                  const index = Math.min(Math.max(raw, 1), sectionCount) - 1;
-
-                  picker.querySelectorAll("[data-lk150-section-panel]").forEach((panel, panelIndex) => {
-                    if (panel instanceof HTMLElement) {
-                      panel.hidden = panelIndex !== index;
-                    }
-                  });
-
-                  document.querySelectorAll("[data-lk150-section-link]").forEach((link) => {
-                    if (!(link instanceof HTMLElement)) return;
-                    const linkIndex = Number.parseInt(link.dataset.sectionIndex ?? "1", 10) - 1;
-                    const isActive = linkIndex === index;
-                    link.classList.toggle("course-preview__sidebar-section-link--active", isActive);
-                    if (link instanceof HTMLAnchorElement) {
-                      link.setAttribute("aria-current", isActive ? "location" : "false");
-                    }
-                  });
-                })();
-              </script>
             </div>
           ) : (
             <article class="course-preview__content">
-              {sectionsWithOffsets.map(({ section, anchorId }) => (
+              {sectionsWithOffsets.map(({ section, anchorId, heading }) => (
                 <section
                   class="course-preview__section"
                   id={anchorId}
-                  aria-labelledby={`${anchorId}-title`}
+                  aria-labelledby={heading ? `${anchorId}-title` : `${anchorId}-label`}
                 >
                   <header class="course-preview__section-header">
-                    <p class="course-preview__content-lesson">
+                    <p class="course-preview__content-lesson" id={`${anchorId}-label`}>
                       Lesson {lesson.displayOrder}: {lesson.title}
                     </p>
-                    <h1 class="course-preview__content-title" id={`${anchorId}-title`}>
-                      {section.title}
-                    </h1>
+                    {
+                      heading ? (
+                        <h1 class="course-preview__content-title" id={`${anchorId}-title`}>
+                          {heading}
+                        </h1>
+                      ) : null
+                    }
                   </header>
 
                   <div class="course-preview__section-blocks">
@@ -174,6 +165,8 @@ const pageTitle = `DEV Preview: ${course.title} — ${lesson.title}`;
   </div>
 
   {showSectionPicker ? (
-    <script type="module" src="../../../../scripts/lk150LessonSectionPreview.ts" />
+    <script>
+      import "../../../../scripts/lk150LessonSectionPreview.ts";
+    </script>
   ) : null}
 </Layout>

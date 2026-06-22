@@ -1,12 +1,18 @@
 import type { APIRoute } from "astro";
 import {
+  COURSE_CONTENT_FILES,
   getAllowedCourseIds,
   isAllowedCourseId,
   isCourseContentAdminAllowed,
   readCourseContentFile,
-  saveRichTextUpdates,
-  type RichTextUpdate,
+  saveLessonUpdate,
 } from "../../../lib/legacy_kin/courseContentAdmin";
+import {
+  addLessonToCourse,
+  deleteLessonFromCourse,
+  duplicateLessonInCourse,
+  moveLessonInCourse,
+} from "../../../lib/legacy_kin/courseLessonAdmin";
 
 export const prerender = false;
 
@@ -39,41 +45,6 @@ function parseCourseId(value: string | null): number | null {
   return parsed;
 }
 
-function parseUpdates(raw: unknown): RichTextUpdate[] | { error: string } {
-  if (!Array.isArray(raw)) {
-    return { error: "updates must be an array." };
-  }
-
-  const updates: RichTextUpdate[] = [];
-
-  for (let i = 0; i < raw.length; i++) {
-    const item = raw[i];
-    if (!item || typeof item !== "object" || Array.isArray(item)) {
-      return { error: `updates[${i}] must be an object.` };
-    }
-
-    const o = item as Record<string, unknown>;
-    const lessonSlug = typeof o.lessonSlug === "string" ? o.lessonSlug.trim() : "";
-    const blockSlug = typeof o.blockSlug === "string" ? o.blockSlug.trim() : "";
-    const legacyComponentId = Number.parseInt(String(o.legacyComponentId ?? ""), 10);
-    const html = typeof o.html === "string" ? o.html : null;
-
-    if (!lessonSlug || !blockSlug) {
-      return { error: `updates[${i}] requires lessonSlug and blockSlug.` };
-    }
-    if (!Number.isFinite(legacyComponentId)) {
-      return { error: `updates[${i}] requires legacyComponentId.` };
-    }
-    if (html === null) {
-      return { error: `updates[${i}] requires html string.` };
-    }
-
-    updates.push({ lessonSlug, blockSlug, legacyComponentId, html });
-  }
-
-  return updates;
-}
-
 export const GET: APIRoute = async ({ url, request }) => {
   if (
     !isCourseContentAdminAllowed(new URL(request.url).hostname, adminEnv)
@@ -89,7 +60,7 @@ export const GET: APIRoute = async ({ url, request }) => {
       return {
         id,
         title: data.course.title,
-        filename: data.course.legacy?.sourceExport ?? null,
+        filename: COURSE_CONTENT_FILES[id],
         lessonCount: data.lessons.length,
       };
     });
@@ -132,22 +103,99 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 
-  const parsedUpdates = parseUpdates(body.updates);
-  if ("error" in parsedUpdates) {
-    return jsonResponse({ ok: false, error: parsedUpdates.error }, 400);
-  }
-
-  if (parsedUpdates.length === 0) {
-    return jsonResponse({ ok: false, error: "No updates provided." }, 400);
-  }
+  const action = typeof body.action === "string" ? body.action.trim() : "saveLesson";
 
   try {
-    const result = saveRichTextUpdates(courseId, parsedUpdates);
+    if (action === "addLesson") {
+      const result = addLessonToCourse(courseId);
+      return jsonResponse({
+        ok: true,
+        action,
+        courseId,
+        course: result.course,
+        lesson: result.lesson,
+        lessonSlug: result.lessonSlug,
+        backupPath: result.backupPath,
+        savedAt: new Date().toISOString(),
+      });
+    }
+
+    if (action === "deleteLesson") {
+      const lessonSlug = typeof body.lessonSlug === "string" ? body.lessonSlug.trim() : "";
+      if (!lessonSlug) {
+        return jsonResponse({ ok: false, error: "lessonSlug is required." }, 400);
+      }
+      const result = deleteLessonFromCourse(courseId, lessonSlug);
+      return jsonResponse({
+        ok: true,
+        action,
+        courseId,
+        course: result.course,
+        lessonSlug,
+        backupPath: result.backupPath,
+        savedAt: new Date().toISOString(),
+      });
+    }
+
+    if (action === "moveLesson") {
+      const fromIndex = Number.parseInt(String(body.fromIndex ?? ""), 10);
+      const toIndex = Number.parseInt(String(body.toIndex ?? ""), 10);
+      if (!Number.isFinite(fromIndex) || !Number.isFinite(toIndex)) {
+        return jsonResponse({ ok: false, error: "fromIndex and toIndex are required." }, 400);
+      }
+      const result = moveLessonInCourse(courseId, fromIndex, toIndex);
+      return jsonResponse({
+        ok: true,
+        action,
+        courseId,
+        course: result.course,
+        backupPath: result.backupPath,
+        savedAt: new Date().toISOString(),
+      });
+    }
+
+    if (action === "duplicateLesson") {
+      const lessonSlug = typeof body.lessonSlug === "string" ? body.lessonSlug.trim() : "";
+      if (!lessonSlug) {
+        return jsonResponse({ ok: false, error: "lessonSlug is required." }, 400);
+      }
+      const result = duplicateLessonInCourse(
+        courseId,
+        lessonSlug,
+        body.lesson,
+      );
+      return jsonResponse({
+        ok: true,
+        action,
+        courseId,
+        course: result.course,
+        lesson: result.lesson,
+        lessonSlug: result.lessonSlug,
+        backupPath: result.backupPath,
+        savedAt: new Date().toISOString(),
+      });
+    }
+
+    const lessonSlug = typeof body.lessonSlug === "string" ? body.lessonSlug.trim() : "";
+    if (!lessonSlug) {
+      return jsonResponse({ ok: false, error: "lessonSlug is required." }, 400);
+    }
+
+    if (!body.lesson || typeof body.lesson !== "object") {
+      return jsonResponse({ ok: false, error: "lesson object is required." }, 400);
+    }
+
+    const removeEmptyBlocks = body.removeEmptyBlocks !== false;
+
+    const result = saveLessonUpdate(courseId, lessonSlug, body.lesson, {
+      removeEmptyBlocks,
+    });
     return jsonResponse({
       ok: true,
+      action: "saveLesson",
       courseId,
-      applied: result.applied,
-      missing: result.missing,
+      lessonSlug: result.lessonSlug,
+      removedEmptyBlocks: result.removedEmptyBlocks,
       backupPath: result.backupPath,
       savedAt: new Date().toISOString(),
     });

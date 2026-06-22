@@ -74,8 +74,15 @@ function initPicker(picker: HTMLElement): void {
   });
 }
 
-document.querySelectorAll("[data-lk150-section-picker]").forEach((picker) => {
-  if (picker instanceof HTMLElement) {
-    initPicker(picker);
-  }
-});
+function initSectionPickers(): void {
+  document.querySelectorAll("[data-lk150-section-picker]").forEach((picker) => {
+    if (picker instanceof HTMLElement) {
+      initPicker(picker);
+    }
+  });
+}
+
+if (typeof document !== "undefined") {
+  initSectionPickers();
+  document.addEventListener("astro:page-load", initSectionPickers);
+}

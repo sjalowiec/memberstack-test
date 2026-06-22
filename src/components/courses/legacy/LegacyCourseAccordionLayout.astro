@@ -1,0 +1,59 @@
+---
+import type { CourseBlock } from "../../../lib/legacy_kin/coursePreviewPoc";
+import {
+  legacyAssetUrl,
+  rewriteLegacyHtml,
+} from "../../../lib/legacy_kin/coursePreviewPoc";
+import {
+  getAccordionLayoutParts,
+  richTextHasVisibleContent,
+} from "../../../lib/legacy_kin/courseAccordionLayout";
+
+interface Props {
+  block: CourseBlock;
+}
+
+const { block } = Astro.props;
+const parts = getAccordionLayoutParts(block);
+---
+
+{
+  parts ? (
+    <div class="course-preview__accordion-layout legacy-course__accordion-layout">
+      {parts.introText &&
+      richTextHasVisibleContent(String(parts.introText.html ?? "")) ? (
+        <div
+          class="course-preview__richtext legacy-course__richtext course-preview__accordion-intro"
+          set:html={rewriteLegacyHtml(String(parts.introText.html ?? ""))}
+          data-legacy-component={parts.introText.legacyComponentId}
+        />
+      ) : null}
+      <div
+        class="course-preview__exercise legacy-course__exercise"
+        data-legacy-component={parts.accordion.legacyComponentId}
+      >
+        {(Array.isArray(parts.accordion.sections) ? parts.accordion.sections : []).map(
+          (section: { title: string; bodyHtml: string; iconSrc?: string }) => (
+            <details class="course-preview__exercise-section">
+              <summary set:html={section.title} />
+              {section.iconSrc ? (
+                <img
+                  class="course-preview__exercise-icon"
+                  src={legacyAssetUrl(section.iconSrc)}
+                  alt=""
+                  loading="lazy"
+                />
+              ) : null}
+              {section.bodyHtml ? (
+                <div
+                  class="course-preview__richtext"
+                  set:html={rewriteLegacyHtml(section.bodyHtml)}
+                />
+              ) : null}
+            </details>
+          ),
+        )}
+      </div>
+    </div>
+  ) : null
+}
