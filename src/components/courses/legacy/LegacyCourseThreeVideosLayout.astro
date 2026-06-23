@@ -1,0 +1,101 @@
+---
+import VimeoEmbed from "../../media/VimeoEmbed.astro";
+import type { CourseBlock } from "../../../lib/legacy_kin/coursePreviewPoc";
+import { rewriteLegacyHtml } from "../../../lib/legacy_kin/coursePreviewPoc";
+import {
+  getThreeVideosLayoutParts,
+  richTextHasVisibleContent,
+  unwrapTextVideoColumnHtml,
+} from "../../../lib/legacy_kin/courseThreeVideosLayout";
+
+interface Props {
+  block: CourseBlock;
+}
+
+const { block } = Astro.props;
+const parts = getThreeVideosLayoutParts(block);
+---
+
+{
+  parts ? (
+    <div class="course-preview__three-videos-layout legacy-course__three-videos-layout">
+      {parts.intro && richTextHasVisibleContent(String(parts.intro.html ?? "")) ? (
+        <div
+          class="three-videos-layout__intro course-preview__richtext legacy-course__richtext"
+          set:html={rewriteLegacyHtml(
+            unwrapTextVideoColumnHtml(String(parts.intro.html ?? "")),
+          )}
+          data-legacy-component={parts.intro.legacyComponentId}
+        />
+      ) : null}
+
+      <div class="three-videos-layout__row">
+        {parts.slots.map((slot) => (
+          <div
+            class="three-videos-layout__column"
+            data-legacy-component={slot.video.legacyComponentId}
+          >
+            {slot.video.title ? (
+              <h4 class="three-videos-layout__video-title">{String(slot.video.title)}</h4>
+            ) : null}
+            {String(slot.video.vimeoId ?? "").trim() ? (
+              <VimeoEmbed
+                vimeoId={String(slot.video.vimeoId).trim()}
+                title={slot.video.title ? String(slot.video.title) : "Course video"}
+              />
+            ) : null}
+            {slot.caption &&
+            richTextHasVisibleContent(String(slot.caption.html ?? "")) ? (
+              <div
+                class="three-videos-layout__caption course-preview__richtext legacy-course__richtext"
+                set:html={rewriteLegacyHtml(String(slot.caption.html ?? ""))}
+                data-legacy-component={slot.caption.legacyComponentId}
+              />
+            ) : null}
+          </div>
+        ))}
+      </div>
+
+      {parts.outro && richTextHasVisibleContent(String(parts.outro.html ?? "")) ? (
+        <div
+          class="three-videos-layout__outro course-preview__richtext legacy-course__richtext"
+          set:html={rewriteLegacyHtml(String(parts.outro.html ?? ""))}
+          data-legacy-component={parts.outro.legacyComponentId}
+        />
+      ) : null}
+    </div>
+  ) : null
+}
+
+<style>
+  .three-videos-layout__intro {
+    margin-bottom: 1rem;
+  }
+
+  .three-videos-layout__row {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin: 1.5rem 0;
+  }
+
+  .three-videos-layout__column {
+    flex: 1 1 300px;
+    min-width: 0;
+  }
+
+  .three-videos-layout__video-title {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .three-videos-layout__caption {
+    margin-top: 0.65rem;
+    font-size: 0.92rem;
+  }
+
+  .three-videos-layout__outro {
+    margin-top: 0.5rem;
+  }
+</style>

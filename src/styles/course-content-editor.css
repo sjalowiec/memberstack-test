@@ -392,6 +392,16 @@ body.course-editor-body {
   min-width: 0;
 }
 
+.course-editor__item-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .course-editor__item-type {
   font-size: 0.68rem;
   font-weight: 700;
@@ -598,7 +608,8 @@ body.course-editor-body {
   flex-direction: column;
 }
 
-#course-editor-edit-form[hidden] {
+#course-editor-edit-form[hidden],
+#course-editor-edit-empty[hidden] {
   display: none !important;
 }
 

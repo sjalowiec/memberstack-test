@@ -71,4 +71,32 @@ export const COURSE_HTML_SNIPPETS: CourseHtmlSnippet[] = [
   Important information goes here.
 </div>`,
   },
+  {
+    id: "text-image-row",
+    name: "Text + Image Row",
+    category: "layout",
+    html: `<div style="
+    display:flex;
+    gap:2rem;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    margin:1.5rem 0;
+">
+    <div style="flex:1;">
+        <h3>Your Heading Here</h3>
+
+        <p>
+            Add your text here.
+        </p>
+    </div>
+
+    <div style="width:40%; min-width:250px;">
+        <img
+            src="/challenge/images/v2/50/example.jpg"
+            alt=""
+            style="width:100%; height:auto; display:block;"
+        >
+    </div>
+</div>`,
+  },
 ];

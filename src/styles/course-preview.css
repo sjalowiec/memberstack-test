@@ -939,3 +939,64 @@ main.site-content:has(.course-preview--reader) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ============================================
+   Course content: numbered step lists (.kin-steps)
+   Use in rich text: <ol class="kin-steps"> or <ul class="kin-steps">
+   ============================================ */
+.kin-steps {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  counter-reset: step;
+}
+
+.kin-steps > li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 2.2rem 1fr;
+  gap: 0.75rem;
+  align-items: start;
+  margin-bottom: 0.9rem;
+}
+
+.kin-steps > li:last-child {
+  margin-bottom: 0;
+}
+
+.kin-steps > li::before {
+  content: counter(step);
+  grid-column: 1;
+  grid-row: 1 / -1;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: #4d6b2a;
+  color: #fff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Keep step body in the second column when a step has multiple block elements */
+.kin-steps > li > * {
+  grid-column: 2;
+  min-width: 0;
+}
+
+@media (max-width: 480px) {
+  .kin-steps > li {
+    grid-template-columns: 2rem 1fr;
+    gap: 0.65rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .kin-steps > li::before {
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: 0.875rem;
+  }
+}

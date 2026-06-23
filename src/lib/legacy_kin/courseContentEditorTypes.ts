@@ -6,11 +6,15 @@ export const TEXT_VIDEO_LAYOUT_TYPE = "textVideoLayout";
 /** Editor-only composite type; stored on disk as richText + image in one block. */
 export const TEXT_IMAGE_LAYOUT_TYPE = "textImageLayout";
 
+/** Editor-only composite: intro text, three videos, optional outro. */
+export const THREE_VIDEOS_LAYOUT_TYPE = "threeVideosLayout";
+
 export type EditorContentKind =
   | "richText"
   | "video"
   | "textVideoLayout"
   | "textImageLayout"
+  | "threeVideosLayout"
   | "image"
   | "imageWithCaption"
   | "download"
@@ -27,6 +31,7 @@ export const EDITOR_TYPE_META: Record<
   video: { label: "Video", color: "#9a4b6b", abbrev: "V" },
   textVideoLayout: { label: "Text + Video Layout", color: "#4a6741", abbrev: "TV" },
   textImageLayout: { label: "Text + Image Layout", color: "#4a5568", abbrev: "TI" },
+  threeVideosLayout: { label: "Three Videos with Text", color: "#7a4a6b", abbrev: "3V" },
   image: { label: "Image", color: "#5a7080", abbrev: "I" },
   imageWithCaption: { label: "Image with Caption", color: "#5a7080", abbrev: "IC" },
   download: { label: "Download", color: "#3f7a6a", abbrev: "D" },

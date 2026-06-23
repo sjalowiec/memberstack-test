@@ -2,6 +2,7 @@ import {
   EDITOR_TYPE_META,
   TEXT_IMAGE_LAYOUT_TYPE,
   TEXT_VIDEO_LAYOUT_TYPE,
+  THREE_VIDEOS_LAYOUT_TYPE,
   type ComponentRef,
   type EditorContentKind,
   type FlatContentItem,
@@ -33,6 +34,19 @@ import {
   TEXT_IMAGE_IMAGE_ROLE,
   TEXT_IMAGE_TEXT_ROLE,
 } from "../lib/legacy_kin/courseTextImageLayout";
+import {
+  DEFAULT_THREE_VIDEOS_CAPTION_HTML,
+  DEFAULT_THREE_VIDEOS_INTRO_HTML,
+  DEFAULT_THREE_VIDEOS_OUTRO_HTML,
+  getThreeVideosLayoutParts,
+  isThreeVideosLayoutBlock,
+  threeVideosCaptionRole,
+  THREE_VIDEOS_EDITOR_LAYOUT,
+  THREE_VIDEOS_INTRO_ROLE,
+  THREE_VIDEOS_OUTRO_ROLE,
+  threeVideosLayoutSummary,
+  threeVideosVideoRole,
+} from "../lib/legacy_kin/courseThreeVideosLayout";
 import { courseImageLinkAttrs } from "../lib/legacy_kin/courseImageLink";
 
 import {
@@ -90,7 +104,6 @@ const dom = {
   sectionTitleHint: null as HTMLElement | null,
   itemsList: null as HTMLElement | null,
   itemsEmpty: null as HTMLElement | null,
-  editPanel: null as HTMLElement | null,
   editEmpty: null as HTMLElement | null,
   editForm: null as HTMLElement | null,
   editHead: null as HTMLElement | null,
@@ -125,7 +138,6 @@ function bindDom() {
   dom.sectionTitleHint = document.getElementById("course-editor-section-title-hint");
   dom.itemsList = document.getElementById("course-editor-items");
   dom.itemsEmpty = document.getElementById("course-editor-items-empty");
-  dom.editPanel = document.getElementById("course-editor-edit-panel");
   dom.editEmpty = document.getElementById("course-editor-edit-empty");
   dom.editForm = document.getElementById("course-editor-edit-form");
   dom.editHead = document.getElementById("course-editor-edit-head");
@@ -450,6 +462,23 @@ function flattenLessonContent(lesson: LessonRecord): FlatContentItem[] {
       continue;
     }
 
+    if (isThreeVideosLayoutBlock(block)) {
+      const parts = getThreeVideosLayoutParts(block);
+      if (!parts) continue;
+      items.push({
+        blockSlug: String(block.slug ?? ""),
+        legacyComponentId: Number(parts.intro?.legacyComponentId ?? parts.slots[0]!.video.legacyComponentId),
+        type: THREE_VIDEOS_LAYOUT_TYPE,
+        component: {
+          type: THREE_VIDEOS_LAYOUT_TYPE,
+          intro: parts.intro,
+          slots: parts.slots,
+          outro: parts.outro,
+        },
+      });
+      continue;
+    }
+
     if (isTextImageLayoutBlock(block)) {
       const parts = getTextImageLayoutParts(block);
       if (!parts) continue;
@@ -505,7 +534,9 @@ function contentItemMatches(a: ComponentRef | null, b: ComponentRef): boolean {
     a.type === TEXT_VIDEO_LAYOUT_TYPE ||
     b.type === TEXT_VIDEO_LAYOUT_TYPE ||
     a.type === TEXT_IMAGE_LAYOUT_TYPE ||
-    b.type === TEXT_IMAGE_LAYOUT_TYPE
+    b.type === TEXT_IMAGE_LAYOUT_TYPE ||
+    a.type === THREE_VIDEOS_LAYOUT_TYPE ||
+    b.type === THREE_VIDEOS_LAYOUT_TYPE
   ) {
     return a.blockSlug === b.blockSlug && a.type === b.type;
   }
@@ -529,6 +560,22 @@ function contentSummary(component: Record<string, unknown>) {
       });
     }
     return "Text + video layout";
+  }
+
+  if (component.type === THREE_VIDEOS_LAYOUT_TYPE) {
+    const intro = component.intro as Record<string, unknown> | null | undefined;
+    const slots = component.slots as
+      | [
+          { video: Record<string, unknown>; caption: Record<string, unknown> | null },
+          { video: Record<string, unknown>; caption: Record<string, unknown> | null },
+          { video: Record<string, unknown>; caption: Record<string, unknown> | null },
+        ]
+      | undefined;
+    const outro = component.outro as Record<string, unknown> | null | undefined;
+    if (slots?.length === 3) {
+      return threeVideosLayoutSummary({ intro: intro ?? null, slots, outro: outro ?? null });
+    }
+    return "Three videos with text";
   }
 
   if (component.type === TEXT_IMAGE_LAYOUT_TYPE) {
@@ -754,6 +801,74 @@ function createTextImageLayoutBlock(lesson: LessonRecord): LessonRecord {
       },
     ],
   };
+}
+
+function createThreeVideosLayoutBlock(lesson: LessonRecord): LessonRecord {
+  const timestamp = Date.now();
+  let nextId = maxLegacyComponentIdInCourse();
+  const makeId = () => nextId++;
+
+  const components: Record<string, unknown>[] = [
+    {
+      type: "richText",
+      html: DEFAULT_THREE_VIDEOS_INTRO_HTML,
+      legacyComponentId: makeId(),
+      order: 1,
+      layoutRole: THREE_VIDEOS_INTRO_ROLE,
+    },
+  ];
+
+  for (const slot of [1, 2, 3] as const) {
+    components.push(
+      {
+        type: "video",
+        vimeoId: "",
+        title: `Video Title ${slot}`,
+        legacyComponentId: makeId(),
+        order: components.length + 1,
+        layoutRole: threeVideosVideoRole(slot),
+      },
+      {
+        type: "richText",
+        html: DEFAULT_THREE_VIDEOS_CAPTION_HTML,
+        legacyComponentId: makeId(),
+        order: components.length + 1,
+        layoutRole: threeVideosCaptionRole(slot),
+      },
+    );
+  }
+
+  components.push({
+    type: "richText",
+    html: DEFAULT_THREE_VIDEOS_OUTRO_HTML,
+    legacyComponentId: makeId(),
+    order: components.length + 1,
+    layoutRole: THREE_VIDEOS_OUTRO_ROLE,
+  });
+
+  return {
+    title: "Three Videos with Text",
+    slug: `three-videos-${timestamp}`,
+    order: nextBlockOrder(lesson),
+    legacy: {
+      assignId: nextAssignId(lesson),
+      blockType: "HTML",
+      editorLayout: THREE_VIDEOS_EDITOR_LAYOUT,
+    },
+    components,
+  };
+}
+
+function reassignThreeVideosLayoutIds(block: LessonRecord, startId: number) {
+  const parts = getThreeVideosLayoutParts(block);
+  if (!parts) return;
+  let id = startId;
+  if (parts.intro) parts.intro.legacyComponentId = id++;
+  for (const slot of parts.slots) {
+    slot.video.legacyComponentId = id++;
+    if (slot.caption) slot.caption.legacyComponentId = id++;
+  }
+  if (parts.outro) parts.outro.legacyComponentId = id++;
 }
 
 function createComponent(kind: string): Record<string, unknown> {
@@ -1157,6 +1272,102 @@ function updateTextVideoLayoutPreview() {
   `;
 }
 
+function applyThreeVideosPatch(patch: {
+  introHtml?: string;
+  outroHtml?: string;
+  slot?: 1 | 2 | 3;
+  title?: string | null;
+  vimeoId?: string;
+  captionHtml?: string;
+}) {
+  if (!selectedLessonSlug || !contentEditingRef) return;
+  const lesson = getLessonDraft(selectedLessonSlug);
+  if (!lesson) return;
+  const block = findBlock(lesson, contentEditingRef.blockSlug);
+  if (!block || !isThreeVideosLayoutBlock(block)) return;
+  const parts = getThreeVideosLayoutParts(block);
+  if (!parts) return;
+
+  if (patch.introHtml !== undefined && parts.intro) {
+    parts.intro.html = patch.introHtml;
+    parts.intro.layoutRole = THREE_VIDEOS_INTRO_ROLE;
+  }
+
+  if (patch.outroHtml !== undefined && parts.outro) {
+    parts.outro.html = patch.outroHtml;
+    parts.outro.layoutRole = THREE_VIDEOS_OUTRO_ROLE;
+  }
+
+  if (patch.slot) {
+    const slotParts = parts.slots[patch.slot - 1];
+    if (!slotParts) return;
+    if (patch.title !== undefined) slotParts.video.title = patch.title;
+    if (patch.vimeoId !== undefined) slotParts.video.vimeoId = patch.vimeoId;
+    slotParts.video.layoutRole = threeVideosVideoRole(patch.slot);
+    if (patch.captionHtml !== undefined && slotParts.caption) {
+      slotParts.caption.html = patch.captionHtml;
+      slotParts.caption.layoutRole = threeVideosCaptionRole(patch.slot);
+    }
+  }
+
+  setLessonDraft(selectedLessonSlug, lesson);
+  renderContentList();
+  updateThreeVideosLayoutPreview();
+  updateSaveState();
+}
+
+function updateThreeVideosLayoutPreview() {
+  const preview = dom.editFields?.querySelector("#ce-3v-layout-preview") as HTMLElement | null;
+  if (!preview || !selectedLessonSlug || !contentEditingRef) return;
+  const lesson = getLessonDraft(selectedLessonSlug);
+  const block = lesson ? findBlock(lesson, contentEditingRef.blockSlug) : null;
+  const parts = block ? getThreeVideosLayoutParts(block) : null;
+  if (!parts) return;
+
+  const introHtml =
+    parts.intro && richTextHasVisibleContent(String(parts.intro.html ?? ""))
+      ? rewriteLegacyHtml(unwrapTextVideoColumnHtml(String(parts.intro.html ?? "")))
+      : "";
+  const outroHtml =
+    parts.outro && richTextHasVisibleContent(String(parts.outro.html ?? ""))
+      ? rewriteLegacyHtml(String(parts.outro.html ?? ""))
+      : "";
+  const blockTitle = block ? blockTitleForEditing(block.title) : "";
+
+  const columns = parts.slots
+    .map((slot) => {
+      const title = slot.video.title ? String(slot.video.title) : "";
+      const vimeoId = String(slot.video.vimeoId ?? "").trim();
+      const captionHtml =
+        slot.caption && richTextHasVisibleContent(String(slot.caption.html ?? ""))
+          ? rewriteLegacyHtml(String(slot.caption.html ?? ""))
+          : "";
+      return `
+        <div class="three-videos-layout__column" style="flex:1 1 300px;min-width:0">
+          ${title ? `<h4 style="margin:0 0 0.5rem;font-size:1rem;font-weight:700">${escapeHtml(title)}</h4>` : ""}
+          ${
+            vimeoId
+              ? `<div class="course-editor__video-preview"><iframe title="Video preview" src="https://player.vimeo.com/video/${escapeHtml(vimeoId)}" allowfullscreen></iframe></div>`
+              : `<div class="course-editor__video-preview" style="display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:0.82rem;background:#f1f5f9">Video preview</div>`
+          }
+          ${captionHtml ? `<div class="course-editor__prose" style="margin-top:0.65rem;font-size:0.92rem">${captionHtml}</div>` : ""}
+        </div>
+      `;
+    })
+    .join("");
+
+  preview.innerHTML = `
+    <div class="course-preview__three-videos-layout">
+      ${blockTitle ? `<h3 style="margin:0 0 0.75rem;font-size:1.05rem;font-weight:700">${escapeHtml(blockTitle)}</h3>` : ""}
+      ${introHtml ? `<div class="course-editor__prose" style="margin-bottom:1rem">${introHtml}</div>` : ""}
+      <div class="course-editor__layout-preview three-videos-layout__row" style="display:flex;gap:1.5rem;flex-wrap:wrap;margin:1rem 0">
+        ${columns}
+      </div>
+      ${outroHtml ? `<div class="course-editor__prose" style="margin-top:0.5rem">${outroHtml}</div>` : ""}
+    </div>
+  `;
+}
+
 function updateCombineNextButton() {
   const btn = dom.editFields?.querySelector("#ce-tv-combine-next") as HTMLButtonElement | null;
   if (!btn || !contentEditingRef) return;
@@ -1469,6 +1680,11 @@ function openContentEdit(ref: ComponentRef) {
     return;
   }
 
+  if (ref.type === THREE_VIDEOS_LAYOUT_TYPE) {
+    openThreeVideosLayoutEdit(ref);
+    return;
+  }
+
   if (ref.type === "exerciseAccordion" && selectedLessonSlug) {
     const lesson = getLessonDraft(selectedLessonSlug);
     if (lesson && isAccordionLayoutItem(ref, lesson)) {
@@ -1493,8 +1709,28 @@ function openContentEdit(ref: ComponentRef) {
 
   dom.editFields.innerHTML = "";
 
+  const lesson = selectedLessonSlug ? getLessonDraft(selectedLessonSlug) : null;
+
   if (component.type === "richText") {
-    mountRichTextEditor(dom.editFields, String(component.html ?? ""));
+    const block = lesson ? findBlock(lesson, ref.blockSlug) : null;
+    dom.editFields.innerHTML = `
+      <label class="course-editor__field"><span class="course-editor__field-label">Section title</span>
+        <input class="course-editor__input" id="ce-rt-section-title" type="text" placeholder="Optional heading shown above this block">
+        <span class="course-editor__field-hint">Shown as the block heading on the lesson page. Leave blank for no heading.</span></label>
+      <div class="course-editor__field">
+        <span class="course-editor__field-label">Text</span>
+        <div id="ce-rt-body-editor"></div>
+      </div>
+    `;
+    const sectionTitleEl = dom.editFields.querySelector("#ce-rt-section-title") as HTMLInputElement;
+    sectionTitleEl.value = block ? blockTitleForEditing(block.title) : "";
+    sectionTitleEl.addEventListener("input", () => {
+      applyBlockSectionTitle(ref.blockSlug, sectionTitleEl.value);
+    });
+    mountRichTextEditor(
+      dom.editFields.querySelector("#ce-rt-body-editor") as HTMLElement,
+      String(component.html ?? ""),
+    );
   } else if (component.type === "video") {
     dom.editFields.innerHTML = `
       <label class="course-editor__field"><span class="course-editor__field-label">Title</span>
@@ -1528,7 +1764,8 @@ function openContentEdit(ref: ComponentRef) {
         <input class="course-editor__input" id="ce-dl-label" type="text" placeholder="Setup checklist (PDF)">
         <span class="course-editor__field-hint">What the learner sees on the button</span></label>
       <label class="course-editor__field"><span class="course-editor__field-label">File path</span>
-        <input class="course-editor__input" id="ce-dl-file" type="text" placeholder="quickstart_checklist.pdf"></label>
+        <input class="course-editor__input" id="ce-dl-file" type="text" placeholder="downloads/quickstart_checklist.pdf">
+        <span class="course-editor__field-hint">Stored exactly as entered — e.g. downloads/file.pdf or legacy filename only</span></label>
     `;
     const labelEl = dom.editFields.querySelector("#ce-dl-label") as HTMLInputElement;
     const fileEl = dom.editFields.querySelector("#ce-dl-file") as HTMLInputElement;
@@ -1929,6 +2166,9 @@ function openTextVideoLayoutEdit(ref: ComponentRef) {
   `;
 
   dom.editFields.innerHTML = `
+    <label class="course-editor__field"><span class="course-editor__field-label">Section title</span>
+      <input class="course-editor__input" id="ce-tv-section-title" type="text" placeholder="Optional heading shown above this block">
+      <span class="course-editor__field-hint">Shown as the block heading on the lesson page. Leave blank for no heading.</span></label>
     <div class="course-editor__field">
       <span class="course-editor__field-label">Left column text</span>
       <div id="ce-tv-left-editor"></div>
@@ -1955,6 +2195,12 @@ function openTextVideoLayoutEdit(ref: ComponentRef) {
       Combine with next text item
     </button>
   `;
+
+  const sectionTitleEl = dom.editFields.querySelector("#ce-tv-section-title") as HTMLInputElement;
+  sectionTitleEl.value = block ? blockTitleForEditing(block.title) : "";
+  sectionTitleEl.addEventListener("input", () => {
+    applyBlockSectionTitle(ref.blockSlug, sectionTitleEl.value);
+  });
 
   const leftWrap = dom.editFields.querySelector("#ce-tv-left-editor") as HTMLElement;
   mountRichTextEditor(
@@ -2109,10 +2355,149 @@ function openTextImageLayoutEdit(ref: ComponentRef) {
   renderContentList();
 }
 
+function openThreeVideosLayoutEdit(ref: ComponentRef) {
+  if (!selectedLessonSlug || !dom.editForm || !dom.editEmpty || !dom.editFields || !dom.editHead) return;
+  const lesson = getLessonDraft(selectedLessonSlug);
+  const block = lesson ? findBlock(lesson, ref.blockSlug) : null;
+  const parts = block ? getThreeVideosLayoutParts(block) : null;
+  if (!parts || !block) return;
+
+  contentEditingRef = { ...ref };
+  dom.editEmpty.hidden = true;
+  dom.editForm.hidden = false;
+  refreshSnippetInsertButtons();
+
+  const meta = typeMeta(THREE_VIDEOS_LAYOUT_TYPE);
+  dom.editHead.innerHTML = `
+    <span class="course-editor__item-icon" style="background:${meta.color}22;color:${meta.color}">${meta.abbrev}</span>
+    <h3 class="course-editor__panel-title">Editing ${meta.label.toLowerCase()}</h3>
+  `;
+
+  const slotFields = ([1, 2, 3] as const)
+    .map(
+      (slot) => `
+    <div class="course-editor__field course-editor__list-card">
+      <span class="course-editor__field-label">Video ${slot}</span>
+      <label class="course-editor__field"><span class="course-editor__field-label">Video title</span>
+        <input class="course-editor__input" id="ce-3v-title-${slot}" type="text" placeholder="Video Title ${slot}"></label>
+      <label class="course-editor__field"><span class="course-editor__field-label">Vimeo ID</span>
+        <input class="course-editor__input" id="ce-3v-id-${slot}" type="text" placeholder="76979871">
+        <span class="course-editor__field-hint">The number from the video URL</span></label>
+      <div id="ce-3v-video-preview-${slot}" class="course-editor__video-preview" hidden></div>
+      <span class="course-editor__field-label">Caption (optional)</span>
+      <div id="ce-3v-caption-editor-${slot}"></div>
+    </div>
+  `,
+    )
+    .join("");
+
+  dom.editFields.innerHTML = `
+    <label class="course-editor__field"><span class="course-editor__field-label">Section title</span>
+      <input class="course-editor__input" id="ce-3v-section-title" type="text" placeholder="Heading shown above this block">
+      <span class="course-editor__field-hint">Also editable in the Section title field above the item list.</span></label>
+    <div class="course-editor__field">
+      <span class="course-editor__field-label">Intro text</span>
+      <span class="course-editor__field-hint" style="margin-bottom:0.35rem">Optional text above the videos (not the section heading).</span>
+      <div id="ce-3v-intro-editor"></div>
+    </div>
+    ${slotFields}
+    <div class="course-editor__field">
+      <span class="course-editor__field-label">Text below videos</span>
+      <span class="course-editor__field-hint" style="margin-bottom:0.35rem">Leave blank to hide on the lesson page.</span>
+      <div id="ce-3v-outro-editor"></div>
+    </div>
+    <div class="course-editor__field">
+      <span class="course-editor__field-label">Layout preview</span>
+      <div id="ce-3v-layout-preview"></div>
+    </div>
+  `;
+
+  const sectionTitleEl = dom.editFields.querySelector("#ce-3v-section-title") as HTMLInputElement;
+  sectionTitleEl.value = blockTitleForEditing(block.title);
+  sectionTitleEl.addEventListener("input", () => {
+    applyBlockSectionTitle(String(block.slug), sectionTitleEl.value);
+    syncSectionTitleField();
+    updateThreeVideosLayoutPreview();
+  });
+
+  const introWrap = dom.editFields.querySelector("#ce-3v-intro-editor") as HTMLElement;
+  mountRichTextEditor(
+    introWrap,
+    String(parts.intro?.html ?? ""),
+    (html) => applyThreeVideosPatch({ introHtml: html }),
+    { tabs: ["html", "preview"] },
+  );
+
+  const outroWrap = dom.editFields.querySelector("#ce-3v-outro-editor") as HTMLElement;
+  mountRichTextEditor(
+    outroWrap,
+    String(parts.outro?.html ?? ""),
+    (html) => applyThreeVideosPatch({ outroHtml: html }),
+    { tabs: ["html", "preview"] },
+  );
+
+  for (const slot of [1, 2, 3] as const) {
+    const slotParts = parts.slots[slot - 1]!;
+    const captionWrap = dom.editFields.querySelector(`#ce-3v-caption-editor-${slot}`) as HTMLElement;
+    mountRichTextEditor(
+      captionWrap,
+      String(slotParts.caption?.html ?? ""),
+      (html) => applyThreeVideosPatch({ slot, captionHtml: html }),
+      { tabs: ["html", "preview"] },
+    );
+
+    const titleEl = dom.editFields.querySelector(`#ce-3v-title-${slot}`) as HTMLInputElement;
+    const idEl = dom.editFields.querySelector(`#ce-3v-id-${slot}`) as HTMLInputElement;
+    const videoPreview = dom.editFields.querySelector(
+      `#ce-3v-video-preview-${slot}`,
+    ) as HTMLElement;
+    titleEl.value = String(slotParts.video.title ?? "");
+    idEl.value = String(slotParts.video.vimeoId ?? "");
+
+    const syncVideo = () => {
+      applyThreeVideosPatch({
+        slot,
+        title: titleEl.value || null,
+        vimeoId: idEl.value.trim(),
+      });
+      const vimeoId = idEl.value.trim();
+      if (vimeoId) {
+        videoPreview.hidden = false;
+        videoPreview.innerHTML = `<iframe title="Video preview" src="https://player.vimeo.com/video/${escapeHtml(vimeoId)}" allowfullscreen></iframe>`;
+      } else {
+        videoPreview.hidden = true;
+        videoPreview.innerHTML = "";
+      }
+    };
+    titleEl.addEventListener("input", syncVideo);
+    idEl.addEventListener("input", syncVideo);
+    syncVideo();
+  }
+
+  updateThreeVideosLayoutPreview();
+  renderContentList();
+}
+
 function blockTitleForEditing(title: unknown): string {
   const trimmed = typeof title === "string" ? title.trim() : "";
   if (!trimmed || /^\(untitled assign \d+\)$/i.test(trimmed)) return "";
   return trimmed;
+}
+
+function contentItemBlockTitle(lesson: LessonRecord, blockSlug: string): string {
+  const block = findBlock(lesson, blockSlug);
+  if (!block) return "";
+  return blockTitleForEditing(block.title);
+}
+
+function contentItemTypeLabel(item: FlatContentItem): string {
+  const kind =
+    item.type === TEXT_VIDEO_LAYOUT_TYPE ||
+    item.type === TEXT_IMAGE_LAYOUT_TYPE ||
+    item.type === THREE_VIDEOS_LAYOUT_TYPE
+      ? item.type
+      : imageEditorKind(item.component);
+  return typeMeta(kind).label;
 }
 
 function contentBlocks(lesson: LessonRecord) {
@@ -2168,6 +2553,47 @@ function syncSectionTitleField() {
     return;
   }
 
+  if (selectedBlock && isThreeVideosLayoutBlock(selectedBlock)) {
+    dom.sectionTitleWrap.hidden = false;
+    dom.sectionTitleInput.disabled = false;
+    dom.sectionTitleInput.value = blockTitleForEditing(selectedBlock.title);
+    if (dom.sectionTitleHint) {
+      dom.sectionTitleHint.hidden = false;
+      dom.sectionTitleHint.textContent =
+        "Shown as the block heading on the lesson page. You can also edit it in the Section title field on the right.";
+    }
+    return;
+  }
+
+  if (
+    selectedBlock &&
+    contentEditingRef?.type === "richText" &&
+    !isTextImageLayoutBlock(selectedBlock) &&
+    !isThreeVideosLayoutBlock(selectedBlock)
+  ) {
+    dom.sectionTitleWrap.hidden = false;
+    dom.sectionTitleInput.disabled = false;
+    dom.sectionTitleInput.value = blockTitleForEditing(selectedBlock.title);
+    if (dom.sectionTitleHint) {
+      dom.sectionTitleHint.hidden = false;
+      dom.sectionTitleHint.textContent =
+        "Shown as the block heading on the lesson page. You can also edit it in the Section title field on the right.";
+    }
+    return;
+  }
+
+  if (selectedBlock && isTextVideoLayoutBlock(selectedBlock)) {
+    dom.sectionTitleWrap.hidden = false;
+    dom.sectionTitleInput.disabled = false;
+    dom.sectionTitleInput.value = blockTitleForEditing(selectedBlock.title);
+    if (dom.sectionTitleHint) {
+      dom.sectionTitleHint.hidden = false;
+      dom.sectionTitleHint.textContent =
+        "Shown as the block heading on the lesson page. You can also edit it in the Section title field on the right.";
+    }
+    return;
+  }
+
   const block = getEditableSectionBlock();
   if (!block) {
     dom.sectionTitleWrap.hidden = blocks.length === 0;
@@ -2192,13 +2618,30 @@ function syncSectionTitleField() {
   if (dom.sectionTitleHint) dom.sectionTitleHint.hidden = true;
 }
 
-function applySectionTitleFromInput(value: string) {
-  const block = getEditableSectionBlock();
-  if (!block || !selectedLessonSlug) return;
+function applyBlockSectionTitle(blockSlug: string, value: string) {
+  if (!selectedLessonSlug) return;
+  const lesson = getLessonDraft(selectedLessonSlug);
+  if (!lesson) return;
+  const block = findBlock(lesson, blockSlug);
+  if (!block) return;
   block.title = value;
-  setLessonDraft(selectedLessonSlug, getLessonDraft(selectedLessonSlug)!);
+  setLessonDraft(selectedLessonSlug, lesson);
   updateSaveState();
   syncRawTextarea();
+  renderContentList();
+  for (const selector of ["#ce-3v-section-title", "#ce-rt-section-title", "#ce-tv-section-title"]) {
+    const panelSectionTitle = dom.editFields?.querySelector(selector) as HTMLInputElement | null;
+    if (panelSectionTitle && panelSectionTitle.value !== value) {
+      panelSectionTitle.value = value;
+    }
+  }
+  updateThreeVideosLayoutPreview();
+}
+
+function applySectionTitleFromInput(value: string) {
+  const block = getEditableSectionBlock();
+  if (!block?.slug || !selectedLessonSlug) return;
+  applyBlockSectionTitle(String(block.slug), value);
 }
 
 function syncLessonTitleInput() {
@@ -2262,14 +2705,23 @@ function renderContentList() {
 
   dom.itemsList.innerHTML = items
     .map((item, index) => {
-      const meta = typeMeta(imageEditorKind(item.component));
+      const meta = typeMeta(
+        item.type === TEXT_VIDEO_LAYOUT_TYPE ||
+          item.type === TEXT_IMAGE_LAYOUT_TYPE ||
+          item.type === THREE_VIDEOS_LAYOUT_TYPE
+          ? (item.type as EditorContentKind)
+          : imageEditorKind(item.component),
+      );
+      const blockTitle = contentItemBlockTitle(lesson, item.blockSlug);
+      const typeLabel = contentItemTypeLabel(item);
       const selected = contentItemMatches(contentEditingRef, item);
       return `
         <article class="course-editor__item ${selected ? "is-selected" : ""}" data-item-index="${index}" draggable="true">
           <span class="course-editor__item-grip" title="Drag to reorder">⋮⋮</span>
           <span class="course-editor__item-icon" style="background:${meta.color}1c;color:${meta.color}">${meta.abbrev}</span>
           <div class="course-editor__item-body">
-            <div class="course-editor__item-type" style="color:${meta.color}">${meta.label}</div>
+            ${blockTitle ? `<div class="course-editor__item-title">${escapeHtml(blockTitle)}</div>` : ""}
+            <div class="course-editor__item-type" style="color:${meta.color}">${escapeHtml(typeLabel)}</div>
             <div class="course-editor__item-summary">${escapeHtml(contentSummary(item.component))}</div>
           </div>
           <div class="course-editor__item-actions">
@@ -2434,6 +2886,16 @@ function moveContentItem(fromIndex: number, toIndex: number) {
     return;
   }
 
+  if (current.type === THREE_VIDEOS_LAYOUT_TYPE) {
+    moveBlockRelativeToTarget(lesson, current.blockSlug, target.blockSlug, moveDown);
+    reassignAllContentOrders(lesson);
+    setLessonDraft(selectedLessonSlug, lesson);
+    contentEditingRef = { ...current };
+    renderContentList();
+    updateSaveState();
+    return;
+  }
+
   if (isAccordionLayoutItem(current, lesson)) {
     moveBlockRelativeToTarget(lesson, current.blockSlug, target.blockSlug, moveDown);
     reassignAllContentOrders(lesson);
@@ -2467,6 +2929,28 @@ function moveContentItem(fromIndex: number, toIndex: number) {
   }
 
   if (target.type === TEXT_IMAGE_LAYOUT_TYPE) {
+    const comp = removeComponentFromBlock(
+      lesson,
+      current.blockSlug,
+      current.legacyComponentId,
+      current.type,
+    );
+    if (!comp) return;
+    pruneEmptyBlocks(lesson);
+    insertComponentBesideBlock(lesson, comp, target.blockSlug, moveDown);
+    reassignAllContentOrders(lesson);
+    setLessonDraft(selectedLessonSlug, lesson);
+    contentEditingRef = {
+      blockSlug: current.blockSlug,
+      legacyComponentId: Number(comp.legacyComponentId),
+      type: String(comp.type),
+    };
+    renderContentList();
+    updateSaveState();
+    return;
+  }
+
+  if (target.type === THREE_VIDEOS_LAYOUT_TYPE) {
     const comp = removeComponentFromBlock(
       lesson,
       current.blockSlug,
@@ -2583,6 +3067,42 @@ function duplicateContentItem(ref: ComponentRef) {
       legacyComponentId: Number(parts.leftText.legacyComponentId),
       type: TEXT_VIDEO_LAYOUT_TYPE,
       pairedLegacyComponentId: Number(parts.video.legacyComponentId),
+    };
+    openContentEdit(contentEditingRef);
+    flashToast("Duplicated");
+    updateSaveState();
+    return;
+  }
+
+  if (ref.type === THREE_VIDEOS_LAYOUT_TYPE) {
+    const block = findBlock(lesson, ref.blockSlug);
+    if (!block) return;
+    const clone = JSON.parse(JSON.stringify(block)) as LessonRecord;
+    const timestamp = Date.now();
+    clone.slug = `three-videos-${timestamp}`;
+    clone.order = nextBlockOrder(lesson);
+    clone.legacy = {
+      ...(clone.legacy as Record<string, unknown>),
+      assignId: nextAssignId(lesson),
+      editorLayout: THREE_VIDEOS_EDITOR_LAYOUT,
+    };
+    reassignThreeVideosLayoutIds(clone, maxLegacyComponentIdInCourse());
+
+    const blocks = (lesson.blocks ?? []) as LessonRecord[];
+    const index = blocks.findIndex((item) => item.slug === ref.blockSlug);
+    blocks.splice(index + 1, 0, clone);
+    lesson.blocks = blocks;
+    reassignAllContentOrders(lesson);
+    setLessonDraft(selectedLessonSlug, lesson);
+
+    const parts = getThreeVideosLayoutParts(clone);
+    if (!parts) return;
+    contentEditingRef = {
+      blockSlug: String(clone.slug),
+      legacyComponentId: Number(
+        parts.intro?.legacyComponentId ?? parts.slots[0]!.video.legacyComponentId,
+      ),
+      type: THREE_VIDEOS_LAYOUT_TYPE,
     };
     openContentEdit(contentEditingRef);
     flashToast("Duplicated");
@@ -2732,6 +3252,19 @@ function deleteContentItem(ref: ComponentRef) {
     return;
   }
 
+  if (ref.type === THREE_VIDEOS_LAYOUT_TYPE) {
+    removeBlockFromLesson(lesson, ref.blockSlug);
+    reassignAllContentOrders(lesson);
+    setLessonDraft(selectedLessonSlug, lesson);
+    if (contentItemMatches(contentEditingRef, ref)) {
+      contentEditingRef = null;
+      hideEditFormPanel();
+    }
+    renderContentList();
+    updateSaveState();
+    return;
+  }
+
   if (isAccordionLayoutItem(ref, lesson)) {
     removeBlockFromLesson(lesson, ref.blockSlug);
     reassignAllContentOrders(lesson);
@@ -2806,6 +3339,27 @@ function appendContentItem(kind: string) {
     openContentEdit(contentEditingRef);
     updateSaveState();
     flashToast(`Added ${typeMeta(TEXT_IMAGE_LAYOUT_TYPE).label}`);
+    return;
+  }
+
+  if (kind === THREE_VIDEOS_LAYOUT_TYPE) {
+    if (!Array.isArray(lesson.blocks)) lesson.blocks = [];
+    const block = createThreeVideosLayoutBlock(lesson);
+    (lesson.blocks as LessonRecord[]).push(block);
+    setLessonDraft(selectedLessonSlug, lesson);
+
+    const parts = getThreeVideosLayoutParts(block);
+    if (!parts) return;
+    contentEditingRef = {
+      blockSlug: String(block.slug),
+      legacyComponentId: Number(
+        parts.intro?.legacyComponentId ?? parts.slots[0]!.video.legacyComponentId,
+      ),
+      type: THREE_VIDEOS_LAYOUT_TYPE,
+    };
+    openContentEdit(contentEditingRef);
+    updateSaveState();
+    flashToast(`Added ${typeMeta(THREE_VIDEOS_LAYOUT_TYPE).label}`);
     return;
   }
 

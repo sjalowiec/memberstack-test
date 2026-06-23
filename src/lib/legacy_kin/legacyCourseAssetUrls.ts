@@ -24,8 +24,16 @@ export function legacyAssetUrl(src: string): string {
   return `${LEGACY_ASSET_ORIGIN}/${trimmed.replace(/^\//, "")}`;
 }
 
+/** Resolve a download component filename to an href without rewriting stored values. */
 export function downloadUrl(filename: string): string {
-  return `${LEGACY_DOWNLOAD_BASE}/${filename.replace(/^\//, "")}`;
+  const trimmed = filename.trim();
+  if (!trimmed) return trimmed;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith("//")) return `https:${trimmed}`;
+  const rootRelative = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  if (isLocalPublicAssetPath(rootRelative)) return rootRelative;
+  if (trimmed.startsWith("/")) return `${LEGACY_ASSET_ORIGIN}${trimmed}`;
+  return `${LEGACY_DOWNLOAD_BASE}/${trimmed.replace(/^\//, "")}`;
 }
 
 function rewriteAttributeUrl(

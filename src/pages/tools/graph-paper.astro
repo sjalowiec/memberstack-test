@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
 import toolsData from "../../../data/tools.json";
+import "../../styles/wizard.css";
 
 const tools = toolsData as Array<{
   href?: string;
@@ -34,7 +35,7 @@ const presets = [
   description="Download printable knitters graph paper based on your stitch and row gauge. Choose US Letter or Metric A4 and download a ready-made PDF."
   toolPrintTitle="Knitters Graph Paper"
 >
-  <main class="wizard-page">
+  <div class="wizard-page">
     <div class="wizard-shell">
       <WizardBackLink className="back-link" />
 
@@ -162,16 +163,9 @@ const presets = [
         </section>
       </div>
     </div>
-  </main>
+  </div>
 
   <style>
-    .wizard-page {
-      padding-top: 0;
-      padding-bottom: 3rem;
-      min-height: 100vh;
-      background: var(--page-bg);
-    }
-
     .wizard-shell {
       max-width: 800px;
       margin: 0 auto;

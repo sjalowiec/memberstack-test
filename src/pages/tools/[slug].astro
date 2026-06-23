@@ -13,7 +13,14 @@ export async function getStaticPaths() {
   // Exclude wizards that have dedicated page files (to avoid route conflicts)
   // gauge-difference is retired and redirects to gauge-comparison via its dedicated page file
   // gauge-conversion-calculator is retired and redirects to pattern-conversion via its dedicated page file
-  const excludedSlugs = ['hand-machine-blanket', 'gauge-calculator', 'gauge-difference', 'gauge-conversion-calculator'];
+  const excludedSlugs = [
+    'hand-machine-blanket',
+    'gauge-calculator',
+    'gauge-difference',
+    'gauge-conversion-calculator',
+    'graph-paper',
+    'pattern-conversion',
+  ];
   
   return wizards
     .filter((wizard) => !excludedSlugs.includes(wizard.data.slug))
@@ -99,7 +106,9 @@ const hasWizardFlow = data.wizardFlow && data.wizardFlow.options && data.wizardF
 <style>
   .kbm-main {
     min-height: 60vh;
-    padding: 2rem 0;
+    /* Clear fixed header (incl. beta strip); global main { padding-top } loses to shorthand padding */
+    padding-top: calc(var(--header-height, 170px) + 1.5rem + var(--kbm-env-banner-h, 0px));
+    padding-bottom: 2rem;
   }
   
   .wizard-container {
