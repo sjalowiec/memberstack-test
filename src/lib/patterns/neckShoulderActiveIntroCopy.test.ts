@@ -147,13 +147,13 @@ describe("renderNeckShoulderChartIntroBlockHtml", () => {
       chart: r.neckShoulderShapingChart,
     });
     const helpIdx = html.indexOf("New to shaping necklines?");
-    const introIdx = html.indexOf("Center Neckline:");
+    const introIdx = html.indexOf("Back neck (three stages):");
     expect(helpIdx).toBeGreaterThanOrEqual(0);
     expect(introIdx).toBeGreaterThan(helpIdx);
     expect(html).toContain(`data-sleeveless-help-video="${NECKLINE_SHAPING_HELP_VIDEO_KEY}"`);
     expect(html).toContain("process of dividing and shaping a neckline");
-    expect(html).toContain("glossary-tooltip-placeholder");
-    expect(html).toContain("Scrap off</span>");
+    expect(html).toMatch(/place the center \d+ neckline stitches in hold/i);
+    expect(html).toContain("Stage 3");
   });
 });
 

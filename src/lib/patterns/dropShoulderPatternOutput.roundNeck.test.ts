@@ -156,8 +156,9 @@ describe("generateDropShoulderPattern round-neck front instructions", () => {
     expect(result.debug.shoulderStitches).toBe(28);
 
     expect(text).toMatch(/Cast on 42 stitches for the left front/i);
-    expect(text).toMatch(/At RC:176, bind off 5 stitches at the center-front \(neck\) edge\./);
-    expect(text).toMatch(/decrease 1 stitch at the neck edge every other row 9 times/);
+    expect(text).toMatch(/At RC:176, bind off 4 stitches at the center-front \(neck\) edge\./);
+    expect(text).toMatch(/bind off 3, then 2 stitches on alternate \(neck-edge\) rows\./);
+    expect(text).toMatch(/Decrease 1 stitch at the neck edge every other row 5 times/i);
     expect(text).toMatch(/When 28 stitches remain, knit even to RC:198/);
 
     const backRepl = buildDropShoulderBodyDiagramReplacements(result, "in", {

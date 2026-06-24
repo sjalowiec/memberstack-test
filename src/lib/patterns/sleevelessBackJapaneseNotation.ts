@@ -5,6 +5,10 @@
 
 import type { ArmholeResult } from "./legoBlocks/armholeShaping";
 import { collectInnerNeckDecreasePointsFromTimeline } from "./notationOverlaySvg";
+import {
+  backRoundNeckPlanForDepth,
+  roundNeckPlanOneSideBackNeckEdgeJpLines,
+} from "./roundNeckPlanPresentation";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import { shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
 import {
@@ -107,6 +111,12 @@ export function shoulderShapingBeginLocalRCForDiagram(
 export function formatBindOffNotation(totalStitches: number): string {
   const n = Math.max(0, Math.round(totalStitches));
   return n > 0 ? `bo${n}` : "";
+}
+
+/** Center or edge hold label (e.g. `hold18`). */
+export function formatHoldNotation(stitchCount: number): string {
+  const n = Math.max(0, Math.round(stitchCount));
+  return n > 0 ? `hold${n}` : "";
 }
 
 export function formatShapingSegment(stitches: number, rows: number, times: number): string {
@@ -303,7 +313,12 @@ export function buildBackJapaneseNotationReplacements(
       ? Array.from({ length: decreaseSts }, (_, i) => ({ row: i * 2, amount: 1 }))
       : [];
 
-  const centerNeckBindOff = d.centerNeckBindOffStitches;
+  const backRoundNeckPlan =
+    d.necklineStitches !== undefined && d.necklineStitches > 0
+      ? backRoundNeckPlanForDepth(d.necklineStitches, Math.max(1, d.backNeckDepthRows ?? 0))
+      : null;
+  const centerNeckBindOff =
+    d.centerNeckBindOffStitches ?? backRoundNeckPlan?.centerBindOff;
   const timeline = result.backNeckShoulderTimeline ?? result.neckShoulderShapingChart.timeline ?? [];
 
   const necklineDecreasePoints =
@@ -311,13 +326,17 @@ export function buildBackJapaneseNotationReplacements(
       ? collectInnerNeckDecreasePointsFromTimeline(timeline, BACK_NOTATION_DIAGRAM_SIDE)
       : [];
 
+  const necklineShapingLines =
+    backRoundNeckPlan !== null && (d.backNeckDepthRows ?? 0) > 0
+      ? roundNeckPlanOneSideBackNeckEdgeJpLines(backRoundNeckPlan, BACK_NOTATION_DIAGRAM_SIDE)
+      : formatDecreaseNotationLines(necklineDecreasePoints);
+
   const shoulderBindOffPoints =
     timeline.length > 0
       ? collectCompleteShoulderShapingPoints(timeline, BACK_NOTATION_DIAGRAM_SIDE)
       : [];
 
   const armholeShapingLines = formatDecreaseNotationLines(armholeDecreasePoints);
-  const necklineShapingLines = formatDecreaseNotationLines(necklineDecreasePoints);
   const shoulderShapingLines =
     timeline.length > 0
       ? shoulderShapingNotationLinesFromTimeline(timeline, BACK_NOTATION_DIAGRAM_SIDE, undefined, {
@@ -351,7 +370,10 @@ export function buildBackJapaneseNotationReplacements(
     "jp-body-shaping": bodyShapingLines,
     "jp-armhole-bo": formatBindOffNotation(bindOffSts),
     "jp-armhole-shaping": joinNotationLines(armholeShapingLines),
-    "jp-neckline-bo": formatBindOffNotation(centerNeckBindOff ?? 0),
+    "jp-neckline-bo":
+      backRoundNeckPlan !== null
+        ? formatHoldNotation(centerNeckBindOff ?? 0)
+        : formatBindOffNotation(centerNeckBindOff ?? 0),
     "jp-neckline-shaping": joinNotationLines(necklineShapingLines),
     "jp-shoulder-shaping": joinNotationLines(shoulderShapingLines),
     "rc-caston": rcCaston,

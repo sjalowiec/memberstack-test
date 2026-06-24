@@ -3,9 +3,12 @@
  */
 
 import {
+  calculateRoundNecklinePlan,
   calculateRoundNecklineShaping,
   initialCenterNeckStitches,
+  normalizeRoundNecklineDepthRows,
 } from "./legoBlocks/roundNeckline";
+import { roundNeckPlanOneSideNeckEdgeJpLines } from "./roundNeckPlanPresentation";
 import {
   compressStitchDecreasePointsToNotationLines,
   type StitchDecreasePoint,
@@ -20,10 +23,23 @@ export function cardiganFrontNeckOpeningStitches(fullNecklineStitches: number): 
 
 /**
  * Initial CF-edge bind-off on cardigan front: half of the pullover/back center bind-off
- * for the same full neck opening N (not the first chart/timeline shaping cell).
+ * for the same full neck opening N (depth-aware when `necklineDepthRows` is provided).
  */
-export function cardiganFrontInitialNeckBindOffStitches(fullNecklineStitches: number): number {
-  const fullCenter = initialCenterNeckStitches(fullNecklineStitches);
+export function cardiganFrontInitialNeckBindOffStitches(
+  fullNecklineStitches: number,
+  necklineDepthRows?: number,
+): number {
+  const N = Math.max(0, Math.round(fullNecklineStitches));
+  if (N <= 1) return N;
+
+  const fullCenter =
+    necklineDepthRows !== undefined && Number.isFinite(necklineDepthRows)
+      ? calculateRoundNecklinePlan({
+          necklineStitches: N,
+          necklineDepthRows: normalizeRoundNecklineDepthRows(necklineDepthRows),
+        }).centerBindOff
+      : initialCenterNeckStitches(N);
+
   if (fullCenter <= 1) return Math.max(0, fullCenter);
   return Math.max(1, Math.round(fullCenter / 2));
 }
@@ -35,9 +51,18 @@ export function cardiganFrontInitialNeckBindOffStitches(fullNecklineStitches: nu
 export function roundNeckOneSideNeckEdgeNotationLines(
   fullNecklineStitches: number,
   side: RoundNeckNotationSide = "right",
+  necklineDepthRows?: number,
 ): string[] {
   const neckSts = Math.max(0, Math.round(fullNecklineStitches));
   if (neckSts <= 2) return [];
+
+  if (necklineDepthRows !== undefined && Number.isFinite(necklineDepthRows)) {
+    const plan = calculateRoundNecklinePlan({
+      necklineStitches: neckSts,
+      necklineDepthRows: normalizeRoundNecklineDepthRows(necklineDepthRows),
+    });
+    return roundNeckPlanOneSideNeckEdgeJpLines(plan, side);
+  }
 
   const plan = calculateRoundNecklineShaping({ necklineStitches: neckSts });
   const stair = side === "right" ? plan.right.stairSteps : plan.left.stairSteps;
@@ -56,4 +81,3 @@ export function roundNeckOneSideNeckEdgeNotationLines(
   }
   return compressStitchDecreasePointsToNotationLines(points);
 }
-

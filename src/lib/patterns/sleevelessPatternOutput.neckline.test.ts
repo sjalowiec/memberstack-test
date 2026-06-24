@@ -84,17 +84,19 @@ describe("generateSleevelessBackPattern neckline routing", () => {
     expect(isFullWidthVNeckFrontStyleChart(r.frontNeckShoulderShapingChart)).toBe(true);
   });
 
-  it("v-neck back timeline still uses round-neck center bind-off (not V-neck center row)", () => {
+  it("v-neck back timeline still uses round-neck center hold (not V-neck center row)", () => {
     const r = generateSleevelessBackPattern(basePattern("v-neck"));
     const tl = r.backNeckShoulderTimeline;
     expect(tl?.length).toBeGreaterThan(0);
-    let centerBindEvents = 0;
+    let centerNeckEvents = 0;
     for (const entry of tl!) {
       for (const ev of entry.events) {
-        if (ev.side === "center" && ev.kind === "bindOff") centerBindEvents += ev.amount;
+        if (ev.side === "center" && (ev.kind === "bindOff" || ev.kind === "hold")) {
+          centerNeckEvents += ev.amount;
+        }
       }
     }
-    expect(centerBindEvents).toBeGreaterThan(0);
+    expect(centerNeckEvents).toBeGreaterThan(0);
   });
 
   it("round neck: front chart is not in V-neck full-width display mode", () => {

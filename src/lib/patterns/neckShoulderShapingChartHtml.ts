@@ -413,6 +413,42 @@ function divideRcDisplayLabel(localStartRcLabel?: string | undefined): string {
   return localStartLabel;
 }
 
+/** HTML shallow back hold divide at the neckline row (three-stage workflow setup). */
+function formatActiveShoulderShallowHoldBackCenterNecklineHtml(args: {
+  localStartRcLabel?: string | undefined;
+  centerHoldStitches?: number | undefined;
+  atRcPrefix?: boolean | undefined;
+}): string {
+  const localStartLabel = String(args.localStartRcLabel ?? "").trim();
+  const centerCount = Number(args.centerHoldStitches);
+  const centerCountLabel =
+    Number.isFinite(centerCount) && centerCount > 0 ? String(Math.round(centerCount)) : "";
+  const centerPhrase = centerCountLabel
+    ? `place the center ${escapeHtml(centerCountLabel)} neckline stitches in hold`
+    : "place the center neckline stitches in hold";
+  const tail = `${centerPhrase}. Place the opposite shoulder stitches in hold. Place the opposite neckline stitches in hold. Work the right shoulder and right neck edge first.`;
+  const rcColon = localStartLabel.match(/^RC:(\d{1,4})$/i);
+  if (rcColon) {
+    const n = String(Math.max(0, parseInt(rcColon[1], 10))).padStart(3, "0");
+    if (args.atRcPrefix) {
+      return `At RC ${escapeHtml(n)}, ${tail}`;
+    }
+    return `When Armhole RC reaches ${escapeHtml(n)}, ${tail}.`;
+  }
+  if (localStartLabel) {
+    return `At ${escapeHtml(localStartLabel)}, ${tail}.`;
+  }
+  return `${tail.charAt(0).toUpperCase()}${tail.slice(1)}.`;
+}
+
+function chartTimelineUsesHoldCenter(chart?: NeckShoulderShapingChart): boolean {
+  const first = chart?.timeline?.[0];
+  if (!first) return false;
+  return first.events.some(
+    (e) => e.kind === "hold" && e.side === "center" && e.edge === "center" && e.amount > 0,
+  );
+}
+
 /** HTML center-neckline divide line with glossary on “Scrap off” and “bind off” (plain-text twin in intro copy module). */
 function formatActiveShoulderCenterNecklineHtml(args: {
   localStartRcLabel?: string | undefined;
@@ -513,6 +549,7 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
   const roundCenterDivide =
     !vNeckDivide &&
     activeShoulderCenterDivideIntroApplies(options.centerBindOffStitches, options.chart);
+  const shallowHoldBackDivide = roundCenterDivide && chartTimelineUsesHoldCenter(options.chart);
   const showCenterDivide = vNeckDivide || roundCenterDivide;
   // Online workflow steps anchor the divide milestone as “At RC NNN, …”; print/default keep
   // “When Armhole RC reaches NNN, …”. Only the prefix wording changes — the calculated RC is the same.
@@ -522,30 +559,46 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
         localStartRcLabel: options.localStartRcLabel,
         atRcPrefix: useAtRcPrefix,
       })
-    : roundCenterDivide
-      ? formatActiveShoulderCenterNecklineHtml({
+    : shallowHoldBackDivide
+      ? formatActiveShoulderShallowHoldBackCenterNecklineHtml({
           localStartRcLabel: options.localStartRcLabel,
-          centerBindOffStitches: options.centerBindOffStitches,
+          centerHoldStitches: options.centerBindOffStitches,
           atRcPrefix: useAtRcPrefix,
         })
-      : "";
+      : roundCenterDivide
+        ? formatActiveShoulderCenterNecklineHtml({
+            localStartRcLabel: options.localStartRcLabel,
+            centerBindOffStitches: options.centerBindOffStitches,
+            atRcPrefix: useAtRcPrefix,
+          })
+        : "";
   const innerParts: string[] = [];
   if (options.includeWorkflowSteps === true && showCenterDivide && centerHtml) {
     const divideRc = divideRcDisplayLabel(options.localStartRcLabel);
     const knitUntilBullet = divideRc
       ? `Knit until Armhole RC reaches ${escapeHtml(divideRc)}.`
       : `Knit to the neckline shaping row.`;
+    const afterDivideBullets = shallowHoldBackDivide
+      ? `<li>Stage 1 — work the right shoulder and right neck edge (checklist below). Stage 2 — return held stitches and mirror for the left side.</li><li>Stage 3 — scrap off or bind off all held neckline stitches when both sides are complete.</li>`
+      : `<li>${escapeHtml(ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE)}</li><li>Work one shoulder at a time.</li>`;
     innerParts.push(
       `<p class="pattern-shaping-step-title"><strong>Before Shaping</strong></p>`,
       `<ul class="pattern-shaping-step-list"><li>Optional: Add a ${lifelineGlossaryPlaceholderHtml()} before dividing the neckline.</li><li>${knitUntilBullet}</li></ul>`,
       `<p class="pattern-shaping-step-title"><strong>Divide the Neckline</strong></p>`,
-      `<ul class="pattern-shaping-step-list"><li>${centerHtml}</li><li>${escapeHtml(ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE)}</li><li>Work one shoulder at a time.</li></ul>`,
+      `<ul class="pattern-shaping-step-list"><li>${centerHtml}</li>${afterDivideBullets}</ul>`,
     );
   } else if (showCenterDivide && centerHtml) {
-    innerParts.push(`<p><strong>Center Neckline:</strong><br>${centerHtml}</p>`);
-    innerParts.push(
-      `<p><strong>Divide:</strong><br>${escapeHtml(ACTIVE_SHOULDER_DIVIDE_SENTENCE)}</p>`,
-    );
+    if (shallowHoldBackDivide) {
+      innerParts.push(`<p><strong>Back neck (three stages):</strong><br>${centerHtml}</p>`);
+      innerParts.push(
+        `<p>Stage 1 — right shoulder and right neck edge. Stage 2 — left side (mirror). Stage 3 — scrap or bind off held neckline stitches.</p>`,
+      );
+    } else {
+      innerParts.push(`<p><strong>Center Neckline:</strong><br>${centerHtml}</p>`);
+      innerParts.push(
+        `<p><strong>Divide:</strong><br>${escapeHtml(ACTIVE_SHOULDER_DIVIDE_SENTENCE)}</p>`,
+      );
+    }
   }
   innerParts.push(`<p>${activeShoulderChartIntroSentenceHtml()}</p>`);
   const inner = innerParts.join("\n  ");

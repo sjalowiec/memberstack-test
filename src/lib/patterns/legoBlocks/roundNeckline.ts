@@ -1,14 +1,29 @@
+import { roundUpToEvenRows } from "../hemDefaults";
+
 /**
  * Round neckline (LEGO): total neckline width N splits into three ~equal phases —
  * center bind-off/hold, neck-edge stair bind-offs (2s and 3s, larger groups first), and
  * single neck-edge decreases — same stair sequence and per-side singles left/right.
  */
 
+/**
+ * Force neckline depth to an even row count (machine-knit pairs). Odd calculated depths
+ * round up to the next even value; zero/invalid stays zero.
+ */
+export function normalizeRoundNecklineDepthRows(rows: number): number {
+  if (!Number.isFinite(rows) || rows <= 0) return 0;
+  return roundUpToEvenRows(Math.floor(rows));
+}
 export type RoundNecklineSidePlan = {
   /** Neck-edge stair bind-offs (each value is 2 or 3); 3-stitch steps come before 2-stitch steps. */
   stairSteps: number[];
-  /** Single-stitch decreases at the neck edge (scheduled every other row in the shaping timeline). */
+  /** Single-stitch decreases at the neck edge (deep-round every-other-row singles). */
   singleDecreaseCount: number;
+  /**
+   * Shallow short-row hold: stitches placed on hold at the neck edge per action row
+   * (every other row; one entry per shaping opportunity).
+   */
+  holdGroups: number[];
 };
 
 export type RoundNecklineShapingResult = {
@@ -35,7 +50,70 @@ export type RoundNecklinePlanResult = {
   totalCheck: number;
 };
 
-/** Partition N into three nonnegative integers summing to N, each within 1 of N/3 (remainder to earlier phases). */
+function emptySidePlan(): RoundNecklineSidePlan {
+  return { stairSteps: [], singleDecreaseCount: 0, holdGroups: [] };
+}
+
+/** Shallow machine-knit round neck (no stair bind-offs; hold-based short rows). */
+export function isShallowHoldRoundPlan(
+  plan: Pick<RoundNecklineShapingResult, "left" | "right"> & {
+    strategy?: RoundNecklineStrategy;
+  },
+): boolean {
+  if (plan.strategy === "shallow-round") return true;
+  if (plan.strategy === "deep-round") return false;
+  return (
+    plan.left.stairSteps.length === 0 &&
+    plan.right.stairSteps.length === 0 &&
+    plan.left.singleDecreaseCount === 0 &&
+    plan.right.singleDecreaseCount === 0 &&
+    (plan.left.holdGroups.length > 0 || plan.right.holdGroups.length > 0)
+  );
+}
+
+/**
+ * Distribute `totalStitches` across `opportunities` every-other-row hold actions (≥1 st each when R > K).
+ */
+export function distributeHoldGroupsPerSide(totalStitches: number, opportunities: number): number[] {
+  const R = Math.max(0, Math.round(totalStitches));
+  const K = Math.max(0, Math.floor(opportunities));
+  if (R === 0 || K === 0) return [];
+  if (R <= K) {
+    return Array.from({ length: R }, () => 1);
+  }
+  const groups = Array.from({ length: K }, () => 1);
+  const extra = R - K;
+  for (let i = 0; i < extra; i++) {
+    groups[i % K]! += 1;
+  }
+  return groups;
+}
+
+/** Compress consecutive equal hold groups into Xs-2r-Nx segments. */
+export function compressHoldGroupsToSegments(
+  groups: readonly number[],
+): { stitchCount: number; repeatCount: number }[] {
+  const out: { stitchCount: number; repeatCount: number }[] = [];
+  for (const g of groups) {
+    if (g <= 0) continue;
+    const last = out[out.length - 1];
+    if (last && last.stitchCount === g) {
+      last.repeatCount += 1;
+    } else {
+      out.push({ stitchCount: g, repeatCount: 1 });
+    }
+  }
+  return out;
+}
+
+function buildShallowHoldSidePlan(perSideStitches: number, opportunities: number): RoundNecklineSidePlan {
+  const holdGroups = distributeHoldGroupsPerSide(perSideStitches, opportunities);
+  return { stairSteps: [], singleDecreaseCount: 0, holdGroups };
+}
+
+function shallowHoldActionsCount(plan: RoundNecklineShapingResult): number {
+  return Math.max(plan.left.holdGroups.length, plan.right.holdGroups.length);
+}
 export function partitionNecklineThirds(n: number): [number, number, number] {
   const N = Math.max(0, Math.round(n));
   if (N === 0) return [0, 0, 0];
@@ -121,6 +199,79 @@ export function distributeStairGroups(sts: number): number[] {
 }
 
 /**
+ * Documented shallow round neck stitch budget (machine-knit): center ≈ 50% of N,
+ * remaining stitches removed as single decreases at each neck edge every other row
+ * (no stair bind-offs).
+ */
+export function calculateDocumentedShallowRoundNecklineShaping(inputs: {
+  necklineStitches: number;
+  /** When set, hold groups are depth-constrained (shapingOpportunities = depth / 2). */
+  necklineDepthRows?: number;
+}): RoundNecklineShapingResult {
+  const N = Math.max(0, Math.round(inputs.necklineStitches));
+
+  if (N === 0) {
+    return {
+      necklineStitches: 0,
+      centerBindOff: 0,
+      left: emptySidePlan(),
+      right: emptySidePlan(),
+      totalCheck: 0,
+    };
+  }
+
+  if (N <= 2) {
+    return {
+      necklineStitches: N,
+      centerBindOff: N,
+      left: emptySidePlan(),
+      right: emptySidePlan(),
+      totalCheck: N,
+    };
+  }
+
+  const center = Math.floor(N / 2);
+  const remaining = N - center;
+  const [leftR, rightR] = splitBalancedPair(remaining);
+  const depthNorm =
+    inputs.necklineDepthRows !== undefined
+      ? normalizeRoundNecklineDepthRows(inputs.necklineDepthRows)
+      : 0;
+  const opportunities =
+    depthNorm > 0 ? depthNorm / 2 : Math.max(leftR, rightR, 1);
+  const left = buildShallowHoldSidePlan(leftR, opportunities);
+  const right = buildShallowHoldSidePlan(rightR, opportunities);
+  const totalCheck = center + sumHoldGroups(left) + sumHoldGroups(right);
+
+  return {
+    necklineStitches: N,
+    centerBindOff: center,
+    left,
+    right,
+    totalCheck,
+  };
+}
+
+function sumHoldGroups(side: RoundNecklineSidePlan): number {
+  return side.holdGroups.reduce((a, b) => a + b, 0);
+}
+
+/**
+ * Rows for documented shallow round neck: center hold row + hold groups every other row.
+ */
+export function rowsRequiredForShallowPlan(plan: RoundNecklineShapingResult): number {
+  const N = plan.necklineStitches;
+  if (N <= 0) return 0;
+  if (N <= 2) return 1;
+
+  const actions = shallowHoldActionsCount(plan);
+  return actions > 0 ? 1 + 2 * actions - 1 : 1;
+}
+
+/** @deprecated Alias — shallow back and front use the same every-other-row row count. */
+export const rowsRequiredForBackShallowPlan = rowsRequiredForShallowPlan;
+
+/**
  * Rows needed for the deep 3-phase schedule: center row +
  * one row per paired stair-step row +
  * every-other-row spacing for single decreases (shared timeline).
@@ -148,8 +299,8 @@ export function minRowsForBalancedEdgeRemainder(edgeTotal: number): EdgeSplit {
   const E = Math.max(0, Math.round(edgeTotal));
   if (E === 0) {
     return {
-      left: { stairSteps: [], singleDecreaseCount: 0 },
-      right: { stairSteps: [], singleDecreaseCount: 0 },
+      left: { stairSteps: [], singleDecreaseCount: 0, holdGroups: [] },
+      right: { stairSteps: [], singleDecreaseCount: 0, holdGroups: [] },
       postRows: 0,
     };
   }
@@ -161,10 +312,12 @@ export function minRowsForBalancedEdgeRemainder(edgeTotal: number): EdgeSplit {
   let bestLeft: RoundNecklineSidePlan = {
     stairSteps: [],
     singleDecreaseCount: el,
+    holdGroups: [],
   };
   let bestRight: RoundNecklineSidePlan = {
     stairSteps: [],
     singleDecreaseCount: er,
+    holdGroups: [],
   };
 
   for (let tL = 0; tL <= el; tL++) {
@@ -185,8 +338,8 @@ export function minRowsForBalancedEdgeRemainder(edgeTotal: number): EdgeSplit {
 
       if (post < bestPost) {
         bestPost = post;
-        bestLeft = { stairSteps: ls, singleDecreaseCount: sL };
-        bestRight = { stairSteps: rs, singleDecreaseCount: sR };
+        bestLeft = { stairSteps: ls, singleDecreaseCount: sL, holdGroups: [] };
+        bestRight = { stairSteps: rs, singleDecreaseCount: sR, holdGroups: [] };
       }
     }
   }
@@ -194,22 +347,20 @@ export function minRowsForBalancedEdgeRemainder(edgeTotal: number): EdgeSplit {
   return { left: bestLeft, right: bestRight, postRows: bestPost };
 }
 
-function buildShallowPlanForBudget(
+function buildDocumentedShallowRoundPlan(
   necklineStitches: number,
-  necklineDepthRows: number
-): Omit<RoundNecklinePlanResult, "strategy" | "necklineDepthRows" | "warnings"> & {
-  warnings: string[];
-} {
+  necklineDepthRows: number,
+): Omit<RoundNecklinePlanResult, "strategy" | "necklineDepthRows"> {
   const N = Math.max(0, Math.round(necklineStitches));
-  const depth = Math.floor(necklineDepthRows);
+  const depth = normalizeRoundNecklineDepthRows(necklineDepthRows);
   const warnings: string[] = [];
 
   if (N === 0) {
     return {
       necklineStitches: 0,
       centerBindOff: 0,
-      left: { stairSteps: [], singleDecreaseCount: 0 },
-      right: { stairSteps: [], singleDecreaseCount: 0 },
+      left: emptySidePlan(),
+      right: emptySidePlan(),
       rowsRequired: 0,
       fitsAvailableRows: depth >= 0,
       warnings,
@@ -217,62 +368,38 @@ function buildShallowPlanForBudget(
     };
   }
 
-  const postBudget = depth - 1;
-  if (postBudget < 0) {
+  if (depth < 1) {
     warnings.push(
-      "necklineDepthRows must be at least 1 to work any neckline shaping; row budget is treated as insufficient."
+      "necklineDepthRows must be at least 1 to work any neckline shaping; row budget is treated as insufficient.",
     );
-    return {
-      necklineStitches: N,
-      centerBindOff: N,
-      left: { stairSteps: [], singleDecreaseCount: 0 },
-      right: { stairSteps: [], singleDecreaseCount: 0 },
-      rowsRequired: 1,
-      fitsAvailableRows: false,
-      warnings,
-      totalCheck: N,
-    };
   }
 
-  let chosenC = 0;
-  let chosenEdge: EdgeSplit | null = null;
-  let chosenRows = Infinity;
+  const shallow = calculateDocumentedShallowRoundNecklineShaping({
+    necklineStitches: N,
+    necklineDepthRows: depth,
+  });
+  const rowsRequired = rowsRequiredForShallowPlan(shallow);
+  const opportunities = depth > 0 ? depth / 2 : 0;
 
-  for (let c = N; c >= 0; c--) {
-    const e = N - c;
-    const edge = minRowsForBalancedEdgeRemainder(e);
-    const totalRows = 1 + edge.postRows;
-    if (edge.postRows <= postBudget) {
-      chosenC = c;
-      chosenEdge = edge;
-      chosenRows = totalRows;
-      break;
-    }
+  if (depth > 0 && opportunities <= 0) {
+    warnings.push("necklineDepthRows must allow at least one shaping opportunity (even depth ≥ 2).");
   }
 
-  if (chosenEdge === null) {
-    chosenC = N;
-    chosenEdge = minRowsForBalancedEdgeRemainder(0);
-    chosenRows = 1;
-  }
-
-  const left = chosenEdge.left;
-  const right = chosenEdge.right;
-  const totalCheck = chosenC + sumSteps(left.stairSteps) + sumSteps(right.stairSteps) + left.singleDecreaseCount + right.singleDecreaseCount;
-
-  if (totalCheck !== N) {
-    warnings.push("internal: shallow plan total mismatch");
+  if (depth > 0 && depth < rowsRequired) {
+    warnings.push(
+      `necklineDepthRows (${depth}) is fewer than the ${rowsRequired} rows required for the documented shallow round neckline hold plan.`,
+    );
   }
 
   return {
     necklineStitches: N,
-    centerBindOff: chosenC,
-    left,
-    right,
-    rowsRequired: chosenRows,
-    fitsAvailableRows: depth >= chosenRows,
+    centerBindOff: shallow.centerBindOff,
+    left: shallow.left,
+    right: shallow.right,
+    rowsRequired,
+    fitsAvailableRows: depth >= rowsRequired,
     warnings,
-    totalCheck,
+    totalCheck: shallow.totalCheck,
   };
 }
 
@@ -285,7 +412,7 @@ export function calculateRoundNecklinePlan(inputs: {
   necklineDepthRows: number;
 }): RoundNecklinePlanResult {
   const N = Math.max(0, Math.round(inputs.necklineStitches));
-  const depthRows = Math.floor(inputs.necklineDepthRows);
+  const depthRows = normalizeRoundNecklineDepthRows(inputs.necklineDepthRows);
 
   if (N === 0) {
     return {
@@ -293,8 +420,8 @@ export function calculateRoundNecklinePlan(inputs: {
       necklineStitches: 0,
       necklineDepthRows: depthRows,
       centerBindOff: 0,
-      left: { stairSteps: [], singleDecreaseCount: 0 },
-      right: { stairSteps: [], singleDecreaseCount: 0 },
+      left: emptySidePlan(),
+      right: emptySidePlan(),
       rowsRequired: 0,
       fitsAvailableRows: depthRows >= 0,
       warnings: [],
@@ -320,10 +447,10 @@ export function calculateRoundNecklinePlan(inputs: {
     };
   }
 
-  const shallow = buildShallowPlanForBudget(N, depthRows);
+  const shallow = buildDocumentedShallowRoundPlan(N, depthRows);
   const w = [
     ...shallow.warnings,
-    `necklineDepthRows (${depthRows}) is fewer than the ${rowsDeep} rows required for a full deep 3-phase round neckline; using shallow-round with a larger center hold and reduced neck-edge shaping.`,
+    `necklineDepthRows (${depthRows}) is fewer than the ${rowsDeep} rows required for a full deep 3-phase round neckline; using documented shallow-round (center ≈ 50%, short-row hold shaping every other row).`,
   ];
 
   return {
@@ -412,8 +539,8 @@ export function calculateRoundNecklineShaping(inputs: {
     return {
       necklineStitches: 0,
       centerBindOff: 0,
-      left: { stairSteps: [], singleDecreaseCount: 0 },
-      right: { stairSteps: [], singleDecreaseCount: 0 },
+      left: emptySidePlan(),
+      right: emptySidePlan(),
       totalCheck: 0,
     };
   }
@@ -422,8 +549,8 @@ export function calculateRoundNecklineShaping(inputs: {
     return {
       necklineStitches: neckSts,
       centerBindOff: neckSts,
-      left: { stairSteps: [], singleDecreaseCount: 0 },
-      right: { stairSteps: [], singleDecreaseCount: 0 },
+      left: emptySidePlan(),
+      right: emptySidePlan(),
       totalCheck: neckSts,
     };
   }
@@ -461,22 +588,70 @@ export function calculateRoundNecklineShaping(inputs: {
     left: {
       stairSteps: [...stairGroups],
       singleDecreaseCount: singlePerSide,
+      holdGroups: [],
     },
     right: {
       stairSteps: [...stairGroups],
       singleDecreaseCount: singlePerSide,
+      holdGroups: [],
     },
     totalCheck: check,
   };
 }
 
-/** Center bind-off / hold count from the round-neck plan (backward-compatible helper name). */
+/** Center bind-off / hold count from the deep round-neck plan (front / full deep planner). */
 export function initialCenterNeckStitches(necklineStitches: number): number {
   return calculateRoundNecklineShaping({ necklineStitches }).centerBindOff;
 }
 
+/** Center bind-off for back necklines — always documented shallow (≈ N ÷ 2). */
+export function initialBackCenterNeckStitches(necklineStitches: number): number {
+  return calculateDocumentedShallowRoundNecklineShaping({ necklineStitches }).centerBindOff;
+}
+
 /**
- * Total neck-edge stitches removed on the heavier side (stair + singles); used for timeline row budgets.
+ * Back neck plan — always documented shallow-round (singles only, every other row; depth used for validation only).
+ */
+export function calculateBackRoundNecklinePlan(inputs: {
+  necklineStitches: number;
+  necklineDepthRows: number;
+}): RoundNecklinePlanResult {
+  const depthRows = normalizeRoundNecklineDepthRows(inputs.necklineDepthRows);
+  const shallow = buildDocumentedShallowRoundPlan(inputs.necklineStitches, depthRows);
+  return {
+    strategy: "shallow-round",
+    necklineStitches: shallow.necklineStitches,
+    necklineDepthRows: depthRows,
+    centerBindOff: shallow.centerBindOff,
+    left: shallow.left,
+    right: shallow.right,
+    rowsRequired: shallow.rowsRequired,
+    fitsAvailableRows: shallow.fitsAvailableRows,
+    warnings: shallow.warnings,
+    totalCheck: shallow.totalCheck,
+  };
+}
+
+/** Total neck-edge hold stitches per side on back (documented shallow short-row plan). */
+export function backNeckEdgeDecreasesPerSide(necklineStitches: number): number {
+  const p = calculateDocumentedShallowRoundNecklineShaping({ necklineStitches });
+  return Math.max(sumHoldGroups(p.left), sumHoldGroups(p.right));
+}
+
+/** Depth-aware back neck-edge hold stitches per side (heavier side). */
+export function backNeckEdgeHoldStitchesPerSide(
+  necklineStitches: number,
+  necklineDepthRows: number,
+): number {
+  const p = calculateDocumentedShallowRoundNecklineShaping({
+    necklineStitches,
+    necklineDepthRows,
+  });
+  return Math.max(sumHoldGroups(p.left), sumHoldGroups(p.right));
+}
+
+/**
+ * Total neck-edge stitches removed on the heavier side (stair + singles); used for front timeline row budgets.
  */
 export function neckEdgeDecreasesPerSide(necklineStitches: number): number {
   const p = calculateRoundNecklineShaping({ necklineStitches });

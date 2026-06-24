@@ -24,6 +24,10 @@ import {
   cardiganFrontInitialNeckBindOffStitches,
   type RoundNeckNotationSide,
 } from "./roundNeckNotation";
+import {
+  roundNeckPlanForDepth,
+  roundNeckPlanOneSideNeckEdgeJpLines,
+} from "./roundNeckPlanPresentation";
 import { neckEdgeNotationLinesFromNeckShoulderChart } from "./notationOverlaySvg";
 import {
   generateSleevelessBackPattern,
@@ -342,7 +346,10 @@ export function buildFrontJapaneseNotationReplacements(
     isSleevelessCardiganFrontNeckShoulderChart(frontChart) &&
     !isVNeckFront;
   const centerNeckBindOff = isCardiganRoundFront
-    ? cardiganFrontInitialNeckBindOffStitches(fullNecklineSts)
+    ? cardiganFrontInitialNeckBindOffStitches(
+        fullNecklineSts,
+        d.frontNeckDepthRows ?? 0,
+      )
     : result.frontNeckShoulderChartUsesLiveRows
       ? initialNeckBindOffFromNeckShoulderChart(frontChart, {
           fullNecklineStitches: fullNecklineSts,
@@ -350,7 +357,19 @@ export function buildFrontJapaneseNotationReplacements(
       : (d.cardiganFrontInitialNeckBindOffStitches ?? d.centerNeckBindOffStitches ?? 0);
   const necklineShapingLines = isCardiganRoundFront
     ? cardiganRoundFrontNeckEdgeNotationLines(result, patternData ?? {}, FRONT_NOTATION_DIAGRAM_SIDE)
-    : neckEdgeNotationLinesFromNeckShoulderChart(frontChart, FRONT_NOTATION_DIAGRAM_SIDE);
+    : (() => {
+        const fromChart = neckEdgeNotationLinesFromNeckShoulderChart(
+          frontChart,
+          FRONT_NOTATION_DIAGRAM_SIDE,
+        );
+        if (fromChart.length > 0 || isVNeckFront || !result.frontNeckShoulderChartUsesLiveRows) {
+          return fromChart;
+        }
+        const depth = d.frontNeckDepthRows ?? 0;
+        if (fullNecklineSts <= 0 || depth <= 0) return fromChart;
+        const plan = roundNeckPlanForDepth(fullNecklineSts, depth);
+        return roundNeckPlanOneSideNeckEdgeJpLines(plan, FRONT_NOTATION_DIAGRAM_SIDE);
+      })();
   /** Back / closed-pullover shoulder schedule — not cardigan half-front timeline compression. */
   const shoulderShapingLines = canonicalShoulderShapingNotationLines(
     result,

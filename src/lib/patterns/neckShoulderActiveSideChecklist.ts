@@ -19,7 +19,7 @@ type ActiveSideScheduledAction = {
   sourceRelativeRow: number;
   edge: ActiveSideEdge;
   amount: number;
-  kind: "bindOff" | "decrease";
+  kind: "bindOff" | "decrease" | "hold";
 };
 
 export type ActiveSideInstructionTableRow = {
@@ -62,10 +62,20 @@ function stitchCountPhrase(n: number): string {
   return k === 1 ? "1 stitch" : `${k} stitches`;
 }
 
-function timelineHasCenterBindOffRow(timeline: readonly RowEntry[]): boolean {
+function timelineHasCenterDivideRow(timeline: readonly RowEntry[]): boolean {
   const first = timeline[0];
   if (!first) return false;
-  return first.events.some((e) => e.side === "center" && e.kind === "bindOff" && e.amount > 0);
+  return first.events.some(
+    (e) =>
+      e.side === "center" &&
+      e.amount > 0 &&
+      (e.kind === "bindOff" || e.kind === "hold"),
+  );
+}
+
+/** @deprecated Use {@link timelineHasCenterDivideRow}. */
+function timelineHasCenterBindOffRow(timeline: readonly RowEntry[]): boolean {
+  return timelineHasCenterDivideRow(timeline);
 }
 
 function centerNecklineDivideInfo(chart: NeckShoulderShapingChart): CenterNecklineDivideInfo | null {
@@ -74,7 +84,12 @@ function centerNecklineDivideInfo(chart: NeckShoulderShapingChart): CenterNeckli
     const center = sorted[0];
     if (!center) return null;
     const centerBindOff = center.events
-      .filter((e) => e.kind === "bindOff" && e.side === "center" && e.edge === "center")
+      .filter(
+        (e) =>
+          (e.kind === "bindOff" || e.kind === "hold") &&
+          e.side === "center" &&
+          e.edge === "center",
+      )
       .reduce((sum, e) => sum + e.amount, 0);
     if (centerBindOff <= 0) return null;
     return {
@@ -106,17 +121,39 @@ function shouldIncludeCenterNecklineSetupRow(
   return options?.includeCenterNecklineSetupRow === true && centerNecklineDivideInfo(chart) !== null;
 }
 
-/** Checklist action text — matches round-neck “scrap off … divide” intro wording. */
-export function formatCenterNecklineSetupChecklistAction(info: CenterNecklineDivideInfo): string {
+/** Checklist action text — shallow hold back vs round-neck scrap-off divide intro. */
+export function formatCenterNecklineSetupChecklistAction(
+  info: CenterNecklineDivideInfo,
+  options?: { shallowHoldBack?: boolean },
+): string {
   const n = Math.max(0, Math.floor(info.centerBindOff));
   const centerWord = n === 1 ? "stitch" : "stitches";
-  const L = Math.max(0, Math.floor(info.stitchesLeftAfter));
   const R = Math.max(0, Math.floor(info.stitchesRightAfter));
+  if (options?.shallowHoldBack) {
+    return `Place center ${n} neckline ${centerWord} in hold; place opposite shoulder and opposite neckline stitches in hold. ${stitchCountPhrase(R)} on active (right) shoulder. ${ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE}`;
+  }
+  const L = Math.max(0, Math.floor(info.stitchesLeftAfter));
   const shoulders =
     L === R
       ? `${stitchCountPhrase(L)} on each shoulder`
       : `${stitchCountPhrase(L)} left, ${stitchCountPhrase(R)} right`;
   return `Scrap off center ${n} neckline ${centerWord} to divide; ${shoulders} remaining. ${ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE} ${stitchCountPhrase(R)} active shoulder.`;
+}
+
+function chartUsesShallowHoldBackCenter(chart?: NeckShoulderShapingChart): boolean {
+  const first = chart?.timeline?.[0];
+  if (!first) return false;
+  if (chart !== undefined && isSleevelessCardiganFrontNeckShoulderChart(chart)) return false;
+  return first.events.some(
+    (e) => e.kind === "hold" && e.side === "center" && e.edge === "center" && e.amount > 0,
+  );
+}
+
+/** Exported for chart intro HTML (shallow back hold divide detection). */
+export function neckShoulderChartUsesShallowHoldBackCenter(
+  chart?: NeckShoulderShapingChart,
+): boolean {
+  return chartUsesShallowHoldBackCenter(chart);
 }
 
 /**
@@ -136,11 +173,14 @@ export function formatCenterNecklineSetupStsRemainingDisplay(info: CenterNecklin
 function buildCenterNecklineSetupChecklistRow(
   rc: number,
   info: CenterNecklineDivideInfo,
+  chart?: NeckShoulderShapingChart,
 ): ActiveSideInstructionTableRow {
   return {
     rc,
     carriagePosition: carriagePositionForActiveSideRc(rc),
-    action: formatCenterNecklineSetupChecklistAction(info),
+    action: formatCenterNecklineSetupChecklistAction(info, {
+      shallowHoldBack: chart !== undefined && chartUsesShallowHoldBackCenter(chart),
+    }),
     edge: ACTIVE_SHOULDER_CENTER_NECKLINE_SETUP_EDGE,
     stitchesRemaining: Math.max(0, Math.floor(info.stitchesRightAfter)),
     stitchesRemainingDisplay: formatCenterNecklineSetupStsRemainingDisplay(info),
@@ -216,7 +256,9 @@ function activeSideActionText(action: ActiveSideScheduledAction): string {
   const amount = Number.isFinite(action.amount) ? Math.max(1, Math.round(action.amount)) : 1;
   const noun = amount === 1 ? "st" : "sts";
   let verb: string;
-  if (action.kind === "bindOff") {
+  if (action.kind === "hold") {
+    verb = "Hold";
+  } else if (action.kind === "bindOff") {
     verb = action.edge === "Armhole" ? "Bind off OR hold" : "Bind off";
   } else {
     verb = "Decrease";
@@ -246,7 +288,7 @@ function activeSideActionFromTimelineEvent(
 ): ActiveSideScheduledAction | null {
   if (event.side !== "right" || event.amount <= 0) return null;
   if (event.edge !== "inner" && event.edge !== "outer") return null;
-  if (event.kind !== "bindOff" && event.kind !== "decrease") return null;
+  if (event.kind !== "bindOff" && event.kind !== "decrease" && event.kind !== "hold") return null;
   return {
     sourceRelativeRow: Math.max(0, Math.floor(entry.row - centerRow - 1)),
     edge: event.edge === "inner" ? "Neck" : "Armhole",
@@ -380,7 +422,7 @@ export function buildActiveSideInstructionTableRows(
     : null;
   let checklistIdx = divideInfo ? 1 : 0;
   if (divideInfo) {
-    out.push(buildCenterNecklineSetupChecklistRow(rcBase, divideInfo));
+    out.push(buildCenterNecklineSetupChecklistRow(rcBase, divideInfo, chart));
   }
   let stitchesRemaining = source.initialStitches;
   const actions = [...source.actions].sort((a, b) => {

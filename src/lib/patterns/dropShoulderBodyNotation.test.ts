@@ -225,7 +225,43 @@ describe("dropShoulderBodyNotationSvg", () => {
 });
 
 describe("dropShoulderBodyJapaneseNotation", () => {
-  it("fills drop-shoulder back notation with center bind-off and neckline shaping", () => {
+  it("always uses documented shallow-round JP on back (hold center + Xs-2r-Nx edge holds)", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
+    expect(result.debug.backNeckRoundNecklineStrategy).toBe("shallow-round");
+    const repl = buildDropShoulderBackJapaneseNotationReplacements(result, DROP_SHOULDER_PATTERN);
+    expect(repl["jp-neckline-bo"]).toBe("hold18");
+    expect(repl["jp-neckline-shaping"]).toBe("3s-2r-1x\n2s-2r-3x");
+    expect(repl["jp-neckline-shaping"]).not.toMatch(/3s-2r-2x|1s-1r/);
+  });
+
+  it("back written instructions use needle-range shallow hold shaping with validation counts", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
+    const backText = result.displayRows
+      .filter((row): row is Extract<(typeof result.displayRows)[number], { kind: "block" }> => row.kind === "block")
+      .flatMap((row) => [...(row.trustedParagraphs ?? []), ...(row.paragraphs ?? [])])
+      .join("\n");
+    expect(backText).toMatch(/RIGHT SIDE/i);
+    expect(backText).toMatch(/class="needle-range"/);
+    expect(backText).toMatch(/Put needles .*L50 through R9.*into hold \(59 stitches total\)/);
+    expect(backText).toMatch(/Work needles .*R10 through R50.*\(41 stitches total\)/);
+    expect(backText).toMatch(/Put 3 needles into hold every other row 1 time/i);
+    expect(backText).toMatch(/Put 2 needles into hold every other row 3 times/i);
+    expect(backText).toMatch(/Scrap off or bind off the remaining right shoulder stitches/i);
+    expect(backText).toMatch(/Break yarn and move the carriage to the opposite side/i);
+    expect(backText).toMatch(/Leave center neckline needles .*L9 through R9.*in hold \(18 stitches total\)/);
+    expect(backText).toMatch(/Return needles .*L50 through L10.*\(41 stitches total\)/);
+    expect(backText).toMatch(/Work needles .*L50 through L10/);
+    expect(backText).not.toMatch(/Work needles .*L50 through L10.*\(41 stitches total\)/);
+    expect(backText).toMatch(/BACK NECKLINE CLEANUP/i);
+    expect(backText).toMatch(/Scrap off or bind off all remaining held neckline stitches/i);
+    expect(backText).not.toMatch(/Place the center \d+ stitches in hold/i);
+    expect(backText).not.toMatch(/Place the opposite shoulder stitches in hold/i);
+    expect(backText).not.toMatch(/Continue to RC:/i);
+    expect(backText).not.toMatch(/bind off 32 stitches for each shoulder/i);
+    expect(backText).not.toMatch(/bind off all \d+ stitches across the top/i);
+  });
+
+  it("fills drop-shoulder back notation with center hold and neckline shaping", () => {
     const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
     expect(isDropShoulderBodyJapaneseNotationSupported(result)).toBe(true);
 
@@ -236,7 +272,7 @@ describe("dropShoulderBodyJapaneseNotation", () => {
     expect(repl["jp-armhole-bo"]).toBe("");
     expect(repl["jp-armhole-shaping"]).toBe("");
     expect(repl["jp-shoulder-shaping"]).toBe("");
-    expect(repl["jp-neckline-bo"]).toMatch(/^bo\d+/);
+    expect(repl["jp-neckline-bo"]).toMatch(/^hold\d+/);
     expect(repl["jp-neckline-shaping"].length).toBeGreaterThan(0);
     if (fullNeck > 0) {
       expect(repl["jp-neckline-bo"]).not.toBe(`bo${fullNeck}`);
@@ -255,11 +291,11 @@ describe("dropShoulderBodyJapaneseNotation", () => {
 
     expect(repl["jp-neckline-shaping"].length).toBeGreaterThan(0);
     expect(out).toContain('transform="translate(40.6 28.83)"');
-    expect(out).toMatch(/translate\(40\.6 28\.83\)"[^>]*>[\s\S]*?1s-2r|3s-2r/);
+    expect(out).toMatch(/translate\(40\.6 28\.83\)"[^>]*>[\s\S]*?(3s-2r|2s-2r|1s-2r)/);
     const armholeText = out.match(
       /<text transform="translate\(190\.38 113\.64\)"[^>]*>([\s\S]*?)<\/text>/,
     )?.[1];
-    expect(armholeText ?? "").not.toMatch(/1s-2r|3s-2r/);
+    expect(armholeText ?? "").not.toMatch(/1s-1r|1s-2r|3s-2r/);
   });
 
   it("derives back neckline shaping when debug.necklineStitches is missing but measurements exist", () => {
@@ -274,10 +310,10 @@ describe("dropShoulderBodyJapaneseNotation", () => {
       DROP_SHOULDER_PATTERN,
     );
     expect(repl["jp-neckline-shaping"].length).toBeGreaterThan(0);
-    expect(repl["jp-neckline-bo"]).toMatch(/^bo\d+/);
+    expect(repl["jp-neckline-bo"]).toMatch(/^hold\d+/);
   });
 
-  it("fills drop-shoulder front round-neck notation from debug", () => {
+  it("fills drop-shoulder front round-neck notation from debug (deep front uses bind-off center)", () => {
     const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
     const repl = buildDropShoulderFrontJapaneseNotationReplacements(result, DROP_SHOULDER_PATTERN);
     expect(repl["jp-caston"]).toMatch(/^co\d+/);

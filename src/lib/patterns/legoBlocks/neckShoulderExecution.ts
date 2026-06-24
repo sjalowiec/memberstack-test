@@ -181,6 +181,7 @@ export function shapingActionsFromTimeline(
   for (const entry of timeline) {
     const rc = entry.row;
     let centerBindOff = 0;
+    let centerHold = 0;
     let neckInnerLeft = 0;
     let neckInnerRight = 0;
     let shoulderOuterLeft = 0;
@@ -190,8 +191,11 @@ export function shapingActionsFromTimeline(
       if (e.kind === "bindOff" && e.side === "center") {
         centerBindOff += e.amount;
       }
+      if (e.kind === "hold" && e.side === "center") {
+        centerHold += e.amount;
+      }
       if (
-        (e.kind === "decrease" || e.kind === "bindOff") &&
+        (e.kind === "decrease" || e.kind === "bindOff" || e.kind === "hold") &&
         e.edge === "inner" &&
         e.amount > 0
       ) {
@@ -208,6 +212,18 @@ export function shapingActionsFromTimeline(
       }
     }
 
+    if (centerHold > 0) {
+      const centerText =
+        options?.centerBindOffShapingLine?.trim() ||
+        (centerHold === 1
+          ? "At center neckline, place 1 stitch in hold."
+          : `At center neckline, place ${centerHold} stitches in hold.`);
+      neckActions.push({
+        startRC: rc,
+        endRC: rc,
+        text: centerText,
+      });
+    }
     if (centerBindOff > 0) {
       const centerText =
         options?.centerBindOffShapingLine?.trim() ||
@@ -220,13 +236,37 @@ export function shapingActionsFromTimeline(
         text: centerText,
       });
     }
+    const hasInnerHold = entry.events.some((ev) => ev.kind === "hold" && ev.edge === "inner");
     const neckSym =
       neckInnerLeft > 0 &&
       neckInnerRight > 0 &&
       neckInnerLeft === neckInnerRight &&
       entry.events.some((ev) => ev.kind === "bindOff" && ev.edge === "inner");
     if (neckInnerLeft > 0 || neckInnerRight > 0) {
-      if (neckSym) {
+      if (hasInnerHold) {
+        if (neckInnerRight > 0) {
+          const n = neckInnerRight;
+          neckActions.push({
+            startRC: rc,
+            endRC: rc,
+            text:
+              n === 1
+                ? "At the right neck edge, put 1 stitch in hold (shoulder stitches continue in work)."
+                : `At the right neck edge, put ${n} stitches in hold (shoulder stitches continue in work).`,
+          });
+        }
+        if (neckInnerLeft > 0) {
+          const n = neckInnerLeft;
+          neckActions.push({
+            startRC: rc,
+            endRC: rc,
+            text:
+              n === 1
+                ? "At the left neck edge, put 1 stitch in hold (shoulder stitches continue in work)."
+                : `At the left neck edge, put ${n} stitches in hold (shoulder stitches continue in work).`,
+          });
+        }
+      } else if (neckSym) {
         const n = neckInnerLeft;
         neckActions.push({
           startRC: rc,
