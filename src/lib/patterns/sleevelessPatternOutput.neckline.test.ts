@@ -3,6 +3,7 @@ import { innerNeckDecreaseNotationLinesFromTimeline } from "./notationOverlaySvg
 import { compressStitchDecreasePointsToNotationLines, type StitchDecreasePoint } from "./shapingNotationCompress";
 import {
   centerBindOffStitchesFromNeckShoulderChart,
+  formatCenterNecklineBindOffAroundZeroPhrase,
   generateSleevelessBackPattern,
 } from "./sleevelessPatternOutput";
 import {
@@ -195,5 +196,56 @@ describe("generateSleevelessBackPattern neckline routing", () => {
     const r = generateSleevelessBackPattern(basePattern("v-neck"));
     const lines = innerNeckDecreaseNotationLinesFromTimeline(r.frontNeckShoulderTimeline!, "right");
     expect(lines.length).toBeLessThanOrEqual(2);
+  });
+});
+
+function backNeckSummaryPlainText(result: ReturnType<typeof generateSleevelessBackPattern>): string {
+  let inSection = false;
+  const parts: string[] = [];
+  for (const row of result.displayRows) {
+    if (row.kind === "section" && row.title === "BACK NECKLINE & SHOULDERS") {
+      inSection = true;
+      continue;
+    }
+    if (inSection && row.kind === "section") break;
+    if (inSection && row.kind === "block") {
+      const paras = row.trustedParagraphs ?? row.paragraphs ?? [];
+      parts.push(...paras);
+    }
+  }
+  return parts.join("\n").replace(/<[^>]+>/g, "");
+}
+
+describe("sleeveless round-neck back neckline summary prose", () => {
+  it("uses setup overview with needle ranges — not drop-shoulder RIGHT/LEFT workflow", () => {
+    const r = generateSleevelessBackPattern(basePattern("round"));
+    const text = backNeckSummaryPlainText(r);
+    expect(text).toMatch(/begin back neckline and shoulder shaping/i);
+    expect(text).toMatch(/Place center neckline needles/i);
+    expect(text).toMatch(/Put needles L\d+ through R\d+ into hold/i);
+    expect(text).toMatch(/Work needles R\d+ through R\d+ first/i);
+    expect(text).toMatch(/Use the checklist below for row-by-row neckline and shoulder shaping/i);
+    expect(text).not.toMatch(/RIGHT SIDE/i);
+    expect(text).not.toMatch(/LEFT SIDE/i);
+    expect(text).not.toMatch(/Scrap off or bind off the remaining right shoulder stitches/i);
+    expect(text).not.toMatch(/Scrap off or bind off the remaining left shoulder stitches/i);
+    expect(text).not.toMatch(/BACK NECKLINE CLEANUP/i);
+    expect(text).not.toMatch(/At the neck edge:/i);
+    expect(text).not.toMatch(/needle 0/i);
+    expect(text).not.toMatch(/left of 0/i);
+    expect(text).not.toMatch(/right of 0/i);
+  });
+});
+
+describe("formatCenterNecklineBindOffAroundZeroPhrase", () => {
+  it("describes center bind-off on L/R needles only (never needle 0)", () => {
+    expect(formatCenterNecklineBindOffAroundZeroPhrase(1)).toBe("1 stitch on R1");
+    expect(formatCenterNecklineBindOffAroundZeroPhrase(8)).toBe(
+      "4 stitches on L needles and 4 on R needles",
+    );
+    expect(formatCenterNecklineBindOffAroundZeroPhrase(7)).toBe(
+      "3 stitches on L needles and 4 stitches on R needles",
+    );
+    expect(formatCenterNecklineBindOffAroundZeroPhrase(7)).not.toMatch(/needle 0|left of 0|right of 0/i);
   });
 });

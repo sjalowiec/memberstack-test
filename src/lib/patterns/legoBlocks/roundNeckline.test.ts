@@ -23,6 +23,7 @@ import {
 
   roundNeckBackBothEdgesWrittenLines,
   roundNeckBackShallowExecutionWrittenLines,
+  roundNeckBackShallowSleevelessSummaryWrittenLines,
 
   roundNeckPlanOneSideBackFullJpLines,
 
@@ -343,6 +344,28 @@ describe("shallow round-neck written instructions", () => {
     expect(lines.some((l) => /Place the (center|opposite)/i.test(l))).toBe(false);
     expect(lines.some((l) => /Continue to RC:/i.test(l))).toBe(false);
     expect(lines.some((l) => /Stage 1/i.test(l))).toBe(false);
+  });
+
+  it("sleeveless summary is setup overview only — checklist handles row-by-row shaping", () => {
+    const plan = calculateBackRoundNecklinePlan({
+      necklineStitches: 36,
+      necklineDepthRows: 10,
+    });
+    const lines = roundNeckBackShallowSleevelessSummaryWrittenLines(plan, {
+      bodyWidthStitches: 100,
+      necklineStartRcLabel: "RC:049",
+    });
+    expect(lines[0]).toBe("At RC:049, begin back neckline and shoulder shaping.");
+    expect(lines.some((l) => /Place center neckline needles .*L9 through R9/i.test(l))).toBe(true);
+    expect(lines.some((l) => /Put needles .*L50 through R9.*into hold/i.test(l))).toBe(true);
+    expect(lines.some((l) => /Work needles .*R10 through R50.*first/i.test(l))).toBe(true);
+    expect(lines.at(-1)).toBe(
+      "Use the checklist below for row-by-row neckline and shoulder shaping.",
+    );
+    expect(lines.some((l) => /^RIGHT SIDE$/i.test(l))).toBe(false);
+    expect(lines.some((l) => /Scrap off or bind off the remaining (right|left) shoulder stitches/i.test(l))).toBe(
+      false,
+    );
   });
 
   it("roundNeckBackBothEdgesWrittenLines summarizes symmetric hold per edge", () => {

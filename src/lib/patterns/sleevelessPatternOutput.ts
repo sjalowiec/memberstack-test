@@ -100,7 +100,7 @@ import {
   cardiganFrontInitialNeckBindOffStitches,
 } from "./roundNeckNotation";
 import {
-  roundNeckBackShallowExecutionWrittenLines,
+  roundNeckBackShallowSleevelessSummaryWrittenLines,
   type RoundNecklinePlanResult,
 } from "./roundNeckPlanPresentation";
 import { buildGlossaryTooltipPlaceholderHtml } from "../glossary/glossaryTooltipPrint";
@@ -1220,17 +1220,22 @@ function stitchCountPhrase(n: number): string {
 }
 
 /**
- * Parenthetical for how the center bind-off spans needle 0 — floor/ceil split when N is odd
- * (matches common machine-bed convention).
+ * Parenthetical for how the center bind-off spans the bed center — floor/ceil split on L/R needles
+ * when N is odd (needle 0 is never a working needle).
  */
 export function formatCenterNecklineBindOffAroundZeroPhrase(totalCenterBindOff: number): string {
   const N = Math.max(0, Math.floor(totalCenterBindOff));
   if (N <= 0) return "";
-  if (N === 1) return "1 stitch at the center (needle 0)";
-  const leftOf = Math.floor(N / 2);
-  const rightOf = N - leftOf;
-  if (leftOf === rightOf) return `${leftOf} stitches on each side of 0`;
-  return `${leftOf} stitches left of 0, ${rightOf} stitches right of 0`;
+  if (N === 1) return "1 stitch on R1";
+  const onLeft = Math.floor(N / 2);
+  const onRight = N - onLeft;
+  if (onLeft === onRight) {
+    const word = onLeft === 1 ? "stitch" : "stitches";
+    return `${onLeft} ${word} on L needles and ${onRight} on R needles`;
+  }
+  const leftWord = onLeft === 1 ? "stitch" : "stitches";
+  const rightWord = onRight === 1 ? "stitch" : "stitches";
+  return `${onLeft} ${leftWord} on L needles and ${onRight} ${rightWord} on R needles`;
 }
 
 /** Remaining shoulder-side stitches after the center bind-off (from chart row 0). */
@@ -1385,16 +1390,6 @@ function parseRcBoundsFromExecutionLines(lines: readonly string[]): {
 }
 
 /**
- * Pre-table neckline/shoulder prose (placed before the one-shoulder shaping table).
- * The "repeat for the second shoulder" wording is rendered inside the one-shoulder checklist
- * HTML (see {@link renderNeckShoulderShapingChartTableOnlyHtml}) AFTER the final bind-off
- * line, so it is intentionally absent here.
- */
-const NECKLINE_SHOULDER_INSTRUCTION_PARAGRAPHS: readonly string[] = [
-  "Use the checklist below to work the neckline and shoulder shaping.",
-];
-
-/**
  * Final shoulder bind-off instruction sentence. Returns `null` when no stitches remain
  * (so callers can omit the line entirely instead of emitting "Bind off remaining 0 stitches.").
  * Uses singular wording for exactly one stitch.
@@ -1423,10 +1418,13 @@ function backNecklineShoulderSummaryParagraphs(args: {
   /** Full garment neck opening N — used for cardigan CF initial bind-off in summary validation. */
   fullNecklineStitches?: number;
   shoulderStitches?: number;
-  /** Full body width at the armhole — enables needle-range back-neck execution prose. */
+  /** Shoulder-line stitch count B at the neckline row — enables needle-range setup prose. */
   stitchesAfterArmhole?: number;
-  /** Shallow back round-neck plan — when set, emits hold execution instructions. */
+  /** Shallow back round-neck plan — when set, emits hold setup overview (checklist handles shaping). */
   backRoundNeckPlan?: RoundNecklinePlanResult | null;
+  /** Garment RC where back neckline shaping begins (with {@link firstArmholeRC} for Armhole RC label). */
+  backNecklineStartRC?: number;
+  firstArmholeRC?: number | null;
 }): string[] | null {
   let leftS: number | undefined;
   let rightS: number | undefined;
@@ -1468,14 +1466,21 @@ function backNecklineShoulderSummaryParagraphs(args: {
     return null;
   }
 
-  return [
-    "Use the checklist below for row-by-row shaping on the active shoulder.",
-    ...(args.backRoundNeckPlan?.strategy === "shallow-round"
-      ? roundNeckBackShallowExecutionWrittenLines(args.backRoundNeckPlan, {
-          bodyWidthStitches: args.stitchesAfterArmhole ?? 0,
-        })
-      : NECKLINE_SHOULDER_INSTRUCTION_PARAGRAPHS.slice(1)),
-  ];
+  const necklineStartRcLabel =
+    args.backNecklineStartRC !== undefined &&
+    args.firstArmholeRC !== null &&
+    args.firstArmholeRC !== undefined
+      ? formatArmholeLocalRc(args.backNecklineStartRC, args.firstArmholeRC)
+      : undefined;
+
+  if (args.backRoundNeckPlan?.strategy === "shallow-round") {
+    return roundNeckBackShallowSleevelessSummaryWrittenLines(args.backRoundNeckPlan, {
+      bodyWidthStitches: args.stitchesAfterArmhole ?? 0,
+      necklineStartRcLabel,
+    });
+  }
+
+  return ["Use the checklist below for row-by-row neckline and shoulder shaping."];
 }
 
 /** Routes needle-range HTML lines to {@link trustedParagraphs} for trusted rendering. */
@@ -1950,6 +1955,8 @@ export function buildSleevelessBackDisplayRows(args: {
       shoulderStitches: args.shoulderStitches,
       stitchesAfterArmhole: args.stitchesAfterArmhole,
       backRoundNeckPlan: args.backRoundNeckPlan,
+      backNecklineStartRC: args.backNecklineStartRC,
+      firstArmholeRC: args.firstArmholeRC,
     });
     if (summary) {
       rows.push({
@@ -1981,6 +1988,8 @@ export function buildSleevelessBackDisplayRows(args: {
       shoulderStitches: args.shoulderStitches,
       stitchesAfterArmhole: args.stitchesAfterArmhole,
       backRoundNeckPlan: args.backRoundNeckPlan,
+      backNecklineStartRC: args.backNecklineStartRC,
+      firstArmholeRC: args.firstArmholeRC,
     });
     rows.push({
       kind: "block",

@@ -158,9 +158,56 @@ function roundNeckBackShallowNeedleExecutionLines(
   ];
 }
 
+/** Armhole-local RC label for sleeveless back-neck summary (e.g. `RC:049`). */
+export type RoundNeckBackShallowSleevelessSummaryOptions = RoundNeckBackShallowExecutionOptions & {
+  necklineStartRcLabel?: string;
+};
+
+const SLEEVELESS_BACK_NECK_CHECKLIST_LINE =
+  "Use the checklist below for row-by-row neckline and shoulder shaping.";
+
+/**
+ * Sleeveless back-neck **setup overview** — needle ranges without drop-shoulder RIGHT/LEFT workflow.
+ * Row-by-row neck and shoulder shaping remain in the active-shoulder checklist.
+ */
+export function roundNeckBackShallowSleevelessSummaryWrittenLines(
+  plan: RoundNecklinePlanResult | RoundNecklineShapingResult,
+  options?: RoundNeckBackShallowSleevelessSummaryOptions,
+): string[] {
+  const checklistLine = SLEEVELESS_BACK_NECK_CHECKLIST_LINE;
+
+  if (!isShallowHoldRoundPlan(plan)) {
+    return [checklistLine];
+  }
+
+  const bodyWidth = options?.bodyWidthStitches ?? 0;
+  const rcLabel = String(options?.necklineStartRcLabel ?? "").trim();
+  const rcLine = rcLabel ? `At ${rcLabel}, begin back neckline and shoulder shaping.` : null;
+
+  if (bodyWidth <= 0) {
+    const centerLine = roundNeckPlanCenterWrittenLine(plan);
+    return [rcLine, centerLine, checklistLine].filter((line): line is string => Boolean(line));
+  }
+
+  const layout = computeShallowBackNeckNeedleLayout(bodyWidth, plan.centerBindOff);
+  const { stitchCounts: counts } = layout;
+  const centerRangeHtml = formatCenterNeedleHoldPhraseHtml(layout);
+  const rightWorkRangeHtml = formatNeedleRangeHtml(
+    formatNeedleRangeThrough(layout.rightShoulder.start, layout.rightShoulder.end),
+  );
+
+  return [
+    ...(rcLine ? [rcLine] : []),
+    `Place center neckline needles ${centerRangeHtml} in hold${formatStitchCountValidation(counts.center)}.`,
+    `Put needles ${formatFirstSideHoldPhraseHtml(layout)} into hold${formatStitchCountValidation(counts.firstSideHold)}.`,
+    `Work needles ${rightWorkRangeHtml} first${formatStitchCountValidation(counts.rightShoulder)}.`,
+    checklistLine,
+  ];
+}
+
 /**
  * Shallow back-neck **execution** instructions (machine-knit workflow with needle ranges).
- * Does not affect JP notation or shaping math — prose only.
+ * Drop-shoulder only — does not affect JP notation or shaping math — prose only.
  */
 export function roundNeckBackShallowExecutionWrittenLines(
   plan: RoundNecklinePlanResult | RoundNecklineShapingResult,
