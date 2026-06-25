@@ -26,7 +26,10 @@ from legacy_course_import import (
     RAW_DIR,
     REPORTS_DIR,
     ROOT,
+    SKIP_CATEGORY_HAND_CLEANED,
+    SKIP_CATEGORY_INTERNAL,
     backup_existing_file,
+    bulk_migration_skip_reason,
     collect_course_stats,
     export_filename,
     group_rows_by_course,
@@ -67,6 +70,8 @@ def render_markdown_report(report: dict) -> str:
         f"- Courses in CSV: {report['totals']['coursesInCsv']}",
         f"- Courses migrated: {report['totals']['coursesMigrated']}",
         f"- Courses skipped: {report['totals']['coursesSkipped']}",
+        f"- Skipped (hand-cleaned): {report['totals']['coursesSkippedHandCleaned']}",
+        f"- Skipped (internal repository): {report['totals']['coursesSkippedInternal']}",
         f"- Lessons: {report['totals']['lessons']}",
         f"- Blocks: {report['totals']['blocks']}",
         f"- Unmapped components: {report['totals']['unmappedComponents']}",
@@ -78,12 +83,27 @@ def render_markdown_report(report: dict) -> str:
         "",
     ]
 
-    if report["skippedCourses"]:
+    if report["skippedHandCleanedCourses"] or report["skippedInternalCourses"]:
         lines.extend(["## Skipped courses", ""])
-        for item in report["skippedCourses"]:
-            lines.append(
-                f"- **{item['legacyChallengeId']}** {item['title']}: {item['reason']}"
-            )
+        if report["skippedHandCleanedCourses"]:
+            lines.extend(["", "### Hand-cleaned (preserved on disk)", ""])
+            for item in report["skippedHandCleanedCourses"]:
+                suffix = (
+                    f" (`{item['existingFile']}`)"
+                    if item.get("existingFile")
+                    else ""
+                )
+                lines.append(
+                    f"- **{item['legacyChallengeId']}** {item['title']}{suffix}: "
+                    f"{item['reason']}"
+                )
+        if report["skippedInternalCourses"]:
+            lines.extend(["", "### Internal repository (not migrated)", ""])
+            for item in report["skippedInternalCourses"]:
+                lines.append(
+                    f"- **{item['legacyChallengeId']}** {item['title']}: "
+                    f"{item['reason']}"
+                )
         lines.append("")
 
     if report["unmappedComponents"]:
@@ -134,6 +154,8 @@ def migrate_all(
             "coursesInCsv": len(grouped),
             "coursesMigrated": 0,
             "coursesSkipped": 0,
+            "coursesSkippedHandCleaned": 0,
+            "coursesSkippedInternal": 0,
             "lessons": 0,
             "blocks": 0,
             "unmappedComponents": 0,
@@ -143,7 +165,8 @@ def migrate_all(
             "uniqueImageReferences": 0,
             "uniqueDownloadReferences": 0,
         },
-        "skippedCourses": [],
+        "skippedHandCleanedCourses": [],
+        "skippedInternalCourses": [],
         "skippedRows": [],
         "unmappedComponents": [],
         "courses": [],
@@ -159,15 +182,25 @@ def migrate_all(
         out_name = poc_filename(challenge_id, title)
         out_path = CLEANED_DIR / out_name
 
-        if challenge_id in HAND_CLEANED_COURSE_IDS and out_path.exists() and not overwrite_hand_cleaned:
-            report["skippedCourses"].append(
-                {
-                    "legacyChallengeId": challenge_id,
-                    "title": title,
-                    "reason": "hand-cleaned course file exists (use --overwrite-hand-cleaned to replace after backup)",
-                    "existingFile": out_name,
-                }
-            )
+        skip = bulk_migration_skip_reason(
+            challenge_id,
+            poc_file_exists=out_path.exists(),
+            overwrite_hand_cleaned=overwrite_hand_cleaned,
+        )
+        if skip:
+            entry = {
+                "legacyChallengeId": challenge_id,
+                "title": title,
+                "reason": skip["reason"],
+                "category": skip["category"],
+            }
+            if skip["category"] == SKIP_CATEGORY_HAND_CLEANED:
+                entry["existingFile"] = out_name
+                report["skippedHandCleanedCourses"].append(entry)
+                report["totals"]["coursesSkippedHandCleaned"] += 1
+            elif skip["category"] == SKIP_CATEGORY_INTERNAL:
+                report["skippedInternalCourses"].append(entry)
+                report["totals"]["coursesSkippedInternal"] += 1
             report["totals"]["coursesSkipped"] += 1
             continue
 
@@ -298,6 +331,10 @@ def main() -> int:
     print(f"Courses in CSV: {report['totals']['coursesInCsv']}")
     print(f"Courses migrated: {report['totals']['coursesMigrated']}")
     print(f"Courses skipped: {report['totals']['coursesSkipped']}")
+    print(
+        f"  Hand-cleaned: {report['totals']['coursesSkippedHandCleaned']}, "
+        f"Internal repository: {report['totals']['coursesSkippedInternal']}"
+    )
     print(f"Lessons: {report['totals']['lessons']}")
     print(f"Blocks: {report['totals']['blocks']}")
     print(f"Unmapped components: {report['totals']['unmappedComponents']}")
@@ -310,9 +347,13 @@ def main() -> int:
     print(f"Report Markdown: {md_report_path.relative_to(ROOT)}")
     if report["backups"]:
         print(f"Backups written: {len(report['backups'])}")
-    if report["skippedCourses"]:
-        print("Skipped courses:")
-        for item in report["skippedCourses"]:
+    if report["skippedHandCleanedCourses"]:
+        print("Skipped (hand-cleaned):")
+        for item in report["skippedHandCleanedCourses"]:
+            print(f"  - {item['legacyChallengeId']} {item['title']}: {item['reason']}")
+    if report["skippedInternalCourses"]:
+        print("Skipped (internal repository):")
+        for item in report["skippedInternalCourses"]:
             print(f"  - {item['legacyChallengeId']} {item['title']}: {item['reason']}")
 
     return 0

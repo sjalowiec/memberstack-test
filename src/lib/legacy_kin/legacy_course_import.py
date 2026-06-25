@@ -22,6 +22,37 @@ REPORTS_DIR = ROOT / "src/data/legacy_kin/reports"
 BACKUP_DIR = CLEANED_DIR / "backups"
 
 HAND_CLEANED_COURSE_IDS = {50, 51}
+INTERNAL_REPOSITORY_COURSE_IDS = {65}
+
+SKIP_CATEGORY_HAND_CLEANED = "handCleaned"
+SKIP_CATEGORY_INTERNAL = "internal"
+
+
+def bulk_migration_skip_reason(
+    challenge_id: int,
+    *,
+    poc_file_exists: bool,
+    overwrite_hand_cleaned: bool = False,
+) -> dict[str, str] | None:
+    """Return skip metadata when bulk migration should not import a course."""
+    if challenge_id in INTERNAL_REPOSITORY_COURSE_IDS:
+        return {
+            "category": SKIP_CATEGORY_INTERNAL,
+            "reason": "Skipped (internal repository)",
+        }
+    if (
+        challenge_id in HAND_CLEANED_COURSE_IDS
+        and poc_file_exists
+        and not overwrite_hand_cleaned
+    ):
+        return {
+            "category": SKIP_CATEGORY_HAND_CLEANED,
+            "reason": (
+                "hand-cleaned course file exists "
+                "(use --overwrite-hand-cleaned to replace after backup)"
+            ),
+        }
+    return None
 
 CSV_CANDIDATE_PATHS = (
     ROOT / "data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
@@ -59,6 +90,13 @@ HTML_CLEANUP_ACTIONS = (
     "legacyNav",
     "vimeoSpacing",
     "boxWrappers",
+    "bootstrapLayout",
+)
+
+BOOTSTRAP_LAYOUT_CLASS_TOKEN_RE = re.compile(
+    r"^(?:row|well_white|well|panel(?:-[a-z0-9_-]+)?|img-responsive|"
+    r"col-(?:xs|sm|md|lg|xl|xxl)(?:-(?:\d+|offset-\d+)))$",
+    re.IGNORECASE,
 )
 
 MIGRATION_NOTES: dict[str, list[str]] = {
@@ -254,6 +292,237 @@ def rewrite_html_download_links(html: str) -> str:
     )
 
 
+def _split_class_tokens(class_value: str) -> tuple[list[str], list[str]]:
+    tokens = [token for token in re.split(r"\s+", class_value.strip()) if token]
+    layout: list[str] = []
+    kept: list[str] = []
+    for token in tokens:
+        if BOOTSTRAP_LAYOUT_CLASS_TOKEN_RE.match(token):
+            layout.append(token)
+        else:
+            kept.append(token)
+    return layout, kept
+
+
+def _is_bootstrap_only_class_value(class_value: str) -> bool:
+    layout, kept = _split_class_tokens(class_value)
+    return bool(layout) and not kept
+
+
+def _extract_class_value(open_tag: str) -> str | None:
+    match = re.search(
+        r'\bclass=(["\'])(.*?)\1',
+        open_tag,
+        re.IGNORECASE | re.DOTALL,
+    )
+    return match.group(2) if match else None
+
+
+def _find_matching_close_div(html: str, open_end: int) -> int | None:
+    depth = 1
+    pos = open_end + 1
+    while pos < len(html) and depth > 0:
+        next_open = re.search(r"<div\b", html[pos:], re.IGNORECASE)
+        next_close = re.search(r"</div\s*>", html[pos:], re.IGNORECASE)
+        if not next_close:
+            return None
+        if next_open and next_open.start() < next_close.start():
+            depth += 1
+            pos += next_open.end()
+            continue
+        depth -= 1
+        if depth == 0:
+            return pos + next_close.start()
+        pos += next_close.end()
+    return None
+
+
+def unwrap_bootstrap_layout_divs(html: str) -> str:
+    changed = True
+    while changed:
+        changed = False
+        for match in re.finditer(r"<div\b", html, re.IGNORECASE):
+            start = match.start()
+            open_end = html.find(">", start)
+            if open_end == -1:
+                continue
+            open_tag = html[start : open_end + 1]
+            class_value = _extract_class_value(open_tag)
+            if not class_value or not _is_bootstrap_only_class_value(class_value):
+                continue
+            close_start = _find_matching_close_div(html, open_end)
+            if close_start is None:
+                continue
+            close_end = close_start + re.match(
+                r"</div\s*>",
+                html[close_start:],
+                re.IGNORECASE,
+            ).end()
+            inner = html[open_end + 1 : close_start]
+            html = html[:start] + inner + html[close_end:]
+            changed = True
+            break
+    return html
+
+
+def strip_bootstrap_layout_classes_from_tags(html: str) -> str:
+    def repl_tag(match: re.Match[str]) -> str:
+        tag = match.group(0)
+        if not re.search(r"\bclass=", tag, re.IGNORECASE):
+            return tag
+
+        def class_repl(class_match: re.Match[str]) -> str:
+            quote = class_match.group(1)
+            class_value = class_match.group(2)
+            _, kept = _split_class_tokens(class_value)
+            if not kept:
+                return ""
+            return f'class={quote}{" ".join(kept)}{quote}'
+
+        updated = re.sub(
+            r'\bclass=(["\'])(.*?)\1',
+            class_repl,
+            tag,
+            count=1,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+        updated = re.sub(r"\s{2,}", " ", updated)
+        return re.sub(r"\s+>", ">", updated)
+
+    return re.sub(r"<\w+\b[^>]*>", repl_tag, html, flags=re.IGNORECASE)
+
+
+def apply_bootstrap_layout_cleanup(html: str) -> str:
+    result = unwrap_bootstrap_layout_divs(html)
+    result = strip_bootstrap_layout_classes_from_tags(result)
+    result = unwrap_bootstrap_layout_divs(result)
+    return result
+
+
+def _direct_child_column_divs(html: str) -> list[tuple[str, str]]:
+    """Return (open_tag, inner_html) for direct child div columns."""
+    columns: list[tuple[str, str]] = []
+    pos = 0
+    trimmed = html.strip()
+    while pos < len(trimmed):
+        leading = re.match(r"\s+", trimmed[pos:])
+        if leading:
+            pos += leading.end()
+            continue
+        open_match = re.match(r"<div\b", trimmed[pos:], re.IGNORECASE)
+        if not open_match:
+            break
+        start = pos + open_match.start()
+        open_end = trimmed.find(">", start)
+        if open_end == -1:
+            break
+        open_tag = trimmed[start : open_end + 1]
+        close_start = _find_matching_close_div(trimmed, open_end)
+        if close_start is None:
+            break
+        close_end = close_start + re.match(
+            r"</div\s*>",
+            trimmed[close_start:],
+            re.IGNORECASE,
+        ).end()
+        columns.append((open_tag, trimmed[open_end + 1 : close_start]))
+        pos = close_end
+    if trimmed[pos:].strip():
+        return []
+    return columns
+
+
+def _is_bootstrap_column_div(open_tag: str) -> bool:
+    class_value = _extract_class_value(open_tag)
+    if not class_value:
+        return False
+    layout, kept = _split_class_tokens(class_value)
+    return any(token.startswith("col-") for token in layout) and not kept
+
+
+def try_split_obvious_text_video_layout(html: str) -> tuple[str, str] | None:
+    """
+    When HTML is an unambiguous Bootstrap two-column text + Vimeo layout,
+    return (text_html, vimeo_id). Otherwise return None.
+    """
+    trimmed = html.strip()
+    row_match = re.match(
+        r"^<div\b[^>]*\bclass=(['\"])[^'\"]*\brow\b[^'\"]*\1[^>]*>([\s\S]*)</div\s*>\s*$",
+        trimmed,
+        re.IGNORECASE,
+    )
+    inner = row_match.group(2) if row_match else trimmed
+    columns = _direct_child_column_divs(inner)
+    if len(columns) != 2:
+        return None
+
+    if not all(_is_bootstrap_column_div(open_tag) for open_tag, _ in columns):
+        return None
+
+    text_html: str | None = None
+    vimeo_id: str | None = None
+    for _, column_html in columns:
+        column_vimeo = extract_vimeo_id(column_html)
+        if column_vimeo:
+            if vimeo_id is not None:
+                return None
+            vimeo_id = column_vimeo
+        else:
+            if text_html is not None:
+                return None
+            text_html = column_html
+
+    if not text_html or not vimeo_id:
+        return None
+    if not strip_html(text_html):
+        return None
+    return text_html.strip(), vimeo_id
+
+
+def html_to_richtext_components(
+    html: str,
+    challenge_id: int,
+    component_id: int,
+    order: int,
+    *,
+    allow_obvious_text_video_split: bool = False,
+    video_title: str | None = None,
+) -> list[dict[str, Any]]:
+    if allow_obvious_text_video_split:
+        split = try_split_obvious_text_video_layout(html)
+        if split:
+            text_raw, vimeo_id = split
+            return [
+                {
+                    "type": "richText",
+                    "html": apply_post_html_cleanup(
+                        strip_embedded_videos(text_raw),
+                        challenge_id,
+                    ),
+                    "legacyComponentId": component_id,
+                    "order": order,
+                },
+                {
+                    "type": "video",
+                    "vimeoId": vimeo_id,
+                    "title": video_title,
+                    "legacySource": "embedded-html",
+                    "legacyComponentId": component_id,
+                    "order": order,
+                },
+            ]
+
+    cleaned = apply_post_html_cleanup(html, challenge_id)
+    return [
+        {
+            "type": "richText",
+            "html": cleaned,
+            "legacyComponentId": component_id,
+            "order": order,
+        }
+    ]
+
+
 def apply_html_cleanup(html: str, actions: tuple[str, ...] | None = None) -> str:
     selected = actions or HTML_CLEANUP_ACTIONS
     result = html
@@ -312,6 +581,8 @@ def apply_html_cleanup(html: str, actions: tuple[str, ...] | None = None) -> str
                 result,
                 flags=re.IGNORECASE,
             )
+        elif action == "bootstrapLayout":
+            result = apply_bootstrap_layout_cleanup(result)
     return result
 
 
@@ -452,14 +723,12 @@ def convert_component(
             ]
         html = vars_map.get("HTMLCONTENT") or ""
         if html.strip():
-            return [
-                {
-                    "type": "richText",
-                    "html": apply_post_html_cleanup(html, challenge_id),
-                    "legacyComponentId": component_id,
-                    "order": order,
-                }
-            ]
+            return html_to_richtext_components(
+                html,
+                challenge_id,
+                component_id,
+                order,
+            )
         return []
 
     if kind in {"VimeoID", "Video"}:
@@ -570,58 +839,24 @@ def convert_component(
     if kind in {"HTML", "Practice"}:
         html = vars_map.get("HTMLCONTENT") or vars_map.get("TEXTCONTENT") or ""
         if html.strip():
-            vimeo_id = extract_vimeo_id(html)
-            components = [
-                {
-                    "type": "richText",
-                    "html": apply_post_html_cleanup(
-                        strip_embedded_videos(html) if vimeo_id else html,
-                        challenge_id,
-                    ),
-                    "legacyComponentId": component_id,
-                    "order": order,
-                }
-            ]
-            if vimeo_id:
-                components.append(
-                    {
-                        "type": "video",
-                        "vimeoId": vimeo_id,
-                        "title": None,
-                        "legacySource": "embedded-html",
-                        "legacyComponentId": component_id,
-                        "order": order,
-                    }
-                )
-            return components
+            return html_to_richtext_components(
+                html,
+                challenge_id,
+                component_id,
+                order,
+                allow_obvious_text_video_split=True,
+            )
         return []
 
     html = vars_map.get("HTMLCONTENT") or vars_map.get("TEXTCONTENT") or ""
     if html.strip():
-        vimeo_id = extract_vimeo_id(html)
-        components = [
-            {
-                "type": "richText",
-                "html": apply_post_html_cleanup(
-                    strip_embedded_videos(html) if vimeo_id else html,
-                    challenge_id,
-                ),
-                "legacyComponentId": component_id,
-                "order": order,
-            }
-        ]
-        if vimeo_id:
-            components.append(
-                {
-                    "type": "video",
-                    "vimeoId": vimeo_id,
-                    "title": None,
-                    "legacySource": "embedded-html",
-                    "legacyComponentId": component_id,
-                    "order": order,
-                }
-            )
-        return components
+        return html_to_richtext_components(
+            html,
+            challenge_id,
+            component_id,
+            order,
+            allow_obvious_text_video_split=True,
+        )
 
     if vars_map.get("VIMEOID"):
         vimeo_raw = vars_map["VIMEOID"]
