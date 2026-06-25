@@ -63,10 +63,10 @@ describe("applyJapaneseNotationSvgReplacements", () => {
     const out = applyJapaneseNotationSvgReplacements(rawSvg, SAMPLE_JP_BACK_NOTATION_REPLACEMENTS);
 
     expect(out).toMatch(
-      /<text transform="translate\(86\.22 151\.8\)"[^>]*>\s*<tspan x="0" y="0">3s-2r-2x<\/tspan>\s*<tspan x="0" dy="14\.4">2s-1r-1x<\/tspan>\s*<tspan x="0" dy="14\.4">1s-2r-4x<\/tspan>\s*<\/text>/,
+      /<text transform="translate\(71\.02 72\.44\)"[^>]*>\s*<tspan x="0" y="0">3s-2r-2x<\/tspan>\s*<tspan x="0" dy="14\.4">2s-1r-1x<\/tspan>\s*<tspan x="0" dy="14\.4">1s-2r-4x<\/tspan>\s*<\/text>/,
     );
     expect(out).toMatch(
-      /<text transform="translate\(175\.17 94\.74\)"[^>]*>\s*<tspan x="0" y="0">4s-2r-4x<\/tspan>\s*<tspan x="0" dy="14\.4">5s-2r-1x<\/tspan>\s*<\/text>/,
+      /<text transform="translate\(166\.02 85\.6\)"[^>]*>\s*<tspan x="0" y="0">4s-2r-4x<\/tspan>\s*<tspan x="0" dy="14\.4">5s-2r-1x<\/tspan>\s*<\/text>/,
     );
   });
 
@@ -76,7 +76,7 @@ describe("applyJapaneseNotationSvgReplacements", () => {
       "jp-neckline-shaping": "A\nB",
     });
 
-    expect(out).toContain('transform="translate(86.22 151.8)"');
+    expect(out).toContain('transform="translate(71.02 72.44)"');
   });
 
   it("keeps multiline tokens on their own text transform when a prior sibling was cleared", () => {
@@ -149,7 +149,7 @@ describe("diagram-jp-front-round.svg multiline shaping", () => {
     const out = applyJapaneseNotationSvgReplacements(rawSvg, SAMPLE_JP_BACK_NOTATION_REPLACEMENTS);
 
     expect(out).toMatch(
-      /<text transform="translate\(33\.92 90\.69\)"[^>]*>\s*<tspan x="0" y="0">3s-2r-2x<\/tspan>\s*<tspan x="0" dy="14\.4">2s-1r-1x<\/tspan>\s*<tspan x="0" dy="14\.4">1s-2r-4x<\/tspan>\s*<\/text>/,
+      /<text transform="translate\(71\.02 72\.44\)"[^>]*>\s*<tspan x="0" y="0">3s-2r-2x<\/tspan>\s*<tspan x="0" dy="14\.4">2s-1r-1x<\/tspan>\s*<tspan x="0" dy="14\.4">1s-2r-4x<\/tspan>\s*<\/text>/,
     );
     expect(findUnreplacedJapaneseNotationPlaceholders(out)).toEqual([]);
   });

@@ -34,6 +34,7 @@ import {
   JP_BACK_NOTATION_SVG_TOKEN_KEYS,
   type JpBackNotationSvgTokenKey,
 } from "./sleevelessBackJapaneseNotation";
+import { isSleevelessVNeckChoice } from "./sleevelessFrontDiagramSrc";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
 function section(obj: unknown): Record<string, unknown> {
@@ -275,7 +276,7 @@ function isDropShoulderCardigan(patternData: unknown): boolean {
 }
 
 function isDropShoulderVNeck(patternData: unknown): boolean {
-  return String(section(patternData?.style).neckline || "") === "v";
+  return isSleevelessVNeckChoice(patternData);
 }
 
 function dropShoulderFrontCastOnSts(

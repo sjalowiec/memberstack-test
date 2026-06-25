@@ -5,6 +5,7 @@
 import videosPublic from "../../data/videos-public.json";
 import { catalogChaptersFromVideoRow } from "../catalogVideoChapters";
 import { vimeoNumericIdFromPublicVideo, type PublicVideoRow } from "../lessonVideo";
+import { catalogVideoIsPublic } from "../videoPublic";
 
 export type SleevelessHelpVideoMeta = {
   id: string;
@@ -28,7 +29,7 @@ export function sleevelessHelpVideoFromCatalog(
   catalog: PublicVideoRow[] = videosPublic as PublicVideoRow[],
 ): SleevelessHelpVideoMeta | null {
   const row = findPublicVideoByContentId(catalog, contentId);
-  if (!row) return null;
+  if (!row || !catalogVideoIsPublic(row)) return null;
   const vimeoId = vimeoNumericIdFromPublicVideo(row);
   if (!vimeoId) return null;
 

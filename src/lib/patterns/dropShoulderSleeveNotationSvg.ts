@@ -2,6 +2,7 @@
  * Drop-shoulder sleeve diagram SVG paths (measurements + shaping notation).
  */
 
+import { resolveDropShoulderDiagramSvg } from "./dropShoulderDiagramSvgResolver";
 import type { DropShoulderSleeveDirection } from "./dropShoulderSleeveConstruction";
 
 export const DROP_SHOULDER_SLEEVE_MEASUREMENT_BOTTOM_UP_SRC =
@@ -19,15 +20,21 @@ export const DROP_SHOULDER_SLEEVE_NOTATION_TOP_DOWN_SRC =
 export function resolveDropShoulderSleeveMeasurementSvgSrc(
   direction: DropShoulderSleeveDirection,
 ): string {
-  return direction === "top-down"
-    ? DROP_SHOULDER_SLEEVE_MEASUREMENT_TOP_DOWN_SRC
-    : DROP_SHOULDER_SLEEVE_MEASUREMENT_BOTTOM_UP_SRC;
+  return resolveDropShoulderDiagramSvg({
+    piece: "sleeve",
+    mode: "sts-rows",
+    bodyShape: "straight",
+    sleeveDirection: direction,
+  }).src;
 }
 
 export function resolveDropShoulderSleeveNotationSvgSrc(
   direction: DropShoulderSleeveDirection,
 ): string {
-  return direction === "top-down"
-    ? DROP_SHOULDER_SLEEVE_NOTATION_TOP_DOWN_SRC
-    : DROP_SHOULDER_SLEEVE_NOTATION_BOTTOM_UP_SRC;
+  return resolveDropShoulderDiagramSvg({
+    piece: "sleeve",
+    mode: "japanese",
+    bodyShape: "straight",
+    sleeveDirection: direction,
+  }).src;
 }

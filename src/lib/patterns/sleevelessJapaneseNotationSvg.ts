@@ -160,6 +160,7 @@ function isExactPlaceholderConcatenation(concatenated: string, key: string): boo
 function buildReplacementTextElement(
   attrs: string,
   firstInner: string,
+  key: string,
   value: string,
   classFontSizes: Map<string, number>,
 ): string {
@@ -168,7 +169,7 @@ function buildReplacementTextElement(
 
   if (lines.length <= 1) {
     const text = escapeXmlText(lines[0] ?? "");
-    return `<text${attrs}>${replaceSingleLineTextInner(firstInner, text)}</text>`;
+    return `<text${attrs}>${singleLineReplacementInner(firstInner, key, text)}</text>`;
   }
 
   const firstTspanAttrs = firstTspanOpenAttrs(firstInner);
@@ -250,12 +251,42 @@ function buildMultilineTspanMarkup(
     .join("");
 }
 
-function replaceSingleLineTextInner(inner: string, escapedValue: string): string {
+/** Replace entire `<text>` inner markup with a single escaped value (split-placeholder isolate groups). */
+function replaceWholeTextInner(inner: string, escapedValue: string): string {
   const firstTspanAttrs = firstTspanOpenAttrs(inner);
   if (firstTspanAttrs.length > 0) {
     return `<tspan${firstTspanAttrs}>${escapedValue}</tspan>`;
   }
   return escapedValue;
+}
+
+/** Replace one placeholder in `<text>` inner markup, preserving literal suffix/prefix text (e.g. `{{shoulder-stitches}}sts`). */
+function substitutePlaceholderInTextInner(
+  inner: string,
+  key: string,
+  escapedValue: string,
+): string {
+  const concatenated = concatSvgTextElementContent(inner);
+  const replaced = concatenated.replace(placeholderPattern(key), escapedValue);
+  if (replaced === concatenated) return inner;
+  const firstTspanAttrs = firstTspanOpenAttrs(inner);
+  if (firstTspanAttrs.length > 0) {
+    return `<tspan${firstTspanAttrs}>${replaced}</tspan>`;
+  }
+  return replaced;
+}
+
+function singleLineReplacementInner(
+  inner: string,
+  key: string,
+  escapedValue: string,
+): string {
+  const concatenated = concatSvgTextElementContent(inner);
+  const substituted = substitutePlaceholderInTextInner(inner, key, escapedValue);
+  const substitutedText = concatSvgTextElementContent(substituted);
+  return substitutedText !== concatenated
+    ? substituted
+    : replaceWholeTextInner(inner, escapedValue);
 }
 
 function isolateGroupContainsPlaceholder(inner: string, key: string): boolean {
@@ -281,7 +312,13 @@ function replacePlaceholderInIsolateGroups(
     const firstInner = firstMatch[2] ?? "";
     const innerWithoutText = inner.replace(/<text[\s\S]*?<\/text>/gi, "");
 
-    const replacementText = buildReplacementTextElement(attrs, firstInner, value, classFontSizes);
+    const replacementText = buildReplacementTextElement(
+      attrs,
+      firstInner,
+      key,
+      value,
+      classFontSizes,
+    );
 
     return `<g isolation="isolate">${replacementText}${innerWithoutText}</g>`;
   });
@@ -314,7 +351,7 @@ function replaceKeyInAdjacentTextPartSequence(
     if (matchedEnd >= 0) {
       const attrs = textParts[i]![1] ?? "";
       const firstInner = textParts[i]![2] ?? "";
-      chunks.push(buildReplacementTextElement(attrs, firstInner, value, classFontSizes));
+      chunks.push(buildReplacementTextElement(attrs, firstInner, key, value, classFontSizes));
       i = matchedEnd + 1;
     } else {
       const part = textParts[i]!;
@@ -359,7 +396,7 @@ function replacePlaceholderInTextElements(
 
     if (lines.length <= 1) {
       const text = escapeXmlText(lines[0] ?? "");
-      const newInner = replaceSingleLineTextInner(inner, text);
+      const newInner = singleLineReplacementInner(inner, key, text);
       return `<text${attrs}>${newInner}</text>`;
     }
 

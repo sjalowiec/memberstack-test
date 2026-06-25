@@ -17,7 +17,16 @@ export default defineConfig({
     server: {
       watch: {
         // Course editor backups should not trigger dev-server reloads.
-        ignored: ["**/src/data/legacy_kin/cleaned/backups/**"],
+        ignored: [
+          "**/src/data/legacy_kin/cleaned/backups/**",
+          // Illustrator masters + autosave temps (avoid dev-server HMR thrash).
+          "**/assets/**/*.ai",
+          "**/assets/**/~ai-*",
+          "**/assets/**/*.tmp",
+          "**/public/images/patterns/**/*.ai",
+          "**/public/images/patterns/**/~ai-*",
+          "**/public/images/patterns/**/*.tmp",
+        ],
       },
     },
   },

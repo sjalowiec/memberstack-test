@@ -50,9 +50,12 @@ import {
 import {
   DROP_SHOULDER_BODY_BACK_STS_ROWS_SRC,
   resolveDropShoulderBackDiagramSrc,
+  resolveDropShoulderBackDiagramSvg,
   resolveDropShoulderFrontDiagramSrc,
   buildDropShoulderBodyDiagramReplacements,
+  withDropShoulderShoulderMeasurementReplacements,
 } from "../lib/patterns/dropShoulderBodyNotationSvg.ts";
+import { reportDropShoulderDiagramFallback } from "../lib/patterns/dropShoulderDiagramSvgResolver.ts";
 import {
   buildDropShoulderBackJapaneseNotationReplacements,
   buildDropShoulderFrontJapaneseNotationReplacements,
@@ -903,7 +906,10 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       if (import.meta.env.DEV) {
         console.log("[sleeveless] Garment schematic SVG fetch (pattern tab):", src, alt || "");
       }
-      const res = await fetch(src, { credentials: "same-origin" });
+      const res = await fetch(src, {
+        credentials: "same-origin",
+        ...(import.meta.env.DEV ? { cache: "no-store" } : {}),
+      });
       if (!res.ok) throw new Error(`Failed to load SVG: ${src} (${res.status})`);
       let svgText = applyGarmentDiagramSvgReplacements(
         await res.text(),
@@ -1017,7 +1023,10 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
     try {
       const notationSrc = resolveSleevelessBackDiagramSrc("shaping-notation", patternData);
-      const res = await fetch(notationSrc, { credentials: "same-origin" });
+      const res = await fetch(notationSrc, {
+        credentials: "same-origin",
+        ...(import.meta.env.DEV ? { cache: "no-store" } : {}),
+      });
       if (!res.ok) throw new Error(`Failed to load SVG: ${notationSrc} (${res.status})`);
       const jpReplacements = buildBackJapaneseNotationReplacements(result, patternData);
       const svgText = applyJapaneseNotationSvgReplacements(await res.text(), jpReplacements);
@@ -1056,7 +1065,10 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
     try {
       const notationSrc = resolveSleevelessFrontDiagramSrc("shaping-notation", patternData);
-      const res = await fetch(notationSrc, { credentials: "same-origin" });
+      const res = await fetch(notationSrc, {
+        credentials: "same-origin",
+        ...(import.meta.env.DEV ? { cache: "no-store" } : {}),
+      });
       if (!res.ok) throw new Error(`Failed to load SVG: ${notationSrc} (${res.status})`);
       const jpReplacements = buildFrontJapaneseNotationReplacements(result, patternData);
       const svgText = applyJapaneseNotationSvgReplacements(await res.text(), jpReplacements);
@@ -2783,13 +2795,26 @@ table {
         : String(hydrateGeneration);
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
     try {
-      const notationSrc = resolveDropShoulderBackDiagramSrc("shaping-notation");
-      const res = await fetch(notationSrc, { credentials: "same-origin" });
+      const backDiagram = resolveDropShoulderBackDiagramSvg("shaping-notation", patternData);
+      reportDropShoulderDiagramFallback(backDiagram, "back shaping notation");
+      const notationSrc = backDiagram.src;
+      const res = await fetch(notationSrc, {
+        credentials: "same-origin",
+        ...(import.meta.env.DEV ? { cache: "no-store" } : {}),
+      });
       if (!res.ok) throw new Error(`Failed to load SVG: ${notationSrc} (${res.status})`);
-      const jpReplacements = buildDropShoulderBackJapaneseNotationReplacements(
+      const jpReplacements = withDropShoulderShoulderMeasurementReplacements(
+        buildDropShoulderBackJapaneseNotationReplacements(
+          result,
+          patternData,
+          generatorPatternData,
+        ),
         result,
-        patternData,
-        generatorPatternData,
+        unit,
+        {
+          patternData,
+          measurementPiece: "back",
+        },
       );
       const svgText = applyJapaneseNotationSvgReplacements(await res.text(), jpReplacements);
 
@@ -2834,12 +2859,31 @@ table {
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
     try {
       const notationSrc = resolveDropShoulderFrontDiagramSrc("shaping-notation", patternData);
-      const res = await fetch(notationSrc, { credentials: "same-origin" });
+      const res = await fetch(notationSrc, {
+        credentials: "same-origin",
+        ...(import.meta.env.DEV ? { cache: "no-store" } : {}),
+      });
       if (!res.ok) throw new Error(`Failed to load SVG: ${notationSrc} (${res.status})`);
-      const jpReplacements = buildDropShoulderFrontJapaneseNotationReplacements(
+      const dsHalf = hostEl.dataset.sleevelessCardiganHalf || "";
+      const cardiganHalfSide =
+        dsHalf === "left" || dsHalf === "right"
+          ? dsHalf
+          : isSleevelessCardiganGarmentStyle(patternData)
+            ? "left"
+            : undefined;
+      const jpReplacements = withDropShoulderShoulderMeasurementReplacements(
+        buildDropShoulderFrontJapaneseNotationReplacements(
+          result,
+          patternData,
+          generatorPatternData,
+        ),
         result,
-        patternData,
-        generatorPatternData,
+        unit,
+        {
+          patternData,
+          measurementPiece: "front",
+          cardiganHalfSide,
+        },
       );
       const svgText = applyJapaneseNotationSvgReplacements(await res.text(), jpReplacements);
 
@@ -2878,7 +2922,9 @@ table {
     generatorPatternData,
   ) {
     if (!(el instanceof HTMLElement)) return;
-    el.dataset.src = resolveDropShoulderBackDiagramSrc(mode);
+    const backDiagram = resolveDropShoulderBackDiagramSvg(mode, patternData);
+    reportDropShoulderDiagramFallback(backDiagram, `back ${mode}`);
+    el.dataset.src = backDiagram.src;
     if (mode === "shaping-notation") {
       await inlineDropShoulderBackNotationSvg(
         el,
@@ -2896,7 +2942,7 @@ table {
     });
     await inlineSvgWithReplacements(
       el,
-      resolveDropShoulderBackDiagramSrc("sts-rows"),
+      backDiagram.src,
       DROP_SHOULDER_BACK_DIAGRAM_STS_ROWS_ALT,
       replacements,
       hydrateGeneration,
@@ -3092,7 +3138,10 @@ table {
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
     try {
       const notationSrc = resolveDropShoulderSleeveNotationSvgSrc(sleeveDirection);
-      const res = await fetch(notationSrc, { credentials: "same-origin" });
+      const res = await fetch(notationSrc, {
+        credentials: "same-origin",
+        ...(import.meta.env.DEV ? { cache: "no-store" } : {}),
+      });
       if (!res.ok) {
         if (notationSrc === DROP_SHOULDER_SLEEVE_NOTATION_TOP_DOWN_SRC) {
           if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
@@ -3379,6 +3428,10 @@ table {
       "sts-rows",
       dropShoulderDiagramPatternData,
     );
+    const backDiagramSrc = resolveDropShoulderBackDiagramSrc(
+      "sts-rows",
+      dropShoulderDiagramPatternData,
+    );
 
     mount.innerHTML =
       wrapPatternSection(
@@ -3386,7 +3439,7 @@ table {
         "BACK",
         wrapDropShoulderPieceSplit(
           back.splitInner,
-          DROP_SHOULDER_BODY_BACK_STS_ROWS_SRC,
+          backDiagramSrc,
           DROP_SHOULDER_BACK_DIAGRAM_STS_ROWS_ALT,
           back.postSplit,
           {
