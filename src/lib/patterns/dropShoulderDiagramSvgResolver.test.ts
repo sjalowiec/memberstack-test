@@ -18,6 +18,38 @@ import {
   resolveDropShoulderFrontDiagramSvg,
 } from "./dropShoulderBodyNotationSvg";
 
+const DROP_SHOULDER_SHAPED_CARDIGAN = {
+  style: {
+    construction: "drop-shoulder",
+    frontStyle: "open",
+    garmentStyle: "cardigan",
+    neckline: "round",
+    bodyShape: "shaped",
+  },
+  fit: {
+    selectedMeasurements: {
+      finished_bust_chest: 40,
+      finished_hip: 36,
+    },
+  },
+};
+
+const DROP_SHOULDER_ALINE_ROUND_CARDIGAN = {
+  style: {
+    construction: "drop-shoulder",
+    frontStyle: "open",
+    garmentStyle: "cardigan",
+    neckline: "round",
+    bodyShape: "aline",
+  },
+  fit: {
+    selectedMeasurements: {
+      finished_bust_chest: 40,
+      finished_hip: 44,
+    },
+  },
+};
+
 const DROP_SHOULDER_ALINE_PATTERN = {
   style: {
     construction: "drop-shoulder",
@@ -88,18 +120,17 @@ describe("dropShoulderDiagramSvgResolver grid audit", () => {
     expect(alineBackStsRows.fallback).toBeUndefined();
     expect(alineBackStsRows.src).toBe("/images/patterns/drop-shoulder/drop-body-back-aline.svg");
 
-    const missingCardiganVJp = resolveDropShoulderDiagramSvg({
+    const cardiganVJp = resolveDropShoulderDiagramSvg({
       piece: "front",
       mode: "japanese",
       garment: "cardigan",
       neckline: "v",
       bodyShape: "aline",
     });
-    expect(missingCardiganVJp.exactMatch).toBe(false);
-    expect(missingCardiganVJp.fallback).toBeDefined();
-    expect(missingCardiganVJp.src).toBe(DROP_SHOULDER_BODY_CARDIGAN_NOTATION_SRC);
-    expect(missingCardiganVJp.expectedAssetPath).toBe(
-      "/images/patterns/drop-shoulder/japanese/jp-drop-body-cardigan-v-aline.svg",
+    expect(cardiganVJp.exactMatch).toBe(true);
+    expect(cardiganVJp.fallback).toBeUndefined();
+    expect(cardiganVJp.src).toBe(
+      "/images/patterns/drop-shoulder/japanese/jp-drop-cardigan-aline.svg",
     );
   });
 });
@@ -141,30 +172,41 @@ describe("dropShoulderDiagramSvgResolver priority routing", () => {
     expect(result.src).toBe("/images/patterns/drop-shoulder/drop-body-back-shaped.svg");
   });
 
-  it("3 — front cardigan V-neck A-line Japanese notation reports fallback", () => {
+  it("2d — front shaped stitches/rows uses drop-body-front-shaped.svg", () => {
+    const result = resolveDropShoulderFrontDiagramSvg("sts-rows", DROP_SHOULDER_SHAPED_PATTERN);
+    expect(result.exactMatch).toBe(true);
+    expect(result.fallback).toBeUndefined();
+    expect(result.src).toBe("/images/patterns/drop-shoulder/drop-body-front-shaped.svg");
+  });
+
+  it("2e — front shaped Japanese notation uses diagram-jp-front-shaped.svg", () => {
+    const result = resolveDropShoulderFrontDiagramSvg(
+      "shaping-notation",
+      DROP_SHOULDER_SHAPED_PATTERN,
+    );
+    expect(result.exactMatch).toBe(true);
+    expect(result.fallback).toBeUndefined();
+    expect(result.src).toBe("/images/patterns/drop-shoulder/diagram-jp-front-shaped.svg");
+  });
+
+  it("3 — front cardigan V-neck A-line Japanese notation shares jp-drop-cardigan-aline.svg", () => {
     const result = resolveDropShoulderFrontDiagramSvg(
       "shaping-notation",
       DROP_SHOULDER_ALINE_PATTERN,
     );
-    expect(result.exactMatch).toBe(false);
-    expect(result.fallback).toBeDefined();
-    expect(result.src).toBe(DROP_SHOULDER_BODY_CARDIGAN_NOTATION_SRC);
-    expect(result.expectedAssetPath).toBe(
-      "/images/patterns/drop-shoulder/japanese/jp-drop-body-cardigan-v-aline.svg",
-    );
+    expect(result.exactMatch).toBe(true);
+    expect(result.fallback).toBeUndefined();
+    expect(result.src).toBe("/images/patterns/drop-shoulder/japanese/jp-drop-cardigan-aline.svg");
   });
 
-  it("4 — front cardigan V-neck A-line stitches/rows uses round A-line draft with neckline fallback", () => {
+  it("4 — front cardigan V-neck A-line stitches/rows shares drop-A-body-cardigan.svg", () => {
     const result = resolveDropShoulderFrontDiagramSvg("sts-rows", DROP_SHOULDER_ALINE_PATTERN);
-    expect(result.exactMatch).toBe(false);
+    expect(result.exactMatch).toBe(true);
+    expect(result.fallback).toBeUndefined();
     expect(result.src).toBe("/images/patterns/drop-shoulder/drop-A-body-cardigan.svg");
-    expect(result.fallback?.reason).toMatch(/round neckline artwork only/i);
-    expect(result.expectedAssetPath).toBe(
-      "/images/patterns/drop-shoulder/drop-A-body-cardigan-v.svg",
-    );
   });
 
-  it("5 — front pullover V-neck A-line shaping notation uses diagram-front-v-aline.svg", () => {
+  it("5 — front pullover V-neck A-line shaping notation uses diagram-jp-front-v-aline.svg", () => {
     const result = resolveDropShoulderFrontDiagramSvg("shaping-notation", {
       style: {
         construction: "drop-shoulder",
@@ -178,6 +220,58 @@ describe("dropShoulderDiagramSvgResolver priority routing", () => {
     expect(result.exactMatch).toBe(true);
     expect(result.src).toBe("/images/patterns/drop-shoulder/diagram-jp-front-v-aline.svg");
     expect(result.fallback).toBeUndefined();
+  });
+
+  it("6 — front pullover round-neck A-line uses drop-A-body-front and diagram-jp-front-aline", () => {
+    const pattern = {
+      style: {
+        construction: "drop-shoulder",
+        frontStyle: "closed",
+        garmentStyle: "pullover",
+        neckline: "round",
+        bodyShape: "aline",
+      },
+      fit: { selectedMeasurements: { finished_bust_chest: 40, finished_hip: 44 } },
+    };
+    const stsRows = resolveDropShoulderFrontDiagramSvg("sts-rows", pattern);
+    expect(stsRows.exactMatch).toBe(true);
+    expect(stsRows.src).toBe("/images/patterns/drop-shoulder/drop-A-body-front.svg");
+    expect(stsRows.fallback).toBeUndefined();
+
+    const jp = resolveDropShoulderFrontDiagramSvg("shaping-notation", pattern);
+    expect(jp.exactMatch).toBe(true);
+    expect(jp.src).toBe("/images/patterns/drop-shoulder/diagram-jp-front-aline.svg");
+    expect(jp.fallback).toBeUndefined();
+  });
+
+  it("7 — front cardigan round-neck A-line uses drop-A-body-cardigan and jp-drop-cardigan-aline", () => {
+    const stsRows = resolveDropShoulderFrontDiagramSvg("sts-rows", DROP_SHOULDER_ALINE_ROUND_CARDIGAN);
+    expect(stsRows.exactMatch).toBe(true);
+    expect(stsRows.src).toBe("/images/patterns/drop-shoulder/drop-A-body-cardigan.svg");
+    expect(stsRows.fallback).toBeUndefined();
+
+    const jp = resolveDropShoulderFrontDiagramSvg(
+      "shaping-notation",
+      DROP_SHOULDER_ALINE_ROUND_CARDIGAN,
+    );
+    expect(jp.exactMatch).toBe(true);
+    expect(jp.src).toBe("/images/patterns/drop-shoulder/japanese/jp-drop-cardigan-aline.svg");
+    expect(jp.fallback).toBeUndefined();
+  });
+
+  it("8 — front cardigan shaped uses drop-body-cardigan-shaped and jp-drop-cardigan-shaped", () => {
+    const stsRows = resolveDropShoulderFrontDiagramSvg("sts-rows", DROP_SHOULDER_SHAPED_CARDIGAN);
+    expect(stsRows.exactMatch).toBe(true);
+    expect(stsRows.src).toBe("/images/patterns/drop-shoulder/drop-body-cardigan-shaped.svg");
+    expect(stsRows.fallback).toBeUndefined();
+
+    const jp = resolveDropShoulderFrontDiagramSvg(
+      "shaping-notation",
+      DROP_SHOULDER_SHAPED_CARDIGAN,
+    );
+    expect(jp.exactMatch).toBe(true);
+    expect(jp.src).toBe("/images/patterns/drop-shoulder/japanese/jp-drop-cardigan-shaped.svg");
+    expect(jp.fallback).toBeUndefined();
   });
 });
 

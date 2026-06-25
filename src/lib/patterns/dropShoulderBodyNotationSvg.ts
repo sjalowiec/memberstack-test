@@ -188,6 +188,18 @@ export const DROP_SHOULDER_BODY_FRONT_NOTATION_SRC =
 export const DROP_SHOULDER_BODY_CARDIGAN_NOTATION_SRC =
   "/images/patterns/drop-shoulder/japanese/jp-drop-body-cardigan.svg";
 
+export const DROP_SHOULDER_BODY_CARDIGAN_ALINE_NOTATION_SRC =
+  "/images/patterns/drop-shoulder/japanese/jp-drop-cardigan-aline.svg";
+
+export const DROP_SHOULDER_BODY_CARDIGAN_ALINE_STS_ROWS_SRC =
+  "/images/patterns/drop-shoulder/drop-A-body-cardigan.svg";
+
+export const DROP_SHOULDER_BODY_CARDIGAN_SHAPED_NOTATION_SRC =
+  "/images/patterns/drop-shoulder/japanese/jp-drop-cardigan-shaped.svg";
+
+export const DROP_SHOULDER_BODY_CARDIGAN_SHAPED_STS_ROWS_SRC =
+  "/images/patterns/drop-shoulder/drop-body-cardigan-shaped.svg";
+
 export function isDropShoulderCardiganGarmentStyle(patternData: unknown): boolean {
   return isSleevelessCardiganGarmentStyle(patternData);
 }

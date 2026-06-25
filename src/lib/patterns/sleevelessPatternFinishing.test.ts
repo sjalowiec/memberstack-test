@@ -104,6 +104,7 @@ describe("buildSleevelessFinishingStepIds", () => {
     expect(coreAssemblyFinishingStepIds({ isCardigan: false, isDropShoulder: true })).toEqual([
       "joinShoulders",
       "finishNeckline",
+      "attachSleeves",
       "joinSideSeams",
     ]);
   });
@@ -238,16 +239,44 @@ describe("buildSleevelessFinishingStepsHtml", () => {
     });
     expect(html).not.toContain("Finish Armholes");
     expect(html).toMatch(/3\. Finish Neckline/);
-    expect(html).toMatch(/4\. Join Side Seams/);
-    expect(html).toContain("Seam from cuff to hem.");
+    expect(html).toMatch(/4\. Attach Sleeves/);
+    expect(html).toMatch(/5\. Join Side Seams/);
+    expect(html).toContain("Join side seams from cuff to hem.");
     expect(html).not.toContain("Seam from hem to underarm.");
+  });
+
+  it("drop-shoulder bottom-up finishing includes bound-off and waste-yarn sleeve attachment", () => {
+    const html = buildSleevelessFinishingStepsHtml({
+      isCardigan: false,
+      isDropShoulder: true,
+      dropShoulderSleeveDirection: "cuff-up",
+      deps,
+    });
+    expect(html).toContain("If you bound off the sleeve, sew the sleeve into the armhole.");
+    expect(html).toContain("If the sleeve stitches are on waste yarn, attach the sleeve to the armhole as follows:");
+    expect(html).not.toContain("picked up stitches from the armhole");
+    expect(html).not.toContain("scrap cast-on");
+  });
+
+  it("drop-shoulder top-down finishing includes pickup and scrap cast-on sleeve attachment", () => {
+    const html = buildSleevelessFinishingStepsHtml({
+      isCardigan: false,
+      isDropShoulder: true,
+      dropShoulderSleeveDirection: "top-down",
+      deps,
+    });
+    expect(html).toContain("If you picked up stitches from the armhole, your sleeve is already attached.");
+    expect(html).toContain("If you began the sleeve with a scrap cast-on, attach the sleeve to the armhole as follows:");
+    expect(html).not.toContain("bound off the sleeve");
+    expect(html).not.toContain("waste yarn");
   });
 
   it("drop-shoulder pullover finishing from pattern omits armhole step", () => {
     const finishing = sleevelessFinishingFromPattern(dropShoulderPulloverPattern(), {});
     expect(finishing.isDropShoulder).toBe(true);
     expect(finishing.steps.some((s) => s.id === "finishArmholes")).toBe(false);
-    expect(finishing.steps.find((s) => s.id === "joinSideSeams")?.stepNumber).toBe(4);
+    expect(finishing.steps.some((s) => s.id === "attachSleeves")).toBe(true);
+    expect(finishing.steps.find((s) => s.id === "joinSideSeams")?.stepNumber).toBe(5);
   });
 
   it("includes neckline finishing help video links for pullover and cardigan", () => {
@@ -289,5 +318,22 @@ describe("buildSleevelessFinishingPrintListHtml", () => {
     });
     expect(html).toContain("knit each front band vertically");
     expect(html).not.toContain("pick up");
+  });
+
+  it("drop-shoulder print list varies attach-sleeves wording by sleeve construction", () => {
+    const bottomUp = buildSleevelessFinishingPrintListHtml({
+      isCardigan: false,
+      isDropShoulder: true,
+      dropShoulderSleeveDirection: "cuff-up",
+    });
+    const topDown = buildSleevelessFinishingPrintListHtml({
+      isCardigan: false,
+      isDropShoulder: true,
+      dropShoulderSleeveDirection: "top-down",
+    });
+    expect(bottomUp).toContain("if you bound off the sleeve, sew it into the armhole");
+    expect(bottomUp).toContain("sleeve stitches are on waste yarn");
+    expect(topDown).toContain("picked up stitches from the armhole");
+    expect(topDown).toContain("began with a scrap cast-on");
   });
 });

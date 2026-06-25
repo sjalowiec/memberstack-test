@@ -91,7 +91,7 @@ export function buildVNeckFrontFullWidthTimeline(
 
   const shoulderLeftPerRow = Array<number>(workRows).fill(0);
   const shoulderRightPerRow = Array<number>(workRows).fill(0);
-  if (shoulderBandTotal > 0) {
+  if (!options?.straightShoulders && shoulderBandTotal > 0) {
     let placementRowsEff = Math.min(shoulderBindoffRowsIn, workRows);
     let leftChunks: number[];
     let rightChunks: number[];

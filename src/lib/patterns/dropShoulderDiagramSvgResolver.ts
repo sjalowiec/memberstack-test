@@ -130,6 +130,24 @@ export const DROP_SHOULDER_DIAGRAM_ASSETS: readonly DropShoulderDiagramAsset[] =
     notes: "Pullover front Japanese notation; round and V-neck share this straight-body asset.",
   },
   {
+    src: `${DROP_SHOULDER_DIAGRAM_ROOT}/drop-A-body-front.svg`,
+    piece: "front",
+    mode: "sts-rows",
+    garment: "pullover",
+    bodyShape: "aline",
+    necklineArtwork: "round",
+    notes: "A-line pullover front measurement with round-neck artwork.",
+  },
+  {
+    src: `${DROP_SHOULDER_DIAGRAM_ROOT}/diagram-jp-front-aline.svg`,
+    piece: "front",
+    mode: "japanese",
+    garment: "pullover",
+    bodyShape: "aline",
+    necklineArtwork: "round",
+    notes: "A-line pullover front Japanese notation with round-neck artwork.",
+  },
+  {
     src: `${DROP_SHOULDER_DIAGRAM_ROOT}/diagram-front-v-aline.svg`,
     piece: "front",
     mode: "sts-rows",
@@ -146,6 +164,22 @@ export const DROP_SHOULDER_DIAGRAM_ASSETS: readonly DropShoulderDiagramAsset[] =
     bodyShape: "aline",
     necklineArtwork: "v",
     notes: "A-line pullover front Japanese notation with V-neck artwork.",
+  },
+  {
+    src: `${DROP_SHOULDER_DIAGRAM_ROOT}/drop-body-front-shaped.svg`,
+    piece: "front",
+    mode: "sts-rows",
+    garment: "pullover",
+    bodyShape: "shaped",
+    notes: "Shaped pullover front measurement; round and V-neck share this asset.",
+  },
+  {
+    src: `${DROP_SHOULDER_DIAGRAM_ROOT}/diagram-jp-front-shaped.svg`,
+    piece: "front",
+    mode: "japanese",
+    garment: "pullover",
+    bodyShape: "shaped",
+    notes: "Shaped pullover front Japanese notation; round and V-neck share this asset.",
   },
   {
     src: `${DROP_SHOULDER_DIAGRAM_ROOT}/body/drop_body_cardigan.svg`,
@@ -169,8 +203,31 @@ export const DROP_SHOULDER_DIAGRAM_ASSETS: readonly DropShoulderDiagramAsset[] =
     mode: "sts-rows",
     garment: "cardigan",
     bodyShape: "aline",
-    necklineArtwork: "round",
-    notes: "A-line cardigan front measurement with round-neck artwork (draft A prefix).",
+    notes: "A-line cardigan front measurement; round and V-neck artwork share this asset.",
+  },
+  {
+    src: `${DROP_SHOULDER_DIAGRAM_ROOT}/japanese/jp-drop-cardigan-aline.svg`,
+    piece: "front",
+    mode: "japanese",
+    garment: "cardigan",
+    bodyShape: "aline",
+    notes: "A-line cardigan front Japanese notation; round and V-neck artwork share this asset.",
+  },
+  {
+    src: `${DROP_SHOULDER_DIAGRAM_ROOT}/drop-body-cardigan-shaped.svg`,
+    piece: "front",
+    mode: "sts-rows",
+    garment: "cardigan",
+    bodyShape: "shaped",
+    notes: "Shaped cardigan front measurement; round and V-neck share this asset.",
+  },
+  {
+    src: `${DROP_SHOULDER_DIAGRAM_ROOT}/japanese/jp-drop-cardigan-shaped.svg`,
+    piece: "front",
+    mode: "japanese",
+    garment: "cardigan",
+    bodyShape: "shaped",
+    notes: "Shaped cardigan front Japanese notation; round and V-neck share this asset.",
   },
   {
     src: `${DROP_SHOULDER_DIAGRAM_ROOT}/drop-body-sleeve.svg`,
@@ -296,9 +353,14 @@ export function expectedDropShoulderDiagramAssetPath(
   if (c.garment === "cardigan") {
     if (c.bodyShape === "aline") {
       if (c.mode === "japanese") {
-        return `${DROP_SHOULDER_DIAGRAM_ROOT}/japanese/jp-drop-body-cardigan${vSuffix}-aline.svg`;
+        return `${DROP_SHOULDER_DIAGRAM_ROOT}/japanese/jp-drop-cardigan-aline.svg`;
       }
-      return `${DROP_SHOULDER_DIAGRAM_ROOT}/drop-A-body-cardigan${vSuffix}.svg`;
+      return `${DROP_SHOULDER_DIAGRAM_ROOT}/drop-A-body-cardigan.svg`;
+    }
+    if (c.bodyShape === "shaped") {
+      return c.mode === "japanese"
+        ? `${DROP_SHOULDER_DIAGRAM_ROOT}/japanese/jp-drop-cardigan-shaped.svg`
+        : `${DROP_SHOULDER_DIAGRAM_ROOT}/drop-body-cardigan-shaped.svg`;
     }
     return c.mode === "japanese"
       ? `${DROP_SHOULDER_DIAGRAM_ROOT}/japanese/jp-drop-body-cardigan.svg`
@@ -310,11 +372,16 @@ export function expectedDropShoulderDiagramAssetPath(
     if (c.mode === "japanese") {
       return c.neckline === "v"
         ? `${DROP_SHOULDER_DIAGRAM_ROOT}/diagram-jp-front-v-aline.svg`
-        : `${DROP_SHOULDER_DIAGRAM_ROOT}/jp-drop-body-front-aline.svg`;
+        : `${DROP_SHOULDER_DIAGRAM_ROOT}/diagram-jp-front-aline.svg`;
     }
     return c.neckline === "v"
       ? `${DROP_SHOULDER_DIAGRAM_ROOT}/diagram-front-v-aline.svg`
       : `${DROP_SHOULDER_DIAGRAM_ROOT}/drop-A-body-front.svg`;
+  }
+  if (c.bodyShape === "shaped") {
+    return c.mode === "japanese"
+      ? `${DROP_SHOULDER_DIAGRAM_ROOT}/diagram-jp-front-shaped.svg`
+      : `${DROP_SHOULDER_DIAGRAM_ROOT}/drop-body-front-shaped.svg`;
   }
   return c.mode === "japanese"
     ? `${DROP_SHOULDER_DIAGRAM_ROOT}/jp-drop-body-front.svg`

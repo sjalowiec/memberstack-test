@@ -917,9 +917,16 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         replacements || {},
       );
 
-      // If any placeholders remain, leave them as-is but log for visibility.
-      if (/\{\{\s*[A-Z0-9_]+\s*\}\}/.test(svgText)) {
-        console.warn("[sleeveless] Unreplaced SVG placeholders remain in", src);
+      const unreplacedPlaceholders = [
+        ...svgText.matchAll(/\{\{\s*([A-Za-z0-9_-]+)\s*\}\}/g),
+      ].map((m) => m[1]);
+      if (unreplacedPlaceholders.length > 0) {
+        const unique = [...new Set(unreplacedPlaceholders)];
+        console.warn(
+          "[sleeveless] Unreplaced SVG placeholders remain in",
+          src,
+          unique.join(", "),
+        );
       }
 
       const parser = new DOMParser();
@@ -2428,7 +2435,7 @@ table {
     );
   }
 
-  function buildFinishingHtml(patternMergedForNeckline, patternDebug) {
+  function buildFinishingHtml(patternMergedForNeckline, patternDebug, dropShoulderSleeveDirection) {
     const isVNeckFinishing = isSleevelessVNeckChoice(patternMergedForNeckline);
     const neckFinishingVideoKey = isVNeckFinishing ? "vNeckBandFinishing" : "onePieceBand";
     const neckFinishingVideoMeta = SLEEVELESS_HELP_VIDEOS[neckFinishingVideoKey];
@@ -2453,6 +2460,7 @@ table {
     return buildSleevelessFinishingStepsHtml({
       isCardigan: finishing.isCardigan,
       isDropShoulder: finishing.isDropShoulder,
+      dropShoulderSleeveDirection: finishing.isDropShoulder ? dropShoulderSleeveDirection : undefined,
       cardiganFrontEdgeFinishingMode: finishing.cardiganFrontEdgeFinishingMode,
       frontEdgePickupSts: finishing.frontEdgePickupSts,
       deps: {
@@ -3361,9 +3369,8 @@ table {
 
   /**
    * Drop-shoulder layout: Back / Front / Sleeve pieces each in a two-column split with the
-   * drop-shoulder schematic SVGs (straight sides + armhole markers only — no curved armholes and
-   * no neck/shoulder shaping charts, which drop shoulder does not have). Reuses the shared
-   * display-row renderer, finishing block, glossary hydration, collapse persistence, and nav.
+   * drop-shoulder schematic SVGs. Front neckline shaping uses a row-by-row chart when live
+   * neck/shoulder inputs are available (straight shoulders — no back neckline chart).
    */
   async function renderDropShoulderMount(
     patternMerged,
@@ -3385,8 +3392,14 @@ table {
       generatorPatternData,
     );
 
-    const renderPiece = (rows, pieceId) =>
-      renderSleevelessDisplayHtml(rows ?? [], "", pieceId, patternIntroSentence, undefined, {
+    const renderPiece = (rows, pieceId, chartTableMountId, neckChartStartRow) =>
+      renderSleevelessDisplayHtml(
+        rows ?? [],
+        chartTableMountId ?? "",
+        pieceId,
+        patternIntroSentence,
+        neckChartStartRow,
+        {
         omitPieceBanner: true,
         neckNotationPreview: bodyNotationSupported
           ? {
@@ -3395,10 +3408,16 @@ table {
               patternData: dropShoulderDiagramPatternData,
             }
           : undefined,
-      });
+      },
+      );
 
     const back = renderPiece(result.displayRows, "back");
-    const front = renderPiece(result.frontDisplayRows, "front");
+    const front = renderPiece(
+      result.frontDisplayRows,
+      "front",
+      "sg-neck-shoulder-chart-table-front",
+      result?.frontNeckShoulderShapingChart?.rows?.[0]?.row,
+    );
     const sleeve = renderPiece(result.sleeveDisplayRows, "sleeve");
 
     const frontLabel = "FRONT";
@@ -3478,7 +3497,7 @@ table {
         ),
         { defaultCollapsed: false, sectionClassName: "pattern-section--garment-piece" },
       ) +
-      wrapPatternSection("sg-finishing", "Finishing", buildFinishingHtml(patternMerged, result.debug), {
+      wrapPatternSection("sg-finishing", "Finishing", buildFinishingHtml(patternMerged, result.debug, sleeveDirection), {
         defaultCollapsed: true,
       });
 
@@ -3492,6 +3511,54 @@ table {
       sleeveDirection,
     );
     if (renderSeq !== sleevelessRenderMountSeq) return;
+
+    const frontArmholeLocalChartStartRc = 0;
+    const armholeGarmentStartRc = result?.debug?.armholeStartRow;
+    const frontChecklistOptions = { includeCenterNecklineSetupRow: true as const };
+    const frontActiveSideRcStart = armholeLocalRcActiveShoulderChecklistStart(
+      result.frontNeckShoulderShapingChart,
+      armholeGarmentStartRc,
+      frontChecklistOptions,
+    );
+    const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
+    if (frontChartTableHost && result.frontNeckShoulderChartUsesLiveRows) {
+      frontChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
+        result.frontNeckShoulderShapingChart,
+        "ns-shaping-chart-front",
+        neckShoulderChartHelpRowHtml(
+          `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
+          result?.frontNeckShoulderShapingChart,
+          "front",
+          bodyNotationSupported,
+        ),
+        {
+          activeSideOnly: true,
+          activeSideRcStart: frontActiveSideRcStart,
+          includeCenterNecklineSetupRow: true,
+          hideCenterNecklineSetupRow: true,
+          tableHeading: "Front Neckline Shaping Chart",
+        },
+      );
+    }
+
+    window.kbmNeckShoulderChartPrintContext = {
+      front: {
+        chart: result.frontNeckShoulderShapingChart,
+        idPrefix: "ns-shaping-chart-front",
+        introHtml: neckShoulderChartHelpRowHtml(
+          `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
+          result?.frontNeckShoulderShapingChart,
+          "front",
+        ),
+        options: {
+          activeSideOnly: true,
+          activeSideRcStart: frontActiveSideRcStart,
+          includeCenterNecklineSetupRow: true,
+          hideCenterNecklineSetupRow: true,
+          tableHeading: "Front Neckline Shaping Chart",
+        },
+      },
+    };
 
     dropShoulderSleeveDiagramHydrateContext = {
       result,
@@ -3510,6 +3577,15 @@ table {
     ensureSleevelessVideoModal();
     const videoHelpRoot = document.getElementById("sleeveless-pattern-tips-scope") || mount;
     bindSleevelessVideoHelp(videoHelpRoot);
+    mountNecklineChartPrintInHeader(
+      "front-neckline-shoulder-chart-print-area",
+      "front-neckline-shoulder-chart-print-btn",
+    );
+    setupNecklineChartPrint(
+      "front-neckline-shoulder-chart-print-btn",
+      "front-neckline-shoulder-chart-print-area",
+      "Front Neckline Shaping Chart",
+    );
     initChartProgressTracking({ patternId: getCurrentPattern().id, root: mount });
     applyPatternSectionCollapseState(mount);
     bindPatternSectionCollapsePersistence(mount);

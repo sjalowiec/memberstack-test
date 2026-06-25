@@ -3,9 +3,13 @@ import {
   CUSTOM_BUILD_CONTINUE_EDITING_HREF,
   CUSTOM_BUILD_EDIT_WORKSPACE_HREF,
   CUSTOM_BUILD_FIRST_EDIT_HREF,
+  DROP_SHOULDER_CONTINUE_EDITING_HREF,
+  DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF,
+  DROP_SHOULDER_OPEN_PATTERN_HREF,
   EXPRESS_CONTINUE_EDITING_HREF,
   EXPRESS_EDIT_WORKSPACE_HREF,
   getContinueEditingHref,
+  getOpenPatternHrefForProject,
   getSavedCustomPatternOpenHref,
   OPEN_PATTERN_EDIT_WORKSPACE_HREF,
   OPEN_PATTERN_HREF,
@@ -47,5 +51,40 @@ describe("customPatternProjectNavigation", () => {
     expect(href).not.toBe(EXPRESS_CONTINUE_EDITING_HREF);
     expect(href).not.toBe(EXPRESS_EDIT_WORKSPACE_HREF);
     expect(href).not.toContain(SAVED_CUSTOM_PATTERN_EDIT_CHOICES_QUERY);
+  });
+
+  it("opens saved drop-shoulder express projects on the drop-shoulder pattern workspace", () => {
+    const project = {
+      pattern: {
+        style: {
+          construction: "drop-shoulder",
+          constructionAuthored: "drop-shoulder",
+        },
+      },
+      customOverrides: { constructionFamily: "drop-shoulder" },
+    };
+    expect(getOpenPatternHrefForProject(project)).toBe(DROP_SHOULDER_OPEN_PATTERN_HREF);
+    expect(getSavedCustomPatternOpenHref("express", project)).toBe(
+      DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF,
+    );
+  });
+
+  it("continues drop-shoulder express projects on the drop-shoulder review page", () => {
+    const project = {
+      pattern: {
+        style: {
+          construction: "drop-shoulder",
+          constructionAuthored: "drop-shoulder",
+        },
+      },
+      customOverrides: { constructionFamily: "drop-shoulder" },
+    };
+    expect(getContinueEditingHref("express", project)).toBe(DROP_SHOULDER_CONTINUE_EDITING_HREF);
+    expect(getContinueEditingHref("express", project)).not.toBe(EXPRESS_CONTINUE_EDITING_HREF);
+  });
+
+  it("continues sleeveless express projects on the sleeveless review page", () => {
+    expect(getContinueEditingHref("express")).toBe(EXPRESS_CONTINUE_EDITING_HREF);
+    expect(getContinueEditingHref("express")).not.toBe(DROP_SHOULDER_CONTINUE_EDITING_HREF);
   });
 });

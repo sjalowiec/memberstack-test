@@ -77,6 +77,8 @@ import {
   type SleevelessBackPatternDebug,
 } from "./sleevelessPatternOutput";
 import type { NeckShoulderShapingChart } from "./neckShoulderShapingChart";
+import { buildDropShoulderFrontNeckShapingChart } from "./dropShoulderFrontNeckShapingChart";
+import { resolveCardiganHalfFrontWidths } from "./cardiganFrontBlock";
 import {
   DROP_SHOULDER_SLEEVE_NO_SHAPING_NOTE_LINES,
   buildDropShoulderSleeveShapingChartRows,
@@ -88,6 +90,7 @@ import {
 } from "./dropShoulderSleeveShaping";
 import type { DropShoulderSleeveDirection } from "./dropShoulderSleeveConstruction";
 import { DROP_SHOULDER_SLEEVE_DIRECTION_DEFAULT } from "./dropShoulderSleeveConstruction";
+import { isSleevelessVNeckChoice } from "./sleevelessFrontDiagramSrc";
 import { buildGlossaryTooltipPlaceholderHtml, PLACE_MARKER_GLOSSARY_ID } from "../glossary/glossaryTooltipPrint";
 import { SCRAP_OFF_GLOSSARY_ID } from "./neckShoulderActiveIntroCopy";
 
@@ -948,7 +951,7 @@ export function generateDropShoulderPattern(
   const audience = pickAudience(patternData);
   const style = section(patternData.style);
   const isCardigan = String(style.frontStyle) === "open";
-  const isVNeck = String(style.neckline) === "v";
+  const isVNeck = isSleevelessVNeckChoice(patternData);
   const sleeveDirection: DropShoulderSleeveDirection =
     options?.sleeveDirection ?? DROP_SHOULDER_SLEEVE_DIRECTION_DEFAULT;
 
@@ -1085,12 +1088,27 @@ export function generateDropShoulderPattern(
     }
   }
 
+  const cardiganLeftHalfWidths =
+    isCardigan && hemCastOnSts > 0 && bustBodySts > 0
+      ? resolveCardiganHalfFrontWidths(
+          {
+            hemCastOnSts: hemCastOnSts,
+            bustBodySts: bustBodySts,
+            stitchesAfterArmhole: bustBodySts,
+          },
+          "left",
+        )
+      : null;
+  const cardiganHalfLeftCastOnSts = cardiganLeftHalfWidths?.hemCastOnSts;
+  const cardiganHalfLeftBustBodySts = cardiganLeftHalfWidths?.bustBodySts;
+  const cardiganHalfLeftStitchesAfterArmhole = cardiganLeftHalfWidths?.stitchesAfterArmhole;
+
   const cardiganFrontAlineShaping =
-    isCardigan && alineBodyShaping
+    isCardigan && alineBodyShaping && cardiganLeftHalfWidths
       ? scaleAlineBodyShapingPlanForCardiganHalf(
           alineBodyShaping,
-          forceEven(hemCastOnSts / 2),
-          forceEven(bustBodySts / 2),
+          cardiganLeftHalfWidths.hemCastOnSts,
+          cardiganLeftHalfWidths.bustBodySts,
         )
       : null;
 
@@ -1134,6 +1152,8 @@ export function generateDropShoulderPattern(
       ? Math.max(armholeMarkerRc, totalRows - backNeckDepthRows)
       : totalRows;
 
+  const frontNecklineStartRC = Math.max(armholeMarkerRc, totalRows - frontNeckDepthRows);
+
   // ---- Build display rows ----
   const displayRows = buildBackRows({
     castOnSts: hemCastOnSts,
@@ -1152,10 +1172,15 @@ export function generateDropShoulderPattern(
     alineBodyShaping,
   });
 
-  const frontDisplayRows = isCardigan
+  const cardiganFrontShoulderSts =
+    cardiganHalfLeftBustBodySts !== undefined
+      ? Math.max(0, Math.round(cardiganHalfLeftBustBodySts - Math.round(neckSts / 2)))
+      : 0;
+
+  let frontDisplayRows = isCardigan
     ? buildCardiganFrontRows({
-        frontCastOnSts: forceEven(hemCastOnSts / 2),
-        frontSts: forceEven(bustBodySts / 2),
+        frontCastOnSts: cardiganHalfLeftCastOnSts ?? 0,
+        frontSts: cardiganHalfLeftBustBodySts ?? 0,
         hemRows,
         hemRowsValid,
         bodyToArmholeRows,
@@ -1163,7 +1188,7 @@ export function generateDropShoulderPattern(
         armholeDepthRows,
         armholeMarkerRc,
         totalRows,
-        shoulderStsEach: Math.max(0, Math.round(forceEven(bustBodySts / 2) - Math.round(neckSts / 2))),
+        shoulderStsEach: cardiganFrontShoulderSts,
         neckPerFront: Math.round(neckSts / 2),
         frontNeckDepthRows,
         isVNeck,
@@ -1186,6 +1211,21 @@ export function generateDropShoulderPattern(
         isVNeck,
         alineBodyShaping,
       });
+
+  const frontNeckChartBuilt = buildDropShoulderFrontNeckShapingChart({
+    isCardigan,
+    isVNeck,
+    neckSts,
+    shoulderStsEach: isCardigan ? cardiganFrontShoulderSts : shoulderStsEach,
+    frontNeckDepthRows,
+    frontNecklineStartRC,
+    totalRows,
+    bustBodySts,
+    rowsPerInch: rpi,
+  });
+  if (frontNeckChartBuilt) {
+    frontDisplayRows = [...frontDisplayRows, { kind: "neckShoulderChartTableMount" }];
+  }
 
   const sleeveDisplayRows = buildDropShoulderSleeveDisplayRows({
     topSts,
@@ -1236,9 +1276,16 @@ export function generateDropShoulderPattern(
     frontNeckDepthRows,
     backNeckDepthRows,
     backNecklineStartRC: backNecklineStartRC,
-    frontNecklineStartRC: Math.max(armholeMarkerRc, totalRows - frontNeckDepthRows),
+    frontNecklineStartRC,
+    armholeStartRow: armholeMarkerRc,
     finalRC: totalRows,
     isCardigan,
+    ...(isCardigan && cardiganHalfLeftCastOnSts !== undefined
+      ? {
+          cardiganHalfLeftCastOnSts,
+          cardiganHalfLeftStitchesAfterArmhole,
+        }
+      : {}),
     // Drop-shoulder sleeve schematic (`drop-body-sleeve.svg`) — consumed by buildDropShoulderSleeveDiagramReplacements.
     dropShoulderSleeveTotalRows: sleeveTotalRows > 0 ? sleeveTotalRows : undefined,
     dropShoulderSleeveBodyRows: sleeveBodyRows > 0 ? sleeveBodyRows : undefined,
@@ -1270,9 +1317,10 @@ export function generateDropShoulderPattern(
     sleeveDisplayRows,
     debug,
     neckShoulderShapingChart: EMPTY_CHART,
-    frontNeckShoulderShapingChart: EMPTY_CHART,
+    frontNeckShoulderShapingChart: frontNeckChartBuilt?.chart ?? EMPTY_CHART,
     neckShoulderChartUsesLiveRows: false,
-    frontNeckShoulderChartUsesLiveRows: false,
+    frontNeckShoulderChartUsesLiveRows: frontNeckChartBuilt?.usesLiveRows ?? false,
+    frontNeckShoulderTimeline: frontNeckChartBuilt?.timeline,
     isDropShoulder: true,
   };
 }

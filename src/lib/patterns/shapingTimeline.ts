@@ -347,7 +347,7 @@ export function buildCardiganHalfFrontTimeline(
   const shoulderStartsAtFirstPostCenter = options?.shoulderStartsAtFirstPostCenter === true;
 
   const shoulderRightPerRow = Array(workRows).fill(0);
-  if (shoulderBandTotal > 0) {
+  if (!options?.straightShoulders && shoulderBandTotal > 0) {
     let placementRowsEff = Math.min(shoulderBindoffRowsIn, workRows);
     let rightChunks: number[];
 
@@ -528,6 +528,11 @@ export type BuildTimelineOptions = {
    * Used to keep front/back final shoulder remainder aligned unless intentionally overridden.
    */
   minFinalStitchesPerSide?: number;
+  /**
+   * Drop-shoulder fronts: skip graduated outer-shoulder bind-offs during the neck-depth window;
+   * shoulder stitches stay straight until the final bind-off row appended by the drop-shoulder chart builder.
+   */
+  straightShoulders?: boolean;
 };
 
 /**
@@ -623,7 +628,7 @@ export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTime
 
   const shoulderLeftPerRow = Array(workRows).fill(0);
   const shoulderRightPerRow = Array(workRows).fill(0);
-  if (shoulderBandTotal > 0) {
+  if (!options?.straightShoulders && shoulderBandTotal > 0) {
     let placementRowsEff = Math.min(shoulderBindoffRowsIn, workRows);
     let leftChunks: number[];
     let rightChunks: number[];
