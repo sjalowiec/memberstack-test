@@ -1,20 +1,21 @@
 ---
-import videos from "../../data/videos-public.json";
+import videosRaw from "../../data/videos-public.json";
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
 import LoginNudge from "../../components/auth/LoginNudge.astro";
 import GatedVimeoEmbed from "../../components/videos/GatedVimeoEmbed.astro";
 import { catalogChaptersFromVideoRow, type CatalogChapterRow } from "../../lib/catalogVideoChapters";
+import { filterPublicCatalogVideos, findPublicCatalogVideoByContentId } from "../../lib/videoPublic";
 export const prerender = true;
 
 export function getStaticPaths() {
-  return videos.map((v) => ({
+  return filterPublicCatalogVideos(videosRaw).map((v) => ({
     params: { id: String(v.content_id) },
   }));
 }
 
 const id = String(Astro.params.id);
-const video = videos.find((v) => String(v.content_id) === id);
+const video = findPublicCatalogVideoByContentId(videosRaw, id);
 
 const contentIdForJumplinks = Number((video as any)?.content_id ?? Astro.params?.id ?? NaN);
 const contentIdAttr = !Number.isNaN(contentIdForJumplinks) ? String(contentIdForJumplinks) : "";

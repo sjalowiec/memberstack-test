@@ -10,6 +10,12 @@ import {
 } from "../../lib/lessonVideo";
 import GatedVimeoEmbed from "../../components/videos/GatedVimeoEmbed.astro";
 import GlossaryHtml from "../../components/GlossaryHtml.astro";
+import {
+  filterPublicHelpHubTips,
+  findPublicHelpHubTipBySlug,
+  type HelpHubTipRecord,
+} from "../../lib/helpHubPublic";
+import { filterPublicCatalogVideos } from "../../lib/videoPublic";
 
 type LessonBodyBlock =
   | { type: "text"; content?: string }
@@ -50,19 +56,15 @@ type Lesson = {
   status?: string;
 };
 
-type HelpHubTip = {
-  id?: number;
-  slug?: string;
-  title?: string;
-  question?: string;
-  relatedLessons?: (string | number)[];
-};
+type HelpHubTip = HelpHubTipRecord;
 
 const lessons = lessonsFile as Lesson[];
-const helpHubTips = Array.isArray(helpHub) ? (helpHub as HelpHubTip[]) : [];
-const catalogVideos = Array.isArray(videosPublic)
-  ? (videosPublic as PublicVideoRow[])
-  : [];
+const helpHubTips = filterPublicHelpHubTips(
+  Array.isArray(helpHub) ? (helpHub as HelpHubTip[]) : [],
+);
+const catalogVideos = filterPublicCatalogVideos(
+  Array.isArray(videosPublic) ? (videosPublic as PublicVideoRow[]) : [],
+);
 
 const { slug } = Astro.params;
 console.log("Looking for slug:", slug);
@@ -97,8 +99,19 @@ if (!lesson || !lessonIsPubliclyPublished(lesson)) {
 
 const url = new URL(Astro.request.url);
 const from = url.searchParams.get("from");
-const hubSlug = url.searchParams.get("hub");
-const showHelpHubBackLink = from === "help-hub" && !!hubSlug;
+const hubSlugParam = url.searchParams.get("hub");
+const hubTipForBackLink =
+  typeof hubSlugParam === "string" && hubSlugParam.trim() !== ""
+    ? findPublicHelpHubTipBySlug(
+        Array.isArray(helpHub) ? (helpHub as HelpHubTip[]) : [],
+        hubSlugParam,
+      )
+    : undefined;
+const hubSlug =
+  hubTipForBackLink && typeof hubTipForBackLink.slug === "string"
+    ? hubTipForBackLink.slug.trim()
+    : "";
+const showHelpHubBackLink = from === "help-hub" && hubSlug.length > 0;
 
 /** Vimeo numeric id for matching (catalog `videoSlug` or legacy `vimeoEmbedUrl`). */
 function lessonVimeoNumericId(l: Lesson): string | null {

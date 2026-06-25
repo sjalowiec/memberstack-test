@@ -9,6 +9,7 @@ import { buildGlossaryRelatedVideosHtml } from "./glossaryCatalogVideos";
 import { getGlossaryPlaceholderVisibleText } from "./glossaryTooltipPrint";
 import { slugify } from "../slugify";
 import type { PublicVideoRow } from "../lessonVideo";
+import { filterPublicCatalogVideos } from "../videoPublic";
 
 type RelatedTool = { name: string; url: string; icon?: string };
 
@@ -26,9 +27,9 @@ type GlossaryRow = {
 };
 
 const glossary: GlossaryRow[] = Array.isArray(glossaryData) ? (glossaryData as GlossaryRow[]) : [];
-const glossaryCatalogVideos: PublicVideoRow[] = Array.isArray(videosPublic)
-  ? (videosPublic as PublicVideoRow[])
-  : [];
+const glossaryCatalogVideos: PublicVideoRow[] = filterPublicCatalogVideos(
+  Array.isArray(videosPublic) ? (videosPublic as PublicVideoRow[]) : [],
+);
 
 function sanitizeGlossaryPopupHtml(html: string): string {
   if (!html) return "";

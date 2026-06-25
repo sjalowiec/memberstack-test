@@ -2,6 +2,7 @@
 import videosPublic from "../data/videos-public.json";
 import { buildGlossaryRelatedVideosHtml } from "../lib/glossary/glossaryCatalogVideos";
 import type { PublicVideoRow } from "../lib/lessonVideo";
+import { filterPublicCatalogVideos } from "../lib/videoPublic";
 
 interface Props {
   entry: any;
@@ -22,7 +23,7 @@ const vimeoIds: string[] = Array.isArray(vimeoIdsRaw)
   : [];
 const videoTitleBase = (entry?.english ?? "").toString().replace(/<[^>]*>/g, "").trim();
 
-const catalogVideos = videosPublic as PublicVideoRow[];
+const catalogVideos = filterPublicCatalogVideos(videosPublic as PublicVideoRow[]);
 const relatedVideosHtml = buildGlossaryRelatedVideosHtml(entry, catalogVideos, vimeoIds);
 
 const imageSrc = entry?.image

@@ -7,6 +7,8 @@ export type VideoPublicRecord = {
   content_id: string | number;
   slug: string;
   title: string;
+  /** `draft`, `published`, or `archived`. Omitted = legacy published. */
+  status?: string;
   description?: string;
   access_level?: string;
   posterUrl?: string;
@@ -123,6 +125,13 @@ export function normalizeVideoForSave(
 
   const description = trimStr(base.description);
   const access_level = trimStr(base.access_level);
+  const statusRaw = trimStr(base.status).toLowerCase();
+  const status =
+    statusRaw === "draft" || statusRaw === "published" || statusRaw === "archived"
+      ? statusRaw
+      : statusRaw === ""
+        ? undefined
+        : undefined;
   const posterUrl = trimStr(base.posterUrl);
   const category = trimStr(base.category);
   const subcategory = trimStr(base.subcategory);
@@ -175,6 +184,9 @@ export function normalizeVideoForSave(
 
   if (access_level) out.access_level = access_level;
   else delete out.access_level;
+
+  if (status) out.status = status;
+  else delete out.status;
 
   if (posterUrl) out.posterUrl = posterUrl;
   else delete out.posterUrl;
