@@ -95,6 +95,13 @@ export type MigrationPendingComponent = {
   order: number;
 };
 
+export type EmbeddedToolComponent = {
+  type: "embeddedTool";
+  toolKey: string;
+  legacyComponentId: number;
+  order: number;
+};
+
 export type CourseComponent =
   | RichTextComponent
   | VideoComponent
@@ -103,6 +110,7 @@ export type CourseComponent =
   | ImageCarouselComponent
   | ImageComponent
   | ExerciseAccordionComponent
+  | EmbeddedToolComponent
   | MigrationPendingComponent;
 
 export type CourseBlock = {

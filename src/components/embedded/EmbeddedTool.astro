@@ -1,0 +1,65 @@
+---
+import MaximumKnittedWidthCalculator from "../tools/MaximumKnittedWidthCalculator.astro";
+import {
+  getEmbeddedToolByKey,
+  type EmbeddedToolEntry,
+} from "../../lib/tools/embeddedToolRegistry";
+
+interface Props {
+  toolKey: string;
+  /** Unique suffix for form controls when multiple tools appear on one page. */
+  instanceId?: string;
+}
+
+const { toolKey, instanceId = "embedded" } = Astro.props;
+const entry: EmbeddedToolEntry | undefined = getEmbeddedToolByKey(toolKey);
+const isAvailable = entry?.status === "available";
+---
+
+<div class="embedded-tool" data-embedded-tool={toolKey}>
+  {
+    isAvailable && toolKey === "maximum-knitted-width" ? (
+      <MaximumKnittedWidthCalculator embedded instanceId={instanceId} />
+    ) : isAvailable ? (
+      <aside class="embedded-tool__notice" role="alert">
+        <p>
+          <strong>{entry?.name ?? toolKey}</strong> is registered but not yet wired for
+          embedding.
+        </p>
+      </aside>
+    ) : (
+      <aside class="embedded-tool__notice embedded-tool__notice--unavailable" role="alert">
+        <p>
+          Embedded tool unavailable
+          {entry?.name ? `: ${entry.name}` : toolKey ? `: ${toolKey}` : ""}.
+        </p>
+      </aside>
+    )
+  }
+</div>
+
+<style>
+  .embedded-tool {
+    margin: 0.5rem 0 0;
+  }
+
+  .embedded-tool__notice {
+    margin: 0;
+    padding: 0.85rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #fcd34d;
+    background: #fffbeb;
+    color: #92400e;
+    font-size: 0.95rem;
+  }
+
+  .embedded-tool__notice--unavailable {
+    border-color: #fecaca;
+    background: #fef2f2;
+    color: #991b1b;
+  }
+
+  .embedded-tool__notice p {
+    margin: 0;
+  }
+</style>

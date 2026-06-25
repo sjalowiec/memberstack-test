@@ -2,17 +2,37 @@
 import "../../styles/wizard.css";
 import FloatingInput from "./FloatingInput.astro";
 import UnitToggle from "../wizards/UnitToggle.astro";
+
+interface Props {
+  /** Compact layout for course lessons and other embedded contexts. */
+  embedded?: boolean;
+  /** Suffix for input ids when multiple calculators may appear on one page. */
+  instanceId?: string;
+}
+
+const { embedded = false, instanceId = "standalone" } = Astro.props;
+const needlesId = `availableNeedles-${instanceId}`;
+const gaugeId = `stitchGauge-${instanceId}`;
 ---
 
-<div class="maxwidth-panel">
+<div
+  class:list={["maxwidth-panel", embedded && "maxwidth-panel--embedded"]}
+  data-maxwidth-calculator
+>
   <div class="section-header-with-toggle">
-    <h2>Enter Your Measurements</h2>
+    {
+      embedded ? (
+        <h3 class="embedded-tool-heading">Maximum Knitted Width</h3>
+      ) : (
+        <h2>Enter Your Measurements</h2>
+      )
+    }
     <UnitToggle />
   </div>
-  <form id="maxwidthForm">
+  <form data-maxwidth-form>
     <div class="maxwidth-input-grid">
       <FloatingInput
-        id="availableNeedles"
+        id={needlesId}
         name="availableNeedles"
         label="Available Needles"
         type="number"
@@ -21,23 +41,24 @@ import UnitToggle from "../wizards/UnitToggle.astro";
         placeholder=" "
       />
       <FloatingInput
-        id="stitchGauge"
+        id={gaugeId}
         name="stitchGauge"
         label="Stitch Gauge"
         type="number"
         min={0.1}
         step={0.1}
         placeholder=" "
+        dataAttrs={{ "data-maxwidth-gauge": "true" }}
       />
     </div>
     <div class="maxwidth-actions">
-      <button type="button" id="calculateMaxwidth" class="wizard-button">
+      <button type="button" data-maxwidth-calc class="wizard-button">
         Calculate
       </button>
     </div>
 
-    <div id="maxwidthValidation" class="maxwidth-validation" role="alert" hidden></div>
-    <div id="maxwidthResults" class="maxwidth-results"></div>
+    <div data-maxwidth-validation class="maxwidth-validation" role="alert" hidden></div>
+    <div data-maxwidth-results class="maxwidth-results"></div>
   </form>
 </div>
 
@@ -51,9 +72,38 @@ import UnitToggle from "../wizards/UnitToggle.astro";
     margin-bottom: 1.5rem;
   }
 
+  .maxwidth-panel--embedded {
+    padding: 1.1rem 1.15rem;
+    margin-bottom: 0;
+    box-shadow: none;
+    border-radius: 10px;
+  }
+
+  .embedded-tool-heading {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #52682d;
+    line-height: 1.3;
+  }
+
+  .maxwidth-panel--embedded .section-header-with-toggle {
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
   @media (max-width: 640px) {
     .maxwidth-panel {
       padding: 1.25rem;
+    }
+
+    .maxwidth-panel--embedded {
+      padding: 1rem;
+    }
+
+    .maxwidth-panel--embedded .section-header-with-toggle {
+      flex-direction: column;
+      align-items: stretch;
     }
   }
 
@@ -67,11 +117,16 @@ import UnitToggle from "../wizards/UnitToggle.astro";
   @media (max-width: 640px) {
     .maxwidth-input-grid {
       grid-template-columns: 1fr;
+      gap: 16px;
     }
   }
 
   .maxwidth-actions {
     margin-top: 20px;
+  }
+
+  .maxwidth-panel--embedded .maxwidth-actions {
+    margin-top: 16px;
   }
 
   .maxwidth-actions .wizard-button {
@@ -83,6 +138,13 @@ import UnitToggle from "../wizards/UnitToggle.astro";
     color: white;
     border: none;
     cursor: pointer;
+    width: auto;
+  }
+
+  @media (max-width: 640px) {
+    .maxwidth-actions .wizard-button {
+      width: 100%;
+    }
   }
 
   .maxwidth-actions .wizard-button:hover {
@@ -107,6 +169,10 @@ import UnitToggle from "../wizards/UnitToggle.astro";
     margin-top: 24px;
   }
 
+  .maxwidth-panel--embedded .maxwidth-results {
+    margin-top: 18px;
+  }
+
   .maxwidth-results-card.tool-results {
     background: #f8faf6;
     border: 1px solid #e5e7eb;
@@ -116,10 +182,19 @@ import UnitToggle from "../wizards/UnitToggle.astro";
     font-size: 1.1rem;
   }
 
+  .maxwidth-panel--embedded .maxwidth-results-card.tool-results {
+    padding: 16px 18px;
+    font-size: 1rem;
+  }
+
   .maxwidth-results-card.tool-results .result-main {
     font-size: 1.25rem;
     font-weight: 700;
     color: #52682d;
+  }
+
+  .maxwidth-panel--embedded .maxwidth-results-card.tool-results .result-main {
+    font-size: 1.1rem;
   }
 
   /* Global so injected results HTML receives these styles */
@@ -169,103 +244,117 @@ import UnitToggle from "../wizards/UnitToggle.astro";
 </style>
 
 <script>
-  const calculateButton = document.getElementById("calculateMaxwidth");
-  const resultsPanel = document.getElementById("maxwidthResults");
-  const validationEl = document.getElementById("maxwidthValidation");
-
   function getUnit(): string {
     return localStorage.getItem("kbm-units") || "in";
   }
 
-  function updateGaugePlaceholder(unit: string): void {
-    const stitchGaugeInput = document.getElementById("stitchGauge") as HTMLInputElement | null;
-    if (!stitchGaugeInput) return;
-    stitchGaugeInput.placeholder = unit === "cm" ? "per 10 cm" : "per 4 inches";
-  }
+  function initMaxWidthCalculator(root: HTMLElement): void {
+    const calculateButton = root.querySelector("[data-maxwidth-calc]");
+    const resultsPanel = root.querySelector("[data-maxwidth-results]");
+    const validationEl = root.querySelector(
+      "[data-maxwidth-validation]",
+    ) as HTMLElement | null;
+    const gaugeInput = root.querySelector("[data-maxwidth-gauge]") as HTMLInputElement | null;
 
-  window.addEventListener("kbm:units-change", (e: Event) => {
-    const ev = e as CustomEvent<{ unit?: string }>;
-    const unit = ev.detail?.unit ?? "in";
-    updateGaugePlaceholder(unit);
-  });
-  updateGaugePlaceholder(getUnit());
-
-  if (!calculateButton || !resultsPanel || !validationEl) throw new Error("Maximum width calculator elements not found");
-
-  calculateButton.addEventListener("click", () => {
-    const form = document.getElementById("maxwidthForm") as HTMLFormElement | null;
-    const formData = form ? new FormData(form) : new FormData();
-
-    const needlesRaw = formData.get("availableNeedles") ?? "";
-    const gaugeRaw = formData.get("stitchGauge") ?? "";
-
-    const needles = parseInt(String(needlesRaw), 10) || 0;
-    const gauge = parseFloat(String(gaugeRaw)) || 0;
-
-    validationEl.hidden = true;
-    validationEl.textContent = "";
-
-    const errors: string[] = [];
-    if (needlesRaw === "" || needlesRaw === null) errors.push("Please enter available needles.");
-    else if (needles <= 0) errors.push("Available needles must be greater than zero.");
-    if (gaugeRaw === "" || gaugeRaw === null) errors.push("Please enter stitch gauge.");
-    else if (gauge <= 0) errors.push("Stitch gauge must be greater than zero.");
-
-    if (errors.length > 0) {
-      validationEl.textContent = errors.join(" ");
-      validationEl.hidden = false;
-      resultsPanel.innerHTML = "";
-      return;
+    function updateGaugePlaceholder(unit: string): void {
+      if (!gaugeInput) return;
+      gaugeInput.placeholder = unit === "cm" ? "per 10 cm" : "per 4 inches";
     }
 
-    const unit = getUnit();
-    let widthIn: number;
-    let widthCm: number;
+    updateGaugePlaceholder(getUnit());
 
-    if (unit === "cm") {
-      widthCm = (needles / gauge) * 10;
-      widthIn = widthCm / 2.54;
-    } else {
-      widthIn = (needles / gauge) * 4;
-      widthCm = widthIn * 2.54;
-    }
+    if (!calculateButton || !resultsPanel || !validationEl) return;
 
-    const widthInRounded = Math.round(widthIn * 10) / 10;
-    const widthCmRounded = Math.round(widthCm * 10) / 10;
+    calculateButton.addEventListener("click", () => {
+      const form = root.querySelector("[data-maxwidth-form]") as HTMLFormElement | null;
+      const formData = form ? new FormData(form) : new FormData();
 
-    const primaryUnit = unit === "cm" ? "cm" : "in";
-    const primaryVal = unit === "cm" ? widthCmRounded : widthInRounded;
-    const altVal = unit === "cm" ? widthInRounded : widthCmRounded;
-    const altUnit = unit === "cm" ? "in" : "cm";
+      const needlesRaw = formData.get("availableNeedles") ?? "";
+      const gaugeRaw = formData.get("stitchGauge") ?? "";
 
-    resultsPanel.innerHTML = `
+      const needles = parseInt(String(needlesRaw), 10) || 0;
+      const gauge = parseFloat(String(gaugeRaw)) || 0;
+
+      validationEl.hidden = true;
+      validationEl.textContent = "";
+
+      const errors: string[] = [];
+      if (needlesRaw === "" || needlesRaw === null) errors.push("Please enter available needles.");
+      else if (needles <= 0) errors.push("Available needles must be greater than zero.");
+      if (gaugeRaw === "" || gaugeRaw === null) errors.push("Please enter stitch gauge.");
+      else if (gauge <= 0) errors.push("Stitch gauge must be greater than zero.");
+
+      if (errors.length > 0) {
+        validationEl.textContent = errors.join(" ");
+        validationEl.hidden = false;
+        resultsPanel.innerHTML = "";
+        return;
+      }
+
+      const unit = getUnit();
+      let widthIn: number;
+      let widthCm: number;
+
+      if (unit === "cm") {
+        widthCm = (needles / gauge) * 10;
+        widthIn = widthCm / 2.54;
+      } else {
+        widthIn = (needles / gauge) * 4;
+        widthCm = widthIn * 2.54;
+      }
+
+      const widthInRounded = Math.round(widthIn * 10) / 10;
+      const widthCmRounded = Math.round(widthCm * 10) / 10;
+
+      const primaryUnit = unit === "cm" ? "cm" : "in";
+      const primaryVal = unit === "cm" ? widthCmRounded : widthInRounded;
+      const altVal = unit === "cm" ? widthInRounded : widthCmRounded;
+      const altUnit = unit === "cm" ? "in" : "cm";
+
+      resultsPanel.innerHTML = `
         <div class="maxwidth-results-card tool-results">
           <p class="result-main">
             Maximum Width: <strong>${primaryVal} ${primaryUnit}</strong> (${altVal} ${altUnit})
           </p>
           <div class="width-indicator">
             <div class="width-bar">
-              <div class="width-fill" id="width-fill"></div>
+              <div class="width-fill" data-maxwidth-fill></div>
             </div>
             <div class="width-scale">
               <span>0</span>
-              <span id="width-label">50 in</span>
+              <span data-maxwidth-label>50 in</span>
             </div>
           </div>
         </div>`;
 
-    const visualMax = 60;
-    const percent = Math.min((widthIn / visualMax) * 100, 100);
-    const bar = document.getElementById("width-fill");
-    const label = document.getElementById("width-label");
-    if (bar) {
-      bar.style.width = "0%";
-      setTimeout(() => {
-        bar.style.width = percent + "%";
-      }, 50);
-    }
-    if (label) {
-      label.textContent = primaryVal.toFixed(1) + " " + primaryUnit;
-    }
+      const visualMax = 60;
+      const percent = Math.min((widthIn / visualMax) * 100, 100);
+      const bar = resultsPanel.querySelector("[data-maxwidth-fill]") as HTMLElement | null;
+      const label = resultsPanel.querySelector("[data-maxwidth-label]");
+      if (bar) {
+        bar.style.width = "0%";
+        window.setTimeout(() => {
+          bar.style.width = percent + "%";
+        }, 50);
+      }
+      if (label) {
+        label.textContent = primaryVal.toFixed(1) + " " + primaryUnit;
+      }
+    });
+  }
+
+  window.addEventListener("kbm:units-change", (e: Event) => {
+    const ev = e as CustomEvent<{ unit?: string }>;
+    const unit = ev.detail?.unit ?? "in";
+    document.querySelectorAll("[data-maxwidth-calculator]").forEach((root) => {
+      const gaugeInput = root.querySelector("[data-maxwidth-gauge]") as HTMLInputElement | null;
+      if (gaugeInput) {
+        gaugeInput.placeholder = unit === "cm" ? "per 10 cm" : "per 4 inches";
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-maxwidth-calculator]").forEach((root) => {
+    initMaxWidthCalculator(root as HTMLElement);
   });
 </script>

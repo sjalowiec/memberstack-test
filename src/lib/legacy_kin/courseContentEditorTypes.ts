@@ -18,6 +18,7 @@ export type EditorContentKind =
   | "image"
   | "imageWithCaption"
   | "download"
+  | "embeddedTool"
   | "exerciseAccordion"
   | "imageGallery"
   | "imageCarousel"
@@ -35,6 +36,7 @@ export const EDITOR_TYPE_META: Record<
   image: { label: "Image", color: "#5a7080", abbrev: "I" },
   imageWithCaption: { label: "Image with Caption", color: "#5a7080", abbrev: "IC" },
   download: { label: "Download", color: "#3f7a6a", abbrev: "D" },
+  embeddedTool: { label: "Embedded Tool", color: "#4a6b8a", abbrev: "ET" },
   exerciseAccordion: { label: "Accordion", color: "#a06a2c", abbrev: "A" },
   imageGallery: { label: "Gallery", color: "#6a5aa0", abbrev: "G" },
   imageCarousel: { label: "Image Carousel", color: "#7a4a8a", abbrev: "C" },

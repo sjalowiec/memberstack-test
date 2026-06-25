@@ -12,6 +12,10 @@ import {
   duplicateLessonInCourse,
   moveLessonInCourse,
 } from "../../../lib/legacy_kin/courseLessonAdmin";
+import {
+  formatCourseSplitReport,
+  runCourseContentSplit,
+} from "../../../lib/legacy_kin/courseContentSplit";
 
 export const prerender = false;
 
@@ -163,6 +167,34 @@ export const POST: APIRoute = async ({ request }) => {
         lesson: result.lesson,
         lessonSlug: result.lessonSlug,
         backupPath: result.backupPath,
+        savedAt: new Date().toISOString(),
+      });
+    }
+
+    if (action === "splitLessonContent") {
+      const lessonSlug =
+        typeof body.lessonSlug === "string" ? body.lessonSlug.trim() : undefined;
+      const blockSlug =
+        typeof body.blockSlug === "string" ? body.blockSlug.trim() : undefined;
+      const dryRun = body.apply !== true;
+      const force = body.force === true;
+      const allowHandCleaned = body.allowHandCleaned === true;
+      const report = runCourseContentSplit({
+        courseId,
+        lessonSlug,
+        blockSlug,
+        dryRun,
+        force,
+        allowHandCleaned,
+      });
+      const course = readCourseContentFile(courseId);
+      return jsonResponse({
+        ok: true,
+        action,
+        courseId,
+        course,
+        report,
+        reportText: formatCourseSplitReport(report),
         savedAt: new Date().toISOString(),
       });
     }

@@ -439,6 +439,15 @@ main.site-content:has(.course-preview--reader) {
   margin-top: 1rem;
 }
 
+.course-preview__embedded-tool {
+  margin-top: 0.25rem;
+}
+
+.course-preview__embedded-tool .maxwidth-panel--embedded {
+  border-color: #e2e8f0;
+  background: #fcfdfb;
+}
+
 .course-preview__richtext {
   max-width: 100%;
   overflow-x: auto;

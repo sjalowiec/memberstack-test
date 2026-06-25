@@ -48,6 +48,10 @@ import {
   threeVideosVideoRole,
 } from "../lib/legacy_kin/courseThreeVideosLayout";
 import { courseImageLinkAttrs } from "../lib/legacy_kin/courseImageLink";
+import {
+  availableEmbeddedToolsForContext,
+  getEmbeddedToolByKey,
+} from "../lib/tools/embeddedToolRegistry";
 
 import {
   initCourseHtmlSnippetsPanel,
@@ -651,6 +655,11 @@ function contentSummary(component: Record<string, unknown>) {
     }
     case "download":
       return String(component.label ?? component.filename ?? "Download");
+    case "embeddedTool": {
+      const toolKey = String(component.toolKey ?? "").trim();
+      const entry = getEmbeddedToolByKey(toolKey);
+      return entry ? entry.name : toolKey || "Embedded tool";
+    }
     case "exerciseAccordion": {
       const introText = component.introText as Record<string, unknown> | null | undefined;
       const sections = Array.isArray(component.sections) ? component.sections : [];
@@ -930,6 +939,16 @@ function createComponent(kind: string): Record<string, unknown> {
         legacyComponentId,
         order: 1,
       };
+    case "embeddedTool": {
+      const availableTools = availableEmbeddedToolsForContext("course");
+      const defaultKey = availableTools[0]?.key ?? "maximum-knitted-width";
+      return {
+        type: "embeddedTool",
+        toolKey: defaultKey,
+        legacyComponentId,
+        order: 1,
+      };
+    }
     case "image":
       return {
         type: "image",
@@ -1821,6 +1840,51 @@ function openContentEdit(ref: ComponentRef) {
     fileEl.addEventListener("input", () =>
       applyContentPatch({ label: labelEl.value, filename: fileEl.value }),
     );
+  } else if (component.type === "embeddedTool") {
+    const availableTools = availableEmbeddedToolsForContext("course");
+    const block = lesson ? findBlock(lesson, ref.blockSlug) : null;
+    const currentKey = String(component.toolKey ?? "").trim();
+    const optionsHtml = availableTools
+      .map(
+        (tool) =>
+          `<option value="${escapeHtml(tool.key)}"${tool.key === currentKey ? " selected" : ""}>${escapeHtml(tool.name)}</option>`,
+      )
+      .join("");
+    const selectedEntry = getEmbeddedToolByKey(currentKey);
+
+    dom.editFields.innerHTML = `
+      <label class="course-editor__field"><span class="course-editor__field-label">Section title</span>
+        <input class="course-editor__input" id="ce-et-section-title" type="text" placeholder="Optional heading shown above this block">
+        <span class="course-editor__field-hint">Shown as the block heading on the lesson page. Leave blank for no heading.</span></label>
+      <label class="course-editor__field"><span class="course-editor__field-label">Tool</span>
+        <select class="course-editor__input" id="ce-et-tool-key"${availableTools.length === 0 ? " disabled" : ""}>
+          ${optionsHtml || `<option value="">No available tools</option>`}
+        </select>
+        <span class="course-editor__field-hint">Only tools marked available in the embedded tools registry.</span></label>
+      ${
+        selectedEntry
+          ? `<p class="course-editor__field-hint" style="margin:0">
+              Standalone page: <a href="${escapeHtml(selectedEntry.standalonePath)}" target="_blank" rel="noopener noreferrer">${escapeHtml(selectedEntry.standalonePath)}</a>
+              · <a href="/admin/embedded-tools" target="_blank" rel="noopener noreferrer">View registry</a>
+            </p>`
+          : `<p class="course-editor__field-hint" style="margin:0">
+              <a href="/admin/embedded-tools" target="_blank" rel="noopener noreferrer">View embedded tools registry</a>
+            </p>`
+      }
+    `;
+
+    const sectionTitleEl = dom.editFields.querySelector("#ce-et-section-title") as HTMLInputElement;
+    const toolKeyEl = dom.editFields.querySelector("#ce-et-tool-key") as HTMLSelectElement;
+    sectionTitleEl.value = block ? blockTitleForEditing(block.title) : "";
+    sectionTitleEl.addEventListener("input", () => {
+      applyBlockSectionTitle(ref.blockSlug, sectionTitleEl.value);
+    });
+
+    const syncTool = () => {
+      applyContentPatch({ toolKey: toolKeyEl.value.trim() });
+      renderContentList();
+    };
+    toolKeyEl.addEventListener("change", syncTool);
   } else if (component.type === "image") {
     dom.editFields.innerHTML = `
       <label class="course-editor__field"><span class="course-editor__field-label">Image path</span>
@@ -2611,6 +2675,21 @@ function syncSectionTitleField() {
 
   if (
     selectedBlock &&
+    contentEditingRef?.type === "embeddedTool"
+  ) {
+    dom.sectionTitleWrap.hidden = false;
+    dom.sectionTitleInput.disabled = false;
+    dom.sectionTitleInput.value = blockTitleForEditing(selectedBlock.title);
+    if (dom.sectionTitleHint) {
+      dom.sectionTitleHint.hidden = false;
+      dom.sectionTitleHint.textContent =
+        "Shown as the block heading on the lesson page. You can also edit it in the Section title field on the right.";
+    }
+    return;
+  }
+
+  if (
+    selectedBlock &&
     contentEditingRef?.type === "richText" &&
     !isTextImageLayoutBlock(selectedBlock) &&
     !isThreeVideosLayoutBlock(selectedBlock)
@@ -2673,7 +2752,12 @@ function applyBlockSectionTitle(blockSlug: string, value: string) {
   updateSaveState();
   syncRawTextarea();
   renderContentList();
-  for (const selector of ["#ce-3v-section-title", "#ce-rt-section-title", "#ce-tv-section-title"]) {
+  for (const selector of [
+    "#ce-3v-section-title",
+    "#ce-rt-section-title",
+    "#ce-tv-section-title",
+    "#ce-et-section-title",
+  ]) {
     const panelSectionTitle = dom.editFields?.querySelector(selector) as HTMLInputElement | null;
     if (panelSectionTitle && panelSectionTitle.value !== value) {
       panelSectionTitle.value = value;

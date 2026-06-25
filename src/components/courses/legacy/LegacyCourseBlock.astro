@@ -1,5 +1,6 @@
 ---
 import VimeoEmbed from "../../media/VimeoEmbed.astro";
+import EmbeddedTool from "../../embedded/EmbeddedTool.astro";
 import LegacyCourseImageCarousel from "./LegacyCourseImageCarousel.astro";
 import LegacyCourseImage from "./LegacyCourseImage.astro";
 import type { CourseComponent } from "../../../lib/legacy_kin/coursePreviewPoc";
@@ -95,6 +96,16 @@ const { component } = Astro.props;
           ) : null}
         </details>
       ))}
+    </div>
+  ) : component.type === "embeddedTool" ? (
+    <div
+      class="course-preview__embedded-tool legacy-course__embedded-tool"
+      data-legacy-component={component.legacyComponentId}
+    >
+      <EmbeddedTool
+        toolKey={component.toolKey}
+        instanceId={`lc-${component.legacyComponentId}`}
+      />
     </div>
   ) : component.type === "migrationPending" ? (
     <aside
