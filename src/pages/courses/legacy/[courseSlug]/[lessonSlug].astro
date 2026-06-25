@@ -6,6 +6,7 @@ import {
   getLegacyCourseBySlug,
   getLegacyLessonBySlug,
   getLegacyLessonNeighbors,
+  legacyCourseLoadOptionsFromPreviewRequest,
   legacyLessonHref,
 } from "../../../../lib/legacy_kin/legacyCourseLoader";
 import {
@@ -14,15 +15,24 @@ import {
 
 const courseSlug = Astro.params.courseSlug ?? "";
 const lessonSlug = Astro.params.lessonSlug ?? "";
-const course = getLegacyCourseBySlug(courseSlug);
-const lesson = getLegacyLessonBySlug(courseSlug, lessonSlug);
+const loaderOptions = legacyCourseLoadOptionsFromPreviewRequest(
+  Astro.url.searchParams.get("preview"),
+  Astro.url.hostname,
+  { isViteDev: import.meta.env.DEV, publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV },
+);
+const course = getLegacyCourseBySlug(courseSlug, loaderOptions);
+const lesson = getLegacyLessonBySlug(courseSlug, lessonSlug, loaderOptions);
 
 if (!course || !lesson) {
   return new Response("Lesson not found", { status: 404 });
 }
 
 const blocks = sortedBlocks(lesson);
-const { prev, next } = getLegacyLessonNeighbors(courseSlug, lesson.slug);
+const { prev, next } = getLegacyLessonNeighbors(
+  courseSlug,
+  lesson.slug,
+  loaderOptions,
+);
 const pageTitle = `${lesson.title} · ${course.course.title} | Knit it Now`;
 ---
 
@@ -34,6 +44,7 @@ const pageTitle = `${lesson.title} · ${course.course.title} | Knit it Now`;
   <LegacyCourseShell
     courseSlug={courseSlug}
     currentLessonSlug={lesson.slug}
+    includeDrafts={loaderOptions.includeDrafts}
   >
     <article class="course-preview__content legacy-course__lesson">
       <header class="course-preview__section-header">

@@ -5,9 +5,10 @@ import "../../../styles/course-preview.css";
 interface Props {
   courseSlug: string;
   currentLessonSlug?: string;
+  includeDrafts?: boolean;
 }
 
-const { courseSlug, currentLessonSlug } = Astro.props;
+const { courseSlug, currentLessonSlug, includeDrafts = false } = Astro.props;
 ---
 
 <div class="course-preview course-preview--reader legacy-course">
@@ -17,7 +18,11 @@ const { courseSlug, currentLessonSlug } = Astro.props;
   </p>
 
   <div class="course-preview__layout">
-    <LegacyCourseSidebar {courseSlug} {currentLessonSlug} />
+    <LegacyCourseSidebar
+      {courseSlug}
+      {currentLessonSlug}
+      {includeDrafts}
+    />
 
     <div class="course-preview__main legacy-course__main">
       <slot />

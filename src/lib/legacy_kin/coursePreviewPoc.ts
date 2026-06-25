@@ -127,9 +127,19 @@ export type CoursePreviewData = {
     legacyChallengeId: number;
     title: string;
     slug: string;
-    legacy: { sourceExport: string };
+    /** `published` or omitted = public when no explicit publish flags. `draft` hides from public routes. */
+    status?: string;
+    published?: boolean;
+    description?: string;
+    legacy: { sourceExport: string; sourceCsv?: string; migratedAt?: string };
   };
   lessons: CourseLesson[];
+  manifest?: {
+    videoCount?: number;
+    videos?: unknown[];
+    downloadCount?: number;
+    downloads?: unknown[];
+  };
 };
 
 const previewCourses: Record<number, CoursePreviewData> = {

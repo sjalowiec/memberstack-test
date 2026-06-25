@@ -1,8 +1,13 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { CoursePreviewData, CourseLesson } from "./coursePreviewPoc";
 import { isCoursePreviewProductionBlocked } from "./coursePreviewProductionAccess";
 import type { DetectSiteEnvironmentOptions } from "../env/siteEnvironment";
+import {
+  isLegacyCourseDraft,
+  isLegacyCoursePublic,
+  type LegacyCoursePublicationFields,
+} from "./legacyCoursePublication";
 
 export const COURSE_CONTENT_DIR = join(
   process.cwd(),
@@ -14,11 +19,100 @@ export const COURSE_CONTENT_DIR = join(
 
 export const COURSE_CONTENT_BACKUP_DIR = join(COURSE_CONTENT_DIR, "backups");
 
-/** Legacy challenge id → POC filename on disk. */
+/** @deprecated Use discoverAdminCourseCatalog() — kept for tests referencing known filenames. */
 export const COURSE_CONTENT_FILES: Record<number, string> = {
   50: "course_50_lk150_quick.poc.json",
   51: "course_51_lk150_fun.poc.json",
 };
+
+export type AdminCourseSummary = {
+  id: number;
+  title: string;
+  slug: string;
+  filename: string;
+  lessonCount: number;
+  status?: string;
+  published?: boolean;
+  isDraft: boolean;
+  isPublic: boolean;
+};
+
+type DiscoveredCourseFile = {
+  id: number;
+  filename: string;
+  title: string;
+  slug: string;
+  lessonCount: number;
+  status?: string;
+  published?: boolean;
+};
+
+function readDiscoveredCourseFile(filename: string): DiscoveredCourseFile | null {
+  const path = join(COURSE_CONTENT_DIR, filename);
+  if (!existsSync(path)) return null;
+
+  try {
+    const raw = readFileSync(path, "utf-8");
+    const data = JSON.parse(raw) as CoursePreviewData;
+    const id = Number(data?.course?.legacyChallengeId);
+    if (!Number.isFinite(id)) return null;
+    const course = data.course as LegacyCoursePublicationFields & {
+      title?: string;
+      slug?: string;
+    };
+    return {
+      id,
+      filename,
+      title: String(course.title ?? `Course ${id}`),
+      slug: String(course.slug ?? ""),
+      lessonCount: Array.isArray(data.lessons) ? data.lessons.length : 0,
+      status: course.status,
+      published: course.published,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function cleanedPocFilenames(): string[] {
+  if (!existsSync(COURSE_CONTENT_DIR)) return [];
+  return readdirSync(COURSE_CONTENT_DIR)
+    .filter((name) => name.endsWith(".poc.json"))
+    .sort();
+}
+
+/** Scan cleaned/ for course-poc JSON files keyed by legacyChallengeId. */
+export function discoverAdminCourseCatalog(): DiscoveredCourseFile[] {
+  const byId = new Map<number, DiscoveredCourseFile>();
+  for (const filename of cleanedPocFilenames()) {
+    const entry = readDiscoveredCourseFile(filename);
+    if (!entry) continue;
+    byId.set(entry.id, entry);
+  }
+  return [...byId.values()].sort((a, b) => a.id - b.id);
+}
+
+function getDiscoveredCourseFile(courseId: number): DiscoveredCourseFile {
+  const entry = discoverAdminCourseCatalog().find((item) => item.id === courseId);
+  if (!entry) {
+    throw new Error(`Unsupported course id ${courseId}.`);
+  }
+  return entry;
+}
+
+export function listAdminCourseSummaries(): AdminCourseSummary[] {
+  return discoverAdminCourseCatalog().map((entry) => ({
+    id: entry.id,
+    title: entry.title,
+    slug: entry.slug,
+    filename: entry.filename,
+    lessonCount: entry.lessonCount,
+    status: entry.status,
+    published: entry.published,
+    isDraft: isLegacyCourseDraft(entry),
+    isPublic: isLegacyCoursePublic(entry),
+  }));
+}
 
 export type HtmlCleanupAction =
   | "emptyParagraphs"
@@ -75,21 +169,16 @@ export function isCourseContentAdminAllowed(
 }
 
 export function getAllowedCourseIds(): number[] {
-  return Object.keys(COURSE_CONTENT_FILES)
-    .map(Number)
-    .sort((a, b) => a - b);
+  return discoverAdminCourseCatalog().map((entry) => entry.id);
 }
 
 export function isAllowedCourseId(courseId: number): boolean {
-  return Object.prototype.hasOwnProperty.call(COURSE_CONTENT_FILES, courseId);
+  return discoverAdminCourseCatalog().some((entry) => entry.id === courseId);
 }
 
 export function getCourseContentPath(courseId: number): string {
-  const filename = COURSE_CONTENT_FILES[courseId];
-  if (!filename) {
-    throw new Error(`Unsupported course id ${courseId}.`);
-  }
-  return join(COURSE_CONTENT_DIR, filename);
+  const entry = getDiscoveredCourseFile(courseId);
+  return join(COURSE_CONTENT_DIR, entry.filename);
 }
 
 export function readCourseContentFile(courseId: number): CoursePreviewData {
@@ -119,7 +208,7 @@ function backupTimestamp(): string {
 export function backupCourseContentFile(courseId: number): string {
   const sourcePath = getCourseContentPath(courseId);
   mkdirSync(COURSE_CONTENT_BACKUP_DIR, { recursive: true });
-  const filename = COURSE_CONTENT_FILES[courseId]!;
+  const filename = getDiscoveredCourseFile(courseId).filename;
   const backupName = `${filename}.${backupTimestamp()}.bak.json`;
   const backupPath = join(COURSE_CONTENT_BACKUP_DIR, backupName);
   copyFileSync(sourcePath, backupPath);

@@ -72,7 +72,18 @@ const SELECTED_LESSON_KEY = "course-editor-selected-lesson";
 type LessonRecord = Record<string, unknown>;
 type CourseRecord = { course?: Record<string, unknown>; lessons?: LessonRecord[] };
 
-let courseCatalog: { id: number; title: string; filename: string }[] = [];
+type CourseCatalogEntry = {
+  id: number;
+  title: string;
+  filename: string;
+  slug?: string;
+  lessonCount?: number;
+  isDraft?: boolean;
+  status?: string;
+  published?: boolean;
+};
+
+let courseCatalog: CourseCatalogEntry[] = [];
 let currentCourseId: number | null = null;
 let courseData: CourseRecord | null = null;
 let selectedLessonSlug: string | null = null;
@@ -94,6 +105,7 @@ const dom = {
   saveHint: null as HTMLElement | null,
   courseSelect: null as HTMLSelectElement | null,
   courseTitle: null as HTMLInputElement | null,
+  draftBadge: null as HTMLElement | null,
   previewLink: null as HTMLAnchorElement | null,
   lessonList: null as HTMLElement | null,
   addLessonBtn: null as HTMLButtonElement | null,
@@ -120,6 +132,37 @@ const dom = {
   centerPanel: null as HTMLElement | null,
 };
 
+function courseIsDraft(course: Record<string, unknown> | undefined): boolean {
+  if (!course) return false;
+  if (course.status === "draft") return true;
+  if (course.published === false) return true;
+  return false;
+}
+
+function formatCourseCatalogLabel(entry: CourseCatalogEntry): string {
+  const label = entry.title?.trim() || entry.filename || `Course ${entry.id}`;
+  const draftSuffix = entry.isDraft ? " · draft" : "";
+  return `${label} (${entry.id})${draftSuffix}`;
+}
+
+function updateCoursePreviewLink(course: Record<string, unknown> | undefined, lessonSlug?: string | null) {
+  if (!dom.previewLink || currentCourseId == null) return;
+  const slug = String(course?.slug ?? "").trim();
+  if (slug) {
+    const base = `/courses/legacy/${encodeURIComponent(slug)}?preview=true`;
+    dom.previewLink.href = lessonSlug ? `${base.replace("?preview=true", "")}/${encodeURIComponent(lessonSlug)}?preview=true` : base;
+    return;
+  }
+  dom.previewLink.href = lessonSlug
+    ? `/dev/course-preview/${currentCourseId}/${lessonSlug}`
+    : `/dev/course-preview/${currentCourseId}`;
+}
+
+function updateCourseDraftBadge(course: Record<string, unknown> | undefined) {
+  if (!dom.draftBadge) return;
+  dom.draftBadge.hidden = !courseIsDraft(course);
+}
+
 function bindDom() {
   dom.loading = document.getElementById("course-editor-loading");
   dom.app = document.getElementById("course-editor-app");
@@ -128,6 +171,7 @@ function bindDom() {
   dom.saveHint = document.getElementById("course-editor-save-hint");
   dom.courseSelect = document.getElementById("course-editor-course") as HTMLSelectElement | null;
   dom.courseTitle = document.getElementById("course-editor-course-title") as HTMLInputElement | null;
+  dom.draftBadge = document.getElementById("course-editor-draft-badge");
   dom.previewLink = document.getElementById("course-editor-preview-link") as HTMLAnchorElement | null;
   dom.lessonList = document.getElementById("course-editor-lessons");
   dom.addLessonBtn = document.getElementById("course-editor-add-lesson") as HTMLButtonElement | null;
@@ -3710,12 +3754,13 @@ function selectLesson(slug: string, force = false) {
   }
 
   if (dom.previewLink && currentCourseId != null) {
-    dom.previewLink.href = `/dev/course-preview/${currentCourseId}/${slug}`;
+    updateCoursePreviewLink(courseData?.course, slug);
   }
   if (dom.courseTitle) {
     dom.courseTitle.value = String(courseData?.course?.title ?? "");
     dom.courseTitle.readOnly = true;
   }
+  updateCourseDraftBadge(courseData?.course);
 
   hideEditFormPanel();
 
@@ -3876,8 +3921,9 @@ async function loadCourse(
     }
 
     if (dom.courseSelect) dom.courseSelect.value = String(courseId);
-    if (dom.previewLink) dom.previewLink.href = `/dev/course-preview/${courseId}`;
+    updateCoursePreviewLink(courseData.course);
     if (dom.courseTitle) dom.courseTitle.value = String(courseData.course?.title ?? "");
+    updateCourseDraftBadge(courseData.course);
 
     if (dom.loading) dom.loading.hidden = true;
     if (dom.app) dom.app.hidden = false;
@@ -3984,7 +4030,7 @@ export function initCourseContentEditor() {
       const payload = (await res.json()) as {
         ok?: boolean;
         error?: string;
-        courses?: { id: number; title: string; filename: string }[];
+        courses?: CourseCatalogEntry[];
       };
       if (!res.ok || !payload.ok) throw new Error(payload.error || "Could not load courses.");
 
@@ -3993,7 +4039,7 @@ export function initCourseContentEditor() {
         dom.courseSelect.innerHTML = courseCatalog
           .map(
             (c) =>
-              `<option value="${c.id}">${escapeHtml(c.filename || c.title)} (${c.id})</option>`,
+              `<option value="${c.id}">${escapeHtml(formatCourseCatalogLabel(c))}</option>`,
           )
           .join("");
       }

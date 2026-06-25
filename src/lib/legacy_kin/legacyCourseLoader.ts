@@ -1,6 +1,12 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { CourseLesson, CoursePreviewData } from "./coursePreviewPoc";
+import {
+  isLegacyCoursePublic,
+  type LegacyCoursePublicationFields,
+} from "./legacyCoursePublication";
+import { isCoursePreviewProductionBlocked } from "./coursePreviewProductionAccess";
+import type { DetectSiteEnvironmentOptions } from "../env/siteEnvironment";
 
 export const LEGACY_COURSE_BASE = "/courses/legacy";
 
@@ -19,10 +25,18 @@ export type LegacyCourseSummary = {
   lessonCount: number;
   sourceFile: string;
   description?: string;
+  status?: string;
+  published?: boolean;
+  isDraft: boolean;
 };
 
 export type LegacyCourseRecord = CoursePreviewData & {
   sourceFile: string;
+};
+
+export type LegacyCourseLoadOptions = {
+  /** When true, include draft/unpublished courses (admin preview). */
+  includeDrafts?: boolean;
 };
 
 function cleanedPocFilenames(): string[] {
@@ -52,44 +66,71 @@ function loadAllCourseRecords(): LegacyCourseRecord[] {
     .filter((record): record is LegacyCourseRecord => record !== null);
 }
 
+function recordIsVisible(
+  record: LegacyCourseRecord,
+  options: LegacyCourseLoadOptions = {},
+): boolean {
+  if (options.includeDrafts) return true;
+  return isLegacyCoursePublic(record.course as LegacyCoursePublicationFields);
+}
+
+function toSummary(record: LegacyCourseRecord): LegacyCourseSummary {
+  const course = record.course as LegacyCoursePublicationFields & {
+    slug: string;
+    title: string;
+    legacyChallengeId: number;
+    description?: string;
+  };
+  return {
+    slug: course.slug,
+    title: course.title,
+    legacyChallengeId: course.legacyChallengeId,
+    lessonCount: record.lessons.length,
+    sourceFile: record.sourceFile,
+    description:
+      "description" in course && typeof course.description === "string"
+        ? course.description
+        : undefined,
+    status: course.status,
+    published: course.published,
+    isDraft: !isLegacyCoursePublic(course),
+  };
+}
+
 export function getSortedLessonsForCourse(
   course: CoursePreviewData,
 ): CourseLesson[] {
   return [...course.lessons].sort((a, b) => a.displayOrder - b.displayOrder);
 }
 
-export function getLegacyCourses(): LegacyCourseSummary[] {
+export function getLegacyCourses(
+  options: LegacyCourseLoadOptions = {},
+): LegacyCourseSummary[] {
   return loadAllCourseRecords()
-    .map((record) => ({
-      slug: record.course.slug,
-      title: record.course.title,
-      legacyChallengeId: record.course.legacyChallengeId,
-      lessonCount: record.lessons.length,
-      sourceFile: record.sourceFile,
-      description:
-        "description" in record.course &&
-        typeof record.course.description === "string"
-          ? record.course.description
-          : undefined,
-    }))
+    .filter((record) => recordIsVisible(record, options))
+    .map(toSummary)
     .sort((a, b) => a.legacyChallengeId - b.legacyChallengeId);
 }
 
 export function getLegacyCourseBySlug(
   slug: string,
+  options: LegacyCourseLoadOptions = {},
 ): LegacyCourseRecord | undefined {
   const normalized = slug.trim();
   if (!normalized) return undefined;
-  return loadAllCourseRecords().find(
-    (record) => record.course.slug === normalized,
+  const record = loadAllCourseRecords().find(
+    (item) => item.course.slug === normalized,
   );
+  if (!record || !recordIsVisible(record, options)) return undefined;
+  return record;
 }
 
 export function getLegacyLessonBySlug(
   courseSlug: string,
   lessonRef: string,
+  options: LegacyCourseLoadOptions = {},
 ): CourseLesson | undefined {
-  const course = getLegacyCourseBySlug(courseSlug);
+  const course = getLegacyCourseBySlug(courseSlug, options);
   if (!course) return undefined;
 
   const lessons = getSortedLessonsForCourse(course);
@@ -129,12 +170,13 @@ export function legacyLessonHref(
 export function getLegacyLessonNeighbors(
   courseSlug: string,
   lessonSlug: string,
+  options: LegacyCourseLoadOptions = {},
 ): {
   index: number;
   prev: CourseLesson | null;
   next: CourseLesson | null;
 } {
-  const course = getLegacyCourseBySlug(courseSlug);
+  const course = getLegacyCourseBySlug(courseSlug, options);
   if (!course) {
     return { index: -1, prev: null, next: null };
   }
@@ -150,4 +192,15 @@ export function getLegacyLessonNeighbors(
     prev: index > 0 ? lessons[index - 1] : null,
     next: index < lessons.length - 1 ? lessons[index + 1] : null,
   };
+}
+
+/** Allow draft preview on staging/dev when `?preview=true`. */
+export function legacyCourseLoadOptionsFromPreviewRequest(
+  previewParam: string | null | undefined,
+  hostname: string | null | undefined,
+  env: DetectSiteEnvironmentOptions = {},
+): LegacyCourseLoadOptions {
+  if (previewParam !== "true") return {};
+  if (isCoursePreviewProductionBlocked(hostname, env)) return {};
+  return { includeDrafts: true };
 }

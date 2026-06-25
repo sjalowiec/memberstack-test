@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   applyComponentRemovals,
   applyRichTextUpdates,
+  COURSE_CONTENT_FILES,
+  discoverAdminCourseCatalog,
   findEmptyBlockSlugs,
+  getAllowedCourseIds,
+  isAllowedCourseId,
+  listAdminCourseSummaries,
+  readCourseContentFile,
   removeEmptyBlocksFromLesson,
   saveLessonUpdate,
   validateLessonInput,
@@ -234,5 +240,67 @@ describe("saveLessonUpdate", () => {
     expect(() =>
       saveLessonUpdate(50, "lesson-one", { title: "Broken lesson" }),
     ).toThrow("Lesson requires a non-empty slug string.");
+  });
+});
+
+describe("discoverAdminCourseCatalog", () => {
+  it("discovers all generated course-poc files on disk", () => {
+    const catalog = discoverAdminCourseCatalog();
+    expect(catalog.length).toBeGreaterThanOrEqual(73);
+  });
+
+  it("includes hand-cleaned courses 50 and 51", () => {
+    const ids = discoverAdminCourseCatalog().map((entry) => entry.id);
+    expect(ids).toContain(50);
+    expect(ids).toContain(51);
+  });
+
+  it("includes migrated draft courses", () => {
+    const entry = discoverAdminCourseCatalog().find((item) => item.id === 2);
+    expect(entry?.title).toBe("Not Enough Needles?");
+    expect(entry?.filename).toBe("course_2_not_enough_needles.poc.json");
+  });
+});
+
+describe("listAdminCourseSummaries", () => {
+  it("marks migrated courses as draft in admin summaries", () => {
+    const draft = listAdminCourseSummaries().find((item) => item.id === 2);
+    expect(draft?.isDraft).toBe(true);
+    expect(draft?.isPublic).toBe(false);
+  });
+
+  it("keeps hand-cleaned courses editable and public in admin summaries", () => {
+    const quickStart = listAdminCourseSummaries().find((item) => item.id === 50);
+    const fun = listAdminCourseSummaries().find((item) => item.id === 51);
+    expect(quickStart?.isDraft).toBe(false);
+    expect(quickStart?.isPublic).toBe(true);
+    expect(fun?.isDraft).toBe(false);
+    expect(fun?.isPublic).toBe(true);
+  });
+});
+
+describe("getAllowedCourseIds", () => {
+  it("allows admin access to every discovered course id", () => {
+    const ids = getAllowedCourseIds();
+    expect(ids).toContain(50);
+    expect(ids).toContain(51);
+    expect(ids).toContain(2);
+    expect(isAllowedCourseId(2)).toBe(true);
+    expect(isAllowedCourseId(999999)).toBe(false);
+  });
+});
+
+describe("readCourseContentFile discovery", () => {
+  it("still loads course 50 from the known filename", () => {
+    expect(COURSE_CONTENT_FILES[50]).toBe("course_50_lk150_quick.poc.json");
+    const data = readCourseContentFile(50);
+    expect(data.course.slug).toBe("lk-150-quick-start");
+    expect(data.lessons.length).toBeGreaterThan(0);
+  });
+
+  it("loads migrated draft course 2 for admin editing", () => {
+    const data = readCourseContentFile(2);
+    expect(data.course.status).toBe("draft");
+    expect(data.course.published).toBe(false);
   });
 });

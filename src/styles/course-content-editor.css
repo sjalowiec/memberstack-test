@@ -127,6 +127,20 @@ body.course-editor-body {
   font-size: 0.82rem;
 }
 
+.course-editor__draft-badge {
+  display: inline-block;
+  margin-top: 0.35rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #7c2d12;
+  background: #ffedd5;
+  border: 1px solid #fdba74;
+}
+
 .course-editor__lessons-head {
   display: flex;
   align-items: center;

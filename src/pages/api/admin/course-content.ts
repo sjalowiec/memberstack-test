@@ -1,9 +1,8 @@
 import type { APIRoute } from "astro";
 import {
-  COURSE_CONTENT_FILES,
-  getAllowedCourseIds,
   isAllowedCourseId,
   isCourseContentAdminAllowed,
+  listAdminCourseSummaries,
   readCourseContentFile,
   saveLessonUpdate,
 } from "../../../lib/legacy_kin/courseContentAdmin";
@@ -55,15 +54,7 @@ export const GET: APIRoute = async ({ url, request }) => {
   const courseId = parseCourseId(url.searchParams.get("courseId"));
 
   try {
-    const courses = getAllowedCourseIds().map((id) => {
-      const data = readCourseContentFile(id);
-      return {
-        id,
-        title: data.course.title,
-        filename: COURSE_CONTENT_FILES[id],
-        lessonCount: data.lessons.length,
-      };
-    });
+    const courses = listAdminCourseSummaries();
 
     if (courseId === null) {
       return jsonResponse({ ok: true, courses });
@@ -98,7 +89,7 @@ export const POST: APIRoute = async ({ request }) => {
   const courseId = Number.parseInt(String(body.courseId ?? ""), 10);
   if (!Number.isFinite(courseId) || !isAllowedCourseId(courseId)) {
     return jsonResponse(
-      { ok: false, error: "courseId must be a supported legacy course id (50 or 51)." },
+      { ok: false, error: "courseId must be a supported legacy course id." },
       400,
     );
   }

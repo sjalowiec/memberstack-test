@@ -10,12 +10,14 @@ import {
 interface Props {
   courseSlug: string;
   currentLessonSlug?: string;
+  includeDrafts?: boolean;
 }
 
-const { courseSlug, currentLessonSlug } = Astro.props;
-const course = getLegacyCourseBySlug(courseSlug);
+const { courseSlug, currentLessonSlug, includeDrafts = false } = Astro.props;
+const loaderOptions = { includeDrafts };
+const course = getLegacyCourseBySlug(courseSlug, loaderOptions);
 const lessons = course ? getSortedLessonsForCourse(course) : [];
-const allCourses = getLegacyCourses();
+const allCourses = getLegacyCourses(loaderOptions);
 ---
 
 <aside class="course-preview__sidebar legacy-course__sidebar" aria-label="Course navigation">
