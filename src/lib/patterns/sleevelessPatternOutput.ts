@@ -1609,6 +1609,7 @@ export function buildSleevelessBackDisplayRows(args: {
         aline.shapingType,
         aline.shapingRowNumbers,
         alineEdgeScope,
+        aline.hemCastOnSts,
       );
       const bustSts = aline.bustBodySts > 0 ? aline.bustBodySts : undefined;
       // Heading + summary sit ABOVE the chart; the per-row counters that were the

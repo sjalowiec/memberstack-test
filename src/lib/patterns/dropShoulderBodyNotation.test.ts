@@ -497,6 +497,43 @@ describe("dropShoulderBodyDiagramReplacements", () => {
     expect(out).not.toContain("{{cross-shoulder}}");
   });
 
+  it("A-line back diagram uses bust width at cross-shoulder and hip cast-on at hem", () => {
+    const alinePattern = {
+      ...DROP_SHOULDER_PATTERN,
+      style: {
+        ...DROP_SHOULDER_PATTERN.style,
+        bodyShape: "aline",
+      },
+      fit: {
+        ...DROP_SHOULDER_PATTERN.fit,
+        selectedMeasurements: {
+          ...DROP_SHOULDER_PATTERN.fit.selectedMeasurements,
+          finished_hip: 44,
+        },
+      },
+    };
+    const result = generateDropShoulderPattern(alinePattern);
+    expect(result.debug.hemCastOnStitches).toBeGreaterThan(result.debug.bustBodyStitches!);
+
+    const repl = buildDropShoulderBodyDiagramReplacements(result, "in", {
+      patternData: alinePattern,
+      measurementPiece: "back",
+    });
+    expect(repl["cross-shoulder-width"]).toBe(String(result.debug.bustBodyStitches));
+    expect(repl.HIP_STS).toBe(String(result.debug.hemCastOnStitches));
+    expect(Number(repl["cross-shoulder-width"])).toBeLessThan(Number(repl.HIP_STS));
+    expect(repl["cross-shoulder"]).toBe(repl.SHOULDER_WIDTH);
+
+    const markerRc = result.debug.rowsFromCastOnToArmholeStart!;
+    const neckStartRc = result.debug.backNecklineStartRC!;
+    const straightAboveMarker = neckStartRc - markerRc;
+    expect(straightAboveMarker).toBeGreaterThan(0);
+    expect(straightAboveMarker).toBeLessThan(result.debug.armholeRows!);
+    expect(repl.ARMHOLE_ROWS).toBe(String(straightAboveMarker));
+    expect(repl.NECK_DEPTH_ROWS).toBe(String(result.debug.backNeckDepthRows));
+    expect(Number(repl.ARMHOLE_ROWS) + Number(repl.NECK_DEPTH_ROWS)).toBe(result.debug.armholeRows);
+  });
+
   it("replaces shoulder-stitches in diagram-jp-back-aline shaping notation", () => {
     const alinePattern = {
       ...DROP_SHOULDER_PATTERN,
@@ -526,7 +563,10 @@ describe("dropShoulderBodyDiagramReplacements", () => {
     const rel = "/images/patterns/drop-shoulder/diagram-jp-back-aline.svg";
     const svgText = readFileSync(resolve(process.cwd(), "public" + rel), "utf8");
     expect(svgText).toContain("{{shoulder-stitches}}");
+    expect(svgText).toContain("{{jp-body-shaping}}");
     expect(repl["shoulder-stitches"]).toBe(String(result.debug.shoulderStitches));
+    expect(repl["jp-body-shaping"]).toMatch(/1s-\d+r-\d+x/);
+    expect(repl["jp-body-shaping"]).not.toMatch(/^\+/m);
 
     const out = applyJapaneseNotationSvgReplacements(svgText, repl);
     expect(out).toMatch(
@@ -535,6 +575,45 @@ describe("dropShoulderBodyDiagramReplacements", () => {
       ),
     );
     expect(out).not.toContain("{{shoulder-stitches}}");
+  });
+
+  it("replaces jp-body-shaping with + increase notation on diagram-jp-back-shaped.svg", () => {
+    const shapedPattern = {
+      ...DROP_SHOULDER_PATTERN,
+      style: {
+        construction: "drop-shoulder",
+        frontStyle: "closed",
+        garmentStyle: "pullover",
+        neckline: "round",
+        bodyShape: "shaped",
+      },
+      fit: {
+        ...DROP_SHOULDER_PATTERN.fit,
+        selectedMeasurements: {
+          ...DROP_SHOULDER_PATTERN.fit.selectedMeasurements,
+          finished_hip: 36,
+        },
+      },
+    };
+    const result = generateDropShoulderPattern(shapedPattern);
+    const repl = withDropShoulderShoulderMeasurementReplacements(
+      buildDropShoulderBackJapaneseNotationReplacements(result, shapedPattern),
+      result,
+      "in",
+      { patternData: shapedPattern, measurementPiece: "back" },
+    );
+
+    const rel = "/images/patterns/drop-shoulder/diagram-jp-back-shaped.svg";
+    const svgText = readFileSync(resolve(process.cwd(), "public" + rel), "utf8");
+    expect(svgText).toContain("{{jp-body-shaping}}");
+    expect(repl["jp-body-shaping"]).toMatch(/^\+1s-\d+r-\d+x/);
+    expect(repl["jp-body-shaping"].split("\n").every((line) => line.startsWith("+"))).toBe(true);
+
+    const out = applyJapaneseNotationSvgReplacements(svgText, repl);
+    expect(out).not.toContain("{{jp-body-shaping}}");
+    for (const line of repl["jp-body-shaping"].split("\n").filter(Boolean)) {
+      expect(out).toContain(line);
+    }
   });
 
   it("replaces shoulder-stitches in diagram-jp-front-v-aline shaping notation", () => {

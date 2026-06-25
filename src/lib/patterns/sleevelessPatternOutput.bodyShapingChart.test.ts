@@ -101,21 +101,33 @@ describe("body shaping chart helper", () => {
     expect(buildSleevelessBodyShapingChartRows("straight", [10, 20], "symmetricSides")).toEqual([]);
   });
 
-  it("maps every shaping row number to a chart row", () => {
+  it("maps every shaping row number to a chart row with running stitch counts", () => {
     const rows = buildSleevelessBodyShapingChartRows(
       "decrease-to-bust",
       [24, 41, 58],
       "symmetricSides",
+      168,
     );
     expect(rows.map((r) => r.rc)).toEqual([24, 41, 58]);
     expect(rows.every((r) => r.action === "Dec 1 stitch at each side edge")).toBe(true);
+    expect(rows.map((r) => r.stitchesRemaining)).toEqual([166, 164, 162]);
   });
 
-  it("renders an interactive checklist table with checkbox / RC / action columns", () => {
+  it("cardigan front decreases one stitch per shaping row", () => {
+    const rows = buildSleevelessBodyShapingChartRows(
+      "decrease-to-bust",
+      [24, 41],
+      "armholeEdgeOnly",
+      84,
+    );
+    expect(rows.map((r) => r.stitchesRemaining)).toEqual([83, 82]);
+  });
+
+  it("renders an interactive checklist table with checkbox / RC / action / sts columns", () => {
     const html = renderSleevelessBodyShapingChartHtml(
       [
-        { rc: 24, action: "Dec 1 stitch at each side edge" },
-        { rc: 41, action: "Dec 1 stitch at each side edge" },
+        { rc: 24, action: "Dec 1 stitch at each side edge", stitchesRemaining: 166 },
+        { rc: 41, action: "Dec 1 stitch at each side edge", stitchesRemaining: 164 },
       ],
       { chartId: "sleeveless-body-shaping-chart-back" },
     );
@@ -124,6 +136,9 @@ describe("body shaping chart helper", () => {
     expect(html).toContain('data-rc="24"');
     expect(html).toContain(">024<");
     expect(html).toContain("Dec 1 stitch at each side edge");
+    expect(html).toContain("Sts Remaining");
+    expect(html).toContain(">166<");
+    expect(html).toContain(">164<");
     // Two shaping rows -> two checkboxes.
     expect((html.match(/type="checkbox"/g) ?? []).length).toBe(2);
   });
@@ -151,6 +166,9 @@ describe("A-line body shaping chart in generated pattern", () => {
     const rows = bodyChartRows(result.displayRows);
     expect(rows.length).toBeGreaterThan(0);
     expect(rows.every((r) => r.action === "Dec 1 stitch at each side edge")).toBe(true);
+    expect(rows.every((r) => r.stitchesRemaining > 0)).toBe(true);
+    const last = rows[rows.length - 1]!;
+    expect(last.stitchesRemaining).toBe(result.debug.bustBodyStitches);
     // Summary heading + sts-remain prose preserved around the chart.
     const paras = bodyParagraphs(result.displayRows).join(" ");
     expect(paras).toMatch(/Begin A-line shaping/i);

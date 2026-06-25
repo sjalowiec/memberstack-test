@@ -16,7 +16,7 @@ export type DropShoulderDiagramPiece = "back" | "front" | "sleeve" | "summary";
 export type DropShoulderDiagramMode = "sts-rows" | "japanese";
 export type DropShoulderGarment = "pullover" | "cardigan";
 export type DropShoulderNeckline = "round" | "v";
-export type DropShoulderBodyShape = "straight" | "aline";
+export type DropShoulderBodyShape = "straight" | "aline" | "shaped";
 
 /** Pattern-tab toggle label — maps to {@link DropShoulderDiagramMode}. */
 export type DropShoulderBodyDiagramViewMode = "sts-rows" | "shaping-notation";
@@ -98,6 +98,20 @@ export const DROP_SHOULDER_DIAGRAM_ASSETS: readonly DropShoulderDiagramAsset[] =
     mode: "japanese",
     bodyShape: "aline",
     notes: "Shared A-line back Japanese notation (pullover and cardigan).",
+  },
+  {
+    src: `${DROP_SHOULDER_DIAGRAM_ROOT}/drop-body-back-shaped.svg`,
+    piece: "back",
+    mode: "sts-rows",
+    bodyShape: "shaped",
+    notes: "Shared shaped (fitted/waist) back measurement schematic (pullover and cardigan).",
+  },
+  {
+    src: `${DROP_SHOULDER_DIAGRAM_ROOT}/diagram-jp-back-shaped.svg`,
+    piece: "back",
+    mode: "japanese",
+    bodyShape: "shaped",
+    notes: "Shared shaped back Japanese notation (pullover and cardigan).",
   },
   {
     src: `${DROP_SHOULDER_DIAGRAM_ROOT}/drop-body-front.svg`,
@@ -216,10 +230,12 @@ export function normalizeDropShoulderDiagramCriteria(
   };
 }
 
-/** Maps pattern `shaped` body to `aline` for drop-shoulder diagram routing. */
+/** Maps pattern body shape to drop-shoulder diagram routing (`straight` | `aline` | `shaped`). */
 export function dropShoulderDiagramBodyShapeFromPattern(patternData: unknown): DropShoulderBodyShape {
   const kind = resolveSleevelessDiagramBodyShapeKind(patternData);
-  return kind === "straight" ? "straight" : "aline";
+  if (kind === "straight") return "straight";
+  if (kind === "shaped") return "shaped";
+  return "aline";
 }
 
 export function dropShoulderNecklineFromPattern(patternData: unknown): DropShoulderNeckline {
@@ -256,15 +272,20 @@ export function expectedDropShoulderDiagramAssetPath(
       : `${DROP_SHOULDER_DIAGRAM_ROOT}/drop-body-sleeve.svg`;
   }
 
-  const aline = c.bodyShape === "aline";
   const vSuffix = c.neckline === "v" ? "-v" : "";
 
   if (c.piece === "back") {
-    if (aline) {
+    if (c.bodyShape === "aline") {
       if (c.mode === "japanese") {
         return `${DROP_SHOULDER_DIAGRAM_ROOT}/diagram-jp-back-aline.svg`;
       }
       return `${DROP_SHOULDER_DIAGRAM_ROOT}/drop-body-back-aline.svg`;
+    }
+    if (c.bodyShape === "shaped") {
+      if (c.mode === "japanese") {
+        return `${DROP_SHOULDER_DIAGRAM_ROOT}/diagram-jp-back-shaped.svg`;
+      }
+      return `${DROP_SHOULDER_DIAGRAM_ROOT}/drop-body-back-shaped.svg`;
     }
     return c.mode === "japanese"
       ? `${DROP_SHOULDER_DIAGRAM_ROOT}/jp-drop-body-back.svg`
@@ -273,7 +294,7 @@ export function expectedDropShoulderDiagramAssetPath(
 
   // front
   if (c.garment === "cardigan") {
-    if (aline) {
+    if (c.bodyShape === "aline") {
       if (c.mode === "japanese") {
         return `${DROP_SHOULDER_DIAGRAM_ROOT}/japanese/jp-drop-body-cardigan${vSuffix}-aline.svg`;
       }
@@ -285,7 +306,7 @@ export function expectedDropShoulderDiagramAssetPath(
   }
 
   // pullover front
-  if (aline) {
+  if (c.bodyShape === "aline") {
     if (c.mode === "japanese") {
       return c.neckline === "v"
         ? `${DROP_SHOULDER_DIAGRAM_ROOT}/diagram-jp-front-v-aline.svg`
@@ -389,8 +410,8 @@ export function resolveDropShoulderDiagramSvg(
   const straight = findRegistryAsset(straightCriteria);
   if (straight) {
     const reason =
-      criteria.bodyShape === "aline"
-        ? `No A-line ${criteria.piece} ${criteria.mode} diagram; using straight-body ${straight.src}.`
+      criteria.bodyShape === "aline" || criteria.bodyShape === "shaped"
+        ? `No ${criteria.bodyShape} ${criteria.piece} ${criteria.mode} diagram; using straight-body ${straight.src}.`
         : `No exact match; using straight-body ${straight.src}.`;
 
     return {
@@ -439,7 +460,7 @@ export function resolveDropShoulderDiagramSvgFromPattern(
 /** Full cross-product audit for body pieces (and sleeve/summary baselines). */
 export function auditDropShoulderDiagramAssetGrid(): DropShoulderDiagramGridCell[] {
   const modes: DropShoulderDiagramMode[] = ["sts-rows", "japanese"];
-  const bodyShapes: DropShoulderBodyShape[] = ["straight", "aline"];
+  const bodyShapes: DropShoulderBodyShape[] = ["straight", "aline", "shaped"];
   const garments: DropShoulderGarment[] = ["pullover", "cardigan"];
   const necklines: DropShoulderNeckline[] = ["round", "v"];
   const cells: DropShoulderDiagramGridCell[] = [];

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildSleevelessBodyBlockPlan } from "./bodyBlock/sleevelessBodyBlock";
 import {
+  alineBodyShapingJapaneseNotationLines,
   bodyBlockPlanToAlineShapingPlan,
   computeSleevelessAlineBodyShaping,
   distributeSleevelessAlineBodyShapingRows,
@@ -168,6 +169,9 @@ describe("computeSleevelessAlineBodyShaping", () => {
     expect(plan!.bodySecondHalf.endSts).toBe(50);
     expect(plan!.shapingRowNumbers.every((r) => r >= plan!.shapingStartRow)).toBe(true);
     expect(plan!.shapingRowNumbers.every((r) => r <= plan!.shapingEndRow)).toBe(true);
+    const jpLines = alineBodyShapingJapaneseNotationLines(plan!);
+    expect(jpLines.length).toBeGreaterThan(0);
+    expect(jpLines.every((line) => !line.startsWith("+"))).toBe(true);
   });
 
   it("casts on 50 and plans 11 paired increases when bust is 72 and hip is 50 sts", () => {
@@ -193,6 +197,10 @@ describe("computeSleevelessAlineBodyShaping", () => {
     );
     expect(plan!.bodyFirstHalf.instructionLines[1]).not.toContain("glossary-tooltip-placeholder");
     expect(plan!.pairedShapingRows).toBe(11);
+    const jpLines = alineBodyShapingJapaneseNotationLines(plan!);
+    expect(jpLines.length).toBeGreaterThan(0);
+    expect(jpLines.every((line) => line.startsWith("+"))).toBe(true);
+    expect(jpLines.every((line) => /^\+1s-\d+r-\d+x$/.test(line))).toBe(true);
   });
 
   it("places hip at cast-on (hipRowsFromHem 0)", () => {

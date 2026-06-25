@@ -52,10 +52,11 @@ import {
   resolveDropShoulderBackDiagramSrc,
   resolveDropShoulderBackDiagramSvg,
   resolveDropShoulderFrontDiagramSrc,
+  resolveDropShoulderFrontDiagramSvg,
   buildDropShoulderBodyDiagramReplacements,
   withDropShoulderShoulderMeasurementReplacements,
+  reportDropShoulderDiagramFallback,
 } from "../lib/patterns/dropShoulderBodyNotationSvg.ts";
-import { reportDropShoulderDiagramFallback } from "../lib/patterns/dropShoulderDiagramSvgResolver.ts";
 import {
   buildDropShoulderBackJapaneseNotationReplacements,
   buildDropShoulderFrontJapaneseNotationReplacements,
@@ -2858,7 +2859,9 @@ table {
         : String(hydrateGeneration);
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
     try {
-      const notationSrc = resolveDropShoulderFrontDiagramSrc("shaping-notation", patternData);
+      const frontDiagram = resolveDropShoulderFrontDiagramSvg("shaping-notation", patternData);
+      reportDropShoulderDiagramFallback(frontDiagram, "front shaping notation");
+      const notationSrc = frontDiagram.src;
       const res = await fetch(notationSrc, {
         credentials: "same-origin",
         ...(import.meta.env.DEV ? { cache: "no-store" } : {}),
@@ -2961,7 +2964,9 @@ table {
     generatorPatternData,
   ) {
     if (!(el instanceof HTMLElement)) return;
-    el.dataset.src = resolveDropShoulderFrontDiagramSrc(mode, patternData);
+    const frontDiagram = resolveDropShoulderFrontDiagramSvg(mode, patternData);
+    reportDropShoulderDiagramFallback(frontDiagram, `front ${mode}`);
+    el.dataset.src = frontDiagram.src;
     if (mode === "shaping-notation") {
       await inlineDropShoulderFrontNotationSvg(
         el,

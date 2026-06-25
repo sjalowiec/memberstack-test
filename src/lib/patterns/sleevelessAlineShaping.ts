@@ -364,7 +364,11 @@ export function alineBodyShapingJapaneseNotationLines(
     row: row - firstRow,
     amount: 1,
   }));
-  return compressStitchDecreasePointsToNotationLines(points);
+  const lines = compressStitchDecreasePointsToNotationLines(points);
+  if (plan.shapingType === "increase-to-bust") {
+    return lines.map((line) => `+${line}`);
+  }
+  return lines;
 }
 
 /**
@@ -377,7 +381,7 @@ export function scaleAlineBodyShapingPlanForCardiganHalf(
 ): SleevelessAlineBodyShapingPlan {
   const hem = Math.max(0, Math.floor(halfCastOnSts));
   const bust = Math.max(0, Math.floor(halfBustBodySts));
-  const totalStitchDifference = Math.max(0, hem - bust);
+  const totalStitchDifference = Math.abs(hem - bust);
   return {
     ...plan,
     hemCastOnSts: hem,

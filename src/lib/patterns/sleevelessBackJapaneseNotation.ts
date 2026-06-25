@@ -200,8 +200,7 @@ export function resolveAlineBodyShapingPlanForNotation(
     return {
       bustBodySts: d.bustBodyStitches ?? d.backStitches ?? 0,
       hemCastOnSts: d.hemCastOnStitches ?? d.backStitches ?? 0,
-      totalStitchDifference: Math.max(
-        0,
+      totalStitchDifference: Math.abs(
         (d.hemCastOnStitches ?? 0) - (d.bustBodyStitches ?? d.backStitches ?? 0),
       ),
       shapingType: d.alineBodyShapingType,
@@ -210,7 +209,19 @@ export function resolveAlineBodyShapingPlanForNotation(
       shapingStartRow: d.alineBodyShapingRowNumbers[0] ?? 0,
       shapingEndRow: d.alineBodyShapingRowNumbers[d.alineBodyShapingRowNumbers.length - 1] ?? 0,
       availableShapingRows: 0,
-      straightRowsBeforeArmhole: 0,
+      straightRowsBeforeArmhole: (() => {
+        const armholeRc =
+          isFiniteNumber(d.rowsFromCastOnToArmholeStart)
+            ? Math.floor(d.rowsFromCastOnToArmholeStart)
+            : isFiniteNumber(d.hemRows) && isFiniteNumber(d.bodyRows)
+              ? Math.floor(d.hemRows) + Math.floor(d.bodyRows)
+              : undefined;
+        const endRow = d.alineBodyShapingRowNumbers[d.alineBodyShapingRowNumbers.length - 1] ?? 0;
+        if (armholeRc !== undefined && endRow > 0) {
+          return Math.max(0, armholeRc - Math.floor(endRow));
+        }
+        return 0;
+      })(),
       shapingBeginRc: 0,
       straightBeforeArmholeBeginRc: 0,
       armholeBeginRc: 0,
@@ -225,7 +236,8 @@ export function resolveAlineBodyShapingPlanForNotation(
   const bustBodySts = d.bustBodyStitches ?? d.backStitches ?? 0;
   const hasAlineBody =
     d.hipRowsFromHem !== undefined ||
-    (isFiniteNumber(hemCastOn) && isFiniteNumber(bustBodySts) && hemCastOn > bustBodySts);
+    (d.alineBodyShapingType !== undefined && d.alineBodyShapingType !== "straight") ||
+    (isFiniteNumber(hemCastOn) && isFiniteNumber(bustBodySts) && hemCastOn !== bustBodySts);
   if (!hasAlineBody) return null;
 
   const finishedBust = d.finishedBustChest;

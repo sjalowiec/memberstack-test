@@ -34,6 +34,22 @@ const DROP_SHOULDER_ALINE_PATTERN = {
   },
 };
 
+const DROP_SHOULDER_SHAPED_PATTERN = {
+  style: {
+    construction: "drop-shoulder",
+    frontStyle: "closed",
+    garmentStyle: "pullover",
+    neckline: "round",
+    bodyShape: "shaped",
+  },
+  fit: {
+    selectedMeasurements: {
+      finished_bust_chest: 40,
+      finished_hip: 36,
+    },
+  },
+};
+
 const DROP_SHOULDER_STRAIGHT_CARDIGAN = {
   style: {
     construction: "drop-shoulder",
@@ -47,7 +63,7 @@ const DROP_SHOULDER_STRAIGHT_CARDIGAN = {
 describe("dropShoulderDiagramSvgResolver inventory", () => {
   it("lists only on-disk diagram SVGs under public/images/patterns/drop-shoulder", () => {
     assertDropShoulderDiagramAssetsExistOnDisk();
-    expect(DROP_SHOULDER_DIAGRAM_ASSETS.length).toBeGreaterThanOrEqual(14);
+    expect(DROP_SHOULDER_DIAGRAM_ASSETS.length).toBeGreaterThanOrEqual(16);
   });
 });
 
@@ -58,7 +74,8 @@ describe("dropShoulderDiagramSvgResolver grid audit", () => {
     expect(grid.some((c) => c.criteria.piece === "front")).toBe(true);
     expect(grid.some((c) => c.criteria.piece === "sleeve")).toBe(true);
     expect(grid.some((c) => c.criteria.piece === "summary")).toBe(true);
-    expect(grid.filter((c) => c.criteria.piece === "front").length).toBe(16);
+    expect(grid.filter((c) => c.criteria.piece === "front").length).toBe(24);
+    expect(grid.filter((c) => c.criteria.piece === "back").length).toBe(6);
   });
 
   it("documents missing A-line assets with expected paths (not silent straight fallback)", () => {
@@ -104,6 +121,24 @@ describe("dropShoulderDiagramSvgResolver priority routing", () => {
     expect(result.exactMatch).toBe(true);
     expect(result.fallback).toBeUndefined();
     expect(result.src).toBe("/images/patterns/drop-shoulder/drop-body-back-aline.svg");
+  });
+
+  it("2b — back shaped Japanese notation uses diagram-jp-back-shaped.svg", () => {
+    const result = resolveDropShoulderDiagramSvgFromPattern(
+      "back",
+      "shaping-notation",
+      DROP_SHOULDER_SHAPED_PATTERN,
+    );
+    expect(result.exactMatch).toBe(true);
+    expect(result.fallback).toBeUndefined();
+    expect(result.src).toBe("/images/patterns/drop-shoulder/diagram-jp-back-shaped.svg");
+  });
+
+  it("2c — back shaped stitches/rows uses drop-body-back-shaped.svg", () => {
+    const result = resolveDropShoulderBackDiagramSvg("sts-rows", DROP_SHOULDER_SHAPED_PATTERN);
+    expect(result.exactMatch).toBe(true);
+    expect(result.fallback).toBeUndefined();
+    expect(result.src).toBe("/images/patterns/drop-shoulder/drop-body-back-shaped.svg");
   });
 
   it("3 — front cardigan V-neck A-line Japanese notation reports fallback", () => {
@@ -218,5 +253,22 @@ describe("expectedDropShoulderDiagramAssetPath", () => {
         bodyShape: "aline",
       }),
     ).toBe("/images/patterns/drop-shoulder/diagram-jp-back-aline.svg");
+  });
+
+  it("names the shaped back measurement and notation target files", () => {
+    expect(
+      expectedDropShoulderDiagramAssetPath({
+        piece: "back",
+        mode: "sts-rows",
+        bodyShape: "shaped",
+      }),
+    ).toBe("/images/patterns/drop-shoulder/drop-body-back-shaped.svg");
+    expect(
+      expectedDropShoulderDiagramAssetPath({
+        piece: "back",
+        mode: "japanese",
+        bodyShape: "shaped",
+      }),
+    ).toBe("/images/patterns/drop-shoulder/diagram-jp-back-shaped.svg");
   });
 });
