@@ -1,0 +1,74 @@
+---
+import {
+  legacyLessonItemHref,
+} from "../../../lib/legacy_kin/legacyCourseLoader";
+import type { CourseContentItemStep } from "../../../lib/legacy_kin/courseLessonContentItems";
+import { contentItemDisplayTitle } from "../../../lib/legacy_kin/courseLessonContentItems";
+
+interface Props {
+  courseSlug: string;
+  previewQuery?: string;
+  prev?: CourseContentItemStep | null;
+  next?: CourseContentItemStep | null;
+}
+
+const { courseSlug, previewQuery = "", prev = null, next = null } = Astro.props;
+
+function stepHref(step: CourseContentItemStep): string {
+  return `${legacyLessonItemHref(courseSlug, step.lesson.slug, step.item.itemSlug)}${previewQuery}`;
+}
+
+function stepLabel(step: CourseContentItemStep): string {
+  return contentItemDisplayTitle(step.lesson, step.item) || step.item.itemSlug;
+}
+---
+
+{
+  prev || next ? (
+    <nav class="legacy-course__item-nav" aria-label="Section navigation">
+      {
+        prev ? (
+          <a class="legacy-course__item-nav-link legacy-course__item-nav-link--prev" href={stepHref(prev)}>
+            ← {stepLabel(prev)}
+          </a>
+        ) : (
+          <span />
+        )
+      }
+      {
+        next ? (
+          <a class="legacy-course__item-nav-link legacy-course__item-nav-link--next" href={stepHref(next)}>
+            {stepLabel(next)} →
+          </a>
+        ) : null
+      }
+    </nav>
+  ) : null
+}
+
+<style>
+  .legacy-course__item-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e0e6d8;
+  }
+
+  .legacy-course__item-nav-link {
+    color: var(--kbm-green, #52682d);
+    text-decoration: none;
+    max-width: 46%;
+    line-height: 1.4;
+  }
+
+  .legacy-course__item-nav-link:hover {
+    text-decoration: underline;
+  }
+
+  .legacy-course__item-nav-link--next {
+    text-align: right;
+    margin-left: auto;
+  }
+</style>

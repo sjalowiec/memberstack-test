@@ -3,6 +3,7 @@ import {
   getLegacyCourseBySlug,
   getLegacyCourses,
   legacyCourseLoadOptionsFromPreviewRequest,
+  legacyCoursePreviewHref,
 } from "./legacyCourseLoader";
 
 describe("getLegacyCourses public visibility", () => {
@@ -44,6 +45,50 @@ describe("getLegacyCourseBySlug", () => {
     const course = getLegacyCourseBySlug("not-enough-needles", { includeDrafts: true });
     expect(course?.course.legacyChallengeId).toBe(2);
     expect(course?.course.status).toBe("draft");
+  });
+});
+
+describe("legacyCoursePreviewHref", () => {
+  it("opens LK-150 Quick Start lesson on the public route without preview query", () => {
+    expect(
+      legacyCoursePreviewHref("lk-150-quick-start", "yarn-and-a-bit-more-tech", {
+        includeDraftPreview: false,
+      }),
+    ).toBe("/courses/legacy/lk-150-quick-start/yarn-and-a-bit-more-tech");
+  });
+
+  it("opens draft Course 2 lesson with preview=true", () => {
+    expect(
+      legacyCoursePreviewHref("not-enough-needles", "decorative-seams", {
+        includeDraftPreview: true,
+      }),
+    ).toBe("/courses/legacy/not-enough-needles/decorative-seams?preview=true");
+  });
+
+  it("opens a specific lesson item on the public route", () => {
+    expect(
+      legacyCoursePreviewHref("lk-150-quick-start", "yarn-and-a-bit-more-tech", {
+        itemSlug: "yarn-and-tension",
+        includeDraftPreview: false,
+      }),
+    ).toBe(
+      "/courses/legacy/lk-150-quick-start/yarn-and-a-bit-more-tech/yarn-and-tension",
+    );
+  });
+
+  it("opens draft Course 2 item with preview=true", () => {
+    expect(
+      legacyCoursePreviewHref("not-enough-needles", "decorative-seams", {
+        itemSlug: "hairpin-lace-seam",
+        includeDraftPreview: true,
+      }),
+    ).toBe(
+      "/courses/legacy/not-enough-needles/decorative-seams/hairpin-lace-seam?preview=true",
+    );
+  });
+
+  it("returns null when course slug is missing", () => {
+    expect(legacyCoursePreviewHref("", "decorative-seams")).toBeNull();
   });
 });
 

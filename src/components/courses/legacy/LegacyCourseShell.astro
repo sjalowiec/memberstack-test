@@ -1,14 +1,26 @@
 ---
 import LegacyCourseSidebar from "./LegacyCourseSidebar.astro";
+import GlossaryTermModal from "../../glossary/GlossaryTermModal.astro";
+import type { LessonContentNavEntry } from "../../../lib/legacy_kin/courseLessonContentItems";
 import "../../../styles/course-preview.css";
 
 interface Props {
   courseSlug: string;
   currentLessonSlug?: string;
+  currentItemSlug?: string;
   includeDrafts?: boolean;
+  previewQuery?: string;
+  contentNavEntries?: LessonContentNavEntry[];
 }
 
-const { courseSlug, currentLessonSlug, includeDrafts = false } = Astro.props;
+const {
+  courseSlug,
+  currentLessonSlug,
+  currentItemSlug,
+  includeDrafts = false,
+  previewQuery = "",
+  contentNavEntries = [],
+} = Astro.props;
 ---
 
 <div class="course-preview course-preview--reader legacy-course">
@@ -21,13 +33,18 @@ const { courseSlug, currentLessonSlug, includeDrafts = false } = Astro.props;
     <LegacyCourseSidebar
       {courseSlug}
       {currentLessonSlug}
+      {currentItemSlug}
       {includeDrafts}
+      {previewQuery}
+      contentNavEntries={contentNavEntries}
     />
 
     <div class="course-preview__main legacy-course__main">
       <slot />
     </div>
   </div>
+
+  <GlossaryTermModal />
 </div>
 
 <style>

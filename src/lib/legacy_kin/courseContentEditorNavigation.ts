@@ -9,13 +9,17 @@ export type LessonNavLike = { slug?: string | null };
 
 export function parseEditorNavigationState(
   search: string,
-  allowedCourseIds: number[] = [50, 51],
+  allowedCourseIds?: number[],
 ): CourseEditorNavigationState {
   const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
   const courseRaw = params.get("course") ?? params.get("courseId");
   const parsedCourseId = courseRaw ? Number.parseInt(courseRaw, 10) : Number.NaN;
+  const courseAllowed =
+    allowedCourseIds == null ||
+    allowedCourseIds.length === 0 ||
+    allowedCourseIds.includes(parsedCourseId);
   const courseId =
-    Number.isFinite(parsedCourseId) && allowedCourseIds.includes(parsedCourseId)
+    Number.isFinite(parsedCourseId) && parsedCourseId > 0 && courseAllowed
       ? parsedCourseId
       : null;
 

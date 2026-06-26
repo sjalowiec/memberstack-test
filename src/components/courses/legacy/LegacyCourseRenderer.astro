@@ -4,49 +4,63 @@ import LegacyCourseTextVideoLayout from "./LegacyCourseTextVideoLayout.astro";
 import LegacyCourseTextImageLayout from "./LegacyCourseTextImageLayout.astro";
 import LegacyCourseThreeVideosLayout from "./LegacyCourseThreeVideosLayout.astro";
 import LegacyCourseAccordionLayout from "./LegacyCourseAccordionLayout.astro";
-import type { CourseBlock } from "../../../lib/legacy_kin/coursePreviewPoc";
-import { sortedComponents } from "../../../lib/legacy_kin/coursePreviewPoc";
+import type { CourseComponent, CourseLesson } from "../../../lib/legacy_kin/coursePreviewPoc";
+import {
+  TEXT_IMAGE_LAYOUT_TYPE,
+  TEXT_VIDEO_LAYOUT_TYPE,
+  THREE_VIDEOS_LAYOUT_TYPE,
+} from "../../../lib/legacy_kin/courseContentEditorTypes";
+import {
+  contentItemDisplayTitle,
+  findBlockBySlug,
+  flattenLessonContent,
+  type FlatContentItem,
+} from "../../../lib/legacy_kin/courseLessonContentItems";
 import { isAccordionLayoutBlock } from "../../../lib/legacy_kin/courseAccordionLayout";
-import { isTextVideoLayoutBlock } from "../../../lib/legacy_kin/courseTextVideoLayout";
-import { isTextImageLayoutBlock } from "../../../lib/legacy_kin/courseTextImageLayout";
-import { isThreeVideosLayoutBlock } from "../../../lib/legacy_kin/courseThreeVideosLayout";
 
 interface Props {
-  blocks: CourseBlock[];
-  lessonSlug: string;
-  showBlockTitles?: boolean;
+  lesson: CourseLesson;
+  item?: FlatContentItem;
+  showItemTitles?: boolean;
 }
 
-const { blocks, lessonSlug, showBlockTitles = true } = Astro.props;
+const { lesson, item, showItemTitles = true } = Astro.props;
+const items = item ? [item] : flattenLessonContent(lesson);
 ---
 
 {
-  blocks.map((block) => (
-    <article
-      class="course-preview__block legacy-course__block"
-      id={`${lessonSlug}--${block.slug}`}
-    >
-      {showBlockTitles && block.title?.trim() && !isTextImageLayoutBlock(block) ? (
-        <h2 class="course-preview__block-title legacy-course__block-title">
-          {block.title}
-        </h2>
-      ) : null}
+  items.map((entry) => {
+    const block = findBlockBySlug(lesson, entry.blockSlug);
+    const title = contentItemDisplayTitle(lesson, entry);
+    const hideTitle =
+      !showItemTitles ||
+      !title ||
+      entry.type === TEXT_IMAGE_LAYOUT_TYPE;
 
-      {isTextVideoLayoutBlock(block) ? (
-        <LegacyCourseTextVideoLayout block={block} />
-      ) : isThreeVideosLayoutBlock(block) ? (
-        <LegacyCourseThreeVideosLayout block={block} />
-      ) : isTextImageLayoutBlock(block) ? (
-        <LegacyCourseTextImageLayout block={block} />
-      ) : isAccordionLayoutBlock(block) ? (
-        <LegacyCourseAccordionLayout block={block} />
-      ) : (
-        <div class="course-preview__components legacy-course__components">
-          {sortedComponents(block).map((component) => (
-            <LegacyCourseBlock component={component} />
-          ))}
-        </div>
-      )}
-    </article>
-  ))
+    return (
+      <article class="course-preview__block legacy-course__block">
+        {!hideTitle ? (
+          <h2 class="course-preview__block-title legacy-course__block-title">
+            {title}
+          </h2>
+        ) : null}
+
+        {entry.type === TEXT_VIDEO_LAYOUT_TYPE && block ? (
+          <LegacyCourseTextVideoLayout block={block} />
+        ) : entry.type === THREE_VIDEOS_LAYOUT_TYPE && block ? (
+          <LegacyCourseThreeVideosLayout block={block} />
+        ) : entry.type === TEXT_IMAGE_LAYOUT_TYPE && block ? (
+          <LegacyCourseTextImageLayout block={block} />
+        ) : entry.type === "exerciseAccordion" &&
+          block &&
+          isAccordionLayoutBlock(block) ? (
+          <LegacyCourseAccordionLayout block={block} />
+        ) : (
+          <div class="course-preview__components legacy-course__components">
+            <LegacyCourseBlock component={entry.component as CourseComponent} />
+          </div>
+        )}
+      </article>
+    );
+  })
 }

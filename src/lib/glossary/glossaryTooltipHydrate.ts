@@ -193,7 +193,15 @@ function handleGlossaryCrossLinkClick(glossaryId: number, anchor: HTMLElement, e
 
   if (anchor.closest("[data-glossary-entry], .glossary-entry-helpinfo")) {
     const slug = glossarySlugForId(glossaryId);
-    if (slug) window.location.assign(`/glossary/${slug}/`);
+    if (!slug) return;
+    const openModal = (
+      window as Window & { __kbmOpenGlossaryTermModal?: (slug: string) => void }
+    ).__kbmOpenGlossaryTermModal;
+    if (typeof openModal === "function") {
+      openModal(slug);
+    } else {
+      window.location.assign(`/glossary/${slug}/`);
+    }
   }
 }
 

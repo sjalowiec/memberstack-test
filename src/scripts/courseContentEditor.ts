@@ -72,6 +72,7 @@ import {
 const API_URL = "/api/admin/course-content";
 const SNIPPETS_OPEN_KEY = "course-editor-snippets-open";
 const SELECTED_LESSON_KEY = "course-editor-selected-lesson";
+const SELECTED_COURSE_KEY = "course-editor-selected-course";
 
 type LessonRecord = Record<string, unknown>;
 type CourseRecord = { course?: Record<string, unknown>; lessons?: LessonRecord[] };
@@ -253,6 +254,27 @@ function readPersistedLessonSlug(courseId: number): string | null {
     const parsed = JSON.parse(raw) as { courseId?: number; slug?: string };
     if (parsed.courseId === courseId && parsed.slug?.trim()) {
       return parsed.slug.trim();
+    }
+  } catch {
+    /* ignore storage failures */
+  }
+  return null;
+}
+
+function persistSelectedCourse(courseId: number) {
+  try {
+    localStorage.setItem(SELECTED_COURSE_KEY, String(courseId));
+  } catch {
+    /* ignore storage failures */
+  }
+}
+
+function readPersistedCourseId(allowedCourseIds: number[]): number | null {
+  try {
+    const raw = localStorage.getItem(SELECTED_COURSE_KEY);
+    const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
+    if (Number.isFinite(parsed) && allowedCourseIds.includes(parsed)) {
+      return parsed;
     }
   } catch {
     /* ignore storage failures */
@@ -3992,6 +4014,7 @@ async function loadCourse(
     }
 
     currentCourseId = courseId;
+    persistSelectedCourse(courseId);
     courseData = payload.course;
     lessonDrafts.clear();
     lessonSavedJson.clear();
@@ -4128,9 +4151,11 @@ export function initCourseContentEditor() {
           .join("");
       }
 
-      const nav = parseEditorNavigationState(window.location.search);
+      const allowedCourseIds = courseCatalog.map((course) => course.id);
+      const nav = parseEditorNavigationState(window.location.search, allowedCourseIds);
       const initialCourseId =
         nav.courseId ??
+        readPersistedCourseId(allowedCourseIds) ??
         (courseCatalog.length > 0 ? courseCatalog[0]!.id : null);
 
       if (initialCourseId != null) {

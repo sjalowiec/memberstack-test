@@ -1,0 +1,72 @@
+---
+import Layout from "../../../../../layouts/Layout.astro";
+import LegacyCourseShell from "../../../../../components/courses/legacy/LegacyCourseShell.astro";
+import LegacyCourseRenderer from "../../../../../components/courses/legacy/LegacyCourseRenderer.astro";
+import LegacyCourseItemNav from "../../../../../components/courses/legacy/LegacyCourseItemNav.astro";
+import {
+  getLegacyCourseBySlug,
+  getLegacyLessonBySlug,
+  legacyCourseLoadOptionsFromPreviewRequest,
+} from "../../../../../lib/legacy_kin/legacyCourseLoader";
+import {
+  contentItemDisplayTitle,
+  findLessonContentItemBySlug,
+  getCourseContentItemNeighbors,
+  getLessonContentNavEntries,
+} from "../../../../../lib/legacy_kin/courseLessonContentItems";
+
+const courseSlug = Astro.params.courseSlug ?? "";
+const lessonSlug = Astro.params.lessonSlug ?? "";
+const itemSlug = Astro.params.itemSlug ?? "";
+const loaderOptions = legacyCourseLoadOptionsFromPreviewRequest(
+  Astro.url.searchParams.get("preview"),
+  Astro.url.hostname,
+  { isViteDev: import.meta.env.DEV, publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV },
+);
+const course = getLegacyCourseBySlug(courseSlug, loaderOptions);
+const lesson = getLegacyLessonBySlug(courseSlug, lessonSlug, loaderOptions);
+const item = lesson ? findLessonContentItemBySlug(lesson, itemSlug) : undefined;
+
+if (!course || !lesson || !item) {
+  return new Response("Lesson section not found", { status: 404 });
+}
+
+const contentNavEntries = getLessonContentNavEntries(lesson);
+const { prev, next } = getCourseContentItemNeighbors(course, lesson.slug, item.itemSlug);
+const sectionTitle = contentItemDisplayTitle(lesson, item) || item.itemSlug;
+const pageTitle = `${sectionTitle} · ${lesson.title} · ${course.course.title} | Knit it Now`;
+const previewQuery = loaderOptions.includeDrafts ? "?preview=true" : "";
+---
+
+<Layout
+  title={pageTitle}
+  description={`${course.course.title} — ${lesson.title} — ${sectionTitle}`}
+  skipGlobalHyvor
+>
+  <LegacyCourseShell
+    {courseSlug}
+    currentLessonSlug={lesson.slug}
+    currentItemSlug={item.itemSlug}
+    includeDrafts={loaderOptions.includeDrafts}
+    {contentNavEntries}
+    {previewQuery}
+  >
+    <article class="course-preview__content legacy-course__lesson">
+      <header class="course-preview__section-header">
+        <p class="course-preview__content-lesson">
+          Lesson {lesson.displayOrder}: {lesson.title}
+        </p>
+        <h1 class="course-preview__content-title">{sectionTitle}</h1>
+      </header>
+
+      <LegacyCourseRenderer lesson={lesson} item={item} showItemTitles={false} />
+
+      <LegacyCourseItemNav
+        {courseSlug}
+        {previewQuery}
+        {prev}
+        {next}
+      />
+    </article>
+  </LegacyCourseShell>
+</Layout>

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import GlossaryTermModal from "../../components/glossary/GlossaryTermModal.astro";
 import { isCourseContentAdminAllowed } from "../../lib/legacy_kin/courseContentAdmin";
 import "../../styles/course-preview.css";
 import "../../styles/course-content-editor.css";
@@ -15,7 +16,12 @@ if (
   return Astro.redirect("/admin/");
 }
 ---
-
+<style>
+  /* Room to scroll add-item buttons above the fixed Memberstack badge */
+  body.course-editor-body .course-editor__center {
+    padding-bottom: 6rem;
+  }
+</style>
 <BaseLayout
   title="Course Content Editor | Admin"
   description="Edit legacy KIN course lesson content"
@@ -202,6 +208,8 @@ if (
   </div>
 
   <div id="course-editor-toast" class="course-editor__toast" aria-live="polite"></div>
+
+  <GlossaryTermModal />
 
   <script>
     import { initCourseContentEditor } from "../../scripts/courseContentEditor.ts";

@@ -1,0 +1,114 @@
+.glossaryModal {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: none;
+}
+
+.glossaryModal.is-open {
+  display: block;
+}
+
+.glossaryModal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.glossaryModal__shell {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: min(900px, 92vw);
+  max-height: calc(100vh - var(--fixed-header, 0px) - 24px);
+  margin: calc(var(--fixed-header, 0px) + 12px) auto 12px;
+  padding: 0 !important;
+  border: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.glossaryModal .glossaryModal__top {
+  display: flex;
+  flex: 0 0 auto;
+  position: relative;
+  height: 0;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  overflow: visible;
+}
+
+.glossaryModal .glossaryModal__title {
+  display: none !important;
+}
+
+.glossaryModal .glossaryModal__close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  z-index: 10;
+  margin: 0;
+  width: 40px;
+  height: 40px;
+  line-height: 1;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #fff;
+  cursor: pointer;
+}
+
+.glossaryModal .glossaryModal__body {
+  flex: 1 1 auto;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 !important;
+  padding: 0 14px 16px;
+  min-height: 0;
+}
+
+.glossaryModal__body > :first-child {
+  margin-top: 0 !important;
+}
+
+.glossaryModal__body main.glossaryEntry {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.glossaryModal .glossaryModal__body .glossaryEntry h1,
+.glossaryModal .glossaryModal__body .glossary-entry__title {
+  margin-top: 0;
+}
+
+.glossaryModal .glossaryModal__body img:not(.glossary-related-tools__icon) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.glossaryModal .glossaryModal__body .back-link {
+  display: none;
+}
+
+.glossaryModal .glossaryModal__body iframe,
+.glossaryModal .glossaryModal__body video {
+  max-width: 100%;
+}
+
+a.glossary-link {
+  color: var(--kbm-green, #52682d);
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+  cursor: pointer;
+}
+
+a.glossary-link:hover,
+a.glossary-link:focus-visible {
+  color: var(--course-brand-dark, #3e4f22);
+}

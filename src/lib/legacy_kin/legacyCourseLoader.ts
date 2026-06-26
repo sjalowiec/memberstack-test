@@ -167,6 +167,55 @@ export function legacyLessonHref(
   return `${legacyCourseHref(courseSlug)}/${encodeURIComponent(lessonSlug)}`;
 }
 
+export function legacyLessonItemHref(
+  courseSlug: string,
+  lessonSlug: string,
+  itemSlug: string,
+): string {
+  return `${legacyLessonHref(courseSlug, lessonSlug)}/${encodeURIComponent(itemSlug)}`;
+}
+
+export type LegacyCoursePreviewHrefOptions = {
+  /** When true, append ?preview=true so draft courses load on staging/dev. */
+  includeDraftPreview?: boolean;
+  /** Open a specific lesson section/item instead of the lesson overview. */
+  itemSlug?: string | null;
+};
+
+/**
+ * Customer-facing preview URL for the course content admin Preview button.
+ * Returns null when courseSlug is empty.
+ */
+export function legacyCoursePreviewHref(
+  courseSlug: string,
+  lessonSlug?: string | null,
+  options: LegacyCoursePreviewHrefOptions = {},
+): string | null {
+  const normalizedCourseSlug = courseSlug.trim();
+  if (!normalizedCourseSlug) return null;
+
+  const normalizedLessonSlug = lessonSlug?.trim();
+  const normalizedItemSlug = options.itemSlug?.trim();
+
+  let path: string;
+  if (normalizedLessonSlug && normalizedItemSlug) {
+    path = legacyLessonItemHref(
+      normalizedCourseSlug,
+      normalizedLessonSlug,
+      normalizedItemSlug,
+    );
+  } else if (normalizedLessonSlug) {
+    path = legacyLessonHref(normalizedCourseSlug, normalizedLessonSlug);
+  } else {
+    path = legacyCourseHref(normalizedCourseSlug);
+  }
+
+  if (options.includeDraftPreview) {
+    return `${path}?preview=true`;
+  }
+  return path;
+}
+
 export function getLegacyLessonNeighbors(
   courseSlug: string,
   lessonSlug: string,

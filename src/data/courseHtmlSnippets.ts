@@ -30,6 +30,12 @@ export const COURSE_HTML_SNIPPETS: CourseHtmlSnippet[] = [
 </a>`,
   },
   {
+    id: "glossary-entry",
+    name: "Glossary Entry",
+    category: "links",
+    html: `<a href="/glossary/TERM-SLUG" class="glossary-link">TERM NAME</a>`,
+  },
+  {
     id: "image",
     name: "Image",
     category: "media",

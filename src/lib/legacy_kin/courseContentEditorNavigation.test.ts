@@ -51,6 +51,15 @@ describe("courseContentEditorNavigation", () => {
     const parsed = parseEditorNavigationState("?course=50&lessonIndex=3");
     expect(resolveInitialLessonSlug(sampleLessons, parsed)).toBe("lesson-four");
   });
+
+  it("accepts any catalog course id when allowlist is omitted", () => {
+    expect(parseEditorNavigationState("?course=2&lesson=lesson-one").courseId).toBe(2);
+  });
+
+  it("rejects course ids not in the provided catalog allowlist", () => {
+    expect(parseEditorNavigationState("?course=99&lesson=lesson-one", [50, 51]).courseId).toBeNull();
+    expect(parseEditorNavigationState("?course=50&lesson=lesson-one", [50, 51]).courseId).toBe(50);
+  });
 });
 
 describe("lesson title display helpers", () => {

@@ -1,18 +1,12 @@
 ---
 import LegacyCourseRenderer from "../courses/legacy/LegacyCourseRenderer.astro";
-import type { CourseBlock } from "../../lib/legacy_kin/coursePreviewPoc";
+import type { CourseLesson } from "../../lib/legacy_kin/coursePreviewPoc";
 
 interface Props {
-  blocks: CourseBlock[];
-  lessonSlug: string;
-  compact?: boolean;
+  lesson: CourseLesson;
 }
 
-const { blocks, lessonSlug, compact = false } = Astro.props;
+const { lesson } = Astro.props;
 ---
 
-<LegacyCourseRenderer
-  blocks={blocks}
-  {lessonSlug}
-  showBlockTitles={!compact}
-/>
+<LegacyCourseRenderer {lesson} />

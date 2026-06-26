@@ -1,0 +1,25 @@
+---
+import "../../styles/glossary-term-modal.css";
+---
+
+<div id="glossaryModal" class="glossaryModal" hidden>
+  <div class="glossaryModal__backdrop" data-close-modal="true"></div>
+  <div
+    class="glossaryModal__shell"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="glossaryModalTitle"
+  >
+    <div class="glossaryModal__top">
+      <div id="glossaryModalTitle" class="glossaryModal__title" aria-live="polite"></div>
+      <button class="glossaryModal__close" type="button" aria-label="Close glossary entry">?</button>
+    </div>
+    <div id="glossaryModalBody" class="glossaryModal__body"></div>
+  </div>
+</div>
+
+<script>
+  import { initGlossaryTermModal } from "../../lib/glossary/glossaryTermModalClient.ts";
+
+  initGlossaryTermModal();
+</script>

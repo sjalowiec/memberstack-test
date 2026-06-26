@@ -4,28 +4,26 @@ import {
   getCoursePreviewData,
   getPreviewCourseIds,
   getSortedLessons,
-  lessonPreviewHref,
-  lessonPreviewSectionHref,
   parseCourseId,
 } from "../../lib/legacy_kin/coursePreviewPoc";
-
-interface SidebarSection {
-  title: string;
-  oneBasedIndex: number;
-}
+import type { LessonContentNavEntry } from "../../lib/legacy_kin/courseLessonContentItems";
+import {
+  legacyLessonHref,
+  legacyLessonItemHref,
+} from "../../lib/legacy_kin/legacyCourseLoader";
 
 interface Props {
   courseId: number;
   currentLessonSlug?: string;
-  currentSections?: SidebarSection[];
-  activeSectionIndex?: number;
+  currentItemSlug?: string;
+  contentNavEntries?: LessonContentNavEntry[];
 }
 
 const {
   courseId: rawCourseId,
   currentLessonSlug,
-  currentSections = [],
-  activeSectionIndex = 0,
+  currentItemSlug,
+  contentNavEntries = [],
 } = Astro.props;
 const courseId = parseCourseId(rawCourseId);
 const course = getCoursePreviewData(courseId)!.course;
@@ -33,7 +31,8 @@ const lessons = getSortedLessons(courseId);
 const previewCourses = getPreviewCourseIds()
   .map((id) => getCoursePreviewData(id)!)
   .map((data) => data.course);
-const showSectionList = currentSections.length > 1;
+const showContentNav = contentNavEntries.length > 1;
+const publicCourseSlug = course.slug;
 ---
 
 <aside class="course-preview__sidebar" aria-label="Course navigation">
@@ -80,7 +79,7 @@ const showSectionList = currentSections.length > 1;
             >
               <a
                 class="course-preview__sidebar-lesson-link"
-                href={lessonPreviewHref(courseId, lessonItem.slug)}
+                href={legacyLessonHref(publicCourseSlug, lessonItem.slug)}
                 aria-current={isActiveLesson ? "page" : undefined}
               >
                 <span class="course-preview__sidebar-lesson-order">
@@ -90,27 +89,30 @@ const showSectionList = currentSections.length > 1;
               </a>
 
               {
-                isActiveLesson && showSectionList ? (
+                isActiveLesson && showContentNav ? (
                   <ol class="course-preview__sidebar-sections">
-                    {currentSections.map((section) => (
-                      <li class="course-preview__sidebar-section">
-                        <a
-                          class="course-preview__sidebar-section-link"
-                          href={lessonPreviewSectionHref(
-                            courseId,
-                            lessonItem.slug,
-                            section.oneBasedIndex,
-                          )}
-                          data-lk150-section-link
-                          data-section-index={section.oneBasedIndex}
-                          aria-current={
-                            section.oneBasedIndex === activeSectionIndex + 1 ? "location" : "false"
-                          }
-                        >
-                          {section.title}
-                        </a>
-                      </li>
-                    ))}
+                    {contentNavEntries.map((entry) => {
+                      const isActiveItem = entry.itemSlug === currentItemSlug;
+                      return (
+                        <li class="course-preview__sidebar-section">
+                          <a
+                            class:list={[
+                              "course-preview__sidebar-section-link",
+                              isActiveItem &&
+                                "course-preview__sidebar-section-link--active",
+                            ]}
+                            href={legacyLessonItemHref(
+                              publicCourseSlug,
+                              lessonItem.slug,
+                              entry.itemSlug,
+                            )}
+                            aria-current={isActiveItem ? "page" : undefined}
+                          >
+                            {entry.title}
+                          </a>
+                        </li>
+                      );
+                    })}
                   </ol>
                 ) : null
               }
