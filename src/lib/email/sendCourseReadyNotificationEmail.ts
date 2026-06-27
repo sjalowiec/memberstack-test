@@ -1,10 +1,23 @@
 import { escapeHtml } from "./escapeHtml";
-import {
-  isDevEnvironment,
-  isResendTransportError,
-  readResendConfig,
-  type ResendConfig,
-} from "./resendConfig";
+import { readResendConfig, type ResendConfig } from "./resendConfig";
+
+function isResendTransportError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  if (error.message === "fetch failed") return true;
+
+  const cause = error.cause;
+  if (cause instanceof Error) {
+    const code = (cause as NodeJS.ErrnoException).code;
+    return (
+      code === "UNABLE_TO_VERIFY_LEAF_SIGNATURE" ||
+      code === "ECONNREFUSED" ||
+      code === "ENOTFOUND" ||
+      code === "ETIMEDOUT"
+    );
+  }
+
+  return false;
+}
 
 export type CourseReadyNotificationPayload = {
   courseSlug: string;
@@ -107,7 +120,7 @@ export async function sendCourseReadyNotificationEmail(
 
     return { ok: true };
   } catch (error) {
-    if (isDevEnvironment() && isResendTransportError(error)) {
+    if (import.meta.env.DEV && isResendTransportError(error)) {
       console.warn(
         "[course-ready-notification] DEV: Resend unreachable (TLS/network). Request accepted without sending.",
         {
