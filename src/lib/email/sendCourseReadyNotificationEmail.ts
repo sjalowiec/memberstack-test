@@ -1,5 +1,10 @@
 import { escapeHtml } from "./escapeHtml";
-import { readResendConfig, type ResendConfig } from "./resendConfig";
+import {
+  isDevEnvironment,
+  isResendTransportError,
+  readResendConfig,
+  type ResendConfig,
+} from "./resendConfig";
 
 export type CourseReadyNotificationPayload = {
   courseSlug: string;
@@ -12,7 +17,7 @@ export type SendCourseReadyNotificationResult =
   | { ok: true }
   | { ok: false; reason: "config" | "resend" };
 
-const SUPPORT_EMAIL = "support@knititnow.com";
+const NOTIFICATION_RECIPIENT = "sue@knititnow.com";
 
 export function buildCourseReadyNotificationEmail(
   payload: CourseReadyNotificationPayload,
@@ -65,6 +70,11 @@ export async function sendCourseReadyNotificationEmail(
   const fetchImpl = options.fetchImpl ?? fetch;
   const { subject, text, html } = buildCourseReadyNotificationEmail(payload);
 
+  console.info("[course-ready-notification] Sending email via Resend", {
+    from: config.fromAddress,
+    to: NOTIFICATION_RECIPIENT,
+  });
+
   try {
     const response = await fetchImpl("https://api.resend.com/emails", {
       method: "POST",
@@ -74,22 +84,44 @@ export async function sendCourseReadyNotificationEmail(
       },
       body: JSON.stringify({
         from: config.fromAddress,
-        to: SUPPORT_EMAIL,
+        to: NOTIFICATION_RECIPIENT,
         subject,
         text,
         html,
-        reply_to: payload.customerEmail,
+        reply_to: payload.customerEmail || undefined,
       }),
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error("[course-ready-notification] Resend API error:", response.status, errText);
+      console.error("[course-ready-notification] Resend API error:", response.status, errText, {
+        from: config.fromAddress,
+        to: NOTIFICATION_RECIPIENT,
+      });
       return { ok: false, reason: "resend" };
     }
 
+    console.info("[course-ready-notification] Resend email accepted", {
+      to: NOTIFICATION_RECIPIENT,
+    });
+
     return { ok: true };
   } catch (error) {
+    if (isDevEnvironment() && isResendTransportError(error)) {
+      console.warn(
+        "[course-ready-notification] DEV: Resend unreachable (TLS/network). Request accepted without sending.",
+        {
+          from: config.fromAddress,
+          to: NOTIFICATION_RECIPIENT,
+          subject,
+          courseSlug: payload.courseSlug,
+          courseTitle: payload.courseTitle,
+          customerEmail: payload.customerEmail,
+        },
+      );
+      return { ok: true };
+    }
+
     const message = error instanceof Error ? error.message : String(error);
     console.error("[course-ready-notification] Failed to send email:", message, error);
     return { ok: false, reason: "resend" };
