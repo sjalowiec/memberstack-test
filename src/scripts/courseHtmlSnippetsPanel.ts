@@ -173,7 +173,6 @@ function renderGlossaryPickerList(
   const matches = filterGlossaryPickerRows(rows, query);
   if (matches.length === 0) {
     listEl.innerHTML = "";
-    listEl.hidden = true;
     if (statusEl) {
       statusEl.textContent = query.trim()
         ? "No glossary terms match your search."
@@ -182,7 +181,6 @@ function renderGlossaryPickerList(
     return;
   }
 
-  listEl.hidden = false;
   listEl.innerHTML = matches
     .map(
       (row) => `
@@ -225,7 +223,7 @@ function renderGlossaryPickerList(
     statusEl.textContent =
       shown < total
         ? `Showing ${shown} of ${total} terms${suffix}. Copy or insert the ready-made link.`
-        : "Copy or insert the ready-made glossary link for each term.";
+        : `${total} terms — scroll the list or search to narrow. Copy or insert a link.`;
   }
 
   wireGlossaryPickerRowActions(listEl);
@@ -300,7 +298,7 @@ function renderSnippetArticle(snippet: (typeof COURSE_HTML_SNIPPETS)[number]) {
           <p class="course-editor__glossary-picker-status" data-glossary-picker-status>
             Loading glossary…
           </p>
-          <ul class="course-editor__glossary-picker-list" data-glossary-picker-list hidden></ul>
+          <ul class="course-editor__glossary-picker-list" data-glossary-picker-list aria-live="polite"></ul>
         </div>
       </article>
     `;

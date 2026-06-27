@@ -9,7 +9,9 @@ import {
   isAllowedCourseId,
   listAdminCourseSummaries,
   readCourseContentFile,
+  readCourseContentStatus,
   removeEmptyBlocksFromLesson,
+  saveCourseMetadata,
   saveLessonUpdate,
   validateLessonInput,
 } from "./courseContentAdmin";
@@ -298,6 +300,33 @@ describe("getAllowedCourseIds", () => {
   });
 });
 
+describe("readCourseContentStatus", () => {
+  it('returns "cleaned" only when course.contentStatus is exactly "cleaned"', () => {
+    expect(readCourseContentStatus({ contentStatus: "cleaned" })).toBe("cleaned");
+    expect(readCourseContentStatus({ contentStatus: "in_progress" })).toBe("in_progress");
+    expect(readCourseContentStatus({})).toBe("in_progress");
+    expect(readCourseContentStatus({ contentStatus: undefined })).toBe("in_progress");
+    expect(readCourseContentStatus({ status: "published" } as { contentStatus?: string })).toBe(
+      "in_progress",
+    );
+  });
+});
+
+describe("saveCourseMetadata contentStatus", () => {
+  it('writes the exact value "cleaned" to course JSON', () => {
+    const before = readCourseContentFile(66).course.contentStatus;
+    try {
+      const result = saveCourseMetadata(66, { contentStatus: "cleaned" });
+      expect(result.contentStatus).toBe("cleaned");
+      expect(readCourseContentFile(66).course.contentStatus).toBe("cleaned");
+    } finally {
+      saveCourseMetadata(66, {
+        contentStatus: before === "cleaned" ? "cleaned" : "in_progress",
+      });
+    }
+  });
+});
+
 describe("readCourseContentFile discovery", () => {
   it("still loads course 50 from the known filename", () => {
     expect(COURSE_CONTENT_FILES[50]).toBe("course_50_lk150_quick.poc.json");
@@ -310,5 +339,12 @@ describe("readCourseContentFile discovery", () => {
     const data = readCourseContentFile(2);
     expect(data.course.status).toBe("draft");
     expect(data.course.published).toBe(false);
+  });
+
+  it("loads ribber basic bootcamp as cleaned for landing-ready behavior", () => {
+    const data = readCourseContentFile(66);
+    expect(data.course.slug).toBe("ribber-basic-bootcamp");
+    expect(data.course.contentStatus).toBe("cleaned");
+    expect(readCourseContentStatus(data.course)).toBe("cleaned");
   });
 });

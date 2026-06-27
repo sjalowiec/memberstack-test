@@ -8,7 +8,8 @@
     "thumbnail": "/images/courses/lk-150_fun.webp",
     "legacy": {
       "sourceExport": "course_51_lk150_fun.csv"
-    }
+    },
+    "contentStatus": "in_progress"
   },
   "lessons": [
     {

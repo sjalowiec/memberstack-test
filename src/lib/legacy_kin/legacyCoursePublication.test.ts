@@ -3,6 +3,7 @@ import {
   isLegacyCourseActive,
   isLegacyCourseDraft,
   isLegacyCoursePublic,
+  readLegacyCoursePublished,
 } from "./legacyCoursePublication";
 
 describe("isLegacyCoursePublic", () => {
@@ -50,7 +51,30 @@ describe("isLegacyCourseDraft", () => {
     expect(isLegacyCourseDraft({ status: "draft", published: false })).toBe(true);
   });
 
+  it("does not mark inactive published courses as draft", () => {
+    expect(isLegacyCourseDraft({ active: false, status: "published", published: true })).toBe(
+      false,
+    );
+  });
+
   it("does not mark hand-cleaned courses without flags as draft", () => {
     expect(isLegacyCourseDraft({})).toBe(false);
+  });
+});
+
+describe("readLegacyCoursePublished", () => {
+  it("treats missing status/published as published for hand-cleaned courses", () => {
+    expect(readLegacyCoursePublished({})).toBe(true);
+  });
+
+  it("reads explicit draft and published flags", () => {
+    expect(readLegacyCoursePublished({ status: "draft", published: false })).toBe(false);
+    expect(readLegacyCoursePublished({ status: "published", published: true })).toBe(true);
+  });
+
+  it("ignores catalog active when reading publication only", () => {
+    expect(readLegacyCoursePublished({ active: false, status: "published", published: true })).toBe(
+      true,
+    );
   });
 });

@@ -85,6 +85,13 @@ describe("courseContentEditorView", () => {
         currentExpanded: "intro",
         selectedBlockSectionSlug: "wrap",
       }),
+    ).toBe("intro");
+
+    expect(
+      resolveExpandedSectionSlug(groups, {
+        currentExpanded: null,
+        selectedBlockSectionSlug: "wrap",
+      }),
     ).toBe("wrap");
 
     expect(
@@ -96,10 +103,49 @@ describe("courseContentEditorView", () => {
   });
 
   it("formats section outline labels", () => {
+    expect(formatSectionBlockCount(0)).toBe("No blocks");
     expect(formatSectionBlockCount(1)).toBe("1 block");
     expect(formatSectionBlockCount(3)).toBe("3 blocks");
     expect(sectionNavLabel("")).toBe("Untitled section");
     expect(sectionNavLabel("Cast On")).toBe("Cast On");
+  });
+
+  it("keeps empty sections visible in the outline", () => {
+    const lesson: CourseLesson = {
+      title: "Lesson",
+      slug: "lesson",
+      displayOrder: 1,
+      legacy: { itemId: 1, lessonOrder: 1 },
+      blocks: [
+        {
+          title: "Empty section",
+          slug: "empty-section",
+          order: 1,
+          legacy: { assignId: 1, blockType: "HTML" },
+          components: [],
+        },
+        {
+          title: "With text",
+          slug: "with-text",
+          order: 2,
+          legacy: { assignId: 2, blockType: "HTML" },
+          components: [
+            { type: "richText", html: "<p>Hi</p>", legacyComponentId: 1, order: 1 },
+          ],
+        },
+      ],
+    };
+
+    const items = flattenLessonContent(lesson);
+    const groups = buildContentListGroups(lesson, items);
+    expect(countLessonSectionsAndBlocks(lesson)).toEqual({
+      sectionCount: 2,
+      blockCount: 1,
+    });
+    expect(groups).toHaveLength(2);
+    expect(groups[0]!.blockTitle).toBe("Empty section");
+    expect(groups[0]!.blockCount).toBe(0);
+    expect(sectionGroupMetaLabel(groups[0]!)).toBe("No blocks");
   });
 
   it("displays section titles for editing", () => {

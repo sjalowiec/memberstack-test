@@ -92,7 +92,6 @@ import {
   countLessonSectionsAndBlocks,
   formatLessonSidebarMeta,
   formatSectionBlockCount,
-  resolveExpandedSectionSlug,
   sectionNavLabel,
 } from "../lib/legacy_kin/courseContentEditorView";
 
@@ -100,6 +99,7 @@ const API_URL = "/api/admin/course-content";
 const SNIPPETS_OPEN_KEY = "course-editor-snippets-open";
 const SELECTED_LESSON_KEY = "course-editor-selected-lesson";
 const SELECTED_COURSE_KEY = "course-editor-selected-course";
+const COURSE_THUMBNAIL_PREFIX = "/images/courses/";
 
 type LessonRecord = Record<string, unknown>;
 type CourseRecord = { course?: Record<string, unknown>; lessons?: LessonRecord[] };
@@ -114,12 +114,15 @@ type CourseCatalogEntry = {
   isActive?: boolean;
   status?: string;
   published?: boolean;
+  contentStatus?: "in_progress" | "cleaned";
 };
 
 let courseCatalog: CourseCatalogEntry[] = [];
 let currentCourseId: number | null = null;
 let savedCourseThumbnail: string | null = null;
 let savedCourseActive = true;
+let savedCoursePublished = true;
+let savedCourseContentStatus: "in_progress" | "cleaned" = "in_progress";
 let courseData: CourseRecord | null = null;
 let selectedLessonSlug: string | null = null;
 let contentEditingRef: ComponentRef | null = null;
@@ -127,6 +130,13 @@ let renamingLessonSlug: string | null = null;
 let advancedOpen = false;
 let focusLessonTitlePending = false;
 let expandedSectionSlug: string | null = null;
+/** After first expand for a lesson, allow all sections to stay collapsed. */
+let outlineExpandInitialized = false;
+
+function resetOutlineExpandState() {
+  expandedSectionSlug = null;
+  outlineExpandInitialized = false;
+}
 
 const lessonDrafts = new Map<string, LessonRecord>();
 const lessonSavedJson = new Map<string, string>();
@@ -142,20 +152,21 @@ const dom = {
   courseSelect: null as HTMLSelectElement | null,
   courseTitle: null as HTMLInputElement | null,
   courseThumbnail: null as HTMLInputElement | null,
+  courseContentStatus: null as HTMLSelectElement | null,
+  coursePublished: null as HTMLSelectElement | null,
   courseActive: null as HTMLSelectElement | null,
+  courseStatusSaveBtn: null as HTMLButtonElement | null,
   courseThumbnailPreviewWrap: null as HTMLElement | null,
   courseThumbnailPreview: null as HTMLImageElement | null,
   courseThumbnailPreviewEmpty: null as HTMLElement | null,
   courseSettingsSaveBtn: null as HTMLButtonElement | null,
   courseSettingsPanel: null as HTMLDetailsElement | null,
-  draftBadge: null as HTMLElement | null,
-  inactiveBadge: null as HTMLElement | null,
   previewLink: null as HTMLAnchorElement | null,
   lessonList: null as HTMLElement | null,
   addLessonBtn: null as HTMLButtonElement | null,
   deleteLessonBtn: null as HTMLButtonElement | null,
   lessonTitleInput: null as HTMLInputElement | null,
-  addSectionBtn: null as HTMLButtonElement | null,
+  addSectionMenu: null as HTMLDetailsElement | null,
   addSectionTypes: null as HTMLElement | null,
   itemsList: null as HTMLElement | null,
   itemsEmpty: null as HTMLElement | null,
@@ -175,18 +186,21 @@ const dom = {
   centerPanel: null as HTMLElement | null,
 };
 
-function courseIsDraft(course: Record<string, unknown> | undefined): boolean {
-  if (!course) return false;
-  if (course.status === "draft") return true;
-  if (course.published === false) return true;
-  return false;
+function readCoursePublished(course: Record<string, unknown> | undefined): boolean {
+  if (!course) return true;
+  if (course.status === "draft") return false;
+  if (course.published === false) return false;
+  if (course.status === "published") return true;
+  if (course.published === true) return true;
+  return true;
 }
 
 function formatCourseCatalogLabel(entry: CourseCatalogEntry): string {
   const label = entry.title?.trim() || entry.filename || `Course ${entry.id}`;
   const draftSuffix = entry.isDraft ? " · draft" : "";
   const inactiveSuffix = entry.isActive === false ? " · inactive" : "";
-  return `${label} (${entry.id})${draftSuffix}${inactiveSuffix}`;
+  const cleanedSuffix = entry.contentStatus === "cleaned" ? " · cleaned" : "";
+  return `${label} (${entry.id})${draftSuffix}${inactiveSuffix}${cleanedSuffix}`;
 }
 
 function updateCoursePreviewLink(course: Record<string, unknown> | undefined, lessonSlug?: string | null) {
@@ -202,19 +216,55 @@ function updateCoursePreviewLink(course: Record<string, unknown> | undefined, le
     : `/dev/course-preview/${currentCourseId}`;
 }
 
-function updateCourseDraftBadge(course: Record<string, unknown> | undefined) {
-  if (!dom.draftBadge) return;
-  dom.draftBadge.hidden = !courseIsDraft(course);
+function updateCourseStatusSelectStyles() {
+  if (dom.coursePublished) {
+    dom.coursePublished.classList.toggle(
+      "course-editor__status-select--draft",
+      dom.coursePublished.value !== "true",
+    );
+  }
+  if (dom.courseActive) {
+    dom.courseActive.classList.toggle(
+      "course-editor__status-select--inactive",
+      dom.courseActive.value !== "true",
+    );
+  }
+}
+
+function updateCourseContentStatusSelectStyles() {
+  if (!dom.courseContentStatus) return;
+  dom.courseContentStatus.classList.toggle(
+    "course-editor__status-select--cleaned",
+    dom.courseContentStatus.value === "cleaned",
+  );
+  dom.courseContentStatus.classList.toggle(
+    "course-editor__status-select--in-progress",
+    dom.courseContentStatus.value !== "cleaned",
+  );
+}
+
+function refreshCourseCatalogEntry(course: Record<string, unknown> | undefined) {
+  if (currentCourseId == null || !course) return;
+  const entry = courseCatalog.find((item) => item.id === currentCourseId);
+  if (!entry) return;
+  entry.title = String(course.title ?? entry.title);
+  entry.status = typeof course.status === "string" ? course.status : entry.status;
+  entry.published = readCoursePublished(course);
+  entry.isDraft = !entry.published;
+  entry.isActive = readCourseActive(course);
+  entry.contentStatus = readCourseContentStatus(course);
+  entry.active = entry.isActive ? undefined : false;
+  if (dom.courseSelect) {
+    const option = dom.courseSelect.querySelector(
+      `option[value="${currentCourseId}"]`,
+    ) as HTMLOptionElement | null;
+    if (option) option.textContent = formatCourseCatalogLabel(entry);
+  }
 }
 
 function readCourseActive(course: Record<string, unknown> | undefined): boolean {
   if (!course) return true;
   return course.active !== false;
-}
-
-function updateCourseInactiveBadge(course: Record<string, unknown> | undefined) {
-  if (!dom.inactiveBadge) return;
-  dom.inactiveBadge.hidden = readCourseActive(course);
 }
 
 function readCourseThumbnail(course: Record<string, unknown> | undefined): string {
@@ -225,23 +275,55 @@ function readCourseThumbnail(course: Record<string, unknown> | undefined): strin
   return value.trim();
 }
 
+function thumbnailInputValueFromPath(path: string | null | undefined): string {
+  if (!path) return "";
+  if (path.startsWith(COURSE_THUMBNAIL_PREFIX)) {
+    return path.slice(COURSE_THUMBNAIL_PREFIX.length);
+  }
+  return path;
+}
+
+function thumbnailPathFromInput(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("/")) return trimmed;
+  return `${COURSE_THUMBNAIL_PREFIX}${trimmed.replace(/^\/+/, "")}`;
+}
+
+function readThumbnailInputPath(): string | null {
+  return thumbnailPathFromInput(dom.courseThumbnail?.value ?? "");
+}
+
+function readCourseContentStatus(course: Record<string, unknown> | undefined): "in_progress" | "cleaned" {
+  return course?.contentStatus === "cleaned" ? "cleaned" : "in_progress";
+}
+
 function syncCourseSettingsFields(course: Record<string, unknown> | undefined) {
   savedCourseThumbnail = readCourseThumbnail(course) || null;
   savedCourseActive = readCourseActive(course);
+  savedCoursePublished = readCoursePublished(course);
+  savedCourseContentStatus = readCourseContentStatus(course);
   if (dom.courseThumbnail) {
-    dom.courseThumbnail.value = savedCourseThumbnail ?? "";
+    dom.courseThumbnail.value = thumbnailInputValueFromPath(savedCourseThumbnail);
   }
   if (dom.courseActive) {
     dom.courseActive.value = savedCourseActive ? "true" : "false";
   }
+  if (dom.coursePublished) {
+    dom.coursePublished.value = savedCoursePublished ? "true" : "false";
+  }
+  if (dom.courseContentStatus) {
+    dom.courseContentStatus.value = savedCourseContentStatus;
+  }
   updateCourseThumbnailPreview();
-  updateCourseInactiveBadge(course);
+  updateCourseStatusSelectStyles();
+  updateCourseContentStatusSelectStyles();
   updateCourseSettingsSaveState();
 }
 
 function updateCourseThumbnailPreview() {
-  const raw = dom.courseThumbnail?.value.trim() ?? "";
-  const previewSrc = raw ? legacyAssetUrl(raw) : "";
+  const previewPath = readThumbnailInputPath();
+  const previewSrc = previewPath ? legacyAssetUrl(previewPath) : "";
 
   if (dom.courseThumbnailPreview && dom.courseThumbnailPreviewWrap) {
     if (previewSrc) {
@@ -259,7 +341,7 @@ function updateCourseThumbnailPreview() {
 }
 
 function isCourseThumbnailDirty(): boolean {
-  const current = dom.courseThumbnail?.value.trim() ?? "";
+  const current = readThumbnailInputPath() ?? "";
   const saved = savedCourseThumbnail ?? "";
   return current !== saved;
 }
@@ -269,19 +351,52 @@ function isCourseActiveDirty(): boolean {
   return current !== savedCourseActive;
 }
 
+function isCoursePublishedDirty(): boolean {
+  const current = dom.coursePublished?.value === "true";
+  return current !== savedCoursePublished;
+}
+
+function isCourseContentStatusDirty(): boolean {
+  const current = dom.courseContentStatus?.value === "cleaned" ? "cleaned" : "in_progress";
+  return current !== savedCourseContentStatus;
+}
+
+function isCourseVisibilityDirty(): boolean {
+  return isCourseActiveDirty() || isCoursePublishedDirty();
+}
+
+/** Publication, catalog, and editorial content status (sidebar controls). */
+function isCourseSidebarMetadataDirty(): boolean {
+  return isCourseVisibilityDirty() || isCourseContentStatusDirty();
+}
+
 function isCourseSettingsDirty(): boolean {
-  return isCourseThumbnailDirty() || isCourseActiveDirty();
+  return isCourseThumbnailDirty() || isCourseSidebarMetadataDirty();
+}
+
+function buildCourseMetadataPayload(): Record<string, unknown> {
+  const payload: Record<string, unknown> = {};
+  if (isCourseThumbnailDirty()) {
+    payload.thumbnail = readThumbnailInputPath();
+  }
+  if (isCourseActiveDirty()) {
+    payload.active = dom.courseActive?.value === "true";
+  }
+  if (isCoursePublishedDirty()) {
+    payload.published = dom.coursePublished?.value === "true";
+  }
+  if (isCourseContentStatusDirty()) {
+    payload.contentStatus =
+      dom.courseContentStatus?.value === "cleaned" ? "cleaned" : "in_progress";
+  }
+  return payload;
 }
 
 function shouldCourseSettingsPanelOpen(
-  course: Record<string, unknown> | undefined,
+  _course: Record<string, unknown> | undefined,
 ): boolean {
-  if (!course) return false;
-  if (courseIsDraft(course)) return true;
-  if (!readCourseActive(course)) return true;
-  if (!readCourseThumbnail(course)) return true;
-  if (isCourseSettingsDirty()) return true;
-  return false;
+  // TEMP: keep course settings expanded so thumbnail preview is visible in admin.
+  return true;
 }
 
 function updateCourseSettingsPanelOpen() {
@@ -290,38 +405,51 @@ function updateCourseSettingsPanelOpen() {
 }
 
 function updateCourseSettingsSaveState() {
-  if (!dom.courseSettingsSaveBtn) return;
-  dom.courseSettingsSaveBtn.disabled =
-    !isCourseSettingsDirty() || currentCourseId == null;
+  const settingsDirty = isCourseSettingsDirty();
+  const sidebarDirty = isCourseSidebarMetadataDirty();
+  if (dom.courseSettingsSaveBtn) {
+    dom.courseSettingsSaveBtn.disabled = !settingsDirty || currentCourseId == null;
+  }
+  if (dom.courseStatusSaveBtn) {
+    dom.courseStatusSaveBtn.disabled = !sidebarDirty || currentCourseId == null;
+  }
   updateCourseSettingsPanelOpen();
 }
 
-async function saveCourseSettings() {
+async function saveCourseMetadataFromSidebar(statusMessage: string, successToast: string) {
   if (currentCourseId == null) return;
-  if (!isCourseSettingsDirty()) return;
+  const payload = buildCourseMetadataPayload();
+  if (Object.keys(payload).length === 0) return;
 
-  const payload: Record<string, unknown> = {};
-  if (isCourseThumbnailDirty()) {
-    payload.thumbnail = dom.courseThumbnail?.value.trim() || null;
-  }
-  if (isCourseActiveDirty()) {
-    payload.active = dom.courseActive?.value === "true";
-  }
-
-  setStatus("Saving course settings…");
+  setStatus(statusMessage);
 
   try {
     const result = await postCourseAction("saveCourseMetadata", payload);
     if (result.course) {
       courseData = result.course;
       syncCourseSettingsFields(courseData.course);
-      updateCourseDraftBadge(courseData.course);
+      refreshCourseCatalogEntry(courseData.course);
     }
     setStatus("");
-    flashToast("Course settings saved");
+    flashToast(successToast);
   } catch (err) {
     setStatus(err instanceof Error ? err.message : "Could not save course settings.", "is-error");
   }
+}
+
+async function saveCourseSettings() {
+  if (currentCourseId == null) return;
+  if (!isCourseSettingsDirty()) return;
+  await saveCourseMetadataFromSidebar("Saving course settings…", "Course settings saved");
+}
+
+async function saveCourseVisibilitySettings() {
+  if (currentCourseId == null) return;
+  if (!isCourseSidebarMetadataDirty()) return;
+  await saveCourseMetadataFromSidebar(
+    "Saving visibility settings…",
+    "Visibility settings saved",
+  );
 }
 
 function bindDom() {
@@ -333,20 +461,23 @@ function bindDom() {
   dom.courseSelect = document.getElementById("course-editor-course") as HTMLSelectElement | null;
   dom.courseTitle = document.getElementById("course-editor-course-title") as HTMLInputElement | null;
   dom.courseThumbnail = document.getElementById("course-editor-thumbnail") as HTMLInputElement | null;
+  dom.courseContentStatus = document.getElementById(
+    "course-editor-content-status",
+  ) as HTMLSelectElement | null;
+  dom.coursePublished = document.getElementById("course-editor-published") as HTMLSelectElement | null;
   dom.courseActive = document.getElementById("course-editor-active") as HTMLSelectElement | null;
+  dom.courseStatusSaveBtn = document.getElementById("course-editor-status-save") as HTMLButtonElement | null;
   dom.courseThumbnailPreviewWrap = document.getElementById("course-editor-thumbnail-preview-wrap");
   dom.courseThumbnailPreview = document.getElementById("course-editor-thumbnail-preview") as HTMLImageElement | null;
   dom.courseThumbnailPreviewEmpty = document.getElementById("course-editor-thumbnail-preview-empty");
   dom.courseSettingsSaveBtn = document.getElementById("course-editor-settings-save") as HTMLButtonElement | null;
   dom.courseSettingsPanel = document.getElementById("course-editor-settings-panel") as HTMLDetailsElement | null;
-  dom.draftBadge = document.getElementById("course-editor-draft-badge");
-  dom.inactiveBadge = document.getElementById("course-editor-inactive-badge");
   dom.previewLink = document.getElementById("course-editor-preview-link") as HTMLAnchorElement | null;
   dom.lessonList = document.getElementById("course-editor-lessons");
   dom.addLessonBtn = document.getElementById("course-editor-add-lesson") as HTMLButtonElement | null;
   dom.deleteLessonBtn = document.getElementById("course-editor-delete-lesson") as HTMLButtonElement | null;
   dom.lessonTitleInput = document.getElementById("course-editor-lesson-title") as HTMLInputElement | null;
-  dom.addSectionBtn = document.getElementById("course-editor-add-section") as HTMLButtonElement | null;
+  dom.addSectionMenu = document.getElementById("course-editor-add-section-menu") as HTMLDetailsElement | null;
   dom.addSectionTypes = document.getElementById("course-editor-add-section-types");
   dom.itemsList = document.getElementById("course-editor-items");
   dom.itemsEmpty = document.getElementById("course-editor-items-empty");
@@ -935,13 +1066,37 @@ function maxLegacyComponentIdInCourse() {
 
 function expandSection(blockSlug: string | null) {
   expandedSectionSlug = blockSlug;
+  outlineExpandInitialized = true;
 }
 
-function syncExpandedSectionForLesson(groups: ReturnType<typeof buildContentListGroups>) {
-  expandedSectionSlug = resolveExpandedSectionSlug(groups, {
-    currentExpanded: expandedSectionSlug,
-    selectedBlockSectionSlug: contentEditingRef?.blockSlug ?? null,
-  });
+function validateExpandedSectionSlug(groups: ReturnType<typeof buildContentListGroups>) {
+  if (groups.length === 0) {
+    expandedSectionSlug = null;
+    return;
+  }
+
+  const slugs = new Set(groups.map((group) => group.blockSlug));
+
+  if (expandedSectionSlug && slugs.has(expandedSectionSlug)) {
+    outlineExpandInitialized = true;
+    return;
+  }
+
+  if (contentEditingRef?.blockSlug && slugs.has(contentEditingRef.blockSlug)) {
+    expandedSectionSlug = contentEditingRef.blockSlug;
+    outlineExpandInitialized = true;
+    return;
+  }
+
+  if (!outlineExpandInitialized) {
+    expandedSectionSlug = groups[0]!.blockSlug;
+    outlineExpandInitialized = true;
+    return;
+  }
+
+  if (expandedSectionSlug && !slugs.has(expandedSectionSlug)) {
+    expandedSectionSlug = groups[0]!.blockSlug ?? null;
+  }
 }
 
 function renderSectionAddBlockRow(blockSlug: string) {
@@ -996,7 +1151,7 @@ function deleteContentSection(blockSlug: string) {
     hideEditFormPanel();
   }
 
-  syncExpandedSectionForLesson(
+  validateExpandedSectionSlug(
     buildContentListGroups(lesson, flattenLessonContent(lesson as CourseLesson)),
   );
 
@@ -1053,6 +1208,20 @@ function bindContentListActions() {
       const blockSlug = toggleSection.getAttribute("data-toggle-section");
       if (blockSlug) {
         expandSection(expandedSectionSlug === blockSlug ? null : blockSlug);
+        renderContentList();
+      }
+      return;
+    }
+
+    const sectionRow = target.closest("[data-outline-section-row]") as HTMLElement | null;
+    if (
+      sectionRow &&
+      !target.closest("input, button, .course-editor__outline-section-actions, a")
+    ) {
+      e.preventDefault();
+      const blockSlug = sectionRow.getAttribute("data-outline-section-row");
+      if (blockSlug && expandedSectionSlug !== blockSlug) {
+        expandSection(blockSlug);
         renderContentList();
       }
       return;
@@ -1135,17 +1304,16 @@ function populateAddSectionTypes() {
 }
 
 function bindAddSectionControls() {
-  dom.addSectionBtn?.addEventListener("click", () => {
-    appendContentItem("richText-blank");
-  });
-
   if (!dom.addSectionTypes || dom.addSectionTypes.dataset.bound === "1") return;
   dom.addSectionTypes.dataset.bound = "1";
   dom.addSectionTypes.addEventListener("click", (e) => {
     const btn = (e.target as HTMLElement).closest("[data-add-section-kind]") as HTMLButtonElement | null;
     if (!btn) return;
     const kind = btn.getAttribute("data-add-section-kind");
-    if (kind) appendContentItem(kind);
+    if (kind) {
+      appendContentItem(kind);
+      if (dom.addSectionMenu) dom.addSectionMenu.open = false;
+    }
   });
 }
 
@@ -1966,6 +2134,7 @@ function mountRichTextEditor(
             <button type="button" class="course-editor__icon-btn" data-cmd="formatBlock" data-arg="h2" title="Heading">H</button>
             <button type="button" class="course-editor__icon-btn" data-cmd="insertUnorderedList" title="Bullet list">•</button>
             <button type="button" class="course-editor__icon-btn" data-cmd="insertOrderedList" title="Numbered list">1.</button>
+            <button type="button" class="course-editor__icon-btn course-editor__icon-btn--label" data-cmd="justifyCenter" title="Center align">Center</button>
             <button type="button" class="course-editor__icon-btn" data-cmd="link" title="Link">🔗</button>
             <button type="button" class="course-editor__icon-btn" data-cmd="removeFormat" title="Clear">⌫</button>
           </div>
@@ -1996,7 +2165,7 @@ function mountRichTextEditor(
         });
       });
     } else if (tab === "html") {
-      body.innerHTML = `<textarea class="course-editor__textarea" spellcheck="false" style="min-height:10rem"></textarea>`;
+      body.innerHTML = `<textarea class="course-editor__textarea course-editor__textarea--rt-html" spellcheck="false"></textarea>`;
       const textarea = body.querySelector("textarea") as HTMLTextAreaElement;
       textarea.value = value;
       textarea.addEventListener("input", () => {
@@ -3039,7 +3208,7 @@ function renderContentList() {
   if (!dom.itemsList) return;
 
   const groups = buildContentListGroups(lesson, items);
-  syncExpandedSectionForLesson(groups);
+  validateExpandedSectionSlug(groups);
 
   const sectionHtml = groups
     .map((group, groupIndex) => {
@@ -3094,10 +3263,21 @@ function renderContentList() {
 
       const addBlockRow =
         isExpanded && !group.isLayout ? renderSectionAddBlockRow(group.blockSlug) : "";
+      const layoutHint =
+        isExpanded && group.isLayout
+          ? `<p class="course-editor__outline-layout-hint">This section is one combined layout. Click <strong>Edit</strong> on the block below to add content. For a separate block under its own heading, use <strong>+ Add Section</strong> above.</p>`
+          : "";
+      const emptyBlocksHint =
+        isExpanded && group.blockCount === 0 && !group.isLayout
+          ? `<p class="course-editor__outline-empty">No blocks yet. Add one below.</p>`
+          : "";
 
       return `
         <div class="course-editor__outline-section ${isExpanded ? "is-expanded" : ""}" data-block-slug="${escapeHtml(group.blockSlug)}">
-          <div class="course-editor__outline-section-row">
+          <div
+            class="course-editor__outline-section-row"
+            data-outline-section-row="${escapeHtml(group.blockSlug)}"
+          >
             <button
               type="button"
               class="course-editor__outline-caret"
@@ -3125,7 +3305,7 @@ function renderContentList() {
           </div>
           ${
             isExpanded
-              ? `<div class="course-editor__outline-blocks">${blocksHtml}${addBlockRow}</div>`
+              ? `<div class="course-editor__outline-blocks">${layoutHint}${emptyBlocksHint}${blocksHtml}${addBlockRow}</div>`
               : ""
           }
         </div>
@@ -3650,8 +3830,27 @@ function deleteContentItem(ref: ComponentRef) {
     return;
   }
 
+  const blockBeforeRemoval = findBlock(lesson, ref.blockSlug);
+  const keepEmptySection = Boolean(
+    blockBeforeRemoval &&
+      !isEditorLayoutBlock(blockBeforeRemoval) &&
+      Array.isArray(blockBeforeRemoval.components) &&
+      blockBeforeRemoval.components.length === 1,
+  );
+
   removeComponentFromBlock(lesson, ref.blockSlug, ref.legacyComponentId, ref.type);
-  pruneEmptyBlocks(lesson);
+
+  const blockAfterRemoval = findBlock(lesson, ref.blockSlug);
+  const keptEmptySection =
+    keepEmptySection &&
+    blockAfterRemoval &&
+    Array.isArray(blockAfterRemoval.components) &&
+    blockAfterRemoval.components.length === 0;
+
+  if (!keptEmptySection) {
+    pruneEmptyBlocks(lesson);
+  }
+
   reassignAllContentOrders(lesson);
   setLessonDraft(selectedLessonSlug, lesson);
 
@@ -3663,6 +3862,11 @@ function deleteContentItem(ref: ComponentRef) {
   ) {
     contentEditingRef = null;
     hideEditFormPanel();
+  }
+
+  if (keptEmptySection) {
+    expandSection(ref.blockSlug);
+    flashToast("Block removed — section kept. Use + Add Block to add content.");
   }
 
   renderContentList();
@@ -4066,7 +4270,7 @@ function selectLesson(slug: string, force = false) {
   selectedLessonSlug = slug;
   contentEditingRef = null;
   renamingLessonSlug = null;
-  expandedSectionSlug = null;
+  resetOutlineExpandState();
 
   if (currentCourseId != null) {
     persistSelectedLesson(currentCourseId, slug);
@@ -4087,7 +4291,6 @@ function selectLesson(slug: string, force = false) {
     dom.courseTitle.value = String(courseData?.course?.title ?? "");
     dom.courseTitle.readOnly = true;
   }
-  updateCourseDraftBadge(courseData?.course);
 
   hideEditFormPanel();
 
@@ -4251,7 +4454,6 @@ async function loadCourse(
     if (dom.courseSelect) dom.courseSelect.value = String(courseId);
     updateCoursePreviewLink(courseData.course);
     if (dom.courseTitle) dom.courseTitle.value = String(courseData.course?.title ?? "");
-    updateCourseDraftBadge(courseData.course);
     syncCourseSettingsFields(courseData.course);
 
     if (dom.loading) dom.loading.hidden = true;
@@ -4330,11 +4532,23 @@ export function initCourseContentEditor() {
     updateCourseThumbnailPreview();
     updateCourseSettingsSaveState();
   });
+  dom.coursePublished?.addEventListener("change", () => {
+    updateCourseStatusSelectStyles();
+    updateCourseSettingsSaveState();
+  });
+  dom.courseContentStatus?.addEventListener("change", () => {
+    updateCourseContentStatusSelectStyles();
+    updateCourseSettingsSaveState();
+  });
   dom.courseActive?.addEventListener("change", () => {
+    updateCourseStatusSelectStyles();
     updateCourseSettingsSaveState();
   });
   dom.courseSettingsSaveBtn?.addEventListener("click", () => {
     void saveCourseSettings();
+  });
+  dom.courseStatusSaveBtn?.addEventListener("click", () => {
+    void saveCourseVisibilitySettings();
   });
 
   dom.snippetsPanel?.addEventListener("toggle", () => {

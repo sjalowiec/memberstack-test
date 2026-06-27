@@ -7,6 +7,10 @@
 interface ImportMetaEnv {
   /** Server-only: Memberstack Admin API key for token verification (My Library APIs). */
   readonly MEMBERSTACK_SECRET_KEY?: string;
+  /** Server-only: Resend API key for transactional email. */
+  readonly RESEND_API_KEY?: string;
+  /** Server-only: verified sender for Resend (defaults to hello@knititnow.com). */
+  readonly CONTACT_FROM_EMAIL?: string;
 }
 
 declare global {

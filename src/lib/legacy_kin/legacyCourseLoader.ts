@@ -116,13 +116,16 @@ export function getLegacyCourseBySlug(
   slug: string,
   options: LegacyCourseLoadOptions = {},
 ): LegacyCourseRecord | undefined {
-  const normalized = slug.trim();
-  if (!normalized) return undefined;
-  const record = loadAllCourseRecords().find(
-    (item) => item.course.slug === normalized,
-  );
+  const record = getLegacyCourseRecordBySlug(slug);
   if (!record || !recordIsVisible(record, options)) return undefined;
   return record;
+}
+
+/** Load course JSON by slug without publication/active filtering (course landing pages). */
+export function getLegacyCourseRecordBySlug(slug: string): LegacyCourseRecord | undefined {
+  const normalized = slug.trim();
+  if (!normalized) return undefined;
+  return loadAllCourseRecords().find((item) => item.course.slug === normalized);
 }
 
 export function getLegacyLessonBySlug(

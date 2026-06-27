@@ -1212,6 +1212,7 @@ def import_course_rows(
             "legacyChallengeId": challenge_id,
             "title": title,
             "slug": course_slug(challenge_id, title),
+            "contentStatus": "in_progress",
             "status": "draft",
             "published": False,
             "legacy": {

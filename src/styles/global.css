@@ -2257,15 +2257,28 @@ p {
 }
 
 /* Legacy KIN content: handwriting callout (courses, glossary, etc.) */
-.handwriting {
+.handwriting,
+.handwriting-primary,
+.handwriting-accent {
   font-family: "Handlee", "Shadows Into Light Two", cursive;
-  color: var(--kbm-green);
   font-weight: 600;
   font-size: 1.5em;
+  line-height: 1.35;
+}
+
+.handwriting,
+.handwriting-primary {
+  color: var(--kbm-green, #52682d);
+}
+
+.handwriting-accent {
+  color: var(--kbm-accent, #c2614e);
 }
 
 .handwriting-lg,
-.handwriting.handwriting-lg {
+.handwriting.handwriting-lg,
+.handwriting-primary.handwriting-lg,
+.handwriting-accent.handwriting-lg {
   font-size: 2em;
 }
 

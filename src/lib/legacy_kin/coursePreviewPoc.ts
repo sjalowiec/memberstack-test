@@ -130,11 +130,15 @@ export type CourseLesson = {
   blocks: CourseBlock[];
 };
 
+export type CourseContentStatus = "in_progress" | "cleaned";
+
 export type CoursePreviewData = {
   course: {
     legacyChallengeId: number;
     title: string;
     slug: string;
+    /** Editorial workflow: migrated content still being cleaned vs hand-cleaned ready. */
+    contentStatus?: CourseContentStatus;
     /** `published` or omitted = public when no explicit publish flags. `draft` hides from public routes. */
     status?: string;
     published?: boolean;

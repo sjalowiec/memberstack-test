@@ -443,7 +443,8 @@ main.site-content:has(.course-preview--reader) {
   margin-top: 0.25rem;
 }
 
-.course-preview__embedded-tool .maxwidth-panel--embedded {
+.course-preview__embedded-tool .maxwidth-panel--embedded,
+.course-preview__embedded-tool .ye-panel--embedded {
   border-color: #e2e8f0;
   background: #fcfdfb;
 }

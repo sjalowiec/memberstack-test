@@ -1,5 +1,6 @@
 ---
 import MaximumKnittedWidthCalculator from "../tools/MaximumKnittedWidthCalculator.astro";
+import YarnEstimatorCalculator from "../tools/YarnEstimatorCalculator.astro";
 import {
   getEmbeddedToolByKey,
   type EmbeddedToolEntry,
@@ -20,6 +21,8 @@ const isAvailable = entry?.status === "available";
   {
     isAvailable && toolKey === "maximum-knitted-width" ? (
       <MaximumKnittedWidthCalculator embedded instanceId={instanceId} />
+    ) : isAvailable && toolKey === "yarn-estimator" ? (
+      <YarnEstimatorCalculator embedded instanceId={instanceId} />
     ) : isAvailable ? (
       <aside class="embedded-tool__notice" role="alert">
         <p>

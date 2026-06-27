@@ -34,7 +34,7 @@ export const EMBEDDED_TOOL_REGISTRY: EmbeddedToolEntry[] = [
     name: "Yarn Estimator",
     description: "Estimate whether you have enough yarn to finish a project.",
     standalonePath: "/tools/yarn-estimator",
-    status: "planned",
+    status: "available",
     allowedContexts: ["course"],
   },
   {

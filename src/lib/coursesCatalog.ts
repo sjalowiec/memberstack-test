@@ -1,11 +1,11 @@
 import catalogFile from "../data/courses-catalog.json";
-import {
-  getLegacyCourseBySlug,
-  legacyCourseHref,
-} from "./legacy_kin/legacyCourseLoader";
+import { readCourseContentStatus } from "./legacy_kin/courseContentAdmin";
+import { courseLandingHref } from "./legacy_kin/courseLanding";
+import { getLegacyCourseBySlug } from "./legacy_kin/legacyCourseLoader";
 import { legacyAssetUrl } from "./legacy_kin/legacyCourseAssetUrls";
 import {
   isLegacyCourseActive,
+  readLegacyCoursePublished,
   type LegacyCoursePublicationFields,
 } from "./legacy_kin/legacyCoursePublication";
 
@@ -106,10 +106,34 @@ function resolveHref(
   slug: string,
   catalogStatus: CourseCatalogStatus,
 ): string | undefined {
-  if (catalogStatus !== "available") return undefined;
-  const legacy = getLegacyCourseBySlug(slug);
+  const legacy = legacyCourseForEntry(slug, catalogStatus);
   if (!legacy) return undefined;
-  return legacyCourseHref(slug);
+  return courseLandingHref(slug);
+}
+
+/**
+ * Catalog card badge/CTA status. When course JSON exists, editorial contentStatus
+ * and publication drive the label — courses-catalog.json catalogStatus is fallback only.
+ */
+export function resolveCatalogStatus(
+  slug: string,
+  catalogStatus: CourseCatalogStatus,
+): CourseCatalogStatus {
+  const legacy = legacyCourseForEntry(slug, catalogStatus);
+  if (!legacy) return catalogStatus;
+
+  const contentStatus = readCourseContentStatus(legacy.course);
+  const published = readLegacyCoursePublished(
+    legacy.course as LegacyCoursePublicationFields,
+  );
+
+  if (contentStatus === "cleaned" && published) {
+    return "available";
+  }
+  if (contentStatus === "in_progress" || !published) {
+    return "in-progress";
+  }
+  return catalogStatus;
 }
 
 /** Catalog rows for /courses, merged with legacy course metadata where available. */
@@ -121,17 +145,17 @@ export function getCourseCatalogEntries(): CourseCatalogEntry[] {
       return isLegacyCourseActive(legacy.course as LegacyCoursePublicationFields);
     })
     .map((entry) => {
-      const status = entry.catalogStatus;
-      const thumbnail = resolveCourseThumbnail(entry.slug, status, entry.thumbnail);
+      const status = resolveCatalogStatus(entry.slug, entry.catalogStatus);
+      const thumbnail = resolveCourseThumbnail(entry.slug, entry.catalogStatus, entry.thumbnail);
       return {
         slug: entry.slug,
-        title: resolveTitle(entry.slug, status),
-        description: resolveDescription(entry.slug, status, entry.description),
+        title: resolveTitle(entry.slug, entry.catalogStatus),
+        description: resolveDescription(entry.slug, entry.catalogStatus, entry.description),
         thumbnail,
         hasThumbnail: Boolean(thumbnail),
         category: entry.category,
         status,
-        href: resolveHref(entry.slug, status),
+        href: resolveHref(entry.slug, entry.catalogStatus),
         buttonLabel: STATUS_BUTTONS[status],
       };
     });

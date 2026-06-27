@@ -34,6 +34,28 @@ describe("glossaryPickerCatalog", () => {
     ]);
   });
 
+  it("returns the full catalog when no search query is given", () => {
+    const rows = buildGlossaryPickerCatalog(
+      Array.from({ length: 55 }, (_, index) => ({
+        glossaryId: index + 1,
+        english: `Term ${String(index).padStart(2, "0")}`,
+        active: true,
+      })),
+    );
+    expect(filterGlossaryPickerRows(rows, "")).toHaveLength(55);
+  });
+
+  it("respects an explicit result limit", () => {
+    const rows = buildGlossaryPickerCatalog(
+      Array.from({ length: 10 }, (_, index) => ({
+        glossaryId: index + 1,
+        english: `Term ${index}`,
+        active: true,
+      })),
+    );
+    expect(filterGlossaryPickerRows(rows, "", 3)).toHaveLength(3);
+  });
+
   it("escapes link text in generated html", () => {
     expect(buildGlossaryLinkHtml("back-bed", "Back & Bed")).toBe(
       `<a href="/glossary/back-bed" class="glossary-link">Back &amp; Bed</a>`,

@@ -77,38 +77,77 @@ if (
             aria-readonly="true"
             title="Course title (read-only — edit in source file if needed)"
           />
-          <span id="course-editor-draft-badge" class="course-editor__draft-badge" hidden>
-            Draft / unpublished
-          </span>
-          <span id="course-editor-inactive-badge" class="course-editor__inactive-badge" hidden>
-            Inactive
-          </span>
+          <div class="course-editor__course-status">
+            <label class="course-editor__status-field" for="course-editor-published">
+              <span class="course-editor__status-label">Publication</span>
+              <select
+                id="course-editor-published"
+                class="course-editor__input course-editor__status-select"
+                aria-label="Publication status"
+              >
+                <option value="false">Draft / unpublished</option>
+                <option value="true">Published</option>
+              </select>
+            </label>
+            <label class="course-editor__status-field" for="course-editor-active">
+              <span class="course-editor__status-label">Catalog</span>
+              <select
+                id="course-editor-active"
+                class="course-editor__input course-editor__status-select"
+                aria-label="Catalog visibility"
+              >
+                <option value="true">Active — listed on /courses</option>
+                <option value="false">Inactive — hidden from public site</option>
+              </select>
+            </label>
+            <p class="course-editor__field-hint course-editor__status-hint">
+              Staging preview still works when inactive. Save after changing visibility.
+            </p>
+            <button
+              type="button"
+              id="course-editor-status-save"
+              class="kbm-btn kbm-btn-outline course-editor__status-save"
+              disabled
+            >
+              Save visibility settings
+            </button>
+          </div>
           <select id="course-editor-course" class="course-editor__course-select" aria-label="Select course"></select>
         </div>
-        <details id="course-editor-settings-panel" class="course-editor__settings-panel">
+        <details id="course-editor-settings-panel" class="course-editor__settings-panel" open>
           <summary class="course-editor__settings-summary">Course settings</summary>
           <div class="course-editor__course-settings">
-            <label class="course-editor__field-label" for="course-editor-active">Catalog visibility</label>
-            <select id="course-editor-active" class="course-editor__input course-editor__active-select" aria-label="Course active or inactive">
-              <option value="true">Active — listed on /courses</option>
-              <option value="false">Inactive — hidden from public site</option>
-            </select>
+            <label class="course-editor__status-field" for="course-editor-content-status">
+              <span class="course-editor__status-label">Content status</span>
+              <select
+                id="course-editor-content-status"
+                class="course-editor__input course-editor__status-select"
+                aria-label="Editorial content status"
+              >
+                <option value="in_progress">In progress — migration / cleanup ongoing</option>
+                <option value="cleaned">Cleaned — hand-edited and ready</option>
+              </select>
+            </label>
             <p class="course-editor__field-hint">
-              Inactive courses are removed from the public catalog and course pages. Staging preview still works.
+              Tracks editorial cleanup only. Does not control public publication or catalog visibility.
             </p>
             <label class="course-editor__sidebar-label" for="course-editor-thumbnail">
               Course thumbnail
             </label>
-            <input
-              id="course-editor-thumbnail"
-              class="course-editor__input course-editor__thumbnail-input"
-              type="text"
-              placeholder="/challenge/images/v2/… or /images/courses/…"
-              autocomplete="off"
-              spellcheck="false"
-            />
+            <div class="course-editor__thumbnail-path">
+              <span class="course-editor__thumbnail-prefix" aria-hidden="true">/images/courses/</span>
+              <input
+                id="course-editor-thumbnail"
+                class="course-editor__input course-editor__thumbnail-input"
+                type="text"
+                placeholder="beginner.webp"
+                autocomplete="off"
+                spellcheck="false"
+              />
+            </div>
             <p class="course-editor__field-hint">
-              Root-relative path used on the public <a href="/courses/" target="_blank" rel="noopener noreferrer">/courses</a> catalog card.
+              Enter the filename only. Saved as <code>/images/courses/…</code> on the public
+              <a href="/courses/" target="_blank" rel="noopener noreferrer">/courses</a> catalog card.
             </p>
             <div id="course-editor-thumbnail-preview-wrap" class="course-editor__thumbnail-preview-wrap" hidden>
               <img
@@ -170,11 +209,9 @@ if (
           </header>
 
           <div class="course-editor__section-toolbar">
-            <button type="button" id="course-editor-add-section" class="course-editor__add-section-btn">
-              + Add Section
-            </button>
             <details class="course-editor__add-section-menu" id="course-editor-add-section-menu">
-              <summary class="course-editor__add-section-menu-summary">More section types</summary>
+              <summary class="course-editor__add-section-btn">+ Add Section</summary>
+              <p class="course-editor__add-section-hint">Choose the first block for the new section.</p>
               <div class="course-editor__add-section-types" id="course-editor-add-section-types"></div>
             </details>
           </div>

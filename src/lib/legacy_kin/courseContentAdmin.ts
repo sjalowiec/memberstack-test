@@ -1,12 +1,13 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { CoursePreviewData, CourseLesson } from "./coursePreviewPoc";
+import type { CoursePreviewData, CourseLesson, CourseContentStatus } from "./coursePreviewPoc";
 import { isCoursePreviewProductionBlocked } from "./coursePreviewProductionAccess";
 import type { DetectSiteEnvironmentOptions } from "../env/siteEnvironment";
 import {
   isLegacyCourseActive,
   isLegacyCourseDraft,
   isLegacyCoursePublic,
+  readLegacyCoursePublished,
   type LegacyCoursePublicationFields,
 } from "./legacyCoursePublication";
 
@@ -38,6 +39,7 @@ export type AdminCourseSummary = {
   isDraft: boolean;
   isPublic: boolean;
   isActive: boolean;
+  contentStatus: CourseContentStatus;
 };
 
 type DiscoveredCourseFile = {
@@ -49,6 +51,7 @@ type DiscoveredCourseFile = {
   status?: string;
   published?: boolean;
   active?: boolean;
+  contentStatus?: CourseContentStatus;
 };
 
 function readDiscoveredCourseFile(filename: string): DiscoveredCourseFile | null {
@@ -74,6 +77,7 @@ function readDiscoveredCourseFile(filename: string): DiscoveredCourseFile | null
       status: course.status,
       published: course.published,
       active: course.active,
+      contentStatus: course.contentStatus,
     };
   } catch {
     return null;
@@ -120,6 +124,7 @@ export function listAdminCourseSummaries(): AdminCourseSummary[] {
       isDraft: isLegacyCourseDraft(entry),
       isPublic: isLegacyCoursePublic(entry),
       isActive: isLegacyCourseActive(entry),
+      contentStatus: readCourseContentStatus({ contentStatus: entry.contentStatus }),
     }))
     .sort(
       (a, b) =>
@@ -178,12 +183,16 @@ export type SaveLessonResult = {
 export type CourseMetadataUpdate = {
   thumbnail?: string | null;
   active?: boolean;
+  published?: boolean;
+  contentStatus?: CourseContentStatus;
 };
 
 export type SaveCourseMetadataResult = {
   backupPath: string;
   thumbnail: string | null;
   active: boolean;
+  published: boolean;
+  contentStatus: CourseContentStatus;
 };
 
 export function isCourseContentAdminAllowed(
@@ -472,6 +481,32 @@ function normalizeCourseActive(value: unknown): boolean {
   return value;
 }
 
+function normalizeCoursePublished(value: unknown): boolean {
+  if (typeof value !== "boolean") {
+    throw new Error("published must be a boolean.");
+  }
+  return value;
+}
+
+function normalizeCourseContentStatus(value: unknown): CourseContentStatus {
+  if (value !== "in_progress" && value !== "cleaned") {
+    throw new Error('contentStatus must be "in_progress" or "cleaned".');
+  }
+  return value;
+}
+
+export function readCourseContentStatus(
+  course: Pick<CoursePreviewData["course"], "contentStatus">,
+): CourseContentStatus {
+  return course.contentStatus === "cleaned" ? "cleaned" : "in_progress";
+}
+
+export function readCoursePublished(
+  course: LegacyCoursePublicationFields,
+): boolean {
+  return readLegacyCoursePublished(course);
+}
+
 export function readCourseActive(
   course: LegacyCoursePublicationFields,
 ): boolean {
@@ -482,7 +517,12 @@ export function saveCourseMetadata(
   courseId: number,
   update: CourseMetadataUpdate,
 ): SaveCourseMetadataResult {
-  if (!("thumbnail" in update) && !("active" in update)) {
+  if (
+    !("thumbnail" in update) &&
+    !("active" in update) &&
+    !("published" in update) &&
+    !("contentStatus" in update)
+  ) {
     throw new Error("No course metadata fields to save.");
   }
 
@@ -508,8 +548,26 @@ export function saveCourseMetadata(
     }
   }
 
+  let published = readCoursePublished(data.course);
+  if ("published" in update) {
+    published = normalizeCoursePublished(update.published);
+    if (published) {
+      data.course.status = "published";
+      data.course.published = true;
+    } else {
+      data.course.status = "draft";
+      data.course.published = false;
+    }
+  }
+
+  let contentStatus = readCourseContentStatus(data.course);
+  if ("contentStatus" in update) {
+    contentStatus = normalizeCourseContentStatus(update.contentStatus);
+    data.course.contentStatus = contentStatus;
+  }
+
   const backupPath = writeCourseContentFile(courseId, data);
-  return { backupPath, thumbnail, active };
+  return { backupPath, thumbnail, active, published, contentStatus };
 }
 
 function readCourseThumbnailFromData(data: CoursePreviewData): string | null {

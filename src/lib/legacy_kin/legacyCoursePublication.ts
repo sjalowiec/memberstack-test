@@ -32,5 +32,16 @@ export function isLegacyCoursePublic(
 export function isLegacyCourseDraft(
   course: LegacyCoursePublicationFields,
 ): boolean {
-  return !isLegacyCoursePublic(course);
+  return !readLegacyCoursePublished(course);
+}
+
+/** Whether lesson content is published (ignores catalog active flag). */
+export function readLegacyCoursePublished(
+  course: LegacyCoursePublicationFields,
+): boolean {
+  if (course.status === "draft") return false;
+  if (course.published === false) return false;
+  if (course.status === "published") return true;
+  if (course.published === true) return true;
+  return true;
 }

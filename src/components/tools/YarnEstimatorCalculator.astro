@@ -1,0 +1,715 @@
+---
+import "../../styles/wizard.css";
+import FloatingInput from "./FloatingInput.astro";
+import UnitToggle from "../wizards/UnitToggle.astro";
+import ToolResultCard from "./ToolResultCard.astro";
+import PrintButton from "../common/PrintButton.astro";
+
+interface Props {
+  /** Compact layout for course lessons and other embedded contexts. */
+  embedded?: boolean;
+  /** Suffix for input ids when multiple calculators may appear on one page. */
+  instanceId?: string;
+}
+
+const { embedded = false, instanceId = "standalone" } = Astro.props;
+const formId = `yarn-estimator-form-${instanceId}`;
+const validationId = `yeValidation-${instanceId}`;
+const resultsId = `ye-results-${instanceId}`;
+const resultGramsId = `yeResultGrams-${instanceId}`;
+const unitsId = `ye-units-${instanceId}`;
+const arrowStartId = `ye-arrow-start-${instanceId}`;
+const arrowEndId = `ye-arrow-end-${instanceId}`;
+const swatchWidthId = `swatchWidth-${instanceId}`;
+const swatchHeightId = `swatchHeight-${instanceId}`;
+const swatchWeightId = `swatchWeight-${instanceId}`;
+const pieceWidthId = `pieceWidth-${instanceId}`;
+const pieceHeightId = `pieceHeight-${instanceId}`;
+const step1TitleId = `ye-step-1-title-${instanceId}`;
+const step2TitleId = `ye-step-2-title-${instanceId}`;
+const pieceDiagramTitleId = `ye-piece-diagram-title-${instanceId}`;
+---
+
+<div
+  class:list={["ye-panel", embedded && "ye-panel--embedded"]}
+  data-yarn-estimator={instanceId}
+>
+  {
+    embedded ? (
+      <h3 class="embedded-tool-heading ye-embedded-heading">Yarn Estimator</h3>
+    ) : null
+  }
+
+  <form id={formId} class="ye-form kbm-tool-calculator-area" novalidate>
+    <section class="ye-step-card" aria-labelledby={step1TitleId}>
+      {
+        embedded ? (
+          <h4 id={step1TitleId} class="ye-step-title ye-step-title--embedded">
+            1. Measure and weigh your swatch.
+          </h4>
+        ) : (
+          <h2 id={step1TitleId} class="ye-step-title">
+            1. Measure and weigh your swatch.
+          </h2>
+        )
+      }
+      <div class="ye-step-layout">
+        <div class="ye-step-inputs">
+          <div class="ye-units-block">
+            <p class="ye-units-label">Length units (inches or cm)</p>
+            <UnitToggle id={unitsId} />
+          </div>
+
+          <div class="ye-field-stack ye-field-stack--compact">
+            <div class="ye-field">
+              <FloatingInput
+                id={swatchWidthId}
+                name="swatchWidth"
+                label="Swatch width"
+                type="number"
+                min={0.01}
+                step={0.01}
+                inputmode="decimal"
+                placeholder=" "
+              />
+            </div>
+            <div class="ye-field">
+              <FloatingInput
+                id={swatchHeightId}
+                name="swatchHeight"
+                label="Swatch height"
+                type="number"
+                min={0.01}
+                step={0.01}
+                inputmode="decimal"
+                placeholder=" "
+              />
+            </div>
+            <div class="ye-field ye-field--wide">
+              <FloatingInput
+                id={swatchWeightId}
+                name="swatchWeight"
+                label="Swatch weight in grams"
+                type="number"
+                min={0.01}
+                step={0.01}
+                inputmode="decimal"
+                placeholder=" "
+              />
+            </div>
+          </div>
+
+          <ul class="ye-step-hints">
+            <li>Measure the full swatch from edge to edge.</li>
+            <li>Use a kitchen scale or postal scale to weigh it.</li>
+          </ul>
+        </div>
+
+        <aside class="ye-step-visual" aria-label="Swatch measurement reference">
+          <div class="ye-visual-card">
+            <img
+              src="/images/tools/swatch-edge-to-edge.png"
+              alt="Swatch measured edge to edge for width and height"
+              class="ye-reference-image"
+              width="340"
+              height="243"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+        </aside>
+      </div>
+      <p class="ye-step-continue" aria-hidden="true">Next: Enter your project dimensions ?</p>
+    </section>
+
+    <section class="ye-step-card" aria-labelledby={step2TitleId}>
+      {
+        embedded ? (
+          <h4 id={step2TitleId} class="ye-step-title ye-step-title--embedded">
+            2. Enter the finished dimensions of one pattern piece.
+          </h4>
+        ) : (
+          <h2 id={step2TitleId} class="ye-step-title">
+            2. Enter the finished dimensions of one pattern piece.
+          </h2>
+        )
+      }
+      <div class="ye-step-layout ye-step-layout--piece">
+        <div class="ye-step-inputs">
+          <div class="ye-field-stack ye-field-stack--compact ye-field-stack--two">
+            <div class="ye-field">
+              <FloatingInput
+                id={pieceWidthId}
+                name="pieceWidth"
+                label="Piece width"
+                type="number"
+                min={0.01}
+                step={0.01}
+                inputmode="decimal"
+                placeholder=" "
+              />
+            </div>
+            <div class="ye-field">
+              <FloatingInput
+                id={pieceHeightId}
+                name="pieceHeight"
+                label="Piece height"
+                type="number"
+                min={0.01}
+                step={0.01}
+                inputmode="decimal"
+                placeholder=" "
+              />
+            </div>
+          </div>
+
+          <ul class="ye-step-hints">
+            <li>Measure the widest part from edge to edge.</li>
+            <li>Measure the longest part from top to bottom.</li>
+          </ul>
+        </div>
+
+        <aside class="ye-step-visual" aria-label="Piece measurement diagram">
+          <div class="ye-visual-card ye-visual-card--diagram">
+            <figure class="ye-piece-diagram">
+              <svg
+                class="ye-piece-diagram__svg"
+                viewBox="0 0 300 240"
+                role="img"
+                aria-labelledby={pieceDiagramTitleId}
+              >
+                <title id={pieceDiagramTitleId}>
+                  Widest and longest measurements of a pattern piece
+                </title>
+                <defs>
+                  <marker
+                    id={arrowStartId}
+                    markerWidth="8"
+                    markerHeight="8"
+                    refX="0"
+                    refY="4"
+                    orient="auto"
+                  >
+                    <path d="M8 0 L0 4 L8 8 Z" fill="#52682d" />
+                  </marker>
+                  <marker
+                    id={arrowEndId}
+                    markerWidth="8"
+                    markerHeight="8"
+                    refX="8"
+                    refY="4"
+                    orient="auto"
+                  >
+                    <path d="M0 0 L8 4 L0 8 Z" fill="#52682d" />
+                  </marker>
+                </defs>
+
+                <line
+                  x1="72"
+                  y1="36"
+                  x2="228"
+                  y2="36"
+                  stroke="#52682d"
+                  stroke-width="1.5"
+                  stroke-dasharray="6 4"
+                  marker-start={`url(#${arrowStartId})`}
+                  marker-end={`url(#${arrowEndId})`}
+                />
+                <text x="150" y="22" text-anchor="middle" class="ye-diagram-label">
+                  WIDEST MEASUREMENT (width)
+                </text>
+
+                <line
+                  x1="48"
+                  y1="72"
+                  x2="48"
+                  y2="192"
+                  stroke="#52682d"
+                  stroke-width="1.5"
+                  stroke-dasharray="6 4"
+                  marker-start={`url(#${arrowStartId})`}
+                  marker-end={`url(#${arrowEndId})`}
+                />
+                <text
+                  x="18"
+                  y="132"
+                  text-anchor="middle"
+                  transform="rotate(-90 18 132)"
+                  class="ye-diagram-label"
+                >
+                  LONGEST MEASUREMENT (height)
+                </text>
+
+                <rect
+                  x="72"
+                  y="72"
+                  width="144"
+                  height="120"
+                  rx="4"
+                  fill="#f3f6ee"
+                  stroke="#52682d"
+                  stroke-width="2"
+                />
+              </svg>
+            </figure>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <div id={validationId} class="ye-validation" role="alert" hidden></div>
+  </form>
+
+  <ToolResultCard
+    id={resultsId}
+    hidden
+    title="Estimated yarn for this piece"
+    resultsContentId={`yeResultsContent-${instanceId}`}
+    singleColumn={true}
+  >
+    {
+      !embedded ? (
+        <PrintButton slot="actions" label="" ariaLabel="Print yarn estimate" />
+      ) : null
+    }
+    <div class="ye-results-body">
+      <p class="ye-result-primary" id={resultGramsId} aria-live="polite"></p>
+      <p class="ye-result-note">
+        Repeat for each piece, then add the totals for all garment pieces together.
+      </p>
+    </div>
+  </ToolResultCard>
+</div>
+
+<style>
+  .ye-panel {
+    margin-bottom: 1.5rem;
+  }
+
+  .ye-panel--embedded {
+    background: #fff;
+    padding: 1.1rem 1.15rem;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 0;
+  }
+
+  .ye-embedded-heading {
+    margin: 0 0 1rem;
+  }
+
+  .embedded-tool-heading {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #52682d;
+    line-height: 1.3;
+  }
+
+  .ye-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .ye-panel--embedded .ye-form {
+    gap: 1rem;
+  }
+
+  .ye-step-card {
+    background: #fff;
+    padding: 1.75rem;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .ye-panel--embedded .ye-step-card {
+    padding: 1.1rem 1rem;
+    box-shadow: none;
+    border-radius: 10px;
+  }
+
+  .ye-step-card:first-of-type {
+    padding-bottom: 1.25rem;
+  }
+
+  .ye-panel--embedded .ye-step-card:first-of-type {
+    padding-bottom: 0.9rem;
+  }
+
+  @media (max-width: 640px) {
+    .ye-step-card {
+      padding: 1.25rem;
+    }
+
+    .ye-panel--embedded .ye-step-card {
+      padding: 1rem 0.9rem;
+    }
+
+    .ye-step-card:first-of-type {
+      padding-bottom: 1rem;
+    }
+  }
+
+  .ye-step-title {
+    margin: 0 0 1.25rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+    line-height: 1.3;
+  }
+
+  .ye-step-title--embedded {
+    margin-bottom: 0.85rem;
+    font-size: 1.05rem;
+  }
+
+  .ye-step-card:first-of-type .ye-step-title {
+    margin-bottom: 1rem;
+  }
+
+  .ye-panel--embedded .ye-step-card:first-of-type .ye-step-title {
+    margin-bottom: 0.75rem;
+  }
+
+  .ye-step-card:first-of-type .ye-step-layout {
+    gap: 1rem 1.5rem;
+  }
+
+  .ye-step-card:first-of-type .ye-units-block {
+    margin-bottom: 0.75rem;
+  }
+
+  .ye-step-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
+    gap: 1.25rem 2rem;
+    align-items: start;
+  }
+
+  .ye-step-inputs {
+    min-width: 0;
+    max-width: 20rem;
+  }
+
+  .ye-step-visual {
+    min-width: 0;
+  }
+
+  @media (min-width: 768px) {
+    .ye-step-layout {
+      grid-template-columns: minmax(0, 20rem) minmax(300px, 1fr);
+    }
+
+    .ye-step-visual {
+      justify-self: stretch;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .ye-step-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .ye-step-inputs {
+      max-width: none;
+    }
+
+    .ye-step-visual {
+      width: 100%;
+      max-width: 22rem;
+      margin: 0 auto;
+    }
+  }
+
+  .ye-visual-card {
+    background: #fafaf8;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 0.875rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    height: 100%;
+  }
+
+  .ye-panel--embedded .ye-visual-card {
+    padding: 0.75rem;
+    box-shadow: none;
+  }
+
+  @media (min-width: 768px) {
+    .ye-visual-card {
+      padding: 1rem 1.125rem;
+    }
+  }
+
+  .ye-visual-card--diagram {
+    padding: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .ye-visual-card--diagram {
+      padding: 1.25rem 1.5rem;
+    }
+  }
+
+  .ye-reference-image {
+    width: 100%;
+    max-width: 340px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .ye-panel--embedded .ye-reference-image {
+    box-shadow: none;
+  }
+
+  @media (min-width: 768px) {
+    .ye-reference-image {
+      max-width: none;
+    }
+  }
+
+  .ye-step-continue {
+    margin: 0.875rem 0 0;
+    padding-top: 0.75rem;
+    border-top: 1px dashed #e5e7eb;
+    text-align: center;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #9ca3af;
+    letter-spacing: 0.01em;
+  }
+
+  .ye-panel--embedded .ye-step-continue {
+    margin-top: 0.65rem;
+    padding-top: 0.6rem;
+  }
+
+  .ye-piece-diagram {
+    margin: 0;
+  }
+
+  .ye-piece-diagram__svg {
+    width: 100%;
+    max-width: 340px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 768px) {
+    .ye-piece-diagram__svg {
+      max-width: none;
+    }
+  }
+
+  .ye-piece-diagram__svg .ye-diagram-label {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    fill: #52682d;
+    letter-spacing: 0.02em;
+  }
+
+  .ye-units-block {
+    margin-bottom: 1rem;
+  }
+
+  .ye-units-label {
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .ye-field-stack--compact {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 8rem));
+    gap: 0.875rem 1rem;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .ye-field-stack--compact .ye-field--wide {
+    grid-column: 1 / -1;
+    max-width: 12.5rem;
+  }
+
+  .ye-field-stack--two.ye-field-stack--compact {
+    grid-template-columns: repeat(2, minmax(0, 8rem));
+  }
+
+  @media (max-width: 520px) {
+    .ye-field-stack--compact,
+    .ye-field-stack--two.ye-field-stack--compact {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      width: 100%;
+    }
+
+    .ye-field-stack--compact .ye-field--wide {
+      max-width: none;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .ye-field-stack--compact,
+    .ye-field-stack--two.ye-field-stack--compact {
+      grid-template-columns: 1fr;
+    }
+
+    .ye-field-stack--compact .ye-field--wide {
+      grid-column: auto;
+    }
+  }
+
+  .ye-step-card:first-of-type .ye-step-hints {
+    margin-top: 0.75rem;
+  }
+
+  .ye-step-hints {
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .ye-step-hints li {
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: #6b7280;
+    padding-left: 1.1rem;
+    position: relative;
+  }
+
+  .ye-step-hints li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #52682d;
+  }
+
+  .ye-validation {
+    margin-top: 0;
+    padding: 14px 18px;
+    border-left: 6px solid #d9534f;
+    background: #fff4f4;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    color: #333;
+  }
+
+  .ye-validation[hidden] {
+    display: none;
+  }
+
+  .ye-results-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .ye-result-primary {
+    margin: 0;
+    font-size: clamp(1.35rem, 3.4vw, 1.85rem);
+    font-weight: 800;
+    line-height: 1.25;
+    color: #52682d;
+  }
+
+  .ye-panel--embedded .ye-result-primary {
+    font-size: clamp(1.1rem, 3vw, 1.35rem);
+  }
+
+  .ye-result-note {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+</style>
+
+<script>
+  import {
+    estimateYarnGrams,
+    formatYarnEstimateResult,
+    parsePositiveNumber,
+  } from "../../lib/tools/yarnEstimator";
+
+  function initYarnEstimator(root: HTMLElement): void {
+    const form = root.querySelector("form");
+    const validationEl = root.querySelector(".ye-validation") as HTMLElement | null;
+    const resultsCard = root.querySelector(".tool-result-card") as HTMLElement | null;
+    const resultGramsEl = root.querySelector(".ye-result-primary") as HTMLElement | null;
+
+    if (!form || !validationEl || !resultsCard || !resultGramsEl) return;
+
+    const formEl = form;
+    const validationElEl = validationEl;
+    const resultsCardEl = resultsCard;
+    const resultGramsElEl = resultGramsEl;
+
+    function hideResults(): void {
+      resultsCardEl.hidden = true;
+      resultGramsElEl.textContent = "";
+    }
+
+    function recalculate(): void {
+      validationElEl.hidden = true;
+      validationElEl.textContent = "";
+
+      const fd = new FormData(formEl);
+      const swatchWidth = parsePositiveNumber((fd.get("swatchWidth") ?? "").toString());
+      const swatchHeight = parsePositiveNumber((fd.get("swatchHeight") ?? "").toString());
+      const swatchWeight = parsePositiveNumber((fd.get("swatchWeight") ?? "").toString());
+      const pieceWidth = parsePositiveNumber((fd.get("pieceWidth") ?? "").toString());
+      const pieceHeight = parsePositiveNumber((fd.get("pieceHeight") ?? "").toString());
+
+      const values = [swatchWidth, swatchHeight, swatchWeight, pieceWidth, pieceHeight];
+      const hasAnyInput = values.some((value) => value !== null);
+
+      if (!hasAnyInput) {
+        hideResults();
+        return;
+      }
+
+      if (values.some((value) => value === null)) {
+        hideResults();
+        return;
+      }
+
+      const gramsNeeded = estimateYarnGrams({
+        swatchWidth: swatchWidth!,
+        swatchHeight: swatchHeight!,
+        swatchWeight: swatchWeight!,
+        pieceWidth: pieceWidth!,
+        pieceHeight: pieceHeight!,
+      });
+
+      resultGramsElEl.textContent = formatYarnEstimateResult(gramsNeeded);
+      resultsCardEl.hidden = false;
+    }
+
+    formEl.addEventListener("input", recalculate);
+
+    window.addEventListener("kbm:units-change", () => {
+      validationElEl.hidden = true;
+      recalculate();
+    });
+  }
+
+  document.querySelectorAll("[data-yarn-estimator]").forEach((root) => {
+    initYarnEstimator(root as HTMLElement);
+  });
+</script>

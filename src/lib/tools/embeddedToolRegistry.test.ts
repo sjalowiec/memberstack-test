@@ -21,6 +21,16 @@ describe("embeddedToolRegistry", () => {
   it("returns only available tools for course editor dropdown", () => {
     const available = availableEmbeddedToolsForContext("course");
     expect(available.every((t) => t.status === "available")).toBe(true);
-    expect(available.map((t) => t.key)).toEqual(["maximum-knitted-width"]);
+    expect(available.map((t) => t.key)).toEqual([
+      "maximum-knitted-width",
+      "yarn-estimator",
+    ]);
+  });
+
+  it("finds yarn estimator by key", () => {
+    const tool = getEmbeddedToolByKey("yarn-estimator");
+    expect(tool?.name).toBe("Yarn Estimator");
+    expect(tool?.status).toBe("available");
+    expect(tool?.standalonePath).toBe("/tools/yarn-estimator");
   });
 });

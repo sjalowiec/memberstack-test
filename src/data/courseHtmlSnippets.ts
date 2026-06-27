@@ -19,7 +19,7 @@ export const COURSE_HTML_SNIPPETS: CourseHtmlSnippet[] = [
     id: "download-button",
     name: "Download Button",
     category: "links",
-    html: `<a href="/downloads/file.pdf" class="btn btn-primary">Download PDF</a>`,
+    html: `<a href="/downloads/file.pdf" class="kbm-btn kbm-btn-primary" target="_blank" rel="noopener noreferrer">Download PDF</a>`,
   },
   {
     id: "external-link-button",

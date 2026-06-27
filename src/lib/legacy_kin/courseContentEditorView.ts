@@ -2,6 +2,7 @@ import type { FlatContentItem } from "./courseContentEditorTypes";
 import { isEditorLayoutBlock } from "./courseContentEditorBlocks";
 import { flattenLessonContent } from "./courseLessonContentItems";
 import type { CourseLesson } from "./coursePreviewPoc";
+import { sortedBlocks } from "./coursePreviewPoc";
 
 type LessonRecord = Record<string, unknown>;
 
@@ -38,11 +39,8 @@ export function countLessonSectionsAndBlocks(lesson: LessonRecord): {
   blockCount: number;
 } {
   const items = flattenLessonContent(lesson as CourseLesson);
-  const sectionSlugs = new Set<string>();
-  for (const item of items) {
-    sectionSlugs.add(item.blockSlug);
-  }
-  return { sectionCount: sectionSlugs.size, blockCount: items.length };
+  const sectionCount = sortedBlocks(lesson as CourseLesson).length;
+  return { sectionCount, blockCount: items.length };
 }
 
 export function formatLessonSidebarMeta(sectionCount: number, blockCount: number): string {
@@ -55,10 +53,9 @@ export function buildContentListGroups(
   lesson: LessonRecord,
   items: FlatContentItem[],
 ): ContentListGroup[] {
-  const blockOrder: string[] = [];
-  for (const item of items) {
-    if (!blockOrder.includes(item.blockSlug)) blockOrder.push(item.blockSlug);
-  }
+  const blockOrder = sortedBlocks(lesson as CourseLesson)
+    .map((block) => String(block.slug ?? ""))
+    .filter(Boolean);
 
   return blockOrder.map((blockSlug, index) => {
     const block = findBlockInLesson(lesson, blockSlug);
@@ -82,6 +79,9 @@ export function buildContentListGroups(
 }
 
 export function sectionGroupMetaLabel(group: ContentListGroup): string {
+  if (group.blockCount === 0) {
+    return "No blocks";
+  }
   if (group.isLayout && group.blockCount === 1) {
     return "Combined layout";
   }
@@ -92,6 +92,7 @@ export function sectionGroupMetaLabel(group: ContentListGroup): string {
 }
 
 export function formatSectionBlockCount(blockCount: number): string {
+  if (blockCount === 0) return "No blocks";
   return `${blockCount} block${blockCount === 1 ? "" : "s"}`;
 }
 
@@ -113,12 +114,12 @@ export function resolveExpandedSectionSlug(
 
   const slugs = new Set(groups.map((group) => group.blockSlug));
 
-  if (options.selectedBlockSectionSlug && slugs.has(options.selectedBlockSectionSlug)) {
-    return options.selectedBlockSectionSlug;
-  }
-
   if (options.currentExpanded && slugs.has(options.currentExpanded)) {
     return options.currentExpanded;
+  }
+
+  if (options.selectedBlockSectionSlug && slugs.has(options.selectedBlockSectionSlug)) {
+    return options.selectedBlockSectionSlug;
   }
 
   if (options.preferFirstWhenUnset !== false) {

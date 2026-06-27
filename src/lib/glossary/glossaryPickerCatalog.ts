@@ -61,11 +61,16 @@ export function buildGlossaryPickerCatalog(entries: unknown[]): GlossaryPickerRo
 export function filterGlossaryPickerRows(
   rows: GlossaryPickerRow[],
   query: string,
-  limit = 40,
+  limit?: number,
 ): GlossaryPickerRow[] {
   const normalized = query.trim().toLowerCase();
   const filtered = normalized
     ? rows.filter((row) => row.term.toLowerCase().includes(normalized))
     : rows;
-  return filtered.slice(0, limit);
+
+  if (limit === undefined) {
+    return filtered;
+  }
+
+  return filtered.slice(0, Math.max(0, limit));
 }
